@@ -80,63 +80,50 @@ namespace icl{
   #ifdef ICL_HAVE_IPP
 
     ///////////////////////////////////////////////////////////////////////////
-    // Caller-functions ///////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-
-    template<class T, IppStatus (*func)(T*,int)>
-    static inline DynMatrix<T> &ipp_unary_func_i(DynMatrix<T> &m){
-      func(m.begin(),m.dim());
-      return m;
-    }
-    template<class T, IppStatus (*func)(const T*,T*,int)>
-    static inline DynMatrix<T> &ipp_unary_func(const DynMatrix<T> &m, DynMatrix<T> &dst){
-      dst.setBounds(m.cols(),m.rows());
-      func(m.begin(),dst.begin(),m.dim());
-      return dst;
-    }
-    template<class T, IppStatus (*func)(T,T*,int)>
-    static inline DynMatrix<T> &ipp_unary_func_c_i(DynMatrix<T> &m,T val){
-      func(val,m.begin(),m.dim());
-      return m;
-    }
-    template<class T, IppStatus (*func)(const T*,T,T*,int)>
-    static inline DynMatrix<T> &ipp_unary_func_c(const DynMatrix<T> &m,T val, DynMatrix <T> &dst){
-      dst.setBounds(m.cols(),m.rows());
-      func(m.begin(),val,dst.begin(),m.dim());
-      return dst;
-    }
-
-    template<class T, IppStatus (*func)(const T*,const T*,T*,int)>
-    static inline DynMatrix<T> &ipp_binary_func(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix <T> &dst){
-      CHECK_DIM(a,b,dst);
-      dst.setBounds(a.cols(),a.rows());
-      func(b.begin(),a.begin(),dst.begin(),a.dim()); // direction is reversed (ipps->order)
-      return dst;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     // Unary functions ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
-    double reciprocal(const double &x) { return 1.0/x; }
+    double reciprocal(const double x) { return 1.0/x; }
 
-  #define ICL_UNARY_HELP_FUNC(name,func)                                  \
-    IppStatus ipps##name##_32f_I(float *p, int len){                      \
-      std::transform(p,p+len,p,func);                                     \
-      return ippStsNoErr;                                                 \
-    }                                                                     \
-    IppStatus ipps##name##_64f_I(double *p, int len){                     \
-      std::transform(p,p+len,p,func);                                     \
-      return ippStsNoErr;                                                 \
-    }                                                                     \
-    IppStatus ipps##name##_32f(const float *s, float *d, int len){        \
-      std::transform(s,s+len,d,func);                                     \
-      return ippStsNoErr;                                                 \
-    }                                                                     \
-    IppStatus ipps##name##_64f(const double *s, double *d, int len){      \
-      std::transform(s,s+len,d,func);                                     \
-      return ippStsNoErr;                                                 \
+  #ifdef WIN32
+    float reciprocal(const float x) { return 1.0 / x; }
+
+    #define ICL_UNARY_HELP_FUNC(name,func)                                    \
+      IppStatus ipps##name##_32f_I(float *p, int len){                        \
+        std::transform(p,p+len,p,static_cast<float(*)(const float)>(func));   \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_64f_I(double *p, int len){                       \
+        std::transform(p,p+len,p,static_cast<double(*)(const double)>(func)); \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_32f(const float *s, float *d, int len){          \
+        std::transform(s,s+len,d,static_cast<float(*)(const float)>(func));   \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_64f(const double *s, double *d, int len){        \
+        std::transform(s,s+len,d,static_cast<double(*)(const double)>(func)); \
+        return ippStsNoErr;                                                   \
     }
+  #else
+    #define ICL_UNARY_HELP_FUNC(name,func)                                    \
+      IppStatus ipps##name##_32f_I(float *p, int len){                        \
+        std::transform(p,p+len,p,func);                                       \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_64f_I(double *p, int len){                       \
+        std::transform(p,p+len,p,func);                                       \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_32f(const float *s, float *d, int len){          \
+        std::transform(s,s+len,d,func);                                       \
+        return ippStsNoErr;                                                   \
+      }                                                                       \
+      IppStatus ipps##name##_64f(const double *s, double *d, int len){        \
+        std::transform(s,s+len,d,func);                                       \
+        return ippStsNoErr;                                                   \
+    }
+  #endif
 
     ICL_UNARY_HELP_FUNC(Sin_icl,::sin)
     ICL_UNARY_HELP_FUNC(Cos_icl,::cos)
@@ -147,34 +134,35 @@ namespace icl{
 
   #undef ICL_UNARY_HELP_FUNC
 
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(DynMatrix<T> &m){                           \
-      ERROR_LOG("not implemented for this type!");                        \
-      return m;                                                           \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m){        \
-      return ipp_unary_func_i<float,ipps##func##_32f_I>(m);               \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m){      \
-      return ipp_unary_func_i<double,ipps##func##_64f_I>(m);              \
-    }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m);          \
-    template ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m);        \
-                                                                          \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, DynMatrix<T> &dst){  \
-      ERROR_LOG("not implemented for this type!");                        \
-      return dst;                                                         \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst){ \
-      return ipp_unary_func<float,ipps##func##_32f>(m,dst);               \
-    }                                                                     \
+  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                              \
+    template<class T>                                                                                          \
+    DynMatrix<T> &matrix_##op(DynMatrix<T> &m){                                                                \
+      ERROR_LOG("not implemented for this type!");                                                             \
+      return m;                                                                                                \
+    }                                                                                                          \
+    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m){                                 \
+      ipps##func##_32f_I(m.begin(), m.dim());                                                                  \
+      return m;                                                                                                \
+    }                                                                                                          \
+    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m){                               \
+      ipps##func##_64f_I(m.begin(), m.dim());                                                                  \
+      return m;                                                                                                \
+    }                                                                                                          \
+    template<class T>                                                                                          \
+    DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, DynMatrix<T> &dst){                                       \
+      ERROR_LOG("not implemented for this type!");                                                             \
+      return dst;                                                                                              \
+    }                                                                                                          \
+    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst){    \
+      dst.setBounds(m.cols(),m.rows());                                                                        \
+      ipps##func##_32f(m.begin(), dst.begin(), m.dim());                                                       \
+      return dst;                                                                                              \
+    }                                                                                                          \
     template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst){ \
-      return ipp_unary_func<double,ipps##func##_64f>(m,dst);              \
-    }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst); \
-    template ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst);
+      dst.setBounds(m.cols(),m.rows());                                                                        \
+      ipps##func##_64f(m.begin(), dst.begin(), m.dim());                                                       \
+      return dst;                                                                                              \
+    }
 
     INSTANTIATE_DYN_MATRIX_MATH_OP(abs,Abs)
     INSTANTIATE_DYN_MATRIX_MATH_OP(log,Ln)
@@ -219,27 +207,32 @@ namespace icl{
     }
 
 
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T> DynMatrix<T> &matrix_##op(DynMatrix<T> &m, T val){  \
-      ERROR_LOG("not implemented for this type!");                        \
-      return m;                                                           \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m, float val){ \
-      return ipp_unary_func_c_i<float,ipps##func##_32f_I>(m,val);         \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m, double val){ \
-      return ipp_unary_func_c_i<double,ipps##func##_64f_I>(m,val);        \
-    }                                                                     \
-    template<class T> DynMatrix<T> &matrix_##op(const DynMatrix<T> &,T, DynMatrix<T> &m){ \
-      ERROR_LOG("not implemented for this type!");                        \
-      return m;                                                           \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &s,float val, DynMatrix<float> &dst){ \
-      return ipp_unary_func_c<float,ipps##func##_32f>(s,val,dst);         \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &s,double val, DynMatrix<double> &dst){ \
-      return ipp_unary_func_c<double,ipps##func##_64f>(s,val,dst);        \
+  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                         \
+    template<class T> DynMatrix<T> &matrix_##op(DynMatrix<T> &m, T val){                                                  \
+      ERROR_LOG("not implemented for this type!");                                                                        \
+      return m;                                                                                                           \
+    }                                                                                                                     \
+    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m, float val){                                 \
+      ipps##func##_32f_I(val,m.begin(),m.dim());                                                                          \
+      return m;                                                                                                           \
+    }                                                                                                                     \
+    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m, double val){                              \
+      ipps##func##_64f_I(val,m.begin(),m.dim());                                                                          \
+      return m;                                                                                                           \
+    }                                                                                                                     \
+    template<class T> DynMatrix<T> &matrix_##op(const DynMatrix<T> &,T, DynMatrix<T> &m){                                 \
+      ERROR_LOG("not implemented for this type!");                                                                        \
+      return m;                                                                                                           \
+    }                                                                                                                     \
+    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m,float val, DynMatrix<float> &dst){     \
+      dst.setBounds(m.cols(),m.rows());                                                                                   \
+      ipps##func##_32f(m.begin(), val, dst.begin(), m.dim());                                                             \
+      return dst;                                                                                                         \
+    }                                                                                                                     \
+    template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &m,double val, DynMatrix<double> &dst){ \
+      dst.setBounds(m.cols(),m.rows());                                                                                   \
+      ipps##func##_64f(m.begin(), val, dst.begin(), m.dim());                                                             \
+      return dst;                                                                                                         \
     }
 
     INSTANTIATE_DYN_MATRIX_MATH_OP(powc,Pow_icl)
@@ -254,6 +247,24 @@ namespace icl{
     // Binary functions ///////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
+  #ifdef WIN32
+    IppStatus ippsArctan2_icl_32f(const float *a, const float *b, float *dst, int len){
+      std::transform(b,b+len,a,dst,static_cast<float(*)(const float, const float)>(::atan2));
+      return ippStsNoErr;
+    }
+    IppStatus ippsArctan2_icl_64f(const double *a, const double *b, double *dst, int len){
+      std::transform(b,b+len,a,dst,static_cast<double(*)(const double, const double)>(::atan2));
+      return ippStsNoErr;
+    }
+    IppStatus ippsPow_icl_32f(const float *a, const float *b, float *dst, int len){
+      std::transform(a,a+len,b,dst,static_cast<float(*)(const float, const float)>(::pow));
+      return ippStsNoErr;
+    }
+    IppStatus ippsPow_icl_64f(const double *a, const double *b, double *dst, int len){
+      std::transform(a,a+len,b,dst,static_cast<double(*)(const double, const double)>(::pow));
+      return ippStsNoErr;
+    }
+  #else
     IppStatus ippsArctan2_icl_32f(const float *a, const float *b, float *dst, int len){
       std::transform(b,b+len,a,dst,::atan2);
       return ippStsNoErr;
@@ -270,22 +281,29 @@ namespace icl{
       std::transform(a,a+len,b,dst,::pow);
       return ippStsNoErr;
     }
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
-      throw (IncompatibleMatrixDimensionException){                       \
-      ERROR_LOG("not implemented for this type!");                        \
-      return dst;                                                         \
-    }                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst) \
-      throw (IncompatibleMatrixDimensionException){                       \
-      return ipp_binary_func<float,ipps##func##_32f>(a,b,dst);            \
-    }                                                                     \
+  #endif
+    
+  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                                         \
+    template<class T>                                                                                                                     \
+    DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst)                                            \
+      throw (IncompatibleMatrixDimensionException){                                                                                       \
+      ERROR_LOG("not implemented for this type!");                                                                                        \
+      return dst;                                                                                                                         \
+    }                                                                                                                                     \
+    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst)     \
+      throw (IncompatibleMatrixDimensionException){                                                                                       \
+      CHECK_DIM(a,b,dst);                                                                                                                 \
+      dst.setBounds(a.cols(), a.rows());                                                                                                  \
+      ipps##func##_32f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
+      return dst;                                                                                                                         \
+    }                                                                                                                                     \
     template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &a, const DynMatrix<double> &b, DynMatrix<double> &dst) \
-      throw (IncompatibleMatrixDimensionException){                       \
-      return ipp_binary_func<double,ipps##func##_64f>(a,b,dst);           \
-    }                                                                     \
+      throw (IncompatibleMatrixDimensionException){                                                                                       \
+      CHECK_DIM(a,b,dst);                                                                                                                 \
+      dst.setBounds(a.cols(), a.rows());                                                                                                  \
+      ipps##func##_64f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
+      return dst;                                                                                                                         \
+    }
 
     INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,Arctan2_icl)
     INSTANTIATE_DYN_MATRIX_MATH_OP(add,Add)
@@ -553,11 +571,10 @@ namespace icl{
     template<> ICLMath_API double matrix_mean(const DynMatrix<double> &m){
       double v=0; ippsMean_64f(m.begin(),m.dim(),&v); return v;
     }
-  #endif // ICL_HAVE_IPP
-
+  #else
     template ICLMath_API float matrix_mean(const DynMatrix<float>&);
     template ICLMath_API double matrix_mean(const DynMatrix<double>&);
-
+  #endif
 
     // VAR ***************************
     template<class T> struct var_functor{
@@ -582,10 +599,10 @@ namespace icl{
     template<> ICLMath_API double matrix_var(const DynMatrix<double> &m){
       double v=0; ippsStdDev_64f(m.begin(),m.dim(),&v); return v*v;
     }
-  #endif // ICL_HAVE_IPP
-
+  #else
     template ICLMath_API float matrix_var(const DynMatrix<float>&);
     template ICLMath_API double matrix_var(const DynMatrix<double>&);
+  #endif // ICL_HAVE_IPP
 
      // VAR (2)***************************
     template<class T>
@@ -620,10 +637,10 @@ namespace icl{
       ippsMeanStdDev_64f(m.begin(),m.dim(),mean,var);
       *var = (*var)*(*var);
     }
-  #endif // ICL_HAVE_IPP
-
+  #else
     template ICLMath_API void matrix_meanvar(const DynMatrix<float>&, float*, float*);
     template ICLMath_API void matrix_meanvar(const DynMatrix<double>&, double*, double*);
+  #endif // ICL_HAVE_IPP
 
 
     // STDDEV ***************************
@@ -986,6 +1003,24 @@ namespace icl{
       return dst;
     }
 
+  #else
+
+    template ICLMath_API DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
+      throw (IncompatibleMatrixDimensionException);
+    template ICLMath_API DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
+      throw (IncompatibleMatrixDimensionException);
+
+    template ICLMath_API DynMatrix<double> &matrix_add_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
+      throw (IncompatibleMatrixDimensionException);
+    template ICLMath_API DynMatrix<float> &matrix_add_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
+      throw (IncompatibleMatrixDimensionException);
+
+
+    template ICLMath_API DynMatrix<double> &matrix_sub_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
+      throw (IncompatibleMatrixDimensionException);
+    template ICLMath_API DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
+      throw (IncompatibleMatrixDimensionException);
+
   #endif // ICL_HAVE_IPP
 
 
@@ -1056,27 +1091,10 @@ namespace icl{
 
   #endif
 
-    template ICLMath_API DynMatrix<double> &matrix_mult_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
-      throw (IncompatibleMatrixDimensionException);
-    template ICLMath_API DynMatrix<float> &matrix_mult_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
-      throw (IncompatibleMatrixDimensionException);
-
 
     template ICLMath_API DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
       throw (IncompatibleMatrixDimensionException);
     template ICLMath_API DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
-      throw (IncompatibleMatrixDimensionException);
-
-
-    template ICLMath_API DynMatrix<double> &matrix_add_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
-      throw (IncompatibleMatrixDimensionException);
-    template ICLMath_API DynMatrix<float> &matrix_add_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
-      throw (IncompatibleMatrixDimensionException);
-
-
-    template ICLMath_API DynMatrix<double> &matrix_sub_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int)
-      throw (IncompatibleMatrixDimensionException);
-    template ICLMath_API DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
       throw (IncompatibleMatrixDimensionException);
 
 

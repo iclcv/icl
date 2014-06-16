@@ -8,7 +8,8 @@
 **                                                                 **
 ** File   : ICLCore/src/ICLCore/CCFunctions.cpp                    **
 ** Module : ICLCore                                                **
-** Authors: Christof Elbrechter, Michael Goetting, Robert Haschke  **
+** Authors: Christof Elbrechter, Michael Goetting, Robert Haschke, **
+**          Sergius Gaulik                                         **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -5134,9 +5135,16 @@ namespace icl{
     template ICLCore_API void planarToInterleaved<TYPEB, TYPEA>(const Img<TYPEB>*, TYPEA*, int);             \
     template ICLCore_API void interleavedToPlanar<TYPEA, TYPEB>(const TYPEA*, Img<TYPEB>*, int)
   
+  #ifndef ICL_HAVE_IPP
+    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
+    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
+    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
+    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32f);
+  #endif
+
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl8u);
     
-    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
+    //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl8u);
@@ -5144,7 +5152,7 @@ namespace icl{
   
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl16s);
-    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
+    //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl16s);
@@ -5152,7 +5160,7 @@ namespace icl{
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl32s);
-    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
+    //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl32s);
   
@@ -5160,7 +5168,7 @@ namespace icl{
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32f);
-    EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32f);
+    //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl32f);
   
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl64f);

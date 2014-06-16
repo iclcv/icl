@@ -48,46 +48,6 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
   
-  #ifdef ICL_HAVE_IPP
-   template<class T, IppStatus (*ippFunc)(const T*,int,int,T*,T*,int,int,int)>
-   static DynMatrix<T> apply_dyn_matrix_inv(const DynMatrix<T> &s){
-      if(s.cols() != s.rows()){
-        throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices");
-      }
-  
-  
-      unsigned int wh = s.cols();
-      DynMatrix<T> d(wh,wh,0.0);
-      std::vector<T> buffer(wh*wh+wh);
-  
-      IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),
-                             buffer.data(),
-                             d.data(),wh*sizeof(T),sizeof(T),
-                             wh);
-      if(st != ippStsNoErr){
-        throw SingularMatrixException("matrix is too singular");
-      }
-      return d;
-    }
-  
-    template<class T, IppStatus (*ippFunc)(const T*,int,int,int,T*,T*)>
-    static T apply_dyn_matrix_det(const DynMatrix<T> &s){
-      if(s.cols() != s.rows()){
-        throw InvalidMatrixDimensionException("matrix determinant can only be calculated on square matrices");
-      }
-      unsigned int wh = s.cols();
-      std::vector<T> buffer(wh*wh+wh);
-  
-      T det(0);
-      IppStatus st = ippFunc(s.data(),wh*sizeof(T),sizeof(T),
-                             wh,buffer.data(),&det);
-      if(st != ippStsNoErr){
-        ERROR_LOG("matrix determinant could not be calculated");
-      }
-      return det;
-    }
-  #endif
-  
     template<class T>
     static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
       ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
@@ -702,20 +662,55 @@ namespace icl{
     }
   
   
-  #ifdef ICL_HAVE_IPP
-    template<> ICLMath_API DynMatrix<float> DynMatrix<float>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-      return apply_dyn_matrix_inv<float,ippmInvert_m_32f>(*this);
+#ifdef ICL_HAVE_IPP
+  #define DYN_MATRIX_INV(T, ippFunc) \
+    template<> ICLMath_API DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){ \
+      if(this->cols() != this->rows()){ \
+        throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices"); \
+      } \
+      unsigned int wh = this->cols(); \
+      DynMatrix<T> d(wh, wh, 0.0); \
+      std::vector<T> buffer(wh*wh + wh); \
+      IppStatus st = ippFunc(this->data(), wh*sizeof(T), sizeof(T), \
+                             buffer.data(), \
+                             d.data(), wh*sizeof(T), sizeof(T), \
+                             wh); \
+      if(st != ippStsNoErr){ \
+        throw SingularMatrixException("matrix is too singular"); \
+      } \
+      return d; \
     }
-    template<> ICLMath_API DynMatrix<double> DynMatrix<double>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){
-      return apply_dyn_matrix_inv<double,ippmInvert_m_64f>(*this);
+    
+  #define DYN_MATRIX_DET(T, ippFunc) \
+    template<> ICLMath_API T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){ \
+      if(this->cols() != this->rows()){ \
+        throw InvalidMatrixDimensionException("matrix determinant can only be calculated on square matrices"); \
+      } \
+      unsigned int wh = this->cols(); \
+      std::vector<T> buffer(wh*wh+wh); \
+      T det(0); \
+      IppStatus st = ippFunc(this->data(),wh*sizeof(T),sizeof(T), \
+                             wh,buffer.data(),&det); \
+      if(st != ippStsNoErr){ \
+        ERROR_LOG("matrix determinant could not be calculated"); \
+      } \
+      return det; \
     }
-    template<> ICLMath_API float DynMatrix<float>::det() const throw (InvalidMatrixDimensionException){
-      return apply_dyn_matrix_det<float,ippmDet_m_32f>(*this);
-    }
-    template<> ICLMath_API double DynMatrix<double>::det() const throw (InvalidMatrixDimensionException){
-      return apply_dyn_matrix_det<double,ippmDet_m_64f>(*this);
-    }
-  #endif
+  
+    DYN_MATRIX_INV(float, ippmInvert_m_32f);
+    DYN_MATRIX_INV(double, ippmInvert_m_64f);
+    DYN_MATRIX_DET(float, ippmDet_m_32f);
+    DYN_MATRIX_DET(double, ippmDet_m_64f);
+
+    #undef DYN_MATRIX_INV
+    #undef DYN_MATRIX_DET
+#else
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
+
+    template ICLMath_API float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
+    template ICLMath_API double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
+#endif
   
   
     template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const throw (ICLException);
@@ -723,12 +718,6 @@ namespace icl{
   
     template ICLMath_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const throw(InvalidMatrixDimensionException, ICLException);
     template ICLMath_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const throw(InvalidMatrixDimensionException, ICLException);
-  
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const throw (InvalidMatrixDimensionException, SingularMatrixException);
-  
-    template ICLMath_API float DynMatrix<float>::det()const throw (InvalidMatrixDimensionException);
-    template ICLMath_API double DynMatrix<double>::det()const throw (InvalidMatrixDimensionException);
   
     template ICLMath_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const
       throw (InvalidMatrixDimensionException,SingularMatrixException);

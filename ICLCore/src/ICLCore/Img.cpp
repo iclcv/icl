@@ -1806,10 +1806,12 @@ namespace icl {
     // }}}
     // OLD version ...
     // ipp case: do not instantiate the already specialized functions 8u and 32f
-    //  ICL_INSTANTIATE_DEPTH(16s)
-    //  ICL_INSTANTIATE_DEPTH(32s)
-    //  ICL_INSTANTIATE_DEPTH(64f)
-    ICL_INSTANTIATE_ALL_DEPTHS
+    ICL_INSTANTIATE_DEPTH(16s)
+    ICL_INSTANTIATE_DEPTH(32s)
+    ICL_INSTANTIATE_DEPTH(64f)
+    // NEW version ...
+    // does not work in Windows
+    //  ICL_INSTANTIATE_ALL_DEPTHS
   #else
    
     // now, we instantiate all functions
