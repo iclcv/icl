@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/LensUndistortionCalibrator.cpp       **
+** File   : ICLGeom/src/ICLGeom/LensUndistortionCalibrator.cpp     **
 ** Module : ICLGeom                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -29,51 +29,25 @@
 ********************************************************************/
 
 #include <ICLCV/LensUndistortionCalibrator.h>
+#include <ICLCore/OpenCV.h>
 
-#ifdef ICL_HAVE_OPENCV
 #include <opencv/cv.h>
-#endif
-
 
 namespace icl{
 
   using namespace utils;
   using namespace math;
+  using namespace core;
 
   namespace cv{
     
-    
-    namespace {
-      struct CvMatF{
-        CvMat *m;
-        CvMatF(int nrows, int ncols):
-          m( cvCreateMat(nrows, ncols, CV_32FC1) ){}
-        float &operator()(int y, int x) {
-          return CV_MAT_ELEM(*m,float,y,x);
-        }
-        ~CvMatF(){
-          cvReleaseMat(&m);
-        }
-      };
-
-      struct CvMatI{
-        CvMat *m;
-        CvMatI(int nrows, int ncols):
-          m( cvCreateMat(nrows, ncols, CV_32SC1) ){}
-        int &operator()(int y, int x) {
-          return CV_MAT_ELEM(*m,int,y,x);
-        }
-        ~CvMatI(){
-          cvReleaseMat(&m);
-        }
-      };
-
-    }
+    typedef CvMatWrapper<float> CvMatF;
+    typedef CvMatWrapper<int> CvMatI;
     
     struct LensUndistortionCalibrator::Data{
       std::vector<Point32f> points;
       int nSubSets;
-      std::vector<Point32f> gridDef;
+      LensUndistortionCalibrator::GridDefinition gridDef;
       Size imageSize;
     };
       
@@ -176,9 +150,17 @@ namespace icl{
       for(int i=0;i<m_data->nSubSets;++i){
         cs(i,0) = (int)m_data->gridDef.size();
       }
-      
       CvSize s = { m_data->imageSize.width, m_data->imageSize.height };
-      cvCalibrateCamera2(O.m, I.m, cs.m, s, intr.m, dist.m, NULL, NULL, CV_CALIB_FIX_ASPECT_RATIO);
+
+      for(int y=0;y<3;++y){      
+        for(int x=0;x<3;++x){
+          intr(x,y) = 0;
+        }
+      }
+      intr(0,0) = intr(1,1) = 1.0f;
+
+      cvCalibrateCamera2(O.get(), I.get(), cs.get(), s, intr.get(), 
+                         dist.get(), NULL, NULL, CV_CALIB_FIX_ASPECT_RATIO);
       
       std::vector<double> params(5);
       for(int i=0;i<5;++i){
@@ -192,7 +174,8 @@ namespace icl{
 
     LensUndistortionCalibrator::Info LensUndistortionCalibrator::getInfo(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::getInfo: instance is null"));
-      Info info = { m_data->imageSize, (int)m_data->points.size(), m_data->nSubSets };
+      Info info = { m_data->imageSize, (int)m_data->points.size(), 
+                    m_data->nSubSets, m_data->gridDef };
       return info;
     }
   }

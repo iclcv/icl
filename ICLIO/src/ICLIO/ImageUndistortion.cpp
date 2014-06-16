@@ -73,7 +73,9 @@ namespace icl{
         Kinv[6] = 0.0; 
         Kinv[7] = 0.0; 
         Kinv[8] = 1.0;
-        Kinv = Kinv.inv();
+
+        //Kinv = Kinv.inv();
+        Kinv = Kinv.pinv(true);
       }
       virtual Point32f undistort(const Point32f &point) const{
         FixedMatrix<icl64f,1,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;

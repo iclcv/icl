@@ -36,6 +36,8 @@
 #include <ICLCV/LensUndistortionCalibrator.h>
 #include <ICLCV/CheckerboardDetector.h>
 #include <ICLGeom/Scene.h>
+#include <ICLGeom/CoplanarPointPoseEstimator.h>
+#include <ICLCore/ConvexHull.h>
 
 using namespace icl::qt;
 using namespace icl::cv;
@@ -49,10 +51,36 @@ HSplit gui;
 GenericGrabber grabber;
 CheckerboardDetector checker;
 LensUndistortionCalibrator calib;
+Scene scene;
+
+std::vector<Vec> estimage_grid_preview(const std::vector<Point32f> &imageCoords,
+                                       const std::vector<Point32f> &normalizedObjectCoords,
+                                       const Camera &cam, const Size32f &realBoardDim){
+  std::vector<Point32f> obj;
+  for(size_t i=0;i<normalizedObjectCoords.size();++i){
+    const Point32f &p = normalizedObjectCoords[i];
+    obj.push_back(Point32f(p.x * realBoardDim.width, p.y * realBoardDim.height));
+  }
+  static CoplanarPointPoseEstimator cpe;
+  Mat T = cpe.getPose(obj.size(), obj.data(), imageCoords.data(), cam);
+  
+  // get the boundary point of the object (just for visualization purpose)
+  std::vector<Point32f> hull = convexHull(obj);
+  
+  
+  // transform object boundary points to the world
+  std::vector<Vec> r;
+  for(size_t i = 0;i<hull.size();++i){
+    r.push_back(T * Vec(hull[i].x, hull[i].y, 0, 1) );
+  }
+  return r;
+}
 
 void init(){
   grabber.init(pa("-i"));
-
+  if(pa("-s")){
+    grabber.useDesired(pa("-s").as<Size>());
+  }
   const ImgBase *image = grabber.grab();
   
   if(pa("-cb")){
@@ -64,43 +92,88 @@ void init(){
                        "detection are not yet supported");
   }
 
+  Range32f r(-1000,1000);
   gui << Draw().label("image").handle("image")
-      << Draw3D().label("recorded data").handle("3D")
+      << Draw3D().label("recorded data").handle("plot")
       << ( VBox().label("controls").minSize(15,1)
            << Button("capture").handle("capture")
-           << Button("calibrate")
+           << Button("calibrate").handle("calibrate")
            << Prop(checker).hideIf(checker.isNull()).label("checker board detection  ")
          )
       << Show();
+
   
-
-
-
-
-
-
+  Camera cam(Vec(0,0,-1,1));
+  cam.setResolution(image->getSize());
+  
+  struct Frustrum : public SceneObject{
+    Frustrum(const Camera &cam, const Size &size){
+      const Point ps[] = { Point(0,0), Point(size.width-1, 0),
+                           Point(size.width-1,size.height-1),
+                           Point(0, size.height-1) };
+      addVertex(cam.getPosition());
+      for(int i=0;i<4;++i){
+        addVertex(cam.getViewRay(ps[i])(1000));
+        addLine(0,i+1);
+        addLine(i+1, i==3 ? 1 : i+2);
+      }
+      
+      setColor(Primitive::line,geom_blue(200));
+    }
+  };
+  
+  scene.addCamera(cam);
+  scene.addCamera(cam);
+  scene.addObject(new Frustrum(cam,image->getSize()));
+  
+  gui["plot"].link(scene.getGLCallback(0));
+  gui["plot"].install(scene.getMouseHandler(0));
 }
 
 void run(){
   static ButtonHandle capture = gui["capture"];
+  static ButtonHandle calibrate = gui["calibrate"];
   static DrawHandle draw = gui["image"];
-  
+
   const Img8u &image = *grabber.grab()->as8u();
   draw = image;
 
-  const CheckerboardDetector::Checkerboard &cb = checker.detect(image);
-
-  if(cb.found){
-    draw->draw(cb.visualize());
-    if(capture.wasTriggered()){
-      calib.addPoints(cb.corners);
+  if(!checker.isNull()){
+    const CheckerboardDetector::Checkerboard &cb = checker.detect(image);
+    
+    if(cb.found){
+      draw->draw(cb.visualize());
+      if(capture.wasTriggered()){
+        calib.addPoints(cb.corners);
+        LensUndistortionCalibrator::Info info = calib.getInfo();
+        std::vector<Vec> ps = estimage_grid_preview(cb.corners, info.gridDef, scene.getCamera(1), pa("-r"));
+        struct LineStrip : public SceneObject{
+          LineStrip(const std::vector<Vec> &ps){
+            m_vertices = ps;
+            m_vertexColors.resize(ps.size(), geom_red());
+            for(size_t i=0;i<ps.size();++i){
+              addLine(i,(i+1)%ps.size(),geom_red());
+            }
+          }
+        };
+        scene.addObject(new LineStrip(ps));
+      }
     }
   }
+  
+  if(calibrate.wasTriggered()){
+    ImageUndistortion udist = calib.computeUndistortion();
+    SHOW(udist);
+  }
+
   draw->render();
+  gui["plot"].render();
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(2) -checkerboard|-cb(WxH)",init,run).exec();
+  return ICLApp(n,ppc,"-input|-i(2) -checkerboard|-cb(WxH) "
+                "-real-checkerboard-dim-mm|-r(WxH=240x180) "
+                "-force-size|-s(size)",init,run).exec();
 }
 
 

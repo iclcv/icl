@@ -79,9 +79,10 @@ namespace icl{
         utils::Size imageSize;  //!< current camera image size
         int numPointsAdded;     //!< total number of points added
         int numPointSetsAdded;  //!< number of sub-sets added
+        const GridDefinition &gridDef; //!< current grid definition
       };
 
-
+      
       /// empty default constructor (creates a null instance)
       LensUndistortionCalibrator();
       
