@@ -568,7 +568,6 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 								}
 							}
 						}
-            delete adj;
 					}
 					for(int a=0; a<numFaces-1; a++) {
 						for (int b=a+1; b<numFaces; b++) {
@@ -586,6 +585,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 					else {
 						assignmentOut[i]=assignment[i];
 					}
+                                    ICL_DELETE_ARRAY(adj);
 				}
 				else {
 					assignmentOut[i]=assignment[i];
@@ -596,7 +596,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 			neighbours(i, i) = true;
 		}
 		memcpy(assignment, assignmentOut, sizeof(assignmentOut));
-    delete assignmentOut;
+    ICL_DELETE_ARRAY(assignmentOut);
 	}
 }
 
