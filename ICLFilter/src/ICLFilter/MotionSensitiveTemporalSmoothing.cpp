@@ -240,8 +240,6 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 	imgCount = 0;
 	useCL = true;
 
-#ifdef ICL_HAVE_OPENCL
-	//create openCL context
 	motionImage.setSize(Size(w,h));
 	motionImage.setChannels(1);
 	if(depth==depth32f) {
@@ -263,7 +261,8 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 		outputImageC.setSize(Size(w,h));
 		outputImageC.setChannels(1);
 	}
-
+#ifdef ICL_HAVE_OPENCL
+        //create openCL context
 	motionImageArray = new float[w*h];
 	if(depth==depth32f) {
 		inputImage1ArrayF = new float[w*h];
@@ -361,7 +360,7 @@ Img32f TemporalSmoothingCL::temporalSmoothingF(const Img32f &inputImage) {
 	if (imgCount % currentFilterSize == 0) {
 		imgCount = 0;
 	}
-	inputImage.deepCopy(&inputImagesF.at(imgCount % currentFilterSize));
+        inputImage.deepCopy(&inputImagesF.at(imgCount % currentFilterSize));
 	imgCount++;
 
 	if (useCL == true && clReady == true) {
