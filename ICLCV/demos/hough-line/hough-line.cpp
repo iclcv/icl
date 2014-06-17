@@ -34,29 +34,26 @@
 typedef FixedColVector<float,2> Pos;
 
 HSplit gui;
-HoughLineDetector *h = 0;
 
-std::vector<Point32f> points;
-Mutex points_mutex;
+HoughLineDetector hld;
+Img8u edgeImage(Size::VGA,1);
 
 struct Mouse : public MouseHandler {
   virtual void process(const MouseEvent &e){
-    if(e.isLeft()){
-      Mutex::Locker l(points_mutex);
-      points.push_back(e.getPos());
-    }else if(e.isRight()){
-      Mutex::Locker l(points_mutex);
-      points.clear();
-   } 
+    if(e.isLeft() || e.isRight()){
+      edgeImage(e.getX(), e.getY(), 0) = 255 * e.isLeft();
+    }
   }
 };
 
 void init(){
-
+  edgeImage.fill(0);
+  
   gui << Draw().handle("view").minSize(32,24)
       << ( VSplit()
            << Image().handle("lut").label("hough space").minSize(16,12)
            << ( VBox() 
+                << Button("load image").handle("load")
                 << Image().handle("inhibit").label("local inhibition image").minSize(8,6)
                 << Slider(0,100,1).out("maxlines").label("max lines")
                 << FSlider(0.01,1,0.03).out("dRho").label("rho sampling step")
@@ -95,45 +92,46 @@ void run(){
   bool dilateEntries = gui["dilateEntries"];
   bool blurredSampling = gui["blurredSampling"];
   
-  HoughLineDetector h(dRho,dR,Range32f(0,sqrt(640*640+480*480)),rInhib,rhoInhib,
-                      gaussianInhibition,blurHoughSpace,dilateEntries,blurredSampling);
-  points_mutex.lock();
-  h.add(points);
+  static ButtonHandle load = gui["load"];
+  if(load.wasTriggered()){
+    try{
+      edgeImage = qt::load<icl8u>(openFileDialog());
+    }catch(...){}
+  }
+
+  int w = edgeImage.getWidth(), h = edgeImage.getHeight();
+  hld.init(dRho,dR,Range32f(0,sqrt(w*w+h*h)),rInhib,rhoInhib,
+           gaussianInhibition,blurHoughSpace,dilateEntries,blurredSampling);
+  hld.clear();
+  hld.add(edgeImage);
 
   std::vector<float> sig;
-  std::vector<StraightLine2D> ls = h.getLines(maxlines,sig);
+  std::vector<StraightLine2D> ls = hld.getLines(maxlines,sig);
 
   (*lut)->setRangeMode(ICLWidget::rmAuto);
   (*lut)->setFitMode(ICLWidget::fmFit);
-  lut = h.getImage();
+  lut = hld.getImage();
   lut.render();
   
   
   if(gaussianInhibition){
     (*inhibit)->setRangeMode(ICLWidget::rmAuto);
     (*inhibit)->setFitMode(ICLWidget::fmFit);
-    inhibit = h.getInhibitionMap();
+    inhibit = hld.getInhibitionMap();
   }
   
-
-  (*view)->color(255,255,255,255);
-  (*view)->fill(255,255,255,255);
-  for(unsigned int i=0;i<points.size();++i){
-    Point32f p = points[i];
-    (*view)->point(p.x,p.y);
-  }
+  view = edgeImage;
 
   (*view)->fill(255,255,255,0);
   (*view)->color(255,0,0,255);
   for(unsigned int i=0;i<ls.size();++i){
     StraightLine2D &l = ls[i];
-    Pos a = l.o+l.v*1000;
-    Pos b = l.o-l.v*1000;
+    Pos a = l.o+l.v*3000;
+    Pos b = l.o-l.v*3000;
     (*view)->line(a[0],a[1],b[0],b[1]);
     (*view)->text(str(sig[i]),l.o[0],l.o[1],-1,-1,8);
   }
   
-  points_mutex.unlock();  
   view->render();
   Thread::msleep(10);
 }

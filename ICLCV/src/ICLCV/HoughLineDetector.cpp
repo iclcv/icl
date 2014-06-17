@@ -41,18 +41,32 @@ namespace icl{
   namespace cv{
   
   
-    HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f rRange, float rInhibitionRange, float rhoInhibitionRange,
-                                         bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling):
-      
-      m_dRho(dRho),m_rRange(rRange),m_rInhib(rInhibitionRange),m_rhoInhib(rhoInhibitionRange),
-      m_gaussianInhibition(gaussianInhib), m_blurHoughSpace(blurHoughSpace),m_dilateEntries(dilateEntries),
-      m_blurredSampling(blurredSampling){
+    HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f &rRange, float rInhibitionRange, float rhoInhibitionRange,
+                                         bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling){
+      init(dRho, dR, rRange, rInhibitionRange, rhoInhibitionRange, gaussianInhib, blurHoughSpace, dilateEntries, blurredSampling);
+    }
+
+    void HoughLineDetector::init(float dRho, float dR, const utils::Range32f &rRange, 
+                                 float rInhibitionRange, float rhoInhibitionRange,
+                                 bool gaussianInhibition,
+                                 bool blurHoughSpace,
+                                 bool dilateEntries,
+                                 bool blurredSampling){
+      m_dRho = dRho;
+      m_rRange = rRange;
+      m_rInhib = rInhibitionRange;
+      m_rhoInhib = rhoInhibitionRange;
+      m_gaussianInhibition = gaussianInhibition;
+      m_blurHoughSpace = blurHoughSpace;
+      m_dilateEntries = dilateEntries;
+      m_blurredSampling = blurredSampling;
       
       
       m_w = ceil(2*M_PI/dRho);
       m_h = (rRange.maxVal-rRange.minVal)/dR;
       
-      m_image = Img32s(Size(m_w,m_h),1);
+      m_image.setChannels(1);
+      m_image.setSize(Size(m_w, m_h));
       m_lut = m_image[0];
   
       m_mr = (m_h-1)/(rRange.maxVal-rRange.minVal);
@@ -60,7 +74,7 @@ namespace icl{
       
       m_mrho = (m_w-1)/(2*M_PI);
   
-      if(gaussianInhib){
+      if(gaussianInhibition){
         /// create inhibition image
         float dx = m_rhoInhib/(2*M_PI) * float(m_w);
         float dy = m_rInhib/(m_rRange.maxVal-m_rRange.minVal) * float(m_h);
@@ -81,7 +95,17 @@ namespace icl{
         }
       }
     }
-    
+
+  void HoughLineDetector::add(const Img8u &binaryImage){
+    ICLASSERT_THROW(binaryImage.getChannels() == 1, ICLException("HoughLineDetector::add: can only work with 1 channel images"));
+    const Channel8u c = binaryImage[0];
+    for(int y=0;y<c.getHeight();++y){
+      for(int x=0;x<c.getWidth();++x){
+        if(c(x,y)) add_intern(x,y);
+      }
+    }
+  }
+
     void HoughLineDetector::add_intern(float x, float y){
       if(m_dilateEntries){
         add_intern2(x,y);

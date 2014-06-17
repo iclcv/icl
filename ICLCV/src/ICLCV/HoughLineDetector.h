@@ -105,7 +105,7 @@ namespace icl{
         to the other two optizations.
         
     */
-    class ICLCV_API HoughLineDetector : public utils::Uncopyable{
+    class HoughLineDetector : public utils::Uncopyable{
       public:
   
       /// Create a new HoughLineDetectorInstance
@@ -118,13 +118,23 @@ namespace icl{
           @param blurHoughSpace enables hough space blurring
           @param dilateEntries enables entry dilatation
           @param blurredSampling enables blurred sampling */
-      HoughLineDetector(float dRho, float dR, const utils::Range32f rRange, 
-                        float rInhibitionRange, float rhoInhibitionRange,
+      HoughLineDetector(float dRho=0.1, float dR=10, 
+                        const utils::Range32f &rRange=utils::Range32f(0,::sqrt(640*640+480*480)), 
+                        float rInhibitionRange=10, 
+                        float rhoInhibitionRange=0.3,
                         bool gaussianInhibition=true,
                         bool blurHoughSpace=true,
                         bool dilateEntries=true,
                         bool blurredSampling=false);
   
+      /// initializes the HoughLineDetector
+      void init(float dRho, float dR, const utils::Range32f &rRange, 
+                float rInhibitionRange, float rhoInhibitionRange,
+                bool gaussianInhibition=true,
+                bool blurHoughSpace=true,
+                bool dilateEntries=true,
+                bool blurredSampling=false);
+      
       /// adds a new point
       inline void add(const utils::Point &p){ 
         add_intern(p.x,p.y); 
@@ -157,6 +167,8 @@ namespace icl{
         for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
       }
   
+      /// adds all non zero pixels of the given binary image
+      void add(const core::Img8u &binaryImage);
   
       /// returns current hough-table image
       const core::Img32s &getImage() const { return m_image; }
