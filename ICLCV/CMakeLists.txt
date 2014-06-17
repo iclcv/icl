@@ -84,7 +84,7 @@ IF(IPP_FOUND)
                       src/ICLCV/TemplateTracker.h)
 ENDIF()
 
-IF(OpenCV_FOUND)
+IF(OPENCV_FOUND)
   LIST(APPEND SOURCES src/ICLCV/OpenSurfLib.cpp
                       src/ICLCV/LensUndistortionCalibrator.cpp
                       src/ICLCV/OpenCVCamCalib.cpp
