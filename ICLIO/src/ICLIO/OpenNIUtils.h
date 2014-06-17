@@ -34,11 +34,13 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLCore/CCFunctions.h>
 
 #include <ICLIO/OpenNIIncludes.h>
 
 #include <map>
 #include <limits>
+#include <set>
 
 namespace icl {
   namespace io{
@@ -89,10 +91,11 @@ namespace icl {
 
       /**
         fills a three channel core::Img8u from OpenNI ImageMetaData expecting
-        the Generator to generate RGB24 Data.
+        the Generator to generate RGB24 Data.  Sets the image format to formatRGB.
       **/
       inline core::Img8u* convertRGBImg(xn::ImageMetaData* src, core::Img8u* dst){
         dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
+        dst -> setFormat(core::formatRGB);
         // draw RGB image
         icl8u* rChannel = dst -> getData(0);
         icl8u* gChannel = dst -> getData(1);
@@ -106,6 +109,51 @@ namespace icl {
             *gChannel = rgbPixel -> nGreen;
             *bChannel = rgbPixel -> nBlue;
           }
+        }
+        return dst;
+      }
+
+
+      /**
+        fills a three channel core::Img8u from OpenNI ImageMetaData expecting
+        the Generator to generate Yuv422 Data. Sets the image format to formatRGB.
+      **/
+      inline core::Img8u* convertYuv422Img(xn::ImageMetaData* src, core::Img8u* dst){
+        dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
+        dst -> setFormat(core::formatRGB);
+        // draw RGB image
+        icl8u* rChannel = dst -> getData(0);
+        icl8u* gChannel = dst -> getData(1);
+        icl8u* bChannel = dst -> getData(2);
+        const XnYUV422DoublePixel* yuvPixel = src -> YUV422Data();
+        icl32s r,g,b;
+        for (int i = 0; i < dst-> getDim()/2 ; ++i){
+          icl::core::cc_util_yuv_to_rgb(yuvPixel->nY1,yuvPixel->nU,yuvPixel->nV,r,g,b);
+          *rChannel = r; ++rChannel;
+          *gChannel = g; ++gChannel;
+          *bChannel = b; ++bChannel;
+          icl::core::cc_util_yuv_to_rgb(yuvPixel->nY2,yuvPixel->nU,yuvPixel->nV,r,g,b);
+          *rChannel = r; ++rChannel;
+          *gChannel = g; ++gChannel;
+          *bChannel = b; ++bChannel;
+          ++yuvPixel;
+        }
+        return dst;
+      }
+
+      /**
+        fills a three channel core::Img8u from OpenNI ImageMetaData expecting
+        the Generator to generate Grayscale8 Data. Sets the image format to formatGrey.
+      **/
+      inline core::Img8u* convertGrayScale8Img(xn::ImageMetaData* src, core::Img8u* dst){
+        dst -> setSize(utils::Size(src -> XRes(), src -> YRes()));
+        dst -> setFormat(core::formatGray);
+        // draw RGB image
+        icl8u* gChannel = dst -> getData(0);
+        const XnGrayscale8Pixel* grayPixel = src -> Grayscale8Data();
+        for (int i = 0; i < dst-> getDim() ; ++i){
+          *gChannel = *grayPixel;
+          ++gChannel; ++grayPixel;
         }
         return dst;
       }
@@ -269,11 +317,49 @@ namespace icl {
           bool m_Avail;
       };
 
+      /// A Context object encapsulating the OpenNI-Context-object.
+      class OpenNIContext : public utils::Uncopyable {
+        private:
+          /// This is a singleton class so Constructor is private.
+          OpenNIContext();
+
+          /// releases the corresponding OpenNI context object.
+          ~OpenNIContext();
+
+          /// initializes the context. only used internally.
+          static OpenNIContext* getInst();
+
+        public:
+
+          /// calls waitAnyUpdateAll on the internal OpenNI context.
+          static XnStatus waitAndUpdate();
+
+          /// calls CreateProductionTree on the internal OpenNI context.
+          static XnStatus CreateProductionTree(xn::NodeInfo& Tree, xn::ProductionNode& node);
+
+          /// calls EnumerateProductionTrees on the internal OpenNI context.
+          static XnStatus EnumerateProductionTrees(XnProductionNodeType type,
+                                                   const xn::Query* pQuery,
+                                                   xn::NodeInfoList& TreesList,
+                                                   xn::EnumerationErrors* pErrors = NULL);
+
+          /// calls Create on the internal OpenNI context.
+          static XnStatus Create(xn::DepthGenerator* generator);
+
+        private:
+          /// Lock for thread safety
+          utils::Mutex m_Lock;
+          /// Tells whether the internal context in initialized or not.
+          bool m_Initialized;
+          /// The internal context object.
+          xn::Context m_Context;
+      };
+
       /// this class interprets and sets Properties of OpenNI MapGenerators
       class MapGeneratorOptions : public utils::Configurable {
         public:
           /// constructor
-          MapGeneratorOptions(xn::MapGenerator* generator, xn::Context* context);
+          MapGeneratorOptions(xn::MapGenerator* generator);
 
           /// callback for changed configurable properties
           void processPropertyChange(const utils::Configurable::Property &prop);
@@ -294,7 +380,7 @@ namespace icl {
       class DepthGeneratorOptions : public MapGeneratorOptions {
         public:
           /// constructor
-          DepthGeneratorOptions(xn::DepthGenerator* generator, xn::Context* context);
+          DepthGeneratorOptions(xn::DepthGenerator* generator);
 
         private:
           /// the used DepthGenerator
@@ -305,7 +391,7 @@ namespace icl {
       class ImageGeneratorOptions : public MapGeneratorOptions {
         public:
           /// constructor
-          ImageGeneratorOptions(xn::ImageGenerator* generator, xn::Context* context);
+          ImageGeneratorOptions(xn::ImageGenerator* generator);
 
           /// callback for changed configurable properties
           void processPropertyChange(const utils::Configurable::Property &prop);
@@ -329,6 +415,8 @@ namespace icl {
 
           /// grab function grabs an image returns whether grabbing worked
           virtual bool acquireImage(core::ImgBase* dest) = 0;
+          /// checks whether a new frame is available
+          virtual bool newFrameAvailable() = 0;
           /// tells the type of the Generator
           virtual Generators getGeneratorType() = 0;
           /// returns underlying xn::MapGenerator instance
@@ -340,8 +428,7 @@ namespace icl {
 
 
           ///  Creates the corresponding Generator.
-          static OpenNIMapGenerator* createGenerator(xn::Context* context,
-                                                     std::string id);
+          static OpenNIMapGenerator* createGenerator(std::string id);
           /// creates an info string for MapOutputModes of MapGenerator gen.
           static std::string getMapOutputModeInfo(xn::MapGenerator* gen);
           /// creates a string describing the current MapOutputMode
@@ -352,12 +439,14 @@ namespace icl {
       class OpenNIDepthGenerator : public OpenNIMapGenerator {
         public:
           /// Creates DepthGenerator number num from Context
-          OpenNIDepthGenerator(xn::Context* context, int num);
+          OpenNIDepthGenerator(int num);
           /// Destructor frees all resouurces
           ~OpenNIDepthGenerator();
 
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
+          /// checks whether a new frame is available
+          bool newFrameAvailable();
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
@@ -368,26 +457,28 @@ namespace icl {
           MapGeneratorOptions* getMapGeneratorOptions();
 
         private:
-          /// the OpenNI context
-          xn::Context* m_Context;
           /// the underlying core::depth generator
           xn::DepthGenerator* m_DepthGenerator;
           /// a DepthMetaData object holding image information
           xn::DepthMetaData m_DepthMD;
           /// pointer to internally used MapGeneratorOptions
           MapGeneratorOptions* m_Options;
+          /// the id of the last grabbed frame
+          unsigned int m_FrameId;
       };
 
       /// RGB Image Generator
       class OpenNIRgbGenerator : public OpenNIMapGenerator {
         public:
           /// Creates RgbGenerator number num from Context
-          OpenNIRgbGenerator(xn::Context* context, int num);
+          OpenNIRgbGenerator(int num);
           /// Destructor frees all resouurces
           ~OpenNIRgbGenerator();
 
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
+          /// checks whether a new frame is available
+          bool newFrameAvailable();
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
@@ -398,12 +489,12 @@ namespace icl {
           MapGeneratorOptions* getMapGeneratorOptions();
 
         private:
-          /// the OpenNI context
-          xn::Context* m_Context;
           /// A NodeInfo for the used device
           xn::NodeInfo* m_DeviceInfo;
           /// the underlying rgb-image generator
           xn::ImageGenerator* m_RgbGenerator;
+          /// the id of the last grabbed frame
+          unsigned int m_FrameId;
           /// the underlying core::depth generator
           /**
             The Xtion cam does not provide rgb images without depthGenerator
@@ -421,12 +512,14 @@ namespace icl {
       class OpenNIIRGenerator : public OpenNIMapGenerator {
         public:
           /// Creates IRGenerator number num from Context
-          OpenNIIRGenerator(xn::Context* context, int num);
+          OpenNIIRGenerator(int num);
           /// Destructor frees all resouurces
           ~OpenNIIRGenerator();
 
           /// grab function grabs an image returns whether grabbing worked
           bool acquireImage(core::ImgBase* dest);
+          /// checks whether a new frame is available
+          bool newFrameAvailable();
           /// tells the type of the Generator
           Generators getGeneratorType();
           /// returns underlying xn::MapGenerator instance
@@ -437,8 +530,6 @@ namespace icl {
           MapGeneratorOptions* getMapGeneratorOptions();
 
         private:
-          /// the OpenNI context
-          xn::Context* m_Context;
           /// A NodeInfo for the used device
           xn::NodeInfo* m_DeviceInfo;
           /// the underlying it-image generator
@@ -447,6 +538,8 @@ namespace icl {
           xn::IRMetaData m_IrMD;
           /// pointer to internally used MapGeneratorOptions
           MapGeneratorOptions* m_Options;
+          /// the id of the last grabbed frame
+          unsigned int m_FrameId;
       };
 
     } // namespace icl_openni

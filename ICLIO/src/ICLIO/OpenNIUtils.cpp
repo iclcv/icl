@@ -47,32 +47,90 @@ using namespace core;
 using namespace io;
 using namespace icl_openni;
 
+// checks whether status is OK. else throws an Exception.
+void assertStatus(XnStatus &status){
+  if (status != XN_STATUS_OK){
+    std::ostringstream st;
+    st << "XnStatus != XN_STATUS_OK. Got '" << xnGetStatusString(status) << "'";
+    ERROR_LOG(st.str());
+    throw new ICLException(st.str());
+  }
+}
+
+//##############################################################################
+//############################# OpenNIContext ##################################
+//##############################################################################
+
+OpenNIContext::OpenNIContext()
+  : m_Initialized(false)
+{}
+
+OpenNIContext::~OpenNIContext(){
+  Mutex::Locker l(m_Lock);
+  if(m_Initialized){
+    m_Context.Release();
+    m_Initialized = false;
+  }
+}
+
+
+OpenNIContext* OpenNIContext::getInst(){
+  static OpenNIContext inst;
+  Mutex::Locker l(inst.m_Lock);
+  if(!inst.m_Initialized){
+    XnStatus xn = inst.m_Context.Init();
+    assertStatus(xn);
+    inst.m_Initialized = true;
+  }
+  return &inst;
+}
+
+XnStatus OpenNIContext::waitAndUpdate(){
+  XnStatus ret = getInst()->m_Context.WaitAnyUpdateAll();
+  return ret;
+}
+
+XnStatus OpenNIContext::CreateProductionTree(NodeInfo& tree, ProductionNode& node){
+  return getInst()->m_Context.CreateProductionTree(tree,node);;
+}
+
+XnStatus OpenNIContext::EnumerateProductionTrees(XnProductionNodeType type,
+                                                 const xn::Query* pQuery,
+                                                 xn::NodeInfoList& TreesList,
+                                                 xn::EnumerationErrors* pErrors)
+{
+  return getInst()->m_Context.EnumerateProductionTrees(type,pQuery,TreesList,pErrors);
+}
+
+XnStatus OpenNIContext::Create(DepthGenerator *generator){
+  return generator->Create(getInst()->m_Context);
+}
+
 //##############################################################################
 //############################# OpenNIMapGenerator #############################
 //##############################################################################
 
 //  Creates the corresponding Generator.
-OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(
-    xn::Context* context, std::string id)
+OpenNIMapGenerator* OpenNIMapGenerator::createGenerator(std::string id)
 {
   // create generator from string
   if(id == "depth"){
-    return new OpenNIDepthGenerator(context, 0);
+    return new OpenNIDepthGenerator(0);
   } else if(id == "rgb"){
-    return new OpenNIRgbGenerator(context, 0);
+    return new OpenNIRgbGenerator(0);
   } else if(id == "ir") {
-    return new OpenNIIRGenerator(context, 0);
+    return new OpenNIIRGenerator(0);
   }
 
   // create generator from string with index
   std::string type = id.substr(0,id.size()-1);
   int num = utils::parse<int>(id.substr(id.size()-1, id.npos));
   if(type == "depth"){
-    return new OpenNIDepthGenerator(context, num);
+    return new OpenNIDepthGenerator(num);
   } else if(type == "rgb"){
-    return new OpenNIRgbGenerator(context, num);
+    return new OpenNIRgbGenerator(num);
   } else if(type == "ir") {
-    return new OpenNIIRGenerator(context, num);
+    return new OpenNIIRGenerator(num);
   } else {
     std::ostringstream s;
     s << "Generator type '" << id << "' not supported.";
@@ -108,7 +166,7 @@ std::string OpenNIMapGenerator::getMapOutputModeInfo(MapGenerator* gen){
   std::ostringstream ret;
   for(unsigned int i = 0; i < cleaned.size(); ++i){
     ret << cleaned.at(i) -> nXRes << "x";
-    ret << cleaned.at(i) -> nYRes << "@";
+    ret << cleaned.at(i) -> nYRes << "x";
     ret << cleaned.at(i) -> nFPS << "fps";
     if(i+1 < cleaned.size()){
       ret << ",";
@@ -126,7 +184,7 @@ std::string OpenNIMapGenerator::getCurrentMapOutputMode(MapGenerator* gen){
   XnMapOutputMode mode;
   gen -> GetMapOutputMode(mode);
   std::ostringstream ret;
-  ret << mode.nXRes << "x" << mode.nYRes << "@" << mode.nFPS << "fps";
+  ret << mode.nXRes << "x" << mode.nYRes << "x" << mode.nFPS << "fps";
   DEBUG_LOG2("Map output mode: " << ret.str());
   return ret.str();
 }
@@ -136,20 +194,20 @@ std::string OpenNIMapGenerator::getCurrentMapOutputMode(MapGenerator* gen){
 //##############################################################################
 
 // Creates a DepthGenerator from Context
-OpenNIDepthGenerator::OpenNIDepthGenerator(Context* context, int num)
-  : m_Context(context), m_DepthGenerator(NULL), m_Options(NULL)
+OpenNIDepthGenerator::OpenNIDepthGenerator(int num)
+  : m_DepthGenerator(NULL), m_Options(NULL)
 {
-  XnStatus status;
+  XnStatus status = XN_STATUS_ERROR;
   m_DepthGenerator = new DepthGenerator();
   NodeInfoList l;
   // enumerate depth generators
-  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
   int i = 0;
   // look for generator according to number num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     if (i == num){
       NodeInfo ni = *it;
-      status = m_Context -> CreateProductionTree(ni, *m_DepthGenerator);
+      status = OpenNIContext::CreateProductionTree(ni, *m_DepthGenerator);
     }
   }
   if(i <= num){ // not enough generators
@@ -166,7 +224,7 @@ OpenNIDepthGenerator::OpenNIDepthGenerator(Context* context, int num)
     throw ICLException(s.str());
   }
   // create GeneratorOptions for DepthGenerator
-  m_Options = new DepthGeneratorOptions(m_DepthGenerator, m_Context);
+  m_Options = new DepthGeneratorOptions(m_DepthGenerator);
   m_DepthGenerator -> StartGenerating();
 }
 
@@ -178,20 +236,19 @@ OpenNIDepthGenerator::~OpenNIDepthGenerator(){
   ICL_DELETE(m_Options);
 }
 
+// checks whether a new frame is available
+bool OpenNIDepthGenerator::newFrameAvailable(){
+  // get data from generator
+  m_DepthGenerator -> GetMetaData(m_DepthMD);
+  // check whether frame number has increased
+  return (m_FrameId != m_DepthMD.FrameID());
+}
+
+
 // grab function grabs an image
 bool OpenNIDepthGenerator::acquireImage(ImgBase* dest){
-  XnStatus rc = XN_STATUS_OK;
-  // Read a new frame
-  rc = m_Context -> WaitOneUpdateAll(*m_DepthGenerator);
-  if (rc != XN_STATUS_OK)
-  {
-    DEBUG_LOG2("Read failed: " << xnGetStatusString(rc));
-    return false;
-  }
-
-  // get data and write to image
-  m_DepthGenerator -> GetMetaData(m_DepthMD);
   convertDepthImg(&m_DepthMD, dest -> as16s());
+  m_FrameId = m_DepthMD.FrameID();
   return true;
 }
 
@@ -219,14 +276,14 @@ MapGeneratorOptions* OpenNIDepthGenerator::getMapGeneratorOptions(){
 //##############################################################################
 
 // Creates a RgbGenerator from Context
-OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
-  : m_Context(context), m_RgbGenerator(NULL), m_Options(NULL)
+OpenNIRgbGenerator::OpenNIRgbGenerator(int num)
+  : m_RgbGenerator(NULL), m_Options(NULL)
 {
   XnStatus status;
   // create DepthGenerator. The Kinect rgb-generator did not work without
   // a depth generator being initialized beforehand.
   m_DepthGenerator = new DepthGenerator();
-  if (XN_STATUS_OK != (status = m_DepthGenerator -> Create(*m_Context))){
+  if (XN_STATUS_OK != (status = OpenNIContext::Create(m_DepthGenerator))){
     std::string error =  xnGetStatusString(status);
     DEBUG_LOG("DepthGenerator init error '" << error << "'");
     throw new ICLException(error);
@@ -234,13 +291,13 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
   m_RgbGenerator = new ImageGenerator();
   NodeInfoList l;
   // get all rgb-image generators
-  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
   int i = 0;
   // create generator according to num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     if (i == num){
       NodeInfo ni = *it;
-      status = m_Context -> CreateProductionTree(ni, *m_RgbGenerator);
+      status = OpenNIContext::CreateProductionTree(ni, *m_RgbGenerator);
     }
   }
   if(i <= num){ // not enough generators found
@@ -257,7 +314,7 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(Context* context, int num)
   }
 
   // create generator options
-  m_Options = new ImageGeneratorOptions(m_RgbGenerator, m_Context);
+  m_Options = new ImageGeneratorOptions(m_RgbGenerator);
   m_RgbGenerator -> StartGenerating();
   DEBUG_LOG2("done creating OpenNIRgbGenerator");
 }
@@ -271,20 +328,27 @@ OpenNIRgbGenerator::~OpenNIRgbGenerator(){
   ICL_DELETE(m_Options);
 }
 
+// checks whether a new frame is available
+bool OpenNIRgbGenerator::newFrameAvailable(){
+  // get data from generator
+  m_RgbGenerator -> GetMetaData(m_RgbMD);
+  // check whether frame number has increased
+  return (m_FrameId != m_RgbMD.FrameID());
+}
+
 // grab function grabs an image
 bool OpenNIRgbGenerator::acquireImage(ImgBase* dest){
-  XnStatus rc = XN_STATUS_OK;
-
-  // Read a new frame
-  rc = m_Context -> WaitOneUpdateAll(*m_RgbGenerator);
-  if (rc != XN_STATUS_OK)
-  {
-    DEBUG_LOG2("Read failed: " << xnGetStatusString(rc))
-        return false;
-  }
   // get data and write to image
-  m_RgbGenerator -> GetMetaData(m_RgbMD);
-  convertRGBImg(&m_RgbMD, dest->as8u());
+  if(m_RgbMD.PixelFormat() == XN_PIXEL_FORMAT_RGB24){
+    convertRGBImg(&m_RgbMD, dest->as8u());
+  } else if(m_RgbMD.PixelFormat() == XN_PIXEL_FORMAT_YUV422){
+    convertYuv422Img(&m_RgbMD, dest->as8u());
+  } else if(m_RgbMD.PixelFormat() == XN_PIXEL_FORMAT_GRAYSCALE_8_BIT){
+    convertGrayScale8Img(&m_RgbMD, dest->as8u());
+  } else {
+    ERROR_LOG("Error: OpenNI Pixel Format '" << m_RgbMD.PixelFormat() << "' not supported." );
+  }
+  m_FrameId = m_RgbMD.FrameID();
   return true;
 }
 
@@ -312,20 +376,20 @@ MapGeneratorOptions* OpenNIRgbGenerator::getMapGeneratorOptions(){
 //##############################################################################
 
 // Creates a IrGenerator from Context
-OpenNIIRGenerator::OpenNIIRGenerator(Context* context, int num)
-  : m_Context(context), m_IrGenerator(NULL), m_Options(NULL)
+OpenNIIRGenerator::OpenNIIRGenerator(int num)
+  : m_IrGenerator(NULL), m_Options(NULL)
 {
-  XnStatus status;
+  XnStatus status = XN_STATUS_ERROR;
   m_IrGenerator = new IRGenerator();
   NodeInfoList l;
   // enumerate ir generators
-  m_Context -> EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
   int i = 0;
   // create generator according to num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     if (i == num){
       NodeInfo ni = *it;
-      status = m_Context -> CreateProductionTree(ni, *m_IrGenerator);
+      status = OpenNIContext::CreateProductionTree(ni, *m_IrGenerator);
     }
   }
   if(i <= num){ // not enough generators
@@ -350,7 +414,7 @@ OpenNIIRGenerator::OpenNIIRGenerator(Context* context, int num)
   m_IrGenerator -> SetMapOutputMode(mo);
 
   // create generator options
-  m_Options = new MapGeneratorOptions(m_IrGenerator, m_Context);
+  m_Options = new MapGeneratorOptions(m_IrGenerator);
   status = m_IrGenerator -> StartGenerating();
   DEBUG_LOG2("startgenerating: " << xnGetStatusString(status));
 }
@@ -362,18 +426,19 @@ OpenNIIRGenerator::~OpenNIIRGenerator(){
   ICL_DELETE(m_Options);
 }
 
+// checks whether a new frame is available
+bool OpenNIIRGenerator::newFrameAvailable(){
+  // get data from generator
+  m_IrGenerator -> GetMetaData(m_IrMD);
+  // check whether frame number has increased
+  return (m_FrameId != m_IrMD.FrameID());
+}
+
 // grab function grabs an image
 bool OpenNIIRGenerator::acquireImage(ImgBase* dest){
-  XnStatus rc = XN_STATUS_OK;
-  // Read a new frame
-  rc = m_Context -> WaitOneUpdateAll(*m_IrGenerator);
-  if (rc != XN_STATUS_OK)
-  {
-    return false;
-  }
   // get data wnd write image
-  m_IrGenerator -> GetMetaData(m_IrMD);
   convertIRImg(&m_IrMD, dest -> as16s());
+  m_FrameId = m_IrMD.FrameID();
   return true;
 }
 
@@ -610,7 +675,7 @@ void setCropping(xn::MapGenerator* gen,
   gen -> GetCroppingCap().GetCropping(crop);
   // go through all cropping properties and set the one named by property-string
   if (property == "Cropping Enabled"){
-      crop.bEnabled = parse<bool>(value);
+    crop.bEnabled = parse<bool>(value);
   } else {
     unsigned int val = parse<int>(value);
     XnMapOutputMode mode;
@@ -696,21 +761,20 @@ std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen,
 }
 
 // fills a Map with available ProductionNodes. used for altern. viewpoint.
-void fillProductionNodeMap(Context *context,
-                           std::map<std::string, xn::ProductionNode> &pn_map)
+void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
 {
   ProductionNode n;
   XnStatus status = XN_STATUS_OK;
   NodeInfoList l;
   // RGB
-  context -> EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
   int i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
     tmp << "rgb";
     if(i) tmp << i;
     NodeInfo ni = *it;
-    status = context -> CreateProductionTree(ni, n);
+    status = OpenNIContext::CreateProductionTree(ni, n);
     if(status == XN_STATUS_OK){
       pn_map[tmp.str()] = n;
     } else {
@@ -718,14 +782,14 @@ void fillProductionNodeMap(Context *context,
     }
   }
   // DEPTH
-  context -> EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
     tmp << "depth";
     if(i) tmp << i;
     NodeInfo ni = *it;
-    status = context -> CreateProductionTree(ni, n);
+    status = OpenNIContext::CreateProductionTree(ni, n);
     if(status == XN_STATUS_OK){
       pn_map[tmp.str()] = n;
     } else {
@@ -733,14 +797,14 @@ void fillProductionNodeMap(Context *context,
     }
   }
   // IR
-  context -> EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
     tmp << "ir";
     if(i) tmp << i;
     NodeInfo ni = *it;
-    status = context -> CreateProductionTree(ni, n);
+    status = OpenNIContext::CreateProductionTree(ni, n);
     if(status == XN_STATUS_OK){
       pn_map[tmp.str()] = n;
     } else {
@@ -748,14 +812,14 @@ void fillProductionNodeMap(Context *context,
     }
   }
   // AUDIO
-  context -> EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, NULL , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
     tmp << "audio";
     if(i) tmp << i;
     NodeInfo ni = *it;
-    status = context -> CreateProductionTree(ni, n);
+    status = OpenNIContext::CreateProductionTree(ni, n);
     if(status == XN_STATUS_OK){
       pn_map[tmp.str()] = n;
     } else {
@@ -765,10 +829,10 @@ void fillProductionNodeMap(Context *context,
 }
 
 // fills capabilities list.
-MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator, xn::Context* context)
+MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   : m_Generator(generator)
 {
-  fillProductionNodeMap(context, m_ProductionNodeMap);
+  fillProductionNodeMap(m_ProductionNodeMap);
   //Configurable
   addProperty("map output mode", "menu", OpenNIMapGenerator::getMapOutputModeInfo(m_Generator),
               OpenNIMapGenerator::getCurrentMapOutputMode(m_Generator), 0,
@@ -896,8 +960,8 @@ void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
 //##############################################################################
 
 // constructor
-DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator, xn::Context* context)
-  : MapGeneratorOptions(generator, context), m_DepthGenerator(generator)
+DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
+  : MapGeneratorOptions(generator), m_DepthGenerator(generator)
 {
   addProperty("max depth", "info", "", m_DepthGenerator -> GetDeviceMaxDepth(),
               0, "The maximum depth value of this grabber.");
@@ -915,8 +979,8 @@ DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator, xn::
 //##############################################################################
 
 // constructor
-ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator, xn::Context* context)
-  : MapGeneratorOptions(generator, context), m_ImageGenerator(generator)
+ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
+  : MapGeneratorOptions(generator), m_ImageGenerator(generator)
 {
   // construnct Pixel Format - format string
   std::ostringstream format;
@@ -937,17 +1001,23 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator, xn::
   }
 
   std::string value = "";
-  switch(m_ImageGenerator -> GetPixelFormat()){
+  XnPixelFormat pf = m_ImageGenerator -> GetPixelFormat();
+  switch(pf){
     case XN_PIXEL_FORMAT_RGB24:
       value = "rgb24";
+      break;
     case XN_PIXEL_FORMAT_YUV422:
       value = "yuv422";
+      break;
     case XN_PIXEL_FORMAT_GRAYSCALE_8_BIT:
       value = "grayscale8";
+      break;
     case XN_PIXEL_FORMAT_GRAYSCALE_16_BIT:
       value = "grayscale16";
+      break;
     case XN_PIXEL_FORMAT_MJPEG:
       value = "mjpeg";
+      break;
     default:
       DEBUG_LOG("Unknown Pixel Format " << m_ImageGenerator -> GetPixelFormat());
       value = "rgb24";
@@ -962,7 +1032,7 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator, xn::
 
 // callback for changed configurable properties
 void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
-      if(prop.name == "Pixel Format"){
+  if(prop.name == "Pixel Format"){
     if (prop.value == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
         m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24);

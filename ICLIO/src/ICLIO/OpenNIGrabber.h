@@ -42,16 +42,34 @@ namespace icl {
     // Forward declaration of OpenNIGrabberImpl
     class OpenNIGrabber;
 
-    /// Internally spawned thread class for continuous grabbing
+    /// Internally spawned thread class for continuous grabbing. Only one instance needed.
     class OpenNIGrabberThread : public utils::Thread {
       public:
-        /// Constructor sets used grabber
-        OpenNIGrabberThread(OpenNIGrabber* grabber);
 
-        /// constantly calls grabNextImage.
-        void run();
+        /// Constructor set up GrabberThread
+        OpenNIGrabberThread();
+
+        /// Destructor stops thread and releases all resources.
+        ~OpenNIGrabberThread();
+
+        /// adds a grabber to be updated every frame.
+        /**
+        * The thread should be stopped beforehand and restarted afterwards.
+        */
+        void addGrabber(OpenNIGrabber* grabber);
+
+        /// removes a grabber so it no longer will be updated.
+        /**
+        * The thread should be stopped beforehand and restarted afterwards.
+        */
+        void removeGrabber(OpenNIGrabber* grabber);
+
       private:
-        OpenNIGrabber* m_Grabber;
+        /// constantly calls update on OpenNI context and updates image buffers. While grabbers are registered.
+        void run();
+
+        /// internally used set of grabber pointers
+        std::set<OpenNIGrabber*> m_Grabber;
     };
 
     /// Grabber implementation for OpenNI based camera access.
@@ -103,8 +121,6 @@ namespace icl {
         icl_openni::OpenNIMapGenerator* m_Generator;
         /// internally used ReadWriteBuffer
         icl_openni::ReadWriteBuffer<core::ImgBase>* m_Buffer;
-        /// a thread continuously grabbing images
-        OpenNIGrabberThread* m_GrabberThread;
         /// whether double frames should be omited
         bool m_OmitDoubleFrames;
     };

@@ -41,83 +41,52 @@ using namespace utils;
 using namespace io;
 using namespace icl_openni;
 
-// checks whether status is OK. else throws an Exception.
-void assertStatus(XnStatus &status){
-  if (status != XN_STATUS_OK){
-    std::ostringstream st;
-    st << "XnStatus != XN_STATUS_OK. Got '" << xnGetStatusString(status) << "'";
-    ERROR_LOG(st.str());
-    throw new ICLException(st.str());
-  }
-}
-
-/// the OpenNI context
-class OniContext{
-  private:
-    Mutex lock;
-    xn::Context context;
-    bool initialized;
-
-    OniContext() : initialized(false){}
-
-    static OniContext& inst(){
-      static OniContext inst;
-      return inst;
-    }
-
-  public:
-    static xn::Context* get(){
-      OniContext& inst = OniContext::inst();
-      Mutex::Locker l(inst.lock);
-      if(!inst.initialized){
-        XnStatus xn = inst.context.Init();
-        assertStatus(xn);
-        inst.initialized = true;
-      }
-      return &inst.context;
-    }
-
-    static void release(){
-      OniContext& inst = OniContext::inst();
-      Mutex::Locker l(inst.lock);
-      if(inst.initialized){
-        //inst.context.Release();
-        //inst.initialized = false;
-        // not releasing. releasing leads to more problems than not releasing
-      }
-    }
-
-    ~OniContext(){
-      Mutex::Locker l(lock);
-      if(initialized){
-        context.Release();
-        initialized = false;
-      }
-    }
-};
-
 //##############################################################################
 //############################# OpenNIGrabberThread ############################
 //##############################################################################
 
-// Constructor sets used grabber
-OpenNIGrabberThread::OpenNIGrabberThread(OpenNIGrabber* grabber)
-  : m_Grabber(grabber)
-{ /* nothing to do */ }
+// a singleton instance of the grabber thread
+static OpenNIGrabberThread oniGrabberThread;
 
+// Constructor sets used grabber
+OpenNIGrabberThread::OpenNIGrabberThread() { /* nothing to do */ }
+
+OpenNIGrabberThread::~OpenNIGrabberThread(){
+  if(oniGrabberThread.running()) oniGrabberThread.stop();
+}
+
+void OpenNIGrabberThread::addGrabber(OpenNIGrabber* grabber){
+  oniGrabberThread.lock();
+  oniGrabberThread.m_Grabber.insert(grabber);
+  oniGrabberThread.unlock();
+}
+
+void OpenNIGrabberThread::removeGrabber(OpenNIGrabber* grabber){
+  oniGrabberThread.lock();
+  oniGrabberThread.m_Grabber.erase(grabber);
+  oniGrabberThread.unlock();
+}
 
 // constantly calls grabNextImage.
 void OpenNIGrabberThread::run(){
-  // non-stop-loop
-  while(1){
+  // run as long as grabber list is not empty
+  while(!m_Grabber.empty()){
     msleep(1);
     // locking thread
     if(trylock()) {
       DEBUG_LOG2("threadlock returned error. sleep and retry.");
       continue;
     }
-    // thread locked grab image.
-    m_Grabber -> grabNextImage();
+    // thread update buffers
+    XnStatus rc = OpenNIContext::waitAndUpdate();
+    if (rc != XN_STATUS_OK)
+    {
+      DEBUG_LOG2("Read failed: " << xnGetStatusString(rc));
+    } else {
+      for(std::set<OpenNIGrabber*>::iterator it = m_Grabber.begin(); it != m_Grabber.end(); ++it){
+        (*it) -> grabNextImage();
+      }
+    }
     // allow thread-stop.
     unlock();
   }
@@ -132,11 +101,12 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
   : m_Id(args), m_OmitDoubleFrames(true)
 {
   Mutex::Locker lock(m_Mutex);
+  oniGrabberThread.stop();
 
   DEBUG_LOG2("init " << m_Id);
 
   // create ImageGenerator and Buffer
-  m_Generator = OpenNIMapGenerator::createGenerator(OniContext::get(), m_Id);
+  m_Generator = OpenNIMapGenerator::createGenerator(m_Id);
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
 
@@ -148,30 +118,35 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
   addChildConfigurable(m_Generator -> getMapGeneratorOptions());
   Configurable::registerCallback(utils::function(this,&OpenNIGrabber::processPropertyChange));
 
-  // create grabber-thread
-  m_GrabberThread = new OpenNIGrabberThread(this);
-  m_GrabberThread -> start();
+  // register to grabber thread
+  oniGrabberThread.addGrabber(this);
+  oniGrabberThread.start();
   DEBUG_LOG2("init done");
 }
 
 OpenNIGrabber::~OpenNIGrabber(){
-  DEBUG_LOG2("");
+  DEBUG_LOG("");
   // stop grabbing
-  m_GrabberThread -> stop();
+  oniGrabberThread.stop();
+  oniGrabberThread.removeGrabber(this);
+  oniGrabberThread.start();
 
   Mutex::Locker lock(m_Mutex);
   // free all
   ICL_DELETE(m_Generator);
   ICL_DELETE(m_Buffer);
-  ICL_DELETE(m_GrabberThread);
-  OniContext::release();
 }
 
 const ImgBase* OpenNIGrabber::acquireImage(){
+  Time t = Time::now();
   // get image from buffer
-  ImgBase* img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
-  if(img && !(img -> getDim())){ // catch empty images
-    return NULL;
+  ImgBase* img = NULL;
+  while(!img || !(img -> getDim())){ // catch null and empty images
+    img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
+    if((Time::now() - t).toSecondsDouble() >= 1.){
+      ERROR_LOG("OpenNiGrabber could not grab an image for more than 1 Second");
+      return NULL;
+    }
   }
   return img;
 }
@@ -184,8 +159,11 @@ void* OpenNIGrabber::getHandle(){
 // grabs an image from ImageGenerator
 void OpenNIGrabber::grabNextImage(){
   Mutex::Locker l(m_Mutex);
-  // make ImageGenerator grab an image.
-  m_Generator -> acquireImage(m_Buffer -> getNextWriteBuffer());
+  // check whether a new frame is available
+  if(m_Generator->newFrameAvailable()){
+    // make ImageGenerator grab an image.
+    m_Generator -> acquireImage(m_Buffer -> getNextWriteBuffer());
+  }
 }
 
 // Returns the string representation of the currently used device.
@@ -225,16 +203,14 @@ static void getNIDeviceList(std::vector<GrabberDeviceDescription>& deviceList,
                             XnPredefinedProductionNodeType type,
                             std::string postfix, std::string desc)
 {
-  xn::Context* context = OniContext::get();
   xn::NodeInfoList nodes;
-  context -> EnumerateProductionTrees(type, NULL , nodes, NULL);
+  OpenNIContext::EnumerateProductionTrees(type, NULL , nodes, NULL);
   int i = 0;
   for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
     deviceList.push_back(
           GrabberDeviceDescription("oni"+postfix, utils::str(i), desc)
           );
   }
-  OniContext::release();
 }
 
 static const std::vector<GrabberDeviceDescription>& getNIDeviceListDepth(std::string hint, bool rescan){
