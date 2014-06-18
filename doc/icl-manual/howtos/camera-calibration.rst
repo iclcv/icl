@@ -427,7 +427,8 @@ The GUI provides several features:
   position.
    
 
-  .. image:: images/calib-2.jpg :alt: shadow
+  .. image:: images/calib-2.jpg 
+     :alt: shadow
 
   The image shows an example of a grid, visualized as an overlay of the
   *pp* image.
