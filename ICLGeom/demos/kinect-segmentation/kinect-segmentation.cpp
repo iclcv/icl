@@ -45,6 +45,9 @@ GenericGrabber grabDepth, grabColor;
 int KINECT_CAM=0,VIEW_CAM=1;
 
 Camera depthCam, colorCam;
+PointCloudCreator::DepthImageMode depthImageMode;
+int depthNanValue;
+int depthMaxValue;
 
 PointCloudObject *obj;
 PointCloudCreator *creator;
@@ -80,9 +83,20 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
 
 
 void init(){
-  grabDepth.init("kinectd","kinectd=0");
-  grabDepth.setPropertyValue("depth-image-unit","raw");
-  grabColor.init("kinectc","kinectc=0");
+  grabDepth.init(pa("-di"));
+  if(grabDepth.supportsProperty("depth-image-unit")){
+    // settings for kinect grabber
+    grabDepth.setPropertyValue("depth-image-unit","raw");
+    depthImageMode = PointCloudCreator::KinectRAW11Bit;
+    depthNanValue = 2047;
+    depthMaxValue = 2046;
+  } else {
+    // settings for other grabbers
+    depthImageMode = PointCloudCreator::DistanceToCamPlane;
+    depthNanValue = 0;
+    depthMaxValue = 10000;
+  }
+  grabColor.init(pa("-ci"));
   grabDepth.useDesired(depth32f, pa("-size"), formatMatrix);
   grabColor.useDesired(depth8u, pa("-size"), formatRGB);
 
@@ -98,7 +112,7 @@ void init(){
   stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
   pseudoColorConverter = new PseudoColorConverter(stops, 2046);
   
-  temporalSmoothing = new MotionSensitiveTemporalSmoothing(2047, 15);
+  temporalSmoothing = new MotionSensitiveTemporalSmoothing(depthNanValue, 15);
   
   segmentation = new Segmentation3D(size);
   
@@ -172,17 +186,17 @@ void init(){
            )
       << Show();
 
-  if(pa("-d")){//get depth cam
+  if(pa("-d")){//get depth cam config
     string depthcamname = pa("-d").as<std::string>();
     depthCam = Camera(depthcamname);
   }
-  else{//default depth cam
+  else{//default depth cam config
     depthCam = Camera();
     depthCam.setResolution(size);
   }
   depthCam.setName("Kinect Depth Camera");
  
-  if(pa("-c")){//get color cam
+  if(pa("-c")){//get color cam config
     string colorcamname = pa("-c").as<std::string>();
     colorCam = Camera(colorcamname);
   }
@@ -208,10 +222,10 @@ void init(){
     
   //create pointcloud
   if(pa("-c")){
-    creator = new PointCloudCreator(depthCam, colorCam, PointCloudCreator::KinectRAW11Bit);
+    creator = new PointCloudCreator(depthCam, colorCam, depthImageMode);
   }
   else{
-    creator = new PointCloudCreator(depthCam, PointCloudCreator::KinectRAW11Bit);
+    creator = new PointCloudCreator(depthCam, depthImageMode);
   }
   
   scene.addObject(obj);
@@ -257,8 +271,14 @@ void run(){
   }
   
   //grab images
-  const ImgBase &colorImage = *grabColor.grab();
-  const ImgBase &depthImage = *grabDepth.grab();
+  const ImgBase *colorImagePtr = grabColor.grab();
+  const ImgBase *depthImagePtr = grabDepth.grab();
+  if(colorImagePtr == NULL || depthImagePtr == NULL){
+    obj->unlock();
+    return;
+  }
+  const ImgBase &colorImage = *colorImagePtr;
+  const ImgBase &depthImage = *depthImagePtr;
     
   static ImgBase *heatmapImage = 0;  
     
@@ -492,5 +512,5 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-size|-s(Size=QVGA) -depth-cam|-d(file) -color-cam|-c(file))",init,run).exec();
+  return ICLApp(n,ppc,"-size|-s(Size=QVGA) -depth-cam|-d(file) -color-cam|-c(file) -depth-input|-di(device=kinectd,device-params=0) -color-input|-ci(device=kinectc,device-params=0)",init,run).exec();
 }
