@@ -272,7 +272,7 @@ special xml- based format. Due to its very regular shape, the object's
 markers can well be described by 8 grids of markers -- two for each
 face (The invisible back-faces are covered with markers as well).  The
 reason why each face is not represented by a single grid is that the
-markers were printed on A4 self-sticking labels that could we were not
+markers were printed on A4 self-sticking labels that we were not
 able to 100%ly align into a single regular grid of markers.
 
 In the first sections, the marker layout is
@@ -412,17 +412,22 @@ The GUI provides several features:
   If the object-to-world transform is *identity* this will be equal
   to the local calibration object coordinate frame
 
-* **more options.plane** here, an artificial plane visualized as a 2D grid)
-  can be added to the rendered scene overlay. An extra dialog that pops up
-  allows for adapting the plane normal, size and color. Once a plane is added,
-  the mouse can be used to point at that plane in order to visualize the
-  estimated 3D coordinate of the intersection between the plane and the
-  view-ray estimated from the current camera calibration result and the mouse
-  pointer. This feature becomes very handy when trying to estimate the real
-  quality of the calibration result.
+* **more options.plane** here, an artificial plane visualized as a 2D
+  grid) can be added to the rendered scene overlay. An extra dialog
+  that pops up allows the plane normal, the size and the color of the
+  plane to be adapted. Once a plane is added, the mouse can be used to
+  point at that plane in order to visualize the estimated 3D
+  coordinate of the intersection between the plane and the view-ray
+  estimated from the current camera calibration result and the mouse
+  pointer. This feature becomes very handy when trying to estimate the
+  real quality of the calibration result. You can e.g. measure a real
+  distance or a known key point in the world and then point at that
+  point in order to directly see the point's estimated 3D position,
+  which should in an optimal case be identical to the known 3D
+  position.
+   
 
-  .. image:: images/calib-2.jpg
-    :alt: shadow
+  .. image:: images/calib-2.jpg :alt: shadow
 
   The image shows an example of a grid, visualized as an overlay of the
   *pp* image.
@@ -431,12 +436,27 @@ The GUI provides several features:
   sometimes also important set of properties that can be adjusted. The
   extra GUI that pops up allows for setting all properties necessary
   for the marker detection. Usually, these parameters are adapted
-  after switching the the *binary* image. The most common parameter
-  that have to be manually tuned here are the parameters in the
+  after switching the the *binary* image. The most common parameters
+  that have to be manually tuned here are the ones in the
   *thresh* tab, which define the mask size and the global threshold
   for the used :icl:`filter::LocalThresholdOp` instance. By adapting these
-  parameters, it usually become possible to detect more markers, which 
+  parameters, it usually becomes possible to detect more markers, which 
   then directly improves the calibration result.
+
+  .. note:: 
+
+      It is not the worst idea to optimize your calibration outcome by
+      trying to find the parameter set that leads to a maximum number
+      of detected markers. In contrast, tuning the parameters in order to
+      make the **error** become as small as possible does not really make
+      sense. For the calibration result, it is very important that
+
+      1. as many markers as possible are detected
+      2. the detected markers are well distributed over at least two
+         non-coplanar surfaces of the calibration object
+      3. the markers of the detected object cover a large part of the
+         actual 2D image (optimally > 80%) and optimall reach into
+         the corners of the image
 
 * **more options.rel. Transf** shows an extra GUI that allows an
   additional object-to-world transform to be adapted. This is also the
