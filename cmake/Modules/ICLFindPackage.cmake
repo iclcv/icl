@@ -41,6 +41,9 @@
 #   NAME_INCLUDE_DIRS    - include directory
 #   NAME_LIBRARIES       - all found libraries
 #   ICL_HAVE_NAME        - this variable is added to the icl definitions
+# Global input:
+#  PKG_SEARCH_PATHS         - contains directories, which should be searched
+#  ARCH_DEPENDENT_LIB_PATHS - suffixes should be used for the libraries search
 MACRO(ICL_FIND_PACKAGE)
 
   # Get all arguments

@@ -65,78 +65,25 @@ IF(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")
 
   SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
 ELSE()
-  IF(NOT WIN32)
-  # find headers
-  FIND_PATH(OpenCV_INCLUDE_DIRS "cv.h" "cxcore.h" "highgui.h"
-            PATHS "${OpenCV_DIR}"
-            PATH_SUFFIXES "include" "include/opencv")
-  
-  # Initiate the variable before the loop
-  SET(GLOBAL OpenCV_LIBRARIES "")
-
-  IF(EXISTS ${OpenCV_DIR})
-    SET(OpenCV_LIB_DIR "${OpenCV_DIR}")
-  ELSE()
-    SET(OpenCV_LIB_DIR "/usr")
-  ENDIF()
-
-  # strategy: search for old style libraries first
-  # only if these were not found: search for new style
-  # libraries 
-
   SET(OpenCV_OLD_LIBS_NOT_FOUND "FALSE")
-  SET(OpenCV_NEW_LIBS_NOT_FOUND "FALSE")
 
-  # find old style libraries
-  FOREACH(L cxcore cv ml highgui cvaux)
-    MESSAGE(STATUS "checking for ${L} in ${OpenCV_LIB_DIR}")
-    FIND_LIBRARY(OpenCV_${L}_LIBRARY
-      NAMES "lib${L}" "${L}"
-      PATHS "${OpenCV_LIB_DIR}"
-      PATH_SUFFIXES "lib" ${ARCH_DEPENDENT_LIB_PATHS}
-      NO_DEFAULT_PATH)
-    
-    IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")
-      LIST(APPEND OpenCV_LIBRARIES ${OpenCV_${L}_LIBRARY})
-    ELSE()
-      SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
-    ENDIF()
-  ENDFOREACH()  
-  
-  IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
-    MESSAGE(STATUS "Found (old style) OpenCV libs: ${OpenCV_LIBRARIES}")
-  ELSE()
-    # old style libraries not found -> search for new style libraries
-    SET(OpenCV_LIBRARIES "")
+  # Search for old style libraries first
+  ICL_FIND_PACKAGE(NAME OpenCV
+                   HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h"
+                   LIBS "cxcore;cv;ml;highgui;cvaux"
+                   PATHS ${OpenCV_LIB_DIR}
+                   OPTIONAL)
 
-    FOREACH(L core highgui imgproc video ml calib3d)
-      FIND_LIBRARY(OpenCV_${L}_LIBRARY
-        NAMES "libopencv_${L}" "opencv_${L}"
-        PATHS "${OpenCV_LIB_DIR}"
-        PATH_SUFFIXES "lib" ${ARCH_DEPENDENT_LIB_PATHS}
-        NO_DEFAULT_PATH)
-      
-      IF(NOT ${OpenCV_${L}_LIBRARY} STREQUAL "OpenCV_${L}_LIBRARY-NOTFOUND")
-        LIST(APPEND OpenCV_LIBRARIES ${OpenCV_${L}_LIBRARY})
-      ELSE()
-        SET(OpenCV_NEW_LIBS_NOT_FOUND "TRUE")
-      ENDIF()
-    ENDFOREACH()  
-    
-    IF(${OpenCV_NEW_LIBS_NOT_FOUND} STREQUAL "FALSE")
-      MESSAGE(STATUS "Found OpenCV libs: ${OpenCV_LIBRARIES}") 
-    ENDIF()
-  
-  ENDIF()
-  
-  IF(${OpenCV_NEW_LIBS_NOT_FOUND} STREQUAL "TRUE" AND 
-     ${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "TRUE")
-   MESSAGE(CRITICAL_ERROR "Not Found OpenCV Libraries (neither old- nor new-style)")
-  ENDIF()
-      
-  ENDIF(NOT WIN32)
+  # If not found search for new style libraries
+  IF(NOT OPENCV_FOUND)
+    SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
+
+    ICL_FIND_PACKAGE(NAME OpenCV
+                     HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h"
+                     LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d"
+                     PATHS ${OpenCV_LIB_DIR})
+  ENDIF(NOT OPENCV_FOUND)
+
+  SET(OpenCV_INCLUDE_DIRS ${OPENCV_INCLUDE_DIRS})
+  SET(OpenCV_LIBRARIES ${OPENCV_LIBRARIES})
 ENDIF()
-
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenCV REQUIRED_VARS
-                                  OpenCV_LIBRARIES
-                                  OpenCV_INCLUDE_DIRS)
