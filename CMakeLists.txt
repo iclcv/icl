@@ -164,11 +164,12 @@ ELSEIF(WIN32)
 ENDIF()
 
 # ---- User options ----
-OPTION(BUILD_WITH_OPENCV "Link against OpenCL and provide OpenCV image convertion functions" OFF)
+OPTION(BUILD_WITH_OPENCV "Link against OpenCV and provide OpenCV image convertion functions" OFF)
 OPTION(BUILD_WITH_QT "Provides GUI and image visualization framework (needs OPENGL)" OFF)
 OPTION(BUILD_WITH_OPENGL "Linked to BUILD_WITH_QT" OFF)
 OPTION(BUILD_WITH_RSB "Link against the RSB framework for network-based image transfer (needs PROTOBUF)" OFF)
 OPTION(BUILD_WITH_PROTOBUF "Needed for RSB-based image transfer" OFF)
+OPTION(BUILD_WITH_EIGEN3 "Uses Eigen3 to speed up several algorithms" OFF)
 OPTION(BUILD_WITH_IPP "Link against Intel IPP for general speedup" OFF)
 OPTION(BUILD_WITH_MKL "Link against Intel MKL to speed up several mathematic fuctions" OFF)
 OPTION(BUILD_WITH_MESASR "Link against libmesasr to provide SwissRanger camera support" OFF)

@@ -105,7 +105,7 @@ namespace icl{
         to the other two optizations.
         
     */
-    class HoughLineDetector : public utils::Uncopyable{
+    class ICLCV_API HoughLineDetector : public utils::Uncopyable{
       public:
   
       /// Create a new HoughLineDetectorInstance

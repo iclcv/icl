@@ -34,12 +34,13 @@ INCLUDE(FindPackageHandleStandardArgs)
 # Start main part here
 # ---------------------------------------------------------------------
 
-SET(_CUDA_PATH $ENV{CUDA_PATH} PATH)
+SET(_CUDA_PATH $ENV{CUDA_PATH})
+FILE(TO_CMAKE_PATH ${_CUDA_PATH} _CUDA_PATH)
 
 ICL_FIND_PACKAGE(NAME OpenCL
                  HEADERS "CL/cl.hpp;CL/cl.h;CL/opencl.h"
                  LIBS "OpenCL"
-                 PATHS _CUDA_PATH
+                 PATHS ${_CUDA_PATH}
                  OPTIONAL)
 
 IF(OPENCL_FOUND)
