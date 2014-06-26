@@ -8,7 +8,7 @@
 #**                                                                 **
 #** File   : cmake/Modules/ICLHelperMacros.cmake                    **
 #** Module : ICLHelperMacros                                        **
-#** Authors: Michael Goetting                                       **
+#** Authors: Michael Goetting, Sergius Gaulik                       **
 #**                                                                 **
 #**                                                                 **
 #** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -149,7 +149,11 @@ IF(NOT WIN32)
       STRING(SUBSTRING "${_LIB}" 0 2 _SUB)
       IF(NOT ${_SUB} STREQUAL "-l")
         GET_PROPERTY(_LIB TARGET ${_LIB} PROPERTY LOCATION)
-        get_filename_component(_DIR ${_LIB} DIRECTORY)
+        IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+          get_filename_component(_DIR ${_LIB} PATH)
+        ELSE()
+          get_filename_component(_DIR ${_LIB} DIRECTORY)
+        ENDIF()
       ENDIF()
     ENDIF()
     LIST(APPEND _LIBRARY_DEPS "${_LIB}")
