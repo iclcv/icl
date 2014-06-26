@@ -431,7 +431,7 @@ IF(BUILD_WITH_QT)
 
       # seems to be not workin properly
       # perhaps, the does not use abs paths
-      SET(Qt5_LIBRARIES "${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} Qt5::Core Qt5::Gui")
+      #SET(Qt5_LIBRARIES "${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES}")
 
       # this results in the same as the single line above!
       #get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)

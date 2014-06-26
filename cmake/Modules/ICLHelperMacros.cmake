@@ -141,7 +141,25 @@ IF(NOT WIN32)
          "${PKG_DEPENDS_ON}")
        
   # Prepare libraries list
-  SET(LIB_DEPENDS_ON "${CONFIG_LIBRARY_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
+  SET(_LIBRARY_DEPS "")
+  SET(_LIBRARY_DIRS "")
+  FOREACH(_LIB ${CONFIG_LIBRARY_DEPS})
+    get_filename_component(_DIR ${_LIB} DIRECTORY)
+    IF(NOT _DIR)
+      STRING(SUBSTRING "${_LIB}" 0 2 _SUB)
+      IF(NOT ${_SUB} STREQUAL "-l")
+        GET_PROPERTY(_LIB TARGET ${_LIB} PROPERTY LOCATION)
+        get_filename_component(_DIR ${_LIB} DIRECTORY)
+      ENDIF()
+    ENDIF()
+    LIST(APPEND _LIBRARY_DEPS "${_LIB}")
+    LIST(APPEND _LIBRARY_DIRS "-Wl,-rpath=${_DIR}")
+  ENDFOREACH()
+  IF(_LIBRARY_DIRS)
+    LIST(REMOVE_DUPLICATES _LIBRARY_DIRS)
+  ENDIF()
+
+  SET(LIB_DEPENDS_ON "${_LIBRARY_DIRS} ${_LIBRARY_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
   STRING(REPLACE ";" " "
          LIB_DEPENDS_ON
          "${LIB_DEPENDS_ON}")

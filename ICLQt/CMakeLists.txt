@@ -250,5 +250,4 @@ INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLQt
                  LIBRARY_DEPS ${ICLQt_3RDPARTY_LIBRARIES}
-                 PKGCONFIG_DEPS ICLCV-${SO_VERSION}
-                 RPATH_DEPS "-Wl,-rpath=${_qt5Core_install_prefix}/lib")
+                 PKGCONFIG_DEPS ICLCV-${SO_VERSION})
