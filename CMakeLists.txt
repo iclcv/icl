@@ -284,21 +284,21 @@ ENDIF()
 IF(BUILD_WITH_MKL)
   IF(ICL_64BIT)
     SET(_MKL_LIB "mkl_intel_lp64")
-    SET(_MKL_LIB_SUF "lib/intel64")
+    SET(_MKL_LIB_SUF "mkl/lib/intel64")
   ELSE(ICL_64BIT)
     IF(WIN32)
       SET(_MKL_LIB "mkl_intel_c")
     ELSE(WIN32)
       SET(_MKL_LIB "mkl_intel")
     ENDIF(WIN32)
-    SET(_MKL_LIB_SUF "lib/ia32")
+    SET(_MKL_LIB_SUF "mkl/lib/ia32")
   ENDIF(ICL_64BIT)
   ICL_FIND_PACKAGE(NAME MKL
                    HEADERS "mkl_types.h"
                    LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
                    PATHS "/opt/MKL;/opt/MKL/mkl"
                    HEADER_PATH_SUFFIXES "mkl/include"
-                   LIB_PATH_SUFFIXES "${_MKL_LIB_SUF};mkl/${_MKL_LIB_SUF}")
+                   LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}")
 ENDIF()
 
 IF(BUILD_WITH_OPENCL)
@@ -392,15 +392,9 @@ IF(BUILD_WITH_V4L)
 ENDIF()
 
 IF(BUILD_WITH_ZMQ)
-  # in addition change GLEW_INCLUDE_DIR in GLEW_INCLUDE_DIRS
-  #ICL_FIND_PACKAGE(NAME ZMQ
-  #                 HEADERS "zmq.hpp"
-  #                 LIBS "zmq")
-  # after testing the above function call the 4 lines below and FindZMQ.cmake can be removed
-  FIND_PACKAGE(ZMQ REQUIRED)
-  IF(ZMQ_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_ZMQ)
-  ENDIF()
+  ICL_FIND_PACKAGE(NAME ZMQ
+                   HEADERS "zmq.hpp"
+                   LIBS "zmq")
 ENDIF()
 
 
@@ -420,12 +414,9 @@ IF(BUILD_WITH_QT)
   ENDIF()
   SET(QT_ROOT QT_ROOT CACHE PATH "Root directory of Qt5")
   FIND_PACKAGE(OpenGL REQUIRED)
-  # in addition change GLEW_INCLUDE_DIR in GLEW_INCLUDE_DIRS
-  #ICL_FIND_PACKAGE(NAME GLEW
-  #                 HEADERS "GL/glew.h"
-  #                 LIBS "GLEW")
-  # after testing the above function call the line below and FindGlew.cmake can be removed
-  FIND_PACKAGE(GLEW REQUIRED)
+  ICL_FIND_PACKAGE(NAME GLEW
+                   HEADERS "GL/glew.h"
+                   LIBS "GLEW")
   FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
   IF(Qt5Widgets_FOUND)
@@ -466,14 +457,10 @@ IF(BUILD_WITH_QT)
 ENDIF()
 
 IF(BUILD_WITH_LIBFREENECT)
-  #ICL_FIND_PACKAGE(NAME LibFreenect
-  #                 HEADERS "libfreenect.h"
-  #                 LIBS "freenect;freenect_sync")
-  # after testing the above function call the 4 lines below and FindLibFreenect.cmake can be removed
-  FIND_PACKAGE(LibFreenect REQUIRED)
-  IF(LIBFREENECT_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBFREENECT)
-  ENDIF()  
+  ICL_FIND_PACKAGE(NAME LibFreenect
+                   HEADERS "libfreenect.h"
+                   LIBS "freenect;freenect_sync"
+                   HEADER_PATH_SUFFIXES "include/libfreenect") 
 ENDIF()
 
 IF(BUILD_WITH_PYLON)
@@ -561,7 +548,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${V4L_INCLUDE_DIRS}
                     ${XINE_INCLUDE_DIRS}
                     ${OPENGL_INCLUDE_DIR}
-                    ${GLEW_INCLUDE_DIR}
+                    ${GLEW_INCLUDE_DIRS}
                     ${LIBFREENECT_INCLUDE_DIRS}
                     ${PYLON_INCLUDE_DIRS}
                     ${PCL_INCLUDE_DIRS}

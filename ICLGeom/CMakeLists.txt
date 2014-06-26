@@ -181,7 +181,7 @@ ADD_LIBRARY(ICLGeom SHARED ${SOURCES} ${HEADERS})
 # ---- 3rd party library handling ----
 IF(QT4_FOUND)
   TARGET_LINK_LIBRARIES(ICLGeom ICLQt
-                        ${PCL_LIBRARIES})
+                        ${ICLGeom_3RDPARTY_LIBRARIES})
 ELSE()
   TARGET_LINK_LIBRARIES(ICLGeom ICLCV
                         ${ICLGeom_3RDPARTY_LIBRARIES})

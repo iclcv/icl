@@ -30,8 +30,6 @@
 
 INCLUDE(FindPackageHandleStandardArgs)
 
-SET(IPP_ROOT "" CACHE PATH "Define IPP root directory if not default")
-
 # ---- Detect IPP version ----
 function(get_ipp_version _INCLUDE_DIR)
   set(_VERSION_STR)
@@ -71,86 +69,21 @@ endfunction()
 # Start main part here
 # ---------------------------------------------------------------------
 
-# Search IPP_ROOT first if it is set.
-IF(IPP_ROOT)
-  SET(_IPP_SEARCH_ROOT PATHS ${IPP_ROOT} ${IPP_ROOT}/lib ${IPP_ROOT}/ipp NO_DEFAULT_PATH)
-  LIST(APPEND _IPP_SEARCHES _IPP_SEARCH_ROOT)
-ENDIF()
+IF(ICL_64BIT)
+  SET(_IPP_LIB_SUF "ipp/lib/intel64")
+ELSE(ICL_64BIT)
+  SET(_IPP_LIB_SUF "ipp/lib/ia32")
+ENDIF(ICL_64BIT)
 
-# Normal search.
-SET(_IPP_SEARCH_NORMAL
-     PATHS "/opt/IPP"
-           "/opt/IPP/lib"
-           "/opt/IPP/ipp"
-   )
-LIST(APPEND _IPP_SEARCHES _IPP_SEARCH_NORMAL)
-LIST(APPEND _IPP_LIBRARIES ippcore ippi ipps ippcv ippm ippcc iomp5)
-
-# Set search path suffix
-IF (ICL_64BIT)
-  set (_LIB_SEARCH_PATH_SUFFIXES "/lib/intel64")
-ELSE()
-  set (_LIB_SEARCH_PATH_SUFFIXES "/lib/ia32")
-ENDIF()
-
-# Try each search configuration
-FOREACH(_PATH ${_IPP_SEARCHES})
-  FIND_PATH(IPP_INCLUDE_DIR 
-            NAMES ipp.h        
-	    PATHS ${${_PATH}}
-	    PATH_SUFFIXES "include" 	  
-	    DOC "The path to Intel(R) IPP header files"
-	    NO_DEFAULT_PATH)
-  
-    FOREACH(_lib ${_IPP_LIBRARIES})
-      FIND_LIBRARY(${_lib}_LIBRARY  
-               NAMES ${_lib}
-	       PATHS ${${_PATH}}
-	       PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
-	       NO_DEFAULT_PATH)
-    ENDFOREACH()
-ENDFOREACH()
-	   
-# Handle the QUIETLY and REQUIRED arguments and set IPP_FOUND to TRUE if 
-# all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(IPP REQUIRED_VARS 
-				  ippcore_LIBRARY
-				  ippi_LIBRARY 
-				  ipps_LIBRARY 
-				  ippcv_LIBRARY 
-				  ippm_LIBRARY 
-				  ippcc_LIBRARY
-				  iomp5_LIBRARY
-				  IPP_INCLUDE_DIR)
+ICL_FIND_PACKAGE(NAME IPP
+                 HEADERS "ipp.h"
+                 LIBS "ippcore;ippi;ipps;ippcv;ippm;ippcc;iomp5"
+                 PATHS "/opt/IPP"
+                 HEADER_PATH_SUFFIXES "ipp/include"
+                 LIB_PATH_SUFFIXES "${_IPP_LIB_SUF}")
 
 IF(IPP_FOUND)
-  # HACK: Until FIND_LIBRARY could handle multiple libraries
-  FOREACH(_lib ${_IPP_LIBRARIES})
-    LIST(APPEND _IPP_LIBRARIES_LIST ${${_lib}_LIBRARY})
-  ENDFOREACH()
-
-  IF(EXISTS "${IPP_INCLUDE_DIR}/ippversion.h")
-    get_ipp_version(${IPP_INCLUDE_DIR})
+  IF(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
+    get_ipp_version(${IPP_INCLUDE_DIRS})
   ENDIF()
-  
-  LIST(REMOVE_DUPLICATES _IPP_LIBRARIES_LIST)
-  SET(IPP_INCLUDE_DIRS ${IPP_INCLUDE_DIR})
-  SET(IPP_LIBRARIES ${_IPP_LIBRARIES_LIST})
-
-  STRING(REGEX REPLACE "[^/]*\\.so$" "" IPP_LIB_DIR ${ippcore_LIBRARY})
-  STRING(REGEX REPLACE "[^/]*\\.so$" "" IOMP_LIB_DIR ${iomp5_LIBRARY})
-
-  #  MESSAGE(STATUS "########################## ${_dir}")
-  # for all IPP_LIBRARIES
-  #   find library directory (by removing libname.so)
-  #   add dir to list
-  # remove duplicates
-  #FOREACH(_lib ${_IPP_LIBRARIES})
-  #  MESSAGE(STATUS "############ lib is ${_lib}")
-  #  STRING(REGEX REPLACE "(.*)/[^/]*\\.so$" "${CMAKE_MATCH_0}" _dir ${_lib})
-  #  MESSAGE(STATUS "########################## ${_dir}")
-  #ENDFOREACH()
-
 ENDIF()
-
-MARK_AS_ADVANCED(IPP_INCLUDE_DIR IPP_ROOT)
