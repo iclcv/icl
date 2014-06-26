@@ -277,16 +277,5 @@ INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLIO
-                 LIBRARY_DEPS ${MESASR_LIBRARIES}
-                              ${ImageMagick_LIBRARIES}
-                              ${LIBDC_LIBRARIES}
-                              ${V4L_LIBRARIES}
-                              ${XINE_LIBRARIES}
-                              ${OPENGL_LIBRARIES}
-                              ${LIBFREENECT_LIBRARIES}
-                              ${PYLON_LIBRARIES}
-                              ${OPENNI_LIBRARIES}
-                              ${QT_LIBRARIES}
-                              ${ZMQ_LIBRARIES}
-                              ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC}
+                 LIBRARY_DEPS ${ICLIO_3RDPARTY_LIBRARIES}
                  PKGCONFIG_DEPS ICLFilter-${SO_VERSION})

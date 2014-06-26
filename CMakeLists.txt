@@ -431,7 +431,7 @@ IF(BUILD_WITH_QT)
 
       # seems to be not workin properly
       # perhaps, the does not use abs paths
-      SET(Qt5_LIBRARIES "${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES}")
+      SET(Qt5_LIBRARIES "${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} Qt5::Core Qt5::Gui")
 
       # this results in the same as the single line above!
       #get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
@@ -560,7 +560,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${ZMQ_INCLUDE_DIRS}
                     ${LIBUSB_INCLUDE_DIRS}
                     ${Qt5Widgets_INCLUDE_DIRS}
-                    )
+                    ${Qt5OpenGL_INCLUDE_DIRS})
 
 # ---- Variables for 3rd party libraries ----
 LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
