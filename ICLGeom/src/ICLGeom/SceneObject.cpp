@@ -606,7 +606,6 @@ namespace icl{
       setSmoothShading(true);
       
       typedef FixedColVector<float,3> F3;
-      typedef FixedColVector<int,3> I3;
       
       int nSkippedVT = 0;
       //int nSkippedVN = 0;

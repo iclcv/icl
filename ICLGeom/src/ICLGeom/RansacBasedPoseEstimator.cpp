@@ -127,7 +127,7 @@ namespace icl{
       if(res.found()){
         const std::vector<float> &m = res.model;
         Mat T = create_hom_4x4<float>(m[0],m[1],m[2],m[3],m[4],m[5]);
-        Result r =  { T, true, res.error };
+        Result r =  { T, true, (float)res.error };
         return r;
       }
       Result r =  { Mat::id(), false, float(-1) };

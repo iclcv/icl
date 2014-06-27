@@ -222,7 +222,9 @@ namespace icl{
       
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
 
-#pragma omp parallel for
+#ifdef USE_OPENMP
+  #pragma omp parallel for
+#endif
       for(int i=0;i<DEPTH_DIM;++i){
         const ViewRayDir &dir = dirs[i];
         const float d = (NEEDS_RAW_TO_MM_MAPPING ? raw_to_mm(depthValues[i]) : depthValues[i])*depthScaling;

@@ -179,8 +179,6 @@ namespace icl{
     const Posit::Result &Posit::findPose(const std::vector<Point32f> &imagePoints, const Point &pp,
                                          float fx, float fy) throw (ICLException){
       BENCHMARK_THIS_FUNCTION;
-      typedef DynMatrix<float> DMat;
-      typedef FixedColVector<float,3> Vec3;
       
       const int N = data->N;
       float ifx = 1.0/fx;

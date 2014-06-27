@@ -595,7 +595,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 		for (int i = 0; i < numFaces; i++) {
 			neighbours(i, i) = true;
 		}
-		memcpy(assignment, assignmentOut, sizeof(assignmentOut));
+		memcpy(assignment, assignmentOut, w*h*sizeof(int));
     ICL_DELETE_ARRAY(assignmentOut);
 	}
 }
