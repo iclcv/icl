@@ -94,10 +94,8 @@ echo "done"
 echo -n "Copying cmake files ... "
 cp ${RESOURCE_DIR}/CMakeLists.txt.template ./${PROJECT}/CMakeLists.txt
 sed -i -e "s|\\@projectname|$PROJECT|" ./${PROJECT}/CMakeLists.txt
-sed -i -e "s|\\@current_icl_version|\"${ICL_VERSION}\"|" ./${PROJECT}/CMakeLists.txt
 cp ${RESOURCE_DIR}/app.CMakeLists.txt.template ./${PROJECT}/app/CMakeLists.txt
 cp ${RESOURCE_DIR}/src.CMakeLists.txt.template ./${PROJECT}/src/CMakeLists.txt
-cp ${RESOURCE_DIR}/cmake.FindPkgConfig.cmake.template ./${PROJECT}/cmake/FindPkgConfig.cmake
 echo "done"
 
 echo -n "Copying license ... "

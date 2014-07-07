@@ -26,11 +26,8 @@ include_directories("${PROJECT_SOURCE_DIR}/src/")
 # add icl headers
 include_directories(${ICL_INCLUDE_DIRS})
 
-# add icl libs
-link_directories(${ICL_LINK_DIRS})
-
 # add icl defines
-add_definitions(${ICL_DEFINES})
+add_definitions(${ICL_DEFINITIONS})
 
 # create executables
 foreach(APP ${APPS})
@@ -42,7 +39,7 @@ foreach(APP ${APPS})
 
   target_link_libraries("${PROJECT_NAME}-${APP}"
     ${PROJECT_NAME}
-    ${ICL_LIBS}
+    ${ICL_LIBRARIES}
   )
 
 # set app version

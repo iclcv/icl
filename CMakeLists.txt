@@ -669,11 +669,11 @@ FOREACH(FILE Makefile doxyfile sample-test.cpp)
 ENDFOREACH()
 
 FOREACH(FILE app.CMakeLists.txt CMakeLists.txt latex.clear.sh 
-              latex.report.plots.sizevarplot.tex latex.talk.talk.tex 
-              src.HelloWorld.cpp app.main.cpp Doxyfile.in latex.library.bib 
-              latex.report.report.tex LICENSE.LGPL  src.HelloWorld.h 
-              cmake.FindPkgConfig.cmake latex.build.sh latex.quick.sh 
-              latex.report.sections.introduction.tex src.CMakeLists.txt)
+             latex.report.plots.sizevarplot.tex latex.talk.talk.tex 
+             src.HelloWorld.cpp app.main.cpp Doxyfile.in latex.library.bib 
+             latex.report.report.tex LICENSE.LGPL  src.HelloWorld.h 
+             latex.build.sh latex.quick.sh 
+             latex.report.sections.introduction.tex src.CMakeLists.txt)
   SET(SRC scripts/icl-create-cmake-project-data/${FILE})
   SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-cmake-project-data)
   FILE(COPY ${SRC} DESTINATION ${DST})

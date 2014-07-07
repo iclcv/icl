@@ -36,28 +36,12 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 # some compiler flags for the different build settings
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC")
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 # search for icl
-include(cmake/FindPkgConfig.cmake)
-if(NOT ICL_VERSION)
-  SET(ICL_VERSION @current_icl_version)
-endif()
-
-PKGCONFIG("ICL-${ICL_VERSION}" HAVE_ICL ICL_INCLUDE_DIRS ICL_DEFINES ICL_LINK_DIRS ICL_LIBS)
-
-IF(HAVE_ICL)
-  LIST(APPEND REQUIRED_LIBRARIES_LIST ICL_LIBS})
-ELSE()
-  message(FATAL_ERROR 
-    "\nCould not find ICL-${ICL_VERSION}\n"
-    "Please ensure that ICL-${ICL_VERSION}.pc is in your PKG_CONFIG_PATH\n"
-    "You can specify the ICL-Version to use via cmake arguments.\n"
-    "\t>> cmake .. -DICL_VERSION=8.0 will try to use  ICL-8.0\n"
-  )
-ENDIF()
+find_package(ICL REQUIRED HINTS ${ICL_ROOT})
 
 message(STATUS "Looking for doxygen")
 find_program(DOXYGEN_BIN NAMES doxygen)
@@ -81,32 +65,6 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/Doxyfile.in"
   "${PROJECT_BINARY_DIR}/Doxyfile"
 )
-
-# get all header files
-#FILE(GLOB HEADERS "${PROJECT_SOURCE_DIR}/src/*.h")
-# get all sources
-#FILE(GLOB SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
-# get all apps
-#FILE(GLOB APPS "${PROJECT_SOURCE_DIR}/apps/*.cpp")
-
-# add all headers
-#include_directories("${PROJECT_SOURCE_DIR}/src/")
-#include_directories(${ICL_INCLUDE_DIRS})
-#include_directories(${PCL_INCLUDE_DIRS})
-
-# add icl libs
-#link_directories(${ICL_LINK_DIRS})
-#link_directories(${PCL_LIBRARY_DIRS})
-
-#add icl defines
-#add_definitions(${ICL_DEFINES})
-#add_definitions(${PCL_DEFINITIONS})
-
-#create library
-#add_library(${PROJECT_NAME} SHARED ${SOURCES})
-#target_link_libraries(${PROJECT_NAME}
-#  ${ICL_LIBS}
-#)
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(app)
