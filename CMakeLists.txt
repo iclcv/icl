@@ -445,18 +445,25 @@ IF(BUILD_WITH_QT)
       # Colon separated Qt library paths only work when Qt's find package was called.
       # This is not necessarily done in projects linking against icl so we need full
       # Paths here.
-      get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
-      get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
-      get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
-      get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
-
-      # For some reason cmake does not add library paths to rpath when they end 
-      # with a number like libQt5Core.so.5. Changing the linked libraries to the
-      # simple .so resolves this problem.
-      STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
-      STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_qt5OpenGL_install_prefix}/lib/${ICLQt5OpenGLLib}")
-      STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_qt5Widgets_install_prefix}/lib/${ICLQt5WidgetsLib}")
-      STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_qt5Gui_install_prefix}/lib/${ICLQt5GuiLib}")
+      IF(WIN32)
+        get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_IMPLIB_RELEASE)
+        get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_IMPLIB_RELEASE)
+        get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
+        get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
+      ELSE(WIN32)
+        get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
+        get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
+        get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
+        get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
+        
+        # For some reason cmake does not add library paths to rpath when they end 
+        # with a number like libQt5Core.so.5. Changing the linked libraries to the
+        # simple .so resolves this problem.
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5OpenGLLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5WidgetsLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5GuiLib}")
+      ENDIF(WIN32)
 
       SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5OpenGLLibAbs})
