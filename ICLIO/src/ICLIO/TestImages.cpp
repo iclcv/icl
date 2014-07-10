@@ -658,7 +658,7 @@ namespace icl{
       //TODO where is this function located
       //sleep(msec*10000);
       //#endif
-      errorCode = system(string("rm -rf ").append(name).c_str());
+      errorCode = system(string(ICL_SYSTEMCALL_RM).append(name).c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
     }

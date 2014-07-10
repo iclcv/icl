@@ -33,11 +33,15 @@
 #include <ICLUtils/ICLConfig.h>
 
 #ifdef WIN32
+#define ICL_SYSTEMCALL_RM "del "
+#else
+#define ICL_SYSTEMCALL_RM "rm -rf "
+#endif
+
+#ifdef WIN32
   #define NOMINMAX
   #define _USE_MATH_DEFINES
   #define M_PI 3.14159265358979323846
-  //#define __msxml_h__ // icl has its own xml classes
-  //#include <Windows.h>
   // TODOWW: test with _MSC_VER == 1700
   #if (defined _MSC_VER && _MSC_VER < 1800)
     #include <cmath>

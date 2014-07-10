@@ -405,18 +405,28 @@ IF(BUILD_WITH_XINE)
 ENDIF()
 
 IF(BUILD_WITH_QT)
+  SET(QT_ROOT QT_ROOT CACHE PATH "Root directory of Qt5")
   IF(WIN32)
     FIND_PACKAGE(WindowsSDK REQUIRED)
     set(CMAKE_LIBRARY_PATH "${WINDOWSSDK_DIRS}/Lib")
     if(POLICY CMP0020)
       cmake_policy(SET CMP0020 NEW)
     endif()
-  ENDIF()
-  SET(QT_ROOT QT_ROOT CACHE PATH "Root directory of Qt5")
+    IF(ICL_64BIT)
+      SET(_GLEW_LIB_SUF "lib/Release/x64")
+    ELSE(ICL_64BIT)
+      SET(_GLEW_LIB_SUF "lib/Release/Win32")
+    ENDIF(ICL_64BIT)
+    ICL_FIND_PACKAGE(NAME GLEW
+                     HEADERS "GL/glew.h"
+                     LIBS "glew32"
+                     LIB_PATH_SUFFIXES ${_GLEW_LIB_SUF})
+  ELSE(WIN32)
+    ICL_FIND_PACKAGE(NAME GLEW
+                     HEADERS "GL/glew.h"
+                     LIBS "GLEW")
+  ENDIF(WIN32)
   FIND_PACKAGE(OpenGL REQUIRED)
-  ICL_FIND_PACKAGE(NAME GLEW
-                   HEADERS "GL/glew.h"
-                   LIBS "GLEW")
   FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5Core REQUIRED HINTS ${QT_ROOT})
@@ -427,7 +437,9 @@ IF(BUILD_WITH_QT)
       #set(CMAKE_AUTOMOC ON)
       #set(CMAKE_INCLUDE_CURRENT_DIR ON)
       add_definitions(${Qt5Widgets_DEFINITIONS})
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+      IF(NOT WIN32)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+      ENDIF(NOT WIN32)
       
       # This creates full library paths from Qt's colon separated paths. 
       # Colon separated Qt library paths only work when Qt's find package was called.

@@ -72,11 +72,7 @@ int main (int n, char **ppc){
       image = w.grab();
       if(pa("-delete")){
         if(imageName.length()){
-#ifdef WIN32
-          int errorCode = system((string("del ") + imageName).c_str());
-#else
-          int errorCode = system((string("rm -rf ") + imageName).c_str());
-#endif
+          int errorCode = system((string(ICL_SYSTEMCALL_RM) + imageName).c_str());
           if ( errorCode != 0 )
             WARNING_LOG( "Error code of system call unequal 0!" );
         }

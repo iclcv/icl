@@ -459,7 +459,7 @@ void init(){
       SHOW(e.what());
     }catch(int){}
     
-    int systemResult = system("rm -rf /tmp/tmp-obj-file.obj");
+    int systemResult = system(string(ICL_SYSTEMCALL_RM).append("/tmp/tmp-obj-file.obj").c_str());
     (void)systemResult;
     
     enum Mode{

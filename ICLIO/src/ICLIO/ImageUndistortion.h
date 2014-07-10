@@ -65,7 +65,7 @@ namespace icl{
       /// loads ImageUndistortion from file using the istream operator
       ImageUndistortion(const std::string &filename);
       
-      /// returns curren timage size
+      /// returns current image size
       const utils::Size &getImageSize() const;
       const std::vector<double> &getParams() const;
       const std::string &getModel() const;
