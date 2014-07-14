@@ -292,6 +292,7 @@ namespace icl {
       }
 
       float getQuadRating(std::vector<Point32f> &corners) {
+        if (corners.size() != 4) return std::numeric_limits<float>::max();
         //#define USE_HOMOGRAPHY_BASED_ERROR
 #ifdef USE_HOMOGRAPHY_BASED_ERROR
         CoplanarPointPoseEstimator pe(CoplanarPointPoseEstimator::cameraFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
