@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/LensUndistortionCalibrator.cpp     **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Sergius Gaulik                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -46,17 +46,16 @@ namespace icl{
     
     struct LensUndistortionCalibrator::Data{
       std::vector<Point32f> points;
-      int nSubSets;
+      std::vector<Point32f> objPoints;
+      std::vector<int> subSetSizes;
       LensUndistortionCalibrator::GridDefinition gridDef;
       Size imageSize;
     };
       
-    LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &dims){
-      const float nx = 1./(dims.width-1.0f);
-      const float ny = 1./(dims.height-1.0f);
+    LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &dims, const utils::Size32f &size){
       for(int y=0;y<dims.height;++y){
         for(int x=0;x<dims.width;++x){
-          push_back(Point32f(float(x)*nx, float(y)*ny));
+          push_back(Point32f(float(x)*size.width, float(y)*size.height));
         }
       }
     }
@@ -67,15 +66,13 @@ namespace icl{
                           const Size32f &markerSpacing){
       const float w = markerSize.width*0.5, h = markerSize.height*0.5;
       const Point32f o(w,h);
-      const float nx = 1./((dims.width-1) * markerSpacing.width + w);
-      const float ny = 1./((dims.height-1) * markerSpacing.height + h);
       const Point32f ds[4] = { Point32f(-w, -h)+o, Point32f(w, -h)+o, Point32f(w, h)+o, Point32f(-w, h)+o };
       for(int y=0;y<dims.height;++y){
         for(int x=0;x<dims.width;++x){
           const Point32f  c(x * markerSpacing.width,
                             y * markerSpacing.height);
           for(int i=0;i<4;++i){
-            dst.push_back( (c+ds[i]).transform(nx,ny) );
+            dst.push_back(c+ds[i]);
           }
         }
       }
@@ -116,15 +113,24 @@ namespace icl{
     }
       
     void LensUndistortionCalibrator::addPoints(const std::vector<Point32f> &imagePoints){
-      ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::addPoints: instance is null"));
-      std::copy(imagePoints.begin(),imagePoints.end(), std::back_inserter(m_data->points));
-      ++m_data->nSubSets;
+      addPoints(imagePoints, m_data->gridDef);
     }
-    
+
+    void LensUndistortionCalibrator::addPoints(const std::vector<Point32f> &imagePoints, const std::vector<utils::Point32f> &gridDef){
+      ICLASSERT_THROW(m_data, ICLException("LensUndistortionCalibrator::addPoints: instance is null"));
+      ICLASSERT_THROW(imagePoints.size() == gridDef.size(),
+        ICLException("LensUndistortionCalibrator::addPoints: "
+        "number of points in the grid does not match with the number of image points"));
+      std::copy(imagePoints.begin(), imagePoints.end(), std::back_inserter(m_data->points));
+      std::copy(gridDef.begin(), gridDef.end(), std::back_inserter(m_data->objPoints));
+      m_data->subSetSizes.push_back(imagePoints.size());
+    }
+
     void LensUndistortionCalibrator::clear(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::clear: instance is null"));
       m_data->points.clear();
-      m_data->nSubSets = 0;
+      m_data->objPoints.clear();
+      m_data->subSetSizes.clear();
     }
     
     io::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){
@@ -133,22 +139,19 @@ namespace icl{
       const std::vector<Point32f> &ps = m_data->points;
       
       CvMatF O(ps.size(),3), I(ps.size(),2), intr(3,3), dist(5,1);
-      CvMatI cs(m_data->nSubSets,1);
+      CvMatI cs(m_data->subSetSizes.size(),1);
 
       for(size_t i=0;i<ps.size();++i){
-
-        int g = i % m_data->gridDef.size();
-
-        O(i,0) = m_data->gridDef[g].x;
-        O(i,1) = m_data->gridDef[g].y;
+        O(i,0) = m_data->objPoints[i].y;
+        O(i,1) = m_data->objPoints[i].x;
         O(i,2) = 0;
 
         I(i,0) = ps[i].x;
         I(i,1) = ps[i].y;
       }
       
-      for(int i=0;i<m_data->nSubSets;++i){
-        cs(i,0) = (int)m_data->gridDef.size();
+      for (int i = 0; i<m_data->subSetSizes.size(); ++i){
+        cs(i,0) = m_data->subSetSizes[i];
       }
       CvSize s = { m_data->imageSize.width, m_data->imageSize.height };
 
@@ -161,10 +164,15 @@ namespace icl{
 
       cvCalibrateCamera2(O.get(), I.get(), cs.get(), s, intr.get(), 
                          dist.get(), NULL, NULL, CV_CALIB_FIX_ASPECT_RATIO);
-      
-      std::vector<double> params(5);
+
+      std::vector<double> params(10);
+      params[0] = intr(0, 0);
+      params[1] = intr(1, 1);
+      params[2] = intr(0, 2);
+      params[3] = intr(1, 2);
+      params[4] = 0.;
       for(int i=0;i<5;++i){
-        params[i] = intr(i,0);
+        params[i+5] = dist(i,0);
       }
 
       
@@ -175,7 +183,7 @@ namespace icl{
     LensUndistortionCalibrator::Info LensUndistortionCalibrator::getInfo(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::getInfo: instance is null"));
       Info info = { m_data->imageSize, (int)m_data->points.size(), 
-                    m_data->nSubSets, m_data->gridDef };
+                    m_data->subSetSizes.size(), m_data->gridDef };
       return info;
     }
   }

@@ -37,14 +37,14 @@ int main(int n, char **ppc){
   ("-i","the first sub-argument defines the marker type (one of bch, icl1 and art). The 2nd sub-argument "
    "defines which marker to create (this is the marker ID in case of type bch and icl1 and "
    "in case of makrer type art, an image filename is expected")
-  ("-b","this is only allowed for bch markers (the detectors default value is 2)")
-  ("-r","this is only allowed for art markers (the detectors default is value is 0.4)")
+  ("-b","border width, which is only relevant for bch markers (the detectors default value is 2)")
+  ("-r","border ratio, which is only relevant for art markers (the detectors default is value is 0.4)")
   ("-o","optionally given output filename. If this is not given, the marker image is shown instead")
   ("-s","output size of the marker image");
   
 
   pa_init(n,ppc,"-id|-i(type,int) -border-size|-b(int=2) "
-          "-border-ration|-r(float=0.4) -output|-o(filename) "
+          "-border-ratio|-r(float=0.4) -output|-o(filename) "
           "-size|-s(size=300x300) "
           "-show-valid-icl1-codes");
 

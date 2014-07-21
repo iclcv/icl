@@ -50,8 +50,9 @@ namespace icl{
       
       /// creates an Undistortion instance given parameters
       /** @param model distortion mode possible values are MatlabModel5Params and SimpleARTBased
-          @param params parameters for the given model (MatlabModel5Params needs 5 parameters, 
-          SimpleARTBased needs 3 parameters)
+          @param params parameters for the given model
+            (MatlabModel5Params needs 10 parameters: fx, fy, ix, iy, skew, k1, k2, k3, k4, k5; 
+            SimpleARTBased needs 4 parameters: x, y, f, scale)
           @param imageSize underlying image size */
       ImageUndistortion(const std::string &model, const std::vector<double> &params,
                         const utils::Size &imageSize);

@@ -432,7 +432,13 @@ void init(){
                 << CheckBox("enable",true).out("enable-obj-"+str(c)).tooltip(tt)
                 << Combo(transformNameList.str() + (transformGiven?"":",id"),initIdx).handle("transform-obj-"+str(c)).tooltip(tt)
                 );
-    
+
+#ifdef WIN32
+    std::string tmpFilename("tmp-obj-file.obj");
+#else
+    std::string tmpFilename("/tmp/tmp-obj-file.obj");
+#endif
+
     try{
       std::string s;
       try{
@@ -442,11 +448,11 @@ void init(){
         throw 1;
       }
       {
-        std::ofstream obj("/tmp/tmp-obj-file.obj");
+        std::ofstream obj(tmpFilename.c_str());
         obj << s << std::endl;
       }
 
-      SceneObject *o = new SceneObject("/tmp/tmp-obj-file.obj");
+      SceneObject *o = new SceneObject(tmpFilename.c_str());
       o->setColor(Primitive::quad,GeomColor(0,100,255,100));
       o->setColor(Primitive::line,GeomColor(255,0,0,255));
       o->setVisible(Primitive::line,true);
@@ -459,7 +465,7 @@ void init(){
       SHOW(e.what());
     }catch(int){}
     
-    int systemResult = system(string(ICL_SYSTEMCALL_RM).append("/tmp/tmp-obj-file.obj").c_str());
+    int systemResult = system(string(ICL_SYSTEMCALL_RM).append(tmpFilename.c_str()).c_str());
     (void)systemResult;
     
     enum Mode{

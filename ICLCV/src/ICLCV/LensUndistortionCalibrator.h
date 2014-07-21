@@ -63,7 +63,7 @@ namespace icl{
         GridDefinition(){}
         
         /// creates a uniform grid with given dimensions
-        GridDefinition(const utils::Size &dims);
+        GridDefinition(const utils::Size &dims, const utils::Size32f &size);
         
         /// creates a non-uniform grid resulting from a set of marker corners
         GridDefinition(const utils::Size &markerGridDims, 
@@ -100,7 +100,10 @@ namespace icl{
       
       /// adds new points (the order must correspond to the GridDefinition that was provided)
       void addPoints(const std::vector<utils::Point32f> &imagePoints);
-      
+
+      /// adds new points with a given grid definition (the order must correspond to the GridDefinition that was provided)
+      void addPoints(const std::vector<utils::Point32f> &imagePoints, const std::vector<utils::Point32f> &gridDef);
+
       /// removes all points added before
       void clear();
       

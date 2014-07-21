@@ -160,7 +160,7 @@ void run(){
     }
 
     if(showIDs){
-    draw->color(0,100,255,255);
+      draw->color(0,100,255,255);
       draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9);
     }
     if(showRegionCorners){

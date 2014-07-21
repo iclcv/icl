@@ -119,10 +119,8 @@ namespace icl {
           const ImgBase *srcROIAdapted = poSrc->shallowCopy(roi);
           
           if(m_eType == tophatBorder){
-            //sub.apply(srcROIAdapted,m_openingAndClosingBuffer,ppoDst);
             sub.apply(srcROIAdapted,m_openingAndClosingBuffer,ppoDst);
           }else{
-            //sub.apply(m_openingAndClosingBuffer,srcROIAdapted,ppoDst);
             sub.apply(m_openingAndClosingBuffer,srcROIAdapted,ppoDst);
           }
   
