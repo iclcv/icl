@@ -74,9 +74,9 @@ struct MarkerInfo {
 
 struct ImageSplit {
   Mutex mutex;
-  int pos = 320;        // current position of the line
-  bool drag = false;    // shows if the line is being dragged
-  bool overlap = false; // shows if mouse is near the line
+  int pos;      // current position of the line
+  bool drag;    // shows if the line is being dragged
+  bool overlap; // shows if mouse is near the line
 } imageSplit;
 
 // mouse handling inside of the draw component
@@ -302,7 +302,6 @@ void addMarker(const std::vector<Point32f> &src, std::vector<Point32f> &dst, boo
 // This functions removes all non-unique markers
 std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
   std::vector<Fiducial> ret;
-  std::vector<int> &ids = markerInfo.markerIdList;
   std::vector<Fiducial>::const_iterator it = fids.begin();
   std::vector<Fiducial>::const_iterator prevIt = it;
 
@@ -388,21 +387,21 @@ void createObjCoords(const std::vector<Point32f> &grid,
   }
 }
 
+// comparision between two fiducial objects
+struct fidComp {
+  bool operator() (Fiducial i, Fiducial j) { return (i.getID()<j.getID()); }
+} comp;
+
 void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
   static ButtonHandle capture = gui["capture"];
   const int minMarkers = gui["minMarkers"];
   std::vector<Fiducial> fids = fid->detect(img);
 
   // first check if enough markers were found
-  if (fids.size() >= minMarkers) {
+  if ((int)fids.size() >= minMarkers) {
     std::vector<bool> foundList;
 
-    // sort detected markers
-    struct fidComp {
-      bool operator() (Fiducial &i, Fiducial &j) { return (i.getID()<j.getID()); }
-    } comp;
     std::sort(fids.begin(), fids.end(), comp);
-
     fids = removeDuplicates(fids);
 
     // second check if there are enough markers after sorting out invalid markers
@@ -452,7 +451,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
         for (std::vector<Fiducial>::const_iterator it = fids.begin(); it != fids.end(); ++it)
           lastCapturedMarkers[it->getID()] = it->getCenter2D();
 
-        for (int i = 0; i < fids.size(); ++i) {
+        for (unsigned int i = 0; i < fids.size(); ++i) {
           if (foundList[fids[i].getID()]) {
             bool lShift, rShift;
             int firstId = fids[i].getID();
@@ -569,7 +568,7 @@ void init(){
     std::sort(idList.begin(), idList.end());
 
     s = pa("-g").as<Size>();
-    if (s.width*s.height != idList.size())
+    if (s.width*s.height != (int)idList.size())
       throw ICLException("the number of markers must be equal to the grid size");
 
     fid = new FiducialDetector(pa("-m").as<std::string>(),
