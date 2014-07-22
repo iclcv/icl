@@ -105,6 +105,9 @@ namespace icl{
       explicit WarpOp(const core::Img32f &warpMap=core::Img32f(), 
                       core::scalemode mode=core::interpolateLIN,
                       bool allowWarpMapScaling=true);
+
+      /// Destructor
+      ~WarpOp();
       
       /// Sets a new scalemode (either interpolateLIN or interpolateNN)    
       void setScaleMode(core::scalemode scaleMode);
@@ -136,6 +139,10 @@ namespace icl{
       core::Img32f m_warpMap;
       core::Img32f m_scaledWarpMap;
       core::scalemode m_scaleMode;
+#ifdef ICL_HAVE_OPENCL
+      struct CLWarp; // forward declaration
+      CLWarp *m_clWarp;
+#endif
     };
   
   
