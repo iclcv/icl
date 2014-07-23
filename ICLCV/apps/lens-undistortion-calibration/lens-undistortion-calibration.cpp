@@ -226,57 +226,58 @@ const ImgBase *getSplitImage(const ImgBase *image) {
   else return image;
 }
 
-// This function sets bool values indicating if the first value
-// of a given vector is the top left corner of a marker.
-void detectPointOrder(const std::vector<Point32f> &left,
-                      const std::vector<Point32f> &right,
-                      bool &lShift, bool &rShift) {
-  Point32f p[4];
-  float d[4];
-  int iMin = 0;
-  lShift = false;
-  rShift = false;
+// Returns a value between 0 and 1, which shows parallelism
+// of two point vectors. 1 indicates total parallelism and
+// 0 orthogonality.
+inline float getParaValue(const Point32f &p0, const Point32f &p1) {
+  float a, b;
+  a = p0.x * p1.x + p0.y * p1.y;
+  a *= a;
+  b = p0.x * p0.x + p0.y * p0.y;
+  b *= p1.x * p1.x + p1.y * p1.y;
 
-  p[0] = left[0] - right[0];
-  p[1] = left[0] - right[3];
-  p[2] = left[1] - right[0];
-  p[3] = left[1] - right[3];
+  return a / b;
+}
 
-  for (int i = 0; i < 4; ++i)
-    d[i] = pow(p[i].x, 2) + pow(p[i].y, 2);
+// This function sets a bool value indicating if the first value
+// of the first marker corner is the top right one.
+void detectFirstPointOrder(const Fiducial &left,
+                           const Fiducial &right,
+                           bool &shift) {
+  shift = false;
+  const std::vector<Point32f> &corners = left.getCorners2D();
+  Point32f d0 = right.getCenter2D() - left.getCenter2D();
+  Point32f d1 = corners[1] - corners[0];
 
-  for (int i = 1; i < 4; ++i)
-    if (d[i] < d[iMin]) iMin = i;
-
-  switch (iMin) {
-  case 0:
-    lShift = true;
-    break;
-  case 1:
-    lShift = true;
-    rShift = true;
-    break;
-  case 3:
-    rShift = true;
-    break;
-  default:
-    break;
+  float para = getParaValue(d0, d1);
+  if (para > 0.75f) {
+    // first corner point is the upper left one
+  } else if (para < 0.25) {
+    // last corner point is the upper left one
+    shift = true;
+  } else {
+    // need more testing to be sure about the corner order
+    d1 = corners[0] - corners[3];
+    if (getParaValue(d0, d1) > 0.5f) {
+      // last corner point is the upper left one
+      shift = true;
+    }
   }
 }
 
-// This function sets bool values indicating if the first value
-// of a given vector is the top left corner of a marker.
-// In contrast to the function "detectPointOrder" the order of
-// left marker is known here.
-void detectNextPointOrder(const std::vector<Point32f> &left,
-                          const std::vector<Point32f> &right,
+// This function sets a bool value for the right marker indicating
+// if the first corner is the top right one.
+// The bool value for the left corner is known.
+void detectNextPointOrder(const Fiducial &left,
+                          const Fiducial &right,
                           bool &lShift, bool &rShift) {
+  const std::vector<Point32f> &rCorners = right.getCorners2D();
   rShift = false;
 
-  const Point32f &lPoint = left[(int)(!lShift)];
+  const Point32f &lPoint = left.getCorners2D()[(int)(!lShift)];
 
-  Point32f p0 = lPoint - right[0];
-  Point32f p1 = lPoint - right[3];
+  Point32f p0 = lPoint - rCorners[0];
+  Point32f p1 = lPoint - rCorners[3];
 
   if (pow(p1.x, 2) + pow(p1.y, 2) < pow(p0.x, 2) + pow(p0.y, 2))
     rShift = true;
@@ -455,20 +456,15 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
           if (foundList[fids[i].getID()]) {
             bool lShift, rShift;
             int firstId = fids[i].getID();
-            const std::vector<Point32f> *left = &fids[i++].getCorners2D();
-            const std::vector<Point32f> *right = &fids[i].getCorners2D();
 
-            detectPointOrder(*left, *right, lShift, rShift);
-            addMarker(*left, corners, lShift);
-            addMarker(*right, corners, rShift);
+            detectFirstPointOrder(fids[i], fids[i+1], lShift);
+            addMarker(fids[i].getCorners2D(), corners, lShift);
 
             while ((i + 1 < fids.size()) && (fids[i + 1].getID() - firstId < grid.width)) {
+              detectNextPointOrder(fids[i], fids[i+1], lShift, rShift);
               i++;
+              addMarker(fids[i].getCorners2D(), corners, rShift);
               lShift = rShift;
-              left = right;
-              right = &fids[i].getCorners2D();
-              detectNextPointOrder(*left, *right, lShift, rShift);
-              addMarker(*right, corners, rShift);
             }
           }
         }
