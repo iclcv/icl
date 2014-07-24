@@ -43,6 +43,7 @@
 #include <ICLGeom/CoplanarPointPoseEstimator.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
+#include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
 using namespace icl::utils;
 using namespace icl::qt;
@@ -65,7 +66,6 @@ std::map<int,Point32f> lastCapturedMarkers;
 ImgBase *splitImage = 0;
 WarpOp warp;
 FiducialDetector *fid = 0;
-FiducialDetector fid2;
 
 struct MarkerInfo {
   std::vector<int> markerIdList;
@@ -110,21 +110,6 @@ void splitImageMouse(const MouseEvent &e) {
     imageSplit.drag = false;
 
   imageSplit.mutex.unlock();
-}
-
-// GUI elements can only be changed in the GUI thread
-void enableButton(const std::string s, const bool b) {
-  struct EnableEvent : public ICLApplication::AsynchronousEvent{
-    const std::string name;
-    const bool b;
-    EnableEvent(const std::string s, const bool b) : name(s), b(b) {};
-    void execute() {
-      if (b) gui[name].enable();
-      else gui[name].disable();
-    }
-  };
-  ICLApplication *app = ICLApplication::instance();
-  if (app)app->executeInGUIThread(new EnableEvent(s, b), false);
 }
 
 void save_params(){
@@ -185,8 +170,8 @@ void resetData() {
   calib.clear();
   udist = ImageUndistortion();
 
-  enableButton("calibrate", false);
-  enableButton("save", false);
+  gui["calibrate"].disable();
+  gui["save"].disable();
 
   vecDraw->render();
 }
@@ -487,7 +472,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
         };
         scene.addObject(new LineStrip(ps));
 
-        enableButton("calibrate", true);
+        gui["calibrate"].enable();
       }
     }
   }
@@ -536,13 +521,14 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
         }
       };
       scene.addObject(new LineStrip(ps));
-      enableButton("calibrate", true);
+      gui["calibrate"].enable();
     }
   }
 }
 
 void init(){
   int maxMarkers = 5;
+  string dStr;
 
   grabber.init(pa("-i"));
   if(pa("-s")){
@@ -551,12 +537,15 @@ void init(){
   const ImgBase *image = grabber.grab();
   
   if(pa("-cb")){
+    dStr = string("checker board detection");
     grabber.useDesired(depth8u);
     checker.init(pa("-cb").as<Size>());
     Size s = pa("-cb").as<Size>();
     Size r = pa("-r").as<Size>();
     calib.init(image->getSize(), LensUndistortionCalibrator::GridDefinition(s, Size(r.width / s.width, r.height / s.height)));
+    checker.setConfigurableID("detectionProps");
   }else if (pa("-m")) {
+    dStr = string("quad detection");
     std::vector<int> &idList = markerInfo.markerIdList;
     Size &s = markerInfo.gridSize;
 
@@ -573,6 +562,9 @@ void init(){
     calib.init(image->getSize(), LensUndistortionCalibrator::GridDefinition(pa("-g").as<Size>(), pa("-m", 2).as<Size>(), pa("-sp").as<Size>()));
 
     maxMarkers = s.width*s.height;
+
+    QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
+    qd.setConfigurableID("detectionProps");
   } else {
     throw ICLException("other modes than checkerboard and markers "
                        "detection are not yet supported");
@@ -595,8 +587,8 @@ void init(){
            << Button("calibrate").handle("calibrate")
            << Button("save").handle("save")
            << Button("reset").handle("reset")
-           << Prop(checker).hideIf(checker.isNull()).label("checker board detection")
            << Slider(5, maxMarkers, maxMarkers).hideIf(!fid).out("minMarkers").label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")
+           << Prop("detectionProps").label(dStr.c_str())
          )
       << Show();
 
@@ -640,7 +632,6 @@ void run(){
   static DrawHandle draw = gui["image"];
   static DrawHandle vecDraw = gui["vecImage"];
   const bool detection   = gui["detection"];
-  //const std::string &detectionType = gui["detectionType"];
 
   // handle reset button
   if (reset.wasTriggered()) {
@@ -664,11 +655,9 @@ void run(){
   draw->linewidth(1);
 
   if (detection) {
-    //if (!detectionType.compare("markers")) {
     if (fid) {
       handleMarkerDetection(img, draw);
     }
-    //} else if (!detectionType.compare("checkerboard") && !checker.isNull()) {
     if (!checker.isNull()) {
       handleCheckerboardDetection(img, draw);
     }
@@ -678,7 +667,7 @@ void run(){
   if(calibrate.wasTriggered()){
     udist = calib.computeUndistortion();
     SHOW(udist);
-    enableButton("save", true);
+    gui["save"].enable();
 
     const Img32f &mapping = udist.createWarpMap();
     warp.setWarpMap(mapping);

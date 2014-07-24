@@ -61,12 +61,15 @@ namespace icl{
           "    const int w = get_global_size(0);                                      \n"
           "    const int h = get_global_size(1);                                      \n"
           "    if(x && y && x<w-1 && y<h-1) {                                         \n"
-          "      const sampler_t sampler= CLK_NORMALIZED_COORDS_FALSE |               \n"
-          "                               CLK_ADDRESS_CLAMP |                         \n"
-          "                               CLK_FILTER_LINEAR;                          \n"
+          "      const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE |              \n"
+          "                                CLK_ADDRESS_CLAMP |                        \n"
+          "                                CLK_FILTER_LINEAR;                         \n"
+          "      const sampler_t samplerN = CLK_NORMALIZED_COORDS_FALSE |             \n"
+          "                                 CLK_ADDRESS_CLAMP |                       \n"
+          "                                 CLK_FILTER_NEAREST;                       \n"
           "      float4 fX = read_imagef(warpX, sampler, (int2)(x,y));                \n"
           "      float4 fY = read_imagef(warpY, sampler, (int2)(x,y));                \n"
-          "      uint4 inPixel = read_imageui(in, sampler, (float2)(fX.s0, fY.s0));   \n"
+          "      uint4 inPixel = read_imageui(in, samplerN, (float2)(fX.s0, fY.s0));  \n"
           "      write_imageui(out, (int2)(x,y), inPixel.s0);                         \n"
           "  }                                                                        \n"
           "}                                                                          \n");
@@ -96,7 +99,7 @@ namespace icl{
         cl_filter_mode filterMode;
         int w = src->getWidth();
         int h = src->getHeight();
-
+        
         if (mode == interpolateNN)
           filterMode = CL_FILTER_NEAREST;
         else if (mode == interpolateLIN)
@@ -304,9 +307,9 @@ namespace icl{
       }
 
   #ifdef ICL_HAVE_OPENCL
-      // the written kernel of CLWarp supports only uint values;
-      // for other types you have to change the function "read_imageui" in the kernel
-      if (src->getDepth() == 0) {
+      // the written kernel of CLWarp supports only uint values and linear interpolation;
+      // TODO: create CLSampler for diffrent interpolation methods
+      if (src->getDepth() == 0 && m_scaleMode == interpolateLIN) {
         m_clWarp->apply(cwm, src, *dst, m_scaleMode);
         return;
       }

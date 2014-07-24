@@ -48,7 +48,7 @@ namespace cl{
 
 namespace icl {
   namespace utils {
-    /// Wrapper for an OpenCL Kernels
+    /// Wrapper for an OpenCL Kernel
     /** A Kernel is a callable OpenCL function. CLKernel instances can
         only be created by CLProgram instances. Please refer to the CLProgram
         reference for further details.
