@@ -211,80 +211,6 @@ const ImgBase *getSplitImage(const ImgBase *image) {
   else return image;
 }
 
-// Returns a value between 0 and 1, which shows parallelism
-// of two point vectors. 1 indicates total parallelism and
-// 0 orthogonality.
-inline float getParaValue(const Point32f &p0, const Point32f &p1) {
-  float a, b;
-  a = p0.x * p1.x + p0.y * p1.y;
-  a *= a;
-  b = p0.x * p0.x + p0.y * p0.y;
-  b *= p1.x * p1.x + p1.y * p1.y;
-
-  return a / b;
-}
-
-// This function sets a bool value indicating if the first value
-// of the first marker corner is the top right one.
-void detectFirstPointOrder(const Fiducial &left,
-                           const Fiducial &right,
-                           bool &shift) {
-  shift = false;
-  const std::vector<Point32f> &corners = left.getCorners2D();
-  Point32f d0 = right.getCenter2D() - left.getCenter2D();
-  Point32f d1 = corners[1] - corners[0];
-
-  float para = getParaValue(d0, d1);
-  if (para > 0.75f) {
-    // first corner point is the upper left one
-  } else if (para < 0.25) {
-    // last corner point is the upper left one
-    shift = true;
-  } else {
-    // need more testing to be sure about the corner order
-    d1 = corners[0] - corners[3];
-    if (getParaValue(d0, d1) > 0.5f) {
-      // last corner point is the upper left one
-      shift = true;
-    }
-  }
-}
-
-// This function sets a bool value for the right marker indicating
-// if the first corner is the top right one.
-// The bool value for the left corner is known.
-void detectNextPointOrder(const Fiducial &left,
-                          const Fiducial &right,
-                          bool &lShift, bool &rShift) {
-  const std::vector<Point32f> &rCorners = right.getCorners2D();
-  rShift = false;
-
-  const Point32f &lPoint = left.getCorners2D()[(int)(!lShift)];
-
-  Point32f p0 = lPoint - rCorners[0];
-  Point32f p1 = lPoint - rCorners[3];
-
-  if (pow(p1.x, 2) + pow(p1.y, 2) < pow(p0.x, 2) + pow(p0.y, 2))
-    rShift = true;
-}
-
-// This function adds image coordinates of a marker to the vector "dst".
-// The top left marker corner is added first and then the other corners
-// in clockwise order.
-void addMarker(const std::vector<Point32f> &src, std::vector<Point32f> &dst, bool shift) {
-  if (shift) {
-    dst.push_back(src[3]);
-    dst.push_back(src[0]);
-    dst.push_back(src[1]);
-    dst.push_back(src[2]);
-  }
-  else {
-    for (std::vector<Point32f>::const_iterator it = src.begin(); it != src.end(); ++it) {
-      dst.push_back(*it);
-    }
-  }
-}
-
 // This functions removes all non-unique markers
 std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
   std::vector<Fiducial> ret;
@@ -307,12 +233,9 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
   return ret;
 }
 
-// This functions checks if the found markers can be processed further.
-// There must be at least two markers in a row for a correct transformation
-// from image to object coordinates.
-// For each id from the global vector "markerIdList" the vector "foundList"
-// will show if vector "fids" contains a marker with this id
-int getValidMarkers(const std::vector<Fiducial> &fids, std::vector<bool> &foundList) {
+// For every id in "markerIdList" this function creates a list
+// of bool values indicating if the marker was found
+int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundList) {
   int validMarkers = 0;
   int lastFoundPos;
   Size &s = markerInfo.gridSize;
@@ -322,24 +245,13 @@ int getValidMarkers(const std::vector<Fiducial> &fids, std::vector<bool> &foundL
   foundList = std::vector<bool>(s.width*s.height, false);
 
   for (int y = 0; y < s.height && it != fids.end(); ++y) {
-    int count = 0;
-
     for (int x = 0; x < s.width; ++x) {
       int pos = x + y*s.width;
 
       if (it != fids.end() && ids[pos] == it->getID()) {
         foundList[pos] = true;
         it++;
-        count++;
-        validMarkers++;
-        lastFoundPos = pos;
       }
-    }
-
-    // remove the only marker in the current row
-    if (count == 1) {
-      validMarkers--;
-      foundList[lastFoundPos] = false;
     }
   }
 
@@ -391,19 +303,17 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
     fids = removeDuplicates(fids);
 
     // second check if there are enough markers after sorting out invalid markers
-    if (getValidMarkers(fids, foundList) >= minMarkers) {
+    if (fids.size() >= minMarkers) {
       const bool autoCapture = gui["autoCapture"];
       const float displacement = gui["captureDis"];
       float diff = -1.f;
 
       // visualize markers
       for (unsigned int i = 0; i < fids.size(); ++i){
-        if (foundList[fids[i].getID()]) {
-          draw->color(255, 0, 0, 255);
-          draw->linestrip(fids[i].getCorners2D());
-          draw->color(0, 100, 255, 255);
-          draw->text(fids[i].getName(), fids[i].getCenter2D().x, fids[i].getCenter2D().y, 9);
-        }
+        draw->color(255, 0, 0, 255);
+        draw->linestrip(fids[i].getCorners2D());
+        draw->color(0, 100, 255, 255);
+        draw->text(fids[i].getName(), fids[i].getCenter2D().x, fids[i].getCenter2D().y, 9);
       }
 
       // if automatic capturing is on, calculate the current displacement
@@ -433,28 +343,22 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
         std::vector<Point32f> corners;
         LensUndistortionCalibrator::Info info = calib.getInfo();
         Size &grid = markerInfo.gridSize;
+        std::vector<Fiducial>::const_iterator it = fids.begin();
 
-        for (std::vector<Fiducial>::const_iterator it = fids.begin(); it != fids.end(); ++it)
+        for (; it != fids.end(); ++it)
           lastCapturedMarkers[it->getID()] = it->getCenter2D();
 
-        for (unsigned int i = 0; i < fids.size(); ++i) {
-          if (foundList[fids[i].getID()]) {
-            bool lShift, rShift;
-            int firstId = fids[i].getID();
-
-            detectFirstPointOrder(fids[i], fids[i+1], lShift);
-            addMarker(fids[i].getCorners2D(), corners, lShift);
-
-            while ((i + 1 < fids.size()) && (fids[i + 1].getID() - firstId < grid.width)) {
-              detectNextPointOrder(fids[i], fids[i+1], lShift, rShift);
-              i++;
-              addMarker(fids[i].getCorners2D(), corners, rShift);
-              lShift = rShift;
-            }
-          }
+        for (it = fids.begin(); it != fids.end(); ++it) {
+          const std::vector<Fiducial::KeyPoint> &points = it->getKeyPoints2D();
+          corners.push_back(points[3].imagePos);
+          corners.push_back(points[0].imagePos);
+          corners.push_back(points[1].imagePos);
+          corners.push_back(points[2].imagePos);
         }
 
+        createFoundList(fids, foundList);
         createObjCoords(info.gridDef, foundList, obj);
+        std::cout << corners.size() << " " << obj.size() << std::endl;
         ICLASSERT(corners.size() == obj.size());
 
         calib.addPoints(corners, obj);
@@ -692,7 +596,20 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-input|-i(2) -checkerboard|-cb(WxH) "
+  pa_explain
+    ("-i", "The first sub-argument defines the input device type. "
+    "The 2nd sub-argument defines the id of the device.")
+    ("-cb", "If defined the application will use a checker board for the calibration. "
+    "The argument defines the grid size.")
+    ("-r", "dimension of the checker board in milimeter")
+    ("-m", "The first sub-argument defines the marker type. "
+    "The second one defines the marker ids, for which the application will search for."
+    "(number of ids should match the marker grid size)"
+    "The last argument defines the size of one marker in milimeter.")
+    ("-g", "size of the marker grid")
+    ("-sp", "spacing between markers")
+    ("-s", "output size of the input image");
+  return ICLApp(n,ppc,"[m]-input|-i(2) -checkerboard|-cb(WxH) "
                 "-real-checkerboard-dim-mm|-r(WxH=240x180) "
                 "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) "
                 "-marker-spacing|-sp(WxH=35x35) -marker-grid|-g(WxH=4x3) "
