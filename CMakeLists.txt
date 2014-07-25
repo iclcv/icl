@@ -426,6 +426,7 @@ IF(BUILD_WITH_QT)
                      HEADERS "GL/glew.h"
                      LIBS "GLEW")
   ENDIF(WIN32)
+  MESSAGE(STATUS "qtroot: is ${QT_ROOT} ################################")
   FIND_PACKAGE(OpenGL REQUIRED)
   FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})

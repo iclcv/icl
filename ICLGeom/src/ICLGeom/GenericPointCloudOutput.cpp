@@ -60,10 +60,12 @@ namespace icl{
 
     GenericPointCloudOutput::GenericPointCloudOutput(const std::string &sourceType, 
                                                        const std::string &srcDescription):m_data(new Data){
+      m_data->impl = 0;
       init(sourceType,srcDescription);
     }
 
-    GenericPointCloudOutput::GenericPointCloudOutput(const ProgArg &pa){
+    GenericPointCloudOutput::GenericPointCloudOutput(const ProgArg &pa):m_data(new Data){
+      m_data->impl = 0;
       init(pa[0],pa[1]);
     }
     
