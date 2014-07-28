@@ -123,8 +123,8 @@ namespace icl{
           if(o.supports(PointCloudObjectBase::X)){                      \
             const icl8u *s = dev.sourceFor(f,nBytes);                   \
             core::DataSegment<icl##D,N> src((icl##D*)s,                 \
-                                      N*sizeof(icl##D),                 \
-                                      dim, o.getSize().width);          \
+                                            N*sizeof(icl##D),           \
+                                            dim, mi.width);             \
             src.deepCopy(o.select##X());                                \
           }                                                             \
           continue;                                                     \
