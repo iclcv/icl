@@ -150,7 +150,7 @@ namespace icl{
         I(i,1) = ps[i].y;
       }
       
-      for (int i = 0; i<m_data->subSetSizes.size(); ++i){
+      for (unsigned int i = 0; i<m_data->subSetSizes.size(); ++i){
         cs(i,0) = m_data->subSetSizes[i];
       }
       CvSize s = { m_data->imageSize.width, m_data->imageSize.height };
@@ -183,7 +183,7 @@ namespace icl{
     LensUndistortionCalibrator::Info LensUndistortionCalibrator::getInfo(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::getInfo: instance is null"));
       Info info = { m_data->imageSize, (int)m_data->points.size(), 
-                    m_data->subSetSizes.size(), m_data->gridDef };
+                    (int)m_data->subSetSizes.size(), m_data->gridDef };
       return info;
     }
   }

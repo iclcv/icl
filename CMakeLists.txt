@@ -455,14 +455,19 @@ IF(BUILD_WITH_QT)
         get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
-        
+        get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
+        IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+          get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} PATH)
+        ELSE()
+          get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
+        ENDIF()
         # For some reason cmake does not add library paths to rpath when they end 
         # with a number like libQt5Core.so.5. Changing the linked libraries to the
         # simple .so resolves this problem.
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5CoreLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5OpenGLLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5WidgetsLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_qt5Core_install_prefix}/lib/${ICLQt5GuiLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5CoreLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5OpenGLLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5WidgetsLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5GuiLib}")
       ENDIF(WIN32)
 
       SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})

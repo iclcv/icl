@@ -237,7 +237,6 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
 // of bool values indicating if the marker was found
 int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundList) {
   int validMarkers = 0;
-  int lastFoundPos;
   Size &s = markerInfo.gridSize;
   std::vector<int> &ids = markerInfo.markerIdList;
   std::vector<Fiducial>::const_iterator it = fids.begin();
@@ -303,7 +302,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
     fids = removeDuplicates(fids);
 
     // second check if there are enough markers after sorting out invalid markers
-    if (fids.size() >= minMarkers) {
+    if ((int)fids.size() >= minMarkers) {
       const bool autoCapture = gui["autoCapture"];
       const float displacement = gui["captureDis"];
       float diff = -1.f;
