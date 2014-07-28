@@ -113,6 +113,7 @@ namespace icl{
         return;
       }
       lock();
+      
       if(t == Normal && ! m_hasNormals){
         m_hasNormals = true;
         m_normals.resize(getDim());
@@ -137,7 +138,9 @@ namespace icl{
     }
     
     int PointCloudObject::getDim() const{
-      return m_dim2D.getDim();
+      // we need abs here, since un-organized point clouds would have
+      // a negative dim otherwise ...
+      return abs(m_dim2D.getDim());
     }
   
     DataSegment<float,3> PointCloudObject::selectXYZ(){

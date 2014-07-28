@@ -38,6 +38,7 @@ namespace icl{
       MandatoryInfo mi = { 0, 0, 
                            o.isOrganized(), 
                            o.getTime().toMicroSeconds() };
+      
       if(mi.organized){
         Size s = o.getSize();
         mi.width = s.width;
@@ -53,7 +54,7 @@ namespace icl{
 #define CPY(X,D,N)                                                      \
       {                                                                 \
         icl8u *d  = dev.targetFor(#X,dim*sizeof(icl##D)*N);             \
-        core::DataSegment<icl##D,N> dst((icl##D*)d, N*sizeof(icl##D), dim, o.getSize().width); \
+        core::DataSegment<icl##D,N> dst((icl##D*)d, N*sizeof(icl##D), dim, mi.width); \
         o.select##X().deepCopy(dst);                                    \
       }
 
