@@ -95,16 +95,16 @@ namespace icl{
       // ++ conditions ++ //
 
       template<class T>
-      inline T sse_if(const T &vIf, T v0) {
-        v0 &= vIf;
-        return v0;
+      inline T sse_if(const T &vIf, const T &v0) {
+        T ret = (v0 & vIf);
+        return ret;
       }
 
       template<class T>
-      inline T sse_ifelse(const T &vIf, T v0, T &v1) {
-        v0 &= vIf;
-        v0 += andnot(v1, vIf);
-        return v0;
+      inline T sse_ifelse(const T &vIf, const T &v0, const T &v1) {
+        T ret = (v0 & vIf);
+        ret += andnot(v1, vIf);
+        return ret;
       }
 
       // -- conditions -- //

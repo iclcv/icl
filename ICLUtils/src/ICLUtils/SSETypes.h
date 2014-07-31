@@ -30,7 +30,6 @@
 
 #pragma once
 
-#ifndef WIN32
 #ifdef ICL_USE_SSE
   #if defined __SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2)
     #include "emmintrin.h"
@@ -44,7 +43,6 @@
       #endif
     #endif
   #endif
-#endif
 #endif
 
 #include <ICLUtils/CompatMacros.h>
@@ -1514,333 +1512,387 @@ namespace icl{
 
       // ++ operations on SSE types ++ //
 
-      // ++ arithmetic oparations ++ //
+      // ++ arithmetic operations ++ //
 
-      inline icl128 operator+(icl128 lv, const icl128 &rv) {
-        return lv += rv;
+      inline icl128 operator+(const icl128 &lv, const icl128 &rv) {
+        icl128 ret = lv;
+        return ret += rv;
       }
 
-      inline icl128 operator-(icl128 lv, const icl128 &rv) {
-        return lv -= rv;
+      inline icl128 operator-(const icl128 &lv, const icl128 &rv) {
+        icl128 ret = lv;
+        return ret -= rv;
       }
 
-      inline icl128 operator*(icl128 lv, const icl128 &rv) {
-        return lv *= rv;
+      inline icl128 operator*(const icl128 &lv, const icl128 &rv) {
+        icl128 ret = lv;
+        return ret *= rv;
       }
 
-      inline icl128 operator/(icl128 lv, const icl128 &rv) {
-        return lv /= rv;
+      inline icl128 operator/(const icl128 &lv, const icl128 &rv) {
+        icl128 ret = lv;
+        return ret /= rv;
       }
 
-      inline icl256 operator+(icl256 lv, const icl256 &rv) {
-        return lv += rv;
+      inline icl256 operator+(const icl256 &lv, const icl256 &rv) {
+        icl256 ret = lv;
+        return ret += rv;
       }
 
-      inline icl256 operator-(icl256 lv, const icl256 &rv) {
-        return lv -= rv;
+      inline icl256 operator-(const icl256 &lv, const icl256 &rv) {
+        icl256 ret = lv;
+        return ret -= rv;
       }
 
-      inline icl256 operator*(icl256 lv, const icl256 &rv) {
-        return lv *= rv;
+      inline icl256 operator*(const icl256 &lv, const icl256 &rv) {
+        icl256 ret = lv;
+        return ret *= rv;
       }
 
-      inline icl256 operator/(icl256 lv, const icl256 &rv) {
-        return lv /= rv;
+      inline icl256 operator/(const icl256 &lv, const icl256 &rv) {
+        icl256 ret = lv;
+        return ret /= rv;
       }
 
-      inline icl512 operator+(icl512 lv, const icl512 &rv) {
-        return lv += rv;
+      inline icl512 operator+(const icl512 &lv, const icl512 &rv) {
+        icl512 ret = lv;
+        return ret += rv;
       }
 
-      inline icl512 operator-(icl512 lv, const icl512 &rv) {
-        return lv -= rv;
+      inline icl512 operator-(const icl512 &lv, const icl512 &rv) {
+        icl512 ret = lv;
+        return ret -= rv;
       }
 
-      inline icl512 operator*(icl512 lv, const icl512 &rv) {
-        return lv *= rv;
+      inline icl512 operator*(const icl512 &lv, const icl512 &rv) {
+        icl512 ret = lv;
+        return ret *= rv;
       }
 
-      inline icl512 operator/(icl512 lv, const icl512 &rv) {
-        return lv /= rv;
+      inline icl512 operator/(const icl512 &lv, const icl512 &rv) {
+        icl512 ret = lv;
+        return ret /= rv;
       }
 
-      // -- arithmetic oparations -- //
+      // -- arithmetic operations -- //
 
-      // ++ comparison oparations ++ //
+      // ++ comparison operations ++ //
 
-      inline icl128 operator==(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator==(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator!=(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator!=(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator<(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator<(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator>(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator>(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator<=(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmple_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator<=(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmple_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator>=(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator>=(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl256 operator==(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpeq_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator==(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpeq_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator!=(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpneq_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator!=(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpneq_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator<(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmplt_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator<(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmplt_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator>(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpgt_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator>(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpgt_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator<=(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmple_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmple_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator<=(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmple_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmple_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator>=(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpge_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator>=(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpge_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl512 operator==(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpeq_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmpeq_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmpeq_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator==(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmpeq_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpeq_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmpeq_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmpeq_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator!=(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpneq_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmpneq_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmpneq_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator!=(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmpneq_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpneq_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmpneq_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmpneq_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator<(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmplt_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmplt_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmplt_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator<(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmplt_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmplt_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmplt_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmplt_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator>(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpgt_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmpgt_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmpgt_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator>(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmpgt_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpgt_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmpgt_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmpgt_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator<=(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmple_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmple_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmple_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmple_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator<=(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmple_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmple_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmple_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmple_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator>=(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_cmpge_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_cmpge_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_cmpge_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator>=(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_cmpge_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_cmpge_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_cmpge_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_cmpge_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      // -- comparison oparations -- //
+      // -- comparison operations -- //
 
-      // ++ logical oparations ++ //
+      // ++ logical operations ++ //
 
-      inline icl128 operator&(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_and_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator&(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_and_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator|(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_or_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator|(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_or_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 operator^(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_xor_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 operator^(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_xor_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 andnot(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_andnot_ps(rv.v0, lv.v0);
-        return lv;
+      inline icl128 andnot(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_andnot_ps(rv.v0, lv.v0);
+        return ret;
       }
 
-      inline icl128i operator&(icl128i lv, const icl128i &rv) {
-        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
-        return lv;
+      inline icl128i operator&(const icl128i &lv, const icl128i &rv) {
+        icl128i ret;
+        ret.v0 = _mm_and_si128(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i operator|(icl128i lv, const icl128i &rv) {
-        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
-        return lv;
+      inline icl128i operator|(const icl128i &lv, const icl128i &rv) {
+        icl128i ret;
+        ret.v0 = _mm_or_si128(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i operator^(icl128i lv, const icl128i &rv) {
-        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
-        return lv;
+      inline icl128i operator^(const icl128i &lv, const icl128i &rv) {
+        icl128i ret;
+        ret.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i andnot(icl128i lv, const icl128i &rv) {
-        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
-        return lv;
+      inline icl128i andnot(const icl128i &lv, const icl128i &rv) {
+        icl128i ret;
+        ret.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        return ret;
       }
 
-      inline icl256 operator&(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_and_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_and_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator&(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_and_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_and_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator|(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_or_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_or_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator|(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_or_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_or_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 operator^(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_xor_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_xor_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 operator^(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_xor_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_xor_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 andnot(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_andnot_ps(rv.v0, lv.v0);
-        lv.v1 = _mm_andnot_ps(rv.v1, lv.v1);
-        return lv;
+      inline icl256 andnot(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_andnot_ps(rv.v0, lv.v0);
+        ret.v1 = _mm_andnot_ps(rv.v1, lv.v1);
+        return ret;
       }
 
-      inline icl256i operator&(icl256i lv, const icl256i &rv) {
-        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_and_si128(lv.v1, rv.v1);
-        return lv;
+      inline icl256i operator&(const icl256i &lv, const icl256i &rv) {
+        icl256i ret;
+        ret.v0 = _mm_and_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_and_si128(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256i operator|(icl256i lv, const icl256i &rv) {
-        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_or_si128(lv.v1, rv.v1);
-        return lv;
+      inline icl256i operator|(const icl256i &lv, const icl256i &rv) {
+        icl256i ret;
+        ret.v0 = _mm_or_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_or_si128(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256i operator^(icl256i lv, const icl256i &rv) {
-        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_xor_si128(lv.v1, rv.v1);
-        return lv;
+      inline icl256i operator^(const icl256i &lv, const icl256i &rv) {
+        icl256i ret;
+        ret.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_xor_si128(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256i andnot(icl256i lv, const icl256i &rv) {
-        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
-        lv.v1 = _mm_andnot_si128(rv.v1, lv.v1);
-        return lv;
+      inline icl256i andnot(const icl256i &lv, const icl256i &rv) {
+        icl256i ret;
+        ret.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        ret.v1 = _mm_andnot_si128(rv.v1, lv.v1);
+        return ret;
       }
 
-      inline icl512 operator&(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_and_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_and_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_and_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_and_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator&(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_and_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_and_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_and_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_and_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator|(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_or_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_or_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_or_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_or_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator|(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_or_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_or_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_or_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_or_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 operator^(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_xor_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_xor_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_xor_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_xor_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 operator^(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_xor_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_xor_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_xor_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_xor_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 andnot(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_andnot_ps(rv.v0, lv.v0);
-        lv.v1 = _mm_andnot_ps(rv.v1, lv.v1);
-        lv.v2 = _mm_andnot_ps(rv.v2, lv.v2);
-        lv.v3 = _mm_andnot_ps(rv.v3, lv.v3);
-        return lv;
+      inline icl512 andnot(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_andnot_ps(rv.v0, lv.v0);
+        ret.v1 = _mm_andnot_ps(rv.v1, lv.v1);
+        ret.v2 = _mm_andnot_ps(rv.v2, lv.v2);
+        ret.v3 = _mm_andnot_ps(rv.v3, lv.v3);
+        return ret;
       }
 
-      inline icl512i operator&(icl512i lv, const icl512i &rv) {
-        lv.v0 = _mm_and_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_and_si128(lv.v1, rv.v1);
-        lv.v2 = _mm_and_si128(lv.v2, rv.v2);
-        lv.v3 = _mm_and_si128(lv.v3, rv.v3);
-        return lv;
+      inline icl512i operator&(const icl512i &lv, const icl512i &rv) {
+        icl512i ret;
+        ret.v0 = _mm_and_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_and_si128(lv.v1, rv.v1);
+        ret.v2 = _mm_and_si128(lv.v2, rv.v2);
+        ret.v3 = _mm_and_si128(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512i operator|(icl512i lv, const icl512i &rv) {
-        lv.v0 = _mm_or_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_or_si128(lv.v1, rv.v1);
-        lv.v2 = _mm_or_si128(lv.v2, rv.v2);
-        lv.v3 = _mm_or_si128(lv.v3, rv.v3);
-        return lv;
+      inline icl512i operator|(const icl512i &lv, const icl512i &rv) {
+        icl512i ret;
+        ret.v0 = _mm_or_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_or_si128(lv.v1, rv.v1);
+        ret.v2 = _mm_or_si128(lv.v2, rv.v2);
+        ret.v3 = _mm_or_si128(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512i operator^(icl512i lv, const icl512i &rv) {
-        lv.v0 = _mm_xor_si128(lv.v0, rv.v0);
-        lv.v1 = _mm_xor_si128(lv.v1, rv.v1);
-        lv.v2 = _mm_xor_si128(lv.v2, rv.v2);
-        lv.v3 = _mm_xor_si128(lv.v3, rv.v3);
-        return lv;
+      inline icl512i operator^(const icl512i &lv, const icl512i &rv) {
+        icl512i ret;
+        ret.v0 = _mm_xor_si128(lv.v0, rv.v0);
+        ret.v1 = _mm_xor_si128(lv.v1, rv.v1);
+        ret.v2 = _mm_xor_si128(lv.v2, rv.v2);
+        ret.v3 = _mm_xor_si128(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512i andnot(icl512i lv, const icl512i &rv) {
-        lv.v0 = _mm_andnot_si128(rv.v0, lv.v0);
-        lv.v1 = _mm_andnot_si128(rv.v1, lv.v1);
-        lv.v2 = _mm_andnot_si128(rv.v2, lv.v2);
-        lv.v3 = _mm_andnot_si128(rv.v3, lv.v3);
-        return lv;
+      inline icl512i andnot(const icl512i &lv, const icl512i &rv) {
+        icl512i ret;
+        ret.v0 = _mm_andnot_si128(rv.v0, lv.v0);
+        ret.v1 = _mm_andnot_si128(rv.v1, lv.v1);
+        ret.v2 = _mm_andnot_si128(rv.v2, lv.v2);
+        ret.v3 = _mm_andnot_si128(rv.v3, lv.v3);
+        return ret;
       }
 
-      // -- logical oparations -- //
+      // -- logical operations -- //
 
-      // ++ shift operations ++ //
+      // ++ shift operetions ++ //
 
       inline icl128i& operator<<(icl128i &v, const int i) {
         v.v0 = _mm_slli_epi32(v.v0, i);
@@ -1884,74 +1936,86 @@ namespace icl{
 
       // ++ min-max operations ++ //
 
-      inline icl128i8u min(icl128i8u lv, const icl128i8u &rv) {
-        lv.v0 = _mm_min_epu8(lv.v0, rv.v0);
-        return lv;
+      inline icl128i8u min(const icl128i8u &lv, const icl128i8u &rv) {
+        icl128i8u ret;
+        ret.v0 = _mm_min_epu8(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i8u max(icl128i8u lv, const icl128i8u &rv) {
-        lv.v0 = _mm_max_epu8(lv.v0, rv.v0);
-        return lv;
+      inline icl128i8u max(const icl128i8u &lv, const icl128i8u &rv) {
+        icl128i8u ret;
+        ret.v0 = _mm_max_epu8(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i16s min(icl128i16s lv, const icl128i16s &rv) {
-        lv.v0 = _mm_min_epi16(lv.v0, rv.v0);
-        return lv;
+      inline icl128i16s min(const icl128i16s &lv, const icl128i16s &rv) {
+        icl128i16s ret;
+        ret.v0 = _mm_min_epi16(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128i16s max(icl128i16s lv, const icl128i16s &rv) {
-        lv.v0 = _mm_max_epi16(lv.v0, rv.v0);
-        return lv;
+      inline icl128i16s max(const icl128i16s &lv, const icl128i16s &rv) {
+        icl128i16s ret;
+        ret.v0 = _mm_max_epi16(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl256i16s min(icl256i16s lv, const icl256i16s &rv) {
-        lv.v0 = _mm_min_epi16(lv.v0, rv.v0);
-        lv.v1 = _mm_min_epi16(lv.v1, rv.v1);
-        return lv;
+      inline icl256i16s min(const icl256i16s &lv, const icl256i16s &rv) {
+        icl256i16s ret;
+        ret.v0 = _mm_min_epi16(lv.v0, rv.v0);
+        ret.v1 = _mm_min_epi16(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256i16s max(icl256i16s lv, const icl256i16s &rv) {
-        lv.v0 = _mm_max_epi16(lv.v0, rv.v0);
-        lv.v1 = _mm_max_epi16(lv.v1, rv.v1);
-        return lv;
+      inline icl256i16s max(const icl256i16s &lv, const icl256i16s &rv) {
+        icl256i16s ret;
+        ret.v0 = _mm_max_epi16(lv.v0, rv.v0);
+        ret.v1 = _mm_max_epi16(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl128 min(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_min_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 min(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_min_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl128 max(icl128 lv, const icl128 &rv) {
-        lv.v0 = _mm_max_ps(lv.v0, rv.v0);
-        return lv;
+      inline icl128 max(const icl128 &lv, const icl128 &rv) {
+        icl128 ret;
+        ret.v0 = _mm_max_ps(lv.v0, rv.v0);
+        return ret;
       }
 
-      inline icl256 min(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_min_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_min_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 min(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_min_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_min_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl256 max(icl256 lv, const icl256 &rv) {
-        lv.v0 = _mm_max_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_max_ps(lv.v1, rv.v1);
-        return lv;
+      inline icl256 max(const icl256 &lv, const icl256 &rv) {
+        icl256 ret;
+        ret.v0 = _mm_max_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_max_ps(lv.v1, rv.v1);
+        return ret;
       }
 
-      inline icl512 min(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_min_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_min_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_min_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_min_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 min(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_min_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_min_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_min_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_min_ps(lv.v3, rv.v3);
+        return ret;
       }
 
-      inline icl512 max(icl512 lv, const icl512 &rv) {
-        lv.v0 = _mm_max_ps(lv.v0, rv.v0);
-        lv.v1 = _mm_max_ps(lv.v1, rv.v1);
-        lv.v2 = _mm_max_ps(lv.v2, rv.v2);
-        lv.v3 = _mm_max_ps(lv.v3, rv.v3);
-        return lv;
+      inline icl512 max(const icl512 &lv, const icl512 &rv) {
+        icl512 ret;
+        ret.v0 = _mm_max_ps(lv.v0, rv.v0);
+        ret.v1 = _mm_max_ps(lv.v1, rv.v1);
+        ret.v2 = _mm_max_ps(lv.v2, rv.v2);
+        ret.v3 = _mm_max_ps(lv.v3, rv.v3);
+        return ret;
       }
 
       // -- min-max operations -- //
@@ -1960,7 +2024,7 @@ namespace icl{
       // ++ absosulte values ++ //
 
     #ifdef ICL_HAVE_SSE3
-
+      /* TODO: replace
       inline icl128i abs8(icl128i v) {
         v.v0 = _mm_abs_epi8(v.v0);
         return v;
@@ -1995,23 +2059,35 @@ namespace icl{
         v.v3 = _mm_abs_epi32(v.v3);
         return v;
       }
-
+      */
     #else
 
       // TODO: without SSE3
 
     #endif
 
-      inline icl128 abs(icl128 v) {
-        return v.andnot(icl128(-0.0f));
+      inline icl128 abs(const icl128 &v) {
+        icl128 ret;
+        ret.v0 = _mm_andnot_ps(icl128(-0.0f), v.v0);
+        return ret;
       }
 
-      inline icl256 abs(icl256 v) {
-        return v.andnot(icl256(-0.0f));
+      inline icl256 abs(const icl256 &v) {
+        icl128 tmp(-0.0f);
+        icl256 ret;
+        ret.v0 = _mm_andnot_ps(tmp.v0, v.v0);
+        ret.v1 = _mm_andnot_ps(tmp.v0, v.v1);
+        return ret;
       }
 
-      inline icl512 abs(icl512 v) {
-        return v.andnot(icl512(-0.0f));
+      inline icl512 abs(const icl512 &v) {
+        icl128 tmp(-0.0f);
+        icl512 ret;
+        ret.v0 = _mm_andnot_ps(tmp.v0, v.v0);
+        ret.v1 = _mm_andnot_ps(tmp.v0, v.v1);
+        ret.v2 = _mm_andnot_ps(tmp.v0, v.v2);
+        ret.v3 = _mm_andnot_ps(tmp.v0, v.v3);
+        return ret;
       }
 
       // -- absosulte values -- //

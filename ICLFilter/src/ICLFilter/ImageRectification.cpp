@@ -162,9 +162,15 @@ namespace icl{
       // constant for faster counting
       const __m128 r0123 = _mm_set_ps(3,2,1,0);
 
+  #ifdef WIN32
       // memory for four x and y values
-      __attribute__ ((aligned (16))) float x4[4];
-      __attribute__ ((aligned (16))) float y4[4];
+      __declspec(align(16)) float x4[4];
+      __declspec(align(16)) float y4[4];
+  #else
+      // memory for four x and y values
+      __attribute__((aligned(16))) float x4[4];
+      __attribute__((aligned(16))) float y4[4];
+  #endif
 #endif
 
       for(int c=0;c<src.getChannels();++c){
@@ -264,9 +270,15 @@ namespace icl{
       // constant for faster counting
       const __m128 r0123 = _mm_set_ps(3,2,1,0);
 
+  #ifdef WIN32
       // memory for four x and y values
-      __attribute__ ((aligned (16))) float x4[4];
-      __attribute__ ((aligned (16))) float y4[4];
+      __declspec(align(16)) float x4[4];
+      __declspec(align(16)) float y4[4];
+  #else
+      // memory for four x and y values
+      __attribute__((aligned(16))) float x4[4];
+      __attribute__((aligned(16))) float y4[4];
+  #endif
 #endif
 
       for(int c=0;c<src.getChannels();++c){

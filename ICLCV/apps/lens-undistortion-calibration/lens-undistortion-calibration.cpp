@@ -357,7 +357,6 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
 
         createFoundList(fids, foundList);
         createObjCoords(info.gridDef, foundList, obj);
-        std::cout << corners.size() << " " << obj.size() << std::endl;
         ICLASSERT(corners.size() == obj.size());
 
         calib.addPoints(corners, obj);
