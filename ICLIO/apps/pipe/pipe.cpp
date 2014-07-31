@@ -146,18 +146,22 @@ const ImgBase *grab_image(){
   }
    */
   
-  if(!(bool)pa("-clip")){
+  if(!(bool)pa("-clip") && !(bool)pa("-crop-and-rescale")){
     return img;
-    
   }else{
-    if(*pa("-clip")=="interactive"){
-      throw ICLException("interactive clipmode is not yet implemented ...");
-    }else{
+    if(pa("-clip") && pa("-crop-and-rescale")){
+      throw ICLException("program arguments -clip and -crop-and-rescale exclude each other");
+    }
+    if(pa("-crop-and-rescale")){
       static Rect *r = 0;
-      static ImgBase *clipped = 0;
+      static ImgBase *croppedAndRescaled = 0;
       if(!r){
-        r = new Rect;
-        *r = pa("-clip");
+        int bx = pa("-crop-and-rescale",0);
+        int by = pa("-crop-and-rescale",1);
+        int tw = pa("-crop-and-rescale",2);
+        int th = pa("-crop-and-rescale",3);
+
+        r = new Rect(bx,by,img->getWidth()-2*bx, img->getHeight()-2*by);
         
         ICLASSERT_THROW(r->width <= img->getWidth(),ICLException("clipping rect width is larger then image width"));
         ICLASSERT_THROW(r->height <= img->getHeight(),ICLException("clipping rect height is larger then image height"));
@@ -165,12 +169,36 @@ const ImgBase *grab_image(){
         ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
         ICLASSERT_THROW(r->right() < img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
         ICLASSERT_THROW(r->bottom() < img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
-        clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat()); 
+
+        croppedAndRescaled = imgNew(img->getDepth(),Size(tw,th),img->getChannels(),img->getFormat()); 
       }
       const ImgBase *tmp = img->shallowCopy(*r);
-      tmp->deepCopyROI(&clipped);
+      tmp->scaledCopyROI(&croppedAndRescaled, interpolateRA);
       delete tmp;
-      img = clipped;
+      img = croppedAndRescaled;
+    }else{
+      if(*pa("-clip")=="interactive"){
+        throw ICLException("interactive clipmode is not yet implemented ...");
+      }else{
+        static Rect *r = 0;
+        static ImgBase *clipped = 0;
+        if(!r){
+          r = new Rect;
+          *r = pa("-clip");
+          
+          ICLASSERT_THROW(r->width <= img->getWidth(),ICLException("clipping rect width is larger then image width"));
+          ICLASSERT_THROW(r->height <= img->getHeight(),ICLException("clipping rect height is larger then image height"));
+          ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
+          ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
+          ICLASSERT_THROW(r->right() < img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
+          ICLASSERT_THROW(r->bottom() < img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
+          clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat()); 
+        }
+        const ImgBase *tmp = img->shallowCopy(*r);
+        tmp->deepCopyROI(&clipped);
+        delete tmp;
+        img = clipped;
+      }
     }
   }
   return img;
@@ -355,6 +383,9 @@ int main(int n, char **ppc){
   ("-idu","if this is given, image updates are initally switched off which means, that no"
    "image is visualized in the preview widget. This helps to reduce network traffic!")
   ("-normalize","normalize resulting image to [0,255]")
+  ("-crop-and-rescale","crops the outer pixels of the image (hcrop_pix on the left and on the "
+   "right image border and vcrop_pix on the top and bottom image border). The resulting smaller image "
+   "is then scaled up to the target image size given by target_width and target_height.")
   ("-camera-config","if a valid xml-camera configuration file was given here, the grabber is set up "
    "with this parameters internally. Valid parameter files can be created with icl-camera-param-io or with "
    "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
@@ -367,7 +398,9 @@ int main(int n, char **ppc){
 	 //-dist|-d(float,float,float,float) -reset|-r "
 	 "-dist|-d(fn) -reset|-r "
           "-decode-bayer(bayer-pattern,outputformat,filterquality) "
-         "-fps(float=15.0) -clip|-c(Rect) -camera-config(filename) -depth(depth) -format(format) -normalize|-n "
+         "-fps(float=15.0) -clip|-c(Rect) "
+          "-crop-and-rescale|-cr(hcrop_pix,vcrop_pix,target_width,target_height) "
+          "-camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
