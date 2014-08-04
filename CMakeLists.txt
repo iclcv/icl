@@ -461,6 +461,8 @@ IF(BUILD_WITH_QT)
         ELSE()
           get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
         ENDIF()
+        MESSAGE(STATUS "ICLQt5CoreLib : ${ICLQt5CoreLib}")
+
         # For some reason cmake does not add library paths to rpath when they end 
         # with a number like libQt5Core.so.5. Changing the linked libraries to the
         # simple .so resolves this problem.

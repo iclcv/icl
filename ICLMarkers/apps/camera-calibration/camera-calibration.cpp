@@ -749,7 +749,32 @@ void run(){
   ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
 
   const ImgBase *image = grabber.grab();
-  
+  if(pa("-crop-and-rescale")){
+    static Rect *r = 0;
+    static ImgBase *croppedAndRescaled = 0;
+    if(!r){
+      int bx = pa("-crop-and-rescale",0);
+      int by = pa("-crop-and-rescale",1);
+      int tw = pa("-crop-and-rescale",2);
+      int th = pa("-crop-and-rescale",3);
+      
+      r = new Rect(bx,by,image->getWidth()-2*bx, image->getHeight()-2*by);
+      
+      ICLASSERT_THROW(r->width <= image->getWidth(),ICLException("clipping rect width is larger then image width"));
+      ICLASSERT_THROW(r->height <= image->getHeight(),ICLException("clipping rect height is larger then image height"));
+      ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
+      ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
+      ICLASSERT_THROW(r->right() < image->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
+      ICLASSERT_THROW(r->bottom() < image->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
+      
+      croppedAndRescaled = imgNew(image->getDepth(),Size(tw,th),image->getChannels(),image->getFormat()); 
+    }
+    const ImgBase *tmp = image->shallowCopy(*r);
+    tmp->scaledCopyROI(&croppedAndRescaled, interpolateRA);
+    delete tmp;
+    image = croppedAndRescaled; 
+  }
+
   std::vector<FoundMarker> markers;
   for(int x=0;x<2;++x){
     if(!fds[x]) continue;
@@ -941,6 +966,10 @@ int main(int n, char **ppc){
     std::cout << sample << std::endl;
     return 0;
   }
+
+  pa_explain("-crop-and-rescale","crops the outer pixels of the image (hcrop_pix on the left and on the "
+             "right image border and vcrop_pix on the top and bottom image border). The resulting smaller image "
+             "is then scaled up to the target image size given by target_width and target_height.");
   
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(...) "
@@ -950,6 +979,7 @@ int main(int n, char **ppc){
                 "-force-size|-s|-size(WxH) "
                 "-convert-output-size|-os(WxH) "
                 "-output|-o(output-xml-file-name) "
+                "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) " 
                 ,init,run).exec();
 }
 
