@@ -34,12 +34,39 @@
 #include <ICLGeom/PointCloudObject.h>
 //#include <ICLGeom/DepthCameraPointCloudGrabber.h>
 #include <ICLGeom/GenericPointCloudGrabber.h>
+#include <ICLGeom/RayCastOctreeObject.h>
+#include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
+
 HSplit gui;
 Scene scene;
 
 
 PointCloudObject obj;
 GenericPointCloudGrabber grabber;
+SmartPtr<RayCastOctreeObject> octree;
+Mutex octreeMutex;
+
+SceneObject *indicatorCS = 0;
+Vec pos;
+
+void mouse(const MouseEvent &e){
+  static MouseHandler *other = scene.getMouseHandler(0);
+  other->process(e);
+  try{
+    Vec v;
+    {
+      Mutex::Locker lock(octreeMutex);
+      if(!octree) return;
+      v = octree->rayCastClosest(scene.getCamera(0).getViewRay(e.getPos()), 10);
+      pos = v;
+    }
+    
+    indicatorCS->lock();
+    indicatorCS->removeTransformation();
+    indicatorCS->translate(v[0],v[1],v[2]);
+    indicatorCS->unlock();
+  }catch(...){}
+}
 
 void init(){
   grabber.init(pa("-pci"));
@@ -60,7 +87,7 @@ void init(){
   scene.addObject(&obj,false);
 
   gui["scene"].link(scene.getGLCallback(0));
-  gui["scene"].install(scene.getMouseHandler(0));
+  gui["scene"].install(mouse);
 
   obj.setPointSize(3);
   obj.setPointSmoothingEnabled(false);
@@ -79,12 +106,46 @@ void init(){
     scene.setDrawCoordinateFrameEnabled(true);
   }
 
+  if(pa("-p")){
+    indicatorCS = new ComplexCoordinateFrameSceneObject(50,2);
+    //indicatorCS->addVertex(Vec(10,10,50,1));
+    //indicatorCS->addText(indicatorCS->getVertices().size()-1,"Test", 50, geom_blue(255));
+    scene.addObject(indicatorCS,true);
+  }
+
+  // if this is left out creation of the first octree takes ages!
+  grabber.grab(obj);
 }
 
+void run_octree(){
+  if(!pa("-p")){
+    Thread::sleep(1000);
+    return;
+  }
+  SmartPtr<PointCloudObject> other = obj.copy();
+  RayCastOctreeObject *octree = new RayCastOctreeObject(-3000,6000);
+  Time t = Time::now();
+  const DataSegment<float,4> xyzh = other->selectXYZH();
+  for(int i=0;i<xyzh.getDim();i+=1){
+    octree->insert(xyzh[i]);
+  }
+  //t.showAge("time for point insertion ... of " + str(xyzh.getDim()) + " points");
+  Mutex::Locker lock(octreeMutex);
+  ::octree = SmartPtr<RayCastOctreeObject>(octree);
+}
 
 void run(){
+  DrawHandle3D draw = gui["scene"];
   grabber.grab(obj);
-  gui["scene"].render();
+  
+  draw->color(0,100,255,255);
+  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ", 
+             10, 30, -10);
+  draw->color(255,255,255,255);
+  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ", 
+             12, 32, -10);
+
+  draw.render();
 }
 
 
@@ -93,6 +154,6 @@ int main(int n, char **ppc){
              "camera parameters to be tuned manually at runtime");
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
                 "-view-camera|-c(filename) -tune -visualize-cameras|-vc(...) "
-                "-show-world-frame|-cs",init,run).exec();
+                "-show-world-frame|-cs -pointing|-p",init,run,run_octree).exec();
 }
 

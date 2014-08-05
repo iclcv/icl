@@ -428,6 +428,18 @@ namespace icl{
         }
       }
       
+      /// utilty method to assign new data
+      /** Internally, this is implemented using clear() followed
+          by a for-loop based insertion of all the points.*/
+      template<class ForwardIterator>
+      void assign(ForwardIterator begin, ForwardIterator end){
+        clear(); 
+        for(; begin != end; ++begin){
+          insert(*begin);
+        }
+      }
+
+      
       /// returns all contained points within the given rectangle
       std::vector<Pt> query(const Scalar &minX, const Scalar &minY, const Scalar &minZ, 
                             const Scalar &width, const Scalar &height, const Scalar &depth) const{
