@@ -32,12 +32,13 @@
 
 #include <ICLGeom/PointCloudGrabber.h>
 #include <ICLUtils/ProgArg.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   namespace geom{
   
     /// Generic interface for PointCloud sources
-    class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber, public utils::Uncopyable{
+    class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber {
       struct Data;
       Data *m_data;
       

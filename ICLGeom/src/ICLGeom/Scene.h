@@ -135,7 +135,7 @@ namespace icl{
     
         */
 
-    class ICLGeom_API Scene : public utils::Lockable, public utils::Configurable, public geom::PointCloudGrabber{
+    class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber{
       public:
 
       /// make SceneObject friend of Scene

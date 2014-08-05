@@ -43,12 +43,14 @@ GenericPointCloudGrabber grabber;
 
 void init(){
   grabber.init(pa("-pci"));
+  grabber.setConfigurableID("grabber");
   Camera cam;
   if(pa("-c")){
     cam = Camera(*pa("-c"));
   }
 
   gui << Draw3D().minSize(32,24).handle("scene")
+      << Prop("grabber").hideIf(!pa("-tune")).minSize(16,1).maxSize(16,99)
       << Show();
   
 
@@ -62,6 +64,21 @@ void init(){
 
   obj.setPointSize(3);
   obj.setPointSmoothingEnabled(false);
+
+  if(pa("-vc")){
+    ProgArg p = pa("-vc");
+    for(int i=0;i<p.n();++i){
+      Camera c(p[i]);
+      c.setName(p[i]);
+      scene.addCamera(c);
+    }
+    scene.setDrawCamerasEnabled(true);
+  }
+  
+  if(pa("-cs")){
+    scene.setDrawCoordinateFrameEnabled(true);
+  }
+
 }
 
 
@@ -72,7 +89,10 @@ void run(){
 
 
 int main(int n, char **ppc){
+  pa_explain("-tune","adds an extra gui that allows certain depth "
+             "camera parameters to be tuned manually at runtime");
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
-                "-view-camera|-c(filename)",init,run).exec();
+                "-view-camera|-c(filename) -tune -visualize-cameras|-vc(...) "
+                "-show-world-frame|-cs",init,run).exec();
 }
 

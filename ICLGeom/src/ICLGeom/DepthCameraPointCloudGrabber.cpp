@@ -84,6 +84,10 @@ namespace icl{
       }else{
         m_data->creator.init(depthCam);
       }
+
+      addProperty("focal length factor","range","[0.8:1.2]",1);
+      addProperty("positioning fix","range","[-50,50]",0);
+      
     }
     
     DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
@@ -130,6 +134,11 @@ namespace icl{
           }
         }
       }
+
+      float fFactor = getPropertyValue("focal length factor");
+      float pFix = getPropertyValue("positioning fix");
+
+      m_data->creator.setFixes(fFactor, pFix);
 
       m_data->creator.create(depthImage, dst, rgbImage);
       m_data->lastDepthImage = &depthImage;

@@ -39,12 +39,14 @@ namespace icl{
  
     struct GenericPointCloudGrabber::Data{
       PointCloudGrabber *impl;
+      
     };
     
     
     GenericPointCloudGrabber::GenericPointCloudGrabber():m_data(new Data)
     {
       m_data->impl = 0;
+      
     }
 
     GenericPointCloudGrabber::GenericPointCloudGrabber(const std::string &sourceType, 
@@ -52,7 +54,7 @@ namespace icl{
       init(sourceType,srcDescription);
     }
 
-    GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa){
+    GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa):m_data(0){
       init(pa[0],pa[1]);
     }
     
@@ -69,7 +71,11 @@ namespace icl{
 
         throw ICLException("GenericPointCloudGrabber list presented successfully");
       }
-      ICL_DELETE(m_data->impl);
+      if(m_data->impl){
+        removeChildConfigurable(m_data->impl);
+        delete m_data->impl;
+      }
+
       std::map<std::string,std::string> data;
       data["creation-string"] = srcDescription;
       m_data->impl = PluginRegister<PointCloudGrabber>::instance().createInstance(sourceType,data);
@@ -77,6 +83,8 @@ namespace icl{
         throw ICLException("GenericPointCloudGrabber::init::unable to create"
                            " GenericPointGrabber instance of type" + sourceType);
       }
+      
+      addChildConfigurable(m_data->impl);
     }
 
     void GenericPointCloudGrabber::init(const utils::ProgArg &pa){

@@ -264,6 +264,9 @@ namespace icl{
           into a dedicated tab</b> */
       void addChildConfigurable(Configurable *configurable, const std::string &childPrefix="");
       
+      /// removes the given child configurable
+      void removeChildConfigurable(Configurable *configurable);
+      
       /// this CAN be used e.g. to store a property value in internal property-list
       /** Throws an exception if the given propertyName is not supported */
       Property &prop(const std::string &propertyName) throw (ICLException);

@@ -770,7 +770,11 @@ void run(){
       croppedAndRescaled = imgNew(image->getDepth(),Size(tw,th),image->getChannels(),image->getFormat()); 
     }
     const ImgBase *tmp = image->shallowCopy(*r);
-    tmp->scaledCopyROI(&croppedAndRescaled, interpolateRA);
+    
+    SHOW(*tmp);
+    SHOW(*croppedAndRescaled);
+    
+    tmp->scaledCopyROI(&croppedAndRescaled, interpolateLIN);
     delete tmp;
     image = croppedAndRescaled; 
   }

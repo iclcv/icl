@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudGrabber.h                **
+** File   : ICLGeom/demos/point-cloud-viewer/fix-kinect-calibration.cpp**
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,31 +28,42 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
+#include <ICLQt/Common.h>
+#include <ICLGeom/Camera.h>
+#include <fstream>
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Configurable.h>
-#include <ICLGeom/PointCloudObjectBase.h>
+int main(int n, char **ppc){
+  pa_init(n,ppc,
+          "[m]-di(depthCamInFile) "
+          "[m]-ci(colorCamInfile) "
+          "[m]-do(depthCamOutFile) "
+          "[m]-co(colorCamOutFile)");
 
-#include <map>
-
-namespace icl{
-  namespace geom{
+  Camera d(*pa("-di"));
+  Camera c(*pa("-ci"));
   
-    /// Generic interface for PointCloud sources
-    struct PointCloudGrabber : public utils::Configurable{
-      /// fills the given point cloud with grabbed information
-      virtual void grab(PointCloudObjectBase &dst) = 0;
-      
-      /// virtual, but empty destructor
-      virtual ~PointCloudGrabber(){}
+  Size res = d.getResolution();
+  PlaneEquation pe(c.getPosition(), c.getNorm());
+  ViewRay vr = d.getViewRay(Point(res.width/2, res.height/2));
+  Vec p = vr.getIntersection(pe);
+  
+  Vec pos = d.getPosition();
+  pos[3] = 1;
+  d.setPosition(p);
+  Vec delta = p - pos;
+  
+  Vec cPos = c.getPosition();
+  cPos += delta;
+  cPos[3] = 1;
+  c.setPosition(cPos);
 
-      /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img32f *getDepthImage() const { return 0; } 
+  
+  std::ofstream cos((*pa("-co")).c_str());
+  cos << c;
 
-      /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img8u *getColorImage() const { return 0; } 
-    };
-  }
+  std::ofstream dos((*pa("-do")).c_str());
+  dos << d;
+
+  
 }
 

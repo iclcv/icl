@@ -135,6 +135,14 @@ namespace icl{
           Please note, that the returned shallowly copies the internal 
           depth camera viewray array */
       RGBDMapping getMapping() const throw (utils::ICLException);
+
+      /// sets up internal heuristical fixes applied to the used depth camera parameters
+      /** @param focalLengthMultiplier is used as multiplicative adaption to the orginal depth camera's 
+                 focal length. 1 is the neutral value for this 
+          @param positionOffsetAlongNorm is used as additive displacement for the used depth camera along
+                 the camera's view normal
+          */
+      void setFixes(float focalLengthMultiplier=1, float positionOffsetAlongNorm=0);
     };
   
   } // namespace geom

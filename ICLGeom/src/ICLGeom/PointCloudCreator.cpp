@@ -30,6 +30,7 @@
 
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/Mutex.h>
 
 #ifdef ICL_HAVE_OPENCL
 #include <ICLGeom/PointCloudCreatorCL.h>
@@ -48,8 +49,9 @@ namespace icl{
     typedef FixedColVector<float,4> ViewRayDir;
 
     struct PointCloudCreator::Data{
+      Mutex mutex;
       SmartPtr<Mat>rgbdMapping;
-      SmartPtr<Camera> depthCamera, colorCamera; // memorized for easy copying
+      SmartPtr<Camera> depthCamera, colorCamera, depthCameraOrig, colorCameraOrig; // memorized for easy copying
       Size depthImageSize;
       Size colorImageSize;
       Vec viewRayOffset;
@@ -63,13 +65,18 @@ namespace icl{
       SmartPtr<PointCloudCreatorCL> creatorCL;
 #endif
       
+      float focalLengthMultiplier;
+      float positionOffsetAlongNorm;
+
+      // float focalLengthMultiplierLast;
+      //float positionOffsetAlongNormLast;
 
       
       static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
         return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
       }
   
-      void init(Camera *depthCam, Camera *colorCam, PointCloudCreator::DepthImageMode mode){
+      void init(Camera *depthCam, Camera *colorCam, PointCloudCreator::DepthImageMode mode, bool isReinit=false){
         
         if(depthCamera && (depthCamera->getRenderParams().chipSize != depthCam->getRenderParams().chipSize)){
           throw ICLException("PointCloudCreator::setCameras(d,c): this call cannot be used to adapt the camera chip size");
@@ -78,6 +85,21 @@ namespace icl{
         this->mode = mode;
         depthCamera = depthCam;
         colorCamera = colorCam;
+        
+        if(!isReinit){
+          depthCameraOrig = new Camera(*depthCam);
+          if(colorCam){
+            colorCameraOrig = new Camera(*colorCam);
+          }else{
+            colorCameraOrig = SmartPtr<Camera>();
+          }
+
+          focalLengthMultiplier = 1;
+          positionOffsetAlongNorm = 0;
+          //          focalLengthMultiplierLast = 1;
+          //positionOffsetAlongNormLast = 0;
+        }
+        
         depthImageSize = depthCam->getRenderParams().chipSize;
         if(colorCam){
           colorImageSize = colorCam->getRenderParams().chipSize;
@@ -109,10 +131,40 @@ namespace icl{
         creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
         clReady = creatorCL->isCLReady();
 #endif
-      }
-      
-    };
 
+       
+      }
+
+      void reinitIfNecessary(float focalLengthMultiplier, float positionOffsetAlongNorm){
+        Mutex::Locker lock(mutex);
+        if(this->focalLengthMultiplier == focalLengthMultiplier &&
+           this->positionOffsetAlongNorm == positionOffsetAlongNorm) return;
+        
+        SHOW(focalLengthMultiplier);
+        SHOW(positionOffsetAlongNorm);
+
+        Camera *dCam = new Camera(*depthCameraOrig);
+        Camera *cCam = colorCameraOrig ? new Camera(*colorCameraOrig) : 0;
+        
+        
+        dCam->setFocalLength(focalLengthMultiplier);
+        
+        Vec dir = dCam->getNorm();
+        Vec pos = dCam->getPosition();
+        pos += dir * positionOffsetAlongNorm;
+        pos[3] = 1;
+        dCam->setPosition(pos);
+
+        SHOW(dCam->getPosition().transp());
+        SHOW(dCam->getFocalLength());
+        
+        init(dCam, cCam, mode, true);
+        
+        this->focalLengthMultiplier = focalLengthMultiplier;
+        this->positionOffsetAlongNorm  = positionOffsetAlongNorm;
+      }
+    };
+    
     /// Destructor
     PointCloudCreator::~PointCloudCreator(){
       delete m_data;
@@ -248,6 +300,7 @@ namespace icl{
     }
   
     void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, const Img8u *rgbImage, float depthScaling){
+      Mutex::Locker lock(m_data->mutex);
       m_data->lastDepthImageMM = &depthImageMM;
       
       static_cam  = m_data->colorCamera.get();
@@ -478,6 +531,7 @@ namespace icl{
     }
                    
     void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
+      Mutex::Locker lock(m_data->mutex);
       if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
       if(!depthImageMM) throw ICLException("PointCloudCreator::mapImage: no depthImage given and not depth image "
                                            "from preceding 'create' method call available");
@@ -529,6 +583,10 @@ namespace icl{
       return RGBDMapping(*m_data->colorCamera, m_data->viewRayDirections, m_data->viewRayOffset);
     }
     
+    void PointCloudCreator::setFixes(float focalLengthMultiplier, float positionOffsetAlongNorm){
+      m_data->reinitIfNecessary(focalLengthMultiplier, positionOffsetAlongNorm);
+    }
+
   } // namespace geom
 }
 

@@ -77,6 +77,11 @@ namespace icl{
       }
       configurable -> m_elderConfigurable = this;
     }
+
+    void Configurable::removeChildConfigurable(Configurable *configurable){
+      (void) configurable;
+      throw ICLException("removeChildConfigurable: is not yet implemented");
+    }
   
     const Configurable::Property &Configurable::prop(const std::string &propertyName) const throw (ICLException){
       return const_cast<Configurable*>(this)->prop(propertyName);

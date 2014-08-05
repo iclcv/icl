@@ -7,6 +7,7 @@ IF(QT4_FOUND)
   ADD_SUBDIRECTORY(surf-based-object-tracking)
   ADD_SUBDIRECTORY(point-cloud-viewer)
   ADD_SUBDIRECTORY(point-cloud-pipe)
+  ADD_SUBDIRECTORY(fix-kinect-calibration)
 ENDIF()
 
 #message(STATUS "opencv: ${OPENCV_FOUND}")
