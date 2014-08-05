@@ -201,7 +201,7 @@ namespace icl{
 
       for (; d < dstSSEEnd; d += 16) {
         // convert 16 values at the same time
-        icl128i v = icl128i(d);
+        icl8ux16 v = icl8ux16(d);
         v.v0 = _mm_sub_epi8(v.v0, _mm_set1_epi8(128));
         v.v0 = _mm_cmpgt_epi8(v.v0, _mm_set1_epi8((char)threshold-129));
         v.storeu(d);

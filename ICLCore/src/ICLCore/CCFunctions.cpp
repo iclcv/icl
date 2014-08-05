@@ -1459,7 +1459,7 @@ namespace icl{
 
     inline void subSSEGraytoRGB(const icl8u *gr, icl8u *r, icl8u *g, icl8u *b) {
       // load gray values
-      icl128i vGr = icl128i(gr);
+      icl8ux16 vGr = icl8ux16(gr);
 
       // store the 'calculated' values
       vGr.storeu(r);
@@ -1513,28 +1513,28 @@ namespace icl{
     }
 
     inline void subSSERGBtoGray(const icl8u *r, const icl8u *g, const icl8u *b, icl8u *gr) {
-      icl256i vR = icl128i(r);
-      icl256i vG = icl128i(g);
-      icl256i vB = icl128i(b);
+      icl16sx16 vR = icl8ux16(r);
+      icl16sx16 vG = icl8ux16(g);
+      icl16sx16 vB = icl8ux16(b);
 
-      vR.add16(vB);
-      vR.add16(vG);
+      vR += vB;
+      vR += vG;
 
-      icl512 vRes = icl512i(vR);
+      icl512 vRes = icl512i32s(vR);
 
       vRes *= icl512(1.0f/3.0f);
       vRes.storeu(gr);
     }
 
     inline void subSSERGBtoGray(const icl8u *r, const icl8u *g, const icl8u *b, icl32f *gr) {
-      icl256i vR = icl128i(r);
-      icl256i vG = icl128i(g);
-      icl256i vB = icl128i(b);
+      icl16sx16 vR = icl8ux16(r);
+      icl16sx16 vG = icl8ux16(g);
+      icl16sx16 vB = icl8ux16(b);
 
-      vR.add16(vB);
-      vR.add16(vG);
+      vR += vB;
+      vR += vG;
 
-      icl512 vRes = icl512i(vR);
+      icl512 vRes = icl512i32s(vR);
 
       vRes *= icl512(1.0f/3.0f);
       vRes.storeu(gr);
@@ -1583,18 +1583,18 @@ namespace icl{
 
           // convert 16 values at the same time
           for(; i<dim-15; i+=16, cR++, cG++, cB++, cGr++){
-            icl256i vR = icl128i(cR);
-            icl256i vG = icl128i(cG);
-            icl256i vB = icl128i(cB);
+            icl16sx16 vR = icl8ux16(cR);
+            icl16sx16 vG = icl8ux16(cG);
+            icl16sx16 vB = icl8ux16(cB);
 
-            vR.add16(vB);
-            vR.add16(vG);
+            vR += vB;
+            vR += vG;
 
-            icl512 vTmp = icl512i(vR);
+            icl512 vTmp = icl512i32s(vR);
 
             vTmp *= icl512(1.0f/3.0f);
 
-            icl128i vRes = icl512i(vTmp).pack8u();
+            icl8ux16 vRes = icl512i32s(vTmp);
             vRes.storeu(cGr);
           }
 
@@ -1624,14 +1624,14 @@ namespace icl{
 
           // convert 16 values at the same time
           for(; i<dim-15; i+=16, ++cR, ++cG, ++cB){
-            icl256i vR = icl128i(cR);
-            icl256i vG = icl128i(cG);
-            icl256i vB = icl128i(cB);
+            icl16sx16 vR = icl8ux16(cR);
+            icl16sx16 vG = icl8ux16(cG);
+            icl16sx16 vB = icl8ux16(cB);
 
-            vR.add16(vB);
-            vR.add16(vG);
+            vR += vB;
+            vR += vG;
 
-            icl512 vRes = icl512i(vR);
+            icl512 vRes = icl512i32s(vR);
 
             vRes *= icl512(1.0f/3.0f);
             vRes.storeu(&gr[i]);
@@ -2187,8 +2187,8 @@ namespace icl{
 
       icl512 vM = vL + vL - vV;
       icl512 vSV = (vV - vM) * icl512(vV).rcp();
-      icl512 vST = icl512i(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
-                           _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
+      icl512 vST = icl512i32s(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
+                              _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
       icl512 vF = vH - vST;
       icl512 vVSF = vV * vSV * vF;
       icl512 vMid1 = vM + vVSF;
@@ -2251,7 +2251,7 @@ namespace icl{
 
       icl128 vM = vL + vL - vV;
       icl128 vSV = (vV - vM) * icl128(vV).rcp();
-      icl128 vST = icl128i(_mm_cvttps_epi32(vH.v0));
+      icl128 vST = icl128i32s(_mm_cvttps_epi32(vH.v0));
       icl128 vF = vH - vST;
       icl128 vVSF = vV * vSV * vF;
       icl128 vMid1 = vM + vVSF;
@@ -2353,8 +2353,8 @@ namespace icl{
 
       icl512 vM = vL + vL - vV;
       icl512 vSV = (vV - vM) * icl512(vV).rcp();
-      icl512 vST = icl512i(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
-                           _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
+      icl512 vST = icl512i32s(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
+                              _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
       icl512 vF = vH - vST;
       icl512 vVSF = vV * vSV * vF;
       icl512 vMid1 = vM + vVSF;
@@ -2437,8 +2437,8 @@ namespace icl{
 
       icl512 vM = vL + vL - vV;
       icl512 vSV = (vV - vM) * icl512(vV).rcp();
-      icl512 vST = icl512i(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
-                           _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
+      icl512 vST = icl512i32s(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
+                              _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
       icl512 vF = vH - vST;
       icl512 vVSF = vV * vSV * vF;
       icl512 vMid1 = vM + vVSF;
@@ -2516,7 +2516,7 @@ namespace icl{
 
       icl128 vM = vL + vL - vV;
       icl128 vSV = (vV - vM) * icl128(vV).rcp();
-      icl128 vST = icl128i(_mm_cvttps_epi32(vH.v0));
+      icl128 vST = icl128i32s(_mm_cvttps_epi32(vH.v0));
       icl128 vF = vH - vST;
       icl128 vVSF = vV * vSV * vF;
       icl128 vMid1 = vM + vVSF;
@@ -2639,8 +2639,8 @@ namespace icl{
 
       icl512 vM = vL + vL - vV;
       icl512 vSV = (vV - vM) * icl512(vV).rcp();
-      icl512 vST = icl512i(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
-                           _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
+      icl512 vST = icl512i32s(_mm_cvttps_epi32(vH.v0), _mm_cvttps_epi32(vH.v1),
+                              _mm_cvttps_epi32(vH.v2), _mm_cvttps_epi32(vH.v3));
       icl512 vF = vH - vST;
       icl512 vVSF = vV * vSV * vF;
       icl512 vMid1 = vM + vVSF;
@@ -2732,7 +2732,7 @@ namespace icl{
 
       icl128 vM = vL + vL - vV;
       icl128 vSV = (vV - vM) * icl128(vV).rcp();
-      icl128 vST = icl128i(_mm_cvttps_epi32(vH.v0));
+      icl128 vST = icl128i32s(_mm_cvttps_epi32(vH.v0));
       icl128 vF = vH - vST;
       icl128 vVSF = vV * vSV * vF;
       icl128 vMid1 = vM + vVSF;
@@ -4073,12 +4073,12 @@ namespace icl{
       }
 
       inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl8u *dst) {
-        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const icl32sx4 mask = icl32sx4(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
 
-        icl128i v0 = icl128i(src0);
-        icl128i v1 = icl128i(src1);
-        icl128i v2 = icl128i(src2);
-        icl128i v3 = icl128i(0);
+        icl8ux16 v0 = icl8ux16(src0);
+        icl8ux16 v1 = icl8ux16(src1);
+        icl8ux16 v2 = icl8ux16(src2);
+        icl8ux16 v3 = icl8ux16((icl8s)0);
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4117,13 +4117,13 @@ namespace icl{
       }
 
       inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl16s *dst) {
-        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
         const __m128i vk0 = _mm_setzero_si128();
 
-        icl128i v0 = icl128i(src0);
-        icl128i v1 = icl128i(src1);
-        icl128i v2 = icl128i(src2);
-        icl128i v3 = icl128i(0);
+        icl8ux16 v0 = icl8ux16(src0);
+        icl8ux16 v1 = icl8ux16(src1);
+        icl8ux16 v2 = icl8ux16(src2);
+        icl8ux16 v3 = icl8ux16((icl8s)0);
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4168,13 +4168,13 @@ namespace icl{
       }
 
       inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, __m128i *dst) {
-        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
         const __m128i vk0 = _mm_setzero_si128();
 
-        icl128i v0 = icl128i(src0);
-        icl128i v1 = icl128i(src1);
-        icl128i v2 = icl128i(src2);
-        icl128i v3 = icl128i(0);
+        icl8ux16 v0 = icl8ux16(src0);
+        icl8ux16 v1 = icl8ux16(src1);
+        icl8ux16 v2 = icl8ux16(src2);
+        icl8ux16 v3 = icl8ux16((icl8s)0);
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4239,13 +4239,13 @@ namespace icl{
       }
 
       inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, icl32f *dst) {
-        const icl128i mask = icl128i(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x04010200, 0x0A080506, 0x0D0E0C09, 0x80808080);
         const __m128i vk0 = _mm_setzero_si128();
 
-        icl128i v0 = icl128i(src0);
-        icl128i v1 = icl128i(src1);
-        icl128i v2 = icl128i(src2);
-        icl128i v3 = icl128i(0);
+        icl8ux16 v0 = icl8ux16(src0);
+        icl8ux16 v1 = icl8ux16(src1);
+        icl8ux16 v2 = icl8ux16(src2);
+        icl8ux16 v3 = icl8ux16((icl8s)0);
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4415,10 +4415,10 @@ namespace icl{
       }
 
       inline void sse_copy_p4c4(const icl8u *src0, const icl8u *src1, const icl8u *src2, const icl8u *src3, icl8u *dst) {
-        icl128i v0 = icl128i(src0);
-        icl128i v1 = icl128i(src1);
-        icl128i v2 = icl128i(src2);
-        icl128i v3 = icl128i(src3);
+        icl8ux16 v0 = icl8ux16(src0);
+        icl8ux16 v1 = icl8ux16(src1);
+        icl8ux16 v2 = icl8ux16(src2);
+        icl8ux16 v3 = icl8ux16(src3);
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v1.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v1.v0);
@@ -4594,12 +4594,12 @@ namespace icl{
       inline void sse_copy_c3p3(const icl8u *src, icl8u *dst0, icl8u *dst1, icl8u *dst2) {
         // this function can be improved with SSE4 using _mm_blendv_epi8;
 
-        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
 
-        icl128i v0 = icl128i(src);
-        icl128i v1 = icl128i(src+12);
-        icl128i v2 = icl128i(src+24);
-        icl128i v3 = icl128i(src+36);
+        icl8ux16 v0 = icl8ux16(src);
+        icl8ux16 v1 = icl8ux16(src + 12);
+        icl8ux16 v2 = icl8ux16(src + 24);
+        icl8ux16 v3 = icl8ux16(src + 36);
 
         v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
         v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
@@ -4623,12 +4623,12 @@ namespace icl{
       inline void sse_copy_c3p3(const icl8u *src, icl16s *dst0, icl16s *dst1, icl16s *dst2) {
         // this function can be improved with SSE4 using _mm_blendv_epi8;
 
-        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
 
-        icl128i v0 = icl128i(src);
-        icl128i v1 = icl128i(src+12);
-        icl128i v2 = icl128i(src+24);
-        icl128i v3 = icl128i(src+36);
+        icl8ux16 v0 = icl8ux16(src);
+        icl8ux16 v1 = icl8ux16(src + 12);
+        icl8ux16 v2 = icl8ux16(src + 24);
+        icl8ux16 v3 = icl8ux16(src + 36);
 
         v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
         v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
@@ -4644,20 +4644,20 @@ namespace icl{
         v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
         v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
 
-        icl256i(v0).storeu(dst0);
-        icl256i(v1).storeu(dst1);
-        icl256i(v2).storeu(dst2);
+        icl16sx16(v0).storeu(dst0);
+        icl16sx16(v1).storeu(dst1);
+        icl16sx16(v2).storeu(dst2);
       }
 
       inline void sse_copy_c3p3(const icl8u *src, icl32s *dst0, icl32s *dst1, icl32s *dst2) {
         // this function can be improved with SSE4 using _mm_blendv_epi8;
 
-        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
 
-        icl128i v0 = icl128i(src);
-        icl128i v1 = icl128i(src+12);
-        icl128i v2 = icl128i(src+24);
-        icl128i v3 = icl128i(src+36);
+        icl8ux16 v0 = icl8ux16(src);
+        icl8ux16 v1 = icl8ux16(src + 12);
+        icl8ux16 v2 = icl8ux16(src + 24);
+        icl8ux16 v3 = icl8ux16(src + 36);
 
         v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
         v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
@@ -4673,20 +4673,20 @@ namespace icl{
         v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
         v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
 
-        icl512i(icl256i(v0)).storeu(dst0);
-        icl512i(icl256i(v1)).storeu(dst1);
-        icl512i(icl256i(v2)).storeu(dst2);
+        icl32sx16(icl16sx16(v0)).storeu(dst0);
+        icl32sx16(icl16sx16(v1)).storeu(dst1);
+        icl32sx16(icl16sx16(v2)).storeu(dst2);
       }
 
       inline void sse_copy_c3p3(const icl8u *src, icl32f *dst0, icl32f *dst1, icl32f *dst2) {
         // this function can be improved with SSE4 using _mm_blendv_epi8;
 
-        const icl128i mask = icl128i(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
+        const icl8ux16 mask = icl32sx4(0x09060300, 0x0A070401, 0x0B080502, 0x80808080);
 
-        icl128i v0 = icl128i(src);
-        icl128i v1 = icl128i(src+12);
-        icl128i v2 = icl128i(src+24);
-        icl128i v3 = icl128i(src+36);
+        icl8ux16 v0 = icl8ux16(src);
+        icl8ux16 v1 = icl8ux16(src + 12);
+        icl8ux16 v2 = icl8ux16(src + 24);
+        icl8ux16 v3 = icl8ux16(src + 36);
 
         v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
         v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
@@ -4702,9 +4702,9 @@ namespace icl{
         v1.v0 = _mm_unpackhi_epi64(vl0, vl1);
         v2.v0 = _mm_unpacklo_epi64(vh0, vh1);
 
-        icl512(icl512i(icl256i(v0))).storeu(dst0);
-        icl512(icl512i(icl256i(v1))).storeu(dst1);
-        icl512(icl512i(icl256i(v2))).storeu(dst2);
+        icl512(icl32sx16(icl16sx16(v0))).storeu(dst0);
+        icl512(icl32sx16(icl16sx16(v1))).storeu(dst1);
+        icl512(icl32sx16(icl16sx16(v2))).storeu(dst2);
       }
 
       inline void sse_copy_c3p3(const icl32f *src, icl8u *dst0, icl8u *dst1, icl8u *dst2) {
@@ -4816,12 +4816,12 @@ namespace icl{
       inline void sse_copy_c4p4(const icl8u *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dst3) {
         // this function can be improved with SSE4 using _mm_blendv_epi8;
 
-        const icl128i mask = icl128i(0x0C080400, 0x0D090501, 0x0E0A0602, 0x0F0B0703);
+        const icl8ux16 mask = icl32sx4(0x0C080400, 0x0D090501, 0x0E0A0602, 0x0F0B0703);
 
-        icl128i v0 = icl128i(src);
-        icl128i v1 = icl128i(src+16);
-        icl128i v2 = icl128i(src+32);
-        icl128i v3 = icl128i(src+48);
+        icl8ux16 v0 = icl8ux16(src);
+        icl8ux16 v1 = icl8ux16(src + 16);
+        icl8ux16 v2 = icl8ux16(src + 32);
+        icl8ux16 v3 = icl8ux16(src + 48);
 
         v0.v0 = _mm_shuffle_epi8(v0.v0, mask.v0);
         v1.v0 = _mm_shuffle_epi8(v1.v0, mask.v0);
@@ -5187,12 +5187,12 @@ namespace icl{
                                     icl8u *r, icl8u *g, icl8u *b) {
         // load YUV values
         icl512 vY = icl512(y);
-        icl128i viU = icl128i(u);
+        icl8ux16 viU = icl8ux16(u);
         viU.v0 = _mm_unpacklo_epi8(viU.v0, viU.v0);
-        icl128i viV = icl128i(v);
+        icl8ux16 viV = icl8ux16(v);
         viV.v0 = _mm_unpacklo_epi8(viV.v0, viV.v0);
-        icl512 vU = icl512(icl512i(icl256i(viU)));
-        icl512 vV = icl512(icl512i(icl256i(viV)));
+        icl512 vU = icl512(icl32sx16(icl16sx16(viU)));
+        icl512 vV = icl512(icl32sx16(icl16sx16(viV)));
 
         vU -= icl512(128.0f);
         vV -= icl512(128.0f);
