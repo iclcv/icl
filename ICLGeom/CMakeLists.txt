@@ -42,7 +42,8 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/ObjectEdgeDetector.cpp
             src/ICLGeom/ObjectEdgeDetectorData.cpp
             src/ICLGeom/ObjectEdgeDetectorCPU.cpp
-            src/ICLGeom/ObjectEdgeDetectorGPU.cpp)
+            src/ICLGeom/ObjectEdgeDetectorGPU.cpp
+            src/ICLGeom/PlanarRansacEstimator.cpp)
 
 
 SET(HEADERS src/ICLGeom/Camera.h
@@ -70,7 +71,8 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/ObjectEdgeDetectorData.h
             src/ICLGeom/ObjectEdgeDetectorCPU.h
             src/ICLGeom/ObjectEdgeDetectorGPU.h
-            src/ICLGeom/ObjectEdgeDetectorPlugin.h)
+            src/ICLGeom/ObjectEdgeDetectorPlugin.h
+            src/ICLGeom/PlanarRansacEstimator.h)
 
 
 IF(QT_FOUND)
