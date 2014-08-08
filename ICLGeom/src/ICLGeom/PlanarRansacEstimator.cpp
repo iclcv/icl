@@ -67,7 +67,7 @@ namespace icl{
     "}                                                                                                                              \n"
     "__kernel void                                                                                                                  \n"
     "assignRANSAC(__global float4 const * xyz, __global uchar * mask, __global int * newLabel, float4 const n0,                     \n"
-    "float const d, int const euclDist, __global int * oldLabel, int maxID, int desiredID)                                          \n"
+    "float const d, float const euclDist, __global int * oldLabel, int maxID, int desiredID)                                          \n"
     "{                                                                                                                              \n"
     "  size_t id =  get_global_id(0);                                                                                               \n"
     "  if(mask[id]==0)                                                                                                              \n"
@@ -798,7 +798,7 @@ namespace icl{
           m_data->kernelAssignRANSAC.setArg(2, assignmentBlobsBuffer);
           m_data->kernelAssignRANSAC.setArg(3, result.n0);
           m_data->kernelAssignRANSAC.setArg(4, result.dist);
-          m_data->kernelAssignRANSAC.setArg(5, (int)threshold);
+          m_data->kernelAssignRANSAC.setArg(5, threshold);
           m_data->kernelAssignRANSAC.setArg(6, assignmentBuffer);
           m_data->kernelAssignRANSAC.setArg(7, srcID);
           m_data->kernelAssignRANSAC.setArg(8, desiredID);
