@@ -186,15 +186,15 @@ namespace icl{
     };
     
   #define BENCHMARK_THIS_SECTION(SECTION_NAME)                            \
-    static StackTimer::StackTimerNotifier __notifier(#SECTION_NAME);      \
-    StackTimer __stacktimer(&__notifier);
+    static icl::utils::StackTimer::StackTimerNotifier __notifier(#SECTION_NAME);      \
+    icl::utils::StackTimer __stacktimer(&__notifier);
     
   #define BENCHMARK_THIS_FUNCTION                                         \
-    static StackTimer::StackTimerNotifier __notifier(__FUNCTION__);       \
-    StackTimer __stacktimer(&__notifier);
+    static icl::utils::StackTimer::StackTimerNotifier __notifier(__FUNCTION__);       \
+    icl::utils::StackTimer __stacktimer(&__notifier);
     
   #define BENCHMARK_THIS_FUNCTION_LITE                                       \
-    static StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
-    StackTimer __stacktimer(&__notifier);
+    static icl::utils::StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
+    icl::utils::StackTimer __stacktimer(&__notifier);
   } // namespace utils
 }
