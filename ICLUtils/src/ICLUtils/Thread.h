@@ -101,7 +101,7 @@ namespace icl{
       void start();
       
       /// stops the thread and waits till it is ended 
-      void stop();
+      virtual void stop();
       
       /// waits for this thread to be ended
       /** The Thread ends automatically when its run function is over, or - if the

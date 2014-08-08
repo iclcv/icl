@@ -49,6 +49,7 @@ using namespace std;
 
 namespace icl{
   namespace utils{
+
     namespace {
       static Mutex SignalHandlerMutex(Mutex::mutexTypeRecursive);
       
@@ -160,6 +161,46 @@ namespace icl{
 #else
 
 #endif
+      }
+
+    
+      
+    }
+
+    struct NamedCallbackHandler : public SignalHandler{
+      Function<void,const std::string&> cb;
+      NamedCallbackHandler(const std::string &signalList,
+                           Function<void,const std::string&> cb):SignalHandler(signalList),cb(cb){}
+      virtual void handleSignals(const std::string &signalAsString){
+        cb(signalAsString);
+      }
+    };
+      
+    namespace{
+      typedef std::map<std::string,SmartPtr<NamedCallbackHandler> > NamedHandlersMap;
+      
+      SmartPtr<NamedHandlersMap> g_namedHandlers;
+      NamedHandlersMap &named(){
+        if(!g_namedHandlers) g_namedHandlers = new NamedHandlersMap;
+        return *g_namedHandlers;
+      }
+    }
+
+    
+    void SignalHandler::install(const std::string &id,
+                                Function<void,const std::string&> handler,
+                                const std::string &signalList){
+      Mutex::Locker l(SignalHandlerMutex);
+      if(named().find(id) != named().end()) return;
+      named()[id] = SmartPtr<NamedCallbackHandler> (new NamedCallbackHandler( signalList, handler) );
+    }
+    void SignalHandler::uninstall(const std::string &id){
+      Mutex::Locker l(SignalHandlerMutex);
+      NamedHandlersMap::iterator it = named().find(id);
+      if(it == named().end()){
+        ERROR_LOG("unable to find named signal handler " << id);
+      }else{
+        named().erase(it);
       }
     }
 

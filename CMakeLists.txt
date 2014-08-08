@@ -127,7 +127,7 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "1" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "2" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 

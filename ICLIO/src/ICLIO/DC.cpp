@@ -313,29 +313,18 @@ namespace icl{
   
       
       
-      class DCSignalHandler : public SignalHandler{
-      public:
-        DCSignalHandler():SignalHandler("SIGINT,SIGTERM,SIGSEGV"){}
-        virtual void handleSignals(const string &signal){
-          // {{{ open
-          printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
-          m_oMutex.lock();
-          DCGrabberThread::stopAllGrabberThreads();
-          m_oMutex.unlock();
-          // printf("done! (please ignore \"Hangup\" statement)\n");
-          // 
-        }
-  
-        // }}}
-        
-      private:
-        Mutex m_oMutex;
-      };
-     
+      void dc_signal_handler(const string &signal){
+        printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
+        DCGrabberThread::stopAllGrabberThreads();
+      }
+      
       void install_signal_handler(){
         // {{{ open
-  
-        static DCSignalHandler dcs;
+        static bool first = true;
+        if(first){
+          first = false;
+          SignalHandler::install("libdc1394", dc_signal_handler, "SIGINT,SIGTERM,SIGSEGV");
+        }
       }
   
       // }}}

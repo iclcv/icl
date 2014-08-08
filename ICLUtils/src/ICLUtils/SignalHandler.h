@@ -35,6 +35,7 @@
 #include <ICLUtils/Macros.h>
 #include <string>
 #include <vector>
+#include <ICLUtils/Function.h>
 
 namespace icl{
   namespace utils{
@@ -95,7 +96,25 @@ namespace icl{
           - <b>SIGXCPU</b> ( CPU time limit exceeded) 
           - <b>SIGXFSZ</b> ( File size limit exceeded)
       */
+      private:
+      // todo: later the constructor should be made private!
+      public:
+      /// this cannot be instantiated manually! Use SignalHandler::install instead
       SignalHandler(const std::string &signalsList="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
+      
+
+      public:
+      friend class NamedCallbackHandler;
+      
+      /// installs a handler to the given signals!
+      /** several handlers can be installed to the same signals.
+          If a handler is installed twice under the same ID, the
+          handler installation is skipped! */
+      static void install(const std::string &id,
+                          Function<void,const std::string&> handler,
+                          const std::string &signalList="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
+      static void uninstall(const std::string &id);
+      
       
       /// Destructor
       /** When the destructor is called the system default signal handlers are

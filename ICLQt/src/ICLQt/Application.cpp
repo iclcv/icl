@@ -42,17 +42,22 @@ namespace icl{
     struct ExecThread : public Uncopyable, public Thread{
       typedef void (*callback)(void);
       callback cb;
-      ExecThread(callback cb):cb(cb){
+      bool stopRequested;
+      ExecThread(callback cb):cb(cb), stopRequested(false){
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
       virtual void run(){
         while(true){
+          if(stopRequested) return; // thread ends!
           if(!trylock()){
             cb();
             unlock();
           }
           usleep(0);
         }
+      }
+      virtual void stop(){
+        stopRequested = true;
       }
     };
   
