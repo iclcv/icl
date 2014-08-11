@@ -521,7 +521,11 @@ namespace icl {
       public:
 
         static SegmentRegisterData* inst(){
-          static SegmentRegisterDataSignalHandler handler;
+          static bool first = true;
+          if(first){
+            first = false;
+            SignalHandler::install("SharedMemorySegment", signal_handler, "SIGINT,SIGTERM,SIGSEGV");
+          }
           static SegmentRegisterData segment_register_data;
           return &segment_register_data;
         }
@@ -616,19 +620,11 @@ namespace icl {
           regMutex()->lock();
           reg_segment.release();
         }
-
-
-        class SegmentRegisterDataSignalHandler : public SignalHandler{
-          public:
-            SegmentRegisterDataSignalHandler() : SignalHandler("SIGINT,SIGTERM,SIGSEGV"){
-              //printf("[created signal handler for SharedMemory]\n");
-            }
-            virtual void handleSignals(const std::string &signal){
-              printf("[SharedMemorySegment signal handling called. Signal \"%s\"]\n",signal.c_str());
-              SharedMemorySegment::Impl::handleSignal();
-              inst()->release();
-            }
-        };
+      static void signal_handler(const std::string &signal){
+        std::cout << "[SharedMemorySegment signal handling called. Signal " << signal << "]",
+        SharedMemorySegment::Impl::handleSignal();
+        inst()->release();
+      }
     };
 
     //##########################################################################

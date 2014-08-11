@@ -70,13 +70,36 @@ namespace icl{
     std::vector<callback> ICLApplication::s_callbacks;
     std::vector<callback> ICLApplication::s_finalizes;
 
-    
+ #if 0   
     static void qapplication_quit_wrapper(int){
       DEBUG_LOG("calling qapplication::quit!");
       QApplication::quit();
     }
-
+#endif
     static void handle_icl_app_signal(const std::string &signal){
+      static bool first = true;
+      if(signal == "SIGINT" && first){
+        first = false;
+        std::cout << "Caught CTRL+C signal!\n"
+                  << "Trying to force 'normal' shutdown ...\n"
+                  << "(press CTRL+C again to force immediate exit)" << std::endl;
+        QApplication::quit();
+      }else if(first){
+        first = false;
+        std::cout << "Caught signal " + signal + "!\n"
+                  << "Trying to force 'normal' shutdown ...\n"
+                  << "(press CTRL+C to force immediate exit)" << std::endl;
+        QApplication::quit();
+      }else{
+        exit(EXIT_FAILURE);
+      }
+
+    }
+#if 0
+;
+        ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
+      QApplication::quit();
+      
       DEBUG_LOG("ignoring signal " << signal);
       return;
 
@@ -101,7 +124,7 @@ namespace icl{
         }
       }
     }
-    
+#endif
 
     
     ICLApplication::ICLApplication(int n, char **ppc, 

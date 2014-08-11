@@ -27,149 +27,198 @@
 ** Excellence Initiative.                                          **
 **                                                                 **
 ********************************************************************/
+#ifdef ICL_SYSTEM_WINDOWS
+namespace icl{
+  namespace utils{
+    void SignalHandler::install(const std::string &, Function<void,const std::string&>,
+                                const std::string &){}
+    
+    void SignalHandler::uninstall(const std::string &){}
+#else
 
 #include <ICLUtils/SignalHandler.h>
 #include <ICLUtils/StrTok.h>
 #include <vector>
 #include <map>
+#include <set>
 #include <signal.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLUtils/Lockable.h>
+#include <ICLUtils/StringUtils.h>
 #include <sys/types.h>
-#ifndef ICL_SYSTEM_WINDOWS
-  #include <unistd.h>
-#endif
+#include <unistd.h>
 #include <cstdio>
+#include <cstring>
 
 #ifdef ICL_SYSTEM_APPLE
 #define SIGPOLL SIGIO
 #endif
 
-using namespace std;
-
 namespace icl{
   namespace utils{
-
-    namespace {
-      static Mutex SignalHandlerMutex(Mutex::mutexTypeRecursive);
-      
-#ifdef ICL_SYSTEM_WINDOWS // TODOW
-      struct sigaction {
-        //int          sa_flags;
-        //sigset_t     sa_mask;
-        //__p_sig_fn_t sa_handler;   /* see mingw/include/signal.h about the type */
-        int sa_flags;
-        int sa_mask;
-        void (*sa_handler)(int);
-      };
-#define sigemptyset(pset)    (*(pset) = 0)
-      int sigaction(int signum, const struct sigaction *act, struct sigaction *oact) {
-        /*void(*handler)(int);
-
-        if (act && oact) {
-          handler = signal(signum, act->sa_handler);
-          if (handler == SIG_ERR) return -1;
-          oact->sa_handler = handler;
-        } if (act && (oact == NULL)) {
-          handler = signal(signum, act->sa_handler);
-          if (handler == SIG_ERR) return -1;
-        }
-        else if ((act == NULL) && oact) {
-          if ((handler = signal(signum, SIG_IGN)) == SIG_ERR) return -1;
-          oact->sa_handler = handler;
-          handler = signal(signum, oact->sa_handler);
-          if (handler == SIG_ERR) return -1;
-        }
-        */
-        return 0;
+    struct SignalHandlerContext : public Lockable{
+      SignalHandlerContext() : Lockable(true){
+#define A_(S) add(str("SIG") + #S,SIG##S) 
+        A_(ABRT); A_(ALRM); A_(BUS);  A_(CHLD); A_(CONT); A_(FPE);  A_(HUP);  A_(ILL);    A_(INT);
+        A_(KILL); A_(PIPE); A_(QUIT); A_(SEGV); A_(STOP); A_(TERM); A_(TSTP); A_(TTIN);   A_(TTOU);
+        A_(USR1); A_(USR2); A_(POLL); A_(PROF); A_(SYS);  A_(TRAP); A_(URG);  A_(VTALRM); A_(XCPU); A_(XFSZ);
+#undef A_
       }
-      int kill(pid_t pid, int signal);
-#endif
+      int t(const std::string &s) const{
+        std::map<std::string,int>::const_iterator it = keys.find(s);
+        if(it != keys.end()){
+          return it->second;
+        }
+        else{
+          ERROR_LOG("undefined signal \"" << s << "\"");
+          return -1;
+        }
+      }
+      const std::string &t(int signal) const{
+        std::map<int,std::string>::const_iterator it = names.find(signal);
+        if(it != names.end()){
+          return (*it).second;
+        }else{
+          ERROR_LOG("undefined signal \"" << signal << "\n");
+          static const std::string udef = "[undefined signal]";
+          return udef;
+        }
+      }
       
-      typedef map<string,int> stringSignalMap;
-      typedef map<int,string> signalStringMap;
-      typedef multimap<int,SignalHandler*> shMap;
-      typedef map<int,struct sigaction*> saMap;
-#define ADD_SIGNAL(S) add(#S,S) 
+      void handle(int signal){
+        Mutex::Locker lock(this);
+        std::string name = t(signal);
+        for(HMap::iterator it = handlers.begin(); it != handlers.end(); ++it){
+          if(it->second.count(signal)){
+            it->second.f(name);
+          }
+        }        
+      }
       
-      class StringSignalMap{
-      public:
-#ifndef ICL_SYSTEM_WINDOWS
-        StringSignalMap(){
-          ADD_SIGNAL(SIGABRT); ADD_SIGNAL(SIGALRM); ADD_SIGNAL(SIGBUS);
-          ADD_SIGNAL(SIGCHLD); ADD_SIGNAL(SIGCONT); ADD_SIGNAL(SIGFPE);
-          ADD_SIGNAL(SIGHUP);  ADD_SIGNAL(SIGILL);  ADD_SIGNAL(SIGINT);
-          ADD_SIGNAL(SIGKILL); ADD_SIGNAL(SIGPIPE); ADD_SIGNAL(SIGQUIT);
-          ADD_SIGNAL(SIGSEGV); ADD_SIGNAL(SIGSTOP); ADD_SIGNAL(SIGTERM);
-          ADD_SIGNAL(SIGTSTP); ADD_SIGNAL(SIGTTIN); ADD_SIGNAL(SIGTTOU);
-          ADD_SIGNAL(SIGUSR1); ADD_SIGNAL(SIGUSR2); ADD_SIGNAL(SIGPOLL);
-          ADD_SIGNAL(SIGPROF); ADD_SIGNAL(SIGSYS);  ADD_SIGNAL(SIGTRAP);
-          ADD_SIGNAL(SIGURG);  ADD_SIGNAL(SIGVTALRM); ADD_SIGNAL(SIGXCPU);
-          ADD_SIGNAL(SIGXFSZ);
-        }
-#else
-        StringSignalMap(){
-          ADD_SIGNAL(SIGABRT); ADD_SIGNAL(SIGFPE);
-          ADD_SIGNAL(SIGILL);  ADD_SIGNAL(SIGINT);
-          ADD_SIGNAL(SIGSEGV); ADD_SIGNAL(SIGTERM);
-        }
-#endif
-        int getSignal(const string &s) const{
-          stringSignalMap::const_iterator it = strsgn.find(s);
-          if(it != strsgn.end()){
-            return (*it).second;
-          }
-          else{
-            ERROR_LOG("undefined signal \"" << s << "\"");
-            return -1;
-          }
-        }
-        const string &getString(int signal) const{
-          signalStringMap::const_iterator it = sgnstr.find(signal);
-          if(it != sgnstr.end()){
-            return (*it).second;
-          }else{
-            ERROR_LOG("undefined signal \"" << signal << "\n");
-            static string sUndefinedSignal = "undefined signal";
-            return sUndefinedSignal;
-          }
-        }
-      
-      private:
-        void add(const std::string &s, int signal){
-          strsgn[s]=signal;
-          sgnstr[signal]=s;
-        }
-        stringSignalMap strsgn;
-        signalStringMap sgnstr;
+      struct Handler : public std::set<int>{
+        Function<void,const std::string&> f;
       };
-    
-      static StringSignalMap SSM;
-      static shMap SHM;
-      static saMap SAM;
-    
-      void signal_handler_function(int signal){
-        Mutex::Locker l(SignalHandlerMutex);
-        shMap::iterator begin = SHM.lower_bound(signal);
-        shMap::iterator end = SHM.upper_bound(signal);
-        std::string str = SSM.getString(signal);
-        for(; begin != end; ++begin){
-          //        while(SHM.count(signal)){
-          //shMap::iterator it = SHM.find(signal);
-          // SignalHandler *sh = (*it).second;
-          begin->second->handleSignals(str);
-          //          sh->handleSignals(SSM.getString(signal));
-          // sh->removeAllHandles();
-        }
-#ifndef ICL_SYSTEM_WINDOWS
-        kill(getpid(),1);
-#else
 
-#endif
+    private:
+      void add(const std::string &s, int signal){
+        keys[s]=signal;
+        names[signal]=s;
+      }
+      std::map<int,std::string> names;
+      std::map<std::string,int> keys;
+      
+    public:
+      std::map<int,int> numHandlers; // for given signal key!
+      typedef std::map<std::string, Handler> HMap;
+      HMap handlers;
+    };
+    
+    static SignalHandlerContext &ctx(){
+      static SignalHandlerContext instance;
+      return instance;
+    }
+    
+  
+    
+    static void register_low_level_handler(void (*handler)(int, siginfo_t*, void*), int signal){
+      Mutex::Locker lock(ctx());
+      
+      struct sigaction action;
+      memset(&action, 0, sizeof(action));
+      if (handler) {
+        action.sa_sigaction = handler;
+        action.sa_flags = SA_SIGINFO;
+      } else {
+        action.sa_handler = SIG_DFL;
+      }
+      sigaction(signal, &action, NULL);
+    }
+
+    static void low_level_handler(int signum, siginfo_t* info, void *ptr) {
+      static bool bQuitting = false;
+      if (bQuitting) exit (EXIT_FAILURE); // signal during exit
+      bQuitting = true;
+      
+      //DEBUG_LOG("handling signal " << ctx().t(signum));
+      ctx().handle(signum);
+      //DEBUG_LOG("done with signal " << ctx().t(signum));
+      
+      // bQuitting = false; ??
+    }
+
+    void SignalHandler::install(const std::string &id, Function<void,const std::string&> f,
+                                const std::string &signals){
+
+      SignalHandlerContext &c = ctx();      
+      Mutex::Locker lock(c);
+
+      if(c.handlers.find(id) != c.handlers.end()){
+        throw ICLException("SingnalHandler with id " + id 
+                           + " was registered twice");
+      }
+         
+      
+      std::vector<std::string> names = tok(signals, ",");
+      
+      SignalHandlerContext::Handler &h = c.handlers[id];
+      h.f = f;
+      
+      for(size_t i=0;i<names.size();++i){
+        int signal =  c.t(names[i]);
+        if(c.numHandlers.find(signal) == c.numHandlers.end()){
+          register_low_level_handler(low_level_handler, signal);
+          c.numHandlers[signal] = 1;
+        }else{
+          c.numHandlers[signal]++;
+        }
+        h.insert(signal);
       }
 
+    }
     
+    void SignalHandler::uninstall(const std::string &id){
+      SignalHandlerContext &c = ctx();      
+      Mutex::Locker lock(c);
       
+      if(c.handlers.find(id) != c.handlers.end()){
+        throw ICLException("SingnalHandler with id " + id 
+                           +" cannot be uninstalled since it was never installed");
+      }
+      SignalHandlerContext::Handler &h = c.handlers[id];
+      
+      std::vector<int> rm;
+      for(std::set<int>::iterator it = h.begin(); it != h.end();++it){
+        int &n = c.numHandlers[*it];
+        if(!--n){
+          rm.push_back(*it);
+        }
+      }
+
+      for(size_t i=0;i<rm.size();++i){
+        register_low_level_handler(0, rm[i]); // no handlers left
+        c.numHandlers.erase(rm[i]);           // ensure that next call will re-install a low-level handler
+      }
+      
+      // remove the Handler instance
+      c.handlers.erase(id);
+    }
+    
+    
+#if 0
+    void signal_handler_function(int signal){
+      Mutex::Locker l(SignalHandlerMutex);
+      shMap::iterator begin = SHM.lower_bound(signal);
+      shMap::iterator end = SHM.upper_bound(signal);
+      std::string str = SSM.getString(signal);
+      for(; begin != end; ++begin){
+        //        while(SHM.count(signal)){
+        //shMap::iterator it = SHM.find(signal);
+        // SignalHandler *sh = (*it).second;
+        begin->second->handleSignals(str);
+        //          sh->handleSignals(SSM.getString(signal));
+        // sh->removeAllHandles();
+      }
     }
 
     struct NamedCallbackHandler : public SignalHandler{
@@ -313,6 +362,10 @@ namespace icl{
 	
 #endif
     }*/
+
+#endif
   } // namespace utils
   
 }
+
+#endif
