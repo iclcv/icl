@@ -34,6 +34,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
+#include <ICLUtils/SignalHandler.h>
 
 using namespace icl::utils;
 
@@ -69,6 +70,27 @@ namespace icl{
     std::vector<callback> ICLApplication::s_callbacks;
     std::vector<callback> ICLApplication::s_finalizes;
   
+
+    static void handle_icl_app_signal(const std::string &signal){
+      if(signal == "SIGHUP"){
+        std::cout << "[SIGHUP]" << std::endl;
+      }else if(signal == "SIGSEGV"){
+        std::cout << "Segmentation violation detected!\n" 
+                  << "Trying to force 'normal' shutdown ..." << std::endl;
+        QApplication::quit();
+      }else{
+        static bool first = true;
+        if(first){
+          first = false;
+          std::cout << "Caught " << signal << " signal!\n"
+                    << "Trying to force 'normal' shutdown ...\n"
+                    << "(Send signal again to force immediate exit)" << std::endl;
+          QApplication::quit();
+        }else{
+          std::terminate();
+        }
+      }
+    }
     
     ICLApplication::ICLApplication(int n, char **ppc, 
                                    const std::string &paInitString,
@@ -138,6 +160,9 @@ namespace icl{
       if(run3) s_callbacks.push_back(run3);
       if(run4) s_callbacks.push_back(run4);
       if(run5) s_callbacks.push_back(run5);
+
+      SignalHandler::install("ICL-Application",handle_icl_app_signal, 
+                             "SIGINT,SIGTERM,SIGSEGV,SIGHUP");
     }
     
     ICLApplication::~ICLApplication(){
