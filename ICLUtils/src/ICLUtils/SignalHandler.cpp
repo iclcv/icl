@@ -150,11 +150,16 @@ namespace icl{
     
       void signal_handler_function(int signal){
         Mutex::Locker l(SignalHandlerMutex);
-        while(SHM.count(signal)){
-          shMap::iterator it = SHM.find(signal);
-          SignalHandler *sh = (*it).second;
-          sh->handleSignals(SSM.getString(signal));
-          sh->removeAllHandles();
+        shMap::iterator begin = SHM.lower_bound(signal);
+        shMap::iterator end = SHM.upper_bound(signal);
+        std::string str = SSM.getString(signal);
+        for(; begin != end; ++begin){
+          //        while(SHM.count(signal)){
+          //shMap::iterator it = SHM.find(signal);
+          // SignalHandler *sh = (*it).second;
+          begin->second->handleSignals(str);
+          //          sh->handleSignals(SSM.getString(signal));
+          // sh->removeAllHandles();
         }
 #ifndef ICL_SYSTEM_WINDOWS
         kill(getpid(),1);

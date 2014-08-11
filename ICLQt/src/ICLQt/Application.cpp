@@ -69,15 +69,23 @@ namespace icl{
     std::vector<callback> ICLApplication::s_inits;
     std::vector<callback> ICLApplication::s_callbacks;
     std::vector<callback> ICLApplication::s_finalizes;
-  
+
+    
+    static void qapplication_quit_wrapper(int){
+      DEBUG_LOG("calling qapplication::quit!");
+      QApplication::quit();
+    }
 
     static void handle_icl_app_signal(const std::string &signal){
+      DEBUG_LOG("ignoring signal " << signal);
+      return;
+
       if(signal == "SIGHUP"){
-        std::cout << "[SIGHUP]" << std::endl;
+        //std::cout << "[SIGHUP]" << std::endl;
       }else if(signal == "SIGSEGV"){
         std::cout << "Segmentation violation detected!\n" 
                   << "Trying to force 'normal' shutdown ..." << std::endl;
-        QApplication::quit();
+        ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
       }else{
         static bool first = true;
         if(first){
@@ -85,12 +93,16 @@ namespace icl{
           std::cout << "Caught " << signal << " signal!\n"
                     << "Trying to force 'normal' shutdown ...\n"
                     << "(Send signal again to force immediate exit)" << std::endl;
-          QApplication::quit();
+          //QApplication::quit();
+          ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
+          //QApplication::processEvents();
         }else{
-          std::terminate();
+          exit(EXIT_SUCCESS);
         }
       }
     }
+    
+
     
     ICLApplication::ICLApplication(int n, char **ppc, 
                                    const std::string &paInitString,
@@ -232,8 +244,9 @@ namespace icl{
     }
     
     
-    void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, bool blocking){
-      if(isGUIThreadActive()){
+    void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, 
+                                            bool blocking, bool forcePostEvent){
+      if(isGUIThreadActive() && !forcePostEvent){
         event->execute();
       }else{
         if(blocking) {

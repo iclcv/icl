@@ -167,12 +167,12 @@ namespace icl{
       /** The event's ownwership is passed. It is deleted internally after 
           it is processed (please note, that the deletion will also take place
           within the GUI thread */
-      void executeInGUIThread(AsynchronousEvent *event, bool blocking = false);
+      void executeInGUIThread(AsynchronousEvent *event, bool blocking = false, bool forcePostEvent = false);
       
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T>
-      void executeInGUIThread(utils::Function<void,T> f, T data, bool blocking = false){
+      void executeInGUIThread(utils::Function<void,T> f, T data, bool blocking = false, bool forcePostEvent = false){
         struct TmpAsynchronousEvent : public AsynchronousEvent{
           T data;
           utils::Function<void,T> f;
@@ -181,13 +181,13 @@ namespace icl{
             f(data);
           }
         };
-        executeInGUIThread(new TmpAsynchronousEvent(data,f),blocking);
+        executeInGUIThread(new TmpAsynchronousEvent(data,f),blocking, forcePostEvent);
       }
       
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T,class U>
-      void executeInGUIThread(utils::Function<void,T,U> f, T t, U u, bool blocking = false){
+      void executeInGUIThread(utils::Function<void,T,U> f, T t, U u, bool blocking = false, bool forcePostEvent = false){
         struct TmpAsynchronousEvent : public AsynchronousEvent{
           T t;
           U u;
@@ -197,7 +197,7 @@ namespace icl{
             f(t,u);
           }
         };
-        executeInGUIThread(new TmpAsynchronousEvent(t,u,f),blocking);
+        executeInGUIThread(new TmpAsynchronousEvent(t,u,f),blocking, forcePostEvent);
       }
       
 
@@ -209,7 +209,7 @@ namespace icl{
       
       /// returns whether we are currently in the GUI thread
       static bool isGUIThreadActive();
-      
+
       private:
       /// singelton instance
       static ICLApplication *s_app;
