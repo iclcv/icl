@@ -43,22 +43,17 @@ namespace icl{
     struct ExecThread : public Uncopyable, public Thread{
       typedef void (*callback)(void);
       callback cb;
-      bool stopRequested;
-      ExecThread(callback cb):cb(cb), stopRequested(false){
+      ExecThread(callback cb):cb(cb){
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
       virtual void run(){
         while(true){
-          if(stopRequested) return; // thread ends!
           if(!trylock()){
             cb();
             unlock();
           }
           usleep(0);
         }
-      }
-      virtual void stop(){
-        stopRequested = true;
       }
     };
   
@@ -88,7 +83,7 @@ namespace icl{
         first = false;
         std::cout << "Caught signal " + signal + "!\n"
                   << "Trying to force 'normal' shutdown ...\n"
-                  << "(press CTRL+C to force immediate exit)" << std::endl;
+                  << "(next signal will force an immediate exit)" << std::endl;
         QApplication::quit();
       }else{
         exit(EXIT_FAILURE);
@@ -197,13 +192,14 @@ namespace icl{
       if(run5) s_callbacks.push_back(run5);
 
       SignalHandler::install("ICL-Application",handle_icl_app_signal, 
-                             "SIGINT,SIGTERM,SIGSEGV,SIGHUP");
+                             "SIGINT,SIGTERM,SIGSEGV,SIGHUP",100);
     }
     
     ICLApplication::~ICLApplication(){
       s_app = 0;
       app->processEvents();
       for(unsigned int i=0;i<s_threads.size();++i){
+        s_threads[i]->stop(); // force right virtual stop implementation to be 
         delete s_threads[i];
       }
       s_threads.clear();

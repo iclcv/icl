@@ -31,7 +31,7 @@
 namespace icl{
   namespace utils{
     void SignalHandler::install(const std::string &, Function<void,const std::string&>,
-                                const std::string &){}
+                                const std::string &, int){}
     
     void SignalHandler::uninstall(const std::string &){}
 #else
@@ -85,20 +85,36 @@ namespace icl{
           return udef;
         }
       }
+    
+      struct Handler : public std::set<int>{
+        Function<void,const std::string&> f;
+        int order;
+
+      };
+      
+      static bool cmp_handler_ptr(Handler *a, Handler *b){
+        return a->order < b->order;
+      }
       
       void handle(int signal){
         Mutex::Locker lock(this);
         std::string name = t(signal);
+        std::vector<Handler*> ordered;
+        
         for(HMap::iterator it = handlers.begin(); it != handlers.end(); ++it){
           if(it->second.count(signal)){
-            it->second.f(name);
+            ordered.push_back(&it->second);
           }
         }        
+        
+        std::sort(ordered.begin(), ordered.end(), cmp_handler_ptr);
+        
+        for(size_t i=0;i<ordered.size();++i){
+          ordered[i]->f(name);
+        }
       }
       
-      struct Handler : public std::set<int>{
-        Function<void,const std::string&> f;
-      };
+    
 
     private:
       void add(const std::string &s, int signal){
@@ -148,7 +164,7 @@ namespace icl{
     }
 
     void SignalHandler::install(const std::string &id, Function<void,const std::string&> f,
-                                const std::string &signals){
+                                const std::string &signals, int order){
 
       SignalHandlerContext &c = ctx();      
       Mutex::Locker lock(c);
@@ -163,6 +179,7 @@ namespace icl{
       
       SignalHandlerContext::Handler &h = c.handlers[id];
       h.f = f;
+      h.order = order;
       
       for(size_t i=0;i<names.size();++i){
         int signal =  c.t(names[i]);
@@ -205,165 +222,6 @@ namespace icl{
     }
     
     
-#if 0
-    void signal_handler_function(int signal){
-      Mutex::Locker l(SignalHandlerMutex);
-      shMap::iterator begin = SHM.lower_bound(signal);
-      shMap::iterator end = SHM.upper_bound(signal);
-      std::string str = SSM.getString(signal);
-      for(; begin != end; ++begin){
-        //        while(SHM.count(signal)){
-        //shMap::iterator it = SHM.find(signal);
-        // SignalHandler *sh = (*it).second;
-        begin->second->handleSignals(str);
-        //          sh->handleSignals(SSM.getString(signal));
-        // sh->removeAllHandles();
-      }
-    }
-
-    struct NamedCallbackHandler : public SignalHandler{
-      Function<void,const std::string&> cb;
-      NamedCallbackHandler(const std::string &signalList,
-                           Function<void,const std::string&> cb):SignalHandler(signalList),cb(cb){}
-      virtual void handleSignals(const std::string &signalAsString){
-        cb(signalAsString);
-      }
-    };
-      
-    namespace{
-      typedef std::map<std::string,SmartPtr<NamedCallbackHandler> > NamedHandlersMap;
-      
-      SmartPtr<NamedHandlersMap> g_namedHandlers;
-      NamedHandlersMap &named(){
-        if(!g_namedHandlers) g_namedHandlers = new NamedHandlersMap;
-        return *g_namedHandlers;
-      }
-    }
-
-    
-    void SignalHandler::install(const std::string &id,
-                                Function<void,const std::string&> handler,
-                                const std::string &signalList){
-      Mutex::Locker l(SignalHandlerMutex);
-      if(named().find(id) != named().end()) return;
-      named()[id] = SmartPtr<NamedCallbackHandler> (new NamedCallbackHandler( signalList, handler) );
-    }
-    void SignalHandler::uninstall(const std::string &id){
-      Mutex::Locker l(SignalHandlerMutex);
-      NamedHandlersMap::iterator it = named().find(id);
-      if(it == named().end()){
-        ERROR_LOG("unable to find named signal handler " << id);
-      }else{
-        named().erase(it);
-      }
-    }
-
-    SignalHandler::SignalHandler(const std::string &signalsList){
-      Mutex::Locker l(SignalHandlerMutex);
-      StrTok t(signalsList,",");
-      const vector<string> &toks = t.allTokens();
-      for(unsigned int i=0;i<toks.size();i++){
-        int signal = SSM.getSignal(toks[i]);
-
-        if(SHM.find(signal) != SHM.end()){
-          DEBUG_LOG2("handler already initialized. adding " << this << " as additinoal handler for " << toks[i] << "(" << signal << ")");
-          SHM.insert(pair<int,SignalHandler*>(signal,this));
-          m_vecAssocitatedSignals.push_back(signal);
-        } else {
-          DEBUG_LOG2("initializing and adding " << this << " as handler for " << toks[i] << "(" << signal << ")");
-          struct sigaction new_action;
-          struct sigaction *old_action = new struct sigaction;
-
-          new_action.sa_handler = signal_handler_function;
-          sigemptyset (&new_action.sa_mask);
-          new_action.sa_flags = 0;
-          sigaction (signal, NULL, old_action);
-
-          if (old_action->sa_handler != SIG_IGN){
-            sigaction (signal, &new_action, NULL);
-            SHM.insert(pair<int,SignalHandler*>(signal,this));
-            SAM[signal]=old_action;
-            m_vecAssocitatedSignals.push_back(signal);
-          } else {
-            ERROR_LOG("this signal can not be handle because it was ignored before: \"" << toks[i] << "\"");
-            delete old_action;
-          }
-          /// sigaction code::
-        }
-      }
-    }
-
-    void SignalHandler::removeHandle(std::string signalName){
-      int signal = SSM.getSignal(signalName);
-      std::vector<int>::iterator it;
-      for(std::vector<int>::iterator it = m_vecAssocitatedSignals.begin();
-          it != m_vecAssocitatedSignals.end(); ++it){
-        if(*it == signal){
-          SignalHandlerMutex.lock();
-          // remove signal from list
-          m_vecAssocitatedSignals.erase(it);
-          // deregister from signal
-          int handlerCount = SHM.count(signal);
-          DEBUG_LOG2("associated: " << signal << " count: " << SHM.count(signal));
-          std::pair<shMap::iterator,shMap::iterator> handlers = SHM.equal_range(signal);
-          for(shMap::iterator it = handlers.first; it != handlers.second;){
-            if(it->second == this){
-              DEBUG_LOG2("found " << this << " in handler map. removing " << signal);
-              shMap::iterator save = it;
-              ++save;
-              SHM.erase(it);
-              it = save;
-            } else {
-              ++it;
-            }
-          }
-          if(handlerCount == 1){
-            DEBUG_LOG2("deleting system signal handler " << signal);
-            struct sigaction *old_action = SAM[signal];
-            sigaction (signal, old_action, NULL);
-            delete old_action;
-            SAM.erase(SAM.find(signal));
-          }
-          SignalHandlerMutex.unlock();
-          return;
-        }
-      }
-    }
-
-    void SignalHandler::removeAllHandles(){
-      while(m_vecAssocitatedSignals.size()){
-        removeHandle(SSM.getString(m_vecAssocitatedSignals[0]));
-      }
-    }
-
-    SignalHandler::~SignalHandler(){
-      removeAllHandles();
-    }
-
-    void SignalHandler::oldAction(const std::string &signal){
-      int s  = SSM.getSignal(signal);
-      struct sigaction* old_sigaction = SAM[s];    
-      ICLASSERT_RETURN( old_sigaction );
-
-      if( old_sigaction->sa_handler != SIG_DFL &&
-          old_sigaction->sa_handler != SIG_ERR &&
-#ifndef ICL_SYSTEM_WINDOWS
-          old_sigaction->sa_handler != SIG_HOLD &&
-#endif
-          old_sigaction->sa_handler != SIG_IGN ){
-        old_sigaction->sa_handler(s);
-      }
-    }
-		
-    /*void SignalHandler::killCurrentProcess() {
-#ifndef ICL_SYSTEM_WINDOWS
-      kill(getpid(),1);
-#else
-	
-#endif
-    }*/
-
-#endif
   } // namespace utils
   
 }

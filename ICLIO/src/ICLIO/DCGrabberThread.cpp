@@ -54,6 +54,17 @@ namespace icl{
       DCGrabberThread::~DCGrabberThread(){
         stop();
         ICL_DELETE(m_poFrameQueue);
+
+        if(!g_bStopAllGrabberThreadsCalled){
+          /// remove from the grabber thread list to 
+          g_oGrabberThreadMutex.lock();
+          vector<DCGrabberThread*>::iterator it = find(g_vecAllThreads.begin(),g_vecAllThreads.end(),this);
+          if(it != g_vecAllThreads.end()){
+            g_vecAllThreads.erase(it);
+          }
+          g_oGrabberThreadMutex.unlock();
+        }
+
       }
       void DCGrabberThread::resetBus(){
         dc1394_reset_bus(m_poCam);
@@ -100,7 +111,7 @@ namespace icl{
       }
   
       // }}}
-      
+
       void DCGrabberThread::run(){
         // {{{ open
   
@@ -121,28 +132,13 @@ namespace icl{
   
       // }}}
   
-      void DCGrabberThread::finalize(){
-        // {{{ open  
-        ICL_DELETE(m_poFrameQueue);
-        if(!g_bStopAllGrabberThreadsCalled){
-          /// remove from the grabber thread list to 
-          g_oGrabberThreadMutex.lock();
-          vector<DCGrabberThread*>::iterator it = find(g_vecAllThreads.begin(),g_vecAllThreads.end(),this);
-          if(it != g_vecAllThreads.end()){
-            g_vecAllThreads.erase(it);
-          }
-          g_oGrabberThreadMutex.unlock();
-        }
-      }
-  
-      // }}}
   
       dc1394video_frame_t *DCGrabberThread::waitForNextImageFrame(){
         Time &lastTime = m_lastFramesTimeStamp;
         dc1394video_frame_t *frame = m_poFrameQueue->back();
         
         if(m_poOptions->suppressDoubledImages && lastTime != Time(0)){
-          while(Time(frame->timestamp) <= lastTime){
+          while(Time(frame->timestamp) <= lastTime && running()){
             m_poFrameQueue->unlock();
             usleep(100);
             m_poFrameQueue->lock();

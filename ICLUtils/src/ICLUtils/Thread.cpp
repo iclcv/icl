@@ -142,7 +142,7 @@ namespace icl{
     
     void *icl_thread_handler(void *t){
       ((Thread*)t)->run();
-  	pthread_exit(0);
+      //pthread_exit(0);
   	return 0;
     }
   } // namespace utils

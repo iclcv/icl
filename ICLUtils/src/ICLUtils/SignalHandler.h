@@ -111,10 +111,16 @@ namespace icl{
       /// installs a handler to the given signals!
       /** several handlers can be installed to the same signals.
           If a handler is installed twice under the same ID, the
-          handler installation is skipped! */
+          handler installation is skipped! 
+          @param orderPercent can be used to define an execution order of signal handlers
+                 Handlers with a higher value of orderPercent are triggered later
+                 The value 100 is used for shutting down the global QApplication, 
+                 which usually ends Qt's event loop, so it should not be used.
+      */
       static void install(const std::string &id,
                           Function<void,const std::string&> handler,
-                          const std::string &signalList="SIGINT,SIGTERM,SIGSEGV");
+                          const std::string &signalList="SIGINT,SIGTERM,SIGSEGV",
+                          int orderPercent = 0);
       
       static void uninstall(const std::string &id);
       

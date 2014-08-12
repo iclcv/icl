@@ -95,9 +95,6 @@ namespace icl{
         /// the thread function (moved frames) 
         ICLIO_API virtual void run();
         
-        /// resets the dc-camera at the end
-        ICLIO_API virtual void finalize();
-        
         /// called by the signal handler to stop all grabber threads
         ICLIO_API static void stopAllGrabberThreads();
         

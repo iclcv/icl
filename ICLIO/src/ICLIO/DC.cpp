@@ -314,8 +314,14 @@ namespace icl{
       
       
       void dc_signal_handler(const string &signal){
-        printf("[Unclean break detected. Signal \"%s\"]\n",signal.c_str());
-        DCGrabberThread::stopAllGrabberThreads();
+        static bool first = true;
+        if((signal == "SIGINT" || signal == "SIGTERM") && first){
+          first = false;
+          std::cout << "DC signal handler caught first " << signal << ", next time a bus reset will be forced" << std::endl;
+        }else{
+          std::cout << "DC signal handler caught signal " << signal << " forcing bus reset" << std::endl;
+          DCGrabberThread::stopAllGrabberThreads();
+        }
       }
       
       void install_signal_handler(){
@@ -323,6 +329,7 @@ namespace icl{
         static bool first = true;
         if(first){
           first = false;
+          //DEBUG_LOG("dc signal handler installation is skipped!");
           SignalHandler::install("libdc1394", dc_signal_handler, "SIGINT,SIGTERM,SIGSEGV");
         }
       }
