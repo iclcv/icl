@@ -47,7 +47,7 @@ off the following steps:
   selection **Additional Include Directories**
 
   If you have set the environment variable **ICL_DIR**, you can use
-  **$(ICL_DIR)/icl-8.5/include** instead of adding the absolute path to the
+  **$(ICL_DIR)/include/icl-9.1** instead of adding the absolute path to the
   include files.
 * afterwards go to **Configuration Properties->Linker->General**
 * add the path to the ICL libraries to the property **Additional Library Directories**
