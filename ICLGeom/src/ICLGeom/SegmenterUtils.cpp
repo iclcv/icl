@@ -237,7 +237,7 @@ namespace icl{
 
         #else
 	        std::cout << "no openCL parallelization available" << std::endl;
-	        clReady = false;
+          m_data->clReady = false;
         #endif
 	    }
     }
@@ -617,6 +617,8 @@ namespace icl{
 	      }
 	      
 	      return neighbours;
+      #else
+        return math::DynMatrix<bool>();
 	    #endif
     }
     

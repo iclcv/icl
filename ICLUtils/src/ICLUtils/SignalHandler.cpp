@@ -28,12 +28,16 @@
 **                                                                 **
 ********************************************************************/
 #ifdef ICL_SYSTEM_WINDOWS
+#include <ICLUtils/SignalHandler.h>
+
 namespace icl{
   namespace utils{
-    void SignalHandler::install(const std::string &, Function<void,const std::string&>,
+    void SignalHandler::install(const std::string &, Function<void, const std::string&>,
                                 const std::string &, int){}
-    
+
     void SignalHandler::uninstall(const std::string &){}
+  }
+}
 #else
 
 #include <ICLUtils/SignalHandler.h>
