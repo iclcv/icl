@@ -31,9 +31,15 @@
 #pragma once
 
 #include <ICLMath/FixedVector.h>
+#include <ICLCore/Img.h>
+#include <ICLCore/DataSegment.h>
+#include <ICLGeom/GeomDefs.h>
+#include <ICLUtils/Exception.h>
 
 namespace icl{
   using namespace core;
+  using namespace geom;
+  using namespace utils;
   namespace cv{
 
     /// class for region growing on images and DataSegments (e.g. poincloud xyzh)
