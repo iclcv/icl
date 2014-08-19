@@ -106,10 +106,12 @@ namespace icl{
     }
     
     const icl8u * ProtoBufSerializationDevice::sourceFor(const std::string &featureName, int &bytes){
+      //      DEBUG_LOG("what ????");
       null_check(__FUNCTION__);
       if(featureName.length() >= 5 && featureName.substr(0,5) == "meta:"){
+        std::string name = featureName.substr(5);
         for(int i=0;i<protoBufObject->metadata_size();++i){
-          std::string name = featureName.substr(5);
+          //DEBUG_LOG("searching for meta-data entry " << name << " but found " <<  protoBufObject->metadata(i).key() );
           if(protoBufObject->metadata(i).key() == name){
             const std::string &value = protoBufObject->metadata(i).value();
             bytes = (int)value.length();

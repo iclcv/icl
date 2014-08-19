@@ -138,7 +138,7 @@ namespace icl{
         dc1394video_frame_t *frame = m_poFrameQueue->back();
         
         if(m_poOptions->suppressDoubledImages && lastTime != Time(0)){
-          while(Time(frame->timestamp) <= lastTime && running()){
+          while(Time(frame->timestamp) <= lastTime && runningNoLock()){
             m_poFrameQueue->unlock();
             usleep(100);
             m_poFrameQueue->lock();

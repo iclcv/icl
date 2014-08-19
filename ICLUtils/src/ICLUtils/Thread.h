@@ -127,8 +127,15 @@ namespace icl{
       /** @param secs time in secs to sleep  ( float precision!)**/
       static void sleep(float secs);
       
-      /// this function is not tested very well
+      /// returns the internal running state
+      /** Internally, the implementation mutex will be locked here.
+          This *might* cause issues */
       bool running() const;
+
+      /// returns the running state of the thread (without locking the mutex)
+      /** this should usually be better (since less prone to producing
+          deadlocks) then the running() method */
+      bool runningNoLock() const;
     
       protected:
   

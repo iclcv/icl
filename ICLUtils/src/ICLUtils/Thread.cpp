@@ -89,8 +89,8 @@ namespace icl{
     void Thread::wait(){
       Mutex::Locker l(impl->mutex);
       if(impl->on){
-  	  pthread_join(impl->thread,&impl->data);
-  	  impl->on = false;
+        pthread_join(impl->thread,&impl->data);
+        impl->on = false;
         finalize();
       }
     }
@@ -132,6 +132,11 @@ namespace icl{
       Mutex::Locker l(const_cast<Mutex&>(impl->mutex));
       return impl->on;
     }
+
+    bool Thread::runningNoLock() const {
+      return impl->on;
+    }
+    
     void Thread::exit(){
       Mutex::Locker l(impl->mutex);
       if(impl->on){

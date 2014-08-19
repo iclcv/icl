@@ -107,7 +107,7 @@ namespace icl{
         const std::string &f = fs[i];
         
         if(f.length()>=5 && f.substr(0,5) == "meta:"){
-          const icl8u *s = dev.sourceFor(f.substr(5), nBytes);
+          const icl8u *s = dev.sourceFor(f, nBytes);
           std::string m(nBytes,'\0');
           std::copy(s,s+nBytes,m.begin());
           o.setMetaData(f.substr(5),m);
