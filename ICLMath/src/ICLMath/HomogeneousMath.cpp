@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLGeom/src/ICLGeom/GeomDefs.cpp                       **
-** Module : ICLGeom                                                **
-** Authors: Matthias Schroeder, Christof Elbrechter                **
+** File   : ICLMath/src/ICLMath/HomogeneousMath.cpp                **
+** Module : ICLMath                                                **
+** Authors: Christof Elbrechter, Matthias Schroeder                **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,18 +28,15 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLGeom/GeomDefs.h>
-#include <limits>
+#include <ICLMath/HomogeneousMath.h>
 
 namespace icl{
-  using namespace utils;
-  
-  namespace geom{
-    
-    float dist_point_linesegment(const Vec &p,const Vec &lineStart,const Vec &lineEnd,Vec *nearestPoint){
-      Vec  d1(p-lineStart);
-      Vec  d2(lineEnd-lineStart);
-      Vec  min_v(lineStart);
+  namespace math{
+
+    float dist_point_linesegment(const Vec4 &p,const Vec4 &lineStart,const Vec4 &lineEnd,Vec4 *nearestPoint){
+      Vec4  d1(p-lineStart);
+      Vec4  d2(lineEnd-lineStart);
+      Vec4  min_v(lineStart);
       float t = sprod3(d2,d2);
     
       if(t > std::numeric_limits<float>::min()){
@@ -55,15 +52,15 @@ namespace icl{
       return norm3(d1);
     }
 
-    float dist_point_triangle(const Vec &p,const Vec &a,const Vec &b,const Vec &c,Vec *nearestPoint){
-      Vec  ab = b - a;
-      Vec  ac = c - a;
-      Vec  n = cross(ab,ac); // not normalized !
+    float dist_point_triangle(const Vec4 &p,const Vec4 &a,const Vec4 &b,const Vec4 &c,Vec4 *nearestPoint){
+      Vec4  ab = b - a;
+      Vec4  ac = c - a;
+      Vec4  n = cross(ab,ac); // not normalized !
       float d = sqrnorm3(n);
     
       // Check if the triangle is degenerated -> measure dist to line segments
       if(fabs(d) < std::numeric_limits<float>::min()){
-        Vec  q, qq;
+        Vec4  q, qq;
         float d, dd(std::numeric_limits<float>::max());
       
         dd = dist_point_linesegment(p, a, b, &qq);
@@ -79,9 +76,9 @@ namespace icl{
       }
     
       float invD = 1.0 / d;
-      Vec  v1v2 = c; v1v2 -= b;
-      Vec  v0p = p; v0p -= a;
-      Vec  t = cross(v0p,n);
+      Vec4  v1v2 = c; v1v2 -= b;
+      Vec4  v0p = p; v0p -= a;
+      Vec4  t = cross(v0p,n);
       float aa= sprod3(t,ac) * -invD;
       float bb = sprod3(t,ab) * invD;
       float s01, s02, s12;

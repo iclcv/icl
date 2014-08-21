@@ -30,7 +30,6 @@
 
 SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CoplanarPointPoseEstimator.cpp
-            src/ICLGeom/GeomDefs.cpp
             src/ICLGeom/ICP.cpp
             src/ICLGeom/PlaneEquation.cpp
             src/ICLGeom/PointCloudNormalEstimator.cpp

@@ -39,10 +39,13 @@
 typedef icl::math::LevenbergMarquardtFitter<float> LM;
 
 namespace icl{
+  using namespace math;
+  
   namespace geom{ 
 
-    icl::math::FixedMatrix<float,4,4> SQParams::getTransformationMatrix() const {
-      return icl::math::create_hom_4x4<float>(euler[0], euler[1], euler[2],
+
+    FixedMatrix<float,4,4> SQParams::getTransformationMatrix() const {
+      return create_hom_4x4<float>(euler[0], euler[1], euler[2],
                                               pos[0], pos[1], pos[2]);
     }
 
@@ -79,7 +82,7 @@ namespace icl{
       LM::Matrix A(Mx.cols(), 4, 1.0);
       std::copy(Mx.begin(), Mx.end(), A.begin());
 
-      A = math::create_hom_4x4<float>(p[0], p[1], p[2],
+      A = create_hom_4x4<float>(p[0], p[1], p[2],
                                       p[3], p[4], p[5]).inv().dyn() * A;
 
       float *it0 = A.row_begin(0);
@@ -98,7 +101,7 @@ namespace icl{
     }
 
 
-    SQFitter::SQFitter(icl::utils::SmartPtr<Vec> camCenter) : camCenter(camCenter) {
+    SQFitter::SQFitter(utils::SmartPtr<Vec> camCenter) : camCenter(camCenter) {
       // get the error functions
       sErrorFunc = utils::function(sError, &shapeError::operator());
       ePErrorFunc = utils::function(ePError, &eulerPosError::operator());
@@ -109,14 +112,14 @@ namespace icl{
     }
 
     void SQFitter::preProcess(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference,
-                              icl::math::FixedMatrix<float,3,3> &R,
+                              FixedMatrix<float,3,3> &R,
                               Vec3 &center, Vec3 &size, Vec3 &origin, float &scale) {
       int cols = Mx.cols();
 
       // point cloud center
-      center = Vec3(math::mean(Mx.row_begin(0), Mx.row_end(0)),
-                    math::mean(Mx.row_begin(1), Mx.row_end(1)),
-                    math::mean(Mx.row_begin(2), Mx.row_end(2)));
+      center = Vec3(mean(Mx.row_begin(0), Mx.row_end(0)),
+                    mean(Mx.row_begin(1), Mx.row_end(1)),
+                    mean(Mx.row_begin(2), Mx.row_end(2)));
 
       for (int i = 0; i < cols; ++i) {
         Mx(i,0) -= center[0];
@@ -147,7 +150,7 @@ namespace icl{
       LM::Matrix eVec, eVal;
       M.eigen(eVec, eVal);
 
-      for (icl::math::DynMatrix<float>::iterator it = eVal.begin(); it != eVal.end(); ++it)
+      for (DynMatrix<float>::iterator it = eVal.begin(); it != eVal.end(); ++it)
         *it = sqrt(fabs(*it));
 
 
@@ -180,15 +183,15 @@ namespace icl{
 
 
       // get origin
-      R = icl::math::FixedMatrix<float,3,3>(eVec.data());
+      R = FixedMatrix<float,3,3>(eVec.data());
       origin = R * ((minV + maxV) * 0.5f);
     }
 
-    LM::Result SQFitter::fitShape(int i, icl::math::FixedMatrix<float,3,3> &R, LM::Matrix &xyzM, SQParams &params, Vec3 &size, Vec3 &euler) {
+    LM::Result SQFitter::fitShape(int i, FixedMatrix<float,3,3> &R, LM::Matrix &xyzM, SQParams &params, Vec3 &size, Vec3 &euler) {
       Vec3 pos = params.pos;
 
 
-      icl::math::FixedMatrix<float,3,3> sR;
+      FixedMatrix<float,3,3> sR;
 
       // switch axis if needed
       if (i == 0) {
@@ -198,14 +201,14 @@ namespace icl{
         size[0] = params.size[0];
         size[1] = params.size[2];
         size[2] = params.size[1];
-        sR = icl::math::FixedMatrix<float,3,3>(R(0,0), R(2,0), R(1,0),
+        sR = FixedMatrix<float,3,3>(R(0,0), R(2,0), R(1,0),
                                                R(0,1), R(2,1), R(1,1),
                                                R(0,2), R(2,2), R(1,2));
       } else {
         size[0] = params.size[1];
         size[1] = params.size[2];
         size[2] = params.size[0];
-        sR = icl::math::FixedMatrix<float,3,3>(R(1,0), R(2,0), R(0,0),
+        sR = FixedMatrix<float,3,3>(R(1,0), R(2,0), R(0,0),
                                                R(1,1), R(2,1), R(0,1),
                                                R(1,2), R(2,2), R(0,2));
       }
@@ -217,7 +220,7 @@ namespace icl{
 
 
       // calculate euler angles
-      euler = icl::math::extract_euler_angles(sR);
+      euler = extract_euler_angles(sR);
 
 
       // first guess for the shape is (1,1)
@@ -231,7 +234,7 @@ namespace icl{
       LM::Matrix A(xyzM.cols(), 4, 1.0);
       std::copy(xyzM.begin(), xyzM.end(), A.begin());
 
-      A = icl::math::create_hom_4x4<float>(euler[0], euler[1], euler[2],
+      A = create_hom_4x4<float>(euler[0], euler[1], euler[2],
                                            pos[0], pos[1], pos[2]).inv().dyn() * A;
 
       float a0 = 1.0/size[0];
@@ -248,7 +251,7 @@ namespace icl{
     }
 
     void SQFitter::fitSQ(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference) {
-      icl::math::FixedMatrix<float,3,3> R;
+      FixedMatrix<float,3,3> R;
       Vec3 center, size, origin;
       float scale;
 

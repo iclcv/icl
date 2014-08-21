@@ -41,9 +41,9 @@ namespace icl{
 
     /// Utility structure, that represents a superquadric
     struct ICLGeom_API SQParams {
-      Vec3 size;
-      Vec3 pos;
-      Vec3 euler;
+      math::Vec3 size;
+      math::Vec3 pos;
+      math::Vec3 euler;
       std::vector<float> shape;
 
       icl::math::FixedMatrix<float,4,4> getTransformationMatrix() const;
@@ -63,7 +63,7 @@ namespace icl{
 
       /// Structure, that contains the error function for the euler angles and position parameters
       struct eulerPosError {
-        Vec3 size;
+        math::Vec3 size;
         std::vector<float> shape;
 
         LM::Matrix operator()(const LM::Params &p, const LM::Matrix &vx);
@@ -86,17 +86,17 @@ namespace icl{
 
     private:
       /// internal function, that fits a superquadric into given point cloud
-      void fitSQ(LM::Matrix &Mx, Vec3 &viewDir, const std::string& sShapePreference);
+      void fitSQ(LM::Matrix &Mx, math::Vec3 &viewDir, const std::string& sShapePreference);
       /// internal function, that prepares some data for fitting of superquadrics
-      void preProcess(LM::Matrix &Mx, Vec3 &viewDir,
+      void preProcess(LM::Matrix &Mx, math::Vec3 &viewDir,
                       const std::string& sShapePreference,
                       icl::math::FixedMatrix<float,3,3> &R,
-                      Vec3 &center, Vec3 &size, Vec3 &origin,
+                      math::Vec3 &center, math::Vec3 &size, math::Vec3 &origin,
                       float &scale);
       /// internal function, that determines the shape parameters
       LM::Result fitShape(int i, icl::math::FixedMatrix<float,3,3> &R,
                           LM::Matrix &Mx, SQParams &params,
-                          Vec3 &size, Vec3 &euler);
+                          math::Vec3 &size, math::Vec3 &euler);
 
     private:
       SQFitter::shapeError sError;         //!< structure containing an error function

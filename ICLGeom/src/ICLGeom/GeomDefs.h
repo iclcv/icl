@@ -34,6 +34,7 @@
 #include <ICLCore/Types.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLMath/FixedVector.h>
+#include <ICLMath/HomogeneousMath.h>
 #include <vector>
 #include <ICLCore/Color.h>
 #include <ICLUtils/Point32f.h>
@@ -87,142 +88,10 @@ namespace icl{
   
     /// Short typedef for 4D float matrices
     typedef Mat4D32f Mat;
-  
-    /// another shortcut for 3D vectors
-    typedef math::FixedColVector<icl32f,3> Vec3;
-    
-    
-    /// linearly interpolates between a, b (x must be in range [0,1])
-    /** if x is 0, a is returned and if x is 1, b is returned */
-    template<class T>
-    T linear_interpolate(const T &a, const T &b, float x){
-      return a * (1-x) + b*x;
-    }
 
-    /// distance from point p to line segment (lineStart -> lineEnd)
-    /** The implementation is based on the code of http://www.geometrictools.com which is
-        povided under the terms of the "Boost Software License 1.0" 
-        (http://www.boost.org/LICENSE_1_0.txt) */
-    ICLGeom_API float dist_point_linesegment(const Vec &p,
-                                 const Vec &lineStart,
-                                 const Vec &lineEnd,
-                                 Vec *nearestPoint=0);
-    
-    
-    /// distance from point p to triangle (a - b - c)
-    /** The implementation is based on the code of http://www.geometrictools.com which is
-        povided under the terms of the "Boost Software License 1.0" 
-        (http://www.boost.org/LICENSE_1_0.txt) */
-    ICLGeom_API float dist_point_triangle(const Vec &p,
-                              const Vec &a,
-                              const Vec &b,
-                              const Vec &c,
-                              Vec *nearestPoint=0);
-    
-    
-    /// bilinear vector interpolation 
-    /** corner order ul, ur, ll, lr
-           0 ----- 1
-        |  |       |   --> x
-        |  2 ------3  
-        \/
-        y
-    */
-    inline Vec bilinear_interpolate(const Vec corners[4], float x, float y){
-      const Vec a = linear_interpolate(corners[0],corners[1],x);
-      const Vec b = linear_interpolate(corners[2],corners[3],x);
-      Vec c = linear_interpolate(a,b,y);
-      c[3] = 1;
-      return c;
-    }
-
-    /// normalize a vector to length 1
-    template<class T>
-    inline math::FixedColVector<T,4> normalize(const math::FixedMatrix<T,1,4> &v) { 
-      double l = v.length();
-      ICLASSERT_RETURN_VAL(l,v);
-      return v/l;
-    }
-    /// normalize a vector to length 1
-    template<class T>
-    inline math::FixedColVector<T,4> normalize3(const math::FixedMatrix<T,1,4> &v,const double& h=1) { 
-      double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-      ICLASSERT_RETURN_VAL(l,v);
-      Vec n = v/l;
-      // XXX 
-      n[3]=h;
-      return n;
-    }
-  
-    /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
-    inline float sprod3(const Vec &a, const Vec &b){
-      return a[0]*b[0] + a[1]*b[1]+ a[2]*b[2];
-    }
-    
-    /// sqared norm for 4D homogeneous vectors (ignoring the homegeneous component)
-    inline float sqrnorm3(const Vec &a){
-      return sprod3(a,a);
-    }
-      
-    /// 3D- euclidian norm for 4D homogeneous vectors (ignoring the homegeneous component)
-    inline float norm3(const Vec &a){
-      return ::sqrt(sqrnorm3(a));
-    }
-  
-  
-    /// homogenize a vector be normalizing 4th component to 1
-    template<class T>
-    inline math::FixedColVector<T,4> homogenize(const math::FixedMatrix<T,1,4> &v){
-      ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];
-    }
-  
-    /// perform perspective projection
-    template<class T>
-    inline math::FixedColVector<T,4> project(math::FixedMatrix<T,1,4> v, T z){
-      T zz = z*v[2];
-      v[0]/=zz;
-      v[1]/=zz;
-      v[2]=0;
-      v[3]=1;
-      return v;
-    }
-    
-    /// homogeneous 3D cross-product
-    template<class T>
-    inline math::FixedColVector<T,4> cross(const math::FixedMatrix<T,1,4> &v1, const math::FixedMatrix<T,1,4> &v2){
-      return math::FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
-                                 v1[2]*v2[0]-v1[0]*v2[2],
-                                 v1[0]*v2[1]-v1[1]*v2[0],
-                                 1 );
-    }
-  
     /// typedef for vector of Vec instances
     typedef std::vector<Vec> VecArray;
-  
     
-    /// rotates a vector around a given axis
-    inline Vec rotate_vector(const Vec &axis, float angle, const Vec &vec){
-      return math::create_rot_4x4(axis[0],axis[1],axis[2],angle)*vec;
-      /*
-          angle /= 2;
-          float a = cos(angle);
-          float sa = sin(angle);
-          float b = axis[0] * sa;
-          float c = axis[1] * sa;
-          float d = axis[2] * sa;
-          
-          float a2=a*a, b2=b*b, c2=c*c, d2=d*d;
-          float ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
-          
-          Mat X(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
-          2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
-          2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
-          0,            0,           0,           1);
-          
-          return X * vec;
-      */
-    }
-  
   } // namespace geom
 }
 

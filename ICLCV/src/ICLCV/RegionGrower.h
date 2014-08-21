@@ -33,13 +33,10 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/DataSegment.h>
-#include <ICLGeom/GeomDefs.h>
+#include <ICLMath/HomogeneousMath.h>
 #include <ICLUtils/Exception.h>
 
 namespace icl{
-  using namespace core;
-  using namespace geom;
-  using namespace utils;
   namespace cv{
 
     /// class for region growing on images and DataSegments (e.g. poincloud xyzh)
@@ -157,17 +154,11 @@ namespace icl{
           float t;
           Float4EuclideanDistance(float t):t(t){}
           bool operator()(const math::FixedColVector<float,4> &a, const math::FixedColVector<float,4> &b) const{
-            return dist3(a,b) < t;
+            return math::dist3(a,b) < t;
           }
         };
         
   
-        static float dist3(const Vec &a, const Vec &b){
-          return norm3(a-b);
-        }
-        
-  
-        
         template<class T, class DataT, int DIM, class Criterion>
         static void flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart, 
                                Channel8u &processed, Criterion crit, std::vector<int> &result,  Channel32s &result2, int id);
