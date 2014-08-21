@@ -57,15 +57,15 @@ namespace icl{
             @return the result label image
         */      
         template<class Criterion>
-        const Img32s &apply(const Img8u &image, Criterion crit, Img8u *initialMask = 0,
+        const core::Img32s &apply(const core::Img8u &image, Criterion crit, core::Img8u *initialMask = 0,
                             const unsigned int minSize=0, const unsigned int startID=1){
-          this->result=Img32s(image.getParams());
+          this->result=core::Img32s(image.getParams());
           //this->mask=Img8u(image.getParams());
-          Img8u &useMask = initialMask ? *initialMask : this->mask;
+          core::Img8u &useMask = initialMask ? *initialMask : this->mask;
           if(image.getChannels() == 1){
-            region_grow<Img8u,icl8u,1, Criterion>(image, useMask, this->result, crit, minSize, startID);
+            region_grow<core::Img8u,icl8u,1, Criterion>(image, useMask, this->result, crit, minSize, startID);
           }else{
-            throw ICLException("wrong number of image channels");
+            throw utils::ICLException("wrong number of image channels");
           }
           return this->result;
         }
@@ -80,12 +80,12 @@ namespace icl{
             @return the result label image
         */   
         template<class Criterion>
-        const Img32s &apply(const DataSegment<float,4> &dataseg, Criterion crit, Img8u *initialMask = 0,
+        const core::Img32s &apply(const core::DataSegment<float,4> &dataseg, Criterion crit, core::Img8u *initialMask = 0,
                             const unsigned int minSize=0, const unsigned int startID=1){
-          Img8u &useMask = initialMask ? *initialMask : this->mask;
+          core::Img8u &useMask = initialMask ? *initialMask : this->mask;
           this->result.setSize(dataseg.getSize());
           this->result.setChannels(1);
-          region_grow<DataSegment<float,4>,float,4, Criterion>(dataseg, useMask, this->result, crit, minSize, startID);
+          region_grow<core::DataSegment<float,4>,float,4, Criterion>(dataseg, useMask, this->result, crit, minSize, startID);
           return this->result;
         }
   
@@ -98,7 +98,7 @@ namespace icl{
             @param startID the start id for the result label image
             @return the result label image
         */   
-        const Img32s &applyFloat4EuclideanDistance(const DataSegment<float,4> &dataseg, Img8u mask, 
+        const core::Img32s &applyFloat4EuclideanDistance(const core::DataSegment<float,4> &dataseg, core::Img8u mask, 
                             const int threshold, const unsigned int minSize=0, const unsigned int startID=1){
           return apply(dataseg, Float4EuclideanDistance(threshold), &mask, minSize, startID);
         }
@@ -112,7 +112,7 @@ namespace icl{
             @param startID the start id for the result label image
             @return the result label image
         */     
-        const Img32s &applyEqualThreshold(const Img8u &image, Img8u mask, const int threshold, 
+        const core::Img32s &applyEqualThreshold(const core::Img8u &image, core::Img8u mask, const int threshold, 
                             const unsigned int minSize=0, const unsigned int startID=1){
           return apply(image, EqualThreshold(threshold), &mask, minSize, startID);
         }
@@ -128,8 +128,8 @@ namespace icl{
   
       private:
 
-        Img8u mask;
-        Img32s result;
+        core::Img8u mask;
+        core::Img32s result;
         std::vector<std::vector<int> > regions;
       
         template<class T, class DataT, int DIM>
@@ -161,17 +161,17 @@ namespace icl{
   
         template<class T, class DataT, int DIM, class Criterion>
         static void flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart, 
-                               Channel8u &processed, Criterion crit, std::vector<int> &result,  Channel32s &result2, int id);
+                               core::Channel8u &processed, Criterion crit, std::vector<int> &result,  core::Channel32s &result2, int id);
                                
                                
         template<class T, class DataT, int DIM, class Criterion>
-        void region_grow(const T &data, Img8u &mask, Img32s &result, Criterion crit, const unsigned int minSize, const unsigned int startID=1){
+        void region_grow(const T &data, core::Img8u &mask, core::Img32s &result, Criterion crit, const unsigned int minSize, const unsigned int startID=1){
           RegionGrowerDataAccessor<T,DataT,DIM> a(data);
           
-          Img8u processed = mask;
-          Channel8u p = processed[0];
+          core::Img8u processed = mask;
+          core::Channel8u p = processed[0];
           std::vector<int> r;
-          Channel32s res = result[0];
+          core::Channel32s res = result[0];
           result.fill(0);
 
           int nextID = startID;
@@ -207,20 +207,20 @@ namespace icl{
      
      
       template<>
-      struct RegionGrower::RegionGrowerDataAccessor<Img8u, icl8u, 1>{
-        const Channel8u c;
-        RegionGrowerDataAccessor(const Img8u &image):c(image[0]){}
+      struct RegionGrower::RegionGrowerDataAccessor<core::Img8u, icl8u, 1>{
+        const core::Channel8u c;
+        RegionGrowerDataAccessor(const core::Img8u &image):c(image[0]){}
         int w() const { return c.getWidth(); }
         int h() const { return c.getHeight(); }
         math::FixedColVector<icl8u, 1> operator()(int x, int y) const { return c(x,y); }
       };
 
       template<>
-      struct RegionGrower::RegionGrowerDataAccessor<Img8u, icl8u, 3>{
-        Channel8u c[3];
-        RegionGrowerDataAccessor(const Img8u &image){
+      struct RegionGrower::RegionGrowerDataAccessor<core::Img8u, icl8u, 3>{
+        core::Channel8u c[3];
+        RegionGrowerDataAccessor(const core::Img8u &image){
           for(int i=0;i<3;++i){
-            c[i] = ((Img8u&)image)[i];
+            c[i] = ((core::Img8u&)image)[i];
           }
         }
         int w() const { return c[0].getWidth(); }
@@ -231,10 +231,10 @@ namespace icl{
       };
 
       template<>
-      struct RegionGrower::RegionGrowerDataAccessor<DataSegment<float,4>, float, 4>{
-        DataSegment<float,4> data;
+      struct RegionGrower::RegionGrowerDataAccessor<core::DataSegment<float,4>, float, 4>{
+        core::DataSegment<float,4> data;
         int ww,hh;
-        RegionGrowerDataAccessor(const DataSegment<float,4> &data):data(data){
+        RegionGrowerDataAccessor(const core::DataSegment<float,4> &data):data(data){
           ww = data.getSize().width;
           hh = data.getSize().height;
         }
@@ -245,7 +245,7 @@ namespace icl{
         
       template<class T, class DataT, int DIM, class Criterion>
       void RegionGrower::flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart, 
-                               Channel8u &processed, Criterion crit, std::vector<int> &result,  Channel32s &result2, int id){
+                               core::Channel8u &processed, Criterion crit, std::vector<int> &result,  core::Channel32s &result2, int id){
         std::vector<utils::Point> stack(1,utils::Point(xStart,yStart));
         processed(xStart,yStart) = true;//update mask
         result2(xStart,yStart) = id;//update result image           
