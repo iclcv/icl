@@ -32,6 +32,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/Macros.h>
+#include <CL/cl.h>
+#undef CL_VERSION_1_2
 #include <CL/cl.hpp>
 
 #include <iostream>

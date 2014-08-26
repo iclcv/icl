@@ -171,6 +171,8 @@ namespace icl{
           yuy2 += 4;
         }
       }
+
+     
   
   #ifdef ICL_HAVE_LIBJPEG    
       void mjpg(const icl8u* data, const Size &size, ImgBase **dst, std::vector<icl8u> *buf = 0){
