@@ -31,6 +31,8 @@
 #include <ICLGeom/Segmentation3D.h>
 #ifdef ICL_HAVE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
+#include <CL/cl.h>
+#undef CL_VERSION_1_2
 #include <CL/cl.hpp>
 #endif
 
