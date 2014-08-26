@@ -361,7 +361,9 @@ namespace icl{
     void ConfigFile::save(const std::string &filename) const{
       // {{{ open
       try{
-        m_doc->save_file(filename.c_str());
+	      if (!m_doc->save_file(filename.c_str())) {
+		      ERROR_LOG("failed to open file: " << filename);
+	      }
         //      XMLDocument::save(*m_doc,filename);
       }catch(const ICLException &e){
         ERROR_LOG(e.what());
