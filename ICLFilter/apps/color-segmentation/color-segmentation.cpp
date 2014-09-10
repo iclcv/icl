@@ -56,10 +56,11 @@ int hoveredClassID = -1;
 
 void cc_util_hls_to_rgb_i(int h, int l, int s, int &r, int &g, int &b){
   float R,G,B;
-  return cc_util_hls_to_rgb(h,l,s,R,G,B);
+  cc_util_hls_to_rgb(h,l,s,R,G,B);
   r = R;
   g = G;
   b = B;
+  //  DEBUG_LOG("h:" << h << " l:" << l << " s:" << s << " --> r:" << r << " g:" << g << " b:" << b);
 }
 void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
   r2=r; g2=g; b2=b;
@@ -95,8 +96,11 @@ struct LUT3DSceneObject : public SceneObject {
     for(int z=0;z<t;++z){
       for(int y=0;y<h;++y){
         for(int x=0;x<w;++x,++i){
-          cc_func(x*dx,y*dy,z*dz,rs[i],gs[i],bs[i]);
-          SceneObject *o = addCube(x-cx,y-cy,z-cz,1);
+          cc_func(w==1 ? 127 : x*dx,
+                  h==1 ? 127 : y*dy,
+                  t==1 ? 127 : z*dz,
+                  rs[i],gs[i],bs[i]);
+          SceneObject *o = addCube(x-cx+0.5,y-cy+0.5,z-cz+0.5,1);
           o->setColor(Primitive::quad, GeomColor(rs[i],gs[i],bs[i],255));
           o->setColor(Primitive::line, GeomColor(255,255,255,255));
           o->setVisible(Primitive::line,false);
