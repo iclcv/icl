@@ -66,6 +66,20 @@ namespace icl{
       /// deferred intialization
       void init(const std::string &sourceType, const std::string &srcDescription);
       
+      /// re-initializes the current device
+      /** The backend can choose to throw an exception. The syntax
+          for reinitialization is defined by each backend individually */
+      void reinit(const std::string &description) throw (utils::ICLException);
+
+      /// forwards call to current backend
+      Camera getDepthCamera() const throw (utils::ICLException);
+
+      /// forwards call to current backend
+      Camera getColorCamera() const throw (utils::ICLException);
+
+      /// forwards call to current backend
+      void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException);
+      
       /// deferred initialization from ProgArg (most common perhaps)
       /** Prog-arg is assumed to have 2 sub-args */
       void init(const utils::ProgArg &pa);

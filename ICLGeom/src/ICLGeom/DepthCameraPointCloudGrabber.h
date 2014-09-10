@@ -127,12 +127,30 @@ namespace icl{
       /** only if both color- and depth camera is available */
       RGBDMapping getMapping() const throw (utils::ICLException);
 
+      /// reinitisize the backend (here, only new camera parameters can be given)
+      /** The syntax is @dcam=depth-cam-filename@ccam=color-cam-filename. 
+          It is also possible to pass only one of the @ tokens. */
+      void reinit(const std::string &description) throw (utils::ICLException);
 
       /// returns the last grabbed point cloud's underlying depth image
       virtual const core::Img32f *getDepthImage() const;
 
       /// returns the last grabbed point cloud's underlying color image (if available)
       virtual const core::Img8u *getColorImage() const;
+
+      /// returns current depth camera
+      virtual Camera getDepthCamera() const throw (utils::ICLException);
+
+      /// returns current color camera
+      /** If no color camera was given, an exception is thrown */
+      virtual Camera getColorCamera() const throw (utils::ICLException);
+
+      /// sets up the cameras world frame
+      /** Internally, this will set the depth camera's world frame to T.
+          If a color camera is given, it will be also moved so that the
+          relative transform between the depth camera and the color camera
+          remains the same. Otherwise, the RGBD-mapping would become broken */
+      virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException);
       
     };
   } // namespace geom

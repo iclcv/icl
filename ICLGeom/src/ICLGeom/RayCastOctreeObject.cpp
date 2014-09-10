@@ -52,6 +52,7 @@ namespace icl{
         sv[i].second = ( sqr(o[0]-rays[i][0]) +
                          sqr(o[1]-rays[i][1]) +
                          sqr(o[2]-rays[i][2]) );
+        if(sv[i].second < 0.0001) sv[i].second = 1.e37;
       }
       return sv;
     }

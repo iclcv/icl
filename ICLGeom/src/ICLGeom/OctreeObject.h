@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/Octree.h>
 #include <ICLGeom/SceneObject.h>
+#include <ICLGeom/PointCloudObjectBase.h>
 
 
 #ifdef APPLE
@@ -125,6 +126,7 @@ namespace icl{
                    const Scalar &width, const Scalar &height, const Scalar &depth):
       Parent(minX,minY,minZ,width,height,depth){ 
         init();
+        SceneObject::setLockingEnabled(true);
       }
       
       /// create OctreeObject from given cubic axis-aligned bounding box
@@ -132,6 +134,19 @@ namespace icl{
         init();
       }
 
+      /// Adds all points from the given point cloud object to the octree
+      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock 
+          is used to avoid issues during update */
+      void fill(const PointCloudObjectBase &obj, bool clearBefore=true){
+        SceneObject::lock();
+        if(clearBefore) Parent::clear();
+        const core::DataSegment<float,4> xyzh = obj.selectXYZH();
+        for(int i=0;i<xyzh.getDim();i+=1){
+          Parent::insert(xyzh[i]);
+        }
+        SceneObject::unlock();
+      }
+      
       /// sets whether points are rendered as well
       /** Please not, that the point rendering of the OctreeObject is less efficient
           the the point-rendering used in SceneObject or in the PointCouldObjectBase

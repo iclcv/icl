@@ -89,6 +89,67 @@ namespace icl{
       addProperty("positioning fix","range","[-50,50]",0);
       
     }
+
+    void DepthCameraPointCloudGrabber::reinit(const std::string &description) 
+      throw (utils::ICLException){
+      std::vector<std::string> ts = tok(description,"@");
+      std::string newDCam, newCCam;
+      for(size_t i=0;i<ts.size();++i){
+        if(ts[i].size() > 5 && ts[i].substr(0,5) == "dcam="){
+          newDCam = ts[i].substr(5);
+        }else if(ts[i].size() > 5 && ts[i].substr(0,5) == "ccam="){
+          newCCam = ts[i].substr(5);
+        }else{
+          throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description + 
+                             "): invalid description syntax [ syntax is "
+                             "@dcam=filename@ccam=filename ]");
+        }
+      }
+      if(newDCam.length() && newCCam.length()){
+        m_data->creator.init(Camera(newDCam), Camera(newCCam));
+      }else if(newDCam.length()){
+        m_data->creator.init(Camera(newDCam));
+      }else if(newCCam.length()){
+        Camera dcam = m_data->creator.getDepthCamera();
+        m_data->creator.init(dcam, Camera(newCCam));
+      }else{
+         throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description + 
+                            "): not a single valid token was found [ syntax is "
+                            "@dcam=filename@ccam=filename ]");
+      }
+    }
+
+    Camera DepthCameraPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
+      return m_data->creator.getDepthCamera();
+    }
+
+    Camera DepthCameraPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
+      return m_data->creator.getColorCamera();
+    }
+    
+
+    void DepthCameraPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) 
+      throw (utils::ICLException){
+      Camera dCam = getDepthCamera();
+      Mat Tdi = dCam.getCSTransformationMatrix();
+
+      dCam.setWorldFrame(T);
+
+      Mat Td2 = dCam.getInvCSTransformationMatrix();
+      Mat Tdi2 = dCam.getCSTransformationMatrix();
+
+      try{
+        Camera cCam = getColorCamera();
+        Mat Tc = cCam.getInvCSTransformationMatrix();
+        
+        Mat Trel = Tdi * Tc;
+        // get relative transform between depth and color
+        cCam.setWorldTransformation( Td2 * Trel);
+        m_data->creator.init(dCam,cCam);
+      }catch(...){
+        m_data->creator.init(dCam);
+      }
+    }
     
     DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
       delete m_data;

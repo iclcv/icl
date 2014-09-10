@@ -91,7 +91,10 @@ namespace icl{
 
         int processEvents(){
           Mutex::Locker l(ctx_mutex);
-          return freenect_process_events(ctx_ptr);
+          //DEBUG_LOG("calling freenect_process_events");
+          int x = freenect_process_events(ctx_ptr);
+          //DEBUG_LOG("calling freenect_process_events done");
+          return x;
         }
 
         int openDevice(freenect_device **dev, int index){
@@ -121,8 +124,10 @@ namespace icl{
         virtual void run(){
           usleep(1000);
           while(true){
+            //DEBUG_LOG("kinect grabber running");
             usleep(1);
             if(!trylock()){
+              //DEBUG_LOG("kinect grabber got lock");
               if(processEvents() < 0){
                 errors++;
               }
@@ -131,6 +136,7 @@ namespace icl{
                 throw ICLException("detected 100th error in freenect event processing");
               }
               unlock();
+              //DEBUG_LOG("kinect grabber unlocked");
             }
           }
         }

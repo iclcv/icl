@@ -112,7 +112,7 @@ namespace icl{
     public:
       enum IconType {Tool,Zoom,Lock, Unlock,RedZoom,RedCam,
                      NNInter, LINInter, CustomIcon, RangeNormal, RangeScaled,
-                     EnterFullScreen, LeaveFullScreen };
+                     EnterFullScreen, LeaveFullScreen, Detach, Reattach };
       enum Event { Move, Press, Release, Enter, Leave,Draw};
   
       ICLWidget *parent;
@@ -153,6 +153,9 @@ namespace icl{
           case CustomIcon: return IconFactory::create_image("custom");
           case LeaveFullScreen: return IconFactory::create_image("leave-fullscreen");
           case EnterFullScreen: return IconFactory::create_image("enter-fullscreen");
+          case Detach: return IconFactory::create_image("locked");
+          case Reattach: return IconFactory::create_image("unlocked");
+
         }
         static Img8u undef(Size(32,32),4);
         return undef;
@@ -345,15 +348,18 @@ namespace icl{
        std::string info_str;
        if(!haveImage) info_str = "no image, viewport:"+str(viewPort);
        else info_str = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
+       pe->linewidth(1);
        pe->fontsize(10);
        Size info_size = pe->estimateTextBounds(info_str);
        info_size.width += 10;
-       info_size.height += 2;
+       info_size.height += 4;
        Size widget_size = pe->getSize();
-       Rect32f info_rect(widget_size.width-info_size.width,widget_size.height- info_size.height,info_size.width,info_size.height);
-       pe->fill(210,210,210,255);
+       Rect32f info_rect(widget_size.width-info_size.width-1,
+                         widget_size.height-info_size.height-1,
+                         info_size.width,info_size.height+1);
+       pe->fill(255,255,255,130);
        pe->rect(info_rect);
-       pe->color(50,50,50,255);
+       pe->color(100,100,100,255);
        pe->rect(info_rect);
        pe->text(info_rect,info_str);
      }
@@ -414,7 +420,7 @@ namespace icl{
       bool showNoImageWarnings;
       ICLWidget::OutputBufferCapturer *outputCap;
       bool menuOn;
-  
+
       QMutex menuMutex;    
       GUI menu;
       QWidget *menuptr;
@@ -441,6 +447,7 @@ namespace icl{
       Point wheelDelta;
       Size defaultViewPort;
       QWidget *parentBeforeFullScreen;
+      QRect geomBeforeFullScreen;
       bool autoRender;
       ICLWidget::BGColorSource bcSrc;
       std::string infoText;
@@ -448,7 +455,7 @@ namespace icl{
       bool event(int x, int y, OSDGLButton::Event evt){
         bool any = false;
         for(unsigned int i=0;i<glbuttons.size();++i){
-          if(i == 6 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
+          if(i == 7 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
             continue;
           }
           any |= glbuttons[i]->event(x,y,evt,parent);
@@ -472,6 +479,8 @@ namespace icl{
         
         w = iclMax(menuptr->minimumWidth(),w);
         h = iclMax(menuptr->minimumHeight(),h);
+        
+        menuptr->setGeometry(MARGIN,TOP_MARGIN, w, h);
       }
       void pushScaleModeAndChangeToZoom(){
         fmSave = fm;
@@ -484,31 +493,61 @@ namespace icl{
   
       void enterFullScreen(){
         if(!parent->isFullScreen()){
-          parentBeforeFullScreen = (QWidget*)parent->parent();
-          parent->setParent(0);
+          if(parent->parent()){
+            parentBeforeFullScreen = (QWidget*)parent->parent();
+            geomBeforeFullScreen = parent->geometry();
+            parent->setParent(0);
+          }
           parent->showFullScreen();
           parent->show();
           glbuttons[5]->toggled = true;
           for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
+        }
+      }
+
+      void detach(){
+        if(!parent->parent()) return;
+        if(!parent->windowTitle().length()){
+          QWidget *p = parent;
+          while(p->parent()) p = (QWidget*)p->parent();
+          parent->setWindowTitle(p->windowTitle() + " (detached)");
+        }
+        if(parent->isFullScreen()){
+          parent->showNormal();
+        }else{
+          parentBeforeFullScreen = (QWidget*)parent->parent();
+          geomBeforeFullScreen = parent->geometry();
+          parent->setParent(0);
+          parent->show();
+          glbuttons[6]->toggled = true;
+          for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
   
         }
       }
-      void leaveFullScreen(){
+      void reattach(){
         if(parent->isFullScreen()){
           parent->showNormal();
-          parent->setParent(parentBeforeFullScreen);
-          if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
-            parentBeforeFullScreen->layout()->addWidget(parent);
-          }
-          parent->show();
-          parent->setFocus();
-          glbuttons[5]->toggled = false;
-          for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
         }
+        parent->setParent(parentBeforeFullScreen);
+        parent->setGeometry(geomBeforeFullScreen);
+        if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
+          parentBeforeFullScreen->layout()->addWidget(parent);
+        }
+        parent->show();
+        parent->setFocus();
+        glbuttons[5]->toggled = false;
+        glbuttons[6]->toggled = false;
+        for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
       }
+
       void changeFullScreenMode(bool toggled){
         if(toggled) enterFullScreen();
-        else leaveFullScreen();
+        else reattach();
+      }
+
+      void changeDetachMode(bool toggled){
+        if(toggled) detach();
+        else reattach();
       }
   
       void autoCapDeviceChanged(){
@@ -840,6 +879,7 @@ namespace icl{
       virtual void paintEvent(QPaintEvent *e){
         QWidget::paintEvent(e);
         QPainter p(this);
+       
         if(dragAny() || r.contains(currPos.x,currPos.y)){
           p.setPen(Qt::NoPen);
           p.setBrush(QBrush(QColor(255,0,0),Qt::BDiagPattern));
@@ -1334,6 +1374,10 @@ namespace icl{
                                                   OSDGLButton::LeaveFullScreen,
                                                   utils::function(m_data,&ICLWidget::Data::changeFullScreenMode)));
       x+=GL_BUTTON_X_INC;
+      m_data->glbuttons.push_back(new OSDGLButton(this,"detach/attach window)","",x,y,w,h,OSDGLButton::Detach,
+                                                  OSDGLButton::Reattach,
+                                                  utils::function(m_data,&ICLWidget::Data::changeDetachMode)));
+      x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"press to stop recording","",x,y,w,h,OSDGLButton::RedCam,
                                                   utils::function(this,&ICLWidget::stopButtonClicked)));
       x+=GL_BUTTON_X_INC;
@@ -1543,12 +1587,12 @@ namespace icl{
         if(!ok){
           (*m_data->menu.get<ButtonHandle>("auto-cap-record"))->setChecked(false);
         }else{
-          m_data->glbuttons[6]->visible = true;
+          m_data->glbuttons[7]->visible = true;
           update();
         }
       }else{
         m_data->outputCap->stopRecording();
-        m_data->glbuttons[6]->visible = false;
+        m_data->glbuttons[7]->visible = false;
         update();
       }
     }
@@ -1570,7 +1614,7 @@ namespace icl{
         QMutexLocker l(&m_data->menuMutex);
         (*m_data->menu.get<ButtonHandle>("auto-cap-record"))->setChecked(false);
       }
-      m_data->glbuttons[6]->visible = false;
+      m_data->glbuttons[7]->visible = false;
       update();
     }
   
@@ -2051,7 +2095,7 @@ namespace icl{
     void ICLWidget::keyPressEvent(QKeyEvent *event){
       
       if(event->key() == Qt::Key_F11){
-        if(isFullScreen()) m_data->leaveFullScreen();
+        if(isFullScreen()) m_data->reattach();
         else m_data->enterFullScreen();
       }
     }

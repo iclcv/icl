@@ -46,15 +46,16 @@ namespace icl{
     GenericPointCloudGrabber::GenericPointCloudGrabber():m_data(new Data)
     {
       m_data->impl = 0;
-      
     }
 
     GenericPointCloudGrabber::GenericPointCloudGrabber(const std::string &sourceType, 
                                                        const std::string &srcDescription):m_data(new Data){
+      m_data->impl = 0;
       init(sourceType,srcDescription);
     }
 
     GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa):m_data(0){
+      m_data->impl = 0;
       init(pa[0],pa[1]);
     }
     
@@ -62,6 +63,35 @@ namespace icl{
       ICL_DELETE(m_data->impl);
       delete m_data;
     }
+
+    void GenericPointCloudGrabber::reinit(const std::string &description) throw (utils::ICLException){
+      if(isNull()){
+        throw ICLException("cannot re-initialize GenericPointCloudGrabber: instance null!");
+      }
+      m_data->impl->reinit(description);
+    }
+
+    Camera GenericPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
+      if(isNull()){
+        throw ICLException("GenericPointCloudGrabber::getDepthCamera(): called on null instance");
+      }
+      return m_data->impl->getDepthCamera();
+    }
+
+    Camera GenericPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
+      if(isNull()){
+        throw ICLException("GenericPointCloudGrabber::getColorCamera(): called on null instance");
+      }
+      return m_data->impl->getColorCamera();
+    }
+
+    void GenericPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException){
+      if(isNull()){
+        throw ICLException("GenericPointCloudGrabber::setCameraWorldFrame(): called on null instance");
+      }
+      m_data->impl->setCameraWorldFrame(T);
+    }
+
     
     void GenericPointCloudGrabber::init(const std::string &sourceType, const std::string &srcDescription){
       if(sourceType == "list"){
