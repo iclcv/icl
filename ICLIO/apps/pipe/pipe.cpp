@@ -186,12 +186,19 @@ const ImgBase *grab_image(){
           r = new Rect;
           *r = pa("-clip");
           
-          ICLASSERT_THROW(r->width <= img->getWidth(),ICLException("clipping rect width is larger then image width"));
-          ICLASSERT_THROW(r->height <= img->getHeight(),ICLException("clipping rect height is larger then image height"));
+          ICLASSERT_THROW(r->width <= img->getWidth(),
+                          ICLException("clipping rect width is larger then image width (image width is " 
+                                       + str(img->getWidth() + " but clip rect width was set to " 
+                                             + str(r->width))));
+          ICLASSERT_THROW(r->height <= img->getHeight(),
+                          ICLException("clipping rect height is larger then image height (image height is " 
+                                       + str(img->getHeight() + " but clip rect height was set to " 
+                                             + str(r->height))));
+
           ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
           ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
-          ICLASSERT_THROW(r->right() < img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
-          ICLASSERT_THROW(r->bottom() < img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
+          ICLASSERT_THROW(r->right() <= img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
+          ICLASSERT_THROW(r->bottom() <= img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
           clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat()); 
         }
         const ImgBase *tmp = img->shallowCopy(*r);

@@ -1876,6 +1876,7 @@ namespace icl{
   
   
     void ICLWidget::paintEvent(QPaintEvent *e){
+      if(QApplication::activeModalWidget()) return;
       QGLWidget::paintEvent(e);
     }
   

@@ -21,6 +21,7 @@ Table of Contents
 * :ref:`install.dependencies`
 
   * :ref:`install.dependencies.mandatory`
+  * :ref:`install.dependencies.quick-trusty`
   * :ref:`install.dependencies.optional`
 
 * :ref:`install.source`
@@ -60,6 +61,27 @@ packages can be installed via::
 
 The libpthread-dev library comes with the C/C++ compiler
 
+
+
+.. _install.dependencies.quick-trusty:
+
+Quick installation guide for Ubuntu Trusty
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Install the following packages::
+
+  sudo apt-get install ibjpeg-dev libpng12-dev libopencv-dev libeigen3-dev
+  libmagick++-dev libglew-1.6-dev libpcl-1.7-all-dev libfreenect-dev
+  libprotobuf-dev protobuf-compiler doxygen graphviz python-sphinx python-pyparsing
+  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools
+  nvidia-libopencl1-304
+
+The last package provides *libOpenCL.so* for nvidia graphics-cards and
+for driver version 304. Please adapt this to your used driver version
+or graphics card vendor. For nvidia cards, you can find out the
+currently used version calling::
+
+  nvidia-smi | grep 'Driver Version'
 
 
 .. _install.dependencies.optional:
