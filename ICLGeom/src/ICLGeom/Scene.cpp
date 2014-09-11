@@ -411,7 +411,7 @@ namespace icl{
       delete m_fboData;
   #endif
     }
-    Scene::Scene(const Scene &scene){
+    Scene::Scene(const Scene &scene) : Lockable(true){
       *this = scene;
     }
 

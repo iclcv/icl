@@ -64,14 +64,26 @@ namespace icl{
       /// thickness of each axis
       float axisThickness;
       
+      /// axis labels
+      std::string xLabel, yLabel, zLabel;
+      
       public:
       
       /// Default constructor with useful default size
       ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
-                                        bool withXYZLabels=true);
+                                                    bool withXYZLabels=true, 
+                                                    const std::string &xLabel="x", 
+                                                    const std::string &yLabel="y",
+                                                    const std::string &zLabel="z");
+
+      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness=5, 
+                                                    bool withXYZLabels=true, 
+                                                    const std::string &xLabel="x", 
+                                                    const std::string &yLabel="y",
+                                                    const std::string &zLabel="z");
   
       /// Dynamic adaption
-      ICLGeom_API void setParams(float axisLength, float axisThickness, bool withXYZLabels = true);
+      ICLGeom_API void setParams(float axisLength[3], float axisThickness, bool withXYZLabels = true);
       
       /// returns current length of the axis'
       inline float getAxisLength() const { return axisLength; }

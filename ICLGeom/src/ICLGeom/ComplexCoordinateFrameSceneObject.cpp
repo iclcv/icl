@@ -38,11 +38,26 @@ using namespace icl::qt;
 
 namespace icl{
   namespace geom{
-    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels){
-      setParams(axisLength,axisThickness,withLabels);
+    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels,
+                                                                          const std::string &xLabel, 
+                                                                          const std::string &yLabel,
+                                                                          const std::string &zLabel):
+      xLabel(xLabel),yLabel(yLabel),zLabel(zLabel){
+      float al[3] = { axisLength, axisLength, axisLength };
+      setParams(al,axisThickness,withLabels);
     }
+
+    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness, 
+                                                                         bool withXYZLabels, 
+                                                                         const std::string &xLabel, 
+                                                                         const std::string &yLabel,
+                                                                         const std::string &zLabel):
+      xLabel(xLabel),yLabel(yLabel),zLabel(zLabel){
+      setParams(axisLengths,axisThickness,withXYZLabels);
+    }
+
     
-    void ComplexCoordinateFrameSceneObject::setParams(float axisLength, float axisThickness, bool withLabels){
+    void ComplexCoordinateFrameSceneObject::setParams(float axisLengths[3], float axisThickness, bool withLabels){
       Mutex::Locker lock(mutex);
       
       m_vertices.clear();
@@ -51,11 +66,12 @@ namespace icl{
       m_primitives.clear();
       m_children.clear();
       
-      const float l=axisLength, d=axisThickness;
+      const float d=axisThickness;
       const float p = M_PI_2;
       const float rxs[3]={0,-p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
       const GeomColor cs[]={geom_red(),geom_green(),geom_blue() };
       for(int i=0;i<3;++i){
+        float l = axisLengths[i];
         SceneObject *o = addCylinder(0,0,l/2, d,d,l, 20);
         o->rotate(rxs[i],rys[i],rzs[i]);
         o->setVisible(Primitive::line,false);
@@ -71,14 +87,15 @@ namespace icl{
         o->setColor(Primitive::polygon,cs[i]);
       }
       
-      addVertex(Vec(l+3*d,0,0,1),GeomColor(0,0,0,0));
-      addVertex(Vec(0,l+3*d,0,1),GeomColor(0,0,0,0));
-      addVertex(Vec(0,0,l+3*d,1),GeomColor(0,0,0,0));
+      float dFac = (xLabel.length() == 1 && yLabel.length() == 1 && zLabel.length() == 1) ? 3 : 5;
+      addVertex(Vec(axisLengths[0]+dFac*d,0,0,1),GeomColor(0,0,0,0));
+      addVertex(Vec(0,axisLengths[1]+dFac*d,0,1),GeomColor(0,0,0,0));
+      addVertex(Vec(0,0,axisLengths[2]+dFac*d,1),GeomColor(0,0,0,0));
   
       if(withLabels){
-        addText(0,"x",axisThickness*3);
-        addText(1,"y",axisThickness*3);
-        addText(2,"z",axisThickness*3);
+        addText(0,xLabel,axisThickness*3);
+        addText(1,yLabel,axisThickness*3);
+        addText(2,zLabel,axisThickness*3);
       }
     }
   
