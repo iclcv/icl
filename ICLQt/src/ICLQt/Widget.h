@@ -235,6 +235,10 @@ namespace icl{
       /// sets up the current image
       void setImage(const core::ImgBase *image);
 
+      private slots:
+      /// internally used for re-embedding ...
+      void reEmbed();
+      
       signals:
       /// invoked when any mouse interaction was performed
       void mouseEvent(const MouseEvent &event);

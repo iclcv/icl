@@ -136,7 +136,7 @@ namespace icl{
       dCam.setWorldFrame(T);
 
       Mat Td2 = dCam.getInvCSTransformationMatrix();
-      Mat Tdi2 = dCam.getCSTransformationMatrix();
+      //Mat Tdi2 = dCam.getCSTransformationMatrix();
 
       try{
         Camera cCam = getColorCamera();

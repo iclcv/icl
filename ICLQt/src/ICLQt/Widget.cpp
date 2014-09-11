@@ -30,7 +30,9 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/Widget.h>
+
 #include <ICLCore/Img.h>
+#include <QtCore/QTimer>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -107,6 +109,37 @@ namespace icl{
   #define LOCK_SECTION QMutexLocker SECTION_LOCKER(&m_data->mutex)
   
     class ZoomAdjustmentWidgetParent;
+
+    struct EmptyWidget : public QWidget{
+      ICLWidget *other;
+      QPushButton *button;
+      EmptyWidget(const QRect &geom, QWidget *parent, ICLWidget *other) : 
+        QWidget(parent), other(other){
+        setGeometry(geom);
+        if(parent && parent->layout()){
+          parent->layout()->addWidget(this);
+        }
+        setObjectName("empty");
+        QLabel *label = new QLabel("[detached]", this);
+        label->setGeometry(40,3,80,20);
+        label->setStyleSheet("font-size: 9px;");
+        button = new QPushButton("re-embed", this);
+        button->setStyleSheet("font-size: 9px;");
+        button->setGeometry(122, 3, 70, 20);
+        connect(button, SIGNAL(pressed()), other, SLOT(reEmbed()));
+        show();
+      }
+      virtual void paintEvent(QPaintEvent *e){
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setPen(QPen(QColor(100,100,100), 1, Qt::DashLine));
+        int x = 1, y=1, w = width()-2, h = height() - 2;
+        p.drawRect(x, y, w, h);
+        p.drawLine(x, y, w, h);
+        p.drawLine(w, x, y, h);
+      }
+    };
+
   
     class OSDGLButton{
     public:
@@ -389,6 +422,9 @@ namespace icl{
         gridColor[0]=gridColor[1]=gridColor[2]=1;
         gridColor[3]=0.4;
         backgroundColor[0] = backgroundColor[1] = backgroundColor[2] = 0;
+
+        embedTimer.setSingleShot(true);
+        connect(&embedTimer,SIGNAL(timeout()), parent, SLOT(reEmbed()));
       }  
       ~Data(){
         ICL_DELETE(channelSelBuf);
@@ -451,7 +487,8 @@ namespace icl{
       bool autoRender;
       ICLWidget::BGColorSource bcSrc;
       std::string infoText;
-      
+      QTimer embedTimer;
+
       bool event(int x, int y, OSDGLButton::Event evt){
         bool any = false;
         for(unsigned int i=0;i<glbuttons.size();++i){
@@ -506,6 +543,7 @@ namespace icl{
       }
 
       void detach(){
+        if(embedTimer.isActive()) return;
         if(!parent->parent()) return;
         if(!parent->windowTitle().length()){
           QWidget *p = parent;
@@ -518,16 +556,31 @@ namespace icl{
           parentBeforeFullScreen = (QWidget*)parent->parent();
           geomBeforeFullScreen = parent->geometry();
           parent->setParent(0);
+          if(parentBeforeFullScreen){
+            new EmptyWidget(geomBeforeFullScreen, parentBeforeFullScreen, parent);
+          }
           parent->show();
+
           glbuttons[6]->toggled = true;
           for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
-  
         }
       }
-      void reattach(){
+
+      void embed(){
         if(parent->isFullScreen()){
-          parent->showNormal();
+          undoFullScreen();
+          return;
         }
+        if(embedTimer.isActive()) return;
+        
+        if(parentBeforeFullScreen){
+          QList<EmptyWidget*> cs = parentBeforeFullScreen->findChildren<EmptyWidget*>("empty");
+          if(cs.size() && cs[0]){
+            cs[0]->setParent(0);
+            delete cs[0];
+          }
+        }
+        
         parent->setParent(parentBeforeFullScreen);
         parent->setGeometry(geomBeforeFullScreen);
         if(parentBeforeFullScreen && parentBeforeFullScreen->layout()){
@@ -539,15 +592,23 @@ namespace icl{
         glbuttons[6]->toggled = false;
         for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
       }
+      
+      void undoFullScreen(){
+        if(embedTimer.isActive()) return;
+        if(parent->isFullScreen()){
+          parent->showNormal();
+        }
+        embedTimer.start(100);
+      }
 
       void changeFullScreenMode(bool toggled){
         if(toggled) enterFullScreen();
-        else reattach();
+        else undoFullScreen();
       }
 
       void changeDetachMode(bool toggled){
         if(toggled) detach();
-        else reattach();
+        else embed();
       }
   
       void autoCapDeviceChanged(){
@@ -1276,7 +1337,7 @@ namespace icl{
       QObject::connect(*data->menu.get<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
       
   
-      QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
+    QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-record"),SIGNAL(toggled(bool)),widget,SLOT(recordButtonToggled(bool)));
       QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-pause"),SIGNAL(toggled(bool)),widget,SLOT(pauseButtonToggled(bool)));
       QObject::connect(*data->menu.get<ButtonHandle>("auto-cap-stop"),SIGNAL(clicked()),widget,SLOT(stopButtonClicked()));
       QObject::connect(*data->menu.get<ComboHandle>("auto-cap-mode"),SIGNAL(currentIndexChanged(int)),widget,SLOT(stopButtonClicked()));
@@ -1885,6 +1946,9 @@ namespace icl{
       m_data->autoRender = on;
     }
   
+    void ICLWidget::reEmbed(){
+      m_data->embed();
+    }
   
     void ICLWidget::setImage(const ImgBase *image){ 
       LOCK_SECTION;
@@ -2096,7 +2160,7 @@ namespace icl{
     void ICLWidget::keyPressEvent(QKeyEvent *event){
       
       if(event->key() == Qt::Key_F11){
-        if(isFullScreen()) m_data->reattach();
+        if(isFullScreen()) m_data->undoFullScreen();
         else m_data->enterFullScreen();
       }
     }
