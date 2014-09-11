@@ -128,12 +128,19 @@ namespace icl{
       if(file){
         jpeg_stdio_src(&jpegHandle.info, (FILE*)file->getHandle());
       }else{
-        DataSourceManager dsm(&jpegHandle.info,const_cast<JOCTET*>(data),maxDataLen);
-        jpegHandle.info.src = &dsm;  
+        jpegHandle.info.src = new DataSourceManager(&jpegHandle.info,const_cast<JOCTET*>(data),maxDataLen);
       }
+      
+      struct DataSourceManagerDeleter{
+        DataSourceManager *p;
+        DataSourceManagerDeleter(DataSourceManager *p):p(p){}
+        ~DataSourceManagerDeleter(){
+          if(p) delete p;
+        }
+      } ensure_data_source_manager_deletion(file ? 0 : (DataSourceManager*)jpegHandle.info.src);
 
       /* request to save comments */
-      jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
+      //jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
 
       /* Step 3: read file parameters with jpeg_read_header() */
       jpeg_read_header(&jpegHandle.info, TRUE);
@@ -142,6 +149,7 @@ namespace icl{
 
       /* evaluate markers, i.e. comments */
       for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
+
         if (m->marker != JPEG_COM) continue;
         std::vector<std::string> ts = StrTok(std::string((char*)m->data,(char*)m->data+m->data_length)," ").allTokens();
         if(ts.size() < 2) continue;

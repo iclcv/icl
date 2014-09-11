@@ -30,6 +30,7 @@
 
 #include <fcntl.h>
 #include <errno.h>
+#include <fstream>
 
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -448,6 +449,13 @@ namespace icl{
 
           if(buf.index >= buffers.size()) normal_exception("got an invalid buffer index! ");
 
+          /*      {
+            DEBUG_LOG("warning mjpeg file is written to /tmp/data.jpg");
+            std::ofstream file("/tmp/data.jpg");
+            file << std::string((const char*)buffers[buf.index].data, buffers[buf.index].length) << std::flush;
+          }
+          SHOW(fourcc_to_string(this->currentFormat->fourcc));
+              */
           process_image ((const icl8u*)buffers[buf.index].data, this->currentFormat->fourcc);
 
           if (-1 == xioctl (VIDIOC_QBUF, &buf)){
