@@ -97,7 +97,8 @@ IF(QT_FOUND)
                        src/ICLGeom/RayCastOctreeObject.cpp
                        src/ICLGeom/SQFitter.cpp
                        src/ICLGeom/PlotWidget3D.cpp
-                       src/ICLGeom/ShaderUtil.cpp)
+                       src/ICLGeom/ShaderUtil.cpp
+                       src/ICLGeom/EuclideanBlobSegmenter.cpp)
 
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
@@ -120,7 +121,8 @@ IF(QT_FOUND)
                        src/ICLGeom/RayCastOctreeObject.h
                        src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
-                       src/ICLGeom/ShaderUtil.h)
+                       src/ICLGeom/ShaderUtil.h
+                       src/ICLGeom/EuclideanBlobSegmenter.h)
 ENDIF()
 
 IF(PCL_FOUND)
