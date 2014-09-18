@@ -37,7 +37,7 @@ namespace icl{
   namespace utils{
     
     /// Pure Interface class for DelOps \ingroup UTILS
-    class DelOpBase { virtual ~DelOpBase(){} };
+    class DelOpBase { public: virtual ~DelOpBase(){} };
     
     /// Pointer delete operation class for the SmartPtr class \ingroup UTILS
     struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
