@@ -866,6 +866,8 @@ namespace icl{
                 newMask(x,y,0)=0;
               }
             }
+          }else{
+            newLabel(x,y,0)=oldLabel(x,y,0);
           }
         }
       }    
