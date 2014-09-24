@@ -53,12 +53,12 @@ namespace icl{
       */
       DoubleSlider(QWidget *parent, const QString &id);
       
-      public slots:
+      public Q_SLOTS:
       /// internally used slot to process when the corresponding QSlider is moved
       /** @param i value */
       void receiveValueChanged(int i);
       
-      signals:
+      Q_SIGNALS:
       /// emitted when the slider values is changed
       void doubleValueChanged(const QString &id, double doubleValue);
       

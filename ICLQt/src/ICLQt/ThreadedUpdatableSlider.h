@@ -104,7 +104,7 @@ namespace icl{
       /// removes all callbacks associated to this slider component
       void removeCallbacks();
   
-      protected slots:
+      protected Q_SLOTS:
       /// for collecting slider singnals
       void collectValueChanged(int);
   

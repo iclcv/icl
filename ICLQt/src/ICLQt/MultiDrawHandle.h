@@ -85,7 +85,7 @@ namespace icl{
       ICLQt_API std::string getSelected();
       ICLQt_API bool isSelected(const std::string &text);
   
-      public slots:
+      public Q_SLOTS:
       ICLQt_API void tabChanged(int idx);
       
   

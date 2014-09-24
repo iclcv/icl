@@ -45,7 +45,7 @@ namespace icl{
                    bool *stateRef=0);
       ~ToggleButton();
   
-      private slots:
+      private Q_SLOTS:
       void toggleStateChanged(bool toggled);
   
       private:

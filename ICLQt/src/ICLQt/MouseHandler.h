@@ -118,7 +118,7 @@ namespace icl{
       m_handler(0){}
 
     
-      public slots:
+      public Q_SLOTS:
 
       /// connected to the ICLWidget's signal mouseEventOccured
       void handleEvent(const MouseEvent &event);

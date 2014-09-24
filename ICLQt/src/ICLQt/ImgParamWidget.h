@@ -50,14 +50,14 @@ namespace icl{
       void doEmitState();
       void getParams(int &width, int &height, int &d, int &fmt) const;
       
-      private slots:
+      private Q_SLOTS:
       void sizeChanged(const QString &val);
       void formatChanged(const QString &val);
       void depthChanged(const QString &val);
   
       void setup(int width, int height, int d, int format);
       
-      signals:
+      Q_SIGNALS:
       void somethingChanged(int width, int height, int d, int format);
   
       

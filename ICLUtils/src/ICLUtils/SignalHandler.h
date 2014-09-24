@@ -66,7 +66,7 @@ namespace icl{
           that may occur, when the program is uncommonly killed.
           
           @param signals comma-separated list of string representations of 
-          the following signals:
+          the following Q_SIGNALS:
           - <b>SIGABRT</b> ( process abort signal)
           - <b>SIGALRM</b> ( Alarm clock)
           - <b>SIGBUS</b>  ( Access to an undefined portion of a memory object)

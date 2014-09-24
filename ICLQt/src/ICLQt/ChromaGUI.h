@@ -74,7 +74,7 @@ namespace icl{
       /// retuns a CombiClassifier with current parameters
       core::ChromaAndRGBClassifier getChromaAndRGBClassifier();
       
-      public slots:
+      public Q_SLOTS:
       /// used for the blue-value visualization slider
       void blueSliderChanged(int val);
       

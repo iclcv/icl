@@ -76,7 +76,7 @@ namespace icl{
       /// Destructor
       virtual ~GUIWidget();
       
-      public slots:
+      public Q_SLOTS:
       /// imediately calls processIO
       /** This slot must be connected to the custom widgets
           "somethis-has-changed"-signal e.g. A button's "clicked"

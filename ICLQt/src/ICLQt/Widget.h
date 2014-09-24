@@ -231,15 +231,15 @@ namespace icl{
           ICLDrawWidget and ICLDrawWidget3D */
       void setAutoRenderOnSetImage(bool on);
     
-      public slots:
+      public Q_SLOTS:
       /// sets up the current image
       void setImage(const core::ImgBase *image);
 
-      private slots:
+      private Q_SLOTS:
       /// internally used for re-embedding ...
       void reEmbed();
       
-      signals:
+      Q_SIGNALS:
       /// invoked when any mouse interaction was performed
       void mouseEvent(const MouseEvent &event);
 
@@ -281,7 +281,7 @@ namespace icl{
       /// listens for F11 which enables the fullscreen mode
       virtual void keyPressEvent(QKeyEvent *event);
     
-      public slots:
+      public Q_SLOTS:
       void showHideMenu();
       void setMenuEmbedded(bool embedded);
 
