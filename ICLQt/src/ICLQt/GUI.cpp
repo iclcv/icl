@@ -931,7 +931,7 @@ namespace icl{
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
   
-        m_poGroupBox = new QGroupBox(def.param(0).c_str(),def.parentWidget());
+        m_poGroupBox = new QGroupBox((def.param(0) + "  ").c_str(),def.parentWidget());
         m_poGroupBox->setFlat(false);
         //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
         m_poGroupBox->setStyle(QStyleFactory::create("fusion"));

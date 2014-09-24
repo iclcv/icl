@@ -701,6 +701,7 @@ namespace icl{
       FROM_TO_NUM_ADD(StringHandle);
       FROM_TO_STR_ADD(StringHandle);
       ADD_T_TO_T(StringHandle);
+      ADD(DataStore::Data::Event,StringHandle);
       
       // BoxHandle
       ADD_T_TO_T(BoxHandle);

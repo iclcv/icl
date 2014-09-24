@@ -140,9 +140,16 @@ namespace icl{
       void fill(const PointCloudObjectBase &obj, bool clearBefore=true){
         SceneObject::lock();
         if(clearBefore) Parent::clear();
-        const core::DataSegment<float,4> xyzh = obj.selectXYZH();
-        for(int i=0;i<xyzh.getDim();i+=1){
-          Parent::insert(xyzh[i]);
+        if(obj.supports(PointCloudObjectBase::XYZH)){
+          const core::DataSegment<float,4> xyzh = obj.selectXYZH();
+          for(int i=0;i<xyzh.getDim();i+=1){
+            Parent::insert(xyzh[i]);
+          }
+        }else if(obj.supports(PointCloudObjectBase::XYZ)){
+          const core::DataSegment<float,3> xyz = obj.selectXYZ();
+          for(int i=0;i<xyz.getDim();i+=1){
+            Parent::insert(xyz[i].resize<1,4>(1));
+          }
         }
         SceneObject::unlock();
       }

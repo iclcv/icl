@@ -32,8 +32,12 @@
 #include <ICLFilter/ImageRectification.h>
 #include <ICLFilter/RotateOp.h>
 #include <ICLQt/DefineRectanglesMouseHandler.h>
+#include <ICLIO/GenericImageOutput.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLIO/FileList.h>
+
+#include <QtWidgets/QScrollArea>
+#include <QtWidgets/QLabel>
 
 GenericGrabber grabber;
 HSplit gui;
@@ -144,6 +148,65 @@ void overwrite(){
   save(curr,filename);
 }
 
+static GUI *batchGUI = 0;
+
+template<bool performCrop>
+void batch_pattern_changed(){
+  BoxHandle box = (*batchGUI)["matches"];
+  
+  QList<QWidget*> widgets = box.getScroll()->widget()->findChildren<QWidget*>();
+  foreach(QWidget * widget, widgets){
+    delete widget;
+  }
+  // while(box.getScroll()->widget()->layout()->count()){
+  //  std::cout << "deleting entry" << std::endl;
+  //  delete box.getScroll()->widget()->layout()->takeAt(0);
+  //}
+  std::vector<utils::Rect> rs = mouse_2->getRects();
+  Rect r = rs[0];
+  try{
+    StringHandle shi = (*batchGUI)["ipat"];
+    StringHandle sho = (*batchGUI)["opat"];
+    FileList f(shi.getValue());
+    GenericImageOutput out("file","file="+sho.getValue());
+    for(int i=0;i<f.size();++i){
+      try{
+        ImgQ image = qt::load(f[i]);
+        if(!image.getDim()) throw 42;
+        box.add(new QLabel(f[i].c_str()));
+        ImgBase *dst = 0;
+        if(performCrop){
+          GenericGrabber g("file","file="+f[i]);
+          const ImgBase *image = g.grab()->shallowCopy(r);
+          image->deepCopyROI(&dst);
+          out.send(dst);
+          std::cout << "converted file " << f[i] << " successfully" << std::endl;
+          delete image;
+        }
+        ICL_DELETE(dst);
+      }catch(...){
+        //        WARNING_LOG("referenced file " << f[i] << " could not be loaded [skipped]");
+      }
+    }
+  }catch(...){}
+}
+
+void batch_crop(){
+  if(!batchGUI){
+    batchGUI = new HSplit;
+    (*batchGUI) << ( VBox()
+                     << String("").handle("ipat").label("input file pattern")
+                     << String("converted-####.png").handle("opat").label("output file pattern")
+                     << Button("do it!").handle("do it")
+                   )
+                << VScroll().handle("matches").label("matching files")
+                << Create();
+    (*batchGUI)["ipat"].registerCallback(batch_pattern_changed<false>);
+    (*batchGUI)["do it"].registerCallback(batch_pattern_changed<true>);
+  }
+  (*batchGUI).show();
+}
+
 void init(){
   grabber.init(pa("-i"));
 
@@ -154,6 +217,7 @@ void init(){
            << Button("overwrite input").handle("overwrite")
            << Combo("0,90,180,270").handle("rot").label("rotation")
            << CheckBox("rectangular",!pa("-r")).handle("rect")
+           << Button("Batch crop...").handle("batch")
            << ( HBox().label("rectification size")
                 << Spinner(1,4096,640).handle("s1")
                 << Label(":")
@@ -166,6 +230,7 @@ void init(){
            )
       << Show();
 
+  gui["batch"].registerCallback(batch_crop);
   const ImgBase *image = grabber.grab();
   
   mouse_1 = new Mouse1(image->getSize());
@@ -216,6 +281,10 @@ void run(){
     roi.setSize(tmp->getROISize());
     tmp->convertROI(&roi);
     cro = rot.apply(&roi);
+
+    draw->color(0,255,0,255);
+    draw->text(str(rs[0]), rs[0].x, rs[0].y);
+
   }else{
     draw->draw(mouse_1->vis());
     Size32f s(gui["s1"],gui["s2"]);

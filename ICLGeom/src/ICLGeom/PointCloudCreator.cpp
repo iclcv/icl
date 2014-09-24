@@ -127,9 +127,15 @@ namespace icl{
         }
 
 #ifdef ICL_HAVE_OPENCL
-        clUse=true;
-        creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
-        clReady = creatorCL->isCLReady();
+        try{
+          clUse=true;
+          creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
+          clReady = creatorCL->isCLReady();
+        }catch(std::exception &e){
+          ERROR_LOG("error creating OpenCL-based point cloud creator: " 
+                    << e.what() << " (using C++ fallback)");
+          clReady = false;
+        }
 #endif
 
        
