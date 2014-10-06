@@ -49,10 +49,10 @@ namespace icl{
 
       /// Constructor with initialization
       /** Possible plugins: 
-          * <b>cam</b> device description is then: "depth-cam-type:depth-cam-id:depth-cam-file"
+          * <b>dcam</b> device description is then: "depth-cam-type:depth-cam-id:depth-cam-file"
             + optionally ":color-cam-type:color-cam-id:color-cam-file"
           * <b>file</b> filename pattern (not yet implemented)
-          * <b>rsb</b> rsb-transport-list: rsb-scope-list
+          * <b>rsb</b> [rsb-transport-list:]rsb-scope-list[,depth-cam-filename[,color-cam-filename]]
       */
       GenericPointCloudGrabber(const std::string &sourceType, const std::string &srcDescription);
 

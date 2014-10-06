@@ -408,11 +408,13 @@ namespace icl{
       void freeDisplayList(SceneObject *o) const;
       
       
+      public:
       /// implements the PointCloudGrabber interface
       /** Internally uses the camera index that can be defined 
           by setting the int-property "point cloud grabber cam"*/
       virtual void grab(PointCloudObjectBase &dst);
 
+      protected:
 #ifdef ICL_HAVE_QT
       /// internally used rendering method
       void renderScene(int camIndex, qt::ICLDrawWidget3D *widget=0) const;

@@ -58,6 +58,8 @@ namespace icl{
       bool initialized;
       RSBPointCloud buffer;
       ProtoBufSerializationDevice sdev;
+      SmartPtr<Camera> depthCam;
+      SmartPtr<Camera> colorCam;
       Data():sdev(&buffer){}
       
       struct Handler : public DataHandler<RSBPointCloud>{
@@ -75,10 +77,15 @@ namespace icl{
     
     
     RSBPointCloudGrabber::RSBPointCloudGrabber(const std::string &scope, 
-                                               const std::string &trasportList){
+                                               const std::string &trasportList,
+                                               Camera *depthCam,
+                                               Camera *colorCam){
       m_data = new Data;
       m_data->initialized = false;
+      m_data->depthCam = depthCam;
+      m_data->colorCam = colorCam;
       if(scope.length()) init(scope,trasportList);
+
     }
     
     RSBPointCloudGrabber::~RSBPointCloudGrabber(){
@@ -126,6 +133,40 @@ namespace icl{
       }
       PointCloudSerializer::deserialize(dst, m_data->sdev);      
     }
+
+    Camera RSBPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
+      if(!m_data->depthCam){
+        throw ICLException("RSBPointCloudGrabber::getDepthCamera(): the depth camera can only "
+                           "be returned if explicitly given to the grabber creation string "
+                           "e.g. \"app -pci rsb /foo,depth-camfile.xml,color-cam-file.xml\"");
+                           
+      }
+      return *m_data->depthCam;
+    }
+    
+    Camera RSBPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
+      if(!m_data->colorCam){
+        throw ICLException("RSBPointCloudGrabber::getColorCamera(): the color camera can only "
+                           "be returned if explicitly given to the grabber creation string "
+                           "e.g. \"app -pci rsb /foo,depth-camfile.xml,color-cam-file.xml\"");
+      }
+
+      return *m_data->colorCam;
+    }
+    
+    static std::vector<std::string> extract_cams(std::string &s){
+      std::vector<std::string> ts = tok(s,",");
+      if(ts.size() == 1) return std::vector<std::string>();
+      if(ts.size() == 2) {
+        s = ts[0];
+        return std::vector<std::string>(1,ts[1]);
+      }else if(ts.size() == 3){
+        s = ts[0];
+        return std::vector<std::string>(ts.begin()+1,ts.end());
+      }else{
+        throw ICLException("create_rsb_point_cloud_grabber from program argument: invalid syntax!");
+      }
+    }
     
     static PointCloudGrabber *create_rsb_point_cloud_grabber(const std::map<std::string,std::string> &d){
       std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
@@ -133,9 +174,23 @@ namespace icl{
       const std::string &params = it->second;
       std::vector<std::string> ts = tok(params,":");
       if(ts.size() ==  1){
-        return new RSBPointCloudGrabber(ts[0]);
+        std::vector<std::string> cams = extract_cams(ts[0]);
+        if(cams.size() == 1){
+          return new RSBPointCloudGrabber(ts[0], "spread", new Camera(cams[0]));
+        }else if(cams.size() == 2){
+          return new RSBPointCloudGrabber(ts[0], "spread", new Camera(cams[0]), new Camera(cams[1]));
+        }else{
+          return new RSBPointCloudGrabber(ts[0]);
+        }
       }else if(ts.size() == 2){
-        return new RSBPointCloudGrabber(ts[1],ts[0]);
+        std::vector<std::string> cams = extract_cams(ts[0]);
+        if(cams.size() == 1){
+          return new RSBPointCloudGrabber(ts[1], ts[0], new Camera(cams[0]));
+        }else if(cams.size() == 2){
+          return new RSBPointCloudGrabber(ts[1], ts[0], new Camera(cams[0]), new Camera(cams[1]));
+        }else{
+          return new RSBPointCloudGrabber(ts[1], ts[0]);
+        }
       }else{
         throw ICLException("unable to create RSBPointCloudGrabber from given parameter string '"+params+"'");
       }
@@ -144,7 +199,7 @@ namespace icl{
     
     REGISTER_PLUGIN(PointCloudGrabber,rsb,create_rsb_point_cloud_grabber,
                     "RSB based point cloud grabber",
-                    "creation-string: [comma-sep-transport-list:]rsb-scope");
+                    "creation-string: [comma-sep-transport-list:]rsb-scope[,depth-cam-file[,color-cam-file]]");
   } // namespace geom
 }
 

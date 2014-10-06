@@ -54,7 +54,8 @@ namespace icl{
       public:
       /// create grabber with given scope
       /** if scope is empty, the grabber is not initialized! */
-      RSBPointCloudGrabber(const std::string &scope="", const std::string &transportList="spread");
+      RSBPointCloudGrabber(const std::string &scope="", const std::string &transportList="spread",
+                           Camera *dCam = 0, Camera *cCam = 0);
       
       /// destructor
       ~RSBPointCloudGrabber();
@@ -64,7 +65,12 @@ namespace icl{
       
       /// fills the given point cloud with grabbed information
       virtual void grab(PointCloudObjectBase &dst);
+
+      /// returns depth camera (only if explicitly given in the creation string)
+      Camera getDepthCamera() const throw (utils::ICLException);
       
+      /// returns color camera (only if explicitly given in the creation string)
+      Camera getColorCamera() const throw (utils::ICLException);
     };
   } // namespace geom
 }

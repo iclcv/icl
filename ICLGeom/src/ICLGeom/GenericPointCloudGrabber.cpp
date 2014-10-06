@@ -54,7 +54,7 @@ namespace icl{
       init(sourceType,srcDescription);
     }
 
-    GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa):m_data(0){
+    GenericPointCloudGrabber::GenericPointCloudGrabber(const ProgArg &pa):m_data(new Data){
       m_data->impl = 0;
       init(pa[0],pa[1]);
     }
