@@ -519,7 +519,10 @@ namespace icl{
       
       template<class T>
       const std::vector<double> findColor(int x, int y) const {
-        int nx = imageSize.width, ny = imageSize.height;
+        if(!Rect(Point(0,0),imageSize).contains(x,y)){
+          return std::vector<double>();
+        }
+        const int nx = data.getWidth(), ny = data.getHeight(); //imageSize.width, ny = imageSize.height;
         for(int yCell=0;yCell<ny;++yCell){
           for(int xCell=0;xCell<nx;++xCell){
             const TextureElement &t = *data(xCell,yCell);

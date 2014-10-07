@@ -323,7 +323,9 @@ namespace icl{
       Size viewPort;
       bool haveImage;
       bool isVisible;
-      
+
+      std::vector<double> color;
+
       ImageInfoIndicator(): haveImage(false), isVisible(false){
         d = (core::depth)(-2);
       }
@@ -334,17 +336,40 @@ namespace icl{
         haveImage = true;
       }
       
-      void update(const Size &viewPortSize){
+      void update(const Size &viewPortSize, const ImgBase *image, int mouseX=0, int mouseY=0){
         haveImage = false;
         viewPort = viewPortSize;
+        
+        color.clear();
+        if(image && image->getImageRect().contains(mouseX,mouseY)){
+          switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D)                                        \
+            case depth##D:{                                             \
+              std::vector<icl##D> vec = (*image->as##D())(mouseX, mouseY).asVec(); \
+              color.assign(vec.begin(), vec.end());                     \
+              break;                                                    \
+            }
+            ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+            default: ICL_INVALID_DEPTH;
+          }
+        }
       }
       
-      void updateMousePos(const Point &mousePos){
+      void updateMousePos(const Point &mousePos, const GLImg &glimg){
+        try{
+          glimg.lock();
+          this->color = glimg.getColor(mousePos.x, mousePos.y);
+          glimg.unlock();
+
+        }catch(ICLException &e){
+          color.clear();
+        }
         this->mousePos = mousePos;
       }
   
       inline std::string posstr(){
-        return str(mousePos);
+        return "x:" + str(mousePos.x) + " y:" + str(mousePos.y);
       }
       
      inline std::string dstr(){
@@ -364,8 +389,31 @@ namespace icl{
        if(p.getFormat() == formatMatrix){
          return str("mat(")+str(p.getChannels())+")";
        }else{
-         return str(p.getFormat());
+         std::string s = str(p.getFormat());
+         if(s.size() > 6 && s.substr(0,6) == "format"){
+           return s.substr(6);
+         }else{
+           return s;
+         }
        }
+     }
+      
+     inline std::string cstr(){
+       if(!color.size()) return "";
+       std::ostringstream str;
+       str << "[";
+       for(size_t i=0;i<color.size();++i){
+         if((int)color[i] == color[i]){
+           if(color[i] < 10) str << "  ";
+           if(color[i] < 100) str << "  ";
+           str << (int)color[i];
+         }else{
+           str << color[i];
+         }
+         if(i+1 < color.size()) str << ",";
+       }
+       str << "]";
+       return str.str();
      }
      void show() {
        isVisible = true;
@@ -377,12 +425,20 @@ namespace icl{
 
      void paint(GLPaintEngine *pe) {
        if(!isVisible)return;
-       static const char D[] = "-";
+       static const char D[] = " ";
        std::string info_str;
-       if(!haveImage) info_str = "no image, viewport:"+str(viewPort);
-       else info_str = posstr()+" "+dstr()+D+str(p.getSize())+D+rstr()+D+fstr();
+       std::ostringstream info_str_stream;
+       if(!haveImage){
+         info_str_stream <<  "no image, viewport:"  << str(viewPort);
+       }else{
+         info_str_stream << posstr() << D << dstr() << D 
+                         << p.getSize() << D << rstr() 
+                         << D << fstr() << D << cstr();
+       }
+       info_str = info_str_stream.str();
+
        pe->linewidth(1);
-       pe->fontsize(10);
+       pe->fontsize(9);
        Size info_size = pe->estimateTextBounds(info_str);
        info_size.width += 10;
        info_size.height += 4;
@@ -392,7 +448,7 @@ namespace icl{
                          info_size.width,info_size.height+1);
        pe->fill(255,255,255,130);
        pe->rect(info_rect);
-       pe->color(100,100,100,255);
+       pe->color(50,50,50,255);
        pe->rect(info_rect);
        pe->text(info_rect,info_str);
      }
@@ -510,13 +566,13 @@ namespace icl{
       void adaptMenuSize(const QSize &parentSize){
         if(!menuptr) return;
         static const int MARGIN = 5;
-        static const int TOP_MARGIN = 20;
+        static const int TOP_MARGIN = 26;
         int w = parentSize.width()-2*MARGIN;
         int h = parentSize.height()-(MARGIN+TOP_MARGIN);
         
-        w = iclMax(menuptr->minimumWidth(),w);
-        h = iclMax(menuptr->minimumHeight(),h);
-        
+        // w = iclMin(menuptr->minimumWidth(),w);
+        // h = iclMin(menuptr->minimumHeight(),h);
+        DEBUG_LOG("parent: " << parentSize.width() << "x" << parentSize.height() << "   " << "menu: " << Size(w,h));
         menuptr->setGeometry(MARGIN,TOP_MARGIN, w, h);
       }
       void pushScaleModeAndChangeToZoom(){
@@ -1302,11 +1358,12 @@ namespace icl{
       data->menuptr = data->menu.getRootWidget();
       data->menuptr->setParent(widget);
       // xxx new layout test
-      if(!widget->layout()){
-        widget->setLayout(new QGridLayout);
-        widget->layout()->setContentsMargins(5,22,5,5);
-      }
-      widget->layout()->addWidget(data->menuptr);
+
+      //if(!widget->layout()){
+      //  widget->setLayout(new QGridLayout);
+      //  widget->layout()->setContentsMargins(5,22,5,5);
+      //}
+      //widget->layout()->addWidget(data->menuptr);
   
   
       /// xxx new bg tset
@@ -1444,7 +1501,7 @@ namespace icl{
       x+=GL_BUTTON_X_INC;
   
       m_data->imageInfoIndicator = new ImageInfoIndicator();
-      m_data->imageInfoIndicator->update(m_data->defaultViewPort);
+      m_data->imageInfoIndicator->update(m_data->defaultViewPort, 0);
     }
   
   
@@ -1579,7 +1636,7 @@ namespace icl{
     void ICLWidget::setViewPort(const Size &size){
       m_data->defaultViewPort = size;
       if(m_data->image.isNull()){
-        m_data->imageInfoIndicator->update(m_data->defaultViewPort);
+        m_data->imageInfoIndicator->update(m_data->defaultViewPort,0);
       }
         
     }
@@ -1601,7 +1658,9 @@ namespace icl{
       }else{
         m_data->infoTabVisible = false;
       }
-      m_data->adaptMenuSize(size());
+      if(m_data->menuptr->parent() == this){
+        m_data->adaptMenuSize(size());
+      }
     }
   
   
@@ -1619,7 +1678,7 @@ namespace icl{
       }else{
         m_data->menuptr->setParent(0);
         m_data->menuptr->setWindowTitle("menu...");
-        m_data->menuptr->setGeometry(QRect(mapToGlobal(pos())+QPoint(width()+5,0),QSize(450,350)));
+        m_data->menuptr->setGeometry(QRect(mapToGlobal(pos())+QPoint(width()+5,0),QSize(480,320)));
       }
       m_data->menuptr->setVisible(visible);
     }
@@ -1954,7 +2013,7 @@ namespace icl{
       LOCK_SECTION;
       if(!image){
         m_data->image.update(0);
-        m_data->imageInfoIndicator->update(m_data->defaultViewPort);
+        m_data->imageInfoIndicator->update(m_data->defaultViewPort, image, m_data->mouseX, m_data->mouseY);
         return;
       }
   
@@ -2117,7 +2176,8 @@ namespace icl{
       }
   
       if(m_data->imageInfoIndicatorEnabled){
-        m_data->imageInfoIndicator->updateMousePos(m_data->mouseEvent.getPos());
+        m_data->imageInfoIndicator->updateMousePos(m_data->mouseEvent.getPos(), 
+                                                   m_data->image);
       }
   
       update();
@@ -2239,7 +2299,9 @@ namespace icl{
   
     void ICLWidget::resizeEvent(QResizeEvent *e){
       resizeGL(e->size().width(),e->size().height());
-      m_data->adaptMenuSize(size());
+      if(m_data->menuptr && m_data->menuptr->parent() == this){
+        m_data->adaptMenuSize(size());
+      }
       if(m_data->embeddedZoomMode || m_data->fm == fmZoom){
         m_data->zoomRect = fixRectAR(m_data->zoomRect,this);
         if(m_data->fm == fmZoom){
