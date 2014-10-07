@@ -1114,7 +1114,7 @@ namespace icl{
   
     
     std::vector<icl64f> GLImg::getColor(int x, int y)const{
-      ICLASSERT_RETURN_VAL(!isNull(),std::vector<double>());
+      if(isNull()) return std::vector<double>();
       return m_data->findColorGeneric(x,y);
     }
     scalemode GLImg::getScaleMode() const{
