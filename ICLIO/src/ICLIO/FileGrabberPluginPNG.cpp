@@ -151,7 +151,7 @@ namespace icl{
         case 3:
           ensureCompatible(dest,destDepth, Size(width,height), formatRGB);
           switch(bits){
-            case 8: interleavedToPlanar(data.data(), (*dest)->asImg<icl8u>()); break; 
+            case 8:  interleavedToPlanar(data.data(), (*dest)->asImg<icl8u>()); break; 
             case 16: interleavedToPlanar(data.data(), (*dest)->asImg<icl32s>()); break; 
             default: throw ICLException("error reading png image unexpected bit depth for 3 channel image");
           }

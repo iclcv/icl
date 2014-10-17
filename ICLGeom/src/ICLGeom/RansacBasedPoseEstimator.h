@@ -31,7 +31,8 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Configurable.h>
+#include <ICLUtils/Exception.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Camera.h>
 
@@ -39,7 +40,7 @@ namespace icl{
   namespace geom{
     
     /// RANSAC-based pose estimation
-    class ICLGeom_API RansacBasedPoseEstimator : public utils::Uncopyable{
+    class ICLGeom_API RansacBasedPoseEstimator : public utils::Configurable{
       struct Data;  //!< internal data handling
       Data *m_data; //!< internal data pointer
       
@@ -50,12 +51,14 @@ namespace icl{
         bool found;
         float error;
       };
+
       
       RansacBasedPoseEstimator(const geom::Camera &camera, 
                                 int iterations=200, 
                                 int minPoints=4,
                                 float maxErr=5,
-                                float minPointsForGoodModel=12);
+                               float minPointsForGoodModel=12,
+                               bool storeLastConsensusSet=false);
 
       ~RansacBasedPoseEstimator();
       
@@ -66,6 +69,10 @@ namespace icl{
       void setMaxError(float maxError);
 
       void setMinPointsForGoodModel(float f);
+
+      void setStoreLastConsensusSet(bool);
+
+      std::vector<utils::Point32f> getLastConsensusSet() throw (utils::ICLException);
       
       /// fit from planar target
       Result fit(const std::vector<utils::Point32f> &modelPoints, 

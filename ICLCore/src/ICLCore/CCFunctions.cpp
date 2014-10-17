@@ -4787,8 +4787,9 @@ namespace icl{
     }
 
     void for_copy_c3p3(const icl32f *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dstEnd) {
+      // lead to invalid read of size 16 ??
       icl8u *dstSSEEnd = dstEnd - 20;
-
+      
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
           sse_copy_c3p3(src, dst0, dst1, dst2);
@@ -4799,7 +4800,6 @@ namespace icl{
           dst1 += 16;
           dst2 += 16;
       }
-
       for (; dst0<dstEnd; src += 3, ++dst0, ++dst1, ++dst2) {
         // convert 1 value
         copy_c3p3(src, dst0, dst1, dst2);

@@ -39,6 +39,7 @@ RansacBasedPoseEstimator *pe = 0;
 
 Size32f ts; // template pixel -> mm
 VBox gui;
+GUI ransacOptions;
 Scene scene;
 SceneObject *obj = 0;
 
@@ -63,19 +64,45 @@ void init(){
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
   gui << Draw3D().handle("draw").minSize(32,24)
-      << FSlider(0,0.04,0.001).handle("t").maxSize(99,3)
+      << (HBox() 
+          << FSlider(-7,-1,-3).handle("t").maxSize(99,3).label("threshold exponent")
+          << Button("ransac ...").handle("ransac options").maxSize(6,3)
+          << CheckBox("vis error").handle("vise").maxSize(5,3)
+          )
       << Show();
   
+  pe->setConfigurableID("pe");
+  pe->adaptProperty("iterations","range","[1,5000]:1","");
+  pe->adaptProperty("max error","range","[1,100]","");
+  pe->adaptProperty("min points","range","[4,10]:1","");
+  pe->adaptProperty("min points for good model","range","[4,100]:1","");
+
+
+  pe->setPropertyValue("iterations",200);
+  pe->setPropertyValue("max error",30);
+  pe->setPropertyValue("min points",4);
+  pe->setPropertyValue("min points for good model",20);
+  pe->setPropertyValue("store last consensus set",true);
+
+  ransacOptions << Prop("pe") << Create();
+  
+  gui["ransac options"].registerCallback(function(&ransacOptions, &GUI::switchVisibility));
+
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));
 }
+
+
 
 void run(){
   DrawHandle3D draw = gui["draw"];
   const ImgBase *image = grabber.grab();
   draw = image;
   
-  surf->setThreshold(gui["t"]);
+  float tExp = gui["t"];
+  float t = ::pow(10,tExp);
+
+  surf->setThreshold(t);
   const std::vector<SurfMatch> &ms = surf->match(image);
   if(ms.size() >= 4){
     std::vector<Point32f> curr(ms.size()),templ(ms.size());
@@ -84,8 +111,29 @@ void run(){
       curr[i] = Point32f(ms[i].first.x,ms[i].first.y);
       templ[i] = Point32f(ms[i].second.x,ms[i].second.y).transform(ts.width,ts.height);
     }
-    Mat T = pe->fit(templ,curr).T; 
+    RansacBasedPoseEstimator::Result result = pe->fit(templ,curr);
+   
+
+    Mat T = result.T; 
     obj->setTransformation(T);
+
+    if(gui["vise"]){
+
+      draw->linewidth(2);
+      
+      std::vector<Point32f> lastSet = pe->getLastConsensusSet();
+      
+      for(size_t i=0;i<ms.size();++i){
+        Vec a = T * Vec(templ[i].x, templ[i].y,0,1);
+        Point32f pa = scene.getCamera(0).project(a);
+        if(std::find(lastSet.begin(),lastSet.end(), curr[i]) != lastSet.end()){
+          draw->color(255,100,0,255);
+        }else{
+          draw->color(255,100,0,100);
+        }
+        draw->line(pa,curr[i]);
+      }
+    }
   }
 
   draw.render();

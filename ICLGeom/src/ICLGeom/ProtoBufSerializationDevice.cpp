@@ -63,10 +63,10 @@ namespace icl{
     PointCloudSerializer::MandatoryInfo ProtoBufSerializationDevice::getDeserializationInfo(){
       null_check(__FUNCTION__);
       PointCloudSerializer::MandatoryInfo mi = {
-        protoBufObject->width(),
-        protoBufObject->height(),
-        protoBufObject->organized(),
-        protoBufObject->timestamp()
+        (int)protoBufObject->width(),
+        (int)protoBufObject->height(),
+        (bool)protoBufObject->organized(),
+        (int64_t)protoBufObject->timestamp()
       };
       return mi;
     }

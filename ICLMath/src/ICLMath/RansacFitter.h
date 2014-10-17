@@ -170,7 +170,13 @@ namespace icl{
         for(i=0;i<m_iterations;++i){
           consensusSet.resize(m_minPointsForModel);
           find_random_consensus_set(consensusSet, allPoints, usedIndices);
-          
+
+          /*          std::cout << "   selected indices: [ " 
+                    << usedIndices[0] << ", "
+                    << usedIndices[1] << ", "
+                    << usedIndices[2] << ", "
+                    << usedIndices[3] << "]" << std::endl;
+              */
           Model model = m_fitting(consensusSet);
           for(int j=0;j<(int)allPoints.size();++j){
             if(find_in(usedIndices, j, usedIndices.size())) continue;
@@ -178,6 +184,7 @@ namespace icl{
               consensusSet.push_back(allPoints[j]);
             }
           }
+          
           
           if((int)consensusSet.size() >= m_minClosePointsForGoodModel){
             model = m_fitting(consensusSet);

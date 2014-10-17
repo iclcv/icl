@@ -55,7 +55,9 @@ namespace icl{
       public:
 
       ProtoBufSerializationDevice(RSBPointCloud *protoBufObject);
-      
+
+      virtual  ~ProtoBufSerializationDevice(){}
+
       void init(RSBPointCloud *protoBufObject);
       
       bool isNull() const;
