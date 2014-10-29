@@ -52,6 +52,9 @@ namespace icl{
   /** \endcond */
   
   namespace geom{
+
+    /// forward declaration of scene class
+    class Scene;
     
     /// Mouse action function pointer
     /** parameters:
@@ -59,14 +62,12 @@ namespace icl{
         const utils::Point32f&              pCurrentMousePosition,
         const utils::Point32f&              pDeltaMousePosition,
         Camera&                             pCamera,
+        Scene&                              pScene,
         void*                               pData
         **/
     typedef void (*MouseActionCallback)(const qt::MouseEvent&,const utils::Point32f&,
-                                        const utils::Point32f&,Camera&,void* );
-    
-    
-    /// forward declaration of scene class
-    class Scene;
+                                        const utils::Point32f&,Camera&,Scene&,void* );
+
     
     
     /// mouse mapping table entry
@@ -269,7 +270,7 @@ namespace icl{
       ICLGeom_API static void freeView(const qt::MouseEvent &pMouseEvent,
                            const utils::Point32f &pCurrentMousePosition,
                            const utils::Point32f &pDeltaMousePosition,
-                           Camera &pCamera, void *pData,
+                           Camera &pCamera, Scene &pScene, void *pData,
                            bool pInverseX, bool pInverseY);
 
 
@@ -284,8 +285,8 @@ namespace icl{
       static void freeView(const qt::MouseEvent &pMouseEvent,
                            const utils::Point32f &pCurrentMousePosition,
                            const utils::Point32f &pDeltaMousePosition,
-                           Camera &pCamera, void *pData){
-        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, false, false );
+                           Camera &pCamera, Scene &pScene, void *pData){
+        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pScene, pData, false, false );
       }
       
       
@@ -300,8 +301,8 @@ namespace icl{
       static void freeViewInverseMouseX(const qt::MouseEvent &pMouseEvent,
                                         const utils::Point32f &pCurrentMousePosition,
                                         const utils::Point32f &pDeltaMousePosition,
-                                        Camera &pCamera, void *pData){
-        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, true, false );
+                                        Camera &pCamera, Scene &pScene, void *pData){
+        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pScene, pData, true, false );
       }
 
 
@@ -316,8 +317,8 @@ namespace icl{
       static void freeViewInverseMouseY(const qt::MouseEvent &pMouseEvent,
                                         const utils::Point32f &pCurrentMousePosition,
                                         const utils::Point32f &pDeltaMousePosition,
-                                        Camera &pCamera, void *pData){
-        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, false, true );
+                                        Camera &pCamera, Scene &pScene, void *pData){
+        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pScene, pData, false, true );
       }
       
       
@@ -333,8 +334,8 @@ namespace icl{
       static void freeViewInverseBoth(const qt::MouseEvent &pMouseEvent,
                                       const utils::Point32f &pCurrentMousePosition,
                                       const utils::Point32f &pDeltaMousePosition,
-                                      Camera &pCamera, void *pData){
-        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pData, true, true );
+                                      Camera &pCamera, Scene &pScene, void *pData){
+        freeView( pMouseEvent, pCurrentMousePosition, pDeltaMousePosition, pCamera, pScene, pData, true, true );
       }
       
       
@@ -349,7 +350,7 @@ namespace icl{
       ICLGeom_API static void rotateAroundOrigin(const qt::MouseEvent &pMouseEvent,
                                      const utils::Point32f &pCurrentMousePosition,
                                      const utils::Point32f &pDeltaMousePosition,
-                                     Camera &pCamera, void *pData);
+                                     Camera &pCamera, Scene &pScene, void *pData);
       
       /// Strafe (camera movement up, down, left, right).
       /** Vertical mouse movement: move camera along right vector.
@@ -362,7 +363,7 @@ namespace icl{
       ICLGeom_API static void strafe(const qt::MouseEvent &pMouseEvent,
                          const utils::Point32f &pCurrentMousePosition,
                          const utils::Point32f &pDeltaMousePosition,
-                         Camera &pCamera, void *pData);
+                         Camera &pCamera, Scene &pScene, void *pData);
       
       /// Roll and distance (camera movement forward and backward).
       /** Vertical mouse movement: move camera along front vector.
@@ -375,7 +376,18 @@ namespace icl{
       ICLGeom_API static void rollAndDistance(const qt::MouseEvent &pMouseEvent,
                                   const utils::Point32f &pCurrentMousePosition,
                                   const utils::Point32f &pDeltaMousePosition,
-                                  Camera &pCamera, void *pData);
+                                  Camera &pCamera, Scene &pScene, void *pData);
+
+      /// Place the cursor for rotational Origin
+      /** @param pMouseEvent mouse event
+          @param pCurrentMousePosition current mouse position
+          @param pDeltaMousePosition delta compared to last mouse position
+          @param pCamera camera
+          @param pData pointer for additional data used to set sensitivity */
+      ICLGeom_API static void placeCursor(const qt::MouseEvent &pMouseEvent,
+                                  const utils::Point32f &pCurrentMousePosition,
+                                  const utils::Point32f &pDeltaMousePosition,
+                                  Camera &pCamera, Scene &pScene, void *pData);
       
       
       /// Process mouse event using mouse mapping table.

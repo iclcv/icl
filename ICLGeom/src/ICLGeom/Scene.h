@@ -136,6 +136,8 @@ namespace icl{
         */
 
     class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber{
+
+      SceneObject *m_cursor;
       public:
 
       /// make SceneObject friend of Scene
@@ -338,6 +340,15 @@ namespace icl{
       
       /// returns whether object frames are visualized
       bool getDrawObjectFramesEnabled() const;
+
+      /// sets the Position of the cursor
+      void setCursor(Vec newPosition);
+
+      /// gets the Position of the cursor
+      Vec getCursor();
+
+      /// activate or deactivate the cursor
+      void activateCursor(bool activate = true);
       
       /// returns a reference to a light with given index
       /** The returned reference cam be used to set lighting parameters.
@@ -494,7 +505,7 @@ namespace icl{
       utils::SmartPtr<SceneObject> m_shadowCameraObjects[8];
       
       /// previous lightstate
-      mutable bool m_previousLightState[8][3];
+      mutable bool m_previousLightState[8][4];
     
       /// optionally given bounds of the scene
       utils::SmartArray<utils::Range32f> m_bounds;

@@ -31,6 +31,7 @@
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/Scene.h>
+#include <ICLQt/GLImg.h>
 
 #ifdef ICL_HAVE_OPENGL
 
@@ -218,9 +219,13 @@ namespace icl{
       ICLASSERT_RETURN(quadratic >= 0);
       this->attenuation = Vec(constant,linear,quadratic,0);
     }
-      
+
     void SceneLight::setShadowEnabled(bool on){
       this->shadowOn = on;
+    }
+
+    void SceneLight::setProjectionEnabled(bool on){
+      this->projectionOn = on;
     }
       
     void SceneLight::setTwoSidedEnabled(bool on){
@@ -233,6 +238,10 @@ namespace icl{
 
     bool SceneLight::getShadowEnabled() const{
       return this->shadowOn;
+    }
+
+    bool SceneLight::getProjectionEnabled() const{
+      return this->projectionOn;
     }
       
     bool SceneLight::getTwoSidedEnabled() const{
@@ -251,6 +260,15 @@ namespace icl{
       delete this->shadowCam;
       this->shadowCam = cam;
     }
+
+    void SceneLight::setProjectionImage(qt::GLImg* img) {
+      projectionImage = img;
+    }
+
+
+    qt::GLImg* SceneLight::getProjectionImage() const{
+      return projectionImage;
+    }
     
     void SceneLight::reset(){
       on = !index;
@@ -259,6 +277,7 @@ namespace icl{
       diffuseOn = true;
       specularOn = false;
       shadowOn = false;
+      projectionOn = false;
       twoSidedOn = false;
   
       ambient = GeomColor(0,0,0,0);

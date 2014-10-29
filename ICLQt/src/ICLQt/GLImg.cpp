@@ -1068,14 +1068,16 @@ namespace icl{
     }
       
       /// binds the given texture cell using glBindTexture(...)
-    void GLImg::bind(int xCell, int yCell){
+    void GLImg::bind(int xCell, int yCell, int textureUnit) const{
       ICLASSERT_RETURN(!isNull());
   
       ICLASSERT_THROW(xCell >= 0 && yCell >=0 && xCell < m_data->data.getWidth() &&
                       yCell < m_data->data.getHeight(), ICLException("GLImg::bind(x,y): invalid cell index"));
   
-      
-      glActiveTextureARB(GL_TEXTURE0);
+      if(m_data->isDirty()) {
+        m_data->uploadTextureData();
+      }
+      glActiveTextureARB(GL_TEXTURE0+textureUnit);
       glBindTexture(GL_TEXTURE_2D, m_data->data(xCell,yCell)->tex);
     }
   

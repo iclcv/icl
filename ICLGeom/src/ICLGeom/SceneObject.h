@@ -733,8 +733,13 @@ namespace icl{
       inline bool getDepthTestEnabled() const{ return m_depthTestEnabled;  }
       
       /// sets whether depth test is enabled for this object
-      inline void setDepthTestEnabled(bool enabled){
+      inline void setDepthTestEnabled(bool enabled, bool recursive = true){
         m_depthTestEnabled = enabled;
+        if(recursive) {
+            for(int i = 0; i < this->getChildCount(); i++) {
+                this->getChild(i)->setDepthTestEnabled(enabled,true);
+            }
+        }
       }
 
       protected:

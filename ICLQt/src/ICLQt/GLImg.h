@@ -218,7 +218,7 @@ namespace icl{
       utils::Size getCells() const;
       
       /// binds the given texture cell using glBindTexture(...)
-      void bind(int xCell=0, int yCell=0);
+      void bind(int xCell=0, int yCell=0, int textureUnit=0) const;
   
       /// returns the image size
       inline utils::Size getSize() const { return utils::Size(getWidth(), getHeight()); }

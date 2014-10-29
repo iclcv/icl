@@ -77,6 +77,14 @@ void icl::geom::ShaderUtil::activateShader(Primitive::Type type, bool withShadow
     activeShader->setUniform("shadowMat", *project2shadow);
     activeShader->setUniform("shadow_map", 7);
     activeShader->setUniform("image_map", 0);
+    activeShader->setUniform("projection_map0", 8);
+    activeShader->setUniform("projection_map1", 9);
+    activeShader->setUniform("projection_map2", 10);
+    activeShader->setUniform("projection_map3", 11);
+    activeShader->setUniform("projection_map4", 12);
+    activeShader->setUniform("projection_map5", 13);
+    activeShader->setUniform("projection_map6", 14);
+    activeShader->setUniform("projection_map7", 15);
   }
 }
 
@@ -127,6 +135,14 @@ void icl::geom::ShaderUtil::recompilePerPixelShader(icl::qt::GLFragmentShader** 
   <<"vec4 texture_Color;\n"
   <<"uniform sampler2D shadow_map;\n"
   <<"uniform sampler2D image_map;\n"
+  <<"uniform sampler2D projection_map0;\n"
+  <<"uniform sampler2D projection_map1;\n"
+  <<"uniform sampler2D projection_map2;\n"
+  <<"uniform sampler2D projection_map3;\n"
+  <<"uniform sampler2D projection_map4;\n"
+  <<"uniform sampler2D projection_map5;\n"
+  <<"uniform sampler2D projection_map6;\n"
+  <<"uniform sampler2D projection_map7;\n"
   <<"uniform float bias;\n"
   <<"void computeColors(int light, out vec3 ambient, out vec3 diffuse, out vec3 specular, out float cos_light){\n"
   <<"  vec3 L = normalize(gl_LightSource[light].position.xyz - V.xyz);\n"
@@ -171,30 +187,46 @@ void icl::geom::ShaderUtil::recompilePerPixelShader(icl::qt::GLFragmentShader** 
 
   if(numShadowLights>0) {
     fragmentBuffer
-    <<"vec3 computeLightWithShadow(int light, int shadow, bool isTwoSided){\n"
-    <<"  vec3 ambient, diffuse, specular;\n"
-    <<"  float cos_light = 0.0;\n"
-    <<"  //compute phong lighting\n"
-    <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
-    <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
-    <<"  //get screen space coordinates\n"
-    <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
-    <<"  //check if the coordinate is out of bounds\n"
-    <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
-    <<"  if(shadow_divided.t < -1.0 || shadow_divided.t > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
-    <<"  //transform to texture space coordinates\n"
-    <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
-    <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
-    <<"  //get shadow depth + offset\n"
-    <<"  float d = length(gl_LightSource[light].position.xyz - V.xyz);\n"
-    <<"  //normalize bias over distance and try to remove artifacts very acute angles\n"
-    <<"  float normalized_bias = bias * 0.03 / ((d * d - 2.0 * d) * max(cos_light,0.1));\n"
-    <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + normalized_bias;\n"
-    <<"  //check if fragment is in shadow\n"
-    <<"  if(shadow_coord[shadow].w > 0.0)\n"
-    <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
-    <<"  return ambient + diffuse + specular;\n"
-    <<"}\n";
+        <<"vec3 computeLightWithShadow(int light, int shadow, bool isTwoSided){\n"
+        <<"  vec3 ambient, diffuse, specular;\n"
+        <<"  float cos_light = 0.0;\n"
+        <<"  //compute phong lighting\n"
+        <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
+        <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
+        <<"  //get screen space coordinates\n"
+        <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
+        <<"  //check if the coordinate is out of bounds\n"
+        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
+        <<"  if(shadow_divided.t < -1.0 || shadow_divided.t > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
+        <<"  //transform to texture space coordinates\n"
+        <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
+        <<"  shadow_divided.s = (float(shadow) + shadow_divided.s) / float(num_shadow_lights);\n"
+        <<"  //get shadow depth + offset\n"
+        <<"  float d = length(gl_LightSource[light].position.xyz - V.xyz);\n"
+        <<"  //normalize bias over distance and try to remove artifacts very acute angles\n"
+        <<"  float normalized_bias = bias * 0.03 / ((d * d - 2.0 * d) * max(cos_light,0.1));\n"
+        <<"  float shadow_depth = texture2D(shadow_map,shadow_divided.st).z + normalized_bias;\n"
+        <<"  //check if fragment is in shadow\n"
+        <<"  if(shadow_coord[shadow].w > 0.0)\n"
+        <<"    if(shadow_divided.z > shadow_depth) return ambient;\n"
+        <<"  return ambient + diffuse + specular;\n"
+        <<"}\n"
+        <<"vec3 computeLightWithProjection(int light, int shadow, sampler2D projection_map, bool isTwoSided){\n"
+        <<"  vec3 ambient, diffuse, specular;\n"
+        <<"  float cos_light = 0.0;\n"
+        <<"  //compute phong lighting\n"
+        <<"  if(isTwoSided)computeColorsTwoSided(light, ambient, diffuse, specular, cos_light);\n"
+        <<"  else computeColors(light, ambient, diffuse, specular, cos_light);\n"
+        <<"  //get screen space coordinates\n"
+        <<"  vec4 shadow_divided = shadow_coord[shadow] / shadow_coord[shadow].w;\n"
+        <<"  //check if the coordinate is out of bounds\n"
+        <<"  if(shadow_divided.s < -1.0 || shadow_divided.s > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
+        <<"  if(shadow_divided.t < -1.0 || shadow_divided.t > 1.0) return ambient;\n" //return ambient + diffuse + specular;\n"
+        <<"  //transform to texture space coordinates\n"
+        <<"  shadow_divided = shadow_divided * 0.5 + 0.5;\n"
+        <<"  vec4 proj = texture2D(projection_map,shadow_divided.st);\n"
+        <<"  return proj.rgb*proj.a;\n"
+        <<"}\n";
   }
 
   // celbrech: note, for shadow lights, one-sided lighting is used
@@ -227,8 +259,15 @@ void icl::geom::ShaderUtil::recompilePerPixelShader(icl::qt::GLFragmentShader** 
         vertexBuffer
         <<"  shadow_coord["<<currentShadow<<"] = shadowMat["<<currentShadow<<"] * V;\n";
         fragmentBuffer
-        <<"#ifdef RENDER_SHADOW\n"
-        <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<","<<twoSided<<");\n"
+        <<"#ifdef RENDER_SHADOW\n";
+        if(lights[i]->getProjectionEnabled()) {
+          fragmentBuffer
+          <<"  color += computeLightWithProjection("<<i<<","<<currentShadow<<","<<"projection_map"<<i<<","<<twoSided<<");\n";
+        }else{
+          fragmentBuffer
+          <<"  color += computeLightWithShadow("<<i<<","<<currentShadow<<","<<twoSided<<");\n";
+        }
+        fragmentBuffer
         <<"#else\n"
         <<"  color += computeLight("<<i<<");\n"
         <<"#endif\n";

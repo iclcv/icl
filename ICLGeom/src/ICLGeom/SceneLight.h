@@ -43,6 +43,11 @@
 #include <ICLUtils/Uncopyable.h>
 
 namespace icl{
+  namespace qt{
+    /** \cond */
+    class GLImg;
+    /** \endcond */
+  }
   namespace geom{
     
     /** \cond */
@@ -90,10 +95,13 @@ namespace icl{
       /// flag whether specular light component is enabled
       bool specularOn;
       
-      //flag weather the light casts a shadow
+      //flag whether the light casts a shadow
       bool shadowOn;
-      
-      //flag weather the light casts a shadow
+
+      //flag whether light projects texture
+      bool projectionOn;
+
+      //flag whether the light is twosided
       bool twoSidedOn;
       
       /// ambient light color
@@ -133,6 +141,8 @@ namespace icl{
       
       ///Shadow Camera for rendering ShadowMaps
       Camera *shadowCam;
+
+      qt::GLImg *projectionImage;
       
       /// for the object anchor mode
       SceneObject *objectAnchor;
@@ -224,9 +234,12 @@ namespace icl{
   
       /// sets the attenuation factors of this light
       void setAttenuation(float constant=1, float linear=0, float quadratic=0);
-      
+
       /// sets whether the light casts shadows or not
       void setShadowEnabled(bool on=true);
+
+      /// sets whether the light projects a texture or not
+      void setProjectionEnabled(bool on=true);
       
       /// sets whether the light casts two-sided light or not
       void setTwoSidedEnabled(bool on=true);
@@ -236,6 +249,9 @@ namespace icl{
 
       /// returns whether the light casts shadows or not
       bool getShadowEnabled() const;
+
+      /// returns whether the light casts shadows or not
+      bool getProjectionEnabled() const;
       
       /// returns whether the light casts two-sided light or not
       bool getTwoSidedEnabled() const;
@@ -245,9 +261,15 @@ namespace icl{
       
       /// returns the camera used for casting the shadows
       Camera* getShadowCam();
-      
+
       /// changes the shadowcam to the provided camera
       void setShadowCam(Camera* cam);
+
+      /// set the projection image
+      void setProjectionImage(qt::GLImg* img);
+
+      /// get the projection image
+      qt::GLImg* getProjectionImage() const;
       
       /// sets all paramters to OpenGL's default values
       void reset();

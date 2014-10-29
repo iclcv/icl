@@ -177,6 +177,10 @@ namespace icl{
                        &rollAndDistance, &mMouseSensitivities[LowMouseSensitivity] );
       setMouseMapping(MouseDragEvent, true, false, true, false, true,  false, 
                        &rollAndDistance, &mMouseSensitivities[HighMouseSensitivity] );
+
+      // left mouse button and shift and control: place cursor
+      setMouseMapping(MousePressEvent, true, false, false, true, true, false,
+                       &placeCursor, 0);
     }
 
 
@@ -214,7 +218,7 @@ namespace icl{
     void SceneMouseHandler::freeView(const qt::MouseEvent &pMouseEvent,
                                      const utils::Point32f &pCurrentMousePosition,
                                      const utils::Point32f &pDeltaMousePosition,
-                                     Camera &pCamera, void *pData,
+                                     Camera &pCamera, Scene &pScene, void *pData,
                                      bool pInverseX, bool pInverseY){
       // sensitivities given by additional data pointer
       MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
@@ -246,7 +250,8 @@ namespace icl{
     void SceneMouseHandler::rotateAroundOrigin(const qt::MouseEvent &pMouseEvent,
                                                const utils::Point32f &pCurrentMousePosition,
                                                const utils::Point32f &pDeltaMousePosition,
-                                               Camera &pCamera, void *pData){
+                                               Camera &pCamera, Scene &pScene, void *pData){
+      bool useCursor = pScene.getPropertyValue("visualize cursor");
       // sensitivities given by additional data pointer
       MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
       ICLASSERT( tMouseSensitivities );
@@ -257,7 +262,9 @@ namespace icl{
       : -tMouseSensitivities->mMouse;
 
       // get camera parameters
-      Vec tPosition = pCamera.getPosition();
+      Vec tPosition;
+      if(useCursor) tPosition = pCamera.getPosition()-pScene.getCursor();
+      else tPosition = pCamera.getPosition();
       Vec tNorm     = pCamera.getNorm();
       Vec tUp       = pCamera.getUp();
       Vec tHoriz    = pCamera.getHoriz();
@@ -272,7 +279,9 @@ namespace icl{
       tNorm = rotate_vector( tUp,   -tRotationFactor * tDeviceFactor * pDeltaMousePosition.x, tNorm );
 
       // adjust camera
-      pCamera.setPosition( tPosition );
+
+      if(useCursor) pCamera.setPosition( tPosition+pScene.getCursor() );
+      else pCamera.setPosition( tPosition );
       pCamera.setNorm( tNorm );
       pCamera.setUp( tUp );
     }
@@ -282,7 +291,7 @@ namespace icl{
     void SceneMouseHandler::strafe(const qt::MouseEvent &pMouseEvent,
                                    const utils::Point32f &pCurrentMousePosition,
                                    const utils::Point32f &pDeltaMousePosition,
-                                   Camera &pCamera, void *pData){
+                                   Camera &pCamera, Scene &pScene, void *pData){
       // sensitivities given by additional data pointer
       MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
       ICLASSERT( tMouseSensitivities );
@@ -306,7 +315,7 @@ namespace icl{
     void SceneMouseHandler::rollAndDistance(const qt::MouseEvent &pMouseEvent,
                                             const utils::Point32f &pCurrentMousePosition,
                                             const utils::Point32f &pDeltaMousePosition,
-                                            Camera &pCamera, void *pData){
+                                            Camera &pCamera, Scene &pScene, void *pData){
       // sensitivities given by additional data pointer
       MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
       ICLASSERT( tMouseSensitivities );
@@ -328,6 +337,18 @@ namespace icl{
 
       // adjust camera
       pCamera.translate( tTranslationVector );
+    }
+
+    void SceneMouseHandler::placeCursor(const qt::MouseEvent &pMouseEvent,
+                                            const utils::Point32f &pCurrentMousePosition,
+                                            const utils::Point32f &pDeltaMousePosition,
+                                            Camera &pCamera, Scene &pScene, void *pData){
+        geom::ViewRay ray = pCamera.getViewRay(utils::Point32f(pCurrentMousePosition.x*pCamera.getResolution().width,pCurrentMousePosition.y*pCamera.getResolution().height));
+        geom::Hit hit = pScene.findObject(ray);
+        if(hit.dist > 0) {
+            pScene.setCursor(hit.pos);
+            pScene.activateCursor();
+        }
     }
 
 
@@ -353,6 +374,9 @@ namespace icl{
         {
           mAnchor = pMouseEvent.getRelPos();
           mCameraBackup = tCamera;
+
+          if ( tMouseActionCallback )
+            tMouseActionCallback( pMouseEvent, pMouseEvent.getRelPos(), Point32f(0,0), tCamera, *mParentScene, tData );
         }
 
       // mouse drag events
@@ -362,7 +386,7 @@ namespace icl{
           tCamera = mCameraBackup;
 
           if ( tMouseActionCallback )
-            tMouseActionCallback( pMouseEvent, pMouseEvent.getRelPos(), tDeltaMousePosition, tCamera, tData );
+            tMouseActionCallback( pMouseEvent, pMouseEvent.getRelPos(), tDeltaMousePosition, tCamera, *mParentScene, tData );
         }
 
       // mouse wheel events
@@ -371,7 +395,7 @@ namespace icl{
           Point32f tDeltaMousePosition = pMouseEvent.getWheelDelta();
 
           if ( tMouseActionCallback )
-            tMouseActionCallback( pMouseEvent, pMouseEvent.getRelPos(), tDeltaMousePosition, tCamera, tData );
+            tMouseActionCallback( pMouseEvent, pMouseEvent.getRelPos(), tDeltaMousePosition, tCamera, *mParentScene, tData );
         }
 
       // save keyboard modifiers for later comparison

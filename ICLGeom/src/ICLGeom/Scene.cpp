@@ -377,7 +377,12 @@ namespace icl{
         m_shaders[i] = 0;
       }
 
+      m_cursor = SceneObject::sphere(0,0,0,1,10,10);
+      m_cursor->setColor(Primitive::all,GeomColor(255,0,255,255),true);
+      m_cursor->addChild(new CoordinateFrameSceneObject(5,0.5),true);
+
       addProperty("visualize cameras","flag","",false);
+      addProperty("visualize cursor","flag","",false);
       addProperty("visualize world frame","flag","",false);
       addProperty("visualize object frames","flag","",false);
       addProperty("visualize lights","flag","",false);
@@ -865,14 +870,21 @@ namespace icl{
               lightSetupChanged = true;
             }
             m_previousLightState[i][0] = m_lights[i]->on;
+
             if(m_lights[i]->getShadowEnabled() != m_previousLightState[i][1]) {
               lightSetupChanged = true;
             }
             m_previousLightState[i][1] = m_lights[i]->getShadowEnabled();
+
             if(m_lights[i]->getTwoSidedEnabled() != m_previousLightState[i][2]) {
               lightSetupChanged = true;
             }
             m_previousLightState[i][2] = m_lights[i]->getTwoSidedEnabled();
+
+            if(m_lights[i]->getProjectionEnabled() != m_previousLightState[i][3]) {
+              lightSetupChanged = true;
+            }
+            m_previousLightState[i][3] = m_lights[i]->getProjectionEnabled();
 
             if(m_lights[i]->getShadowEnabled()) {
               numShadowLights++;
@@ -884,6 +896,13 @@ namespace icl{
           ShaderUtil::recompilePerPixelShader(m_shaders,m_lights,numShadowLights);
           m_shaders[0]->activate();
           m_shaders[0]->deactivate();
+        }
+
+        //bind the projection textures
+        for(int i = 0; i <8;i++) {
+          if(m_lights[i] && m_lights[i]->getShadowEnabled() && m_lights[i]->getProjectionEnabled() && m_lights[i]->getProjectionImage()) {
+            m_lights[i]->getProjectionImage()->bind(0,0,8+i);
+          }
         }
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
@@ -1043,6 +1062,15 @@ namespace icl{
         };
         glLightModeliv(GL_LIGHT_MODEL_AMBIENT, minumum_ambience);
         renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get());
+      }
+
+      if(((Configurable*)this)->getPropertyValue("visualize cursor")){
+        renderSceneObjectRecursive(m_cursor);
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        m_cursor->setDepthTestEnabled(false);
+        renderSceneObjectRecursive(m_cursor);
+        m_cursor->setDepthTestEnabled(true);
+        if(!m_renderSettings->wireframe)glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
       }
 
     }
@@ -1291,6 +1319,22 @@ namespace icl{
 
     bool Scene::getDrawObjectFramesEnabled() const{
       return ((Configurable*)this)->getPropertyValue("visualize object frames");
+    }
+
+    void Scene::setCursor(Vec newPosition) {
+        Mat4 trans = m_cursor->getTransformation();
+        trans(3,0) = newPosition(0,0);
+        trans(3,1) = newPosition(0,1);
+        trans(3,2) = newPosition(0,2);
+        m_cursor->setTransformation(trans);
+    }
+    Vec Scene::getCursor() {
+        Mat4 trans = m_cursor->getTransformation();
+        return Vec(trans(3,0),trans(3,1),trans(3,2));
+    }
+
+    void Scene::activateCursor(bool activate) {
+        ((Configurable*)this)->setPropertyValue("visualize cursor",activate);
     }
 
 
