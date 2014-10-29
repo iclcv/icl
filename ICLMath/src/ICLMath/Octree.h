@@ -216,7 +216,7 @@ namespace icl{
           std::vector<Pt> pts;
           for(size_t i=0;i<allocated.size()-1;++i){
             const Node *ns = allocated[i];
-            for(size_t j=0;j<allocated.size();++j){
+            for(size_t j=0;j<ALLOC_CHUNK_SIZE*8;++j){
               for(const Pt* p = ns[j].points; p != ns[j].next;++p){
                 pts.push_back(scale_down(*p));
               }

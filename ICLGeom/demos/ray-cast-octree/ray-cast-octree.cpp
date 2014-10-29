@@ -39,6 +39,26 @@ Scene scene;
 RayCastOctreeObject octree(-2000,4000);
 GenericPointCloudGrabber grabber;
 
+/* only for the native
+inline float sqr_ray_point_dist(const ViewRay &ray, const Vec &p){
+  const Vec x = p-ray.offset;
+  return sqrnorm3(x)-sqr(sprod3(x,ray.direction));
+} 
+
+std::vector<Vec> ray_cast_naive_radius(const std::vector<Vec> &points, const ViewRay &v, float maxR){
+  std::vector<Vec> result;
+  
+  for(size_t j=0;j<points.size();++j){
+    float d = sqr_ray_point_dist(v, points[j]);
+    if(d < maxR){
+      result.push_back(points[j]);
+    }
+  }
+  return result;
+}
+    */
+
+
 struct Mouse : public MouseHandler{
   void process(const MouseEvent &e){
     if(e.isPressEvent() && e.isModifierActive(ShiftModifier)){
@@ -56,19 +76,74 @@ struct Mouse : public MouseHandler{
         }catch(ICLException &e){
           std::cout << "no point close enough to ray!" << std::endl;
         }
-      }else{
-        octree.lock();
-        o->getVertices() = octree.rayCast(v,r);//0.01);
-        octree.unlock();
-      }
-      o->setPointSize(5);
-      scene.addObject(o);
 
+        o->setPointSize(12);
+      scene.addObject(o);
+      
       SceneObject *l = new SceneObject;
       l->addVertex(v.offset);
-      l->addVertex(v.offset + v.direction * 400);
-      l->addLine(0,1,geom_green());
+      l->addVertex(v.offset + v.direction * 4000);
+      l->addLine(0,1,GeomColor(255,0,255,255));
+      l->setLineWidth(2);
       scene.addObject(l);
+
+      }else{
+        octree.lock();
+        //Time t = Time::now();
+        //for(int i=0;i<1000;++i){
+        std::vector<Vec> points;
+        std::vector<RayCastOctreeObject::AABB> boxes;
+        o->getVertices() = octree.rayCastDebug(v,r, boxes, points);//0.01);
+
+        SHOW(points.size());
+        
+        SceneObject *oBoxes = new SceneObject;
+        SceneObject *oPoints = new SceneObject;
+        for(size_t i=0;i<points.size();++i){
+          oPoints->addVertex(points[i], geom_white());
+        }
+        for(size_t i=0;i<boxes.size();++i){
+          const RayCastOctreeObject::AABB &b = boxes[i];
+          SceneObject *box = oBoxes->addCuboid(b.center[0]-b.halfSize[0],
+                                               b.center[1]-b.halfSize[1],
+                                               b.center[2]-b.halfSize[2],
+                                               b.halfSize[0]*2,
+                                               b.halfSize[1]*2,
+                                               b.halfSize[2]*2);
+          box->setVisible(Primitive::vertex,false);
+          box->setVisible(Primitive::quad,false);
+          box->setVisible(Primitive::line,true);
+          box->setColor(Primitive::line, geom_white(255));
+        }
+        oPoints->setPointSize(7);
+
+
+        o->setPointSize(12);
+        scene.addObject(o);
+        
+        SceneObject *l = new SceneObject;
+        l->addVertex(v.offset);
+        l->addVertex(v.offset + v.direction * 4000);
+        l->addLine(0,1,GeomColor(255,0,255,255));
+        l->setLineWidth(2);
+        scene.addObject(l);
+        
+        scene.addObject(oPoints);
+        scene.addObject(oBoxes);
+        //}
+        //t.showAge("time for 1000 ray casts [found " + str(o->getVertices().size()) + " points]");
+        /* only a benchmark for native search
+        std::vector<Vec> all = octree.queryAll();
+        //std::vector<Vec> all = octree.query(-2000,-2000,-2000, 4000, 4000, 4000);
+        t = Time::now();        
+        for(int i=0;i<1000;++i){
+          o->getVertices() = ray_cast_naive_radius(all, v, r);
+        }
+        t.showAge("time for 1000 naive ray casts [found " + str(o->getVertices().size()) + " points]");
+        */
+        octree.unlock();
+      }
+     
     }
   }  
 } mouse;
@@ -90,7 +165,7 @@ void init(){
   octree.setRenderPoints(true);
   octree.setLockingEnabled(true);
 
-  gui << Draw3D().handle("plot") << Show();
+  gui << Draw3D(scene.getCamera(0).getResolution()).handle("plot") << Show();
 
 
   if(pa("-pci")){
@@ -115,11 +190,10 @@ void run(){
   if(pa("-pci")){
     static PointCloudObject obj;
     grabber.grab(obj);
-    Time t = Time::now();
-    octree.fill(obj,OctreeObject::PointFilter(scene.getCamera(1)),true);
+    //    Time t = Time::now();
+    octree.fill(obj,RayCastOctreeObject::PointFilter(scene.getCamera(1)),true);
     //octree.fill(obj);
-    t.showAge("time for filling the octree");
-
+    //    t.showAge("time for filling the octree");
   }else{
     Thread::msleep(100000);
   }
@@ -129,5 +203,5 @@ void run(){
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-r(float=1) -1 -pci(2) -c(initial-camera)",init,run).exec();
+  return ICLApp(n,ppc,"-r(float=10) -1 -pci(2) -c(initial-camera)",init,run).exec();
 }

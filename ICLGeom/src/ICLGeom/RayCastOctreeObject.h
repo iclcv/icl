@@ -86,10 +86,18 @@ namespace icl{
                                    float maxSqrDist, float maxDist, 
                                    std::vector<Vec> &result);
      
+      static void ray_cast_sqr_rec_debug(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray, 
+                                         float maxSqrDist, float maxDist, 
+                                         std::vector<Vec> &result,
+                                         std::vector<AABB> &boxes, std::vector<Vec> &points);
       public:
       
       /// casts a ray and returns all points that are closer than given distance to ray
       ICLGeom_API std::vector<Vec> rayCast(const ViewRay &ray, float maxDist=1) const;
+
+      /// casts a ray and returns all points that are closer than given distance to ray
+      ICLGeom_API std::vector<Vec> rayCastDebug(const ViewRay &ray, float maxDist,
+                                                std::vector<AABB> &boxes, std::vector<Vec> &points) const;
       
       /// as ray cast, but sorts the points by distance to the ray-offset
       ICLGeom_API std::vector<Vec> rayCastSort(const ViewRay &ray, float maxDist = 1) const;

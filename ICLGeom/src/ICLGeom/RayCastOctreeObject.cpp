@@ -77,12 +77,45 @@ namespace icl{
       }
     }
 
+    void RayCastOctreeObject::ray_cast_sqr_rec_debug(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray, 
+                                                     float maxSqrDist, float maxDist, 
+                                                     std::vector<Vec> &result,
+                                                     std::vector<AABB> &boxes, std::vector<Vec> &points){
+      boxes.push_back(n->boundary);
+      for(const Vec *p=n->points; p<n->next;++p){
+        points.push_back(*p);
+        if(sqr_ray_point_dist(ray,*p) < maxSqrDist){
+          result.push_back(*p);
+        }
+      }
+      if(n->children){
+        for(int i=0;i<8;++i){
+          const Super::AABB &aabb = n->children[i].boundary;
+          if(sqr_ray_point_dist(ray,aabb.center) <= sqr(n->children[i].radius+maxDist)){
+            ray_cast_sqr_rec_debug(n->children+i,ray,maxSqrDist, maxDist, result, boxes, points);
+          }
+        }            
+      }
+    }
+
+
     std::vector<Vec> RayCastOctreeObject::rayCast(const ViewRay &ray, float maxDist) const{
       const float maxSqrDist = sqr(maxDist);
       std::vector<Vec> result;
       result.reserve(4);
       
       ray_cast_sqr_rec(Super::root, ray, maxSqrDist, maxDist, result);
+      
+      return result;
+    }
+
+    std::vector<Vec> RayCastOctreeObject::rayCastDebug(const ViewRay &ray, float maxDist,
+                                                       std::vector<AABB> &boxes, std::vector<Vec> &points) const{
+      const float maxSqrDist = sqr(maxDist);
+      std::vector<Vec> result;
+      result.reserve(4);
+      
+      ray_cast_sqr_rec_debug(Super::root, ray, maxSqrDist, maxDist, result, boxes, points);
       
       return result;
     }
