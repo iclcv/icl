@@ -131,9 +131,10 @@ void init(){
 
   gui << Draw().handle("draw").minSize(48,18) 
       << ( VBox().maxSize(14,99).minSize(14,1)
-           << ( HBox()
-                << Button("extract template").handle("extract")
-                << Button("rotate template").handle("rotate")
+           << ( HBox().label("template ...")
+                << Button("extract from image").handle("extract")
+                << Button("rotate").handle("rotate")
+                << Button("load...").handle("load")
               )
            << ( HBox().label("extract aspect ratio")
                 << Spinner(1,32,4).handle("ar1")
@@ -182,7 +183,8 @@ void extract_template(const Img8u &image){
     size.width = float(size.width) * 0.9;
     size.height = float(size.height) * 0.9;
   }
-  ir.apply(ps,image,Size(size.width,size.height)).deepCopy(&templ);
+  ir.apply(ps,image,Size(size.width,size.height
+)).deepCopy(&templ);
   surf->setReferenceImage(&templ);
   vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
 }
@@ -191,7 +193,22 @@ void rotate_template(){
   RotateOp r(90);
   r.apply(&templ)->deepCopy(bpp(templ));
   surf->setReferenceImage(&templ);
-  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
+  //  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
+}
+
+void load(){
+  try{
+    std::string fn = openFileDialog();
+    Img8u image = load<icl8u>(fn);
+    if(image.getWidth() > iW ||
+       image.getHeight() > iH){
+      ERROR_LOG("template width and height must not be larger that the image width and height");
+      return;
+    }
+    image.deepCopy(bpp(templ));
+    surf->setReferenceImage(&templ);
+    //vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
+  }catch(...){}
 }
 
 
@@ -206,6 +223,7 @@ void run(){
   DrawHandle draw = gui["draw"];
   ButtonHandle extract = gui["extract"];
   ButtonHandle rotate = gui["rotate"];
+  ButtonHandle load = gui["load"];
 
   const Img8u &image = *grabber.grab()->as8u();
   iW = image.getWidth();
@@ -213,13 +231,26 @@ void run(){
   tW = templ.getWidth();
   tH = templ.getHeight();
 
-  if(extract.wasTriggered()) extract_template(image);
-  if(rotate.wasTriggered()) rotate_template();
+  if(load.wasTriggered()){
+    ::load();
+    tW = templ.getWidth();
+    tH = templ.getHeight();
+  }
+  if(extract.wasTriggered()){
+    extract_template(image);
+    tW = templ.getWidth();
+    tH = templ.getHeight();
+  }
+  if(rotate.wasTriggered()){
+    rotate_template();
+    tW = templ.getWidth();
+    tH = templ.getHeight();
+  }
 
   vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
   
   mouse->setXOffset(tW);
-  vis.setSize(Size(iW+tW,iH));
+  vis.setSize(Size(iW+tW,iclMax(iH,tH)));
   
   
   vis.fill(0);

@@ -34,6 +34,7 @@
 #include <ICLMath/Octree.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/PointCloudObjectBase.h>
+#include <ICLGeom/Camera.h>
 
 
 #ifdef APPLE
@@ -100,6 +101,30 @@ namespace icl{
 
 
     /// The OctreeObjects provides a visualizable SceneObject interface for the Octree class
+    /** \section Insertion Speed
+        
+        Please note that the insertion speed heavily depends on the data that is actually 
+        inserted. A very common problem is an incredible slow insertion of Kinect-Point clouds.
+        The main reason for this is the fact that Kinect's depth image contains many holes
+        with depth value 0.0, originated by -- for the device -- invisible parts of the scene.
+        These holes in point-cloud points that are all exactly at the camera center. \n
+        However, a large set of points at the same location leads to a very deep Octree node 
+        structure which affects the insertion performance extremely negatively.
+
+        In order to avoid this, it is recommended to use a point filter, most commonly the
+        internal class OctreeObject::PointFilter is sufficient here, when inserting points from
+        another point cloud into an octree.
+
+        Please note: another very common misconception is an issue with low speed of debug
+        builds. As a matter of fact, in particular structures as the OctreeObject profit 
+        tremendously from the automatic compiler optimizations, so between "-O0 -g3" and 
+        "-O3 -g0 -march=native" a speedup factor of 10 is not very unlikely. 
+        
+        As a general guideline, the insertion of a full QVGA (320x240) point cloud from a kinect
+        device (employing the PointFilter to avoid insertion thousands of camera center points)
+        takes about 5ms on a mobile Core i7 (Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz)
+     */
+    
     template<class Scalar, int CAPACITY=4, int SF=32, class Pt=math::FixedColVector<Scalar,4>, int ALLOC_CHUNK_SIZE=1024>
     class OctreeObject : public math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>, public SceneObject{
 
@@ -153,6 +178,76 @@ namespace icl{
         }
         SceneObject::unlock();
       }
+
+      /// Adds all points from the given point cloud object to the octree
+      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock 
+          is used to avoid issues during update. Supporting a filtering function that
+          provides both bool operator()(const Vec&) const 
+          and bool operator()(const Vec3 &) const. 
+
+          A most common filter is provided as an internal class: PointFilter
+          Which is able to 
+          */
+      template<class Filter>
+      void fill(const PointCloudObjectBase &obj, Filter f, bool clearBefore){
+        SceneObject::lock();
+        if(clearBefore) Parent::clear();
+        if(obj.supports(PointCloudObjectBase::XYZH)){
+          const core::DataSegment<float,4> xyzh = obj.selectXYZH();
+          for(int i=0;i<xyzh.getDim();i+=1){
+            if(f(xyzh[i])){
+              Parent::insert(xyzh[i]);
+            }
+          }
+        }else if(obj.supports(PointCloudObjectBase::XYZ)){
+          const core::DataSegment<float,3> xyz = obj.selectXYZ();
+          for(int i=0;i<xyz.getDim();i+=1){
+            if(f(xyz[i])){
+              Parent::insert(xyz[i].resize<1,4>(1));
+            }
+          }
+        }
+        SceneObject::unlock();
+      }
+
+
+      /// Internal most common fill-Filter to filter out single points
+      /** The single point that is usually filtered out is the camera center.
+          Therefore, two constructors are provided. One that can be 
+          arbitrarily defined and another one that uses a camera's position
+          and it's focal length as distance threshold directly
+
+          In other words, the filter filters our an epsilon sphere around
+          the given center point, where epsilon is the given radius or
+          the given camera's focal length */
+      struct ICLGeom_API PointFilter {
+        math::Vec3 pos;   //!< position to filter out
+        float  sqrRadius; //!< squared distance threshold to the filter point
+
+        /// Create point filter with given center and radius
+        PointFilter(const Vec &p, float radius=10){
+          pos = p.resize<1,3>();
+          sqrRadius = radius*radius;
+        }
+        
+        /// Create point filter with given camera
+        /** Internally uses the Camera's position and its focal length as 
+            radius*/
+        PointFilter(const geom::Camera &cam){
+          pos = cam.getPosition().resize<1,3>();
+          this->sqrRadius = utils::sqr(cam.getFocalLength());
+        }
+        
+        /// actual filter function
+        /** realized as an inline template */
+        template<int N> 
+        inline bool operator()(const math::FixedColVector<float,N> &v) const{
+          return ( ( sqr(v[0]-pos[0]) +
+                     sqr(v[1]-pos[1]) +
+                     sqr(v[2]-pos[2]) ) > sqrRadius);
+        }
+      };
+
       
       /// sets whether points are rendered as well
       /** Please not, that the point rendering of the OctreeObject is less efficient

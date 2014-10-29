@@ -183,6 +183,8 @@ namespace icl{
       }
     } g_props_initializer_instance;
     
+    static int g_use_single_serial = -1;
+
     static int propNr(const std::string &x){
       std::map<std::string,int>::iterator it = g_props.find(x);
       if(it != g_props.end()){
@@ -296,18 +298,27 @@ namespace icl{
 
     SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
       g_swissranger_instance_count++;
+      
       if(g_swissranger_instance_count == 1){
         set_canon(0);
+
       }
       SR_SetCallback(swiss_ranger_debug_callback);
       m_sr = new SwissRanger;
       unsigned short version[4];
       SR_GetVersion(version);
-      if(serialNumber < 0){
-        m_sr->id = SR_OpenDlg(&m_sr->cam,3,0);
+
+      if(serialNumber <= 0){
+        DEBUG_LOG("trying single serial: " << g_use_single_serial);
+        m_sr->id = SR_OpenUSB(&m_sr->cam,g_use_single_serial);
         if(m_sr->id <= 0){
-          ICL_DELETE(m_sr);
-          throw ICLException("unable to open SwissRanger (SR_OpenDlg) device with serialNumber " + str(serialNumber));
+          m_sr->id = SR_OpenDlg(&m_sr->cam,3,0);
+          if(m_sr->id <= 0){
+            ICL_DELETE(m_sr);
+            throw ICLException("unable to open SwissRanger (SR_OpenDlg) device with serialNumber " + str(serialNumber));
+          }
+        }else{
+          DEBUG_LOG("using single device serial " << g_use_single_serial);
         }
       }else{
         m_sr->id = SR_OpenUSB(&m_sr->cam,serialNumber);
@@ -316,6 +327,8 @@ namespace icl{
           throw ICLException("unable to open SwissRanger (SR_OpenUSB) device with serialNumber " + str(serialNumber));
         }
       }
+      SR_SetTimeout(m_sr->cam, 10000); // 10 sec
+      
       m_sr->iim = iimUnknownPixelsMinusOne;
 
       m_sr->size.width = SR_GetCols(m_sr->cam);
@@ -330,6 +343,7 @@ namespace icl{
       
       m_sr->createXYZ = true;
       
+
       SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
       addProperties();
     }
@@ -538,9 +552,15 @@ namespace icl{
         DWORD inAddr = 0; // what is this ?
         DWORD inMask = 0; // how to use a mask here ?
         int nFound = SR_OpenAll(cams,100,inAddr,inMask);
+
         for(int i=0;i<nFound;++i){
           int serial = SR_ReadSerial(cams[i]);
-          deviceList.push_back(GrabberDeviceDescription("sr",str(serial),"SwissRanger Device "+str(i)+" (serial "+str(serial)+")"));
+          if(nFound == 1){
+            g_use_single_serial = serial;
+            //DEBUG_LOG("setting single serial to " << serial);
+          }
+          //DEBUG_LOG("found cam with serial " << serial);
+          deviceList.push_back(GrabberDeviceDescription("sr",str(serial)+"|||-1|||0","SwissRanger Device "+str(i)+" (serial "+str(serial)+")"));
           SR_Close(cams[i]);
         }
       }

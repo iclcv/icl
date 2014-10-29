@@ -30,12 +30,14 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/RayCastOctreeObject.h>
+#include <ICLGeom/GenericPointCloudGrabber.h>
 #include <ICLGeom/Geom.h>
 
 GUI gui;
 Scene scene;
 
-RayCastOctreeObject octree(-100,200);
+RayCastOctreeObject octree(-2000,4000);
+GenericPointCloudGrabber grabber;
 
 struct Mouse : public MouseHandler{
   void process(const MouseEvent &e){
@@ -47,13 +49,17 @@ struct Mouse : public MouseHandler{
       
       if(pa("-1")){
         try{
+          octree.lock();
           Vec vv = octree.rayCastClosest(v,r);
+          octree.unlock();
           o->getVertices().push_back(vv);
         }catch(ICLException &e){
           std::cout << "no point close enough to ray!" << std::endl;
         }
       }else{
+        octree.lock();
         o->getVertices() = octree.rayCast(v,r);//0.01);
+        octree.unlock();
       }
       o->setPointSize(5);
       scene.addObject(o);
@@ -66,33 +72,62 @@ struct Mouse : public MouseHandler{
     }
   }  
 } mouse;
+
+
+
+
 void init(){
-  scene.addCamera(Camera(Vec(0,0,150,1)));
-  scene.setBounds(200);
+  if(pa("-c")){
+    scene.addCamera(Camera(*pa("-c")));
+  }else{
+    scene.addCamera(Camera(Vec(0,0,1500,1)));
+  }
+  scene.addCamera(scene.getCamera(0));
+  
+  scene.setBounds(2000);
  
-  octree.setRenderBoxes(false);
+  octree.setRenderBoxes(true);
   octree.setRenderPoints(true);
+  octree.setLockingEnabled(true);
 
   gui << Draw3D().handle("plot") << Show();
 
-  for(float x=0;x<320;++x){
-    for(float y=0;y<240;++y){
-      octree.insert( Vec((x-160)/2, (y-120)/2, 0,1 ) );
+
+  if(pa("-pci")){
+    grabber.init(pa("-pci"));
+  }else{
+    for(float x=0;x<6400;x+=10){
+      for(float y=0;y<4800;y+=10){
+        octree.insert( Vec((x-3200)/2, (y-2400)/2, 0,1 ) );
+      }
     }
   }
-    octree.setPointSize(2);
-  
+  octree.setPointSize(2);
   
   scene.addObject(&octree,false);
   
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
   gui["plot"].install(&mouse);
-  
-  
+}
+
+void run(){
+  if(pa("-pci")){
+    static PointCloudObject obj;
+    grabber.grab(obj);
+    Time t = Time::now();
+    octree.fill(obj,OctreeObject::PointFilter(scene.getCamera(1)),true);
+    //octree.fill(obj);
+    t.showAge("time for filling the octree");
+
+  }else{
+    Thread::msleep(100000);
+  }
+
+  gui["plot"].render();
 }
 
 
 int main(int n, char **ppc){
-  return ICLApp(n,ppc,"-r(float=1) -1",init).exec();
+  return ICLApp(n,ppc,"-r(float=1) -1 -pci(2) -c(initial-camera)",init,run).exec();
 }
