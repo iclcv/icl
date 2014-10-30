@@ -14,6 +14,8 @@ cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.07 \
       -DBUILD_WITH_V4L=TRUE \
       -DBUILD_WITH_XINE=TRUE \
       -DBUILD_WITH_LIBFREENECT=TRUE \
+      -DBUILD_WITH_LIBFREENECT2=TRUE \
+      -DLIBFREENECT2_ROOT=/vol/nivision/share/libfreenect2/freenect2 \
       -DBUILD_WITH_MESASR=TRUE \
       -DBUILD_WITH_QT=TRUE \
       -DQT_ROOT=/vol/nivision/share/qt5/5.2.1/gcc_64 \
