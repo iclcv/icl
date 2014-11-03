@@ -176,6 +176,11 @@ IF(LIBFREENECT_FOUND)
   LIST(APPEND HEADERS src/ICLIO/KinectGrabber.h)
 ENDIF()
 
+IF(LIBFREENECT2_FOUND)
+  LIST(APPEND SOURCES src/ICLIO/Kinect2Grabber.cpp)
+  LIST(APPEND HEADERS src/ICLIO/Kinect2Grabber.h)
+ENDIF()
+
 IF(PYLON_FOUND)
   LIST(APPEND SOURCES src/ICLIO/PylonGrabber.cpp
                       src/ICLIO/PylonGrabberThread.cpp
