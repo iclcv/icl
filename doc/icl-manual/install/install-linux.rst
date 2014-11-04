@@ -103,6 +103,7 @@ Overview:
 * :ref:`install.dependencies.optional.imagemagick`
 * :ref:`install.dependencies.optional.libdc`
 * :ref:`install.dependencies.optional.libfreenect`
+* :ref:`install.dependencies.optional.libfreenect2`
 * :ref:`install.dependencies.optional.xine`
 * :ref:`install.dependencies.optional.qt`
 * :ref:`install.dependencies.optional.pylon`
@@ -261,6 +262,99 @@ IR-images and to set some internal camera properties.
 * **Dependent library features:** libfreenect-based access to Kinect cameras
   (Please note, that we also provide an alternative using OpenNI)
 * **Ubuntu packages:**  libfreenect-dev
+
+
+.. _install.dependencies.optional.libfreenect2:
+
+OpenKinect Kinect Driver Library Version 2 for Kinect 2 (libfreenect2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+libfreenect2 provides a lightweight interface for grabbing images
+from Microsoft Kinect2 cameras. The library allows to grab color, depth and 
+IR-images. There is no Ubuntu package for the library yet. Thefore, the driver
+libraries must be installed manually. Please note that the support for 
+Kinect2 using libfreenect2 is in its early beta-phase by now.
+
+In order to get a compiled and installed version of libfreenect2, the
+most recent git-version is used. As the currently available Version
+does not come up with a working installation routine, this how-to only explains
+how to build the libraries and how to link with ICL against the build-tree.
+Thus, it is strongly recommended to already perform the initial git checkout
+in the actual installation directory. For the example, we assume the
+the directory to be /opt/share/libfreenect2
+
+Create the source/install directory::
+
+  export DIR=/opt/share/libfreenect2
+  mkdir $DIR 
+  cd $DIR
+
+Get the sources via git clone::
+
+  git clone https://github.com/OpenKinect/libfreenect2/ .
+  cd ./depends
+
+Download and install additional but patched dependencies, such as libusb 
+not, you'll need the ubuntu package libudev-dev::
+
+  ./install_ubuntu.sh 
+
+
+Download and bulid libturbojpeg (for latest libturbojpeg)::
+
+  wget http://sourceforge.net/projects/libjpeg-turbo/files/1.3.1/libjpeg-turbo-1.3.1.tar.gz
+  tar xf libjpeg-turbo-1.3.1.tar.gz && rm libjpeg-turbo-1.3.1.tar.gz && cd libjpeg-turbo-1.3.1
+  
+Build libturbojpeg. *Note, you'll need the ubuntu-packages autoconf and nasm*::
+
+  autoreconf -fiv && ./configure && make -j3
+
+Build the protonect example *thing*::
+
+  cd ../../examples/protonect
+  
+Edit CMakeLists.txt (replace turbojpeg in line 102 by 
+$DIR/depends/libjpeg-turbo-1.3.1/.libs/libturbojpeg.so)::
+
+  sed -i "102s|.*|  $DIR/depends/libjpeg-turbo-1.3.1/.libs/libturbojpeg.so|" CMakeLists.txt 
+
+Patch the opengl_depth_packet_processor in ./src (set variable do_debug in line 322 to false)::
+
+  sed -i 's|static const bool do_debug = true;|static const bool do_debug = false;|g' src/opengl_depth_packet_processor.cpp
+
+**On ubuntu trusty only** there seems to be an issue with the opencv dev-files. In order to get
+the build running smoothly, apply the following fixes and install the following libraries::
+
+  sudo apt-get install libopencv-core-dev libopencv-photo-dev libopencv-contrib-dev libopencv-highgui-dev
+ 
+**On ubuntu trusty only** now patch the CMakeLists.txt by assuming opencv is installed::
+
+  sed -i 's|FIND_PACKAGE(OpenCV REQUIRED)|#FIND_PACKAGE(OpenCV REQUIRED)|g' CMakeLists.txt
+  sed -i 's|${OpenCV_LIBS}|opencv_photo opencv_core opencv_contrib opencv_highgui|g' CMakeLists.txt
+
+
+Configure using cmake and build (you'll need libopencv-core-dev,
+libopencv-photo-dev, libopencv-highgui-dev and libopencv-contrib-dev anyway)::
+
+  cmake . && make
+
+In order to be able to use Kinect2 as non-super-user. Add udef rules:
+as root, create file /etc/udev/rules.d/90-kinect2.rules with content::
+
+  # ATTR{product}=="Kinect2"
+  SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02c4", MODE="0666"
+  SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d8", MODE="0666"
+  SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d9", MODE="0666"
+
+**Important** After adding and saving the file, you'll have to re-attach your Kinect2 device::
+
+  $DIR/examples/protonect/bin/Protonect 
+
+Should now display the Kinect2 images. In your ICL-configuration cmake command add::
+
+  -DBUILD_WITH_LIBFREENECT2=TRUE -DLIBFREENECT2_ROOT=$DIR
+
+
 
 
 .. _install.dependencies.optional.xine:
