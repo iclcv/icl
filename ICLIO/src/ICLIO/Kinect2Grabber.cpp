@@ -40,6 +40,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
@@ -202,6 +203,7 @@ namespace icl{
       LibFreenect2Context::Device *dev;
       Kinect2Grabber::Mode mode;
       bool avoidDoubledFrames;
+      bool unflipXAxis;
       Img32f irImage, depthImage;
       Img8u rgbImage;
 
@@ -243,6 +245,17 @@ namespace icl{
         }
       }
 
+      template<class T>
+      Img<T> *copyOutput(const Img<T> &src, Img<T> &dst){
+        waitToAvoidDoubledFrames();
+        if(unflipXAxis){
+          flippedCopy(axisVert, &src, bpp(dst));
+        }else{
+          src.deepCopy(&dst);
+        }
+        return &dst;
+      }
+
     };
     
     Kinect2Grabber::Kinect2Grabber(Kinect2Grabber::Mode mode, int deviceID) throw (ICLException) {
@@ -253,6 +266,7 @@ namespace icl{
           m_impl->dev = ctx.openDevice(deviceID);
           m_impl->mode = mode;
           m_impl->avoidDoubledFrames = true;
+          m_impl->unflipXAxis = true;
         }catch(ICLException &e){
           delete m_impl;
           throw;
@@ -262,6 +276,24 @@ namespace icl{
       }
 
       addProperty("Avoid double frames","flag","",1,0,"whether to avoid returning the same frame multiple times");
+      addProperty("Unflip X-Axis","flag","",1,1,"The driver's output images are flipped. Decide whether to un-flip it");
+      
+      switch(mode){
+        case GRAB_RGB_IMAGE:
+          addProperty("format","menu","RGB-8u","RGB (8u)");
+          addProperty("size","menu","FullHD - 1080p 1920x1080","FullHD - 1080p 1920x1080");
+          break;
+        case GRAB_IR_IMAGE:
+          addProperty("format","menu","1 channdel float","1 channel float");
+          addProperty("size","menu","512x424","512x424");
+          break;
+        case GRAB_DEPTH_IMAGE:
+          addProperty("format","menu","1 channdel float","1 channel float");
+          addProperty("size","menu","512x424","512x424");
+          break;
+        default:
+          break;
+      }
 
       Configurable::registerCallback(utils::function(this,&Kinect2Grabber::processPropertyChange));
     }
@@ -278,30 +310,34 @@ namespace icl{
       Mutex::Locker lock(m_impl->dev);
       switch(m_impl->mode){
         case GRAB_DEPTH_IMAGE:
-          m_impl->waitToAvoidDoubledFrames();
-          m_impl->dev->depthImage.deepCopy(&m_impl->depthImage);
-          return &m_impl->depthImage;
+          //m_impl->waitToAvoidDoubledFrames();
+          return m_impl->copyOutput(m_impl->dev->depthImage,m_impl->depthImage);
+          //          return &m_impl->depthImage;
           break;
         case GRAB_RGB_IMAGE:
-          m_impl->waitToAvoidDoubledFrames();
-          m_impl->dev->rgbImage.deepCopy(&m_impl->rgbImage);
-          return &m_impl->rgbImage;
+          //m_impl->waitToAvoidDoubledFrames();
+          //          m_impl->dev->rgbImage.deepCopy(&m_impl->rgbImage);
+          return m_impl->copyOutput(m_impl->dev->rgbImage,m_impl->rgbImage);
           break;
         case GRAB_IR_IMAGE:
-          m_impl->waitToAvoidDoubledFrames();
-          m_impl->dev->irImage.deepCopy(&m_impl->irImage);
-          return &m_impl->irImage;
+          return m_impl->copyOutput(m_impl->dev->irImage,m_impl->irImage);
+          //m_impl->waitToAvoidDoubledFrames();
+          //          m_impl->dev->irImage.deepCopy(&m_impl->irImage);
+           //return &m_impl->irImage;
           break;
         default:
           throw ICLException("Kinect2Grabber::acquireImage() invalid image mode!");
           break;
       }
+      return 0;
     }
 
     /// callback for changed configurable properties
     void Kinect2Grabber::processPropertyChange(const utils::Configurable::Property &prop){
       if(prop.name == "Avoid double frames"){
         m_impl->avoidDoubledFrames = parse<bool>(prop.value);
+      }else if(prop.name == "Unflip X-Axis"){
+        m_impl->unflipXAxis = parse<bool>(prop.value);
       }
     }
 
