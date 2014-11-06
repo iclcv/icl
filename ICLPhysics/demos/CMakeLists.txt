@@ -1,7 +1,6 @@
 IF(BULLET_FOUND)
 ADD_SUBDIRECTORY(physics-car)
 ADD_SUBDIRECTORY(physics-constraints)
-ADD_SUBDIRECTORY(physics-test)
 ADD_SUBDIRECTORY(physics-scene)
 ADD_SUBDIRECTORY(physics-maze)
 ADD_SUBDIRECTORY(physics-paper)
