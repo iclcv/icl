@@ -52,6 +52,10 @@ FUNCTION(BUILD_DEMO)
   SET(oneValueArgs NAME)
   SET(multiValueArgs SOURCES LIBRARIES)
   CMAKE_PARSE_ARGUMENTS(DEMO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  LIST(GET DEMO_SOURCES 0 FIRST_SOURCE)
+  get_filename_component(SOURCE_ABSOLUTE ${FIRST_SOURCE} ABSOLUTE)
+  get_filename_component(SOURCE_FOLDER ${SOURCE_ABSOLUTE} PATH)
   
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ICLUtils/src
                       ${CMAKE_SOURCE_DIR}/ICLMath/src
@@ -61,7 +65,9 @@ FUNCTION(BUILD_DEMO)
                       ${CMAKE_SOURCE_DIR}/ICLQt/src
                       ${CMAKE_SOURCE_DIR}/ICLCV/src
                       ${CMAKE_SOURCE_DIR}/ICLGeom/src
-                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src)
+                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src
+                      ${CMAKE_SOURCE_DIR}/ICLPhysics/src
+                      ${SOURCE_FOLDER})
 
   SET(BINARY "${DEMO_NAME}-demo")
   ADD_EXECUTABLE(${BINARY} ${DEMO_SOURCES})
@@ -86,7 +92,8 @@ FUNCTION(BUILD_APP)
                       ${CMAKE_SOURCE_DIR}/ICLQt/src
                       ${CMAKE_SOURCE_DIR}/ICLCV/src
                       ${CMAKE_SOURCE_DIR}/ICLGeom/src
-                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src)
+                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src
+                      ${CMAKE_SOURCE_DIR}/ICLPhysics/src)
 
   SET(BINARY "icl-${APP_NAME}")
   ADD_EXECUTABLE(${BINARY} ${APP_SOURCES})
@@ -121,7 +128,7 @@ IF(NOT WIN32)
   LIST(REMOVE_DUPLICATES INCLUDE_DIRS)
   
   # remove local include dirs
-  FOREACH(M Utils Math Core Filter IO CV Qt Geom Markers)
+  FOREACH(M Utils Math Core Filter IO CV Qt Geom Markers Physics)
     LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/ICL${M}/src)
   ENDFOREACH()
   # remove build-dir added in case of RSB-Support

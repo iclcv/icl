@@ -157,6 +157,12 @@
 #define ICLMarkers_API   __declspec(dllimport)
 #endif
 
+#ifdef ICLPhysics_EXPORTS
+#define ICLPhysics_API   __declspec(dllexport)
+#else
+#define ICLPhysics_API   __declspec(dllimport)
+#endif
+
 #else
 #define ICLUtils_API
 #define ICLMath_IMP
@@ -168,6 +174,7 @@
 #define ICLQt_API
 #define ICLGeom_API
 #define ICLMarkers_API
+#define ICLPhysics_API
 #endif
 
 #ifdef ICL_HAVE_OPENGL

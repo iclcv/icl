@@ -1,0 +1,119 @@
+#include <ICLGeom/Geom.h>
+#include <ICLQt/Common.h>
+#include <ICLUtils/FPSLimiter.h>
+
+#include <ICLPhysics/PhysicsScene.h>
+#include <ICLPhysics/RigidBoxObject.h>
+#include <ICLPhysics/RigidCylinderObject.h>
+#include <ICLPhysics/RigidSphereObject.h>
+#include <ICLPhysics/Object2PointConstraint.h>
+#include <ICLPhysics/PhysicsMouseHandler.h>
+#include <ICLPhysics/SixDOFConstraint.h>
+#include <ICLPhysics/BallSocketConstraint.h>
+#include <ICLPhysics/HingeConstraint.h>
+#include <ICLPhysics/SliderConstraint.h>
+#include <ICLPhysics/PhysicsDefs.h>
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+
+using namespace geom;
+using namespace physics;
+using namespace std;
+
+GUI gui;
+vector<PhysicsObject*> objects;
+FPSLimiter fps(60);
+
+GenericGrabber dataGrab;
+
+FixedColVector<float, 3> gravity;
+Camera cam(Vec(1000,0,100,1), Vec(-1,0,0,1), Vec(0,0,-1,1));
+
+RigidBoxObject *box = new RigidBoxObject(0.0,0.0,500, 100, 100, 100, 70);
+RigidCylinderObject *cylinder = new RigidCylinderObject(0.0,0.0,700.0, 100, 100, 20,40);
+RigidCylinderObject *cylinder2 = new RigidCylinderObject(0.0,0.0,900.0, 100, 100, 20,30);
+RigidBoxObject *table = new RigidBoxObject(0.0,0.0,-200.0, 3000, 3000, 200, 0);
+Mat matA(1,0,0,0,
+         0,1,0,0,
+         0,0,1,0,
+         0,0,0,1);
+Mat matB(1,0,0,0,
+         0,1,0,0,
+         0,0,1,0,
+         0,0,0,1);
+SliderConstraint sc(cylinder, cylinder2, matA, matB, 2);
+PhysicsScene scene;
+PhysicsMouseHandler handler(0,&scene);
+void init(){
+  cout << "pointers"<<endl;
+  cout<<"box:"<<box<<endl;
+  cout<<"cylinder:"<<cylinder<<endl;
+  cout<<"cylinder2:"<<cylinder2<<endl;
+  cout<<"table:"<<table<<endl;
+  cout<<"tablescale:"<<table->getScale()<<endl;
+  cout<<"icl2bullet"<<icl2bullet(1.f)<<endl;
+  gui << Draw3D().handle("draw") << Show();
+  scene.addCamera(cam);
+  
+  box->setCollisionGroup(0);
+  cylinder->setCollisionGroup(1);
+  cylinder2->setCollisionGroup(2);
+  table->setCollisionGroup(3);
+  //scene.setGroupCollision(0,1,false);
+  
+  cylinder->setRestitution(0.5f);
+  cylinder2->setRestitution(0.9f);
+  box->setRestitution(0.9f);
+  table->setRestitution(0.9f);
+  
+  
+  cylinder->setDamping(0.0f, 0.0f);
+  cylinder2->setDamping(0.0f, 0.0f);
+  box->setDamping(0.0f, 0.0f);
+  
+  box->setFriction(1.f);
+  cylinder->setFriction(1.f);
+  cylinder2->setFriction(1.f);
+  table->setFriction(1.f);
+  
+  
+  cylinder->setRollingFriction(0.9f);
+  cylinder2->setRollingFriction(0.9f);
+  table->setRollingFriction(0.9f);
+  box->setRollingFriction(1.f);
+  
+  scene.addObject(cylinder, true);
+  scene.addObject(cylinder2, true);
+  scene.addObject(table, true);
+  scene.addConstraint(&sc,true);
+  //scene.removeConstraint(&sc);
+  
+  scene.setGravity(Vec(0,0,-10000));
+  //use mouse events for camera movement
+  gui["draw"].install(&handler);
+  
+  //link the visualization
+  gui["draw"].link(scene.getGLCallback(0));
+}
+
+int delay = 0;
+int counter = 0;
+clock_t begin_time = clock();
+void run()
+{
+  float time_since_last_tick = 1.f/ fps.getFPSVal();
+  delay++;
+  if(delay < 60) return;
+  box->setScale(Vec(1,1,1) * (2.f + sin(-1.57079633 + counter++ / 10.f)));
+  //cout<<cylinder->getLinearVelocity()<<endl;
+  //step world and render
+  scene.step(time_since_last_tick, 50, 1.f/60.f);
+  gui["draw"].render();
+}
+
+int main(int n, char**ppc){
+  return ICLApplication(n,ppc,"",init,run).exec();
+}

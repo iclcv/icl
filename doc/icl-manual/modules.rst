@@ -15,3 +15,4 @@ Modules
    modules/cv 
    modules/geom
    modules/markers
+   modules/physics

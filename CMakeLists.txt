@@ -127,7 +127,7 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "2" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "3" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 
@@ -189,6 +189,7 @@ OPTION(BUILD_WITH_OPENCL "Uses OpenCL to speed up several algorithms" OFF)
 OPTION(BUILD_WITH_OPENNI "Links against OpenNI to grab from Kinect devices" OFF)
 OPTION(BUILD_WITH_PCL "Link against PCL to provide a compatibility layer to PCL point clouds" OFF)
 OPTION(BUILD_WITH_SSE "Decide if SSE intrinsics shall be used to speed up many support functions" ON)
+OPTION(BUILD_WITH_BULLET "Provides physics simulation. Needs the bullet physics engine" OFF)
 
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
@@ -587,6 +588,13 @@ IF(BUILD_WITH_SSE)
   ADD_ICL_DEFINITIONS(-DICL_USE_SSE)
 ENDIF()
 
+IF(BUILD_WITH_BULLET)
+  FIND_PACKAGE(BULLET REQUIRED)
+  IF(BULLET_FOUND)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
+  ENDIF()
+ENDIF()
+
 CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLConfig.h.in ${CMAKE_BINARY_DIR}/src/ICLUtils/ICLConfig.h)
 
 # ---- OS system include directories ----
@@ -627,7 +635,8 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${ZMQ_INCLUDE_DIRS}
                     ${LIBUSB_INCLUDE_DIRS}
                     ${Qt5Widgets_INCLUDE_DIRS}
-                    ${Qt5OpenGL_INCLUDE_DIRS})
+                    ${Qt5OpenGL_INCLUDE_DIRS}
+                    ${BULLET_INCLUDE_DIRS})
 
 # ---- Variables for 3rd party libraries ----
 LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
@@ -679,6 +688,9 @@ IF(QT4_FOUND)
 ENDIF()
 ADD_SUBDIRECTORY(ICLGeom)
 ADD_SUBDIRECTORY(ICLMarkers)
+IF(BULLET_FOUND)
+  ADD_SUBDIRECTORY(ICLPhysics)
+ENDIF()
 
 #---- Add documentation ----
 ADD_SUBDIRECTORY(doc)
