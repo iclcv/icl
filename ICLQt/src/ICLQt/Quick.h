@@ -45,6 +45,7 @@ namespace icl{
   namespace geom{}
   namespace cv{}
   namespace markers{}
+  namespace physics{}
 }
 
 #ifndef ICL_NO_USING_NAMESPACES
@@ -58,6 +59,7 @@ using namespace icl::qt;
 using namespace icl::geom;
 using namespace icl::cv;
 using namespace icl::markers;
+using namespace icl::physics;
 #endif
 
 /// just used by default

@@ -280,7 +280,7 @@ namespace icl{
 	        const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,
 	        const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1)
 	      {
-	        assert((colObj0Wrap->m_collisionObject==&body || colObj1Wrap->m_collisionObject==&body) && "body does not match either collision object");
+	        ICLASSERT((colObj0Wrap->m_collisionObject==&body || colObj1Wrap->m_collisionObject==&body) && "body does not match either collision object");
 		      ccol = true;
 		      return 0;
 	      }

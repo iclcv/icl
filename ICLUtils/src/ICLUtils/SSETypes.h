@@ -30,19 +30,17 @@
 
 #pragma once
 
-#ifdef ICL_USE_SSE
-  #if defined __SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2)
-    #include "emmintrin.h"
-    #define ICL_HAVE_SSE2
-    #if defined __SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
-      #include "pmmintrin.h"
-      #define ICL_HAVE_SSE3
-      #if defined __SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500)
-        #include "tmmintrin.h"
-        #define ICL_HAVE_SSSE3
-      #endif
-    #endif
-  #endif
+#if defined ICL_USE_SSE2 && (__SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2))
+	#include "emmintrin.h"
+	#define ICL_HAVE_SSE2
+	#if defined ICL_USE_SSE3 && (__SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
+		#include "pmmintrin.h"
+		#define ICL_HAVE_SSE3
+		#if defined ICL_USE_SSSE3 && (__SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
+			#include "tmmintrin.h"
+			#define ICL_HAVE_SSSE3
+		#endif
+	#endif
 #endif
 
 #include <ICLUtils/CompatMacros.h>

@@ -68,6 +68,8 @@
 #cmakedefine ICL_HAVE_RSB @ICL_HAVE_RSB@
 #cmakedefine ICL_HAVE_PROTOBUF @ICL_HAVE_PROTOBUF@
 
-#cmakedefine ICL_USE_SSE @ICL_USE_SSE@
+#cmakedefine ICL_USE_SSE2 @ICL_USE_SSE2@
+#cmakedefine ICL_USE_SSE3 @ICL_USE_SSE3@
+#cmakedefine ICL_USE_SSSE3 @ICL_USE_SSSE3@
 
 #cmakedefine QWT_DLL @QWT_DLL@

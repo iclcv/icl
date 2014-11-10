@@ -86,7 +86,7 @@ void init(){
 
   ransacOptions << Prop("pe") << Create();
   
-  gui["ransac options"].registerCallback(function(&ransacOptions, &GUI::switchVisibility));
+  gui["ransac options"].registerCallback(utils::function(ransacOptions, &GUI::switchVisibility));
 
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));

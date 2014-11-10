@@ -5,8 +5,8 @@
 
 namespace icl{
   namespace physics{
-    extern float ICL_UNIT_TO_METER;
-    extern float METER_TO_BULLET_UNIT;
+	ICLPhysics_API extern float ICL_UNIT_TO_METER;
+	ICLPhysics_API extern float METER_TO_BULLET_UNIT;
     #define ICL_UNIT_TO_BULLET_UNIT (ICL_UNIT_TO_METER / METER_TO_BULLET_UNIT)
 
     /// Converts from icl to bullet units

@@ -33,7 +33,7 @@ namespace icl {
         struct defaultCallback {
           static void callback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos) {}
         };
-        m_collisionCallback = function(&defaultCallback::callback);
+		m_collisionCallback = utils::function(&defaultCallback::callback);
       }
 
       /// Destructor (freeing m_physicalObject if not 0)

@@ -20,7 +20,7 @@ namespace icl{
           setVisible(geom::Primitive::all,false);
           addCylinder(0, 0, 0, 11, 11, 1, 16);
           setColor(geom::Primitive::all, geom::geom_green());
-          setCollisionCallback(function(this, &HoleObject::onHit));
+          setCollisionCallback(utils::function(this, &HoleObject::onHit));
           setContactResponse(false);
           PhysicsObject::setContactResponse(false);
         }

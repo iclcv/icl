@@ -188,7 +188,10 @@ OPTION(BUILD_WITH_PYLON "Link against the basler Pylon package to support GIG-E 
 OPTION(BUILD_WITH_OPENCL "Uses OpenCL to speed up several algorithms" OFF)
 OPTION(BUILD_WITH_OPENNI "Links against OpenNI to grab from Kinect devices" OFF)
 OPTION(BUILD_WITH_PCL "Link against PCL to provide a compatibility layer to PCL point clouds" OFF)
-OPTION(BUILD_WITH_SSE "Decide if SSE intrinsics shall be used to speed up many support functions" ON)
+OPTION(BUILD_WITH_SSE "Decide if all SSE intrinsics shall be used to speed up many support functions" ON)
+OPTION(BUILD_WITH_SSE2 "Decide if SSE2 and lower intrinsics shall be used to speed up many support functions" OFF)
+OPTION(BUILD_WITH_SSE3 "Decide if SSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
+OPTION(BUILD_WITH_SSSE3 "Decide if SSSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
 OPTION(BUILD_WITH_BULLET "Provides physics simulation. Needs the bullet physics engine" OFF)
 
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
@@ -585,7 +588,24 @@ ENDIF()
 
 
 IF(BUILD_WITH_SSE)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSSE3)
+ENDIF()
+
+IF(BUILD_WITH_SSE2)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
+ENDIF()
+
+IF(BUILD_WITH_SSE3)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
+ENDIF()
+
+IF(BUILD_WITH_SSE3)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
+  ADD_ICL_DEFINITIONS(-DICL_USE_SSSE3)
 ENDIF()
 
 IF(BUILD_WITH_BULLET)
@@ -672,6 +692,8 @@ LIST(APPEND ICLQt_3RDPARTY_LIBRARIES ${Qt5_LIBRARIES})
 
 
 LIST(APPEND ICLGeom_3RDPARTY_LIBRARIES ${PCL_LIBRARIES_PC})
+
+LIST(APPEND ICLPhysics_3RDPARTY_LIBRARIES ${BULLET_LIBRARIES})
 
 #---- Add src sub directories ----
 IF(WIN32)

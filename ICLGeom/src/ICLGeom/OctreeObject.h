@@ -220,7 +220,7 @@ namespace icl{
           In other words, the filter filters our an epsilon sphere around
           the given center point, where epsilon is the given radius or
           the given camera's focal length */
-      struct ICLGeom_API PointFilter {
+      struct PointFilter {
         math::Vec3 pos;   //!< position to filter out
         float  sqrRadius; //!< squared distance threshold to the filter point
 
