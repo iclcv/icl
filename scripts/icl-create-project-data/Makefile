@@ -113,11 +113,11 @@ CXXCPP_PC:=${CXXCPP} -I${INC_INSTALL_PREFIX}
 
 # parsing pkg-config files
 ifneq "${PC_DEPS}" ""
-CXXFLAGS:=${CXXFLAGS} $(shell pkg-config --cflags-only-I ${PC_DEPS})
-CXXCPP:=${CXXCPP} $(shell pkg-config --cflags-only-other ${PC_DEPS})
+CXXFLAGS:=${CXXFLAGS} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-I ${PC_DEPS})
+CXXCPP:=${CXXCPP} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-other ${PC_DEPS})
 #LDFLAGS:=$(shell pkg-config --libs-only-L ${PC_DEPS}) ${LDFLAGS} 
-LDFLAGS:=$(patsubst -L%,${WL_RP}%,$(shell pkg-config --libs-only-L ${PC_DEPS})) ${LDFLAGS} 
-LDFLAGS:=$(shell pkg-config --libs ${PC_DEPS}) ${LDFLAGS}
+LDFLAGS:=$(patsubst -L%,${WL_RP}%,$(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --libs-only-L ${PC_DEPS})) ${LDFLAGS} 
+LDFLAGS:=$(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --libs ${PC_DEPS}) ${LDFLAGS}
 endif
 
 LIB_LNK_INSTALL:=${LIB_LNK} -Wl,-rpath=${LIB_INSTALL_PREFIX}

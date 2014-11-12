@@ -76,14 +76,28 @@ namespace icl{
                                                     const std::string &yLabel="y",
                                                     const std::string &zLabel="z");
 
+      /// forwards initialization to setParams
       ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness=5, 
                                                     bool withXYZLabels=true, 
                                                     const std::string &xLabel="x", 
                                                     const std::string &yLabel="y",
-                                                    const std::string &zLabel="z");
+                                                    const std::string &zLabel="z",
+                                                    const GeomColor &xAxisColor=GeomColor(255,0,0,255),
+                                                    const GeomColor &yAxisColor=GeomColor(0,255,0,255),
+                                                    const GeomColor &zAxisColor=GeomColor(0,0,255,255),
+                                                    const GeomColor &textLabelColor=GeomColor(255,255,255,255),
+                                                    float textScaling=1.0f);
+
   
       /// Dynamic adaption
-      ICLGeom_API void setParams(float axisLength[3], float axisThickness, bool withXYZLabels = true);
+      /** The default text label size is 3 x axisThickness. If you use very thin axes, textScaling
+          can be used to compensate a resulting too small text size */
+      ICLGeom_API void setParams(float axisLength[3], float axisThickness, bool withXYZLabels = true,
+                                 const GeomColor &xAxisColor=GeomColor(255,0,0,255),
+                                 const GeomColor &yAxisColor=GeomColor(0,255,0,255),
+                                 const GeomColor &zAxisColor=GeomColor(0,0,255,255),
+                                 const GeomColor &textLabelColor=GeomColor(255,255,255,255),
+                                 float textScaling = 1.0f);
       
       /// returns current length of the axis'
       inline float getAxisLength() const { return axisLength; }

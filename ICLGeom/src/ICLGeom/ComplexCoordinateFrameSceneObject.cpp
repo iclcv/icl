@@ -51,13 +51,21 @@ namespace icl{
                                                                          bool withXYZLabels, 
                                                                          const std::string &xLabel, 
                                                                          const std::string &yLabel,
-                                                                         const std::string &zLabel):
+                                                                         const std::string &zLabel,
+                                                                         const GeomColor &xAxisColor,
+                                                                         const GeomColor &yAxisColor,
+                                                                         const GeomColor &zAxisColor,
+                                                                         const GeomColor &textLabelColor,
+                                                                         float textScaling):
       xLabel(xLabel),yLabel(yLabel),zLabel(zLabel){
-      setParams(axisLengths,axisThickness,withXYZLabels);
+      setParams(axisLengths,axisThickness,withXYZLabels,xAxisColor, yAxisColor, zAxisColor, textLabelColor, textScaling);
     }
 
     
-    void ComplexCoordinateFrameSceneObject::setParams(float axisLengths[3], float axisThickness, bool withLabels){
+    void ComplexCoordinateFrameSceneObject::setParams(float axisLengths[3], float axisThickness, bool withLabels, 
+                                                      const GeomColor &xAxisColor, const GeomColor &yAxisColor,
+                                                      const GeomColor &zAxisColor, const GeomColor &textLabelColor,
+                                                      float textScaling){
       Mutex::Locker lock(mutex);
       
       m_vertices.clear();
@@ -69,7 +77,7 @@ namespace icl{
       const float d=axisThickness;
       const float p = M_PI_2;
       const float rxs[3]={0,-p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
-      const GeomColor cs[]={geom_red(),geom_green(),geom_blue() };
+      const GeomColor cs[]={xAxisColor, yAxisColor, zAxisColor };
       for(int i=0;i<3;++i){
         float l = axisLengths[i];
         SceneObject *o = addCylinder(0,0,l/2, d,d,l, 20);
@@ -93,9 +101,9 @@ namespace icl{
       addVertex(Vec(0,0,axisLengths[2]+dFac*d,1),GeomColor(0,0,0,0));
   
       if(withLabels){
-        addText(0,xLabel,axisThickness*3);
-        addText(1,yLabel,axisThickness*3);
-        addText(2,zLabel,axisThickness*3);
+        addText(0,xLabel,textScaling * axisThickness*3, textLabelColor);
+        addText(1,yLabel,textScaling * axisThickness*3, textLabelColor);
+        addText(2,zLabel,textScaling * axisThickness*3, textLabelColor);
       }
     }
   
