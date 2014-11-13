@@ -29,6 +29,9 @@ Image Component Library (ICL)
 .. |I| image:: icons/92px/markers.png
        :target: modules/markers.html
 
+.. |J| image:: icons/92px/physics.png
+       :target: modules/physics.html
+
 .. |TT| image:: icons/tooltip.png
 .. |ITT| image:: icons/index-tip.png
 
@@ -70,9 +73,8 @@ Image Component Library (ICL)
 
 .. we force the 3 column layout here!
 
-| |A| |B| |C|
-| |D| |E| |F|
-| |G| |H| |I|
+| |A| |B| |C| |D| |E| 
+| |F| |G| |H| |I| |J|
 
 Getting Startted
 ****************
@@ -191,6 +193,9 @@ Internal
        }else if(href.match('.*modules/geom.*')){
          id = "module-geom";
          text = "the <b>geom</b> module provides 3D-vision and point-cloud processig tools including 3D-visualization";
+       }else if(href.match('.*modules/physics.*')){
+         id = "module-phyiscs";
+         text = "the <b>physics</b> module provides a powerful integration of the bullet engine featuring soft and rigid body physics";
        }else if(href.match('.*modules/markers.*')){
          id = "module-markers";
          text = "the <b>markers</b> module provides a generic fiducial marker detection frameworks for common marker types";

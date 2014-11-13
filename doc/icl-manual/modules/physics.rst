@@ -6,15 +6,17 @@
 3D Physics Simulation
 ###########################
 
-.. image:: /icons/185px/geom.png
+.. image:: /icons/185px/physics.png
 
-+------------------------------------------------------------------------------+---------------------------------+
-|The classes for rigid and softbodies integrate well with existing ICLGEOM     | .. image:: images/collision.png |
-|classes allowing to use physics in existing scenes with very little changes.  |   :alt: shadow                  |
-|Simulation of rigid and soft bodies, constraints, motors, collision detection |                                 |
-|as well as collision callbacks has been integrated.                           |                                 |
-+------------------------------------------------------------------------------+---------------------------------+
+The ICLPhysics package provides a powerful wrapper layer around the
+most common aspects of the versatile Bullet Physics engine
+(http://bulletphysics.org). The implemented wrapper layout features
+soft and rigid body dynamics and collisions as well as constraints and motor
+types. Its seamless integration with ICLGeom's rendering API allows for super fast
+rapid prototyping.
 
+.. image:: images/collision.png 
+ :scale: 30%
 
 Table of Contents
 ^^^^^^^^^^^^^^^^^
@@ -45,7 +47,7 @@ parameters visit http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The
 :icl:`RigidObject`
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The :icl:`RigidObject` class is one of the two basic types of objects in
+The :icl:`physics::RigidObject` class is one of the two basic types of objects in
 the physics scene. The subclasses like :icl:`RigidBoxObject` or 
 :icl:`RigidCylinderObject` allow for quick scene building with primitive shapes.
 For more complex shapes :icl:`RigidConvexHullObject` can be used to create a

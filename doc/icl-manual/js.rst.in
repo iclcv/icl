@@ -15,7 +15,8 @@
     <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
     <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
     <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
-    <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+    <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
     </tr>
     </table>
   </div>
@@ -73,8 +74,8 @@
     #sticky-6{ border: 1px solid rgb(0,200,255); } 
     #sticky-7{ border: 1px solid rgb(0,255,0); } 
     #sticky-8{ border: 1px solid rgb(0,50,255); } 
-    #sticky-9{ border: 1px solid rgb(128,0,255); } 
-    #sticky-10{ border: 1px solid rgb(100,100,100); }
+    #sticky-9{ border: 1px solid rgb(0,0,255); } 
+    #sticky-10{ border: 1px solid rgb(128,0,255); }
 
     #sticky{
       line-height: 8px;
@@ -106,7 +107,7 @@
   $('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
   $('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
   $('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
-  $('#sticky-10').bind('click',function(e){ location = '../extras/tutorial.html';  });
+  $('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
 
   /* Script by: www.jtricks.com
    * Version: 20071127
@@ -298,7 +299,7 @@
       }
 
 
-      var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers' ];
+      var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
       var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
                        ['LINALG'],
                        ['TYPES', 'GENERAL', 'IMAGE'],
@@ -311,7 +312,7 @@
                      ];
 
       if(package == 'unknown'){
-        for(var i=0;i<9;++i){
+        for(var i=0;i<10;++i){
           if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
             package = packages[i];
             // could be a function or a namespace
@@ -374,7 +375,6 @@
            type = 'struct';
          }
       }
-      
       if(package == "unknown" && href.match('.*namespaceicl.*')){
         // very special treatment
         return '<div class="tooltip">the <b>icl</b> namespace is used for all '
