@@ -224,9 +224,17 @@ namespace icl{
       }
     }
       
-    void PhysicsWorld::setGravity(geom::Vec gravity){
+    void PhysicsWorld::setGravity(const geom::Vec &gravity){
       data->m_dynamicsWorld->setGravity(scaleIcl2bullet(gravity));
       data->m_worldInfo->m_gravity = scaleIcl2bullet(gravity);
+    }
+    
+    void PhysicsWorld::setGravityEnabled(bool on, const geom::Vec *useThisGravityIfOn){
+      if(on){
+        setGravity(useThisGravityIfOn ? *useThisGravityIfOn : geom::Vec(0,0,-9810));
+      }else{
+        setGravity(geom::Vec(0,0,0));
+      }
     }
     
     void PhysicsWorld::splitImpulseEnabled(bool enable){

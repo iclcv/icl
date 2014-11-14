@@ -53,8 +53,14 @@ namespace icl{
       void removeObject(PhysicsObject *obj);
       
       ///sets the Gravity of the World
-      void setGravity(geom::Vec gravity);
-      
+      void setGravity(const geom::Vec &gravity);
+
+      /// enables/disables gravity
+      /** When enabling gravity (on = true), either the given gravity
+          value can be used or if useThisGravityIfOn is null, the default gravity
+          (0,0, -9810) is used */
+      void setGravityEnabled(bool on, const geom::Vec *useThisGravityIfOn=0);
+
       ///enable splitImpulse
       void splitImpulseEnabled(bool enable);
       
