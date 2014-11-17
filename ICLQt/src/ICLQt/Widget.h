@@ -260,6 +260,13 @@ namespace icl{
           by the widget's OSD-menu cannot be used any more */
       void setBackgroundColorSource(BGColorSource src);
 
+
+      /// sets up the capturing GUI and immediately initialized the internal capturer
+      void startRecording(const std::string &outputDevice, 
+                          const std::string &outputInfo,
+                          bool framebuffer=true, int frameskip=0,
+                          bool setParamsOnlyButDoNotStartRecording=false);
+
       protected:
       
       /// shows a help dialog 

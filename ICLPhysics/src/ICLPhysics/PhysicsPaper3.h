@@ -75,6 +75,14 @@ namespace icl{
 
       virtual ~PhysicsPaper3();
 
+      void saveState(const std::string &filename);
+      
+      void restoreState(const std::string &filename);
+      
+      void setFaceAlpha(float alpha01);
+
+      float getFaceAlpha() const;
+      
       int getNumNodes() const;
 
       void splitAlongLine(const utils::Point32f &a, const utils::Point32f &b, const geom::Camera &currCam);

@@ -1683,7 +1683,22 @@ namespace icl{
       m_data->menuptr->setVisible(visible);
     }
   
-  
+    void ICLWidget::startRecording(const std::string &outputDevice, 
+                                   const std::string &outputInfo,
+                                   bool framebuffer, int frameskip,
+                                   bool setParamsOnlyButDoNotStartRecording){
+      if(!m_data->menuptr){
+        create_menu(this,m_data);
+      }
+      m_data->menu["auto-cap-device"] = outputDevice;
+      m_data->menu["auto-cap-filepattern"] = outputInfo;
+      m_data->menu["auto-cap-mode"] = (framebuffer ? 1 : 0);
+      m_data->menu["auto-cap-frameskip"] = frameskip;
+      
+      if(!setParamsOnlyButDoNotStartRecording){
+        recordButtonToggled(true);
+      }
+    }
   
     void ICLWidget::recordButtonToggled(bool checked){
       if(!m_data->outputCap){

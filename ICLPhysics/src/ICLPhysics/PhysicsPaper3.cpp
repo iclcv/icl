@@ -41,6 +41,7 @@ namespace icl{
       int numPointsBeforeUpdate;
       bool softBodyUpdatesEnabled;
       PhysicsWorld *physicsWorld;
+      float faceAlpha;
 
       mutable int lastUsedFaceIdx;
 
@@ -70,6 +71,7 @@ namespace icl{
         visFaces = true;
         linkStiffness = 1.e-5;
 
+        faceAlpha = 1;
         straightenFolds = true;
         doubleFolds = true;
         useSmoothNormals = true;
@@ -272,6 +274,15 @@ namespace icl{
     void PhysicsPaper3::updateSceneObject(btSoftBody *soft){
       (void) soft;
     }
+
+    void PhysicsPaper3::setFaceAlpha(float alpha01){
+      m_data->faceAlpha = alpha01;
+    }
+
+    float PhysicsPaper3::getFaceAlpha() const{
+      return m_data->faceAlpha;
+    }
+
 
     Vec PhysicsPaper3::interpolatePosition(const Point32f &pp) const{
       Point32f p = pp;
@@ -1097,7 +1108,7 @@ namespace icl{
           if(m_data->haveTexture){
               m_data->tex[0].draw3DGeneric(3, &c[0][0], &c[0][1], &c[0][2], 4, t,&n[0][0],&n[0][1],&n[0][2],4);
           }else{
-            glColor3f(0.9,.2,.3);
+            glColor4f(0.9,.2,.6,getFaceAlpha());
             glBegin(GL_TRIANGLES);
             for(int j=0;j<3;++j){
               glNormal3f(n[j][0],n[j][1],n[j][2]);
@@ -1112,7 +1123,7 @@ namespace icl{
           if(m_data->haveTexture){
             m_data->tex[1].draw3DGeneric(3, &c[0][0], &c[0][1], &c[0][2], 4, t,&n[0][0],&n[0][1],&n[0][2],4);
           }else{
-            glColor3f(0.1,0.5,1);
+            glColor4f(0.1,0.6,1,getFaceAlpha());
             glBegin(GL_TRIANGLES);
             for(int j=0;j<3;++j){
               glNormal3f(n[j][0],n[j][1],n[j][2]);
