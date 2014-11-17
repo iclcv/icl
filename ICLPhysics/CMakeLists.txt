@@ -57,7 +57,10 @@ SET(SOURCES src/ICLPhysics/Object2PointConstraint.cpp
             src/ICLPhysics/FoldMap.cpp
             src/ICLPhysics/PhysicsUtils.cpp
             src/ICLPhysics/PhysicsWorld.cpp
-            src/ICLPhysics/SixDOFConstraint.cpp)
+            src/ICLPhysics/SixDOFConstraint.cpp
+            src/ICLPhysics/PhysicsPaper3MouseHandler.cpp
+            src/ICLPhysics/SceneMultiCamCapturer.cpp
+            src/ICLPhysics/PhysicsPaper3ContextMenu.cpp)
 
 
 
@@ -89,7 +92,10 @@ SET(HEADERS src/ICLPhysics/Object2PointConstraint.h
             src/ICLPhysics/PhysicsPaper3.h
             src/ICLPhysics/FoldMap.h
             src/ICLPhysics/PhysicsUtils.h
-            src/ICLPhysics/PhysicsWorld.h)
+            src/ICLPhysics/PhysicsWorld.h
+            src/ICLPhysics/PhysicsPaper3MouseHandler.h
+            src/ICLPhysics/SceneMultiCamCapturer.h
+            src/ICLPhysics/PhysicsPaper3ContextMenu.h)
 
 # ---- Library build instructions ----
 IF(WIN32)

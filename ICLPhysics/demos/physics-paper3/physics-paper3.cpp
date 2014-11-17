@@ -1,6 +1,7 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
-#include <PhysicsPaper3MouseHandler.h>
+#include <ICLPhysics/PhysicsPaper3MouseHandler.h>
+#include <ICLPhysics/PhysicsPaper3.h>
 #include <DefaultGroundObject.h>
 #include <ICLUtils/File.h>
 #include <ICLPhysics/PhysicsScene.h>
@@ -62,7 +63,7 @@ void init(){
           << Button("view ray test").handle("vr")
           << Button("reset model").handle("reset")
           << FSlider(1,20,10).handle("f").label("move force")
-          << FSlider(0.1,1,0.25).handle("r").label("move radius")
+          << FSlider(0.01,1,0.25).handle("r").label("move radius")
           << Image().label("fold map").handle("fm").minSize(8,8)
          )
       << Show();
@@ -74,15 +75,25 @@ void init(){
 
   //  scene.getLight(0).setOn(false);
   scene.getLight(0).setDiffuse(GeomColor(255,255,255,50));
+  scene.setPropertyValue("shadows.use improved shading", true);
+  scene.setPropertyValue("shadows.resolution", 2048);
 
   SceneLight &l = scene.getLight(1);
+  l.setOn();
+  l.setShadowEnabled();
+  l.setTwoSidedEnabled(true);
   l.setAnchorToWorld();
-  l.setPosition(Vec(0,0,300,1));
+  l.setPosition(Vec(0,0,1200,1));
   l.setOn(true);
-  l.setSpecularEnabled(true);
-  l.setDiffuseEnabled(true);
+  l.setAmbientEnabled();
+  l.setDiffuseEnabled();
+  l.setSpecularEnabled();
+
   l.setSpecular(GeomColor(0,100,255,255));
   l.setDiffuse(GeomColor(255,100,0,30));
+  l.getShadowCam()->setNorm(Vec(0,0,-1,1));
+
+  
 
   ButtonHandle h4 = gui["vr"], reset=gui["reset"];
   reset.disable();
@@ -144,9 +155,7 @@ void run(){
   draw->draw(mouse->vis());
   draw.render();
   model->setLinksVisible(gui["vis links"]);
-  //TODO ADD THIS OPTION
-  //world.setGravityEnabled(gui["gravity on"]);
-  scene.setGravity(Vec(0,0,-10000));
+  scene.setGravityEnabled(gui["gravity on"]);
   mouse->applyForceToModel(gui["f"],gui["r"]);
   if(gui["physics on"]){
     scene.step(1,1);
