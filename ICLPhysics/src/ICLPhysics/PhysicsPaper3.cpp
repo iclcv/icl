@@ -166,12 +166,12 @@ namespace icl{
         for(int x=0;x<nx;++x){
           Point32f p(x*dx,y*dy);
           texCoords1.push_back(p);
-          nodes1.push_back(scaleIcl2bullet(bilinear_interpolate(cs,p.x,p.y)));
+          nodes1.push_back(icl2bullet_scaled(bilinear_interpolate(cs,p.x,p.y)));
           normals1.push_back(btVector3(0,0,1));
           if(x && y){
             Point32f q((x-.5)*dx, (y-.5)*dy);
             texCoords2.push_back(q);
-            nodes2.push_back(scaleIcl2bullet(bilinear_interpolate(cs,q.x,q.y)));
+            nodes2.push_back(icl2bullet_scaled(bilinear_interpolate(cs,q.x,q.y)));
             normals2.push_back(btVector3(0,0,1));
           }
         }
@@ -312,9 +312,9 @@ namespace icl{
 
       const btSoftBody::Face &f = s->m_faces[hit_idx];
 
-      const Vec a = scaleBullet2icl(f.m_n[0]->m_x);
-      const Vec b = scaleBullet2icl(f.m_n[1]->m_x);
-      const Vec c = scaleBullet2icl(f.m_n[2]->m_x);
+      const Vec a = bullet2icl_scaled(f.m_n[0]->m_x);
+      const Vec b = bullet2icl_scaled(f.m_n[1]->m_x);
+      const Vec c = bullet2icl_scaled(f.m_n[2]->m_x);
 
 
       const Point32f &ta = m_data->texCoords[ia];
@@ -505,7 +505,7 @@ namespace icl{
                                      std::vector<NodeMovement> *dst){
       m_data->physicsWorld->lock();
       Vec pW =  interpolatePosition(coords);
-      btVector3 offset = scaleIcl2bullet(target - pW);
+      btVector3 offset = icl2bullet_scaled(target - pW);
 
       // find all nodes within radius:
       std::vector<int> closeIndices;
@@ -541,8 +541,8 @@ namespace icl{
           float alpha = N*::exp(-d*d/(radius*radius)) * streangth;
           n.m_v = offset * alpha;
           if(dst){
-            NodeMovement m = { scaleBullet2icl( n.m_x ),
-                               scaleBullet2icl( n.m_x + n.m_v),
+            NodeMovement m = { bullet2icl_scaled( n.m_x ),
+                               bullet2icl_scaled( n.m_x + n.m_v),
                                alpha };
             dst->push_back(m);
           }
@@ -920,7 +920,7 @@ namespace icl{
       btSoftBody *s = getSoftBody();
       std::vector<Vec> vertices(s->m_nodes.size());
       for(size_t i=0;i<vertices.size();++i){
-        vertices[i] = scaleBullet2icl(s->m_nodes[i].m_x);
+        vertices[i] = bullet2icl_scaled(s->m_nodes[i].m_x);
       }
 
       m_data->projectedPoints = currCam.project(vertices);
@@ -1004,9 +1004,9 @@ namespace icl{
 
 
     static Vec get_face_normal(const btSoftBody::Face &f){
-      return compute_normal(bullet2icl(f.m_n[0]->m_x),
-                            bullet2icl(f.m_n[1]->m_x),
-                            bullet2icl(f.m_n[2]->m_x));
+      return compute_normal(bullet2icl_unscaled(f.m_n[0]->m_x),
+                            bullet2icl_unscaled(f.m_n[1]->m_x),
+                            bullet2icl_unscaled(f.m_n[2]->m_x));
     }
 
     void PhysicsPaper3::computeSmoothNormals(){
@@ -1067,12 +1067,12 @@ namespace icl{
 
           bool isFlat = true;
           for(int j=0;j<3;++j){
-            c[j] = scaleBullet2icl(f.m_n[j]->m_x);
+            c[j] = bullet2icl_scaled(f.m_n[j]->m_x);
             if(m_data->useSmoothNormals){
               n[j] = m_data->smoothNormals[(int)(f.m_n[j]-o)];
               if(!n[j][3]) isFlat = false;
             }else{
-              n[j] = bullet2icl(f.m_n[j]->m_n);
+              n[j] = bullet2icl_unscaled(f.m_n[j]->m_n);
             }
             t[j] = m_data->texCoords[(int)(f.m_n[j] - &s->m_nodes[0])];
           }
@@ -1227,9 +1227,9 @@ namespace icl{
 
       for(int i=0;i<s->m_faces.size();++i){
         const btSoftBody::Face &f = s->m_faces[i];
-        Vec a = scaleBullet2icl(f.m_n[0]->m_x);
-        Vec b = scaleBullet2icl(f.m_n[1]->m_x);
-        Vec c = scaleBullet2icl(f.m_n[2]->m_x);
+        Vec a = bullet2icl_scaled(f.m_n[0]->m_x);
+        Vec b = bullet2icl_scaled(f.m_n[1]->m_x);
+        Vec c = bullet2icl_scaled(f.m_n[2]->m_x);
 
         Vec pW;
         Point32f coords;
@@ -1368,8 +1368,8 @@ namespace icl{
         Point32f lb = m_data->texCoords[ib];
         if((ab.distance(la) < 0.05) && (ab.distance(lb) < 0.05)){
 
-          Vec va = scaleBullet2icl(s->m_nodes[ia].m_x);
-          Vec vb = scaleBullet2icl(s->m_nodes[ib].m_x);
+          Vec va = bullet2icl_scaled(s->m_nodes[ia].m_x);
+          Vec vb = bullet2icl_scaled(s->m_nodes[ib].m_x);
 
           Point32f pa = cam.project(va);
           Point32f pb = cam.project(vb);
@@ -1431,11 +1431,11 @@ namespace icl{
           m_data->fm.addFold(la,lb,memorize ? -stiffness : stiffness);
           //if(memorize){
           //  Vec d = bullet2icl(s->m_nodes[ia].m_x) - bullet2icl(s->m_nodes[ib].m_x);
-          //  l.m_rl = scaleIcl2bullet( norm3(d) );
+          //  l.m_rl = icl2bullet_scaled( norm3(d) );
           //  LinkState *fs = (LinkState*)l.m_tag;
           //  fs->hasMemorizedRestDist = true;
           //}else{
-          //  l.m_rl = scaleIcl2bullet( ::sqrt (::sqr((la.x-lb.x)*210) + ::sqr((la.y-lb.y)*297) )  );
+          //  l.m_rl = icl2bullet_scaled( ::sqrt (::sqr((la.x-lb.x)*210) + ::sqr((la.y-lb.y)*297) )  );
           //  LinkState *fs = (LinkState*)l.m_tag;
           //  fs->hasMemorizedRestDist = false;
           //}

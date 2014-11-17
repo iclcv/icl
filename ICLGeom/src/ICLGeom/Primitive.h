@@ -270,7 +270,7 @@ namespace icl{
       TexturePrimitive(int a, int b, int c, int d, 
                        const core::ImgBase *image=0, bool createTextureOnce=true, 
                        int na=-1, int nb=-1, int nc=-1, int nd=-1, core::scalemode sm=core::interpolateLIN):
-      QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(image,sm),
+      QuadPrimitive(a,b,c,d,geom_white(),na,nb,nc,nd), texture(image,sm),
         image(createTextureOnce ? 0 : image){
         type = Primitive::texture;
       }
@@ -279,7 +279,7 @@ namespace icl{
       TexturePrimitive(int a, int b, int c, int d, 
                        const core::Img8u &image,
                        int na=-1, int nb=-1, int nc=-1, int nd=-1, core::scalemode sm=core::interpolateLIN):
-      QuadPrimitive(a,b,c,d,na,nb,nc,nd), texture(&image,sm), 
+      QuadPrimitive(a,b,c,d,geom_white(),na,nb,nc,nd), texture(&image,sm), 
         image(0){
         type = Primitive::texture;
       }
@@ -391,7 +391,7 @@ namespace icl{
       SharedTexturePrimitive(int a, int b, int c, int d, 
                        int sharedTextureIndex,
                        int na=-1, int nb=-1, int nc=-1, int nd=-1):
-      QuadPrimitive(a,b,c,d,na,nb,nc,nd), sharedTextureIndex(sharedTextureIndex){
+      QuadPrimitive(a,b,c,d,geom_white(),na,nb,nc,nd), sharedTextureIndex(sharedTextureIndex){
         type = Primitive::texture;
       }
   

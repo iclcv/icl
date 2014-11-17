@@ -14,8 +14,8 @@ namespace icl {
       btTransform frameA, frameB;
       frameA = btTransform::getIdentity();
       frameB = btTransform::getIdentity();
-      frameA.setOrigin(scaleIcl2bullet(point));
-      frameB.setOrigin(scaleIcl2bullet(localOffset));
+      frameA.setOrigin(icl2bullet_scaled(point));
+      frameB.setOrigin(icl2bullet_scaled(localOffset));
       
       //create constraint
       btGeneric6DofSpringConstraint *cons = new btGeneric6DofSpringConstraint(*(anchor->getRigidBody()),
@@ -64,12 +64,12 @@ namespace icl {
     
     void Object2PointConstraint::setPoint(const geom::Vec& newPoint){
       btGeneric6DofSpringConstraint* cons = dynamic_cast<btGeneric6DofSpringConstraint*>(m_constraint);
-      cons->getFrameOffsetA().setOrigin(scaleIcl2bullet(newPoint));
+      cons->getFrameOffsetA().setOrigin(icl2bullet_scaled(newPoint));
     }
     
     void Object2PointConstraint::setLocalOffset(const geom::Vec& newLocalOffset){
       btGeneric6DofSpringConstraint* cons = dynamic_cast<btGeneric6DofSpringConstraint*>(m_constraint);
-      cons->getFrameOffsetB().setOrigin(scaleIcl2bullet(newLocalOffset));
+      cons->getFrameOffsetB().setOrigin(icl2bullet_scaled(newLocalOffset));
     }
     
     void Object2PointConstraint::setStiffness(float newStiffness){

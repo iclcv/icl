@@ -195,7 +195,7 @@ namespace icl{
       FixedMatrix(){}
       
       /// Create Matrix and initialize elements with given value
-      FixedMatrix(const T &initValue){
+      explicit FixedMatrix(const T &initValue){
         std::fill(begin(),end(),initValue);
       }
   
@@ -204,7 +204,7 @@ namespace icl{
           allowed here 
           @param srcdata const source data pointer copied deeply
       */
-      FixedMatrix(const T *srcdata){
+      explicit FixedMatrix(const T *srcdata){
         FixedMatrixBase::optimized_copy<const T*,T*,DIM>(srcdata,srcdata+dim(),begin());
         //std::copy(srcdata,srcdata+dim(),begin());
       }

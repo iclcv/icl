@@ -212,7 +212,7 @@ namespace icl{
         RegionGrowerDataAccessor(const core::Img8u &image):c(image[0]){}
         int w() const { return c.getWidth(); }
         int h() const { return c.getHeight(); }
-        math::FixedColVector<icl8u, 1> operator()(int x, int y) const { return c(x,y); }
+        math::FixedColVector<icl8u, 1> operator()(int x, int y) const { return math::FixedColVector<icl8u, 1>(c(x,y)); }
       };
 
       template<>

@@ -141,7 +141,7 @@ namespace icl{
             if(numContacts) {
               PhysicsObject* obj0 = static_cast<PhysicsObject*>(static_cast<const btCollisionObject*>(contactManifold->getBody0())->getUserPointer());
               PhysicsObject* obj1 = static_cast<PhysicsObject*>(static_cast<const btCollisionObject*>(contactManifold->getBody1())->getUserPointer());
-              geom::Vec pos = scaleBullet2icl(contactManifold->getContactPoint(0).getPositionWorldOnA());
+              geom::Vec pos = bullet2icl_scaled(contactManifold->getContactPoint(0).getPositionWorldOnA());
               obj0->collisionCallback(obj0,obj1,pos);
               obj1->collisionCallback(obj1,obj0,pos);
             }
@@ -225,8 +225,8 @@ namespace icl{
     }
       
     void PhysicsWorld::setGravity(const geom::Vec &gravity){
-      data->m_dynamicsWorld->setGravity(scaleIcl2bullet(gravity));
-      data->m_worldInfo->m_gravity = scaleIcl2bullet(gravity);
+      data->m_dynamicsWorld->setGravity(icl2bullet_scaled(gravity));
+      data->m_worldInfo->m_gravity = icl2bullet_scaled(gravity);
     }
     
     void PhysicsWorld::setGravityEnabled(bool on, const geom::Vec *useThisGravityIfOn){

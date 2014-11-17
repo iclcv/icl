@@ -13,33 +13,33 @@ namespace icl{
 
     void RigidObject::setLinearVelocity(geom::Vec velocity){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::setLinearVelocity: physical object was null");
-      getRigidBody()->setLinearVelocity(scaleIcl2bullet(velocity));
+      getRigidBody()->setLinearVelocity(icl2bullet_scaled(velocity));
     }
     
     void RigidObject::setAngularVelocity(geom::Vec velocity){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::setAngularVelocity: physical object was null");
-      getRigidBody()->setAngularVelocity(icl2bullet(velocity));
+      getRigidBody()->setAngularVelocity(icl2bullet_unscaled(velocity));
     }
     
     
     geom::Vec RigidObject::getLinearVelocity(){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::getLinearVelocity: physical object was null");
-      return scaleBullet2icl(getRigidBody()->getLinearVelocity());
+      return bullet2icl_scaled(getRigidBody()->getLinearVelocity());
     }
     
     geom::Vec RigidObject::getAngularVelocity(){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::getAngularVelocity: physical object was null");
-      return bullet2icl(getRigidBody()->getAngularVelocity());
+      return bullet2icl_unscaled(getRigidBody()->getAngularVelocity());
     }
     
     void RigidObject::applyForce(geom::Vec force, geom::Vec relPos){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyForce: physical object was null");
-      getRigidBody()->applyForce(scaleIcl2bullet(force), scaleIcl2bullet(relPos));
+      getRigidBody()->applyForce(icl2bullet_scaled(force), icl2bullet_scaled(relPos));
     }
     
     void RigidObject::applyCentralForce(geom::Vec force){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyCentralForce: physical object was null");
-      getRigidBody()->applyCentralForce(scaleIcl2bullet(force));
+      getRigidBody()->applyCentralForce(icl2bullet_scaled(force));
     }
     
     void RigidObject::setDamping(float linear, float angular){

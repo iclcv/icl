@@ -26,6 +26,17 @@ namespace icl{
                  0,0,0,1);
     }
     
+
+    inline btTransform icl2bullet_no_scaling(const geom::Mat &M)
+    {
+      btTransform T;
+      T.setBasis(btMatrix3x3(M[0],M[1],M[2],
+                             M[4],M[5],M[6],
+                             M[8],M[9],M[10]));
+      T.setOrigin(btVector3(M[3],M[7],M[11]));
+      return T;
+    }
+
     /// Creates a bullet transform from an icl Mat and scales accordingly.
     inline btTransform icl2bullet(const geom::Mat &M)
     {
@@ -40,15 +51,15 @@ namespace icl{
     }
     
     /// Creates a bullet vector from an icl vector WITHOUT scaling.
-    inline btVector3 icl2bullet(const geom::Vec &v) { return btVector3(v[0],v[1],v[2]); }
+    inline btVector3 icl2bullet_unscaled(const geom::Vec &v) { return btVector3(v[0],v[1],v[2]); }
     
     /// Creates an icl vector from a bullet vector WITHOUT scaling.
-    inline geom::Vec bullet2icl(const btVector3 &v) { return geom::Vec(v[0],v[1],v[2],1.0); }
+    inline geom::Vec bullet2icl_unscaled(const btVector3 &v) { return geom::Vec(v[0],v[1],v[2],1.0); }
     
     /// Creates a bullet vector from an icl vector WITH scaling.
-    inline btVector3 scaleIcl2bullet(const geom::Vec &v) { return btVector3(icl2bullet(v[0]),icl2bullet(v[1]),icl2bullet(v[2])); }
+    inline btVector3 icl2bullet_scaled(const geom::Vec &v) { return btVector3(icl2bullet(v[0]),icl2bullet(v[1]),icl2bullet(v[2])); }
     
     /// Creates an icl vector from a bullet vector WITH scaling.
-    inline geom::Vec scaleBullet2icl(const btVector3 &v) { return geom::Vec(bullet2icl(v[0]),bullet2icl(v[1]),bullet2icl(v[2]),1.0); }
+    inline geom::Vec bullet2icl_scaled(const btVector3 &v) { return geom::Vec(bullet2icl(v[0]),bullet2icl(v[1]),bullet2icl(v[2]),1.0); }
   }
 }

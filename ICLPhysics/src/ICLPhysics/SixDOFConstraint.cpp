@@ -66,38 +66,38 @@ namespace icl {
       }
     
     void SixDOFConstraint::setLinearLowerLimit(const geom::Vec &lower) {
-      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setLinearLowerLimit(scaleIcl2bullet(lower));
+      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setLinearLowerLimit(icl2bullet_scaled(lower));
     }
     void SixDOFConstraint::setLinearUpperLimit(const geom::Vec &upper) {
-      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setLinearUpperLimit(scaleIcl2bullet(upper));
+      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setLinearUpperLimit(icl2bullet_scaled(upper));
     }
     geom::Vec SixDOFConstraint::getLinearLowerLimit() {
       btVector3 lower;
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getLinearLowerLimit(lower);
-      return scaleBullet2icl(lower);
+      return bullet2icl_scaled(lower);
     }
     geom::Vec SixDOFConstraint::getLinearUpperLimit() {
       btVector3 upper;
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getLinearUpperLimit(upper);
-      return scaleBullet2icl(upper);
+      return bullet2icl_scaled(upper);
     }
     
     
     void SixDOFConstraint::setAngularLowerLimit(const geom::Vec &lower) {
-      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularLowerLimit(icl2bullet(lower));
+      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularLowerLimit(icl2bullet_unscaled(lower));
     }
     void SixDOFConstraint::setAngularUpperLimit(const geom::Vec &upper) {
-      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularUpperLimit(icl2bullet(upper));
+      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularUpperLimit(icl2bullet_unscaled(upper));
     }
     geom::Vec SixDOFConstraint::getAngularLowerLimit() {
       btVector3 lower;
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getAngularLowerLimit(lower);
-      return bullet2icl(lower);
+      return bullet2icl_unscaled(lower);
     }
     geom::Vec SixDOFConstraint::getAngularUpperLimit() {
       btVector3 upper;
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getAngularUpperLimit(upper);
-      return bullet2icl(upper);
+      return bullet2icl_unscaled(upper);
     }
       
     void SixDOFConstraint::setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce) {

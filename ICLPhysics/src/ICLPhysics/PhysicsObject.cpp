@@ -60,7 +60,7 @@ namespace icl{
     
     void PhysicsObject::setScale(geom::Vec scale) {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setScale: physical object was null");
-      getCollisionObject()->getCollisionShape()->setLocalScaling(icl2bullet(scale));
+      getCollisionObject()->getCollisionShape()->setLocalScaling(icl2bullet_unscaled(scale));
       m_stateChanged = true;
       activate(true);
       //remove the contactpoints so the collision will be updated
@@ -68,7 +68,7 @@ namespace icl{
     }
     
     geom::Vec PhysicsObject::getScale() {
-      return bullet2icl(getCollisionObject()->getCollisionShape()->getLocalScaling());
+      return bullet2icl_unscaled(getCollisionObject()->getCollisionShape()->getLocalScaling());
     }
     
     void PhysicsObject::updateSceneObject()

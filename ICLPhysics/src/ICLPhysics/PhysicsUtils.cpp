@@ -68,8 +68,8 @@ namespace icl{
 
 			convexConvex.getClosestPoints(input ,gjkOutput,0);
 
-			pointOnB = scaleBullet2icl(gjkOutput.m_pointInWorld);
-			pointOnA = scaleBullet2icl(gjkOutput.m_normalOnBInWorld * gjkOutput.m_distance + gjkOutput.m_pointInWorld);
+			pointOnB = bullet2icl_scaled(gjkOutput.m_pointInWorld);
+			pointOnA = bullet2icl_scaled(gjkOutput.m_normalOnBInWorld * gjkOutput.m_distance + gjkOutput.m_pointInWorld);
 			distance = bullet2icl(gjkOutput.m_distance);
 		}
 
