@@ -29,6 +29,9 @@ namespace icl{
       utils::VisualizationDescription vis() const;
     
       void applyForceToModel(float streangth=1, float radius = 0.1);
+      
+      /// if enabled, links are always added twice (with few pixels distance)
+      void setAddLinksTwice(bool enabled);
 
     };
 

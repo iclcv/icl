@@ -27,6 +27,7 @@ namespace icl{
       std::vector<PhysicsPaper3::NodeMovement> nodeMovements;
       float lastStreangth, lastRadius;
       PhysicsPaper3ContextMenu men;
+      bool addLinksTwice;
     
       void setLinkHighlight(const VisualizationDescription &d){
         Mutex::Locker lock(this);
@@ -149,8 +150,13 @@ namespace icl{
     
       m_data->men.addEntries("remove,streangthen,weaken,memorize weak,memorize strong");
       m_data->men.setCallback(function(this,&PhysicsPaper3MouseHandler::menuCallback));
+
+      m_data->addLinksTwice = false;
     }
   
+    void PhysicsPaper3MouseHandler::setAddLinksTwice(bool enabled){
+      m_data->addLinksTwice = enabled;
+    }
     void PhysicsPaper3MouseHandler::menuCallback(const std::string &entry){
       if(entry == "remove"){
         m_data->model->adaptFoldStiffness(m_data->menuCoords, 1.0);
@@ -183,7 +189,20 @@ namespace icl{
           }else if(e.isDragEvent()){
             m_data->curr = e.getPos();
           }else if(e.isReleaseEvent()) {
-            m_data->model->splitAlongLine(m_data->start, m_data->curr, cam);
+            const Point32f &a = m_data->start, &b = m_data->curr;
+            Point32f dir = b - a;
+            float l = dir.norm();
+            if(l){
+              if(m_data->addLinksTwice){
+                Point32f n = dir * (1./l);
+                Point32f perp(n.y, -n.x);
+                Point32f offs = perp*2; // distance is 4 pix??
+                m_data->model->splitAlongLine(a + offs, b + offs, cam);
+                m_data->model->splitAlongLine(a - offs, b - offs, cam);
+              }else{
+                m_data->model->splitAlongLine(m_data->start, m_data->curr, cam);
+              }
+            }
             m_data->start = m_data->curr = Point32f(-1,-1);
           }
           m_data->setLinkHighlight(VisualizationDescription());
