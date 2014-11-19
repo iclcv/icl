@@ -63,8 +63,8 @@ namespace icl{
 
 			btPointCollector gjkOutput;
 			btGjkPairDetector::ClosestPointInput input;
-			input.m_transformA = icl2bullet(transA);
-			input.m_transformB = icl2bullet(transB);
+			input.m_transformA = icl2bullet_scaled_mat(transA);
+			input.m_transformB = icl2bullet_scaled_mat(transB);
 
 			convexConvex.getClosestPoints(input ,gjkOutput,0);
 

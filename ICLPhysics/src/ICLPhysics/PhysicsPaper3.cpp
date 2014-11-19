@@ -130,25 +130,6 @@ namespace icl{
                                  const Img8u *front_texture, const Img8u *back_texture, float initialStiffness, float initialMaxLinkDistnace):
       m_data(new Data){
 
-      m_data->enableSelfCollision = enableSelfCollision;
-      m_data->visLinks = false;
-      m_data->physicsWorld = world;
-      setLockingEnabled(true);
-
-      //Img8u ftex(Size(5,8),3),btex(Size(5,8),3);
-      //ftex.clear(0,255);
-      //ftex.clear(1,0);
-      //ftex.clear(2,0);
-
-      //btex.clear(0,0);
-      //btex.clear(1,100);
-      //btex.clear(2,255);
-
-      if(front_texture || back_texture){
-        m_data->haveTexture = true;
-        m_data->tex[0].update(front_texture ? front_texture : back_texture);
-        m_data->tex[1].update(back_texture ? back_texture : front_texture);
-      }
 
       const float rx = 210./2, ry = 297./2;
       const float init_z = 40;
@@ -158,22 +139,37 @@ namespace icl{
       };
       const Vec *cs = corners ? corners : def_corners;
 
+      m_data->enableSelfCollision = enableSelfCollision;
+      m_data->visLinks = false;
+      m_data->physicsWorld = world;
+      setLockingEnabled(true);
+
+      if(front_texture || back_texture){
+        m_data->haveTexture = true;
+        m_data->tex[0].update(front_texture ? front_texture : back_texture);
+        m_data->tex[1].update(back_texture ? back_texture : front_texture);
+      }
+
       const int nx = cellsInit.width, ny = cellsInit.height;
       const float dx = 1./(nx-1), dy = 1./(ny-1);
 
       std::vector<btVector3> nodes1,nodes2,normals1,normals2;
       std::vector<Point32f> texCoords1,texCoords2;
 
+
       for(int y=0;y<ny;++y){
         for(int x=0;x<nx;++x){
           Point32f p(x*dx,y*dy);
           texCoords1.push_back(p);
-          nodes1.push_back(icl2bullet_scaled(bilinear_interpolate(cs,p.x,p.y)));
+          const Vec interpolated = bilinear_interpolate(cs,p.x,p.y);
+          btVector3 bulletVec = icl2bullet_scaled(interpolated);
+          nodes1.push_back(bulletVec);
           normals1.push_back(btVector3(0,0,1));
           if(x && y){
             Point32f q((x-.5)*dx, (y-.5)*dy);
             texCoords2.push_back(q);
-            nodes2.push_back(icl2bullet_scaled(bilinear_interpolate(cs,q.x,q.y)));
+            const Vec interpolated2 = bilinear_interpolate(cs,q.x,q.y);
+            nodes2.push_back(icl2bullet_scaled(interpolated2));
             normals2.push_back(btVector3(0,0,1));
           }
         }
@@ -185,6 +181,7 @@ namespace icl{
       m_data->texCoords.assign(texCoords1.begin(),texCoords1.end());
       std::copy(texCoords2.begin(),texCoords2.end(),std::back_inserter(m_data->texCoords));
 
+   
       btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
                                      nodes1.size(), nodes1.data(),0);
       s->setTotalMass(nodes1.size()*0.01,false);

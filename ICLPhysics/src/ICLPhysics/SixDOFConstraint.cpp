@@ -8,8 +8,8 @@ namespace icl {
   void SixDOFConstraint::init(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, const bool useLinearReferenceFrameA) {
       btGeneric6DofConstraint *cons = new btGeneric6DofConstraint(*a->getRigidBody(),
                                                                   *b->getRigidBody(),
-                                                                  icl2bullet(frameInA),
-                                                                  icl2bullet(frameInB),
+                                                                  icl2bullet_scaled_mat(frameInA),
+                                                                  icl2bullet_scaled_mat(frameInB),
                                                                   useLinearReferenceFrameA);
 
       m_constraint = cons;
@@ -51,7 +51,7 @@ namespace icl {
     }
     
     void SixDOFConstraint::setFrames(const geom::Mat &frameA, const geom::Mat &frameB) {
-      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setFrames(icl2bullet(frameA),icl2bullet(frameB));
+      dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setFrames(icl2bullet_scaled_mat(frameA),icl2bullet_scaled_mat(frameB));
     }
 
     void SixDOFConstraint::setPivot(const geom::Vec &pivotInA, const geom::Vec &pivotInB) {

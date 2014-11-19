@@ -9,7 +9,7 @@ namespace icl{
   namespace physics{
     PhysicsObject::~PhysicsObject(){
       if(m_physicalObject) {
-        delete m_physicalObject->getCollisionShape();
+        // delete m_physicalObject->getCollisionShape(); this  is automatically deleted by the physical object!
         delete m_physicalObject;
       }
     }
@@ -38,7 +38,7 @@ namespace icl{
     void PhysicsObject::setTransformation(const geom::Mat &m)
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setTransformation: physical object was null");
-      btTransform trans = icl2bullet(m);
+      btTransform trans = icl2bullet_scaled_mat(m);
       getCollisionObject()->setWorldTransform(trans);
       m_stateChanged = true;
     }
@@ -47,7 +47,7 @@ namespace icl{
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::transform: physical object was null");
       btTransform trans = getCollisionObject()->getWorldTransform();
-      trans = icl2bullet(m) * trans;
+      trans = icl2bullet_scaled_mat(m) * trans;
       getCollisionObject()->setWorldTransform(trans);
       m_stateChanged = true;
     }

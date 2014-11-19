@@ -24,7 +24,7 @@ namespace icl{
     void RigidCompoundObject::addChild(RigidObject* obj, bool passOwnership) {
       SceneObject::addChild(obj,passOwnership);
       btCompoundShape *shape = static_cast<btCompoundShape*>(getCollisionObject()->getCollisionShape());
-      shape->addChildShape(icl2bullet(obj->getTransformation()),obj->getCollisionObject()->getCollisionShape());
+      shape->addChildShape(icl2bullet_scaled_mat(obj->getTransformation()),obj->getCollisionObject()->getCollisionShape());
       shape->recalculateLocalAabb();
       btVector3 inertia(0,0,0);
       float mass = getMass();

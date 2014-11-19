@@ -165,9 +165,17 @@ void run(){
 }
 
 int main(int n, char **a){
+
+  {
+    PhysicsWorld world;
+    PhysicsPaper3 tmp(&world,true,Size(6,9),0);
+  }
+
   return ICLApp(n,a,"-shaders(vertex-shader-file,fragment-shader-file) "
                 "-initial-paper-dim|-dim|-d(size=4x6) "
                 "-enable-self-collision|-self|-s "
                 "-textures|-t(2) -initial-stiffness|-it(float=-1) "
                 "-initial-link-distance|-id(float=0.5)",init,run).exec();
 }
+
+

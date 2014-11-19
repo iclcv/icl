@@ -27,7 +27,7 @@ namespace icl{
     }
     
 
-    inline btTransform icl2bullet_no_scaling(const geom::Mat &M)
+    inline btTransform icl2bullet_unscaled_mat(const geom::Mat &M)
     {
       btTransform T;
       T.setBasis(btMatrix3x3(M[0],M[1],M[2],
@@ -38,7 +38,7 @@ namespace icl{
     }
 
     /// Creates a bullet transform from an icl Mat and scales accordingly.
-    inline btTransform icl2bullet(const geom::Mat &M)
+    inline btTransform icl2bullet_scaled_mat(const geom::Mat &M)
     {
       btTransform T;
       T.setBasis(btMatrix3x3(M[0],M[1],M[2],
