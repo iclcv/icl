@@ -64,7 +64,13 @@ namespace icl{
       std::vector<std::vector<btSoftBody::Face*> > smoothNormalGraph;
       std::vector<Vec> smoothNormals;
       bool useSmoothNormals;
-      GeomColor linkColor;
+      
+      struct LinkColors{
+        GeomColor original;
+        GeomColor inserted;
+        GeomColor creases;
+        GeomColor bendingConstraints;
+      } linkColors;
 
       Data():mutex(Mutex::mutexTypeRecursive),fm(Size(200,300),1.0f){
         visLinks = true;
@@ -77,7 +83,11 @@ namespace icl{
         useSmoothNormals = true;
 
         haveTexture = false;
-        linkColor = geom_green(255);
+
+        linkColors.original = geom_green(255)*(1./255);
+        linkColors.inserted = GeomColor(255,0,255,255)*(1./255);
+        linkColors.creases = GeomColor(255,255,0,255)*(1./255);
+        linkColors.bendingConstraints = GeomColor(255,0,0,255)*(1./255);
       }
 
       std::map<std::pair<int,int>,float> rlMap;
@@ -567,9 +577,16 @@ namespace icl{
       m_data->physicsWorld->unlock();
     }
 
-    void PhysicsPaper3::setLinkColor(const GeomColor &color){
-      m_data->linkColor = color;
+    void PhysicsPaper3::setLinkColors(const geom::GeomColor &originalLinks, 
+                                      const geom::GeomColor &insertedLinks,
+                                      const geom::GeomColor &creaseLines,
+                                      const geom::GeomColor &bendingConstraints){
+      m_data->linkColors.original = originalLinks*(1./255);
+      m_data->linkColors.inserted = insertedLinks*(1./255);
+      m_data->linkColors.creases = creaseLines*(1./255);
+      m_data->linkColors.bendingConstraints = bendingConstraints*(1./255);
     }
+
 
     void PhysicsPaper3::addTriangle(int a, int b, int c){
       btSoftBody *s = getSoftBody();
@@ -933,7 +950,7 @@ namespace icl{
 
       m_data->projectedPoints = currCam.project(vertices);
       //Img32f tmp(currCam.getResolution(),1);
-      SHOW(currCam);
+      //      SHOW(currCam);
       //color(255,255,255);
       //pix(tmp,std::vector<Point>(m_data->projectedPoints.begin(), m_data->projectedPoints.end()));
       //qt::show(tmp);
@@ -1052,6 +1069,26 @@ namespace icl{
       }
     }
 
+    namespace {
+
+      struct RenderedTriangleImpl{
+        Vec nodes[3];
+        Vec normals[3];
+        Point32f texCoords[3];
+        float distToCam;
+      };
+      
+      struct RenderedTriangle{
+        utils::SmartPtr<RenderedTriangleImpl> impl;
+        RenderedTriangle():
+          impl(new RenderedTriangleImpl){}
+
+        bool operator<(const RenderedTriangle &other) const {
+          return impl->distToCam < other.impl->distToCam;
+        }
+      };
+    }
+
     void PhysicsPaper3::complexCustomRender(icl::geom::ShaderUtil* util){
       m_data->physicsWorld->lock();
       util->activateShader(Primitive::triangle, true);
@@ -1061,14 +1098,62 @@ namespace icl{
         updateSmoothNormalGraph(); // todo: if too slow: only do this if something is changed
         computeSmoothNormals();
       }
-
+      
       btSoftBody *s = getSoftBody();
 
       btSoftBody::Node *o = &s->m_nodes[0];
 
       if(m_data->visFaces){
+        Vec cc(0,0,0,1);
+        try{ 
+          cc = util->getCurrentCamera().getPosition(); 
+        } catch(...){
+          // this is the shadow case .. which simply uses un-sorted rendering!
+        }
+          
+        std::vector<RenderedTriangle> ts(s->m_faces.size());
+        for(size_t i=0;i<ts.size();++i){
+          ts[i] = RenderedTriangle();
+        }
+        for(int i=0;i<s->m_faces.size();++i){
+          btSoftBody::Face &f = s->m_faces[i];
+          RenderedTriangleImpl &t = *ts[i].impl;
+          
+          bool isFlat = true;
+          for(int j=0;j<3;++j){
+            t.nodes[j] = bullet2icl_scaled(f.m_n[j]->m_x);
+            if(m_data->useSmoothNormals){
+              t.normals[j] = m_data->smoothNormals[(int)(f.m_n[j]-o)];
+              if(!t.normals[j][3]) isFlat = false;
+            }else{
+              t.normals[j] = bullet2icl_unscaled(f.m_n[j]->m_n);
+            }
+            t.texCoords[j] = m_data->texCoords[(int)(f.m_n[j] - &s->m_nodes[0])];
+          }
+
+          if(!isFlat){
+            int good = -1;
+            for(int j=0;j<3;++j){
+              if(t.normals[j][3]) good = j; break;
+            }
+            if(good == -1) {
+              t.normals[0] = t.normals[1] = t.normals[2] = compute_normal(t.nodes[0], t.nodes[1], t.nodes[2]);
+            }else{
+              for(int j=0;j<3;++j){
+                if(!t.normals[j][3]) t.normals[j] = t.normals[good];
+              }
+            }
+          }
+          
+          Vec p = (t.nodes[0] + t.nodes[1] + t.nodes[2]) * (1./3);
+          t.distToCam = sqr(p[0]-cc[0]) + sqr(p[1]-cc[1]) + sqr(p[2]-cc[2]);
+        }
+        
+        std::sort(ts.begin(), ts.end());
+        
         glEnable(GL_CULL_FACE);
         for(int i=0;i<s->m_faces.size();++i){
+          /*
           btSoftBody::Face &f = s->m_faces[i];
           Vec c[3],n[3];
           Point32f t[3];
@@ -1098,6 +1183,11 @@ namespace icl{
               }
             }
           }
+              */
+          RenderedTriangleImpl &ti = *ts[i].impl;
+          const Vec *c = ti.nodes;
+          const Vec *n = ti.normals;
+          const Point32f *t = ti.texCoords;
 
           glFrontFace(GL_FRONT);
           glCullFace(GL_FRONT);
@@ -1144,30 +1234,28 @@ namespace icl{
           if(LinkState::is_first_order(l.m_tag) || m_data->visLinks){
             if(LinkState::is_first_order(l.m_tag)){
               if(LinkState::is_fold(l.m_tag)){
-                glColor3f(255,255,255);
+                glColor4fv(&m_data->linkColors.creases[0]);
               }else if(LinkState::is_original(l.m_tag)){
-                glColor4f(m_data->linkColor[0]/255,
-                          m_data->linkColor[1]/255,
-                          m_data->linkColor[2]/255,
-                          m_data->linkColor[3]/255);
+                glColor4fv(&m_data->linkColors.original[0]);
               }else{
-                glColor3f(255,0,255);
+                glColor4fv(&m_data->linkColors.inserted[0]);
               }
             }else{
               // xxxx
               if(LinkState::is_first_order(l.m_tag)){
-                glColor4f(m_data->linkColor[0]/255,
-                          m_data->linkColor[1]/255,
-                          m_data->linkColor[2]/255,
-                          m_data->linkColor[3]/255);
+                glColor4fv(&m_data->linkColors.original[0]);
               }else{
                 float stiffness = l.m_material->m_kLST;
                 if(stiffness < 0.001){
-                  continue;
+                  continue; // dont render link at all
                 }else if(stiffness < 0.1){
-                  glColor4f(1,0,0,0.5);
+                  glColor4f(m_data->linkColors.bendingConstraints[0],
+                            m_data->linkColors.bendingConstraints[1],
+                            m_data->linkColors.bendingConstraints[2], 0.5);
                 }else{
-                  glColor4f(1,0,0,0.8);
+                  glColor4f(m_data->linkColors.bendingConstraints[0],
+                            m_data->linkColors.bendingConstraints[1],
+                            m_data->linkColors.bendingConstraints[2], 0.8);
                 }
               }
             }

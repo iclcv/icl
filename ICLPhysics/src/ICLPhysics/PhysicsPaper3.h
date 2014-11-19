@@ -163,7 +163,10 @@ namespace icl{
 
       void serializeStructureTo(std::ostream &str);
 
-      void setLinkColor(const geom::GeomColor &color);
+      void setLinkColors(const geom::GeomColor &originalLinks, 
+                         const geom::GeomColor &insertedLinks,
+                         const geom::GeomColor &creaseLines,
+                         const geom::GeomColor &bendingConstraints);
 
       protected:
 

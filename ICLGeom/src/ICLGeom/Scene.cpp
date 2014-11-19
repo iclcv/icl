@@ -989,7 +989,7 @@ namespace icl{
       glEnable(GL_DEPTH_TEST);
 
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading){
-        ShaderUtil util(m_shaders, &project2shadow, m_renderSettings->shadowBias);
+        ShaderUtil util(&cam, m_shaders, &project2shadow, m_renderSettings->shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
           renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get());
         }
