@@ -6,9 +6,9 @@
 #** Website: www.iclcv.org and                                      **
 #**          http://opensource.cit-ec.de/projects/icl               **
 #**                                                                 **
-#** File   : ICLGeom/CMakeLists.txt                                 **
-#** Module : ICLGeom                                                **
-#** Authors: Michael Goetting                                       **
+#** File   : ICLPhysics/CMakeLists.txt                              **
+#** Module : ICLPhysics                                             **
+#** Authors: Christof Elbrechter, Matthias Esau                     **
 #**                                                                 **
 #**                                                                 **
 #** GNU LESSER GENERAL PUBLIC LICENSE                               **
