@@ -440,7 +440,9 @@ namespace icl{
 
       std::vector<Point32f> &tex = m_data->texCoords;
 
+
       const int num = tex.size();
+      SHOW(num);
       for(int i=0;i<num;++i){
         for(int j=0;j<num;++j){
           if(i == j) continue;

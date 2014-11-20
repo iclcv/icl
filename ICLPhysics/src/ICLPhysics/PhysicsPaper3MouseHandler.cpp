@@ -260,7 +260,7 @@ namespace icl{
             d = m_data->model->getFoldLineHighlight(*coords, cam);
           }
           m_data->setLinkHighlight(d);
-          if(coords && e.isPressEvent() && e.isRight()){
+          if(coords && e.isPressEvent() && e.isRight() && e.isModifierActive(MetaModifier)){
             m_data->menuCoords = *coords;
             QPoint p = e.getWidget()->mapToGlobal(QPoint(e.getPos().x, e.getPos().y));
             m_data->men.show(Point(p.x(), p.y()));
