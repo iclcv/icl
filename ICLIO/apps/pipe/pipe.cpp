@@ -72,9 +72,9 @@ std::vector<string> remove_size(const vector<string> &v){
 void init_grabber(){
   grabber.init(pa("-i"));
   //grabber->setIgnoreDesiredParams(true);
-   if(pa("-size")){
-    grabber.useDesired<Size>(pa("-size"));
-  }
+  //if(pa("-size")){
+  //  grabber.useDesired<Size>(pa("-size"));
+  //}
   if(pa("-depth")){
     grabber.useDesired<depth>(pa("-depth"));
   }
@@ -206,6 +206,14 @@ const ImgBase *grab_image(){
         delete tmp;
         img = clipped;
       }
+    }
+
+    if(pa("-size")){
+      static Size size = pa("-size");
+      static ImgBase *target = imgNew(img->getDepth(), size, img->getChannels(), img->getFormat());
+      target->setTime(img->getTime());
+      img->scaledCopy(&target);
+      img = target;
     }
   }
   return img;

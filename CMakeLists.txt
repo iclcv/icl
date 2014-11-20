@@ -767,6 +767,10 @@ IF(NOT WIN32)
   ENDFOREACH()
 ENDIF()
 
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-video.sh
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        DESTINATION bin/)
+
 CONFIGURE_FILE(scripts/icl-create-project-data/Makefile.custom.in
                ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom

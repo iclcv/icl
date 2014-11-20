@@ -43,6 +43,7 @@ GenericGrabber grabber;
 HSplit gui;
 Img8u curr;
 Mutex currMutex;
+Rect lastRect;
 
 struct Mouse1 : public MouseHandler{
   std::vector<Point> ps;
@@ -210,9 +211,11 @@ void batch_crop(){
 void init(){
   grabber.init(pa("-i"));
 
+  bool c_arg = pa("-c");
+
   gui << Draw().handle("draw").label("input image")
       << Image().handle("cropped").label("cropped")
-      << ( VBox().maxSize(12,99).minSize(12,1)
+      << ( VBox().maxSize(c_arg ? 0 : 12,99).minSize(c_arg ? 0 : 12,1)
            << Button("save as ..").handle("saveAs")
            << Button("overwrite input").handle("overwrite")
            << Combo("0,90,180,270").handle("rot").label("rotation")
@@ -230,33 +233,37 @@ void init(){
            )
       << Show();
 
-  gui["batch"].registerCallback(batch_crop);
-  const ImgBase *image = grabber.grab();
-  
-  mouse_1 = new Mouse1(image->getSize());
-  mouse_2 = new Mouse2(image->getSize());
 
-  gui["draw"].install(mouse_1);
+  if(!c_arg){
+    gui["batch"].registerCallback(batch_crop);
+  }
+  const ImgBase *image = grabber.grab();
+  if(!c_arg){
+    mouse_1 = new Mouse1(image->getSize());
+    gui["draw"].install(mouse_1);
+  }
+  mouse_2 = new Mouse2(image->getSize());
   gui["draw"].install(mouse_2);
   
   DrawHandle draw = gui["draw"];
   draw->setImageInfoIndicatorEnabled(false);
   
-  gui["rect"].registerCallback(rectangular_changed);
-  rectangular_changed();
-  
-  
-  if(*pa("-i",0) != "file" || FileList(*pa("-i",1)).size() != 1){
-    gui["overwrite"].disable();
-  }else{
-    gui["overwrite"].registerCallback(overwrite);
+  if(!c_arg){
+    gui["rect"].registerCallback(rectangular_changed);
+    rectangular_changed();
+    if(*pa("-i",0) != "file" || FileList(*pa("-i",1)).size() != 1){
+      gui["overwrite"].disable();
+    }else{
+      gui["overwrite"].registerCallback(overwrite);
+    }
+    gui["saveAs"].registerCallback(save_as);
   }
-  
-  gui["saveAs"].registerCallback(save_as);
 
 }
 
 void run(){
+  bool c_arg = pa("-c");
+  
   static FPSLimiter fpsLimit(30);
   fpsLimit.wait();
 
@@ -265,15 +272,20 @@ void run(){
   ImageHandle cropped = gui["cropped"];
 
   draw = image;
-  
+
   static RotateOp rot;
-  rot.setAngle(parse<int>(gui["rot"]));
+  if(c_arg){
+    rot.setAngle(0);
+  }else{
+    rot.setAngle(parse<int>(gui["rot"]));
+  }
 
   const ImgBase *cro = 0;
-  if(gui["rect"]){
+  if(c_arg || gui["rect"].as<bool>()){
     static Img8u roi;
     std::vector<utils::Rect> rs = mouse_2->getRects();
     ICLASSERT_THROW(rs.size() == 1, ICLException("expected exactly one rectangle"));
+    lastRect = rs[0];
     mouse_2->visualize(**draw);
     SmartPtr<const ImgBase> tmp = image->shallowCopy(rs[0] & image->getImageRect());
     roi.setChannels(tmp->getChannels());
@@ -315,5 +327,30 @@ void run(){
 
 
 int main(int n, char **args){
-  return ICLApp(n,args,"[m]-input|-i(2) -rectification|-r",init,run).exec();
+  pa_init(n,args,"[m]-input|-i(2) -rectification|-r -create-crop-rect-output-only|-ccroo|-c "
+          "-estimate-image-size-only -estimate-image-ar-only "
+          "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
+  if(pa("-estimate-image-size-only") || pa("-estimate-image-ar-only") || pa("-compute-optimal-scaling-size")){
+    GenericGrabber g(pa("-input"));
+    Size s = g.grab()->getSize();
+    if(pa("-estimate-image-size-only")){
+      std::cout << s << std::endl;
+    }
+    if(pa("-estimate-image-ar-only")){
+      std::cout << float(s.width)/float(s.height) << std::endl;
+    }
+    if(pa("-compute-optimal-scaling-size")){
+      int W = pa("-compute-optimal-scaling-size");
+      Size sinput = pa("-compute-optimal-scaling-size-input-size");
+      if(sinput == Size(0,0)) sinput = s;
+      float f = float(W)/float(sinput.width);
+      std::cout << Size(W,round(sinput.height * f)) << std::endl;
+    }
+
+    return 0;
+  }
+  ICLApp app(n,args,"",init,run);
+  int result = app.exec();
+  std::cout << lastRect << std::endl;
+  return result;
 }
