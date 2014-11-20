@@ -104,10 +104,12 @@ namespace icl{
         ImgBase *imageOut;
         std::vector<icl8u> convertBuffer;
         ColorFormatDecoder decoder;
+        bool stoppedAlready;
 
         Impl(const std::string &deviceName, const std::string &initialFormat="", bool startGrabbing=true):
-          deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()),image(0),imageOut(0){
-
+          deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()),
+          image(0),imageOut(0),stoppedAlready(false){
+          
           // note, \b is the word boundary special character (while $ is a line end which does not work so well here)
           if(deviceName.length() == 1 && match(deviceName,"^[0-9]\\b")){
             if(File("/dev/video/"+deviceName).exists()){
@@ -129,9 +131,11 @@ namespace icl{
             init_mmap();
             start_capturing();
           }
+
         }
 
         ~Impl(){
+          stoppedAlready = true;
           if(isGrabbing){
             stop();
             stop_capturing();
@@ -405,11 +409,12 @@ namespace icl{
             errno_exception("VIDIOC_STREAMON failed");
           }
 
+          isGrabbing = true;
           start(); // starts the thread as well
         }
 
         virtual void run(){
-          while(true){
+          while(!stoppedAlready){
             fd_set fds;
             struct timeval tv;
 
@@ -435,6 +440,7 @@ namespace icl{
         }
 
         bool read_frame(){
+          //          DEBUG_LOG("<read_frame>");
           v4l2_buffer buf;
           memset(&buf,0,sizeof(buf));
 
@@ -461,6 +467,7 @@ namespace icl{
           if (-1 == xioctl (VIDIOC_QBUF, &buf)){
             errno_exception("enqueue video buffer VIDIOC_QBUF failed");
           }
+          //DEBUG_LOG("</read_frame>");
           return true;
         }
 
@@ -472,6 +479,7 @@ namespace icl{
           if(deviceNameInfo == "Myrmex"){ // spezialization for the myrmex tactile device
             fourcc = FourCC("MYRM");
           }
+          SHOW((void*)p);
           decoder.decode(fourcc,p, currentSize, &image);
           if(image) image->setTime(t);
         }

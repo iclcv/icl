@@ -146,7 +146,7 @@ const ImgBase *grab_image(){
   }
    */
   
-  if(!(bool)pa("-clip") && !(bool)pa("-crop-and-rescale")){
+  if(!(bool)pa("-clip") && !(bool)pa("-crop-and-rescale") && !(bool)pa("-size")){
     return img;
   }else{
     if(pa("-clip") && pa("-crop-and-rescale")){
@@ -176,7 +176,7 @@ const ImgBase *grab_image(){
       tmp->scaledCopyROI(&croppedAndRescaled, interpolateRA);
       delete tmp;
       img = croppedAndRescaled;
-    }else{
+    }else if(pa("-clip")){
       if(*pa("-clip")=="interactive"){
         throw ICLException("interactive clipmode is not yet implemented ...");
       }else{
