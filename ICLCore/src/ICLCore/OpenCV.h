@@ -38,6 +38,8 @@
 
 #include <ICLUtils/Uncopyable.h>
 
+#include <opencv2/core/core.hpp>
+
 namespace icl{
   namespace core{
   
@@ -88,7 +90,44 @@ namespace icl{
         @param *dst pointer to destinationmatrix (IplImage)*/
     ICLCore_API CvMat *img_to_cvmat_shallow(const ImgBase *src, CvMat *dst = 0) throw (utils::ICLException);
 
+    /// converts icl image into opencv's C++ image type cv::Mat (data is deeply copied)
+    /** If a destimation Mat is given, it will be set up to resemble the input images
+        parameters exactly. Therefore, the data is always copied and never converted */
+    ICLCore_API ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dst=0) throw (utils::ICLException);
 
+    /// converts cv::Mat to ImgBase (internally the pixel data is type-converted if needed)
+    ICLCore_API ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn=0) throw (utils::ICLException);
+
+    /// converts cv::Mat to ImgBase (internally the pixel data is type-converted if needed)
+    ICLCore_API void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn) throw (utils::ICLException);
+    
+    
+    /// Very simply wrapper about the opencv C++ matrix type cv::Mat
+    struct ICLCore_API MatWrapper{
+      ::cv::Mat mat;
+      MatWrapper();
+      MatWrapper(depth d, const utils::Size &size, int channels);
+      MatWrapper(const MatWrapper &other);
+      explicit MatWrapper(const ::cv::Mat &other);
+
+      void adapt(depth d, const utils::Size &size, int channels);
+
+      MatWrapper &operator=(const ::cv::Mat &other);
+      MatWrapper &operator=(const MatWrapper &other);
+      MatWrapper &operator=(const ImgBase &image);
+      void copyTo(ImgBase **dst);
+      void convertTo(ImgBase &dst);
+      
+      utils::Size getSize() const;
+      int getChannels() const;
+      depth getDepth() const;
+      
+      template<class T> ICLCore_API 
+      T* getInterleavedData();
+      
+      template<class T> ICLCore_API 
+      const T* getInterleavedData() const;
+    };
     
     /** \cond */
     /// internally used templated selector
@@ -146,8 +185,12 @@ namespace icl{
 
       /// returns the current wrapped CvMat pointer (const)
       const CvMat *get() const { return m.get(); }
-      
 
+      /// assigns given image (channel 0 only)
+      void operator=(const Img<T> &image){
+        img_to_cvmat(&image, get(), 0);
+      }
+      
       /// adapts the size (if necessary)
       /** If the size is adapted, the newly created instace's ownership is taken over */
       inline void setSize(const utils::Size &size){
@@ -178,9 +221,10 @@ namespace icl{
       const T &operator()(int y, int x) const{
         return CV_MAT_ELEM((const_cast<CvMat&>(*m)),T,y,x);
       }
-
-    };
       
+    };
+
+  
     /// Overloaded ostream operator for the CvMat32fWrapper
     template<class T>
     inline std::ostream &operator<<(std::ostream &str, const CvMatWrapper<T> &m){
