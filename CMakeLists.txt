@@ -353,8 +353,11 @@ IF(BUILD_WITH_OPENCV)
       # we need at least opencv 2.4 for the ORB-feature interface we want to use
       IF((NOT OPENCV_VERSION_MAJOR LESS 2) AND
          (NOT OPENCV_VERSION_MINOR LESS 4))
+       MESSAGE(STATUS "OpenCV >= 2.4.x detected, adding ORB feature detector")
        ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_FEATURES_2D)
        SET(OPENCV_FEATURES_2D_FOUND "TRUE")
+     ELSE()
+       MESSAGE(STATUS "OpenCV < 2.4.x detected, ommitting ORB feature detector")
      ENDIF()
     ENDIF()
   ENDIF()
