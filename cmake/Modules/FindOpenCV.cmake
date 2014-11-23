@@ -93,10 +93,13 @@ ELSE()
       SET(CV_VEPO) 
       SET(CV_VMAJ) 
       SET(CV_VMIN)
+      
+      # 2.4.x file layout-based check
       FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VEPO REGEX "#define CV_VERSION_EPOCH")
       FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VMAJ REGEX "#define CV_VERSION_MAJOR")
       FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VMIN REGEX "#define CV_VERSION_MINOR")
 
+      # oh year! they also changed the whole file layout between 2.3 and 2.4 ...
       IF(NOT CV_VEPO)
         FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VEPO REGEX "#define CV_MAJOR_VERSION")
         FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VMAJ REGEX "#define CV_MINOR_VERSION")
