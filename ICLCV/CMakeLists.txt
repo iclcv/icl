@@ -94,6 +94,12 @@ IF(OPENCV_FOUND)
                       src/ICLCV/LensUndistortionCalibrator.h
                       src/ICLCV/OpenCVCamCalib.h
                       src/ICLCV/CheckerboardDetector.h)
+
+  IF(OPENCV_FEATURES_2D_FOUND)
+      LIST(APPEND SOURCES src/ICLCV/ORBFeatureDetector.cpp)
+      LIST(APPEND HEADERS src/ICLCV/ORBFeatureDetector.h)
+  ENDIF()
+
 ENDIF()
 
 

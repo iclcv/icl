@@ -79,8 +79,8 @@ ELSE()
     SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
 
     ICL_FIND_PACKAGE(NAME OpenCV
-                     HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h"
-                     LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d"
+                     HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h;features2d/features2d.hpp"
+                     LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d;opencv_features2d"
                      PATHS ${OpenCV_LIB_DIR})
   ENDIF(NOT OPENCV_FOUND)
 

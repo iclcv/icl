@@ -479,7 +479,6 @@ namespace icl{
           if(deviceNameInfo == "Myrmex"){ // spezialization for the myrmex tactile device
             fourcc = FourCC("MYRM");
           }
-          SHOW((void*)p);
           decoder.decode(fourcc,p, currentSize, &image);
           if(image) image->setTime(t);
         }

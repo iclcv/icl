@@ -31,14 +31,12 @@
 #pragma once
 
 #include <opencv/cxcore.h>
+#include <opencv2/core/core.hpp>
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/ImgBase.h>
-
 #include <ICLUtils/Uncopyable.h>
-
-#include <opencv2/core/core.hpp>
 
 namespace icl{
   namespace core{
