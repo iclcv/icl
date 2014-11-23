@@ -41,6 +41,10 @@ IF(EXISTS "${OPENCV_ROOT}")
   SET(OpenCV_DIR ${OPENCV_ROOT})
 ENDIF()
 
+SET(OPENCV_VERSION_MAJOR 0)
+SET(OPENCV_VERSION_MINOR 0)
+SET(OPENCV_VERSION_PATCH 0)
+
 IF(EXISTS "${OpenCV_DIR}/OpenCVConfig.cmake")  
   # Include the standard CMake script
   INCLUDE("${OpenCV_DIR}/OpenCVConfig.cmake")
@@ -82,6 +86,24 @@ ELSE()
                      HEADERS "opencv/cv.h;opencv/cxcore.h;opencv/highgui.h;features2d/features2d.hpp"
                      LIBS "opencv_core;opencv_highgui;opencv_imgproc;opencv_video;opencv_ml;opencv_calib3d;opencv_features2d"
                      PATHS ${OpenCV_LIB_DIR})
+
+    IF(OPENCV_FOUND)
+      SET(OPENCV_VERSION_FILE "${OPENCV_INCLUDE_DIRS}/opencv2/core/version.hpp")
+      MESSAGE(STATUS "OpenCV version file is ${OPENCV_VERSION_FILE}")
+      SET(CV_VEPO) 
+      SET(CV_VMAJ) 
+      SET(CV_VMIN)
+      FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VEPO REGEX "#define CV_VERSION_EPOCH")
+      FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VMAJ REGEX "#define CV_VERSION_MAJOR")
+      FILE(STRINGS ${OPENCV_VERSION_FILE} CV_VMIN REGEX "#define CV_VERSION_MINOR")
+
+      STRING(REGEX MATCHALL "[0-9]+" OPENCV_VERSION_MAJOR ${CV_VEPO})
+      STRING(REGEX MATCHALL "[0-9]+" OPENCV_VERSION_MINOR ${CV_VMAJ})
+      STRING(REGEX MATCHALL "[0-9]+" OPENCV_VERSION_PATCH ${CV_VMIN})
+
+      MESSAGE(STATUS "Found OpenCV version ${OPENCV_VERSION_EPOCH}.${OPENCV_VERSION_MAJOR}.${OPENCV_VERSION_MINOR}")
+    ENDIF()
+
   ENDIF(NOT OPENCV_FOUND)
 
   SET(OpenCV_INCLUDE_DIRS ${OPENCV_INCLUDE_DIRS})
