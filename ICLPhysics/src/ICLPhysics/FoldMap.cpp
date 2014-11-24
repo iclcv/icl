@@ -53,7 +53,7 @@ namespace icl{
                                         Point(b.x * (m.getWidth()-1), b.y * (m.getHeight()-1)) );
 
       Channel32f c  = m[0];
-      const unsigned int w = c.getWidth(), h = c.getHeight();
+      const unsigned int w = c.getWidth()-1, h = c.getHeight()-1;
       for(int i=0;i<r.n;++i){
         const Point &p = r[i];
         if((unsigned)p.x < w && (unsigned)p.y < h){
