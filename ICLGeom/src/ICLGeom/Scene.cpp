@@ -404,7 +404,7 @@ namespace icl{
       addProperty("info.Primitives in the Scene","info","",0);
       addProperty("info.Vertices in the Scene","info","",0);
       addProperty("point cloud grabber cam","range:spinbox","[0,10000]",0);
-      addProperty("grab depth feature","flat","",false);
+      addProperty("grab depth feature","flag","",false);
     }
     Scene::~Scene(){
   #ifdef ICL_HAVE_QT

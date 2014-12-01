@@ -43,8 +43,8 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/ObjectEdgeDetectorCPU.cpp
             src/ICLGeom/ObjectEdgeDetectorGPU.cpp
             src/ICLGeom/PlanarRansacEstimator.cpp
-            src/ICLGeom/SegmenterUtils.cpp)
-
+            src/ICLGeom/SegmenterUtils.cpp       
+            src/ICLGeom/PCDFileGrabber.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -73,7 +73,8 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/ObjectEdgeDetectorGPU.h
             src/ICLGeom/ObjectEdgeDetectorPlugin.h
             src/ICLGeom/PlanarRansacEstimator.h
-            src/ICLGeom/SegmenterUtils.h)
+            src/ICLGeom/SegmenterUtils.h
+            src/ICLGeom/PCDFileGrabber.h)
 
 
 IF(QT_FOUND)
@@ -98,12 +99,8 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.cpp
                        src/ICLGeom/PlotWidget3D.cpp
                        src/ICLGeom/ShaderUtil.cpp
-                       src/ICLGeom/EuclideanBlobSegmenter.cpp
-                       src/ICLGeom/PCDFileGrabber.cpp)
-
-
-
-
+                       src/ICLGeom/EuclideanBlobSegmenter.cpp)
+ 
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
                        src/ICLGeom/SceneLightObject.h
@@ -126,8 +123,7 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
                        src/ICLGeom/ShaderUtil.h
-                       src/ICLGeom/EuclideanBlobSegmenter.h
-                       src/ICLGeom/PCDFileGrabber.h)
+                       src/ICLGeom/EuclideanBlobSegmenter.h)
 ENDIF()
 
 IF(PCL_FOUND)
