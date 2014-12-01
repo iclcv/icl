@@ -96,8 +96,11 @@ namespace icl{
       /// creates a point cloud
       /** If the PointCloudCreator instance is set up to provide color information and the destionation point cloud
           does not support color information, the detination point cloud is tried to be adapted using
-          PointCloudObjectBase::canAddFeature and PointCloudObjectBase::addFeature */
-      void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0, float depthScaling=1);
+          PointCloudObjectBase::canAddFeature and PointCloudObjectBase::addFeature.
+          If add depthFeature is set to true, the destination pointcloud is tryed to be endowed
+          with a depth feature segment
+          */
+      void create(const core::Img32f &depthImage, PointCloudObjectBase &destination, const core::Img8u *rgbImage = 0, float depthScaling=1, bool addDepthFeature=false);
   
       /// returns the current core::depth camera
       const Camera &getDepthCamera() const;

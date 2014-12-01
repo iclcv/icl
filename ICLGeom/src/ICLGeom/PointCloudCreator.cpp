@@ -305,7 +305,8 @@ namespace icl{
       }
     }
   
-    void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, const Img8u *rgbImage, float depthScaling){
+    void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, 
+                                   const Img8u *rgbImage, float depthScaling, bool addDepthFeature){
       Mutex::Locker lock(m_data->mutex);
       m_data->lastDepthImageMM = &depthImageMM;
       
@@ -374,6 +375,20 @@ namespace icl{
             }
           }
         }
+      }
+      
+      if(addDepthFeature){
+        if(!destination.supports(PointCloudObjectBase::Depth)){
+          if(!destination.canAddFeature(PointCloudObjectBase::Depth)){
+            throw ICLException("PointCloudCreator::create: 'Depth' feature neither supported "
+                               "by the givent point cloud, nor it can be added!");
+          }else{
+            destination.addFeature(PointCloudObjectBase::Depth);
+          }
+        }
+        const DataSegment<float,1> dimage((float*)depthImageMM.begin(0), sizeof(float), 
+                                          depthImageMM.getDim(), depthImageMM.getWidth());
+        dimage.deepCopy(destination.selectDepth());
       }
       
       if(m_data->mode == KinectRAW11Bit){

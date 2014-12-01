@@ -98,7 +98,11 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.cpp
                        src/ICLGeom/PlotWidget3D.cpp
                        src/ICLGeom/ShaderUtil.cpp
-                       src/ICLGeom/EuclideanBlobSegmenter.cpp)
+                       src/ICLGeom/EuclideanBlobSegmenter.cpp
+                       src/ICLGeom/PCDFileGrabber.cpp)
+
+
+
 
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
@@ -122,15 +126,14 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
                        src/ICLGeom/ShaderUtil.h
-                       src/ICLGeom/EuclideanBlobSegmenter.h)
+                       src/ICLGeom/EuclideanBlobSegmenter.h
+                       src/ICLGeom/PCDFileGrabber.h)
 ENDIF()
 
 IF(PCL_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/PCLPointCloudObject.cpp)
   LIST (APPEND HEADERS src/ICLGeom/PCLPointCloudObject.h)
   # requires pcl_io lib that depends on openni!!
-  # src/ICLGeom/PCDFileGrabber.cpp
-  # src/ICLGeom/PCDFileGrabber.h
 ENDIF()
 
 IF(OPENCL_FOUND)

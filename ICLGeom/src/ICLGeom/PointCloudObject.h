@@ -51,20 +51,22 @@ namespace icl{
      */
     class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
       protected:
-      bool m_organized;          //!< internal 2D organized flag
-      utils::Size m_dim2D;       //!< 2D dimension
-      bool m_hasNormals;         //!< flag whether normals are given
-      bool m_hasColors;          //!< flag whether the point cloud has colors
-      bool m_hasLabels;          //!< flag indicating whether labels are supported
-      std::vector<int> m_labels; //!< label mask (activated in constructor)
+      bool m_organized;           //!< internal 2D organized flag
+      utils::Size m_dim2D;        //!< 2D dimension
+      bool m_hasNormals;          //!< flag whether normals are given
+      bool m_hasColors;           //!< flag whether the point cloud has colors
+      bool m_hasLabels;           //!< flag indicating whether labels are supported
+      bool m_hasDepth;            //!< flag indicating whether a depth-feature is supported
+      std::vector<int> m_labels;  //!< label mask (activated in constructor)
+      std::vector<float> m_depth; //!< optional feature for the depth mask (Depth-feature)
       public:
       
       
       /// creates an empty point cloud with with optionally initialized featuers
-      PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false);
+      PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false, bool withDepth=false);
       
       /// create an un-organizied point cloud with N points
-      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false);
+      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false, bool withDepth=false);
       
       /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
@@ -73,7 +75,7 @@ namespace icl{
           @params withNormals if true, also normals will be created for each point
           */
       PointCloudObject(int width, int height, bool organized=true, bool withNormals=false, 
-                       bool withColors=true, bool withLabels=false);
+                       bool withColors=true, bool withLabels=false, bool withDepth=false);
   
       /// returns which features are supported (only XYZ and RGBA32f)
       virtual bool supports(FeatureType t) const;
@@ -107,6 +109,11 @@ namespace icl{
       /// returns the label data segment (32-bit signed integer)
       /** Only available if the the Label feature was explicitly enabled */
       virtual core::DataSegment<icl32s,1> selectLabel();
+
+
+      /// returns the depth data segment (single channel float, packed)
+      /** Only available if the the Depth feature was explicitly enabled */
+      virtual core::DataSegment<float,1> selectDepth();
       
       /// important, this is again, reimplemented in order to NOT draw the stuff manually here
       virtual void customRender();
@@ -131,6 +138,7 @@ namespace icl{
       void push_back(const Vec &point){
         addVertex(point,GeomColor(0,100,255,255));
         if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+        if(m_hasDepth) m_depth.push_back(0);
       }
       
       /// adds xyz point with given color
@@ -138,13 +146,15 @@ namespace icl{
       void push_back(const Vec &point, const GeomColor &color){
         addVertex(point,color);
         if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+        if(m_hasDepth) m_depth.push_back(0);
       }
 
-      /// adds xyz point with given normal and color
+      /// adds xyz point with given normal and color and optional depth value
       /** @see push_back(const Vec&) */
-      void push_back(const Vec &point, const Vec &normal, const GeomColor &color){
+      void push_back(const Vec &point, const Vec &normal, const GeomColor &color, float depth=0){
         addVertex(point,color);
         if(m_hasNormals) m_normals.push_back(normal);
+        if(m_hasDepth) m_depth.push_back(depth);
       }
       
       private:

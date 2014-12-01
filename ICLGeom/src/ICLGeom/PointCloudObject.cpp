@@ -38,23 +38,25 @@ using namespace icl::core;
 namespace icl{
   namespace geom{
 
-    PointCloudObject::PointCloudObject(bool withNormals, bool withColors, bool withLabels):
+    PointCloudObject::PointCloudObject(bool withNormals, bool withColors, bool withLabels, bool withDepth):
       m_organized(false){
       m_dim2D = Size(0,0);
       m_hasNormals = withNormals;
       m_hasColors = withColors;
       m_hasLabels = withLabels;
+      m_hasDepth = withDepth;
       
       setLockingEnabled(true);
     }
 
-    PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors, bool withLabels):
+    PointCloudObject::PointCloudObject(int numPoints, bool withNormals, bool withColors, bool withLabels, bool withDepth):
       m_organized(false){
       m_dim2D = Size(numPoints,1);
       m_vertices.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       m_hasNormals = withNormals;
       m_hasColors = withColors;
       m_hasLabels = withLabels;
+      m_hasDepth = withDepth;
 
       setLockingEnabled(true);
 
@@ -67,9 +69,12 @@ namespace icl{
       if(withLabels){
         m_labels.resize(m_dim2D.getDim(),0);
       }
+      if(withDepth){
+        m_depth.resize(m_dim2D.getDim(),0);
+      }
     }
   
-    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors, bool withLabels):
+    PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors, bool withLabels, bool withDepth):
       m_organized(organized){
       if(organized){
         m_dim2D = Size(width,height);
@@ -81,6 +86,7 @@ namespace icl{
       m_hasNormals = withNormals;
       m_hasColors = withColors;
       m_hasLabels = withLabels;
+      m_hasDepth = withDepth;
 
       setLockingEnabled(true);
       
@@ -93,18 +99,21 @@ namespace icl{
       if(withLabels){
         m_labels.resize(m_dim2D.getDim(),0);
       }
-
+      if(withDepth){
+        m_depth.resize(m_dim2D.getDim(),0);
+      }
     }
     
     bool PointCloudObject::supports(FeatureType t) const{
       if(t == Normal && m_hasNormals) return true;
       else if(t == Label && m_hasLabels) return true;
-      else if ( t == RGBA32f && m_hasColors) return true;
+      else if(t == RGBA32f && m_hasColors) return true;
+      else if(t == Depth && m_hasDepth) return true;
       else return (t == XYZ) || (t == XYZH);
     }
 
     bool PointCloudObject::canAddFeature(FeatureType t) const{
-      return t == Normal || t == RGBA32f || t == Label;
+      return t == Normal || t == RGBA32f || t == Label || t == Depth;
     }
     
     void PointCloudObject::addFeature(FeatureType t) throw (utils::ICLException){
@@ -123,6 +132,9 @@ namespace icl{
       }else if(t == Label && !m_hasLabels){
         m_hasLabels = true;
         m_labels.resize(getDim());
+      }else if(t == Depth && !m_hasDepth){
+        m_hasDepth = true;
+        m_depth.resize(getDim());
       }
       unlock();
     }
@@ -174,6 +186,15 @@ namespace icl{
         return error<icl32s,1>(__FUNCTION__);
       }
     }
+
+    DataSegment<float,1> PointCloudObject::selectDepth(){
+      if(m_hasDepth){
+        return DataSegment<float,1>(&m_depth[0], sizeof(float), m_labels.size(), m_dim2D.width);
+      }else{
+        return error<float,1>(__FUNCTION__);
+      }
+    }
+    
     
     void PointCloudObject::customRender() {
       drawNormalLines();
@@ -195,6 +216,9 @@ namespace icl{
       }
       if(m_hasLabels){
         m_labels.resize(len, 0);
+      }
+      if(m_hasDepth){
+        m_depth.resize(len,0);
       }
       unlock();
     }

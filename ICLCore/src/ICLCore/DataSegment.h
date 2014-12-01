@@ -226,6 +226,21 @@ int main(){
           operator[](i) = vecValue;
         }
       }
+
+      /// wrapps a data-segment around an std::vector
+      /** if N is not 1, a size of the data-segment becomes v.size()/N, so 
+          it uses N consecutive elements of the vector for each entry */
+      static DataSegment<T,N> fromVector(std::vector<T> &v){
+        return DataSegment<T,N>(v.data(), N*sizeof(T), v.size()/N);
+      }
+
+      /// wrapps a data-segment around an std::vector (const version)
+      /** if N is not 1, a size of the data-segment becomes v.size()/N, so 
+          it uses N consecutive elements of the vector for each entry */
+      static const DataSegment<T,N> fromVector(const std::vector<T> &v){
+        return DataSegment<T,N>(v.data(), N*sizeof(T), v.size()/N);
+      }
+
     };
     
     

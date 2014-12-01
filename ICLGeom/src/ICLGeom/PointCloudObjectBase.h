@@ -134,7 +134,8 @@ namespace icl{
         /// scalar components 4 bytes each!
         Intensity,      //!< single float intensity
         Label,          //!< single int32 label
-  
+        Depth,          //!< single float depth value (interpretation suggestion: dist to camera center)
+
         BGR,            //!< [uchar b,g,r, padding]
         BGRA,           //!< [uchar b,g,r, alpha]
         BGRA32s,        //!< bgra packed as one icl32s
@@ -209,6 +210,9 @@ namespace icl{
       
       /// well known feature Intensity (single float values)
       virtual core::DataSegment<float,1> selectIntensity(){   return error<float,1>(__FUNCTION__);   }
+
+      /// well known feature Depth (single float values)
+      virtual core::DataSegment<float,1> selectDepth(){   return error<float,1>(__FUNCTION__);   }
   
       /// well known feature Intensity (single 32bit int values)
       virtual core::DataSegment<icl32s,1> selectLabel(){      return error<icl32s,1>(__FUNCTION__);  }
@@ -244,6 +248,9 @@ namespace icl{
   
       /// const intensity data
       const core::DataSegment<float,1> selectIntensity() const { return const_cast<PointCloudObjectBase*>(this)->selectIntensity(); }
+
+      /// const intensity data
+      const core::DataSegment<float,1> selectDepth() const { return const_cast<PointCloudObjectBase*>(this)->selectDepth(); }
       
       /// const label data
       const core::DataSegment<icl32s,1> selectLabel() const { return const_cast<PointCloudObjectBase*>(this)->selectLabel(); }

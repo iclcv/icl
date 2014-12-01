@@ -404,6 +404,7 @@ namespace icl{
       addProperty("info.Primitives in the Scene","info","",0);
       addProperty("info.Vertices in the Scene","info","",0);
       addProperty("point cloud grabber cam","range:spinbox","[0,10000]",0);
+      addProperty("grab depth feature","flat","",false);
     }
     Scene::~Scene(){
   #ifdef ICL_HAVE_QT
@@ -1576,6 +1577,7 @@ namespace icl{
 
     void Scene::grab(PointCloudObjectBase &dst){
       int camID = getPropertyValue("point cloud grabber cam");
+      bool withDepth = getPropertyValue("grab depth feature");
       if((int)m_cameras.size() <= camID) {
         ERROR_LOG("invalid camera id");
         return;
@@ -1584,7 +1586,7 @@ namespace icl{
       Img32f depthBuffer(c.getRenderParams().chipSize,1);
       const Img8u &image = render(camID,0,&depthBuffer,DistToCamPlane);
       PointCloudCreator pcc(c,c);
-      pcc.create(depthBuffer,dst,&image);
+      pcc.create(depthBuffer,dst,&image,1,withDepth);
     }
 
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,

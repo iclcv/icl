@@ -421,8 +421,11 @@ namespace icl{
       
       public:
       /// implements the PointCloudGrabber interface
-      /** Internally uses the camera index that can be defined 
-          by setting the int-property "point cloud grabber cam"*/
+      /** Internally uses the camera index that can be defined by
+          setting the int-property "point cloud grabber cam" by
+          setting the "grab depth feature" property, the destination
+          point cloud will be filled with a depth -field as well
+      */
       virtual void grab(PointCloudObjectBase &dst);
 
       protected:
