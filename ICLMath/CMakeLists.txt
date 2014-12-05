@@ -32,6 +32,7 @@ SET(SOURCES src/ICLMath/DynMatrix.cpp
             src/ICLMath/DynMatrixUtils.cpp
 	    src/ICLMath/FFTUtils.cpp
 	    src/ICLMath/FixedMatrix.cpp
+	    src/ICLMath/GraphCutter.cpp
 	    src/ICLMath/Homography2D.cpp
 	    src/ICLMath/KDTree.cpp
 	    src/ICLMath/LevenbergMarquardtFitter.cpp
@@ -49,6 +50,7 @@ SET(HEADERS src/ICLMath/DynMatrix.h
 	    src/ICLMath/FFTException.h
 	    src/ICLMath/FFTUtils.h
 	    src/ICLMath/FixedMatrix.h
+	    src/ICLMath/GraphCutter.h
 	    src/ICLMath/FixedVector.h
 	    src/ICLMath/Homography2D.h
 	    src/ICLMath/KDTree.h
