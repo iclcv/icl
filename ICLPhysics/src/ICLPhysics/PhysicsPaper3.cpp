@@ -469,7 +469,7 @@ namespace icl{
 
     void PhysicsPaper3::updateCollisionClusters(){
       btSoftBody *s = getSoftBody();
-  #if 0
+  #if 1
       s->generateClusters(0);
   #else
       s->releaseClusters();
