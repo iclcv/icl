@@ -122,6 +122,29 @@ namespace icl{
         math::DynMatrix<bool> edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces);
         
+        /// Extracts the segments from a label image.
+        /** @param labelImage the input label image
+            @return a vector of pointID vectors.
+        */                      
+        std::vector<std::vector<int> > extractSegments(core::Img32s &labelImage);
+        
+        /// Relabels the label image.
+        /** @param labelImage the input/output label image
+            @param assignment a vector of vectors with label ids. Each label from the inner id is replaced by the outer vector id.
+            @param maxOldLabel the maximum id of the old labels (optional)
+        */
+        void relabel(core::Img32s &labelImage, std::vector<std::vector<int> > &assignment, int maxOldLabel=0);
+        
+        /// Checks if there is occlusion between two points (depth of all points on or in front of an augmented line).
+        /** @param depthImage the input depth image
+            @param p1 the first image point
+            @param p2 the second image point
+            @param distanceTolerance the distance tolerance in depthUnits
+            @param outlierTolerance maximum number of outlier points in percent
+            @return true if occluded.
+        */
+        bool occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance=3., float outlierTolerance=5.);
+        
         
       private:
       

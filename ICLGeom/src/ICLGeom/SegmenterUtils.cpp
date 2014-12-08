@@ -103,7 +103,7 @@ namespace icl{
       "}                                                                                                                              \n"
       "__kernel void                                                                                                                  \n"
       "calculatePointAssignment(__global float4 const * xyz, __global uchar * mask, __global int const * assignment,                  \n"
-      "                         int const radius, int const numFaces, __global bool * neighbours, __global int * assignmentOut,       \n"
+      "                         int const radius, int const numFaces, __global uchar * neighbours, __global int * assignmentOut,       \n"
       "                         int const w, int const h, float const maxDist)                                                        \n"
       "{                                                                                                                              \n"
       "  int x = get_global_id(0);                                                                                                    \n"
@@ -139,8 +139,8 @@ namespace icl{
       "    for(int a=0; a<numFaces-1; a++){                                                                                           \n"
       "      for (int b=a+1; b<numFaces; b++){                                                                                        \n"
       "        if(adj[a]==true && adj[b]==true){                                                                                      \n"
-      "          neighbours[a*numFaces+b]=true;                                                                                       \n"
-      "          neighbours[b*numFaces+a]=true;                                                                                       \n"
+      "          neighbours[a*numFaces+b]=1;                                                                                          \n"
+      "          neighbours[b*numFaces+a]=1;                                                                                          \n"
       "        }                                                                                                                      \n"
       "      }                                                                                                                        \n"
       "    }                                                                                                                          \n"
@@ -385,6 +385,118 @@ namespace icl{
     }
         
     
+    std::vector<std::vector<int> > SegmenterUtils::extractSegments(core::Img32s &labelImage){
+      int h=labelImage.getSize().height;
+      int w=labelImage.getSize().width;
+      core::Channel32s labelImageC = labelImage[0];
+      std::vector<std::vector<int> > segments;
+      for(int y=0; y<h; y++){
+        for(int x=0; x<w; x++){
+          if(labelImageC(x,y)>(int)segments.size()){
+            segments.resize(labelImageC(x,y));
+          }
+          if(labelImageC(x,y)>0){
+            segments.at(labelImageC(x,y)-1).push_back(x+y*w);
+          }
+        }
+      }
+      return segments;
+    }
+    
+    
+    void SegmenterUtils::relabel(core::Img32s &labelImage, std::vector<std::vector<int> > &assignment, int maxOldLabel){
+      std::vector<int> mapping;
+      if(maxOldLabel>0){
+        mapping.resize(maxOldLabel,0);
+      }else{
+        int maxLabel=0;
+        for(unsigned int i=0; i<assignment.size(); i++){
+          for(unsigned int j=0; j<assignment[i].size(); j++){
+            if(assignment[i][j]+1>maxLabel){
+              maxLabel=assignment[i][j]+1;//assignment [0..n-1], label [1..n]
+            }
+          }
+        }
+        mapping.resize(maxLabel,0);
+      }
+      for(unsigned int i=0; i<assignment.size(); i++){//calculate mapping
+        for(unsigned int j=0; j<assignment[i].size(); j++){
+          mapping[assignment[i][j]]=i;
+        }
+      }
+      int w = labelImage.getSize().width;
+      int h = labelImage.getSize().height;
+      core::Channel32s labelImageC = labelImage[0];
+      for(int y=0; y<h; y++){//map
+        for(int x=0; x<w; x++){
+          if(labelImageC(x,y)>0){
+            labelImageC(x,y)=mapping[labelImageC(x,y)-1];
+          }
+        }
+      }  
+    }
+    
+    
+    bool SegmenterUtils::occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance, float outlierTolerance){
+      core::Channel32f depthImageC = depthImage[0];
+      bool sampleX=false;//over x or y
+      int step=0;//positive or negative
+      float startValue=depthImageC(p1.x,p1.y);
+      float endValue=depthImageC(p2.x,p2.y);
+      float depthGradient, gradient;
+
+      if(abs(p2.x-p1.x)>abs(p2.y-p1.y)){//sample x init
+        sampleX=true;
+        gradient = (float)(p2.y-p1.y)/(float)(p2.x-p1.x);
+        depthGradient=(endValue-startValue)/(p2.x-p1.x);
+        if(p2.x-p1.x>0){
+          step=1;
+        }else{
+          step=-1;
+        }
+      }else{//sample y init
+        sampleX=false;
+        gradient = (float)(p2.x-p1.x)/(float)(p2.y-p1.y);
+        depthGradient=(endValue-startValue)/(p2.y-p1.y);
+        if(p2.y-p1.y>0){
+          step=1;
+        }else{
+          step=-1;
+        }
+      }
+      
+      int numReject=0;
+      if(sampleX){//sample x process
+        for(int i=p1.x; (i-p2.x)*step<=0; i+=step){
+          int newY=(int)round(p1.y+(i-p1.x)*gradient);
+          float realValue = depthImageC(i,newY);
+          float augmentedValue = startValue+(i-p1.x)*depthGradient;
+          float s1 = realValue-augmentedValue;//minus -> real closer than augmented
+          if(s1-distanceTolerance>0 && depthImageC(i,newY)!=2047){//not occluding
+            numReject++;
+          }     
+        }
+        if((float)numReject/(float)(abs(p2.x-p1.x)+1)>outlierTolerance/100.){
+          return false;
+        }
+      }else{//sample y process 
+        for(int i=p1.y; (i-p2.y)*step<=0; i+=step){
+          int newX=(int)round(p1.x+(i-p1.y)*gradient);
+          float realValue = depthImageC(newX,i);
+          float augmentedValue = startValue+(i-p1.y)*depthGradient;
+          float s1 = realValue-augmentedValue;
+          if(s1-distanceTolerance>0 && depthImageC(newX,i)!=2047){
+            numReject++;
+          }
+        }
+        if((float)numReject/(float)(abs(p2.y-p1.y)+1)>outlierTolerance/100.){
+          return false;
+        }
+      }
+      return true;             
+    }
+    
+    
     void SegmenterUtils::createColorImageCL(core::Img32s &labelImage, core::Img8u &colorImage){
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
@@ -562,6 +674,7 @@ namespace icl{
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
         math::DynMatrix<bool> neighbours(numSurfaces,numSurfaces,false);
+        math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,(unsigned char)0);
         if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit	      
 	        m_data->size = s;
 	        int w = s.width;
@@ -588,7 +701,7 @@ namespace icl{
           m_data->maskBuffer.write(maskImage.begin(0),w*h*sizeof(unsigned char));
           m_data->xyzBuffer.write(&xyzh[0][0],w*h*sizeof(Vec));//FixedColVector<float, 4>));
           
-		      m_data->neighboursBuffer = m_data->program.createBuffer("rw", numSurfaces*numSurfaces * sizeof(bool), &neighbours[0]);
+		      m_data->neighboursBuffer = m_data->program.createBuffer("rw", numSurfaces*numSurfaces * sizeof(unsigned char), &neighboursC[0]);
 		      
 		      m_data->kernelPointAssignment.setArgs(m_data->xyzBuffer,
 				      m_data->maskBuffer,
@@ -601,8 +714,13 @@ namespace icl{
 				      h,
 				      euclideanDistance);
 		      m_data->kernelPointAssignment.apply(w,h);
-		      m_data->neighboursBuffer.read(neighbours.data(),
-				      numSurfaces*numSurfaces * sizeof(bool));
+		      m_data->neighboursBuffer.read(neighboursC.data(),
+				      numSurfaces*numSurfaces * sizeof(unsigned char));
+				  for(unsigned int i=0; i<neighboursC.rows(); i++){
+				    for(unsigned int j=0; j<neighboursC.cols(); j++){
+				      neighbours(i,j)=(bool)neighboursC(i,j);
+				    }
+				  }
 		      if(pointAssignment){
 				    m_data->assignmentOutBuffer.read(m_data->assignmentArray.data(), w*h * sizeof(int));
 				    labelImage = core::Img32s(utils::Size(w,h),1,std::vector<int*>(1,m_data->assignmentArray.data()),false);
