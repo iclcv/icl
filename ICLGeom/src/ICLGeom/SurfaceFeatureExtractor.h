@@ -48,7 +48,9 @@ namespace icl{
   	      CURVATURE_FACTOR = 2,
   	      MEAN_NORMAL = 4,
   	      MEAN_POSITION = 8,
-  	      ALL = 15
+  	      BOUNDING_BOX_3D = 16,
+  	      BOUNDING_BOX_2D = 32,
+  	      ALL = 63
   	    };
   	  
         
@@ -59,6 +61,9 @@ namespace icl{
           Vec meanNormal;//mean normal
           Vec meanPosition;//mean position
           int curvatureFactor;//curvature Factor from enum CurvatureFactor
+          std::pair<Vec,Vec> boundingBox3D;
+          std::pair<utils::Point,utils::Point> boundingBox2D;
+          float volume;//volume of the 3D bounding box
         }SurfaceFeature;
         
         
@@ -70,7 +75,7 @@ namespace icl{
         };
         
           
-        /// Applies the surface feature calculation for one single surface
+        /// Applies the surface feature calculation for one single surface (please note: no BoundingBox2D)
         /** @param points the points xyz
             @param normals the corresponding point normals
             @param mode the mode from Mode enum (e.g. A | B)
@@ -87,10 +92,17 @@ namespace icl{
         */              
         static std::vector<SurfaceFeature> apply(core::Img32s labelImage, core::DataSegment<float,4> &xyzh, core::DataSegment<float,4> &normals, int mode=ALL);
         
+        /// Calculates the matching score between 0 and 1 for two normal histograms.
+        /** @param a the first normal histogram
+            @param b the second normal histogram
+            @return the matching score between 0 (no matching) and 1 (perfect matching).
+        */
+        static float matchNormalHistograms(core::Img32f &a, core::Img32f &b);
+        
       private:
       
         static SurfaceFeature getInitializedStruct();
-        static void update(Vec &normal, Vec &point, SurfaceFeature &feature, int mode);
+        static void update(Vec &normal, Vec &point, SurfaceFeature &feature, int mode, int x=0, int y=0);
         static void finish(SurfaceFeature &feature, int mode);      
     };
      
