@@ -405,7 +405,30 @@ namespace icl{
       }
       return probabilities;
     }    
-   
+    
+    
+    void GraphCutter::mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src){
+      if(src.rows()!=dst.rows()){
+        throw utils::ICLException("unequal sizes");
+      }
+      for(unsigned int i=0; i<src.rows(); i++){
+        for(unsigned int j=0; j<src.cols(); j++){
+          if(src(i,j)==true) dst(i,j)=true;
+        }
+      }
+    }
+	      
+	      
+    void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight){
+      if(featureMatrix.rows()!=dst.rows()){
+        throw utils::ICLException("unequal sizes");
+      }
+      for(unsigned int i=0; i<featureMatrix.rows(); i++){
+        for(unsigned int j=0; j<featureMatrix.cols(); j++){
+          if(featureMatrix(i,j)==true) dst(i,j)*=weight;
+        }
+      }  
+    }
     
   }
 }

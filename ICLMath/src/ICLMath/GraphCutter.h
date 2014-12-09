@@ -84,7 +84,7 @@ namespace icl{
         */                            
         static std::vector<CutNode> hierarchicalCut(DynMatrix<bool> &adjacencyMatrix);
         
-        /// Creates a weighted matrix from an unweighted boolean matrix
+        /// Creates a weighted matrix from an unweighted boolean matrix.
         /** @param initialMatrix the unweighted boolean matrix (0 for "no edge", 1 for "edge")
             @return a weighted matrix.
         */
@@ -96,12 +96,25 @@ namespace icl{
         */
         static std::vector<std::vector<int> > findUnconnectedSubgraphs(DynMatrix<float> &adjacencyMatrix);
 	      
-	      /// Creates a submatrix with a given subset
+	      /// Creates a submatrix with a given subset.
         /** @param adjacencyMatrix the input matrix
             @param subgraph the subset of nodes in the matrix
             @return a matrix from the subset.
         */
 	      static DynMatrix<float> createSubMatrix(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subgraph);
+	      
+	      /// Merges the src matrix into the dst matrix (dst is the maximum of both matrices).
+        /** @param dst the destination matrix
+            @param src the source matrix
+        */
+	      static void mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src);
+
+	      /// Weights the dst matrix (value*=weight) for all true cells in the featureMatrix.
+        /** @param dst the destination matrix
+            @param featureMatrix the boolean feature matrix (indicates where to weight)
+            @param weight the weight
+        */	      
+	      static void weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight);
                 
       private:
         static std::vector<float> capforest(std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts, int subsetsSize);
