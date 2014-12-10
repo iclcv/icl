@@ -44,7 +44,8 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/ObjectEdgeDetectorGPU.cpp
             src/ICLGeom/PlanarRansacEstimator.cpp
             src/ICLGeom/SegmenterUtils.cpp
-            src/ICLGeom/SurfaceFeatureExtractor.cpp       
+            src/ICLGeom/SurfaceFeatureExtractor.cpp
+            src/ICLGeom/CutfreeAdjacencyFeatureExtractor.cpp       
             src/ICLGeom/PCDFileGrabber.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
@@ -76,6 +77,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PlanarRansacEstimator.h
             src/ICLGeom/SegmenterUtils.h
             src/ICLGeom/SurfaceFeatureExtractor.h
+            src/ICLGeom/CutfreeAdjacencyFeatureExtractor.h
             src/ICLGeom/PCDFileGrabber.h)
 
 
