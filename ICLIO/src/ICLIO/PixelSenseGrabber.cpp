@@ -34,6 +34,8 @@
 #include <ICLUtils/StringUtils.h>
 #ifdef WIN32
   #include <lusb0_usb.h> // TODO: why is this one not included in Unix?
+#else
+  #include <usb.h>
 #endif
 
 using namespace icl::utils;
