@@ -430,7 +430,7 @@ namespace icl{
       for(int y=0; y<h; y++){//map
         for(int x=0; x<w; x++){
           if(labelImageC(x,y)>0){
-            labelImageC(x,y)=mapping[labelImageC(x,y)-1];
+            labelImageC(x,y)=mapping[labelImageC(x,y)-1]+1;
           }
         }
       }  
