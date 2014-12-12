@@ -143,7 +143,7 @@ namespace icl{
             @param outlierTolerance maximum number of outlier points in percent
             @return true if occluded.
         */
-        bool occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance=3., float outlierTolerance=5.);
+        static bool occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance=3., float outlierTolerance=5.);
         
         
       private:
