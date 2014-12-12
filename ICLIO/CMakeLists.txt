@@ -149,6 +149,11 @@ IF(OpenCV_FOUND)
                       src/ICLIO/OpenCVVideoGrabber.h)
 ENDIF()
  
+IF(LIBAV_FOUND)
+  LIST(APPEND SOURCES src/ICLIO/LibAVVideoWriter.cpp)
+  LIST(APPEND HEADERS src/ICLIO/LibAVVideoWriter.h)
+ENDIF()
+
 IF(QT4_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SharedMemoryGrabber.cpp
                       src/ICLIO/SharedMemoryPublisher.cpp

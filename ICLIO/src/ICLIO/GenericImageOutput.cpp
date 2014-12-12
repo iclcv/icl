@@ -44,6 +44,10 @@
 #include <ICLIO/OpenCVVideoWriter.h>
 #endif
 
+#ifdef ICL_HAVE_LIBAV
+#include <ICLIO/LibAVVideoWriter.h>
+#endif
+
 #if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
 #include <ICLIO/RSBImageOutput.h>
 #endif
@@ -91,6 +95,23 @@ namespace icl{
       }
       std::vector<std::string> plugins;
       
+  #ifdef ICL_HAVE_LIBAV
+      plugins.push_back("video~Video File~libav based video file writer");
+      if(type == "video"){
+        try{
+          std::vector<std::string> t = tok(d,",");
+          if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
+          std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
+          Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
+          double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
+          std::cout<<"t.size():"<<size<<std::endl;
+          o = new LibAVVideoWriter(t[0], fourcc, fps, size);
+        }catch(const std::exception &e){
+          ERROR_LOG("Unable to create LibAVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
+        }
+
+      }
+  #else
   #ifdef ICL_HAVE_OPENCV
       plugins.push_back("video~Video File~OpenCV based video file writer");
       if(type == "video"){
@@ -106,6 +127,7 @@ namespace icl{
         }
         
       }
+  #endif
   #endif
 
   #ifdef ICL_HAVE_ZMQ

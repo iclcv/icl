@@ -174,6 +174,7 @@ OPTION(BUILD_WITH_IPP "Link against Intel IPP for general speedup" OFF)
 OPTION(BUILD_WITH_MKL "Link against Intel MKL to speed up several mathematic fuctions" OFF)
 OPTION(BUILD_WITH_MESASR "Link against libmesasr to provide SwissRanger camera support" OFF)
 OPTION(BUILD_WITH_IMAGEMAGICK "Use ImageMagick to provide I/O for many common image formats" OFF)
+OPTION(BUILD_WITH_LIBAV "Use libav to provide video encoding for many common image formats" OFF)
 OPTION(BUILD_WITH_LIBDC "Use libdc to provide FireWire-Camera support" OFF)
 OPTION(BUILD_WITH_LIBFREENECT "Use libfreenect to grab from Kinect Devices" OFF)
 OPTION(BUILD_WITH_LIBFREENECT2 "Use experimental libfreenect2 dependency to grab from Kinect2 Devices" OFF)
@@ -626,13 +627,23 @@ ENDIF()
 
 IF(BUILD_WITH_BULLET)
   ICL_FIND_PACKAGE(NAME Bullet
-                   HEADERS "BulletDynamics/Dynamics/btRigidBody.h:BulletSoftBody/btSoftBody.h;BulletCollision/NarrowPhaseCollision/btPointCollector.h;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h;BulletSoftBody/btSoftRigidDynamicsWorld.h;BulletCollision/CollisionShapes/btBoxShape.h;BulletCollision/CollisionShapes/btCompoundShape.h"
+                   HEADERS "BulletDynamics/Dynamics/btRigidBody.h;BulletSoftBody/btSoftBody.h;BulletCollision/NarrowPhaseCollision/btPointCollector.h;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h;BulletSoftBody/btSoftRigidDynamicsWorld.h;BulletCollision/CollisionShapes/btBoxShape.h;BulletCollision/CollisionShapes/btCompoundShape.h"
                    LIBS "LinearMath;BulletCollision;BulletDynamics;BulletSoftBody"
                    HEADER_PATH_SUFFIXES "include/bullet"
                    LIB_PATH_SUFFIXES "lib") 
 #  FIND_PACKAGE(BULLET REQUIRED)
   IF(BULLET_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
+  ENDIF()
+ENDIF()
+
+IF(BUILD_WITH_LIBAV)
+  ICL_FIND_PACKAGE(NAME libav
+                   HEADERS "libavcodec/avcodec.h;libavformat/avfornat.h;libswscale/swscale.h"
+                   LIBS "avcodec;avformat;avutil;avresample;swscale"
+                   HEADER_PATH_SUFFIXES "include/avcodec;include/avformat;include/avdevice;include/avfilter;include/avutil;include/avresample;include/swscale")
+  IF(LIBAV_FOUND)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBAV)
   ENDIF()
 ENDIF()
 
