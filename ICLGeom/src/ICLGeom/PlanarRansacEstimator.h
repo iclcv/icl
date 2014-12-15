@@ -136,6 +136,24 @@ namespace icl{
                      int desiredID, int srcID, float threshold, Result &result);
 
         
+        /// Creates random models (n and distance) for RANSAC
+        /** @param srcPoints the input points
+            @param n0 the empty input n0 vector 
+            @param dist the empty input distance vector
+            @param passes the number of passes
+        */ 
+        static void calculateRandomModels(std::vector<Vec> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes);       
+        
+        
+        /// Creates random models (n and distance) for RANSAC
+        /** @param xyzh the input xyz pointcloud data
+            @param srcPoints the sourcePoint Ids
+            @param n0 the empty input n0 vector 
+            @param dist the empty input distance vector
+            @param passes the number of passes
+        */ 
+        static void calculateRandomModels(core::DataSegment<float,4> &xyzh, std::vector<int> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes);
+        
       private:
       
         struct Data;  //!< internal data type
@@ -157,10 +175,6 @@ namespace icl{
                
         void initOpenCL();            
         
-        void calculateRandomModels(std::vector<Vec> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes);       
-        
-        void calculateRandomModels(core::DataSegment<float,4> &xyzh, std::vector<int> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes);
-        
         Result createResult(std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                 float threshold, int passes, int tolerance, int optimization, int numPoints);
         
@@ -168,7 +182,7 @@ namespace icl{
                    std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn, std::vector<std::vector<int> > &pointIDs,
                    std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre, float threshold, int passes, int tolerance, int optimization);
         
-        void calculateModel(Vec &fa, Vec &fb, Vec &rPoint, Vec &n0, float &dist);
+        static void calculateModel(Vec &fa, Vec &fb, Vec &rPoint, Vec &n0, float &dist);
         
         void relabelCL(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
                      int desiredID, int srcID, float threshold, Result &result, int w, int h);
