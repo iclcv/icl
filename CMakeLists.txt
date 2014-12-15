@@ -194,6 +194,7 @@ OPTION(BUILD_WITH_SSE2 "Decide if SSE2 and lower intrinsics shall be used to spe
 OPTION(BUILD_WITH_SSE3 "Decide if SSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
 OPTION(BUILD_WITH_SSSE3 "Decide if SSSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
 OPTION(BUILD_WITH_BULLET "Provides physics simulation. Needs the bullet physics engine" OFF)
+OPTION(BUILD_WITH_RST "Link against the RST framework for message definitions (needs PROTOBUF)" OFF)
 
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
@@ -573,6 +574,39 @@ IF(BUILD_WITH_PCL)
   ENDIF()  
 ENDIF()
 
+# Why does it have to be before the RSB stuff?
+IF(BUILD_WITH_RST)
+  IF(NOT BUILD_WITH_PROTOBUF)
+    MESSAGE(FATAL_ERROR "Option BUILD_WITH_RST was defined, but BUILD_WITH_PROTOBUF was not defined (these options belong together, so either specify both or none of them)")
+  ENDIF()
+
+  IF(RST_ROOT)
+    SET(RSTSANDBOX_ROOT ${RST_ROOT})
+  ENDIF()
+
+  SET(RST_VERSION 0.11) # make this generic later
+
+  ICL_FIND_PACKAGE(NAME rst
+                   HEADERS "rst/math/Vec3DFloat.pb.h"
+                   LIBS "rst${RST_VERSION}"
+                   HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/stable")
+
+  ICL_FIND_PACKAGE(NAME rstsandbox
+                   HEADERS "rst/geometry/Primitive3DFloatSet.pb.h"
+                   LIBS "rstsandbox${RST_VERSION}"
+                   HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/sandbox")
+
+  IF(RST_FOUND AND RSTSANDBOX_FOUND)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_RST)
+    ADD_ICL_DEFINITIONS(-DRST_EXPORT=)
+    ADD_ICL_DEFINITIONS(-DRSTSANDBOX_EXPORT=)
+    LIST(APPEND RST_LIBRARIES ${RSTSANDBOX_LIBRARIES})
+    LIST(APPEND RST_INCLUDE_DIRS ${RSTSANDBOX_INCLUDE_DIRS})
+  ENDIF()
+ENDIF()
+
+MESSAGE(STATUS ${RST_LIBRARIES_PC})
+
 IF(BUILD_WITH_RSB)
   IF(NOT BUILD_WITH_PROTOBUF)
     MESSAGE(FATAL_ERROR "Option BUILD_WITH_RSB was defined, but BUILD_WITH_PROTOBUF was not defined (these options belong together, so either specify both or none of them)")
@@ -603,6 +637,7 @@ IF(BUILD_WITH_RSB)
   ENDIF()  
 ENDIF()
 
+MESSAGE(STATUS ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC})
 
 IF(BUILD_WITH_SSE)
   ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
@@ -688,7 +723,8 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${LIBUSB_INCLUDE_DIRS}
                     ${Qt5Widgets_INCLUDE_DIRS}
                     ${Qt5OpenGL_INCLUDE_DIRS}
-                    ${BULLET_INCLUDE_DIRS})
+                    ${BULLET_INCLUDE_DIRS}
+                    ${RST_INCLUDE_DIRS})
 
 # ---- Variables for 3rd party libraries ----
 LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
@@ -723,6 +759,8 @@ LIST(APPEND ICLQt_3RDPARTY_LIBRARIES ${GLEW_LIBRARIES})
 LIST(APPEND ICLQt_3RDPARTY_LIBRARIES ${Qt5_LIBRARIES})
 
 LIST(APPEND ICLGeom_3RDPARTY_LIBRARIES ${PCL_LIBRARIES_PC})
+LIST(APPEND ICLGeom_3RDPARTY_LIBRARIES ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC})
+LIST(APPEND ICLGeom_3RDPARTY_LIBRARIES ${RST_LIBRARIES})
 
 LIST(APPEND ICLPhysics_3RDPARTY_LIBRARIES ${BULLET_LIBRARIES})
 

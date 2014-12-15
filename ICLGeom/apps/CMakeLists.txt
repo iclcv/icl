@@ -16,3 +16,7 @@ ENDIF()
 IF(QT4_FOUND AND PCL_FOUND)
   ADD_SUBDIRECTORY(point-cloud-tests)
 ENDIF()
+
+IF(RST_FOUND AND RSB_FOUND)
+  ADD_SUBDIRECTORY(point-cloud-primitive-filter)
+ENDIF()
