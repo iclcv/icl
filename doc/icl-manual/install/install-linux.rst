@@ -304,6 +304,14 @@ Download and bulid libturbojpeg (for latest libturbojpeg)::
 
   wget http://sourceforge.net/projects/libjpeg-turbo/files/1.3.1/libjpeg-turbo-1.3.1.tar.gz
   tar xf libjpeg-turbo-1.3.1.tar.gz && rm libjpeg-turbo-1.3.1.tar.gz && cd libjpeg-turbo-1.3.1
+
+  * next version, not working either ? *
+  wget http://sourceforge.net/projects/libjpeg-turbo/files/1.3.90%20%281.4%20beta1%29/libjpeg-turbo-1.3.90.tar.gz/download
+  mv download libjpeg-turbo-1.3.9.tar.gz
+  tar xf libjpeg-turbo-1.3.9.tar.gz
+  rm libjpeg-turbo-1.3.9.tar.gz
+  cd libjpeg-turbo-1.3.90
+  
   
 Build libturbojpeg. *Note, you'll need the ubuntu-packages autoconf and nasm*::
 

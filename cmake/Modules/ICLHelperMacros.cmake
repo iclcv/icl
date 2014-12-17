@@ -175,6 +175,15 @@ IF(NOT WIN32)
   ENDIF()
 
   SET(LIB_DEPENDS_ON "${_LIBRARY_DIRS} ${_LIBRARY_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
+  # removing /usr/lib and also the architecture dependent default library paths for the list
+  #MESSAGE(STATUS "before filtering: ${LIB_DEPENDS_ON}")
+  FOREACH(A ${ARCH_DEPENDENT_LIB_PATHS} lib)
+    #MESSAGE(STATUS "   removing: ${A}")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=/usr/${A}")
+  ENDFOREACH()
+  #MESSAGE(STATUS "after filtering: ${LIB_DEPENDS_ON}")
+  #MESSAGE(STATUS "---")
+
   STRING(REPLACE ";" " "
          LIB_DEPENDS_ON
          "${LIB_DEPENDS_ON}")
