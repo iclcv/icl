@@ -50,16 +50,17 @@ IF(RSB_ROOT AND NOT RSC_ROOT)
   SET(RSC_ROOT ${RSB_ROOT})
 ENDIF()
 
+FILE(GLOB RSB_INCLUDES "${RSB_ROOT}/include/rsb*")
 FIND_PATH(RSB_INCLUDE_DIR 
   NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConverter.h
-  PATHS ${RSB_ROOT}/include ${RSB_ROOT}/include/rsb ${RSB_ROOT}/include/rsb0.9 ${RSB_ROOT}/include/rsb0.10 ${RSB_ROOT}/include/rsb0.11
+  PATHS ${RSB_ROOT}/include ${RSB_INCLUDES}
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
 
+FILE(GLOB RSC_INCLUDES "${RSB_ROOT}/include/rsc*")
 FIND_PATH(RSC_INCLUDE_DIR 
   NAMES rsc/logging/Logger.h
-  PATHS ${RSC_ROOT}/include ${RSC_ROOT}/include/rsc ${RSC_ROOT}/include/rsc0.9
-        ${RSC_ROOT}/include/rsc0.10 ${RSC_ROOT}/include/rsc0.11
+  PATHS ${RSC_ROOT}/include ${RSC_INCLUDES}
   DOC "The path to RSC header files"
   NO_DEFAULT_PATH)
 
@@ -83,7 +84,7 @@ IF(FILE_NAME STREQUAL librsbcore OR FILE_NAME STREQUAL rsbcore)
   MESSAGE(STATUS "resulting rsb-lib(old library layout): ${RSB_LIBRARY}")
 ELSE()
   FIND_LIBRARY(RSB_LIBRARY
-    NAMES rsb rsb0.9 rsb0.10 rsb0.11
+    NAMES rsb rsb0.9 rsb0.10 rsb0.11 rsb0.12
     PATHS ${RSB_ROOT}
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
@@ -135,7 +136,7 @@ ELSE()
 ENDIF()
 
 FIND_LIBRARY(RSC_LIBRARY  
-  NAMES rsc rsc0.9 rsc0.10 rsc0.11
+  NAMES rsc rsc0.9 rsc0.10 rsc0.11 rsc0.12
   PATHS ${RSC_ROOT} ${RSB_ROOT}
   PATH_SUFFIXES lib
   NO_DEFAULT_PATH)
