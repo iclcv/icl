@@ -32,15 +32,79 @@
 #include <ICLUtils/File.h>
 #include <ICLCore/CCFunctions.h>
 
+#include "libavutil/channel_layout.h"
+#include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
+#include "libavformat/avformat.h"
+#include "libavresample/avresample.h"
+#include "libswscale/swscale.h"
+
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl{
   namespace io{
 
-    #define INPUT_FORMAT AV_PIX_FMT_RGB24
-    #define STREAM_FORMAT AV_PIX_FMT_YUV420P
-    AVFrame *LibAVVideoWriter::alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
+
+    struct LibAVVideoWriter::Data{
+      Data(const std::string &filename, const std::string &fourcc, double fps, const Size &frame_size):
+        video_st(),filename(filename),fps(fps),frame_size(frame_size){
+        if(File(filename).exists()){
+          throw ICLException("file already exists");
+        }
+        av_register_all();
+        if(fourcc.length()) fmt = av_guess_format(fourcc.c_str(), filename.c_str(), 0);
+        else fmt = av_guess_format(0, filename.c_str(), 0);
+        if(!fmt) throw ICLException("Unkown format");
+        oc = avformat_alloc_context();
+        if (!oc) throw ICLException("Memory error");
+        oc->oformat = fmt;
+        snprintf(oc->filename, sizeof(oc->filename), "%s", filename.c_str());
+        add_video_stream(&video_st, oc, fmt->video_codec);
+        open_video(oc, &video_st);
+        av_dump_format(oc, 0, filename.c_str(), 1);
+        if (!(fmt->flags & AVFMT_NOFILE)) {
+            if (avio_open(&oc->pb, filename.c_str(), AVIO_FLAG_WRITE) < 0) {
+                throw ICLException("Could not open file");
+            }
+        }
+        avformat_write_header(oc, 0);
+      }
+      
+      ~Data(){
+        av_write_trailer(oc);
+        close_stream(oc, &video_st);
+        if (!(fmt->flags & AVFMT_NOFILE))avio_close(oc->pb);
+        avformat_free_context(oc);
+      }
+      struct OutputStream {
+        AVStream *st;
+        int64_t next_pts;
+        AVFrame *frame;
+        AVFrame *tmp_frame;
+        float t, tincr, tincr2;
+        struct SwsContext *sws_ctx;
+        int sws_ctx_width, sws_ctx_height;
+      };
+
+      OutputStream video_st;
+      std::string filename;
+      AVOutputFormat *fmt;
+      AVFormatContext *oc;
+      double fps;
+      utils::Size frame_size;
+      void add_video_stream(OutputStream *ost, AVFormatContext *oc, enum AVCodecID codec_id);
+      AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
+      void open_video(AVFormatContext *oc, OutputStream *ost);
+      void close_stream(AVFormatContext *oc, OutputStream *ost);
+      void fill_rgb_image(const core::ImgBase *src, AVFrame **pict);
+      AVFrame *get_video_frame(const core::ImgBase *src, OutputStream *ost);
+      int write_video_frame(const core::ImgBase *src, AVFormatContext *oc, OutputStream *ost);
+    };
+    
+#define INPUT_FORMAT AV_PIX_FMT_RGB24
+#define STREAM_FORMAT AV_PIX_FMT_YUV420P
+    AVFrame *LibAVVideoWriter::Data::alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
     {
         AVFrame *picture;
 
@@ -58,7 +122,7 @@ namespace icl{
         return picture;
     }
 
-    void LibAVVideoWriter::open_video(AVFormatContext *oc, OutputStream *ost)
+    void LibAVVideoWriter::Data::open_video(AVFormatContext *oc, OutputStream *ost)
     {
         AVCodecContext *c;
 
@@ -78,7 +142,7 @@ namespace icl{
     }
 
 
-    void LibAVVideoWriter::add_video_stream(OutputStream *ost, AVFormatContext *oc,
+    void LibAVVideoWriter::Data::add_video_stream(OutputStream *ost, AVFormatContext *oc,
                                  enum AVCodecID codec_id)
     {
         AVCodecContext *c;
@@ -131,7 +195,7 @@ namespace icl{
         sws_freeContext(ost->sws_ctx);
     }
 
-    void LibAVVideoWriter::fill_rgb_image(const ImgBase *src, AVFrame **pict)
+    void LibAVVideoWriter::Data::fill_rgb_image(const ImgBase *src, AVFrame **pict)
     {
       if(!*pict) {
         *pict = alloc_picture(INPUT_FORMAT,src->getSize().width,src->getSize().height);
@@ -157,7 +221,7 @@ namespace icl{
       }
     }
 
-    AVFrame *LibAVVideoWriter::get_video_frame(const ImgBase *src, OutputStream *ost)
+    AVFrame *LibAVVideoWriter::Data::get_video_frame(const ImgBase *src, OutputStream *ost)
     {
         AVCodecContext *c = ost->st->codec;
         int sw = src->getSize().width;
@@ -187,7 +251,7 @@ namespace icl{
         return ost->frame;
     }
 
-    int LibAVVideoWriter::write_video_frame(const ImgBase *src, AVFormatContext *oc, OutputStream *ost)
+    int LibAVVideoWriter::Data::write_video_frame(const ImgBase *src, AVFormatContext *oc, OutputStream *ost)
     {
         int ret;
         AVCodecContext *c;
@@ -236,36 +300,19 @@ namespace icl{
     }
 
     LibAVVideoWriter::LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
-                                         double fps, Size frame_size) throw (ICLException):video_st(),filename(filename),fps(fps),frame_size(frame_size){
-        if(File(filename).exists()){
-          throw ICLException("file already exists");
-        }
-        av_register_all();
-        if(fourcc.length()) fmt = av_guess_format(fourcc.c_str(), filename.c_str(), 0);
-        else fmt = av_guess_format(0, filename.c_str(), 0);
-        if(!fmt) throw ICLException("Unkown format");
-        oc = avformat_alloc_context();
-        if (!oc) throw ICLException("Memory error");
-        oc->oformat = fmt;
-        snprintf(oc->filename, sizeof(oc->filename), "%s", filename.c_str());
-        add_video_stream(&video_st, oc, fmt->video_codec);
-        open_video(oc, &video_st);
-        av_dump_format(oc, 0, filename.c_str(), 1);
-        if (!(fmt->flags & AVFMT_NOFILE)) {
-            if (avio_open(&oc->pb, filename.c_str(), AVIO_FLAG_WRITE) < 0) {
-                throw ICLException("Could not open file");
-            }
-        }
-        avformat_write_header(oc, 0);
+                                       double fps, Size frame_size) throw (ICLException):
+      m_data(new Data(filename, fourcc, fps, frame_size){
     }
 
     LibAVVideoWriter::~LibAVVideoWriter(){
-        av_write_trailer(oc);
-        close_stream(oc, &video_st);
-        if (!(fmt->flags & AVFMT_NOFILE))avio_close(oc->pb);
-        avformat_free_context(oc);
+      delete m_data;
     }
     
+    void LibAVVideoWriter::send(const ImgBase *image){
+       m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
+    }
+        
+        
     LibAVVideoWriter &LibAVVideoWriter::operator<<(const ImgBase *image){
       write_video_frame(image, oc, &video_st);
       return *this;

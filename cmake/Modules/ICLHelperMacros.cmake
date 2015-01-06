@@ -184,6 +184,25 @@ IF(NOT WIN32)
   #MESSAGE(STATUS "after filtering: ${LIB_DEPENDS_ON}")
   #MESSAGE(STATUS "---")
 
+  SET(LIB_DEPENDS_ON_NEW "")
+  FOREACH(T  ${LIB_DEPENDS_ON})
+    STRING(REGEX MATCH "^/usr/lib/.*\\.so.*" M ${T})
+    IF(NOT M)
+      LIST(APPEND LIB_DEPENDS_ON_NEW ${T})
+    ELSE()
+      # magic begins here!
+      STRING(REGEX REPLACE "/" ";" M ${T})
+      LIST(REVERSE M)
+      SET(M0 "")
+      LIST(GET M 0 M)
+      STRING(REGEX REPLACE "^lib" "" M ${M})
+      STRING(REGEX REPLACE "\\.so[\\.0-0]*$" "" M ${M})
+      SET(REP -l${M})
+      LIST(APPEND LIB_DEPENDS_ON_NEW -l${M})
+    ENDIF()
+  ENDFOREACH()
+  SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
+
   STRING(REPLACE ";" " "
          LIB_DEPENDS_ON
          "${LIB_DEPENDS_ON}")

@@ -34,46 +34,14 @@
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/ImgBase.h>
-#include <string>
-
-extern "C"{
-#include "libavutil/channel_layout.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
-#include "libavformat/avformat.h"
-#include "libavresample/avresample.h"
-#include "libswscale/swscale.h"
-}
-
-
 
 namespace icl{
   namespace io{
   
     class ICLIO_API LibAVVideoWriter :public ImageOutput{
-      private:
-        struct OutputStream {
-            AVStream *st;
-            int64_t next_pts;
-            AVFrame *frame;
-            AVFrame *tmp_frame;
-            float t, tincr, tincr2;
-            struct SwsContext *sws_ctx;
-            int sws_ctx_width, sws_ctx_height;
-        };
-        OutputStream video_st;
-        std::string filename;
-        AVOutputFormat *fmt;
-        AVFormatContext *oc;
-        double fps;
-        utils::Size frame_size;
-        void add_video_stream(OutputStream *ost, AVFormatContext *oc, enum AVCodecID codec_id);
-        AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
-        void open_video(AVFormatContext *oc, OutputStream *ost);
-        void close_stream(AVFormatContext *oc, OutputStream *ost);
-        void fill_rgb_image(const core::ImgBase *src, AVFrame **pict);
-        AVFrame *get_video_frame(const core::ImgBase *src, OutputStream *ost);
-        int write_video_frame(const core::ImgBase *src, AVFormatContext *oc, OutputStream *ost);
+      struct Data;
+      Data *m_data;
+
       public:
         
   	/// Creates a new videowriter with given filename
@@ -97,14 +65,13 @@ namespace icl{
             **/
     LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
                           double fps, utils::Size frame_size) throw (utils::ICLException);
-        
+
+  
   	/// Destructor
     ~LibAVVideoWriter();
         
     /// wraps write to implement ImageOutput interface
-    virtual void send(const core::ImgBase *image) {
-      write_video_frame(image, oc, &video_st);
-    }
+    virtual void send(const core::ImgBase *image);
         
   	/// as write but in stream manner
     LibAVVideoWriter &operator<<(const core::ImgBase *image);
