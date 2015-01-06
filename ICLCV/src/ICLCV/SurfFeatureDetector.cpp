@@ -237,16 +237,25 @@ namespace icl{
                                             "     }                                                    \n"
                                             "  }                                                       \n"
                                             );  
-
-        m_data->matchProgram = CLProgram("gpu",match_program);
-
-        m_data->matchBufferRefSize = 0;
-        m_data->matchBufferCurSize = 0;
-        m_data->matchBufferDistsSize = 0;
-        m_data->matchBufferMatchesSize = 0;
-        
-        m_data->distsKernel = m_data->matchProgram.createKernel("dists");
-        m_data->matchKernel = m_data->matchProgram.createKernel("match");
+        try{
+          m_data->matchProgram = CLProgram("gpu",match_program);
+          
+          m_data->matchBufferRefSize = 0;
+          m_data->matchBufferCurSize = 0;
+          m_data->matchBufferDistsSize = 0;
+          m_data->matchBufferMatchesSize = 0;
+          
+          m_data->distsKernel = m_data->matchProgram.createKernel("dists");
+          m_data->matchKernel = m_data->matchProgram.createKernel("match");
+        }catch(ICLException &e){
+          if(plugin == "best"){
+            DEBUG_LOG("detected an error while initializing OpenCL backend [" + str(e.what()) + "]: using CPU-fallback");
+            m_data->opensurf_backend = true;
+            m_data->clsurf_backend = false;
+          }else{
+            throw;
+          }
+        }
       }
 #endif
       
