@@ -47,6 +47,7 @@ SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
             src/ICLCV/SurfFeatureDetector.cpp
             src/ICLCV/VectorTracker.cpp
             src/ICLCV/ContourDetector.cpp
+            src/ICLCV/CurvatureExtractor.cpp
             src/ICLCV/RDPApproximation.cpp)
 
 SET(HEADERS src/ICLCV/CornerDetectorCSS.h
@@ -74,6 +75,7 @@ SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/SurfFeatureDetector.h
             src/ICLCV/WorkingLineSegment.h
             src/ICLCV/ContourDetector.h
+            src/ICLCV/CurvatureExtractor.h
             src/ICLCV/RDPApproximation.h)
 
 IF(IPP_FOUND)

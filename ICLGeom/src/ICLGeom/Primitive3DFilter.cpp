@@ -207,7 +207,7 @@ namespace icl{
                 // for all points
                 for(int i = 0; i < pcObj.getDim(); ++i) {
                     // translation
-                    Vec3 relpoint(xyzh[i][0] - it->position[0], xyzh[i][1] - it->position[1], xyzh[i][2] - it->position[2]);
+                    math::Vec3 relpoint(xyzh[i][0] - it->position[0], xyzh[i][1] - it->position[1], xyzh[i][2] - it->position[2]);
                     // rotation
                     relpoint = it->orientation.conj().rotateVector(relpoint);
                     // filtering

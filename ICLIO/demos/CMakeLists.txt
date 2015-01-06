@@ -11,5 +11,7 @@ INCLUDE(ICLHelperMacros)
 #           LIBRARIES ICLIO)
 
 
+ADD_SUBDIRECTORY(png_write_test)
+
 ENDIF()
 

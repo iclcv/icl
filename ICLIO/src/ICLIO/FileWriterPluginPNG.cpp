@@ -77,7 +77,7 @@ namespace icl{
         return;
       }
       
-      depth d = image->getDepth(); (void)d;
+      depth d = image->getDepth();// (void)d;
       int w = image->getWidth();
       int h = image->getHeight();
       int c = image->getChannels();
@@ -86,14 +86,23 @@ namespace icl{
         ERROR_LOG("the png format supports only 1,2,3 and 4 channel images");
         return;
       }
+
+      // if we have a 16 bit image we need to consider this when extracting the rows from the image (double number of bytes)
+      uint num_bytes = 1;
+      uint bits = 8;
+      // we can only guarantee the 16 bit resolution for 1-channel grey-scale images!
+      if (d == depth16s && c == 1) {
+        bits = 16;
+        num_bytes = 2;
+      }
       
       // Note that tests have 0: no compression, 9: max
       // shown that zlib compression levels 3-6 usually perform as well as level 9
       // for PNG images, and do considerably fewer caclulations. 
       png_set_compression_level(writer, 4);
-  
+
       png_set_IHDR(writer,info,w,h,
-                   8, // bits for now: later you will be able to select this
+                   bits, // bits for now: later you will be able to select this
                    c==1 ? PNG_COLOR_TYPE_GRAY :
                    c==2 ? PNG_COLOR_TYPE_GRAY_ALPHA :
                    c==3 ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA,
@@ -106,6 +115,10 @@ namespace icl{
         case 1: 
           if(image->getDepth() == depth8u){
             p = image->asImg<icl8u>()->begin(0);
+          } else if (d == depth16s) {
+            const icl16s *p16 = 0;
+            p16 = image->asImg<icl16s>()->begin(0);
+            p = (icl8u*)p16;
           }else{
             data.resize(w*h);
             Img8u tmp(Size(w,h),1,std::vector<icl8u*>(1,data.data()));
@@ -129,9 +142,16 @@ namespace icl{
           ERROR_LOG("unable to write an image with " << image->getChannels() << " as png file");
           return;
       }
+
+      // need to swap for 16 bit (big-endian)
+      if (d == depth16s && c == 1) {
+          png_set_swap(writer);
+      }
+
+
       rows.resize(h);
       for(int i=0;i<h;++i){
-        rows[i] = (icl8u*)(p+i*w*c);
+        rows[i] = (icl8u*)(p+i*w*c*num_bytes);
       }
      
       if(setjmp(png_jmpbuf(writer))){
