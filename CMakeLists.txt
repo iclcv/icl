@@ -174,7 +174,7 @@ OPTION(BUILD_WITH_IPP "Link against Intel IPP for general speedup" OFF)
 OPTION(BUILD_WITH_MKL "Link against Intel MKL to speed up several mathematic fuctions" OFF)
 OPTION(BUILD_WITH_MESASR "Link against libmesasr to provide SwissRanger camera support" OFF)
 OPTION(BUILD_WITH_IMAGEMAGICK "Use ImageMagick to provide I/O for many common image formats" OFF)
-OPTION(BUILD_WITH_LIBAV "Use libav to provide video encoding for many common image formats" OFF)
+OPTION(BUILD_WITH_LIBAV "Use libav to provide video encoding for many common video formats" OFF)
 OPTION(BUILD_WITH_LIBDC "Use libdc to provide FireWire-Camera support" OFF)
 OPTION(BUILD_WITH_LIBFREENECT "Use libfreenect to grab from Kinect Devices" OFF)
 OPTION(BUILD_WITH_LIBFREENECT2 "Use experimental libfreenect2 dependency to grab from Kinect2 Devices" OFF)
@@ -584,7 +584,7 @@ IF(BUILD_WITH_RST)
     SET(RSTSANDBOX_ROOT ${RST_ROOT})
   ENDIF()
 
-  SET(RST_VERSION 0.11) # make this generic later
+  SET(RST_VERSION 0.12) # make this generic later
 
   ICL_FIND_PACKAGE(NAME rst
                    HEADERS "rst/math/Vec3DFloat.pb.h"

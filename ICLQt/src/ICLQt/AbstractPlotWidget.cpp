@@ -289,7 +289,10 @@ namespace icl{
           axisLabelPen = QPen(QColor(50,50,50));
           data->bgBrush = QBrush(QColor(255,255,255));
         }
-  
+        defaultPen.setCosmetic(true);
+        gridPen.setCosmetic(true);          
+        axisLabelPen.setCosmetic(true);
+                
         data->pens[X_AXIS_PEN] = defaultPen;
         data->pens[Y_AXIS_PEN] = defaultPen;
         data->pens[X_TIC_PEN] = defaultPen;
@@ -402,7 +405,8 @@ namespace icl{
       
       data->pens.resize(NUM_PEN_TYPES);
   
-      const QPen defaultPen(QColor(50,50,50));
+      QPen defaultPen(QColor(50,50,50));
+      defaultPen.setCosmetic(true);
       data->pens[X_AXIS_PEN] = defaultPen;
       data->pens[Y_AXIS_PEN] = defaultPen;
       data->pens[X_TIC_PEN] = defaultPen;
@@ -412,6 +416,10 @@ namespace icl{
       data->pens[X_GRID_PEN] = QPen(QColor(150,150,150));
       data->pens[Y_GRID_PEN] = QPen(QColor(150,150,150));
       data->pens[AXIS_NAME_PEN] = QPen(QColor(0,0,0));
+      
+      data->pens[X_GRID_PEN].setCosmetic(true);
+      data->pens[Y_GRID_PEN].setCosmetic(true);
+      data->pens[AXIS_NAME_PEN].setCosmetic(true);
       
       setContextMenuPolicy(Qt::CustomContextMenu);
       
