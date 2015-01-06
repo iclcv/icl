@@ -177,17 +177,33 @@ IF(NOT WIN32)
   SET(LIB_DEPENDS_ON "${_LIBRARY_DIRS} ${_LIBRARY_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
   # removing /usr/lib and also the architecture dependent default library paths for the list
   #MESSAGE(STATUS "before filtering: ${LIB_DEPENDS_ON}")
-  FOREACH(A ${ARCH_DEPENDENT_LIB_PATHS} lib)
-    #MESSAGE(STATUS "   removing: ${A}")
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=/usr/${A}")
-  ENDFOREACH()
-  #MESSAGE(STATUS "after filtering: ${LIB_DEPENDS_ON}")
-  #MESSAGE(STATUS "---")
-
+ 
+  # tokenize the list properly: i.e. replace " " by ";" so that each 
+  # token actually becomes a cmake list token
   SET(LIB_DEPENDS_ON_NEW "")
+  FOREACH(T ${LIB_DEPENDS_ON})
+ #   MESSAGE(STATUS "---- ${T}")
+    STRING(REGEX REPLACE " " ";" T ${T}) 
+    FOREACH(T2 ${T})
+#      MESSAGE(STATUS "      ${T2}")
+      LIST(APPEND LIB_DEPENDS_ON_NEW ${T2})
+    ENDFOREACH()
+  ENDFOREACH()
+
+  # update actual list and remove silly rpaths
+  SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
+  LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
+  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=")
+  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=:")
+  SET(LIB_DEPENDS_ON_NEW "")
+
+  # loop over the list and replace full paths with -lLIBNAME
+  # for all libs that are in default directories (i.e. located
+  # in /usr/lib/somewhere
   FOREACH(T  ${LIB_DEPENDS_ON})
     STRING(REGEX MATCH "^/usr/lib/.*\\.so.*" M ${T})
     IF(NOT M)
+  #    MESSAGE(STATUS "keeping token ${T}")
       LIST(APPEND LIB_DEPENDS_ON_NEW ${T})
     ELSE()
       # magic begins here!
@@ -196,12 +212,18 @@ IF(NOT WIN32)
       SET(M0 "")
       LIST(GET M 0 M)
       STRING(REGEX REPLACE "^lib" "" M ${M})
-      STRING(REGEX REPLACE "\\.so[\\.0-0]*$" "" M ${M})
+      STRING(REGEX REPLACE "\\.so[\\.0-9]*$" "" M ${M})
       SET(REP -l${M})
       LIST(APPEND LIB_DEPENDS_ON_NEW -l${M})
+   #   MESSAGE(STATUS "replaced token by -l${M}")
     ENDIF()
   ENDFOREACH()
   SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
+
+  FOREACH(A ${ARCH_DEPENDENT_LIB_PATHS} lib)
+    #MESSAGE(STATUS "   removing: /usr/${A}")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=/usr/${A}")
+  ENDFOREACH()
 
   STRING(REPLACE ";" " "
          LIB_DEPENDS_ON
