@@ -28,10 +28,6 @@
 **                                                                 **
 ********************************************************************/
 
-
-// commented for fastfix reasons
-#ifdef ICL_HAVE_OPENCL
-
 #include <ICLGeom/Primitive3DFilter.h>
 #include <ICLUtils/PugiXML.h>
 #include <ICLUtils/StringUtils.h>
@@ -216,18 +212,20 @@ namespace icl{
                     relpoint = it->orientation.conj().rotateVector(relpoint);
                     // filtering
                     if(it->type == CUBE)
-                        filterMap[i] |= ( (relpoint[0] <= a) && (relpoint[0] >= -a) && (relpoint[1] <= b) && (relpoint[1] >= -b) &&(relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
+                        groupMap[i] |= ( (relpoint[0] <= a) && (relpoint[0] >= -a) && (relpoint[1] <= b) && (relpoint[1] >= -b) &&(relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
                     else if(it->type == SPHERE)
-                        filterMap[i] |= ( (relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) + (relpoint[2]*relpoint[2])/(c*c) <= 1 ) << groupBit;
+                        groupMap[i] |= ( (relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) + (relpoint[2]*relpoint[2])/(c*c) <= 1 ) << groupBit;
                     else if(it->type == CYLINDER)
-                        filterMap[i] |= ( ((relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) <= 1) && (relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
+                        groupMap[i] |= ( ((relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) <= 1) && (relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
                 }
 
                 #endif
 
             }
 
+            #ifdef ICL_HAVE_OPENCL
             groupmapbuffer.read(groupMap.data(), dim);
+            #endif
 
             // for all filter actions
             for(std::vector<utils::SmartPtr<FilterAction> >::iterator actionit = config.filterActions.begin(); actionit != config.filterActions.end(); ++actionit) {
@@ -284,7 +282,7 @@ namespace icl{
 
         }
 
-        Primitive3DFilter::FilterConfig::FilterConfig(const string &filename) throw(utils::ParseException) {
+        Primitive3DFilter::FilterConfig::FilterConfig(const std::string &filename) throw(utils::ParseException) {
 
             // parse XML document
             pugi::xml_document doc;
@@ -639,4 +637,3 @@ namespace icl{
 
     } // namespace geom
 }
-#endif

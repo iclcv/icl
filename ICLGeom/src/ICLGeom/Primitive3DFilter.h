@@ -30,10 +30,6 @@
 
 #pragma once
 
-
-// commented for fastfix reasons
-#ifdef ICL_HAVE_OPENCL
-
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLGeom/SceneObject.h>
 
@@ -336,5 +332,3 @@ namespace icl{
 
     } // namespace geom
 }
-
-#endif
