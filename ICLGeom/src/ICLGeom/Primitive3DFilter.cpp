@@ -28,6 +28,10 @@
 **                                                                 **
 ********************************************************************/
 
+
+// commented for fastfix reasons
+#ifdef ICL_HAVE_OPENCL
+
 #include <ICLGeom/Primitive3DFilter.h>
 #include <ICLUtils/PugiXML.h>
 #include <ICLUtils/StringUtils.h>
@@ -635,3 +639,4 @@ namespace icl{
 
     } // namespace geom
 }
+#endif
