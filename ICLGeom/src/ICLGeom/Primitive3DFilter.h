@@ -173,6 +173,8 @@ namespace icl{
                 /// Constructor
                 FilterAction(std::vector<unsigned char> formula) : formula(formula) {}
 
+                virtual ~FilterAction() {}
+
                 /// perform the actual filter action
                 /**
                     @param pcObj the point cloud to be filtered
@@ -197,6 +199,8 @@ namespace icl{
                 /// Constructor
                 RemoveAction(std::vector<unsigned char> formula) : FilterAction(formula) {}
 
+                virtual ~RemoveAction() {}
+
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);
 
@@ -207,6 +211,8 @@ namespace icl{
 
                 /// Constructor
                 SetposAction(std::vector<unsigned char> formula, float x, float y, float z) : FilterAction(formula), x(x), y(y), z(z) {}
+
+                virtual ~SetposAction() {}
 
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);
@@ -223,6 +229,8 @@ namespace icl{
 
                 /// Constructor
                 ColorAction(std::vector<unsigned char> formula, float r, float g, float b, float a) : FilterAction(formula), r(r), g(g), b(b), a(a) {}
+
+                virtual ~ColorAction() {}
 
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);
@@ -241,6 +249,8 @@ namespace icl{
                 /// Constructor
                 LabelAction(std::vector<unsigned char> formula, icl32s value) : FilterAction(formula), value(value) {}
 
+                virtual ~LabelAction() {}
+
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);
 
@@ -255,6 +265,8 @@ namespace icl{
                 /// Constructor
                 IntensityAction(std::vector<unsigned char> formula, float value) : FilterAction(formula), value(value) {}
 
+                virtual ~IntensityAction() {}
+
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);
 
@@ -268,6 +280,8 @@ namespace icl{
 
                 /// Constructor
                 FilterDepthImgAction(std::vector<unsigned char> formula, float value) : FilterAction(formula), value(value) {}
+
+                virtual ~FilterDepthImgAction() {}
 
                 void performAction(PointCloudObjectBase &pcObj, std::vector<unsigned char> &actionMap,
                                    std::vector<unsigned char> &groupMap, core::Img32f *depthImage);

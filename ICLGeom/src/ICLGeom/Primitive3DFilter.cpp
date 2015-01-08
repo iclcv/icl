@@ -627,7 +627,12 @@ namespace icl{
                                                     slices);
                     break;
                 }
-                default: break;
+                default: {
+                    std::stringstream sstream;
+                    sstream << type;
+                    WARNING_LOG("No primitive type for id: "+sstream.str());
+                    return;//break;
+                }
                 }
             }
             added_obj->setColor(Primitive::all,color);
