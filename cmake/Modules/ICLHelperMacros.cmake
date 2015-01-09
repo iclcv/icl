@@ -102,6 +102,81 @@ FUNCTION(BUILD_APP)
           RUNTIME DESTINATION bin)
 ENDFUNCTION()
 
+FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
+    SET( COMPONENT_DIRS "" )
+    SET( COMPONENT_DEPS "" )
+    FOREACH(_LIB ${${LIB_LIST}})
+        IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+            get_filename_component(_DIR ${_LIB} PATH)
+        ELSE()
+            get_filename_component(_DIR ${_LIB} DIRECTORY)
+        ENDIF()
+        IF(NOT _DIR)
+          STRING(SUBSTRING "${_LIB}" 0 2 _SUB)
+          IF(NOT ${_SUB} STREQUAL "-l")
+            GET_PROPERTY(_LIB TARGET ${_LIB} PROPERTY LOCATION)
+            IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+              get_filename_component(_DIR ${_LIB} PATH)
+            ELSE()
+              get_filename_component(_DIR ${_LIB} DIRECTORY)
+            ENDIF()
+          ENDIF()
+        ENDIF()
+        LIST(APPEND COMPONENT_DEPS "${_LIB}")
+        LIST(APPEND COMPONENT_DIRS "-Wl,-rpath=${_DIR}")
+    ENDFOREACH()
+    IF(COMPONENT_DIRS)
+        LIST(REMOVE_DUPLICATES COMPONENT_DIRS)
+    ENDIF()
+
+    SET(LIB_DEPENDS_ON "${COMPONENT_DIRS} ${COMPONENT_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
+    # removing /usr/lib and also the architecture dependent default library paths for the list
+    #MESSAGE(STATUS "before filtering: ${LIB_DEPENDS_ON}")
+
+    # tokenize the list properly: i.e. replace " " by ";" so that each
+    # token actually becomes a cmake list token
+    SET(LIB_DEPENDS_ON_NEW "")
+    FOREACH(T ${LIB_DEPENDS_ON})
+    #   MESSAGE(STATUS "---- ${T}")
+    STRING(REGEX REPLACE " " ";" T ${T})
+    FOREACH(T2 ${T})
+    #      MESSAGE(STATUS "      ${T2}")
+      LIST(APPEND LIB_DEPENDS_ON_NEW ${T2})
+    ENDFOREACH()
+    ENDFOREACH()
+
+    # update actual list and remove silly rpaths
+    SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
+    LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=:")
+    SET(LIB_DEPENDS_ON_NEW "")
+
+    # loop over the list and replace full paths with -lLIBNAME
+    # for all libs that are in default directories (i.e. located
+    # in /usr/lib/somewhere
+    FOREACH(T  ${LIB_DEPENDS_ON})
+    STRING(REGEX MATCH "^/usr/lib/.*\\.so.*" M ${T})
+    IF(NOT M)
+    #    MESSAGE(STATUS "keeping token ${T}")
+      LIST(APPEND LIB_DEPENDS_ON_NEW ${T})
+    ELSE()
+      # magic begins here!
+      STRING(REGEX REPLACE "/" ";" M ${T})
+      LIST(REVERSE M)
+      SET(M0 "")
+      LIST(GET M 0 M)
+      STRING(REGEX REPLACE "^lib" "" M ${M})
+      STRING(REGEX REPLACE "\\.so[\\.0-9]*$" "" M ${M})
+      SET(REP -l${M})
+      LIST(APPEND LIB_DEPENDS_ON_NEW -l${M})
+    #   MESSAGE(STATUS "replaced token by -l${M}")
+    ENDIF()
+    ENDFOREACH()
+    SET(${LIST_OUT} ${LIB_DEPENDS_ON_NEW} PARENT_SCOPE)
+
+ENDFUNCTION()
+
 #*********************************************************************
 # ---- Create pkg-config ----
 #*********************************************************************
