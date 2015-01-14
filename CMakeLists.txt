@@ -675,7 +675,7 @@ ENDIF()
 IF(BUILD_WITH_LIBAV)
   ICL_FIND_PACKAGE(NAME libav
                    HEADERS "libavcodec/avcodec.h;libavformat/avfornat.h;libswscale/swscale.h"
-                   LIBS "avcodec;avformat;avutil;avresample;swscale"
+                   LIBS "avcodec;avformat;avutil;avresample;swscale;avdevice;"
                    HEADER_PATH_SUFFIXES "include/avcodec;include/avformat;include/avdevice;include/avfilter;include/avutil;include/avresample;include/swscale")
   IF(LIBAV_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBAV)
@@ -705,6 +705,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${MESASR_INCLUDE_DIRS}
+                    ${LIBAV_INCLUDE_DIRS}
                     ${LIBDC_INCLUDE_DIRS}
                     ${V4L_INCLUDE_DIRS}
                     ${XINE_INCLUDE_DIRS}
@@ -739,6 +740,7 @@ LIST(APPEND ICLMath_3RDPARTY_LIBRARIES ${MKL_LIBRARIES})
 LIST(APPEND ICLCore_3RDPARTY_LIBRARIES ${OpenCV_LIBRARIES})
 
 LIST(APPEND ICLIO_3RDPARTY_LIBRARIES ${MESASR_LIBRARIES})
+LIST(APPEND ICLIO_3RDPARTY_LIBRARIES ${LIBAV_LIBRARIES})
 LIST(APPEND ICLIO_3RDPARTY_LIBRARIES ${ImageMagick_LIBRARIES})
 LIST(APPEND ICLIO_3RDPARTY_LIBRARIES ${LIBDC_LIBRARIES})
 LIST(APPEND ICLIO_3RDPARTY_LIBRARIES ${V4L_LIBRARIES})

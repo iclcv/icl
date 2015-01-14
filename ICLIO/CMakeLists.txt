@@ -261,6 +261,7 @@ ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLIO ICLFilter
                             ${ICLIO_3RDPARTY_LIBRARIES})
+                            
 
 # Wo sind die hier :-? (UNICAP XCF QT GENICAM OPENNI RSB PROTOBUF)
 

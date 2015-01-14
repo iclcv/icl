@@ -32,12 +32,18 @@
 #include <ICLUtils/File.h>
 #include <ICLCore/CCFunctions.h>
 
-#include "libavutil/channel_layout.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
-#include "libavformat/avformat.h"
-#include "libavresample/avresample.h"
-#include "libswscale/swscale.h"
+extern "C"
+{
+#include <libavutil/channel_layout.h>
+#include <libavutil/mathematics.h>
+#include <libavutil/opt.h>
+#include <libavformat/avformat.h>
+#include <libavresample/avresample.h>
+#include <libswscale/swscale.h>
+#include <libavcodec/version.h>
+}
+
+#if LIBAVCODEC_VERSION_MAJOR <= 54
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -107,8 +113,11 @@ namespace icl{
     AVFrame *LibAVVideoWriter::Data::alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
     {
         AVFrame *picture;
-
+#if LIBAVCODEC_VERSION_MAJOR > 54
         picture = av_frame_alloc();
+#else
+        picture = avcodec_alloc_frame();
+#endif
         if (!picture)
             return 0;
 
@@ -117,7 +126,17 @@ namespace icl{
         picture->height = height;
 
         /* allocate the buffers for the frame data */
+#if LIBAVCODEC_VERSION_MAJOR > 54
         if (av_frame_get_buffer(picture, 32) < 0) throw ICLException("Could not allocate frame data");
+#else
+        int size = avpicture_get_size(pix_fmt, width, height);
+        uint8_t *picture_buf = (uint8_t*) av_malloc(size);
+        if (!picture_buf) {
+	    throw ICLException("Could not allocate frame data");
+        }
+        avpicture_fill((AVPicture *)picture, picture_buf,
+                       pix_fmt, width, height);
+#endif
 
         return picture;
     }
@@ -187,11 +206,18 @@ namespace icl{
             c->flags |= CODEC_FLAG_GLOBAL_HEADER;
     }
 
-    void LibAVVideoWriter::close_stream(AVFormatContext *oc, OutputStream *ost)
+    void LibAVVideoWriter::Data::close_stream(AVFormatContext *oc, OutputStream *ost)
     {
         avcodec_close(ost->st->codec);
+#if LIBAVCODEC_VERSION_MAJOR > 54
         av_frame_free(&ost->frame);
         av_frame_free(&ost->tmp_frame);
+#else
+        av_free(&ost->frame->data[0]);
+        av_free(&ost->frame);
+        av_free(&ost->tmp_frame->data[0]);
+        av_free(&ost->tmp_frame);
+#endif
         sws_freeContext(ost->sws_ctx);
     }
 
@@ -201,11 +227,18 @@ namespace icl{
         *pict = alloc_picture(INPUT_FORMAT,src->getSize().width,src->getSize().height);
       } else {
         if((*pict)->width != src->getSize().width || (*pict)->height != src->getSize().height) {
+#if LIBAVCODEC_VERSION_MAJOR > 54
           av_frame_free(pict);
+#else
+          av_free((*pict)->data[0]);
+          av_free(*pict);
+#endif
           *pict = alloc_picture(INPUT_FORMAT,src->getSize().width,src->getSize().height);
         }
       }
+#if LIBAVCODEC_VERSION_MAJOR > 54
       av_frame_make_writable(*pict);
+#endif
       depth d = src->getDepth();
       switch(d) {
         case depth16s:
@@ -276,7 +309,9 @@ namespace icl{
             pkt.size          = sizeof(AVPicture);
 
             pkt.pts = pkt.dts = frame->pts;
+#if LIBAVCODEC_VERSION_MAJOR > 54
             av_packet_rescale_ts(&pkt, c->time_base, ost->st->time_base);
+#endif
 
             ret = av_interleaved_write_frame(oc, &pkt);
         } else {
@@ -288,7 +323,9 @@ namespace icl{
             if (ret < 0) throw ICLException("Error encoding a video frame");
 
             if (got_packet) {
+#if LIBAVCODEC_VERSION_MAJOR > 54
                 av_packet_rescale_ts(&pkt, c->time_base, ost->st->time_base);
+#endif
                 pkt.stream_index = ost->st->index;
 
                 /* Write the compressed frame to the media file. */
@@ -301,7 +338,7 @@ namespace icl{
 
     LibAVVideoWriter::LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
                                        double fps, Size frame_size) throw (ICLException):
-      m_data(new Data(filename, fourcc, fps, frame_size){
+      m_data(new Data(filename, fourcc, fps, frame_size)){
     }
 
     LibAVVideoWriter::~LibAVVideoWriter(){
@@ -314,9 +351,10 @@ namespace icl{
         
         
     LibAVVideoWriter &LibAVVideoWriter::operator<<(const ImgBase *image){
-      write_video_frame(image, oc, &video_st);
+      m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
       return *this;
     }
   } // namespace io
 
 }
+#endif

@@ -100,7 +100,7 @@ namespace icl{
       if(type == "video"){
         try{
           std::vector<std::string> t = tok(d,",");
-          if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
+          if(!t.size()) throw ICLException("unable to create LibAVVideoWriter with empty destination filename");
           std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
           Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
           double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
