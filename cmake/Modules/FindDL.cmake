@@ -55,11 +55,20 @@ FIND_PATH(DL_INCLUDE_DIRS
   DOC "The path to DL header files"
   NO_DEFAULT_PATH)
 
-FIND_LIBRARY(DL_LIBRARIES  
-  NAMES dl
-  PATHS  ${${_DL_SEARCHES}}
-  PATH_SUFFIXES "/lib" "/lib/i386-linux-gnu" "/lib/x86_64-linux-gnu"
-  NO_DEFAULT_PATH)
+# Set search path suffix
+IF (ICL_64BIT)
+  FIND_LIBRARY(DL_LIBRARIES  
+    NAMES dl
+    PATHS  ${${_DL_SEARCHES}}
+    PATH_SUFFIXES "/lib" "/lib/x86_64-linux-gnu"
+    NO_DEFAULT_PATH)
+ELSE()
+  FIND_LIBRARY(DL_LIBRARIES  
+    NAMES dl
+    PATHS  ${${_DL_SEARCHES}}
+    PATH_SUFFIXES "/lib" "/lib/i386-linux-gnu"
+    NO_DEFAULT_PATH)
+ENDIF()
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(DL REQUIRED_VARS 
 				  DL_LIBRARIES
