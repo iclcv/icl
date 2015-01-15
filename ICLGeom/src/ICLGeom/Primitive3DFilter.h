@@ -306,6 +306,9 @@ namespace icl{
                 /// map regular expression (matching the primitive description) to internal groupBit
                 std::map<std::string, unsigned char> mapRegexToBit;
 
+                /// map groupBit to padding
+                std::map<unsigned char, float> mapGroupBitToPadding;
+
                 /// all filter actions to be performed
                 std::vector<utils::SmartPtr<FilterAction> > filterActions;
 

@@ -182,11 +182,14 @@ namespace icl{
                     }
                 }
 
+                // padding
+                float padding = config.mapGroupBitToPadding[groupBit];
+
                 // scale
-                float a = it->scale[0]/2.0;
-                float b = it->scale[1]/2.0;
-                float c = it->scale[2]/2.0;
-                if(a == 0 || b == 0 || c == 0)
+                float a = it->scale[0]/2.0 + padding;
+                float b = it->scale[1]/2.0 + padding;
+                float c = it->scale[2]/2.0 + padding;
+                if(a <= 0 || b <= 0 || c <= 0)
                     continue;
 
                 #ifdef ICL_HAVE_OPENCL
@@ -301,8 +304,14 @@ namespace icl{
                 pugi::xml_attribute regexAttr = primitivegroupNode.attribute("regex");
                 if(regexAttr.empty()) throw utils::ParseException("Primitivegroup has no regex attribute.");
                 std::string regex = regexAttr.value();
+                pugi::xml_attribute paddingAttr = primitivegroupNode.attribute("padding");
+                float padding = 0.0;
+                if(!paddingAttr.empty()) {
+                    padding = paddingAttr.as_float();
+                }
                 mapGroupIdToBit[id] = currentBit;
                 mapRegexToBit[regex] = currentBit;
+                mapGroupBitToPadding[currentBit] = padding;
                 currentBit++;
             }
 
