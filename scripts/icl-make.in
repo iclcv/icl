@@ -28,6 +28,10 @@ else
    exit -1;
 fi
 
+PFX=@CMAKE_INSTALL_PREFIX@
+
 LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC} | sed 's|-Wl,-rpath\\|-Wl,-rpath|g')"
+LDFLAGS="-L${PFX}/lib -Wl,-rpath=${PFX}/lib ${LDFLAGS}"
+
 CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I."
 g++ $CXXFLAGS -o $1 $SRC $LDFLAGS 

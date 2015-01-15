@@ -30,7 +30,7 @@ PC_DEPS=@PKG_CONFIG_FILE_NAME_NO_PC@
 
 # optionally define C++-C-Pre-Processor flags
 # CXXCPP=
-# LDFLAGS=
+LDFLAGS=-Wl,-rpath=@CMAKE_INSTALL_PREFIX@/lib
 
 ##################################################
 # extra files to install #########################
