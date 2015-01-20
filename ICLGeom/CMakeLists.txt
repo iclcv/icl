@@ -46,7 +46,8 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/SegmenterUtils.cpp
             src/ICLGeom/SurfaceFeatureExtractor.cpp
             src/ICLGeom/CutfreeAdjacencyFeatureExtractor.cpp
-            src/ICLGeom/CoPlanarityFeatureExtractor.cpp       
+            src/ICLGeom/CoPlanarityFeatureExtractor.cpp
+            src/ICLGeom/RemainingPointsFeatureExtractor.cpp       
             src/ICLGeom/PCDFileGrabber.cpp
             src/ICLGeom/Primitive3DFilter.cpp)
 
@@ -81,6 +82,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/SurfaceFeatureExtractor.h
             src/ICLGeom/CutfreeAdjacencyFeatureExtractor.h
             src/ICLGeom/CoPlanarityFeatureExtractor.h
+            src/ICLGeom/RemainingPointsFeatureExtractor.h
             src/ICLGeom/PCDFileGrabber.h
             src/ICLGeom/Primitive3DFilter.h)
 
