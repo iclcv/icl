@@ -164,6 +164,69 @@ namespace icl{
 
     }
 
+    PhysicsPaper3 *PhysicsPaper3::clone(PhysicsWorld *world) const{
+      return new PhysicsPaper3(world, *this);
+    }
+
+    PhysicsPaper3::PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other) : m_data(new Data){
+      m_data->enableSelfCollision = other.m_data->enableSelfCollision;
+      m_data->visLinks = other.m_data->visLinks;
+      m_data->physicsWorld = world;
+      setLockingEnabled(true);
+      if(other.m_data->haveTexture){
+        m_data->haveTexture = true;
+        m_data->tex[0].update(other.m_data->tex[0].extractImage());
+        m_data->tex[1].update(other.m_data->tex[1].extractImage());
+      }
+      const btSoftBody *sOrig = other.getSoftBody();
+      std::vector<btVector3> ns(sOrig->m_nodes.size());
+      for(size_t i=0;i<ns.size();++i){
+        ns[i] = sOrig->m_nodes[i].m_x;
+      }
+
+      btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
+                                     ns.size(), ns.data(), 0);
+
+      s->m_cfg = sOrig->m_cfg;
+      s->getCollisionShape()->setMargin(icl2bullet(2));
+
+      s->appendMaterial();
+      s->m_materials[0]->m_kLST = 1.0;
+      s->m_materials[0]->m_kAST = 1.0;
+      s->m_materials[0]->m_kVST = 1.0;
+      
+      
+      s->setTotalMass(ns.size()*0.01,false);
+      
+      setPhysicalObject(s);      
+      
+      // copy triangles
+      const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
+      for(int i=0;i<sOrig->m_faces.size();++i){
+        const btSoftBody::Face &f = sOrig->m_faces[i];
+        addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
+        s->m_faces[i].m_normal = f.m_normal;
+        s->m_faces[i].m_ra = f.m_ra;
+      }
+
+      // copy constraints
+      for(int i=0;i<sOrig->m_links.size();++i){
+        const btSoftBody::Link &l = sOrig->m_links[i];
+        addLink((int)(l.m_n[0]-n0),(int)(l.m_n[1]-n0),
+                l.m_material->m_kLST);
+        s->m_links[i].m_tag = ((LinkState*)l.m_tag)->p();
+        s->m_links[i].m_bbending = l.m_bbending;
+        s->m_links[i].m_c0 = l.m_c0;
+        s->m_links[i].m_c1 = l.m_c1;
+        s->m_links[i].m_c2 = l.m_c2;
+        s->m_links[i].m_c3 = l.m_c3;
+      }
+
+      m_data->fm = FoldMap(other.getFoldMap());
+      
+    }
+
+
 
     PhysicsPaper3::PhysicsPaper3(PhysicsWorld *world, bool enableSelfCollision, const Size &cellsInit, const Vec corners[4],
                                  const Img8u *front_texture, const Img8u *back_texture, float initialStiffness, float initialMaxLinkDistnace):

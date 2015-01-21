@@ -45,6 +45,10 @@ namespace icl{
       clear();
     }
 
+    FoldMap::FoldMap(const Img32f &image, float initialValue):
+      m(image.getSize(),1),initialValue(initialValue){
+        std::copy(image.begin(0), image.end(0), m.begin(0));
+    }
 
     void FoldMap::draw_fold(const utils::Point32f &a, const utils::Point32f &b, float value){
       LineSampler ls;

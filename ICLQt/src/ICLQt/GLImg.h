@@ -255,7 +255,7 @@ namespace icl{
       std::vector<icl64f> getColor(int x, int y)const;
   
       /// creates core::ImgBase version of the currently buffered images
-      /** Please note, that the ownership is not passed to the caller! */
+      /** Please note that the ownership is not passed to the caller! */
       const core::ImgBase *extractImage() const;
   
       /// returns statistics of the currently buffered image

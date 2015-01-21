@@ -102,7 +102,11 @@ namespace icl{
                     float initialStiffness=-1,
                     float initialMaxLinkDistnace=0.5);
 
+      PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other);
+      
       virtual ~PhysicsPaper3();
+      
+      PhysicsPaper3 *clone(PhysicsWorld *world) const;
 
       void saveState(const std::string &filename);
       

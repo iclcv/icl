@@ -56,6 +56,8 @@ namespace icl{
       public:
       FoldMap(const utils::Size &resolution=utils::Size(200,300),float intialValue=1);
 
+      explicit FoldMap(const core::Img32f &image, float initialValue=1);
+
       void clear();
 
       /// memorized folds are nagative
