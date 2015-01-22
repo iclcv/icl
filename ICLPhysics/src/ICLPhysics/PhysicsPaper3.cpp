@@ -117,6 +117,8 @@ namespace icl{
         linkColors.inserted = GeomColor(255,0,255,255)*(1./255);
         linkColors.creases = GeomColor(255,255,0,255)*(1./255);
         linkColors.bendingConstraints = GeomColor(255,0,0,255)*(1./255);
+
+        lastUsedFaceIdx = 0;
       }
 
       std::map<std::pair<int,int>,float> rlMap;
@@ -168,10 +170,15 @@ namespace icl{
       return new PhysicsPaper3(world, *this);
     }
 
+
     PhysicsPaper3::PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other) : m_data(new Data){
       m_data->enableSelfCollision = other.m_data->enableSelfCollision;
       m_data->visLinks = other.m_data->visLinks;
       m_data->physicsWorld = world;
+
+      m_data->texCoords = other.m_data->texCoords;
+      m_data->projectedPoints = other.m_data->projectedPoints;
+      
       setLockingEnabled(true);
       if(other.m_data->haveTexture){
         m_data->haveTexture = true;
@@ -183,7 +190,7 @@ namespace icl{
       for(size_t i=0;i<ns.size();++i){
         ns[i] = sOrig->m_nodes[i].m_x;
       }
-
+      DEBUG_LOG("created copy of btSoftBody object with " << ns.size() << " nodes");
       btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
                                      ns.size(), ns.data(), 0);
 
@@ -202,7 +209,9 @@ namespace icl{
       
       // copy triangles
       const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
+      DEBUG_LOG("starting to copy " << sOrig->m_faces.size() << " faces");
       for(int i=0;i<sOrig->m_faces.size();++i){
+        SHOW(i);
         const btSoftBody::Face &f = sOrig->m_faces[i];
         addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
         s->m_faces[i].m_normal = f.m_normal;
