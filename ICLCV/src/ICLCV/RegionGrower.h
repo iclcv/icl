@@ -63,13 +63,33 @@ namespace icl{
           //this->mask=Img8u(image.getParams());
           core::Img8u &useMask = initialMask ? *initialMask : this->mask;
           if(image.getChannels() == 1){
-            region_grow<core::Img8u,icl8u,1, Criterion>(image, useMask, this->result, crit, minSize, startID);
+              region_grow<core::Img8u,icl8u,1, Criterion>(image, useMask, this->result, crit, minSize, startID);
           }else{
             throw utils::ICLException("wrong number of image channels");
           }
           return this->result;
         }
 
+        /// Applies the region growing on an input image with a growing criterion
+        /** @param image the input image for region growing
+            @param crit the region growing criterion
+            @param initialMask the initial mask (e.g. ROI)
+            @param minSize the minimum size of regions (smaller regions are removed)
+            @param startID the start id for the result label image
+            @return the result label image
+        */
+        const core::Img32s &applyColorImageGrowing(const core::Img8u &image, float const th, core::Img8u *initialMask = 0,
+                            const unsigned int minSize=0, const unsigned int startID=1){
+          this->result=core::Img32s(image.getSize(),1);
+          //this->mask=Img8u(image.getParams());
+          core::Img8u &useMask = initialMask ? *initialMask : this->mask;
+          if(image.getChannels() == 3){
+              region_grow<core::Img8u,icl8u,3, U8EuclideanDistance>(image, useMask, this->result, U8EuclideanDistance(th), minSize, startID);
+          }else{
+            throw utils::ICLException("wrong number of image channels");
+          }
+          return this->result;
+        }
 
         /// Applies the region growing on an input data segment with a growing criterion
         /** @param dataseg the input data segment for region growing
@@ -140,6 +160,18 @@ namespace icl{
           math::FixedColVector<DataT, DIM> operator()(int x, int y) const { return math::FixedColVector<DataT,DIM>(); }
         };
         
+        static float dist3u8(const math::FixedColVector<icl8u,3> &a, const math::FixedColVector<icl8u,3> &b) {
+            math::FixedColVector<icl8u,3> c = b-a;
+            return sqrt( c[0]*c[0] + c[1]*c[1] + c[2]*c[2] );
+        }
+
+        struct U8EuclideanDistance{
+            float t;
+            U8EuclideanDistance(float t):t(t){}
+            bool operator() (const math::FixedColVector<icl8u,3> &a, const math::FixedColVector<icl8u,3> &b) const {
+                return dist3u8(a,b) < t;
+            }
+        };
         
         struct EqualThreshold{
           int t;

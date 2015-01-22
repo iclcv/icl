@@ -158,7 +158,7 @@ namespace icl{
         ERROR_LOG("an error occured while writing png file " << file.getName());
         return;
       }
-  
+
       png_write_image(writer, (png_bytep*)rows.data());
   
   

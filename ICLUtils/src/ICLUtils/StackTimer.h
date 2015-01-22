@@ -72,10 +72,13 @@ namespace icl{
         At the end of the programm, the following info could be
         given to you:
         <pre>
-        calls[     361]  time[ 77.7 ms]  avg[  215 ns]  min[  183 ns]  max[  5.2 ms] {function1}
-        calls[     361]  time[  1.7 ms]  avg[    4 ns]  min[    4 ns]  max[   51 ns] {function2}
+        calls[     361]  time[ 77.7 ms]  avg[  215 us]  min[  183 us]  max[  5.2 ms] {function1}
+        calls[     361]  time[  1.7 ms]  avg[    4 us]  min[    4 us]  max[   51 us] {function2}
         </pre>
   
+        s = seconds
+        ms = milliseconds
+        us = microseconds
   
         \section SEC Benchmarking code section
         If sections of code shall be benchmarked, this can be done with the BENCHMARK_THIS_SECTION
@@ -124,7 +127,7 @@ namespace icl{
           }else if(l>1000){
             sprintf(acBuf,"%3ld.%1ld ms",l/1000,l/100-10*(l/1000));
           }else{
-            sprintf(acBuf,"  %3ld ns",l);
+            sprintf(acBuf,"  %3ld us",l);
           }
           return std::string(acBuf);
         }
