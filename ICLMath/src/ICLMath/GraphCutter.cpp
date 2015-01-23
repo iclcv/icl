@@ -65,8 +65,17 @@ namespace icl{
         }
       }
       if(subsets.size()!=2){
-        //throw utils::ICLException("no cut found (wrong final size)");
-        std::cout<<"no cut found (wrong final size of "<<subsets.size()<<")"<<std::endl;
+        //lambda_id is already min-cut
+        subset1 = subsets[lambda_id];
+        subset2.clear();        
+        for(unsigned int i=0; i<subsets.size(); i++){
+          if((int)i!=lambda_id){
+            for(unsigned int j=0; j<subsets[i].size(); j++){
+              subset2.push_back(subsets[i][j]);
+            }
+          }
+        }
+        return lambda_score;
       }
       subset1 = subsets[0];
       subset2 = subsets[1];      
