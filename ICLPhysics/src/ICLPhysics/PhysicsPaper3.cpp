@@ -63,7 +63,7 @@ namespace icl{
       qt::GLImg tex[2];
 
       bool haveTexture;
-
+      float initialStiffness;
       std::vector<utils::Point32f> texCoords;
       std::vector<utils::Point32f> projectedPoints;
 
@@ -175,7 +175,7 @@ namespace icl{
       m_data->enableSelfCollision = other.m_data->enableSelfCollision;
       m_data->visLinks = other.m_data->visLinks;
       m_data->physicsWorld = world;
-
+      m_data->initialStiffness = other.m_data->initialStiffness;
       m_data->texCoords = other.m_data->texCoords;
       m_data->projectedPoints = other.m_data->projectedPoints;
       
@@ -248,6 +248,7 @@ namespace icl{
       };
       const Vec *cs = corners ? corners : def_corners;
 
+      m_data->initialStiffness = initialStiffness;
       m_data->enableSelfCollision = enableSelfCollision;
       m_data->visLinks = false;
       m_data->physicsWorld = world;
@@ -512,7 +513,6 @@ namespace icl{
 
 
       const int num = tex.size();
-      SHOW(num);
       for(int i=0;i<num;++i){
         for(int j=0;j<num;++j){
           if(i == j) continue;
@@ -1077,7 +1077,7 @@ namespace icl{
 
       m_data->lastUsedFaceIdx = -1;
 
-      createBendingConstraints(0.5);
+      createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
         m_data->fmCallback(m_data->fm.getImage());
@@ -1086,6 +1086,75 @@ namespace icl{
       m_data->physicsWorld->unlock();
 
       unlock();
+    }
+
+    void PhysicsPaper3::splitAlongLineInPaperCoords(const utils::Point32f &aIn, const utils::Point32f &bIn, bool extendLineToEdges){
+      Point32f a = aIn, b = bIn;
+      Point32f e = (b-a)*100; // elongate each side by 100 % to avoid 
+      b += e;
+      a -= e;
+      std::vector<Point32f> wheres;
+      if(extendLineToEdges){
+        Point32f where;
+        utils::Point32f edges[5] = {Point32f(0,0), Point32f(1,0), Point32f(1,1), Point32f(0,1), Point32f(0,0) };
+        for(int i=0;i<4;++i){
+          if(line_segment_intersect(a,b,edges[i],edges[i+1], &where)){
+            DEBUG_LOG("a:" << a << " b:" << b << "  intersected at " << where);
+            wheres.push_back(where);
+          }
+          if(wheres.size() >= 2) break;
+        }
+        if(wheres.size() != 2){
+          ERROR_LOG("the given line aIn - bIn should definitely intersect the unitiy"
+                    " rect of the paper frame twice ??");
+        }else{
+          a = wheres[0];
+          b = wheres[1];
+          Point32f e = (b-a); // elongate each side by 100 % to avoid 
+          b += e;
+          a -= e;
+        }
+      }
+      
+      lock();
+      m_data->physicsWorld->lock();
+
+      std::vector<int> delLinks,delTriangles;
+      btSoftBody *s = getSoftBody();
+
+      int nNodes = s->m_nodes.size();
+      m_data->projectedPoints = m_data->texCoords;
+
+      m_data->numPointsBeforeUpdate = nNodes;
+
+      for(int i=0;i<s->m_links.size();++i){
+        if(hitLink(&s->m_links[i],a,b)) delLinks.push_back(i);
+      }
+      remove_indices_from_bullet_array(s->m_links, delLinks);
+
+      int n_faces = s->m_faces.size();
+      for(int i=0;i<n_faces;++i){
+        if(hitTriangle(&s->m_faces[i],a,b)){
+          if(replaceTriangle(&s->m_faces[i],a,b)) delTriangles.push_back(i);
+        }
+      }
+
+      // delete old triangles and links ...
+
+      remove_indices_from_bullet_array(s->m_faces, delTriangles);
+
+      m_data->lastUsedFaceIdx = -1;
+
+      createBendingConstraints(m_data->initialStiffness);
+
+      if(m_data->fmCallback){
+        m_data->fmCallback(m_data->fm.getImage());
+      }
+
+      m_data->physicsWorld->unlock();
+
+      unlock();
+    
     }
 
 
@@ -1640,7 +1709,7 @@ namespace icl{
         }
       }
 
-      createBendingConstraints(0.5);
+      createBendingConstraints(m_data->initialStiffness);
       // all links that cross one of the toBeMemorizedLinks must not update their rest-distances
       // createBendingConstraints2(0.5, toBeMemorizedLinks);
     }

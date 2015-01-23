@@ -120,6 +120,9 @@ namespace icl{
 
       void splitAlongLine(const utils::Point32f &a, const utils::Point32f &b, const geom::Camera &currCam);
 
+      void splitAlongLineInPaperCoords(const utils::Point32f &a, const utils::Point32f &b, bool autoExtendLineToEdges=true);
+
+
       geom::Vec interpolatePosition(const utils::Point32f &p) const;
 
       /// returns paper coordinates of given (or Point(-1,-1) in case of no hit)
