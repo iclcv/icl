@@ -190,7 +190,7 @@ namespace icl{
       for(size_t i=0;i<ns.size();++i){
         ns[i] = sOrig->m_nodes[i].m_x;
       }
-      DEBUG_LOG("created copy of btSoftBody object with " << ns.size() << " nodes");
+      //      DEBUG_LOG("created copy of btSoftBody object with " << ns.size() << " nodes");
       btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
                                      ns.size(), ns.data(), 0);
 
@@ -209,9 +209,7 @@ namespace icl{
       
       // copy triangles
       const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
-      DEBUG_LOG("starting to copy " << sOrig->m_faces.size() << " faces");
       for(int i=0;i<sOrig->m_faces.size();++i){
-        SHOW(i);
         const btSoftBody::Face &f = sOrig->m_faces[i];
         addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
         s->m_faces[i].m_normal = f.m_normal;

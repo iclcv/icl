@@ -544,10 +544,10 @@ namespace icl{
       if(camerasToo){
         m_cameras.clear();
       }
-  #ifdef ICL_HAVE_QT
-      m_mouseHandlers.clear();
-      m_glCallbacks.clear();
-  #endif
+      // #ifdef ICL_HAVE_QT
+      // m_mouseHandlers.clear();
+      // m_glCallbacks.clear();
+      // #endif
 
     }
 
