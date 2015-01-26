@@ -32,6 +32,7 @@
 
 #include <ICLCore/DataSegment.h>
 #include <ICLGeom/SurfaceFeatureExtractor.h>
+#include <ICLGeom/PointCloudSegment.h>
 
 namespace icl{
   namespace geom{
@@ -66,6 +67,27 @@ namespace icl{
       core::Img8u apply(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
                   core::DataSegment<float,4> normals=NULL, bool stabelize=true, bool useROI=false, 
                   bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true);
+  	  
+  	  /// One line call for the hierarchical surface feature segmentation.
+      /** @param xyz the xyzh DataSegment from the PointCloudObject class
+          @param rgb the rgba32f DataSegment from the PointCloudObject class
+          @param edgeImg the edge image from the ObjectEdgeDetector class
+          @param depthImg the input depth image
+          @param normals the input normals
+          @param useROI true for 3D region of interest (set by setROI() )
+          @param useCutreeAdjacency use the cutfree adjacency feature
+          @param useCoplanarity use the coplanarity feature
+          @param useCurvature use the curvature feature
+          @param useRemainingPoints use the remaining points assignment
+          @param weightCutreeAdjacency use the cutfree adjacency feature
+          @param weightCoplanarity use the coplanarity feature
+          @param weightCurvature use the curvature feature
+          @param weightRemainingPoints use the remaining points assignment
+          @return the hierachical segmentation tree */
+  	  std::vector<PointCloudSegmentPtr> applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
+                  core::DataSegment<float,4> normals=NULL, bool useROI=false, 
+                  bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true,
+                  float weightCutfreeAdjacency=1.0, float weightCoplanarity=0.9, float weightCurvature=0.8, float weightRemainingPoints=0.7);
   	  		      
       /// Sets the ROI in world coordinates
       /**       @param xMin xMin in mm
@@ -147,6 +169,8 @@ namespace icl{
      private:
       
       void surfaceSegmentation(core::DataSegment<float,4> &xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, int minSurfaceSize=25, bool useROI=false); 
+      
+      std::vector<PointCloudSegmentPtr> createHierarchy(math::DynMatrix<float> &probabilityMatrix, core::DataSegment<float,4> &xyz, core::DataSegment<float,4> &rgb);
       
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer

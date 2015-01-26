@@ -197,6 +197,71 @@ namespace icl {
     }
 
 
+    std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
+                  core::DataSegment<float,4> normals, bool useROI, 
+                  bool useCutfreeAdjacency, bool useCoplanarity, bool useCurvature, bool useRemainingPoints,
+                  float weightCutfreeAdjacency, float weightCoplanarity, float weightCurvature, float weightRemainingPoints){
+      surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
+	    	    	    
+	    std::vector<SurfaceFeatureExtractor::SurfaceFeature> features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
+	    
+	    math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage, 
+                              m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
+	    
+	    math::DynMatrix<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	    
+	    math::DynMatrix<bool> cutfreeMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	    math::DynMatrix<bool> coplanMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	    math::DynMatrix<bool> curveMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	    math::DynMatrix<bool> remainingMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	    
+	    if(useCutfreeAdjacency){
+	      cutfreeMatrix = m_data->cutfree->apply(xyz, 
+                  m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
+                  m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, features, m_data->cutfreeMinAngle);
+        math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
+      }
+      
+      if(useCoplanarity){
+        coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
+                          m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
+    	   math::GraphCutter::mergeMatrix(resultMatrix, coplanMatrix);
+      }
+
+      if(useCurvature){
+        curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, features, m_data->surfaces, normals, 
+                                            m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity, 
+                                            m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance, 
+                                            m_data->curvatureOutlierTolerance);
+        math::GraphCutter::mergeMatrix(resultMatrix, curveMatrix);
+      }
+	      	    
+	    if(useRemainingPoints){
+	      remainingMatrix = RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage, 
+                          m_data->surfaces, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius);
+                          
+        resultMatrix.setBounds(remainingMatrix.cols(), remainingMatrix.rows(), true, false);//hold content, initializer
+        math::GraphCutter::mergeMatrix(resultMatrix, remainingMatrix);
+	    }
+	    
+	    cutfreeMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
+	    coplanMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
+	    curveMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
+	    remainingMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
+	    
+	    math::DynMatrix<float> probabilityMatrix = math::GraphCutter::calculateProbabilityMatrix(resultMatrix, true);
+	    
+	    math::GraphCutter::weightMatrix(probabilityMatrix, cutfreeMatrix, weightCutfreeAdjacency);
+	    math::GraphCutter::weightMatrix(probabilityMatrix, coplanMatrix, weightCoplanarity);
+	    math::GraphCutter::weightMatrix(probabilityMatrix, curveMatrix, weightCurvature);
+	    math::GraphCutter::weightMatrix(probabilityMatrix, remainingMatrix, weightRemainingPoints);
+	    
+	    m_data->segments.clear();
+	    
+	    return createHierarchy(probabilityMatrix, xyz, rgb);
+    }
+
+
     void FeatureGraphSegmenter::setROI(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
 	    m_data->xMinROI = xMin;
 	    m_data->xMaxROI = xMax;
@@ -341,6 +406,50 @@ namespace icl {
         }
       }
     }    
+    
+    
+    std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::createHierarchy(math::DynMatrix<float> &probabilityMatrix, core::DataSegment<float,4> &xyz, core::DataSegment<float,4> &rgb){
+      std::vector<math::GraphCutter::CutNode> cutNodes = math::GraphCutter::hierarchicalCut(probabilityMatrix);
+      std::vector<PointCloudSegmentPtr> results;
+
+      //create point cloud segments (incl. leafs with data)
+      std::vector<PointCloudSegmentPtr> pointCloudSegments(cutNodes.size());
+      for(unsigned int i=0; i<cutNodes.size(); i++){//create segments
+        if(cutNodes[i].children.size()==0){//leaf (no children)
+          pointCloudSegments[i]=new PointCloudSegment(m_data->surfaces[cutNodes[i].subset[0]].size(), true);
+          core::DataSegment<float,4> dst_xyzh=pointCloudSegments[i]->selectXYZH();
+          core::DataSegment<float,4> dst_rgba=pointCloudSegments[i]->selectRGBA32f();
+          for(unsigned int j=0; j<m_data->surfaces[cutNodes[i].subset[0]].size(); j++){
+            dst_xyzh[j]=xyz[m_data->surfaces[cutNodes[i].subset[0]][j]];
+            dst_rgba[j]=rgb[m_data->surfaces[cutNodes[i].subset[0]][j]];
+          }
+          pointCloudSegments[i]->cutCost=0;//cost 0
+        }
+        else{//parent node
+          pointCloudSegments[i]=new PointCloudSegment(0,false);
+          pointCloudSegments[i]->cutCost=cutNodes[i].cost;//cost x
+        }
+      }
+
+      //create hierarchy
+      for(unsigned int i=0; i<cutNodes.size(); i++){//create segments
+        if(cutNodes[i].children.size()>0){
+          for(unsigned int j=0; j<cutNodes[i].children.size(); j++){
+            pointCloudSegments[i]->addChild(pointCloudSegments[cutNodes[i].children[j]]);
+          }
+        }
+      }
+
+      //add root nodes to result
+      for(unsigned int i=0; i<cutNodes.size(); i++){//create segments
+        if(cutNodes[i].parent==-1){
+          results.push_back(pointCloudSegments[i]);
+          results.back()->updateFeatures();//new          
+        }
+      }
+	    
+	    return results; 
+    }
           
   } // namespace geom
 }
