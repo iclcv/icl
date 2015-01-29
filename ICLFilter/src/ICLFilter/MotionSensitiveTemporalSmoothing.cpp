@@ -306,14 +306,14 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 	}
 	if(clReady==true) { //only if CL context is available
 		try {
-			motionImageBuffer = program.createBuffer("rw", w*h * sizeof(float), motionImageArray);
+                        motionImageBuffer = program.createBuffer("rw", w*h * sizeof(float), motionImageArray);
 
 			if(depth==depth32f) {
 				inputImageBufferF = program.createBuffer("rw", w*h * sizeof(float) * maxFilterSize, inputImagesArrayF);
 				outputImageBufferF = program.createBuffer("rw", w*h * sizeof(float), outputImageArrayF);
 			} else if(depth==depth8u) {
 				inputImageBufferC = program.createBuffer("rw", w*h * sizeof(unsigned char) * maxFilterSize, inputImagesArrayC);
-				inputImageBufferC = program.createBuffer("rw", w*h * sizeof(unsigned char), outputImageArrayC);
+				outputImageBufferC = program.createBuffer("rw", w*h * sizeof(unsigned char), outputImageArrayC);
 			}
 			kernelTemporalSmoothingFloat = program.createKernel("temporalSmoothingFloat");
 			kernelTemporalSmoothingChar = program.createKernel("temporalSmoothingChar");
@@ -442,8 +442,10 @@ Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
 		try {
 			inputImage1ArrayC=inputImagesC.at(imgCount-1).begin(0);
 
+                        DEBUG_LOG("uploading data to cl buffer");
 			inputImageBufferC.write(inputImage1ArrayC, w*h * sizeof(unsigned char), (imgCount-1)*w*h* sizeof(unsigned char));
 
+                        DEBUG_LOG("setting kernel args");
 			kernelTemporalSmoothingChar.setArgs(inputImageBufferC,
 					outputImageBufferC,
 					currentFilterSize,
@@ -453,10 +455,12 @@ Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
 					currentDifference,
 					nullValue,
 					motionImageBuffer);//set parameter for kernel
+                        DEBUG_LOG("applying kernel");
 			kernelTemporalSmoothingChar.apply(w*h);
+                        DEBUG_LOG("reading data from mermory");
 			outputImageBufferC.read(outputImageArrayC, w*h * sizeof(unsigned char));
+                        DEBUG_LOG(" ... done");
 			outputImageC = Img8u(Size(w,h),1,std::vector<unsigned char*>(1,outputImageArrayC),false);
-
 		} catch (CLException &err) { //catch openCL errors
 			std::cout<< "ERROR: "<< err.what()<< std::endl;
 		}

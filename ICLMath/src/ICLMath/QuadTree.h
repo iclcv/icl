@@ -199,6 +199,7 @@ namespace icl{
           return ( p[0] >= center[0] - halfSize[0]
                    && p[1] >= center[1] - halfSize[1]
                    && p[0] <= center[0] + halfSize[0]
+
                    && p[1] <= center[1] + halfSize[1]);
         }
         
