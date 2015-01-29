@@ -304,6 +304,11 @@ namespace icl{
         return m_ID;
       }
   
+      /// returns whether the ordered flag is set
+      bool isOrderedFlagSet() const{
+        return m_isOrdered;
+      }
+
       /// adds an additional deativation pattern
       /** By this means, extended or also accumulating Configurable-instances can
           hide some of their inherited/accumulated properties. E.g. special

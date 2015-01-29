@@ -108,6 +108,14 @@ namespace icl{
       
       PhysicsPaper3 *clone(PhysicsWorld *world) const;
 
+      /// takes the softbody from the given other physics paper 
+      /** The current own soft-body is deleted, the current other 
+          softbody is moved (by pointer) into this class. Most additional
+          state variables (e.g. texture coords) are copied over aswell
+          (right now the physics world and the corresponding config from
+          other is not copied over)*/
+      void takeSoftBodyFrom(PhysicsPaper3 *other);
+
       void saveState(const std::string &filename);
       
       void restoreState(const std::string &filename);

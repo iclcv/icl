@@ -43,7 +43,9 @@ namespace icl{
       }
     }
     void PhysicsObject::setPhysicalObject(btCollisionObject *obj){
-      delete m_physicalObject;
+      if(m_physicalObject){
+        delete m_physicalObject;
+      }
       m_physicalObject = obj;
       //set the userpointer to the physicsobject so it can be accessed in collision callbacks
       m_physicalObject->setUserPointer(this);

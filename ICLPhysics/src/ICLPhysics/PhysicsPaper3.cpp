@@ -360,6 +360,20 @@ namespace icl{
 
       createBendingConstraints(initialMaxLinkDistnace,initialStiffness);
     }
+    
+    void PhysicsPaper3::takeSoftBodyFrom(PhysicsPaper3 *other){
+      lock();
+      other->lock();
+      
+      btSoftBody *sCur = getSoftBody();
+      btSoftBody *sNew = other->getSoftBody();
+      sNew->m_cfg = sCur->m_cfg;
+    
+      setPhysicalObject(sNew);      
+      m_data->fm = FoldMap(other->getFoldMap());
+      other->unlock();
+      unlock();
+    }
 
     PhysicsPaper3::~PhysicsPaper3(){
       delete m_data;
