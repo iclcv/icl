@@ -206,6 +206,7 @@ namespace icl{
       s->setTotalMass(ns.size()*0.01,false);
       
       setPhysicalObject(s);      
+      setCurrentPhysicsWorld(world);
       
       // copy triangles
       const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
@@ -326,7 +327,7 @@ namespace icl{
       }
 
       setPhysicalObject(s);
-
+      setCurrentPhysicsWorld(world);
       // center vertex/tex-coords offset
       int o = nx * ny;
 
@@ -366,11 +367,20 @@ namespace icl{
       other->lock();
       
       btSoftBody *sCur = getSoftBody();
+      m_data->physicsWorld->removeObject(this);
+      
       btSoftBody *sNew = other->getSoftBody();
       sNew->m_cfg = sCur->m_cfg;
     
       setPhysicalObject(sNew);      
+      other->forgetPhysicalObject(true);
+      
+      m_data->physicsWorld->addObject(this);
+      sNew->setUserPointer(this);
+      sNew->m_worldInfo = m_data->physicsWorld->getWorldInfo();
+      
       m_data->fm = FoldMap(other->getFoldMap());
+      m_data->texCoords = other->m_data->texCoords;
       other->unlock();
       unlock();
     }

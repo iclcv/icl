@@ -50,6 +50,13 @@ namespace icl{
       //set the userpointer to the physicsobject so it can be accessed in collision callbacks
       m_physicalObject->setUserPointer(this);
     }
+    void PhysicsObject::forgetPhysicalObject(bool removeFromWorld){
+      if(removeFromWorld && m_world){
+        m_world->removeObject(this);
+      }
+      m_physicalObject->setUserPointer(0);
+      m_physicalObject = 0;
+    }
 
     void PhysicsObject::setCollisionMargin(float margin){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionMargin physical object was null");
@@ -126,7 +133,7 @@ namespace icl{
     {
       m_collisionGroup = group;
     }
-    
+        
     int PhysicsObject::getCollisionGroup()
     {
       return m_collisionGroup;

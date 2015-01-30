@@ -71,6 +71,8 @@ namespace icl {
       /// sets the physical object (delets the old one of not 0)
       void setPhysicalObject(btCollisionObject *obj);
 
+      /// sets the internal physical object o null, but wont delete it!
+      void forgetPhysicalObject(bool removeFromWorld=true);
       
       /// returns internal physical object as collision object
       /** Collision objects are like rigid objects, but they cannot be moved */
