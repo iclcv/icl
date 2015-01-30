@@ -1123,7 +1123,7 @@ namespace icl{
         utils::Point32f edges[5] = {Point32f(0,0), Point32f(1,0), Point32f(1,1), Point32f(0,1), Point32f(0,0) };
         for(int i=0;i<4;++i){
           if(line_segment_intersect(a,b,edges[i],edges[i+1], &where)){
-            DEBUG_LOG("a:" << a << " b:" << b << "  intersected at " << where);
+            //            DEBUG_LOG("a:" << a << " b:" << b << "  intersected at " << where);
             wheres.push_back(where);
           }
           if(wheres.size() >= 2) break;
