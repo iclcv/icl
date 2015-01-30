@@ -50,6 +50,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CurvatureFeatureExtractor.cpp
             src/ICLGeom/RemainingPointsFeatureExtractor.cpp
             src/ICLGeom/FeatureGraphSegmenter.cpp
+            src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
             src/ICLGeom/PointCloudSegment.cpp       
             src/ICLGeom/PCDFileGrabber.cpp
             src/ICLGeom/Primitive3DFilter.cpp)
@@ -88,6 +89,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/CurvatureFeatureExtractor.h
             src/ICLGeom/RemainingPointsFeatureExtractor.h
             src/ICLGeom/FeatureGraphSegmenter.h
+            src/ICLGeom/ConfigurableDepthImageSegmenter.h
             src/ICLGeom/PointCloudSegment.h
             src/ICLGeom/PCDFileGrabber.h
             src/ICLGeom/Primitive3DFilter.h)
