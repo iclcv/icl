@@ -95,14 +95,23 @@ void run(){
  
   const std::vector<MultiCamFiducial> &fs = fd.detect(images,1);
 
+  if(pa("-verbose")){
+    std::cout << " --- " << std::endl;
+  }
   for(unsigned int i=0;i<fs.size();++i){
     if(fs[i].isNull()) {
       continue;
     }
     updateCube(fs[i].getID(),fs[i].getPose3D());
+    if(pa("-verbose")){
+      Vec3 pos = fs[i].getPose3D().part<3,0,1,3>();
+      std::cout << "Detected marker " << fs[i].getID() << " at " << pos.transp() << std::endl;
+    }
   }
   const int camID = fd.getCameraIDFromIntermediteImageName(gui["vis"]);
   draw->link(scene.getGLCallback(camID));
+
+  gui["draw"].render();
 }
 
 int main(int n, char **args){
@@ -115,5 +124,5 @@ int main(int n, char **args){
    
   return ICLApp(n,args,"[m]-input|-i(...) [m]-cameras|-c(...) "
                  "[m]-markers-to-load|-m(type,which,size) "
-                 "-do-not-sync-2D-detectors|-nosync",init,run).exec();
+                 "-do-not-sync-2D-detectors|-nosync -verbose",init,run).exec();
 }
