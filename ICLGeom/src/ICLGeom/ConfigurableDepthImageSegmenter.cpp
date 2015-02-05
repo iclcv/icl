@@ -149,10 +149,10 @@ namespace icl{
         m_data->temporalSmoothing->apply(&depthImage,&filteredImage);    
       }
 		
-      string usedFilter=getPropertyValue("pre.filter");
+      std::string usedFilter=getPropertyValue("pre.filter");
       bool useAveraging=getPropertyValue("pre.averaging");
-      string usedAngle=getPropertyValue("pre.edge angle method");
-      string usedSmoothing=getPropertyValue("pre.smoothing");
+      std::string usedAngle=getPropertyValue("pre.edge angle method");
+      std::string usedSmoothing=getPropertyValue("pre.smoothing");
       int normalrange = getPropertyValue("pre.normal range");
       int neighbrange = getPropertyValue("pre.edge neighborhood");
       float threshold = getPropertyValue("pre.edge threshold");
