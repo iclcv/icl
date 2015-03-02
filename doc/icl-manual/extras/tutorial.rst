@@ -28,3 +28,4 @@ Tutorials
    ../tutorials/using-imgbase
    ../tutorials/imgbase-ptrptrs
    ../tutorials/using-filters
+   ../tutorials/pointcloud-filtering
