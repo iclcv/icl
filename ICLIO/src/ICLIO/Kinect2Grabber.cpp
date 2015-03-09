@@ -30,7 +30,9 @@
 
 #define GLEW_MX
 #include <string>
-#include <libfreenect2/opengl.h>
+//#include <libfreenect2/opengl.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #undef GLEW_MX
