@@ -313,39 +313,37 @@ not, you'll need the ubuntu package libudev-dev::
 
   ./install_ubuntu.sh 
 
+Download and bulid libturbojpeg (for latest libturbojpeg)
+(Please note that the version that comes with the system, which is installed
+in /usr/lib/something does not help you here, as you need a share-object that 
+is compliled with -fPIC. So once again: download and install version 1.4::
 
-Download and bulid libturbojpeg (for latest libturbojpeg)::
+  wget http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-1.4.0.tar.gz
+  tar xf libjpeg-turbo-1.4.0.tar.gz && cd libjpeg-turbo-1.4.0
 
-  wget http://sourceforge.net/projects/libjpeg-turbo/files/1.3.1/libjpeg-turbo-1.3.1.tar.gz
-  tar xf libjpeg-turbo-1.3.1.tar.gz && rm libjpeg-turbo-1.3.1.tar.gz && cd libjpeg-turbo-1.3.1
-
-  * next version, not working either ? *
-  wget http://sourceforge.net/projects/libjpeg-turbo/files/1.3.90%20%281.4%20beta1%29/libjpeg-turbo-1.3.90.tar.gz/download
-  mv download libjpeg-turbo-1.3.9.tar.gz
-  tar xf libjpeg-turbo-1.3.9.tar.gz
-  rm libjpeg-turbo-1.3.9.tar.gz
-  cd libjpeg-turbo-1.3.90
-  
-  
-Build libturbojpeg. *Note, you'll need the ubuntu-packages autoconf and nasm*::
+Build libturbojpeg. *Note, you'll need the ubuntu-packages autoconf and nasm,
+If you encounter crazy issues regarding assembler translation issues, please ensure
+that your GREP_OPTIONS variable is empty*::
 
   autoreconf -fiv && ./configure && make -j3
 
 Build the protonect example *thing*::
 
-  cd ../../examples/protonect
+  cd $DIR/examples/protonect
   
 Edit CMakeLists.txt (replace turbojpeg in line 102 by 
-$DIR/depends/libjpeg-turbo-1.3.1/.libs/libturbojpeg.so)::
+$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so)::
 
-  sed -i "102s|.*|  $DIR/depends/libjpeg-turbo-1.3.1/.libs/libturbojpeg.so|" CMakeLists.txt 
+  sed -i "s|turbojpeg|$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so|" CMakeLists.txt 
 
 Patch the opengl_depth_packet_processor in ./src (set variable do_debug in line 322 to false)::
 
   sed -i 's|static const bool do_debug = true;|static const bool do_debug = false;|g' src/opengl_depth_packet_processor.cpp
 
-**On ubuntu trusty only** there seems to be an issue with the opencv dev-files. In order to get
-the build running smoothly, apply the following fixes and install the following libraries::
+**On ubuntu trusty only** there seems to be an issue with the opencv
+dev-files. In order to get the build running smoothly, apply the
+following fixes and install the following libraries **if it does not
+work without!**::
 
   sudo apt-get install libopencv-core-dev libopencv-photo-dev libopencv-contrib-dev libopencv-highgui-dev
  
@@ -360,8 +358,10 @@ libopencv-photo-dev, libopencv-highgui-dev and libopencv-contrib-dev anyway)::
 
   cmake . && make
 
-In order to be able to use Kinect2 as non-super-user. Add udef rules:
-as root, create file /etc/udev/rules.d/90-kinect2.rules with content::
+Ingore strage cmake errors regarding INTERFACE_LINK_LIBRARIES AND
+LINK_INTERFACE_LIBRARIES (if occuring). In order to be able to use
+Kinect2 as non-super-user. Add udef rules: as root, create file
+/etc/udev/rules.d/90-kinect2.rules with content::
 
   # ATTR{product}=="Kinect2"
   SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02c4", MODE="0666"
@@ -372,11 +372,14 @@ as root, create file /etc/udev/rules.d/90-kinect2.rules with content::
 
   $DIR/examples/protonect/bin/Protonect 
 
-Should now display the Kinect2 images. In your ICL-configuration cmake command add::
+Should now display the Kinect2 images. If not, try to disconnect/connect once again and check for 
+kernel-messages using "dmesg" command. In your ICL-configuration cmake command add::
 
   -DBUILD_WITH_LIBFREENECT2=TRUE -DLIBFREENECT2_ROOT=$DIR
 
+Where $DIR should of course be replaced with the particular build-dir, e.g.::
 
+  -DBUILD_WITH_LIBFREENECT2=TRUE -DLIBFREENECT2_ROOT=/vol/nivision/share/libfreenect2
 
 
 .. _install.dependencies.optional.xine:

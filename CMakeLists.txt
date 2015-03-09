@@ -127,8 +127,8 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "3" CACHE STRING "Minor project version part")
-SET(ICL_VERSION_PATCH "1" CACHE STRING "Patch project version part")
+SET(ICL_VERSION_MINOR "4" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 
 SET(ICL_NAME                   icl)
@@ -519,7 +519,7 @@ IF(BUILD_WITH_LIBFREENECT)
 ENDIF()
 
 IF(BUILD_WITH_LIBFREENECT2)
-  IF(LIBFREENECT_ROOT)
+  IF(LIBFREENECT2_ROOT)
     SET(LIBFREENECT2_GLFW3_ROOT ${LIBFREENECT2_ROOT})
     SET(LIBFREENECT2_LIBUSB_ROOT ${LIBFREENECT2_ROOT})
   ENDIF()
@@ -534,7 +534,7 @@ IF(BUILD_WITH_LIBFREENECT2)
                    HEADERS "GLFW/glfw3.h"
                    LIBS "glfw"
                    HEADER_PATH_SUFFIXES "depends/glfw/include"
-                   LIB_PATH_SUFFIXES "examples/protonect/lib") 
+                   LIB_PATH_SUFFIXES "depends/glfw/lib") 
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_LIBUSB
                    HEADERS "libusb-1.0/libusb.h"
