@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <ICLIO/GenericImageOutput.h>
 
 VSplit gui;
 
@@ -42,6 +43,10 @@ struct Input{
     lastImage = grabber.grab();
     handle = lastImage;
   }
+  void save(){
+    if(out) out->send(lastImage);
+  }
+  SmartPtr<GenericImageOutput> out;
 };
 
 int nInputs = -1;
@@ -119,6 +124,16 @@ void init(){
     if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
     
     rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+in.b).handle(in.id);
+    
+    if(pa("-o")){
+      ProgArg o = pa("-o");
+
+      if((int)(2*i+1) >= o.n()){
+        throw ICLException("less outputs were given to -o "
+                           "then inputs were given to -i");
+      }
+      in.out = new GenericImageOutput(o[2*i], o[2*i+1]);
+    }
   }
 
   for(int i=0;i<layout.height;++i){
@@ -174,6 +189,10 @@ void run(){
       for(int i=0;i<nInputs;++i){
         inputs[i]();
       }
+
+      for(int i=0;i<nInputs;++i){
+        inputs[i].save();
+      }
       
       if(save.wasTriggered()){
         save_all();
@@ -189,6 +208,7 @@ void run(){
 int main(int n, char **ppc){
   pa_explain
   ("-size","grabbing size")
+  ("-i","automatically output each input image (output correspond to the inputs)")
   ("-i","list of inputs, two tokens per input, e.g. -i dc 0 dc 1 dc 2 file '*.jpg'");
 
   pa_init(n,ppc,
@@ -198,6 +218,7 @@ int main(int n, char **ppc){
           "-reset-bus|-r "
           "-layout|-l(size) " 
           "-asynchronous|-a "
+          "-output|-o(...) "
           "-sync-all-grabbers|-sync "
           "-i(...)");
   ICLApp app(n,ppc,"",init);
@@ -206,6 +227,7 @@ int main(int n, char **ppc){
   nInputs = p.n()/2;
 
   if(pa("-a")){
+    if(pa("-o")) throw ICLException("output is not supported in async mode");
     asyncMode = true;
     if(nInputs > 8) throw ICLException("asynchronous mode is only supported for up to 8 inputs!");
     if(nInputs > 0) app.addThread(run<0>);

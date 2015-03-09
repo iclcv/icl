@@ -245,6 +245,7 @@ Internal
     $('#module-cv').bind('click',function(e){ location = 'modules/cv.html';  });
     $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
     $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
+    $('#module-physics').bind('click',function(e){ location = 'modules/physics.html';  });
 
     $('#extra-about').bind('click',function(e){ location = 'extras/about.html';  });
     $('#extra-download').bind('click',function(e){ location = 'extras/download.html';  });

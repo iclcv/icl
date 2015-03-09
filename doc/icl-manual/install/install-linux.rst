@@ -116,8 +116,10 @@ Overview:
 
 .. _install.dependencies.optional.ipp:
 
-Intel Integrated Performance Primitives (Intel IPP)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Intel IPP
+~~~~~~~~~
+
+**Intel Integrated Performance Primitives (Intel IPP)**
 
 The Intel IPP is a proprietary library that provides a very large set
 of highly optimized functions for different domains, such as linear
@@ -143,8 +145,10 @@ installation sources.
 
 .. _install.dependencies.optional.mkl:
 
-Intel Math Kernel Library (Intel MKL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Intel MKL
+~~~~~~~~~
+
+**Intel Math Kernel Library (Intel MKL)**
 
 The Intel Math Kernel Library dependency is quite similar to the Intel
 IPP dependency. However, Intel MKL is only used for a much smaller set
@@ -167,8 +171,10 @@ have an equivalent C++ fallback implementation.
 
 .. _install.dependencies.optional.opencv:
 
-Open Computer Vision Library (OpenCV)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OpenCV
+~~~~~~
+
+**Open Computer Vision Library (OpenCV)**
 
 We use OpenCV mainly in order to provide a compatibility interface
 that converts OpenCV's common image data types **IplImage** and
@@ -200,8 +206,10 @@ part of ICL.
 
 .. _install.dependencies.optional.libmesasr:
 
-SwissRanger Driver Library (libMesaSR)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+libMesaSR
+~~~~~~~~~
+
+**SwissRanger Driver Library (libMesaSR)**
 
 LibMesaSR is a proprietary library that allows to grab images from
 SwissRanger 3D time-of-flight cameras provided by the Mesa Imaging
@@ -216,8 +224,10 @@ company (http://www.mesa-imaging.ch) The library is closed source.
 
 .. _install.dependencies.optional.imagemagick:
 
-Image Magick (libmagick++)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+libmagick++
+~~~~~~~~~~~
+
+**Image Magick (libmagick++)**
 
 ImageMagick is used to provide a large set of support image types. Most
 types are supported in both reading and writing. Without ImageMagick, only
@@ -249,8 +259,10 @@ firewire cameras and to set camera parameters.
 
 .. _install.dependencies.optional.libfreenect:
 
-OpenKinect Kinect Driver Library (libfreenect)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+libfreenect
+~~~~~~~~~~~
+
+**OpenKinect Kinect Driver Library (libfreenect)**
 
 The libfreenect provides a lightweight interface for grabbing images
 from Microsoft Kinect cameras. The library allows to grab color, depth and 
@@ -266,8 +278,10 @@ IR-images and to set some internal camera properties.
 
 .. _install.dependencies.optional.libfreenect2:
 
-OpenKinect Kinect Driver Library Version 2 for Kinect 2 (libfreenect2)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+libfreenect2
+~~~~~~~~~~~~
+
+**OpenKinect Kinect Driver Library Version 2 for Kinect 2 (libfreenect2)**
 
 libfreenect2 provides a lightweight interface for grabbing images
 from Microsoft Kinect2 cameras. The library allows to grab color, depth and 
@@ -367,8 +381,10 @@ Should now display the Kinect2 images. In your ICL-configuration cmake command a
 
 .. _install.dependencies.optional.xine:
 
-Xine (libxine)
-~~~~~~~~~~~~~~
+libxine
+~~~~~~~
+
+**Xine (libxine)**
 
 The xine library provides a very intuitive yet powerful interface for
 grabbing video in a frame-by-frame manner.
@@ -383,8 +399,10 @@ grabbing video in a frame-by-frame manner.
 
 .. _install.dependencies.optional.qt:
 
-Qt Library (libQt5s)
-~~~~~~~~~~~~~~~~~~~
+Qt5
+~~~
+
+**Qt Library (libQt5)**
 
 The well known Qt Library is used for ICL's rapid GUI creation toolkit.
 Actually Qt is also a prerequisite for most ICL applications and for
@@ -405,8 +423,11 @@ wrangler library libglew-dev and it needs OpenGL headers to be installed.
 
 .. _install.dependencies.optional.pylon:
 
-Basler Pylon Drivers
-~~~~~~~~~~~~~~~~~~~~
+Basler Pylon
+~~~~~~~~~~~~
+
+**Basler Pylon Drivers**
+
 The closed source basler pylon drivers (including the Genicam libraries) are
 used for accessing Gigabit-Ethernet (GIG-E) cameras.
 
@@ -421,8 +442,10 @@ used for accessing Gigabit-Ethernet (GIG-E) cameras.
 
 .. _install.dependencies.optional.opencl:
 
-Open Computing Language (OpenCL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OpenCL
+~~~~~~
+
+**Open Computing Language (OpenCL)**
 
 OpenCL is used to significantly speed up a set of processing units using
 the computing units of graphics cards or other OpenCL platforms. We mainly use it
@@ -443,8 +466,10 @@ for point cloud processing units located in the ICLGeom module.
 
 .. _install.dependencies.optional.sphinx:
 
-Sphinx/Doxygen for generating the API documentation and the Manual
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sphinx/Doxygen
+~~~~~~~~~~~~~~
+
+**Sphinx/Doxygen for generating the API documentation and the Manual**
 
 In order to build ICL's API reference, doxygen needs to be installed. Since
 also generation of inheritance graphs is activated, also 'dot' is needed.
@@ -471,8 +496,10 @@ from the build directory
 
 .. _install.dependencies.optional.openni:
 
-OpenNI / Nite
-~~~~~~~~~~~~~
+OpenNI
+~~~~~~
+
+**OpenNI / Nite**
 
 Right now, we only use OpenNI as an alternative backend to grab images
 from Kinect and other PrimeSense 3D cameras
@@ -488,8 +515,10 @@ from Kinect and other PrimeSense 3D cameras
 
 .. _install.dependencies.optional.pcl:
 
-Point Cloud Library (PCL)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+PCL
+~~~
+
+**Point Cloud Library (PCL)**
 
 PCL has become some kind of a quasi-standard for point cloud
 processing.  ICL's ICLGeom module provides the generic
@@ -519,8 +548,10 @@ ICL can seamlessly interface to PCL algorithms using this class.
    
 .. _install.dependencies.optional.rsb:
 
-Robotics Service Bus (RSB)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+RSB/RST
+~~~~~~~
+
+**Robotics Service Bus (RSB)**
 
 The robotics service bus is a new and versatile library for
 interprocess communications.  ICL uses it as backends for the
@@ -637,7 +668,7 @@ and defines some variables can be found
 .. _install.binary:
    
 Installation using Binary Packages
-"""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""
 
 Binary packages are not yet supported, but we plan to support this as
 soon as possible.

@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>
@@ -337,6 +338,24 @@ namespace icl{
         m_roi = newROI;
       }
       
+      /// deeply copies the channel data (no roi support here)
+      void deepCopy(Channel<T> &other) const throw (utils::ICLException){
+        if(m_size != other.m_size){
+          throw utils::ICLException("Channel::deepCopy: sizes differ!");
+        }
+        icl::core::copy(m_data,m_data+m_size.getDim(), other.m_data);
+      }
+      
+      /// deeply converts the channel data (no roi support here)
+      template<class OtherT>
+      void convert(Channel<OtherT> &other) const throw(utils::ICLException){
+        if(m_size != other.m_size){
+          throw utils::ICLException("Channel::convert: sizes differ!");
+        }
+        icl::core::convert(m_data,m_data+m_size.getDim(), other.m_data);
+      }
+
+
       /// mades Img<T> a friend to allow it construction of ImgChannels
       friend class Img<T>;
   

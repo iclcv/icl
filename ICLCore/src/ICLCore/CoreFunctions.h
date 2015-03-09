@@ -367,7 +367,7 @@ namespace icl {
         @return mean value of image or image channel (optionally: roi)
     */
     ICLCore_API std::vector<double> mean(const ImgBase *poImg, int iChannel = -1, bool roiOnly = false);
-
+    
     /// Compute the variance value of an image a with given mean \ingroup MATH
     /** @param poImg input imge
         @param mean vector with channel means
