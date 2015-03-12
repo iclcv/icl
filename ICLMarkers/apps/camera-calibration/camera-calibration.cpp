@@ -749,6 +749,18 @@ void run(){
   ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
 
   const ImgBase *image = grabber.grab();
+
+  if(pa("-normalize-input-image")){
+    static ImgBase *normalized = 0;
+    image->deepCopy(&normalized);
+    normalized->normalizeAllChannels(Range64f(0,255));
+    
+    static Img8u normalized8u;
+    normalized->convert(&normalized8u);
+
+    image = &normalized8u;    
+  }
+
   if(pa("-crop-and-rescale")){
     static Rect *r = 0;
     static ImgBase *croppedAndRescaled = 0;
@@ -973,7 +985,8 @@ int main(int n, char **ppc){
 
   pa_explain("-crop-and-rescale","crops the outer pixels of the image (hcrop_pix on the left and on the "
              "right image border and vcrop_pix on the top and bottom image border). The resulting smaller image "
-             "is then scaled up to the target image size given by target_width and target_height.");
+             "is then scaled up to the target image size given by target_width and target_height.")
+  ("-normalize-input-image","automatically scales the input image range to [0,255] and converts the input image to depth8u");
   
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(...) "
@@ -983,6 +996,7 @@ int main(int n, char **ppc){
                 "-force-size|-s|-size(WxH) "
                 "-convert-output-size|-os(WxH) "
                 "-output|-o(output-xml-file-name) "
+                "-normalize-input-image|-n "
                 "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) " 
                 ,init,run).exec();
 }
