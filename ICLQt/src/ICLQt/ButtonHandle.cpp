@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ButtonHandle.h>
+#include <QPushButton>
 #include <algorithm>
 
 namespace icl{

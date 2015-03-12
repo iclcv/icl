@@ -340,7 +340,8 @@ namespace icl{
   
   
   #endif
-    
+  template<class T>
+  float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]; }
   
     template<class T>
     FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle){
@@ -353,10 +354,37 @@ namespace icl{
       
       T a2=a*a, b2=b*b, c2=c*c, d2=d*d;
       T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+
+      // Gram–Schmidt process for orthogonalization
+      typedef FixedMatrix<T,1,3> ColVec;
+
+      ColVec v1 = ColVec(a2+b2-c2-d2, 2*ad+2*bd, 2*bd-2*ac).normalized();
+      ColVec v2(2*bc-2*ad, a2-b2+c2-d2, 2*ab+2*cd);
+      v2 = (v2 - (v1*scalar(v1,v2))).normalized();
+      ColVec v3(2*ac+2*bd,2*cd-2*ab,a2-b2-c2+d2);
+      v3 = (v3 - v1*scalar(v1,v3) - v2*scalar(v2,v3)).normalized();
       
-      return FixedMatrix<T,3,3>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,  
+      return FixedMatrix<T,3,3>(  v1[0], v2[0], v3[0],
+                                  v1[1], v2[1], v3[1],
+                                  v1[2], v2[2], v3[2]  );
+
+      /*return FixedMatrix<T,3,3>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,
                                 2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,  
-                                2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2);
+                                2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2);*/
+
+      /*
+        Vec3 w1 = rot.col(0);
+        Vec3 w2 = rot.col(1);
+        Vec3 w3 = rot.col(2);
+        Vec3 v1 = w1.normalized();
+        Vec3 v2 = (w2 - (v1*scalar(v1,w2))).normalized();
+        Vec3 v3 = (w3 - v1*scalar(v1,w3) - v2*scalar(v2,w3)).normalized();
+        Mat3 rot_c;
+        rot_c.col(0) = v1;
+        rot_c.col(1) = v2;
+        rot_c.col(2) = v3;
+        transf.part<0,0,3,3>() = rot_c;
+        */
     }
   
   
@@ -371,11 +399,25 @@ namespace icl{
       
       T a2=a*a, b2=b*b, c2=c*c, d2=d*d;
       T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
+
+      // Gram–Schmidt process for orthogonalization
+      typedef FixedMatrix<T,1,3> ColVec;
+
+      ColVec v1 = ColVec(a2+b2-c2-d2, 2*ad+2*bd, 2*bd-2*ac).normalized();
+      ColVec v2(2*bc-2*ad, a2-b2+c2-d2, 2*ab+2*cd);
+      v2 = (v2 - (v1*scalar(v1,v2))).normalized();
+      ColVec v3(2*ac+2*bd,2*cd-2*ab,a2-b2-c2+d2);
+      v3 = (v3 - v1*scalar(v1,v3) - v2*scalar(v2,v3)).normalized();
       
-      return FixedMatrix<T,4,4>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
+      return FixedMatrix<T,4,4>(v1[0], v2[0], v3[0], 0,
+                                v1[1], v2[1], v3[1], 0,
+                                v1[2], v2[2], v3[2], 0,
+                                0    , 0    , 0    , 1);
+
+      /*return FixedMatrix<T,4,4>(a2+b2-c2-d2,  2*bc-2*ad,   2*ac+2*bd,   0,
                                 2*ad+2*bd,    a2-b2+c2-d2, 2*cd-2*ab,   0,
                                 2*bd-2*ac,    2*ab+2*cd,   a2-b2-c2+d2, 0,
-                                0,            0,           0,           1);
+                                0,            0,           0,           1);*/
     }
     
     
