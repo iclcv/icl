@@ -616,7 +616,7 @@ namespace icl{
             mat(3,0) = position[0];
             mat(3,1) = position[1];
             mat(3,2) = position[2];
-            SceneObject *added_obj;
+            SceneObject *added_obj = 0;
             if (object) {
                 switch (type) {
                 case(CUBE): {
@@ -644,8 +644,10 @@ namespace icl{
                 }
                 }
             }
-            added_obj->setColor(Primitive::all,color);
-            added_obj->setTransformation(mat);
+            if(added_obj){
+              added_obj->setColor(Primitive::all,color);
+              added_obj->setTransformation(mat);
+            }
 
         }
 

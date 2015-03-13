@@ -251,7 +251,7 @@ namespace icl{
                                                const utils::Point32f &pCurrentMousePosition,
                                                const utils::Point32f &pDeltaMousePosition,
                                                Camera &pCamera, Scene &pScene, void *pData){
-      bool useCursor = pScene.getPropertyValue("visualize cursor");
+      bool useCursor = true; //pScene.getPropertyValue("visualize cursor");
       // sensitivities given by additional data pointer
       MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
       ICLASSERT( tMouseSensitivities );
@@ -340,9 +340,9 @@ namespace icl{
     }
 
     void SceneMouseHandler::placeCursor(const qt::MouseEvent &pMouseEvent,
-                                            const utils::Point32f &pCurrentMousePosition,
-                                            const utils::Point32f &pDeltaMousePosition,
-                                            Camera &pCamera, Scene &pScene, void *pData){
+                                        const utils::Point32f &pCurrentMousePosition,
+                                        const utils::Point32f &pDeltaMousePosition,
+                                        Camera &pCamera, Scene &pScene, void *pData){
         geom::ViewRay ray = pCamera.getViewRay(utils::Point32f(pCurrentMousePosition.x*pCamera.getResolution().width,pCurrentMousePosition.y*pCamera.getResolution().height));
         geom::Hit hit = pScene.findObject(ray);
         if(hit.dist > 0) {

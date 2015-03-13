@@ -106,7 +106,8 @@ namespace icl{
       m_createDisplayListNextTime(0),
       m_fragmentShader(0),
       m_castShadows(true),
-      m_receiveShadows(true)
+      m_receiveShadows(true),
+      m_pointHitMaxDistance(10)
     {
   
       m_visibleMask = Primitive::all;
@@ -272,7 +273,8 @@ namespace icl{
       m_createDisplayListNextTime(0),
       m_fragmentShader(0),
       m_castShadows(true),
-      m_receiveShadows(true)
+      m_receiveShadows(true),
+      m_pointHitMaxDistance(10)
     {
       m_visibleMask = Primitive::all;
   
@@ -598,7 +600,8 @@ namespace icl{
       m_createDisplayListNextTime(0),
       m_fragmentShader(0),
       m_castShadows(true),
-      m_receiveShadows(true)
+      m_receiveShadows(true),
+      m_pointHitMaxDistance(0)
     {
       File file(objFileName,File::readText);
       if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
@@ -926,7 +929,8 @@ namespace icl{
       m_depthTestEnabled = other.m_depthTestEnabled;
       m_shininess = other.m_shininess;
       m_specularReflectance = other.m_specularReflectance;
-      
+      m_pointHitMaxDistance = other.m_pointHitMaxDistance;
+
       setLockingEnabled(other.getLockingEnabled());
       m_visibleMask = other.m_visibleMask;
       m_children.clear();
@@ -1187,83 +1191,103 @@ namespace icl{
           // into the vertex list of the object, it _is_ supported implicitly
         }
         if(aabbCheckOK){
+          //std::cout << "?? checking " << obj->m_vertices.size() << " vertices" << std::endl;
+          float maxD = sqr(obj->getPointHitMaxDistance());
+
+          int n = 0;
+          for(size_t i=0;i<vs.size();++i){
+            float d_squared = v.closestSqrDistanceTo(vs[i]);
+            if(d_squared < maxD){
+              ++n;
+              Hit h;
+              h.pos = vs[i];
+              h.obj = obj;
+              h.dist = l3(v.offset, vs[i]) + 2*sqrt(d_squared);
+              if (h.dist > 0.001){ // ohh nasty one here, but we need to remove the ones that are mapped into the
+                                  // camera center here
+                hits.push_back(h);
+              }
+            }
+          }// use just the points here!
+          //std::cout << "added " << n << " hits\n" << std::endl;
+         
           for(unsigned int i=0;i<obj->m_primitives.size();++i){
             const Primitive *p = obj->m_primitives[i];
             switch(p->type){
               case Primitive::triangle:{
                 Hit h;
-                const TrianglePrimitive *tp = reinterpret_cast<const TrianglePrimitive*>(p);
-                if(compute_intersection(v,Triangle(vs[tp->i(0)],vs[tp->i(1)],vs[tp->i(1)] ),h.pos) == ViewRay::foundIntersection){
-                  h.obj = obj;
-                  h.dist = l3(v.offset,h.pos);
-                  hits.push_back(h);
+                  const TrianglePrimitive *tp = reinterpret_cast<const TrianglePrimitive*>(p);
+                  if(compute_intersection(v,Triangle(vs[tp->i(0)],vs[tp->i(1)],vs[tp->i(1)] ),h.pos) == ViewRay::foundIntersection){
+                    h.obj = obj;
+                    h.dist = l3(v.offset,h.pos);
+                    hits.push_back(h);
+                  }
+                  break;
                 }
-                break;
-              }
-              case Primitive::texture:
-              case Primitive::quad:{
-                const TextureGridPrimitive *t = dynamic_cast<const TextureGridPrimitive*>(p);
-                const TwoSidedGridPrimitive *tg = dynamic_cast<const TwoSidedGridPrimitive*>(p);
+                case Primitive::texture:
+                case Primitive::quad:{
+                  const TextureGridPrimitive *t = dynamic_cast<const TextureGridPrimitive*>(p);
+                  const TwoSidedGridPrimitive *tg = dynamic_cast<const TwoSidedGridPrimitive*>(p);
 
-                Hit h;
-                if(t){
-                  for(int x=1;x<t->w;++x){
-                    for(int y=1;y<t->h;++y){
-                      Vec a = t->getPos(x-1,y-1);
-                      Vec b = t->getPos(x,y-1);
-                      Vec c = t->getPos(x,y);
-                      Vec d = t->getPos(x-1,y);
+                  Hit h;
+                  if(t){
+                    for(int x=1;x<t->w;++x){
+                      for(int y=1;y<t->h;++y){
+                        Vec a = t->getPos(x-1,y-1);
+                        Vec b = t->getPos(x,y-1);
+                        Vec c = t->getPos(x,y);
+                        Vec d = t->getPos(x-1,y);
                       
-                      if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
-                        h.obj = obj;
-                        h.dist = l3(v.offset,h.pos);
-                        hits.push_back(h);
-                      }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
-                        h.obj = obj;
-                        h.dist = l3(v.offset,h.pos);
-                        hits.push_back(h);
+                        if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
+                          h.obj = obj;
+                          h.dist = l3(v.offset,h.pos);
+                          hits.push_back(h);
+                        }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
+                          h.obj = obj;
+                          h.dist = l3(v.offset,h.pos);
+                          hits.push_back(h);
+                        }
                       }
                     }
-                  }
-                }else if(tg){
-                  for(int x=1;x<tg->w;++x){
-                    for(int y=1;y<tg->h;++y){
-                      Vec a = tg->getPos(x-1,y-1);
-                      Vec b = tg->getPos(x,y-1);
-                      Vec c = tg->getPos(x,y);
-                      Vec d = tg->getPos(x-1,y);
+                  }else if(tg){
+                    for(int x=1;x<tg->w;++x){
+                      for(int y=1;y<tg->h;++y){
+                        Vec a = tg->getPos(x-1,y-1);
+                        Vec b = tg->getPos(x,y-1);
+                        Vec c = tg->getPos(x,y);
+                        Vec d = tg->getPos(x-1,y);
                       
-                      if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
-                        h.obj = obj;
-                        h.dist = l3(v.offset,h.pos);
-                        hits.push_back(h);
-                      }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
-                        h.obj = obj;
-                        h.dist = l3(v.offset,h.pos);
-                        hits.push_back(h);
+                        if(compute_intersection(v, Triangle(a,d,b), h.pos) == ViewRay::foundIntersection){
+                          h.obj = obj;
+                          h.dist = l3(v.offset,h.pos);
+                          hits.push_back(h);
+                        }else if(compute_intersection(v, Triangle(c,b,d), h.pos) == ViewRay::foundIntersection){
+                          h.obj = obj;
+                          h.dist = l3(v.offset,h.pos);
+                          hits.push_back(h);
+                        }
                       }
                     }
-                  }
-                }else{
+                  }else{
                   
-                  /** a--b xxx
-                      |  |
-                      d--c
-                      */
+                    /** a--b xxx
+                        |  |
+                        d--c
+                        */
   
-                  const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
-                  if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == ViewRay::foundIntersection){
-                    h.obj = obj;
-                    h.dist = l3(v.offset,h.pos);
-                    hits.push_back(h);
-                  }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == ViewRay::foundIntersection){
-                    h.obj = obj;
-                    h.dist = l3(v.offset,h.pos);
-                    hits.push_back(h);
+                    const QuadPrimitive *qp = reinterpret_cast<const QuadPrimitive*>(p);
+                    if(compute_intersection(v, Triangle(vs[qp->i(0)],vs[qp->i(1)],vs[qp->i(2)] ),h.pos) == ViewRay::foundIntersection){
+                      h.obj = obj;
+                      h.dist = l3(v.offset,h.pos);
+                      hits.push_back(h);
+                    }else if(compute_intersection(v,Triangle(vs[qp->i(0)],vs[qp->i(2)],vs[qp->i(3)]),h.pos) == ViewRay::foundIntersection){
+                      h.obj = obj;
+                      h.dist = l3(v.offset,h.pos);
+                      hits.push_back(h);
+                    }
                   }
+                  break;
                 }
-                break;
-              }
               case Primitive::polygon:{
                 const PolygonPrimitive *pp = reinterpret_cast<const PolygonPrimitive*>(p);
                 int n = pp->getNumPoints();

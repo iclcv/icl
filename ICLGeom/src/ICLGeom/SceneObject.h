@@ -742,6 +742,22 @@ namespace icl{
         }
       }
 
+      /// returns the maximum distance to a pointing viewraw 
+      /** When calling scene.find(ViewRay) in order to click at an object,
+          all object primitives are checked for the test. In addition, 
+          all object vertices are also checked here, but since here,
+          an actual hit is statistically impossible, the "pointHitMaxDistance 
+          property is used **/
+      inline float getPointHitMaxDistance() const {
+        return m_pointHitMaxDistance;
+      }
+
+      /// sets the maximum distance to a pointing view-ray
+      /** @see getPointHitMaxDistance() */
+      inline void setPointHitMaxDistance(float d){
+        m_pointHitMaxDistance = d;
+      }
+
       protected:
       /// recursive picking method
       static void collect_hits_recursive(SceneObject *obj, const ViewRay &v, 
@@ -784,8 +800,6 @@ namespace icl{
       icl8u m_shininess;
       GeomColor m_specularReflectance;
 
-
-      
       private:
   
       /// internally used flag
@@ -801,7 +815,8 @@ namespace icl{
       
       bool m_castShadows;
       bool m_receiveShadows;
-  
+
+      float m_pointHitMaxDistance;
     };
   } // namespace geom
 }

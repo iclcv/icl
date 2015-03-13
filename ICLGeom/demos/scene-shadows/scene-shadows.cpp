@@ -39,6 +39,7 @@ Scene scene;
 void reload_obj(){
   scene.removeObject(0);
   SceneObject *o = new SceneObject(*pa("-o")); 
+  o->setPointHitMaxDistance(0.1);
   o->setColor(Primitive::line,GeomColor(255,0,0,255));
   o->setVisible(Primitive::line,true);
   scene.addObject(o);
@@ -57,7 +58,7 @@ void init(){
          )
       << Show();
   
-
+  
   scene.setPropertyValue("shadows.use improved shading", true);
   
   // create camera and add to scene instance
@@ -68,7 +69,9 @@ void init(){
   
   // a plane to demonstrate the shadows
   SceneObject *plane = SceneObject::cuboid(4, 0, 0, 1, 30, 30);
+  plane->setPointHitMaxDistance(0.1);
   SceneObject *random = SceneObject::cuboid(0, 6, 6, 10, 4, 4);
+  random->setPointHitMaxDistance(0.1);
   plane->setPolygonSmoothingEnabled(false);
   scene.addObject(plane, true);
   scene.addObject(random, true);
@@ -94,6 +97,7 @@ void init(){
   
   if(pa("-o")){ // either load an .obj file
     SceneObject *o = new SceneObject(*pa("-o")); 
+    o->setPointHitMaxDistance(0.1);
     o->scale(so,so,so);
     if(pa("-n")){
       o->createAutoNormals();
