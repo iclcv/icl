@@ -283,6 +283,7 @@ namespace icl{
       bool deactivateExec;
       std::string processingProperty;
       utils::Mutex execMutex;
+      std::map<std::string,std::string> deferredAssignList;
 
       struct StSt{
         std::string full,half;
@@ -318,6 +319,8 @@ namespace icl{
             gui["#S#"+p] = conf->getPropertyValue(p);
           }else if( t == "color"){
             gui["#C#"+p] = parse<Color>(conf->getPropertyValue(p));
+          }else if( t == "Point32f"){
+            gui["#p#"+p] = conf->getPropertyValue(p);
           }
 
         }
@@ -404,7 +407,14 @@ namespace icl{
           ostr << '\1' << handle;
           Color c = parse<Color>(conf->getPropertyValue(p.full));
           gui << ColorSelect(c[0],c[1],c[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(t == "Point32f"){
+          std::string handle = "#p#"+p.full;
+          ostr << '\1' << handle;
+          Point32f pt = conf->getPropertyValue(p.full);
+          deferredAssignList[handle] = str(pt);
+          gui << String(" ",100).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
+        
 
         else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
@@ -582,6 +592,11 @@ namespace icl{
 
         gui << sub_gui;
         gui.create();
+        
+        for(std::map<std::string,std::string>::const_iterator it = deferredAssignList.begin();
+            it != deferredAssignList.end(); ++it){
+          gui[it->first] = it->second;
+        }
 
         if(use_tabs){
           (**gui.get<TabHandle>("__the_tab__")).setCurrentIndex(generalIdx);
@@ -629,7 +644,10 @@ namespace icl{
           gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
         }else if(type == "color"){
           gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
+        }else if(type == "Point32f"){
+          gui["#p#"+name] = conf->getPropertyValue(name).as<Point32f>();
         }
+
         deactivateExec = false;
         processingProperty = "";
       }
@@ -653,6 +671,7 @@ namespace icl{
           case 'I':
           case 'F':
           case 'S':
+          case 'p':
             conf->setPropertyValue(prop,gui[handle].as<Any>());
             break;
           case 'C':

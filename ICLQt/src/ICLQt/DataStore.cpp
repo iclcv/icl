@@ -454,7 +454,20 @@ INST_OTHER_TYPES
     // StringHandle
     FROM_TO_NUM(StringHandle,dst=str(src),dst=parse<double>(src.getCurrentText()));
     FROM_TO_STR(StringHandle,dst=src.getCurrentText(),dst=src);
+    FROM_TO(Point32f,StringHandle, dst = str(src));
     
+    /*
+    template<>
+    struct AssignSpecial<Point32f,StringHandle> : public DataStore::Assign{
+      AssignSpecial(const std::string &srcType, const std::string &dstType):
+        Assign(srcType,dstType,DataStore::get_type_name<Point32f>(),
+               DataStore::get_type_name<StringHandle>()){}
+      bool apply(Point32f &src, StringHandle &dst){ dst = str(src); return true; }
+      virtual bool operator()(void *src, void *dst){
+        return apply(*reinterpret_cast<Point32f*>(src),*reinterpret_cast<StringHandle*>(dst));
+      }
+        };*/
+
     // TabWidget to num
     TO_NUM(TabHandle,dst=src.current());
 }
@@ -702,6 +715,7 @@ namespace icl{
       FROM_TO_STR_ADD(StringHandle);
       ADD_T_TO_T(StringHandle);
       ADD(DataStore::Data::Event,StringHandle);
+      ADD(Point32f,StringHandle);
       
       // BoxHandle
       ADD_T_TO_T(BoxHandle);
