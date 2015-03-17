@@ -111,6 +111,7 @@ Overview:
 * :ref:`install.dependencies.optional.opencl`
 * :ref:`install.dependencies.optional.pcl`
 * :ref:`install.dependencies.optional.rsb`
+* :ref:`install.dependencies.optional.bullet`
 
 
 
@@ -297,6 +298,11 @@ Thus, it is strongly recommended to already perform the initial git checkout
 in the actual installation directory. For the example, we assume the
 the directory to be /opt/share/libfreenect2
 
+However, before we start, we'll install a couple of new ubuntu packages
+that are mandatory for the build::
+
+  sudo apt-get install  libudev-dev autoconf nasm
+
 Create the source/install directory::
 
   export DIR=/opt/share/libfreenect2
@@ -308,8 +314,7 @@ Get the sources via git clone::
   git clone https://github.com/OpenKinect/libfreenect2/ .
   cd ./depends
 
-Download and install additional but patched dependencies, such as libusb 
-not, you'll need the ubuntu package libudev-dev::
+Download and install additional but patched dependencies, such as libusb::
 
   ./install_ubuntu.sh 
 
@@ -321,9 +326,9 @@ is compliled with -fPIC. So once again: download and install version 1.4::
   wget http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-1.4.0.tar.gz
   tar xf libjpeg-turbo-1.4.0.tar.gz && cd libjpeg-turbo-1.4.0
 
-Build libturbojpeg. *Note, you'll need the ubuntu-packages autoconf and nasm,
-If you encounter crazy issues regarding assembler translation issues, please ensure
-that your GREP_OPTIONS variable is empty*::
+Build libturbojpeg. If you encounter crazy issues regarding assembler
+translation issues, please ensure that your GREP_OPTIONS variable is
+empty::
 
   autoreconf -fiv && ./configure && make -j3
 
@@ -342,7 +347,7 @@ Patch the opengl_depth_packet_processor in ./src (set variable do_debug in line 
 
 **On ubuntu trusty only** there seems to be an issue with the opencv
 dev-files. In order to get the build running smoothly, apply the
-following fixes and install the following libraries **if it does not
+following fixes and install the following libraries **only if it does not
 work without!**::
 
   sudo apt-get install libopencv-core-dev libopencv-photo-dev libopencv-contrib-dev libopencv-highgui-dev
@@ -421,8 +426,11 @@ wrangler library libglew-dev and it needs OpenGL headers to be installed.
   * GUI-framework and all dependent applications
   * Shared memory based image-I/O backends
 
-* **Ubuntu packages:**  libqt5-dev libglew-dev (+open-gl headers)
+* **Ubuntu packages:**
 
+  * **< TRUSTY**   libqt5-dev 
+  * **>= TRUSTY**  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools
+  * In each case: libglew-dev, + opengl headers and libs provided by the graphics driver
 
 .. _install.dependencies.optional.pylon:
 
@@ -539,7 +547,12 @@ ICL can seamlessly interface to PCL algorithms using this class.
 
 * **Ubuntu packages:**  no in standard
 
-  * add ppa-sources from https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages
+  * add ppa-sources from https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages::
+  
+      sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
+      sudo apt-get update
+      sudo apt-get install libpcl-all-dev
+
   * libpcl-all-dev
 
 .. todo::
@@ -568,7 +581,31 @@ exchange image data between different processes and PCs.
 * **Ubuntu packages:**  no in standard, but on the same server as
   the ICL debian packages sources soon
 
-  
+.. _install.dependencies.optional.bullet:
+
+Bullet3
+~~~~~~~
+
+**The Bullte Physics Engine (Bullet)**
+
+For the ICLPhysics Module (:icl:`icl::physics`), the Bullet physics library is needed. The
+ICL-package is implemented as a shallow wrapper around the Bullet physics engine.
+ICL provides a seamless integration of physics simulation info ICL's 
+3D-Visualization framework (provided by the ICLGeom module). We are not aware of any
+well established sourced for pre-compiled libraries for the Bullet physics engine. Thefore,
+bullet must be build from the git-sources::
+
+  sudo apt-get install git
+  cd /tmp
+  git clone http://github.com/bulletphysics/bullet3 bullet3-git
+  cd bullet3-git
+  mkdir build 
+  cd build
+  # note: please adapt the installation prefix to your needs
+  cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX=/tmp/bullet3 ..
+  make -j6 && make install
+
+
 .. _install.source:
 
 Installation from Source
