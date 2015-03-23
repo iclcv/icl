@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/apps/reset-sm-bus/reset-sm-bus.cpp               **
+** File   : ICLIO/apps/reset-bus/reset-bus.cpp                     **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,8 +28,9 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLIO/SharedMemoryGrabber.h>
+#include <ICLQt/Common.h>
 
-int main(){
-  icl::io::SharedMemoryGrabber::resetBus(true);
+int main(int n, char **ppc){
+  pa_init(n,ppc,"-device-type|-t(type) -verbose");
+  GenericGrabber::resetBus(pa("-t"), pa("-verbose"));
 }

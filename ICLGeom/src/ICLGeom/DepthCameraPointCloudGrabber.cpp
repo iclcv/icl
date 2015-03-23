@@ -74,6 +74,8 @@ namespace icl{
       m_data->depthGrabber.useDesired(formatMatrix);
       m_data->depthGrabber.useDesired(depth32f);
       m_data->depthGrabber.useDesired(depthCam.getResolution());
+
+      addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");
   
       if(&colorCam != &get_null_color_cam()){
         m_data->creator.init(depthCam, colorCam);
@@ -81,12 +83,15 @@ namespace icl{
         m_data->colorGrabber.useDesired(formatRGB);
         m_data->colorGrabber.useDesired(depth8u);
         m_data->colorGrabber.useDesired(colorCam.getResolution());
+        addChildConfigurable(m_data->colorGrabber.getGrabber(),"Color Source");
       }else{
         m_data->creator.init(depthCam);
       }
 
       addProperty("focal length factor","range","[0.8:1.2]",1);
       addProperty("positioning fix","range","[-50,50]",0);
+
+
       
     }
 

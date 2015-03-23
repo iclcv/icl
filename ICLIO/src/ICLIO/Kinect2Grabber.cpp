@@ -279,7 +279,7 @@ namespace icl{
 
       addProperty("Avoid double frames","flag","",1,0,"whether to avoid returning the same frame multiple times");
       addProperty("Unflip X-Axis","flag","",1,1,"The driver's output images are flipped. Decide whether to un-flip it");
-      
+          
       switch(mode){
         case GRAB_RGB_IMAGE:
           addProperty("format","menu","RGB-8u","RGB (8u)");
@@ -292,6 +292,8 @@ namespace icl{
         case GRAB_DEPTH_IMAGE:
           addProperty("format","menu","1 channdel float","1 channel float");
           addProperty("size","menu","512x424","512x424");
+          addProperty("Flying pixels.remove","flag","",0,0,"Enable/Disable automatic removal of flying pixels");
+          addProperty("Flying pixels.dist threshold","range","[0.1,50]",10,0,"Threshold for removing flying pixels");
           break;
         default:
           break;
@@ -311,11 +313,36 @@ namespace icl{
     const ImgBase* Kinect2Grabber::acquireImage(){
       Mutex::Locker lock(m_impl->dev);
       switch(m_impl->mode){
-        case GRAB_DEPTH_IMAGE:
+      case GRAB_DEPTH_IMAGE:{
           //m_impl->waitToAvoidDoubledFrames();
-          return m_impl->copyOutput(m_impl->dev->depthImage,m_impl->depthImage);
-          //          return &m_impl->depthImage;
+          Img32f &im = *m_impl->copyOutput(m_impl->dev->depthImage,m_impl->depthImage);
+          if(getPropertyValue("Flying pixels.remove")){
+            const float t = sqr(getPropertyValue("Flying pixels.dist threshold").as<float>());
+            Channel32f c = im[0];
+            const int w = c.getWidth()-1, h = c.getHeight()-1;
+            for(int y=1;y<h;++y){
+              for(int x=1;x<w;++x){
+                const float p = fabs(c(x,y));
+                const int n = (( sqr(p - fabs(c(x-1,y-1))) > t ) +
+                               ( sqr(p - fabs(c(x-1,y))) > t ) +
+                               ( sqr(p - fabs(c(x-1,y+1))) > t ) +
+                               ( sqr(p - fabs(c(x,y-1))) > t ) +
+                               ( sqr(p - fabs(c(x,y+1))) > t ) +
+                               ( sqr(p - fabs(c(x+1,y-1))) > t ) +
+                               ( sqr(p - fabs(c(x+1,y))) > t ) +
+                               ( sqr(p - fabs(c(x+1,y+1))) > t ) );
+                if( n > 4) c(x,y) = -c(x,y);
+              }
+            }
+            const int dim = (w+1)*(h+1);
+            for(int i=0;i<dim;++i){
+              if(c[i] < 0) c[i] = 0;
+            }     
+          }
+     
+          return &im;
           break;
+        }
         case GRAB_RGB_IMAGE:
           //m_impl->waitToAvoidDoubledFrames();
           //          m_impl->dev->rgbImage.deepCopy(&m_impl->rgbImage);

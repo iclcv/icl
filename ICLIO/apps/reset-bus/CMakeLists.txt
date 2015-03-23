@@ -2,7 +2,7 @@
 INCLUDE(ICLHelperMacros)
 
 # ---- Examples ----
-BUILD_APP(NAME reset-sm-bus
-          SOURCES reset-sm-bus.cpp
+BUILD_APP(NAME reset-bus
+          SOURCES reset-bus.cpp
           LIBRARIES ICLMarkers)
 

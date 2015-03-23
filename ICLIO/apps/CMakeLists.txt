@@ -1,6 +1,6 @@
 IF(QT4_FOUND)
   ADD_SUBDIRECTORY(create)
-  ADD_SUBDIRECTORY(reset-sm-bus)
+  ADD_SUBDIRECTORY(reset-bus)
   ADD_SUBDIRECTORY(video-player)
   ADD_SUBDIRECTORY(multi-viewer)
 ENDIF()
