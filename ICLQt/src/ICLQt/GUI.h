@@ -40,6 +40,7 @@
 #include <QApplication>
 #include <string>
 #include <vector>
+#include <iostream>
 
 /** \cond */
 class QLayout;
@@ -202,12 +203,22 @@ namespace icl{
       /// returns whether this GUI has been created or not
       bool hasBeenCreated() const;
   
+      /// legacy creation method (use with care)
+      static inline GUI create_gui_from_string(const std::string &definition, QWidget *parent){
+        return GUI(definition, parent);
+      }
+      
+      /// creates a hierarchical xml-description of the GUI Layout
+      std::string createXMLDescription() const;
+      
       protected:
       /// can be overwritten in subclasses (such as ContainerGUIComponent)
       virtual std::string createDefinition() const { return m_sDefinition; }
   
       private:
   
+      static void to_string_recursive(const GUI *gui, std::ostream &str, int level);
+      
       void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);
   
       /// own definition string
