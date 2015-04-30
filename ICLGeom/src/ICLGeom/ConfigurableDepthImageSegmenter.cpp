@@ -38,26 +38,35 @@ namespace icl{
   namespace geom{  
     
     struct ConfigurableDepthImageSegmenter::Data {
-	    Data(Mode mode, Camera depthCam){
-        depthCamera=depthCam;
-        
-        creator = new PointCloudCreator(depthCam, PointCloudCreator::KinectRAW11Bit);
-        temporalSmoothing = new filter::MotionSensitiveTemporalSmoothing(2047, 15);
-        
-        if(mode==CPU){
-          temporalSmoothing->setUseCL(false);
-  	      objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::CPU);
-          segmentation = new FeatureGraphSegmenter(FeatureGraphSegmenter::CPU);
-        }else{ 
-          temporalSmoothing->setUseCL(true);
-  	      objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::BEST);
-          segmentation = new FeatureGraphSegmenter(FeatureGraphSegmenter::BEST);
-        }        
+        Data(Mode mode, Camera depthCam, Camera colorCam){
+            depthCamera=depthCam;
+            creator = new PointCloudCreator(depthCam, colorCam, PointCloudCreator::KinectRAW11Bit);
+            init(mode);
 	    }
+
+        Data(Mode mode, Camera depthCam){
+            depthCamera=depthCam;
+            creator = new PointCloudCreator(depthCam, PointCloudCreator::KinectRAW11Bit);
+            init(mode);
+        }
 
 	    ~Data() {
 	    }
       
+      void init(Mode mode) {
+          temporalSmoothing = new filter::MotionSensitiveTemporalSmoothing(2047, 15);
+
+          if(mode==CPU){
+            temporalSmoothing->setUseCL(false);
+            objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::CPU);
+            segmentation = new FeatureGraphSegmenter(FeatureGraphSegmenter::CPU);
+          }else{
+            temporalSmoothing->setUseCL(true);
+            objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::BEST);
+            segmentation = new FeatureGraphSegmenter(FeatureGraphSegmenter::BEST);
+          }
+      }
+
       PointCloudCreator *creator;
       ObjectEdgeDetector *objectEdgeDetector;
       filter::MotionSensitiveTemporalSmoothing *temporalSmoothing;
@@ -72,66 +81,75 @@ namespace icl{
     
     ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam) :
 	      m_data(new Data(mode, depthCam)){
-      addProperty("general.enable segmentation","flag","",true);
-      addProperty("general.stabelize segmentation","flag","",true);
-      addProperty("general.depth scaling","range","[0.9,1.1]",1.05);
-      addProperty("general.use ROI","flag","",false);
-      addProperty("general.ROI min x","range","[-1500,500]",-1200);
-      addProperty("general.ROI max x","range","[-500,1500]",1200);
-      addProperty("general.ROI min y","range","[-1500,800]",-100);
-      addProperty("general.ROI max y","range","[-500,1500]",1050);
-      addProperty("general.ROI min z","range","[-500,500]",0);
-      addProperty("general.ROI max z","range","[0,1500]",1050);
-            
-      addProperty("pre.enable temporal smoothing","flag","",true);
-      addProperty("pre.temporal smoothing size","range","[1,15]:1",6);
-      addProperty("pre.temporal smoothing diff","range","[1,22]:1",10);
-      addProperty("pre.filter","menu","unfiltered,median3x3,median5x5","median3x3");
-      addProperty("pre.normal range","range","[1,15]:1",1);
-      addProperty("pre.averaging","flag","",true);
-      addProperty("pre.averaging range","range","[1,15]:1",2);
-      addProperty("pre.smoothing","menu","linear,gaussian","linear");
-      addProperty("pre.edge threshold","range","[0.7,1]",0.89);
-      addProperty("pre.edge angle method","menu","max,mean","mean");
-      addProperty("pre.edge neighborhood","range","[1,15]",1);
-      
-      addProperty("surfaces.min surface size","range","[5,75]:1",50);
-      addProperty("surfaces.assignment radius","range","[2,15]:1",7);
-      addProperty("surfaces.assignment distance","range","[3.0,25.0]",15.0);
-      
-      addProperty("cutfree.enable cutfree adjacency feature","flag","",true);
-      addProperty("cutfree.ransac euclidean distance","range","[2.0,20.0]",8.0);
-      addProperty("cutfree.ransac passes","range","[5,50]:1",20);
-      addProperty("cutfree.ransac tolerance","range","[5,50]:1",30);
-      addProperty("cutfree.min angle","range","[0.0,70.0]",30.0);
-      
-      addProperty("coplanarity.enable coplanarity feature","flag","",true);
-      addProperty("coplanarity.max angle","range","[0.0, 60.0]",30.0);
-      addProperty("coplanarity.distance tolerance","range","[1.0,10.0]",3.0);
-      addProperty("coplanarity.outlier tolerance","range","[1.0,10.0]",5.0);
-      addProperty("coplanarity.num triangles","range","[10,50]:1",20);
-      addProperty("coplanarity.num scanlines","range","[1,20]:1",9);
-      
-      addProperty("curvature.enable curvature feature","flag","",true);
-      addProperty("curvature.histogram similarity","range","[0.1,1.0]",0.5);
-      addProperty("curvature.enable open objects","flag","",true);
-      addProperty("curvature.max distance","range","[1,20]:1",10);
-      addProperty("curvature.enable occluded objects","flag","",true);
-      addProperty("curvature.max error","range","[1.0,20.0]",10.0);
-      addProperty("curvature.ransac passes","range","[5,50]:1",20);
-      addProperty("curvature.distance tolerance","range","[1.0,10.0]",3.0);
-      addProperty("curvature.outlier tolerance","range","[1.0,10.0]",5.0);
-      
-      addProperty("remaining.enable remaining points feature","flag","",true);
-      addProperty("remaining.min size","range","[5,50]:1",10);
-      addProperty("remaining.euclidean distance","range","[2.0,20.0]",10.0);
-      addProperty("remaining.radius","range","[0,10]:1",0);
-      
-      addProperty("graphcut.threshold","range","[0.0, 1.1]",0.5);
-                        
-      setConfigurableID("segmentation");
+        initProperties();
+    }
+
+    ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam) :
+          m_data(new Data(mode, depthCam, colorCam)){
+        initProperties();
     }
   	
+    void ConfigurableDepthImageSegmenter::initProperties() {
+        addProperty("general.enable segmentation","flag","",true);
+        addProperty("general.stabelize segmentation","flag","",true);
+        addProperty("general.depth scaling","range","[0.9,1.1]",1.05);
+        addProperty("general.use ROI","flag","",false);
+        addProperty("general.ROI min x","range","[-1500,500]",-1200);
+        addProperty("general.ROI max x","range","[-500,1500]",1200);
+        addProperty("general.ROI min y","range","[-1500,800]",-100);
+        addProperty("general.ROI max y","range","[-500,1500]",1050);
+        addProperty("general.ROI min z","range","[-500,500]",0);
+        addProperty("general.ROI max z","range","[0,1500]",1050);
+
+        addProperty("pre.enable temporal smoothing","flag","",true);
+        addProperty("pre.temporal smoothing size","range","[1,15]:1",6);
+        addProperty("pre.temporal smoothing diff","range","[1,22]:1",10);
+        addProperty("pre.filter","menu","unfiltered,median3x3,median5x5","median3x3");
+        addProperty("pre.normal range","range","[1,15]:1",1);
+        addProperty("pre.averaging","flag","",true);
+        addProperty("pre.averaging range","range","[1,15]:1",2);
+        addProperty("pre.smoothing","menu","linear,gaussian","linear");
+        addProperty("pre.edge threshold","range","[0.7,1]",0.89);
+        addProperty("pre.edge angle method","menu","max,mean","mean");
+        addProperty("pre.edge neighborhood","range","[1,15]",1);
+
+        addProperty("surfaces.min surface size","range","[5,75]:1",50);
+        addProperty("surfaces.assignment radius","range","[2,15]:1",7);
+        addProperty("surfaces.assignment distance","range","[3.0,25.0]",15.0);
+
+        addProperty("cutfree.enable cutfree adjacency feature","flag","",true);
+        addProperty("cutfree.ransac euclidean distance","range","[2.0,20.0]",8.0);
+        addProperty("cutfree.ransac passes","range","[5,50]:1",20);
+        addProperty("cutfree.ransac tolerance","range","[5,50]:1",30);
+        addProperty("cutfree.min angle","range","[0.0,70.0]",30.0);
+
+        addProperty("coplanarity.enable coplanarity feature","flag","",true);
+        addProperty("coplanarity.max angle","range","[0.0, 60.0]",30.0);
+        addProperty("coplanarity.distance tolerance","range","[1.0,10.0]",3.0);
+        addProperty("coplanarity.outlier tolerance","range","[1.0,10.0]",5.0);
+        addProperty("coplanarity.num triangles","range","[10,50]:1",20);
+        addProperty("coplanarity.num scanlines","range","[1,20]:1",9);
+
+        addProperty("curvature.enable curvature feature","flag","",true);
+        addProperty("curvature.histogram similarity","range","[0.1,1.0]",0.5);
+        addProperty("curvature.enable open objects","flag","",true);
+        addProperty("curvature.max distance","range","[1,20]:1",10);
+        addProperty("curvature.enable occluded objects","flag","",true);
+        addProperty("curvature.max error","range","[1.0,20.0]",10.0);
+        addProperty("curvature.ransac passes","range","[5,50]:1",20);
+        addProperty("curvature.distance tolerance","range","[1.0,10.0]",3.0);
+        addProperty("curvature.outlier tolerance","range","[1.0,10.0]",5.0);
+
+        addProperty("remaining.enable remaining points feature","flag","",true);
+        addProperty("remaining.min size","range","[5,50]:1",10);
+        addProperty("remaining.euclidean distance","range","[2.0,20.0]",10.0);
+        addProperty("remaining.radius","range","[0,10]:1",0);
+
+        addProperty("graphcut.threshold","range","[0.0, 1.1]",0.5);
+
+        setConfigurableID("segmentation");
+    }
+
   	
     ConfigurableDepthImageSegmenter::~ConfigurableDepthImageSegmenter(){
       delete m_data;
@@ -303,6 +321,14 @@ namespace icl{
 	  	
     core::Img8u ConfigurableDepthImageSegmenter::getColoredLabelImage(){
       return m_data->segmentation->getColoredLabelImage(getPropertyValue("general.stabelize segmentation"));
+    }
+
+    core::Img8u ConfigurableDepthImageSegmenter::getMappedColorImage(const core::Img8u &image) {
+        core::Img8u mapped(image.getParams());
+        if (!m_data->creator->hasColorCamera())
+            return mapped;
+        m_data->creator->mapImage(&image,bpp(mapped));
+        return mapped;
     }
     
     

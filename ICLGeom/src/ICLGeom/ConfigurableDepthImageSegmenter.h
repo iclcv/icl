@@ -48,7 +48,8 @@ namespace icl{
       /** Constructs an object of this class. 
           @param mode GPU, CPU and BEST (default) 
           @param depthCam the depth camera*/
-      ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam); 
+      ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam);
+      ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam);
   	  
   	  ///Destructor
       ~ConfigurableDepthImageSegmenter();
@@ -73,6 +74,10 @@ namespace icl{
   	  /// Returns the colored label image.
       /**        @return the colored label image */  			
       core::Img8u getColoredLabelImage();
+
+      /// Returns the mapped image (the last passed depth image is used for mapping) assumed to be grabbed by the camera cam
+      /**       @return the mapped image */
+      core::Img8u getMappedColorImage(const core::Img8u &image);
       
       /// Returns the surface cluster from the pre-segmentation.
       /**        @return a vector of surfaces. Every entry contains a vector with the point indices */
@@ -84,6 +89,8 @@ namespace icl{
       
             
       private:
+
+      void initProperties();
 
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer

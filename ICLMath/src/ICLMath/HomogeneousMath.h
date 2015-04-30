@@ -109,6 +109,55 @@ namespace icl{
       n[3]=h;
       return n;
     }
+
+    /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
+    inline float sprod3(const Vec3 &a, const Vec3 &b){
+      return a[0]*b[0] + a[1]*b[1]+ a[2]*b[2];
+    }
+
+    template<class T>
+    inline FixedMatrix<T,3,3> gramSchmidtOrtho(FixedMatrix<T,3,3> const &mat) {
+        FixedMatrix<T,3,3> result(T(0));
+        Vec3 w1 = mat.col(0);
+        Vec3 w2 = mat.col(1);
+        Vec3 w3 = mat.col(2);
+        Vec3 v1 = w1.normalized();
+        Vec3 v2 = (w2 - (v1*sprod3(v1,w2))).normalized();
+        Vec3 v3 = (w3 - v1*sprod3(v1,w3) - v2*sprod3(v2,w3)).normalized();
+        result.col(0) = v1;
+        result.col(1) = v2;
+        result.col(2) = v3;
+        return result;
+    }
+
+    /*template<class T, unsigned int DIM>
+    inline float sprod(FixedColVector<T,DIM> const &a, FixedColVector<T,DIM> const &b) {
+        float result = 0;
+        for(int i = 0; i < DIM; ++i) {
+            result += a[i]*b[i];
+        }
+        return result;
+    }
+
+    template<class T, unsigned int COLS, unsigned int ROWS>
+    inline FixedMatrix<T,COLS,ROWS> gramSchmidtOrtho(FixedMatrix<T,COLS,ROWS> const &mat) {
+        FixedMatrix<T,COLS,ROWS> r(T(0.f));
+
+        FixedColVector<T,ROWS> w = mat.col(0);
+        r.col(0) = w.normalized();
+
+        for(unsigned int i = 1; i < COLS; ++i) {
+            FixedColVector<T,ROWS> w_i = mat.col(i);
+            FixedColVector<T,ROWS> tmp(0.f);
+            for(unsigned int k = 0; k < i; ++k) {
+                FixedColVector<T,ROWS> v_k = mat.col(k);
+                tmp += v_k*sprod(v_k,w_i);
+            }
+            r.col(i) = (w_i-tmp).normalized();
+        }
+
+        return r;
+    }*/
   
     /// 3D scalar (aka dot-) product for 4D homogeneous vectors (ignoring the homegeneous component)
     inline float sprod3(const Vec4 &a, const Vec4 &b){
