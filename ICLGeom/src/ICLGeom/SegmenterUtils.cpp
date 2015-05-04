@@ -497,6 +497,25 @@ namespace icl{
     }
     
     
+    std::vector<std::vector<int> > SegmenterUtils::createLabelVectors(core::Img32s &labelImage){
+      utils::Size s = labelImage.getSize();
+      core::Channel32s labelImageC = labelImage[0];
+      std::vector<std::vector<int> > labelVector;
+      for(unsigned int y=0; y<s.height; y++){
+        for(unsigned int x=0; x<s.width; x++){
+          int id = x+y*s.width;
+          if(labelImageC(x,y)>0){
+            if(labelImageC(x,y)>labelVector.size()){
+              labelVector.resize(labelImageC(x,y));
+            }
+            labelVector[labelImageC(x,y)-1].push_back(id);
+          }
+        }
+      }
+      return labelVector;     
+    }
+    
+    
     void SegmenterUtils::createColorImageCL(core::Img32s &labelImage, core::Img8u &colorImage){
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();

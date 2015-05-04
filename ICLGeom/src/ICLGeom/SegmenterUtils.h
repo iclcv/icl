@@ -145,6 +145,11 @@ namespace icl{
         */
         static bool occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance=3., float outlierTolerance=5.);
         
+        /// Creates the label vectors from a given label image
+        /** @param labelImage the input label image
+            @return the vector of id vectors
+        */
+        static std::vector<std::vector<int> > createLabelVectors(core::Img32s &labelImage);
         
       private:
       

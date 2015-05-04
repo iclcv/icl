@@ -183,6 +183,8 @@ namespace icl {
         math::GraphCutter::mergeMatrix(resultMatrix, curveMatrix);
       }
 	    
+	    m_data->surfaces = m_data->segUtils->createLabelVectors(m_data->labelImage);
+	    
 	    m_data->segments.clear();
 	    m_data->segments = math::GraphCutter::thresholdCut(resultMatrix, m_data->graphCutThreshold);
 	    
