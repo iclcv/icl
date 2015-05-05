@@ -56,6 +56,7 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
             src/ICLQt/GLImg.cpp
 	    src/ICLQt/GLFragmentShader.cpp
 	    src/ICLQt/GUI.cpp
+	    src/ICLQt/DynamicGUI.cpp
 	    src/ICLQt/GUIDefinition.cpp
 	    src/ICLQt/GUIWidget.cpp
 	    src/ICLQt/HistogrammWidget.cpp
@@ -121,6 +122,7 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/GUIComponentWithOutput.h
 	    src/ICLQt/GUIDefinition.h
 	    src/ICLQt/GUI.h
+	    src/ICLQt/DynamicGUI.h
 	    src/ICLQt/GUIHandleBase.h
 	    src/ICLQt/GUIHandle.h
 	    src/ICLQt/GUISyntaxErrorException.h

@@ -37,6 +37,7 @@ The **GUI** Creation Framework
   * :ref:`qt.gui-creation-framework-iclapp`
   * :ref:`qt.gui-creation-framework-defexpr`
   * :ref:`qt.gui-creation-framework-hierarchical`
+  * :ref:`qt.gui-creation-framework-dynamic`
 
 * :ref:`qt.gui-creation-framework-accessinggui`
 
@@ -276,6 +277,25 @@ nested sub-containers:
 |                                                   | started with **appname -input create   |
 |                                                   | mandril**                              |  
 +---------------------------------------------------+----------------------------------------+
+
+
+.. _qt.gui-creation-framework-dynamic:
+
+
+Dynamic XML-based GUI Description
+"""""""""""""""""""""""""""""""""
+
+In order to separate the GUI layout from the actual implementation,
+the :icl:`DynamicGUI` class can be used. This class enables the
+programmer to define the GUI layout in a separate XML-file that is
+then parsed by the application at runtime. The advantage of this
+approach is that the adaption of GUI parameters or the adding of new
+GUI components as well as re-arrangement of the GUI components no
+longer requires to re-compile the application. In contrast to this,
+the GUI definition syntax is no longer parsed and evaluated by the
+compiler, which means that the development cycle is not neccessarily
+shortened.
+
 
 .. _qt.gui-creation-framework-accessinggui:
 

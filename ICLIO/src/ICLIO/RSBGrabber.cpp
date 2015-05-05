@@ -205,7 +205,7 @@ namespace icl{
       Mutex::Locker lock(m_data->mutex);
       while(!m_data->bufferImage || !m_data->hasNewImage){
         m_data->mutex.unlock();
-        Thread::msleep(0);
+        Thread::msleep(1);
         m_data->mutex.lock();
       }
       m_data->bufferImage->deepCopy(&m_data->outputImage);
