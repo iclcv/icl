@@ -28,10 +28,12 @@
 **                                                                 **
 ********************************************************************/
 
+#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Factory.h>
 #include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
+#include <rsb/Version.h>
 
 #include <ICLCore/ImageSerializer.h>
 
@@ -53,6 +55,8 @@ namespace icl{
     struct StaticRSBImageTypeRegistration{
       StaticRSBImageTypeRegistration(){
         shared_ptr<ProtocolBufferConverter<RSBImage> > p(new ProtocolBufferConverter<RSBImage>());
+
+
   #if RSB_VERSION_MINOR < 8
         stringConverterRepository()->registerConverter(p);
   #else
@@ -101,7 +105,7 @@ namespace icl{
       m_data = new Data;
       
       Scope rsbScope(scope);
-      ParticipantConfig rsbCfg = Factory::getInstance().getDefaultParticipantConfig();
+      ParticipantConfig rsbCfg = getFactory().getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
       
@@ -118,12 +122,12 @@ namespace icl{
         }
       }
       rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
-      m_data->informer = Factory::getInstance().createInformer<RSBImage>(rsbScope,rsbCfg);
+      m_data->informer = getFactory().createInformer<RSBImage>(rsbScope,rsbCfg);
       m_data->out = Informer<RSBImage>::DataPtr(new RSBImage);
   
       
       m_data->propertyScopeName = "/icl/RSBImageOutput/configuration"+scope;
-      m_data->propertyListener = Factory::getInstance().createListener(Scope(m_data->propertyScopeName), rsbCfg);
+      m_data->propertyListener = getFactory().createListener(Scope(m_data->propertyScopeName), rsbCfg);
       m_data->propertyHandler = shared_ptr<rsb::Handler>(new Data::PropertyHandler(this));
       m_data->propertyListener->addHandler(m_data->propertyHandler);
     }

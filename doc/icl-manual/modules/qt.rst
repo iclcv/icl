@@ -38,6 +38,7 @@ The **GUI** Creation Framework
   * :ref:`qt.gui-creation-framework-defexpr`
   * :ref:`qt.gui-creation-framework-hierarchical`
   * :ref:`qt.gui-creation-framework-dynamic`
+  * :ref:`qt.gui-creation-framework-remote`
 
 * :ref:`qt.gui-creation-framework-accessinggui`
 
@@ -296,6 +297,22 @@ the GUI definition syntax is no longer parsed and evaluated by the
 compiler, which means that the development cycle is not neccessarily
 shortened.
 
+.. _qt.gui-creation-framework-remote:
+
+
+RSB-based Remote GUIs
+"""""""""""""""""""""
+
+With the :icl:`qt::RSBRemoteGUI`, an additional separation of the GUI
+and the actual application code can be reached. This class can wrapped
+around an existing gui. It then analyses the wrapped GUI and provides
+setter and getter RSB-based network interfaces for each of the GUI
+components. By these means, ICL's GUI-creation framework can more easily be
+used in a decoupled fashion. 
+
+The ICL-application **icl-remote-gui** bundles this functionality by being able
+to load a GUI-xml-file and then to automatically create the corresponding
+RSB-interfaces for it
 
 .. _qt.gui-creation-framework-accessinggui:
 

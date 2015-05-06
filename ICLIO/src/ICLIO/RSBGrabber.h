@@ -34,7 +34,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
-#if !defined(HAVE_RSB) || !defined(HAVE_PROTOBUF)
+#if !defined(ICL_HAVE_RSB) || !defined(ICL_HAVE_PROTOBUF)
   #if WIN32
     #pragma WARNING("This header should only be included if ICL_HAVE_RSB and ICL_HAVE_PROTOBUF are defined and available in ICL")
   #else

@@ -158,6 +158,11 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/GLFragmentShader.h
 	    src/ICLQt/Quick.h)
 
+IF(RSB_FOUND)
+ LIST(APPEND SOURCES src/ICLQt/RSBRemoteGUI.cpp)
+ LIST(APPEND HEADERS src/ICLQt/RSBRemoteGUI.h)
+ENDIF()
+
 SET(ICL_MOC_HEADERS src/ICLQt/Widget.h
                     src/ICLQt/MouseHandler.h
                     src/ICLQt/DoubleSlider.h
