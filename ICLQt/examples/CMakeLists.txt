@@ -1,5 +1,2 @@
 ADD_SUBDIRECTORY(model-fitting)
 ADD_SUBDIRECTORY(quick)
-IF(RSB_FOUND)
- ADD_SUBDIRECTORY(rsb-dyn-gui)
-ENDIF()

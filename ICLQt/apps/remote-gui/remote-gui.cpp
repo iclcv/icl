@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCV/examples/rsb-dyn-gui.cpp                         **
+** File   : ICLCV/examples/remote-gui/remote-gui.cpp               **
 ** Module : ICLCV                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -85,5 +85,5 @@ int main(int n, char **ppc){
                 "-rsb-scope|-scope|-s(scope=/foo) "
                 "-create-setter-gui|-c "
                 "-verbose "
-                "-generate-gui-xml-file|-g(output-file-name)",init).exec();
+                "-generate-example-gui-xml-file|-g(output-file-name)",init).exec();
 }
