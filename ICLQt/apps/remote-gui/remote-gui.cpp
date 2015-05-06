@@ -76,7 +76,7 @@ void init(){
     remote.setVerboseMode(pa("-verbose"));    
     remote.init(&gui, *pa("-scope"), pa("-c"));
     
-    gui["image"] = create("lena");
+    //gui["image"] = create("lena");
   }
 }
 
