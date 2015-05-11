@@ -64,7 +64,7 @@ namespace icl{
       /// appends anything in std::ostream manner
       template<class T>
       StateHandle &operator<<(const T &t){
-        append(str(t));
+        append(utils::str(t));
         return *this;
       }
       

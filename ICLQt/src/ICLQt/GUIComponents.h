@@ -316,7 +316,14 @@ namespace icl{
       /// create ps component with given update rate
       Ps(int updatePFS=10):GUIComponent("ps",utils::str(updatePFS)){}
     };
-  
+
+
+    /// For a state log panel
+    struct State : public GUIComponent{
+      /// create state widget
+      State(int maxLines=100):GUIComponent("state",utils::str(maxLines)){}
+    };
+    
     /// Creates not component
     struct Dummy : public GUIComponent{
       Dummy():GUIComponent(""){}

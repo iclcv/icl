@@ -51,6 +51,7 @@ namespace icl{
       Mutex mutex;
       
       Data(int deviceID){
+        DEBUG_LOG("Generic Grabber created");
         xiH = NULL;
         memset(&image,0,sizeof(image));
         image.size = sizeof(XI_IMG);
@@ -111,11 +112,12 @@ namespace icl{
     }
 
     const std::vector<GrabberDeviceDescription> &XiGrabber::getDeviceList(std::string, bool rescan){
+      //DEBUG_LOG("get device list called !");
       static std::vector<GrabberDeviceDescription> all;
       if(rescan){
         all.clear();
-        //        unsigned int n = 0;
-        /** for no reason just blocks ...
+        unsigned int n = 0;
+        // for no reason just blocks ...
         XI_RETURN s = xiGetNumberDevices(&n);
         Data::handle_result(s, "xiGetNumberDevices");
         for(unsigned int i=0;i<n;++i){
@@ -123,21 +125,26 @@ namespace icl{
           s =  xiGetDeviceInfoString(i, XI_PRM_DEVICE_NAME, buf, 10000);
           Data::handle_result(s, "xiGetDeviceInfoString");
           all.push_back(GrabberDeviceDescription("xi",str(i), buf));
-            }*/
-        
-        for(int i=0;true;++i){
-          HANDLE h = NULL; 
-          XI_RETURN s = xiOpenDevice(i, &h);
-          if(s != XI_OK) break;
-          all.push_back(GrabberDeviceDescription("xi",str(i),"Ximea Device ID " + str(i)));
-          s = xiCloseDevice(h);
-          Data::handle_result(s,"xiCloseDevice");
         }
+        /** this is even worse!
+        for(int i=0;true;++i){
+            HANDLE h = NULL; 
+            DEBUG_LOG("opening device " << i);
+            XI_RETURN s = xiOpenDevice(i, &h);
+            DEBUG_LOG("opened device " << i);
+            if(s != XI_OK) break;
+            DEBUG_LOG("device opening was successful");
+            all.push_back(GrabberDeviceDescription("xi",str(i),"Ximea Device ID " + str(i)));
+            s = xiCloseDevice(h);
+            Data::handle_result(s,"xiCloseDevice");
+            }
+            */
       }
       return all;      
     }
 
     const core::ImgBase* XiGrabber::acquireImage(){
+      //DEBUG_LOG("acquire image called!");
       XI_RETURN s = XI_TIMEOUT;
       do{
         s = xiGetImage(m_data->xiH, 10000, &m_data->image);
