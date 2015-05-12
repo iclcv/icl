@@ -61,6 +61,8 @@ namespace icl{
         - p points (serialized as binary float vector)
         - P point size (serialized as float)
         - L line width (serialized as float)
+        - F font size (serialized as float)
+        - A text angle (serialized as float given in degrees, default is 0, which is no rotation, rotation is performed clock-wise)
         
         - +xo. for symbols (serialized as Point32f)
           - +: plus symbols
@@ -240,6 +242,7 @@ namespace icl{
       inline void sym(char type, const Point32f &p){
         addPart(type,p);
       }
+      
       /// adds text
       /** note that the text must be single lined */
       void text(icl32f x, icl32f y, const std::string &text);
@@ -295,6 +298,15 @@ namespace icl{
         addPart('P',s);
       }
 
+      /// defines the font size to be used
+      inline void fontsize(float s){
+        addPart('F',s);
+      }
+
+      /// sets the vertical text mode
+      inline void textangle(float angle){
+        addPart('A',angle);
+      }
     };
     
     /// overloaded ostream operator for VisualizationDescription::Text

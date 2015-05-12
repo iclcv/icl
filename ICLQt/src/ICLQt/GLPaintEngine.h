@@ -82,7 +82,7 @@ namespace icl{
       virtual void triangle(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c);
       virtual void quad(const utils::Point32f &a, const utils::Point32f &b, const utils::Point32f &c, const utils::Point32f &d);
       virtual void ellipse(const utils::Rect32f &r);
-      virtual void text(const utils::Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered);
+      virtual void text(const utils::Rect32f &r, const std::string text, PaintEngine::AlignMode mode = PaintEngine::Centered, float angle=0);
   
       /// brightness-constrast intensity adjustment (for images only)
       virtual void bci(float brightness=0, float contrast=0, float intensity=0);

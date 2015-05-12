@@ -325,7 +325,7 @@ namespace icl{
     }
   
   
-    void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode){
+    void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode, float angle){
       // {{{ open
       QFontMetrics m(m_font);
       QRectF br = m.boundingRect(text.c_str());
@@ -340,8 +340,15 @@ namespace icl{
      
       painter.drawText(QRect(0,0,img.width(),img.height()),Qt::AlignHCenter,text.c_str());
       painter.end();
-      
-      image(r,img,mode,interpolateLIN);
+
+      if(angle){
+        QTransform R;
+        R.rotate(angle);
+        QImage img2 = img.transformed(R);
+        image(r,img2,mode,interpolateLIN);
+      }else{
+        image(r,img,mode,interpolateLIN);
+      }
       /*
           setupPixelTransfer(depth8u,0,0,0);
           glPixelStorei(GL_UNPACK_ALIGNMENT,4);

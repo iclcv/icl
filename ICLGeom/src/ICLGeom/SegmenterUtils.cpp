@@ -501,11 +501,11 @@ namespace icl{
       utils::Size s = labelImage.getSize();
       core::Channel32s labelImageC = labelImage[0];
       std::vector<std::vector<int> > labelVector;
-      for(unsigned int y=0; y<s.height; y++){
-        for(unsigned int x=0; x<s.width; x++){
+      for(int y=0; y<s.height; y++){
+        for( int x=0; x<s.width; x++){
           int id = x+y*s.width;
           if(labelImageC(x,y)>0){
-            if(labelImageC(x,y)>labelVector.size()){
+            if(labelImageC(x,y)>(int)labelVector.size()){
               labelVector.resize(labelImageC(x,y));
             }
             labelVector[labelImageC(x,y)-1].push_back(id);

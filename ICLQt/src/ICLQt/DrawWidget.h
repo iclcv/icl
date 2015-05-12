@@ -398,6 +398,15 @@ int main(int n, char **ppc){
       /// sets current pointsize (default is 1)
       void pointsize(float s);
     
+      /// sets an angle for text that is rendered
+      /** The angle is specified in degrees and in clock-wise direction */
+      void textangle(float angleDeg);
+
+      /// sets the internal default font size
+      /** The default font size is used if the font-size given to text is set to 0
+          the 'default'-default size is 10 */
+      void fontsize(float size);
+      
       /// sets the draw state machines "edge"-color buffer to a given value
       /** Primitives except images are drawn with the currently set "color"
           and filled with the currently set "fill" 
