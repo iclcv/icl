@@ -286,6 +286,7 @@ namespace icl{
   
     /// draws the bar plot data
     bool LowLevelPlotWidget::drawBarPlotData(QPainter &p, const DrawState &state){
+            // seems to be fixed now! TODO_LOG("rendering of bar plots leads to missing bars: this must be fixed");
       if(!data->barPlotData.size()) return false;
       
       const int rows = (int)data->barPlotData.size();
@@ -296,8 +297,10 @@ namespace icl{
   
       LinearTransform1D A(Range32f(vd.left(), vd.right()),Range32f(0,1));
       float lFrac = A(v.left()), rFrac = A(v.right());
-      float len = data->getMaxSeriesDataRowLen()-1;
+
+      float len = data->getMaxSeriesDataRowLen()+1; // +1 ??
       // we use (len-1) as range since with 100 bins, we have only 99 gaps
+
       LinearTransform1D lx(Range32f(lFrac*(len-1), rFrac*(len-1)),
                            Range32f(state.b_left,width()-state.b_right));
       LinearTransform1D ly(yrange, Range32f(height()-state.b_bottom,state.b_top)); 
@@ -310,10 +313,14 @@ namespace icl{
         const int stride = sd.stride;
   
         int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
-        int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
+        int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+2);
         firstVisibleX = clip(firstVisibleX,0,sd.size()-1);
         lastVisibleX = clip(lastVisibleX,0,sd.size()-1);
   
+
+        //    SHOW(firstVisibleX);
+        //        SHOW(lastVisibleX);
+
         std::vector<float> &ybuf = data->ybuf;
         std::vector<float> &xbuf = data->xbuf;
         std::vector<bool> &yClipBuf = data->yClipBuf;
@@ -346,7 +353,7 @@ namespace icl{
           
           const float wAll = .8*(xbuf[firstVisibleX+1] - xbuf[firstVisibleX]);
   
-          for(int x=firstVisibleX;x<lastVisibleX;++x){
+          for(int x=firstVisibleX;x<=lastVisibleX;++x){
             const float xStart = ceil(xbuf[x] + y * (wAll/rows));
             const float wOne = floor(wAll/rows) - 1;
             if(ybuf[x] < fillZero){
@@ -571,7 +578,7 @@ namespace icl{
   
       if(haveSeries || haveBarPlot){
         // use max line len, 0
-        return Range32f(0, data->getMaxSeriesDataRowLen()-1);
+        return Range32f(0, data->getMaxSeriesDataRowLen());
       }else{
         Range32f r = Range32f::limits();
         std::swap(r.minVal, r.maxVal);
