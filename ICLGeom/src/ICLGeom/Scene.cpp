@@ -902,7 +902,10 @@ namespace icl{
         //bind the projection textures
         for(int i = 0; i <8;i++) {
           if(m_lights[i] && m_lights[i]->getShadowEnabled() && m_lights[i]->getProjectionEnabled() && m_lights[i]->getProjectionImage()) {
-            m_lights[i]->getProjectionImage()->bind(0,0,8+i);
+            GLImg *pi = m_lights[i]->getProjectionImage();
+            pi->lock();
+            pi->bind(0,0,8+i);
+            pi->unlock();
           }
         }
 
