@@ -124,7 +124,7 @@ void run_octree(){
   }
   SmartPtr<PointCloudObject> other = obj.copy();
   RayCastOctreeObject *octree = new RayCastOctreeObject(-3000,6000);
-  Time t = Time::now();
+  //  Time t = Time::now();
   const DataSegment<float,4> xyzh = other->selectXYZH();
   for(int i=0;i<xyzh.getDim();i+=1){
     octree->insert(xyzh[i]);

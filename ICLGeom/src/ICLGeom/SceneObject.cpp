@@ -35,6 +35,7 @@
 #include <ICLGeom/PlaneEquation.h>
 #include <ICLGeom/Scene.h>
 
+
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
@@ -73,9 +74,42 @@ namespace icl{
       }
       if(recursive){
         for(unsigned int i=0;i<m_children.size();++i){
-          m_children[i]->setVisible(oredTypes,visible);
+          m_children[i]->setVisible(oredTypes,visible,recursive);
         }
       }
+    }
+
+    void SceneObject::setVisible(const std::string &what, bool recursive){
+      int on = 0, off = 0;
+      //DEBUG_LOG("what : " << what);
+      std::vector<std::string> ts = tok(what,",");
+      for(size_t i=0;i<ts.size();++i){
+        std::vector<std::string> ab = tok(ts[i],"=");
+        if(!ab.size() || ab.size() > 2){
+          ERROR_LOG("error in SceneObject::setVisible: invalid syntax: " << what);
+        }
+        bool enable = ab.size() < 2 || parse<bool>(ab[1]);
+        int &target = (enable ? on : off);
+
+#define CHECK_TYPE(x) else if(ab[0] == #x){ target |= Primitive::x; }
+        if(ab[0] == "this" || ab[0] == "all"){
+          setVisible(enable,recursive);
+        }
+        CHECK_TYPE(vertex)
+        CHECK_TYPE(line)
+        CHECK_TYPE(triangle)
+        CHECK_TYPE(polygon)
+        CHECK_TYPE(texture)
+        CHECK_TYPE(text)
+        CHECK_TYPE(faces)
+        else {
+          ERROR_LOG("invalid primitive type name: " << ab[0]);
+        }
+#undef CHECK_TYPE
+      }
+
+      setVisible(off, false, recursive);
+      setVisible(on, true, recursive);
     }
       
     bool SceneObject::isVisible(Primitive::Type t) const {
@@ -121,6 +155,22 @@ namespace icl{
       }
       m_primitives.clear();
     }
+
+    void SceneObject::clear(bool deleteAndRemoveChildren, bool resetTransform){
+      clearAllPrimitives();
+      m_vertices.clear();
+      m_normals.clear();
+      m_vertexColors.clear();
+      m_sharedTextures.clear();
+      
+      if(deleteAndRemoveChildren){
+        removeAllChildren();
+      }
+      if(resetTransform){
+        removeTransformation();
+      }
+    }
+
     
     void SceneObject::addVertex(const Vec &p, const GeomColor &color){
       m_vertices.push_back(p);

@@ -29,6 +29,7 @@
 **                                                                 **
 ********************************************************************/
 
+#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Handler.h>
 #include <rsb/Listener.h>
 #include <rsb/Factory.h>

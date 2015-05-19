@@ -240,6 +240,40 @@ namespace icl{
   
       /// changes visibility of given primitive type
       ICLGeom_API void setVisible(int oredTypes, bool visible, bool recursive = true);
+
+      /// convenience method that allows for setting several visibility properties at once
+      /** 'what' must be a comma separated list of A=B tokens, where A is a primitive type name
+          and B is a boolean (e.g. either true or 1 or false or 0). The "=B" part can be
+          left out and is then automatically interpreted as "=true"
+          Supported primitive type names are:
+          - vertex
+          - line
+          - triangle
+          - quad
+          - polygon
+          - texture
+          - text
+          - faces (this is a meta type and refers to triangle, quad, polygon, text and texture)
+          - all (refers to all primitive types and to this)
+          - this (this is a special type that refers to the whole object)
+          
+          Here are some examples
+          <pre>
+          obj.setVisible("vertex,line,faces=false"); // shows only lines and points
+          obj.setVisible("this");                    // shows the whole object
+          obj.setVisible("this=0");                  // hides the whole object
+          obj.setVisible("vertex=false,line=true,triangles=false,quads=true"); // ...
+          </pre>
+
+          In case of referencing a given primitive more than once, and with different
+          visiblity values, the result is undefined.
+     */
+      ICLGeom_API void setVisible(const std::string &what, bool recursive=true);
+
+      /// explicit version for const char pointer to avoid an explicit cast to bool/int
+      inline void setVisible(const char *what, bool recursive=true){
+        setVisible(std::string(what),recursive);
+      }
       
       /// returns visibility of given primitive type
       ICLGeom_API bool isVisible(Primitive::Type t) const;
@@ -692,6 +726,9 @@ namespace icl{
   
       /// deletes and removes all primitives
       ICLGeom_API void clearAllPrimitives();
+      
+      /// deletes all primitive and all vertex, color and normal content (and optionally also the children)
+      ICLGeom_API virtual void clear(bool deleteAndRemoveChildren=true, bool resetTransform=false);
       
       /// creates a displaylist in the next render cycle
       /** if the displaylist was already created, it is updated */

@@ -36,6 +36,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/PluginRegister.h>
 
+#define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Factory.h>
 #include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
