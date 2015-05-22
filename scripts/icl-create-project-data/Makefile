@@ -89,7 +89,6 @@ BIN_INSTALL_PREFIX=${INSTALL_PREFIX}/bin/${PROJECT_NAME}
 ETC_INSTALL_PREFIX=${INSTALL_PREFIX}/etc/${PROJECT_NAME}
 REL_BIN_INSTALL_PREFIX=bin/${PROJECT_NAME}
 
-
 APPS_INSTALLED=$(patsubst app/%.cpp,${BIN_INSTALL_PREFIX}/%,${APP_SOURCES})
 
 REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
@@ -106,10 +105,22 @@ endif
 
 INSTALL=${AT}install
 
+
+FOUND_EXPLICIT_INCLUDE_DIR=$(wildcard src/${PROJECT_NAME}))
+
+
 # save flags from Makefile.custom
 LDFLAGS_PC:=${LDFLAGS} -L${LIB_INSTALL_PREFIX} -l${LIB} -Wl,-rpath=${LIB_INSTALL_PREFIX}
 CXXFLAGS_PC:=$(filter-out -Isrc -Iapp -fPIC -Wall,${CXXFLAGS})
-CXXCPP_PC:=${CXXCPP} -I${INC_INSTALL_PREFIX}
+
+ifeq "${FOUND_EXPLICIT_INCLUDE_DIR}" "src/${PROJECT_NAME}"
+INC_INSTALL_PREFIX_PC=${INC_INSTALL_PREFIX}	
+REL_INC_INSTALL_PREFIX_PC=include/${PROJECT_NAME}
+else
+INC_INSTALL_PREFIX_PC=${INSTALL_PREFIX}/include
+REL_INC_INSTALL_PREFIX_PC=include
+endif
+CXXCPP_PC:=${CXXCPP} -I${INC_INSTALL_PREFIX_PC}
 
 # parsing pkg-config files
 ifneq "${PC_DEPS}" ""
@@ -289,7 +300,7 @@ ${PC}:
 	${ECHO} bindir=$$\{prefix\}/${REL_BIN_INSTALL_PREFIX} >> $@
 	${ECHO} libdir=$$\{prefix\}/lib >> $@
 	${ECHO} datadir$$\{prefix\}/data >> $@
-	${ECHO} includedir=$$\{prefix\}/${REL_INC_INSTALL_PREFIX} >> $@
+	${ECHO} includedir=$$\{prefix\}/${REL_INC_INSTALL_PREFIX_PC} >> $@
 	${ECHO} installation=${MAKECMDGOALS} >> $@
 	${ECHO} package=${LIB} >> $@
 	${ECHO} >> $@
