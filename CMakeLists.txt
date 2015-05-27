@@ -603,6 +603,7 @@ IF(BUILD_WITH_RST)
 
   ICL_FIND_PACKAGE(NAME rstsandbox
                    LIBS "rstsandbox${RST_VERSION}"
+                   HEADERS "rst/geometry/PolygonalPatch3D.pb.h"
                    HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/sandbox")
 
   IF(RST_FOUND AND RSTSANDBOX_FOUND)
