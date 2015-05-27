@@ -602,7 +602,6 @@ IF(BUILD_WITH_RST)
                    HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/stable")
 
   ICL_FIND_PACKAGE(NAME rstsandbox
-                   HEADERS "rst/geometry/Primitive3DFloatSet.pb.h"
                    LIBS "rstsandbox${RST_VERSION}"
                    HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/sandbox")
 
