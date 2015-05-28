@@ -338,10 +338,12 @@ ENDFUNCTION()
 #*********************************************************************
 # ---- Add definitions ----
 #*********************************************************************
-MACRO(ADD_ICL_DEFINITIONS)
-  string(REPLACE "-D" "" _ST "${ARGV}")
-  SET(${_ST} 1) # this is needed for ICLConfig.h
+FUNCTION(ADD_ICL_DEFINITIONS)
+  foreach(var ${ARGV})
+    string(REPLACE "-D" "" var "${var}")
+    SET(${var} "1") # this is needed for ICLConfig.h
+  endforeach()
 
   ADD_DEFINITIONS(${ARGV})
   LIST(APPEND ICL_DEFINITIONS ${ARGV})
-ENDMACRO()
+ENDFUNCTION()
