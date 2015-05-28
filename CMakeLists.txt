@@ -594,24 +594,11 @@ IF(BUILD_WITH_RST)
     SET(RSTSANDBOX_ROOT ${RST_ROOT})
   ENDIF()
 
-  SET(RST_VERSION 0.12) # make this generic later
-
-  ICL_FIND_PACKAGE(NAME rst
-                   HEADERS "rst/math/Vec3DFloat.pb.h"
-                   LIBS "rst${RST_VERSION}"
-                   HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/stable")
-
-  ICL_FIND_PACKAGE(NAME rstsandbox
-                   LIBS "rstsandbox${RST_VERSION}"
-                   HEADERS "rst/geometry/PolygonalPatch3D.pb.h"
-                   HEADER_PATH_SUFFIXES "include/rst${RST_VERSION}/sandbox")
-
-  IF(RST_FOUND AND RSTSANDBOX_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_RST)
-    ADD_ICL_DEFINITIONS(-DRST_EXPORT=)
-    ADD_ICL_DEFINITIONS(-DRSTSANDBOX_EXPORT=)
-    LIST(APPEND RST_LIBRARIES ${RSTSANDBOX_LIBRARIES})
-    LIST(APPEND RST_INCLUDE_DIRS ${RSTSANDBOX_INCLUDE_DIRS})
+  FIND_PACKAGE(RST COMPONENTS sandbox)
+  LIST(FIND STABLE_PROTOS_REL proto/stable/rst/math/Vec3DFloat.proto HAVE_VEC3DF)
+  LIST(FIND SANDBOX_PROTOS_REL proto/sandbox/rst/geometry/PolygonalPatch3D.proto HAVE_POLY3D)
+  IF(RST_FOUND AND HAVE_VEC3DF AND HAVE_POLY3D)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_RST ${RST_CFLAGS})
   ENDIF()
 ENDIF()
 
