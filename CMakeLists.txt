@@ -283,8 +283,23 @@ IF(NOT WIN32)
 ENDIF()
 
 IF(BUILD_WITH_IPP)
-  FIND_PACKAGE(IPP REQUIRED)
+  IF(ICL_64BIT)
+    SET(_IPP_LIB_SUF "ipp/lib/intel64")
+  ELSE(ICL_64BIT)
+    SET(_IPP_LIB_SUF "ipp/lib/ia32")
+  ENDIF(ICL_64BIT)
+
+  ICL_FIND_PACKAGE(NAME IPP
+    HEADERS "ipp.h"
+    LIBS "ippcore;ippi;ipps;ippcv;ippm;ippcc;iomp5"
+    PATHS "/opt/IPP"
+    HEADER_PATH_SUFFIXES "ipp/include"
+    LIB_PATH_SUFFIXES "${_IPP_LIB_SUF}")
+  
   IF(IPP_FOUND)
+    IF(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
+      get_ipp_version(${IPP_INCLUDE_DIRS})
+    ENDIF()
     ADD_ICL_DEFINITIONS(-DICL_HAVE_IPP)
   ENDIF()
 ENDIF()
