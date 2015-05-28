@@ -89,7 +89,7 @@ namespace icl{
       if(!scope.length()) throw ICLException("RSBPointCloudSender::init: empty scope string");
       
       Scope rsbScope(scope);
-      Factory &factory = rsc::patterns::Singleton<Factory>::getInstance();
+      Factory &factory = rsb::getFactory();
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;

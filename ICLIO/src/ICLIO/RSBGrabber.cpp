@@ -144,11 +144,7 @@ namespace icl{
       m_data->hasNewImage = false;
       
       Scope rsbScope(scope);
-#if 1
-      Factory &factory = rsc::patterns::Singleton<Factory>::getInstance();
-#else 
-      Factory &factory = Factory::getInstance()
-#endif
+      Factory &factory = rsb::getFactory();
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
