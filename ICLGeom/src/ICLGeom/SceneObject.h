@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLUtils/ICLConfig.h>
 #ifndef ICL_HAVE_OPENGL
 #if WIN32
 #pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
