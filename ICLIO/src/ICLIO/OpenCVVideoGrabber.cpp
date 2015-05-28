@@ -61,7 +61,7 @@ namespace icl{
       utils::Mutex::Locker l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==0), 0);
       core::ipl_to_img(cvQueryFrame(data->cvc), &data->m_buffer);
-
+      if(data->m_buffer->getChannels() == 3) data->m_buffer->setFormat(formatRGB);
       if (data->use_video_fps){
         data->fpslimiter->wait();
       }

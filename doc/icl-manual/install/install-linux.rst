@@ -70,11 +70,13 @@ Quick installation guide for Ubuntu Trusty
 
 Install the following packages::
 
-  sudo apt-get install ibjpeg-dev libpng12-dev libopencv-dev libeigen3-dev
-  libmagick++-dev libglew-1.6-dev libpcl-1.7-all-dev libfreenect-dev
-  libprotobuf-dev protobuf-compiler doxygen graphviz python-sphinx python-pyparsing
-  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools
-  nvidia-libopencl1-304
+  sudo apt-get install libjpeg-dev libpng12-dev libopencv-dev
+  libeigen3-dev libmagick++-dev libglew-1.6-dev libpcl-1.7-all-dev
+  libfreenect-dev libprotobuf-dev protobuf-compiler doxygen graphviz
+  python-sphinx python-pyparsing libqt5opengl5-dev libqt5svg5-dev
+  libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools libavcodec-dev
+  libavformat-dev libavutil-dev libavresample-dev libswscale-dev
+  libavdevice-dev nvidia-libopencl1-304
 
 The last package provides *libOpenCL.so* for nvidia graphics-cards and
 for driver version 304. Please adapt this to your used driver version
@@ -112,7 +114,7 @@ Overview:
 * :ref:`install.dependencies.optional.pcl`
 * :ref:`install.dependencies.optional.rsb`
 * :ref:`install.dependencies.optional.bullet`
-
+* :ref:`install.dependencies.optional.libav`
 
 
 .. _install.dependencies.optional.ipp:
@@ -605,6 +607,23 @@ bullet must be build from the git-sources::
   cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX=/tmp/bullet3 ..
   make -j6 && make install
 
+
+.. _install.dependencies.optional.libav
+
+LibAV
+~~~~~
+
+**Video Encoding/Decoding based on LibAV**
+
+As it turned out that our OpenCV-based :icl:`io::GenericGrabber` and :icl:`io:GenericImageOutput` backend does not support all codes as expected, a pure libav-based backend is provided as well.
+
+* **Supported Versions:**  mixed
+* **License Type:** open source
+* **Download at:** https://libav.org
+* **Dependent library features:** libav-based video grabbing/writing
+* **Ubuntu packages:**  libavcodec-dev libavformat-dev libavutil-dev libavresample-dev libswscale-dev libavdevice-dev
+
+  
 
 .. _install.source:
 
