@@ -255,6 +255,8 @@ namespace icl{
           glBindTexture(GL_TEXTURE_2D, 0);
 
           // create a framebuffer object
+          GLint prev_framebuffer;
+          glGetIntegerv(GL_FRAMEBUFFER_BINDING,&prev_framebuffer);
           glGenFramebuffers(1, &glints.shadowFBO);
           glBindFramebuffer(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 
@@ -269,7 +271,7 @@ namespace icl{
               throw ICLException("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO");
 
           // switch back to previous framebuffer
-          glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+          glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_framebuffer);
       }
 
       void setShadowFBO(uint size = 512, uint shadows = 1) {
@@ -945,6 +947,8 @@ namespace icl{
         }
       }
 
+
+      glClear(GL_DEPTH_BUFFER_BIT);
       glEnable(GL_NORMALIZE);
 
       glMatrixMode(GL_MODELVIEW);
@@ -1082,6 +1086,8 @@ namespace icl{
    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
       FBOData::Glints &glints = m_fboData->glints;
       if(!glints.created)m_fboData->createShadowFBO();
+      GLint prev_framebuffer;
+      glGetIntegerv(GL_FRAMEBUFFER_BINDING,&prev_framebuffer);
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glints.shadowFBO);
 
       //Using the fixed pipeline
@@ -1120,7 +1126,7 @@ namespace icl{
         renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get());
       }
         // enable the default framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_framebuffer);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glDisable(GL_CULL_FACE);
         glDisable(GL_SCISSOR_TEST);

@@ -51,6 +51,8 @@
 #include <QtOpenGL/QGLContext>
 #endif
 
+#define UPLOAD_TEXTURE_UNIT (GL_TEXTURE0+20)
+
 using namespace icl::utils;
 using namespace icl::core;
 using namespace std;
@@ -389,7 +391,7 @@ namespace icl{
                                 t.size.width*imageChannels*sizeof(InternalType));
           }
         }
-        makeDirty(); 
+        makeDirty();
         // here, the texture becomes dirty in all contexts, old: setDirty();
         textureBufferMutex.unlock();
       }
@@ -625,20 +627,20 @@ namespace icl{
         }
         textures.resize(data.getDim());
         glGenTextures(textures.size(), textures.data());
-        
+
         textureBufferMutex.lock();
         
   
         static GLenum types[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
         static GLenum chan[] = { 0, GL_LUMINANCE, GL_RGB, GL_RGB, GL_RGBA};
-        
+
         for(int y=0;y<data.getHeight();++y){
           for(int x=0;x<data.getWidth();++x){
             TextureElement &t = *data(x,y);
             
             t.tex = textures[x+data.getWidth()*y];
-  
-            glActiveTextureARB(GL_TEXTURE0);
+
+            glActiveTextureARB(UPLOAD_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, t.tex);
   
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
