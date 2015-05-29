@@ -187,6 +187,12 @@ namespace icl{
           If the given size is utils::Size::null  the viewport is not adated */
       void setViewPort(const utils::Size &size);
 
+      
+      /// show the widget on fullscreen on the (or returns to the original embedded state)
+      /** optionally, a screen can be passed on which the widget is to be shown in fullscreen mode */
+      void setFullScreenMode(bool on, int screen=-1);
+      
+
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
       /** Special buttons can directly be attached to specific ICLWidget slots, 
           furthermore special button- clicks and toggle events are notified using

@@ -60,8 +60,11 @@ int main (int n, char **ppc){
   pa_explain
   ("-input","define image to read")
   ("-delete","delete image file after reading")
-  ("-roi","if set, image roi is visualized");
-  pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r",true);
+  ("-roi","if set, image roi is visualized")
+  ("-fs","shows the widget in fullscreen mode on the given\n"
+   "screen ID (or any screen if the passed id is -1).\n"
+   "The -fs flag only works when explicitly defining the input using the -input|-i arg!");
+  pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r -fullscreen|-fs(screen)",true);
 
   const ImgBase *image = 0;
   if(pa("-input")){
@@ -91,9 +94,13 @@ int main (int n, char **ppc){
     gui << Draw().handle("draw").size(size/20);
     gui.show();
 
-    gui["draw"] = image;
-    gui["draw"].render();
+    DrawHandle draw = gui["draw"];
+    draw = image;
+    draw.render();
 
+    if(pa("-fs")){
+      draw->setFullScreenMode(true,pa("-fs"));
+    }
   }else if(pa_get_count()){
     if(pa("-delete")){
       std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
@@ -150,6 +157,10 @@ int main (int n, char **ppc){
       std::cout << "roi visualization is not supported in multi image mode!" << std::endl;
     }
   }
+
+  
+ 
+  
 
   return app.exec();
 }

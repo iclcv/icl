@@ -33,6 +33,7 @@
 
 #include <ICLCore/Img.h>
 #include <QtCore/QTimer>
+#include <QtWidgets/QDesktopWidget>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -584,15 +585,28 @@ namespace icl{
       }
   
   
-      void enterFullScreen(){
+      void enterFullScreen(int screen = -1){
         if(!parent->isFullScreen()){
           if(parent->parent()){
             parentBeforeFullScreen = (QWidget*)parent->parent();
             geomBeforeFullScreen = parent->geometry();
             parent->setParent(0);
           }
+          if(screen >= 0){ // from the internet, it seems to be not quite clear whether to call this before
+                           // or after showFullScreen
+            QRect geom = QApplication::desktop()->screenGeometry(screen);
+            parent->move(QPoint(geom.x(), geom.y()));
+            parent->resize(geom.width(), geom.height());
+          }
           parent->showFullScreen();
           parent->show();
+
+          if(screen >= 0){
+            QRect geom = QApplication::desktop()->screenGeometry(screen);
+            parent->move(QPoint(geom.x(), geom.y()));
+            parent->resize(geom.width(), geom.height());
+          }
+
           glbuttons[5]->toggled = true;
           for(unsigned int i=0;i<glbuttons.size();++i) glbuttons[i]->over = false;
         }
@@ -2240,6 +2254,15 @@ namespace icl{
       }
     }
     
+    void ICLWidget::setFullScreenMode(bool on, int screen){
+      if(on){
+        if(isFullScreen()) return;
+        m_data->enterFullScreen(screen);
+      }else{
+        if(!isFullScreen()) return;
+        m_data->undoFullScreen();
+      }
+    }
   
   
     void ICLWidget::wheelEvent(QWheelEvent *e){
