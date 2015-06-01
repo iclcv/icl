@@ -9,12 +9,12 @@ if [ $# -ne 1 ] ; then
   exit 1
 fi
 
-if [ -d $1 ] ; then
+if [ -d $1 ] && [ "$1" != "." ] ; then
     echo "error: foldername $1 already exists"
     exit 1
 fi
 
-if [ -e $1 ] ; then
+if [ -e $1 ]  && [ "$1" != "." ] ; then
     echo "error: file with name $1 already exists"
     exit 1
 fi
@@ -59,6 +59,11 @@ if [ "$1" = "--update" ] ; then
 fi
 
 PROJECT=$1
+if [ "$PROJECT" = "." ] ; then
+    CREATE_PROJECT_INPLACE=TRUE ;
+else
+    CREATE_PROJECT_INPLACE=FALSE ;
+fi
 
 # Create folder root dir
 echo -n "Creating folder ${PROJECT} ... "
@@ -89,7 +94,13 @@ echo -n "Copying doxyfile ...        "
 cp ${RESOURCE_DIR}/doxyfile.template ./${PROJECT}/doc/doxyfile
 echo "done"
 
-echo "All source files placed in src/ are build into lib${PROJECT}.so which"
+if [ "$CREATE_PROJECT_INPLACE" = "TRUE" ] ; then
+    USED_PROJECT_NAME=${PWD##*/}
+else
+    USED_PROJECT_NAME=$PROJECT
+fi
+
+echo "All source files placed in src/ are build into lib${USED_PROJECT_NAME}.so which"
 echo "is automatically linked against the programs build from all source"
 echo "files placed in app/ by calling"
 echo " >> make"
