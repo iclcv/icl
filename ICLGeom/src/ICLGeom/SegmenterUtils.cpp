@@ -661,7 +661,8 @@ namespace icl{
       std::vector<bool> empties(countCur,true);//find unassigned ids
       for(int i=0; i<countCur; i++){
         if(curAss[i]!=0){
-          empties[curAss[i]-1]=false;
+          //empties[curAss[i]-1]=false;
+          empties[i]=false;
         }
         for(int j=i+1; j<countCur; j++){//multiple use of id (use highest score)
           if(curAss[i]==curAss[j]){
