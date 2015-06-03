@@ -4,7 +4,7 @@
 
 # This will influence the name of the library,
 # which is set to lib${PROJECT_NAME}.so
-PROJECT_NAME=${FOLDER}
+PROJECT_NAME?=${FOLDER}
 
 # where to install the project
 INSTALL_PREFIX=/vol/nivision
