@@ -61,13 +61,16 @@ namespace icl{
     class FreenectContext : public Thread{
 
       private:
-        int started;
-        int errors;
-        Mutex startMutex;
-        Mutex *ctx_mutex;
-        freenect_context *ctx_ptr;
-        static const int MAX_ERRORS = 100;
-
+      int started;
+      int errors;
+      Mutex startMutex;
+      Mutex *ctx_mutex;
+      freenect_context *ctx_ptr;
+      static const int MAX_ERRORS = 100;
+      
+    public:
+      std::vector<std::string> deviceAssociation;
+    private:
         FreenectContext() : started(0), errors(0) {
           static Mutex cMutex;
           static freenect_context *ctx = NULL;
@@ -80,6 +83,23 @@ namespace icl{
 #endif
           ctx_mutex = &cMutex;
           ctx_ptr = ctx;
+
+          freenect_device_attributes *attribs  = 0;
+          int n = freenect_list_device_attributes(ctx,  &attribs);
+          if(n < 1){
+            throw ICLException("no Kinect devices found");
+          }
+          
+          for(freenect_device_attributes *a = attribs; a ; a=a->next){
+            if(a->camera_serial){
+              deviceAssociation.push_back(a->camera_serial);
+            }else{
+              DEBUG_LOG("Kinect Device camera serial was null");
+              deviceAssociation.push_back("null??");
+            }
+          }
+          
+          freenect_free_device_attributes(attribs);
         }
 
       public:
@@ -526,11 +546,35 @@ namespace icl{
         bool avoidDoubleFrames;
         Mutex mutex;
         Time lastupdate;
+      //std::string deviceSerialString;
+      
+      static int getIndex(std::string idOrSerial){
+        std::vector<std::string> ts = tok(idOrSerial,"|||",false);
+        if(ts.size() > 1){
+          idOrSerial = ts[0];
+        }
+        FreenectContext &ctx = FreenectContext::getFreenectContext();
+        if(idOrSerial.length() < 2){
+          return parse<int>(idOrSerial);
+        }else{
+          for(size_t i=0;i<ctx.deviceAssociation.size();++i){
+            if(ctx.deviceAssociation[i] == idOrSerial){
+              return (int)i;
+            }
+          }
+          throw ICLException("Kinect device serial '" + idOrSerial + "' not found\n"
+                             "(found device serials were " + cat(ctx.deviceAssociation,",") + ")");
+        }
+        return 0;
+      }
 
-        Impl(KinectGrabber::Mode mode, int index, const Size &size)
-          : device(new FreenectDevice(index,mode, size)),
-            ledColor(0), desiredTiltDegrees(0), avoidDoubleFrames(true), mutex(Mutex::mutexTypeRecursive), lastupdate(Time::now())
-        { /* nothing to do */ }
+      Impl(KinectGrabber::Mode mode, std::string idOrSerial, const Size &size)
+        : device(new FreenectDevice(getIndex(idOrSerial),mode, size)),
+          ledColor(0), desiredTiltDegrees(0), avoidDoubleFrames(true), mutex(Mutex::mutexTypeRecursive), lastupdate(Time::now())
+        {
+        
+          
+        }
 
         ~Impl(){
           device.setNull();
@@ -557,9 +601,20 @@ namespace icl{
         }
     };
 
-    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) throw (ICLException) {
+    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) 
+      throw (ICLException) {
+      init(mode, str(deviceID),size);
+    }
+    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size) 
+      throw (ICLException) {
+      init(mode, idOrSerial,size);
+    }
+   
+    void KinectGrabber::init(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size) 
+      throw (ICLException){
+      
       FreenectContext::getFreenectContext().start();
-      m_impl = new Impl(mode,deviceID,size);
+      m_impl = new Impl(mode,idOrSerial,size);
       // Configurable
       static const std::string formats[] = {
         "Color Image {24Bit RGB}",
@@ -628,6 +683,8 @@ namespace icl{
       prop("Accelerometers").value = accelval;
       m_impl -> lastupdate = Time::now();
     }
+
+    
 
     /// callback for changed configurable properties
     void KinectGrabber::processPropertyChange(const utils::Configurable::Property &prop){
@@ -715,12 +772,20 @@ namespace icl{
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
         devices.clear();
-        for(int i=0;i<8;++i){
+        FreenectContext &ctx = FreenectContext::getFreenectContext();
+        
+        for(size_t i=0;i<ctx.deviceAssociation.size();++i){
           try{
             KinectGrabber g(GRAB_RGB_IMAGE,i);
-            devices.push_back(GrabberDeviceDescription("kinectd",str(i),"Kinect Depth Camera (ID "+str(i)+")"));
-            devices.push_back(GrabberDeviceDescription("kinectc",str(i),"Kinect Color Camera RGB (ID "+str(i)+")"));
-            devices.push_back(GrabberDeviceDescription("kinecti",str(i),"Kinect Color Camera IR (ID "+str(i)+")"));
+            
+            std::string serial = ctx.deviceAssociation[i];
+            std::string s = str(i);
+            if(serial != "null"){            
+              s += "|||" + serial;
+            }
+            devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
+            devices.push_back(GrabberDeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
+            devices.push_back(GrabberDeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
           }catch(ICLException &e){
             (void)e;//SHOW(e.what());
             break;
@@ -731,24 +796,30 @@ namespace icl{
     }
 
     Grabber* createDepthGrabber(const std::string &param){
-      return new KinectGrabber(KinectGrabber::GRAB_DEPTH_IMAGE,to32s(param));
+      return new KinectGrabber(KinectGrabber::GRAB_DEPTH_IMAGE,param);
     }
 
     Grabber* createRGBGrabber(const std::string &param){
-      return new KinectGrabber(KinectGrabber::GRAB_RGB_IMAGE,to32s(param));
+      return new KinectGrabber(KinectGrabber::GRAB_RGB_IMAGE,param);
     }
 
     Grabber* createIRGrabber(const std::string &param){
-      return new KinectGrabber(KinectGrabber::GRAB_IR_IMAGE_8BIT,to32s(param));
+      return new KinectGrabber(KinectGrabber::GRAB_IR_IMAGE_8BIT,param);
     }
 
     const std::vector<GrabberDeviceDescription>& getKinectDDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
+        FreenectContext &ctx = FreenectContext::getFreenectContext();
         devices.clear();
-        int deviceCount = FreenectContext::getFreenectContext().numDevices();
+        int deviceCount = ctx.numDevices();
         for(int i = 0; i < deviceCount; ++i){
-          devices.push_back(GrabberDeviceDescription("kinectd",str(i),"Kinect Depth Camera (ID "+str(i)+")"));
+          std::string serial = ctx.deviceAssociation[i];
+          std::string s = str(i);
+          if(serial != "null"){            
+            s += "|||" + serial;
+          }
+          devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
         }
       }
       return devices;
@@ -757,10 +828,16 @@ namespace icl{
     const std::vector<GrabberDeviceDescription>& getKinectCDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
+        FreenectContext &ctx = FreenectContext::getFreenectContext();
         devices.clear();
-        int deviceCount = FreenectContext::getFreenectContext().numDevices();
+        int deviceCount = ctx.numDevices();
         for(int i = 0; i < deviceCount; ++i){
-          devices.push_back(GrabberDeviceDescription("kinectc",str(i),"Kinect Color Camera RGB (ID "+str(i)+")"));
+          std::string serial = ctx.deviceAssociation[i];
+          std::string s = str(i);
+          if(serial != "null"){            
+            s += "|||" + serial;
+          }
+          devices.push_back(GrabberDeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
         }
       }
       return devices;
@@ -769,10 +846,16 @@ namespace icl{
     const std::vector<GrabberDeviceDescription>& getKinectIDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> devices;
       if(rescan){
+FreenectContext &ctx = FreenectContext::getFreenectContext();
         devices.clear();
-        int deviceCount = FreenectContext::getFreenectContext().numDevices();
+        int deviceCount = ctx.numDevices();
         for(int i = 0; i < deviceCount; ++i){
-          devices.push_back(GrabberDeviceDescription("kinecti",str(i),"Kinect Color Camera IR (ID "+str(i)+")"));
+          std::string serial = ctx.deviceAssociation[i];
+          std::string s = str(i);
+          if(serial != "null"){            
+            s += "|||" + serial;
+          }
+          devices.push_back(GrabberDeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
         }
       }
       return devices;
@@ -784,239 +867,4 @@ namespace icl{
 
   } // namespace io
 } // namespace icl
-
-#if 0
-// adpated old version using libfreenect.hpp
-struct ICLKinectDevice : public Freenect::FreenectDevice{
-    ICLKinectDevice(freenect_context *ctx, int index):
-      Freenect::FreenectDevice(ctx,index),m_ctx(ctx),
-      m_index(index){
-      colorImage = Img8u(Size::VGA,formatRGB);
-      depthImage = Img32f(Size::VGA,1);
-      avoidDoubleFrames = true;
-      colorOn = false;
-      depthOn = false;
-
-      m_userCount[0] = m_userCount[1] = 0;
-    }
-
-    ~ICLKinectDevice(){
-      stopColorICL();
-      stopDepthICL();
-    }
-
-    int getIndex() const { return m_index; }
-
-    void VideoCallback(void *data, uint32_t timestamp){
-      Mutex::Locker lock(m_colorMutex);
-      colorImage.setTime(Time::now());
-      interleavedToPlanar((const icl8u*)data,&colorImage);
-    }
-
-    void DepthCallback(void *data, uint32_t timestamp){
-      Mutex::Locker lock(m_depthMutex);
-      depthImage.setTime(Time::now());
-      std::copy((const icl16s*)data,(const icl16s*)data+640*480,depthImage.begin(0));
-    }
-
-    const Img32f &getLastDepthImage(){
-      Mutex::Locker lock(m_depthMutex);
-      if(avoidDoubleFrames){
-        while(lastDepthTime == depthImage.getTime()){
-          m_depthMutex.unlock();
-          Thread::msleep(1);
-          m_depthMutex.lock();
-        }
-      }
-      lastDepthTime = depthImage.getTime();
-      depthImage.deepCopy(&depthImageOut);
-
-      return depthImageOut;
-    }
-    const Img8u &getLastColorImage(){
-      Mutex::Locker lock(m_colorMutex);
-      if(avoidDoubleFrames){
-        while(lastColorTime == colorImage.getTime()){
-          m_colorMutex.unlock();
-          Thread::msleep(1);
-          m_colorMutex.lock();
-        }
-      }
-      lastColorTime = colorImage.getTime();
-      colorImage.deepCopy(&colorImageOut);
-      return colorImageOut;
-    }
-
-    void startColorICL(){
-      if(!colorOn){
-        startVideo();
-        colorOn = true;
-      }
-    }
-
-    void startDepthICL(){
-      if(!depthOn){
-        startDepth();
-        depthOn = true;
-      }
-    }
-
-    void stopColorICL(){
-      if(colorOn){
-        stopVideo();
-        colorOn = false;
-      }
-    }
-
-    void stopDepthICL(){
-      if(depthOn){
-        stopDepth();
-        depthOn = false;
-      }
-    }
-
-    void startICL(bool color){
-      if(color) startColorICL();
-      else startDepthICL();
-    }
-
-    void stopICL(bool color){
-      if(color) stopColorICL();
-      else stopDepthICL();
-    }
-
-    void addUser(bool color){
-      ++m_userCount[color?1:0];
-    }
-
-    void removeUser(bool color){
-      --m_userCount[color?1:0];
-    }
-
-    bool hasUsers(bool color) const{
-      return m_userCount[color?1:0];
-    }
-    bool hasUsers() const{
-      return hasUsers(true) || hasUsers(false);
-    }
-
-  protected:
-    freenect_context *m_ctx;
-    int m_index,m_userCount[2];
-    Mutex m_colorMutex, m_depthMutex;
-    Img32f depthImage,depthImageOut;
-    Img8u colorImage,colorImageOut;
-    bool avoidDoubleFrames;
-    Time lastColorTime, lastDepthTime;
-    bool colorOn, depthOn;
-};
-
-
-
-class ICLKinectDeviceFactory{
-    ICLKinectDeviceFactory(){}
-    static SmartPtr<Freenect::Freenect<ICLKinectDevice> > singelton;
-    static std::map<int,ICLKinectDevice*> deviceMap;
-  public:
-    static Freenect::Freenect<ICLKinectDevice> &factory() {
-      if(!singelton) {
-        singelton = SmartPtr<Freenect::Freenect<ICLKinectDevice> >(new Freenect::Freenect<ICLKinectDevice>);
-      }
-      return *singelton;
-    }
-
-    static ICLKinectDevice *createDevice(int index, bool color){
-      ICLKinectDevice *&dev = deviceMap[index];
-      if(!dev){
-        try{
-          dev = &factory().createDevice(index);
-        }catch(const std::runtime_error &err){
-          throw ICLException("Unable to get access to Kinect device with ID " + str(index));
-        }
-      }
-      dev->addUser(color);
-      dev->startICL(color);
-      return dev;
-    }
-
-    static void freeDevice(int index, int color){
-      std::map<int,ICLKinectDevice*>::iterator it = deviceMap.find(index);
-      if(it == deviceMap.end()) throw ICLException("unable to free an unused kinect device");
-      ICLKinectDevice *&dev = it->second;
-      dev->stopICL(color);
-      dev->removeUser(color);
-      if(!dev->hasUsers()){
-        delete dev;
-        deviceMap.erase(it);
-      }
-    }
-};
-
-
-SmartPtr<Freenect::Freenect<ICLKinectDevice> > ICLKinectDeviceFactory::singelton;
-std::map<int,ICLKinectDevice*> ICLKinectDeviceFactory::deviceMap;
-}
-#endif
-
-
-
-
-#if 0
-namespace{
-  struct ICLFreenectDevice : Freenect::FreenectDevice{
-      Mutex m_colorMutex, m_depthMutex;
-      Img32f depthImage,depthImageOut;
-      Img8u colorImage,colorImageOut;
-      bool avoidDoubleFrames;
-      Time lastColorTime, lastDepthTime;
-      int referenceCount;
-      
-      ICLFreenectDevice(freenect_context *_ctx, int _index): FreenectDevice(_ctx,_index){
-        referenceCount = 1;
-        colorImage = Img8u(Size::VGA,formatRGB);
-        depthImage = Img32f(Size::VGA,1);
-        avoidDoubleFrames = true;
-      }
-      
-      void VideoCallback(void *data, uint32_t timestamp){
-        Mutex::Locker lock(m_colorMutex);
-        colorImage.setTime(Time::now());
-        interleavedToPlanar((const icl8u*)data,&colorImage);
-      }
-      
-      void DepthCallback(void *data, uint32_t timestamp){
-        Mutex::Locker lock(m_depthMutex);
-        depthImage.setTime(Time::now());
-        std::copy((const icl16s*)data,(const icl16s*)data+640*480,depthImage.begin(0));
-      }
-      const Img32f &getLastDepthImage(){
-        Mutex::Locker lock(m_depthMutex);
-        if(avoidDoubleFrames){
-          while(lastDepthTime == depthImage.getTime()){
-            m_depthMutex.unlock();
-            Thread::msleep(1);
-            m_depthMutex.lock();
-          }
-        }
-        lastDepthTime = depthImage.getTime();
-        depthImage.deepCopy(&depthImageOut);
-        
-        return depthImageOut;
-      }
-      const Img8u &getLastColorImage(){
-        Mutex::Locker lock(m_colorMutex);
-        if(avoidDoubleFrames){
-          while(lastColorTime == colorImage.getTime()){
-            m_colorMutex.unlock();
-            Thread::msleep(1);
-            m_colorMutex.lock();
-          }
-        }
-        lastColorTime = colorImage.getTime();
-        colorImage.deepCopy(&colorImageOut);
-        return colorImageOut;
-      }
-  };
-} // anonymos namespace
-#endif
 
