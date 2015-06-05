@@ -70,7 +70,8 @@ namespace icl{
                                    const std::string &depthDeviceType="kinectd",
                                    const std::string &depthDeviceID="0",
                                    const std::string &colorDeviceType="kinectc",
-                                   const std::string &colorDeviceID="0");
+                                   const std::string &colorDeviceID="0",
+                                   bool needsKinectRawDepthInput=false);
       
       /// Destructor
       ~DepthCameraPointCloudGrabber();

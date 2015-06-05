@@ -61,11 +61,12 @@ namespace icl{
     
     
     DepthCameraPointCloudGrabber::DepthCameraPointCloudGrabber(const Camera &depthCam,
-                                                     const Camera &colorCam,
-                                                     const std::string &depthDeviceType,
-                                                     const std::string &depthDeviceID,
-                                                     const std::string &colorDeviceType,
-                                                     const std::string &colorDeviceID):
+                                                               const Camera &colorCam,
+                                                               const std::string &depthDeviceType,
+                                                               const std::string &depthDeviceID,
+                                                               const std::string &colorDeviceType,
+                                                               const std::string &colorDeviceID,
+                                                               bool needsKinectRawDepthInput):
       m_data(new Data){
       m_data->lastColorImage = 0;
       m_data->lastDepthImage = 0;
@@ -78,21 +79,23 @@ namespace icl{
       addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");
   
       if(&colorCam != &get_null_color_cam()){
-        m_data->creator.init(depthCam, colorCam);
+        m_data->creator.init(depthCam, colorCam, 
+                             needsKinectRawDepthInput ? 
+                             PointCloudCreator::KinectRAW11Bit :
+                             PointCloudCreator::DistanceToCamPlane);
         m_data->colorGrabber.init(colorDeviceType,colorDeviceType+"="+colorDeviceID);
         m_data->colorGrabber.useDesired(formatRGB);
         m_data->colorGrabber.useDesired(depth8u);
         m_data->colorGrabber.useDesired(colorCam.getResolution());
         addChildConfigurable(m_data->colorGrabber.getGrabber(),"Color Source");
       }else{
-        m_data->creator.init(depthCam);
+        m_data->creator.init(depthCam,  needsKinectRawDepthInput ? 
+                             PointCloudCreator::KinectRAW11Bit :
+                             PointCloudCreator::DistanceToCamPlane);
       }
 
       addProperty("focal length factor","range","[0.8:1.2]",1);
       addProperty("positioning fix","range","[-50,50]",0);
-
-
-      
     }
 
     void DepthCameraPointCloudGrabber::reinit(const std::string &description) 
@@ -265,8 +268,19 @@ namespace icl{
       const std::string &params = it->second;
 
       std::vector<std::string> ts = tok(params,",");
+      
+      bool raw = false;
+      for(size_t i=0;i<ts.size();++i){
+        if(ts[i] == "raw" || ts[i] == "RAW"){
+          raw = true;
+          ts.erase(ts.begin()+i);
+        }
+      }
+      
       const Camera *dc = 0, *cc = 0;
       Camera dcx,ccx;
+      
+      
       if(ts[2] == "DEFAULT"){
         dc = &DepthCameraPointCloudGrabber::get_default_depth_cam();
       }else{
@@ -284,9 +298,9 @@ namespace icl{
       }
       
       if(ts.size() == 3){
-        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],"","");
+        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],"","",raw);
       }else{
-        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],ts[3],ts[4]);
+        return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],ts[3],ts[4],raw);
       }
     }
     
