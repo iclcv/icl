@@ -301,15 +301,15 @@ namespace icl{
     
     core::Img32s SegmenterUtils::stabelizeSegmentation(core::Img32s &labelImage){
       core::Img32s stableLabelImage(labelImage.getSize(),1,core::formatMatrix);
-     	
-     	core::Channel32s labelImageC = labelImage[0];
-      core::Channel32s lastLabelImageC = m_data->lastLabelImage[0];
+      core::Channel32s labelImageC = labelImage[0];
       core::Channel32s stableLabelImageC = stableLabelImage[0];
      	
      	utils::Size size = labelImage.getSize();			 
       if(m_data->stabelizeCounter==0){//first image
         labelImage.deepCopy(&m_data->lastLabelImage);
       }else{
+        core::Channel32s lastLabelImageC = m_data->lastLabelImage[0];
+        
         //count number of segments of previous and current label image
         int countCur=0;
         int countLast=0;
@@ -341,7 +341,7 @@ namespace icl{
           }
         }
 				 	
-				stableLabelImage.deepCopy(&m_data->lastLabelImage);//copy image for next iteration 	
+        stableLabelImage.deepCopy(&m_data->lastLabelImage);//copy image for next iteration 	
 				 	
       }
       m_data->stabelizeCounter=1;
