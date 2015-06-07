@@ -32,6 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
+#include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/Function.h>
 
 namespace icl{
   namespace math{
@@ -134,7 +136,7 @@ namespace icl{
       public:
       /// fills the give float* with data from the given data point
       /** creates the rows of the design matrix */
-      typedef Function<void,const DataPoint&,T*> DesignMatrixGen;
+      typedef utils::Function<void,const DataPoint&,T*> DesignMatrixGen;
       
       /// model type (defines the model parameters)
       typedef std::vector<T> Model;
@@ -150,7 +152,7 @@ namespace icl{
       DynMatrix<T> m_D, m_S, m_Evecs, m_Evals, m_svdU, m_svdS, m_svdVt;
       
       /// constraint matrix
-      SmartPtr<DynMatrix<T> >m_C;
+      utils::SmartPtr<DynMatrix<T> >m_C;
       
       /// the model parameters
       Model m_model;
@@ -182,7 +184,7 @@ namespace icl{
       /** Internally we use a workaround when the matrix inversion fails due to stability
           problems. If the standard matrix inversion fails, a SVD-based inversion is 
           used */
-      Model fit(const std::vector<DataPoint> &points){
+      Model fit(const std::vector<DataPoint> &points) throw (utils::ICLException){
         const int M = m_modelDim;
         const int N = (int)points.size();
         
@@ -205,26 +207,11 @@ namespace icl{
           Si = m_C ? m_S.pinv(true)* (*m_C) : m_S.pinv(true); 
         }
         
-        try{
-          Si.eigen(m_Evecs, m_Evals);
-          /// use eigen vector for the largest eigen value
-          std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
-        }catch(ICLException &e){
-          //Si.svd(m_svdU, m_svdS, m_svdVt);
-          //SHOW(m_svdS);
-          //
-          //std::copy(m_svdU.col_begin(0), m_svdU.col_end(0), m_model.begin());
-          //
-          //for(int i=0;i<N;++i){
-          //  SHOW(getError(m_model,points[i]));
-          //}
-
-          // this can happen if there is no noise in the input values
-          // rather than solving Ax = lambda x, we have a 0 eigenvalue lambda
-          // therefore we have to solve Ax = 0 ??
-          DEBUG_LOG("LeastSquareModelFitting:fit: error in eigenvalue decomposition:\n" << e.what());
-          std::fill(m_model.begin(),m_model.end(),Range<T>::limits().maxVal);
-        }
+        
+        // might cause an exception
+        Si.eigen(m_Evecs, m_Evals); 
+        /// use eigen vector for the largest eigen value
+        std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
         
         return m_model;
       }

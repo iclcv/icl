@@ -104,6 +104,7 @@ namespace icl{
       ICL_DELETE(m_data);
       m_data = new Data;
       
+
       Scope rsbScope(scope);
       ParticipantConfig rsbCfg = getFactory().getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
