@@ -110,7 +110,7 @@ namespace icl{
       addProperty("positioning fix","range","[-50,50]",0);
       
       addProperty("pp.enabled","flag","",false);
-      addProperty("pp.mode","menu","median,blur,temporal-smoothing",false);
+      addProperty("pp.mode","menu","median,blur,temporal-smoothing","median");
       addProperty("pp.temporal smoothing frames","range","[2:30]:1",5);
       addProperty("pp.temporal smoothing null","menu","0,-1,2047",0);
       addProperty("pp.median window size","menu","3,5",3);
