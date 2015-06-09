@@ -153,7 +153,7 @@ namespace icl{
           std::vector<std::string> ts = tok(d,":");
           if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
           if(ts.size() == 1){
-            o = new RSBImageOutput(ts[0]);
+      o = new RSBImageOutput(ts[0],"");
           }else if(ts.size() == 2){
             o = new RSBImageOutput(ts[1],ts[0]);
           }else{

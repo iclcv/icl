@@ -103,29 +103,47 @@ namespace icl{
     void RSBImageOutput::init(const std::string &scope, const std::string &transportList){
       ICL_DELETE(m_data);
       m_data = new Data;
-      
 
       SHOW(scope);
       SHOW(transportList);
       
-      Scope rsbScope(scope);
-      ParticipantConfig rsbCfg = getFactory().getDefaultParticipantConfig();
-      typedef std::set<ParticipantConfig::Transport> TSet;
-      typedef std::vector<ParticipantConfig::Transport> TVec;
+      //DEBUG_LOG("here creating scope");
+      SHOW(scope);
+      SHOW(transportList);
       
-      TSet ts2 = rsbCfg.getTransports(true);
-      TVec ts(ts2.begin(),ts2.end());
+      Scope rsbScope(scope);
+      //DEBUG_LOG("here creating default config");
+      ParticipantConfig rsbCfg = getFactory().getDefaultParticipantConfig();
+      //DEBUG_LOG("here done!");
+      
+      //DEBUG_LOG("here");
       std::vector<std::string> transports = tok(transportList,",");
-
-      for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
-        ParticipantConfig::Transport &t = *it;
-        if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
-          t.setEnabled(false);
-        }else{
-          it->setEnabled(true);
+      if(transports.size()){
+        try{
+          typedef std::set<ParticipantConfig::Transport> TSet;
+          typedef std::vector<ParticipantConfig::Transport> TVec;
+          
+          //DEBUG_LOG("here");
+          TSet ts2 = rsbCfg.getTransports(true);
+          TVec ts(ts2.begin(),ts2.end());
+          
+          
+          //DEBUG_LOG("here");
+          for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
+            ParticipantConfig::Transport &t = *it;
+            if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
+              t.setEnabled(false);
+            }else{
+              it->setEnabled(true);
+            }
+          }
+          //DEBUG_LOG("here");
+          rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
+          //DEBUG_LOG("here");
+        }catch(std::exception &e){
+          WARNING_LOG("an error occurred configuring RSB output: " << e.what());
         }
       }
-      rsbCfg.setTransports(TSet(ts.begin(),ts.end()));
       m_data->informer = getFactory().createInformer<RSBImage>(rsbScope,rsbCfg);
       m_data->out = Informer<RSBImage>::DataPtr(new RSBImage);
   
