@@ -105,6 +105,9 @@ namespace icl{
       m_data = new Data;
       
 
+      SHOW(scope);
+      SHOW(transportList);
+      
       Scope rsbScope(scope);
       ParticipantConfig rsbCfg = getFactory().getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
