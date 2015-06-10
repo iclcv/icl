@@ -271,6 +271,7 @@ namespace icl{
                 depthImageOut.setSize(depthImage.getSize());
                 depthImageOut.setChannels(1);
                 std::transform( depthImage.begin(0), depthImage.end(0), depthImageOut.begin(0), kinect_raw_to_mm);
+                depthImageOut.setTime(depthImage.getTime());
               }
               return depthImageOut;
             }
