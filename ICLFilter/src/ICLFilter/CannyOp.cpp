@@ -40,7 +40,7 @@ namespace icl {
   namespace filter{
 
     void CannyOp::property_callback(const Property &p){
-      SHOW(p.name());
+      //SHOW(p.name());
     }
 
     CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
