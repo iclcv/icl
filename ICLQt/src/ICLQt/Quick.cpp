@@ -256,7 +256,7 @@ namespace icl{
             c.text = "";
           }
         }else{
-          if(textCompleter){
+          if(c.textCompleter){
             DEBUG_LOG("text completion using a QTextCompleter in textInputDialog(..) is not supported yet");
           }
           bool ok = false;
