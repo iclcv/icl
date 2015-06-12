@@ -81,6 +81,8 @@
 #include <fstream>
 #include <cstdio>
 
+#include <QtWidgets/QCompleter>
+
 
 
 using namespace icl::utils;
@@ -147,7 +149,7 @@ namespace icl{
         std::string &dst;
         CustomGetTextDialog(QWidget *parent, const std::string &text, const std::string &title, 
                             const std::string &initialText, const ImgBase *image,
-                            QCompleter *textCompleter, std::string &dst):
+                            std::vector<std::string> completionOptions, std::string &dst):
           QDialog(parent, Qt::Dialog),dst(dst){
           setContentsMargins(1,1,1,1);
           gui = HBox();
@@ -173,7 +175,15 @@ namespace icl{
                  );
           gui << rest  << Create();
           
-          gui.get<StringHandle>("text")->setCompleter(textCompleter);
+          if(completionOptions.size()){
+            QStringList ops;
+            for(size_t i=0;i<completionOptions.size();++i){
+              ops << completionOptions[i].c_str();
+            }
+            QLineEdit *le = *gui.get<StringHandle>("text");
+            le->setCompleter(new QCompleter(ops,le));
+          }
+
           
           GUI::ComplexCallback cbf = utils::function(this,&CustomGetTextDialog::cb);
           gui.registerCallback(cbf,"text,done,cancel");
@@ -215,7 +225,7 @@ namespace icl{
         std::string text;
         bool except;
         const ImgBase *visImage;
-        QCompleter *textCompleter;
+        std::vector<std::string> completionOptions;
       };
 
       
@@ -246,7 +256,7 @@ namespace icl{
           //          throw ICLException("Sorry displaying images in a dialog does not work yet (TODO: implement this using a qimage view)");
           std::string dst;
           CustomGetTextDialog dialog((QWidget*)c.parentWidget, c.message, c.caption, 
-                                     c.initialText, c.visImage, c.textCompleter, dst);
+                                     c.initialText, c.visImage, c.completionOptions, dst);
           int e = dialog.exec();
           if(e){
             c.text = dst.c_str();
@@ -256,8 +266,8 @@ namespace icl{
             c.text = "";
           }
         }else{
-          if(c.textCompleter){
-            DEBUG_LOG("text completion using a QTextCompleter in textInputDialog(..) is not supported yet");
+          if(c.completionOptions.size()){
+            DEBUG_LOG("text completion options a QTextCompleter in textInputDialog(..) is not supported yet");
           }
           bool ok = false;
           QString t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(), 
@@ -316,8 +326,8 @@ namespace icl{
     std::string textInputDialog(const std::string &caption, const std::string &message,
                                 const std::string &initialText, void *parentWidget,
                                 core::ImgBase *visImage,
-                                QCompleter *textCompleter) throw (utils::ICLException){
-      TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false, visImage, textCompleter };  
+                                std::vector<std::string> completionOptions) throw (utils::ICLException){
+      TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false, visImage, completionOptions };  
 
       ICLApp::instance()->executeInGUIThread<TextIOContext&>(do_gettext, c, true);
 
