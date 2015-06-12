@@ -65,6 +65,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLQt/GUIComponents.h>
 #include <ICLQt/BoxHandle.h>
+#include <ICLQt/StringHandle.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <ICLQt/GUIWidget.h>
 
