@@ -139,6 +139,8 @@ namespace icl {
       }
 
       private:
+      
+      void property_callback(const Property &p);
 
       void setUpPreBlurOp();
 

@@ -39,6 +39,10 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
 
+    void CannyOp::property_callback(const Property &p){
+      SHOW(p.name());
+    }
+
     CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
       // {{{ open
       m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlurRadius(preBlurRadius){
@@ -48,6 +52,8 @@ namespace icl {
       m_derivatives[0]=m_derivatives[1]=0;
       m_preBlurOp = 0;
       setUpPreBlurOp();
+      
+      registerCallback(function(this,&CannyOp::property_callback));
     }
 
     // }}}
@@ -63,6 +69,7 @@ namespace icl {
 
       m_preBlurOp = 0;
       setUpPreBlurOp();
+      registerCallback(function(this,&CannyOp::property_callback));
     }
 
     // }}}

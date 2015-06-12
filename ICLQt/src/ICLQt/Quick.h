@@ -34,6 +34,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Img.h>
+#include <QtWidgets/QCompleter>
 
 namespace icl{
   namespace utils{}
@@ -92,7 +93,8 @@ namespace icl{
                                 const std::string &message="please write your text here",
                                 const std::string &initialText="",
                                 void *parentWidget=0,
-                                core::ImgBase *visImage=0) throw (utils::ICLException);
+                                core::ImgBase *visImage=0,
+                                QCompleter *textCompleter=0) throw (utils::ICLException);
 
    
     /// executes the given command as a child process and returns it output
