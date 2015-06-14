@@ -181,7 +181,7 @@ namespace icl {
 
     void EuclideanBlobSegmenter::blobSegmentation(bool useROI) {
       //find biggest surface (support plane)
-      int maxID=0;
+      int maxID=-1;
       unsigned int maxSize=0;
       for(unsigned int i=0; i<m_data->surfaces.size(); i++){
         if(m_data->surfaces.at(i).size()>maxSize){
@@ -191,6 +191,8 @@ namespace icl {
       }
       
       //RANSAC with the plane (find model) 
+      if(maxID < 0) return;
+      
       PlanarRansacEstimator::Result result=m_data->ransac->apply(m_data->xyzData, 
                 m_data->surfaces.at(maxID), m_data->surfaces.at(maxID), m_data->RANSACeuclDistance/2, m_data->RANSACpasses, 
                 m_data->RANSACsubset, m_data->RANSACtolerance, PlanarRansacEstimator::MAX_ON);
