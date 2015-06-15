@@ -236,6 +236,7 @@ IF(RSB_FOUND)
 
   LIST(APPEND HEADERS src/ICLIO/RSBGrabber.h
                       src/ICLIO/RSBImageOutput.h
+                      src/ICLIO/RSBIOUtil.h
                       ${PROTO_HDRS})
 ENDIF()
 
