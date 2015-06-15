@@ -53,8 +53,8 @@ namespace icl{
     
     // Tier 1: Very basic template class that allows for runtime type identification
     struct RSBIOUtilMeta{
-      virtual void getTypeName() const = 0;
-      virtual void getFullTypeName() const = 0;
+      virtual std::string getTypeName() const = 0;
+      virtual std::string getFullTypeName() const = 0;
       virtual ~RSBIOUtilMeta(){}
     };
     
@@ -88,8 +88,8 @@ namespace icl{
         ConverterPtr c(new Converter);
         rsb::converter::converterRepository<std::string>()->registerConverter(c);
       }
-      virtual void getTypeName() { return T::getDescriptor()->name(); }
-      virtual void getFullTypeName() { return T::getDescriptor()->full_name(); }
+      virtual std::string getTypeName() { return T::getDescriptor()->name(); }
+      virtual std::string getFullTypeName() { return T::getDescriptor()->full_name(); }
     };
 
     /// specialization non-protocol-buffer types
@@ -97,8 +97,8 @@ namespace icl{
     template<>                                                          \
     struct RSBIOUtilDataExtra<T>{                                       \
       static void register_type(){}                                     \
-      virtual void getTypeName() { return #NAME; }                      \
-      virtual void getFullTypeName() { return #FULL_NAME; }             \
+      virtual std::string getTypeName() { return #NAME; }                     \
+      virtual std::string getFullTypeName() { return #FULL_NAME; }            \
     };
     
     REGISTER_RSBIOUtil_COMMON_TYPE(std::string,string,primitive.string);
