@@ -415,7 +415,7 @@ install: all ${PC} create-install-dirs custom-install-hook ${APPS_INSTALLED}
 	fi
 	${AT}for T in ${EXTRA_INSTALL_TO_ETC} ; do \
 		${ECHO_NO_AT} ${PROGRESS} ${FBLA}${BRED}[extra etc]${DEF} $$T ; \
-		rm -rf ${ETC_INSTALL_PREFIX}/$$T : \
+		rm -rf ${ETC_INSTALL_PREFIX}/$$T ; \
 		install -p -m 664 $$T ${ETC_INSTALL_PREFIX}/ ; \
 	done
 
