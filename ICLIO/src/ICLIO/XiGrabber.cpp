@@ -31,6 +31,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
+#include <ICLUtils/Time.h>
 #include <ICLIO/XiGrabber.h>
 #include <m3api/xiApi.h>
 #include <memory.h>
@@ -42,6 +43,85 @@ namespace icl{
   using namespace utils;
   namespace io{
 
+    static std::pair<int,std::string> error_codes[76] = {
+      std::pair<int,std::string>(0,"Function call succeeded"),
+      std::pair<int,std::string>(1,"Invalid handle"),
+      std::pair<int,std::string>(2,"Register read error"),
+      std::pair<int,std::string>(3,"Register write error"),
+      std::pair<int,std::string>(4,"Freeing resiurces error"),
+      std::pair<int,std::string>(5,"Freeing channel error"),
+      std::pair<int,std::string>(6,"Freeing bandwith error"),
+      std::pair<int,std::string>(7,"Read block error"),
+      std::pair<int,std::string>(8,"Write block error"),
+      std::pair<int,std::string>(9,"No image"),
+      std::pair<int,std::string>(10,"Timeout"),
+      std::pair<int,std::string>(11,"Invalid arguments supplied"),
+      std::pair<int,std::string>(12,"Not supported"),
+      std::pair<int,std::string>(13,"Attach buffers error"),
+      std::pair<int,std::string>(14,"Overlapped result"),
+      std::pair<int,std::string>(15,"Memory allocation error"),
+      std::pair<int,std::string>(16,"DLL context is NULL"),
+      std::pair<int,std::string>(17,"DLL context is non zero"),
+      std::pair<int,std::string>(18,"DLL context exists"),
+      std::pair<int,std::string>(19,"Too many devices connected"),
+      std::pair<int,std::string>(20,"Camera context error"),
+      std::pair<int,std::string>(21,"Unknown hardware"),
+      std::pair<int,std::string>(22,"Invalid TM file"),
+      std::pair<int,std::string>(23,"Invalid TM tag"),
+      std::pair<int,std::string>(24,"Incomplete TM"),
+      std::pair<int,std::string>(25,"Bus reset error"),
+      std::pair<int,std::string>(26,"Not implemented"),
+      std::pair<int,std::string>(27,"Shading too bright"),
+      std::pair<int,std::string>(28,"Shading too dark"),
+      std::pair<int,std::string>(29,"Gain is too low"),
+      std::pair<int,std::string>(30,"Invalid bad pixel list"),
+      std::pair<int,std::string>(31,"Bad pixel list realloc error"),
+      std::pair<int,std::string>(32,"Invalid pixel list"),
+      std::pair<int,std::string>(33,"Invalid Flash File System"),
+      std::pair<int,std::string>(34,"Invalid profile"),
+      std::pair<int,std::string>(35,"Invalid calibration"),
+      std::pair<int,std::string>(36,"Invalid buffer"),
+      std::pair<int,std::string>(38,"Invalid data"),
+      std::pair<int,std::string>(39,"Timing generator is busy"),
+      std::pair<int,std::string>(40,"Wrong operation open/write/read/close"),
+      std::pair<int,std::string>(41,"Acquisition already started"),
+      std::pair<int,std::string>(42,"Old version of device driver installed to the system."),
+      std::pair<int,std::string>(43,"To get error code please call GetLastError function."),
+      std::pair<int,std::string>(44,"Data can't be processed"),
+      std::pair<int,std::string>(45,"Acquisition has been stopped. It should be started before GetImage."),
+      std::pair<int,std::string>(46,"Acquisition has been stoped with error."),
+      std::pair<int,std::string>(47,"Input ICC profile missed or corrupted"),
+      std::pair<int,std::string>(48,"Output ICC profile missed or corrupted"),
+      std::pair<int,std::string>(49,"Device not ready to operate"),
+      std::pair<int,std::string>(50,"Shading too contrast"),
+      std::pair<int,std::string>(51,"Module already initialized"),
+      std::pair<int,std::string>(52,"Application doesn't enough privileges(one or more app"),
+      std::pair<int,std::string>(53,"Installed driver not compatible with current software"),
+      std::pair<int,std::string>(54,"TM file was not loaded successfully from resources"),
+      std::pair<int,std::string>(55,"Device has been reseted, abnormal initial state"),
+      std::pair<int,std::string>(56,"No Devices Found"),
+      std::pair<int,std::string>(57,"Resource(device) or function locked by mutex"),
+      std::pair<int,std::string>(58,"Buffer provided by user is too small"),
+      std::pair<int,std::string>(59,"Couldn't initialize processor."),
+      std::pair<int,std::string>(60,"The object/module/procedure/process being referred to has not been started."),
+      std::pair<int,std::string>(100,"Unknown parameter"),
+      std::pair<int,std::string>(101,"Wrong parameter value"),
+      std::pair<int,std::string>(103,"Wrong parameter type"),
+      std::pair<int,std::string>(104,"Wrong parameter size"),
+      std::pair<int,std::string>(105,"Input buffer too small"),
+      std::pair<int,std::string>(106,"Parameter info not supported"),
+      std::pair<int,std::string>(107,"Parameter info not supported"),
+      std::pair<int,std::string>(108,"Data format not supported"),
+      std::pair<int,std::string>(109,"Read only parameter"),
+      std::pair<int,std::string>(111,"This camera does not support currently available bandwidth"),
+      std::pair<int,std::string>(112,"FFS file selector is invalid or NULL"),
+      std::pair<int,std::string>(113,"FFS file not found"),
+      std::pair<int,std::string>(201,"Processing error - other"),
+      std::pair<int,std::string>(202,"Error while image processing."),
+      std::pair<int,std::string>(203,"Input format is not supported for processing."),
+      std::pair<int,std::string>(204,"Output format is not supported for processing"),
+    };
+
 #define XI_CALL(X) DEBUG_LOG("calling xiFunction " << #X); X
     
     struct XiGrabber::Data{
@@ -49,6 +129,7 @@ namespace icl{
       XI_IMG image;
       Img8u buf;
       Mutex mutex;
+      Size imageSize;
       
       Data(int deviceID){
         DEBUG_LOG("Generic Grabber created");
@@ -71,6 +152,11 @@ namespace icl{
         xiSetParamInt(xiH, XI_PRM_RECENT_FRAME, 1);
         handle_result(s,"xiSetParamInt(use recent frame)");
         
+        // hmm ? we assume here, that this gives the maximum size and not
+        // only the size that is currently set inside the device
+        xiGetParamInt(xiH, XI_PRM_WIDTH, &imageSize.width);
+        xiGetParamInt(xiH, XI_PRM_HEIGHT, &imageSize.height);
+
         s = xiStartAcquisition(xiH);
       }
       
@@ -84,9 +170,21 @@ namespace icl{
         }
       }
       
-      static void handle_result(XI_RETURN s, const std::string &where){
+      static void handle_result(XI_RETURN s, const std::string &where, bool throwException=true){
         if(s != XI_OK){
-          throw ICLException("XiGrabber: error in XiApi in " + where + " (error code was: " + str(s) + ")");
+          static std::map<int,std::string> errors;
+          if(!errors.size()){
+            for(int i=0;i<76;++i){
+              errors.insert(error_codes[i]);
+            }
+          }
+          std::string errorText = "XiGrabber: error in XiApi in " + where + " (error code was: " 
+            + str(s)  + ":" + errors[s] + ")";
+          if(throwException){
+            throw ICLException(errorText);
+          }else{
+            ERROR_LOG(errorText);
+          }
         }
       }
 
@@ -100,11 +198,21 @@ namespace icl{
     XiGrabber::XiGrabber(int deviceID) throw(utils::ICLException) : m_data(0){
       addProperty("format", "menu", "RGB 24Bit,Gray 8Bit", "RGB 24Bit", 0, "");
       addProperty("size", "info", "", "", 0, "");
+      addProperty("roi.enabled","flag","",false);
+  
       
       init(deviceID);
 
+      std::string w = str(m_data->imageSize.width);
+      std::string h = str(m_data->imageSize.height);
+      addProperty("roi.x","range:spinbox","[0,"+w+"]:1",0);
+      addProperty("roi.y","range:spinbox","[0,"+h+"]:1",0);
+      addProperty("roi.width","range:spinbox","[0,"+w+"]:1",m_data->imageSize.width);
+      addProperty("roi.height","range:spinbox","[0,"+h+"]:1",m_data->imageSize.height);
+
       Configurable::registerCallback(utils::function(this,&XiGrabber::processPropertyChange));
 
+      addProperty("pixel binning","menu","no binning,2x2 to 1,4x4 to 1","no binning");
     }
 
     XiGrabber::~XiGrabber(){
@@ -146,8 +254,11 @@ namespace icl{
     const core::ImgBase* XiGrabber::acquireImage(){
       //DEBUG_LOG("acquire image called!");
       XI_RETURN s = XI_TIMEOUT;
+      Time timestamp;
       do{
         s = xiGetImage(m_data->xiH, 10000, &m_data->image);
+        timestamp = Time::now(); // by this, we avoid having to deal with the crazy
+                                // Sec/Usec timestamp stuff from the camera
         if(s == XI_TIMEOUT){
           XI_RETURN s1 = xiStopAcquisition(m_data->xiH);
           Data::handle_result(s1,"xiStopAcquisition because of timeout");
@@ -170,6 +281,7 @@ namespace icl{
         int dim = m_data->buf.getDim();
         std::copy(s, s+dim, m_data->buf.begin(0));
       }
+      m_data->buf.setTime(timestamp);
       return &m_data->buf;
     }
 
@@ -182,6 +294,80 @@ namespace icl{
         }else{
           XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
           Data::handle_result(s,"setPaxiSetParamInt(format=mono8)");          
+        }
+      }else if (prop.name == "pixel binning"){
+        std::string value = getPropertyValue(prop.name);
+        int rate = 0;
+        if(value == "no binning"){
+          rate = 1;
+        }else if(value == "2x2 to 1"){
+          rate = 2;
+        }else if(value == "4x4 to 1"){
+          rate = 4;
+        }else{
+          ERROR_LOG("invalid pixel binning value " << value);
+        }
+        if(rate){
+          try{
+            XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_DOWNSAMPLING, rate);
+            Data::handle_result(s,"setPaxiSetParamInt(downsampling)");  
+          }catch(ICLException &e){
+            ERROR_LOG("error setting property 'pixel binning':"
+                      << e.what());
+          }
+        }
+      }else if(prop.name.length() > 4 && prop.name.substr(0,4) == "roi."){
+        bool on = getPropertyValue("roi.enabled");
+        if(on){
+          int x = getPropertyValue("roi.x");
+          int y = getPropertyValue("roi.y");
+          int w = getPropertyValue("roi.width");
+          int h = getPropertyValue("roi.height");
+          
+          try{
+            int div = 1;
+            XI_RETURN s = xiGetParamInt(m_data->xiH, XI_PRM_INFO_INCREMENT, &div);
+            Data::handle_result(s,"xiGetParamInt(info-increment)");
+            if(div < 1){
+              div = 1;
+              WARNING_LOG("xi-api returned 0 for property XI_PRM_INFO_INCREMENT, using 1 instead");
+            }
+            x = (x/div)*div;
+            y = (y/div)*div;
+            w = (w/div)*div;
+            h = (h/div)*div;
+
+            if(x + w > m_data->imageSize.width ||
+               y + h > m_data->imageSize.height){
+              WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect " 
+                          << Rect(Point::null, m_data->imageSize) 
+                          << " (skipping xiApi call to avoid undefined behavior");
+            }else{
+              XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+              Data::handle_result(s,"xiSetParamInt(x-offset)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
+              Data::handle_result(s,"xiSetParamInt(y-offset)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
+              Data::handle_result(s,"xiSetParamInt(width)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
+              Data::handle_result(s,"xiSetParamInt(height)");
+            }
+          }catch(ICLException &e){
+            ERROR_LOG("Error setting image ROI:" << e.what());
+          }
+        }else{
+          try{
+            XI_RETURN s =  xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, 0);
+            Data::handle_result(s,"xiSetParamInt(x-offset)");
+            s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, 0);
+            Data::handle_result(s,"xiSetParamInt(y-offset)");
+            s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, m_data->imageSize.width);
+            Data::handle_result(s,"xiSetParamInt(width)");
+            s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, m_data->imageSize.height);
+            Data::handle_result(s,"xiSetParamInt(height)");
+          }catch(ICLException &e){
+            ERROR_LOG("Error un-setting image ROI:" << e.what());
+          }
         }
       }
     }
