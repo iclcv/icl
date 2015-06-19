@@ -115,6 +115,7 @@ Overview:
 * :ref:`install.dependencies.optional.rsb`
 * :ref:`install.dependencies.optional.bullet`
 * :ref:`install.dependencies.optional.libav`
+* :ref:`install.dependencies.optional.xiapi`
 
 
 .. _install.dependencies.optional.ipp:
@@ -608,7 +609,7 @@ bullet must be build from the git-sources::
   make -j6 && make install
 
 
-.. _install.dependencies.optional.libav
+.. _install.dependencies.optional.libav:
 
 LibAV
 ~~~~~
@@ -623,7 +624,37 @@ As it turned out that our OpenCV-based :icl:`io::GenericGrabber` and :icl:`io:Ge
 * **Dependent library features:** libav-based video grabbing/writing
 * **Ubuntu packages:**  libavcodec-dev libavformat-dev libavutil-dev libavresample-dev libswscale-dev libavdevice-dev
 
-  
+.. _install.dependencies.optional.xiapi:
+
+Ximea XiAPI
+~~~~~~~~~~~
+
+**Grabber Backend for Ximea Cameras based on libXIMEA**
+
+In order to provide camera support for Ximea Cameras, the xiAPI library from
+Ximea's Website must be installed. In addition, the dev-package of libusb-1 is needed
+so either install it to a system default path or specify libusb-1 root using cmake defines::
+
+  -DBUILD_WITH_LIBUSB=TRUE -DLIB_USB_ROOT=/path/to/lib/usb
+
+Please note, that the XiAPI dependency will also build if -DBUILD_WITH_LIBUSB is not given to 
+cmake but libusb is found in a system default directory.
+
+
+* **Supported Versions:**  recent (June, 2015)
+* **License Type:** free but closed source
+* **Download at:** http://www.ximea.com/support/wiki/apis/XIMEA_Linux_Software_Package
+* **Dependent library features:** XiAPI-based camera support
+* **Ubuntu packages:**  libusb-1.0-0-dev (only for libusb-1-dev)
+
+Detailed installation instructions (copied form the above mentioned website)::
+
+  wget http://www.ximea.com/downloads/recent/XIMEA_Linux_SP.tgz
+  tar xzf XIMEA_Linux_SP.tgz
+  cd package
+  sudo ./install
+
+This will install the latest version of the library to /opt/XIMEA
 
 .. _install.source:
 
