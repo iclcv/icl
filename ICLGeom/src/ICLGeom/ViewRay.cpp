@@ -30,6 +30,7 @@
 
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Camera.h>
+#include <ICLMath/HomogeneousMath.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -62,6 +63,7 @@ namespace icl{
 
     float ViewRay::closestSqrDistanceTo(const Vec &p) const{
       const Vec x = p-offset;
+	  //return l3(x - icl::math::sprod3(x,direction)*direction);
       return sqrnorm3(x)-sqr(sprod3(x,direction));
     }
     

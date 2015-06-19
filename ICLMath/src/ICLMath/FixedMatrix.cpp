@@ -405,9 +405,9 @@ namespace icl{
 
       ColVec v1 = ColVec(a2+b2-c2-d2, 2*ad+2*bd, 2*bd-2*ac).normalized();
       ColVec v2(2*bc-2*ad, a2-b2+c2-d2, 2*ab+2*cd);
-      v2 = (v2 - (v1*scalar(v1,v2))).normalized();
+	  v2 = (v2 - (v1*scalar(v1,v2))).normalized();
       ColVec v3(2*ac+2*bd,2*cd-2*ab,a2-b2-c2+d2);
-      v3 = (v3 - v1*scalar(v1,v3) - v2*scalar(v2,v3)).normalized();
+	  v3 = (v3 - v1*scalar(v1,v3) - v2*scalar(v2,v3)).normalized();
       
       return FixedMatrix<T,4,4>(v1[0], v2[0], v3[0], 0,
                                 v1[1], v2[1], v3[1], 0,

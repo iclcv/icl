@@ -143,7 +143,9 @@ namespace icl{
       /// Sets the graphcut threshold
       /**       @param threshold the maximum weight of a cut */
       void setGraphCutThreshold(float threshold);
-      
+
+	  std::vector<SurfaceFeatureExtractor::SurfaceFeature> getSurfaceFeatures();
+
       /// Returns the segment blobs.
       /**        @return a vector of segments. Every entry contains a vector with the surface indices */
       std::vector<std::vector<int> > getSegments();

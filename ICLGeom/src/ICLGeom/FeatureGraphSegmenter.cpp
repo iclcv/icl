@@ -103,6 +103,8 @@ namespace icl {
 
       core::Img8u maskImage;
       core::Img32s labelImage;
+
+	  std::vector<SurfaceFeatureExtractor::SurfaceFeature> features;
       
       float xMinROI, xMaxROI, yMinROI, yMaxROI, zMinROI, zMaxROI;
       
@@ -153,9 +155,9 @@ namespace icl {
                                   core::DataSegment<float, 4> normals, bool stabelize, bool useROI, 
                                   bool useCutfreeAdjacency, bool useCoplanarity, bool useCurvature, bool useRemainingPoints) {
 	
-	    surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
-	    	    	    
-	    std::vector<SurfaceFeatureExtractor::SurfaceFeature> features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
+		surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
+
+		m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
 	    
 	    math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage, 
                               m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
@@ -165,18 +167,18 @@ namespace icl {
 	    if(useCutfreeAdjacency){
 	      math::DynMatrix<bool> cutfreeMatrix = m_data->cutfree->apply(xyz, 
                   m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
-                  m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, features, m_data->cutfreeMinAngle);
+				  m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, m_data->features, m_data->cutfreeMinAngle);
         math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
       }
       
       if(useCoplanarity){
-        math::DynMatrix<bool> coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
+		math::DynMatrix<bool> coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
                           m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
     	   math::GraphCutter::mergeMatrix(resultMatrix, coplanMatrix);
       }
 
       if(useCurvature){
-        math::DynMatrix<bool> curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, features, m_data->surfaces, normals, 
+		math::DynMatrix<bool> curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
                                             m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity, 
                                             m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance, 
                                             m_data->curvatureOutlierTolerance);
@@ -198,14 +200,13 @@ namespace icl {
 	    return getColoredLabelImage(stabelize);
     }
 
-
     std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
                   core::DataSegment<float,4> normals, bool useROI, 
                   bool useCutfreeAdjacency, bool useCoplanarity, bool useCurvature, bool useRemainingPoints,
                   float weightCutfreeAdjacency, float weightCoplanarity, float weightCurvature, float weightRemainingPoints){
       surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
 	    	    	    
-	    std::vector<SurfaceFeatureExtractor::SurfaceFeature> features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
+		m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
 	    
 	    math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage, 
                               m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
@@ -220,18 +221,18 @@ namespace icl {
 	    if(useCutfreeAdjacency){
 	      cutfreeMatrix = m_data->cutfree->apply(xyz, 
                   m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
-                  m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, features, m_data->cutfreeMinAngle);
+				  m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, m_data->features, m_data->cutfreeMinAngle);
         math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
       }
       
       if(useCoplanarity){
-        coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
+		coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
                           m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
     	   math::GraphCutter::mergeMatrix(resultMatrix, coplanMatrix);
       }
 
       if(useCurvature){
-        curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, features, m_data->surfaces, normals, 
+		curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
                                             m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity, 
                                             m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance, 
                                             m_data->curvatureOutlierTolerance);
@@ -326,7 +327,10 @@ namespace icl {
       m_data->graphCutThreshold=threshold;
     }
     
-    
+	std::vector<SurfaceFeatureExtractor::SurfaceFeature> FeatureGraphSegmenter::getSurfaceFeatures() {
+		return m_data->features;
+	}
+
     std::vector<std::vector<int> > FeatureGraphSegmenter::getSegments() {
 	    return m_data->segments;
     }

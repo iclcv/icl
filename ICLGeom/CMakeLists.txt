@@ -31,6 +31,7 @@
 SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CoplanarPointPoseEstimator.cpp
             src/ICLGeom/ICP.cpp
+												src/ICLGeom/ICP3D.cpp
             src/ICLGeom/PlaneEquation.cpp
             src/ICLGeom/PointCloudNormalEstimator.cpp
             src/ICLGeom/PoseEstimator.cpp
@@ -71,6 +72,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PrimitiveType.h
             src/ICLGeom/SceneObjectBase.h
             src/ICLGeom/ICP.h
+												src/ICLGeom/ICP3D.h
             src/ICLGeom/RGBDMapping.h
             src/ICLGeom/Plot3D.h          
             src/ICLGeom/PlotHandle3D.h

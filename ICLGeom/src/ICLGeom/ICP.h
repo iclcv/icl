@@ -37,7 +37,7 @@
 
 namespace icl{
   namespace geom{
-  
+
     /// Implementaiton of the Iterator Closest utils::Point (ICP) Algorithm
     /** TODO: Add Documentation 
         What about a fixed 3D-Version that uses 3D-Fixed Matrix data?

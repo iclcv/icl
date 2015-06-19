@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <ICLGeom/FeatureGraphSegmenter.h>
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLGeom/Camera.h>
@@ -59,6 +60,8 @@ namespace icl{
           @param obj the empty pointcloud object for the results (computed in the method) */
       void apply(const core::Img32f &depthImage, PointCloudObject &obj);
       
+	  std::vector<geom::SurfaceFeatureExtractor::SurfaceFeature> getSurfaceFeatures();
+
       /// Returns the colored normal image.
       /**        @return the colored normal image */  		
       const core::Img8u getNormalImage();
@@ -70,6 +73,8 @@ namespace icl{
   	  /// Returns the label image.
       /**        @return the label image */  		
   	  core::Img32s getLabelImage();	
+
+      const core::DataSegment<float,4> getNormalSegment();
   	  
   	  /// Returns the colored label image.
       /**        @return the colored label image */  			

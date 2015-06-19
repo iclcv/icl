@@ -302,8 +302,16 @@ namespace icl{
       
     obj.unlock();  
     }
-    
-	  
+
+	std::vector<geom::SurfaceFeatureExtractor::SurfaceFeature>
+	ConfigurableDepthImageSegmenter::getSurfaceFeatures() {
+		return m_data->segmentation->getSurfaceFeatures();
+	}
+
+    const core::DataSegment<float,4> ConfigurableDepthImageSegmenter::getNormalSegment() {
+        return m_data->objectEdgeDetector->getNormals();
+    }
+
     const core::Img8u ConfigurableDepthImageSegmenter::getNormalImage(){
       return m_data->normalImage;
     }

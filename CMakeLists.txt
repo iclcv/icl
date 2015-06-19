@@ -195,6 +195,7 @@ OPTION(BUILD_WITH_SSE3 "Decide if SSE3 and lower intrinsics shall be used to spe
 OPTION(BUILD_WITH_SSSE3 "Decide if SSSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
 OPTION(BUILD_WITH_BULLET "Provides physics simulation. Needs the bullet physics engine" OFF)
 OPTION(BUILD_WITH_RST "Link against the RST framework for message definitions (needs PROTOBUF)" OFF)
+OPTION(BUILD_WITH_RSC "Link against the RSC framework for message definitions (needs RST)" OFF)
 OPTION(BUILD_WITH_XIAPI "Link against the libm3api, e.g. used for Ximea Cameras" OFF)
 
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)

@@ -14,6 +14,8 @@ ENDIF()
 
 #message(STATUS "opencv: ${OPENCV_FOUND}")
 
+ADD_SUBDIRECTORY(icp3d-test)
+
 IF(QT4_FOUND AND PCL_FOUND)
   ADD_SUBDIRECTORY(point-cloud-tests)
 ENDIF()
