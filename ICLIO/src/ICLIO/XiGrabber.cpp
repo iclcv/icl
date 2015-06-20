@@ -318,6 +318,7 @@ namespace icl{
         }
       }else if(prop.name.length() > 4 && prop.name.substr(0,4) == "roi."){
         bool on = getPropertyValue("roi.enabled");
+        XI_RETURN s;
         if(on){
           int x = getPropertyValue("roi.x");
           int y = getPropertyValue("roi.y");
@@ -326,8 +327,13 @@ namespace icl{
           
           try{
             int div = 1;
-            XI_RETURN s = xiGetParamInt(m_data->xiH, XI_PRM_INFO_INCREMENT, &div);
-            Data::handle_result(s,"xiGetParamInt(info-increment)");
+            try{
+              s = xiGetParamInt(m_data->xiH, XI_PRM_INFO_INCREMENT, &div);
+              Data::handle_result(s,"xiGetParamInt(info-increment)");
+            }catch(ICLException &e){
+              WARNING_LOG("xi-api could not get info-increment "
+                          "parameter: using 1 instead");
+            }
             if(div < 1){
               div = 1;
               WARNING_LOG("xi-api returned 0 for property XI_PRM_INFO_INCREMENT, using 1 instead");
@@ -343,28 +349,29 @@ namespace icl{
                           << Rect(Point::null, m_data->imageSize) 
                           << " (skipping xiApi call to avoid undefined behavior");
             }else{
-              XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
-              Data::handle_result(s,"xiSetParamInt(x-offset)");
-              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
-              Data::handle_result(s,"xiSetParamInt(y-offset)");
+              DEBUG_LOG("setting roi to " << Rect(x,y,w,h));
               s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
               Data::handle_result(s,"xiSetParamInt(width)");
               s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
               Data::handle_result(s,"xiSetParamInt(height)");
-            }
+              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+              Data::handle_result(s,"xiSetParamInt(x-offset)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
+              Data::handle_result(s,"xiSetParamInt(y-offset)");
+             }
           }catch(ICLException &e){
             ERROR_LOG("Error setting image ROI:" << e.what());
           }
         }else{
           try{
-            XI_RETURN s =  xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, 0);
-            Data::handle_result(s,"xiSetParamInt(x-offset)");
-            s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, 0);
-            Data::handle_result(s,"xiSetParamInt(y-offset)");
             s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, m_data->imageSize.width);
             Data::handle_result(s,"xiSetParamInt(width)");
             s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, m_data->imageSize.height);
             Data::handle_result(s,"xiSetParamInt(height)");
+            s =  xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, 0);
+            Data::handle_result(s,"xiSetParamInt(x-offset)");
+            s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, 0);
+            Data::handle_result(s,"xiSetParamInt(y-offset)");
           }catch(ICLException &e){
             ERROR_LOG("Error un-setting image ROI:" << e.what());
           }
