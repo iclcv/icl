@@ -714,6 +714,9 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 	int l = 0;
 	int kSize = 1;
 	int rowSize = 1;
+        (void)kSize;
+        (void)rowSize;
+
 	if (m_data->normalAveragingRange <= 1) {
 		// nothing!
 	} else if (m_data->normalAveragingRange <= 3) {

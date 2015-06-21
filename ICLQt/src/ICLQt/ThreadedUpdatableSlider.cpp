@@ -50,6 +50,16 @@ namespace icl{
       QObject::connect(this,SIGNAL(sliderPressed()),this,SLOT(collectSliderPressed()));
       QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
     }
+
+    bool ThreadedUpdatableSlider::event(QEvent *event){
+      ICLASSERT_RETURN_VAL(event,false);
+      if(event->type() == SliderUpdateEvent::EVENT_ID){
+        setValue(reinterpret_cast<SliderUpdateEvent*>(event)->value);
+        return true;
+      }else{
+          return QSlider::event(event);
+      }
+    } 
   
     void ThreadedUpdatableSlider::registerCallback(const Function<void> &cb, const std::string &eventList){
       std::vector<std::string> ts = tok(eventList,",");

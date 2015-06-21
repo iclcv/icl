@@ -52,6 +52,8 @@ namespace icl{
     class ICLQt_API ThreadedUpdatableSlider : public QSlider{
       Q_OBJECT;
       
+      //int m_stepping;
+      
       /// internally callback type
       struct CB{
         /// associated event 
@@ -73,6 +75,7 @@ namespace icl{
       /** new, if this is called from the GUI thread, setValue is called directly
           without using Qt's signal mechanism*/
       void setValueFromOtherThread(int value){
+        //value = (value/m_stepping)*m_stepping;
         if(QThread::currentThread() == QCoreApplication::instance()->thread()){
           setValue(value);
         }else{
@@ -80,16 +83,12 @@ namespace icl{
         }
       }
       
+      //void setStepping(int stepping){
+      //  m_stepping = stepping;
+      //}
+      
       /// automatically called by Qt's event processing mechanism
-      virtual bool event ( QEvent * event ){
-        ICLASSERT_RETURN_VAL(event,false);
-        if(event->type() == SliderUpdateEvent::EVENT_ID){
-          setValue(reinterpret_cast<SliderUpdateEvent*>(event)->value);
-          return true;
-        }else{
-          return QSlider::event(event);
-        }
-      } 
+      virtual bool event ( QEvent * event );
       
       /// registers a void-callback function to the given event names
       /** allowed event names are

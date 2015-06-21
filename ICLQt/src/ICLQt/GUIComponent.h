@@ -85,6 +85,22 @@ namespace icl{
         str << a << ',' << b << ',' << c << ',' << d;
         return str.str();
       }
+
+      /// utility method to concatenate 5 values
+      template<class A, class B, class C, class D, class E> 
+      static std::string form_args_5(const A &a, const B &b, const C &c, const D &d, const E &e){
+        std::ostringstream str;
+        str << a << ',' << b << ',' << c << ',' << d << "," << e;
+        return str.str();
+      }
+
+      /// utility method to concatenate 5 values
+      template<class A, class B, class C, class D, class E, class F> 
+      static std::string form_args_6(const A &a, const B &b, const C &c, const D &d, const E &e, const F &f){
+        std::ostringstream str;
+        str << a << ',' << b << ',' << c << ',' << d << "," << e << "," << f;
+        return str.str();
+      }
       
       /// component type
       std::string m_type;

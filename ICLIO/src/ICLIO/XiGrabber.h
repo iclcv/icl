@@ -50,6 +50,8 @@ namespace icl{
         /// Connects an unconnected grabber to given shared memory segment
         void init(int deviceID) throw (utils::ICLException);
 
+        /// provide protected access for the data class
+        friend class Data;
       public:
 
         /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)

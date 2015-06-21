@@ -154,8 +154,8 @@ namespace icl{
         
         // hmm ? we assume here, that this gives the maximum size and not
         // only the size that is currently set inside the device
-        xiGetParamInt(xiH, XI_PRM_WIDTH, &imageSize.width);
-        xiGetParamInt(xiH, XI_PRM_HEIGHT, &imageSize.height);
+        xiGetParamInt(xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &imageSize.width);
+        xiGetParamInt(xiH, XI_PRM_HEIGHT XI_PRM_INFO_MAX, &imageSize.height);
 
         s = xiStartAcquisition(xiH);
       }
@@ -170,7 +170,58 @@ namespace icl{
         }
       }
       
-      static void handle_result(XI_RETURN s, const std::string &where, bool throwException=true){
+      template<class T>
+      struct Info{
+        T min;
+        T max;
+        T step;
+        T curr;
+        
+        std::string rangeString() const {
+          return "[" + str(min) + "," +str(max) + "]:" + str(step);
+        }
+      };
+      
+      Info<int> get_info_int(const std::string &what){
+        Info<int> info = {0,0,0,0};
+        xiGetParamInt(xiH, (what + XI_PRM_INFO_MIN).c_str(), &info.min);
+        xiGetParamInt(xiH, (what + XI_PRM_INFO_MAX).c_str(), &info.max);
+        xiGetParamInt(xiH, (what + XI_PRM_INFO_INCREMENT).c_str(), &info.step);
+        xiGetParamInt(xiH, (what).c_str(), &info.curr);
+        //if(info.step == info.max) info.step = 1;
+        //        SHOW(info.step);
+        //SHOW(info.max);
+
+        DEBUG_LOG("created info for " << what << ": " << info.rangeString());
+        return info;
+      }
+      Info<float> get_info_float(const std::string &what){
+        Info<float> info = {0,0,0,0};
+        xiGetParamFloat(xiH, (what + XI_PRM_INFO_MIN).c_str(), &info.min);
+        xiGetParamFloat(xiH, (what + XI_PRM_INFO_MAX).c_str(), &info.max);
+        xiGetParamFloat(xiH, (what + XI_PRM_INFO_INCREMENT).c_str(), &info.step);
+        xiGetParamFloat(xiH, (what).c_str(), &info.curr);
+        //if(info.step == info.max) info.step=1;
+        //DEBUG_LOG("created info for " << what << ": " << info.rangeString());
+        return info;
+      }
+
+
+      void addRangeProperty(const std::string &type, XiGrabber *g, const std::string &what, 
+                            const std::string &propertyName=""){
+        if(type == "int"){
+          Info<int> info = get_info_int(what);
+          g->addProperty(propertyName.length() ? propertyName : what,
+                         "range",info.rangeString(), info.curr);
+        }else{
+          Info<float> info = get_info_float(what);
+          g->addProperty(propertyName.length() ? propertyName : what,
+                         "range",info.rangeString(), info.curr);
+        }
+      }
+      
+      static void handle_result(XI_RETURN s, const std::string &where, 
+                                bool throwException=true){
         if(s != XI_OK){
           static std::map<int,std::string> errors;
           if(!errors.size()){
@@ -193,26 +244,34 @@ namespace icl{
     void XiGrabber::init(int deviceID) throw (utils::ICLException){
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
+
+      addProperty("format", "menu", "RGB 24Bit,Gray 8Bit", "RGB 24Bit", 0, "");
+      addProperty("size", "info", "", "", 0, "");
+
+      addProperty("roi.enabled","flag","",false);
+      
+      int maxw=0, maxh=0, xstep=0, ystep=0;
+      xiGetParamInt(m_data->xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &maxw);
+      xiGetParamInt(m_data->xiH, XI_PRM_HEIGHT XI_PRM_INFO_MAX, &maxh);
+      xiGetParamInt(m_data->xiH, XI_PRM_OFFSET_X XI_PRM_INFO_INCREMENT, &xstep);
+      xiGetParamInt(m_data->xiH, XI_PRM_OFFSET_Y XI_PRM_INFO_INCREMENT, &ystep);
+      addProperty("roi.x","range",str("[0,")+str(maxw)+"]:"+str(xstep),0);
+      addProperty("roi.y","range",str("[0,")+str(maxh)+"]:"+str(ystep),0);
+
+      m_data->addRangeProperty("int",this, XI_PRM_WIDTH, "roi.width");
+      m_data->addRangeProperty("int",this, XI_PRM_HEIGHT, "roi.height");
+
+      addProperty("pixel binning","menu","no binning,2x2 to 1,4x4 to 1","no binning");
+
+      m_data->addRangeProperty("int", this, XI_PRM_EXPOSURE);
+      m_data->addRangeProperty("float", this, XI_PRM_GAIN);
+
+      Configurable::registerCallback(utils::function(this,&XiGrabber::processPropertyChange));
     }
 
     XiGrabber::XiGrabber(int deviceID) throw(utils::ICLException) : m_data(0){
-      addProperty("format", "menu", "RGB 24Bit,Gray 8Bit", "RGB 24Bit", 0, "");
-      addProperty("size", "info", "", "", 0, "");
-      addProperty("roi.enabled","flag","",false);
-  
-      
       init(deviceID);
-
-      std::string w = str(m_data->imageSize.width);
-      std::string h = str(m_data->imageSize.height);
-      addProperty("roi.x","range:spinbox","[0,"+w+"]:1",0);
-      addProperty("roi.y","range:spinbox","[0,"+h+"]:1",0);
-      addProperty("roi.width","range:spinbox","[0,"+w+"]:1",m_data->imageSize.width);
-      addProperty("roi.height","range:spinbox","[0,"+h+"]:1",m_data->imageSize.height);
-
-      Configurable::registerCallback(utils::function(this,&XiGrabber::processPropertyChange));
-
-      addProperty("pixel binning","menu","no binning,2x2 to 1,4x4 to 1","no binning");
+      
     }
 
     XiGrabber::~XiGrabber(){
@@ -286,15 +345,30 @@ namespace icl{
     }
 
     void XiGrabber::processPropertyChange(const utils::Configurable::Property &prop){
+      XI_RETURN s;
       if(prop.name == "format"){
         std::string value = getPropertyValue(prop.name);
         if(value == "RGB 24Bit"){
-          XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
+          s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
           Data::handle_result(s,"setPaxiSetParamInt(format=RGB24)");
         }else{
-          XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
+          s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
           Data::handle_result(s,"setPaxiSetParamInt(format=mono8)");          
         }
+      }else if(prop.name == str(XI_PRM_EXPOSURE)){
+        int value = getPropertyValue(prop.name);   
+        std::cout << "settings exposure to " << value << " !!" << std::endl;
+        //s = xiStopAcquisition(m_data->xiH);
+        // Data::handle_result(s,"xiStopAcquistion()");
+        s = xiSetParamInt(m_data->xiH, XI_PRM_EXPOSURE, value);
+        Data::handle_result(s,"setPaxiSetParamInt(exposure)");
+        //s = xiStartAcquisition(m_data->xiH);
+        //Data::handle_result(s,"xiStartAcquistion()");
+      }else if(prop.name == str(XI_PRM_GAIN)){
+        float value = getPropertyValue(prop.name);
+        XI_RETURN s = xiSetParamFloat(m_data->xiH, XI_PRM_GAIN, value);
+        Data::handle_result(s,"setPaxiSetParamInt(gain)");
+
       }else if (prop.name == "pixel binning"){
         std::string value = getPropertyValue(prop.name);
         int rate = 0;
@@ -318,7 +392,12 @@ namespace icl{
         }
       }else if(prop.name.length() > 4 && prop.name.substr(0,4) == "roi."){
         bool on = getPropertyValue("roi.enabled");
-        XI_RETURN s;
+        XI_RETURN s,s2;
+        
+        // the incomming slider values are NOT stepped correctly -> 
+        // buffer re-ask the api for all the values and perform the stepping
+        // manually again (or even memorize) the stuff?
+        
         if(on){
           int x = getPropertyValue("roi.x");
           int y = getPropertyValue("roi.y");
@@ -326,23 +405,6 @@ namespace icl{
           int h = getPropertyValue("roi.height");
           
           try{
-            int div = 1;
-            try{
-              s = xiGetParamInt(m_data->xiH, XI_PRM_INFO_INCREMENT, &div);
-              Data::handle_result(s,"xiGetParamInt(info-increment)");
-            }catch(ICLException &e){
-              WARNING_LOG("xi-api could not get info-increment "
-                          "parameter: using 1 instead");
-            }
-            if(div < 1){
-              div = 1;
-              WARNING_LOG("xi-api returned 0 for property XI_PRM_INFO_INCREMENT, using 1 instead");
-            }
-            x = (x/div)*div;
-            y = (y/div)*div;
-            w = (w/div)*div;
-            h = (h/div)*div;
-
             if(x + w > m_data->imageSize.width ||
                y + h > m_data->imageSize.height){
               WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect " 
@@ -350,15 +412,30 @@ namespace icl{
                           << " (skipping xiApi call to avoid undefined behavior");
             }else{
               DEBUG_LOG("setting roi to " << Rect(x,y,w,h));
+              
+              std::cout << "--a:" << std::endl;
               s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
-              Data::handle_result(s,"xiSetParamInt(width)");
+              s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+
+              if(s != XI_OK || s2 != XI_OK){
+                std::cout << "--b:" << std::endl;
+                s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+                Data::handle_result(s2,"xiSetParamInt(x-offset)");
+                s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
+                Data::handle_result(s,"xiSetParamInt(width)");
+                std::cout << "</b>" << std::endl;
+              } 
+
               s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
-              Data::handle_result(s,"xiSetParamInt(height)");
-              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
-              Data::handle_result(s,"xiSetParamInt(x-offset)");
-              s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
-              Data::handle_result(s,"xiSetParamInt(y-offset)");
-             }
+              s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
+
+              if(s != XI_OK || s2 != XI_OK){
+                s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
+                Data::handle_result(s2,"xiSetParamInt(y-offset)");
+                s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
+                Data::handle_result(s,"xiSetParamInt(height)");
+              } 
+            }
           }catch(ICLException &e){
             ERROR_LOG("Error setting image ROI:" << e.what());
           }

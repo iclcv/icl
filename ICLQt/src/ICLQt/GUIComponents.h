@@ -93,12 +93,12 @@ namespace icl{
         Sliders always come with an QLCDNumber component, that displays the current slider value */
     struct Slider : public GUIComponentWithOutput{
       /// creates a slider with given POD parameters
-      Slider(int min=0, int max=100, int curr=50, bool vertical=false):
-      GUIComponentWithOutput("slider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
+      Slider(int min=0, int max=100, int curr=50, bool vertical=false, int stepping=1):
+      GUIComponentWithOutput("slider",form_args_6(min,max,curr,vertical?"vertical":"horizontal","on",stepping)){}
   
       /// creates a slider from given int-range
-      Slider(const utils::Range32f &r, int curr, bool vertical=false):
-      GUIComponentWithOutput("slider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
+      Slider(const utils::Range32f &r, int curr, bool vertical=false, int stepping=1):
+      GUIComponentWithOutput("slider",form_args_6(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal","on",stepping)){}
     };
   
     /// Float-valued Slider component

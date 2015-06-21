@@ -345,13 +345,13 @@ namespace icl{
           std::string handle="#r#"+p.full;
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
           std::string c = conf->getPropertyValue(p.full);
-          if(r.stepping == 1){
-            gui << Slider(r.minVal,r.maxVal,parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          if(r.stepping >= 1){
+            gui << Slider(r.minVal,r.maxVal,parse<int>(c),false,r.stepping).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           }else{
-            if(r.stepping){
-              WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
-              WARNING_LOG("component was " << p.full);
-            }
+            //            if(r.stepping){
+            //  WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
+            //  WARNING_LOG("component was " << p.full);
+            //}
             gui << FSlider(r,parse<float>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           }
           ostr << '\1' << handle;
@@ -622,8 +622,11 @@ namespace icl{
         processingProperty = p.name;
         if(type == "range" || type == "range:slider"){
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
-          if(r.stepping == 1){
-            gui.get<SliderHandle>("#r#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
+          if(r.stepping >= 1){
+            int val = parse<icl32s>(conf->getPropertyValue(name));
+            int s = (int)(r.stepping);
+            val = (val/s)*s;
+            gui.get<SliderHandle>("#r#"+name).setValue( val );
           }else{
             gui.get<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
           }
@@ -1357,15 +1360,22 @@ namespace icl{
 
     struct SliderGUIWidget : public GUIWidget{
       // {{{ open
-
+      
       static bool vertical(const GUIDefinition &def){
         return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
       }
 
-      SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,5,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
+      SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,6,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
         /// param_order = min,max,curr,step=1,orientation=("horizontal")|"vertical"
-        bool deactivateDisplay = (def.numParams() == 5) && (def.param(4) == "off");
+        bool deactivateDisplay = (def.numParams() >= 5) && (def.param(4) == "off");
 
+        m_stepping = def.numParams() == 6 ? def.intParam(5) : 1;
+        if(m_stepping < 1){
+          ERROR_LOG("a slider gui component with stepping < 1 is not possible (using stepping 1)");
+          m_stepping = 1;
+        }
+        /// min,max,curr,vertical ,"off" for no display
+        
         m_piValue = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
 
         int iVerticalFlag = vertical(def);
@@ -1385,7 +1395,10 @@ namespace icl{
         m_poSlider->setMinimum(iMin);
         m_poSlider->setMaximum(iMax);
         m_poSlider->setValue(iCurr);
-
+        if(m_stepping != 1){
+          m_poSlider->setSingleStep(m_stepping);
+          m_poSlider->setTickInterval(m_stepping);
+        }
         if(deactivateDisplay){
           m_poLCD = 0;
         }else{
@@ -1430,15 +1443,19 @@ namespace icl{
       virtual void processIO(){
         //cb();
         //iStep is handled as a value that must '%' the slider to 0
-        *m_piValue = m_poSlider->value();
-        Thread::msleep(100);
-        if(m_poLCD) m_poLCD->display(*m_piValue);
+        int value = m_poSlider->value();
+        value = (value / m_stepping) * m_stepping;
+        *m_piValue = value;
+        //        Thread::msleep(100);
+        if(m_poLCD) m_poLCD->display(value);
       }
     private:
       ThreadedUpdatableSlider *m_poSlider;
       QLCDNumber *m_poLCD;
       int *m_piValue;
       bool m_bVerticalFlag;
+      int m_stepping;
+
     };
 
   // }}}
