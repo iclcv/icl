@@ -1388,6 +1388,8 @@ namespace icl{
         }else{
           m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
         }
+        m_poSlider->setStepping(m_stepping);
+
         if(def.hasToolTip()) m_poSlider->setToolTip(def.toolTip().c_str());
 
         addToGrid(m_poSlider);

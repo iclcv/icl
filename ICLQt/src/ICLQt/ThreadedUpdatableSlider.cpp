@@ -32,23 +32,57 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 
+#include <QtGui/QMouseEvent>
+#include <QtWidgets/QStyle>
+
 using namespace icl::utils;
 
 namespace icl{
   namespace qt{
+
+    struct ThreadedUpdatableSlider::EventFilter : public QObject{
+      ThreadedUpdatableSlider *m_parent;
+      EventFilter(ThreadedUpdatableSlider *parent):
+        QObject(parent), m_parent(parent){}
+      bool eventFilter(QObject* watched, QEvent* event){
+        QMouseEvent *m = dynamic_cast<QMouseEvent*>(event);
+	if(m && watched == m_parent){
+          //QObject::eventFilter(watched, event);
+          //Qt::MouseButton b = m->button();
+          QFlags<Qt::MouseButton> bs = m->buttons();
+          if(m && (bs & Qt::LeftButton || 
+                   bs & Qt::RightButton || 
+                   bs & Qt::MidButton)){
+            int val = QStyle::sliderValueFromPosition(m_parent->minimum(), 
+                                                      m_parent->maximum(), 
+                                                      m->x(), 
+                                                      m_parent->width());
+            val = (val/m_parent->m_stepping)*m_parent->m_stepping;
+            m_parent->setValue(val);
+            m_parent->update();
+            return true;
+          }
+        }
+        //DEBUG_LOG("received event of type " << (int)event->type());
+	return QObject::eventFilter(watched, event);
+      }
+    };
+
   
-    ThreadedUpdatableSlider::ThreadedUpdatableSlider(QWidget *parent): QSlider(parent){
+    ThreadedUpdatableSlider::ThreadedUpdatableSlider(QWidget *parent): QSlider(parent), m_stepping(1){
       QObject::connect(this,SIGNAL(valueChanged(int)),this,SLOT(collectValueChanged(int)));
       QObject::connect(this,SIGNAL(sliderMoved(int)),this,SLOT(collectSliderMoved(int)));
       QObject::connect(this,SIGNAL(sliderPressed()),this,SLOT(collectSliderPressed()));
       QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
+      installEventFilter(new EventFilter(this));
     }
   
-    ThreadedUpdatableSlider::ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent): QSlider(o, parent){
+    ThreadedUpdatableSlider::ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent): QSlider(o, parent), m_stepping(1){
       QObject::connect(this,SIGNAL(valueChanged(int)),this,SLOT(collectValueChanged(int)));
       QObject::connect(this,SIGNAL(sliderMoved(int)),this,SLOT(collectSliderMoved(int)));
       QObject::connect(this,SIGNAL(sliderPressed()),this,SLOT(collectSliderPressed()));
       QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
+      installEventFilter(new EventFilter(this));
     }
 
     bool ThreadedUpdatableSlider::event(QEvent *event){
@@ -80,9 +114,15 @@ namespace icl{
       callbacks.clear();
     }
     
-    void ThreadedUpdatableSlider::collectValueChanged(int){
-      for(unsigned int i=0;i<callbacks.size();++i){
-        if(callbacks[i].event == CB::all || callbacks[i].event == CB::value) callbacks[i].f();
+    void ThreadedUpdatableSlider::collectValueChanged(int value){
+      int stepped = (value/m_stepping)*m_stepping;
+      if(stepped != value){
+        setValue(stepped); // this will re-call this method with an appropriate value
+                           // which then actually calls the callbacks ...
+      }else{
+        for(unsigned int i=0;i<callbacks.size();++i){
+          if(callbacks[i].event == CB::all || callbacks[i].event == CB::value) callbacks[i].f();
+        }
       }
     }
   
