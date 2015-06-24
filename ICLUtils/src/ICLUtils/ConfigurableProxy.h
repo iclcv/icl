@@ -88,6 +88,10 @@ namespace icl{
           getInternalConfigurable() -> loadProperties(filename, propertiesToSkip);
         }
 
+        void addChildConfigurable(Configurable *configurable, const std::string &childPrefix=""){
+          getInternalConfigurable() -> addChildConfigurable(configurable,childPrefix);
+        }
+
         /// get type of property
         std::string getPropertyType(const std::string &propertyName) const{
           return getInternalConfigurable() -> getPropertyType(propertyName);

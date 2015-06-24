@@ -33,7 +33,9 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/TextTable.h>
-
+#ifdef ICL_HAVE_RSB
+#include <ICLIO/ConfigurableRemoteServer.h>
+#endif
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -272,7 +274,7 @@ namespace icl{
           }else if(p.first == "info"){
             std::cout << "Property list for " << m_poDesc << std::endl;
             std::vector<std::string> ps = m_poGrabber->getPropertyList();
-            TextTable t(4,ps.size()+2,35);
+            TextTable t(4,ps.size()+3,35);
             t[0] = tok("property,type,allowed values,current value",",");
             for(unsigned int j=0;j<ps.size();++j){
               const std::string &p2 = ps[j];
@@ -288,13 +290,35 @@ namespace icl{
             
             t(0,ps.size()+1) = str("udist");
             t(1,ps.size()+1) = str("special");
-            t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-opencv-calib)");
+            t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-lens-undistortion-calibration)");
             t(3,ps.size()+1) = str("-");
+
+            
+            std::string helpText;
+#ifdef ICL_HAVE_RSB
+            helpText = "(supported)";
+#else
+            helpText = "(not supported in current build due to missing RSB-Support)";
+#endif
+
+
+            t(0,ps.size()+2) = str("remote");
+            t(1,ps.size()+2) = str("special");
+            t(2,ps.size()+2) = str("RSB-scope of configurable remote server ") + helpText;
+            t(3,ps.size()+2) = str("-");
 
             std::cout << t << std::endl;
             std::terminate();
           }else if(p.first == "udist"){
             m_poGrabber -> enableUndistortion(p.second);
+          }else if(p.first == "remote"){
+#ifdef ICL_HAVE_RSB
+            Configurable *remote = ConfigurableRemoteServer::create_client(p.second);
+            addChildConfigurable(remote); // hmm is that really THAT simple?
+#else
+            ERROR_LOG("could not create connection to remote configurable named '" << p.second << "'"
+                      << "(reason: ICL is compiled without RSB-support)");
+#endif
           }else{
             m_poGrabber->setPropertyValue(p.first,p.second);
           }
