@@ -47,6 +47,64 @@ namespace icl{
     using namespace utils;
     using namespace rsb;
     using namespace rsb::patterns;
+
+    static boost::shared_ptr<std::string> pack(const std::string &s){
+      return boost::shared_ptr<std::string>(new std::string(s));
+    }
+
+    struct ConfigurableRemoteServer::Client : public Configurable{
+      mutable RemoteServerPtr remoteServer;
+
+      Client(const std::string &serverScope){
+        Factory& factory = getFactory();
+        remoteServer = factory.createRemoteServer(serverScope);
+      }
+      
+      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+        remoteServer->call<void>("setPropertyValue",pack(propertyName+"="+value));
+      }
+      virtual std::vector<std::string> getPropertyList() const{
+        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getPropertyList");
+        if(s){
+          ERROR_LOG("remote method getPropertyList: returned null");
+          return std::vector<std::string>();
+        }else{
+          return tok(*s,",");
+        }
+      }
+      
+      std::string rmi(const std::string &propertyName, const std::string &method, bool intVersion=false) const{
+        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getProperty"+method);
+        if(s){
+          if(intVersion){
+            return "0";
+          }else{
+            ERROR_LOG("remote method getProperty" << method << ": returned null");
+            return "";
+          }
+        }else{
+          return *s;
+        }
+      }
+      
+      virtual std::string getPropertyType(const std::string &propertyName) const{
+        return rmi(propertyName,"Type");
+      }
+      virtual std::string getPropertyInfo(const std::string &propertyName) const{
+        return rmi(propertyName,"Info");
+      }
+      virtual Any getPropertyValue(const std::string &propertyName) const{
+        return rmi(propertyName,"Value");
+      }
+      virtual std::string getPropertyToolTip(const std::string &propertyName) const{
+        return rmi(propertyName,"ToolTip");
+      }
+      virtual int getPropertyVolatileness(const std::string &propertyName) const{
+        return parse<int>(rmi(propertyName,"Volatileness",true));
+      }
+
+    };
+
     
     struct ConfigurableRemoteServer::Data{
       Configurable *c;
@@ -56,9 +114,7 @@ namespace icl{
         Configurable *c;
         GenericCallback(Configurable *c):c(c){}
         
-        static boost::shared_ptr<std::string> pack(const std::string &s){
-          return boost::shared_ptr<std::string>(new std::string(s));
-        }
+      
       };
       
       struct ListCallback : public LocalServer::Callback<void,std::string>, public GenericCallback{
@@ -151,7 +207,7 @@ namespace icl{
     
     utils::Configurable *ConfigurableRemoteServer::create_client(const std::string &remoteServerScope){
       /// well that is actually some work here!
-      return 0;
+      return new Client(remoteServerScope);
     }
   }
 }
