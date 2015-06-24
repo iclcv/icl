@@ -232,11 +232,13 @@ IF(RSB_FOUND)
 
   LIST(APPEND SOURCES src/ICLIO/RSBGrabber.cpp
                       src/ICLIO/RSBImageOutput.cpp
+                      src/ICLIO/ConfigurableRemoteServer.cpp
                       ${PROTO_SRCS})
 
   LIST(APPEND HEADERS src/ICLIO/RSBGrabber.h
                       src/ICLIO/RSBImageOutput.h
                       src/ICLIO/RSBIOUtil.h
+                      src/ICLIO/ConfigurableRemoteServer.h
                       ${PROTO_HDRS})
 ENDIF()
 
