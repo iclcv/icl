@@ -50,7 +50,8 @@ namespace icl{
                                                    bool showMetaData,
                                                    int lineWidth,
                                                    float textSize):
-      edgeColor(edgeColor),fillColor(fillColor),centerColor(centerColor),metaColor(metaColor),
+    edgeColor(edgeColor),fillColor(fillColor),
+      centerColor(centerColor),metaColor(metaColor),
       handleWidth(handleWidth),visualizeCenter(visualizeCenter),visualizeHovering(visualizeHovering),
       showOffsetText(showOffsetText),showSizeText(showSizeText),
       showCenterText(showCenterText),showMetaData(showMetaData),
@@ -183,14 +184,18 @@ namespace icl{
       }
       if(options->showOffsetText || options->showSizeText || options->showCenterText){
         w.color(options->edgeColor);
-        int y = this->y + 1;
+        int y = this->y + 10;
         if(options->showOffsetText){
           w.text("offs: " + str(ul()),x+1,y,options->textSize);
           y += options->textSize+2;
         }
         if(options->showSizeText){
-          w.text("size: " + str(getSize()),x+1,y,options->textSize);
-          y += options->textSize+2;
+          Size s = getSize();
+          //w.text("size: " + str(getSize()),x+1,y,options->textSize);
+          w.text(str(s.width), x+s.width*0.3, this->y + s.height - options->textSize-2);
+          w.textangle(-90);
+          w.text(str(s.height), this->x - this->options->textSize-2, this->y + s.height *0.3);
+          w.textangle(0);
         }
         if(options->showCenterText){
           w.text("center: " + str(center()),x+1,y,options->textSize);
@@ -204,7 +209,7 @@ namespace icl{
   
   
     DefineRectanglesMouseHandler::DefineRectanglesMouseHandler(int maxRects, int minDim):
-      maxRects(maxRects),minDim(minDim),draggedRect(0){
+      Lockable(true),maxRects(maxRects),minDim(minDim),draggedRect(0){
     }
   
     DefineRectanglesMouseHandler::Options &DefineRectanglesMouseHandler::getOptions(){
