@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Any.h>
+#include <ICLUtils/Function.h>
 #include <ICLCore/Color.h>
 #include <ICLQt/MouseHandler.h>
 
@@ -130,6 +131,9 @@ namespace icl{
         bool showMetaData;     //!< if true, the meta data is shown as (as text)
         int lineWidth;         //!< linewidth for visualization
         float textSize;        //!< text size used for all texts (note: if this is negative, it's defined in image pixels)
+        int xStepping;         //!< can be set to force a given stepping for defined rectangles (x-direction)
+        int yStepping;         //!< can be set to force a given stepping for defined rectangles (x-direction)
+        bool canDeleteRects;   //!< defines whether rectangles can be deleted using right click
       };
   
       protected:
@@ -198,7 +202,17 @@ namespace icl{
       utils::Point currCurr;  //!< used for the currently defined rectangle
       DefinedRect *draggedRect; //!< use if any rectangle is currently moved or manipulated
       Options options;  //!< options structure
+      
+      private:
+      typedef utils::Function<void,const std::vector<utils::Rect> &>  Callback;
+      std::map<std::string,Callback> callbacks;
+      void callCallbacks();
+    
       public:
+
+      
+      void registerCallback(const std::string &id, Callback cb);
+      void unregisterCallback(const std::string &id);
       
       /// Default constructor with optionally given maximum rectangle count an minimum rectangle dimension
       /** @see \ref MRC
