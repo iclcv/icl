@@ -192,7 +192,7 @@ namespace icl{
         //        SHOW(info.step);
         //SHOW(info.max);
 
-        DEBUG_LOG("created info for " << what << ": " << info.rangeString());
+        //        DEBUG_LOG("created info for " << what << ": " << info.rangeString());
         return info;
       }
       Info<float> get_info_float(const std::string &what){
@@ -369,89 +369,83 @@ namespace icl{
         XI_RETURN s = xiSetParamFloat(m_data->xiH, XI_PRM_GAIN, value);
         Data::handle_result(s,"setPaxiSetParamInt(gain)");
 
-      }else if (prop.name == "pixel binning"){
-        std::string value = getPropertyValue(prop.name);
-        int rate = 0;
-        if(value == "no binning"){
-          rate = 1;
-        }else if(value == "2x2 to 1"){
-          rate = 2;
-        }else if(value == "4x4 to 1"){
-          rate = 4;
-        }else{
-          ERROR_LOG("invalid pixel binning value " << value);
-        }
-        if(rate){
+      }else if(prop.name == "pixel binning" ||
+               ( prop.name.length() > 4 && prop.name.substr(0,4) == "roi.")){
+        XI_RETURN s,s2;
+        
+        std::string sbinning = getPropertyValue("pixel binning");        
+        int binning = (sbinning == "no binning" ? 1 : 
+                       sbinning == "2x2 to 1" ? 2 :
+                       sbinning == "4x4 to 1" ? 4 : 0);
+        if(binning){
           try{
-            XI_RETURN s = xiSetParamInt(m_data->xiH, XI_PRM_DOWNSAMPLING, rate);
+            s = xiSetParamInt(m_data->xiH, XI_PRM_DOWNSAMPLING, binning);
             Data::handle_result(s,"setPaxiSetParamInt(downsampling)");  
           }catch(ICLException &e){
             ERROR_LOG("error setting property 'pixel binning':"
                       << e.what());
           }
         }
-      }else if(prop.name.length() > 4 && prop.name.substr(0,4) == "roi."){
-        bool on = getPropertyValue("roi.enabled");
-        XI_RETURN s,s2;
         
-        // the incomming slider values are NOT stepped correctly -> 
-        // buffer re-ask the api for all the values and perform the stepping
-        // manually again (or even memorize) the stuff?
+        int x=0, y=0, w=m_data->imageSize.width, h=m_data->imageSize.height;
+
         
-        if(on){
-          int x = getPropertyValue("roi.x");
-          int y = getPropertyValue("roi.y");
-          int w = getPropertyValue("roi.width");
-          int h = getPropertyValue("roi.height");
+        if(getPropertyValue("roi.enabled")){
+          x = getPropertyValue("roi.x");
+          y = getPropertyValue("roi.y");
+          w = getPropertyValue("roi.width");
+          h = getPropertyValue("roi.height");
+        }
+
+        x /= binning;
+        y /= binning;
+        w /= binning;
+        h /= binning;
+
+        SteppingRange32s ix = parse<SteppingRange32s>(getPropertyInfo("roi.x"));
+        SteppingRange32s iy = parse<SteppingRange32s>(getPropertyInfo("roi.y"));
+        SteppingRange32s iw = parse<SteppingRange32s>(getPropertyInfo("roi.width"));
+        SteppingRange32s ih = parse<SteppingRange32s>(getPropertyInfo("roi.height"));
+
+        x = x/(ix.stepping) * ix.stepping;
+        y = y/(iy.stepping) * iy.stepping;
+        w = w/(iw.stepping) * iw.stepping;
+        h = h/(ih.stepping) * ih.stepping;
+        
+        try{
+          Size maxSize(m_data->imageSize.width/binning, 
+                       m_data->imageSize.height/binning);
           
-          try{
-            if(x + w > m_data->imageSize.width ||
-               y + h > m_data->imageSize.height){
-              WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect " 
-                          << Rect(Point::null, m_data->imageSize) 
-                          << " (skipping xiApi call to avoid undefined behavior");
-            }else{
-              DEBUG_LOG("setting roi to " << Rect(x,y,w,h));
-              
-              std::cout << "--a:" << std::endl;
-              s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
+          if(x + w > maxSize.width ||
+             y + h > maxSize.height){
+            WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect " 
+                        << Rect(Point::null, maxSize)
+                        << " (skipping xiApi call to avoid undefined behavior");
+          }else{
+            //DEBUG_LOG("setting roi to " << Rect(x,y,w,h));
+            
+            s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
+            s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+            
+            if(s != XI_OK || s2 != XI_OK){
               s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
+              Data::handle_result(s2,"xiSetParamInt(x-offset)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
+              Data::handle_result(s,"xiSetParamInt(width)");
+            } 
 
-              if(s != XI_OK || s2 != XI_OK){
-                std::cout << "--b:" << std::endl;
-                s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
-                Data::handle_result(s2,"xiSetParamInt(x-offset)");
-                s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
-                Data::handle_result(s,"xiSetParamInt(width)");
-                std::cout << "</b>" << std::endl;
-              } 
-
-              s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
+            s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
+            s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
+              
+            if(s != XI_OK || s2 != XI_OK){
               s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
-
-              if(s != XI_OK || s2 != XI_OK){
-                s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
-                Data::handle_result(s2,"xiSetParamInt(y-offset)");
-                s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
-                Data::handle_result(s,"xiSetParamInt(height)");
-              } 
-            }
-          }catch(ICLException &e){
-            ERROR_LOG("Error setting image ROI:" << e.what());
+              Data::handle_result(s2,"xiSetParamInt(y-offset)");
+              s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
+              Data::handle_result(s,"xiSetParamInt(height)");
+            } 
           }
-        }else{
-          try{
-            s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, m_data->imageSize.width);
-            Data::handle_result(s,"xiSetParamInt(width)");
-            s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, m_data->imageSize.height);
-            Data::handle_result(s,"xiSetParamInt(height)");
-            s =  xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, 0);
-            Data::handle_result(s,"xiSetParamInt(x-offset)");
-            s = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, 0);
-            Data::handle_result(s,"xiSetParamInt(y-offset)");
-          }catch(ICLException &e){
-            ERROR_LOG("Error un-setting image ROI:" << e.what());
-          }
+        }catch(ICLException &e){
+          ERROR_LOG("Error setting image ROI:" << e.what());
         }
       }
     }

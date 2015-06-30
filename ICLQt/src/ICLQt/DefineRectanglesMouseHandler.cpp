@@ -222,6 +222,13 @@ namespace icl{
   
     void DefineRectanglesMouseHandler::process(const MouseEvent &e){
       Mutex::Locker l(this);
+
+      struct CallCallbacksAtEnd{
+        Function<void> f;
+        CallCallbacksAtEnd(Function<void> f):f(f){}
+        ~CallCallbacksAtEnd(){ f(); }
+      } call_callbacks_at_end(function(this, &DefineRectanglesMouseHandler::callCallbacks));
+ 
       if(draggedRect){
         draggedRect->event(e);
         if(e.isReleaseEvent()){
@@ -229,7 +236,6 @@ namespace icl{
             for(unsigned int i=0;i<rects.size();++i){
               if(&rects[i] == draggedRect){
                 rects.erase(rects.begin()+i);
-                callCallbacks();
                 break;
               }
             }
@@ -248,12 +254,10 @@ namespace icl{
           if(e.isPressEvent() && rects[i].contains(x,y)){
             if(e.isRight() && options.canDeleteRects){
               rects.erase(rects.begin()+i);
-              callCallbacks();
               return;
             }else if(e.isMiddle()){
               if(i != rects.size()-1){
                 std::swap(rects[i],rects.back());
-                callCallbacks();
               }
               return;
             }
@@ -285,7 +289,6 @@ namespace icl{
           rects.push_back(DefinedRect(r.normalized(),&options));
         }
         currCurr = currBegin = Point::null;
-        callCallbacks();
       }
     }
     
@@ -312,7 +315,6 @@ namespace icl{
       Mutex::Locker l(this);
       if(rects.size()){
         rects.clear();
-        callCallbacks();
       }
     }
     
@@ -328,7 +330,6 @@ namespace icl{
         }
       }
       if(anyChanged){
-        callCallbacks();
       }
     }
     
@@ -336,7 +337,6 @@ namespace icl{
       Mutex::Locker l(this);
       if((int)rects.size() < maxRects && rect.getDim() >= minDim){ 
         rects.push_back(DefinedRect(rect,&options));
-        callCallbacks();
       }
     }
     
@@ -345,7 +345,6 @@ namespace icl{
       this->maxRects = maxRects;
       if((int)rects.size() > maxRects){
         rects.resize(maxRects);
-        callCallbacks();
       }
     }
 
@@ -470,7 +469,6 @@ namespace icl{
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);
       rects.insert(rects.begin(),1,r);
-      callCallbacks();
     }
       
     void DefineRectanglesMouseHandler::bringToBack(int idx){
@@ -479,7 +477,6 @@ namespace icl{
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);
       rects.push_back(r);
-      callCallbacks();
     }
     
   
