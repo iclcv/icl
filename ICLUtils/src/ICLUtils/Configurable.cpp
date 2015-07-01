@@ -111,7 +111,7 @@ namespace icl{
       try{
         prop(name);
         throw ICLException("Unable to add property " + name + " because it is already used");
-      }catch(ICLException &ex){
+      }catch(ICLException &){
         m_properties[name]= Property(this,name,type,info,value,volatileness, tooltip);
         if(m_isOrdered) m_ordering[m_properties.size()] = name;
       }

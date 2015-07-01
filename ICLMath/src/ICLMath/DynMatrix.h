@@ -198,7 +198,7 @@ namespace icl{
       }
       
       /// tests weather a matrix is enough similar to another matrix
-      inline bool isSimilar(const DynMatrix &other, T tollerance=0.0001) const{
+      inline bool isSimilar(const DynMatrix &other, T tollerance=T(0.0001)) const{
         if(other.cols() != cols() || other.rows() != rows()) return false;
         for(unsigned int i=0;i<dim();++i){
           T diff = m_data[i] - other.m_data[i];
@@ -843,7 +843,7 @@ namespace icl{
       /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
       /** Even though, implementation also works for non-sqared matrices, it's not recommended to
           apply this function on non-sqared matrices */
-      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold = 1E-16) const;
+      void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold = T(1E-16)) const;
   
       /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
       DynMatrix solve_upper_triangular(const DynMatrix &b) const throw(InvalidMatrixDimensionException);
@@ -899,7 +899,7 @@ namespace icl{
             * svd 23.4 ms
           @param zeroThreshold 
       */
-      DynMatrix solve(const DynMatrix &b, const std::string &method = "lu", T zeroThreshold = 1E-16)
+      DynMatrix solve(const DynMatrix &b, const std::string &method = "lu", T zeroThreshold = T(1E-16))
         throw(InvalidMatrixDimensionException,  utils::ICLException, SingularMatrixException);
   
   
@@ -957,7 +957,7 @@ namespace icl{
           return V * S * U.transp();
           </code>
       */
-      DynMatrix pinv(bool useSVD = false, T zeroThreshold = 1E-16) const
+      DynMatrix pinv(bool useSVD = false, T zeroThreshold = T(1E-16)) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
       /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
@@ -967,7 +967,7 @@ namespace icl{
       * @param zeroThreshold singular values below threshold are set to zero
       * @return pseudo inverse
       */
-      DynMatrix big_matrix_pinv(T zeroThreshold = 1E-16) const
+      DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const
         throw (InvalidMatrixDimensionException,SingularMatrixException,utils::ICLException);
   
   #ifdef ICL_HAVE_MKL

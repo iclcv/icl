@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLCV/ImageRegion.h>
+#include <stdint.h>
 
 namespace icl {
     namespace cv {
@@ -63,7 +64,7 @@ namespace icl {
          * @param steps used only if the inidecs in extractContourCurvature() are not given. In this case, only each steps' point curvature is computed
          * @param thinned_contour use thinned contour when extractRegionCurvature() is used
          */
-        CurvatureExtractor(const uint curv_radius, const uint steps = 1,
+        CurvatureExtractor(const uint32_t curv_radius, const uint32_t steps = 1,
                            const bool thinned_contour = true);
 
         /**
@@ -81,7 +82,7 @@ namespace icl {
          */
         void extractContourCurvature(const PointVector &contour,
                                      const core::Img8u &insideLookup,
-                                     const uint regionLookupId,
+                                     const uint32_t regionLookupId,
                                      std::vector<int> &indices,
                                      FloatHist &hist,
                                      DMatF &dist, DMatF &curvature);
@@ -95,7 +96,7 @@ namespace icl {
          */
         void extractRegionCurvature(const std::vector<ImageRegion> &regions,
                                     const core::Img8u &insideLookup,
-                                    const std::vector<uint> &regionLookupIds,
+                                    const std::vector<uint32_t> &regionLookupIds,
                                     std::vector<FloatHist> &curvatureHists);
 
         /**
@@ -120,23 +121,23 @@ namespace icl {
          * @brief getCurvatureRadius
          * @return the discrete radius that is used to compute the curvature
          */
-        uint getCurvatureRadius() { return m_curv_radius; }
+        uint32_t getCurvatureRadius() { return m_curv_radius; }
         /**
          * @brief setCurvatureRadius
          * @param radius the discrete radius that is used to compute the curvature
          */
-        void setCurvatureRadius(const uint radius) { m_curv_radius = radius; }
+        void setCurvatureRadius(const uint32_t radius) { m_curv_radius = radius; }
 
         /**
          * @brief getStepSize
          * @return the steps between the points the curvature is computed for
          */
-        uint getStepSize() { return m_steps; }
+        uint32_t getStepSize() { return m_steps; }
         /**
          * @brief setStepSize
          * @param steps the steps between the points the curvature is computed for
          */
-        void setStepSize(const uint steps) { m_steps = steps; }
+        void setStepSize(const uint32_t steps) { m_steps = steps; }
 
         /**
          * @brief getUseThinnedContour
@@ -156,12 +157,12 @@ namespace icl {
          * Curvature of a point p_i is the sum of relations between the direct
          * distance and geodesic distance of p_i+k to point p_i-k where k < m_curv_radius.
          */
-        uint m_curv_radius;
+        uint32_t m_curv_radius;
         /**
          * @brief m_steps
          * Steps between points the curvature is computed for. Used for auto-fill indices in extractContourCurvature().
          */
-        uint m_steps;
+        uint32_t m_steps;
 
         /// Whether use thinned contour of ImageRegions or not.
         bool m_thinned_contour;
