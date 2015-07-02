@@ -30,14 +30,6 @@
 
 #pragma once
 
-#ifndef ICL_HAVE_OPENGL
-#if WIN32
-#pragma WARNING("this header must not be included if ICL_HAVE_OPENGL is not defined")
-#else
-#warning "this header must not be included if ICL_HAVE_OPENGL is not defined"
-#endif
-#else
-
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/Img.h>
@@ -488,4 +480,3 @@ namespace icl{
   } // namespace geom
 }
 
-#endif

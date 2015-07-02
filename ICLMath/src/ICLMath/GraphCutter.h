@@ -39,7 +39,7 @@ namespace icl{
     /// class for graph cut algorithms on undirected graphs (a graph is represented by an adjacency matrix).
     /** The GraphCutter class implements the CONTRACT/CAP algorithm from H. Nagamochi, T. Ono, T. Ibaraki, "Implementing an efficient
         minimum capacity cut algorithm", Mathematical Programming 67 (1994). */
-    class GraphCutter{
+	  class ICLMath_API GraphCutter{
       	
   	  public:
         

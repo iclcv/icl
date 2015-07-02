@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
 	icl::math::Mat4 T = icl::math::create_hom_4x4_trans(5,-5,2);
 
-	for(uint i = 0; i < 100; ++i) {
+	for(uint32_t i = 0; i < 100; ++i) {
 		ICP3D::ICP3DVec v(icl::utils::random(-50,50),
 						  icl::utils::random(-50,50),
 						  icl::utils::random(-50,50),

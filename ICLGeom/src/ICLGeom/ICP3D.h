@@ -40,7 +40,7 @@ namespace icl {
 		/**
 		 * @brief The ICP3D class is a special ICP-case for homogeneous 3D-vectors
 		 */
-		class ICP3D : public utils::Uncopyable {
+		class ICLGeom_API ICP3D : public utils::Uncopyable {
 
 		public:
 
