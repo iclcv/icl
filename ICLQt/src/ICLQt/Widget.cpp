@@ -573,7 +573,7 @@ namespace icl{
         
         // w = iclMin(menuptr->minimumWidth(),w);
         // h = iclMin(menuptr->minimumHeight(),h);
-        DEBUG_LOG("parent: " << parentSize.width() << "x" << parentSize.height() << "   " << "menu: " << Size(w,h));
+        //        DEBUG_LOG("parent: " << parentSize.width() << "x" << parentSize.height() << "   " << "menu: " << Size(w,h));
         menuptr->setGeometry(MARGIN,TOP_MARGIN, w, h);
       }
       void pushScaleModeAndChangeToZoom(){

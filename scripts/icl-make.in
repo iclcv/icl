@@ -34,4 +34,9 @@ LDFLAGS="$LDFLAGS $(pkg-config --libs ${ICL_PC} | sed 's|-Wl,-rpath\\|-Wl,-rpath
 LDFLAGS="-L${PFX}/lib -Wl,-rpath=${PFX}/lib ${LDFLAGS}"
 
 CXXFLAGS="$CXXFLAGS $(pkg-config --cflags ${ICL_PC}) -I."
+
+if [ "$2" = "-v" ] || [ "$2" = "--v" ] || [ "$2" = "-verbose" ] || [ "$2" = "--verbose" ] ; then
+   echo "g++ $CXXFLAGS -o $1 $SRC $LDFLAGS" ;
+fi
+
 g++ $CXXFLAGS -o $1 $SRC $LDFLAGS 
