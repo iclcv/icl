@@ -116,7 +116,8 @@ Overview:
 * :ref:`install.dependencies.optional.bullet`
 * :ref:`install.dependencies.optional.libav`
 * :ref:`install.dependencies.optional.xiapi`
-
+* :ref:`install.dependencies.optional.v4l2`
+* :ref:`install.dependencies.optional.optris`
 
 .. _install.dependencies.optional.ipp:
 
@@ -655,6 +656,74 @@ Detailed installation instructions (copied form the above mentioned website)::
   sudo ./install
 
 This will install the latest version of the library to /opt/XIMEA
+
+.. _install.dependencies.optional.optris:
+
+Optris
+~~~~~~
+
+**Grabber Backend for Optris' IR Camera acquisition library libirimager**
+
+In order to provide camera support for Optris' IR cameras, such as the
+TIM 160 from MicroEpsilon, the libirimager library must be
+installed. In contrast to what is suggested by MicroEpsilon, we
+recommend to use Optris' version of the **libirimager** library directly
+rather than MicroEpsilons adapted (and apparently outdated version).
+
+A basic instruction to installation process is given at
+http://www.optris.de/optris-pi-linux-bibliothek . Here, debian
+packages can be obtained. Please note that you'll need administrator
+privileges for the default debian-package-based
+installation. Workarounds that try to extract the received
+.deb-archive would as well have to deal with setting up udev-device
+permission and so on.
+In addition, ICL's optris-plugin assumes camera calibration files to be
+stored at the default location in the file-system::
+
+  /usr/share/libirimager/cali/
+
+In order to use a camera with some serial number X (the serial number is 
+printed onto the device housing, in our case 15060002), the corresponding
+calibration files need to be copied from the CD shipped with the camera to
+that folder::
+
+  > ls /usr/share/libirimager/cali/
+  
+  Cali-15060002-72-0-250.dat    
+  Cali-15060002-72-M20-100.dat  
+  Kennlinie-15060002-72-0-250.prn    
+  Kennlinie-15060002-72-M20-100.prn
+  Cali-15060002-72-150-900.dat  
+  Cali-15060002.xml		    
+  Kennlinie-15060002-72-150-900.prn
+ 
+In addition to installing the debian archive (and perhaps rebooting), 
+ICL's other optional dependencies libudev and v4l2 are needed.
+
+* **Supported Versions:**  1.0.11 (July, 2015)
+* **License Type:** free but closed source
+* **Download at:** http://www.optris.de/optris-pi-linux-bibliothek
+* **Dependent library features:** Optris-based camera support
+* **Ubuntu packages:** libirimager-1.0.11-amd64.deb libudev libv4l-dev (identical to the v4l2 dependency)
+
+.. _install.dependencies.optional.v4l2:
+
+V4L2
+~~~~
+
+**Grabber Backend for Video 4 Linux 2-based cameras**
+
+For most usb-based cameras/Webcams on linux, V4L2 can be used. While
+v4l2 used to be a part of the kernel-Headers in older linux version,
+nowerdays, it is shipped as an additional library that can usually be
+installed conveniently using a package manager.
+
+* **Supported Versions:**  1.0.1-1 (July, 2015)
+* **License Type:** OpenSource
+* **Download at:** ??
+* **Dependent library features:** Video 4 Linux based camera backend
+* **Ubuntu packages:** libv4l-dev 
+
 
 .. _install.source:
 

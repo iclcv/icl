@@ -105,6 +105,7 @@ namespace icl {
                                     - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
                                     - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
                                     - <b>rsb</b> Robotics Service Bus Source
+                                    - <b>optris</b> For Optris' IR-Cameras
 
 
 
@@ -162,6 +163,7 @@ namespace icl {
                                     - kinectc=device-index (int)
                                     - kinecti=device-index (int)
                                     - rsb=[comma-sep. transport-list=spread]:scope)
+                                    - optris=camera-serial
 
           @param notifyErrors if set to false, no exception is thrown if no suitable device was found
       **/
