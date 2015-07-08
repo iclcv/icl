@@ -125,11 +125,7 @@ namespace icl{
       
       addChildConfigurable(data->plugin.get());
 		
-	  SHOW(data->plugin->getPropertyList().size());
-	  SHOW(data->plugin->getPropertyListWithoutDeactivated().size());
-	  SHOW(getPropertyList().size());
-
-      switch(data->plugin->getPreProcessing()){
+	  switch(data->plugin->getPreProcessing()){
         case FiducialDetectorPlugin::Binary:{
           BinaryPP *p = new BinaryPP;
           data->pp = p;

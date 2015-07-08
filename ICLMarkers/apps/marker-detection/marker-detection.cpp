@@ -55,8 +55,6 @@ void init(){
   fid = new FiducialDetector(pa("-m").as<std::string>(), 
                              pa("-m",1).as<std::string>(), 
                              ParamList("size",(*pa("-m",2)) ) );
-  SHOW(fid->getPropertyList().size());
-  SHOW(cat(fid->getPropertyList()));
   fid->setConfigurableID("fid");
   canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
 

@@ -363,7 +363,7 @@ namespace icl{
           this->color = glimg.getColor(mousePos.x, mousePos.y);
           glimg.unlock();
 
-        }catch(ICLException &e){
+        }catch(ICLException &){
           color.clear();
         }
         this->mousePos = mousePos;

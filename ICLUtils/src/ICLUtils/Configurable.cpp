@@ -395,7 +395,7 @@ namespace icl{
         bool found = false;
         for(unsigned int j=0;j<m_deactivated.size();++j){
           if(icl::utils::match(ps[i],m_deactivated[j])){
-			  DEBUG_LOG("matched property -" << ps[i] << "- and regex -" << m_deactivated[j] << "- so the propertie is deactivated then");
+			  //DEBUG_LOG("matched property -" << ps[i] << "- and regex -" << m_deactivated[j] << "- so the propertie is deactivated then");
             found=true;
             break;
           }

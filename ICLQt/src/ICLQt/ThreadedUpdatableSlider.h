@@ -53,7 +53,7 @@ namespace icl{
       Q_OBJECT;
       
       struct EventFilter;
-      friend class EventFilter;
+      friend struct EventFilter;
       //int m_stepping;
       
       /// internally callback type

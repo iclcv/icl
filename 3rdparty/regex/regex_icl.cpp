@@ -24,7 +24,7 @@ namespace icl{
     }
     
     int regcomp(regex_t *re, const char *regex, int cflags){
-	  std::cout << "compiling regular expression -" << regex << "-" << std::endl;
+	  //std::cout << "compiling regular expression -" << regex << "-" << std::endl;
       if(re->m_impl){
 		delete re->m_impl;
 		re->m_impl = 0;
@@ -58,7 +58,7 @@ namespace icl{
 	}
     int regexec(regex_t *re, const char *text, int nSubMatches,
 		regmatch_t *matches, int dummy){
-		std::cout << "matching regular expression against text -" << text << "-" << std::endl;
+		//std::cout << "matching regular expression against text -" << text << "-" << std::endl;
 		if (!re) return -1;
 		if (!re->m_impl) return -2;
 		if (!re->m_impl->re) return -3;
@@ -76,17 +76,17 @@ namespace icl{
 				matches[i].rm_eo = (int)(end - sBegin);
 			}
 		}
-		std::cout << "returning from regmatch: -" << !sm.size() << "-" << std::endl;
+		//std::cout << "returning from regmatch: -" << !sm.size() << "-" << std::endl;
 		return !sm.size();
 	}
     
     void regfree(regex_t *re){
-		std::cout << "regfree started" << std::endl;
+		//std::cout << "regfree started" << std::endl;
       if(re->m_impl){
 		delete re->m_impl;
 		re->m_impl = 0;
       }
-	  std::cout << "regfree ended" << std::endl;
+	 // std::cout << "regfree ended" << std::endl;
     }
   }
 }
