@@ -137,6 +137,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            "${ICL_SOURCE_DIR}/3rdparty/zlib"
                            "${ICL_SOURCE_DIR}/3rdparty/libpng"
                            "${ICL_SOURCE_DIR}/3rdparty/libjpeg"
+                           "${ICL_SOURCE_DIR}/3rdparty/regex"
                            "${CMAKE_BINARY_DIR}/src")
 ELSE()
 INCLUDE_DIRECTORIES(BEFORE src 
