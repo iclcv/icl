@@ -1,0 +1,196 @@
+Genral note:
+
+We build icl for 32 bit (64 bit applications seem to be more complicated). That is, 
+even on a 64 bit windows, all stuff is downloaded as 32 (aka x86) binaries/libraries.
+
+* get tortoise svn
+* get winscp (perhaps)
+* get visual studio express 2013 Desktop (Version 12.0)
+* get a good editor (such as emacs)
+* get winrar
+* get cmake for windows (http://www.cmake.org/download/)
+* get windows SDK for your windows version 
+  (https://msdn.microsoft.com/de-de/windows/desktop/aa904949.aspx)
+  In the online installer, check only Windows Headers and Libraries/Headers and X86Libraries
+* If you have not done this already: download your graphics driver ...
+* get python 2.x and (such as 2.7.10) and install to c:\Python27 (or similar with another version number)
+* ensure that binary directories are added to the path (the most recent windows Python.msi installer can do that for you
+  -- simply check that option in the installation option dialog)
+* install sphinx using pip from command line:
+  > pip install sphinx
+  > pip install pyparsing
+* now on command line 
+  > sphinx-build -h
+  Should actually produce some help text for sphinx-build
+* for formulas within the doxygen documentation, you'll need latex ans ghostscript
+* Get latex, e.g. from http://miktex.org/download
+* get ghostscript: http://www.ghostscript.com/download/gsdnld.html (please ensure to get the 32bit version here)
+* add gs binary dir to your path: (such as C:\Program Files (x86)\gs\gs9.16\bin)
+
+create folder c:\ICL
+All further steps in this tutorial will assume that all ICL related files are installed to here.
+
+check out ICL to c:\ICL\src
+
+the trunk:
+https://opensource.cit-ec.de/svn/icl/trunk
+
+everything
+https://opensource.cit-ec.de/svn/icl
+
+
+Download some important dependencies:
+=====================================
+
+
+pthread (mandatory)
+~~~~~~~~~~~~~~~~~~~
+
+Use your browser to get pthread for windows from 
+ftp://sourceware.org/pub/pthreads-win32/dll-latest
+get dll/x86/pthreadVC2.dll and store to C:\ICL\dependencies\pthread\bin\
+get lib/x86/ptheradVC2.lib and store to c:\ICL\dependencies\pthread\lib\
+get include/pthread.h and store to C:\ICL\dependencies\pthread\include
+
+
+Qt 5.5 (optional but strongly recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Download Qt 5.5 (or maybe another newer or older version)
+using Qt's online installer:
+
+http://download.qt.io/official_releases/online_installers/qt-unified-windows-x86-online.exe
+run the qt-online installer 
+Chose the destination directory C:\ICL\dependencies\qt
+Deselect all but a single Qt version (e.g. only 5.5)
+In the chosen version, deselect all builds except for msvc2013 32Bit 
+Deselect all extra packages, such as  QtCanvas3D, Qt3D, Qt Script etc. 
+Deselect Qt Extras
+You cannot deselect the installation of the QtCreator, so simply install it then :-)
+
+
+Glew (mandatory extra dependency for Qt)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Download glew, e.g. from sourceforce:
+http://sourceforge.net/projects/glew/files/glew/1.12.0/glew-1.12.0-win32.zip/download
+unpack to C:\ICL\dependencies\glew-1.12.0 (or similar if the version is different)
+
+
+
+
+Configure Build using CMake
+===========================
+cmake.exe should be in you path, if not, you'll have to use an absolute path in 
+the commandline or you'll have to add the containing directory to your bin directory
+
+Open command line Window+R cmd -> ENTER
+> cd c:\ICL\src\trunk [or branches\some-branch or something]
+> mkdir build
+> cd build
+> cmake-gui ..
+
+This opens the cmake gui
+Click on configure and select "Visual Studi 12 2013" (no arm and no 64bit here!)
+Check "Use Default native Compilers"
+Click finish
+
+before we start: ensure to set some default configuration values
+check BUILD_APPS, BUILD_DEMOS and BUILD_DEMOS if you need them
+set the CMAKE_INSTALL_PREFIX to somewhere, where you'll have writing permissions
+please note that you can also leave it at the default value "C:/Program Files (x86)/ICL"
+if you simply create that folder manually and grant yourself writing permissions to that 
+folder (using right click etc.). It is also recommended to check all BUILD_WITH_SSE* flags.
+
+Set up pthreadVC2
+~~~~~~~~~~~~~~~~~
+
+This results in a error and your CMake-GUI's main parameter list gets a red background
+As the system cannot find the pthread library
+Set variable PTHREADS_INCLUDE_DIR to c:/ICL/dependencies/pthread/include
+Set variable pthreadVC2_LIBRARY to C:/ICL/dependencies/pthread/lib/pthreadVC2.lib
+
+presss configure again
+
+There should be warnings, but no errros and the configuration should exit with "Configuring done"
+
+
+Set up Qt 5.5
+~~~~~~~~~~~~~
+check BUILD_WITH_QT
+click "add Entry" (upper left)
+add Entry QT_ROOT, type string, value C:\ICL\dependencies\qt\5.5\msvc2013
+click configure (this results in errors, but also in some new entries)
+set GLEW_ROOT to C:/ICL/dependencies/glew-1.12.0
+set GLEW_INCLUDE_DIR to C:/ICL/dependencies/glew-1.12.0/include
+check "advanced" view
+set OPENGL_gl_LIBRARY to C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\OpenGL32.lib
+set OPENGL_glu_LIBRARY to C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\GlU32.lib
+press configure again
+This should now also exit successfully with "Configuring done"
+Generate the msvc-files by pressing "generate"
+
+
+Import the project to Visual Studio Express 2013 and Combile it
+===============================================================
+
+Open Visual studio
+Choose "Open Project"
+And then open C:\ICL\src\trunk\build\ICL (or the svn branch/tag that you chose)
+Chose the build type (debug or release) 
+hit F7 to build the project
+
+Once everything build correctly, right click on INSTALL in the project explorer and chose build
+if you get an error that starts with "the command setlocal ...", you dont have the permission to 
+install ICL into the specified CMAKE_INSTALL_PREFIX. You can either adapt the install prefix in 
+cmake-gui or you can simply create the already specified target folder "C:/Program Files (x86)/ICL"
+and grant yourself writing permissions to that folder.
+
+Once, the library is installed, you should acually be able to start programs. However, you must
+ensure adapting the PATH-environment variable so that the runtime linker can actually find all the libraries:
+To this end go to Start-Menu->Computer->RightClick->Properties
+then click "advanced settings" (or similar)
+Click Environment-Variables
+Select Path in the lower list and click edit
+
+append
+C:\ICL\dependencies\glew-1.12.0\bin\Release\Win32
+C:\ICL\dependencies\pthread\bin
+C:\ICL\dependencies\qt\5.5\msvc2013\bin
+C:\Program Files (x86)\ICL\bin (or the installation prefix that you chose)
+
+(delimited with semikolons)
+
+
+
+Installation and Enabling of further dependencies
+=================================================
+
+Bullet
+~~~~~~
+
+* download bullet source and unpack 
+* use cmd and go to the unpacked folder
+  > cd C:\path\to\folder\bullet3-2.83.5
+  > mkdir build
+  > cd build
+  > cmake-gui ..
+* press configure (select your visual studio version)
+* uncheck BUILD_SHARED_LIBS, BUILD_BULLET3, BUILD_BULLET2_DEMOS, BUILD_CPU_DEMOS, BUILD_OPENGL3_DEMOS, BUILD_UNIT_TESTS
+* press configure first, then press generate
+* import project to visual studio (open visual studio, hit "open project" and select the visual studio file from
+  the build-folder, you just created)
+
+* select Release-Win32 build and compile everything (by pressing F7)
+* create C:\Program Files (x86)\BULLET_PHYSICS and grant yourself writing permissions
+* right click INSTALL in the msvc-project-folder-explorer and chose compile
+
+* go back to ICL's cmake-gui
+* check BUILD_WITH_BULLET
+* add new entry BULLET_ROOT of type string and set value to C:\Program Files (x86)\BULLET_PHYSICS
+* click configure and the generate
+
+OpenCV (3.0)
+~~~~~~~~~~~~
+
+* download and unpack opencv for windows (http://sourceforge.net/projects/opencvlibrary/files/opencv-win/3.0.0/opencv-3.0.0.exe/download)

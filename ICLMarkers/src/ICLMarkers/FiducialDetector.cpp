@@ -124,8 +124,8 @@ namespace icl{
       if(camera) setCamera(*camera);
       
       addChildConfigurable(data->plugin.get());
-      
-      switch(data->plugin->getPreProcessing()){
+		
+	  switch(data->plugin->getPreProcessing()){
         case FiducialDetectorPlugin::Binary:{
           BinaryPP *p = new BinaryPP;
           data->pp = p;

@@ -33,7 +33,10 @@
 #include <limits>
 #include <cstdio>
 
-#ifndef ICL_SYSTEM_WINDOWS
+#ifdef ICL_SYSTEM_WINDOWS
+#include <regex_icl.h>
+using namespace icl::regex;
+#else
 #include <regex.h>
 #endif
 
@@ -217,7 +220,7 @@ namespace icl{
     MatchResult match(const std::string &text, const std::string &regexIn, int num)
       throw (InvalidRegularExpressionException){
       string regexSave = regexIn;
-  #ifndef ICL_SYSTEM_WINDOWS // TODOW
+  //#ifndef ICL_SYSTEM_WINDOWS // TODOW
       char *regex = const_cast<char*>(regexSave.c_str());
       regex_t    re;
       
@@ -226,7 +229,6 @@ namespace icl{
       int status = regcomp(&re, regex, cflags);
       if(status != 0){
         char buf[256];
-        regerror(status,&re,buf,256);
         throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
       }
       
@@ -235,9 +237,9 @@ namespace icl{
       // char buf[256];
       // regerror(status,&re,buf,256);
       //throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
-  #endif
+  //#endif
       MatchResult mr;
-  #ifndef ICL_SYSTEM_WINDOWS
+  //#ifndef ICL_SYSTEM_WINDOWS
       mr.matched = !status;
       for(int i=0;i<num;++i){
         int so = matchList[i].rm_so;
@@ -247,7 +249,7 @@ namespace icl{
         }
       }
       regfree(&re);
-  #endif
+  //#endif
       return mr;
     }
 

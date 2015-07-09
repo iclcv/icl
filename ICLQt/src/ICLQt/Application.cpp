@@ -43,16 +43,35 @@ namespace icl{
     struct ExecThread : public Uncopyable, public Thread{
       typedef void (*callback)(void);
       callback cb;
-      ExecThread(callback cb):cb(cb){
+#if WIN32
+	  bool stopRequested;
+#endif
+      ExecThread(callback cb):cb(cb)
+#if WIN32
+,stopRequested(false)
+#endif
+{
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
+#if WIN32
+	  virtual void stop(){
+		  stopRequested = true;
+		  Thread::stop();
+	  }
+#endif
+
       virtual void run(){
         while(true){
           if(!trylock()){
             cb();
             unlock();
           }
-          usleep(0);
+		  usleep(1);
+#if WIN32
+		  if (stopRequested){
+			  exit();
+		  }
+#endif
         }
       }
     };
@@ -193,26 +212,28 @@ namespace icl{
 
       SignalHandler::install("ICL-Application",handle_icl_app_signal, 
                              "SIGINT,SIGTERM,SIGSEGV,SIGHUP",100);
+
+	  connect(app, SIGNAL(lastWindowClosed()), this, SLOT(lastWindowClosed()));
     }
     
-    ICLApplication::~ICLApplication(){
-      s_app = 0;
-      app->processEvents();
-      for(unsigned int i=0;i<s_threads.size();++i){
-        s_threads[i]->stop(); // force right virtual stop implementation to be 
-        delete s_threads[i];
-      }
-      s_threads.clear();
-      s_inits.clear();
-      s_callbacks.clear();
-      delete sharedWidget;
-      delete app;
-   
-      for(unsigned int i=0;i<s_finalizes.size();++i){
-      	s_finalizes[i](); 
-      }   
-      s_finalizes.clear();
-    }
+	ICLApplication::~ICLApplication(){
+		s_app = 0;
+		app->processEvents();
+		for (unsigned int i = 0; i < s_threads.size(); ++i){
+			s_threads[i]->stop(); // force right virtual stop implementation to be 
+			delete s_threads[i];
+		}
+		s_threads.clear();
+		s_inits.clear();
+		s_callbacks.clear();
+		delete sharedWidget;
+		delete app;
+
+		for (unsigned int i = 0; i < s_finalizes.size(); ++i){
+			s_finalizes[i]();
+		}
+		s_finalizes.clear();
+	}
     
     void ICLApplication::addThread(callback cb){
       ICLASSERT_RETURN(cb);
@@ -262,6 +283,12 @@ namespace icl{
       return true;
     }
     
+	void ICLApplication::lastWindowClosed(){
+#if WIN32
+		QApplication::quit(); // most likely not needed here!
+#endif
+		
+	}
     
     void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, 
                                             bool blocking, bool forcePostEvent){

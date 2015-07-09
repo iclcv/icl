@@ -245,6 +245,11 @@ ELSE()
     ENDIF()
 ENDIF()
 
+# workaround for the fact that on windows, regex.h is not available
+IF(WIN32)
+  LIST(APPEND REQUIRED_LIBRARIES_LIST regex_icl)
+ENDIF()
+
 IF(WIN32)
   LIST(APPEND REQUIRED_LIBRARIES_LIST zlib)
   ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBZ)
@@ -805,6 +810,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLConfig.h.in ${CMAKE_BINARY_
 # ---- OS system include directories ----
 IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
+			   	  ${REGEX_ICL_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
                                   ${PTHREADS_INCLUDE_DIRS}
                                   ${PNG_INCLUDE_DIRS}

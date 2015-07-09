@@ -111,7 +111,7 @@ namespace icl{
       try{
         prop(name);
         throw ICLException("Unable to add property " + name + " because it is already used");
-      }catch(ICLException &ex){
+      }catch(ICLException &){
         m_properties[name]= Property(this,name,type,info,value,volatileness, tooltip);
         if(m_isOrdered) m_ordering[m_properties.size()] = name;
       }
@@ -395,6 +395,7 @@ namespace icl{
         bool found = false;
         for(unsigned int j=0;j<m_deactivated.size();++j){
           if(icl::utils::match(ps[i],m_deactivated[j])){
+			  //DEBUG_LOG("matched property -" << ps[i] << "- and regex -" << m_deactivated[j] << "- so the propertie is deactivated then");
             found=true;
             break;
           }

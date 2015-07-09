@@ -39,7 +39,7 @@ namespace icl{
   namespace geom{
     /**
        This class computes the whole segmentation pipeline of the feature graph based segmentation. The configurable class provides the GUI with all paramters: Prop("segmentation") */
-    class ConfigurableDepthImageSegmenter : public utils::Configurable{
+    class ICLGeom_API ConfigurableDepthImageSegmenter : public utils::Configurable{
   	
       public:
       

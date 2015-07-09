@@ -2490,6 +2490,7 @@ namespace icl{
           //        std::cout << "setting window title:" << QApplication::applicationName().toLatin1().data() << std::endl;
           //m_poWidget->setWindowTitle(File(QApplication::arguments().at(0).toLatin1().data()).getBaseName().c_str());
           m_poWidget->setWindowTitle(File(QApplication::applicationName().toLatin1().data()).getBaseName().c_str());
+		  //SHOW(m_poWidget->testAttribute(Qt::WA_QuitOnClose))
         }
 
         if(!m_poWidget){

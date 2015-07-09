@@ -40,7 +40,7 @@ namespace icl {
 
 		//======================================================================
 
-		ICP3D::ICP3D(const uint iterations, const icl32f max_distance, const icl64f errorDelat)
+		ICP3D::ICP3D(const uint32_t iterations, const icl32f max_distance, const icl64f errorDelat)
 			: maxIterations(iterations),
 			  maxDist(max_distance),
 			  errorDeltaTh(errorDelat),
@@ -99,7 +99,7 @@ namespace icl {
 					std::vector<ICP3DVec> in_matches;
 
 					icl64f max_dist = 0;
-					for (uint i = 0; i < out.size(); ++i) {
+					for (uint32_t i = 0; i < out.size(); ++i) {
 						ICP3DVec &v1 = out[i];
 						ICP3DVec v2;
 						v2 = octree->nn(v1);
@@ -138,7 +138,7 @@ namespace icl {
 
 					complete_transform = transform * complete_transform;
 					// do transformation
-					for (uint i = 0; i < out.size(); ++i) {
+					for (uint32_t i = 0; i < out.size(); ++i) {
 						out[i] = transform * out[i];
 					}
 

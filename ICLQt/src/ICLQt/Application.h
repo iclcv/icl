@@ -98,7 +98,11 @@ namespace icl{
         I guess there's nothing more to explain, isn't it?
     */
     class ICLQt_API ICLApplication : public QObject{
-      
+		Q_OBJECT;
+
+		private slots:
+		void lastWindowClosed();
+
       public:
       QApplication *app;
       QGLWidget *sharedWidget;

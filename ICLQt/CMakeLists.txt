@@ -84,7 +84,6 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
 	    src/ICLQt/Widget.cpp)
 
 SET(HEADERS src/ICLQt/AbstractPlotWidget.h
-	    src/ICLQt/Application.h
 	    src/ICLQt/BorderBox.h
 	    src/ICLQt/BorderHandle.h
 	    src/ICLQt/BoxHandle.h
@@ -172,7 +171,8 @@ SET(ICL_MOC_HEADERS src/ICLQt/Widget.h
 	            src/ICLQt/ChromaGUI.h
 	            src/ICLQt/ThreadedUpdatableSlider.h
 	            src/ICLQt/MultiDrawHandle.h
-	            src/ICLQt/ToggleButton.h)
+	            src/ICLQt/ToggleButton.h
+		    src/ICLQt/Application.h)
 
 # ---- Library build instructions ----
 IF(WIN32)

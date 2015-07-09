@@ -330,7 +330,7 @@ int main(int n, char **args){
   pa_init(n,args,"[m]-input|-i(2) -rectification|-r -create-crop-rect-output-only|-ccroo|-c "
           "-estimate-image-size-only -estimate-image-ar-only "
           "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
-  if(pa("-estimate-image-size-only") || pa("-estimate-image-ar-only") || pa("-compute-optimal-scaling-size")){
+  if(pa("-estimate-image-size-only").as<bool>() || pa("-estimate-image-ar-only").as<bool>() || pa("-compute-optimal-scaling-size").as<bool>()){
     GenericGrabber g(pa("-input"));
     Size s = g.grab()->getSize();
     if(pa("-estimate-image-size-only")){

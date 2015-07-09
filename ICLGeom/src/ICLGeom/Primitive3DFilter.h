@@ -139,7 +139,7 @@ namespace icl{
                 }
 
                 /// renders this 3D primitive into the scene object (by adding a child object to SceneObject *object)
-                void toSceneObject(SceneObject *object, uint slices = 15, GeomColor const &color = geom_white(100));
+                void toSceneObject(SceneObject *object, uint32_t slices = 15, GeomColor const &color = geom_white(100));
 
                 /// the type of primitive
                 PrimitiveType type;

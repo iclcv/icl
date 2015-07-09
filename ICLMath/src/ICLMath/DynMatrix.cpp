@@ -325,7 +325,7 @@ namespace icl{
         DynMatrix<T> U,s,V;
         try{
           svd_dyn(*this,U,s,V);
-        }catch(const ICLException &ex){
+        }catch(const ICLException &){
           return pinv(false,zeroThreshold);
         }
         DynMatrix S(U.cols(), V.rows(),0.0f);

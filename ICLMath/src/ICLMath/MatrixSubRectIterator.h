@@ -106,7 +106,7 @@ namespace icl{
          m_matrixWidth(matrixWidth),m_subRectWidth(subRectWidth),m_subRectHeight(subRectHeight),
          m_dataOrigin(ptData),m_dataCurr(ptData+subRectX+subRectY*matrixWidth) {init();}
       
-      inline MatrixSubRectIterator &operator=(const MatrixSubRectIterator &other){
+      inline MatrixSubRectIterator &assign(const MatrixSubRectIterator &other){
         m_matrixWidth = other.m_matrixWidth;
         m_subRectWidth = other.m_subRectWidth;
         m_subRectHeight = other.m_subRectHeight;
@@ -119,7 +119,7 @@ namespace icl{
       }
   
       inline const MatrixSubRectIterator& operator=(const MatrixSubRectIterator &other) const{
-        return (*const_cast<MatrixSubRectIterator*>(this)) = other;
+		  return (*const_cast<MatrixSubRectIterator*>(this)).assign(other);
       }
   
       /// retuns a reference of the current pixel value (const)

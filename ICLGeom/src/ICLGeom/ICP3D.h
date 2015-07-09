@@ -40,7 +40,7 @@ namespace icl {
 		/**
 		 * @brief The ICP3D class is a special ICP-case for homogeneous 3D-vectors
 		 */
-		class ICP3D : public utils::Uncopyable {
+		class ICLGeom_API ICP3D : public utils::Uncopyable {
 
 		public:
 
@@ -54,7 +54,7 @@ namespace icl {
 				/// @brief error The final error
 				icl64f error;
 				/// @brief iterations The number of iterations needed
-				uint iterations;
+				uint32_t iterations;
 			};
 
 			typedef icl::math::FixedColVector<icl32f,4> ICP3DVec;
@@ -62,7 +62,7 @@ namespace icl {
 			/**
 			 * @brief ICP3D Standard constructor
 			 */
-			ICP3D(uint const iterations = 10,
+			ICP3D(uint32_t const iterations = 10,
 				  icl32f const max_distance = 1.0f,
 				  icl64f const errorDelat = 0.01f);
 
@@ -140,13 +140,13 @@ namespace icl {
 			void setErrorDeltaTh(icl64f const th) { errorDeltaTh = th; }
 			icl64f getErrorDeltaTh() { return errorDeltaTh; }
 
-			void setMaximumIterations(uint const iterations) { maxIterations = iterations; }
-			uint getMaximumIterations() { return maxIterations; }
+			void setMaximumIterations(uint32_t const iterations) { maxIterations = iterations; }
+			uint32_t getMaximumIterations() { return maxIterations; }
 
 			std::vector<ICP3DVec> const &getTarget() { return m_target; }
 
 			/// @brief maxIterations Maximum number of iterations
-			uint maxIterations;
+			uint32_t maxIterations;
 			/// @brief maxDist Maximal distance allowed between two corresponding points
 			icl32f maxDist;
 			/**

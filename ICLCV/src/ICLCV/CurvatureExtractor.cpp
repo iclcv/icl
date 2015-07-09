@@ -40,8 +40,8 @@ using namespace icl::core;
 namespace icl {
     namespace cv {
 
-    CurvatureExtractor::CurvatureExtractor(const uint curv_radius,
-                                     const uint steps,
+    CurvatureExtractor::CurvatureExtractor(const uint32_t curv_radius,
+                                     const uint32_t steps,
                                      const bool thinned_contour)
         : m_curv_radius(curv_radius), m_steps(steps),
           m_thinned_contour(thinned_contour) {
@@ -50,7 +50,7 @@ namespace icl {
 
     void CurvatureExtractor::extractContourCurvature(const PointVector &contour,
                                                   const Img8u &insideLookup,
-                                                  const uint regionLookupId,
+                                                  const uint32_t regionLookupId,
                                                   std::vector<int> &indices,
                                                   FloatHist &hist,
                                                   DMatF &dist,
@@ -63,7 +63,7 @@ namespace icl {
 
         //const PointVector &contour = region.getBoundary(m_thinned_contour);
 
-        const uint dim = contour.size();
+        const uint32_t dim = contour.size();
 
         ICLASSERT_RETURN((dim > 1 || dim >= m_curv_radius*m_steps));
 
@@ -71,9 +71,9 @@ namespace icl {
         dist = DMatF(dim,dim,0.0f);
 
     //#pragma omp parallel for schedule(dynamic)
-        for (uint col = 0; col < dim; ++col) {
+        for (uint32_t col = 0; col < dim; ++col) {
             const Point &p1 = contour[col];
-            for (uint row = col+1; row < dim; ++row) {
+            for (uint32_t row = col+1; row < dim; ++row) {
                 const Point &p2 = contour[row];
                 dist(col,row) = dist(row,col) = fabs(p1.distanceTo(p2));
             }
@@ -83,7 +83,7 @@ namespace icl {
         // them to the whole contour according to the steps given in 'm_steps'
         if (indices.empty()) {
             indices.reserve(std::floor(dim/(float)m_steps));
-            for (uint i = 0; i < dim; i+=m_steps)
+            for (uint32_t i = 0; i < dim; i+=m_steps)
                 indices.push_back(i);
         }
 
@@ -92,13 +92,13 @@ namespace icl {
         hist.resize(indices.size());
 
     //#pragma omp parallel for schedule(dynamic)
-        for (uint i = 0; i < indices.size(); ++i) {
+        for (uint32_t i = 0; i < indices.size(); ++i) {
             const int index = indices[i];
             float h_i = 0;
-            for (uint s = 1; s < m_curv_radius; ++s) {
+            for (uint32_t s = 1; s < m_curv_radius; ++s) {
                 // the curent indices i-s_j and i+s_j
-                const uint min = restOp((index-s),dim);
-                const uint max = restOp((index+s),dim);
+                const uint32_t min = restOp((index-s),dim);
+                const uint32_t max = restOp((index+s),dim);
                 const Point32f p_1 = contour[min];
                 const Point32f p_2 = contour[max];
 
@@ -110,9 +110,9 @@ namespace icl {
                 }
                 // the geodesic length 'l' of a curve
                 float l = 0;
-                for (uint k = 0; k < 2*s; ++k) {
-                    const uint i1 = (min+k)%dim;
-                    const uint i2 = (min+k+1)%dim;
+				for (uint32_t k = 0; k < 2 * s; ++k) {
+					const uint32_t i1 = (min + k) % dim;
+					const uint32_t i2 = (min + k + 1) % dim;
                     l += dist(i1,i2);
                 }
                 // compute the curavature 'k_i'
@@ -133,14 +133,14 @@ namespace icl {
 
     void CurvatureExtractor::extractRegionCurvature(const std::vector<ImageRegion> &regions,
                                                  const Img8u &insideLookup,
-                                                 const std::vector<uint> &regionLookupIds,
+                                                 const std::vector<uint32_t> &regionLookupIds,
                                                  std::vector<FloatHist> &curvatureHists) {
 
         BENCHMARK_THIS_FUNCTION;
 
         ICLASSERT_RETURN((regions.size() == regionLookupIds.size()));
 
-        uint dim = regions.size();
+		uint32_t dim = regions.size();
 
         // prepare internal memory
         curvatureHists.resize(dim);
@@ -148,7 +148,7 @@ namespace icl {
         m_curvatures.resize(dim);
         m_used_indices.resize(dim);
 
-        for (uint i = 0; i < regions.size(); ++i) {
+		for (uint32_t i = 0; i < regions.size(); ++i) {
             const ImageRegion &region = regions[i];
             extractContourCurvature(region.getBoundary(m_thinned_contour),
                                     insideLookup,regionLookupIds[i],

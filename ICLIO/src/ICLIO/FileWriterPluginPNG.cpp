@@ -35,6 +35,7 @@
 
 #include <png.h>
 #include <cstdio>
+#include <stdint.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -88,8 +89,8 @@ namespace icl{
       }
 
       // if we have a 16 bit image we need to consider this when extracting the rows from the image (double number of bytes)
-      uint num_bytes = 1;
-      uint bits = 8;
+      uint32_t num_bytes = 1;
+      uint32_t bits = 8;
       // we can only guarantee the 16 bit resolution for 1-channel grey-scale images!
       if (d == depth16s && c == 1) {
         bits = 16;

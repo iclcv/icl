@@ -609,7 +609,7 @@ namespace icl{
 
         }
 
-        void Primitive3DFilter::Primitive3D::toSceneObject(icl::geom::SceneObject *object, uint slices,
+        void Primitive3DFilter::Primitive3D::toSceneObject(icl::geom::SceneObject *object, uint32_t slices,
                                                            icl::geom::GeomColor const &color) {
 
             math::Mat4 mat = orientation.getTransformationMatrix();
