@@ -26,6 +26,7 @@ Table of Contents
 
   * :ref:`io.grabbers.device-selection`
   * :ref:`io.grabbers.properties`
+  * :ref:`io.grabbers.remote-properties`
   * :ref:`io.grabber-backends`
   * :ref:`io.file-types`
 
@@ -143,7 +144,16 @@ properties can be set from command line. For this, a list of
   stored in an appropriate xml file::
 
     icl-camviewer -input dc 0=my-udist-properties.xml
+
+* create a remote server for the camera properties so that an external application
+  that receives the images can also adapt the grabber properties (only with RSB-Support)::
   
+    icl-pipe -i v4l 0@remote-server=/foo/bar/cfg -o rsb /foo/bar 
+
+  The opposite receiving part then can instantiate a remote client::
+
+    icl-viewer -i rsb /foo/bar@remote-client=/foo/bar/cfg
+
   .. note::
      
     *appropriate* means that the xml-file was created by either serializing
@@ -151,7 +161,51 @@ properties can be set from command line. For this, a list of
     the estimation of lens distortion compensation parameters: **icl-opencv-calib**.
     The use of this tool is explained in detail in :ref:`howtos.calib.distortion`
 
+.. _io.grabbers.remote-properties:
 
+Adapting Camera Properties Remotely
+"""""""""""""""""""""""""""""""""""
+
+When streaming images between processes, a particular difficulty is
+the adaption of native camera parameters from the receiving (auctually
+processing) process. Let's say, an image server process is created in
+one process::
+
+  icl-pipe -i v4l 0 -o rsb /foo/bar
+
+that here streams images from the first v4l device through an rsb-informer.
+Now an actuall application, that receives (and processes) the images, such as::
+
+  icl-viewer -i rsb /foo/bar
+ 
+would only be able to adapt the here locally used RSB-grabber's
+properties, which basically only allow to adjust image compression
+parameters. This mechanism is internally realized by a property
+feedback channel that is automatically spawned by the
+:icl:`io::GenericImageOutput` instance, which is created in the
+icl-pipe process. Though this channel, the :icl:`io::GenericGrabber`
+that is created in the icl-viewer process can tell the
+:icl:`io::GenericImageOutput` of the icl-pipe-process how and how much
+the images should be compressed. The actuall video-4-linux camera
+properties, however, are only visible in the icl-pipe process. 
+
+ICL's :icl:`io::GenericGrabber` provides a generic method to forward the
+actual device properties also to the client (icl-viewer) side. To this end,
+the sending process must be explicitly told to create an RSB-remote-server
+for its grabbers properties::
+
+  icl-pipe -i v4l 0 -o rsb /foo/bar@remote-server=/baz
+ 
+Now, client processes, such as icl-viewer, can access these properties
+(if needed) by instantiating a remote-client::
+
+  icl-viewer -i rsb /foo/bar@remote-client=/baz
+
+In this case, the RSB-grabber in the icl-viewer process would not only
+provide access to the native RSB-grabber properties, but also to all
+properties of the v4l-Grabber that is used in the icl-pipe process. Please note::
+
+  The remotely connected properties are endowed with a "remote."-prefix.
 
 .. _io.grabber-backends:
 
@@ -205,7 +259,8 @@ dependencies are not part of automatically created list.
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 |  16   |   oni   |              depth|rgb|ir                |  OpenNI-based depth camera grabber for Kinect and X-tion  |          OpenNI               |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
-
+|  17   | optris  |              camera serial               |  libIRImager based backend for Optris' IR Cameras         | libirimager, v4l2, udev       |
++-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 
 .. _io.file-types:
 

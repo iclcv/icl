@@ -65,7 +65,7 @@ namespace icl{
       }
       virtual std::vector<std::string> getPropertyList() const{
         boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getPropertyList");
-        if(s){
+        if(!s){
           ERROR_LOG("remote method getPropertyList: returned null");
           return std::vector<std::string>();
         }else{
@@ -74,8 +74,9 @@ namespace icl{
       }
       
       std::string rmi(const std::string &propertyName, const std::string &method, bool intVersion=false) const{
-        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getProperty"+method);
-        if(s){
+        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getProperty"+method, 
+                                                                           pack(propertyName));
+        if(!s){
           if(intVersion){
             return "0";
           }else{
@@ -121,23 +122,26 @@ namespace icl{
         ListCallback(Configurable *c):GenericCallback(c){}
 
         boost::shared_ptr<std::string> call(const std::string&  /*methodName*/){
-          return pack(cat(c->getPropertyList(),","));
+          boost::shared_ptr<std::string> s = pack(cat(c->getPropertyList(),","));
+          //DEBUG_LOG("list callback called, returning '" << *s << "'");
+          return s;
         }
       };
 
       struct InfoCallback : public LocalServer::Callback<std::string,std::string>, public GenericCallback{
-        InfoCallback(Configurable *c):GenericCallback(c){}
+        std::string method;
+        InfoCallback(Configurable *c, const std::string &method):GenericCallback(c),method(method){}
         boost::shared_ptr<std::string> call(const std::string& methodName,
                                             boost::shared_ptr<std::string> arg){
-          if(methodName == "getPropertyType"){
+          if(method == "Type"){
             return pack(c->getPropertyType(*arg));
-          }else if(methodName == "getPropertyInfo"){
+          }else if(method == "Info"){
             return pack(c->getPropertyInfo(*arg));
-          }else if(methodName == "getPropertyValue"){
+          }else if(method == "Value"){
             return pack(c->getPropertyValue(*arg));
-          }else if(methodName == "getPropertyVolatileness"){
+          }else if(method == "Volatileness"){
             return pack(str(c->getPropertyVolatileness(*arg)));
-          }else if(methodName == "getPropertyToolTip"){
+          }else if(method == "ToolTip"){
             return pack(c->getPropertyToolTip(*arg));
           }else{
             ERROR_LOG("invalid method name: " << methodName);
@@ -150,7 +154,7 @@ namespace icl{
         void call(const std::string&, /* method name */
                   boost::shared_ptr<std::string> arg){
           // arg is arg=value
-          std::vector<std::string> ts = tok("arg","=");
+          std::vector<std::string> ts = tok(*arg,"=");
           if(ts.size() == 1) ts.push_back("");
           c->setPropertyValue(ts[0],ts[1]);
         }
@@ -160,9 +164,10 @@ namespace icl{
         Factory &factory = getFactory();
         server = factory.createLocalServer(scope);
         server->registerMethod("getPropertyList", LocalServer::CallbackPtr(new ListCallback(c)));
-        LocalServer::CallbackPtr ptr(new InfoCallback(c));
-        std::string ips[5] = { "Info", "List", "Value", "Volatileness", "ToolTip" };
+
+        std::string ips[5] = { "Info", "Type", "Value", "Volatileness", "ToolTip" };
         for(int i=0;i<5;++i){
+          LocalServer::CallbackPtr ptr(new InfoCallback(c,ips[i]));
           server->registerMethod("getProperty"+ips[i],ptr);
         }
         server->registerMethod("setPropertyValue", LocalServer::CallbackPtr(new SetCallback(c)));

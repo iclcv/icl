@@ -46,7 +46,11 @@ namespace icl{
 #if WIN32
 	  bool stopRequested;
 #endif
-      ExecThread(callback cb):cb(cb),stopRequested(false){
+      ExecThread(callback cb):cb(cb)
+#if WIN32
+,stopRequested(false)
+#endif
+{
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
 #if WIN32

@@ -77,7 +77,7 @@ int main(int n, char **ppc){
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");
-  pa_init(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -pwc|p -sr|s -cvcam|c -sm|m -v4l|v -all|a "
+  pa_init(n,ppc,"-dc|d -dc800|8 -demo -unicap|u -mry|y -optris|o -xi|x -pwc|p -sr|s -cvcam|c -sm|m -v4l|v -all|a "
           " -reset-bus|-r|r -kinect|k -pylon|b "
           "-input|-i(device-type,device-ID) -list-devices-only|-l");
 
@@ -93,6 +93,8 @@ int main(int n, char **ppc){
   if(pa("k"))str << ",kinectd,kinectc,kinecti";
   if(pa("m"))str << ",sm";
   if(pa("v"))str << ",v4l";
+  if(pa("o"))str << ",optris";
+  if(pa("x"))str << ",xi";
   if(pa("y"))str << ",myr";
   if(pa("b"))str << ",pylon";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);

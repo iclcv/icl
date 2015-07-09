@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLIO/src/ICLIO/XiGrabber.h                            **
+** File   : ICLIO/src/ICLIO/OptrisGrabber.h                        **
 ** Module : ICLIO                                                  **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -36,31 +36,28 @@
 namespace icl{
   namespace io{
     
-    /// Grabber class that grabs images using the XiAPI (extension of the M3API)
-    /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
-        with the generic grabber for this.
+    /// Grabber class that grabs images using the libImager library from Optris
+    /** Optris provides IR-Cameras, such as the TIM 160 which yields IR-temperature
+        images of 160x120 resolution at 120 Hz.
     */
-    class ICLIO_API XiGrabber : public Grabber {
+    class ICLIO_API OptrisGrabber : public Grabber {
         /// Internal Data storage class
         struct Data;
 
         /// Hidden Data container
         Data *m_data;
 
-        /// internal initialization function
-        void init(int deviceID) throw (utils::ICLException);
-
         /// provide protected access for the data class
         friend class Data;
       public:
 
-        /// Creates a new XiGrabber instance (please use the GenericGrabber instead)
-        XiGrabber(int deviceID) throw(utils::ICLException);
+        /// Creates a new OptrisGrabber instance (please use the GenericGrabber instead)
+        OptrisGrabber(const std::string &serialPattern, bool testOnly=false) throw(utils::ICLException);
 
         /// Destructor
-        ~XiGrabber();
+        ~OptrisGrabber();
 
-        /// returns a list of all connected devices
+        /// returns a list of all available devices
         static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
         /// grabbing function

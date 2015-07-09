@@ -123,6 +123,9 @@ namespace icl{
       if(m_poGrabber){
         GrabberInstanceTable::get() -> deleteGrabber(m_poDesc);
       }
+      if(m_remoteServer){
+        delete m_remoteServer;
+      }
     }
     
     void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
@@ -195,8 +198,12 @@ namespace icl{
         // delete old grabber
         GrabberInstanceTable::get()->deleteGrabber(m_poDesc);
       }
+      if(m_remoteServer){
+        delete m_remoteServer;
+      }
       m_poDesc = GrabberDeviceDescription();
       m_poGrabber = NULL;
+      m_remoteServer = NULL;
       setInternalConfigurable(NULL);
 
       // create param map
@@ -274,7 +281,7 @@ namespace icl{
           }else if(p.first == "info"){
             std::cout << "Property list for " << m_poDesc << std::endl;
             std::vector<std::string> ps = m_poGrabber->getPropertyList();
-            TextTable t(4,ps.size()+3,35);
+            TextTable t(4,ps.size()+4,35);
             t[0] = tok("property,type,allowed values,current value",",");
             for(unsigned int j=0;j<ps.size();++j){
               const std::string &p2 = ps[j];
@@ -302,22 +309,35 @@ namespace icl{
 #endif
 
 
-            t(0,ps.size()+2) = str("remote");
+            t(0,ps.size()+2) = str("remote-server");
             t(1,ps.size()+2) = str("special");
             t(2,ps.size()+2) = str("RSB-scope of configurable remote server ") + helpText;
             t(3,ps.size()+2) = str("-");
+
+            t(0,ps.size()+3) = str("remote-client");
+            t(1,ps.size()+3) = str("special");
+            t(2,ps.size()+3) = str("RSB-scope of server to connect to remotely ") + helpText;
+            t(3,ps.size()+3) = str("-");
 
             std::cout << t << std::endl;
             std::terminate();
           }else if(p.first == "udist"){
             m_poGrabber -> enableUndistortion(p.second);
-          }else if(p.first == "remote"){
+          }else if(p.first == "remote-server"){
+#ifdef ICL_HAVE_RSB
+            m_remoteServer = new ConfigurableRemoteServer(m_poGrabber, p.second);
+#else
+            ERROR_LOG("could not create configurable remote server named '" << p.second << "'"
+                      << " for this grabber(reason: ICL is compiled without RSB-support)");
+#endif
+            
+          }else if(p.first == "remote-client"){
 #ifdef ICL_HAVE_RSB
             Configurable *remote = ConfigurableRemoteServer::create_client(p.second);
-            addChildConfigurable(remote); // hmm is that really THAT simple?
+            addChildConfigurable(remote,"remote"); // hmm is that really THAT simple?
 #else
             ERROR_LOG("could not create connection to remote configurable named '" << p.second << "'"
-                      << "(reason: ICL is compiled without RSB-support)");
+                      << " (reason: ICL is compiled without RSB-support)");
 #endif
           }else{
             m_poGrabber->setPropertyValue(p.first,p.second);
