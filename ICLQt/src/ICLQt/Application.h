@@ -100,8 +100,10 @@ namespace icl{
     class ICLQt_API ICLApplication : public QObject{
 		Q_OBJECT;
 
-		private slots:
+#if WIN32
+	private slots:
 		void lastWindowClosed();
+#endif
 
       public:
       QApplication *app;

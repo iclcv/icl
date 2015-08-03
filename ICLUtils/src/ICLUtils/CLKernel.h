@@ -104,6 +104,8 @@ namespace icl {
       void apply(int gloW, int gloH = 0, int gloC = 0,
                  int locW = 0, int locH = 0, int locC = 0) throw (CLKernelException);
       
+	  /// calls the finish-fkt. of opencl to wait until the command queue is done
+	  void finish() throw (CLKernelException);
       
       /// for tight integration with the CLProgram class
       friend class CLProgram;

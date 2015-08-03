@@ -44,7 +44,7 @@ namespace icl {
       cl::Kernel kernel;
       cl::CommandQueue cmdQueue;
       Impl(){}
-      Impl(Impl& other):cmdQueue(other.cmdQueue){
+	  Impl(Impl& other):cmdQueue(other.cmdQueue){
         kernel = other.kernel;
       }
       Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id)
@@ -55,6 +55,14 @@ namespace icl {
           throw CLKernelException(CLException::getMessage(error.err(), error.what()));
         }
       }
+
+	  void finish() throw (CLKernelException) {
+		  try {
+			  cmdQueue.finish();
+		  } catch (cl::Error& error) {
+			throw CLKernelException(CLException::getMessage(error.err(), error.what()));
+		  }
+	  }
 
       void apply(int gloW, int gloH = 0, int gloC = 0,
                  int locW = 0, int locH = 0, int locC = 0) throw (CLKernelException){
@@ -132,6 +140,10 @@ namespace icl {
                          int locW, int locH, int locC) throw (CLKernelException){
       impl->apply(gloW, gloH, gloC, locW, locH, locC);
     }
+
+	void CLKernel::finish() throw (CLKernelException) {
+		impl->finish();
+	}
 
     CLKernel::~CLKernel() {
       delete impl;

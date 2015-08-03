@@ -283,12 +283,11 @@ namespace icl{
       return true;
     }
     
-	void ICLApplication::lastWindowClosed(){
 #if WIN32
+	void ICLApplication::lastWindowClosed(){
 		QApplication::quit(); // most likely not needed here!
-#endif
-		
 	}
+#endif
     
     void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, 
                                             bool blocking, bool forcePostEvent){
