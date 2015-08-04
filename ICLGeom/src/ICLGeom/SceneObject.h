@@ -729,7 +729,7 @@ namespace icl{
       ICLGeom_API void clearAllPrimitives();
       
       /// deletes all primitive and all vertex, color and normal content (and optionally also the children)
-      ICLGeom_API virtual void clear(bool deleteAndRemoveChildren=true, bool resetTransform=false);
+      ICLGeom_API virtual void clearObject(bool deleteAndRemoveChildren=true, bool resetTransform=false);
       
       /// creates a displaylist in the next render cycle
       /** if the displaylist was already created, it is updated */

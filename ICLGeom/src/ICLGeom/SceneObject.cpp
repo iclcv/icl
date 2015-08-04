@@ -156,7 +156,7 @@ namespace icl{
       m_primitives.clear();
     }
 
-    void SceneObject::clear(bool deleteAndRemoveChildren, bool resetTransform){
+    void SceneObject::clearObject(bool deleteAndRemoveChildren, bool resetTransform){
       clearAllPrimitives();
       m_vertices.clear();
       m_normals.clear();
