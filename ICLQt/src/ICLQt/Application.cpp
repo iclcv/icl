@@ -213,7 +213,9 @@ namespace icl{
       SignalHandler::install("ICL-Application",handle_icl_app_signal, 
                              "SIGINT,SIGTERM,SIGSEGV,SIGHUP",100);
 
+#if WIN32
 	  connect(app, SIGNAL(lastWindowClosed()), this, SLOT(lastWindowClosed()));
+#endif
     }
     
 	ICLApplication::~ICLApplication(){

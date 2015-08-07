@@ -41,7 +41,8 @@ SET(SOURCES src/ICLMath/DynMatrix.cpp
 	    src/ICLMath/SimplexOptimizer.cpp
 	    src/ICLMath/SOM.cpp
 	    src/ICLMath/StochasticOptimizer.cpp
-	    src/ICLMath/StraightLine2D.cpp
+					src/ICLMath/StraightLine2D.cpp
+					src/ICLMath/EigenICLConverter.cpp
             src/ICLMath/HomogeneousMath.cpp)
 
 SET(HEADERS src/ICLMath/DynMatrix.h
@@ -75,6 +76,7 @@ SET(HEADERS src/ICLMath/DynMatrix.h
 	    src/ICLMath/SOM.h
 	    src/ICLMath/StochasticOptimizer.h
 	    src/ICLMath/StraightLine2D.h
+					src/ICLMath/EigenICLConverter.h
             src/ICLMath/HomogeneousMath.h)
 
 IF(WIN32)
