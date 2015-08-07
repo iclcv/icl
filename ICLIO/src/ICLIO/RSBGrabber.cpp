@@ -109,6 +109,7 @@ namespace icl{
         shared_ptr<rsb::Handler> handler;
 
         void update(RSBImage &image, RSBGrabber *impl){
+          impl->setPropertyValue("rsb event received","");
           Mutex::Locker lock(mutex); // "reentrant-ness" and external access
           const std::string &data = image.data();
           const std::string &mode = image.compressionmode();
@@ -184,6 +185,7 @@ namespace icl{
       addProperty("JPEG-quality", "range", "[1,100]:1", m_data->receivedJPEGQuality, 0, "");
       addProperty("image data size", "info", "", m_data->lastImageDataSize, 0, "");
       addProperty("compression ratio", "info", "", str(m_data->lastCompressionRatio) + "%", 0, "");
+      addProperty("rsb event received","command","",0,0,"");
       Configurable::registerCallback(utils::function(this,&RSBGrabber::processPropertyChange));
     }
     
@@ -210,6 +212,7 @@ namespace icl{
       setPropertyValue("image data size", m_data->lastImageDataSize);
       setPropertyValue("compression ratio", str(m_data->lastCompressionRatio) + "%");
       setPropertyValue("size", m_data->outputImage->getSize());
+
       return m_data->outputImage;
     }
 

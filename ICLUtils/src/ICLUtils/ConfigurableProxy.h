@@ -92,6 +92,11 @@ namespace icl{
           getInternalConfigurable() -> addChildConfigurable(configurable,childPrefix);
         }
 
+
+        void registerCallback(Configurable::Callback cb){
+          getInternalConfigurable() -> registerCallback(cb);
+        }
+        
         /// get type of property
         std::string getPropertyType(const std::string &propertyName) const{
           return getInternalConfigurable() -> getPropertyType(propertyName);

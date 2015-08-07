@@ -63,7 +63,8 @@ namespace icl {
         ConfigurableRemoteServer *m_remoteServer;
 
       public:
-
+        using utils::ConfigurableProxy::registerCallback;
+        
         /// Initialized the grabber from given prog-arg
         /** The progarg needs two sub-parameters */
         GenericGrabber(const utils::ProgArg &pa) throw (utils::ICLException):m_poGrabber(0),m_remoteServer(0){
