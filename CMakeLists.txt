@@ -797,7 +797,7 @@ ENDIF()
 
 IF(BUILD_WITH_LIBAV)
   ICL_FIND_PACKAGE(NAME libav
-                   HEADERS "libavcodec/avcodec.h;libavformat/avfornat.h;libswscale/swscale.h"
+                   HEADERS "libavcodec/avcodec.h;libavformat/avformat.h;libswscale/swscale.h"
                    LIBS "avcodec;avformat;avutil;avresample;swscale;avdevice;"
                    HEADER_PATH_SUFFIXES "include/avcodec;include/avformat;include/avdevice;include/avfilter;include/avutil;include/avresample;include/swscale")
   IF(LIBAV_FOUND)

@@ -54,7 +54,9 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
             src/ICLGeom/PointCloudSegment.cpp       
             src/ICLGeom/PCDFileGrabber.cpp
-            src/ICLGeom/Primitive3DFilter.cpp)
+            src/ICLGeom/Primitive3DFilter.cpp
+	    src/ICLGeom/IterativeClosestPoint.cpp
+	    src/ICLGeom/IterativeClosestPointCLCode.cl)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -72,7 +74,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PrimitiveType.h
             src/ICLGeom/SceneObjectBase.h
             src/ICLGeom/ICP.h
-												src/ICLGeom/ICP3D.h
+	    src/ICLGeom/ICP3D.h
             src/ICLGeom/RGBDMapping.h
             src/ICLGeom/Plot3D.h          
             src/ICLGeom/PlotHandle3D.h
@@ -94,7 +96,9 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/ConfigurableDepthImageSegmenter.h
             src/ICLGeom/PointCloudSegment.h
             src/ICLGeom/PCDFileGrabber.h
-            src/ICLGeom/Primitive3DFilter.h)
+            src/ICLGeom/Primitive3DFilter.h
+	    src/ICLGeom/IterativeClosestPoint.h
+	    src/ICLGeom/IterativeClosestPointCLCode.h)
 
 
 IF(QT_FOUND)
