@@ -36,7 +36,7 @@ namespace icl {
 		//------------------------------------------------------------------------------------------
 
 		template<typename T>
-		icl::math::DynMatrix<T> eigenToICLDyn(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const &E) {
+		inline icl::math::DynMatrix<T> eigenToICLDyn(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const &E) {
 			icl::math::DynMatrix<T> result(E.cols(),E.rows());
 			for(uint i = 0; i < E.cols(); ++i)
 				for(uint k = 0; k < E.rows(); ++k)
@@ -45,7 +45,7 @@ namespace icl {
 		}
 
 		template<typename T>
-		Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> iclToEigenDyn(icl::math::DynMatrix<T> const &E) {
+		inline Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> iclToEigenDyn(icl::math::DynMatrix<T> const &E) {
 			Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> result(E.rows(),E.cols());
 			for(uint i = 0; i < E.cols(); ++i)
 				for(uint k = 0; k < E.rows(); ++k)
