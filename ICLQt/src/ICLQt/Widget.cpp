@@ -710,7 +710,8 @@ namespace icl{
       int frameIdx;
       FixedConverter *converter;
       ImgBase *convertedBuffer;
-  
+      std::map<std::string,Function<void,const core::ImgBase*> > recordingCallbacks;
+      
     public:
       OutputBufferCapturer(ICLWidget *parent, ICLWidget::Data *data):
         parent(parent),data(data),target(SET_IMAGES),
@@ -739,6 +740,26 @@ namespace icl{
         while((int)end >= 0 && s[end] == ' ') --end;
         return s.substr(begin,end-begin+1);
       }
+
+     
+
+      void registerRecordingCallback(utils::Function<void,const ImgBase*> cb, 
+                                     const std::string &handle){
+        Mutex::Locker l(mutex);
+        recordingCallbacks[handle] = cb;
+      }
+
+      void unregisterRecordingCallback(const std::string &handle){
+        Mutex::Locker l(mutex);
+        std::map<std::string,Function<void,const core::ImgBase*> >::iterator it = recordingCallbacks.find(handle);
+        if(it != recordingCallbacks.end()){
+          recordingCallbacks.erase(it);
+        }else{
+          ERROR_LOG("could not remove recording callback for handle " << handle 
+                    << " (no callback registered for that handle)");
+        }
+      }
+
       
       bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
                           bool forceParams, const Size &dstSize, core::format dstFmt,  core::depth dstDepth){
@@ -814,7 +835,11 @@ namespace icl{
         }
         try{
           SmartPtr<const ImgBase> image(data->image.extractImage(),false);
-          
+          for(std::map<std::string, utils::Function<void,const ImgBase*> >::iterator it = recordingCallbacks.begin();
+              it != recordingCallbacks.end();++it){
+            it->second(image.get());
+          }
+
           if(converter){
             converter->apply(image.get(),&convertedBuffer);
             image = SmartPtr<ImgBase>(convertedBuffer,false);
@@ -839,6 +864,10 @@ namespace icl{
         }
         try{
           const ImgBase *fb = &parent->grabFrameBufferICL();
+          for(std::map<std::string, utils::Function<void,const ImgBase*> >::iterator it = recordingCallbacks.begin();
+              it != recordingCallbacks.end();++it){
+            it->second(fb);
+          }
           if(converter){
             converter->apply(fb,&convertedBuffer);
             fb = convertedBuffer;
@@ -1696,6 +1725,19 @@ namespace icl{
       }
       m_data->menuptr->setVisible(visible);
     }
+
+    void ICLWidget::registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb, 
+                                              const std::string &handle){
+      if(!m_data->outputCap){
+        m_data->outputCap = new OutputBufferCapturer(this,m_data);
+      }
+      m_data->outputCap->registerRecordingCallback(cb, handle);
+    }
+
+    void ICLWidget::unregisterRecordingCallback(const std::string &handle){
+      m_data->outputCap->unregisterRecordingCallback(handle);
+    }
+
   
     void ICLWidget::startRecording(const std::string &outputDevice, 
                                    const std::string &outputInfo,

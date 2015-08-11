@@ -273,6 +273,16 @@ namespace icl{
                           bool framebuffer=true, int frameskip=0,
                           bool setParamsOnlyButDoNotStartRecording=false);
 
+      /// adds a callback function that is executed each time an image is recorded!
+      /** TODO: Use a non-default handle to manage different callbacks in parallel. use 
+          startRecording("null","",...) to use the callbacks without actually
+          recording images. */
+      void registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb, 
+                                     const std::string &handle="default");
+
+      /// removes a recording callback function
+      void unregisterRecordingCallback(const std::string &handle="default");
+
       protected:
       
       /// shows a help dialog 
