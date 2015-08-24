@@ -31,7 +31,7 @@
 SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CoplanarPointPoseEstimator.cpp
             src/ICLGeom/ICP.cpp
-												src/ICLGeom/ICP3D.cpp
+	    src/ICLGeom/ICP3D.cpp
             src/ICLGeom/PlaneEquation.cpp
             src/ICLGeom/PointCloudNormalEstimator.cpp
             src/ICLGeom/PoseEstimator.cpp
@@ -54,9 +54,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
             src/ICLGeom/PointCloudSegment.cpp       
             src/ICLGeom/PCDFileGrabber.cpp
-            src/ICLGeom/Primitive3DFilter.cpp
-	    src/ICLGeom/IterativeClosestPoint.cpp
-	    src/ICLGeom/IterativeClosestPointCLCode.cl)
+            src/ICLGeom/Primitive3DFilter.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -96,9 +94,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/ConfigurableDepthImageSegmenter.h
             src/ICLGeom/PointCloudSegment.h
             src/ICLGeom/PCDFileGrabber.h
-            src/ICLGeom/Primitive3DFilter.h
-	    src/ICLGeom/IterativeClosestPoint.h
-	    src/ICLGeom/IterativeClosestPointCLCode.h)
+            src/ICLGeom/Primitive3DFilter.h)
 
 
 IF(QT_FOUND)
@@ -157,8 +153,12 @@ IF(PCL_FOUND)
 ENDIF()
 
 IF(OPENCL_FOUND)
-    LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp)
-    LIST (APPEND HEADERS src/ICLGeom/PointCloudCreatorCL.h)
+    LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp
+                         src/ICLGeom/IterativeClosestPoint.cpp
+	                 src/ICLGeom/IterativeClosestPointCLCode.cl)
+    LIST (APPEND HEADERS src/ICLGeom/PointCloudCreatorCL.h
+                         src/ICLGeom/IterativeClosestPoint.h
+	                 src/ICLGeom/IterativeClosestPointCLCode.h)
 ENDIF()
 
 IF(RSB_FOUND)

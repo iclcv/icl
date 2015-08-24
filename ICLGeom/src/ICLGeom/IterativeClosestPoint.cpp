@@ -361,7 +361,9 @@ namespace icl{
         m_data = new Data(clCode, localSize2Dx, localSize2Dy, localSize1D, subFunc, toVectorFunc);
     }
 #else
+    template<class T>
     struct IterativeClosestPoint<T>::Data{};
+
     template<typename T>
     void IterativeClosestPoint<T>::icp(const char* pointsA, const char* pointsB, int sizeA, int sizeB, size_t typeSize, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix, void (*subFunc)(const char * a, const char *b, char *c), void (*neutralElementFunc)(char * e), math::Vec4 (*toVectorFunc)(const char* point)){}
     template<typename T>

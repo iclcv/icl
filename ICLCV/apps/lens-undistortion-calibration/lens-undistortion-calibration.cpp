@@ -469,7 +469,9 @@ void init(){
     qd.setConfigurableID("detectionProps");
   } else {
     throw ICLException("other modes than checkerboard and markers "
-                       "detection are not yet supported");
+                       "detection are not yet supported\nPlease use "
+                       "either -m or -cb program argument to choose "
+                       "'checkerboard' or 'markers' mode");
   }
 
   gui << ( VSplit().label("image")
