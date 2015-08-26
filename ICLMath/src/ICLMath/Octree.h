@@ -81,7 +81,7 @@ namespace icl{
                    && p[2] >= center[2] - halfSize[2]
                    && p[0] <= center[0] + halfSize[0]
                    && p[1] <= center[1] + halfSize[1]
-                   && p[1] <= center[2] + halfSize[2]);
+                   && p[2] <= center[2] + halfSize[2]);
         }
         
         /// returns whether the AABB intersects with another AABB
