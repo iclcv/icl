@@ -65,8 +65,8 @@ The libpthread-dev library comes with the C/C++ compiler
 
 .. _install.dependencies.quick-trusty:
 
-Quick installation guide for Ubuntu Trusty
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Quick installation guide for Ubuntu Trusty (and maybe later)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install the following packages::
 
@@ -85,7 +85,22 @@ currently used version calling::
 
   nvidia-smi | grep 'Driver Version'
 
+For libpcl-1.7-all-dev, you'll need an extra ppa to be available:
 
+  sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
+
+For Ubuntu Vivid (15.04)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Adapt the trusty installation by using lib-glew-dev.
+
+Here, libpcl-1.7 is back in the distribution, so replace libpcl-1.7-all-dev by
+libpcl-1.7-dev
+
+
+
+
+  
 .. _install.dependencies.optional:
 
 Optional Dependencies
