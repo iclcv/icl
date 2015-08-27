@@ -43,7 +43,7 @@ extern "C"
 #include <libavcodec/version.h>
 }
 
-#if LIBAVCODEC_VERSION_MAJOR <= 54
+//#if LIBAVCODEC_VERSION_MAJOR <= 54
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -357,4 +357,4 @@ namespace icl{
   } // namespace io
 
 }
-#endif
+//#endif
