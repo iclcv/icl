@@ -435,7 +435,7 @@ The well known Qt Library is used for ICL's rapid GUI creation toolkit.
 Actually Qt is also a prerequisite for most ICL applications and for
 the whole ICLQt module. We strongly recommend to have at least Qt support
 when building ICL. The Qt package right now also used the OpenGL extension
-wrangler library libglew-dev and it needs OpenGL headers to be installed.
+wrangler library libglew-dev (on some systems libglew-1.6-dev) and it needs OpenGL headers to be installed.
 
 * **Supported Versions:** 5
 * **License Type:** open source
@@ -449,7 +449,7 @@ wrangler library libglew-dev and it needs OpenGL headers to be installed.
 
   * **< TRUSTY**   libqt5-dev 
   * **>= TRUSTY**  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools
-  * In each case: libglew-dev, + opengl headers and libs provided by the graphics driver
+  * In each case: libglew-dev (or libglew-1.6-dev), + opengl headers and libs provided by the graphics driver
 
 .. _install.dependencies.optional.pylon:
 
@@ -564,15 +564,18 @@ ICL can seamlessly interface to PCL algorithms using this class.
   * :icl:`geom::PCLPointCloudObject` class.
   * :icl:`geom::PCDFileGrabber` class
 
-* **Ubuntu packages:**  no in standard
-
-  * add ppa-sources from https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages::
+* **Ubuntu packages:**  no in standard in older ubuntu versions (such as in 14.04 trusty)
+  * In Ubuntu 14.04 trusty
+     * add ppa-sources from https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages::
   
-      sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
-      sudo apt-get update
-      sudo apt-get install libpcl-all-dev
+         sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
+         sudo apt-get update
+         sudo apt-get install libpcl-all-dev
 
-  * libpcl-all-dev
+     * libpcl-all-dev
+  * In newer Ubuntu versions (tested on 15.04 vivid)
+     * pcl is directly available
+     * simply install the package **libpcl-dev**
 
 .. todo::
 
