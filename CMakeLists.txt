@@ -60,15 +60,15 @@ IF(NOT WIN32)
 ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
-  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
-                              -Werror -Wno-\\#warnings 
-                              -Wno-deprecated-declarations 
-                              -Wno-uninitialized 
-                              -Wno-overloaded-virtual)
-else()
+#if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
+#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
+#                              -Werror -Wno-\\#warnings 
+#                              -Wno-deprecated-declarations 
+#                              -Wno-uninitialized 
+#                              -Wno-overloaded-virtual)
+#else()
   set(ICL_DEACTIVATED_WARNING "")
-endif()
+#endif()
 
 IF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No Specific build type specified: using Release")
