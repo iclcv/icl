@@ -37,8 +37,8 @@ class Icl < Formula
       -DBUILD_WITH_OPENCV=On 
       -DBUILD_WITH_IMAGEMAGICK=On
       -DBoost_USE_STATIC_LIBS=On
-      -DCMAKE_PREFIX_PATH='#{HOMEBREW_PREFIX}/Cellar/qt5/5.4.1'
       -DBOOST_ROOT='#{HOMEBREW_PREFIX}'
+      -DQT_ROOT='#{HOMEBREW_PREFIX}/opt/qt5'
       -DCMAKE_INSTALL_PREFIX='#{HOMEBREW_PREFIX}'
     ]
     system "cmake", ".", *args
