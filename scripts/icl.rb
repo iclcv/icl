@@ -40,7 +40,7 @@ class Icl < Formula
       -DJPEG_LIBRARY='#{HOMEBREW_PREFIX}/lib/libjpeg.dylib'
       -DPNG_LIBRARY='#{HOMEBREW_PREFIX}/lib/libpng.dylib'
       -DPROTOBUF_LIBRARY='#{HOMEBREW_PREFIX}/lib/libprotobuf.dylib'
-      -DCMAKE_PREFIX_PATH='#{HOMEBREW_PREFIX}/Cellar/qt5/5.4.1:#{HOMEBREW_PREFIX}/Cellar/opencv/2.4.12'
+      -DCMAKE_PREFIX_PATH='#{HOMEBREW_PREFIX}/Cellar/qt5/5.4.1'
       -DBOOST_ROOT='#{HOMEBREW_PREFIX}'
       -DCMAKE_INSTALL_PREFIX='#{HOMEBREW_PREFIX}'
     ]
