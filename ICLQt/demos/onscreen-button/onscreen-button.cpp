@@ -33,11 +33,11 @@
 
 GUI gui;
 GenericGrabber grabber;
-Mutex mutex;
+Mutex mtex;
 const ImgBase *image;
 
 void capture(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   std::string filename = saveFileDialog();
   if(filename.length()){
     save(cvt(image),filename);
@@ -65,9 +65,9 @@ void init(){
 }
 
 void run(){
-  mutex.lock();
+  mtex.lock();
   image = grabber.grab();
-  mutex.unlock();
+  mtex.unlock();
   gui["image"] = image;
 }
 

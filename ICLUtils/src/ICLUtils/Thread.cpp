@@ -108,7 +108,7 @@ namespace icl{
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(usec / 1000);
     #else
-      ::usleep(usec);
+      usleep(usec);
   	#endif
     }
   
@@ -123,7 +123,7 @@ namespace icl{
   #ifdef ICL_SYSTEM_WINDOWS
       Sleep(secs*1000);
   #else
-      ::usleep((long)secs * 1000000);
+      usleep((long)secs * 1000000);
   #endif
     }
   

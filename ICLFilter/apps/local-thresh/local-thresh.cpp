@@ -40,7 +40,7 @@
 HBox gui;
 GenericGrabber grabber;
 LocalThresholdOp ltop;
-Mutex mutex;
+Mutex mtex;
 Rect selroi[3];
 
 void step();
@@ -83,7 +83,7 @@ void save(){
 }
 
 void step(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   static DrawHandle orig = gui["orig"];
   static ImageHandle prev = gui["prev"];
   static ButtonHandle next = gui["next"];

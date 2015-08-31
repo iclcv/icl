@@ -37,7 +37,7 @@
 #include <ICLGeom/Camera.h>
 
 
-#ifdef APPLE
+#ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #elif WIN32
