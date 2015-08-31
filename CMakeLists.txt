@@ -666,7 +666,7 @@ IF(BUILD_WITH_RST)
 
   IF(RST_FOUND)
     set(HAVE_ALL_PROTOS TRUE)
-    foreach(proto rst/math/Vec3DFloat.proto rst/geometry/PolygonalPatch3D.proto)
+    foreach(proto rst/math/Vec3DFloat.proto rst/geometry/PolygonalPatch3D.proto rst/geometry/Primitive3DFloatSet.proto)
       LIST(FIND STABLE_PROTOS_REL proto/stable/${proto} _HAVE_STABLE_PROTO)
       LIST(FIND SANDBOX_PROTOS_REL proto/sandbox/${proto} _HAVE_SANDBOX_PROTO)
       if((_HAVE_STABLE_PROTO LESS 0) AND (_HAVE_SANDBOX_PROTO LESS 0))
