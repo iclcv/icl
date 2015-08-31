@@ -18,6 +18,7 @@ class Icl < Formula
   depends_on "protobuf"
   depends_on "rsb"
   depends_on "opencv"
+  depends_on "libdc1394"
 
   #depends_on :x11 # if your formula requires any X11/XQuartz components
 
@@ -34,12 +35,8 @@ class Icl < Formula
       -DBUILD_WITH_PROTOBUF=On
       -DBUILD_WITH_RSB=On 
       -DBUILD_WITH_OPENCV=On 
+      -DBUILD_WITH_IMAGEMAGICK=On
       -DBoost_USE_STATIC_LIBS=On
-      -DZLIB_LIBRARY='/usr/lib/libz.dylib'
-      -DGLEW_LIBRARY='#{HOMEBREW_PREFIX}/lib/libGLEW.dylib'
-      -DJPEG_LIBRARY='#{HOMEBREW_PREFIX}/lib/libjpeg.dylib'
-      -DPNG_LIBRARY='#{HOMEBREW_PREFIX}/lib/libpng.dylib'
-      -DPROTOBUF_LIBRARY='#{HOMEBREW_PREFIX}/lib/libprotobuf.dylib'
       -DCMAKE_PREFIX_PATH='#{HOMEBREW_PREFIX}/Cellar/qt5/5.4.1'
       -DBOOST_ROOT='#{HOMEBREW_PREFIX}'
       -DCMAKE_INSTALL_PREFIX='#{HOMEBREW_PREFIX}'
