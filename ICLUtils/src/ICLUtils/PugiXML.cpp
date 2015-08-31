@@ -51,6 +51,7 @@
 #include <string.h>
 #include <assert.h>
 #include <vector>
+#include <stdexcept>
 
 #ifdef PUGIXML_WCHAR_MODE
 # include <wchar.h>
