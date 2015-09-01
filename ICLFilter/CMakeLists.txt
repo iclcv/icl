@@ -33,7 +33,7 @@ SET(SOURCES src/ICLFilter/AffineOp.cpp
 	    src/ICLFilter/BinaryCompareOp.cpp
 	    src/ICLFilter/BinaryLogicalOp.cpp
 	    src/ICLFilter/BinaryOp.cpp
-      src/ICLFilter/CannyOp.cpp
+            src/ICLFilter/CannyOp.cpp
 	    src/ICLFilter/ChamferOp.cpp
 	    src/ICLFilter/ColorDistanceOp.cpp
 	    src/ICLFilter/ColorSegmentationOp.cpp
@@ -66,7 +66,8 @@ SET(SOURCES src/ICLFilter/AffineOp.cpp
 	    src/ICLFilter/WarpOp.cpp
 	    src/ICLFilter/WeightChannelsOp.cpp
 	    src/ICLFilter/WeightedSumOp.cpp
-	    src/ICLFilter/ImageRectification.cpp)
+	    src/ICLFilter/ImageRectification.cpp
+            src/ICLFilter/DitheringOp.cpp)
 
 SET(HEADERS src/ICLFilter/AffineOp.h
             src/ICLFilter/BaseAffineOp.h
@@ -74,7 +75,7 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/BinaryCompareOp.h
 	    src/ICLFilter/BinaryLogicalOp.h
 	    src/ICLFilter/BinaryOp.h
-      src/ICLFilter/CannyOp.h
+            src/ICLFilter/CannyOp.h
 	    src/ICLFilter/ChamferOp.h
 	    src/ICLFilter/ColorDistanceOp.h
 	    src/ICLFilter/ColorSegmentationOp.h
@@ -114,7 +115,8 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/WarpOp.h
 	    src/ICLFilter/WeightChannelsOp.h
 	    src/ICLFilter/WeightedSumOp.h
-            src/ICLFilter/ImageRectification.h)
+            src/ICLFilter/ImageRectification.h
+            src/ICLFilter/DitheringOp.h)
 
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLFilter/WienerOp.cpp
