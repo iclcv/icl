@@ -70,13 +70,13 @@ Quick installation guide for Ubuntu Trusty (and maybe later)
 
 Install the following packages::
 
-  sudo apt-get install libjpeg-dev libpng12-dev libopencv-dev
+  sudo apt-get install cmake libjpeg-dev libpng12-dev libopencv-dev
   libeigen3-dev libmagick++-dev libglew-1.6-dev libpcl-1.7-all-dev
   libfreenect-dev libprotobuf-dev protobuf-compiler doxygen graphviz
   python-sphinx python-pyparsing libqt5opengl5-dev libqt5svg5-dev
   libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools libavcodec-dev
   libavformat-dev libavutil-dev libavresample-dev libswscale-dev
-  libavdevice-dev nvidia-libopencl1-304
+  libavdevice-dev nvidia-libopencl1-304 libxine-dev
 
 The last package provides *libOpenCL.so* for nvidia graphics-cards and
 for driver version 304. Please adapt this to your used driver version
@@ -96,6 +96,8 @@ Adapt the trusty installation by using lib-glew-dev.
 
 Here, libpcl-1.7 is back in the distribution, so replace libpcl-1.7-all-dev by
 libpcl-1.7-dev
+
+In addition, the libxine-dev package is now named libxine2-dev
 
 
 
