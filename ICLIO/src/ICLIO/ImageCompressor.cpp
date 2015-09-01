@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/ImageCompressor.h>
+#include <ICLFilter/DitheringOp.h>
 #include <stdint.h>
 #ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/JPEGEncoder.h>
@@ -40,11 +41,13 @@
 
 using namespace icl::utils;
 using namespace icl::core;
+using namespace icl::filter;
 
 namespace icl{
   namespace io{
   
     struct ImageCompressor::Data{
+      Img8u ditheringBuffer;
       std::vector<icl8u> encoded_buffer;
       ImgBase *decoded_buffer;
       ImageCompressor::CompressionSpec compression;
@@ -109,10 +112,19 @@ namespace icl{
                                   icl8u *compressedData, 
                                   const Size &imageSize, 
                                   const Rect &roi, 
-                                  const ImageCompressor::CompressionSpec &spec){
+                                  const ImageCompressor::CompressionSpec &spec,
+                                  Img8u &ditheringBuffer){
       if(spec.mode == "none"){
         std::copy(imageData,imageData+imageSize.getDim(), compressedData);
         compressedData += imageSize.getDim();
+      }else if(spec.mode == "dith"){
+        DitheringOp op;
+        op.setLevels(round(pow(2,parse<int>(spec.quality))));
+        Img8u tmp(imageSize, formatGray, std::vector<icl8u*>(1,(icl8u*)imageData), false);
+        op.apply(&tmp,bpp(ditheringBuffer));
+        return compressChannel(ditheringBuffer.begin(0), compressedData, imageSize, roi,
+                               ImageCompressor::CompressionSpec("rlen",spec.quality),
+                               ditheringBuffer);
       }else if(spec.mode == "rlen"){
         switch(parse<int>(spec.quality)){
           case 1:{
@@ -228,7 +240,7 @@ namespace icl{
       if(spec.mode == "none"){
         std::copy(compressedData,compressedData+imageDataLen,imageData);
         compressedData += imageDataLen;
-      }else if(spec.mode == "rlen"){
+      }else if(spec.mode == "rlen" || spec.mode == "dith"){
         switch(parse<int>(spec.quality)){
           case 1:{
             icl8u *pc = imageData;
@@ -375,7 +387,9 @@ namespace icl{
       if(image->getDepth() == depth8u){
         const Img8u *image8u = image->as8u();
         for(int c=0;c<image->getChannels();++c){
-          dst = compressChannel(image8u->begin(c),dst, image8u->getSize(),image8u->getImageRect(), header.compressionSpec());
+          dst = compressChannel(image8u->begin(c),dst, image8u->getSize(),
+                                image8u->getImageRect(), header.compressionSpec(),
+                                m_data->ditheringBuffer);
         }
         len = (float)(dst-m_data->encoded_buffer.data());
       }else{ // only no-compression mode
@@ -452,7 +466,7 @@ namespace icl{
         if(spec.quality.length() && spec.quality != "none"){
           WARNING_LOG("ImageCompressor::setCompression: quality value for compression 'none' is not used");
         }// good
-      }else if(spec.mode == "rlen"){
+      }else if(spec.mode == "rlen" || spec.mode == "dith"){
         int q = parse<int>(spec.quality);
         if(q!=1 && q!=4 && q!=6 && q!=8){
           throw ICLException("ImageCompressor::setCompression: invalid rlen compression quality (" + spec.quality + ")");

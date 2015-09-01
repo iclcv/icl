@@ -40,6 +40,11 @@ namespace icl{
       setAlgorithm(a);
       setLevels(l);
     }
+
+    inline void clipped_add(icl8u &v, int x){
+      int s = (int)v + x;
+      v = s < 0 ? 0 : s > 255 ? 255 : s;
+    }
     
     void DitheringOp::apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst){
       if(!prepare(ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(),
@@ -62,6 +67,8 @@ namespace icl{
         std::fill(lut+i*dl, lut+(i+1)*dl, i*dval);
       }
 
+      Time t = Time::now();
+      
       const int maxx = roi.x + roi.width;
       const int maxy = roi.y + roi.height;
       for(int c=0;c<poSrc->getChannels();++c){
@@ -82,18 +89,19 @@ namespace icl{
             // img(x+1,y+1) += e * 1./16.;
             bool xin = x+1<maxx, yin = y+1<maxy;
             if(xin){
-              img(x+1,y) += (e*7)/16;
+              clipped_add(img(x+1,y),(e*7)/16);
             }
             if(yin){
-              img(x-1,y+1) +=  (e*3)/16;
-              img(x,y+1) += (e*3)/16;
+              clipped_add(img(x-1,y+1),(e*3)/16);
+              clipped_add(img(x,y+1),(e*3)/16);
               if(xin){
-                img(x+1,y+1) += e/16;
+                clipped_add(img(x+1,y+1),e/16);
               }
             }            
           }
         }
       }
+      t.showAge("what");
     }
   } // namespace filter
 }

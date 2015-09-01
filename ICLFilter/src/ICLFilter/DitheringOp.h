@@ -51,7 +51,7 @@ namespace icl{
         to the range [2,128]
 
         \section BENCH Benchmark
-        As a very coarse estimate, dithering takes about 6ms per million pixels (single channel)
+        As a very coarse estimate, dithering takes about 7.5ms per million pixels (single channel)
         on an Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz with optized build.
 
         \section EX Examples
