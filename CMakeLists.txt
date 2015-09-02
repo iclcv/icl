@@ -351,12 +351,11 @@ IF(BUILD_WITH_EIGEN3)
 ENDIF()
 
 IF(BUILD_WITH_OPENNI)
-  #ICL_FIND_PACKAGE(NAME OpenNI
-  #                 HEADERS "XnOpenNI.h"
-  #                 LIBS "OpenNI"
-  #                 HEADER_PATH_SUFFIXES "include/ni")
-  # after testing the above function call the 4 lines below and FindOpenNI.cmake can be removed
-  FIND_PACKAGE(OpenNI)
+  ICL_FIND_PACKAGE(NAME OpenNI
+                   HEADERS "XnOpenNI.h"
+                   LIBS "OpenNI"
+                   HEADER_PATH_SUFFIXES "include/ni")
+
   IF(OpenNI_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENNI)
   ENDIF()
@@ -463,14 +462,9 @@ IF(BUILD_WITH_LIBUSB)
                      PATHS "/opt/MESASR")
   ELSE(WIN32)
     ICL_FIND_PACKAGE(NAME LIBUSB
-                     HEADERS "usb.h;lusb0_usb.h"
-                     LIBS "usb")
-    IF(NOT LIBUSB_FOUND)
-      ICL_FIND_PACKAGE(NAME LIBUSB
-        HEADERS "usb.h"
-        HEADER_PATH_SUFFIXES "include/libusb-1.0"
-        LIBS "usb")
-    ENDIF()
+                     HEADERS "libusb.h"
+                     HEADER_PATH_SUFFIXES "include/libusb-1.0"
+                     LIBS "usb-1.0")
   ENDIF(WIN32)
 ENDIF()
 
@@ -483,8 +477,9 @@ ENDIF()
 
 IF(BUILD_WITH_ZMQ)
   ICL_FIND_PACKAGE(NAME ZMQ
-                   HEADERS "zmq.hpp"
-                   LIBS "zmq")
+                   HEADERS "zmqpp.hpp"
+                   HEADER_PATH_SUFFIXES "include/zmqpp"
+                   LIBS "zmqpp")
 ENDIF()
 
 
