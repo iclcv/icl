@@ -67,8 +67,7 @@ namespace icl{
         std::fill(lut+i*dl, lut+(i+1)*dl, i*dval);
       }
 
-      Time t = Time::now();
-      
+
       const int maxx = roi.x + roi.width;
       const int maxy = roi.y + roi.height;
       for(int c=0;c<poSrc->getChannels();++c){
@@ -101,7 +100,6 @@ namespace icl{
           }
         }
       }
-      t.showAge("what");
     }
   } // namespace filter
 }
