@@ -482,8 +482,7 @@ ENDIF()
 
 IF(BUILD_WITH_ZMQ)
   ICL_FIND_PACKAGE(NAME ZMQ
-                   HEADERS "zmqpp.hpp"
-                   HEADER_PATH_SUFFIXES "include/zmqpp"
+                   HEADERS "zmq.hpp"
                    LIBS "zmqpp")
 ENDIF()
 
