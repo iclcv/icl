@@ -797,12 +797,7 @@ IF(BUILD_WITH_SSE3)
 ENDIF()
 
 IF(BUILD_WITH_BULLET)
-  ICL_FIND_PACKAGE(NAME Bullet
-                   HEADERS "BulletDynamics/Dynamics/btRigidBody.h;BulletSoftBody/btSoftBody.h;BulletCollision/NarrowPhaseCollision/btPointCollector.h;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h;BulletSoftBody/btSoftRigidDynamicsWorld.h;BulletCollision/CollisionShapes/btBoxShape.h;BulletCollision/CollisionShapes/btCompoundShape.h"
-                   LIBS "LinearMath;BulletCollision;BulletDynamics;BulletSoftBody"
-                   HEADER_PATH_SUFFIXES "include/bullet"
-                   LIB_PATH_SUFFIXES "lib") 
-#  FIND_PACKAGE(BULLET REQUIRED)
+  FIND_PACKAGE(BULLET REQUIRED)
   IF(BULLET_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
   ENDIF()
