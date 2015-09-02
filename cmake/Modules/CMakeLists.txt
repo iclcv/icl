@@ -8,6 +8,6 @@ INSTALL(FILES FindLibDC.cmake
               FindPylon.cmake
               FindV4L.cmake
               FindWinProtobuf.cmake
-	       FindBULLET.cmake
+              FindSSE.cmake
               InstallFilesRecursive.cmake
        DESTINATION ${CMAKE_MODULE_PATH})
