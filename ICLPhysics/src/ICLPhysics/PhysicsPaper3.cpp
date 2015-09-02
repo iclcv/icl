@@ -35,7 +35,12 @@
 #include <ICLUtils/ConsoleProgress.h>
 #include <ICLMath/StraightLine2D.h>
 #include <ICLGeom/ShaderUtil.h>
-#include <GL/gl.h>
+
+#ifdef ICL_SYSTEM_APPLE
+  #include <OpenGL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 #include <ICLPhysics/FoldMap.h>
 
