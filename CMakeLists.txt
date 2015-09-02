@@ -462,9 +462,14 @@ IF(BUILD_WITH_LIBUSB)
                      PATHS "/opt/MESASR")
   ELSE(WIN32)
     ICL_FIND_PACKAGE(NAME LIBUSB
-                     HEADERS "libusb.h"
-                     HEADER_PATH_SUFFIXES "include/libusb-1.0"
-                     LIBS "usb-1.0")
+                     HEADERS "usb.h;lusb0_usb.h"
+                     LIBS "usb")
+#    IF(NOT LIBUSB_FOUND)
+#     ICL_FIND_PACKAGE(NAME LIBUSB
+#        HEADERS "usb.h"
+#        HEADER_PATH_SUFFIXES "include/libusb-1.0"
+#        LIBS "usb")
+
   ENDIF(WIN32)
 ENDIF()
 
