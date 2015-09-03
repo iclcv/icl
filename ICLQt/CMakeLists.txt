@@ -81,7 +81,10 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
 	    src/ICLQt/ThreadedUpdatableSlider.cpp
 	    src/ICLQt/ThreadedUpdatableTextView.cpp
 	    src/ICLQt/ToggleButton.cpp
-	    src/ICLQt/Widget.cpp)
+      src/ICLQt/Widget.cpp
+      src/ICLQt/ICLVideoSurface.cpp
+      src/ICLQt/QtVideoGrabber.cpp
+      src/ICLQt/QtCameraGrabber.cpp)
 
 SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/BorderBox.h
@@ -155,7 +158,10 @@ SET(HEADERS src/ICLQt/AbstractPlotWidget.h
 	    src/ICLQt/DrawWidget3D.h
 	    src/ICLQt/DrawHandle3D.h
 	    src/ICLQt/GLFragmentShader.h
-	    src/ICLQt/Quick.h)
+      src/ICLQt/Quick.h
+      src/ICLQt/ICLVideoSurface.h
+      src/ICLQt/QtVideoGrabber.h
+      src/ICLQt/QtCameraGrabber.h)
 
 IF(RSB_FOUND)
  LIST(APPEND SOURCES src/ICLQt/RSBRemoteGUI.cpp)
