@@ -100,10 +100,8 @@ namespace icl{
     class ICLQt_API ICLApplication : public QObject{
       Q_OBJECT;
 
-#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
       private slots:
       void lastWindowClosed();
-#endif
 
       public:
       QApplication *app;
