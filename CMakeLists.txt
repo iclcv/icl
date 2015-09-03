@@ -517,8 +517,7 @@ IF(BUILD_WITH_QT)
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5Core REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5Multimedia REQUIRED HINTS ${QT_ROOT})
-  FIND_PACKAGE(Qt5MultimediaWidgets REQUIRED HINTS ${QT_ROOT})
-  IF(Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5Core_FOUND AND Qt5Multimedia_FOUND AND Qt5MultimediaWidgets_FOUND)
+  IF(Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5Core_FOUND AND Qt5Multimedia_FOUND)
     IF(Qt5OpenGL_FOUND)
       SET(QT4_FOUND TRUE)
       SET(QT_FOUND TRUE)
@@ -537,14 +536,12 @@ IF(BUILD_WITH_QT)
         get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_IMPLIB_RELEASE)
-        get_target_property(ICLQt5MultimediaWidgetsLibAbs Qt5::MultimediaWidgets IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
       ELSE(WIN32)
         get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5MultimediaLib Qt5::Multimedia IMPORTED_SONAME_RELEASE)
-        get_target_property(ICLQt5MultimediaWidgetsLib Qt5::MultimediaWidgets IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
         get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
@@ -565,7 +562,6 @@ IF(BUILD_WITH_QT)
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5WidgetsLib}")
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5GuiLib}")
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaWidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaWidgetsLib}")
       ENDIF(WIN32)
 
       SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})
@@ -573,7 +569,6 @@ IF(BUILD_WITH_QT)
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5GuiLibAbs})
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5WidgetsLibAbs})
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaWidgetsLibAbs})
 
       ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
@@ -859,6 +854,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${PROTOBUF_INCLUDE_DIRS}
                     ${ZMQ_INCLUDE_DIRS}
                     ${LIBUSB_INCLUDE_DIRS}
+                    ${Qt5Multimedia_INCLUDE_DIRS}
                     ${Qt5Widgets_INCLUDE_DIRS}
                     ${Qt5OpenGL_INCLUDE_DIRS}
                     ${BULLET_INCLUDE_DIRS}
