@@ -43,17 +43,17 @@ namespace icl{
     struct ExecThread : public Uncopyable, public Thread{
       typedef void (*callback)(void);
       callback cb;
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 	  bool stopRequested;
 #endif
       ExecThread(callback cb):cb(cb)
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 ,stopRequested(false)
 #endif
 {
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 	  virtual void stop(){
 		  stopRequested = true;
 		  Thread::stop();
@@ -67,7 +67,7 @@ namespace icl{
             unlock();
           }
 		  usleep(1);
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 		  if (stopRequested){
 			  exit();
 		  }
@@ -213,7 +213,7 @@ namespace icl{
       SignalHandler::install("ICL-Application",handle_icl_app_signal, 
                              "SIGINT,SIGTERM,SIGSEGV,SIGHUP",100);
 
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 	  connect(app, SIGNAL(lastWindowClosed()), this, SLOT(lastWindowClosed()));
 #endif
     }
@@ -285,7 +285,7 @@ namespace icl{
       return true;
     }
     
-#if WIN32
+#if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 	void ICLApplication::lastWindowClosed(){
 		QApplication::quit(); // most likely not needed here!
 	}
