@@ -61,10 +61,10 @@ ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
 
 if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
-  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
-                              -Werror -Wno-\\#warnings 
-                              -Wno-deprecated-declarations 
-                              -Wno-uninitialized 
+  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline
+                              -Werror -Wno-\\#warnings
+                              -Wno-deprecated-declarations
+                              -Wno-uninitialized
                               -Wno-overloaded-virtual)
 else()
   set(ICL_DEACTIVATED_WARNING "")
@@ -98,10 +98,10 @@ IF(MSVC)
   #SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:libc /NODEFAULTLIB:msvcrtd")
   # Generate debug information
   SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
-  
+
   SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${ICL_COMPILER_FLAGS}")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ICL_COMPILER_FLAGS}")
-  
+
   IF(ENABLE_OPENMP_BUILD_OPTION)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp -DUSE_OPENMP")
   ENDIF()
@@ -303,7 +303,7 @@ IF(BUILD_WITH_IPP)
     PATHS "/opt/IPP"
     HEADER_PATH_SUFFIXES "ipp/include"
     LIB_PATH_SUFFIXES "${_IPP_LIB_SUF}")
-  
+
   IF(IPP_FOUND)
     IF(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
       get_ipp_version(${IPP_INCLUDE_DIRS})
@@ -336,7 +336,7 @@ ENDIF()
 IF(BUILD_WITH_OPENCL)
   FIND_PACKAGE(OpenCL REQUIRED)
   IF(OPENCL_FOUND)
-	SET(CMAKE_CXX_FLAGS "-msse2 ${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "-msse2 ${CMAKE_CXX_FLAGS}")
   ENDIF()
 ENDIF()
 
@@ -377,7 +377,7 @@ IF(BUILD_WITH_OPENCV)
     ELSE()
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_NEW_STYLE)
       # we need at least opencv 2.4 for the ORB-feature interface we want to use
-      IF(((NOT OPENCV_VERSION_MAJOR LESS 2) AND (NOT OPENCV_VERSION_MINOR LESS 4)) 
+      IF(((NOT OPENCV_VERSION_MAJOR LESS 2) AND (NOT OPENCV_VERSION_MINOR LESS 4))
           OR (OPENCV_VERSION_MAJOR GREATER 2))
        MESSAGE(STATUS "OpenCV >= 2.4.x detected, adding ORB feature detector")
        ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_FEATURES_2D)
@@ -420,7 +420,7 @@ IF(BUILD_WITH_LIBIRIMAGER)
 
   ICL_FIND_PACKAGE(NAME LIBUDEV
                   LIBS "udev")
-  
+
   IF(LIBIRIMAGER_FOUND AND LIBUDEV_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBIRIMAGER -DICL_HAVE_LIBUDEV)
   ELSE()
@@ -512,10 +512,13 @@ IF(BUILD_WITH_QT)
                      LIBS "GLEW")
   ENDIF(WIN32)
   FIND_PACKAGE(OpenGL REQUIRED)
+  FIND_PACKAGE(Qt5Gui REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
   FIND_PACKAGE(Qt5Core REQUIRED HINTS ${QT_ROOT})
-  IF(Qt5Widgets_FOUND AND Qt5Core_FOUND)
+  FIND_PACKAGE(Qt5Multimedia REQUIRED HINTS ${QT_ROOT})
+  FIND_PACKAGE(Qt5MultimediaWidgets REQUIRED HINTS ${QT_ROOT})
+  IF(Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5Core_FOUND AND Qt5Multimedia_FOUND AND Qt5MultimediaWidgets_FOUND)
     IF(Qt5OpenGL_FOUND)
       SET(QT4_FOUND TRUE)
       SET(QT_FOUND TRUE)
@@ -525,19 +528,23 @@ IF(BUILD_WITH_QT)
       IF(NOT WIN32)
         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
       ENDIF(NOT WIN32)
-      
-      # This creates full library paths from Qt's colon separated paths. 
+
+      # This creates full library paths from Qt's colon separated paths.
       # Colon separated Qt library paths only work when Qt's find package was called.
       # This is not necessarily done in projects linking against icl so we need full
       # Paths here.
       IF(WIN32)
         get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_IMPLIB_RELEASE)
+        get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_IMPLIB_RELEASE)
+        get_target_property(ICLQt5MultimediaWidgetsLibAbs Qt5::MultimediaWidgets IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
       ELSE(WIN32)
         get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
+        get_target_property(ICLQt5MultimediaLib Qt5::Multimedia IMPORTED_SONAME_RELEASE)
+        get_target_property(ICLQt5MultimediaWidgetsLib Qt5::MultimediaWidgets IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
         get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
@@ -547,20 +554,26 @@ IF(BUILD_WITH_QT)
           get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
         ENDIF()
         MESSAGE(STATUS "ICLQt5CoreLib : ${ICLQt5CoreLib}")
+        MESSAGE(STATUS "ICLQt5GuiLib : ${ICLQt5CoreLib}")
+        MESSAGE(STATUS "ICLQt5MultimediaLib : ${ICLQt5MultimediaLib}")
 
-        # For some reason cmake does not add library paths to rpath when they end 
+        # For some reason cmake does not add library paths to rpath when they end
         # with a number like libQt5Core.so.5. Changing the linked libraries to the
         # simple .so resolves this problem.
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5CoreLib}")
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5OpenGLLib}")
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5WidgetsLib}")
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5GuiLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaLib}")
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaWidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaWidgetsLib}")
       ENDIF(WIN32)
 
       SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5OpenGLLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5WidgetsLibAbs})
       LIST(APPEND Qt5_LIBRARIES ${ICLQt5GuiLibAbs})
+      LIST(APPEND Qt5_LIBRARIES ${ICLQt5WidgetsLibAbs})
+      LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaLibAbs})
+      LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaWidgetsLibAbs})
 
       ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
@@ -573,7 +586,7 @@ IF(BUILD_WITH_LIBFREENECT)
   ICL_FIND_PACKAGE(NAME LibFreenect
                    HEADERS "libfreenect.h"
                    LIBS "freenect;freenect_sync"
-                   HEADER_PATH_SUFFIXES "include/libfreenect") 
+                   HEADER_PATH_SUFFIXES "include/libfreenect")
 ENDIF()
 
 IF(BUILD_WITH_LIBFREENECT2)
@@ -586,19 +599,19 @@ IF(BUILD_WITH_LIBFREENECT2)
                    HEADERS "libfreenect2/opengl.h;libfreenect2/libfreenect2.hpp;libfreenect2/frame_listener_impl.h"
                    LIBS "freenect2"
                    HEADER_PATH_SUFFIXES "examples/protonect/include"
-                   LIB_PATH_SUFFIXES "examples/protonect/lib") 
+                   LIB_PATH_SUFFIXES "examples/protonect/lib")
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_GLFW3
                    HEADERS "GLFW/glfw3.h"
                    LIBS "glfw"
                    HEADER_PATH_SUFFIXES "depends/glfw/include"
-                   LIB_PATH_SUFFIXES "depends/glfw/lib") 
+                   LIB_PATH_SUFFIXES "depends/glfw/lib")
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_LIBUSB
                    HEADERS "libusb-1.0/libusb.h"
                    LIBS "usb-1.0"
                    HEADER_PATH_SUFFIXES "depends/libusb/include"
-                   LIB_PATH_SUFFIXES "depends/libusb/lib") 
+                   LIB_PATH_SUFFIXES "depends/libusb/lib")
 
 
   IF(LIBFREENECT2_FOUND AND LIBFREENECT2_GLFW3_FOUND AND LIBFREENECT2_LIBUSB_FOUND)
@@ -613,7 +626,7 @@ IF(BUILD_WITH_PYLON)
   FIND_PACKAGE(Pylon REQUIRED)
   IF(PYLON_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_PYLON)
-  ENDIF()  
+  ENDIF()
 ENDIF()
 
 IF(BUILD_WITH_PCL)
@@ -623,7 +636,7 @@ IF(BUILD_WITH_PCL)
     FIND_PACKAGE(PCL 1.6 REQUIRED COMPONENTS kdtree common octree search QUIET)
   ENDIF()
   # io requires openni aswell !!
-  # FIND_PACKAGE(PCL REQUIRED) ?? 
+  # FIND_PACKAGE(PCL REQUIRED) ??
   IF(PCL_FOUND)
     MESSAGE(STATUS "Found PCL: ${PCL_INCLUDE_DIRS} ${PCL_LIBRARIES}")
     # workaround aroud issue that PCL_LIBRARIES contains
@@ -640,7 +653,7 @@ IF(BUILD_WITH_PCL)
     ELSE()
       MESSAGE(SEND_ERROR "Could NOT find PCL")
     ENDIF()
-  ENDIF()  
+  ENDIF()
 ENDIF()
 
 # Why does it have to be before the RSB stuff?
@@ -651,7 +664,7 @@ IF(BUILD_WITH_RST)
   IF(NOT BUILD_WITH_RSC)
     MESSAGE(FATAL_ERROR "Option BUILD_WITH_RST was defined, but BUILD_WITH_RSC was not defined (these options belong together, so either specify both or none of them)")
   ENDIF()
-  
+
   IF(RST_ROOT)
     FIND_PACKAGE(RST COMPONENTS sandbox PATHS ${RST_ROOT} NO_DEFAULT_PATH QUIET)
   ELSE()
@@ -665,8 +678,8 @@ IF(BUILD_WITH_RST)
       LIST(FIND STABLE_PROTOS_REL proto/stable/${proto} _HAVE_STABLE_PROTO)
       LIST(FIND SANDBOX_PROTOS_REL proto/sandbox/${proto} _HAVE_SANDBOX_PROTO)
       if((_HAVE_STABLE_PROTO LESS 0) AND (_HAVE_SANDBOX_PROTO LESS 0))
-	LIST(APPEND RST_MISSING ${proto})
-	set(HAVE_ALL_PROTOS FALSE)
+  LIST(APPEND RST_MISSING ${proto})
+  set(HAVE_ALL_PROTOS FALSE)
       endif()
     endforeach()
   else()
@@ -675,17 +688,17 @@ IF(BUILD_WITH_RST)
 
   IF(RST_FOUND AND HAVE_ALL_PROTOS)
     MESSAGE(STATUS "Found RST: ${RST_INCLUDE_DIRS} ${RST_LIBRARIES}")
-    
+
     IF(RSC_ROOT)
       FIND_PACKAGE(RSC PATHS ${RSC_ROOT} NO_DEFAULT_PATH QUIET)
     ELSE()
       FIND_PACKAGE(RSC PATHS QUIET)
     ENDIF()
-    
+
 
     IF(RSC_FOUND)
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_RST ${RST_CFLAGS})      
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_RSC ${RSC_CFLAGS})      
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_RST ${RST_CFLAGS})
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_RSC ${RSC_CFLAGS})
     ELSE()
       IF(BUILD_WITH_RSC_OPTIONAL)
         MESSAGE(STATUS "Cloud NOT find OPTIONAL RSC (missing:  continuing...)")
@@ -724,7 +737,7 @@ IF(BUILD_WITH_RSB)
   IF(RSB_FOUND AND PROTOBUF_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_RSB)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_PROTOBUF)
-    
+
     LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${RSB_LIBRARIES})
     LIST(APPEND RSB_RSC_AND_PROTOBUF_LIBRARIES_PC ${PROTOBUF_LIBRARIES})
     IF(WIN32)
@@ -757,7 +770,7 @@ IF(BUILD_WITH_RSB)
     ENDIF()
     SET(RSB_FOUND FALSE)
     SET(PROTOBUF_FOUND FALSE)
-  ENDIF()  
+  ENDIF()
 ENDIF()
 
 MESSAGE(STATUS ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC})
@@ -788,7 +801,7 @@ IF(BUILD_WITH_BULLET)
                    HEADERS "BulletDynamics/Dynamics/btRigidBody.h;BulletSoftBody/btSoftBody.h;BulletCollision/NarrowPhaseCollision/btPointCollector.h;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h;BulletSoftBody/btSoftRigidDynamicsWorld.h;BulletCollision/CollisionShapes/btBoxShape.h;BulletCollision/CollisionShapes/btCompoundShape.h"
                    LIBS "LinearMath;BulletCollision;BulletDynamics;BulletSoftBody"
                    HEADER_PATH_SUFFIXES "include/bullet"
-                   LIB_PATH_SUFFIXES "lib") 
+                   LIB_PATH_SUFFIXES "lib")
 #  FIND_PACKAGE(BULLET REQUIRED)
   IF(BULLET_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
@@ -810,7 +823,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLConfig.h.in ${CMAKE_BINARY_
 # ---- OS system include directories ----
 IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
-			   	  ${REGEX_ICL_INCLUDE_DIRS}
+            ${REGEX_ICL_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
                                   ${PTHREADS_INCLUDE_DIRS}
                                   ${PNG_INCLUDE_DIRS}
@@ -979,11 +992,11 @@ FOREACH(FILE Makefile doxyfile sample-test.cpp)
   INSTALL(FILES ${DST}/${FILE} DESTINATION ${RESOURCE_DIR} RENAME ${FILE}.template)
 ENDFOREACH()
 
-FOREACH(FILE app.CMakeLists.txt CMakeLists.txt latex.clear.sh 
-             latex.report.plots.sizevarplot.tex latex.talk.talk.tex 
-             src.HelloWorld.cpp app.main.cpp Doxyfile.in latex.library.bib 
-             latex.report.report.tex LICENSE.LGPL  src.HelloWorld.h 
-             latex.build.sh latex.quick.sh 
+FOREACH(FILE app.CMakeLists.txt CMakeLists.txt latex.clear.sh
+             latex.report.plots.sizevarplot.tex latex.talk.talk.tex
+             src.HelloWorld.cpp app.main.cpp Doxyfile.in latex.library.bib
+             latex.report.report.tex LICENSE.LGPL  src.HelloWorld.h
+             latex.build.sh latex.quick.sh
              latex.report.sections.introduction.tex src.CMakeLists.txt)
   SET(SRC scripts/icl-create-cmake-project-data/${FILE})
   SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-cmake-project-data)
