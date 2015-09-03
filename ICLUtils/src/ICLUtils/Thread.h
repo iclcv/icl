@@ -157,6 +157,9 @@ namespace icl{
   
       /// internal used unlock function
       void unlock();
+
+      /// internal used join function
+      void join();
     };
   
   

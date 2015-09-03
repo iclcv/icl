@@ -82,7 +82,7 @@ namespace icl{
       if(impl->on){
         pthread_cancel(impl->thread);
         pthread_join(impl->thread,&impl->data);
-  	  impl->on = false;
+  	    impl->on = false;
         finalize();
       }
     }
@@ -102,6 +102,9 @@ namespace icl{
     }
     void Thread::unlock(){
       impl->mutex.unlock();
+    }
+    void Thread::join() {
+      pthread_join(impl->thread,&impl->data);
     }
     
     void Thread::usleep(unsigned int usec){
@@ -138,11 +141,13 @@ namespace icl{
     }
     
     void Thread::exit(){
-      Mutex::Locker l(impl->mutex);
+      impl->mutex.lock();
       if(impl->on){
         impl->on = false;
-  	  pthread_exit(impl->data);
+        impl->mutex.unlock();
+  	    pthread_exit(impl->data);
       }
+      impl->mutex.unlock();
     }
     
     void *icl_thread_handler(void *t){

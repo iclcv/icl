@@ -56,7 +56,7 @@ namespace icl{
 #if ICL_SYSTEM_WINDOWS || ICL_SYSTEM_APPLE
 	  virtual void stop(){
 		  stopRequested = true;
-		  Thread::stop();
+      Thread::join();
 	  }
 #endif
 
