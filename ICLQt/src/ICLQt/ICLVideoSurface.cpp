@@ -38,7 +38,8 @@ namespace icl{
       init();
       useLocking.store(false);
     }
-
+    ICLVideoSurface::~ICLVideoSurface(){
+    }
     QList<QVideoFrame::PixelFormat> ICLVideoSurface::supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType) const
     {

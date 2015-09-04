@@ -32,6 +32,8 @@
 #include <ICLQt/QtCameraGrabber.h>
 #include <QtMultimedia/QCameraInfo>
 #include <ICLUtils/StringUtils.h>
+#include <QtMultimedia/QCameraExposure>
+#include <QtMultimedia/QCameraImageProcessing>
 
 namespace icl{
   namespace qt{
@@ -69,23 +71,33 @@ namespace icl{
         }
       }
 
-      addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
-      addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
-      
+    
       cam = new QCamera(cameras[deviceIndex]);
       cam->setViewfinder(surface);
       cam->start();
 
+      
+      addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
+      addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
+
+      //QList<QSize> sizes = cam->supportedViewfinderResolutions(); needs qt 5.5
+      //for(int i=0;i<sizes.size();++i){
+      //  DEBUG_LOG(sizes[i].width());
+      //  DEBUG_LOG(sizes[i].height());
+      //}
       // todo add properties format, and size
     }
 
     QtCameraGrabber::~QtCameraGrabber() {
-      if(cam){
-        cam->stop();
-        delete cam;
-        cam = 0;
-      }
-      ICL_DELETE(surface);
+      
+      /* deletion leads to issues
+          if(cam){
+          cam->stop();
+          delete cam;
+          cam = 0;
+          }
+      */
+      //ICL_DELETE(surface);
     }
 
     const core::ImgBase *QtCameraGrabber::acquireImage() {

@@ -55,13 +55,13 @@ namespace icl{
       core::Img8u *imgDisplay;
       core::Img8u *imgNextDisplay;
       volatile bool nextFrameReady;
-      boost::mutex waitMutex;
-      boost::condition_variable waitCondition;
-      boost::atomic<bool> useLocking;
+      boost::mutex waitMutex;                   // QMutex then ...
+      boost::condition_variable waitCondition;  // !QWaitCondition (maybe?)
+      boost::atomic<bool> useLocking;           // !use QAtomicInt
 
     public:
       ICLVideoSurface();
-
+      ~ICLVideoSurface();
       QList<QVideoFrame::PixelFormat> supportedPixelFormats(
           QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const;
 
