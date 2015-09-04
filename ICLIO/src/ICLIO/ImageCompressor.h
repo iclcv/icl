@@ -42,7 +42,7 @@ namespace icl{
         
         \section MODES Serialization Modes
         
-        Right now, 3 different serialization modes are supported. 
+        Right now, 4 different serialization modes are supported. 
         - "rlen" Run Length Encoding: here, the image is scanned line by line
           and instead of encoding pixel data [ pix1, pix2, pix3, ...], it is encoded
           by [value|length] pairs. Which means, that the <em>value</em> was found
@@ -66,6 +66,7 @@ namespace icl{
           - Quality 8: value 8Bit, length 8Bit. Best for non-binary images with lots of 
             homogeneous regions. Lossless, but not neccessarily better than uncompressed
             serialization. Best case: 1/(2^8) compression, Worst case: 2/1. 
+        - "dith" Works as rlen, but before sending, the image is dithered
         - "jpeg" uses jpeg compression. Comparable to motion jpeg and only available if
           ICL has been build with LIBJPEG support. The compression quality can be varied
           from 0 to 100. Which is the default JPEG compression quality value. Usually values

@@ -104,12 +104,12 @@ namespace icl{
       ICL_DELETE(m_data);
       m_data = new Data;
 
-      SHOW(scope);
-      SHOW(transportList);
+      //  SHOW(scope);
+      //SHOW(transportList);
       
       //DEBUG_LOG("here creating scope");
-      SHOW(scope);
-      SHOW(transportList);
+      // SHOW(scope);
+      //SHOW(transportList);
       
       Scope rsbScope(scope);
       //DEBUG_LOG("here creating default config");

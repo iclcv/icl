@@ -83,6 +83,8 @@ namespace icl{
             cmd = shared_ptr<std::string>(new std::string("none:none"));
           }else if(setCompressionMode == "rlen"){
             cmd = shared_ptr<std::string>(new std::string("rlen:" + str(setRLEQuality)));
+          }else if(setCompressionMode == "dith"){
+            cmd = shared_ptr<std::string>(new std::string("dith:" + str(setRLEQuality)));
           }else if(setCompressionMode == "jpeg"){
             cmd = shared_ptr<std::string>(new std::string("jpeg:" + str(setJPEGQuality)));
           }else{
@@ -180,7 +182,7 @@ namespace icl{
       // Configurable
       addProperty("format", "info", "", "-", 0, "");
       addProperty("size", "info", "", "", 0, "");
-      addProperty("compression-type", "menu", "none,rlen,jpeg", m_data->receivedCompressionMode, 0, "");
+      addProperty("compression-type", "menu", "none,rlen,dith,jpeg", m_data->receivedCompressionMode, 0, "");
       addProperty("RLE-quality", "menu", "1 Bit,4 Bit,6 Bit,8 Bit", m_data->receivedRLEQuality, 0, "");
       addProperty("JPEG-quality", "range", "[1,100]:1", m_data->receivedJPEGQuality, 0, "");
       addProperty("image data size", "info", "", m_data->lastImageDataSize, 0, "");
