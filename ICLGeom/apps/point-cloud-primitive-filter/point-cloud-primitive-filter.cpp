@@ -207,10 +207,10 @@ void run(){
 }
 
 
-int main(int n, char **ppc){
+ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
                 "[m]-config(filename) "
                 "-primitivescope(scopename=/nirobots/primitivesetScope) "
                 "-point-cloud-output|-pco(point-cloud-destination,descrition) "
                 "-view-camera|-c(filename)",init,run).exec();
-}
+ }

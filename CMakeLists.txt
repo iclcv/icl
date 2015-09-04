@@ -38,9 +38,10 @@ PROJECT(ICL)
 INCLUDE(ICLHelperMacros)
 INCLUDE(CheckArchitecture)
 INCLUDE(InstallFilesRecursive)
+INCLUDE(FindSSE)
 
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+SET(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 # ---- build type (debug/release) and opptions
 IF(WIN32)
@@ -60,15 +61,15 @@ IF(NOT WIN32)
 ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
-  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline
-                              -Werror -Wno-\\#warnings
-                              -Wno-deprecated-declarations
-                              -Wno-uninitialized
-                              -Wno-overloaded-virtual)
-else()
+#if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
+#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
+#                              -Werror -Wno-\\#warnings 
+#                              -Wno-deprecated-declarations 
+#                              -Wno-uninitialized 
+#                              -Wno-overloaded-virtual)
+#else()
   set(ICL_DEACTIVATED_WARNING "")
-endif()
+#endif()
 
 IF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No Specific build type specified: using Release")
@@ -127,9 +128,8 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "6" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "7" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
-
 
 SET(ICL_NAME                   icl)
 SET(PROJECT_VERSION            "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
@@ -155,10 +155,10 @@ ELSE()
 ENDIF()
 
 # --- global compiler flags ---
-IF(UNIX)
-  ADD_ICL_DEFINITIONS(-DICL_SYSTEM_LINUX)
-ELSEIF(APPLE)
+IF(APPLE)
   ADD_ICL_DEFINITIONS(-DICL_SYSTEM_APPLE)
+ELSEIF(UNIX)
+  ADD_ICL_DEFINITIONS(-DICL_SYSTEM_LINUX)
 ELSEIF(WIN32)
   ADD_ICL_DEFINITIONS(-DICL_SYSTEM_WINDOWS)
 ENDIF()
@@ -189,10 +189,6 @@ OPTION(BUILD_WITH_PYLON "Link against the basler Pylon package to support GIG-E 
 OPTION(BUILD_WITH_OPENCL "Uses OpenCL to speed up several algorithms" OFF)
 OPTION(BUILD_WITH_OPENNI "Links against OpenNI to grab from Kinect devices" OFF)
 OPTION(BUILD_WITH_PCL "Link against PCL to provide a compatibility layer to PCL point clouds" OFF)
-OPTION(BUILD_WITH_SSE "Decide if all SSE intrinsics shall be used to speed up many support functions" ON)
-OPTION(BUILD_WITH_SSE2 "Decide if SSE2 and lower intrinsics shall be used to speed up many support functions" OFF)
-OPTION(BUILD_WITH_SSE3 "Decide if SSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
-OPTION(BUILD_WITH_SSSE3 "Decide if SSSE3 and lower intrinsics shall be used to speed up many support functions" OFF)
 OPTION(BUILD_WITH_BULLET "Provides physics simulation. Needs the bullet physics engine" OFF)
 OPTION(BUILD_WITH_RST "Link against the RST framework for message definitions (needs PROTOBUF)" OFF)
 OPTION(BUILD_WITH_RSC "Link against the RSC framework for message definitions (needs RST)" OFF)
@@ -209,7 +205,9 @@ INCLUDE(ICLFindPackage)
 
 IF(WIN32)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
-ELSE(WIN32)
+ELSEIF(APPLE)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .dylib)
+ELSE()
   set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
 ENDIF(WIN32)
 
@@ -221,9 +219,10 @@ IF(WIN32)
   ELSE(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86;lib/msvc;lib/Win32")
   ENDIF(ICL_64BIT)
+ELSEIF(APPLE)
+  SET(PKG_SEARCH_PATHS "/usr;/usr/local")
 ELSE(WIN32)
   SET(PKG_SEARCH_PATHS "/usr;/usr/local")
-
   IF(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86_64-linux-gnu;lib/intel64")
   ELSE(ICL_64BIT)
@@ -283,7 +282,7 @@ IF(PNG_FOUND)
   LIST(APPEND REQUIRED_LIBRARIES_LIST ${PNG_LIBRARIES})
 ENDIF()
 
-IF(NOT WIN32)
+IF((NOT WIN32) AND (NOT APPLE))
   ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl")
   IF(DL_FOUND)
     LIST(APPEND REQUIRED_LIBRARIES_LIST ${DL_LIBRARIES})
@@ -335,8 +334,9 @@ ENDIF()
 
 IF(BUILD_WITH_OPENCL)
   FIND_PACKAGE(OpenCL REQUIRED)
-  IF(OPENCL_FOUND)
-  SET(CMAKE_CXX_FLAGS "-msse2 ${CMAKE_CXX_FLAGS}")
+  IF(OpenCL_FOUND)
+	 SET(CMAKE_CXX_FLAGS "-msse2 ${CMAKE_CXX_FLAGS}")
+   ADD_ICL_DEFINITIONS(-ICL_HAVE_OPENCL)
   ENDIF()
 ENDIF()
 
@@ -347,18 +347,21 @@ IF(BUILD_WITH_EIGEN3)
 ENDIF()
 
 IF(BUILD_WITH_OPENNI)
-  #ICL_FIND_PACKAGE(NAME OpenNI
-  #                 HEADERS "XnOpenNI.h"
-  #                 LIBS "OpenNI"
-  #                 HEADER_PATH_SUFFIXES "include/ni")
-  # after testing the above function call the 4 lines below and FindOpenNI.cmake can be removed
-  FIND_PACKAGE(OpenNI)
+  ICL_FIND_PACKAGE(NAME OpenNI
+                   HEADERS "XnOpenNI.h"
+                   LIBS "OpenNI"
+                   HEADER_PATH_SUFFIXES "include/ni")
+
   IF(OpenNI_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENNI)
   ENDIF()
 ENDIF()
 
 IF(BUILD_WITH_OPENCV)
+  if (${OPENCV_ROOT})
+    set (OpenCV_DIR ${OPENCV_ROOT})
+  endif()
+  SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
   SET(OPENCV_FEATURES_2D_FOUND "FALSE")
   FIND_PACKAGE(OpenCV REQUIRED)
   IF(OPENCV_FOUND)
@@ -442,9 +445,6 @@ ENDIF()
 
 IF(BUILD_WITH_LIBDC)
   FIND_PACKAGE(LibDC REQUIRED)
-  #ICL_FIND_PACKAGE(NAME LibDC
-  #                 HEADERS "dc1394/dc1394.h"
-  #                 LIBS "dc1394")
   IF(LIBDC_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBDC)
   ENDIF()
@@ -460,12 +460,12 @@ IF(BUILD_WITH_LIBUSB)
     ICL_FIND_PACKAGE(NAME LIBUSB
                      HEADERS "usb.h;lusb0_usb.h"
                      LIBS "usb")
-    IF(NOT LIBUSB_FOUND)
-      ICL_FIND_PACKAGE(NAME LIBUSB
-        HEADERS "usb.h"
-        HEADER_PATH_SUFFIXES "include/libusb-1.0"
-        LIBS "usb")
-    ENDIF()
+#    IF(NOT LIBUSB_FOUND)
+#     ICL_FIND_PACKAGE(NAME LIBUSB
+#        HEADERS "usb.h"
+#        HEADER_PATH_SUFFIXES "include/libusb-1.0"
+#        LIBS "usb")
+
   ENDIF(WIN32)
 ENDIF()
 
@@ -538,6 +538,12 @@ IF(BUILD_WITH_QT)
         get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
         get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
+      ELSEIF(APPLE)
+        get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
+        get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
+        get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_LOCATION_RELEASE)
+        get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
+        get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
       ELSE(WIN32)
         get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
         get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
@@ -644,7 +650,7 @@ IF(BUILD_WITH_PCL)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_PCL)
   ELSE()
     IF(BUILD_WITH_PCL_OPTIONAL)
-      MESSAGE(STATUS "Cloud NOT find OPTIONAL PCL (continuing...)")
+      MESSAGE(STATUS "Could NOT find OPTIONAL PCL (continuing...)")
     ELSE()
       MESSAGE(SEND_ERROR "Could NOT find PCL")
     ENDIF()
@@ -673,8 +679,8 @@ IF(BUILD_WITH_RST)
       LIST(FIND STABLE_PROTOS_REL proto/stable/${proto} _HAVE_STABLE_PROTO)
       LIST(FIND SANDBOX_PROTOS_REL proto/sandbox/${proto} _HAVE_SANDBOX_PROTO)
       if((_HAVE_STABLE_PROTO LESS 0) AND (_HAVE_SANDBOX_PROTO LESS 0))
-  LIST(APPEND RST_MISSING ${proto})
-  set(HAVE_ALL_PROTOS FALSE)
+	LIST(APPEND RST_MISSING ${proto})
+	set(HAVE_ALL_PROTOS FALSE)
       endif()
     endforeach()
   else()
@@ -696,7 +702,7 @@ IF(BUILD_WITH_RST)
       ADD_ICL_DEFINITIONS(-DICL_HAVE_RSC ${RSC_CFLAGS})
     ELSE()
       IF(BUILD_WITH_RSC_OPTIONAL)
-        MESSAGE(STATUS "Cloud NOT find OPTIONAL RSC (missing:  continuing...)")
+        MESSAGE(STATUS "Could NOT find OPTIONAL RSC (missing:  continuing...)")
       ELSE()
         MESSAGE(SEND_ERROR "Could NOT find RST")
       ENDIF()
@@ -705,7 +711,7 @@ IF(BUILD_WITH_RST)
   ELSE()
     SET(RST_FOUND FALSE)
     IF(BUILD_WITH_RST_OPTIONAL)
-      MESSAGE(STATUS "Cloud NOT find OPTIONAL RST (missing: ${RST_MISSING}, continuing...)")
+      MESSAGE(STATUS "Could NOT find OPTIONAL RST (missing: ${RST_MISSING}, continuing...)")
     ELSE()
       MESSAGE(SEND_ERROR "Could NOT find RST (missing: ${RST_MISSING})")
     ENDIF()
@@ -747,7 +753,7 @@ IF(BUILD_WITH_RSB)
   ELSE()
     IF(NOT RSB_FOUND)
       IF(BUILD_WITH_RSB_OPTIONAL)
-        MESSAGE(STATUS "Cloud NOT find OPTIONAL RSB (continuing...)")
+        MESSAGE(STATUS "Could NOT find OPTIONAL RSB (continuing...)")
       ELSE()
         MESSAGE(SEND_ERROR "Could NOT find RSB")
       ENDIF()
@@ -756,7 +762,7 @@ IF(BUILD_WITH_RSB)
         MESSAGE(SEND_ERROR "Could NOT find PROTOBUF")
         IF(BUILD_WITH_PROTOBUF_OPTIONAL)
           IF(BUILD_WITH_RSB_OPTIONAL)
-            MESSAGE(STATUS "Cloud NOT find OPTIONAL PROTOBUF (continuing...)")
+            MESSAGE(STATUS "Could NOT find OPTIONAL PROTOBUF (continuing...)")
           ELSE()
             MESSAGE(SEND_ERROR "Defining BUILD_WITH_PROTOBUF_OPTIONAL=TRUE is not possible as RSB needs PROTOBUF mandatorily (define BUILD_WITH_RSB_OPTIONAL=TRUE aswell to achieve a real optional RSB dependency)")
           ENDIF()
@@ -770,34 +776,23 @@ ENDIF()
 
 MESSAGE(STATUS ${RSB_RSC_AND_PROTOBUF_LIBRARIES_PC})
 
-IF(BUILD_WITH_SSE)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSSE3)
-ENDIF()
-
-IF(BUILD_WITH_SSE2)
+IF(SSE2_FOUND)
+  message(STATUS "sse2 enabled")
   ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
 ENDIF()
 
-IF(BUILD_WITH_SSE3)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
+IF(SSE3_FOUND)
+  message(STATUS "sse3 enabled")
   ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
 ENDIF()
 
-IF(BUILD_WITH_SSE3)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE2)
-  ADD_ICL_DEFINITIONS(-DICL_USE_SSE3)
+IF(SSSE3_FOUND)
+  message(STATUS "ssse3 enabled")
   ADD_ICL_DEFINITIONS(-DICL_USE_SSSE3)
 ENDIF()
 
 IF(BUILD_WITH_BULLET)
-  ICL_FIND_PACKAGE(NAME Bullet
-                   HEADERS "BulletDynamics/Dynamics/btRigidBody.h;BulletSoftBody/btSoftBody.h;BulletCollision/NarrowPhaseCollision/btPointCollector.h;BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.h;BulletSoftBody/btSoftRigidDynamicsWorld.h;BulletCollision/CollisionShapes/btBoxShape.h;BulletCollision/CollisionShapes/btCompoundShape.h"
-                   LIBS "LinearMath;BulletCollision;BulletDynamics;BulletSoftBody"
-                   HEADER_PATH_SUFFIXES "include/bullet"
-                   LIB_PATH_SUFFIXES "lib")
-#  FIND_PACKAGE(BULLET REQUIRED)
+  FIND_PACKAGE(Bullet REQUIRED)
   IF(BULLET_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
   ENDIF()
@@ -818,7 +813,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLConfig.h.in ${CMAKE_BINARY_
 # ---- OS system include directories ----
 IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM ${ZLIB_INCLUDE_DIRS}
-            ${REGEX_ICL_INCLUDE_DIRS}
+			   	  ${REGEX_ICL_INCLUDE_DIRS}
                                   ${JPEG_INCLUDE_DIR}
                                   ${PTHREADS_INCLUDE_DIRS}
                                   ${PNG_INCLUDE_DIRS}
@@ -833,7 +828,7 @@ ENDIF()
 # ---- 3rd party include directories ----
 INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${MKL_INCLUDE_DIRS}
-                    ${OPENCL_INCLUDE_DIRS}
+                    ${OpenCL_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${MESASR_INCLUDE_DIRS}
@@ -867,7 +862,7 @@ LIST(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
 
 LIST(APPEND ICLUtils_3RDPARTY_LIBRARIES ${REQUIRED_LIBRARIES_LIST})
 LIST(APPEND ICLUtils_3RDPARTY_LIBRARIES ${IPP_LIBRARIES})
-LIST(APPEND ICLUtils_3RDPARTY_LIBRARIES ${OPENCL_LIBRARIES})
+LIST(APPEND ICLUtils_3RDPARTY_LIBRARIES ${OpenCL_LIBRARIES})
 LIST(APPEND ICLUtils_3RDPARTY_LIBRARIES ${DL_LIBRARIES})
 
 LIST(APPEND ICLMath_3RDPARTY_LIBRARIES ${MKL_LIBRARIES})

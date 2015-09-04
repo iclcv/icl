@@ -3,12 +3,11 @@ MESSAGE(STATUS "CMake modules will be installed to: ${CMAKE_MODULE_PATH}")
 
 INSTALL(FILES FindLibDC.cmake
               FindMesaSR.cmake
-              FindOpenCL.cmake
-              FindOpenCV.cmake
               FindOpenNI.cmake
+              FindOpenCL.cmake
               FindPylon.cmake
               FindV4L.cmake
               FindWinProtobuf.cmake
-	      FindBULLET.cmake
+              FindSSE.cmake
               InstallFilesRecursive.cmake
        DESTINATION ${CMAKE_MODULE_PATH})

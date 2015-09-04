@@ -36,14 +36,14 @@
 GUI gui;
 GenericGrabber grabber;
 SimpleBlobSearcher S;
-Mutex mutex;
+Mutex mtex;
 
 void mouse(const MouseEvent &e){
   if(e.hitImage() && e.isPressEvent()){
     static int &minSize = gui.get<int>("minSize");
     static int &maxSize = gui.get<int>("maxSize");
     static float &thresh = gui.get<float>("thresh");
-    Mutex::Locker lock(mutex);
+    Mutex::Locker lock(mtex);
     int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
     std::vector<double> color = e.getColor();
     ICLASSERT_RETURN(color.size() == 3);

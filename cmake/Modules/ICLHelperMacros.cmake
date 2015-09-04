@@ -133,7 +133,7 @@ FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
             LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${_DIR}" isSystemDir)
             STRING(REGEX MATCH "^/usr/lib/*" isSystemDir ${_DIR})
             IF(NOT isSystemDir)
-                LIST(APPEND COMPONENT_DIRS "-Wl,-rpath=${_DIR}")
+                LIST(APPEND COMPONENT_DIRS "-Wl,-rpath,${_DIR}")
             ENDIF()
         ENDIF()
     ENDFOREACH()
@@ -160,8 +160,8 @@ FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
     # update actual list and remove silly rpaths
     SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
     LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=")
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=:")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,:")
     SET(LIB_DEPENDS_ON_NEW "")
 
     # loop over the list and replace full paths with -lLIBNAME
@@ -255,7 +255,7 @@ IF(NOT WIN32)
       ENDIF()
     ENDIF()
     LIST(APPEND _LIBRARY_DEPS "${_LIB}")
-    LIST(APPEND _LIBRARY_DIRS "-Wl,-rpath=${_DIR}")
+    LIST(APPEND _LIBRARY_DIRS "-Wl,-rpath,${_DIR}")
   ENDFOREACH()
   IF(_LIBRARY_DIRS)
     LIST(REMOVE_DUPLICATES _LIBRARY_DIRS)
@@ -280,8 +280,8 @@ IF(NOT WIN32)
   # update actual list and remove silly rpaths
   SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
   LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
-  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=")
-  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=:")
+  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,")
+  LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,:")
   SET(LIB_DEPENDS_ON_NEW "")
 
   # loop over the list and replace full paths with -lLIBNAME
@@ -313,7 +313,7 @@ IF(NOT WIN32)
 
   FOREACH(A ${ARCH_DEPENDENT_LIB_PATHS} lib)
     #MESSAGE(STATUS "   removing: /usr/${A}")
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath=/usr/${A}")
+    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,/usr/${A}")
   ENDFOREACH()
 
   STRING(REPLACE ";" " "

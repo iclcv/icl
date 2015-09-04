@@ -1148,6 +1148,7 @@ namespace icl{
           return *this;
         }
 
+#ifndef ICL_SYSTEM_APPLE
         inline icl128i32s& operator=(const icl128i32s &v) {
           v0 = v.v0;
           return *this;
@@ -1157,7 +1158,7 @@ namespace icl{
           v0 = v.v0;
           return *this;
         }
-
+#endif
         inline icl128i32s& operator+=(const icl128i32s &v) {
           v0 = _mm_add_epi32(v0, v.v0);
           return *this;
@@ -1647,10 +1648,12 @@ namespace icl{
         return ret *= rv;
       }
 
+#ifndef ICL_SYSTEM_APPLE
       inline icl128 operator/(const icl128 &lv, const icl128 &rv) {
         icl128 ret = lv;
         return ret /= rv;
       }
+#endif
 
       inline icl256 operator+(const icl256 &lv, const icl256 &rv) {
         icl256 ret = lv;

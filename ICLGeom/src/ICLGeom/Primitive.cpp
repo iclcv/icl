@@ -37,7 +37,7 @@
 #include <ICLCore/CCFunctions.h>
 #endif
 
-#ifdef APPLE
+#ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #elif WIN32

@@ -98,12 +98,10 @@ namespace icl{
         I guess there's nothing more to explain, isn't it?
     */
     class ICLQt_API ICLApplication : public QObject{
-		Q_OBJECT;
+      Q_OBJECT;
 
-#if WIN32
-	private slots:
-		void lastWindowClosed();
-#endif
+      private slots:
+      void lastWindowClosed();
 
       public:
       QApplication *app;

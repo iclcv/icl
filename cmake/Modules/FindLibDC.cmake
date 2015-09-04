@@ -42,14 +42,14 @@ ENDIF()
 
 # Normal search.
 SET(_LIBDC_SEARCH_NORMAL
-     PATHS "/usr"
+     PATHS "/usr" "/usr/local"
    )
 LIST(APPEND _LIBDC_SEARCHES _LIBDC_SEARCH_NORMAL)
 LIST(APPEND _LIBDC_LIBRARIES dc1394)
 
 # Set search path suffix
 IF (ICL_64BIT)
-  set (_LIB_SEARCH_PATH_SUFFIXES "/lib/x86_64-linux-gnu" "/lib64")
+  set (_LIB_SEARCH_PATH_SUFFIXES "/lib/x86_64-linux-gnu" "/lib64" "/lib")
 ELSE()
   set (_LIB_SEARCH_PATH_SUFFIXES "/lib/i386-linux-gnu" "/lib")
 ENDIF()

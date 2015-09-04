@@ -35,7 +35,7 @@ std::string filename;
 GenericGrabber grabber;
 bool disableNextUpdate = false;
 bool mouseInWindow = false;
-Mutex mutex;
+Mutex mtex;
 bool paused=false;
 
 #ifdef ICL_HAVE_OPENCV
@@ -54,7 +54,7 @@ enum SliderEventType { press,release };
   
 template<SliderEventType t>
 void stream_pos(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   int posVal = gui["posVal"];
   switch(t){
     case press: paused = true; break;
@@ -97,12 +97,12 @@ void run(){
   int volume = gui["volume"];
 #endif
 
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   
   while(paused || pause){
-    mutex.unlock();
+    mtex.unlock();
     Thread::msleep(100);
-    mutex.lock();
+    mtex.lock();
   }
   
   image = grabber.grab();

@@ -34,7 +34,7 @@
 
 VBox gui;
 GenericGrabber grabber;
-Mutex mutex;
+Mutex mtex;
 
 
 struct XC{
@@ -57,7 +57,7 @@ vector<XC> colorbuffer;
 
   
 void mouse(const MouseEvent &event){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   std::string colormode = gui["colormode"].as<std::string>();
   if(event.isPressEvent()){
     const std::vector<icl64f> &c = event.getColor();
@@ -92,12 +92,12 @@ void mouse(const MouseEvent &event){
 
 
 void reset_list(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   colorbuffer.clear();
   printf("cleared! \n----------------------------------------\n");
 }
 void calc_mean(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   if(!colorbuffer.size()){
     return;
   }

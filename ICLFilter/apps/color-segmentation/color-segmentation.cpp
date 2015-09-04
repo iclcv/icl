@@ -46,7 +46,7 @@ VSplit gui;
 
 GenericGrabber grabber;
 SmartPtr<ColorSegmentationOp> segmenter;
-Mutex mutex;
+Mutex mtex;
 
 Img8u currLUT,currLUTColor,segImage;
 
@@ -71,9 +71,9 @@ Scene scene;
 struct LUT3DSceneObject : public SceneObject {
   int w,h,t,dx,dy,dz,dim;
   std::vector<int> rs,gs,bs;
-  Mutex mutex;
-  virtual void lock(){ mutex.lock(); }
-  virtual void unlock(){ mutex.unlock(); }
+  Mutex mtex;
+  virtual void lock(){ mtex.lock(); }
+  virtual void unlock(){ mtex.unlock(); }
   
   LUT3DSceneObject(){
 
@@ -186,7 +186,7 @@ void highlight_regions(int classID){
 }
 
 void mouse(const MouseEvent &e){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   if(!currLUT.getDim()) return;
   
   static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
@@ -245,7 +245,7 @@ void save_dialog(){
 }
 
 void clear_lut(){
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   segmenter->clearLUT(0);
 }
 
@@ -413,7 +413,7 @@ void run(){
   int &z = gui.get<int>("z");
   const Img8u *grabbedImage = grabber.grab()->asImg<icl8u>();
 
-  Mutex::Locker lock(mutex);
+  Mutex::Locker lock(mtex);
   
   if(preMedian){
     static MedianOp m(Size(3,3));
