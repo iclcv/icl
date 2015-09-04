@@ -30,7 +30,6 @@
 
 #pragma once
 #include <QtMultimedia/QMediaPlayer>
-#include <QtMultimediaWidgets/QVideoWidget>
 #include <QFileInfo>
 #include <ICLQt/Common.h>
 #include <ICLQt/ICLVideoSurface.h>

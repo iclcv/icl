@@ -31,32 +31,66 @@
 
 #include <ICLQt/QtCameraGrabber.h>
 #include <QtMultimedia/QCameraInfo>
+#include <ICLUtils/StringUtils.h>
 
 namespace icl{
   namespace qt{
-    QtCameraGrabber::QtCameraGrabber(const std::string &device) {
+    QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn) :cam(0),surface(0){
       surface = new ICLVideoSurface;
-
-      QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-      int id = atoi(device.c_str());
-      if(id>=cameras.length()){
-          throw ICLException("QtCamera initialization unable to find video device given device ID:"+device);
+      std::vector<std::string> deviceTokens = tok(deviceIn,"|||",false);
+      if(!deviceTokens.size()){
+        throw ICLException("Could not create device from empty QtCamera device id");
       }
-      cam = new QCamera(cameras[id]);
+      std::string device = deviceTokens[0];
+      QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+      if(!cameras.size()){
+        throw ICLException("QtCamera device id " +str(device) +
+                           " could not be instantiated (no supported cameras were found)");
+      }
+      bool isInt = false;
+      int deviceIndex = QString::fromLatin1(device.c_str()).toInt(&isInt);
+      if(isInt){
+        if(deviceIndex>=cameras.length()){
+          throw ICLException("QtCamera device index " +str(deviceIndex) +
+                             " out of range (possible range: [" + str(0) + "," + str(cameras.size()-1) +"])");
+        }
+      }else{
+        deviceIndex = -1;
+        std::vector<std::string> allCams;
+        for(int i=0;i<cameras.size();++i){
+          allCams.push_back(cameras[i].description().toLatin1().data());
+          if(allCams.back() == device){
+            deviceIndex = i;
+          }
+        }
+        if(deviceIndex == -1){
+          throw ICLException("QtCamera device name " + device
+                             + " not found (found devices were " + cat(allCams) + ")");
+        }
+      }
+
+      addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
+      addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
+      
+      cam = new QCamera(cameras[deviceIndex]);
       cam->setViewfinder(surface);
       cam->start();
+
+      // todo add properties format, and size
     }
 
     QtCameraGrabber::~QtCameraGrabber() {
-      delete cam;
-      delete surface;
+      if(cam){
+        cam->stop();
+        delete cam;
+        cam = 0;
+      }
+      ICL_DELETE(surface);
     }
 
     const core::ImgBase *QtCameraGrabber::acquireImage() {
       return surface->getImage();
     }
-
-//    REGISTER_CONFIGURABLE(QtCameraGrabber, return new QtCameraGrabber(""));
 
     Grabber* createQtCameraGrabber(const std::string &param){
       return new QtCameraGrabber(param);
@@ -64,13 +98,16 @@ namespace icl{
 
     const std::vector<GrabberDeviceDescription>& getQtCameraDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
-      if(!rescan) return deviceList;
-
-      deviceList.clear();
-      // if filter exists, add grabber with filter
-      if(hint.size()) deviceList.push_back(
-        GrabberDeviceDescription("qtcam", hint, "A grabber Camera files.")
-        );
+      if(rescan){
+        deviceList.clear();
+        QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+        for(int i=0;i<cameras.size();++i){
+          deviceList.push_back(GrabberDeviceDescription("qtcam",
+                                                        str(i)+"|||"+cameras[i].deviceName().toLatin1().data(),
+                                                        str("Qt camera source ") +
+                                                        cameras[i].description().toLatin1().data()));
+        }
+      }
       return deviceList;
     }
 
