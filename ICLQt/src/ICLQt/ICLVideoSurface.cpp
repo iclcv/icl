@@ -40,12 +40,21 @@ namespace icl{
     }
     ICLVideoSurface::~ICLVideoSurface(){
     }
+
+    // Everything BELOW YUV420P is not natively supported!
+    // You might experience lag.
     QList<QVideoFrame::PixelFormat> ICLVideoSurface::supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType) const
     {
       return QList<QVideoFrame::PixelFormat>()
           << QVideoFrame::Format_RGB24
-          << QVideoFrame::Format_YUV420P;
+          << QVideoFrame::Format_YUV420P
+          << QVideoFrame::Format_ARGB32
+          << QVideoFrame::Format_ARGB32_Premultiplied
+          << QVideoFrame::Format_RGB32
+          << QVideoFrame::Format_RGB24 
+          << QVideoFrame::Format_RGB565 
+          << QVideoFrame::Format_RGB555;
     }
 
     void ICLVideoSurface::init() {
@@ -95,6 +104,17 @@ namespace icl{
               }
               else
                 imgWork->setFullROI();
+            } else {
+              const QImage tmpImg(cloneFrame.bits(),
+                           cloneFrame.width(),
+                           cloneFrame.height(),
+                           QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
+              QVideoFrame tmp = QVideoFrame(tmpImg.convertToFormat(QImage::Format_RGB888));  
+              tmp.map(QAbstractVideoBuffer::ReadWrite);
+              cloneFrame = tmp;
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
+              core::interleavedToPlanar<uchar,icl8u>(cloneFrame.bits(),imgWork,cloneFrame.bytesPerLine());
             }
             if(useLocking.load()) {
               boost::mutex::scoped_lock waitLock(waitMutex);
