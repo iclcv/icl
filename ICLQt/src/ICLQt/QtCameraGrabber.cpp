@@ -66,25 +66,42 @@ namespace icl{
           }
         }
         if(deviceIndex == -1){
-          throw ICLException("QtCamera device name " + device
+          throw ICLException("QtCamera device id " + device
                              + " not found (found devices were " + cat(allCams) + ")");
         }
       }
 
-    
       cam = new QCamera(cameras[deviceIndex]);
       cam->setViewfinder(surface);
+      cam->load();
+
+      // check if the chosen device supports a format which can be transformed
+      // by the ICLSurface into an ICL format.
+      bool compatible = false;
+      QList<QVideoFrame::PixelFormat> camFormats  = cam->supportedViewfinderPixelFormats();
+      QList<QVideoFrame::PixelFormat> surfaceFormats = surface->supportedPixelFormats();
+      for (int i=0;i < camFormats.size(); ++i) {
+        if (surfaceFormats.contains(camFormats[i])) {
+          compatible = true;
+          break;
+        }
+      }
+      if (!compatible) {
+        cam->unload();
+        throw ICLException("QtCamera with device id " + str(device)
+                           + " is not supported (yed). Please try OpenCV instead.");
+      }
+
       cam->start();
 
-      
       addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
       addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
 
-      //QList<QSize> sizes = cam->supportedViewfinderResolutions(); needs qt 5.5
-      //for(int i=0;i<sizes.size();++i){
-      //  DEBUG_LOG(sizes[i].width());
-      //  DEBUG_LOG(sizes[i].height());
-      //}
+      // QList<QSize> sizes = cam->supportedViewfinderResolutions();// needs qt 5.5
+      // for(int i=0;i<sizes.size();++i){
+      //   DEBUG_LOG("Width: " << sizes[i].width());
+      //   DEBUG_LOG("Height: " << sizes[i].height());
+      // }
       // todo add properties format, and size
     }
 
