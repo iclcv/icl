@@ -41,7 +41,7 @@ namespace icl{
     ICLVideoSurface::~ICLVideoSurface(){
     }
 
-    // Everything BELOW YUV420P is not natively supported!
+    // Everything BELOW ARGB32 is not natively supported!
     // You might experience lag.
     QList<QVideoFrame::PixelFormat> ICLVideoSurface::supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType) const
@@ -70,8 +70,9 @@ namespace icl{
     }
 
     bool ICLVideoSurface::start(const QVideoSurfaceFormat &format) {
-      if ((format.pixelFormat() != QVideoFrame::Format_RGB24) ||
-          (format.pixelFormat() != QVideoFrame::Format_YUV420P)) {
+      if ((format.pixelFormat() != QVideoFrame::Format_RGB24) &&
+          (format.pixelFormat() != QVideoFrame::Format_YUV420P) &&
+          (format.pixelFormat() != QVideoFrame::Format_ARGB32)) {
         WARNING_LOG("Using non native conversion. Performance may suffer.")
       }
       QAbstractVideoSurface::start(format);
@@ -107,7 +108,27 @@ namespace icl{
               }
               else
                 imgWork->setFullROI();
+            } else if(cloneFrame.pixelFormat() == QVideoFrame::Format_ARGB32) {
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
+              const int dim = imgWork->getDim();
+              icl8u *res_r = imgWork->begin(0);
+              icl8u *res_g = imgWork->begin(1);
+              icl8u *res_b = imgWork->begin(2);
+              uchar *src = cloneFrame.bits();
+
+              // channel order in QVideoFrame seems switched
+              // its rather 0xBBGGRRAA than 0xAARRBBGG
+              // that is why we match Channel 0 -> Blue and 2 -> Reds
+              for(int i=0;i<dim;++i){
+                res_r[i] = src[i*4+2]; // red channel
+                res_g[i] = src[i*4+1]; // green channel
+                res_b[i] = src[i*4+0]; // blue channel
+              } 
             } else {
+              // fallback if no native conversion is available
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
               const QImage tmpImg(cloneFrame.bits(),
                            cloneFrame.width(),
                            cloneFrame.height(),
