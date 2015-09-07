@@ -52,7 +52,6 @@ namespace icl{
           << QVideoFrame::Format_ARGB32
           << QVideoFrame::Format_ARGB32_Premultiplied
           << QVideoFrame::Format_RGB32
-          << QVideoFrame::Format_RGB24 
           << QVideoFrame::Format_RGB565 
           << QVideoFrame::Format_RGB555;
     }
@@ -71,6 +70,10 @@ namespace icl{
     }
 
     bool ICLVideoSurface::start(const QVideoSurfaceFormat &format) {
+      if ((format.pixelFormat() != QVideoFrame::Format_RGB24) ||
+          (format.pixelFormat() != QVideoFrame::Format_RGB24)) {
+        WARNING_LOG("Using non native conversion. Performance may suffer.")
+      }
       QAbstractVideoSurface::start(format);
       init();
       useLocking.store(true);
