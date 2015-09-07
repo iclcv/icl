@@ -71,7 +71,7 @@ namespace icl{
 
     bool ICLVideoSurface::start(const QVideoSurfaceFormat &format) {
       if ((format.pixelFormat() != QVideoFrame::Format_RGB24) ||
-          (format.pixelFormat() != QVideoFrame::Format_RGB24)) {
+          (format.pixelFormat() != QVideoFrame::Format_YUV420P)) {
         WARNING_LOG("Using non native conversion. Performance may suffer.")
       }
       QAbstractVideoSurface::start(format);
