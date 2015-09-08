@@ -512,83 +512,127 @@ IF(BUILD_WITH_QT)
       SET(_GLEW_LIB_SUF "lib/Release/Win32")
     ENDIF(ICL_64BIT)
     ICL_FIND_PACKAGE(NAME GLEW
-                     HEADERS "GL/glew.h"
-                     LIBS "glew32"
-                     LIB_PATH_SUFFIXES ${_GLEW_LIB_SUF})
+      HEADERS "GL/glew.h"
+      LIBS "glew32"
+      LIB_PATH_SUFFIXES ${_GLEW_LIB_SUF})
   ELSE(WIN32)
     ICL_FIND_PACKAGE(NAME GLEW
-                     HEADERS "GL/glew.h"
-                     LIBS "GLEW")
+      HEADERS "GL/glew.h"
+      LIBS "GLEW")
   ENDIF(WIN32)
+
   FIND_PACKAGE(OpenGL REQUIRED)
-  FIND_PACKAGE(Qt5Gui REQUIRED HINTS ${QT_ROOT})
-  FIND_PACKAGE(Qt5Widgets REQUIRED HINTS ${QT_ROOT})
-  FIND_PACKAGE(Qt5OpenGL REQUIRED HINTS ${QT_ROOT})
-  FIND_PACKAGE(Qt5Core REQUIRED HINTS ${QT_ROOT})
-  FIND_PACKAGE(Qt5Multimedia REQUIRED HINTS ${QT_ROOT})
-  IF(Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5Core_FOUND AND Qt5Multimedia_FOUND)
-    IF(Qt5OpenGL_FOUND)
-      SET(QT4_FOUND TRUE)
-      SET(QT_FOUND TRUE)
-      #set(CMAKE_AUTOMOC ON)
-      #set(CMAKE_INCLUDE_CURRENT_DIR ON)
-      add_definitions(${Qt5Widgets_DEFINITIONS})
-      IF(NOT WIN32)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-      ENDIF(NOT WIN32)
 
-      # This creates full library paths from Qt's colon separated paths.
-      # Colon separated Qt library paths only work when Qt's find package was called.
-      # This is not necessarily done in projects linking against icl so we need full
-      # Paths here.
-      IF(WIN32)
-        get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_IMPLIB_RELEASE)
-        get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_IMPLIB_RELEASE)
-        get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_IMPLIB_RELEASE)
-        get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
-        get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
-      ELSEIF(APPLE)
-        get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
-        get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
-        get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_LOCATION_RELEASE)
-        get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
-        get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
-      ELSE(WIN32)
-        get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
-        get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
-        get_target_property(ICLQt5MultimediaLib Qt5::Multimedia IMPORTED_SONAME_RELEASE)
-        get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
-        get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
-        get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
-        IF(CMAKE_VERSION VERSION_LESS 2.8.12)
-          get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} PATH)
-        ELSE()
-          get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
-        ENDIF()
-        MESSAGE(STATUS "ICLQt5CoreLib : ${ICLQt5CoreLib}")
-        MESSAGE(STATUS "ICLQt5GuiLib : ${ICLQt5CoreLib}")
-        MESSAGE(STATUS "ICLQt5MultimediaLib : ${ICLQt5MultimediaLib}")
+  SET(ICL_QT_MODULES Core Gui Multimedia Widgets OpenGL)
 
-        # For some reason cmake does not add library paths to rpath when they end
-        # with a number like libQt5Core.so.5. Changing the linked libraries to the
-        # simple .so resolves this problem.
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5CoreLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5OpenGLLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5WidgetsLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5GuiLib}")
-        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaLib}")
-      ENDIF(WIN32)
-
-      SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5OpenGLLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5GuiLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5WidgetsLibAbs})
-      LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaLibAbs})
-
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
-      ADD_ICL_DEFINITIONS(-DQWT_DLL)
+  SET(ICL_ALL_QT_LIBS_FOUND TRUE)
+  
+  FOREACH(M ${ICL_QT_MODULES})
+    FIND_PACKAGE(Qt5${M} REQUIRED HINTS ${QT_ROOT})
+    IF(NOT Qt5${M}_FOUND)
+      SET(ICL_ALL_QT_LIBS_FOUND FALSE)
+      MESSAGE(STATUS "Not Found: Qt-Module ${M}")
+    ELSE()
+      MESSAGE(STATUS "Found Qt-Module ${M}")
     ENDIF()
+  ENDFOREACH()
+  
+  IF(ICL_ALL_QT_LIBS_FOUND)
+    MESSAGE(STATUS "Found: All Qt Modules")
+    SET(QT_FOUND TRUE)
+    #set(CMAKE_AUTOMOC ON)
+    #set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    add_definitions(${Qt5Widgets_DEFINITIONS})
+    IF(NOT WIN32)
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    ENDIF(NOT WIN32)
+    
+    # This creates full library paths from Qt's colon separated paths.
+    # Colon separated Qt library paths only work when Qt's find package was called.
+    # This is not necessarily done in projects linking against icl so we need full
+    # Paths here.
+    IF(WIN32)
+      SET(QWHAT IMPLIB)
+      SET(QPFX Abs)
+    ELSEIF(APPLE)
+      SET(QWHAT LOCATION)
+      SET(QPFX Abs)
+    ELSE() # unix case
+      SET(QWHAT SONAME)
+      SET(QPFX "")
+    ENDIF()
+    
+    FOREACH(M ${ICL_QT_MODULES})
+      get_target_property(ICLQt5${M}Lib${QPFX} Qt5::${M} IMPORTED_${QWHAT}_RELEASE)
+    ENDFOREACH()
+    
+    IF(UNIX AND NOT APPLE)
+      SET(ICL_QT_PATH PATH)
+      IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+        SET(ICL_QT_PATH DIRECTORY)
+      ENDIF()
+      # For some reason cmake does not add library paths to rpath when they end
+      # with a number like libQt5Core.so.5. Changing the linked libraries to the
+      # simple .so resolves this problem.
+      get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
+      get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} ${ICL_QT_PATH})
+      
+      FOREACH(M ${ICL_QT_MODULES})
+        STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5${M}LibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5${M}Lib}")
+      ENDFOREACH()
+    ENDIF()
+    SET(Qt5_LIBRARIES "")
+    FOREACH(M ${ICL_QT_MODULES})
+      LIST(APPEND Qt5_LIBRARIES ${ICLQt5${M}LibAbs})
+    ENDFOREACH()
+    
+    # IF(WIN32)
+    #   get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_IMPLIB_RELEASE)
+    #   get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_IMPLIB_RELEASE)
+    #   get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_IMPLIB_RELEASE)
+    #   get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_IMPLIB_RELEASE)
+    #   get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_IMPLIB_RELEASE)
+    # ELSEIF(APPLE)
+    #   get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
+    #   get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
+    #   get_target_property(ICLQt5MultimediaLibAbs Qt5::Multimedia IMPORTED_LOCATION_RELEASE)
+    #   get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
+    #   get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
+    # ELSE(WIN32)
+    #   get_target_property(ICLQt5CoreLib Qt5::Core IMPORTED_SONAME_RELEASE)
+    #   get_target_property(ICLQt5GuiLib Qt5::Gui IMPORTED_SONAME_RELEASE)
+    #   get_target_property(ICLQt5MultimediaLib Qt5::Multimedia IMPORTED_SONAME_RELEASE)
+    #   get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
+    #   get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
+    #   get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
+    #   IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+    #     get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} PATH)
+    #   ELSE()
+    #     get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
+    #   ENDIF()
+    #   MESSAGE(STATUS "ICLQt5CoreLib : ${ICLQt5CoreLib}")
+    #   MESSAGE(STATUS "ICLQt5GuiLib : ${ICLQt5CoreLib}")
+    #   MESSAGE(STATUS "ICLQt5MultimediaLib : ${ICLQt5MultimediaLib}")
+
+    #   # For some reason cmake does not add library paths to rpath when they end
+    #   # with a number like libQt5Core.so.5. Changing the linked libraries to the
+    #   # simple .so resolves this problem.
+    #   STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5CoreLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5CoreLib}")
+    #   STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5OpenGLLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5OpenGLLib}")
+    #   STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5WidgetsLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5WidgetsLib}")
+    #   STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5GuiLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5GuiLib}")
+    #   STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5MultimediaLibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5MultimediaLib}")
+    # ENDIF(WIN32)
+
+    # SET(Qt5_LIBRARIES ${ICLQt5CoreLibAbs})
+    # LIST(APPEND Qt5_LIBRARIES ${ICLQt5OpenGLLibAbs})
+    # LIST(APPEND Qt5_LIBRARIES ${ICLQt5GuiLibAbs})
+    # LIST(APPEND Qt5_LIBRARIES ${ICLQt5WidgetsLibAbs})
+    # LIST(APPEND Qt5_LIBRARIES ${ICLQt5MultimediaLibAbs})
+
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_QT)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENGL)
+    ADD_ICL_DEFINITIONS(-DQWT_DLL)
   ENDIF()
 ENDIF()
 
@@ -918,7 +962,7 @@ ADD_SUBDIRECTORY(ICLCore)
 ADD_SUBDIRECTORY(ICLFilter)
 ADD_SUBDIRECTORY(ICLIO)
 ADD_SUBDIRECTORY(ICLCV)
-IF(QT4_FOUND)
+IF(QT_FOUND)
   ADD_SUBDIRECTORY(ICLQt)
 ENDIF()
 ADD_SUBDIRECTORY(ICLGeom)

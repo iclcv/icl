@@ -1,4 +1,4 @@
-IF(QT4_FOUND)
+IF(QT_FOUND)
   ADD_SUBDIRECTORY(affine-op)
   ADD_SUBDIRECTORY(convolution-op)
   ADD_SUBDIRECTORY(fft)

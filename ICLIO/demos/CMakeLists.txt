@@ -1,4 +1,4 @@
-IF(QT4_FOUND)
+IF(QT_FOUND)
   ADD_SUBDIRECTORY(rsb)
   ADD_SUBDIRECTORY(undistortion)
 
