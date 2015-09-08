@@ -30,6 +30,7 @@
 
 
 #include <ICLQt/QtCameraGrabber.h>
+#include <QtGlobal>
 #include <QtMultimedia/QCameraInfo>
 #include <ICLUtils/StringUtils.h>
 #include <QtMultimedia/QCameraExposure>
@@ -75,23 +76,25 @@ namespace icl{
       cam->setViewfinder(surface);
       cam->load();
 
-      // check if the chosen device supports a format which can be transformed
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+      //check if the chosen device supports a format
+      // which can be transformed
       // by the ICLSurface into an ICL format.
       bool compatible = false;
       QList<QVideoFrame::PixelFormat> camFormats  = cam->supportedViewfinderPixelFormats();
       QList<QVideoFrame::PixelFormat> surfaceFormats = surface->supportedPixelFormats();
       for (int i=0;i < camFormats.size(); ++i) {
-        if (surfaceFormats.contains(camFormats[i])) {
-          compatible = true;
-          break;
-        }
+       if (surfaceFormats.contains(camFormats[i])) {
+         compatible = true;
+         break;
+       }
       }
       if (!compatible) {
-        cam->unload();
-        throw ICLException("QtCamera with device id " + str(device)
-                           + " is not supported (yed). Please try OpenCV instead.");
+       cam->unload();
+       throw ICLException("QtCamera with device id " + str(device)
+                          + " is not supported (yed). Please try OpenCV instead.");
       }
-
+#endif
       cam->start();
 
       addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
