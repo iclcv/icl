@@ -50,8 +50,8 @@ namespace icl{
       /// Constructor with initialization
       /** Possible plugins: 
           * <b>dcam</b> device description is then: "depth-cam-type,depth-cam-id,depth-cam-file"
-            + optionally ",color-cam-type,color-cam-id,color-cam-file"
-            + an additional comma-seperated token "raw" can be passed to make the grabber
+            * optionally ",color-cam-type,color-cam-id,color-cam-file"
+            * an additional comma-seperated token "raw" can be passed to make the grabber
               compatible to Kinect11BitRaw depth input images
           * <b>file</b> filename pattern (not yet implemented)
           * <b>rsb</b> [rsb-transport-list:]rsb-scope-list[,depth-cam-filename[,color-cam-filename]]
