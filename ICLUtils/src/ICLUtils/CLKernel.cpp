@@ -35,6 +35,7 @@
 
 #include <CL/cl.h>
 #undef CL_VERSION_1_2
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
 #include <CL/cl.hpp>
 
 namespace icl {
