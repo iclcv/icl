@@ -32,10 +32,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/Macros.h>
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
-#include <CL/cl.hpp>
+
+#include <ICLUtils/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>

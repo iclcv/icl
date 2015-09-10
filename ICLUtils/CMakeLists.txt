@@ -68,6 +68,7 @@ SET(HEADERS src/ICLUtils/Any.h
             src/ICLUtils/Array2D.h
 	    src/ICLUtils/BasicTypes.h
 	    src/ICLUtils/ClippedCast.h
+		src/ICLUtils/CLIncludes.h
 	    src/ICLUtils/CLBuffer.h
 	    src/ICLUtils/CLImage2D.h	    
 	    src/ICLUtils/CLException.h

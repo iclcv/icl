@@ -107,10 +107,15 @@ void init(){
 }
 
 void run(){
+
+	WARNING_LOG("Hello");
+
   Size size = pa("-size");
 
   const Img8u &colorImage = *grabColor.grab()->asImg<icl8u>();
   const Img32f &depthImage = *grabDepth.grab()->asImg<icl32f>();
+
+  WARNING_LOG("Hello");
       
   int normalrange = gui["normalrange"];
   int neighbrange = gui["neighbrange"];
@@ -120,6 +125,8 @@ void run(){
   Time start, end;
   start = Time::now();
 
+  WARNING_LOG("Hello");
+
   usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
   if(usedFilterHandle.getSelected()==1){ //median 3x3
     objectEdgeDetector->setMedianFilterSize(3);
@@ -127,6 +134,8 @@ void run(){
   else if(usedFilterHandle.getSelected()==2){ //median 5x5
     objectEdgeDetector->setMedianFilterSize(5);
   }
+
+  WARNING_LOG("Hello");
 
   objectEdgeDetector->setNormalCalculationRange(normalrange);	
   objectEdgeDetector->setNormalAveragingRange(avgrange);	
@@ -139,10 +148,14 @@ void run(){
   objectEdgeDetector->setAngleNeighborhoodRange(neighbrange);
   objectEdgeDetector->setBinarizationThreshold(threshold);
     
+  WARNING_LOG("Hello");
+
   bool disableAveraging = gui["disableAveraging"];
   edgeImage=objectEdgeDetector->calculate(depthImage, usedFilterHandle.getSelected(),
                                            !disableAveraging, usedSmoothingHandle.getSelected());
     
+  WARNING_LOG("Hello");
+
   //access interim result
   angleImage=objectEdgeDetector->getAngleImage();
   
@@ -154,13 +167,16 @@ void run(){
   std::cout<<"Size: "<<size<<" ,Runtime: ";
   std::cout <<(end-start).toMicroSeconds() <<" ms" << endl;
 
+  WARNING_LOG("Hello");
   gui["depth"] = depthImage;
   gui["color"] = colorImage;
   gui["angle"] = angleImage;
   gui["edge"] = edgeImage;
   gui["normal"] = normalImage;
+  WARNING_LOG("Hello");
 
   gui["fps"].render();
+  WARNING_LOG("Hello");
 }
 
 int main(int n, char **ppc){

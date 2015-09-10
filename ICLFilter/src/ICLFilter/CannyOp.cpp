@@ -376,6 +376,73 @@ namespace icl {
     }
      // }}}
 
+	void CannyOp::apply (const ImgBase *src_x, const ImgBase *src_y, ImgBase **ppoDst) {
+		// {{{ open
+	  FUNCTION_LOG("");
+	  ICLASSERT_RETURN( src_x );
+	  ICLASSERT_RETURN( src_y );
+	  ICLASSERT_RETURN( ppoDst );
+	  ICLASSERT_RETURN( src_x->getChannels() == 1 );
+	  ICLASSERT_RETURN( src_y->getChannels() == 1 );
+	  ICLASSERT_RETURN( src_x != *ppoDst && src_y != *ppoDst);
+
+	  if(m_preBlurRadius>0){
+		src_x = m_preBlurOp->apply(src_x);
+		src_y = m_preBlurOp->apply(src_y);
+	  }
+
+	  //for(int i=0;i<2;i++){
+		m_ops[0]->setClipToROI (true);
+		m_ops[0]->apply(src_x,&m_derivatives[0]);
+		m_ops[1]->setClipToROI (true);
+		m_ops[1]->apply(src_y,&m_derivatives[1]);
+	  //}
+
+	  if (getClipToROI()) {
+		if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
+	  } else {
+		if (!prepare (ppoDst, depth8u, src_x->getSize(), src_x->getFormat(), src_x->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
+	  }
+
+  #ifdef ICL_HAVE_IPP
+	  int minSize=0;
+	  ippiCannyGetSize(m_derivatives[0]->getSize(), &minSize);
+	  m_cannyBuf.resize(minSize);
+	  for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
+		switch(m_derivatives[0]->getDepth()){
+		  case depth32f:
+			ippiCanny_32f8u_C1R (m_derivatives[0]->asImg<icl32f>()->getROIData(c), m_derivatives[0]->getLineStep(),
+								 m_derivatives[1]->asImg<icl32f>()->getROIData(c), m_derivatives[1]->getLineStep(),
+								 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
+								 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+			break;
+		  case depth16s:
+			ippiCanny_16s8u_C1R (m_derivatives[0]->asImg<icl16s>()->getROIData(c), m_derivatives[0]->getLineStep(),
+								 m_derivatives[1]->asImg<icl16s>()->getROIData(c), m_derivatives[1]->getLineStep(),
+								 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
+								 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+			break;
+		  default:
+			ICL_INVALID_DEPTH;
+		}
+	  }
+  #else
+	  for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
+		switch(m_derivatives[0]->getDepth()){
+		  case depth32f:
+			applyCanny32f(m_derivatives[0], m_derivatives[1], *ppoDst, c);
+			break;
+		  case depth16s:
+			applyCanny16s(m_derivatives[0], m_derivatives[1], *ppoDst, c);
+			break;
+		  default:
+			ICL_INVALID_DEPTH;
+		}
+	  }
+  #endif
+
+	}
+
     void CannyOp::setThresholds(icl32f lo, icl32f hi){
       // {{{ open
 
