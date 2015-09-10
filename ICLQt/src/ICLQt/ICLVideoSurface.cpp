@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ICLVideoSurface.h>
-
+#include <QtCore/QMutexLocker>
 namespace icl{
   namespace qt{
     ICLVideoSurface::ICLVideoSurface() :
@@ -84,7 +84,7 @@ namespace icl{
     void ICLVideoSurface::stop() {
       QAbstractVideoSurface::stop();
       useLocking.store(false);
-      waitCondition.notify_one();
+	  waitCondition.wakeOne();// notify_one();
     }
 
     bool ICLVideoSurface::present(const QVideoFrame &frame)
@@ -141,11 +141,11 @@ namespace icl{
               core::interleavedToPlanar<uchar,icl8u>(cloneFrame.bits(),imgWork,cloneFrame.bytesPerLine());
             }
             if(useLocking.load()) {
-              boost::mutex::scoped_lock waitLock(waitMutex);
+				QMutexLocker waitLock(&waitMutex);// boost::mutex::scoped_lock waitLock(waitMutex);
               if(!nextFrameReady)
               {
                   nextFrameReady=true;
-                  waitCondition.notify_one();
+				  waitCondition.wakeOne();// notify_one();
               }
             }
             nextFrameReady=true;
@@ -157,9 +157,9 @@ namespace icl{
 
     const Img8u* ICLVideoSurface::getImage(){
       if(useLocking.load()) {
-        boost::mutex::scoped_lock waitLock(waitMutex);
+		  QMutexLocker waitLock(&waitMutex);// boost::mutex::scoped_lock waitLock(waitMutex);
         while(!nextFrameReady) {
-            waitCondition.wait(waitLock);
+            waitCondition.wait(&waitMutex);
         }
       }
       lock.lock();

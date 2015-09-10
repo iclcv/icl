@@ -34,11 +34,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
-
-/**\cond */
-class QCheckBox;
-/**\endcond */
-
+#include <QtWidgets/QCheckBox>
 
 namespace icl{
   namespace qt{

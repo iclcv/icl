@@ -37,9 +37,12 @@
 #include <ICLQt/Common.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLCore/CCFunctions.h>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/atomic.hpp>
+#include <QtCore/QMutex>
+#include <QtCore/QWaitCondition>
+#include <QtCore/QAtomicInt>
+//#include <boost/thread/mutex.hpp>
+//#include <boost/thread/condition_variable.hpp>
+//#include <boost/atomic.hpp>
 
 namespace icl{
   namespace qt{
@@ -55,9 +58,12 @@ namespace icl{
       core::Img8u *imgDisplay;
       core::Img8u *imgNextDisplay;
       volatile bool nextFrameReady;
-      boost::mutex waitMutex;                   // QMutex then ...
-      boost::condition_variable waitCondition;  // !QWaitCondition (maybe?)
-      boost::atomic<bool> useLocking;           // !use QAtomicInt
+	  QMutex waitMutex;
+	  QWaitCondition waitCondition;
+	  QAtomicInt useLocking;
+      //boost::mutex waitMutex;                   // QMutex then ...
+      //boost::condition_variable waitCondition;  // !QWaitCondition (maybe?)
+      //boost::atomic<bool> useLocking;           // !use QAtomicInt
 
     public:
       ICLVideoSurface();
