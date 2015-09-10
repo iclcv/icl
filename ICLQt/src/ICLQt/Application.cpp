@@ -57,8 +57,6 @@ namespace icl{
           if(!trylock()){
             cb();
             unlock();
-          }else{
-            DEBUG_LOG("thread did not get the lock!");
           }
           usleep(1);
           if (stopRequested){
