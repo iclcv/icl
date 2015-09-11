@@ -51,6 +51,16 @@ SET(SOURCES src/ICLFilter/AffineOp.cpp
 	    src/ICLFilter/LUTOp.cpp
 	    src/ICLFilter/LUTOp3Channel.cpp
 	    src/ICLFilter/LocalThresholdOp.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_8u_true.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_16s_true.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_32s_true.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_32f_true.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_64f_true.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_8u_false.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_16s_false.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_32s_false.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_32f_false.cpp
+	    src/ICLFilter/LocalThresholdOpHelpers_64f_false.cpp
 	    src/ICLFilter/MedianOp.cpp
 	    src/ICLFilter/MirrorOp.cpp
 	    src/ICLFilter/MorphologicalOp.cpp
@@ -96,6 +106,7 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/LUTOp.h
 	    src/ICLFilter/LUTOp3Channel.h
 	    src/ICLFilter/LocalThresholdOp.h
+	    src/ICLFilter/LocalThresholdOpHelpers.h
 	    src/ICLFilter/MedianOp.h
 	    src/ICLFilter/MirrorOp.h
 	    src/ICLFilter/MorphologicalOp.h

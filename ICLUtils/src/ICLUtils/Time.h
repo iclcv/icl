@@ -115,6 +115,11 @@ namespace icl{
         inline void showAge(const std::string &title="") const{
           std::cout << title << ":" << age().toMilliSecondsDouble() << "ms" << std::endl;
         }
+        
+        /// alternative function name for showAge
+        inline void printAge(const std::string &title="") const {
+          showAge(title);
+        }
           
         
         Time operator-() const
