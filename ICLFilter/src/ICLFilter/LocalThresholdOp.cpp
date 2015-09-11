@@ -353,13 +353,13 @@ namespace icl{
     }
   
     template <class S>
-    static void roi_cmp(const Channel<S> &s, const Rect &r, S val, Channel8u &d){
+    static void roi_cmp(const Channel<S> &s, const Rect &r, S val, Channel8u &d, int threshold){
       const int maxy = r.bottom();
       for(int y=r.y;y<maxy;++y){
         const S *srow = &s(r.x,y);
         icl8u *drow = &d(r.x,y);
         for(int x=0;x<r.width;++x){
-          drow[x] = 255 * (srow[x] > val);
+          drow[x] = 255 * (srow[x] > (val + threshold));
         }
       }
     }
@@ -386,20 +386,20 @@ namespace icl{
       float base = a + threshold;
       for(int i=0;i<n;++i){
         dst[i] = 255 * (src[i] > (base + i * slope));
-        //cmp[i] = base + i * slope;
+        //  cmp[i] = base + i * slope;
       }
     }
 
 
     template<class S>
-    static void compare_lin(S *cL,S *cR, int ts,
+    static void compare_lin(S *cL,S *cR, int tsx, int tsy,
                             S ul, S ur, S ll, S lr, const Channel<S> &src,
                             Channel8u dst, const Rect &roi, int threshold,
                             Channel32f cmp){
-      linear_interpolate(ul,ll,cL,ts);
-      linear_interpolate(ur,lr,cR,ts);
-      for(int y=0;y<roi.height;++y){
-        linear_interpolate_cmp<S>(cL[y], cR[y], ts,
+      linear_interpolate(ul,ll,cL,tsy);
+      linear_interpolate(ur,lr,cR,tsy);
+      for(int y=0;y<tsy;++y){
+        linear_interpolate_cmp<S>(cL[y], cR[y], tsx,
                                   &src(roi.x,roi.y+y), 
                                   &dst(roi.x,roi.y+y),
                                   threshold,
@@ -408,7 +408,6 @@ namespace icl{
       }
     }
    
-
     template<class S>
     static void apply_tiled_thresh(const Img<S> &s, Img8u &dst, 
                                    Img<S> &buf1, Img<S> &buf2, int ts, int threshold,
@@ -423,11 +422,18 @@ namespace icl{
       int NY = h/ts;
       Rect r(0,0,ts,ts);
 
-      Time tt2 = Time::now();
-      //#define USE_ORIGINAL_VERSION
-#ifdef USE_ORIGINAL_VERSION
+      //      Time tt2 = Time::now();
+      /*
+          the old version is outdated now
+          Benchmarks: 1280x960 single channel (scaled lena image)
+          OLD with IPP: 13.5ms
+          
+          NEW (no IPP involved) 2.7ms
+          */
+      
+#ifdef ICL_HAVE_IPP 
       int bw = w/ts;
-      Time tt = tt2;
+      // Time tt = tt2;
       
       for(int c=s.getChannels()-1;c>=0;--c){
         S *pbuf1 = buf1.begin(c);
@@ -441,13 +447,13 @@ namespace icl{
         }
       }
 
-      tt.printAge("roi-mean-downscaling");
-      tt = Time::now();
+      //tt.printAge("roi-mean-downscaling");
+      //tt = Time::now();
       buf1.scaledCopy(&buf2,lin?interpolateLIN:interpolateNN);
-      tt.printAge("scaled copy");
-      tt = Time::now();
+      //tt.printAge("scaled copy");
+      //tt = Time::now();
       cmp->apply(&s,&buf2,bpp(dst));
-      tt.printAge("compare");
+      //tt.printAge("compare");
     
 #else
       for(int c=s.getChannels()-1;c>=0;--c){
@@ -476,7 +482,7 @@ namespace icl{
             r.y = ts*y - o.y;
             for(int x=1;x<NX;++x){
               r.x = ts*x - o.y;
-              compare_lin(c1,c2,ts,
+              compare_lin(c1,c2,ts,ts,
                           bufChan(x-1,y-1),
                           bufChan(x,y-1),
                           bufChan(x-1,y),
@@ -484,59 +490,76 @@ namespace icl{
                           srcChan, dstChan, 
                           r, threshold, chanCmp);
             }
-          } 
+          }
           /// image borders, here, the closest global value is used
-          
-          // top row
-          const int roiYS[2] = { 0, (NY-1)*ts + ts/2 };
-          const int chanYS[2] = {0, NY-1};
-          for(int sy=0;sy<2;++sy){
-            roi_cmp(srcChan, Rect(ts/2,roiYS[sy],ts/2,ts/2), bufChan(0,chanYS[sy]), dstChan); // left fraction
-            for(int x=1;x<NX-1;++x){
-              roi_cmp(srcChan, Rect(x*ts,roiYS[sy],ts,ts/2), bufChan(x,chanYS[sy]), dstChan); // top/bottom border
-            }          
-            roi_cmp(srcChan, Rect((NX-1)*ts+ts/2,roiYS[sy],ts/2,ts/2), bufChan(NX-1,chanYS[sy]), dstChan); // right fraction
+          /*
+                                                  xm
+              +-------+-------+-------+-------+-------+
+              |       |       |       |       |       |
+              |   x...+...x...+ ..x...+...x...+...x   |
+              |   .   |   .   |   .   |   .   |   .   |
+              +---.---+---.---+---.---+---.---+---+---+
+              |   .   |   .   |   .   |   .   |   .   |
+              |   x...+...x...+ ..x...+...x...+...x   |
+              |   .   |   .   |   .   |   .   |   .   |
+              +---.---+---.---+---.---+---.---+---.---+
+              |   .   |   .   |   .   |   .   |   .   |
+              |   x...+...x...+ ..x...+...x...+...x   |
+              |   .   |   .   |   .   |   .   |   .   |
+              +---.---+---.---+---.---+---.---+---.---+
+              |   .   |   .   |   .   |   .   |   .   |
+              |   x...+...x...+ ..x...+...x...+...x   |   ym;
+              |       |       |       |       |       |
+              +-------+-------+-------+-------+-------+
+              */
+          const int th = ts/2;
+          const int xm = NX*ts - th, ym = NY*ts - th;
+          // corners
+          roi_cmp(srcChan, Rect(0,0,th,th), bufChan(0,0), dstChan, threshold);
+          roi_cmp(srcChan, Rect(xm,0,th,th), bufChan(NX-1,0), dstChan, threshold);
+          roi_cmp(srcChan, Rect(0,ym,th,th), bufChan(0,NY-1), dstChan, threshold);
+          roi_cmp(srcChan, Rect(xm,ym,th,th), bufChan(NX-1,NY-1), dstChan, threshold);
+          for(int x=1; x<NX;++x){
+            // top
+            compare_lin(c1,c2,ts,th,
+                        bufChan(x-1,0),bufChan(x,0),
+                        bufChan(x-1,0),bufChan(x,0),
+                        srcChan, dstChan, 
+                        Rect(th+(x-1)*ts,0,ts,th), threshold, chanCmp);
+            // bottom
+            compare_lin(c1,c2,ts,th,
+                        bufChan(x-1,NY-1),bufChan(x,NY-1),
+                        bufChan(x-1,NY-1),bufChan(x,NY-1),
+                        srcChan, dstChan, 
+                        Rect(th+(x-1)*ts,ym,ts,th), threshold, chanCmp);
           }
-
-          // left and right column // todo!!!
-          r.width = ts/2;
-          r.height = ts;
-          for(int y=0;y<NY;++y){
-            r.x = 0;
-            r.y = ts*y;
-            roi_cmp(srcChan, r, bufChan(0,y), dstChan);
-            r.x = ts * (NX-1);
-            roi_cmp(srcChan, r, bufChan(NX-1,y), dstChan);
+          for(int y=1;y<NY;++y){
+            // left
+            compare_lin(c1,c2,th,ts,
+                        bufChan(0,y-1),bufChan(0,y-1),
+                        bufChan(0,y),bufChan(0,y),
+                        srcChan, dstChan, 
+                        Rect(0,th+(y-1)*ts,th,ts), threshold, chanCmp);
+            // right
+            compare_lin(c1,c2,th,ts,
+                        bufChan(NX-1,y-1),bufChan(NX-1,y-1),
+                        bufChan(NX-1,y),bufChan(NX-1,y),
+                        srcChan, dstChan, 
+                        Rect(xm,th+(y-1)*ts,th,ts), threshold, chanCmp);
           }
-          
-
-
-          
-          static int first = true;
-          if(first){
-            first = false;
-            ppm_write(s,"src.ppm");
-            ppm_write(cmp,"cmp.ppm");
-            ppm_write(buf1,"buf1.ppm");
-            ppm_write(dst,"dst.ppm");
-          }
-          
         }else{
           /// todo: handle right colum and bottom row!
           for(int y=0;y<NY;++y){
             r.y = ts*y;
             for(int x=0;x<NX;++x){
               r.x = ts*x;
-              // todo threshold leads to a value range overflow
-              S mean = roi_mean(srcChan,dim,r)+threshold;
-              roi_cmp(srcChan,r,mean,dstChan);
+              S mean = roi_mean(srcChan,dim,r);
+              roi_cmp(srcChan,r,mean,dstChan,threshold);
             }
           }
         }
       }
 #endif
-      tt2.printAge("total");
-      std::cout << "----" << std::endl;
     }
 
     inline bool is_int(float x){
