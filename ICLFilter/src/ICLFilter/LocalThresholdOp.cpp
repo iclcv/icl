@@ -472,7 +472,9 @@ namespace icl{
             }
           } 
           const Point o(ts/2,ts/2);
-          S c1[ts],c2[ts];
+          //S c1[ts],c2[ts];
+          S *c1 = new S[ts];
+          S *c2 = new S[ts];
 
           Img32f cmp(s.getSize(),1);
           Channel32f chanCmp = cmp[0];
@@ -547,6 +549,9 @@ namespace icl{
                         srcChan, dstChan, 
                         Rect(xm,th+(y-1)*ts,th,ts), threshold, chanCmp);
           }
+
+          delete[] c1;
+          delete[] c2;
         }else{
           /// todo: handle right colum and bottom row!
           for(int y=0;y<NY;++y){
