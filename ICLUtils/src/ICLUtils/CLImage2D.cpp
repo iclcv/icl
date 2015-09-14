@@ -101,7 +101,7 @@ namespace icl {
                         default:
                         throw CLBufferException("unknown depth value");
                     }
-                    image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, channelType), width, height, 0, (void*) src);
+					image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, channelType), width, height, 0, (void*) src);
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }

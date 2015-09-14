@@ -77,7 +77,8 @@ SET(SOURCES src/ICLFilter/AffineOp.cpp
 	    src/ICLFilter/WeightChannelsOp.cpp
 	    src/ICLFilter/WeightedSumOp.cpp
 	    src/ICLFilter/ImageRectification.cpp
-            src/ICLFilter/DitheringOp.cpp)
+		src/ICLFilter/DitheringOp.cpp
+		src/ICLFilter/BilateralFilterOp.cpp)
 
 SET(HEADERS src/ICLFilter/AffineOp.h
             src/ICLFilter/BaseAffineOp.h
@@ -126,8 +127,13 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/WarpOp.h
 	    src/ICLFilter/WeightChannelsOp.h
 	    src/ICLFilter/WeightedSumOp.h
-            src/ICLFilter/ImageRectification.h
-            src/ICLFilter/DitheringOp.h)
+		src/ICLFilter/ImageRectification.h
+		src/ICLFilter/DitheringOp.h
+		src/ICLFilter/BilateralFilterOp.h)
+
+SET(KERNEL )
+
+LIST(APPEND KERNEL "src/ICLFilter/OpenCL/BilateralFilterOp.cl")
 
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLFilter/WienerOp.cpp
@@ -137,6 +143,14 @@ IF(IPP_FOUND)
 		      src/ICLFilter/ProximityOp.h)	    
 ENDIF()
 
+#for local usage:
+SET(ICLFILTER_OPENCL_KERNEL_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/OpenCL\"")
+configure_file(	"src/ICLFilter/ICLFilterConfig.h.in"
+				"${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ICLFilterConfig.h" @ONLY)
+#for global (installed) usage:
+SET(ICLFILTER_OPENCL_KERNEL_PATH "${CMAKE_INSTALL_PREFIX}/include/${INSTALL_PATH_PREFIX}/ICLFilter/OpenCL")
+configure_file(	"src/ICLFilter/ICLFilterConfig.h.in"
+				"${CMAKE_CURRENT_BINARY_DIR}/src/ICLFilter/ICLFilterConfig.h" @ONLY)
 
 # ---- Library build instructions ----
 IF(WIN32)
@@ -156,7 +170,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLCore/src)
 ENDIF()
 
-ADD_LIBRARY(ICLFilter SHARED ${SOURCES} ${HEADERS})
+ADD_LIBRARY(ICLFilter SHARED ${SOURCES} ${HEADERS} ${KERNEL} "src/ICLFilter/ICLFilterConfig.h")
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLFilter ICLCore)
@@ -180,6 +194,10 @@ INSTALL(TARGETS ICLFilter
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
+INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" KERNEL)
+INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/ICLFilter/ICLFilterConfig.h"
+		DESTINATION "include/${INSTALL_PATH_PREFIX}/ICLFilter"
+		RENAME "ICLFilterConfig.h")
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLFilter
