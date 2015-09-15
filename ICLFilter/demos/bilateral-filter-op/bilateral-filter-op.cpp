@@ -34,6 +34,8 @@
 
 //------------------------------------------------------------------------------
 
+#include <ICLCore/CCFunctions.h>
+
 #include <ICLUtils/StackTimer.h>
 #include <ICLQt/Common.h>
 
@@ -72,9 +74,19 @@ void grab_cb(const ImgBase *img) {
 	Img<T> color_bilateral(color_original.getParams());
 	MedianOp median(utils::Size(gui["median_radius"].as<int>(),gui["median_radius"].as<int>()));
 
+	bool use_gray = gui["to_gray"].as<bool>();
+	Img<T> gray_image(color_original.getSize(),core::formatGray);
+	if (use_gray) {
+		core::cc(&color_original,&gray_image);
+	}
+
 	{
 		BENCHMARK_THIS_SECTION(median_call);
-		median.apply(&color_original,bpp(color_median));
+		if (use_gray)
+			median.apply(&gray_image,bpp(color_median));
+		else
+			median.apply(&color_original,bpp(color_median));
+
 	}
 
 	bi_filter->setRadius(gui["bi_radius"].as<int>());
@@ -83,7 +95,10 @@ void grab_cb(const ImgBase *img) {
 	bi_filter->setUseLAB(gui["use_lab"].as<bool>());
 	{
 		BENCHMARK_THIS_SECTION(bilateral_filter_call);
-		bi_filter->apply(&color_original,bpp(color_bilateral));
+		if (use_gray)
+			bi_filter->apply(&gray_image,bpp(color_bilateral));
+		else
+			bi_filter->apply(&color_original,bpp(color_bilateral));
 	}
 
 	// set images
@@ -98,15 +113,16 @@ void grab_cb(const ImgBase *img) {
 
 }
 
-
-
 //==============================================================================
 
 void init() {
 
 	grabber.init(pa("-i"));
-	int depth = grabber.getDesiredDepthInternal();
-	SHOW(depth);
+
+	if (pa("-s")) {
+		utils::Size size = pa("-s");
+		grabber.setDesiredSizeInternal(size);
+	}
 
     // create the GUI
 	gui << ( VBox()
@@ -116,6 +132,7 @@ void init() {
 				  << Draw().label("Bilateral Filtered").handle("view3").minSize(16, 12)
 				  )
 			 << CheckBox("Use LAB",true).handle("use_lab")
+			 << CheckBox("Use gray image",false).handle("to_gray")
 			 << Slider(1,24,4).label("Bilateral Kernel Radius").handle("bi_radius")
 			 << Slider(1,24,4).label("Median Kernel Radius").handle("median_radius")
 			 << FSlider(0.1,200,5).label("sigma_r (bilateral)").handle("sigma_r")
@@ -160,7 +177,7 @@ void run() {
 //==============================================================================
 int main(int argc, char **argv) {
 
-	ICLApp app(argc,argv,"[m]-input|-i(2)",init,run);
+	ICLApp app(argc,argv,"[m]-input|-i(2) -size|-s(1)",init,run);
     return app.exec();
 
     return 0;

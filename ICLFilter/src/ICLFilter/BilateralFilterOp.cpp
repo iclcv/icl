@@ -65,7 +65,6 @@ struct BilateralFilterOp::Impl {
 
 struct BilateralFilterOp::GPUImpl : BilateralFilterOp::Impl {
 public:
-	int width, height;
 
 	GPUImpl()
 		: width(0), height(0) {
@@ -81,9 +80,9 @@ public:
 		program = utils::CLProgram("gpu",kernel_stream);
 
 		rgb_to_lab = program.createKernel("rgbToLABCIE");
-		filter[(int)UCHAR_LAB] = program.createKernel("bilateral_filter_color");
-		filter[(int)UCHAR_MONO] = program.createKernel("bilateral_filter_mono");
-		filter[(int)FLOAT_MONO] = program.createKernel("bilateral_filter_mono_float");
+		filter[(int)UCHAR_3COLORS] = program.createKernel("bilateral_filter_color");
+		filter[(int)UCHAR_SINGLE_CHANNEL] = program.createKernel("bilateral_filter_mono");
+		filter[(int)FLOAT_SINGLE_CHANNEL] = program.createKernel("bilateral_filter_mono_float");
 
 		//program.listSelectedDevice();
 	}
@@ -95,10 +94,15 @@ public:
 		int w = in->getWidth();
 		int h = in->getHeight();
 
-		bool reset_buffers = this->width != w || this->height != h;
+		bool reset_buffers = this->width != w
+							|| this->height != h
+							|| this->depth != in->getDepth()
+							|| this->channels != in->getChannels();
 
 		this->width = w;
 		this->height = h;
+		this->depth = in->getDepth();
+		this->channels = in->getChannels();
 
 		if (in->getDepth() == core::depth8u) {
 			const core::Img8u &_in = *in->as8u();
@@ -115,7 +119,7 @@ public:
 				} else {
 					image_buffer_in.write(&ch(0,0));
 				}
-				utils::CLKernel &kernel = filter[UCHAR_MONO];
+				utils::CLKernel &kernel = filter[UCHAR_SINGLE_CHANNEL];
 				kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
 				kernel.apply(w,h);
 				kernel.finish();
@@ -143,7 +147,7 @@ public:
 					in_b.write(&b(0,0));
 				}
 
-				utils::CLKernel &kernel = filter[UCHAR_LAB];
+				utils::CLKernel &kernel = filter[UCHAR_3COLORS];
 				if (_use_lab) {
 					rgb_to_lab.setArgs(in_r,in_g,in_b,lab_l,lab_a,lab_b);
 					rgb_to_lab.apply(w,h);
@@ -170,27 +174,23 @@ public:
 			}
 		} else if(in->getDepth() == core::depth32f && in->getChannels() == 1) {
 
-			BENCHMARK_THIS_SECTION(PREPARATION_PLUS_KERNEL_CALL);
 			const core::Img32f &_in = *in->as32f();
 			const core::Channel32f ch = _in[0];
 			core::Img32f *_out = (*out)->as32f();
 			_out->setSize(_in.getSize());
 			_out->setFormat(_in.getFormat());
 			core::Channel32f ch_out = (*_out)[0];
-			//applyKernel<float>(w,h,&ch[0],&ch_out[0],FLOAT_MONO,radius,sigma_s,sigma_r,_use_lab);
+
 			if (reset_buffers) {
 				image_buffer_in = program.createImage2D("r",w,h,core::depth32f,&ch(0,0));
 				image_buffer_out = program.createImage2D("w",w,h,core::depth32f,0);
 			} else {
 				image_buffer_in.write(&ch(0,0));
 			}
-			utils::CLKernel &kernel = filter[FLOAT_MONO];
+			utils::CLKernel &kernel = filter[FLOAT_SINGLE_CHANNEL];
 			kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
-			{
-				BENCHMARK_THIS_SECTION(KERNEL_CALL)
-				kernel.apply(w,h);
-				kernel.finish();
-			}
+			kernel.apply(w,h);
+			kernel.finish();
 			image_buffer_out.read(&ch_out(0,0));
 
 		} else {
@@ -200,35 +200,39 @@ public:
 
 protected:
 	enum ImageType {
-		FLOAT_MONO,
-		UCHAR_MONO,
-		UCHAR_LAB
+		FLOAT_SINGLE_CHANNEL,
+		UCHAR_SINGLE_CHANNEL,
+		UCHAR_3COLORS
 	};
 
 	/// Main OpenCL program
 	utils::CLProgram program;
 	/// All known filters
 	std::map<int,utils::CLKernel> filter;
+	/// Additional kernel for rgb-to-lab converter
 	utils::CLKernel rgb_to_lab;
-	/// buffer used for image transfer
-	utils::CLBuffer in_buffer;
-	/// buffer used for image transfer
-	utils::CLBuffer out_buffer;
 
+	//@{
+	/// buffers used for image transfer and converting
 	utils::CLImage2D image_buffer_in;
 	utils::CLImage2D image_buffer_out;
-
 	utils::CLImage2D in_r;
 	utils::CLImage2D in_g;
 	utils::CLImage2D in_b;
-
 	utils::CLImage2D lab_l;
 	utils::CLImage2D lab_a;
 	utils::CLImage2D lab_b;
-
 	utils::CLImage2D out_r;
 	utils::CLImage2D out_g;
 	utils::CLImage2D out_b;
+	//@}
+
+	//@{
+	/// Internal storage
+	int width, height;
+	int depth;
+	int channels;
+	//@}
 };
 
 #endif
