@@ -34,6 +34,16 @@
 
 namespace icl{
   namespace filter{
+    namespace {
+      template<class TT>
+      struct ThreshType{ typedef TT T; };
+      
+      template<> struct ThreshType<icl8u> { typedef int T; };
+      template<> struct ThreshType<icl16s> { typedef int T; };
+      template<> struct ThreshType<icl32s> { typedef int T; };
+      template<> struct ThreshType<icl32f> { typedef float T; };
+      template<> struct ThreshType<icl64f> { typedef double T; };
+    }
     /// Internally used helper function 
     /** This function was outsourced to optimize the compilation times by better
         exploiting multi-threaded compilation. The actual template instantiation of
@@ -103,8 +113,7 @@ namespace icl{
           COMPLEX_STEP(x-r,0,w+r-x-1,y+r);
         }
       }
-      
-      
+
       // [4][CENTER][5]
       for(int y=r; y<yEnd; ++y){
         //[4]
@@ -172,26 +181,26 @@ namespace icl{
       fast_lt_impl<TS,TI,TD,TT,WITH_GAMMA>(src,iim,dst,r,t,gs,channel); \
     }
     
-#define INST_FAST_LT(TS,TI,TD,TT,WITH_GAMMA)                            \
-    template void fast_lt<icl##TS,icl##TI,icl##TD,TT,WITH_GAMMA>        \
-    (const Img<icl##TS>&, const Img<icl##TI>&, Img<icl##TD>&,           \
-     int,TT,float,int)
+#define INST_FAST_LT(TS,TI,TD,WITH_GAMMA)                               \
+  template void fast_lt<icl##TS,icl##TI,icl##TD,typename ThreshType<icl##TS>::T,WITH_GAMMA> \
+  (const Img<icl##TS>&, const Img<icl##TI>&, Img<icl##TD>&,             \
+   int,typename ThreshType<icl##TS>::T,float,int)
 
-#define INST_FAST_LT_FOR_SRC_TYPE(SRC,WITH_GAMMA)     \
-    INST_FAST_LT(SRC,32s,8u,int,WITH_GAMMA);          \
-    INST_FAST_LT(SRC,32f,8u,int,WITH_GAMMA);          \
-    INST_FAST_LT(SRC,64f,8u,int,WITH_GAMMA);          \
-    INST_FAST_LT(SRC,32s,16s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,32f,16s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,64f,16s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,32s,32s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,32f,32s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,64f,32s,int,WITH_GAMMA);         \
-    INST_FAST_LT(SRC,32s,32f,float,WITH_GAMMA);       \
-    INST_FAST_LT(SRC,32f,32f,float,WITH_GAMMA);       \
-    INST_FAST_LT(SRC,64f,32f,float,WITH_GAMMA);       \
-    INST_FAST_LT(SRC,32s,64f,float,WITH_GAMMA);       \
-    INST_FAST_LT(SRC,32f,64f,float,WITH_GAMMA);       \
-    INST_FAST_LT(SRC,64f,64f,float,WITH_GAMMA);       
+#define INST_FAST_LT_FOR_SRC_TYPE(SRC,WITH_GAMMA) \
+  INST_FAST_LT(SRC,32s,8u,WITH_GAMMA);            \
+  INST_FAST_LT(SRC,32f,8u,WITH_GAMMA);            \
+  INST_FAST_LT(SRC,64f,8u,WITH_GAMMA);            \
+  INST_FAST_LT(SRC,32s,16s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32f,16s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,64f,16s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32s,32s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32f,32s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,64f,32s,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32s,32f,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32f,32f,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,64f,32f,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32s,64f,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,32f,64f,WITH_GAMMA);           \
+  INST_FAST_LT(SRC,64f,64f,WITH_GAMMA);       
 
 

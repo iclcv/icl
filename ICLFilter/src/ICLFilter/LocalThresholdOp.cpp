@@ -90,6 +90,7 @@ namespace icl{
       addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
       addProperty("algorithm","menu","region mean,tiled linear,tiled NN","region mean");
       addProperty("actually used mask size","info","","0");
+      addProperty("invert output","flag","",false);
     }
     
     // }}}
@@ -195,66 +196,68 @@ namespace icl{
     }
   
     // }}}
+
   
+    
+    
     /// this template resolves the destination images depths and if a gamma slope is set or not
     template<class S, class I>
-    void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float t, int m, float gs){
+    void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float tf, int m, float gs){
       // {{{ open
-  
-#if 1
+      typename ThreshType<S>::T t = (typename ThreshType<S>::T)(tf);
       switch(dst->getDepth()){
         case depth8u:
           if(gs!=0.0f){
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl8u,int,true>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
+              fast_lt<S,I,icl8u,typename ThreshType<S>::T,true>(src,ii,*dst->asImg<icl8u>(),m,t,gs,c);
             }
           }else{
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl8u,int,false>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
+              fast_lt<S,I,icl8u,typename ThreshType<S>::T,false>(src,ii,*dst->asImg<icl8u>(),m,t,gs,c);
             }
           }
           break;
         case depth16s:
           if(gs!=0.0f){
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl16s,int,true>(src,ii,*dst->asImg<icl16s>(),m,int(t),gs,c);
+              fast_lt<S,I,icl16s,typename ThreshType<S>::T,true>(src,ii,*dst->asImg<icl16s>(),m,t,gs,c);
             }
           }else{
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl16s,int,false>(src,ii,*dst->asImg<icl16s>(),m,int(t),gs,c);
+              fast_lt<S,I,icl16s,typename ThreshType<S>::T,false>(src,ii,*dst->asImg<icl16s>(),m,t,gs,c);
             }
           }
           break;
         case depth32s:
           if(gs!=0.0f){
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32s,int,true>(src,ii,*dst->asImg<icl32s>(),m,int(t),gs,c);
+              fast_lt<S,I,icl32s,typename ThreshType<S>::T,true>(src,ii,*dst->asImg<icl32s>(),m,t,gs,c);
             }
           }else{
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32s,int,false>(src,ii,*dst->asImg<icl32s>(),m,int(t),gs,c);
+              fast_lt<S,I,icl32s,typename ThreshType<S>::T,false>(src,ii,*dst->asImg<icl32s>(),m,t,gs,c);
             }
           }
           break;
         case depth32f:
           if(gs!=0.0f){
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32f,float,true>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
+              fast_lt<S,I,icl32f,typename ThreshType<S>::T,true>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
             }
           }else{
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32f,float,false>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
+              fast_lt<S,I,icl32f,typename ThreshType<S>::T,false>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
             }
           }
           break;
         case depth64f:
           if(gs!=0.0f){
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl64f,float,true>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
+              fast_lt<S,I,icl64f,typename ThreshType<S>::T,true>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
             }
           }else{
             for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl64f,float,false>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
+              fast_lt<S,I,icl64f,typename ThreshType<S>::T,false>(src,ii,*dst->asImg<icl64f>(),m,t,gs,c);
             }
           }
           break;
@@ -263,35 +266,7 @@ namespace icl{
           ICL_INVALID_DEPTH;
       }
   
-#else
-      switch(dst->getDepth()){
-        case depth8u:
-          if(gs!=0.0f){
-            for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl8u,int,true>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
-            }
-          }else{
-            for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl8u,int,false>(src,ii,*dst->asImg<icl8u>(),m,int(t),gs,c);
-            }
-          }
-          break;
-        case depth32f:
-          if(gs!=0.0f){
-            for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32f,float,true>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
-            }
-          }else{
-            for(int c=0;c<src.getChannels();++c){
-              fast_lt<S,I,icl32f,float,false>(src,ii,*dst->asImg<icl32f>(),m,t,gs,c);
-            }
-          }
-          break;
-        default:
-          // this may not happen
-          ICL_INVALID_DEPTH;
-      }
-#endif
+
     }
   
     // }}}
@@ -689,6 +664,14 @@ namespace icl{
         (*useDst)->deepCopyROI(dst);
       }
       (*dst)->setTime(src->getTime());
+
+      if(dstDepth == depth8u && getPropertyValue("invert output").as<bool>()){
+        Channel8u c = (*(*dst)->as8u())[0];
+        const int dim = c.getDim();
+        for(int i=0;i<dim;++i){
+          c[i] = 255-c[i];
+        }
+      }
     }  
     
     // }}}

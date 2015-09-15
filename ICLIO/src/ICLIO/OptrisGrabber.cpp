@@ -38,11 +38,13 @@
 #include <ICLUtils/XML.h>
 #include <ICLIO/FileList.h>
 #include <ICLCore/PseudoColorConverter.h>
+#include <ICLFilter/LocalThresholdOp.h>
 
 #include <ICLIO/V4L2Grabber.h>
 #include <ICLMath/LinearTransform1D.h>
 #include <fstream>
 
+namespace optris {}
 
 namespace icl{
   using namespace utils;
@@ -50,6 +52,8 @@ namespace icl{
   using namespace core;
 
   namespace io{
+    using namespace optris;
+    
     namespace{
       struct Buffer{
         std::vector<unsigned char> buf;
@@ -79,6 +83,7 @@ namespace icl{
       Img8u pccSrc;
       Img8u pccOutNull;
       Img32f combinedImage;
+      filter::LocalThresholdOp lt;
 
       const ImgBase *convert_output(const Img32f &s, const std::string &fmt){
         if(fmt == "Temperature celsius [32f]"){
@@ -252,6 +257,8 @@ namespace icl{
       addProperty("format","menu","Temperature celsius [32f],Pseudo Color [RGB8],Pseudo Color + Temp. [RGBT 32f]","Temperature celsius [32f]");
       addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
       addProperty("omit doubled frames","flag","",true);
+      addProperty("threshold output","flag","",false);
+      addChildConfigurable(&m_data->lt,"thresh");
       if(!testOnly){
         m_data->start_capturing();
       }
@@ -299,8 +306,14 @@ namespace icl{
       }
       m_data->buffer.lastTimeAcquired = m_data->buffer.image.getTime();
       m_data->buffer.image.deepCopy(&m_data->buffer.outBuf);
-      return m_data->convert_output(m_data->buffer.outBuf, 
-                                    getPropertyValue("format"));
+
+      const ImgBase *cvt = m_data->convert_output(m_data->buffer.outBuf, 
+                                                  getPropertyValue("format"));
+      if(getPropertyValue("threshold output")){
+        cvt = m_data->lt.apply(cvt);
+      }
+
+      return cvt;
     }
 
     void OptrisGrabber::processPropertyChange(const utils::Configurable::Property &prop){
@@ -313,7 +326,7 @@ namespace icl{
 
     REGISTER_GRABBER(optris,utils::function(create_micro_epsilon_grabber), 
                      utils::function(OptrisGrabber::getDeviceList), 
-                     "me:camera serial ID or pattern:LibImager-based camera grabber source");
+                     "optris:camera serial ID or pattern:LibImager-based camera grabber source");
   
     //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io

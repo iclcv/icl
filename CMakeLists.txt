@@ -441,8 +441,8 @@ IF(BUILD_WITH_LIBIRIMAGER)
 
   ICL_FIND_PACKAGE(NAME LIBIRIMAGER
                   HEADERS "libirimager/IRImager.h"
-                  LIBS "irimager;irimageprocessing")
-
+                  LIBS "irimager;ircore;irimageprocessing")
+                #please note that the library order seems to be mandatory here!
   ICL_FIND_PACKAGE(NAME LIBUDEV
                   LIBS "udev")
 
