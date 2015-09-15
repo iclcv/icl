@@ -42,6 +42,8 @@
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
 
+#include <ICLUtils/StackTimer.h>
+
 
 namespace icl {
 
@@ -63,7 +65,10 @@ struct BilateralFilterOp::Impl {
 
 struct BilateralFilterOp::GPUImpl : BilateralFilterOp::Impl {
 public:
-	GPUImpl() {
+	int width, height;
+
+	GPUImpl()
+		: width(0), height(0) {
 
 		std::ifstream kernel_stream;
 		std::string kernel_name = "/BilateralFilterOp.cl";
@@ -90,6 +95,11 @@ public:
 		int w = in->getWidth();
 		int h = in->getHeight();
 
+		bool reset_buffers = this->width != w || this->height != h;
+
+		this->width = w;
+		this->height = h;
+
 		if (in->getDepth() == core::depth8u) {
 			const core::Img8u &_in = *in->as8u();
 			core::Img8u *_out = (*out)->as8u();
@@ -97,7 +107,19 @@ public:
 
 				core::Channel8u ch_out = (*_out)[0];
 				core::Channel8u ch = _in[0];
-				applyKernel<cl_uchar>(w,h,&ch[0],&ch_out[0],UCHAR_MONO,radius,sigma_s,sigma_r,_use_lab);
+				_out->setSize(_in.getSize());
+				_out->setFormat(_in.getFormat());
+				if (reset_buffers) {
+					image_buffer_in = program.createImage2D("r",w,h,core::depth8u,&ch(0,0));
+					image_buffer_out = program.createImage2D("w",w,h,core::depth8u,0);
+				} else {
+					image_buffer_in.write(&ch(0,0));
+				}
+				utils::CLKernel &kernel = filter[UCHAR_MONO];
+				kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
+				kernel.apply(w,h);
+				kernel.finish();
+				image_buffer_out.read(&ch_out(0,0));
 
 			} else if(_in.getChannels() == 3) {
 
@@ -105,17 +127,22 @@ public:
 				const core::Channel8u g = _in[1];
 				const core::Channel8u b = _in[2];
 
-				utils::CLImage2D in_r = program.createImage2D("r",w,h,core::depth8u,&r(0,0));
-				utils::CLImage2D in_g = program.createImage2D("r",w,h,core::depth8u,&g(0,0));
-				utils::CLImage2D in_b = program.createImage2D("r",w,h,core::depth8u,&b(0,0));
+				if (reset_buffers) {
+					in_r = program.createImage2D("r",w,h,core::depth8u,&r(0,0));
+					in_g = program.createImage2D("r",w,h,core::depth8u,&g(0,0));
+					in_b = program.createImage2D("r",w,h,core::depth8u,&b(0,0));
+					out_r = program.createImage2D("w",w,h,core::depth8u,0);
+					out_g = program.createImage2D("w",w,h,core::depth8u,0);
+					out_b = program.createImage2D("w",w,h,core::depth8u,0);
+					lab_l = program.createImage2D("rw",w,h,core::depth8u,0);
+					lab_a = program.createImage2D("rw",w,h,core::depth8u,0);
+					lab_b = program.createImage2D("rw",w,h,core::depth8u,0);
+				} else {
+					in_r.write(&r(0,0));
+					in_g.write(&g(0,0));
+					in_b.write(&b(0,0));
+				}
 
-				utils::CLImage2D out_r = program.createImage2D("w",w,h,core::depth8u,0);
-				utils::CLImage2D out_g = program.createImage2D("w",w,h,core::depth8u,0);
-				utils::CLImage2D out_b = program.createImage2D("w",w,h,core::depth8u,0);
-
-				utils::CLImage2D lab_l = program.createImage2D("rw",w,h,core::depth8u,&r(0,0));
-				utils::CLImage2D lab_a = program.createImage2D("rw",w,h,core::depth8u,&g(0,0));
-				utils::CLImage2D lab_b = program.createImage2D("rw",w,h,core::depth8u,&b(0,0));
 				utils::CLKernel &kernel = filter[UCHAR_LAB];
 				if (_use_lab) {
 					rgb_to_lab.setArgs(in_r,in_g,in_b,lab_l,lab_a,lab_b);
@@ -143,11 +170,28 @@ public:
 			}
 		} else if(in->getDepth() == core::depth32f && in->getChannels() == 1) {
 
+			BENCHMARK_THIS_SECTION(PREPARATION_PLUS_KERNEL_CALL);
 			const core::Img32f &_in = *in->as32f();
 			const core::Channel32f ch = _in[0];
 			core::Img32f *_out = (*out)->as32f();
+			_out->setSize(_in.getSize());
+			_out->setFormat(_in.getFormat());
 			core::Channel32f ch_out = (*_out)[0];
-			applyKernel<float>(w,h,&ch[0],&ch_out[0],FLOAT_MONO,radius,sigma_s,sigma_r,_use_lab);
+			//applyKernel<float>(w,h,&ch[0],&ch_out[0],FLOAT_MONO,radius,sigma_s,sigma_r,_use_lab);
+			if (reset_buffers) {
+				image_buffer_in = program.createImage2D("r",w,h,core::depth32f,&ch(0,0));
+				image_buffer_out = program.createImage2D("w",w,h,core::depth32f,0);
+			} else {
+				image_buffer_in.write(&ch(0,0));
+			}
+			utils::CLKernel &kernel = filter[FLOAT_MONO];
+			kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
+			{
+				BENCHMARK_THIS_SECTION(KERNEL_CALL)
+				kernel.apply(w,h);
+				kernel.finish();
+			}
+			image_buffer_out.read(&ch_out(0,0));
 
 		} else {
 			throw utils::InvalidDepthException(ICL_FILE_LOCATION);
@@ -161,25 +205,6 @@ protected:
 		UCHAR_LAB
 	};
 
-	template<typename TYPE>
-	void applyKernel(int w, int h, const TYPE *data, TYPE *out, ImageType t,
-					 int radius, float sigma_s, float sigma_r, bool use_lab) {
-
-		int length = w*h*sizeof(TYPE);
-		in_buffer = program.createBuffer("r",length,data);
-		out_buffer = program.createBuffer("w",length,0);
-		utils::CLKernel &kernel = filter[(int)t];
-		int g_w = w;
-		int g_h = h;
-		int l_w = 16;
-		int l_h = 16;
-		kernel.setArgs(in_buffer,w,h,radius,sigma_s,sigma_r,(int)use_lab,out_buffer);
-		kernel.apply(g_w,g_h,0,l_w,l_h,0);
-		kernel.finish();
-		out_buffer.read(out,length);
-
-	}
-
 	/// Main OpenCL program
 	utils::CLProgram program;
 	/// All known filters
@@ -189,6 +214,21 @@ protected:
 	utils::CLBuffer in_buffer;
 	/// buffer used for image transfer
 	utils::CLBuffer out_buffer;
+
+	utils::CLImage2D image_buffer_in;
+	utils::CLImage2D image_buffer_out;
+
+	utils::CLImage2D in_r;
+	utils::CLImage2D in_g;
+	utils::CLImage2D in_b;
+
+	utils::CLImage2D lab_l;
+	utils::CLImage2D lab_a;
+	utils::CLImage2D lab_b;
+
+	utils::CLImage2D out_r;
+	utils::CLImage2D out_g;
+	utils::CLImage2D out_b;
 };
 
 #endif

@@ -116,5 +116,4 @@ private:
 };
 
 } // namespace filter
-
 } // namespace icl
