@@ -29,11 +29,8 @@
 ********************************************************************/
 
 #include <ICLFilter/LocalThresholdOpHelpers.h>
-#include <ICLCore/CoreFunctions.h>
 
 namespace icl{
-  using namespace core;
-  using namespace utils;
   namespace filter{
     FAST_LT_DEFINITION
 

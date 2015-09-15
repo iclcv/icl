@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <stdint.h>
 
 namespace icl{
   namespace filter{
@@ -38,33 +38,32 @@ namespace icl{
       template<class TT>
       struct ThreshType{ typedef TT T; };
       
-      template<> struct ThreshType<icl8u> { typedef int T; };
-      template<> struct ThreshType<icl16s> { typedef int T; };
-      template<> struct ThreshType<icl32s> { typedef int T; };
-      template<> struct ThreshType<icl32f> { typedef float T; };
-      template<> struct ThreshType<icl64f> { typedef double T; };
+      template<> struct ThreshType<uint8_t> { typedef int T; };
+      template<> struct ThreshType<int16_t> { typedef int T; };
+      template<> struct ThreshType<int32_t> { typedef int T; };
+      template<> struct ThreshType<float> { typedef float T; };
+      template<> struct ThreshType<double> { typedef double T; };
+
+      inline float lt_clip_float(float f) { return f > 255 ? 255 : f < 0 ? 0 : f; }
+
+      typedef uint8_t lt_icl8u;
+      typedef int16_t lt_icl16s;
+      typedef int32_t lt_icl32s;
+      typedef float   lt_icl32f;
+      typedef double  lt_icl64f;
     }
     /// Internally used helper function 
     /** This function was outsourced to optimize the compilation times by better
         exploiting multi-threaded compilation. The actual template instantiation of
         this function is spread over 10 source-files. */
     template<class TS,  class TI, class TD, class TT, bool WITH_GAMMA>
-    void fast_lt(const core::Img<TS> &src, const core::Img<TI> &iim, 
-                 core::Img<TD> &dst, int r, TT t, float gs, int channel);
+    void fast_lt(const TS *psrc, const TI *ii, TD *pdst, int w, int h, int r, TT t, float gs, int channel);
 
     /// Internally used helper function 
     /** This function was outsourced to optimize the compilation times by better
         exploiting multi-threaded compilation */
     template<class TS,  class TI, class TD, class TT, bool WITH_GAMMA>
-    void fast_lt_impl(const core::Img<TS> &src, const core::Img<TI> &iim, 
-                      core::Img<TD> &dst, int r, TT t, float gs, int channel){
-      const TI *ii = iim.begin(channel);
-      const TS *psrc = src.begin(channel);
-      TD *pdst = dst.begin(channel);
-      
-      // first, we leave out the borders:
-      const int w = src.getWidth();
-      const int h = src.getHeight();
+    void fast_lt_impl(const TS *psrc, const TI *ii, TD *pdst, int w, int h, int r, TT t, float gs, int channel){
       const int r2 = 2*r;
       const int yEnd = h-r;
       const int dim = r2*r2;
@@ -98,7 +97,7 @@ namespace icl{
 #define GET_RECT(rx,ry,rw,rh) (GET_B((rx),(ry),(rw),(rh)) - GET_C((rx),(ry),(rw),(rh)) - GET_D((rx),(ry),(rw),(rh)) + GET_A((rx),(ry),(rw),(rh)) + t)
 #define COMPLEX_STEP(rx,ry,rw,rh) pdst[x+w*y] = (!WITH_GAMMA) ?         \
       (255 * (psrc[x+w*y]*((rw)*(rh)) > (GET_RECT((rx),(ry),(rw),(rh)))) ) : \
-      ((TD)utils::clip<float>( gs * (psrc[x+w*y] - float(GET_RECT((rx),(ry),(rw),(rh)))/((rw)*(rh)) ) + 128,float(0),float(255)))
+      ((TD)lt_clip_float( gs * (psrc[x+w*y] - float(GET_RECT((rx),(ry),(rw),(rh)))/((rw)*(rh)) ) + 128))
   
   
       // [1][2][3]
@@ -132,7 +131,7 @@ namespace icl{
         
 #define STEP *d = (!WITH_GAMMA) ?                                       \
         (255 * ( (*s*dim) > (*B - *C - *D + *A + t))) :                 \
-        ((TD)utils::clip<float>( gs * (*s - float(*B - *C - *D + *A + t)/dim ) + 128,float(0),float(255))) \
+        ((TD)lt_clip_float( gs * (*s - float(*B - *C - *D + *A + t)/dim ) + 128)) \
         ;  ++B; ++C; ++D; ++A; ++s; ++d;
         
         // 16x loop unrolling here
@@ -176,15 +175,16 @@ namespace icl{
 
 #define FAST_LT_DEFINITION                                              \
     template<class TS,  class TI, class TD, class TT, bool WITH_GAMMA>  \
-    void fast_lt(const Img<TS> &src, const Img<TI> &iim, Img<TD> &dst,  \
+    void fast_lt(const TS *psrc, const TI *iim, TD *pdst, int w, int h, \
                  int r, TT t, float gs, int channel){                   \
-      fast_lt_impl<TS,TI,TD,TT,WITH_GAMMA>(src,iim,dst,r,t,gs,channel); \
+      fast_lt_impl<TS,TI,TD,TT,WITH_GAMMA>(psrc,iim,pdst,w,h,r,t,gs,channel); \
     }
-    
+
 #define INST_FAST_LT(TS,TI,TD,WITH_GAMMA)                               \
-  template void fast_lt<icl##TS,icl##TI,icl##TD,typename ThreshType<icl##TS>::T,WITH_GAMMA> \
-  (const Img<icl##TS>&, const Img<icl##TI>&, Img<icl##TD>&,             \
-   int,typename ThreshType<icl##TS>::T,float,int)
+  template void fast_lt<lt_icl##TS,lt_icl##TI,lt_icl##TD,               \
+    typename ThreshType<lt_icl##TS>::T,WITH_GAMMA>                      \
+  (const lt_icl##TS*, const lt_icl##TI*, lt_icl##TD*, int, int,         \
+   int,typename ThreshType<lt_icl##TS>::T,float,int)
 
 #define INST_FAST_LT_FOR_SRC_TYPE(SRC,WITH_GAMMA) \
   INST_FAST_LT(SRC,32s,8u,WITH_GAMMA);            \
