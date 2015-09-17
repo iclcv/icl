@@ -143,7 +143,7 @@ FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
 
     SET(LIB_DEPENDS_ON "${COMPONENT_DIRS} ${COMPONENT_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
     # removing /usr/lib and also the architecture dependent default library paths for the list
-    #MESSAGE(STATUS "before filtering: ${LIB_DEPENDS_ON}")
+	#MESSAGE(STATUS "before filtering: ;${LIB_DEPENDS_ON};")
 
     # tokenize the list properly: i.e. replace " " by ";" so that each
     # token actually becomes a cmake list token
@@ -157,11 +157,11 @@ FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
     ENDFOREACH()
     ENDFOREACH()
 
-    # update actual list and remove silly rpaths
-    SET(LIB_DEPENDS_ON ${LIB_DEPENDS_ON_NEW})
-    LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,")
-    LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,:")
+	# update actual list and remove silly rpaths
+	SET(LIB_DEPENDS_ON "${LIB_DEPENDS_ON_NEW}")
+	LIST(REMOVE_DUPLICATES LIB_DEPENDS_ON)
+	LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,")
+	LIST(REMOVE_ITEM LIB_DEPENDS_ON "-Wl,-rpath,:")
     SET(LIB_DEPENDS_ON_NEW "")
 
     # loop over the list and replace full paths with -lLIBNAME
@@ -184,7 +184,7 @@ FUNCTION(SPLIT_LIB_PATHS LIST_OUT LIB_LIST)
       LIST(APPEND LIB_DEPENDS_ON_NEW ${M})
     #   MESSAGE(STATUS "replaced token by -l${M}")
     ENDIF()
-    ENDFOREACH()
+	ENDFOREACH()
     SET(${LIST_OUT} ${LIB_DEPENDS_ON_NEW} PARENT_SCOPE)
 
 ENDFUNCTION()
