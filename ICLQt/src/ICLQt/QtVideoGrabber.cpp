@@ -31,6 +31,8 @@
 
 #include <ICLQt/QtVideoGrabber.h>
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+
 namespace icl{
   namespace qt{
     QtVideoGrabber::QtVideoGrabber(const std::string &filename) throw (utils::FileNotFoundException,utils::InvalidFileException) {
@@ -88,3 +90,5 @@ namespace icl{
     REGISTER_GRABBER(qtvideo,utils::function(createQtVideoGrabber), utils::function(getQtVideoDeviceList),"qtvideo:video filename:Qt based video file source");
   }
 }
+
+#endif

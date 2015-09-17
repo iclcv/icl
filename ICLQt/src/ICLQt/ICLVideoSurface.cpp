@@ -29,6 +29,8 @@
 ********************************************************************/
 
 #include <ICLQt/ICLVideoSurface.h>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+
 #include <QtCore/QMutexLocker>
 namespace icl{
   namespace qt{
@@ -44,8 +46,7 @@ namespace icl{
     // Everything BELOW ARGB32 is not natively supported!
     // You might experience lag.
     QList<QVideoFrame::PixelFormat> ICLVideoSurface::supportedPixelFormats(
-            QAbstractVideoBuffer::HandleType handleType) const
-    {
+            QAbstractVideoBuffer::HandleType handleType) const {
       return QList<QVideoFrame::PixelFormat>()
           << QVideoFrame::Format_RGB24
           << QVideoFrame::Format_YUV420P
@@ -172,3 +173,5 @@ namespace icl{
     }
   }
 }
+
+#endif

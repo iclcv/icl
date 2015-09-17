@@ -28,6 +28,9 @@
 **                                                                 **
 ********************************************************************/
 
+#include <QtCore>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
 
 #pragma once
 #include <QtMultimedia/QCamera>
@@ -49,10 +52,11 @@ namespace icl{
         /// grab function
         virtual const core::ImgBase *acquireImage();
 
-
       protected:
         QCamera* cam;
         ICLVideoSurface* surface;
     };
   }
 }
+
+#endif

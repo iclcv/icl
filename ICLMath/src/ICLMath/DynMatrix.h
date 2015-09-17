@@ -835,10 +835,12 @@ namespace icl{
       }
   
       /// applies QR-decomposition using stabilized Gram-Schmidt orthonormalization (only for icl32f and icl64f)
-      void decompose_QR(DynMatrix &Q, DynMatrix &R) const;
+      void decompose_QR(DynMatrix &Q, DynMatrix &R) const
+        throw (InvalidMatrixDimensionException,SingularMatrixException);
   
       /// applies RQ-decomposition (by exploiting implemnetation of QR-decomposition) (only for icl32f, and icl64f)
-      void decompose_RQ(DynMatrix &R, DynMatrix &Q) const;
+      void decompose_RQ(DynMatrix &R, DynMatrix &Q) const
+        throw (InvalidMatrixDimensionException,SingularMatrixException);
   
       /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
       /** Even though, implementation also works for non-sqared matrices, it's not recommended to

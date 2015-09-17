@@ -29,6 +29,11 @@
 ********************************************************************/
 
 #pragma once
+
+#include <QtCore>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+
 #include <QtMultimedia/QMediaPlayer>
 #include <QFileInfo>
 #include <ICLQt/Common.h>
@@ -64,3 +69,4 @@ namespace icl{
     };
   }
 }
+#endif

@@ -28,9 +28,12 @@
 **                                                                 **
 ********************************************************************/
 
-
-
 #pragma once
+
+#include <QtCore>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+
 #include <QtMultimedia/QVideoSurfaceFormat>
 #include <QtMultimedia/QAbstractVideoSurface>
 #include <QFileInfo>
@@ -83,3 +86,5 @@ namespace icl{
     };
   }
 }
+
+#endif
