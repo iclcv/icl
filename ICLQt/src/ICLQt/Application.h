@@ -100,7 +100,7 @@ namespace icl{
     class ICLQt_API ICLApplication : public QObject{
       Q_OBJECT;
 
-      private slots:
+	  private Q_SLOTS:
       void lastWindowClosed();
 
       public:
