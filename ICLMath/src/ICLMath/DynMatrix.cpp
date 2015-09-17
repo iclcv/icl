@@ -145,7 +145,8 @@ namespace icl{
     }
   
     template<class T>
-    void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const {
+    void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const 
+          throw (InvalidMatrixDimensionException,SingularMatrixException) {
       DynMatrix<T> A = *this; // Working copy
       DynMatrix<T> a(1,rows()), q(1,rows());
   
@@ -175,7 +176,8 @@ namespace icl{
     }
   
     template<class T>
-    void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const {
+    void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const 
+          throw (InvalidMatrixDimensionException,SingularMatrixException) {
      // first reverse the rows of A and transpose it
       DynMatrix<T> A_(rows(),cols());
       for (unsigned int i = 0; i<rows(); i++){

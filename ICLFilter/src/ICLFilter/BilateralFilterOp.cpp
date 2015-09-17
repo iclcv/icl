@@ -298,7 +298,7 @@ void BilateralFilterOp::init(Mode mode) {
 		#ifdef ICL_HAVE_OPENCL
 			impl = new GPUImpl();
 		#else
-			WARNING_LOG"OpenCL is not available");
+			WARNING_LOG("OpenCL is not available");
 		#endif
 	} else if (mode == CPU) {
 		impl = new CPUImpl();

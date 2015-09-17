@@ -51,7 +51,9 @@
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLGeom/PointCloudNormalEstimator.h>
 #include <ICLGeom/Scene.h>
-#include <ICLGeom/PCLPointCloudObject.h>
+//alneuman: is not used and just breaks the icl if build without pcl support
+//#include <ICLGeom/PCLPointCloudObject.h>
+
 
 //------------------------------------------------------------------------------
 
