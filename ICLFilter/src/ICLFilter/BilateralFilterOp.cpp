@@ -91,8 +91,8 @@ public:
 
 	void apply(const core::ImgBase *in, core::ImgBase **out, int radius, float sigma_s, float sigma_r, bool _use_lab) {
 
-		int w = in->getWidth();
-		int h = in->getHeight();
+		int w = in->getWidth();//in->getROIWidth();//in->getWidth();
+		int h = in->getHeight();//in->getROIHeight();//in->getHeight();
 
 		bool reset_buffers = this->width != w
 							|| this->height != h
@@ -111,14 +111,19 @@ public:
 
 				core::Channel8u ch_out = (*_out)[0];
 				core::Channel8u ch = _in[0];
-				_out->setSize(_in.getSize());
+				_out->setSize(utils::Size(w,h));
 				_out->setFormat(_in.getFormat());
+//				unsigned char *buff = new unsigned char[w*h];
+//				std::copy(ch.beginROI(),ch.endROI(),buff);
 				if (reset_buffers) {
+					//image_buffer_in = program.createImage2D("r",w,h,core::depth8u,buff);
 					image_buffer_in = program.createImage2D("r",w,h,core::depth8u,&ch(0,0));
 					image_buffer_out = program.createImage2D("w",w,h,core::depth8u,0);
 				} else {
+//					image_buffer_in.write(buff);
 					image_buffer_in.write(&ch(0,0));
 				}
+				//delete [] buff;
 				utils::CLKernel &kernel = filter[UCHAR_SINGLE_CHANNEL];
 				kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
 				kernel.apply(w,h);
@@ -131,7 +136,16 @@ public:
 				const core::Channel8u g = _in[1];
 				const core::Channel8u b = _in[2];
 
+				/*unsigned char *buff_r = new unsigned char[w*h];
+				unsigned char *buff_g = new unsigned char[w*h];
+				unsigned char *buff_b = new unsigned char[w*h];
+				std::copy(r.beginROI(),r.endROI(),buff_r);
+				std::copy(g.beginROI(),g.endROI(),buff_g);
+				std::copy(b.beginROI(),b.endROI(),buff_b);*/
 				if (reset_buffers) {
+					/*in_r = program.createImage2D("r",w,h,core::depth8u,buff_r);
+					in_g = program.createImage2D("r",w,h,core::depth8u,buff_g);
+					in_b = program.createImage2D("r",w,h,core::depth8u,buff_b);*/
 					in_r = program.createImage2D("r",w,h,core::depth8u,&r(0,0));
 					in_g = program.createImage2D("r",w,h,core::depth8u,&g(0,0));
 					in_b = program.createImage2D("r",w,h,core::depth8u,&b(0,0));
@@ -142,10 +156,16 @@ public:
 					lab_a = program.createImage2D("rw",w,h,core::depth8u,0);
 					lab_b = program.createImage2D("rw",w,h,core::depth8u,0);
 				} else {
+					/*in_r.write(buff_r);
+					in_g.write(buff_g);
+					in_b.write(buff_b);*/
 					in_r.write(&r(0,0));
 					in_g.write(&g(0,0));
 					in_b.write(&b(0,0));
 				}
+				/*delete [] buff_r;
+				delete [] buff_g;
+				delete [] buff_b;*/
 
 				utils::CLKernel &kernel = filter[UCHAR_3COLORS];
 				if (_use_lab) {
@@ -159,7 +179,7 @@ public:
 				kernel.apply(w,h);
 				kernel.finish();
 
-				_out->setSize(_in.getSize());
+				_out->setSize(utils::Size(w,h));
 				_out->setFormat(_in.getFormat());
 				core::Channel8u _r = (*_out)[0];
 				core::Channel8u _g = (*_out)[1];
@@ -177,16 +197,21 @@ public:
 			const core::Img32f &_in = *in->as32f();
 			const core::Channel32f ch = _in[0];
 			core::Img32f *_out = (*out)->as32f();
-			_out->setSize(_in.getSize());
+			_out->setSize(utils::Size(w,h));
 			_out->setFormat(_in.getFormat());
 			core::Channel32f ch_out = (*_out)[0];
 
+			//float *buff = new float[w*h];
+			//std::copy(ch.beginROI(),ch.endROI(),buff);
 			if (reset_buffers) {
+				//image_buffer_in = program.createImage2D("r",w,h,core::depth32f,buff);
 				image_buffer_in = program.createImage2D("r",w,h,core::depth32f,&ch(0,0));
 				image_buffer_out = program.createImage2D("w",w,h,core::depth32f,0);
 			} else {
+				//image_buffer_in.write(buff);
 				image_buffer_in.write(&ch(0,0));
 			}
+			//delete [] buff;
 			utils::CLKernel &kernel = filter[FLOAT_SINGLE_CHANNEL];
 			kernel.setArgs(image_buffer_in,image_buffer_out,w,h,radius,sigma_s,sigma_r);
 			kernel.apply(w,h);

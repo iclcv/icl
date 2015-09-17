@@ -29,6 +29,8 @@
 ********************************************************************/
 
 #include <ICLQt/ICLVideoSurface.h>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+
 #include <QtCore/QMutexLocker>
 namespace icl{
   namespace qt{
@@ -172,3 +174,5 @@ namespace icl{
     }
   }
 }
+
+#endif

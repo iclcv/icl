@@ -28,8 +28,9 @@
 **                                                                 **
 ********************************************************************/
 
-
 #include <ICLQt/QtCameraGrabber.h>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
 #include <QtGlobal>
 #include <QtMultimedia/QCameraInfo>
 #include <ICLUtils/StringUtils.h>
@@ -146,3 +147,5 @@ namespace icl{
     REGISTER_GRABBER(qtcam,utils::function(createQtCameraGrabber), utils::function(getQtCameraDeviceList),"qtcam:video filename:Qt based Camera source");
   }
 }
+
+#endif
