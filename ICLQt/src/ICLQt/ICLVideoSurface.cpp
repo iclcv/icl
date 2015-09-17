@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ICLVideoSurface.h>
-
+#include <QtCore/QMutexLocker>
 namespace icl{
   namespace qt{
     ICLVideoSurface::ICLVideoSurface() :
@@ -40,12 +40,20 @@ namespace icl{
     }
     ICLVideoSurface::~ICLVideoSurface(){
     }
+
+    // Everything BELOW ARGB32 is not natively supported!
+    // You might experience lag.
     QList<QVideoFrame::PixelFormat> ICLVideoSurface::supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType) const
     {
       return QList<QVideoFrame::PixelFormat>()
           << QVideoFrame::Format_RGB24
-          << QVideoFrame::Format_YUV420P;
+          << QVideoFrame::Format_YUV420P
+          << QVideoFrame::Format_ARGB32
+          << QVideoFrame::Format_ARGB32_Premultiplied
+          << QVideoFrame::Format_RGB32
+          << QVideoFrame::Format_RGB565 
+          << QVideoFrame::Format_RGB555;
     }
 
     void ICLVideoSurface::init() {
@@ -62,6 +70,11 @@ namespace icl{
     }
 
     bool ICLVideoSurface::start(const QVideoSurfaceFormat &format) {
+      if ((format.pixelFormat() != QVideoFrame::Format_RGB24) &&
+          (format.pixelFormat() != QVideoFrame::Format_YUV420P) &&
+          (format.pixelFormat() != QVideoFrame::Format_ARGB32)) {
+        WARNING_LOG("Using non native conversion. Performance may suffer.")
+      }
       QAbstractVideoSurface::start(format);
       init();
       useLocking.store(true);
@@ -71,7 +84,7 @@ namespace icl{
     void ICLVideoSurface::stop() {
       QAbstractVideoSurface::stop();
       useLocking.store(false);
-      waitCondition.notify_one();
+	  waitCondition.wakeOne();// notify_one();
     }
 
     bool ICLVideoSurface::present(const QVideoFrame &frame)
@@ -95,13 +108,44 @@ namespace icl{
               }
               else
                 imgWork->setFullROI();
+            } else if(cloneFrame.pixelFormat() == QVideoFrame::Format_ARGB32) {
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
+              const int dim = imgWork->getDim();
+              icl8u *res_r = imgWork->begin(0);
+              icl8u *res_g = imgWork->begin(1);
+              icl8u *res_b = imgWork->begin(2);
+              uchar *src = cloneFrame.bits();
+
+              // channel order in QVideoFrame seems switched
+              // its rather 0xBBGGRRAA than 0xAARRBBGG
+              // that is why we match Channel 0 -> Blue and 2 -> Reds
+              for(int i=0;i<dim;++i){
+                res_r[i] = src[i*4+2]; // red channel
+                res_g[i] = src[i*4+1]; // green channel
+                res_b[i] = src[i*4+0]; // blue channel
+              } 
+            } else {
+              // fallback if no native conversion is available
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
+              const QImage tmpImg(cloneFrame.bits(),
+                           cloneFrame.width(),
+                           cloneFrame.height(),
+                           QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
+              QVideoFrame tmp = QVideoFrame(tmpImg.convertToFormat(QImage::Format_RGB888));  
+              tmp.map(QAbstractVideoBuffer::ReadWrite);
+              cloneFrame = tmp;
+              imgWork->setChannels(3);
+              imgWork->setSize(utils::Size(cloneFrame.width(),cloneFrame.height()));
+              core::interleavedToPlanar<uchar,icl8u>(cloneFrame.bits(),imgWork,cloneFrame.bytesPerLine());
             }
             if(useLocking.load()) {
-              boost::mutex::scoped_lock waitLock(waitMutex);
+				QMutexLocker waitLock(&waitMutex);// boost::mutex::scoped_lock waitLock(waitMutex);
               if(!nextFrameReady)
               {
                   nextFrameReady=true;
-                  waitCondition.notify_one();
+				  waitCondition.wakeOne();// notify_one();
               }
             }
             nextFrameReady=true;
@@ -113,9 +157,9 @@ namespace icl{
 
     const Img8u* ICLVideoSurface::getImage(){
       if(useLocking.load()) {
-        boost::mutex::scoped_lock waitLock(waitMutex);
+		  QMutexLocker waitLock(&waitMutex);// boost::mutex::scoped_lock waitLock(waitMutex);
         while(!nextFrameReady) {
-            waitCondition.wait(waitLock);
+            waitCondition.wait(&waitMutex);
         }
       }
       lock.lock();

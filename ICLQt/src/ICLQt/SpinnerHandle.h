@@ -32,11 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
-
-/** \cond */
-class QSpinBox;
-/** \endcond */
-
+#include <QtWidgets/QSpinBox>
 
 namespace icl{
   namespace qt{

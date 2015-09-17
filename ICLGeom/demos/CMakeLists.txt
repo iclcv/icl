@@ -1,4 +1,4 @@
-IF(QT4_FOUND)
+IF(QT_FOUND)
   ADD_SUBDIRECTORY(animated-grid)
   ADD_SUBDIRECTORY(camera)
   ADD_SUBDIRECTORY(generic-texture-coords)

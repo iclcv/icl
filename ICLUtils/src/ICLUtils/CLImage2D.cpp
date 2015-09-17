@@ -32,9 +32,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/Macros.h>
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#include <CL/cl.hpp>
+
+#include <ICLUtils/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>
@@ -102,7 +101,7 @@ namespace icl {
                         default:
                         throw CLBufferException("unknown depth value");
                     }
-                    image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, channelType), width, height, 0, (void*) src);
+					image2D = cl::Image2D(context, memFlags, cl::ImageFormat(CL_R, channelType), width, height, 0, (void*) src);
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }

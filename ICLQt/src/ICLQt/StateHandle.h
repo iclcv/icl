@@ -32,17 +32,13 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLQt/ThreadedUpdatableTextView.h>
 #include <ICLQt/GUIHandle.h>
 #include <string>
 
 namespace icl{
   namespace qt{
-  
-    /** \cond */
-    class ThreadedUpdatableTextView;
-    /** \endcond */
-  
-  
+    
     /// Class for GUI-Label handling a so called state component\ingroup HANDLES
     /** You can add a state component as an alternative std::cout for debugging
         or system state messages

@@ -162,7 +162,7 @@ IF(LIBIRIMAGER_FOUND)
   LIST(APPEND HEADERS src/ICLIO/OptrisGrabber.h)
 ENDIF()
 
-IF(QT4_FOUND)
+IF(QT_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SharedMemoryGrabber.cpp
                       src/ICLIO/SharedMemoryPublisher.cpp
                       src/ICLIO/SharedMemorySegment.cpp)

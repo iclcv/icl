@@ -122,6 +122,13 @@ namespace icl {
       */
       virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
 
+	  ///applies the Canny Operator
+	  /**
+		  @param src the source image
+		  @param dst pointer to the destination image
+	  */
+	  virtual void apply(const core::ImgBase *src_x, const core::ImgBase *src_y, core::ImgBase **dst);
+
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 

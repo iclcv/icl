@@ -691,7 +691,7 @@ namespace icl{
                                      "load property file")
                       );
                 //update_all_components();
-              } catch (utils::ICLException &e){
+              } catch (utils::ICLException &){
                 // cancel
               }
             }else if(prop == "save"){
@@ -700,7 +700,7 @@ namespace icl{
                       saveFileDialog("XML (*.xml);; All files (*)",
                                      "save properties to file"
                                      ));
-              } catch (utils::ICLException &e){
+              } catch (utils::ICLException &){
                 // cancel
               }
             }

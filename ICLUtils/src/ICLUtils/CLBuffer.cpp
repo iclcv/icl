@@ -33,9 +33,7 @@
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/Macros.h>
 
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#include <CL/cl.hpp>
+#include <ICLUtils/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>

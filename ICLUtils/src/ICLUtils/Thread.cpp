@@ -112,14 +112,14 @@ namespace icl{
       Sleep(usec / 1000);
     #else
       usleep(usec);
-  	#endif
+    #endif
     }
   
     void Thread::msleep(unsigned int msecs){
   #ifdef ICL_SYSTEM_WINDOWS
       Sleep(msecs);
   #else
-      usleep(msecs*1000);
+      ::usleep(msecs*1000);
   #endif
     }
     void Thread::sleep(float secs){

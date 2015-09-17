@@ -32,13 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
+#include <QtWidgets/QGroupBox>
 #include <string>
-
-//#include <QGroupBox>
-/** \cond */
-class QGroupBox;
-/** \endcond */
-
 
 namespace icl{
   namespace qt{

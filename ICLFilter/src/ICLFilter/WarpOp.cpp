@@ -31,10 +31,8 @@
 #include <ICLFilter/WarpOp.h>
 #ifdef ICL_HAVE_OPENCL
 #include <ICLUtils/CLProgram.h>
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#include <CL/cl.hpp>
 #endif
+#include <ICLUtils/CLIncludes.h>
 
 using namespace icl::utils;
 using namespace icl::core;

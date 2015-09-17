@@ -36,10 +36,8 @@
 
 // #ifdef ICL_HAVE_OPENCL
 // #include <ICLUtils/CLProgram.h>
-// #include <CL/cl.h>
-// #undef CL_VERSION_1_2
-// #include <CL/cl.hpp>
 // #endif
+// #include <ICLUtils/CLIncludes.h>
 
 
 // namespace icl{
@@ -297,79 +295,79 @@
 //       DynMatrix<float> rotation(4,4);
 
       //copy initial rotation
-      for(int i = 0; i < MATRIX_SIZE; i++) {
-        rotation.data()[i] = initialTransform[i];
-      }
-      //ignore translation because it is calculated internally
-      rotation(3,0) = 0;
-      rotation(3,1) = 0;
-      rotation(3,2) = 0;
-      //init output rotation
-      for(int i = 0; i < MATRIX_SIZE; i++) {
-        transformMatrix[i] = rotation.data()[i];
-      }
-      m_data->loadPoints(pointsA,pointsB,sizeof(T),sizeA,sizeB);
-      m_data->getCenter(m_data->pointsABuf,m_data->centerABuf,centerA,sizeof(T),sizeA);
-      m_data->getCenter(m_data->pointsBBuf,m_data->centerBBuf,centerB,sizeof(T),sizeB);
-      m_data->subtract(m_data->pointsABuf,centerA,m_data->centeredABuf,sizeof(T),sizeA);
-      m_data->subtract(m_data->pointsBBuf,centerB,m_data->centeredBBuf,sizeof(T),sizeB);
-      //copy the representatives
-      for(int i = 0; i < sizeReps; i++) {
-        int index = rand()%sizeA;
-        pointsReps[i] = pointsA[index];
-      }
-      m_data->loadReps(pointsReps,sizeof(T), sizeA, sizeB ,sizeReps, repWidth);
-      m_data->subtract(m_data->pointsRepsBuf,centerA,m_data->pointsRepsBuf,sizeof(T),sizeReps);
-      m_data->getClosestPoints(m_data->centeredABuf,m_data->pointsRepsBuf,m_data->closestRepsABuf,sizeof(T),sizeA,sizeReps);
-      m_data->buildRepDB(m_data->centeredABuf, m_data->closestRepsABuf, m_data->countersBuf, m_data->repDataBaseBuf,repWidth,sizeof(T),sizeA,sizeReps);
-      for(int i = 0; i < maxIterations; i++) {
-        m_data->getRotatedPoints(m_data->centeredBBuf, m_data->pointsBRotatedBuf,rotation.inv().data(),sizeof(T),sizeB);
-        m_data->getClosestPoints(m_data->pointsBRotatedBuf,m_data->pointsRepsBuf,m_data->closestRepsBBuf,sizeof(T),sizeB,sizeReps);
-        m_data->getClosestPointsInDB(m_data->pointsBRotatedBuf,m_data->closestRepsBBuf,m_data->centeredABuf,m_data->repDataBaseBuf,m_data->countersBuf,m_data->closestPointsBuf,sizeof(T),sizeB,repWidth);
-        //check the error to see if we can stop
-        float prevError = error;
-        error = m_data->getError(m_data->pointsBRotatedBuf,m_data->centeredABuf,m_data->closestPointsBuf,sizeof(T),sizeB);
-        //only copy a new rotation if its better then the old one
-        if(error<lowestError) {
-          lowestError = error;
-          for(int i = 0; i < MATRIX_SIZE; i++) {
-            transformMatrix[i] = rotation.data()[i];
-          }
-        }
-        if(((prevError - error) < errorDeltaThreshold) || (error < errorThreshold))break;
-        DynMatrix<float> h(MATRIX_WIDTH,MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
-        m_data->getCovarianceSum(m_data->pointsBRotatedBuf,m_data->centeredABuf,m_data->closestPointsBuf,h.data(),sizeof(T),sizeB);
-        h.svd(u,s,v);
-        r = u*v.transp();
-        if(r.det() < 0) {
-          r.at(2,0) *= -1;
-          r.at(2,1) *= -1;
-          r.at(2,2) *= -1;
-        }
-        rotation = r * rotation;
-      }
-      char translation[sizeof(T)];
-      m_data->subFunc(centerB,centerA,translation);
-      Vec4 trans = m_data->toVectorFunc(translation);
-      transformMatrix[0*4+3] = trans[0];
-      transformMatrix[1*4+3] = trans[1];
-      transformMatrix[2*4+3] = trans[2];
-      free(pointsReps);
-    }
-    template<typename T>
-    IterativeClosestPoint<T>::IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point)) {
-        m_data = new Data(clCode, localSize2Dx, localSize2Dy, localSize1D, subFunc, toVectorFunc);
-    }
-#else
-    template<class T>
-    struct IterativeClosestPoint<T>::Data{};
+//      for(int i = 0; i < MATRIX_SIZE; i++) {
+//        rotation.data()[i] = initialTransform[i];
+//      }
+//      //ignore translation because it is calculated internally
+//      rotation(3,0) = 0;
+//      rotation(3,1) = 0;
+//      rotation(3,2) = 0;
+//      //init output rotation
+//      for(int i = 0; i < MATRIX_SIZE; i++) {
+//        transformMatrix[i] = rotation.data()[i];
+//      }
+//      m_data->loadPoints(pointsA,pointsB,sizeof(T),sizeA,sizeB);
+//      m_data->getCenter(m_data->pointsABuf,m_data->centerABuf,centerA,sizeof(T),sizeA);
+//      m_data->getCenter(m_data->pointsBBuf,m_data->centerBBuf,centerB,sizeof(T),sizeB);
+//      m_data->subtract(m_data->pointsABuf,centerA,m_data->centeredABuf,sizeof(T),sizeA);
+//      m_data->subtract(m_data->pointsBBuf,centerB,m_data->centeredBBuf,sizeof(T),sizeB);
+//      //copy the representatives
+//      for(int i = 0; i < sizeReps; i++) {
+//        int index = rand()%sizeA;
+//        pointsReps[i] = pointsA[index];
+//      }
+//      m_data->loadReps(pointsReps,sizeof(T), sizeA, sizeB ,sizeReps, repWidth);
+//      m_data->subtract(m_data->pointsRepsBuf,centerA,m_data->pointsRepsBuf,sizeof(T),sizeReps);
+//      m_data->getClosestPoints(m_data->centeredABuf,m_data->pointsRepsBuf,m_data->closestRepsABuf,sizeof(T),sizeA,sizeReps);
+//      m_data->buildRepDB(m_data->centeredABuf, m_data->closestRepsABuf, m_data->countersBuf, m_data->repDataBaseBuf,repWidth,sizeof(T),sizeA,sizeReps);
+//      for(int i = 0; i < maxIterations; i++) {
+//        m_data->getRotatedPoints(m_data->centeredBBuf, m_data->pointsBRotatedBuf,rotation.inv().data(),sizeof(T),sizeB);
+//        m_data->getClosestPoints(m_data->pointsBRotatedBuf,m_data->pointsRepsBuf,m_data->closestRepsBBuf,sizeof(T),sizeB,sizeReps);
+//        m_data->getClosestPointsInDB(m_data->pointsBRotatedBuf,m_data->closestRepsBBuf,m_data->centeredABuf,m_data->repDataBaseBuf,m_data->countersBuf,m_data->closestPointsBuf,sizeof(T),sizeB,repWidth);
+//        //check the error to see if we can stop
+//        float prevError = error;
+//        error = m_data->getError(m_data->pointsBRotatedBuf,m_data->centeredABuf,m_data->closestPointsBuf,sizeof(T),sizeB);
+//        //only copy a new rotation if its better then the old one
+//        if(error<lowestError) {
+//          lowestError = error;
+//          for(int i = 0; i < MATRIX_SIZE; i++) {
+//            transformMatrix[i] = rotation.data()[i];
+//          }
+//        }
+//        if(((prevError - error) < errorDeltaThreshold) || (error < errorThreshold))break;
+//        DynMatrix<float> h(MATRIX_WIDTH,MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
+//        m_data->getCovarianceSum(m_data->pointsBRotatedBuf,m_data->centeredABuf,m_data->closestPointsBuf,h.data(),sizeof(T),sizeB);
+//        h.svd(u,s,v);
+//        r = u*v.transp();
+//        if(r.det() < 0) {
+//          r.at(2,0) *= -1;
+//          r.at(2,1) *= -1;
+//          r.at(2,2) *= -1;
+//        }
+//        rotation = r * rotation;
+//      }
+//      char translation[sizeof(T)];
+//      m_data->subFunc(centerB,centerA,translation);
+//      Vec4 trans = m_data->toVectorFunc(translation);
+//      transformMatrix[0*4+3] = trans[0];
+//      transformMatrix[1*4+3] = trans[1];
+//      transformMatrix[2*4+3] = trans[2];
+//      free(pointsReps);
+//    }
+//    template<typename T>
+//    IterativeClosestPoint<T>::IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point)) {
+//        m_data = new Data(clCode, localSize2Dx, localSize2Dy, localSize1D, subFunc, toVectorFunc);
+//    }
+//#else
+//    template<class T>
+//    struct IterativeClosestPoint<T>::Data{};
 
-    template<typename T>
-    void IterativeClosestPoint<T>::icp(const char* pointsA, const char* pointsB, int sizeA, int sizeB, size_t typeSize, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix, void (*subFunc)(const char * a, const char *b, char *c), void (*neutralElementFunc)(char * e), math::Vec4 (*toVectorFunc)(const char* point)){}
-    template<typename T>
-    IterativeClosestPoint<T>::IterativeClosestPoint(const std::string &clCode, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point)) {}
-    }
-#endif
+//    template<typename T>
+//    void IterativeClosestPoint<T>::icp(const char* pointsA, const char* pointsB, int sizeA, int sizeB, size_t typeSize, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix, void (*subFunc)(const char * a, const char *b, char *c), void (*neutralElementFunc)(char * e), math::Vec4 (*toVectorFunc)(const char* point)){}
+//    template<typename T>
+//    IterativeClosestPoint<T>::IterativeClosestPoint(const std::string &clCode, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point)) {}
+//    }
+//#endif
 
 //     template<typename T>
 //     IterativeClosestPoint<Vec4> IterativeClosestPoint<T>::icpVec4() {

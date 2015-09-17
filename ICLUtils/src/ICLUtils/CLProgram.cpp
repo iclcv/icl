@@ -32,9 +32,8 @@
 #include <ICLUtils/StringUtils.h>
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 
-#include <CL/cl.h>
-#undef CL_VERSION_1_2
-#include <CL/cl.hpp>
+#include <ICLUtils/CLIncludes.h>
+
 #include <iostream>
 #include <sstream>
 #include <exception>

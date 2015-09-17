@@ -31,7 +31,7 @@
 SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CoplanarPointPoseEstimator.cpp
             src/ICLGeom/ICP.cpp
-	    src/ICLGeom/ICP3D.cpp
+            src/ICLGeom/ICP3D.cpp
             src/ICLGeom/PlaneEquation.cpp
             src/ICLGeom/PointCloudNormalEstimator.cpp
             src/ICLGeom/PoseEstimator.cpp
@@ -49,12 +49,7 @@ SET(SOURCES src/ICLGeom/Camera.cpp
             src/ICLGeom/CutfreeAdjacencyFeatureExtractor.cpp
             src/ICLGeom/CoPlanarityFeatureExtractor.cpp
             src/ICLGeom/CurvatureFeatureExtractor.cpp
-            src/ICLGeom/RemainingPointsFeatureExtractor.cpp
-            src/ICLGeom/FeatureGraphSegmenter.cpp
-            src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
-            src/ICLGeom/PointCloudSegment.cpp       
-            src/ICLGeom/PCDFileGrabber.cpp
-            src/ICLGeom/Primitive3DFilter.cpp)
+            src/ICLGeom/RemainingPointsFeatureExtractor.cpp)
 
 SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PointCloudNormalEstimator.h
@@ -72,7 +67,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/PrimitiveType.h
             src/ICLGeom/SceneObjectBase.h
             src/ICLGeom/ICP.h
-	    src/ICLGeom/ICP3D.h
+            src/ICLGeom/ICP3D.h
             src/ICLGeom/RGBDMapping.h
             src/ICLGeom/Plot3D.h          
             src/ICLGeom/PlotHandle3D.h
@@ -89,12 +84,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/CutfreeAdjacencyFeatureExtractor.h
             src/ICLGeom/CoPlanarityFeatureExtractor.h
             src/ICLGeom/CurvatureFeatureExtractor.h
-            src/ICLGeom/RemainingPointsFeatureExtractor.h
-            src/ICLGeom/FeatureGraphSegmenter.h
-            src/ICLGeom/ConfigurableDepthImageSegmenter.h
-            src/ICLGeom/PointCloudSegment.h
-            src/ICLGeom/PCDFileGrabber.h
-            src/ICLGeom/Primitive3DFilter.h)
+            src/ICLGeom/RemainingPointsFeatureExtractor.h)
 
 
 IF(QT_FOUND)
@@ -119,7 +109,12 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.cpp
                        src/ICLGeom/PlotWidget3D.cpp
                        src/ICLGeom/ShaderUtil.cpp
-                       src/ICLGeom/EuclideanBlobSegmenter.cpp)
+                       src/ICLGeom/EuclideanBlobSegmenter.cpp
+                       src/ICLGeom/FeatureGraphSegmenter.cpp
+                       src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
+                       src/ICLGeom/PointCloudSegment.cpp       
+                       src/ICLGeom/PCDFileGrabber.cpp
+                       src/ICLGeom/Primitive3DFilter.cpp)
  
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
@@ -143,7 +138,12 @@ IF(QT_FOUND)
                        src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
                        src/ICLGeom/ShaderUtil.h
-                       src/ICLGeom/EuclideanBlobSegmenter.h)
+                       src/ICLGeom/EuclideanBlobSegmenter.h
+                       src/ICLGeom/FeatureGraphSegmenter.h
+                       src/ICLGeom/ConfigurableDepthImageSegmenter.h
+                       src/ICLGeom/PointCloudSegment.h
+                       src/ICLGeom/PCDFileGrabber.h
+                       src/ICLGeom/Primitive3DFilter.h)
 ENDIF()
 
 IF(PCL_FOUND)
@@ -207,7 +207,7 @@ ENDIF()
 ADD_LIBRARY(ICLGeom SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
-IF(QT4_FOUND)
+IF(QT_FOUND)
   TARGET_LINK_LIBRARIES(ICLGeom ICLQt
                         ${ICLGeom_3RDPARTY_LIBRARIES})
 ELSE()
@@ -236,7 +236,7 @@ INSTALL(TARGETS ICLGeom
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
 
 # ---- PKG-config ----
-IF(QT4_FOUND)
+IF(QT_FOUND)
   CREATE_PKGCONFIG(NAME ICLGeom
                    LIBRARY_DEPS ${ICLGeom_3RDPARTY_LIBRARIES}
                    PKGCONFIG_DEPS ICLQt-${SO_VERSION})

@@ -59,6 +59,10 @@
 #include <map>
 #include <ICLIO/FileList.h>
 
+#if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
+#include <QtCore/QDir>
+#endif
+
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -192,7 +196,20 @@ namespace icl{
       // {{{ open
 
       if(File(pattern).isDirectory()){
+#if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
+		  std::vector<std::string> files;
+		 QDir dir(pattern.c_str());
+		 QStringList es = dir.entryList();
+		 for (int i = 0; i < es.size(); ++i){
+			 std::string ei = es[i].toLatin1().data();
+			 if (!File(ei).isDirectory()){
+				 files.push_back(ei);
+			 }
+		 }
+		 m_data->oFileList = FileList(files);
+#else
         m_data->oFileList = pattern+"/*";
+#endif
         if(!m_data->oFileList.size()){
           throw FileNotFoundException(pattern);
         }
@@ -209,6 +226,9 @@ namespace icl{
           throw FileNotFoundException("didn't find any file whose format is supported");
         }
       }else{
+#ifdef ICL_SYSTEM_WINDOWS
+		  throw ICLException("Error: file globbing is thus far not supported under windows. You can, however use a directory-name if possible");
+#endif
         m_data->oFileList = pattern;
         if(!m_data->oFileList.size()){
           throw FileNotFoundException(pattern);

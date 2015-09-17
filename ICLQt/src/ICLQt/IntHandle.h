@@ -32,10 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandle.h>
-
-/** \cond */
-class QLineEdit;
-/** \endcond */
+#include <QtWidgets/QLineEdit>
 
 namespace icl{
   namespace qt{

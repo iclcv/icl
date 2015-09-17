@@ -130,7 +130,7 @@ namespace icl {
       CREATE_IPP_FUNCTIONS_FOR_OP(and,AndC);
       CREATE_IPP_FUNCTIONS_FOR_OP(or,OrC);
       CREATE_IPP_FUNCTIONS_FOR_OP(xor,XorC);
-  //fallback für 16s TODO
+  //fallback f16s TODO
   #undef CREATE_IPP_FUNCTIONS_FOR_OP  
       
   #endif
