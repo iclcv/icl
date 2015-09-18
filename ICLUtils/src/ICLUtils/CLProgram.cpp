@@ -37,6 +37,8 @@
 #include <iostream>
 #include <sstream>
 #include <exception>
+#include <set>
+#include <map>
 
 using namespace std;
 namespace icl {
@@ -48,7 +50,8 @@ namespace icl {
       cl::Program program;
       cl::Context context;
       cl::Device device;
-      cl::CommandQueue cmdQueue;
+	  cl::CommandQueue cmdQueue;
+	  std::map< cl_channel_order,set<cl_channel_type> > supported_channel_orders;
       void initProgram(const string &sourceText) throw (CLBuildException) {
         cl::Program::Sources sources(1, std::make_pair(sourceText.c_str(), 0)); //kernel source
         program = cl::Program(context, sources);//program (bind context and source)
@@ -71,6 +74,7 @@ namespace icl {
           deviceList.push_back(device);
           context = cl::Context(deviceList);//select GPU device
           cmdQueue = cl::CommandQueue(context, device, 0);//create command queue
+		  prepareSupportedImageFormats();
         } catch (cl::Error& error) { //catch openCL errors
           throw CLInitException(CLException::getMessage(error.err(), error.what()));
         }
@@ -95,7 +99,23 @@ namespace icl {
         string errorMsg = "No appropriate OpenCL device found for type ";
         errorMsg = errorMsg.append(deviceTypeToString(deviceType));
         throw CLInitException(errorMsg);
-      }
+	  }
+
+	  void prepareSupportedImageFormats() {
+			std::vector<cl::ImageFormat> formats;
+			cl_mem_flags memFlags = CL_MEM_READ_WRITE;
+			context.getSupportedImageFormats(memFlags,CL_MEM_OBJECT_IMAGE2D,&formats);
+			supported_channel_orders.clear();
+			cl_channel_order current_order = 0;
+			for(uint i = 0; i < formats.size(); ++i) {
+				cl::ImageFormat &format = formats[i];
+				if (current_order != format.image_channel_order) {
+					current_order = format.image_channel_order;
+					supported_channel_orders[current_order] = std::set<cl_channel_type>();
+				}
+				supported_channel_orders[current_order].insert(format.image_channel_data_type);
+			}
+	  }
 
       static void listPlatformInfos(cl::Platform & platform) {
         std::string value;
@@ -192,8 +212,8 @@ namespace icl {
         return CLBuffer(context, cmdQueue, accessMode, size, src);
       }
 
-      CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException){
-          return CLImage2D(context, cmdQueue, accessMode, width, height, depth, src);
+	  CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException){
+		  return CLImage2D(context, cmdQueue, accessMode, width, height, depth, num_channel, src, supported_channel_orders);
       }
       CLKernel createKernel(const string &id) throw (CLKernelException) {
         return CLKernel(id, program, cmdQueue);
@@ -238,6 +258,7 @@ namespace icl {
       impl->program = other.impl->program;
       impl->context = other.impl->context;
       impl->device = other.impl->device;
+	  impl->supported_channel_orders = other.impl->supported_channel_orders;
     }
 
     CLProgram const& CLProgram::operator=(CLProgram const& other){
@@ -246,6 +267,7 @@ namespace icl {
       impl->program = other.impl->program;
       impl->context = other.impl->context;
       impl->device = other.impl->device;
+	  impl->supported_channel_orders = other.impl->supported_channel_orders;
       return *this;
     }
     CLProgram::CLProgram(){
@@ -263,10 +285,12 @@ namespace icl {
     }
 
     CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) throw(CLBufferException){
-        return impl->createImage2D(accessMode, width, height, depth, src);
+		return impl->createImage2D(accessMode, width, height, depth, 1, src);
     }
 
-
+	CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) throw(CLBufferException){
+		return impl->createImage2D(accessMode, width, height, depth, num_channel, src);
+	}
 
     CLKernel CLProgram::createKernel(const string &id) throw (CLKernelException) {
       return impl->createKernel(id);

@@ -309,6 +309,8 @@ namespace icl {
           */
       CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException);
 
+	  CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException);
+
       /// extract a kernel from the program
       /** Kernels in the CLProgram's source code have to be qualified with the
           __kernel qualifier. The kernel (aka function) name in the OpenCL source code

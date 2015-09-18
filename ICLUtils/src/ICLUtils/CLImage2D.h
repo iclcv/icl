@@ -35,6 +35,9 @@
 #include <ICLUtils/Rect.h>
 #include <string>
 
+#include <set>
+#include <map>
+
 /** \cond */
 namespace cl {
     class Image2D;
@@ -54,20 +57,22 @@ namespace icl {
             Impl *impl;//!< internal implemetation
 
             /// private constructor (image can only be created by CLProgram instances)
-            CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
-                    const string &accessMode, const size_t width, const size_t height,
-                    int depth, const void *src=NULL) throw (CLBufferException);
+			CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
+					const string &accessMode, const size_t width, const size_t height,
+					int depth, int num_channel, const void *src=NULL, std::map< uint, std::set<uint> > const
+					  &supported_formats = std::map< uint, std::set<uint> >()) throw (CLBufferException);
 
             /// provides access to the underlying cl-Image2D object
             cl::Image2D getImage2D();
-            const cl::Image2D getImage2D() const;
+			const cl::Image2D getImage2D() const;
 
-        public:
+		public:
+
             friend class CLProgram;//!< for tight integration with CLProgram instances
             friend class CLKernel;//!< for tight integration with CLKernel instances
 
             /// default constructor (creates null instance)
-            CLImage2D();
+			CLImage2D();
 
             /// copy constructor (always performs shallow copy)
             CLImage2D(const CLImage2D& other);

@@ -42,8 +42,6 @@
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
 
-#include <ICLUtils/StackTimer.h>
-
 
 namespace icl {
 
@@ -117,8 +115,8 @@ public:
 //				std::copy(ch.beginROI(),ch.endROI(),buff);
 				if (reset_buffers) {
 					//image_buffer_in = program.createImage2D("r",w,h,core::depth8u,buff);
-					image_buffer_in = program.createImage2D("r",w,h,core::depth8u,&ch(0,0));
-					image_buffer_out = program.createImage2D("w",w,h,core::depth8u,0);
+					image_buffer_in = program.createImage2D("r",w,h,core::depth8u,1,&ch(0,0));
+					image_buffer_out = program.createImage2D("w",w,h,core::depth8u,1,0);
 				} else {
 //					image_buffer_in.write(buff);
 					image_buffer_in.write(&ch(0,0));
@@ -146,15 +144,15 @@ public:
 					/*in_r = program.createImage2D("r",w,h,core::depth8u,buff_r);
 					in_g = program.createImage2D("r",w,h,core::depth8u,buff_g);
 					in_b = program.createImage2D("r",w,h,core::depth8u,buff_b);*/
-					in_r = program.createImage2D("r",w,h,core::depth8u,&r(0,0));
-					in_g = program.createImage2D("r",w,h,core::depth8u,&g(0,0));
-					in_b = program.createImage2D("r",w,h,core::depth8u,&b(0,0));
-					out_r = program.createImage2D("w",w,h,core::depth8u,0);
-					out_g = program.createImage2D("w",w,h,core::depth8u,0);
-					out_b = program.createImage2D("w",w,h,core::depth8u,0);
-					lab_l = program.createImage2D("rw",w,h,core::depth8u,0);
-					lab_a = program.createImage2D("rw",w,h,core::depth8u,0);
-					lab_b = program.createImage2D("rw",w,h,core::depth8u,0);
+					in_r = program.createImage2D("r",w,h,core::depth8u,1,&r(0,0));
+					in_g = program.createImage2D("r",w,h,core::depth8u,1,&g(0,0));
+					in_b = program.createImage2D("r",w,h,core::depth8u,1,&b(0,0));
+					out_r = program.createImage2D("w",w,h,core::depth8u,1,0);
+					out_g = program.createImage2D("w",w,h,core::depth8u,1,0);
+					out_b = program.createImage2D("w",w,h,core::depth8u,1,0);
+					lab_l = program.createImage2D("rw",w,h,core::depth8u,1,0);
+					lab_a = program.createImage2D("rw",w,h,core::depth8u,1,0);
+					lab_b = program.createImage2D("rw",w,h,core::depth8u,1,0);
 				} else {
 					/*in_r.write(buff_r);
 					in_g.write(buff_g);
@@ -205,8 +203,8 @@ public:
 			//std::copy(ch.beginROI(),ch.endROI(),buff);
 			if (reset_buffers) {
 				//image_buffer_in = program.createImage2D("r",w,h,core::depth32f,buff);
-				image_buffer_in = program.createImage2D("r",w,h,core::depth32f,&ch(0,0));
-				image_buffer_out = program.createImage2D("w",w,h,core::depth32f,0);
+				image_buffer_in = program.createImage2D("r",w,h,core::depth32f,1,&ch(0,0));
+				image_buffer_out = program.createImage2D("w",w,h,core::depth32f,1,0);
 			} else {
 				//image_buffer_in.write(buff);
 				image_buffer_in.write(&ch(0,0));
