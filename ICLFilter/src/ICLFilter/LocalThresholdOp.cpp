@@ -87,7 +87,7 @@ namespace icl{
           */
       addProperty("mask size","range:slider","[1,100]:1",str(maskSize));
       addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
-      addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
+      addProperty("gamma slope","range:slider","[-255,255]",str(gammaSlope));
       addProperty("algorithm","menu","region mean,tiled linear,tiled NN","region mean");
       addProperty("actually used mask size","info","","0");
       addProperty("invert output","flag","",false);

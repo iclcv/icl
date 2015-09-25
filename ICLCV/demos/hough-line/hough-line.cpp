@@ -48,49 +48,31 @@ struct Mouse : public MouseHandler {
 
 void init(){
   edgeImage.fill(0);
+
+  hld.setConfigurableID("hld");
   
   gui << Draw().handle("view").minSize(32,24)
       << ( VSplit()
            << Image().handle("lut").label("hough space").minSize(16,12)
            << ( VBox() 
                 << Button("load image").handle("load")
-                << Image().handle("inhibit").label("local inhibition image").minSize(8,6)
-                << Slider(0,100,1).out("maxlines").label("max lines")
-                << FSlider(0.01,1,0.03).out("dRho").label("rho sampling step")
-                << FSlider(0.1,10,2).out("dR").label("r sampling step")
-                << FSlider(2,100,10).out("rInhib").label("r inhibition radius")
-                << FSlider(0.05,2,0.3).out("rhoInhib").label("rho inhibition radius")
-                << ( HBox() 
-                     << Button("off","!on").out("gaussianInhibition").label("gaussian inhib")
-                     << Button("off","!on").out("blurHoughSpace").label("blur hough space")
-                     )
-                << ( HBox() 
-                     << Button("off","!on").out("dilateEntries").label("dilate entries")
-                     << Button("off","!on").out("blurredSampling").label("blurred sampling")
-                     )
+                << Spinner(0,100,1).out("maxlines").label("max lines")
+                << Prop("hld")
                 )
-
            )
       << Show();
 
   gui["view"].install(new Mouse);
   gui["view"] = Img8u(Size::VGA,1);
   gui["view"].render();
+
+  ImageHandle lut = gui["lut"];
+  (*lut)->setRangeMode(ICLWidget::rmAuto);
+  (*lut)->setFitMode(ICLWidget::fmFit);
 }
 
 void run(){
   int maxlines = gui["maxlines"];
-  float dRho = gui["dRho"];
-  float dR = gui["dR"];
-  float rInhib = gui["rInhib"];
-  float rhoInhib = gui["rhoInhib"];
-  ImageHandle lut = gui["lut"];
-  ImageHandle inhibit = gui["inhibit"];
-  DrawHandle view = gui["view"];
-  bool gaussianInhibition = gui["gaussianInhibition"];
-  bool blurHoughSpace = gui["blurHoughSpace"];
-  bool dilateEntries = gui["dilateEntries"];
-  bool blurredSampling = gui["blurredSampling"];
   
   static ButtonHandle load = gui["load"];
   if(load.wasTriggered()){
@@ -99,26 +81,16 @@ void run(){
     }catch(...){}
   }
 
-  int w = edgeImage.getWidth(), h = edgeImage.getHeight();
-  hld.init(dRho,dR,Range32f(0,sqrt(w*w+h*h)),rInhib,rhoInhib,
-           gaussianInhibition,blurHoughSpace,dilateEntries,blurredSampling);
-  hld.clear();
   hld.add(edgeImage);
 
-  std::vector<float> sig;
-  std::vector<StraightLine2D> ls = hld.getLines(maxlines,sig);
 
-  (*lut)->setRangeMode(ICLWidget::rmAuto);
-  (*lut)->setFitMode(ICLWidget::fmFit);
+  std::vector<float> sig;
+  std::vector<StraightLine2D> ls = hld.getLines(maxlines,sig,false);
+
+  ImageHandle lut = gui["lut"];
+  DrawHandle view = gui["view"];
   lut = hld.getImage();
-  lut.render();
-  
-  
-  if(gaussianInhibition){
-    (*inhibit)->setRangeMode(ICLWidget::rmAuto);
-    (*inhibit)->setFitMode(ICLWidget::fmFit);
-    inhibit = hld.getInhibitionMap();
-  }
+  hld.reset();
   
   view = edgeImage;
 

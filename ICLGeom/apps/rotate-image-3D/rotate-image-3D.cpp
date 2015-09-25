@@ -71,7 +71,14 @@ void run(){
   }else{
     grabber.grab()->convert(&image);
     if(pa("-o")){
-      output.send(&scene.render(0));
+      const Img8u &image = scene.render(0);
+      if(pa("-d")){
+        static Img8u buf(pa("-d").as<Size>(),formatRGB);
+        image.scaledCopyROI(&buf,interpolateRA);
+        output.send(&buf);
+      }else{
+        output.send(&image);
+      }
     }
     gui["draw"].render();
     Thread::msleep(10);
@@ -83,7 +90,7 @@ void init(){
   if(pa("-o")){
     output.init(pa("-o"));
   }
-  gui << Draw3D().handle("draw").minSize(20,15) << Show();
+ 
 
   grabber.grab()->convert(&image);  
   obj = new ImgObj;
@@ -103,6 +110,8 @@ void init(){
     scene.getCamera(0).setResolution(pa("-r"));
   }
 
+  gui << Draw3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
+  
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));
   
@@ -123,7 +132,11 @@ int main(int n, char **ppc){
   ("-i","icl typical input specification")
   ("-o","generic image output output specification (e.g. -o sm xyz) writes images to shared memory segment \"xyz\"")
   ("-s","if given, the image will only be grabbed once")
-  ("-r","defines the rendering camera resolution, overwrites the resolution of the camera provided by -cam");
+  ("-r","defines the rendering camera resolution, overwrites the resolution of the camera provided by -cam")
+  ("-d","downsampling resolution for reduced aliasing effects when using low-res output");
 
-  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s -rendering-camera|-c(camerafile) -resolution|-r(size)" ,init,run).exec();
+  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s "
+                "-rendering-camera|-c(camerafile) "
+                "-resolution|-r(size) "
+                "-downsampling-resolution|-d(size)" ,init,run).exec();
 }
