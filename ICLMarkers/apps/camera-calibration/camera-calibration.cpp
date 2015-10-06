@@ -29,38 +29,23 @@
 **                                                                 **
 ********************************************************************/
 
+#include "CameraCalibrationUtils.h"
+
 #include <ICLQt/Common.h>
 #include <ICLGeom/Scene.h>
 #include <ICLMarkers/FiducialDetector.h>
-#include <ICLGeom/GridSceneObject.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
+#include <ICLQt/AdjustGridMouseHandler.h>
+#include <ICLGeom/CoplanarPointPoseEstimator.h>
 
 #include <QMessageBox>
 #include <fstream>
 #include <ICLUtils/ConfigFile.h>
 
-struct PossibleMarker{
-  PossibleMarker():loaded(false){}
-  PossibleMarker(int cfgFileIndex,const Vec &v):loaded(true),center(v),hasCorners(false),cfgFileIndex(cfgFileIndex){}
-  PossibleMarker(int cfgFileIndex,const Vec &v, const Vec &a, const Vec &b, const Vec &c, const Vec &d):
-    loaded(true),center(v),hasCorners(true),cfgFileIndex(cfgFileIndex){
-    corners[0] = a;
-    corners[1] = b;   
-    corners[2] = c;
-    corners[3] = d;
-  }
-  bool loaded;
-  Vec center;
-  bool hasCorners;
-  Vec corners[4];
-  int cfgFileIndex;
-};
-
-enum MarkerType {
-  BCH,
-  AMOEBA
-};
-
+typedef CameraCalibrationUtils CCU;
+typedef CCU::PossibleMarker PossibleMarker;
+typedef CCU::MarkerType MarkerType;
+typedef CCU::FoundMarker FoundMarker;
 
 HSplit gui;
 GUI relTransGUI;
@@ -69,518 +54,73 @@ GUI planeOptionGUI;
 
 Scene scene;
 GenericGrabber grabber;
-
 Point32f currentMousePos;
-bool havePlane = false;
 bool haveAnyCalibration = false;
+CCU::CalibFileData calibFileData;
 
 
-SmartPtr<FiducialDetector> fds[2];
+AdjustGridMouseHandler gridAdjuster;
 
-std::vector<PossibleMarker> possible[2] = {
-  std::vector<PossibleMarker>(4096), 
-  std::vector<PossibleMarker>(4096)
-};
-
-FiducialDetector *lastFD = 0; // used for visualization
-SceneObject *planeObj = 0;
-
-
-
-//std::vector<std::pair<SceneObject*,Mat> > calibObjs;
-
-std::string sample= ("<config>\n"
-                     "  <!-- A grid is a regular 1D or 2D grid of markers in 3D space.\n"
-                     "       Each grid is defined by the (x,y,z)-offset of the upper left marker,\n"
-                     "       and by two direction vectors 'x-direction' and 'y-direction'. \n"
-                     "       A grid marker at grid position (i,j) is located at \n"
-                     "       offset + x-direction*i + y-direction*j\n"
-                     "       The grid markers are assumed to be in the defined marker-range;\n"
-                     "       the markers are distributed in row-major order. Possible marker\n"
-                     "       types are 'bch' and 'amoeba'. If the marker type is bch, not only\n"
-                     "       the marker centers, but also the markers corners are used as\n"
-                     "       reference points. -->\n"
-                     "  <section id=\"grid-0\">\n"
-                     "      <data id=\"dim\" type=\"string\">(NumXCells)x(NumYCells)</data>\n"
-                     "      <data id=\"offset\" type=\"string\">x,y,z</data>\n"
-                     "      <data id=\"x-direction\" type=\"string\">dx1,dy1,dz1</data>\n"
-                     "      <data id=\"y-direction\" type=\"string\">dx2,dy2,dz2</data>\n"
-                     "      <data id=\"marker-type\" type=\"string\">amoeba|bch</data>\n"
-                     "      <data id=\"marker-ids\" type=\"string\">[minID,maxID]</data>\n"
-                     "   </section>\n"
-                     "    <!-- more grids with raising indices (also index 0 is optional)-->\n"
-                     "\n"
-                     "  <!-- For simplicity, 1 by 1 grids (i.e. single markers) can be defined\n"
-                     "       in a simpler way. Here, less information needs to be given, however\n"
-                     "       it is important to mention, that the marker corners can only be used\n"
-                     "       for grids. -->\n"
-                     "   <section id=\"marker-0\">\n"
-                     "      <data id=\"marker-type\" type=\"string\">amoeba|bch</data>\n"
-                     "      <data id=\"offset\" type=\"string\">x,y,z</data>\n"
-                     "      <data id=\"marker-id\" type=\"int\">id</data>\n"
-                     "   </section>\n"
-                     "   <!-- more markers with raising indices (also index 0 is optional)-->\n"
-                     "\n"
-                     "  <!-- If the calibration object can be placed in the scene in different distinct\n"
-                     "       ways (i.e. with differnt relative transformations), several world-tranforms can\n"
-                     "       can be defined. All defined world transforms can be chosen interactively at runtime.\n"
-                     "       By default, the first world transform is used. If no world transform is given, a dummy\n"
-                     "       transform called 'identity' is added automatically -->\n"
-                     "   <section id=\"world-transform-0\" type=\"string\">    <!-- also optional -->\n"
-                     "      <data id=\"name\" type=\"string\">example with z-offset of 100mm</data>\n"
-                     "      <data id=\"transform\" type=\"string\">\n"
-                     "          1 0 0 0\n"
-                     "          0 1 0 0\n"
-                     "          0 0 1 100\n"
-                     "          0 0 0 1\n"
-                     "      </data>\n"
-                     "   </section>\n"
-                     "   <!-- more possible world transforms (if none is given, an identity transform is added automatically -->\n"
-                     "   <data id=\"obj-file\" type=\"string\">\n"
-                     "      <!-- optional .obj file content that describes the visual shape of the calibration object -->\n"
-                     "   </data>\n"
-                     "</config>\n");
 
 void mouse(const MouseEvent &e){
   currentMousePos = e.getPos();
-}
-
-FiducialDetector *create_new_fd(MarkerType t, std::vector<std::string> &configurables, std::string &iin){
-  static const std::string ts[2] = {"bch","amoeba"};
-  FiducialDetector *fd = new FiducialDetector(ts[t]);
-  fd->setConfigurableID(ts[t]);
-  configurables.push_back(ts[t]);
-  iin = fd->getIntermediateImageNames();
-  fd->setPropertyValue("css.angle-threshold",180);
-  fd->setPropertyValue("css.curvature-cutoff",66);
-  fd->setPropertyValue("css.rc-coefficient",1);
-  fd->setPropertyValue("thresh.global threshold",-10);
-  fd->setPropertyValue("thresh.mask size",30);
-
-  if(pa("-s").as<bool>() && parse<Size>(pa("-s")) == Size::QVGA){
-    fd->setPropertyValue("pp.filter","none");
-  }
-  lastFD = fd;
-  return fd;
-}
-
-
-Mutex save_lock;
-
-static std::string get_save_filename(){
-  if(pa("-o")){
-    return *pa("-o");
-  }else{ 
-    try{
-      return saveFileDialog("*.xml","save current camera","./");
-    }catch(...){}
-  }
-  return "";
-}
-
-static void save_cam(Camera cam, const std::string &filename){
-  if(filename.length()){
-    std::ofstream s(filename.c_str());
-    if(pa("-os")){
-      Camera::RenderParams &r = cam.getRenderParams();
-      Size os = parse<Size>(*pa("-os"));
-      float fx = float(os.width) / float(r.chipSize.width);
-      float fy = float(os.height) / float(r.chipSize.height);
-      r.chipSize = os;
-      cam.setSamplingResolutionX(cam.getSamplingResolutionX()*fx);
-      cam.setSamplingResolutionY(cam.getSamplingResolutionY()*fy);
-      cam.setPrincipalPointOffset(cam.getPrincipalPointOffsetX()*fx,
-                                  cam.getPrincipalPointOffsetY()*fy);
-      r.viewport = Rect(Point::null,os);
-    }
-    s << cam;
+  if(gui["manual mode"]){
+    gridAdjuster.process(e);
   }
 }
+
+CCU::BestOfNSaver *bestOfNSaver = 0;
 
 void save(){
-  save_lock.lock();
+  bestOfNSaver->lock();
   Camera cam = scene.getCamera(0);
-  save_lock.unlock();
+  bestOfNSaver->unlock();
 
-  std::string filename = get_save_filename();
-  save_cam(cam,filename);
+  CCU::save_cam_pa(cam,"-os","-o");
 }                   
 
-struct BestOfNSaver : public QObject{
-  std::vector<Camera> cams;
-  std::vector<float> errors;
-  int n;
-  int num_end;
-  bool inited;
-  std::string filename;
-  
-  float lastBestError;
-  std::string lastFileName;
-
-  float runningBestError;
-  
-  BestOfNSaver():
-    inited(false)
-  {}
-
-  virtual bool event ( QEvent * event ){
-    ICLASSERT_RETURN_VAL(event,false);
-    if(event->type() == QEvent::User){
-      QMessageBox::information(0,"saved",("camera file has been saved to\n"+lastFileName+"\n"+"error was:"+str(lastBestError)).c_str());
-      return true;
-    }else{
-      return QObject::event(event);
-    }
-  } 
-  
-  void init(){
-    num_end = gui["save_num_frames"].as<int>();
-    Mutex::Locker l(save_lock);
-    if(inited) return;
-    filename = get_save_filename();
-    if(filename != ""){
-      cams.resize(0); cams.reserve(num_end);
-      errors.resize(0); errors.reserve(num_end);
-      n = 0;
-      inited = true;
-    }
-    runningBestError = 99999;
-  }
-  
-  void stop(){
-    Mutex::Locker l(save_lock);
-    if(inited){
-      n = num_end;
-    }
-  }
-  
-  void next_hook(const Camera &cam, float error){
-    Mutex::Locker l(save_lock);
-    if(!inited) return;
-
-    if(error > 0){
-      cams.push_back(cam);
-      errors.push_back(error);
-    }
-    ++n;
-
-    gui["save_remaining_frames"] = num_end - n;
-    if(error > 0 && (error < runningBestError)){
-      runningBestError = error;
-    }
-    gui["save_best_error"] = runningBestError;
-    
-    if(n >= num_end){
-      if(!cams.size()){
-        QMessageBox::critical(0,"error","unable to save the best of N calibration results:\n"
-                              "all N calibration runs failed!");
-      }
-      else{
-        int best = (int)(std::min_element(errors.begin(),errors.end())-errors.begin());
-        int worst = (int)(std::max_element(errors.begin(),errors.end())-errors.begin());
-        
-        std::cout << "best error:" << errors[best] << std::endl;
-        std::cout << "worst error:" << errors[worst] << std::endl;
-        
-        save_cam(cams[best],filename);
-        lastBestError = errors[best];
-        lastFileName = filename;
-        QApplication::postEvent(this,new QEvent(QEvent::User),Qt::HighEventPriority);
-      }
-      inited = false;
-    }
-  }
-  
-} *bestOfNSaver = 0;
-
-
-static inline Vec set_3_to_1(Vec a){
-  a[2] += 1;
-  a[3] = 1;
-  return a;
+int get_n_frames(){
+  return gui["save_num_frames"];
 }
 
 void change_plane(const std::string &handle){
-  if(handle == "planeDim"){
-    if(planeOptionGUI["planeDim"].as<std::string>() == "none"){
-      planeOptionGUI["planeOffset"].disable();
-      planeOptionGUI["planeRadius"].disable();
-      planeOptionGUI["planeTicDist"].disable();
-      planeOptionGUI["planeColor"].disable();
-      planeOptionGUI["planeStatus"] = str("removed");
-      scene.removeObject(planeObj);
-      planeObj = 0;
-      havePlane = false;
-      return;
-    }else{
-      havePlane = true;
-      planeOptionGUI["planeOffset"].enable();
-      planeOptionGUI["planeRadius"].enable();
-      planeOptionGUI["planeTicDist"].enable();
-      planeOptionGUI["planeColor"].enable();
-    }
-  }
-  if(planeObj){
-    scene.removeObject(planeObj);
-    ICL_DELETE(planeObj);
-  }
-  
-  const std::string t = planeOptionGUI["planeDim"].as<std::string>();
-  const float offset = planeOptionGUI["planeOffset"];
-  const float radius = parse<float>(planeOptionGUI["planeRadius"]);
-  const float ticDist = planeOptionGUI["planeTicDist"];
-  const Color4D c = planeOptionGUI["planeColor"];
-
-  int n = (2*radius) / ticDist;
-  if(n * n > 1000000){
-    planeOptionGUI["planeStatus"] = str("too many nodes");
-    return;
-  }else{
-    planeOptionGUI["planeStatus"] = str("ok (") + str(n*n) + " nodes)";
-  }
-  Vec o(offset*(t=="x"),offset*(t=="y"),offset*(t=="z"),1);
-  Vec dx,dy;
-  if(t == "x"){
-    dx = Vec(0,ticDist,0,1);
-    dy = Vec(0,0,ticDist,1);
-  }else if(t == "y"){
-    dx = Vec(ticDist,0,0,1);
-    dy = Vec(0,0,ticDist,1);
-  }else{
-    dx = Vec(ticDist,0,0,1);
-    dy = Vec(0,ticDist,0,1);
-  }
-  int n2 = n/2;
-
-  planeObj = new GridSceneObject(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
-  planeObj->setColor(Primitive::line,GeomColor(c[0],c[1],c[2],c[3]));
-  planeObj->setVisible(Primitive::vertex,false);
-
-  planeObj->addVertex(set_3_to_1(o-dx*n2));
-  planeObj->addVertex(set_3_to_1(o+dx*n2));
-
-  planeObj->addVertex(set_3_to_1(o-dy*n2));
-  planeObj->addVertex(set_3_to_1(o+dy*n2));
-  
-  planeObj->addLine(n*n,n*n+1,GeomColor(255,0,0,255));
-  planeObj->addLine(n*n+2,n*n+3,GeomColor(0,255,0,255));
-
-
-  scene.addObject(planeObj);
+  CCU::change_plane(handle, planeOptionGUI, scene, calibFileData);
 }
 
-struct NamedTransform{
-  NamedTransform(){}
-  NamedTransform(const std::string &name,const Mat &t):
-    name(name),transform(t){}
-  std::string name;
-  Mat transform;
-};
-
-struct CalibFile{
-  std::string filename;
-  std::vector<NamedTransform> transforms;
-  SceneObject* obj;
-};
-
-std::vector<CalibFile> loadedFiles;
 
 void init(){
-  bestOfNSaver = new BestOfNSaver;
+  bestOfNSaver = new CCU::BestOfNSaver(get_n_frames);
 
   if( !pa("-c") || !pa("-c").n() ){
     pa_show_usage("program argument -c must be given with at least one sub-argument");
     ::exit(0); 
   }
 
-  std::vector<std::string> configurables;
-  std::string iin;
-  GUI objGUI;
-
   for(int c = 0; c <pa("-c").n(); ++c){
-    CalibFile cf;
-    cf.filename = *pa("-c",c);
-    cf.obj = 0;
-    ConfigFile cfg(cf.filename);
-    
-    std::cout << "* parsing given configuration file '" << cf.filename << "'" << std::endl;
-    
-
-
-    std::ostringstream transformNameList;    
-    for(int t=0;true;++t){
-      try{
-        const std::string name = cfg["config.world-transform-" + str(t) + ".name"].as<std::string>();
-        transformNameList << (t?",":"") << name;
-        const Mat transform = parse<Mat>(cfg["config.world-transform-"+str(t)+".transform"]);
-        cf.transforms.push_back(NamedTransform(name,transform));
-      }catch(...){
-        break;
-      }
-    }
-
-    const bool transformGiven = cf.transforms.size();
-    if(!transformGiven){
-      cf.transforms.push_back(NamedTransform("identity",Mat::id()));
-    }
-
-
-    File cff(cf.filename);
-    std::string tt = "full path: " + cf.filename;
-    int initIdx = pa("-it");
-    objGUI << ( HBox().label(cff.getBaseName()+cff.getSuffix()).minSize(1,3).maxSize(100,3)
-                << CheckBox("enable",true).out("enable-obj-"+str(c)).tooltip(tt)
-                << Combo(transformNameList.str() + (transformGiven?"":",id"),initIdx).handle("transform-obj-"+str(c)).tooltip(tt)
-                );
-
-#ifdef WIN32
-    std::string tmpFilename("tmp-obj-file.obj");
-#else
-    std::string tmpFilename("/tmp/tmp-obj-file.obj");
-#endif
-
     try{
-      std::string s;
-      try{
-        const std::string s2 = cfg["config.obj-file"].as<std::string>();
-        s = s2;
-      }catch(...){
-        throw 1;
-      }
-      {
-        std::ofstream obj(tmpFilename.c_str());
-        obj << s << std::endl;
-      }
-
-      SceneObject *o = new SceneObject(tmpFilename.c_str());
-      o->setColor(Primitive::quad,GeomColor(0,100,255,100));
-      o->setColor(Primitive::line,GeomColor(255,0,0,255));
-      o->setVisible(Primitive::line,true);
-      o->setLineWidth(2);
-      o->setTransformation(cf.transforms[0].transform);
-      scene.addObject(o);
-      o->setVisible(false);
-      cf.obj = o;
-    }catch(ICLException &e){
-      SHOW(e.what());
-    }catch(int){}
-    
-    int systemResult = system(string(ICL_SYSTEMCALL_RM).append(tmpFilename.c_str()).c_str());
-    (void)systemResult;
-    
-    enum Mode{
-      ExtractGrids,
-      ExtractSingleMarkers,
-      ExtractionDone
-    } mode = ExtractGrids;
-
-    for(int i=0;mode != ExtractionDone ;++i){
-      
-      cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");  
-      if(!cfg.contains("offset")) {
-        mode = (Mode)(mode+1);
-        i = -1;
-        continue;
-      }
-
-      Vec3 o,dx,dy,dx1,dy1;
-      Size s(1,1);
-      Size32f ms;
-      std::vector<int> markerIDs;
-      MarkerType t;
-      bool haveCorners;
-      try{
-        t = (MarkerType)(cfg["marker-type"].as<std::string>() == "amoeba");
-        o = parse<Vec3>(cfg["offset"]);
-        if(mode == ExtractGrids){
-          s = parse<Size>(cfg["dim"]);
-          dx = parse<Vec3>(cfg["x-direction"]);
-          dy = parse<Vec3>(cfg["y-direction"]);
-          dx1 = dx.normalized();
-          dy1 = dy.normalized();
-
-          markerIDs = FiducialDetectorPlugin::parse_list_str(cfg["marker-ids"].as<std::string>());
-
-          ICLASSERT_THROW((int)markerIDs.size() == s.getDim(), 
-                          ICLException("error loading configuration file at given grid " + str(i)
-                                       + ": given size " +str(s) + " is not compatible to "
-                                       + "given marker ID range "  + 
-                                       cfg["marker-ids"].as<std::string>()));
-        }else{
-          markerIDs.push_back(cfg["marker-id"].as<int>());
-        }
-        
-        if(!fds[t]) fds[t] = create_new_fd(t,configurables,iin);
-        try{ 
-          ms = parse<Size32f>(cfg["marker-size"]); 
-        } catch(...){}
-
-        fds[t]->loadMarkers(cfg["marker-ids"].as<std::string>(),t==AMOEBA ? ParamList() : ParamList("size",ms));
-
-        if(mode == ExtractGrids){
-          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker ids: {" 
-                    << markerIDs.front() << ", ..., " << markerIDs.back() << "}"  << std::endl; 
-        }else{
-          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << markerIDs[0] << std::endl; 
-        }
-
-        
-        int idIdx = 0;
-        std::vector<PossibleMarker> &lut = possible[t];
-        //  std::vector<Vec> vertices;
-        
-        haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
-
-        for(int y=0;y<s.height;++y){
-          for(int x=0;x<s.width;++x, ++idIdx){
-            int id = markerIDs[idIdx];
-            if(id == -1) continue;
-            Vec3 v = o+dx*x +dy*y;
-            if(lut[id].loaded) throw ICLException("error loading configuration file at given grid " + str(i)
-                                                  +" : the marker ID " + str(id) + " was already used before");
-            if(haveCorners){
-              Vec3 ul = v + dx1*(ms.width/2) - dy1*(ms.height/2);
-              Vec3 ur = v + dx1*(ms.width/2) + dy1*(ms.height/2);
-              Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
-              Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
-              
-              lut[id] = PossibleMarker(c,
-                                       v.resize<1,4>(1),
-                                       ul.resize<1,4>(1),
-                                       ur.resize<1,4>(1),
-                                       ll.resize<1,4>(1),
-                                       lr.resize<1,4>(1));
-            }else{
-              lut[id] = PossibleMarker(c,Vec(v[0],v[1],v[2],1));
-            }
-            //            vertices.push_back(cf.transforms[0].transform*Vec(v[0],v[1],v[2],1));
-          }
-        }
-      }catch(ICLException &e){
-        ERROR_LOG("Error parsing xml configuration file: '" << *pa("-c",c) << "': " << e.what());
-        continue;
-      }
+      CCU::CalibFile cf = CCU::parse_calib_file(*pa("-c",c),c,calibFileData);
+      calibFileData.loadedFiles.push_back(cf);
+      scene.addObject(cf.obj);
+    }catch(std::runtime_error &e){
+      ERROR_LOG("Error parsing calibration object file " + *pa("-c",c) + ": '" + str(e.what()) + "'");
     }
-    loadedFiles.push_back(cf);
   }
   
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
-#ifdef OLD_GUI  
-  gui << "draw3D()[@handle=draw@minsize=32x24]";
-#endif
   gui << Draw3D().handle("draw").minSize(32,24);
   
-  markerDetectionOptionGUI = Tab(cat(configurables,","));
-  for(unsigned int i=0;i<configurables.size();++i){
-    markerDetectionOptionGUI << Prop(configurables[i]);
+  markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
+
+  for(unsigned int i=0;i<calibFileData.configurables.size();++i){
+    markerDetectionOptionGUI << Prop(calibFileData.configurables[i]);
   }
 
   gui << ( VBox().minSize(14,28).maxSize(14,100)
            << (VBox().label("visualization").minSize(1,5)
                << ( HBox().maxSize(100,3).minSize(1,3) 
-                    << Combo(iin).handle("iin").label("visualized image")
+                    << Combo(calibFileData.iin).handle("iin").label("visualized image")
                     << Slider(0,255,128).out("objAlpha").label("object-alpha")
                     )
                << ( HBox().maxSize(100,3) 
@@ -588,13 +128,19 @@ void init(){
                     << CheckBox("show CS",false).out("showCS")
                     )
                )
-           << ( HBox().label("more options").minSize(1,3).maxSize(100,3)
-                << Button("plane").handle("show-plane-options")
-                << Button("markers").handle("show-marker-detection-options")
-                << Button("rel. Transf.").handle("showRelTransGUI")
+           << ( VBox().label("more options").minSize(1,6).maxSize(100,6)
+                << ( HBox().maxSize(99,2)
+                     << Button("plane").handle("show-plane-options")
+                     << Button("markers").handle("show-marker-detection-options")
+                     )
+                << ( HBox().maxSize(99,2)
+                     << Button("rel. Transf.").handle("showRelTransGUI")
+                     << CamCfg()
+                     )
+                << CheckBox("manually define marker grids").handle("manual mode")
                 )
            << (VScroll().label("calibration objects") 
-               << objGUI
+               << calibFileData.objGUI
                )
            << (HBox().maxSize(100,3)
                << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
@@ -613,7 +159,10 @@ void init(){
            << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
            << ( VBox().maxSize(100,6).minSize(1,6) 
                 << ( HBox()
-                     << Spinner(1,10000,10).out("save_num_frames").label("# frames").tooltip("When you press save, the system will\ncapture that many frames to find\nan optimal calibration result")
+                     << Spinner(1,10000,10).out("save_num_frames").label("# frames").tooltip("When you press save, "
+                                                                                             "the system will\ncapture "
+                                                                                             "that many frames to find\nan "
+                                                                                             "optimal calibration result")
                      << Button("save").handle("save")
                      << Button("stop").handle("save_stop")
                      )
@@ -659,15 +208,12 @@ void init(){
   markerDetectionOptionGUI.create();
   gui["show-marker-detection-options"].registerCallback(utils::function(&markerDetectionOptionGUI,&GUI::switchVisibility));
   gui["show-plane-options"].registerCallback(utils::function(&planeOptionGUI, &GUI::switchVisibility));
-           
-
-  gui["save"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::init));
-  gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &BestOfNSaver::stop));
-
+  gui["save"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::init));
+  gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::stop));
+  gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
+  
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
-  
-  gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
   
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
@@ -677,52 +223,40 @@ void init(){
   
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(new MouseHandler(mouse));
-  
- 
 }
 
-struct FoundMarker{
-  FoundMarker(){}
-  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos, int cfgFileIndex):
-    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(false),cfgFileIndex(cfgFileIndex){}
-  FoundMarker(Fiducial fid, const Point32f &imagePos, const Vec &worldPos,
-              const Point32f imageCornerPositions[4],
-              const Vec worldCornerPositions[4],
-              int cfgFileIndex):
-    fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(true),cfgFileIndex(cfgFileIndex){
-    std::copy(imageCornerPositions,imageCornerPositions+4,this->imageCornerPositions);
-    std::copy(worldCornerPositions,worldCornerPositions+4,this->worldCornerPositions);
-  }
-  
-  Fiducial fid;
-  Point32f imagePos;
-  Vec worldPos;
-  bool hasCorners;
-  Point32f imageCornerPositions[4];  
-  Vec worldCornerPositions[4];
-  int cfgFileIndex;
-};
+
+inline float len_vec(const Vec3 &v){
+  return ::sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
+}
+
+inline Vec3 normalize_vec(const Vec3 &v){
+  float len = len_vec(v);
+  if(!len) return v;
+  return v * 1./len;
+}
+
 
 
 void run(){
   scene.lock();
   scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
   scene.unlock();
-
+  
   const Mat Trel = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
                                          relTransGUI["ry"].as<float>()*M_PI/4,
                                          relTransGUI["rz"].as<float>()*M_PI/4,
                                          relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
-
-  std::vector<Mat> Ts(loadedFiles.size());
+  
+  std::vector<Mat> Ts(calibFileData.loadedFiles.size());
   std::vector<bool> enabled(Ts.size());
-
-  for(unsigned int i=0;i<loadedFiles.size();++i){
+  
+  for(unsigned int i=0;i<calibFileData.loadedFiles.size();++i){
     int tidx = gui.get<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
-    Ts[i] = loadedFiles[i].transforms[tidx].transform;
+    Ts[i] = calibFileData.loadedFiles[i].transforms[tidx].transform;
     enabled[i] = gui.get<bool>("enable-obj-"+str(i));
 
-    SceneObject *calibObj = loadedFiles[i].obj;
+    SceneObject *calibObj = calibFileData.loadedFiles[i].obj;
     if(!calibObj) continue;
     calibObj->setTransformation(Trel * Ts[i]);
     const int a = gui["objAlpha"];
@@ -746,227 +280,196 @@ void run(){
     }
   } 
 
-  ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
-
-  const ImgBase *image = grabber.grab();
-
-  if(pa("-normalize-input-image")){
-    static ImgBase *normalized = 0;
-    image->deepCopy(&normalized);
-    normalized->normalizeAllChannels(Range64f(0,255));
-    
-    static Img8u normalized8u;
-    normalized->convert(&normalized8u);
-
-    image = &normalized8u;    
-  }
-
-  if(pa("-crop-and-rescale")){
-    static Rect *r = 0;
-    static ImgBase *croppedAndRescaled = 0;
-    if(!r){
-      int bx = pa("-crop-and-rescale",0);
-      int by = pa("-crop-and-rescale",1);
-      int tw = pa("-crop-and-rescale",2);
-      int th = pa("-crop-and-rescale",3);
-      
-      r = new Rect(bx,by,image->getWidth()-2*bx, image->getHeight()-2*by);
-      
-      ICLASSERT_THROW(r->width <= image->getWidth(),ICLException("clipping rect width is larger then image width"));
-      ICLASSERT_THROW(r->height <= image->getHeight(),ICLException("clipping rect height is larger then image height"));
-      ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
-      ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
-      ICLASSERT_THROW(r->right() < image->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
-      ICLASSERT_THROW(r->bottom() < image->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
-      
-      croppedAndRescaled = imgNew(image->getDepth(),Size(tw,th),image->getChannels(),image->getFormat()); 
-    }
-    const ImgBase *tmp = image->shallowCopy(*r);
-    
-    SHOW(*tmp);
-    SHOW(*croppedAndRescaled);
-    
-    tmp->scaledCopyROI(&croppedAndRescaled, interpolateLIN);
-    delete tmp;
-    image = croppedAndRescaled; 
-  }
+  const ImgBase *image = CCU::preprocess(grabber.grab());
 
   std::vector<FoundMarker> markers;
-  for(int x=0;x<2;++x){
-    if(!fds[x]) continue;
-    const std::vector<Fiducial> &fids = fds[x]->detect(image);
-    for(unsigned int i=0;i<fids.size();++i){
+  
+  bool manualMode = gui["manual mode"];
+  static bool lastManualMode = manualMode;
 
-      const PossibleMarker &p = possible[x][fids[i].getID()];
-      if(p.loaded){
-        if(p.hasCorners && fids[i].getKeyPoints2D().size() == 4){
-         const std::vector<Fiducial::KeyPoint> &kps = fids[i].getKeyPoints2D();
-          Point32f imagePositions[4] = { 
-            kps[0].imagePos, 
-            kps[1].imagePos, 
-            kps[2].imagePos,
-            kps[3].imagePos 
-          };
-          
-          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center,
-                                        imagePositions,p.corners,p.cfgFileIndex));
-        }else{
-          markers.push_back(FoundMarker(fids[i],fids[i].getCenter2D(),p.center,p.cfgFileIndex));
+  /// one list of grids per loaded file
+  static std::vector<std::vector<CCU::DetectedGrid> > detectedGrids(calibFileData.loadedFiles.size());
+  static const Rect bounds = image->getImageRect().enlarged(100);
+  if(manualMode != lastManualMode){
+    if(!manualMode){
+      gridAdjuster.clear();
+      lastManualMode = manualMode;
+    }else{
+      markers = CCU::detect_markers(image,calibFileData);
+      lastManualMode = manualMode;
+
+      detectedGrids.clear();
+      detectedGrids.resize(calibFileData.loadedFiles.size());
+      
+      /// associate detected markers to registered grids
+      for(size_t i=0;i<markers.size();++i){
+        const CCU::FoundMarker &m = markers[i];
+        const CCU::PossibleMarker &p = *m.possible;
+        if(p.gridIdx == -1) continue;
+        const CCU::CalibFile &cf = calibFileData.loadedFiles[p.cfgFileIndex];
+        const CCU::MarkerGrid &g = cf.grids[p.gridIdx];
+        
+        std::vector<CCU::DetectedGrid> &dgs = detectedGrids[p.cfgFileIndex];
+        if(!dgs.size()) {
+          dgs.resize(cf.grids.size());
         }
+        CCU::DetectedGrid &dg = dgs[p.gridIdx];
+        if(!dg){
+          dg.setup(&g);
+        }
+        int mID = m.fid.getID();
+        int gridIDIdxPos = g.getCellIdx(mID);
+        if(gridIDIdxPos == -1){
+          ERROR_LOG("found invalid grid idx position for markerID " << mID);
+          continue;
+        }
+        dg.foundMarkers[gridIDIdxPos] = &m;
+      }
+      
+      std::vector<std::vector<Point> > manuallyAdjustableGrids;
+      
+      std::vector<std::vector<core::Line32f> > textureLines;
+      std::vector<Size32f> sizes;
+      
+      for(size_t i=0;i<detectedGrids.size();++i){
+        //        std::cout << "Detected grids for CfgFile " << i << ":" << std::endl;
+        for(size_t j=0;j<detectedGrids[i].size();++j){
+          CCU::DetectedGrid &g = detectedGrids[i][j];
+          if(!g){
+            g.setup(&calibFileData.loadedFiles[i].grids[j]);
+          }
+          manuallyAdjustableGrids.resize(manuallyAdjustableGrids.size()+1);
+          textureLines.resize(textureLines.size()+1);
+          sizes.resize(sizes.size()+1);
+          g.getGridCornersAndTexture(scene.getCamera(0), manuallyAdjustableGrids.back(),
+                                     textureLines.back(), sizes.back(), bounds);
+        }
+      }
+      try{
+        gridAdjuster.init(bounds, manuallyAdjustableGrids);
+        for(size_t i=0;i<sizes.size();++i){
+          gridAdjuster.defineGridTexture(i, sizes[i], textureLines[i]);
+        }
+      }catch(std::runtime_error &e){
+        SHOW(e.what());
       }
     }
   }
+  
+  if(manualMode){
+    markers.clear();
+    /// find marker geometry and use gridAdjuster.mapPoints for the mapping of the marker's points
+    int gridIdx = -1;
+    for(size_t ci=0;ci<detectedGrids.size();++ci){
+      //      std::cout << "Detected grids for CfgFile " << ci << ":" << std::endl;
+      for(size_t j=0;j<detectedGrids[ci].size();++j){
+        const CCU::DetectedGrid &g = detectedGrids[ci][j];
+        if(g){ // found that grid!
+          ++gridIdx;
+          const CCU::MarkerGrid &realGrid = *g.realGrid;
+          //Vec3 dxn = normalize_vec(realGrid.dx) * realGrid.markerSize.width;
+          //Vec3 dyn = normalize_vec(realGrid.dy) * realGrid.markerSize.height;
+          
+          // in grid space
+          float dx = len_vec(realGrid.dx);
+          float dy = len_vec(realGrid.dy);
+          float rx = realGrid.markerSize.width/2;
+          float ry = realGrid.markerSize.height/2;
+          
+          for(int y=0;y<realGrid.dim.height;++y){
+            for(int x=0;x<realGrid.dim.width;++x){
+              math::Vec3 center = realGrid.offset + realGrid.dx * x  + realGrid.dy * y;
+              
+              // corners are actually not needed because all points along the grid are
+              // linearly dependend and therefore more points on the grid make the solution
+              // only more fragile (they didnt' work anyways :-)
+              //
+              /*math::Vec3 corners[4] = {
+                center + dxn - dyn,
+                center + dxn + dyn,
+                center - dxn + dyn,
+                center - dxn - dyn
+              };*/
+              
+              Point32f centerGridSpace(x * dx + rx, y * dy + ry);
+              /*Point32f cornersGridSpace[4] = {
+                centerGridSpace + Point32f(dx,-dy),
+                centerGridSpace + Point32f(dx,dy),
+                centerGridSpace + Point32f(-dx,dy),
+                centerGridSpace + Point32f(-dx,-dy)
+                  };
 
+              
+              std::vector<Point32f> ps(5);
+              ps[0] = centerGridSpace;
+              for(int i=0;i<4;++i){
+                ps[i+1] = cornersGridSpace[i];
+                  }
+                  */
+              std::vector<Point32f> ps;
+              try{
+                 ps = gridAdjuster.mapPoints(gridIdx, std::vector<Point32f>(1,centerGridSpace));
+              }catch(...){
+                y = realGrid.dim.height;
+                break;
+              }
+              
+              CCU::FoundMarker found;
+              found.possible = 0;
+              found.type = realGrid.type;
+              found.id = realGrid.markerIDs.at(x + realGrid.dim.width * y);
+              //markers::Fiducial fid;
+              found.imagePos = ps[0];
+              found.worldPos = center.resize<1,4>(1);
+              found.hasCorners = false; // true
+              /*
+              for(int i=0;i<4;++i){
+                found.imageCornerPositions[i] = ps[i+1];
+                found.worldCornerPositions[i] = corners[i].resize<1,4>(1);
+                  }*/
+              found.cfgFileIndex = ci;
+              // todo setup found!
+              markers.push_back(found);
+            }
+          }
+        }
+      }
+    }
+  }else{
+    markers = CCU::detect_markers(image,calibFileData);
+  }
 
+  ButtonHandle showRelTrans = relTransGUI["showRelTrans"];
   if(showRelTrans.wasTriggered()){
     std::cout << "current relative transformation is:" << std::endl << Trel << std::endl;
-    for(unsigned int i=0;i<loadedFiles.size();++i){
+    for(unsigned int i=0;i<calibFileData.loadedFiles.size();++i){
       std::cout << " * combined transformation matrix for calibration object '" << pa("-c",i) 
                 << "' is:" << std::endl << (Trel * Ts[i]) << std::endl;
     }
   }
 
-  
-  std::vector<Vec> xws,xwsCentersOnly;
-  std::vector<Point32f> xis,xisCentersOnly;
- 
-  const bool useCorners = gui["useCorners"];
-  for(unsigned int i=0;i<markers.size();++i){
-    const int idx = markers[i].cfgFileIndex;
-    if(!enabled[idx]) continue;
-    Mat T = Trel * Ts[idx];
-    xws.push_back(T *markers[i].worldPos);
-    xis.push_back(markers[i].imagePos);
-
-    xwsCentersOnly.push_back(xws.back());
-    xisCentersOnly.push_back(xis.back());
-
-    if(useCorners && markers[i].hasCorners){
-      for(int j=0;j<4;++j){
-        xws.push_back(T * markers[i].worldCornerPositions[j]);
-        xis.push_back(markers[i].imageCornerPositions[j]);
-      }
-    }
-  }
-  
-  std::vector<Vec> *W[2] = { &xws, &xwsCentersOnly };
-  std::vector<Point32f> *I[2] = { &xis, &xisCentersOnly };
-  int idx = 0;
   bool deactivatedCenters = false;
-  while(true){
-    try{
-      Camera &cam = scene.getCamera(0);
-
-      {
-        Mutex::Locker lock(save_lock);
-        cam = Camera::calibrate_pinv(*W[idx], *I[idx]);
-        cam.getRenderParams().viewport = Rect(Point::null,image->getSize());
-        cam.getRenderParams().chipSize = image->getSize();
-      }
-
-      //      scene.setDrawCoordinateFrameEnabled(true);
-      
-      float error = 0;
-      
-      for(unsigned int i=0;i<W[idx]->size();++i){
-        error += I[idx]->operator[](i).distanceTo(cam.project(W[idx]->operator[](i)));
-      }
-      if(gui["errNormalized"]){
-        error /= sqr(W[idx]->size());
-        error *= 100;
-      }else{
-        error /= W[idx]->size();
-      }
-
-      gui["error"] = error;
-      gui["status"] = str("ok") + ((idx&&useCorners) ? "(used centers only)" : "");
-      if(idx) deactivatedCenters = true;
-      
-      bestOfNSaver->next_hook(cam,error);
-      
-      if(error > 0 && !haveAnyCalibration){
-        haveAnyCalibration = true;
-        for(int i=0;i<scene.getObjectCount();++i){
-          scene.getObject(i)->setVisible(true);
-        }
-      }
-      break;
-    }catch(ICLException &e){
-      if(idx == 0){
-        ++idx;
-      }else{
-        gui["status"] = str(e.what());
-        bestOfNSaver->next_hook(Camera(),-1);
-        break;
-      }
-    }
-  }
-
-  
+  CCU::CalibrationResult res = CCU::perform_calibration(markers,enabled, Ts, Trel, image->getSize(),
+                                                        deactivatedCenters, gui["useCorners"],
+                                                        gui["errNormalized"], bestOfNSaver,
+                                                        haveAnyCalibration, scene);
+  gui["status"] = res.status;
+  gui["error"] = res.error;
+  gui["save_remaining_frames"] = res.saveRemainingFrames;
+  gui["save_best_error"] = res.saveBestError;
   
   static DrawHandle3D draw = gui["draw"];
   
-  draw = lastFD->getIntermediateImage(gui["iin"].as<std::string>());
-  draw->symsize(7);
-  for(unsigned int i=0;i<markers.size();++i){
-    FoundMarker &m = markers[i];
-    draw->linewidth(2);
+  draw = calibFileData.lastFD->getIntermediateImage(gui["iin"].as<std::string>());
 
-    const int idx = markers[i].cfgFileIndex;
-    if(enabled[idx]){
-      draw->color(0,100,255,255);
-      draw->fill(0,100,255,100);
-    }else{
-      draw->color(200,200,200,255);
-      draw->fill(100,100,100,100);
-    
-    }
-    draw->polygon(m.fid.getCorners2D());
-    if(enabled[idx]){
-      draw->color(255,0,0,255);
-    }else{
-      draw->color(200,200,200,255);
-    }
+  CCU::visualize_found_markers(draw,markers,enabled,deactivatedCenters,gui["useCorners"]);
 
-    draw->linewidth(1);
-    draw->sym(m.imagePos,'x');
-    if(useCorners && m.hasCorners){
-      if(deactivatedCenters) draw->color(255,0,0,100);
-      draw->sym(m.imageCornerPositions[0],'x');
-      draw->sym(m.imageCornerPositions[1],'x');
-      draw->sym(m.imageCornerPositions[2],'x');
-      draw->sym(m.imageCornerPositions[3],'x');
-    }
-    if(enabled[idx]){
-      draw->color(0,255,0,255);
-    }else{
-      draw->color(200,200,200,255);
-    }
-    draw->text(str(m.fid.getID()),m.imagePos.x, m.imagePos.y+12, -10);
+  if(calibFileData.planeObj){
+    CCU::visualize_plane(draw, planeOptionGUI["planeDim"],planeOptionGUI["planeOffset"],
+                         currentMousePos, scene);
   }
-
-  if(havePlane){
-    draw->linewidth(1);
-    const Point32f p = currentMousePos;
-    const std::string t = planeOptionGUI["planeDim"].as<std::string>();
-    const float o = planeOptionGUI["planeOffset"];
-    const float x=t=="x",y=t=="y",z=t=="z";
-    PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));
-
-    const Vec w = scene.getCamera(0).getViewRay(p).getIntersection(pe);
-    const Vec wx = x ? Vec(w[0],o,w[2],1) : Vec(o,w[1],w[2],1);
-    const Vec wy = y ? Vec(w[0],w[1],o,1) : Vec(w[0],o,w[2],1);
-    
-    draw->color(0,100,255,255);
-    draw->line(p,scene.getCamera(0).project(wx));
-    draw->line(p,scene.getCamera(0).project(wy));
-    
-    const std::string tx = str("(")+str(w[0])+","+str(w[1])+","+str(w[2])+")";
-    draw->color(0,0,0,255);
-    draw->text(tx,p.x+1,p.y-11,8);
-    draw->text(tx,p.x,p.y-12,8);
-    draw->color(255,255,255,255);
-    draw->text(tx,p.x-1,p.y-13,8);
+  if(!gridAdjuster.isNull()){
+    draw->draw(gridAdjuster.vis());
   }
 
 
@@ -979,7 +482,7 @@ int main(int n, char **ppc){
   std::vector<std::string> args(ppc+1,ppc+n);
   if(std::find(args.begin(),args.end(),"-cc") != args.end() ||
      std::find(args.begin(),args.end(),"-create-emtpy-config-file") != args.end()){
-    std::cout << sample << std::endl;
+    std::cout << CCU::create_sample_calibration_file_content() << std::endl;
     return 0;
   }
 
