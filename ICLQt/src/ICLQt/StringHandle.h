@@ -50,7 +50,7 @@ namespace icl{
       
       /// Create a new Int handle
       StringHandle(QLineEdit *le,std::string *str, GUIWidget *w):
-      GUIHandle<QLineEdit>(le,w),m_str(str){}
+	  GUIHandle<QLineEdit>(le,w),m_str(str){}
       
       /// makes the associated textfield show the given text
       void operator=(const std::string &text);

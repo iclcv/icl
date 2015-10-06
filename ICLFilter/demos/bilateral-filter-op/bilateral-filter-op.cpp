@@ -97,6 +97,7 @@ void grab_cb(const ImgBase *img) {
 
 	bool use_gray = gui["to_gray"].as<bool>();
 	Img<T> gray_image(color_original.getSize(),core::formatGray);
+	//color_original.setFormat(core::formatRGB);
 	Img8u edge_;
 	if (use_gray) {
 		core::cc(&color_original,&gray_image);
@@ -140,9 +141,9 @@ void grab_cb(const ImgBase *img) {
 	gui["view2"] = &color_median;
 	gui["view3"] = &color_bilateral;
 
-	gui["viewedge3"] = &edge_bi_filtered;
-	gui["viewedge2"] = &edge_median;
 	gui["viewedge1"] = &edge_;
+	gui["viewedge2"] = &edge_median;
+	gui["viewedge3"] = &edge_bi_filtered;
 
 	// update view:
 	gui["view1"].render();
@@ -199,11 +200,7 @@ void init() {
 
 void run() {
 
-	const ImgBase* img = 0;
-	{
-		BENCHMARK_THIS_SECTION(grabber);
-		img = grabber.grab();
-	}
+	const ImgBase* img = grabber.grab();
 
 	switch(img->getDepth()) {
 		case(core::depth8u): {

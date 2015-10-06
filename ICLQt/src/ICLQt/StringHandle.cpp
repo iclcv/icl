@@ -42,7 +42,7 @@ namespace icl{
       *m_str = text;
       getGUIWidget()->getGUI()->unlockData();
   
-    }
+	}
     std::string StringHandle::getCurrentText() const{
       return (**this)->text().toLatin1().data();  
     }

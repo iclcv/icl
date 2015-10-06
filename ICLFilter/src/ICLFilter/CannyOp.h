@@ -140,6 +140,10 @@ namespace icl {
         setUpPreBlurOp();
       }
 
+	  void setUseDerivativesInfo(bool use_derivatives) {
+		  m_use_derivatives_info = use_derivatives;
+	  }
+
       /// returns current pre-blur feature state
       bool getPreBlurRadius() const {
         return m_preBlurRadius;
@@ -162,6 +166,7 @@ namespace icl {
       UnaryOp *m_preBlurOp;
       icl32f m_lowT,m_highT;
       bool m_ownOps;
+	  bool m_use_derivatives_info;
       core::Img32f m_buffer;
       int m_preBlurRadius;
     };

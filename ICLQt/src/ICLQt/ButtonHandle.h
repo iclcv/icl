@@ -35,6 +35,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
+#include <QPushButton>
 
 //#include <QPushButton>
 
@@ -72,7 +73,11 @@ namespace icl{
           cb();
         }
       }
-      
+
+	  ICLQt_API void setButtonText(std::string const &text) {
+		  (**this)->setText(text.c_str());
+	  }
+
       /// sets the internal boolean variable to false
       ICLQt_API void reset();
       

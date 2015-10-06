@@ -33,6 +33,7 @@
 #include <ICLGeom/FeatureGraphSegmenter.h>
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLCore/DataSegment.h>
 #include <ICLGeom/Camera.h>
 
 namespace icl{
@@ -80,9 +81,15 @@ namespace icl{
       /**        @return the colored label image */  			
       core::Img8u getColoredLabelImage();
 
+	  /// Returns the angle image of the object edge detector
+	  /// /**        @return the angle image */
+	  const core::Img32f getAngleImage();
+
       /// Returns the mapped image (the last passed depth image is used for mapping) assumed to be grabbed by the camera cam
       /**       @return the mapped image */
       core::Img8u getMappedColorImage(const core::Img8u &image);
+
+	  void mapImageToDepth(const core::ImgBase *src, core::ImgBase **dst);
       
       /// Returns the surface cluster from the pre-segmentation.
       /**        @return a vector of surfaces. Every entry contains a vector with the point indices */
@@ -92,6 +99,7 @@ namespace icl{
       /**        @return a vector of segments. Every entry contains a vector with the surface indices */
       std::vector<std::vector<int> > getSegments();
       
+	  void setNormals(core::DataSegment<float,4> &normals);
             
       private:
 

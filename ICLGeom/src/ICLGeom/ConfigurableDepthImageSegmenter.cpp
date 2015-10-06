@@ -309,8 +309,12 @@ namespace icl{
 	}
 
     const core::DataSegment<float,4> ConfigurableDepthImageSegmenter::getNormalSegment() {
-        return m_data->objectEdgeDetector->getNormals();
+		return m_data->objectEdgeDetector->getNormals();
     }
+
+	const core::Img32f ConfigurableDepthImageSegmenter::getAngleImage() {
+		return m_data->objectEdgeDetector->getAngleImage();
+	}
 
     const core::Img8u ConfigurableDepthImageSegmenter::getNormalImage(){
       return m_data->normalImage;
@@ -338,7 +342,14 @@ namespace icl{
         m_data->creator->mapImage(&image,bpp(mapped));
         return mapped;
     }
-    
+
+	void ConfigurableDepthImageSegmenter::mapImageToDepth(const core::ImgBase *src, core::ImgBase **dst) {
+		m_data->creator->mapImage(src,dst);
+	}
+
+	void ConfigurableDepthImageSegmenter::setNormals(core::DataSegment<float,4> &normals) {
+		m_data->objectEdgeDetector->setNormals(normals);
+	}
     
     std::vector<std::vector<int> > ConfigurableDepthImageSegmenter::getSurfaces(){
       return m_data->segmentation->getSurfaces();
