@@ -48,15 +48,18 @@ namespace icl{
     }
     
     struct Grabber::Data{
-        Size desiredSize;
-        format desiredFormat;
-        depth desiredDepth;
-        Converter converter;
-        ImgBase  *image;
-        filter::WarpOp *warp;
-
-        Mutex callbackMutex;
-        std::vector<Grabber::callback> callbacks;
+      Size desiredSize;
+      format desiredFormat;
+      depth desiredDepth;
+      Converter converter;
+      ImgBase  *image;
+      filter::WarpOp *warp;
+      bool undistortionEnabled;
+      scalemode undistortionInterpolationMode;
+      bool undistortionUseOpenCL;
+            
+      Mutex callbackMutex;
+      std::vector<Grabber::callback> callbacks;
     };
 
     
@@ -69,6 +72,9 @@ namespace icl{
       data->desiredDepth = (depth)-1;
       data->image = 0;
       data->warp = 0;
+      data->undistortionEnabled = true;
+      data->undistortionInterpolationMode = interpolateNN;
+      data->undistortionUseOpenCL = false;
     }
 
     Grabber::~Grabber() {
@@ -166,8 +172,14 @@ namespace icl{
       // for now, we use the adapted which seem to make
       // much more sence
       
-      const ImgBase *adapted = adaptGrabResult(acquired,data->warp ? 0 : ppoDst);
-      if(data->warp){
+      bool useWarp = !!data->warp && data->undistortionEnabled;
+
+      const ImgBase *adapted = adaptGrabResult(acquired,useWarp ? 0 : ppoDst);
+      if(useWarp){
+        data->warp->setScaleMode(data->undistortionInterpolationMode);
+#ifdef ICL_HAVE_OPENCL
+        data->warp->setTryUseOpenCL(data->undistortionUseOpenCL);
+#endif
         if(ppoDst){
           data->warp->apply(adapted, ppoDst);
           return *ppoDst;
@@ -301,6 +313,20 @@ namespace icl{
         } else {
           useDesired<format>(parse<format>(prop.value));
         }
+      }else if (prop.name == "undistortion.enable"){
+        data->undistortionEnabled = parse<bool>(prop.value);
+      }else if (prop.name == "undistortion.interpolation"){
+        if(prop.value == "nearest"){
+          data->undistortionInterpolationMode = interpolateNN;
+        }else if(prop.value == "linear"){
+          data->undistortionInterpolationMode = interpolateLIN;
+        }else if(prop.value == "multisampling"){
+          data->undistortionInterpolationMode = interpolateRA;
+        }else{
+          ERROR_LOG("invalid value for property undistortion.multisampling");
+        }
+      }else if(prop.name == "undistortion.use OpenCL"){
+        data->undistortionUseOpenCL = parse<bool>(prop.value);
       }
     }
 

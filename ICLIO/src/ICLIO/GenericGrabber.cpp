@@ -268,6 +268,12 @@ namespace icl{
         m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
         m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
         m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
+        m_poGrabber -> addProperty("undistortion.enable","flag","",true,0,"forces to not use undistortion (eve if given)");
+        m_poGrabber -> addProperty("undistortion.interpolation","menu","nearest,linear","nearest",0,"sets the interpolation mode for image undistortion");
+#ifdef ICL_HAVE_OPENCL
+        m_poGrabber -> addProperty("undistortion.use OpenCL","flag","",false, 0,"trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
+#endif
+
         m_poGrabber -> Configurable::registerCallback(utils::function(m_poGrabber,&Grabber::processPropertyChange));
         setInternalConfigurable(m_poGrabber);
 

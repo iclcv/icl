@@ -191,6 +191,7 @@ namespace icl{
       dst.setSize(src.getSize());
       dst.setFormat(formatRGB);
       dst.setROI(src.getROI());
+      dst.setTime(src.getTime());
       Img8u ci;
       for(int i=0;i<3;++i){
         dst.selectChannel(i,&ci);

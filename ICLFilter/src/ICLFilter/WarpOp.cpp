@@ -238,7 +238,7 @@ namespace icl{
     
   
     WarpOp::WarpOp(const Img32f &warpMap,scalemode mode, bool allowWarpMapScaling):
-      m_allowWarpMapScaling(allowWarpMapScaling),m_scaleMode(mode){
+      m_allowWarpMapScaling(allowWarpMapScaling),m_scaleMode(mode),m_tryUseOpenCL(false){
       warpMap.deepCopy(&m_warpMap);
       prepare_warp_table_inplace(m_warpMap);
   #ifdef ICL_HAVE_OPENCL
@@ -309,7 +309,7 @@ namespace icl{
   #ifdef ICL_HAVE_OPENCL
       // the written kernel of CLWarp supports only uint values and linear interpolation;
       // TODO: create CLSampler for diffrent interpolation methods
-      if (src->getDepth() == 0 && m_scaleMode == interpolateLIN) {
+      if (m_tryUseOpenCL && src->getDepth() == depth8u && m_scaleMode == interpolateLIN) {
         m_clWarp->apply(cwm, src, *dst, m_scaleMode);
         return;
       }
@@ -329,6 +329,9 @@ namespace icl{
       }
     }
   
+    void WarpOp::setTryUseOpenCL(bool on){
+      m_tryUseOpenCL = on;
+    }
   
   
   } // namespace filter
