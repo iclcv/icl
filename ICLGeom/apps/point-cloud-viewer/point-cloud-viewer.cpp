@@ -41,8 +41,9 @@ HSplit gui;
 Scene scene;
 
 
-PointCloudObject obj;
+PointCloudObject obj, obj2;
 GenericPointCloudGrabber grabber;
+GenericPointCloudGrabber grabber2; // used to add an extra point cloud if needed
 SmartPtr<RayCastOctreeObject> octree;
 Mutex octreeMutex;
 
@@ -71,6 +72,11 @@ void mouse(const MouseEvent &e){
 void init(){
   grabber.init(pa("-pci"));
   grabber.setConfigurableID("grabber");
+  
+  if(pa("-pci2")){
+    grabber2.init(pa("-pci2"));
+    grabber2.setConfigurableID("grabber2");
+  }
   Camera cam;
   if(pa("-c")){
     cam = Camera(*pa("-c"));
@@ -78,6 +84,11 @@ void init(){
 
   gui << Draw3D().minSize(32,24).handle("scene")
       << Prop("grabber").hideIf(!pa("-tune")).minSize(16,1).maxSize(16,99)
+      << Prop("grabber").hideIf(!pa("-tune") || !pa("-pci2")).minSize(16,1).maxSize(16,99)
+      << ( HBox().label("show objects")
+           << CheckBox("object 1",true).handle("o1").hideIf(!pa("-pci2"))
+           << CheckBox("object 2",true).handle("o2").hideIf(!pa("-pci2"))
+         )
       << Show();
   
 
@@ -91,6 +102,7 @@ void init(){
 
   obj.setPointSize(3);
   obj.setPointSmoothingEnabled(false);
+  
 
   if(pa("-vc")){
     ProgArg p = pa("-vc");
@@ -115,6 +127,12 @@ void init(){
 
   // if this is left out creation of the first octree takes ages!
   grabber.grab(obj);
+  if(pa("-pci2")){
+    scene.addObject(&obj2,false);
+    obj2.setPointSize(3);
+    obj2.setPointSmoothingEnabled(false);
+    grabber2.grab(obj2);
+  }
 }
 
 void run_octree(){
@@ -137,6 +155,13 @@ void run_octree(){
 void run(){
   DrawHandle3D draw = gui["scene"];
   grabber.grab(obj);
+
+  if( pa("-pci2")){
+    grabber2.grab(obj2);
+
+    obj.setVisible(gui["o1"].as<bool>());
+    obj2.setVisible(gui["o2"].as<bool>());
+  }
   
   draw->color(0,100,255,255);
   draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ", 
@@ -153,6 +178,7 @@ int main(int n, char **ppc){
   pa_explain("-tune","adds an extra gui that allows certain depth "
              "camera parameters to be tuned manually at runtime");
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
+                "-point-cloud-input-2|-pci2(point-cloud-source,descrition) "
                 "-view-camera|-c(filename) -tune -visualize-cameras|-vc(...) "
                 "-show-world-frame|-cs -pointing|-p",init,run,run_octree).exec();
 }
