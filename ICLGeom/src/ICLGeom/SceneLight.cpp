@@ -63,22 +63,27 @@ namespace icl{
     
     void SceneLight::updatePositions(const Scene &scene, const Camera &cam) const{
         Mat T = Mat::id();
-        switch(anchor){
-          case CamAnchor:
-            if(camAnchor < 0){
-              glLoadIdentity();
-              T = cam.getCSTransformationMatrix().inv();
-            }else{
-              T = scene.getCamera(camAnchor).getCSTransformationMatrix().inv();
+        try{
+          switch(anchor){
+            case CamAnchor:
+              if(camAnchor < 0){
+                glLoadIdentity();
+                T = cam.getCSTransformationMatrix().inv();
+              }else{        
+                T = scene.getCamera(camAnchor).getCSTransformationMatrix().inv();
+              }
+              break;
+            case ObjectAnchor:{
+              T = objectAnchor->getTransformation(false);
+              break;
             }
-            break;
-          case ObjectAnchor:{
-            T = objectAnchor->getTransformation(false);
-            break;
+            default:
+              break;
           }
-          default:
-            break;
+        }catch(std::runtime_error &e){
+          DEBUG_LOG("Error updating scene light position: " << e.what());
         }
+
         lightObject->lock();
         Vec currPos = lightObject->getTransformation().part<3,0,1,4>();
         Vec targetPos = T*position;
@@ -107,24 +112,28 @@ namespace icl{
   
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-  
-        switch(anchor){
-          case CamAnchor:
-            if(camAnchor < 0){
-              glLoadIdentity();
-              T = cam.getCSTransformationMatrix().inv();
-            }else{
-              T = scene.getCamera(camAnchor).getCSTransformationMatrix().inv();
-              glMultMatrixf(T.transp().data()); 
+
+        try{
+          switch(anchor){
+            case CamAnchor:
+              if(camAnchor < 0){
+                glLoadIdentity();
+                T = cam.getCSTransformationMatrix().inv();
+              }else{
+                T = scene.getCamera(camAnchor).getCSTransformationMatrix().inv();
+                glMultMatrixf(T.transp().data()); 
+              }
+              break;
+            case ObjectAnchor:{
+              T = objectAnchor->getTransformation(false);
+              glMultMatrixf(T.transp().data());
+              break;
             }
-            break;
-          case ObjectAnchor:{
-            T = objectAnchor->getTransformation(false);
-            glMultMatrixf(T.transp().data());
-            break;
+            default:
+              break;
           }
-          default:
-            break;
+        }catch(std::runtime_error &e){
+          DEBUG_LOG("Error setting up scene light world pose: " << e.what());
         }
 
         glLightfv(l,GL_POSITION,position.begin());

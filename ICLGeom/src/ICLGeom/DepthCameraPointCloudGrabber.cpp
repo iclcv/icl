@@ -145,6 +145,10 @@ namespace icl{
       m_data->depthGrabber.useDesired(depth32f);
       m_data->depthGrabber.useDesired(depthCam.getResolution());
 
+      if(depthDeviceType == "kinectd" && needsKinectRawDepthInput){
+        m_data->depthGrabber.setPropertyValue("depth-image-unit","raw");
+      }
+
       addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");
   
       if(&colorCam != &get_null_color_cam()){
