@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Function.h>
 #include <vector>
 
 namespace icl{
@@ -50,6 +51,8 @@ namespace icl{
       
       /// Vector Type
       typedef std::vector<float> Vec;
+
+      typedef utils::Function<float,const Vec&,const Vec&> DistanceFunction;
   
       /// Creates an empty (null) vector tracker (isNull() returns true then)
       VectorTracker();
@@ -81,9 +84,12 @@ namespace icl{
           @param tryOpt enables/disables whether to test for trivial assignment. If a trivial assignment can be expected, this
                         will increase performance significantly. If it's more likely, that trivial assignment will fail, this 
                         also reduce performance a little bit.
+          @param df can be set to a custom function that is used to compute the distance value between two values
+                    by default a pearson distance is used, for the normalization factors, normFactors is used
       */
       VectorTracker(int dim, float largeDistance, const std::vector<float> &normFactors=std::vector<float>(),
-                    IDmode idMode=firstFree, float distanceThreshold=0, bool tryOpt=true); 
+                    IDmode idMode=firstFree, float distanceThreshold=0, bool tryOpt=true,
+                    DistanceFunction df=DistanceFunction(), bool dfIsQualityFunction=false); 
   
       /// Deep copy constructor (all data and current state is copied deeply)
       /** New instance is absolutely independent from the source instance */
@@ -95,12 +101,12 @@ namespace icl{
       
       /// Destructor
       ~VectorTracker();
-  
+      
       /// next step function most efficient version
       void pushData(const std::vector<Vec> &newData);
   
       /// returns runtime id of last pushed data element index
-      int getID(int index) const;
+      int getID(int index, float *lastErrorOrScore=0) const;
       
       /// returns whether VectorTracker instance is currently null (created with default constructor)
       bool isNull() const;
@@ -116,6 +122,9 @@ namespace icl{
           Dimensions that have a false-entry in the given mask are not-extrapolated
           over time (which is identical to using a constant extrapolation model) */
       void setExtrapolationMask(const std::vector<bool> &mask);
+
+      /// sets a custom distance function
+      void setDistanceFunction(DistanceFunction df);
       
       /// returns current extrapolation mask
       const std::vector<bool> &getExtrapolationMask() const;
