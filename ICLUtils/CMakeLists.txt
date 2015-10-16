@@ -30,11 +30,13 @@
 
 SET(SOURCES src/ICLUtils/ConfigFile.cpp
             src/ICLUtils/Configurable.cpp
-	    src/ICLUtils/ConsoleProgress.cpp
+		src/ICLUtils/ConsoleProgress.cpp
 	    src/ICLUtils/CLBuffer.cpp
 	    src/ICLUtils/CLImage2D.cpp	    
 	    src/ICLUtils/CLKernel.cpp
-	    src/ICLUtils/CLProgram.cpp
+		src/ICLUtils/CLProgram.cpp
+		src/ICLUtils/CLDeviceContext.cpp
+		src/ICLUtils/CLMemoryAssistant.cpp
 	    src/ICLUtils/Exception.cpp
 	    src/ICLUtils/File.cpp
 	    src/ICLUtils/FPSEstimator.cpp
@@ -70,10 +72,13 @@ SET(HEADERS src/ICLUtils/Any.h
 	    src/ICLUtils/ClippedCast.h
 		src/ICLUtils/CLIncludes.h
 	    src/ICLUtils/CLBuffer.h
+		src/ICLUtils/CLMemory.h
 	    src/ICLUtils/CLImage2D.h	    
 	    src/ICLUtils/CLException.h
 	    src/ICLUtils/CLKernel.h
-	    src/ICLUtils/CLProgram.h 
+		src/ICLUtils/CLProgram.h
+		src/ICLUtils/CLDeviceContext.h
+		src/ICLUtils/CLMemoryAssistant.h
 	    src/ICLUtils/CompatMacros.h
             src/ICLUtils/ConfigFile.h
             src/ICLUtils/PluginRegister.h
@@ -142,7 +147,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            "${CMAKE_BINARY_DIR}/src")
 ELSE()
 INCLUDE_DIRECTORIES(BEFORE src 
-                           "${CMAKE_BINARY_DIR}/src")
+						   "${CMAKE_BINARY_DIR}/src")
 ENDIF()
 
 ADD_LIBRARY(ICLUtils SHARED ${SOURCES} ${HEADERS})

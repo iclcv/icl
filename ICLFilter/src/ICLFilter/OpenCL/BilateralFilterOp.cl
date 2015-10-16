@@ -340,7 +340,6 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 
 	}
 
-
 	int tlx = max(x-radius, 0);
 	int tly = max(y-radius, 0);
 	int brx = min(x+radius, w-1);

@@ -110,24 +110,24 @@ namespace icl{
         };
         shared_ptr<rsb::Handler> handler;
 
-        void update(RSBImage &image, RSBGrabber *impl){
-          impl->setPropertyValue("rsb event received","");
-          Mutex::Locker lock(mutex); // "reentrant-ness" and external access
+		void update(RSBImage &image, RSBGrabber *impl){
+
+		  impl->setPropertyValue("rsb event received","");
+		  Mutex::Locker lock(mutex); // "reentrant-ness" and external access
           const std::string &data = image.data();
-          const std::string &mode = image.compressionmode();
-          DEBUG_LOG2(mode);
+		  const std::string &mode = image.compressionmode();
 
-          receivedCompressionMode = mode;
+		  receivedCompressionMode = mode;
 
-          compressor.uncompress((const icl8u*)&data[0], data.length(), &bufferImage); //)->deepCopy(&bufferImage);
+		  compressor.uncompress((const icl8u*)&data[0], data.length(), &bufferImage); //)->deepCopy(&bufferImage);
 
-          if(bufferImage){
-            bufferImage->setTime(image.time());
-            bufferImage->setROI(Rect(image.roix(),image.roiy(), image.roiw(), image.roih()));
-            bufferImage->setMetaData(image.metadata());
+		  if(bufferImage){
+			bufferImage->setTime(image.time());
+			bufferImage->setROI(Rect(image.roix(),image.roiy(), image.roiw(), image.roih()));
+			bufferImage->setMetaData(image.metadata());
             hasNewImage = true;
-          }
-          impl->notifyNewImageAvailable(bufferImage);
+		  }
+		  impl->notifyNewImageAvailable(bufferImage);
         }
     };
     
@@ -156,7 +156,7 @@ namespace icl{
       TVec ts(ts2.begin(),ts2.end());
       std::vector<std::string> transports = tok(transportList,",");
 
-      for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
+	  for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
         ParticipantConfig::Transport &t = *it;
         if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
           t.setEnabled(false);

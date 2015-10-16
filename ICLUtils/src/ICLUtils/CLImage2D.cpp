@@ -194,7 +194,18 @@ namespace icl {
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }
-            }
+			}
+
+			static const icl32s iclDepthToByteDepth(int icl_depth) {
+				switch (icl_depth) {
+					case(0): return 1;
+					case(1): return 2;
+					case(2): return 4;
+					case(3): return 4;
+					case(4): return 8;
+					default: return 1; // maybe better to throw an exception here?
+				}
+			}
 
         };
 
@@ -202,20 +213,27 @@ namespace icl {
 				const string &accessMode, const size_t width, const size_t height,
 				int depth, int num_channel, const void *src,
 				const std::map<uint, std::set<uint> > &supported_formats)
-        throw (CLBufferException) {
+		throw (CLBufferException)
+			: CLMemory(CLMemory::Image2D) {
             impl = new Impl(context, cmdQueue, accessMode, width, height,
 					depth, num_channel, src, supported_formats);
 
+			setDimensions(width,height,num_channel);
+			m_byte_depth = Impl::iclDepthToByteDepth(depth);
+
         }
 
-		CLImage2D::CLImage2D() {
+		CLImage2D::CLImage2D()
+			: CLMemory(CLMemory::Image2D) {
             impl = new Impl();
         }
-        CLImage2D::CLImage2D(const CLImage2D& other) {
+		CLImage2D::CLImage2D(const CLImage2D& other)
+			: CLMemory(other) {
             impl = new Impl(*(other.impl));
         }
 
         CLImage2D& CLImage2D::operator=(CLImage2D const& other) {
+			CLMemory::operator=(other);
             impl->cmdQueue = other.impl->cmdQueue;
             impl->image2D = other.impl->image2D;
             impl->width = other.impl->width;

@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/Rect.h>
+#include <ICLUtils/CLMemory.h>
 #include <string>
 
 #include <set>
@@ -52,7 +53,7 @@ namespace icl {
         /// Wrapper for an OpenCL Image2D
         /** Valid CLImage2D instances can only be created by a CLProgram instance.
          @see CLProgram for more details */
-      class ICLUtils_API CLImage2D {
+	  class ICLUtils_API CLImage2D : public CLMemory {
             struct Impl; //!< internal hidden implementation type
             Impl *impl;//!< internal implemetation
 
@@ -70,6 +71,7 @@ namespace icl {
 
             friend class CLProgram;//!< for tight integration with CLProgram instances
             friend class CLKernel;//!< for tight integration with CLKernel instances
+			friend class CLDeviceContext;//!< for tight integration with CLDeviceContext instances
 
             /// default constructor (creates null instance)
 			CLImage2D();
@@ -103,6 +105,11 @@ namespace icl {
             operator bool() const {
                 return impl;
             }
+
+			icl32s getWidth() const { return m_dimensions[0]; }
+			icl32s getHeight() const { return m_dimensions[1]; }
+			icl32s getChannelSize() const { return m_dimensions[0]*m_dimensions[1]; }
+			icl32s getNumChannels() const { return m_dimensions[2]; }
 
         };
     }
