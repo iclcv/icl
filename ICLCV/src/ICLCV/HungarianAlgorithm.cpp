@@ -517,7 +517,7 @@ namespace icl{
     void HungarianAlgorithm<real>::visualizeAssignment(const Array2D<real> &cost, const vec &a){
       // {{{ open
       mat v(cost.getWidth(),cost.getHeight());
-      
+      v.fill(0);
       for(unsigned int i=0;i<a.size();i++){
         v(i,a[i]) = 1;
       }
