@@ -90,7 +90,7 @@ void init(){
     scene.getLight(i).setDiffuse(GeomColor(255 / lights,255 / lights,255 / lights,255));
     scene.getLight(i).setPosition(Vec(-4,10,-30,1));
     scene.getLight(i).setSpecular(GeomColor(255 / lights,255 / lights,255 / lights,255));
-    scene.getLight(i).getShadowCam()->setNorm(Vec(4,-10,30,1));
+    scene.getLight(i).getShadowCam()->setNorm(Vec(4,-10,30,1),true);
   }
 
   float so = pa("-so");
@@ -146,7 +146,7 @@ void run(){
 
   for(unsigned int i = 0; i < lights; i++) {
     scene.getLight(i).setPosition(Vec(h,r * cos(timer * 1.f / float(i + 1)),r * sin(timer * 1.f / float(i + 1)),1.f));
-    scene.getLight(i).getShadowCam()->setNorm(Vec(-h,-r * cos(timer * 1.f / float(i + 1)),-r * sin(timer * 1.f / float(i + 1)),1.f));
+    scene.getLight(i).getShadowCam()->setNorm(Vec(-h,-r * cos(timer * 1.f / float(i + 1)),-r * sin(timer * 1.f / float(i + 1)),1.f), true);
   }
   scene.getCamera(0).setFocalLength(gui["f"]); // update the camera's focal length
   
