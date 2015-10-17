@@ -82,6 +82,13 @@ namespace icl {
   
       return T;
     }
+
+    void Camera::orthogonalizeRotationMatrix(){
+      Mat3 R = getCSTransformationMatrix().part<0,0,3,3>();
+      Mat3 Ro = gramSchmidtOrtho(R);
+      setRotation(Ro);
+    }
+
   
     Mat Camera::getInvCSTransformationMatrix() const{
       Vec hh = cross(m_up,m_norm);

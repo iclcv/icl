@@ -329,8 +329,18 @@ namespace icl {
   
       void setName(const std::string &name) { m_name = name; }
       void setPosition(const Vec &pos) { m_pos = pos; }
-      void setNorm(const Vec &norm) { m_norm = norm; m_norm[3] = 0; m_norm.normalize(); m_norm[3] = 1; } //!< gets automatically normalized
-      void setUp(const Vec &up) { m_up = up; m_up[3] = 0; m_up.normalize(); m_up[3] = 1; } //!< gets automatically normalized
+      void setNorm(const Vec &norm, bool autoOrthogonalizeRotationMatrix=false) {
+        m_norm = norm; m_norm[3] = 0; m_norm.normalize(); m_norm[3] = 1;
+        if(autoOrthogonalizeRotationMatrix) orthogonalizeRotationMatrix();
+      }
+      /// gets automatically normalized
+      void setUp(const Vec &up, bool autoOrthogonalizeRotationMatrix=false) {
+        m_up = up; m_up[3] = 0; m_up.normalize(); m_up[3] = 1;
+        if(autoOrthogonalizeRotationMatrix) orthogonalizeRotationMatrix();
+      } 
+      /// extracts the current rotation matrix and uses gramSchmidth orthogonalization
+      void orthogonalizeRotationMatrix();
+      
       void setFocalLength(float value) { m_f = value; }
       void setPrincipalPointOffset(float px, float py) { m_px = px; m_py = py; }
       void setPrincipalPointOffset(const utils::Point32f &p) { m_px = p.x; m_py = p.y; }

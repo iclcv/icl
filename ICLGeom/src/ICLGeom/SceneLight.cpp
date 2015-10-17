@@ -58,7 +58,7 @@ namespace icl{
       memcpy(this,&other,sizeof(other));
       objectAnchor = 0;
       lightObject = 0;
-      shadowCam = 0;
+      shadowCam = new Camera(*other.shadowCam);
     }
     
     void SceneLight::updatePositions(const Scene &scene, const Camera &cam) const{
