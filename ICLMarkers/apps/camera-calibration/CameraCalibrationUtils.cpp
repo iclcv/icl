@@ -364,7 +364,11 @@ namespace icl{
           ms = parse<Size32f>(cfg["marker-size"]); 
         } catch(...){}
 
-        d.fds[t]->loadMarkers(cfg["marker-ids"].as<std::string>(),t==AMOEBA ? ParamList() : ParamList("size",ms));
+        if(markerIDs.size() > 1){
+          d.fds[t]->loadMarkers("{"+cat(markerIDs,",")+"}",t==AMOEBA ? ParamList() : ParamList("size",ms));
+        }else{
+          d.fds[t]->loadMarkers(str(markerIDs[0]),t==AMOEBA ? ParamList() : ParamList("size",ms));
+        }
 
         if(mode == ExtractGrids){
           MarkerGrid g = { o, dx, dy, s, ms, markerIDs, t };
