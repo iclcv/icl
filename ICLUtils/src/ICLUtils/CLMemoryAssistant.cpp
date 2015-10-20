@@ -30,6 +30,8 @@
 
 #include <ICLUtils/CLMemoryAssistant.h>
 
+#ifdef ICL_HAVE_OPENCL
+
 namespace icl {
 	namespace utils {
 
@@ -108,3 +110,4 @@ namespace icl {
 	}
 }
 
+#endif
