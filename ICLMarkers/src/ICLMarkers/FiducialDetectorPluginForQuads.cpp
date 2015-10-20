@@ -62,10 +62,10 @@ namespace icl{
       
       deactivateProperty("quads.create region graph");
   
-      addProperty("max tilt","range","[1,50]",10,0,
+      addProperty("max tilt","range","[1,200]",150,0,
                   "Maximum tilt for quad markers (1: only perfect squares are\n"
                   "detected, 5-10 most tilted quads are detected, >10\n"
-                  "also very tilted rectangular quads are detected.");
+                  "also very tilted rectangular quads are detected (not linear).");
       addProperty("return rejected quads","flag","",false,0,
                   "If set to true, also quads that were not identified as valid markers\n"
                   "are retuned (as dummy markers with an invalid ID");
