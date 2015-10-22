@@ -83,6 +83,7 @@ namespace icl{
       PseudoColorConverter pcc;
       Img8u pccSrc;
       Img8u pccOutNull;
+      Img32f pccOutNull32f;
       Img32f combinedImage;
       filter::LocalThresholdOp lt;
 
@@ -99,11 +100,19 @@ namespace icl{
         pccSrc.setSize(s.getSize());
         pccOutNull.setFormat(formatRGB);
         pccOutNull.setSize(s.getSize());
+        pccOutNull32f.setChannels(4);
+        pccOutNull32f.setSize(s.getSize());
         
         if(!r.getLength()){
-          pccOutNull.fill(0);
-          pccOutNull.setTime(s.getTime());
-          return &pccOutNull;
+          if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
+            pccOutNull32f.fill(0);
+            pccOutNull32f.setTime(s.getTime());
+            return &pccOutNull32f;
+          }else{
+            pccOutNull.fill(0);
+            pccOutNull.setTime(s.getTime());
+            return &pccOutNull;
+          }
         }
         LinearTransform1D t(r, Range32f(0,255));
         const Channel32f cs = s[0];
