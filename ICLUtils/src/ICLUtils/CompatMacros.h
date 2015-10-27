@@ -49,30 +49,30 @@
     {
       return floor(a + 0.5f);
     }
-    inline double log2(double a)  
+    inline double log2(double a)
     {
-      return log(a) / 0.69314718055994530943;  
+      return log(a) / 0.69314718055994530943;
     }
-    inline float pow(int a, int b)  
+    inline float pow(int a, int b)
     {
-      return pow((float)a, b);  
+      return pow((float)a, b);
     }
     inline double pow(float a, double b)
     {
       return pow((double)a, b);
     }
-    inline int rint(double a)  
+    inline int rint(double a)
     {
       // this is not really what it should do
-      return (int)round(a);  
+      return (int)round(a);
     }
-    inline float log(int a)  
+    inline float log(int a)
     {
-      return log((float)a);  
+      return log((float)a);
     }
-    inline float exp(int a)  
+    inline float exp(int a)
     {
-      return exp((float)a);  
+      return exp((float)a);
     }
     inline float sqrt(int a)
     {
@@ -179,9 +179,9 @@
 
 #ifdef ICL_HAVE_OPENGL
   #ifdef ICL_SYSTEM_APPLE
-    #include <OpenGL/glew.h>
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
+    #include <GL/glew.h>
+    #include <gl.h>
+    #include <glu.h>
   #elif ICL_SYSTEM_WINDOWS
     #include <Windows.h>
     #include <GL/glew.h>
