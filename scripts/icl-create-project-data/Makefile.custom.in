@@ -7,7 +7,7 @@
 PROJECT_NAME?=${FOLDER}
 
 # where to install the project
-INSTALL_PREFIX=/vol/nivision
+INSTALL_PREFIX?=/vol/nivision
 
 # package description that is written into the
 # pkg-config file
@@ -30,7 +30,7 @@ PC_DEPS=@PKG_CONFIG_FILE_NAME_NO_PC@
 
 # optionally define C++-C-Pre-Processor flags
 # CXXCPP=
-LDFLAGS=-Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib
+LDFLAGS=-Wl,-rpath=${INSTALL_PREFIX}/lib -Wl,-rpath=@CMAKE_INSTALL_PREFIX@/lib
 
 ##################################################
 # extra files to install #########################
