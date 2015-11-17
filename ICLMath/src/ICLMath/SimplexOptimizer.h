@@ -151,7 +151,7 @@ namespace icl{
       typedef utils::Function<T, const Vector&> error_function;
       typedef SimplexOptimizationResult<T,Vector> Result;
       typedef utils::Function<void,const Result &> iteration_callback;
-      
+      typedef utils::Function<Vector> init_gen;
   
       /// creates a new instance with given parameters
       /** @param f error function 
@@ -233,9 +233,12 @@ namespace icl{
           */
       Result optimize(const Vector &init);
       
-      /// rens an optimization using internal parameters using the given initial simplex
+      /// runs an optimization using internal parameters using the given initial simplex
       /** the given input simplex must have init[0].dim+1 entries !*/
       Result optimize(const std::vector<Vector> &init);
+
+      /// uses the inititalization generator to run the optimization several times with different initialization values
+      Result optimize(init_gen gen, int nInitCycles);
       
       /// create a default simplex structure
       /** the initial simplex is created internally using the heuristic shown in the
