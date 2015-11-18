@@ -296,7 +296,14 @@ namespace icl{
     /// adds a new point
     
     /// adds all non zero pixels of the given binary image
-    void HoughLineDetector::add(const core::Img8u &binaryImage);
+	//void HoughLineDetector::add(const core::Img8u &binaryImage){
+	//	const Channel8u c = binaryImage[0];
+//		for (int y = 0; y < c.getHeight(); ++y){
+//			for (int x = 0; x < c.getWidth(); ++x){
+//				if (c(x, y)) add(Point(x, y));
+//			}
+//		}
+//	}
   
     /// returns current hough-table image
     const core::Img32s &HoughLineDetector::getImage() const { return m_data->image; }

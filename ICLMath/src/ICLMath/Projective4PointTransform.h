@@ -46,7 +46,7 @@ namespace icl{
         http://math.stackexchange.com/questions/296794/finding-the-transform-matrix-from-4-projected-points-with-javascript
 
     */
-    class Projective4PointTransform{
+	  class ICLMath_API Projective4PointTransform{
       Mat3 m_Ainv; //!< internally held inverse source transform
       Mat3 m_B;    //!< internally held destination transform
       Mat3 m_C;    //!< internally held result-transform C = B * A_inv

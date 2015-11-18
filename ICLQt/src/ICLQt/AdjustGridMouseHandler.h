@@ -41,7 +41,7 @@ namespace icl{
   namespace qt{
 
     /// Special MouseHandler Implementation that allows several quadrangular grids to be defined
-    class AdjustGridMouseHandler : public MouseHandler, public utils::Uncopyable, public utils::Lockable{
+	  class ICLQt_API AdjustGridMouseHandler : public MouseHandler, public utils::Uncopyable, public utils::Lockable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
     
