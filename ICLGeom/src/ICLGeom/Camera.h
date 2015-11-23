@@ -197,14 +197,33 @@ namespace icl {
           If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<utils::Point32f>,float)
       */
       static Camera calibrate(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+        throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
       /// Uses the passed world point -- image point references to estimate the projection parameters.
       /** Same as the method calibrate, but using a pseudoinvers instead of the SVD for the estimation.
           This method is less stable and less exact. */
       static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+        throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
+      static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                        const Camera &intrinsicCamValue, const RenderParams &renderParams=RenderParams())
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
+      static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                        const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams=RenderParams())
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** TODO provide algorithm
+          fx, fy are the known camera x- and y-focal lengths, s is the skew, and px and py is the principal point offset */
+      static Camera calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
+                                        float fx, float fy, float s, float px ,float py,
+                                        const RenderParams &renderParams=RenderParams())
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
       /** @} @{ @name putils::rojection functions */
   
       // projections normal
@@ -242,6 +261,7 @@ namespace icl {
       
       /// Returns a view-ray equation of given point in the world
       ViewRay getViewRay(const Vec &Xw) const;
+
       /// returns estimated 3D point for given pixel and plane equation
       Vec estimate3DPosition(const utils::Point32f &pixel, const PlaneEquation &plane) const throw (utils::ICLException);
       /// calculates the intersection point between this view ray and a given plane
@@ -459,6 +479,9 @@ namespace icl {
       static Vec estimate_3D_svd(const std::vector<Camera*> cams,
                                  const std::vector<utils::Point32f> &UVs);
   
+      /// estimates a 3D object world position wrt.
+      Mat estimatePose(const std::vector<Vec> &worldPositions, const std::vector<utils::Point32f> &UVs);
+      
       /** @}*/
   
       protected:

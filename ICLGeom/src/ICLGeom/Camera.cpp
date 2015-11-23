@@ -218,6 +218,7 @@ namespace icl {
       return Point32f(xi[0],xi[1]);
     }
   
+    
     // Projects a set of points
     void Camera::project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const{
       dst.resize(Xws.size());
@@ -342,6 +343,54 @@ namespace icl {
       cam.setSkew(K(1,0));
       return cam;
     }
+
+    Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                       const Camera &intrinsicCamValue, const RenderParams &renderParams)
+      throw (NotEnoughDataPointsException,SingularMatrixException) {
+        return calibrate_extrinsic(Xws, xis, intrinsicCamValue.getProjectionMatrix(), renderParams);
+    }
+
+    
+    Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                       const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams)
+      throw (NotEnoughDataPointsException,SingularMatrixException) {
+      const Mat &k = camIntrinsicProjectionMatrix;
+      return calibrate_extrinsic(Xws, xis, k(0,0), k(1,1), k(1,0), k(2,0), k(2,1), renderParams);
+    }
+
+    Camera Camera::calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
+                                       float fx, float fy, float s, float px ,float py,
+                                       const RenderParams &renderParams)
+    throw (NotEnoughDataPointsException,SingularMatrixException) {
+        checkAndFixPoints(Xws,xis);
+      
+      int n = (int)Xws.size();
+      
+      DynMatrix<double> M(12,2*n);
+      for(int i=0;i<n;++i){
+        double x = Xws[i].x, y = Xws[i].y, z = Xws[i].z, u = xis[i].x, v = xis[i].y;
+        double du = px-u, dv = py-v;
+        const double F[12] = {x,y,z,1,x,y,z,1,x,y,z,1};
+        double A[12] = { fx,fx,fx,fx, s, s, s, s, du,du,du,du };
+        double B[12] = { 0, 0, 0, 0, fy,fy,fy,fy, dv,dv,dv,dv };
+        double *a = &M(0,2*i), *b = &M(0,2*i+1);
+        for(int j=0;j<12;++j){
+          a[i] = A[i] * F[i];
+          b[i] = B[i] * F[i];
+        }
+      }
+      DynMatrix<double> _U,_s,V;
+      M.svd(_U,_s,V);
+  
+      Mat RT = Mat::id();
+      std::copy(V.col_begin(11), V.col_end(11), RT.begin());
+      
+      return Camera(Vec(RT(3,0), RT(3,1), RT(3,2), 1),
+                    Vec(RT(0,2), RT(1,2), RT(2,2), 1),
+                    Vec(RT(0,1), RT(1,1), RT(2,1), 1),
+                    1, Point32f(px,py), fx, fy, s, renderParams);
+    }
+      /** @} @{ @name utils::projection functions */
   
     Camera Camera::calibrate_pinv(std::vector<Vec> Xws,
                                       std::vector<Point32f> xis,
@@ -381,9 +430,9 @@ namespace icl {
                                  float focalLength)
       throw (NotEnoughDataPointsException,SingularMatrixException) {
   
-  #ifndef ICL_HAVE_MKL
-  	return calibrate_pinv(Xws,xis,focalLength);
-  #else
+      //  #ifndef ICL_HAVE_MKL
+      // 	return calibrate_pinv(Xws,xis,focalLength);
+      //#else
       // TODO: normalize points
       // TODO: check whether we have svd (IPP) available
       checkAndFixPoints(Xws,xis);
@@ -412,7 +461,7 @@ namespace icl {
         Q(i,j) = V(11,j*4+i);
       }
       return Camera::createFromProjectionMatrix(Q, focalLength);
-  #endif
+      //#endif
     }
   
     void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis) throw (NotEnoughDataPointsException) {
@@ -657,6 +706,13 @@ namespace icl {
     }
   
     // }}}
+
+    /// estimates a 3D object world position wrt.
+    Mat Camera::estimatePose(const std::vector<Vec> &worldPositions, const std::vector<utils::Point32f> &UVs){
+      TODO_LOG("implement this function");
+      return Mat::id();
+    }
+
   
     Vec Camera::estimate_3D(const std::vector<Camera*> cams,
                             const std::vector<Point32f> &UVs,
