@@ -169,7 +169,8 @@ namespace icl{
       enum algorithm{
         regionMean, //!< regionMean threshold calculation
         tiledNN,    //!< tiled threshold with nearest neighbour interpolation
-        tiledLIN    //!< tiled threshold with linear interpolation
+        tiledLIN,   //!< tiled threshold with linear interpolation
+        global      //!< simple global threshold
       };
       
       /// create a new LocalThreshold object with given mask-size and global threshold and RegionMean algorithm
