@@ -34,6 +34,7 @@
 
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/ConfigFile.h>
+#include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLQt/Common.h>
 #include <fstream>
 
@@ -628,6 +629,86 @@ namespace icl{
       return image;
     }
 
+    namespace{
+      struct LMAOptUtil{
+        typedef math::LevenbergMarquardtFitter<double> LMA;
+        typedef LMA::Vector vec;
+        typedef LMA::Params params;
+        typedef LMA::Matrix mat;
+        
+        Camera cam;
+        Mat P,T;
+        LMAOptUtil(const Camera &cam):cam(cam){
+          P = cam.getProjectionMatrix();
+          T = cam.getCSTransformationMatrix();
+        }
+
+        static Mat m(const params &p){
+          return create_hom_4x4<float>(p[0],p[1],p[2],p[3]*1000,p[4]*1000,p[5]*1000);
+        }
+        
+        Camera fixCam(const params &par){
+          Mat3 R = T.part<0,0,3,3>();
+          Vec3 pOrig =  cam.getPosition().resize<1,3>(); //T.part<3,0,1,3>();
+          Mat d = m(par);
+          Mat3 dR = d.part<0,0,3,3>();
+          Vec3 dt = d.part<3,0,1,3>();
+
+          Mat3 dRR = dR * R;
+ 
+          Camera c = cam;
+          c.setUp(Vec(dRR(0,1), dRR(1,1), dRR(2,1), 1));
+          c.setNorm(Vec(dRR(0,2), dRR(1,2), dRR(2,2), 1));
+          c.setPosition( (pOrig - dRR.transp() * dt).resize<1,4>(1));
+
+          return c;
+        }
+        Mat getFixedCSMatrix(const params &p){
+          return  m(p) * T;
+        }
+        
+        vec f(const params &p, const vec &x) const{
+          Mat Q = P * m(p) * T;
+          Vec y = Q * Vec(x[0],x[1],x[2],1);
+          vec r(2);
+          r[0] = y[0]/y[3];
+          r[1] = y[1]/y[3];
+          return r;
+        }
+        
+        static Camera optimize(const Camera &init, 
+                               const std::vector<Vec> &Xws, 
+                               const std::vector<Point32f> &xis){
+        
+          LMAOptUtil u(init);
+          LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
+                  0.1, 1000);
+          //lma.setDebugCallback();
+
+          int n = (int)Xws.size();
+          mat xs(3,n), ys(2,n);
+          for(int i=0;i<n;++i){
+            xs(0,i) = Xws[i].x;
+            xs(1,i) = Xws[i].y;
+            xs(2,i) = Xws[i].z;
+
+            ys(0,i) = xis[i].x;
+            ys(1,i) = xis[i].y;
+          }
+                    
+          LMA::Result r = lma.fit(xs, ys, params(6,0.0));
+          std::cout << "LMA Optimization Results: " << std::endl << r << std::endl;
+          
+          return u.fixCam(r.params);
+        }
+      };
+    }
+    
+    Camera CameraCalibrationUtils::optimize_extrinsic_lma(const Camera &init, const std::vector<Vec> &Xws, 
+                                                          const std::vector<Point32f> &xis){
+      return LMAOptUtil::optimize(init, Xws, xis);
+    }
+
     CameraCalibrationUtils::CalibrationResult
     CameraCalibrationUtils::perform_calibration(const std::vector<FoundMarker> &markers,
                                                 const std::vector<bool> &enabledCfgFiles,
@@ -635,7 +716,9 @@ namespace icl{
                                                 const geom::Mat &Trel, const utils::Size &imageSize,
                                                 bool &deactivatedCenters, bool useCorners,
                                                 bool normalizeError, BestOfNSaver *saver,
-                                                bool &haveAnyCalibration, geom::Scene &scene){
+                                                bool &haveAnyCalibration, geom::Scene &scene,
+                                                const geom::Camera *givenIntrinsicParams,
+                                                bool performLMAbasedOptimiziation){
       CalibrationResult res;
       res.error = 0;
       std::vector<Vec> xws,xwsCentersOnly;
@@ -665,14 +748,25 @@ namespace icl{
       deactivatedCenters = false;
       while(true){
         try{
-          Camera &cam = scene.getCamera(0);
-          
+          scene.lock();
+          Camera cam = scene.getCamera(0);
           {
             Mutex::Locker lock(saver);
-            cam = Camera::calibrate_pinv(*W[idx], *I[idx]);
+            if(givenIntrinsicParams){
+              cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams);
+            }else{
+              cam = Camera::calibrate_pinv(*W[idx], *I[idx]);
+            }
             cam.getRenderParams().viewport = Rect(Point::null,imageSize);
             cam.getRenderParams().chipSize = imageSize;
+            
+            if(performLMAbasedOptimiziation){
+              cam = optimize_extrinsic_lma(cam, *W[idx], *I[idx]);
+            }
           }
+          scene.getCamera(0) = cam;
+          scene.unlock();
+
           
           float error = 0;
           

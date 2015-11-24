@@ -347,7 +347,7 @@ namespace icl {
     Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
                                        const Camera &intrinsicCamValue, const RenderParams &renderParams)
       throw (NotEnoughDataPointsException,SingularMatrixException) {
-        return calibrate_extrinsic(Xws, xis, intrinsicCamValue.getProjectionMatrix(), renderParams);
+      return calibrate_extrinsic(Xws, xis, intrinsicCamValue.getProjectionMatrix(), renderParams);
     }
 
     
@@ -358,36 +358,56 @@ namespace icl {
       return calibrate_extrinsic(Xws, xis, k(0,0), k(1,1), k(1,0), k(2,0), k(2,1), renderParams);
     }
 
+    template<class T, unsigned int N, unsigned int M>
+    inline T norm3_local(const FixedMatrix<T, N, M> &m){
+      return ::sqrt(sqr(m[0]) + sqr(m[1]) + sqr(m[2]) );
+    }
+
     Camera Camera::calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
                                        float fx, float fy, float s, float px ,float py,
                                        const RenderParams &renderParams)
     throw (NotEnoughDataPointsException,SingularMatrixException) {
-        checkAndFixPoints(Xws,xis);
+      checkAndFixPoints(Xws,xis);
       
       int n = (int)Xws.size();
-      
+    
       DynMatrix<double> M(12,2*n);
       for(int i=0;i<n;++i){
         double x = Xws[i].x, y = Xws[i].y, z = Xws[i].z, u = xis[i].x, v = xis[i].y;
         double du = px-u, dv = py-v;
         const double F[12] = {x,y,z,1,x,y,z,1,x,y,z,1};
-        double A[12] = { fx,fx,fx,fx, s, s, s, s, du,du,du,du };
-        double B[12] = { 0, 0, 0, 0, fy,fy,fy,fy, dv,dv,dv,dv };
+        const double A[12] = { fx,fx,fx,fx, s, s, s, s, du,du,du,du };
+        const double B[12] = { 0, 0, 0, 0, fy,fy,fy,fy, dv,dv,dv,dv };
         double *a = &M(0,2*i), *b = &M(0,2*i+1);
         for(int j=0;j<12;++j){
-          a[i] = A[i] * F[i];
-          b[i] = B[i] * F[i];
+          a[j] = A[j] * F[j];
+          b[j] = B[j] * F[j];
         }
       }
+
       DynMatrix<double> _U,_s,V;
       M.svd(_U,_s,V);
   
-      Mat RT = Mat::id();
+      typedef math::FixedMatrix<double,4,4> DMat;
+      typedef math::FixedMatrix<double,3,3> DMat3;
+      typedef math::FixedMatrix<double,1,3> DVec3;
+
+      DMat RT = Mat::id();
       std::copy(V.col_begin(11), V.col_end(11), RT.begin());
+        
+      DMat3 R = RT.part<0,0,3,3>();
+      DVec3 t = RT.part<3,0,1,3>();
+
+      DMat3 r,q;
+      R.decompose_RQ(r,q);
+      DMat3 Ri = q.transp();
       
-      return Camera(Vec(RT(3,0), RT(3,1), RT(3,2), 1),
-                    Vec(RT(0,2), RT(1,2), RT(2,2), 1),
-                    Vec(RT(0,1), RT(1,1), RT(2,1), 1),
+      double norm = 3./(r(0,0) + r(1,1) + r(2,2));
+      t = -Ri * ( t * norm );
+      
+      return Camera(Vec(t[0],    t[1],    t[2],    1),
+                    Vec(Ri(2,0), Ri(2,1), Ri(2,2), 1),
+                    Vec(Ri(1,0), Ri(1,1), Ri(1,2), 1),
                     1, Point32f(px,py), fx, fy, s, renderParams);
     }
       /** @} @{ @name utils::projection functions */

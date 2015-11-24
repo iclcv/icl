@@ -142,19 +142,32 @@ void init(){
            << (VScroll().label("calibration objects") 
                << calibFileData.objGUI
                )
-           << (HBox().maxSize(100,3)
-               << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
-                                                                 "of the actually detected points and the points\n"
-                                                                 "that are projected into the scene using the\n"
-                                                                 "current camera calibration result\n"
-                                                                 "If 'normalized error' is checked, the sum of the\n"
-                                                                 "is not normalized by the number of points N\n"
-                                                                 "but by N^2. To make the error comparable, it is\n"
-                                                                 "also mutiplied by 100 in this case.")
-               << CheckBox("nomalized error",true).out("errNormalized").tooltip("if checked, the total calibration error\n"
-                                                                                "is not devided by the number of calibration points N,\n"
-                                                                                "but by N^2 in order to avoid favoring frames where\n"
-                                                                                "only few markers were found.")
+           << (HBox().maxSize(100,4)
+               << ( VBox()
+                    << CheckBox("nomalized error",true).out("errNormalized").tooltip("if checked, the total calibration error\n"
+                                                                                     "is not devided by the number of calibration points N,\n"
+                                                                                     "but by N^2 in order to avoid favoring frames where\n"
+                                                                                     "only few markers were found.")
+                    
+                    << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
+                                                                      "of the actually detected points and the points\n"
+                                                                      "that are projected into the scene using the\n"
+                                                                      "current camera calibration result\n"
+                                                                      "If 'normalized error' is checked, the sum of the\n"
+                                                                      "is not normalized by the number of points N\n"
+                                                                      "but by N^2. To make the error comparable, it is\n"
+                                                                      "also mutiplied by 100 in this case.")
+                    )
+               << Combo("default,extr.,extr. + lma").label("opt. mode").handle("extr").hideIf(!pa("-intr")).tooltip("in case you passed the program argument "
+                                                                                                                    "<i>\"-intr FILENAME\"</i> to the "
+                                                                                                                    "icl-camera-calibration application, "
+                                                                                                                    "you can here define whether to perform "
+                                                                                                                    "the default joint in/extrinsic calibration or "
+                                                                                                                    "wheter to use the given intrinsic parameters "
+                                                                                                                    "to obtain more optimized extrinsic "
+                                                                                                                    "calibration results. The lma mode will add an "
+                                                                                                                    "additional levenberg-marquardt base "
+                                                                                                                    "optimization step.")
                )
            << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
            << ( VBox().maxSize(100,6).minSize(1,6) 
@@ -449,10 +462,22 @@ void run(){
   }
 
   bool deactivatedCenters = false;
+  static Camera *givenIntrinsicCamera = 0;
+  static bool haveIntr = pa("-intr");
+  if(haveIntr && !givenIntrinsicCamera){
+    givenIntrinsicCamera = new Camera(*pa("-intr"));
+  }
+  Camera *useIntrinsicCam = givenIntrinsicCamera;
+  std::string extrMode = gui["extr"];
+  if(haveIntr && extrMode == "default"){
+    useIntrinsicCam = 0;
+  }
+  
   CCU::CalibrationResult res = CCU::perform_calibration(markers,enabled, Ts, Trel, image->getSize(),
                                                         deactivatedCenters, gui["useCorners"],
                                                         gui["errNormalized"], bestOfNSaver,
-                                                        haveAnyCalibration, scene);
+                                                        haveAnyCalibration, scene, 
+                                                        useIntrinsicCam, extrMode == "extr. + lma");
   gui["status"] = res.status;
   gui["error"] = res.error;
   gui["save_remaining_frames"] = res.saveRemainingFrames;
@@ -500,6 +525,7 @@ int main(int n, char **ppc){
                 "-convert-output-size|-os(WxH) "
                 "-output|-o(output-xml-file-name) "
                 "-normalize-input-image|-n "
+                "-use-intrinsic-camera-parameters|-intr(camera-filename) "
                 "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) " 
                 ,init,run).exec();
 }

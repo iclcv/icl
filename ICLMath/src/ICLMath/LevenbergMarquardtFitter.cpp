@@ -166,8 +166,9 @@ namespace icl{
       }
 
       Scalar e = error(ys,y_est);
+      Scalar eInit = e;
       if(e < minError){
-        Result r = {-1, e, lambdas, params};
+        Result r = {-1, eInit, e, lambdas, params};
         if(dbg) dbg(r);
         return r;
       }
@@ -200,7 +201,7 @@ namespace icl{
               if (tmp > maxN) maxN = tmp;
             }
             if (maxN <= EPS1) {
-              Result result = { it, e, lambdas, params};
+              Result result = { it, eInit, e, lambdas, params};
               return result;
             }
 
@@ -233,13 +234,13 @@ namespace icl{
           Scalar e_new = error(ys, y_est);
 
           if(e_new < MIN_E){
-            Result result = { it, e_new, lambdas, params_new};
+            Result result = { it, eInit, e_new, lambdas, params_new};
             return result;
           }
 
           // stop if the change is small
           if (pSolved.norm() <= EPS2*(params.norm() + EPS2)) {
-            Result result = { it, e_new, lambdas, params_new};
+            Result result = { it, eInit, e_new, lambdas, params_new};
             return result;
           }
 
@@ -271,7 +272,7 @@ namespace icl{
                 if (tmp > maxN) maxN = tmp;
               }
               if (maxN <= EPS1) {
-                Result result = { it, e, lambdas, params};
+                Result result = { it, eInit, e, lambdas, params};
                 return result;
               }
             }
@@ -287,19 +288,19 @@ namespace icl{
             v[o] *= 2.0;
 
             if (v[o] > 1.e15) {
-              Result r = { it, e, lambdas, params };
+              Result r = { it, eInit, e, lambdas, params };
               if(dbg) dbg(r);
               return r;
             }
           }
 
           if(dbg){
-            Result r = { it, e, lambdas, params};
+            Result r = { it, eInit, e, lambdas, params};
             dbg(r);
           }
         }
       }
-      Result result = { it, e, lambdas, params };
+      Result result = { it, eInit, e, lambdas, params };
       return result;
     }
 
@@ -331,8 +332,10 @@ namespace icl{
       y_est = fMat(params, xs);
 
       Scalar e = error(ys,y_est);
+      Scalar eInit = e;
+
       if(e < minError){
-        Result r = {-1, e, lambdas, params};
+        Result r = {-1, eInit, e, lambdas, params};
         if(dbg) dbg(r);
         return r;
       }
@@ -355,7 +358,7 @@ namespace icl{
               if (tmp > maxN) maxN = tmp;
             }
             if (maxN <= EPS1) {
-              Result result = { it, e, lambdas, params};
+              Result result = { it, eInit, e, lambdas, params};
               return result;
             }
 
@@ -383,13 +386,13 @@ namespace icl{
           Scalar e_new = error(ys, y_est);
 
           if(e_new < MIN_E){
-            Result result = { it, e_new, lambdas, params_new};
+            Result result = { it, eInit, e_new, lambdas, params_new};
             return result;
           }
 
           // stop if the change is small
           if (pSolved.norm() <= EPS2*(params.norm() + EPS2)) {
-            Result result = { it, e_new, lambdas, params_new};
+            Result result = { it, eInit, e_new, lambdas, params_new};
             return result;
           }
 
@@ -415,7 +418,7 @@ namespace icl{
                 if (tmp > maxN) maxN = tmp;
               }
               if (maxN <= EPS1) {
-                Result result = { it, e, lambdas, params};
+                Result result = { it, eInit, e, lambdas, params};
                 return result;
               }
             }
@@ -431,19 +434,19 @@ namespace icl{
             v[o] *= 2.0;
 
             if (v[o] > 1.e15) {
-              Result r = { it, e, lambdas, params };
+              Result r = { it, eInit, e, lambdas, params };
               if(dbg) dbg(r);
               return r;
             }
           }
 
           if(dbg){
-            Result r = { it, e, lambdas, params};
+            Result r = { it, eInit, e, lambdas, params};
             dbg(r);
           }
         }
       }
-      Result result = { it, e, lambdas, params };
+      Result result = { it, eInit, e, lambdas, params };
       return result;
     }
 

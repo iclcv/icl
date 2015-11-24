@@ -259,13 +259,14 @@ namespace icl{
       /// Utility structure, that represents a fitting result
       struct Result{ 
         int iteration;                //!< number of iterations needed
+        Scalar initialError;          //!< initial error
         Scalar error;                 //!< reached error
         std::vector<Scalar> lambdas;  //!< last lambdas (one per output)
         Params params;                //!< final parameters
       
         /// overloaded ostream-operator
         friend ICLMath_API inline std::ostream &operator<<(std::ostream &str, const Result &d){
-          return str << "iteration: " << d.iteration << "  error:" << d.error 
+          return str << "iteration: " << d.iteration << " initial error: " << d.initialError << " error:" << d.error 
                      << "  lambda[0]:" << d.lambdas[0] << "  params:" << d.params.transp();
         }
       };

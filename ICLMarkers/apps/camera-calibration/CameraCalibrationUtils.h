@@ -197,6 +197,9 @@ namespace icl{
         float saveBestError;
       };
 
+      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws, 
+                                                 const std::vector<utils::Point32f> &xis);
+
       /// actually performs the camera calibration
       static CalibrationResult perform_calibration(const std::vector<FoundMarker> &markers,
                                                    const std::vector<bool> &enabledCfgFiles,
@@ -204,7 +207,9 @@ namespace icl{
                                                    const geom::Mat &Trel, const utils::Size &imageSize,
                                                    bool &deactivatedCenters, bool useCorners,
                                                    bool normalizeError, BestOfNSaver *saver,
-                                                   bool &haveAnyCalibration, geom::Scene &scene);
+                                                   bool &haveAnyCalibration, geom::Scene &scene,
+                                                   const geom::Camera *givenIntrinsicParams=0,
+                                                   bool performLMAbasedOptimiziation=false);
 
       /// parses a camera calibration file
       static CalibFile parse_calib_file(const std::string &filename, int calibrationFileIndex, CalibFileData &data);
