@@ -218,7 +218,69 @@ namespace icl {
       throw (NotEnoughDataPointsException,math::SingularMatrixException);
 
       /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
-      /** TODO provide algorithm
+      /** Outgoing from the a the camera's projection law: (u',v', 0, h) = P C x, which results in homogenized real screen coordinates 
+          u = u'/h and v = v'/h the method internally creates a system of linear equation to get a least square algebraic optimum.
+          
+          Let \f[
+           P = \left(\begin{array}{cccc} 
+           fm_x & s     & p_x & 0 \\
+           0    & f m_y & p_y & 0 \\
+           0    & 0     & 0 &   0 \\
+           0    & 0     & 1 &   0
+         \end{array}\right)
+          \f]
+          
+          be the projection matrix and C the camera's coordinate frame transformation matrix (which transforms points from
+          the world frame into the local camera frame. Further, we denote the lines of C by C<sub>1</sub>, C<sub>2</sub>, 
+          C<sub>3</sub> and C<sub>4</sub>. 
+
+          The projection law leads to the two formulas for u and v:
+
+          \f[
+          u = \frac{fm_x C_1 x + s C_2 x + p_x C_3 x}{C_3 x} 
+          \f]
+          and 
+          \f[
+          v = \frac{fm_y C_2 x + p_y C_3 x}{C_3 x} 
+          \f]
+
+          which can be made linear wrt. the coefficients of C by deviding by C<sub>3</sub>x  and then bringing the 
+          left part to the right, yielding:
+
+          \f[
+          fm_x C_1 x + s C_2 x + (p_x - u) C_3 x = 0
+          \f]
+          and 
+          \f[
+          fm_y C_2 x + (p_y - v) C_3 x = 0
+          \f]
+
+          This allows us to create a linear system of equations of the shape Ax=0, which is solved 
+          by finding the eigenvector to the smallest eigenvalue of A (which is internally done using SVD).
+
+          For each input point x=(x,y,z,1) and corresponding image point (u,v), 
+          we define d<sub>u</sub> = p<sub>x</sub> - u and  d<sub>v</sub> = p<sub>y</sub> - v 
+          in order to get two lines of the equation
+
+          \f[
+           P = \left(\begin{array}{cccccccccccc} 
+           fm_x x & fm_x y & fm_z x & fm_x & s x & s y & s z & s & d_u x & d_u y & d_u z & d_u \\
+           0 & 0 & 0 & 0 & fm_y x & fm_y y & fm_y x & fm_y & d_v x & d_v y & d_v z & d_v \\
+           ...
+         \end{array}\right) ( C_1 C_2 C_3 )^T
+          \f].
+
+          Solving this yields a 12D vectors whose elements written row-by-row into the first 3 lines 
+          of a 4x4 identity matrix is almost our desired relative camera transform matrix C. Actually, 
+          we receive the a scaled solution kC, which has to be normalized to make the rotation part of C
+          orthogonal
+
+          However, 
+          
+          
+          
+          \section PARAMS The function parameters
+
           fx, fy are the known camera x- and y-focal lengths, s is the skew, and px and py is the principal point offset */
       static Camera calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
                                         float fx, float fy, float s, float px ,float py,

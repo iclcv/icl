@@ -158,7 +158,7 @@ void init(){
                                                                       "but by N^2. To make the error comparable, it is\n"
                                                                       "also mutiplied by 100 in this case.")
                     )
-               << Combo("default,extr.,extr. + lma").label("opt. mode").handle("extr").hideIf(!pa("-intr")).tooltip("in case you passed the program argument "
+               << Combo("default,extr.,!extr. + lma").label("opt. mode").handle("extr").hideIf(!pa("-intr")).tooltip("in case you passed the program argument "
                                                                                                                     "<i>\"-intr FILENAME\"</i> to the "
                                                                                                                     "icl-camera-calibration application, "
                                                                                                                     "you can here define whether to perform "
