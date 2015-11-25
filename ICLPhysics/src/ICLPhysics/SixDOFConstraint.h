@@ -65,7 +65,7 @@ namespace icl {
       /// Return the upper linear limit.
       geom::Vec getLinearUpperLimit();
       
-      
+			float getAngle(int index);
       
       /* Set lower angular limits of the constraint pivot.
        * Setting the lower limit to higher than the upper limit unlocks the axis.
@@ -84,10 +84,10 @@ namespace icl {
       geom::Vec getAngularUpperLimit();
       
       /// Set the angular motor settings.
-      void setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce);
+			void setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation = false);
       
       /// Set the linear motor settings.
-      void setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce);
+			void setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation = false);
     };
   }
 }

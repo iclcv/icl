@@ -113,7 +113,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLCV/src
                            ${ICL_SOURCE_DIR}/ICLGeom/src
                            ${ICL_SOURCE_DIR}/ICLMarkers/src
-                           ${BULLET_INCLUDE_DIRS})
+						   "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 ELSE()
 INCLUDE_DIRECTORIES(BEFORE src
                            ${CMAKE_BINARY_DIR}/src
@@ -126,7 +126,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLCV/src
                            ${ICL_SOURCE_DIR}/ICLGeom/src
                            ${ICL_SOURCE_DIR}/ICLMarkers/src
-                           ${BULLET_INCLUDE_DIRS})
+						   "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 ENDIF()
 
 ADD_LIBRARY(ICLPhysics SHARED ${SOURCES} ${HEADERS})

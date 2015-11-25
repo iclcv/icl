@@ -172,5 +172,17 @@ namespace icl{
     void PhysicsObject::collisionCallback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos) {
       m_collisionCallback(self, other,pos);
     }
+
+		void PhysicsObject::setObjectID(std::string const &id) {
+			m_id = id;
+		}
+
+		std::string PhysicsObject::getObjectID() {
+			return m_id;
+		}
+
+		std::string PhysicsObject::getObjectID() const {
+			return m_id;
+		}
   }
 }

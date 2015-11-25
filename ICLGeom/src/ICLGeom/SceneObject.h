@@ -223,6 +223,9 @@ namespace icl{
   
       /// returns object vertices (const)
       ICLGeom_API const std::vector<Vec> &getVertices() const;
+
+			/// returns object normals (const)
+			ICLGeom_API const std::vector<Vec> &getNormals() const;
   
       /// returns object vertex colors
       /** If the number of vertex colors is changed, the object needs to be

@@ -49,7 +49,7 @@ namespace icl {
       setAngularUpperLimit(geom::Vec(0,0,0));
       m_objects.push_back(a);
       m_objects.push_back(b);
-      initUserPointer();
+			initUserPointer();
     }
     SixDOFConstraint::SixDOFConstraint(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB,const bool useLinearReferenceFrameA) {
       init(a,b,frameInA,frameInB,useLinearReferenceFrameA);
@@ -111,6 +111,9 @@ namespace icl {
       return bullet2icl_scaled(upper);
     }
     
+		float SixDOFConstraint::getAngle(int index) {
+			return dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getAngle(index);
+		}
     
     void SixDOFConstraint::setAngularLowerLimit(const geom::Vec &lower) {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularLowerLimit(icl2bullet_unscaled(lower));
@@ -129,18 +132,26 @@ namespace icl {
       return bullet2icl_unscaled(upper);
     }
       
-    void SixDOFConstraint::setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce) {
+		void SixDOFConstraint::setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation) {
       btGeneric6DofConstraint *cons = dynamic_cast<btGeneric6DofConstraint*>(m_constraint);
       cons->getRotationalLimitMotor(index)->m_enableMotor = enableMotor;
       cons->getRotationalLimitMotor(index)->m_targetVelocity = targetVelocity;
-      cons->getRotationalLimitMotor(index)->m_maxMotorForce = icl2bullet(icl2bullet(maxMotorForce));
+			cons->getRotationalLimitMotor(index)->m_maxMotorForce = icl2bullet(icl2bullet(maxMotorForce));
+			if (force_activation && m_objects.size() > 1) {
+				m_objects[0]->setActive(true);
+				m_objects[1]->setActive(true);
+			}
     }
     
-    void SixDOFConstraint::setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce) {
+		void SixDOFConstraint::setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation) {
       btGeneric6DofConstraint *cons = dynamic_cast<btGeneric6DofConstraint*>(m_constraint);
       cons->getTranslationalLimitMotor()->m_enableMotor[index] = enableMotor;
       cons->getTranslationalLimitMotor()->m_targetVelocity[index] = icl2bullet(targetVelocity);
-      cons->getTranslationalLimitMotor()->m_maxMotorForce[index] = icl2bullet(maxMotorForce);
+			cons->getTranslationalLimitMotor()->m_maxMotorForce[index] = icl2bullet(maxMotorForce);
+			if (force_activation && m_objects.size() > 1) {
+				m_objects[0]->setActive(true);
+				m_objects[1]->setActive(true);
+			}
     }
   }
 }

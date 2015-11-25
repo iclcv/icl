@@ -43,9 +43,21 @@ namespace icl{
         - rigid object
         - soft body objects 
     */
-    class ICLPhysics_API RigidObject : public PhysicsObject{
-      
-      public:
+		class ICLPhysics_API RigidObject : public PhysicsObject{
+
+		public:
+
+			enum ActivationMode {
+				DYNAMIC = 0,	// ACTIVE_TAG - Disables the object after a certain time interval. Use setActive() to make it active again and reset the time-counter
+				ACTIVE_FOREVER = 1,	// DISABLE_DEACTIVATION
+				INACTIVE_FOREVER = 2,	// DISABLE_SIMULATION
+				BT_ISLAND_SLEEPING = 3,	// ISLAND_SLEEPING - (not recommented)
+				TOWARDS_INACTIVE = 4	// WANTS_DEAKTIVATION - disables the object after each step directly
+			};
+
+			/**
+			 * @brief RigidObject
+			 */
       RigidObject();
       
       virtual btRigidBody *getRigidBody();
@@ -61,10 +73,10 @@ namespace icl{
       /// sets the angular velocity of that object
       void setAngularVelocity(geom::Vec velocity);
       
-      /// sets the linear velocity of that object
+			/// returns the linear velocity of that object
       geom::Vec getLinearVelocity();
       
-      /// sets the angular velocity of that object
+			/// returns the angular velocity of that object
       geom::Vec getAngularVelocity();
       
       ///apply a force at the point relPos
@@ -72,9 +84,17 @@ namespace icl{
       
       ///apply a force to the center
       void applyCentralForce(geom::Vec force);
+
+			void setDeactivationTime(float time);
       
       /// sets the angular and linear damping of that object
       void setDamping(float linear, float angular);
+
+			/// sets the corresponding bullet activation state for this object
+			void setActivationMode(ActivationMode const mode);
+
+			/// activates this component regarding the current activation mode
+			void setActive(bool force_active = false);
       
       virtual ~RigidObject();
       

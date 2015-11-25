@@ -75,6 +75,25 @@ namespace icl{
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::setDamping: physical object was null");
       getRigidBody()->setDamping(linear, angular);
     }
+
+		void RigidObject::setActivationMode(ActivationMode const mode) {
+			switch (mode) {
+				case(DYNAMIC): getRigidBody()->setActivationState(ACTIVE_TAG); break;
+				case(ACTIVE_FOREVER): getRigidBody()->setActivationState(DISABLE_DEACTIVATION); break;
+				case(INACTIVE_FOREVER): getRigidBody()->setActivationState(DISABLE_SIMULATION); break;
+				case(BT_ISLAND_SLEEPING): getRigidBody()->setActivationState(ISLAND_SLEEPING); break;
+				case(TOWARDS_INACTIVE): getRigidBody()->setActivationState(WANTS_DEACTIVATION); break;
+				default: break;
+			}
+		}
+
+		void RigidObject::setDeactivationTime(float time) {
+			getRigidBody()->setDeactivationTime(time);
+		}
+
+		void RigidObject::setActive(bool force_active) {
+			getRigidBody()->activate(force_active);
+		}
     
     RigidObject::~RigidObject(){
       delete getRigidBody()->getMotionState();

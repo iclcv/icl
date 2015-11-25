@@ -53,8 +53,20 @@ namespace icl{
     class Constraint;
 
     /// A physical world that handles physical objects
-    class ICLPhysics_API PhysicsWorld : public utils::Lockable, public utils::Uncopyable{
+		class ICLPhysics_API PhysicsWorld : public utils::Lockable, public utils::Uncopyable{
       
+		public:
+
+			enum BulletSolverType {
+				SequentialImpulseConstraintSolver,
+				MLCP_Dantzig,
+				NNCG,
+				Lemke,
+				Default = SequentialImpulseConstraintSolver
+			};
+
+		private:
+
       friend class PhysicsObject;
       /// internal data structure (hidden)
       struct Data;
@@ -62,15 +74,17 @@ namespace icl{
       /// internal data pointer
       Data *data;
       
-      protected:
-      
+			void setSolver(BulletSolverType type);
+
+		protected:
+
       /// removes contactpoints (used when the collisionshape of an object has changed)
       void removeContactPoints(PhysicsObject *obj);
-      
-      public:
+
+		public:
 
       /// constructor with given config file name
-      PhysicsWorld();
+			PhysicsWorld(BulletSolverType solver_type = Default);
 
       /// Destructor
       ~PhysicsWorld();
@@ -97,6 +111,9 @@ namespace icl{
       /** If the given time interval tdSeconds is < 0, the actual time interval since
           the last call of this method is used */
       void step(float dtSeconds=-1, int maxSubSteps=10, float fixedTimeStep=1.f/120.f);
+
+			/// returns the last delta of time in seconds as a double value.
+			double getLastTimeDelta();
       
       ///check collision of an object with the world
       bool collideWithWorld(RigidObject* obj, bool ignoreJoints = true);
