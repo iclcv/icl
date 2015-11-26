@@ -629,6 +629,7 @@ namespace icl{
       return image;
     }
 
+    /* move to Camera.cpp
     namespace{
       struct LMAOptUtil{
         typedef math::LevenbergMarquardtFitter<double> LMA;
@@ -708,7 +709,7 @@ namespace icl{
                                                           const std::vector<Point32f> &xis){
       return LMAOptUtil::optimize(init, Xws, xis);
     }
-
+    */
     CameraCalibrationUtils::CalibrationResult
     CameraCalibrationUtils::perform_calibration(const std::vector<FoundMarker> &markers,
                                                 const std::vector<bool> &enabledCfgFiles,
@@ -753,16 +754,17 @@ namespace icl{
           {
             Mutex::Locker lock(saver);
             if(givenIntrinsicParams){
-              cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams);
+              cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams, 
+                                                Camera::RenderParams(),  performLMAbasedOptimiziation);
             }else{
-              cam = Camera::calibrate_pinv(*W[idx], *I[idx]);
+              cam = Camera::calibrate_pinv(*W[idx], *I[idx], 1, performLMAbasedOptimiziation);
             }
             cam.getRenderParams().viewport = Rect(Point::null,imageSize);
             cam.getRenderParams().chipSize = imageSize;
             
-            if(performLMAbasedOptimiziation){
-              cam = optimize_extrinsic_lma(cam, *W[idx], *I[idx]);
-            }
+            //if(performLMAbasedOptimiziation){
+            //  cam = optimize_extrinsic_lma(cam, *W[idx], *I[idx]);
+            //}
           }
           scene.getCamera(0) = cam;
           scene.unlock();

@@ -197,8 +197,9 @@ namespace icl{
         float saveBestError;
       };
 
-      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws, 
-                                                 const std::vector<utils::Point32f> &xis);
+      // this was move to the camera class
+      //      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws, 
+      //                                           const std::vector<utils::Point32f> &xis);
 
       /// actually performs the camera calibration
       static CalibrationResult perform_calibration(const std::vector<FoundMarker> &markers,
