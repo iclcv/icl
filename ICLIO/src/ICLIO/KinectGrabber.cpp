@@ -318,7 +318,9 @@ namespace icl{
           ImgBase *pDst = &dst;
 
           if((currentColorMode != KinectGrabber::GRAB_RGB_IMAGE) && (irShift != Off)){
-            TranslateOp t(-4.8, -3.9, irShift == Fast ? interpolateNN : interpolateLIN);
+            //            TranslateOp t(-4.8, -3.9, irShift == Fast ? interpolateNN : interpolateLIN);
+            // found another value in literature, which sounds more plausible !
+            TranslateOp t(-3, -3, irShift == Fast ? interpolateNN : interpolateLIN);
             t.apply(&src, &pDst);
             // apply affine warp
           }else{

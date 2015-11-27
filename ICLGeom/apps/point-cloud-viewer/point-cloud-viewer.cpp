@@ -133,6 +133,41 @@ void init(){
     obj2.setPointSmoothingEnabled(false);
     grabber2.grab(obj2);
   }
+  
+  if(pa("-add-plane")){
+    SceneObject *plane = new SceneObject;
+    Vec p(pa("-add-plane",0),
+          pa("-add-plane",1),
+          pa("-add-plane",2),1);
+    Vec n(pa("-add-plane",3),
+          pa("-add-plane",4),
+          pa("-add-plane",5),1);
+    
+    Vec nx;
+    if(n[1] || n[2]){
+      nx = cross(n, n + Vec(1,0,0));
+    }else{
+      nx = Vec(0,1,0,1);
+    }
+    Vec ny = cross(n, nx);
+    
+    nx = normalize3(nx);
+    nx[3] = 0;
+    ny = normalize3(ny);
+    ny[3] = 0;
+
+    plane->addVertex(p + nx * 1500 + ny * 1500);
+    plane->addVertex(p + nx * 1500 - ny * 1500);
+    plane->addVertex(p - nx * 1500 - ny * 1500);
+    plane->addVertex(p - nx * 1500 + ny * 1500);
+    
+    plane->addQuad(0,1,2,3,GeomColor(255,50,150,100));
+    scene.addObject(plane,true);
+
+    scene.getLight(0).setAmbientEnabled(true);
+    scene.getLight(0).setOn(true);
+    scene.getLight(0).setAmbient(GeomColor(255,255,255,100));
+  }
 }
 
 void run_octree(){
@@ -179,6 +214,7 @@ int main(int n, char **ppc){
              "camera parameters to be tuned manually at runtime");
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(point-cloud-source,descrition) "
                 "-point-cloud-input-2|-pci2(point-cloud-source,descrition) "
+                "-add-plane(px,py,pz,nx,ny,nz) "
                 "-view-camera|-c(filename) -tune -visualize-cameras|-vc(...) "
                 "-show-world-frame|-cs -pointing|-p",init,run,run_octree).exec();
 }

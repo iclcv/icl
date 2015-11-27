@@ -61,6 +61,8 @@ CCU::CalibFileData calibFileData;
 
 AdjustGridMouseHandler gridAdjuster;
 
+SmartPtr<Camera> knownIntrinsicCameraParams;
+
 
 void mouse(const MouseEvent &e){
   currentMousePos = e.getPos();
@@ -87,8 +89,76 @@ void change_plane(const std::string &handle){
   CCU::change_plane(handle, planeOptionGUI, scene, calibFileData);
 }
 
+struct IntrinsicParams {
+  std::string id;
+  Size size;
+  float fx, fy, px, py, skew;
+};
 
 void init(){
+  bool pif = pa("-if"), pip = pa("-ip"), pis = pa("-is");
+  if(!!pif + !! pip + !! pis > 1){
+    throw ICLException("The program arguments -if -ip and -is are exclusive");
+  }
+  if(pif){
+    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(*pa("-if")));
+  }else if(pip){
+    Camera c;
+    c.setFocalLength(1);
+    c.setSamplingResolutionX(pa("-ip",0));
+    c.setSamplingResolutionY(pa("-ip",1));
+    c.setPrincipalPointOffset(pa("-ip",2),pa("-ip",3));
+    c.setSkew(pa("-ip",4));
+    c.setResolution(Size::null); // this means, we assume the target resolution
+    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(c));
+  }else if(pis){
+    static const int N = 3;
+    // specs were taken from
+    // 3D with Kinect
+    // Jan Smisek, Michal Jancosek and Tomas Pajdla
+    // CMP, Dept. of Cybernetics, FEE, Czech Technical University in Prague
+    // http://cmp.felk.cvut.cz/ftp/articles/pajdla/Smisek-CDC4CV-2011.pdf
+    static IntrinsicParams ips[N] = {
+      { str("kinecti"), Size::VGA,  585, 585, 316, 247.6, 0 },
+      { str("kinectd"), Size::VGA,  585, 585, 316, 247.6, 0 },
+      { str("kinectc"), Size::VGA,  524, 524, 316.7, 238.5, 0 }
+    };
+    std::string s = pa("-is");
+    if(s == "list"){
+      std::cout << "List of well known camera specs: " << std::endl;
+      for(int i=0;i<N;++i){
+        IntrinsicParams &p = ips[i];
+        std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy 
+                  << " px:" << p.px  << "py:" << p.py << " skew: " << p.skew << std::endl;
+      }
+      throw ICLException("aborted after listing known camera specs");
+    }else{
+      for(int i=0;i<N;++i){
+        IntrinsicParams &p = ips[i];
+        if(p.id == s){
+          Camera c;
+          c.setFocalLength(1);
+          c.setSamplingResolutionX(p.fx);
+          c.setSamplingResolutionY(p.fy);
+          c.setPrincipalPointOffset(p.px, p.py);
+          c.setSkew(p.skew);
+          c.setResolution(p.size);
+          knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(c));
+          break;
+        }
+      }
+      if(!knownIntrinsicCameraParams){
+        std::cout << "List of well known camera specs: " << std::endl;
+        for(int i=0;i<N;++i){
+          IntrinsicParams &p = ips[i];
+          std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy 
+                    << " px:" << p.px  << "py:" << p.py << " skew: " << p.skew << std::endl;
+        }
+        throw ICLException("Error: could not find a known camera spec with name '" + s + "'");
+      }
+    }
+  }
+  
   bestOfNSaver = new CCU::BestOfNSaver(get_n_frames);
 
   if( !pa("-c") || !pa("-c").n() ){
@@ -158,16 +228,20 @@ void init(){
                                                                       "but by N^2. To make the error comparable, it is\n"
                                                                       "also mutiplied by 100 in this case.")
                     )
-               << Combo("default,extr.,!extr. + lma").label("opt. mode").handle("extr").hideIf(!pa("-intr")).tooltip("in case you passed the program argument "
-                                                                                                                    "<i>\"-intr FILENAME\"</i> to the "
-                                                                                                                    "icl-camera-calibration application, "
-                                                                                                                    "you can here define whether to perform "
-                                                                                                                    "the default joint in/extrinsic calibration or "
-                                                                                                                    "wheter to use the given intrinsic parameters "
-                                                                                                                    "to obtain more optimized extrinsic "
-                                                                                                                    "calibration results. The lma mode will add an "
-                                                                                                                    "additional levenberg-marquardt base "
-                                                                                                                    "optimization step.")
+               << (VBox()
+                   << Combo("default,!extr").label("opt. mode").
+                      handle("extr").hideIf(!knownIntrinsicCameraParams).tooltip("in case you passed the program argument "
+                                                                                 "<i>\"-intr FILENAME\"</i> to the "
+                                                                                 "icl-camera-calibration application, "
+                                                                                 "you can here define whether to perform "
+                                                                                 "the default joint in/extrinsic calibration or "
+                                                                                 "wheter to use the given intrinsic parameters "
+                                                                                 "to obtain more optimized extrinsic "
+                                                                                 "calibration results. The lma mode will add an "
+                                                                                 "additional levenberg-marquardt base "
+                                                                                 "optimization step.")
+                   << CheckBox("use lma",true).handle("lma").tooltip("perform 2nd tier LMA-based optrimization to minimize projection error.")
+                   )
                )
            << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
            << ( VBox().maxSize(100,6).minSize(1,6) 
@@ -461,23 +535,34 @@ void run(){
     }
   }
 
+  bool useLMA = gui["lma"];
   bool deactivatedCenters = false;
-  static Camera *givenIntrinsicCamera = 0;
-  static bool haveIntr = pa("-intr");
-  if(haveIntr && !givenIntrinsicCamera){
-    givenIntrinsicCamera = new Camera(*pa("-intr"));
+
+  Camera *intr = 0;
+  if(knownIntrinsicCameraParams){
+    Camera &c = *knownIntrinsicCameraParams;
+    Size cr = c.getResolution();
+    Size ir = image->getSize();
+    if(cr != Size::null && cr != ir){
+      float fx = float(ir.width)/float(cr.width);
+      float fy = float(ir.width)/float(cr.width);
+      c.setFocalLength(1);
+      c.setSamplingResolutionX(c.getSamplingResolutionX() * fx);
+      c.setSamplingResolutionY(c.getSamplingResolutionY() * fy);
+      c.setPrincipalPointOffset(c.getPrincipalPointOffsetX() * fx,
+                                c.getPrincipalPointOffsetY() * fy);
+      // c.setSkew(c.getSkew() * fx); fx or fy? we simply dont scale it!
+      c.setResolution(ir);
+    }
+    if(gui["extr"].as<std::string>() != "default"){
+      intr = &c;
+    }
   }
-  Camera *useIntrinsicCam = givenIntrinsicCamera;
-  std::string extrMode = gui["extr"];
-  if(haveIntr && extrMode == "default"){
-    useIntrinsicCam = 0;
-  }
-  
   CCU::CalibrationResult res = CCU::perform_calibration(markers,enabled, Ts, Trel, image->getSize(),
                                                         deactivatedCenters, gui["useCorners"],
                                                         gui["errNormalized"], bestOfNSaver,
                                                         haveAnyCalibration, scene, 
-                                                        useIntrinsicCam, extrMode == "extr. + lma");
+                                                        intr, useLMA);
   gui["status"] = res.status;
   gui["error"] = res.error;
   gui["save_remaining_frames"] = res.saveRemainingFrames;
@@ -514,6 +599,17 @@ int main(int n, char **ppc){
   pa_explain("-crop-and-rescale","crops the outer pixels of the image (hcrop_pix on the left and on the "
              "right image border and vcrop_pix on the top and bottom image border). The resulting smaller image "
              "is then scaled up to the target image size given by target_width and target_height.")
+  ("-if","use an already performed camera calibrtion file's intrinsic parameters. This is recommended in case of "
+   "a calibration object that is not very close to the camera and whose projection therefore doesn't fill the camera "
+   "image properly. In such cases, it is recommended to perform the camera calibration in a two tier-fashion. First "
+   "the calibration object is placed optimally in front of the camera in order to optimize the intrinsic camera "
+   "parameter calibration result. Then, in a second step, the result from the first calibration step is given using "
+   "the '-intr filename' arg, so that only the extrinsic camera parameters have to be optimized in the second step. ")
+  ("-ip","Though this program argument, known intrinsic camera parameters can be passed directly. By these means, "
+   "it is not necessary to create a camera-xml file in order to pass externally known parameters to this program.")
+  ("-is","For a set of cameras, known intrinsic camera parameters can be used, which usually leads to a much better "
+   "accuracy of the extrinsic camera parameter set. The available spec-names for known camera parameter sets can be "
+   "queried, by passing 'list' as a sub-arg of -is (icl-camera-calibration -is list)")
   ("-normalize-input-image","automatically scales the input image range to [0,255] and converts the input image to depth8u");
   
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
@@ -525,7 +621,9 @@ int main(int n, char **ppc){
                 "-convert-output-size|-os(WxH) "
                 "-output|-o(output-xml-file-name) "
                 "-normalize-input-image|-n "
-                "-use-intrinsic-camera-parameters|-intr(camera-filename) "
+                "-use-intrinsic-camera-parameter-file|-intr-file|-if(camera-filename) "
+                "-use-intrinsic-camera-parameters|-intr-params|-ip(fx,fy,px,py,skew) "
+                "-use-intrinsic-camera-parameter-spec|-intr-spec|-is(spec) "
                 "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) " 
                 ,init,run).exec();
 }

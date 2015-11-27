@@ -753,12 +753,18 @@ namespace icl{
           Camera cam = scene.getCamera(0);
           {
             Mutex::Locker lock(saver);
-            if(givenIntrinsicParams){
-              cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams, 
-                                                Camera::RenderParams(),  performLMAbasedOptimiziation);
-            }else{
-              cam = Camera::calibrate_pinv(*W[idx], *I[idx], 1, performLMAbasedOptimiziation);
+            try{
+              if(givenIntrinsicParams){
+                cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams, 
+                                                  Camera::RenderParams(),  performLMAbasedOptimiziation);
+              }else{
+                cam = Camera::calibrate_pinv(*W[idx], *I[idx], 1, performLMAbasedOptimiziation);
+              }
+            }catch(std::exception &e){
+              scene.unlock();
+              throw;
             }
+
             cam.getRenderParams().viewport = Rect(Point::null,imageSize);
             cam.getRenderParams().chipSize = imageSize;
             

@@ -471,6 +471,7 @@ namespace icl {
                                const std::vector<Vec> &Xws, 
                                const std::vector<Point32f> &xis){
         
+          DEBUG_LOG("staring optimization at cam position " << init.getPosition().transp());
           LMAOptUtil u(init);
           LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
                   0.1, 1000);
