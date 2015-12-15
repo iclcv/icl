@@ -85,6 +85,7 @@ void init(){
           << CheckBox("physics on",true).handle("physics on")
           << CheckBox("gravity on",true).handle("gravity on")
           << CheckBox("vis lines",true).handle("vis lines")
+          << CheckBox("vis drag",false).handle("vis drag")
           << CheckBox("vis 2nd order links",false).handle("vis links")
           << Button("pos interp. test").handle("test")
           << Button("hit  test").handle("hit test")
@@ -185,6 +186,7 @@ void run(){
   draw.render();
   model->setLinksVisible(gui["vis links"]);
   scene.setGravityEnabled(gui["gravity on"]);
+  mouse->setDragIndicatorsVisible(gui["vis drag"]);
   mouse->applyForceToModel(gui["f"],gui["r"]);
   if(gui["physics on"]){
     scene.step(1,1);

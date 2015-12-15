@@ -61,7 +61,8 @@ namespace icl{
       
       /// if enabled, links are always added twice (with few pixels distance)
       void setAddLinksTwice(bool enabled);
-
+      
+      void setDragIndicatorsVisible(bool on);
     };
 
   }
