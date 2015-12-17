@@ -70,6 +70,16 @@ namespace icl{
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyCentralForce: physical object was null");
       getRigidBody()->applyCentralForce(icl2bullet_scaled(force));
     }
+
+		void RigidObject::applyImpulse(geom::Vec impulse, geom::Vec relPos){
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyForce: physical object was null");
+			getRigidBody()->applyImpulse(icl2bullet_scaled(impulse), icl2bullet_scaled(relPos));
+		}
+
+		void RigidObject::applyCentralImpulse(geom::Vec force){
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyCentralForce: physical object was null");
+			getRigidBody()->applyCentralImpulse(icl2bullet_scaled(force));
+		}
     
     void RigidObject::setDamping(float linear, float angular){
       if(!getCollisionObject()) throw utils::ICLException("RigidObject::setDamping: physical object was null");
@@ -85,6 +95,35 @@ namespace icl{
 				case(TOWARDS_INACTIVE): getRigidBody()->setActivationState(WANTS_DEACTIVATION); break;
 				default: break;
 			}
+		}
+
+		void RigidObject::applyTorque(geom::Vec t) {
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyForce: physical object was null");
+			getRigidBody()->applyTorque(
+						btVector3(icl2bullet(icl2bullet(t[0])),
+											icl2bullet(icl2bullet(t[1])),
+											icl2bullet(icl2bullet(t[2]))
+					));
+		}
+
+		void RigidObject::applyTorqueImpulse(geom::Vec t) {
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::applyForce: physical object was null");
+			getRigidBody()->applyTorqueImpulse(
+						btVector3(icl2bullet(icl2bullet(t[0])),
+											icl2bullet(icl2bullet(t[1])),
+											icl2bullet(icl2bullet(t[2]))
+					));
+		}
+
+		geom::Vec RigidObject::getTotalForce() {
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::getTotalForce: physical object was null");
+			return bullet2icl_scaled(getRigidBody()->getTotalForce());
+		}
+
+		geom::Vec RigidObject::getTotalTorque() {
+			if(!getCollisionObject()) throw utils::ICLException("RigidObject::getTotalTorque: physical object was null");
+			btVector3 torque = getRigidBody()->getTotalTorque();
+			return geom::Vec(bullet2icl(bullet2icl(torque[0])),bullet2icl(bullet2icl(torque[1])),bullet2icl(bullet2icl(torque[2])),0);
 		}
 
 		void RigidObject::setDeactivationTime(float time) {

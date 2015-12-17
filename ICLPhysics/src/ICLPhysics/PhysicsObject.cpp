@@ -155,6 +155,26 @@ namespace icl{
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::activate(): physical object was null");
       m_physicalObject->activate(forceActivation);
     }
+
+		int PhysicsObject::getCollisionObjectType() {
+			if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::getCollisionFlags(): physical object was null");
+			return 0;//m_physicalObject->getCollisionFlags();
+		}
+
+		void PhysicsObject::setCollisionObjectType(int type) {
+			if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionFlags(): physical object was null");
+			//m_physicalObject->set;
+		}
+
+		int PhysicsObject::getCollisionFlags() {
+			if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::getCollisionFlags(): physical object was null");
+			return m_physicalObject->getCollisionFlags();
+		}
+
+		void PhysicsObject::setCollisionFlags(int flags) {
+			if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionFlags(): physical object was null");
+			m_physicalObject->setCollisionFlags(flags);
+		}
     
     void PhysicsObject::stateChanged()
     {

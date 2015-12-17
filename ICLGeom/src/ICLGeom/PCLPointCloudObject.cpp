@@ -107,12 +107,14 @@ namespace icl{
     }
     
     template<class PCLPointType>
-    PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const pcl::PointCloud<PCLPointType> &cloud){
+		PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(const pcl::PointCloud<PCLPointType> &cloud)
+			: m_pcl(0) {
       setPCL(cloud);
     }
   
     template<class PCLPointType>
-    PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(pcl::PointCloud<PCLPointType> &cloud, bool deepCopy){
+		PCLPointCloudObject<PCLPointType>::PCLPointCloudObject(pcl::PointCloud<PCLPointType> &cloud, bool deepCopy)
+			: m_pcl(0) {
       setPCL(cloud, deepCopy);
     }
     

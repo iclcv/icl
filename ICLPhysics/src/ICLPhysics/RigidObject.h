@@ -78,12 +78,28 @@ namespace icl{
       
 			/// returns the angular velocity of that object
       geom::Vec getAngularVelocity();
+
+			geom::Vec getTotalForce();
+
+			geom::Vec getTotalTorque();
       
       ///apply a force at the point relPos
       void applyForce(geom::Vec force, geom::Vec relPos);
       
       ///apply a force to the center
       void applyCentralForce(geom::Vec force);
+
+			///apply an impulse at the point relPos
+			void applyImpulse(geom::Vec force, geom::Vec relPos);
+
+			///apply an impulse to the center
+			void applyCentralImpulse(geom::Vec force);
+
+			/// apply a torque to the center
+			void applyTorque(geom::Vec t);
+
+			/// apply a torque impulse to the center
+			void applyTorqueImpulse(geom::Vec t);
 
 			void setDeactivationTime(float time);
       

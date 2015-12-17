@@ -133,6 +133,14 @@ namespace icl {
       
 			/// sets the activation mode of this object
       void activate(bool forceActivation = false);
+
+			int getCollisionObjectType();
+
+			void setCollisionObjectType(int type);
+
+			int getCollisionFlags();
+
+			void setCollisionFlags(int flags);
       
       /// sets an internal flag to update the sceneobject
       void stateChanged();
