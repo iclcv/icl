@@ -247,7 +247,8 @@ namespace icl{
           
           m_data->distsKernel = m_data->matchProgram.createKernel("dists");
           m_data->matchKernel = m_data->matchProgram.createKernel("match");
-        }catch(ICLException &){
+        }catch(ICLException &e){
+          (void)e;
           if(plugin == "best"){
 #ifdef ICL_HAVE_OPENCV
             DEBUG_LOG("detected an error while initializing OpenCL backend [" + str(e.what()) + "]: using CPU-fallback");
