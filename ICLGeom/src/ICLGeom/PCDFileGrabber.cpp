@@ -300,7 +300,7 @@ namespace icl{
               copy_rgb<0,1,2,3,float,4>(rgb, dst.selectRGBA32f(), dim);
             }
 
-          }catch(ICLException &e){
+          }catch(ICLException &){
           }
           
         }

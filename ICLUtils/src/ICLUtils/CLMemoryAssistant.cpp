@@ -70,6 +70,7 @@ namespace icl {
 				mem_ptr = m_context.createBufferHeap(accessMode,length,byteDepth,src);
 				m_memory_map[key] = (CLMemory*)mem_ptr;
 			} catch (CLException const &e) {
+				(void)e;
 				ICL_DELETE(mem_ptr);
 				m_memory_map.erase(key);
 				throw;
@@ -88,6 +89,7 @@ namespace icl {
 				mem_ptr = m_context.createImage2DHeap(accessMode,width,height,depth,num_channel,src);
 				m_memory_map[key] = (CLMemory*)mem_ptr;
 			} catch (CLException const &e) {
+				(void)e;
 				ICL_DELETE(mem_ptr);
 				m_memory_map.erase(key);
 				throw;

@@ -246,7 +246,7 @@ namespace icl{
         V4 evals;
         try{
           N.eigen(evecs,evals);
-        }catch(ICLException &e){
+        }catch(ICLException &){
           throw SingularMatrixException("error in eigenvalue decomposition (the internal matrix is too singular)");
         }
       

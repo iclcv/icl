@@ -49,7 +49,7 @@ namespace icl {
             size_t height;
             cl::Image2D image2D;
 			cl::CommandQueue cmdQueue;
-			std::map< uint,set<uint> > supported_channel_orders;
+			std::map< uint32_t,set<uint32_t> > supported_channel_orders;
 
             static cl_mem_flags stringToMemFlags(const string &accessMode)
             throw (CLBufferException) {
@@ -104,8 +104,8 @@ namespace icl {
 
             Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
                     const string &accessMode, const size_t width, const size_t height,
-					int depth, int num_channel, const void *src = 0, const std::map<uint, std::set<uint> >
-					&supported_formats = std::map< uint,std::set<uint> >()) throw (CLBufferException)
+					int depth, int num_channel, const void *src = 0, const std::map<uint32_t, std::set<uint32_t> >
+					&supported_formats = std::map< uint32_t,std::set<uint32_t> >()) throw (CLBufferException)
 				:cmdQueue(cmdQueue), supported_channel_orders(supported_formats) {
 
                 cl_mem_flags memFlags = stringToMemFlags(accessMode);
@@ -212,7 +212,7 @@ namespace icl {
 		CLImage2D::CLImage2D(cl::Context &context, cl::CommandQueue &cmdQueue,
 				const string &accessMode, const size_t width, const size_t height,
 				int depth, int num_channel, const void *src,
-				const std::map<uint, std::set<uint> > &supported_formats)
+				const std::map<uint32_t, std::set<uint32_t> > &supported_formats)
 		throw (CLBufferException)
 			: CLMemory(CLMemory::Image2D) {
             impl = new Impl(context, cmdQueue, accessMode, width, height,

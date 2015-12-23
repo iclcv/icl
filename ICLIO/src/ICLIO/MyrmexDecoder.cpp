@@ -63,7 +63,7 @@ namespace icl{
       //TODO: viewpoint/speed/compression parameter
       try{
         if(conversionTable.size()==0) init(data, size, VIEW_M, 6, 0);  //Init on first usage
-      }catch(ICLException &e){
+      }catch(ICLException &){
         // frame was erroneous -> drop it and return dummy 8x8 image
         ensureCompatible(dst,depth16s, Size(8,8), formatGray);
         return;

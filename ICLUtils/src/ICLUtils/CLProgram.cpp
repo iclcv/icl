@@ -60,7 +60,7 @@ namespace icl {
 			deviceList.push_back(deviceContext.getDevice());
 			try {
 				program.build(deviceList);
-			} catch (cl::Error& error) {
+			} catch (cl::Error&) {
 				throw CLBuildException(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(deviceContext.getDevice()));
 			}
 			is_valid = true;
@@ -105,7 +105,7 @@ namespace icl {
 		try {
 			impl->initDevice(deviceType);
 			impl->initProgram(sourceCode);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}
@@ -119,7 +119,7 @@ namespace icl {
 			std::string srcProg(std::istreambuf_iterator<char>(fileStream),
 								(std::istreambuf_iterator<char>()));
 			impl->initProgram(srcProg);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}
@@ -131,7 +131,7 @@ namespace icl {
 		try {
 			impl->initDevice(parent.impl->deviceContext);
 			impl->initProgram(sourceCode);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}
@@ -145,7 +145,7 @@ namespace icl {
 			std::string srcProg(std::istreambuf_iterator<char>(fileStream),
 								(std::istreambuf_iterator<char>()));
 			impl->initProgram(srcProg);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}
@@ -178,7 +178,7 @@ namespace icl {
 		try {
 			impl->initDevice(device_context);
 			impl->initProgram(sourceCode);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}
@@ -191,7 +191,7 @@ namespace icl {
 			std::string srcProg(std::istreambuf_iterator<char>(fileStream),
 								(std::istreambuf_iterator<char>()));
 			impl->initProgram(srcProg);
-		} catch (const CLException &e) {
+		} catch (const CLException &) {
 			delete impl; // ensure impl is released
 			throw;
 		}

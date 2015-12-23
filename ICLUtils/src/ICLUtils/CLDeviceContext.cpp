@@ -97,7 +97,7 @@ namespace icl {
 				  device = deviceList[0];
 				  platform = platformList[i];
 				  return;
-				} catch(cl::Error &error) {
+				} catch(cl::Error &) {
 				  /*explicit catching of exception!
 					  getDevices throws an exception when a platform doesn't provide the desired device,
 					  in this case the remaining platform should be asked.
@@ -115,7 +115,7 @@ namespace icl {
 				  context.getSupportedImageFormats(memFlags,CL_MEM_OBJECT_IMAGE2D,&formats);
 				  supported_channel_orders.clear();
 				  cl_channel_order current_order = 0;
-				  for(uint i = 0; i < formats.size(); ++i) {
+				  for(uint32_t i = 0; i < formats.size(); ++i) {
 					  cl::ImageFormat &format = formats[i];
 					  if (current_order != format.image_channel_order) {
 						  current_order = format.image_channel_order;
@@ -235,6 +235,7 @@ namespace icl {
 				try {
 					res = new CLBuffer(context, cmdQueue, accessMode, length, byteDepth, src);
 				} catch(CLException const &e) {
+					(void)e;
 					ICL_DELETE(res);
 					throw;
 				}
@@ -246,6 +247,7 @@ namespace icl {
 				try {
 					res = new CLImage2D(context, cmdQueue, accessMode, width, height, depth, num_channel, src, supported_channel_orders);
 				} catch(CLException const &e) {
+					(void)e;
 					ICL_DELETE(res);
 					throw;
 				}
@@ -267,6 +269,7 @@ namespace icl {
 			try {
 				impl->init(device);
 			} catch (CLException const &e) {
+				(void)e;
 				ICL_DELETE(impl);
 				throw;
 			}

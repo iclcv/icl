@@ -124,7 +124,9 @@ namespace icl{
         GrabberInstanceTable::get() -> deleteGrabber(m_poDesc);
       }
       if(m_remoteServer){
+#ifdef ICL_HAVE_RSB
         delete m_remoteServer;
+#endif
       }
     }
     

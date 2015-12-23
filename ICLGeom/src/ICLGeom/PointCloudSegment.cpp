@@ -209,7 +209,7 @@ namespace icl{
         this->eigenvectors[2] = evec.col(2);
           
         this->eigenvalues = eval;
-      }catch(utils::ICLException &e){
+      }catch(utils::ICLException &){
         Vec3 vecZero(0,0,0);
         this->eigenvalues = Vec3(1,1,1);
           

@@ -338,7 +338,7 @@ namespace icl{
                         throw utils::ParseException("Part attribute must be inner or outer.");
                     try{
                         groupBit = mapGroupIdToBit.at(id);
-                    } catch(const std::out_of_range& oor) {
+                    } catch(const std::out_of_range&) {
                         throw utils::ParseException("No primitive group with id " + id + " has been defined.");
                     }
                     formula.push_back(newIntersection);
@@ -366,7 +366,7 @@ namespace icl{
                             throw utils::ParseException("Part attribute must be inner or outer.");
                         try{
                             groupBit = mapGroupIdToBit.at(id);
-                        } catch(const std::out_of_range& oor) {
+                        } catch(const std::out_of_range&) {
                             throw utils::ParseException("No primitive group with id " + id + " has been defined.");
                         }
                         formula.push_back(newIntersection);
