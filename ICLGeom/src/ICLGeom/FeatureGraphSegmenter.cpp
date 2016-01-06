@@ -378,38 +378,44 @@ namespace icl {
       core::Channel32s labelImageC = m_data->labelImage[0];
       int w = edgeImg.getSize().width;
       
+      //mask edge image
+      core::Img8u edgeImgMasked;
+      edgeImgMasked.setSize(edgeImg.getSize());
+      edgeImgMasked.setChannels(1);
+      core::Channel8u edgeImgMaskedC = edgeImgMasked[0];
+      core::Channel8u edgeImgC = edgeImg[0];
+      utils::Size size = edgeImg.getSize();
+	    for(int y=0; y<size.height; y++){
+	      for(int x=0; x<size.width; x++){
+	        if(maskImageC(x,y)==1){
+	          edgeImgMaskedC(x,y)=0;
+	        }else{
+	          edgeImgMaskedC(x,y)=edgeImgC(x,y);
+	        }
+	      }
+	    }
+            
       int numCluster=0;      
       m_data->region->setConstraints (minSurfaceSize, 4000000, 254, 255);
-      std::vector<std::vector<int> > remove;
       std::vector<cv::ImageRegion> regions;
-      regions = m_data->region->detect(&edgeImg); 	
+      regions = m_data->region->detect(&edgeImgMasked); 	
       for(unsigned int i=0; i<regions.size(); i++){
-        numCluster++;
         std::vector<utils::Point> ps = regions[i].getPixels();
-        std::vector<int> data;
-        for(unsigned int j=0; j<ps.size(); j++){
-          int px = ps[j][0];
-          int py = ps[j][1];
-          int v=px+w*py;
-          if(maskImageC(px,py)==0){
-            labelImageC(px,py)=numCluster;
-            maskImageC(px,py)=1;
-            data.push_back(v);
+        if((int)ps.size()>=minSurfaceSize){
+          numCluster++;
+          std::vector<int> data;
+          for(unsigned int j=0; j<ps.size(); j++){
+            int px = ps[j][0];
+            int py = ps[j][1];
+            int v=px+w*py;
+            if(maskImageC(px,py)==0){
+              labelImageC(px,py)=numCluster;
+              maskImageC(px,py)=1;
+              data.push_back(v);
+            }
           }
-        }
-        if((int)data.size()<minSurfaceSize){
-          remove.push_back(data);
-          numCluster--;
-        }
-        else{
           m_data->surfaces.push_back(data);
-        }
-      }
-      for(unsigned int i=0; i<remove.size(); i++){
-        for(unsigned int j=0; j<remove.at(i).size(); j++){
-          maskImageC[remove[i][j]]=0;
-          labelImageC[remove[i][j]]=0;
-        }
+        }        
       }
     }    
     
