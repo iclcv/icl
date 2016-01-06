@@ -131,10 +131,9 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 		src/ICLFilter/DitheringOp.h
 		src/ICLFilter/BilateralFilterOp.h)
 
+# opencl kernel integration
 SET(KERNEL )
-
 LIST(APPEND KERNEL src/ICLFilter/OpenCL/BilateralFilterOp.cl)
-
 foreach(kernel_file ${KERNEL})
 	get_filename_component(kernel_source_name ${kernel_file} NAME_WE)
 	string(REGEX REPLACE ".cl$" "Kernel.h" kernel_header_file "${kernel_file}")
