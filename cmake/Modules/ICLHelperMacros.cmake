@@ -382,3 +382,21 @@ function(get_ipp_version _INCLUDE_DIR)
   
   return()
 endfunction()
+
+#*********************************************************************
+# ---- create opencl header files from source code ----
+#*********************************************************************
+function(CREATE_CL_HEADER file_in file_out kernel_source_name namespace_name)
+	file(READ "${file_in}" file_content)
+	# make program-internal semicolons invisible for cmake
+	string(REGEX REPLACE ";" "\\\\;" file_content "${file_content}")
+	# split the "string" into rows by replacing newline by E;
+	string(REGEX REPLACE "\n" "E;" file_content "${file_content}")
+	file(WRITE "${file_out}" "namespace icl {\n namespace ${namespace_name} {\n  const char ${kernel_source_name}[] = \n\"")
+	foreach(lineE ${file_content})
+		string(REGEX REPLACE "^(.*)E$" "\\1" line "${lineE}")
+		file(APPEND "${file_out}" "  ${line}\\\n")
+	endforeach()
+	file(APPEND "${file_out}" "\";\n }\n}\n")
+	return()
+endfunction()

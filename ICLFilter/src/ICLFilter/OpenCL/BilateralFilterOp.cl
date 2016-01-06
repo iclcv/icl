@@ -47,7 +47,7 @@ __kernel void rgbToLABCIE(	__read_only image2d_t r_in,
 							__write_only image2d_t g_out,
 							__write_only image2d_t b_out) {
 
-	const sampler_t sampler = CLK_FILTER_NEAREST | CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE;// | CLK_FILTER_NEAREST;
+	const sampler_t sampler = CLK_FILTER_NEAREST | CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE;
 
 	const int x = get_global_id(0);
 	const int y = get_global_id(1);
@@ -85,7 +85,7 @@ __kernel void bilateral_filter_color(	__read_only image2d_t l_in,
 											const float sigma_r,
 											const int use_lab) {
 
-	const sampler_t sampler = CLK_FILTER_NEAREST | CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE;// | CLK_FILTER_NEAREST;
+	const sampler_t sampler = CLK_FILTER_NEAREST | CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE;
 
 	const int x = get_global_id(0);
 	const int y = get_global_id(1);
@@ -197,7 +197,6 @@ __kernel void bilateral_filter_mono(__read_only image2d_t in,
 
 	uint4 res4 = (uint4)(0.0);
 
-	//if(src_depth != 0) {
 		for(int i=tlx; i<= brx; i++) {
 			for(int j=tly; j<= bry; j++) {
 				int2 coords2 = (int2)(i,j);
@@ -205,13 +204,12 @@ __kernel void bilateral_filter_mono(__read_only image2d_t in,
 				float d = d4.x;
 				float delta_dist = (float)((x - i) * (x - i) + (y - j) * (y - j));
 				float delta_depth = (src_depth - d) * (src_depth - d);
-				float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) ); //cost :
+				float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) );
 				sum += weight * d;
 				wp += weight;
 			}
 		}
 		res4.x = sum / wp;
-	//}
 	write_imageui(out,coords,res4);
 }
 
@@ -231,7 +229,7 @@ __kernel void bilateral_filter_mono_float(	__read_only image2d_t in,
 	const float r = sigma_r;
 
 	const int radius = radius_;
-	int w = width;	// buffer into shared memory?
+	int w = width;
 	int h = height;
 
 	int tlx = max(x-radius, 0);
@@ -240,7 +238,7 @@ __kernel void bilateral_filter_mono_float(	__read_only image2d_t in,
 	int bry = min(y+radius, h-1);
 
 	float sum = 0;
-	float wp = 0;	// normalizing constant
+	float wp = 0;
 
 	int2 coords = (int2)(x,y);
 	float4 src_depth4 = read_imagef(in,sampler,coords);
@@ -251,21 +249,19 @@ __kernel void bilateral_filter_mono_float(	__read_only image2d_t in,
 
 	float4 res4 = (float4)(0.0,0.0,0.0,1.0);
 
-	//if(src_depth != 0) {
-		for(int i=tlx; i <= brx; i++) {
-			for(int j=tly; j <= bry; j++) {
-				float delta_dist = (float)((x - i) * (x - i) + (y - j) * (y - j));
-				int2 coords2 = (int2)(i,j);
-				float4 d4 = read_imagef(in,sampler,coords2);
-				float d = d4.x;
-				float delta_depth = (src_depth - d) * (src_depth - d);
-				float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) ); //cost
-				sum += weight * d;
-				wp += weight;
-			}
+	for(int i=tlx; i <= brx; i++) {
+		for(int j=tly; j <= bry; j++) {
+			float delta_dist = (float)((x - i) * (x - i) + (y - j) * (y - j));
+			int2 coords2 = (int2)(i,j);
+			float4 d4 = read_imagef(in,sampler,coords2);
+			float d = d4.x;
+			float delta_depth = (src_depth - d) * (src_depth - d);
+			float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) );
+			sum += weight * d;
+			wp += weight;
 		}
-		res4.x = sum / wp;
-	//}
+	}
+	res4.x = sum / wp;
 	write_imagef(out,coords,res4);
 }
 
@@ -302,7 +298,7 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 	float r2 = r*r;
 
 	const int radius = radius_;
-	int w = width;	// buffer into shared memory?
+	int w = width;
 	int h = height;
 
 	const int l_w = l_w_2r-2*radius;
@@ -320,8 +316,6 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 		}
 	}
 
-// TODO: buffer-blocking-call
-
 	int buff_start_idx_y = radius+1;
 	int buff_cur_y = 0;
 
@@ -333,9 +327,6 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 			float src_depth = buffer[idx];
 
 			float4 res4 = (float4)(0.0,0.0,0.0,1.0);
-
-
-			// TODO calculate pixelvalue here
 		}
 
 	}
@@ -346,7 +337,7 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 	int bry = min(y+radius, h-1);
 
 	float sum = 0;
-	float wp = 0;	// normalizing constant
+	float wp = 0;
 
 	int2 coords = (int2)(x,y);
 	float4 src_depth4 = read_imagef(in,sampler,coords);
@@ -363,7 +354,7 @@ __kernel void bilateral_filter_mono_float2(	__read_only image2d_t in,
 				float4 d4 = read_imagef(in,sampler,coords2);
 				float d = d4.x;
 				float delta_depth = (src_depth - d) * (src_depth - d);
-				float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) ); //cost
+				float weight = native_exp( -(delta_dist / s2 + delta_depth / r2) );
 				sum += weight * d;
 				wp += weight;
 			}

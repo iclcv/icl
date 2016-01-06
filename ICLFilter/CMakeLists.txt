@@ -133,24 +133,22 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 
 SET(KERNEL )
 
-LIST(APPEND KERNEL "src/ICLFilter/OpenCL/BilateralFilterOp.cl")
+LIST(APPEND KERNEL src/ICLFilter/OpenCL/BilateralFilterOp.cl)
+
+foreach(kernel_file ${KERNEL})
+	get_filename_component(kernel_source_name ${kernel_file} NAME_WE)
+	string(REGEX REPLACE ".cl$" "Kernel.h" kernel_header_file "${kernel_file}")
+	CREATE_CL_HEADER("${kernel_file}" "${kernel_header_file}" "${kernel_source_name}KernelSource" filter)
+	LIST(APPEND HEADERS ${kernel_header_file})
+endforeach()
 
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLFilter/WienerOp.cpp
 		      src/ICLFilter/ProximityOp.cpp)
 
   LIST(APPEND HEADERS src/ICLFilter/WienerOp.h
-		      src/ICLFilter/ProximityOp.h)	    
+			  src/ICLFilter/ProximityOp.h)
 ENDIF()
-
-#for local usage:
-SET(ICLFILTER_OPENCL_KERNEL_PATH "\"${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/OpenCL\"")
-configure_file(	"src/ICLFilter/ICLFilterConfig.h.in"
-				"${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ICLFilterConfig.h" @ONLY)
-#for global (installed) usage:
-SET(ICLFILTER_OPENCL_KERNEL_PATH "${CMAKE_INSTALL_PREFIX}/include/${INSTALL_PATH_PREFIX}/ICLFilter/OpenCL")
-configure_file(	"src/ICLFilter/ICLFilterConfig.h.in"
-				"${CMAKE_CURRENT_BINARY_DIR}/src/ICLFilter/ICLFilterConfig.h" @ONLY)
 
 # ---- Library build instructions ----
 IF(WIN32)
@@ -170,7 +168,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLCore/src)
 ENDIF()
 
-ADD_LIBRARY(ICLFilter SHARED ${SOURCES} ${HEADERS} ${KERNEL} "src/ICLFilter/ICLFilterConfig.h")
+ADD_LIBRARY(ICLFilter SHARED ${SOURCES} ${HEADERS} ${KERNEL})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLFilter ICLCore)
@@ -194,10 +192,6 @@ INSTALL(TARGETS ICLFilter
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS)
-INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" KERNEL)
-INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/ICLFilter/ICLFilterConfig.h"
-		DESTINATION "include/${INSTALL_PATH_PREFIX}/ICLFilter"
-		RENAME "ICLFilterConfig.h")
 
 # ---- PKG-config ----
 CREATE_PKGCONFIG(NAME ICLFilter

@@ -28,9 +28,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include "BilateralFilterOp.h"
-
-#include <ICLFilter/ICLFilterConfig.h>
+#include <ICLFilter/BilateralFilterOp.h>
 
 #include <fstream>
 
@@ -44,6 +42,7 @@
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>
 
+#include <ICLFilter/OpenCL/BilateralFilterOpKernel.h>
 
 namespace icl {
 
@@ -69,15 +68,9 @@ public:
 	GPUImpl()
 		: width(0), height(0) {
 
-		std::ifstream kernel_stream;
-		std::string kernel_name = "/BilateralFilterOp.cl";
-		std::string kernel_path = ICLFILTER_OPENCL_KERNEL_PATH+kernel_name;
-		kernel_stream.open(kernel_path.c_str());
-		if (!kernel_stream.is_open()) {
-			throw icl::utils::ICLException(std::string("No kernel file found in \""+kernel_path+"\""));
-		}
+		std::string kernel_source = BilateralFilterOpKernelSource;
 
-		program = utils::CLProgram("gpu",kernel_stream);
+		program = utils::CLProgram("gpu",kernel_source);
 
 		rgb_to_lab = program.createKernel("rgbToLABCIE");
 		filter[(int)UCHAR_3COLORS] = program.createKernel("bilateral_filter_color");

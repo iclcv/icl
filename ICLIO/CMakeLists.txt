@@ -62,7 +62,8 @@ SET(SOURCES src/ICLIO/DemoImageFlowers.cpp
             src/ICLIO/JPEGDecoder.cpp
             src/ICLIO/JPEGEncoder.cpp
             src/ICLIO/FileGrabberPluginPNG.cpp
-            src/ICLIO/FileWriterPluginPNG.cpp)
+			src/ICLIO/FileWriterPluginPNG.cpp
+			src/ICLIO/Kinect11BitCompressor.cpp)
 
 SET(HEADERS src/ICLIO/FileGrabber.h
             src/ICLIO/CreateGrabber.h
@@ -98,7 +99,8 @@ SET(HEADERS src/ICLIO/FileGrabber.h
             src/ICLIO/JPEGEncoder.h
             src/ICLIO/FourCC.h
             src/ICLIO/FileGrabberPluginPNG.h
-            src/ICLIO/FileWriterPluginPNG.h)
+			src/ICLIO/FileWriterPluginPNG.h
+			src/ICLIO/Kinect11BitCompressor.h)
 
 IF(MESASR_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SwissRangerGrabber.cpp)

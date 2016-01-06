@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/ImageCompressor.h>
+#include <ICLIO/Kinect11BitCompressor.h>
 #include <ICLFilter/DitheringOp.h>
 #include <stdint.h>
 #ifdef ICL_HAVE_LIBJPEG
@@ -225,8 +226,7 @@ namespace icl{
             break;        
           }
           default: throw ICLException("ImageCompressor::compressChannel: unsupported RLE compression quality (" + spec.quality + ")");
-        }
-        
+				}
       }else{
         throw ICLException("ImageCompressor::compressChannel: unsupported compression mode (" + spec.mode + ")");
       }
@@ -333,7 +333,8 @@ namespace icl{
     const ImageCompressor::CompressedData ImageCompressor::compress(const ImgBase *image, bool skipMetaData){ 
       ICLASSERT_THROW(image,ICLException("ImageCompressor::compress: image width null"));
   
-      if( (m_data->compression.mode != "none") && image->getDepth() != depth8u){
+			if( (m_data->compression.mode != "none") && image->getDepth() != depth8u
+					&& ( (m_data->compression.mode != "1611") && image->getDepth() != depth16s) ){
         throw ICLException("ImageCompressor::compress: image compression is only supported for Img8u images");
       }
       
@@ -367,7 +368,41 @@ namespace icl{
   #else
         throw ICLException("ImageCompressor:encode jpeg compression is not supported without libjpeg");
   #endif
-      }
+			} else if(m_data->compression.mode == "1611") {
+
+				const Img16s *img16s_in = image->as16s();
+				int len = img16s_in->getSize().getDim(); // we support one channel only (single channel 16-bit-kinect image)
+
+				int encoded_len = Kinect11BitCompressor::estimate_packed_size(len);
+				const int metaDataLength = skipMetaData ? 0 : (int)image->getMetaData().length();
+				const int headerSize = sizeof(Header::Params) + metaDataLength;
+				const int numBytes = encoded_len*sizeof(uint16_t);
+				const int finalSize = headerSize+numBytes;
+
+				m_data->encoded_buffer.resize(finalSize);
+				icl8u *dst = m_data->encoded_buffer.data();
+
+				header.data = dst;
+				header.params.dataLen = m_data->encoded_buffer.size();
+
+				*reinterpret_cast<Header::Params*>(dst) = header.params;
+				dst += sizeof(Header::Params);
+				if(!skipMetaData){
+					std::copy(image->getMetaData().begin(), image->getMetaData().end(),dst);
+					dst += header.params.metaLen;
+				}
+
+				const uint16_t *src_16 = (const uint16_t*)(img16s_in->getData(0));
+				uint16_t *dst_16 = (uint16_t*)(dst);
+
+				int q = parse<int>(m_data->compression.quality);
+				if (q == 0)
+					Kinect11BitCompressor::pack16to11_2(src_16,dst_16,len);
+				else if (q == 1)
+					Kinect11BitCompressor::pack16to11(src_16,dst_16,len);
+
+				return CompressedData(m_data->encoded_buffer.data(),finalSize,encoded_len/float(len));
+			}
       
       m_data->encoded_buffer.resize(estimateEncodedBufferSize(image,skipMetaData));
       
@@ -430,7 +465,7 @@ namespace icl{
                       ICLException("ImageCompressor::uncompress: given data pointer is too short"));
   
       Header header = uncompressHeader(data,len);
-      ImgBase *&useDst = dst ? *dst : m_data->decoded_buffer;
+			ImgBase *&useDst = dst ? *dst : m_data->decoded_buffer;
   
       if(header.getCompressionMode() == "jpeg"){
   #ifdef ICL_HAVE_LIBJPEG
@@ -439,7 +474,20 @@ namespace icl{
   #else
         throw ICLException("ImageCompressor::uncompress: jpeg decoding is not supported without LIBJPEG");
   #endif
-      }else{
+			}else if(header.getCompressionMode() == "1611") {
+				int len = header.params.width*header.params.height;
+				header.setupImage(&useDst);
+				useDst->getMetaData().assign(header.metaBegin(), header.metaBegin()+header.params.metaLen);
+
+				Img16s *s16s = useDst->as16s();
+				uint16_t *dst16 = (uint16_t*)s16s->getData(0);
+				const uint16_t *src16 = (const uint16_t*)header.imageBegin();
+				if (header.params.compressionQuality == 0)
+					Kinect11BitCompressor::unpack11to16_2(src16,dst16,len);
+				else if (header.params.compressionQuality == 1)
+					Kinect11BitCompressor::unpack11to16(src16,dst16,len);
+
+			}else{
   
         header.setupImage(&useDst);
         useDst->getMetaData().assign(header.metaBegin(), header.metaBegin()+header.params.metaLen);
@@ -455,11 +503,11 @@ namespace icl{
           int l = useDst->getDim() * getSizeOf(useDst->getDepth());
           for(int c=0;c<useDst->getChannels();++c){
             std::copy(p+c*l, p+(c+1)*l, (icl8u*)useDst->getDataPtr(c));
-          }        
-        }      
+					}
+				}
       }
       return useDst;
-    }
+		}
   
     void ImageCompressor::setCompression(const ImageCompressor::CompressionSpec &spec){
       if(spec.mode == "none"){
@@ -476,7 +524,12 @@ namespace icl{
         if(q<0 || q>100){
           throw ICLException("ImageCompressor::setCompression: invalid jpeg compression quality (" + spec.quality + ")");
         }
-      }else{
+			}else if (spec.mode == "1611") {
+				int q = parse<int>(spec.quality);
+				if(spec.quality.length() && (q != 1 && q != 0)){
+					throw ICLException("ImageCompressor::setCompression: invalid 1611 compression quality (" + spec.quality + ")");
+				}
+			}else{
         throw ICLException("ImageCompressor::setCompression: invalid compression mode (" + spec.mode + ")");
       }
       m_data->compression = spec;
