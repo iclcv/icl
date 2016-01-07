@@ -144,6 +144,8 @@ namespace icl{
         addProperty("remaining.min size","range","[5,50]:1",10);
         addProperty("remaining.euclidean distance","range","[2.0,20.0]",10.0);
         addProperty("remaining.radius","range","[0,10]:1",0);
+        addProperty("remaining.assign euclidean distance","range","[2.0,20.0]",10.0);
+        addProperty("remaining.support tolerance","range","[0,30]:1",9);
 
         addProperty("graphcut.threshold","range","[0.0, 1.1]",0.5);
 
@@ -268,6 +270,8 @@ namespace icl{
         int remainingMinSize = getPropertyValue("remaining.min size");
         float remainingEuclDist = getPropertyValue("remaining.euclidean distance");
         int remainingRadius = getPropertyValue("remaining.radius");
+        float remainingAssignEuclDist = getPropertyValue("remaining.assign euclidean distance");
+        int remainingSupportTolerance = getPropertyValue("remaining.support tolerance");
         
         float graphcutThreshold = getPropertyValue("graphcut.threshold");     
       
@@ -286,7 +290,7 @@ namespace icl{
         m_data->segmentation->setCoplanarityParams(coplanMaxAngle, coplanDistance, coplanOutlier, coplanNumTriangles, coplanNumScanlines);
         m_data->segmentation->setCurvatureParams(curveHistogram, curveUseOpen, curveMaxDist, curveUseOccluded, curveMaxError, 
                                 curvePasses, curveDistance, curveOutlier);
-        m_data->segmentation->setRemainingPointsParams(remainingMinSize, remainingEuclDist, remainingRadius);
+        m_data->segmentation->setRemainingPointsParams(remainingMinSize, remainingEuclDist, remainingRadius, remainingAssignEuclDist, remainingSupportTolerance);
         m_data->segmentation->setGraphCutThreshold(graphcutThreshold);
         
         if(useTempSmoothing){

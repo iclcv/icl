@@ -86,7 +86,9 @@ namespace icl {
       
         remainingMinSize=10;
         remainingEuclideanDistance=5.0;
-        remainingRadius=6;  
+        remainingRadius=6;
+        remainingAssignEuclideanDistance=5.0;
+        remainingSupportTolerance=9;    
         
         graphCutThreshold=0.5;
 	    }
@@ -136,6 +138,8 @@ namespace icl {
       int remainingMinSize;
       float remainingEuclideanDistance;
       int remainingRadius;
+      float remainingAssignEuclideanDistance;
+      int remainingSupportTolerance;
            
       float graphCutThreshold;
     };
@@ -194,7 +198,7 @@ namespace icl {
 	      
 	    if(useRemainingPoints){
 	      RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage, 
-                          m_data->surfaces, m_data->segments, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius);
+                          m_data->surfaces, m_data->segments, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius, m_data->remainingAssignEuclideanDistance, m_data->remainingSupportTolerance);
 	    }
 	    	    
 	    m_data->segUtils->relabel(m_data->labelImage, m_data->segments, m_data->surfaces.size());
@@ -245,7 +249,7 @@ namespace icl {
 	        	    
 	      if(useRemainingPoints){
 	        remainingMatrix = RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage, 
-                            m_data->surfaces, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius);
+                            m_data->surfaces, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius, m_data->remainingAssignEuclideanDistance);
                             
           resultMatrix.setBounds(remainingMatrix.cols(), remainingMatrix.rows(), true, false);//hold content, initializer
           math::GraphCutter::mergeMatrix(resultMatrix, remainingMatrix);
@@ -322,10 +326,12 @@ namespace icl {
     }
     
     
-    void FeatureGraphSegmenter::setRemainingPointsParams(int minSize, float euclideanDistance, int radius){
+    void FeatureGraphSegmenter::setRemainingPointsParams(int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance){
       m_data->remainingMinSize=minSize;
       m_data->remainingEuclideanDistance=euclideanDistance;
       m_data->remainingRadius=radius;
+      m_data->remainingAssignEuclideanDistance=assignEuclideanDistance;
+      m_data->remainingSupportTolerance=supportTolerance;
     }
   
     

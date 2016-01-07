@@ -38,38 +38,38 @@ namespace icl{
   namespace geom{    
 
     void RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage, 
-                          std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, int minSize, float euclideanDistance, int radius){
+                          std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance){
       calculateLocalMinima(depthImage, maskImage, radius);      
-      apply(xyz, labelImage, maskImage, surfaces, segments, minSize, euclideanDistance);
+      apply(xyz, labelImage, maskImage, surfaces, segments, minSize, euclideanDistance, assignEuclideanDistance, supportTolerance);
     }
     
                            
     void RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage, 
-                      std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, int minSize, float euclideanDistance){
+                      std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, int minSize, float euclideanDistance, float assignEuclideanDistance, int supportTolerance){
       int numCluster=surfaces.size();
       clusterRemainingPoints(xyz, surfaces, labelImage, maskImage, minSize, euclideanDistance, numCluster);
       std::vector<std::vector<int> > neighbours;
       std::vector<std::vector<int> > neighboursPoints;
-      detectNeighbours(xyz, surfaces, labelImage, neighbours, neighboursPoints, numCluster, euclideanDistance); 
+      detectNeighbours(xyz, surfaces, labelImage, neighbours, neighboursPoints, numCluster, assignEuclideanDistance); 
 
-      ruleBasedAssignment(xyz, surfaces, segments, neighbours, neighboursPoints, numCluster);
+      ruleBasedAssignment(xyz, labelImage, surfaces, segments, neighbours, neighboursPoints, numCluster, supportTolerance);
     }
      
                       
     math::DynMatrix<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage, 
-                      std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance, int radius){
+                      std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance, int radius, float assignEuclideanDistance){
       calculateLocalMinima(depthImage, maskImage, radius);
-      return apply(xyz, labelImage, maskImage, surfaces, minSize, euclideanDistance);            
+      return apply(xyz, labelImage, maskImage, surfaces, minSize, euclideanDistance, assignEuclideanDistance);            
     }
      
                       
     math::DynMatrix<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage, 
-                      std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance){      
+                      std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance, float assignEuclideanDistance){      
       int numCluster=surfaces.size();
       clusterRemainingPoints(xyz, surfaces, labelImage, maskImage, minSize, euclideanDistance, numCluster);
       std::vector<std::vector<int> > neighbours;
       std::vector<std::vector<int> > neighboursPoints;
-      detectNeighbours(xyz, surfaces, labelImage, neighbours, neighboursPoints, numCluster, euclideanDistance); 
+      detectNeighbours(xyz, surfaces, labelImage, neighbours, neighboursPoints, numCluster, assignEuclideanDistance); 
       
       //create Matrix
       math::DynMatrix<bool> remainingMatrix(surfaces.size(), surfaces.size(), false);
@@ -135,7 +135,7 @@ namespace icl{
     
     
     void RemainingPointsFeatureExtractor::detectNeighbours(core::DataSegment<float,4> &xyz, std::vector<std::vector<int> > &surfaces, core::Img32s &labelImage, std::vector<std::vector<int> > &neighbours, 
-                                     std::vector<std::vector<int> > &neighboursPoints, int numCluster, float euclideanDistance){
+                                     std::vector<std::vector<int> > &neighboursPoints, int numCluster, float assignEuclideanDistance){
       utils::Size s = labelImage.getSize();
       core::Channel32s labelImageC = labelImage[0];
       //determine neighbouring surfaces      
@@ -148,7 +148,7 @@ namespace icl{
               int p1 = surfaces[x][y];
               int p2 = surfaces[x][y]+p+s.width*q;
               if(p2>=0 && p2<s.width*s.height && p1!=p2 && labelImageC[p1]!=labelImageC[p2] && labelImageC[p2]!=0){//bounds, id, value, not 0
-                if(checkNotExist(labelImageC[p2]-1, nb, nbPoints) && math::dist3(xyz[p1], xyz[p2])<euclideanDistance){
+                if(checkNotExist(labelImageC[p2]-1, nb, nbPoints) && math::dist3(xyz[p1], xyz[p2])<assignEuclideanDistance){// /4.
                   nb.push_back(labelImageC[p2]-1);//id, not label-value
                   nbPoints.push_back(1); 
                 }
@@ -176,8 +176,8 @@ namespace icl{
     }
 
 
-    void RemainingPointsFeatureExtractor::ruleBasedAssignment(core::DataSegment<float,4> &xyz, std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, 
-                                        std::vector<std::vector<int> > &neighbours, std::vector<std::vector<int> > &neighboursPoints, int numCluster){
+    void RemainingPointsFeatureExtractor::ruleBasedAssignment(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, 
+                                        std::vector<std::vector<int> > &neighbours, std::vector<std::vector<int> > &neighboursPoints, int numCluster, int supportTolerance){
                                         
       std::vector<int> assignment = segmentMapping(segments, surfaces.size());
       
@@ -195,7 +195,9 @@ namespace icl{
           assignment[x]=assignment[nb[0]];
         }                 
         else if(nb.size()==1){
-          if(nbPoints[0]<9){ //new blob (weak connectivity)
+          bool supported = checkSupport(labelImage, surfaces[x], nb[0], supportTolerance); 
+          if(supported){ //new blob
+          //if(nbPoints[0]<9){ //new blob (weak connectivity)
             std::vector<int> seg;
             seg.push_back(x);
             segments.push_back(seg);
@@ -276,6 +278,28 @@ namespace icl{
         }
       }
       return bestNeighbourID;
+    }
+    
+    bool RemainingPointsFeatureExtractor::checkSupport(core::Img32s &labelImage, std::vector<int> &surface, int neighbourID, int supportTolerance){
+      int count=0;
+      utils::Size s = labelImage.getSize();
+      core::Channel32s labelImageC = labelImage[0];
+      for(unsigned int y=0; y<surface.size(); y++){
+        for(int p=-1; p<=1; p++){//all 8 neighbours
+          for(int q=-1; q<=1; q++){
+            int p1 = surface[y];
+            int p2 = surface[y]+p+s.width*q;
+            if(p2>=0 && p2<s.width*s.height && p1!=p2 && labelImageC[p1]!=labelImageC[p2] && labelImageC[p2]!=0 && labelImageC[p2]-1!=neighbourID){//bounds, id-self, value-self, not 0, value-neighb.
+              if(count<supportTolerance){
+                count++;
+              }else{
+                return false;
+              }
+            }
+          }
+        }
+      }
+      return true;
     }
       
   } // namespace geom
