@@ -73,6 +73,7 @@ namespace icl{
     std::vector<callback> ICLApplication::s_inits;
     std::vector<callback> ICLApplication::s_callbacks;
     std::vector<callback> ICLApplication::s_finalizes;
+		std::vector<callback> ICLApplication::s_prepare_shutdowns;
 
 #if 0   
     static void qapplication_quit_wrapper(int){
@@ -209,6 +210,10 @@ namespace icl{
   ICLApplication::~ICLApplication(){
     s_app = 0;
     app->processEvents();
+		for (unsigned int i = 0; i < s_prepare_shutdowns.size(); ++i){
+			s_prepare_shutdowns[i]();
+		}
+		s_prepare_shutdowns.clear();
     for (unsigned int i = 0; i < s_threads.size(); ++i){
       s_threads[i]->stop(); // force right virtual stop implementation to be 
       delete s_threads[i];
@@ -239,6 +244,10 @@ namespace icl{
     s_finalizes.push_back(cb);
   }
 
+	void ICLApplication::addPrepareShutDown(callback cb) {
+		ICLASSERT_RETURN(cb);
+		s_prepare_shutdowns.push_back(cb);
+	}
 
   int ICLApplication::exec(){
     for(unsigned int i=0;i<s_inits.size();++i){

@@ -73,6 +73,11 @@ namespace icl{
           around 70 provide sufficient results with a very good compression ration (about 2%).
           However, please note that even a quality setting of 100 does not lead to lossless 
           compression.
+				- "1611" compresses unsigned 16-bit images to 11-bit packed continuous data.
+					The result is a pointer to an unsigned 16-bit-array
+					- Quality 0: Cuts the upper 5 bits (only values up to 2^11 are supported)
+					- Quality 1: Compresses 16-bit arrays to 11-bit packed arrays as follows: D = (a/Z)+b
+						and uncompresses Z = a/(D-b) (See Kinect11BitCompressor for details)
         - "none" Uncompressed image serialization. This is the only compression mode, that
           can be used for non-core::Img8u images.
         

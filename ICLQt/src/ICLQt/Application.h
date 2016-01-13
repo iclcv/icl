@@ -149,6 +149,10 @@ namespace icl{
       /// adds a new finalization function
       /** Finalization functions are called, when the singelton ICLApplication instance is deleted */
       void addFinalization(callback cb);
+
+			/// adds a new preparation-for-shutdown function
+			/** Prepare for shutdown functions are called, when the singelton ICLApplication instance is deleted and before the worker threads are stopped! */
+			void addPrepareShutDown(callback cb);
   
       /// executes this ICLApplication
       /** callbacks are executed in the following order:
@@ -230,6 +234,9 @@ namespace icl{
   
       /// list of finalization functions
       static std::vector<callback> s_finalizes;
+
+			/// list of finalization functions
+			static std::vector<callback> s_prepare_shutdowns;
     };
   
     /// this is just a shortcut typedef
