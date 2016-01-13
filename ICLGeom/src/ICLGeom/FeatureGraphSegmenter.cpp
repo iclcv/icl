@@ -226,6 +226,8 @@ namespace icl {
 	      math::DynMatrix<bool> curveMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 	      math::DynMatrix<bool> remainingMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 	      
+	      m_data->surfaces = m_data->segUtils->createLabelVectors(m_data->labelImage);
+	      
 	      if(useCutfreeAdjacency){
 	        cutfreeMatrix = m_data->cutfree->apply(xyz, 
                     m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
