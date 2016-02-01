@@ -193,6 +193,11 @@ namespace icl{
         ensureCompatible(dst,depth8u,size,formatRGB);
         convertYUV420ToRGB8(data,size,(*dst)->as8u());
       }
+
+       void rgb3(const icl8u* data, const Size &size, ImgBase **dst, std::vector<icl8u>*){
+        ensureCompatible(dst,depth8u,size,formatRGB);
+        interleavedToPlanar(data, (*dst)->as8u());
+      }
       
     }
     ColorFormatDecoder::ColorFormatDecoder():m_dstBuf(0){
@@ -205,6 +210,7 @@ namespace icl{
       m_functions[FourCC("YU12").asInt()] = color_format_converter::yu12;
       m_functions[FourCC("MYRM").asInt()] = color_format_converter::myrm;
       m_functions[FourCC("Y10B").asInt()] = color_format_converter::y10b;
+      m_functions[FourCC("RGB3").asInt()] = color_format_converter::rgb3;
       m_functions[FourCC("RGGB").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_RGGB>;
       m_functions[FourCC("GBRG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GBRG>;
       m_functions[FourCC("GRBG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GRBG>;
