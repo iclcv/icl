@@ -549,10 +549,9 @@ void run(){
       c.setFocalLength(1);
       c.setSamplingResolutionX(c.getSamplingResolutionX() * fx);
       c.setSamplingResolutionY(c.getSamplingResolutionY() * fy);
-      c.setPrincipalPointOffset(c.getPrincipalPointOffsetX() * fx,
-                                c.getPrincipalPointOffsetY() * fy);
       // c.setSkew(c.getSkew() * fx); fx or fy? we simply dont scale it!
-      c.setResolution(ir);
+      c.setResolution(ir, Point32f(c.getPrincipalPointOffsetX() * fx,
+                                   c.getPrincipalPointOffsetY() * fy));
     }
     if(gui["extr"].as<std::string>() != "default"){
       intr = &c;

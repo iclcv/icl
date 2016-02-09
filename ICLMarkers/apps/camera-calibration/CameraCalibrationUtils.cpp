@@ -143,6 +143,7 @@ namespace icl{
     void CameraCalibrationUtils::save_cam_filename(geom::Camera cam,
                                                    const std::string &outputSizeProgArg,
                                                    const std::string &filename){
+      
       if(filename.length()){
         std::ofstream s(filename.c_str());
         if(pa(outputSizeProgArg)){
