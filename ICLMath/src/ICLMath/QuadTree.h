@@ -171,12 +171,13 @@ namespace icl{
         * approx. nn: 2.7ms (2.7ms)
         * query: 22.8ms (22.8ms)
     */
-    template<class Scalar, int CAPACITY=4, int SF=1, int ALLOC_CHUNK_SIZE=1024>
+    template<class Scalar, int CAPACITY=4, int SF=1, int ALLOC_CHUNK_SIZE=1024, 
+             class VECTOR_TYPE=FixedColVector<Scalar,2> >
     class QuadTree{
       public:
       
       // 2D-point type, internally used
-      typedef FixedColVector<Scalar,2> Pt;
+      typedef VECTOR_TYPE Pt;
       
       protected:
 
