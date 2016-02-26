@@ -258,7 +258,7 @@ namespace icl{
           }
           for(const Pt *p=points; p<next ; ++p){
             if(boundary.contains(*p)){
-              found.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
+              found.push_back((*p)/SF);//Pt((*p)[0]/SF,(*p)[1]/SF));
             }
           }
           if(!children) return;
@@ -369,14 +369,14 @@ namespace icl{
             const Node *ns = allocated[i];
             for(size_t j=0;j<allocated.size();++j){
               for(const Pt* p = ns[j].points; p != ns[j].next;++p){
-                pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
+                pts.push_back((*p)/SF);//Pt((*p)[0]/SF,(*p)[1]/SF));
               }
             }
           }
           const Node *ns = allocated.back();
           for(int i=0;i<curr*4;++i){
             for(const Pt* p = ns[i].points; p != ns[i].next;++p){
-              pts.push_back(Pt((*p)[0]/SF,(*p)[1]/SF));
+              pts.push_back((*p)/SF); //Pt((*p)[0]/SF,(*p)[1]/SF));
             }
           }
           return pts;
@@ -484,8 +484,8 @@ namespace icl{
       Pt nn_approx(const Pt &p) const throw (utils::ICLException){
         double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
-        nn_approx_internal(Pt(SF*p[0],SF*p[1]),currMinDist,currNN);
-        return Pt((*currNN)[0]/SF,(*currNN)[1]/SF) ;
+        nn_approx_internal(p*SF /*Pt(SF*p[0],SF*p[1])*/,currMinDist,currNN);
+        return (*currNN)/SF; //Pt((*currNN)[0]/SF,(*currNN)[1]/SF) ;
       }
 
       /// finds the nearest neighbor to the given node
@@ -508,7 +508,7 @@ namespace icl{
           actually only happen when nn is called on an empty QuadTree
       */
       Pt nn(const Pt &pIn) const throw (utils::ICLException){
-        const Pt p(SF*pIn[0],SF*pIn[1]);
+        const Pt p = pIn*SF;//p(SF*pIn[0],SF*pIn[1]);
         std::vector<const Node*> stack;
         stack.reserve(128);
         stack.push_back(root);
@@ -538,7 +538,7 @@ namespace icl{
           }
           currMinDist = sqrt(sqrMinDist);
         }
-        return Pt((*currNN)[0]/SF, (*currNN)[1]/SF);
+        return (*currNN)/SF; //Pt((*currNN)[0]/SF, (*currNN)[1]/SF);
       }
 
       /// convenience wrapper for the Point32f type
@@ -560,7 +560,7 @@ namespace icl{
           if new nodes are needed. */ 
       void insert(const Pt &pIn){
         ++num;
-        const Pt p(SF*pIn[0],SF*pIn[1]);
+        const Pt p = pIn*SF;//p(SF*pIn[0],SF*pIn[1]);
         Node *n = root;
         while(true){
           if(n->next != n->points+CAPACITY){
