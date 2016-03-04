@@ -45,8 +45,13 @@ SET(SOURCES src/ICLMarkers/BCHCode.cpp
 	    src/ICLMarkers/MultiCamFiducialDetector.cpp
 	    src/ICLMarkers/MultiCamFiducialImpl.cpp
 	    src/ICLMarkers/QuadDetector.cpp
-	    src/ICLMarkers/TwoLevelRegionStructure.cpp)
-
+	    src/ICLMarkers/TwoLevelRegionStructure.cpp
+            src/ICLMarkers/AdvancedMarkerGridDetector.cpp
+            src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.cpp
+            src/ICLMarkers/InverseUndistortionProcessor.cpp
+            src/ICLMarkers/MarkerGridDetector.cpp
+            src/ICLMarkers/MarkerGridEvaluater.cpp)
+          
 SET(HEADERS src/ICLMarkers/BCHCode.h
             src/ICLMarkers/Fiducial.h
 	    src/ICLMarkers/FiducialDetector.h
@@ -67,7 +72,13 @@ SET(HEADERS src/ICLMarkers/BCHCode.h
 	    src/ICLMarkers/QuadDetector.h
 	    src/ICLMarkers/RegionStructure.h
 	    src/ICLMarkers/TiltedQuad.h
-	    src/ICLMarkers/TwoLevelRegionStructure.h)
+	    src/ICLMarkers/TwoLevelRegionStructure.h
+            src/ICLMarkers/InverseUndistortionProcessor.h
+            src/ICLMarkers/AdvancedMarkerGridDetector.h
+            src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.h
+            src/ICLMarkers/MarkerGridEvaluater.h
+            src/ICLMarkers/MarkerGridDetector.h)
+
 
 # ---- Library build instructions ----
 IF(WIN32)

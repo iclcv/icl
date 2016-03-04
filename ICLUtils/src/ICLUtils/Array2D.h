@@ -229,6 +229,24 @@ namespace icl{
         if(pos) *pos = Point(idx%getWidth(),idx/getWidth());
         return data()[idx];
       }
+
+      /// sets a new size
+      /** If the current size doesn't differ from the new size,
+          nothing is done*/
+      void setSize(const Size &size){
+        if(getSize() == size) return;
+        m_size = size;
+        m_data = new T[size.getDim()];
+      }
+
+      /// sets size and fills with new entries
+      /** If the current size doesn't differ from the new size,
+          only the content is overwritte with init */
+      template<class Init>
+      void setSize(const Size &size, const Init &init){
+        setSize(size);
+        fill(init);
+      }
     };
     
   
