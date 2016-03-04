@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <AdvancedMarkerGridDetector.h>
+#include <ICLMarkers/AdvancedMarkerGridDetector.h>
 #include <ICLMath/FixedVector.h>
 
 namespace icl{

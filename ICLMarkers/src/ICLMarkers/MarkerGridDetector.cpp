@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <MarkerGridDetector.h>
+#include <ICLMarkers/MarkerGridDetector.h>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLUtils/StringUtils.h>
 

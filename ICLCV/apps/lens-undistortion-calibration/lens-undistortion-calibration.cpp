@@ -33,9 +33,9 @@
 #include <ICLCore/PseudoColorConverter.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLCV/RegionDetector.h>
-#include <MarkerGridEvaluater.h>
-#include <MarkerGridBasedUndistortionOptimizer.h>
-#include <UndistortionUtil.h>
+#include <ICLMarkers/MarkerGridEvaluater.h>
+#include <ICLMarkers/MarkerGridBasedUndistortionOptimizer.h>
+#include "UndistortionUtil.h"
 
 HBox gui;
 //SmartPtr<FiducialDetector> fd;
