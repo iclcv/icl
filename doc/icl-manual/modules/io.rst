@@ -466,20 +466,29 @@ are supported
 
 .. _io.intrinsic-calibrator:
 
-Intrinsic Camera Calibration (*will be moved*)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Intrinsic Camera Calibration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-ICL's intrinsic camera calibration framework is currently not properly
-supported and maintained. The application for camera calibration is
-not working properly and its OpenCV-based parameters are not supported
-by ICL's image undistortion!
+Intrinsic camera calibration basically consists of two parts:
 
-.. todo::
-   
-   this part must be moved somewhere else. The calibration procedure should
-   be implemented in ICLCV, but the calibration result (in shape of
-   definition of the image undistortion model should be moved to ICLCore
+* Estimation of paramerters for removing lens-distortion artifacts
+* Estimation of projective camera prameters (focal-length,
+  principal-point offset and skew)
 
+ICL assumes that these two steps are conceptually separated. We solve
+and apply lens-undistortion **before** all further processing
+steps. Thus, the more or less distorted camera image is used to
+compute lens-undistortion parameters using the very common 5 parameter
+model that is also used by OpenCV's intrinsic calibration tool and by
+matlab. Once, these parameters are known, lens-undistortion is
+performed per-pixel (internally efficiently optimized using a
+warp-table) on an application's internal input image. Therefore, the
+application can then simply assume a non-distorted camera image so
+that the linear pinhole camera model completely describes the camera
+projection.
+
+Details, examples and a step-by-step description is given in
+:ref:`howto.camcalib`.
 
 
 .. _io.others:

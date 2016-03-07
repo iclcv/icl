@@ -66,17 +66,41 @@ non-linear manner leading to several issues in former processing
 steps. Therefore, ICL explicitly assumes lens distortion to be
 corrected **before** camera calibration is approached.
 
-The ICL application **icl-opencv-calib**, located in the **Geom**
-module provides the necessary functionality to obtain appropriate
-parameters for lens distortion correction. Internally this wraps
-OpenCV's calibration functions, but we plan to provide a native
-built-in tool for lens distortion correction in the future. For
-**icl-opencv-calib**, a common checkerboard image is needed. In order
-to obtain optimal calibration results, the image of the checkerboard
-must be printed out and attached to a very planar
-surface. Alternatively, the images could also be displayed on another
-computer screen, so that it is visible by the camera.
+The ICLCV module provides two different tools for the estimation of
+lens-undistortion parameters:
 
+* *icl-lens-undistortion-calibration*
+* *icl-lens-undistortion-calibration-opencv*
+
+While *icl-lens-undistortion-calibration-opencv* internally employs
+OpenCV's calibration method, *icl-lens-undistortion-calibration* is 
+implemented without OpenCV.
+
+In contrast to OpenCV's built-in calibration application,
+*icl-lens-undistortion-calibration-opencv* comes up with a set of
+additional convenience features, such as automatic acquisition of
+calibration frames and an option to replace the checkerboard-input
+image by a fiducial-marker-based input grid.
+
+*As we had the impression
+that the OpenCV-based calibration tool in some cases has a tendency to
+yield very bad results we implemented an alternative system, that in
+our opinion behaves better in the presence of a very few or many
+calibration images*.
+
+
+OpenCV-based Lens Undistortion
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ICL application **icl-lens-undistortion-calibration-opencv**,
+located in the :ref:`cv` module provides the necessary functionality
+to obtain appropriate parameters for lens distortion correction. For
+the tool a common checkerboard image is needed. In order to obtain
+optimal calibration results, the image of the checkerboard must be
+printed out and attached to a very planar surface. Alternatively, the
+images could also be displayed on another computer screen, so that it
+is visible by the camera. The tool also allows a marker-grid image to
+be used.
 
 .. note::
 
@@ -87,19 +111,21 @@ computer screen, so that it is visible by the camera.
 In order to initiate the tool, just run it with an approriate parameter
 set, e.g.::
   
-  icl-opencv-calib -i dc800 0 -cbs 6x9 -m 20
+  icl-lens-undistortion-calibration-opencv -i dc800 0 -g 7x5
 
-This uses the first fire-wire device, a 6 by 9 checkerboard and a set
-of 20 reference images for calibration. Here is a screenshot of the
-application running:
+This uses the first fire-wire 800 device, a 7 by 5 checkerboard and a set
+Here is a screenshot of the application running:
 
-.. image:: images/opencv-calib-screenshot.jpg
+.. image:: images/icl-lens-undistortion-calibration-opencv-screenshot.png
       :alt: shadow
       :scale: 50%
 
-Once enough frames are collected, the application will automatically
-start the calibration procedure, resulting in the estimation of 
-intrinsic camera parameters, which can be split into two sets:
+Once enough calibration frames were collected. The calibration can be
+triggered. The collection of calibration frames can be triggered manually 
+or an automatic mode can be activated. Here, the system would store every input
+frame that has more than a minimum displacement (adjustable using the a slider)
+all other already captured frames. OpenCV internally computes two sets of 
+calibration prameters:
 
 1. Parameters describing the projective camera geometry (focal length
    in x and y direction, and principal point offset of the camera, and
@@ -108,13 +134,12 @@ intrinsic camera parameters, which can be split into two sets:
 2. Parameters describing the compensation of lens distortion. Here, we use
    the standard model described by 5 scalar parameters k1, ..., k5
 
-However, it turned out, that the estimation of these projective
-geometry parameters is more accurate when using a 3D calibration
-object, which is why these parameters are estimated and also saved,
-but not used in the further steps of the processing pipeline.
-Pressing the *save parameters* button pops up a file dialog, which
-allows the destimation xml file to be selected. The resulting file
-looks like this one:
+It turned out, that the estimation of the projective geometry
+parameters is more accurate when using a 3D calibration object, which
+is why these parameters are estimated and also saved, but not used in
+the further steps of the processing pipeline. Pressing the *save*
+button pops up a file dialog, which allows the destination
+xml file to be selected. The resulting file looks like this one:
 
 .. literalinclude:: files/udist.xml
     :language: xml
@@ -131,7 +156,7 @@ which allows two additional parameters to be passed e.g.::
   icl-viewer -input dc800 0
 
 Here, the first *sub-argument* **dc800** selects a grabber backend,
-which is fire-wire-800 in the present example, and the second
+which is fire-wire-800 in the given example, and the second
 sub-argument selects a device from that backend (here, the 1st one
 found -- at index 0). As explained :ref:`here<io.generic-grabber>`, the second
 sub-argument can be augmented with additional parameters of shape
@@ -146,6 +171,68 @@ When using a camera with significant lens distortion, it is strongly
 recommended to acquire undistortion parameters **before** approaching
 the actual camera calibration step, since this assumes undistorted
 images to be used as input.
+
+**Marker-based Detection**
+
+The checkerboard-input of the camera calibration tool has the severe
+disadvantage, that input calibration frames can only be used if the
+whole checker-board is visible. This, however, leads to the fact that
+it is very difficult to provide calibration frames that also cover the
+border regions of the images well. In order to make this step more
+convenient, a marker-based grid can be used as well. Here, also a 
+sub-set of marker-grid can be used for calibration. By calling::
+
+  icl-lens-undistortion-calibration-opencv -i dc800 0 -m bch '[0-629]' 8x8 -g 30x21
+
+The OpenCV-based camera calibration tool uses a 30x21 bch marker grid
+as input. Here is a screenshot
+  
+.. image:: images/icl-lens-undistortion-calibration-opencv-screenshot-2.png
+      :alt: shadow
+      :scale: 50%
+
+As one can see, only a part of the marker-grid is visible and still the 
+calibration can be performed very well. 
+
+
+
+ICL's native Lens Undistortion Calibration Tool
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Please note, the work on this calibration tool was suspended. Please**
+**Use icl-lens-undistortion-calibration-opencv instead**
+
+ICL's camera calibration tool works quite similar to the OpenCV-based
+tool, but it can only use marker-grid input. Appropriate marker-grid
+images can be created using::
+
+  icl-create-marker-grid-svg [...]
+
+This allows grid parameters to be specified, such as the
+grid-dimension, the size of markers and the gap between them. The results
+is an SVG image that can then be converted into pdf or printed directly using
+standard external tools such as inkscape. The calibration tool itself can 
+be run using::
+ 
+  icl-lens-undistortion-calibration -i dc800 0 -g 30x21
+
+The user-interface differs a little bit from the OpenCV-based calibration
+tool, but in general, it works very similar. Basically one should
+make the grid visible in the camera and then go to the *optimize* tab on the 
+right. Here, one can click *capture frame* for each to-be-captured input frame
+and then *optimize* for the actual optimization. Please note that in particular, 
+the OpenCL-based calibration mode is significantly faster -- albeit calibration 
+still takes some seconds. Here are two screenshots of the tool:
+
+.. image:: images/icl-calib-screenshot-1.png
+      :alt: shadow
+      :scale: 50%
+
+.. image:: images/icl-calib-screenshot-2.png
+      :alt: shadow
+      :scale: 50%
+  
+
 
 .. _howtos.calib.object:
 
