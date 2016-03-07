@@ -33,8 +33,13 @@
 #include <ICLMarkers/MarkerGridEvaluater.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLMarkers/InverseUndistortionProcessor.h>
+#include <ICLMath/SimplexOptimizer.h>
+#include <ICLUtils/Random.h>
+
 
 namespace icl{
+  typedef math::SimplexOptimizer<float,std::vector<float> > Simplex;
+  
   namespace markers{
     using namespace utils;
     
@@ -152,7 +157,7 @@ namespace icl{
       return k;
     }
   
-    std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAuto(const utils::Size &imageSize){
+    std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSample(const utils::Size &imageSize){
       const float kData[9] = {0,0,0,0,0, imageSize.width/2.f, imageSize.height/2.f,
                               imageSize.width/2.f, imageSize.height/2.f}; // last two (fx, and fy are not optimized)
       std::vector<float> k(kData,kData+9);
@@ -167,6 +172,62 @@ namespace icl{
         deltaFactor /= 2;
       }
       return k;
+    }
+
+
+    namespace{
+      struct SimplexErrorFunction{
+        mutable std::vector<float> pInternal;
+        MarkerGridBasedUndistortionOptimizer *opt;
+        SimplexErrorFunction(MarkerGridBasedUndistortionOptimizer *opt, float fx, float fy):
+          pInternal(9), opt(opt){
+          pInternal[7] = fx;
+          pInternal[8] = fy;
+        }
+        float error(const std::vector<float> &p) const{
+          for(int i=0;i<5;++i){
+            pInternal[i] = p[i];
+          }
+          pInternal[5] = pInternal[7] + p[5]*10;
+          pInternal[6] = pInternal[8] + p[6]*10;
+          
+          float e = opt->computeError(pInternal.data());
+          DEBUG_LOG("parameters are: " << pInternal[0] << "," << pInternal[1] << ","
+                    << pInternal[2] << "," << pInternal[3] << "," << pInternal[4] << ","
+                    << pInternal[5] << "," << pInternal[6] << "," << pInternal[7] << ","
+                    << pInternal[8] << " --> Error:" << e);
+          if(str(e) == "nan") return 1000;
+          return e;
+        }
+        static void iteration_callback(const Simplex::Result &r){
+          if(!(r.iterations%100)){
+            SHOW(r.fx);
+            SHOW(r.iterations);
+          }
+        }
+        static std::vector<float> gen(){
+          static utils::GRand r(0,0.1);
+          std::vector<float> f(7);
+          std::fill(f.begin(), f.end(), r);
+          f[5] = fabs(f[5]);
+          f[6] = fabs(f[6]);
+          return f;
+        }
+      };
+    }
+    
+    std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSimplex(const utils::Size &imageSize){
+      utils::randomSeed();
+      SimplexErrorFunction e(this, imageSize.width*0.5, imageSize.height*0.5);
+      Simplex simplex(function(e, &SimplexErrorFunction::error), 7);
+      simplex.setIterationCallback(&SimplexErrorFunction::iteration_callback);
+      const Simplex::Result &r =  simplex.optimize(&SimplexErrorFunction::gen, 100);
+      std::vector<float> rvec = r.x;
+      rvec[5] = 10*rvec[5] + imageSize.width;
+      rvec[6] = 10*rvec[6] + imageSize.height;
+      rvec.push_back(imageSize.width*0.5);
+      rvec.push_back(imageSize.height*0.5);
+      return rvec;
     }
   }
 }

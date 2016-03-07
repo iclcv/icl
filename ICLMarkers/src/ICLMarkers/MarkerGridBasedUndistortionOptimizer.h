@@ -62,7 +62,9 @@ namespace icl{
                                         int idx, float min, float max, 
                                         const std::vector<int> steps=std::vector<int>(3,10));
 
-      std::vector<float> optimizeAuto(const utils::Size &imageSize);
+      std::vector<float> optimizeAutoSample(const utils::Size &imageSize);
+
+      std::vector<float> optimizeAutoSimplex(const utils::Size &imageSize);
       
       
     };

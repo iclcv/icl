@@ -196,9 +196,9 @@ namespace icl{
         m_data->undistort_inverse(p.data(), m_data->outBuf.data(), kf, i);
       }
     }
-    std::cout << "k: ";
-    for(int i=0;i<9;++i) std::cout << kf[i] << ", ";
-    std::cout << std::endl;
+    //std::cout << "k: ";
+    //for(int i=0;i<9;++i) std::cout << kf[i] << ", ";
+    //std::cout << std::endl;
 
     return m_data->outBuf;
   }

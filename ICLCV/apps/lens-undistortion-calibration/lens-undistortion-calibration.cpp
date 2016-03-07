@@ -90,15 +90,18 @@ void init(){
                 << Label("--").label("src error").handle("error").maxSize(99,2).minSize(1,2)
                 << Label("--").label("fixed error").handle("uerror").maxSize(99,2).minSize(1,2)
                 )
-           << CamCfg().maxSize(99,2).minSize(1,2)
-           << Combo(fd->getIntermediateImageNames()).handle("vis").maxSize(99,2)
+           << ( HBox()
+                << CamCfg().maxSize(99,2).minSize(1,2)
+                << Combo(fd->getIntermediateImageNames()).handle("vis").maxSize(99,2)
+              )
+           << CheckBox("show detection overlay",true).handle("overlay")
            << ( Tab("udist,markers,optimize")
                 << Prop("udist")
                 << Prop("fd")
                 << (VBox()
                     << Button("capture frame").handle("capture")
                     << Button("clear frames").handle("clear")
-                    << CheckBox("Use OpenCL").handle("use opencl")
+                    << CheckBox("Use OpenCL",true).handle("use opencl")
                     << Label("--").handle("ncap").label("num captured")
                     << Label("--").handle("caperr").label("base error")
                     << Button("optimize").handle("optimize")
@@ -131,9 +134,10 @@ void run(){
   
   const Img8u &useImage = *fd->getIntermediateImage(gui["vis"])->as8u();
   draw = useImage;
-  draw->draw(grid.vis());
-  draw->draw(gridEval.vis());
-
+  if(gui["overlay"]){
+    draw->draw(grid.vis());
+    draw->draw(gridEval.vis());
+  }
   /// undistorted image
   const Img8u &uDistUseImage = udist->undistort(useImage);
   udraw = uDistUseImage;
@@ -141,8 +145,10 @@ void run(){
   detector.detect(&uDistUseImage);
   
   gui["uerror"] = gridEval.evalError();
-  udraw->draw(grid.vis());
-  udraw->draw(gridEval.vis());
+  if(gui["overlay"]){
+    udraw->draw(grid.vis());
+    udraw->draw(gridEval.vis());
+  }
 
   /// optimization ...
   if(clear.wasTriggered()){
@@ -160,7 +166,7 @@ void run(){
   if(optimize.wasTriggered()){
     //    std::vector<float> kOpt = storage.optimizeSample(k, 0,-1,1, std::vector<int>(5,10));
     opt.setUseOpenCL(gui["use opencl"]);
-    std::vector<float> kOpt = opt.optimizeAuto(useImage.getSize());
+    std::vector<float> kOpt = opt.optimizeAutoSimplex(useImage.getSize());
     udist->setParamVector(kOpt.data());
   }
 
