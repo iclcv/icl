@@ -56,14 +56,14 @@ SmartPtr<UndistortionUtil> udist;
 void init(){
   grabber.init(pa("-i"));
   
-  GridDef gridDef;  
-  if(pa("-g")){
-    std::vector<int> ids = FiducialDetectorPlugin::parse_list_str(*pa("-g",2));
-    gridDef = GridDef(pa("-g",1), pa("-g", 3), pa("-g",4), ids, pa("-g"));
-  }else{
-    gridDef = GridDef(Size(6,4), Size32f(40,40), Size32f(279.5,183.7));
+  Size32f dummy(1,1);
+  std::vector<int> ids;
+  if(pa("-mi")){
+    std::vector<int> ids = FiducialDetectorPlugin::parse_list_str(*pa("-mi"));
   }
-  detector.init(gridDef);
+  GridDef g(pa("-g"), dummy, dummy, ids, pa("-m"));
+
+  detector.init(g);
   detector.setConfigurableID("fd");
   detector.setPropertyValue("thresh.global threshold", 21);
   detector.setPropertyValue("thresh.mask size", 30);
@@ -74,7 +74,8 @@ void init(){
     
 
   FiducialDetector *fd = detector.getFiducialDetector();
-  
+  fd->setPropertyValue("max bch errors",1);
+
   gui << ( Tab("distorted input,undistorted image,"
                "difference image,undistortion map").handle("tab").minSize(32,24)
            << Draw().handle("image")
@@ -241,17 +242,25 @@ void run(){
 int main(int n, char **ppc){
   pa_explain("-g","Defines the calibration marker grid, which must be put\n"
              "onto a 100%ly planar surface. The grid (usually printed on an\n"
-             "A4 sheet of paper), has gridDim.x x gridDim.y markers of type\n"
-             "'type'. The marker ID's from top-left to bottom row are defined\n"
-             "by 'markerIDs'. This can either be a comma-separated list of\n"
-             "IDs or range-definition, such as '[0-100]'. Each marker of the\n"
-             "grid has an other size of 'markerSize' and the whole grid\n"
-             "dimension (left border of the left-most marker to the right\n"
-             "border of the right most border, and for the vertical direction\n"
-             "analogolously), 'gridSize'\n"
-             "the example PDF in etc/template-6x4-A4.pdf would have to use:\n"
-             "-g bch 6x4 '[0-23]' 40x40 279.5x183.7\n"
-             "If the -grid argument is not given, these values are also used\n"
-             "as default settings.");
-  return ICLApp(n,ppc,"-input|-i(2) -marker-grid|-grid|-g(type,gridDim,markerIDs,markerSize,gridSize)", init, run).exec();
+             "A4 sheet of paper), has W x H markers. \n"
+             "Marker grid templates for printing can be created with the tool\n"
+             "icl-create-marker-grid-svg <-o filemane> [...] \n"
+             "The tool creates a standard svg (you can use an external tool\n"
+             "such as inkscape to convert the resulting vector graphics to pdf\n"
+             "or to print it directly. Bby default icl-create-marker-grid-svg\n"
+             "creates a very detailed grid of 30x21 markers. As each of the \n"
+             "resulting markers is only 8x8 mm large, we consider this as an\n"
+             "extreme example, which is suited for mega-pixel cameras only.\n"
+             "icl-lens-undistortion-calibration would have to be called like\n"
+             "lens-undistortion-calibration -g 30x21 to work\n"
+             "with that grid");
+  pa_explain("-m","Marker type to be used, actually this should stay 'bch'!");
+  pa_explain("-mi","Marker IDs that were used. By default, the IDs [0, WxH-1]\n"
+             "are used. The marker IDs are always interpreted in row-major\n"
+             "order. The ID-string can either be a comma-seperated list of IDs\n"
+             ", such as '{0,2,3,4,5,99}', or a range string, such as '[0-99]'");
+
+
+  return ICLApp(n,ppc,"-input|-i(2) -grid-dim|-g(cellSize=30x21) "
+                "-marker-type|-m(type=bch) -marker-ids|-mi(ids)", init, run).exec();
 }
