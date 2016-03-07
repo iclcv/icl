@@ -68,7 +68,7 @@ namespace icl{
     }
 
     void MarkerGridBasedUndistortionOptimizer::undistort(const MarkerGrid &src,
-                                      MarkerGrid &dst, const float k[7]) const{
+                                      MarkerGrid &dst, const float k[9]) const{
       dst.setSize(src.getSize());
       
       int n = src.getDim()*4;
@@ -93,7 +93,7 @@ namespace icl{
     }
     
     /// k = k0,k1,k2,k3,k4, ix-offset, iy-offset
-    float MarkerGridBasedUndistortionOptimizer::computeError(const float k[7]){
+    float MarkerGridBasedUndistortionOptimizer::computeError(const float k[9]){
       //Time t = Time::now();
       std::vector<SmartPtr<MarkerGrid> > &gs = m_data->grids;
       std::vector<SmartPtr<MarkerGrid> > &us = m_data->ugrids;
@@ -117,10 +117,10 @@ namespace icl{
       return error/float(us.size());
     }
     
-    std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeSample(const float kInit[7],
+    std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeSample(const float kInit[9],
                                                          int idx, float min, float max, 
                                                          const std::vector<int> steps){
-      std::vector<float> k(kInit,kInit+7);
+      std::vector<float> k(kInit,kInit+9);
 
       float opt = 0;
       for(size_t s = 0;s<steps.size();++s){
@@ -153,8 +153,9 @@ namespace icl{
     }
   
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAuto(const utils::Size &imageSize){
-      const float kData[7] = {0,0,0,0,0, imageSize.width/2.f, imageSize.height/2.f};
-      std::vector<float> k(kData,kData+7);
+      const float kData[9] = {0,0,0,0,0, imageSize.width/2.f, imageSize.height/2.f,
+                              imageSize.width/2.f, imageSize.height/2.f}; // last two (fx, and fy are not optimized)
+      std::vector<float> k(kData,kData+9);
       static const float deltas[7] = {0.5,0.5,0.5,0.5,0.5,50,50};
       float deltaFactor = 2.0;
       int N_OUTER_LOOPS = 12;

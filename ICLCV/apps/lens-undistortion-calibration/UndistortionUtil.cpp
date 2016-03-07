@@ -90,8 +90,8 @@ namespace icl{
     
     f["intrin.fx"] = imageSize.width/2.;
     f["intrin.fy"] = imageSize.height/2.;
-    f["intrin.ix"] = imageSize.width/2.;
-    f["intrin.iy"] = imageSize.height/2.;
+    f["intrin.ix"] = double(k[5]);
+    f["intrin.iy"] = double(k[6]);
     f["intrin.skew"] = 0.;
     f["udist.k1"] = double(k[0]);
     f["udist.k2"] = double(k[1]);
@@ -119,6 +119,9 @@ namespace icl{
                    const std::vector<float> &k,
                    const utils::Point32f &coffset,
                    bool updateMap){
+    this->k[7] = imageSize.width*0.5;
+    this->k[8] = imageSize.height*0.5;
+
     inInit = true;
     this->imageSize = imageSize;
     if(k.size() != 5) throw utils::ICLException("invalid parameter size");

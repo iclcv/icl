@@ -42,7 +42,7 @@ namespace icl{
 
 
       void undistort(const MarkerGrid &src,
-                     MarkerGrid &dst, const float k[7]) const;
+                     MarkerGrid &dst, const float k[9]) const;
 
       public:
       MarkerGridBasedUndistortionOptimizer();
@@ -56,13 +56,15 @@ namespace icl{
       void setUseOpenCL(bool on);
       
       /// k = k0,k1,k2,k3,k4, w/2 + ix-offset, h/2 + iy-offset
-      float computeError(const float k[7]);
+      float computeError(const float k[9]);
       
-      std::vector<float> optimizeSample(const float kInit[7],
+      std::vector<float> optimizeSample(const float kInit[9],
                                         int idx, float min, float max, 
                                         const std::vector<int> steps=std::vector<int>(3,10));
 
       std::vector<float> optimizeAuto(const utils::Size &imageSize);
+      
+      
     };
   }
 }

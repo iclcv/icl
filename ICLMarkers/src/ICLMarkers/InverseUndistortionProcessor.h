@@ -56,6 +56,6 @@ namespace icl{
     void setPreferOpenCL(bool preferOpenCL);
 
     /// performs the mapping with given distortion coefficients
-    const std::vector<utils::Point32f> &run(const std::vector<utils::Point32f> &p, const float kf[7]);
+    const std::vector<utils::Point32f> &run(const std::vector<utils::Point32f> &p, const float kf[9]);
   };
 }

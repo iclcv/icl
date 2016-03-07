@@ -53,6 +53,7 @@ MarkerGridEvaluater gridEval;
 MarkerGridBasedUndistortionOptimizer opt;
 SmartPtr<UndistortionUtil> udist;
 
+
 void init(){
   grabber.init(pa("-i"));
   
@@ -151,7 +152,9 @@ void run(){
     opt.add(grid);
   }
   gui["ncap"] = opt.size();
-  const float k[7] = {0,0,0,0,0, float(useImage.getWidth())/2, float(useImage.getHeight())/2 };
+  const float k[9] = {0,0,0,0,0, 
+                      float(useImage.getWidth())/2, float(useImage.getHeight())/2,
+                      float(useImage.getWidth())/2, float(useImage.getHeight())/2 };
   gui["caperr"] = opt.computeError(k);
 
   if(optimize.wasTriggered()){

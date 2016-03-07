@@ -55,22 +55,22 @@ namespace icl{
       return fabs(a-b);
     }
     
-    inline float2 undistort(float2 pd, float *k){             
-      const float rx = (pd.x - k[5])/k[5], ry = (pd.y - k[6])/k[6];
+    inline float2 undistort(float2 pd, float k[9]){             
+      const float rx = (pd.x - k[5])/k[7], ry = (pd.y - k[6])/k[8];
       const float r2 = rx*rx + ry*ry;
       const float cr = 1.0f + k[0]*r2 + k[1]*r2*r2 + k[4]*r2*r2*r2;   
       const float dx = 2*k[2]*rx*ry + k[3] *(r2 + 2*rx*rx);           
       const float dy = 2*k[3]*rx*ry + k[2] *(r2 + 2*ry*ry);           
       const float rxu = rx * cr + dx;                                 
       const float ryu = ry * cr + dy;                                 
-      return float2(rxu*k[5] + k[5],  ryu*k[6] + k[6]);               
+      return float2(rxu*k[7] + k[5],  ryu*k[8] + k[6]);               
     }                                                                 
     
     inline float2 abs_diff_comp(float2 a, float2 b){                  
       return float2(abs_diff(a.x,b.x), abs_diff(a.y,b.y));            
     }                                                                 
     
-    float2 undistort_inverse_point(float2 s, float *k){       
+    float2 undistort_inverse_point(float2 s, float k[9]){       
       float2 p=s;                                                     
       const float lambda = 0.5;                                       
       const float h = 0.01;                                           
@@ -95,8 +95,8 @@ namespace icl{
                            float2 *out,             
                            const float *k,          
                            int id){
-      float kLocal[7]= {0};
-      for(int i=0;i<7;++i) kLocal[i] = k[i];                        
+      float kLocal[9]= {0};
+      for(int i=0;i<9;++i) kLocal[i] = k[i];                        
       out[id] = undistort_inverse_point(in[id], kLocal);        
     }                                                                 
     
@@ -104,14 +104,14 @@ namespace icl{
 #ifdef USE_OPENCL
       if(preferOpenCL){
         static const char *k = ("inline float2 undistort(float2 pd, __local float *k){             \n"
-                                "  const float rx = (pd.x - k[5])/k[5], ry = (pd.y - k[6])/k[6];   \n"
+                                "  const float rx = (pd.x - k[5])/k[7], ry = (pd.y - k[6])/k[8];   \n"
                                 "  const float r2 = rx*rx + ry*ry;                                 \n" 
                                 "  const float cr = 1.0f + k[0]*r2 + k[1]*r2*r2 + k[4]*r2*r2*r2;   \n"
                                 "  const float dx = 2*k[2]*rx*ry + k[3] *(r2 + 2*rx*rx);           \n"
                                 "  const float dy = 2*k[3]*rx*ry + k[2] *(r2 + 2*ry*ry);           \n"
                                 "  const float rxu = rx * cr + dx;                                 \n"
                                 "  const float ryu = ry * cr + dy;                                 \n"
-                                "  return (float2)(rxu*k[5] + k[5],  ryu*k[6] + k[6]);             \n"
+                                "  return (float2)(rxu*k[7] + k[5],  ryu*k[8] + k[6]);             \n"
                                 "}                                                                 \n"
                                 "                                                                  \n"
                                 "inline float2 abs_diff_comp(float2 a, float2 b){                  \n"
@@ -145,14 +145,14 @@ namespace icl{
                                 "                                __global float2 *out,             \n"
                                 "                                const __global float *k,          \n"
                                 "                                __local float *kLocal){           \n"
-                                "    for(int i=0;i<7;++i) kLocal[i] = k[i];                        \n"
+                                "    for(int i=0;i<9;++i) kLocal[i] = k[i];                        \n"
                                 "    const int id = get_global_id(0);                              \n"
                                 "    out[id] = undistort_inverse_point(in[id], kLocal);            \n"
                                 "}                                                                 \n");
         program = CLProgram("gpu",k);                      
         program.listSelectedDevice();
         
-        this->k = program.createBuffer("r",7*sizeof(float));
+        this->k = program.createBuffer("r",9*sizeof(float));
         kernel = program.createKernel("undistort_inverse");
       }
 #endif
@@ -171,7 +171,7 @@ namespace icl{
   }
   
   const std::vector<Point32f> &InverseUndistortionProcessor::run(const std::vector<Point32f> &p,
-                                                                 const float kf[7]){
+                                                                 const float kf[9]){
     m_data->outBuf.resize(p.size());
     bool done = false;
 #ifdef USE_OPENCL
@@ -182,8 +182,8 @@ namespace icl{
       m_data->output = m_data->program.createBuffer("w",needed);      
 
       m_data->input.write(p.data(), needed);
-      m_data->k.write(kf,7*sizeof(float));
-      CLKernel::LocalMemory l(7*sizeof(float));
+      m_data->k.write(kf,9*sizeof(float));
+      CLKernel::LocalMemory l(9*sizeof(float));
       m_data->kernel.setArgs(m_data->input, m_data->output, m_data->k, l);
       m_data->kernel.apply(p.size(), 1, 0); 
       m_data->output.read(m_data->outBuf.data(), needed);
@@ -196,6 +196,10 @@ namespace icl{
         m_data->undistort_inverse(p.data(), m_data->outBuf.data(), kf, i);
       }
     }
+    std::cout << "k: ";
+    for(int i=0;i<9;++i) std::cout << kf[i] << ", ";
+    std::cout << std::endl;
+
     return m_data->outBuf;
   }
 

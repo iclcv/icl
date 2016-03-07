@@ -41,7 +41,7 @@ namespace icl{
   
   class UndistortionUtil : public utils::Configurable {
     utils::Size imageSize;
-    float k[7]; // k0...k4 and ix, iy
+    float k[9]; // k0...k4 and ix, iy and fixed: fx, fy
     core::Img32f warpMapBuffer;
     filter::WarpOp warpOp;
     bool inInit;
@@ -53,7 +53,7 @@ namespace icl{
     public:
 
     UndistortionUtil(const utils::Size &imageSize,
-          bool inverted=false);
+                     bool inverted=false);
 
     const core::Img32f &getWarpMap() const {
       return warpMapBuffer;
@@ -71,20 +71,21 @@ namespace icl{
     void updateWarpMap();
 
      static utils::Point32f undistort_point(const utils::Point32f &pd,
-                                           const float k[7]){
-      const float rx = (pd.x - k[5])/k[5], ry = (pd.y - k[6])/k[6];
-      const float r2 = rx*rx + ry*ry;
-      const float cr = 1.0f + k[0]*r2 + k[1]*r2*r2 + k[4]*r2*r2*r2;
-        
-      const float dx = 2*k[2]*rx*ry + k[3] *(r2 + 2*rx*rx);
-      const float dy = 2*k[3]*rx*ry + k[2] *(r2 + 2*ry*ry);
-
-      const float rxu = rx * cr + dx;
-      const float ryu = ry * cr + dy;
-      
-      return utils::Point32f(rxu*k[5] + k[5], 
-                             ryu*k[6] + k[6]);
-    }
+                                            const float k[9]){
+       const float fx = k[7], fy = k[8];
+       const float rx = (pd.x - k[5])/fx, ry = (pd.y - k[6])/fy;
+       const float r2 = rx*rx + ry*ry;
+       const float cr = 1.0f + k[0]*r2 + k[1]*r2*r2 + k[4]*r2*r2*r2;
+       
+       const float dx = 2*k[2]*rx*ry + k[3] *(r2 + 2*rx*rx);
+       const float dy = 2*k[3]*rx*ry + k[2] *(r2 + 2*ry*ry);
+       
+       const float rxu = rx * cr + dx;
+       const float ryu = ry * cr + dy;
+       
+       return utils::Point32f(rxu*fx + k[5], 
+                              ryu*fy + k[6]);      
+     }
 
     static utils::Point32f undistort_point_inverse(const utils::Point32f &pd,
                                                    const float k[7]);
