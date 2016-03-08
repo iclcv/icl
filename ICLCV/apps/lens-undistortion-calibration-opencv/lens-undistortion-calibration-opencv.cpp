@@ -31,7 +31,10 @@
 
 #define ICL_NO_USING_NAMESPACES
 
+
+#include "DisplacementMap.h"
 #include <ICLUtils/ConfigFile.h>
+#include <ICLUtils/Configurable.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLCore/ConvexHull.h>
@@ -60,57 +63,86 @@ GenericGrabber grabber;
 CheckerboardDetector checker;
 LensUndistortionCalibrator calib;
 Scene scene;
-ImageUndistortion udist;
+//ImageUndistortion udist;
 std::vector<Point32f> lastCapturedCorners;
 std::map<int,Point32f> lastCapturedMarkers;
 ImgBase *splitImage = 0;
 WarpOp warp;
 FiducialDetector *fid = 0;
+DisplacementMap dmap;
 
 struct MarkerInfo {
   std::vector<int> markerIdList;
   Size gridSize;
 } markerInfo;
 
-struct ImageSplit {
-  Mutex mutex;
-  int pos;      // current position of the line
-  bool drag;    // shows if the line is being dragged
-  bool overlap; // shows if mouse is near the line
-} imageSplit;
+struct ConfigurableUDist : public Configurable{
+  std::vector<double> defaultValues;
+  bool paramChanged;
+  SmartPtr<ImageUndistortion> udist;
+  ConfigurableUDist(){
+    setConfigurableID("udist");
+    paramChanged = true;
+  }
 
-// mouse handling inside of the draw component
-void splitImageMouse(const MouseEvent &e) {
-  imageSplit.mutex.lock();
-  imageSplit.overlap = false;
-
-  // take split line
-  if (e.hitImage()) {
-    if (abs(e.getPos().x - imageSplit.pos) < 5) {
-      imageSplit.overlap = true;
-      if (e.isPressEvent() && e.isLeftOnly())
-        imageSplit.drag = true;
+  void cb(const Property &p){
+    DEBUG_LOG("before: " << *udist);
+    std::vector<double> ps = udist->getParams();
+    if(p.name == "fx"){
+      ps[0] = parse<double>(p.value);
+    }else if(p.name == "fy"){
+      ps[1] = parse<double>(p.value);
+    }else if(p.name == "ix"){
+      ps[2] = parse<double>(p.value);
+    }else if(p.name == "iy"){
+      ps[3] = parse<double>(p.value);
+    }else if(p.name == "skew"){
+      ps[4] = parse<double>(p.value);
+    }else{
+      int idx = parse<int>(p.name.substr(1));
+      ps[idx+4] = parse<double>(p.value);
     }
+    udist->setParams(ps);
+    DEBUG_LOG("after: " << *udist);
+    paramChanged = true;
   }
 
-  // drag split line
-  if (imageSplit.drag && e.isDragEvent()) {
-    static DrawHandle draw = gui["image"];
-    int iWidth = draw->getImageSize().width;
-    int &pos = imageSplit.pos;
-    pos = e.getPos().x;
-    if (pos < 0)
-      pos = 0;
-    else if (pos >= iWidth)
-      pos = iWidth - 1;
+  void updateConfigurableParams(){
+    const std::vector<double> &values = udist->getParams();
+    std::vector<std::string> ps = tok("fx,fy,ix,iy,skew,k1,k2,k3,k4,k5",",");
+    for(int i=0;i<10;++i){
+      setPropertyValue(ps[i], values[i]);
+    }
+    paramChanged = true;
   }
-
-  // release split line
-  if (e.isReleaseEvent())
-    imageSplit.drag = false;
-
-  imageSplit.mutex.unlock();
-}
+  
+  void init(const Size &size, bool addProperties=true){
+#define add(X,MIN,MAX,CUR) \
+    addProperty(#X,"range","[" +str(MIN)+ "," +str(MAX)+ "]",CUR);     \
+    defaultValues.push_back(CUR);
+    
+    if(addProperties){
+      add(fx,10,10000,1000);
+      add(fy,10,10000,1000);
+      add(ix,0,size.width,size.width/2);
+      add(iy,0,size.height,size.height/2);
+      add(skew,0,10,0);
+      add(k1,-10,10,0);
+      add(k2,-100,100,0);
+      add(k3,-10,10,0);
+      add(k4,-10,10,0);
+      add(k5,-100,100,0);
+      registerCallback(function(this,&ConfigurableUDist::cb));
+    }
+     
+    udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);
+    paramChanged = true;
+  }
+  
+  void reset(){
+    init(udist->getImageSize(),false);
+  }
+} udist;
 
 void save_params(){
   try{
@@ -118,11 +150,11 @@ void save_params(){
     ConfigFile f;
     f.setPrefix("config.");
 
-    f["size.width"] = udist.getImageSize().width;
-    f["size.height"] = udist.getImageSize().height;
-    f["model"] = udist.getModel();
+    f["size.width"] = udist.udist->getImageSize().width;
+    f["size.height"] = udist.udist->getImageSize().height;
+    f["model"] = udist.udist->getModel();
 
-    const std::vector<double> &p = udist.getParams();
+    const std::vector<double> &p = udist.udist->getParams();
     f["intrin.fx"] = p[0];
     f["intrin.fy"] = p[1];
     f["intrin.ix"] = p[2];
@@ -168,48 +200,15 @@ void resetData() {
 
   scene.removeObjects(1);
   calib.clear();
-  udist = ImageUndistortion();
+  udist.reset();
 
-  gui["calibrate"].disable();
-  gui["save"].disable();
+  //gui["calibrate"].disable();
+  //  gui["save"].disable();
 
   vecDraw->render();
 }
 
-const ImgBase *getSplitImage(const ImgBase *image) {
-  const int split = imageSplit.pos;
 
-  // if the undistortion was calculated, draw the undistorted image
-  if (!udist.isNull()) {
-    if (splitImage) splitImage->clear();
-    warp.apply(image, &splitImage);
-
-    const Img8u &src = *image->as8u();
-    Img8u &dst = *splitImage->as8u();
-
-    // left part of the image should be the original input
-    const icl::icl8u *r = src.begin(0);
-    const icl::icl8u *g = src.begin(1);
-    const icl::icl8u *b = src.begin(2);
-    icl::icl8u *dR = dst.begin(0);
-    icl::icl8u *dG = dst.begin(1);
-    icl::icl8u *dB = dst.begin(2);
-    for (int y = 0; y < src.getHeight(); ++y) {
-      std::copy(r, r + split, dR);
-      std::copy(g, g + split, dG);
-      std::copy(b, b + split, dB);
-      r += src.getWidth();
-      g += src.getWidth();
-      b += src.getWidth();
-      dR += src.getWidth();
-      dG += src.getWidth();
-      dB += src.getWidth();
-    }
-
-    return splitImage;
-  }
-  else return image;
-}
 
 // This functions removes all non-unique markers
 std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
@@ -293,6 +292,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
   static ButtonHandle capture = gui["capture"];
   const int minMarkers = gui["minMarkers"];
   std::vector<Fiducial> fids = fid->detect(img);
+  gui["nfound"] = str(fids.size());
 
   // first check if enough markers were found
   if ((int)fids.size() >= minMarkers) {
@@ -437,6 +437,7 @@ void init(){
     grabber.useDesired(pa("-s").as<Size>());
   }
   const ImgBase *image = grabber.grab();
+  udist.init(image->getSize());
   
   if(pa("-cb")){
     dStr = string("checker board detection");
@@ -475,24 +476,34 @@ void init(){
   }
 
   gui << ( VSplit().label("image")
-           << Draw().label("input image / undistorted image").handle("image")
+           << Draw().label("input image").handle("image")
+           << Image().label("undistorted image").handle("uimage")
          )
       << ( VSplit().label("data")
-           << Draw3D().label("recorded data").handle("plot")
-           << Draw().label("vector image").handle("vecImage")
+           << Draw3D().label("recorded planes").handle("plot")
+           << Draw().label("displacement map").handle("vecImage")
          )
       << ( VBox().label("controls").minSize(15,1)
-           << CheckBox("detection", true).out("detection").tooltip("if checked the application will try to find\n"
-                                                                   "a checkboard inside the image.")
-           << CheckBox("auto capture", false).out("autoCapture").tooltip("if checked and the displacement is higher than a threshold,\n"
-                                                                          "the current detection will be captured.")
+           << CheckBox("detection", true).out("detection")
+              .tooltip("if checked the application will try to find\n"
+                       "a checkboard inside the image.")
+           << CheckBox("auto capture", false).out("autoCapture")
+              .tooltip("if checked and the displacement is higher than a threshold,\n"
+                       "the current detection will be captured.")
            << FSlider(0.f, 200.f, 10.f).out("captureDis").label("displacement")
            << Button("capture").handle("capture")
            << Button("calibrate").handle("calibrate")
            << Button("save").handle("save")
            << Button("reset").handle("reset")
-           << Slider(5, maxMarkers, maxMarkers).hideIf(!fid).out("minMarkers").label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")
-           << Prop("detectionProps").label(dStr.c_str())
+           << (HBox()
+               << Slider(5, maxMarkers, 5).hideIf(!fid).out("minMarkers")
+                  .label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")
+               << Label("--").handle("nfound").label("#markers found").hideIf(!fid).maxSize(5,2)
+               )
+           << ( Tab("manual params,detection")
+                << Prop("udist")
+                << Prop("detectionProps")
+              )
          )
       << Show();
 
@@ -522,11 +533,8 @@ void init(){
   
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
-  gui["image"].install(new MouseHandler(splitImageMouse));
   gui["calibrate"].disable();
-  gui["save"].disable();
-
-  imageSplit.pos = image->getWidth() / 2;
+  //gui["save"].disable();
 }
 
 void run(){
@@ -534,6 +542,7 @@ void run(){
   static ButtonHandle calibrate = gui["calibrate"];
   static ButtonHandle save      = gui["save"];
   static DrawHandle draw = gui["image"];
+  static ImageHandle udraw = gui["uimage"];
   static DrawHandle vecDraw = gui["vecImage"];
   const bool detection   = gui["detection"];
 
@@ -543,55 +552,44 @@ void run(){
   }
 
   const ImgBase *img = grabber.grab();
-  draw = getSplitImage(img);
+  draw = img;
+  if(warp.getWarpMap().getSize().getDim()){
+    static Img8u warped;
+    warped.fill(0);
+    warp.apply(img,bpp(warped));
+    udraw = warped;
+  }
 
-  // get the current configuration of the split line
-  imageSplit.mutex.lock();
-  int splitPos = imageSplit.pos;
-  bool splitDrag = imageSplit.drag;
-  bool splitOverlap = imageSplit.overlap;
-  imageSplit.mutex.unlock();
-
-  // draw the seperation line between input image and the undistorted image
-  draw->color(255, 255, 255, 255);
-  if (splitDrag || splitOverlap) draw->linewidth(3);
-  draw->line(splitPos, 0, splitPos, img->getHeight() - 1);
-  draw->linewidth(1);
-
-  if (detection) {
-    if (fid) {
+  if(detection){
+    if(fid) {
       handleMarkerDetection(img, draw);
     }
-    if (!checker.isNull()) {
+    if(!checker.isNull()) {
       handleCheckerboardDetection(img, draw);
     }
   }
 
   // handle calibrate button
   if(calibrate.wasTriggered()){
-    udist = calib.computeUndistortion();
-    SHOW(udist);
-    gui["save"].enable();
-
-    const Img32f &mapping = udist.createWarpMap();
-    warp.setWarpMap(mapping);
-
-    // draw the displacement between the input image and the undistorted image
-    for (int y = 0; y < mapping.getHeight(); y += 5)
-      for (int x = 0; x < mapping.getWidth(); x += 5) {
-        float distX = mapping[0](x, y);
-        float distY = mapping[1](x, y);
-        vecDraw->arrow(distX, distY, x, y, 1.0f);
-      }
-    vecDraw->render();
+    *udist.udist = calib.computeUndistortion();
+    udist.updateConfigurableParams();
+    udist.paramChanged = true;
+    SHOW(udist.udist);
+    // gui["save"].enable();
   }
-
+  if(udist.paramChanged){
+    udist.paramChanged = false;
+    const Img32f &mapping = udist.udist->createWarpMap();
+    warp.setWarpMap(mapping);
+    dmap.visualizeTo(mapping, vecDraw);
+  }
+  draw->render();
+  
   // handle save button
-  if (save.wasTriggered() && !udist.isNull()) {
+  if (save.wasTriggered() && !udist.udist->isNull()) {
     save_params();
   }
 
-  draw->render();
   gui["plot"].render();
 }
 

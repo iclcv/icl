@@ -136,6 +136,12 @@ namespace icl{
           return gridPts;
         }
 
+        /// returns current image points (unconst version)
+        KeyPoints &getImagePoints() {
+          return imagePts;
+        }
+
+
         /// visualizes the marker boundary and the center
         void visTo(utils::VisualizationDescription &vd) const;
 

@@ -131,6 +131,7 @@ namespace icl{
           const Marker &m = (*grid)(x,y);
           if(!m.wasFound()) continue;
           const Marker::KeyPoints &ip = m.getImagePoints();
+
           l.push_back(ip.ul);
           l.push_back(ip.ll);
           r.push_back(ip.ur);
@@ -153,6 +154,7 @@ namespace icl{
           b.push_back(ip.lr);
         }
       }
+
 
       // diagonal lines bottom-left to upper-right
       int xs=0, ys=1, xe=1, ye=0;
@@ -200,8 +202,7 @@ namespace icl{
         if(ye == h-1) break;
       }
 
-
-#if 0
+      /*
 
       0 1 2 3 4 5 6
       | | | | | | |
@@ -211,7 +212,8 @@ namespace icl{
       3- s t u v w x =
       4- 0 1 2 3 4 5 &
 
-#endif
+      */
+
       if(STORE_LINES){
         lines.resize(ps.size());
       }
@@ -230,6 +232,15 @@ namespace icl{
         }else{
           Line::PCAInfo p = Line::perform_pca(*ps[i]);
           if(p) { 
+            /*if(str(p.getError()) == "nan"){
+              SHOW(ps[i]->size());
+              std::cout << "points:" << std::endl;
+              for(int j=0;j<ps[i]->size();++j){
+                std::cout << i << " :" << (*ps[i])[j] << std::endl;
+              }
+              
+              throw 32;
+                }*/
             error += ::sqrt(p.getError());
             ++nValid;
           }

@@ -30,7 +30,7 @@
 ********************************************************************/
 
 #include <ICLMarkers/InverseUndistortionProcessor.h>
-
+#include <ICLUtils/StringUtils.h>
 #ifdef ICL_HAVE_OPENCL
 #define USE_OPENCL
 #include <ICLUtils/CLProgram.h>
@@ -41,6 +41,7 @@ namespace icl{
   using namespace utils;
   
   struct InverseUndistortionProcessor::Data{
+    bool openCLInitialized;
 #ifdef USE_OPENCL
     CLProgram program;          // main class
     CLBuffer input,output,k;   // buffers for image input/output and the 3x3-convolution mask
@@ -55,7 +56,7 @@ namespace icl{
       return fabs(a-b);
     }
     
-    inline float2 undistort(float2 pd, float k[9]){             
+    inline float2 undistort(float2 pd, const float k[9]){             
       const float rx = (pd.x - k[5])/k[7], ry = (pd.y - k[6])/k[8];
       const float r2 = rx*rx + ry*ry;
       const float cr = 1.0f + k[0]*r2 + k[1]*r2*r2 + k[4]*r2*r2*r2;   
@@ -69,8 +70,15 @@ namespace icl{
     inline float2 abs_diff_comp(float2 a, float2 b){                  
       return float2(abs_diff(a.x,b.x), abs_diff(a.y,b.y));            
     }                                                                 
+
+    bool local_isnan(float f){
+      return f != f;
+    }
+    bool local_isnan(const Point32f &p){
+      return local_isnan(p.x) || local_isnan(p.y);
+    }
     
-    float2 undistort_inverse_point(float2 s, float k[9]){       
+    float2 undistort_inverse_point(float2 s, const float k[9]){       
       float2 p=s;                                                     
       const float lambda = 0.5;                                       
       const float h = 0.01;                                           
@@ -82,27 +90,89 @@ namespace icl{
         float2 fx = abs_diff_comp(undistort(p,k), s);                 
         if (fx.x < t && fx.y < t) break;                              
         float2 fxh = abs_diff_comp(undistort(p+hh,k), s);             
-        float2 grad = (fxh - fx) * use_lambda;                        
+        float2 grad = (fxh - fx) * use_lambda; 
+
         grad.x = grad.x * fx.x;  // maybe element-wise product?       
         grad.y = grad.y * fx.y;  // is this maybe a*b                 
         p = p - grad;                                                 
-        if(++nn > 100) break;                                          
+        if(local_isnan(p) || ++nn > 100){
+          return p;
+        }
       }                                                               
       return p;                                                       
-    }                                                                 
+    }            
+    
+    float sgn(float x){
+      return x < 0 ? -1 : 1;
+    }
+
+
+
+    float2 undistort_inverse_point_verbose(float2 s, const float k[9]){       
+      float2 p=s;                                                     
+      const float lambda = 0.5;                                       
+      const float h = 0.01;                                           
+      const float use_lambda = lambda/h;                              
+      const float t = 0.05; // desired pixel distance!                
+      int nn = 0; // step counter                                     
+      const float2 hh(h,h);              
+      int step = 0;
+      while(1){    
+        ++step;
+        std::cout << "--- step " << step << "------" << std::endl;
+        float2 fx = abs_diff_comp(undistort(p,k), s);                 
+        if (fx.x < t && fx.y < t) break;                              
+        float2 fxh = abs_diff_comp(undistort(p+hh,k), s);             
+        float2 grad = (fxh - fx) * use_lambda;              
+
+        //if(fabs(grad.x) > 10 || fabs(grad.y) > 10){
+        //  return float2(-1,-1);
+        //}
+          
+        DEBUG_LOG("p:" << p << " fx: "<< fx << " fxh:" << fxh << " grad:" << grad);
+        
+        grad.x = grad.x * fx.x;
+        grad.y = grad.y * fx.y;
+        p = p - grad;   
+        if(local_isnan(p) || ++nn > 100){
+          break;
+        }
+      }         
+      return p;
+      
+    }                                                                  
     
     void undistort_inverse(const float2 *in,        
                            float2 *out,             
                            const float *k,          
                            int id){
-      float kLocal[9]= {0};
-      for(int i=0;i<9;++i) kLocal[i] = k[i];                        
-      out[id] = undistort_inverse_point(in[id], kLocal);        
+      out[id] = undistort_inverse_point(in[id], k);        
     }                                                                 
     
-    Data(bool preferOpenCL):preferOpenCL(preferOpenCL){
+    Data(bool preferOpenCL):openCLInitialized(false),preferOpenCL(preferOpenCL){
+
+    }
+  };
+  
+  InverseUndistortionProcessor::InverseUndistortionProcessor(bool preferOpenCL){
+    m_data = new Data(preferOpenCL);
+  }
+  InverseUndistortionProcessor::~InverseUndistortionProcessor(){
+    delete m_data;
+  }
+ 
+  void InverseUndistortionProcessor::setPreferOpenCL(bool preferOpenCL){
+    m_data->preferOpenCL = preferOpenCL;
+  }
+  
+  const std::vector<Point32f> &InverseUndistortionProcessor::run(const std::vector<Point32f> &p,
+                                                                 const float kf[9]){
+    
+    bool done = false;
+    m_data->outBuf.resize(p.size());
 #ifdef USE_OPENCL
-      if(preferOpenCL){
+    if(m_data->preferOpenCL){
+      if(!m_data->openCLInitialized){
         static const char *k = ("inline float2 undistort(float2 pd, __local float *k){             \n"
                                 "  const float rx = (pd.x - k[5])/k[7], ry = (pd.y - k[6])/k[8];   \n"
                                 "  const float r2 = rx*rx + ry*ry;                                 \n" 
@@ -136,7 +206,7 @@ namespace icl{
                                 "    grad.x = grad.x * fx.x;  // maybe element-wise product?       \n"
                                 "    grad.y = grad.y * fx.y;  // is this maybe a*b                 \n"
                                 "    p = p - grad;                                                 \n"
-                                "    if(++nn > 100) break;                                         \n"
+                                "    if(isnan(p.x) || isnan(p.y) || ++nn > 100) break;             \n"
                                 "  }                                                               \n"
                                 "  return p;                                                       \n"
                                 "}                                                                 \n"
@@ -149,33 +219,14 @@ namespace icl{
                                 "    const int id = get_global_id(0);                              \n"
                                 "    out[id] = undistort_inverse_point(in[id], kLocal);            \n"
                                 "}                                                                 \n");
-        program = CLProgram("gpu",k);                      
-        program.listSelectedDevice();
+        m_data->program = CLProgram("gpu",k);                      
+        m_data->program.listSelectedDevice();
         
-        this->k = program.createBuffer("r",9*sizeof(float));
-        kernel = program.createKernel("undistort_inverse");
+        m_data->k = m_data->program.createBuffer("r",9*sizeof(float));
+        m_data->kernel = m_data->program.createKernel("undistort_inverse");
+        
+        m_data->openCLInitialized = true;
       }
-#endif
-    }
-  };
-  
-  InverseUndistortionProcessor::InverseUndistortionProcessor(bool preferOpenCL){
-    m_data = new Data(preferOpenCL);
-  }
-  InverseUndistortionProcessor::~InverseUndistortionProcessor(){
-    delete m_data;
-  }
- 
-  void InverseUndistortionProcessor::setPreferOpenCL(bool preferOpenCL){
-    m_data->preferOpenCL = preferOpenCL;
-  }
-  
-  const std::vector<Point32f> &InverseUndistortionProcessor::run(const std::vector<Point32f> &p,
-                                                                 const float kf[9]){
-    m_data->outBuf.resize(p.size());
-    bool done = false;
-#ifdef USE_OPENCL
-    if(m_data->preferOpenCL){
       int needed = p.size()*2*sizeof(float);   
       
       m_data->input = m_data->program.createBuffer("r",needed);
@@ -196,9 +247,7 @@ namespace icl{
         m_data->undistort_inverse(p.data(), m_data->outBuf.data(), kf, i);
       }
     }
-    //std::cout << "k: ";
-    //for(int i=0;i<9;++i) std::cout << kf[i] << ", ";
-    //std::cout << std::endl;
+
 
     return m_data->outBuf;
   }

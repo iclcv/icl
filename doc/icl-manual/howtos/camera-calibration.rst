@@ -69,7 +69,7 @@ corrected **before** camera calibration is approached.
 The ICLCV module provides two different tools for the estimation of
 lens-undistortion parameters:
 
-* *icl-lens-undistortion-calibration*
+* *icl-lens-undistortion-calibration (please do not use this!)*
 * *icl-lens-undistortion-calibration-opencv*
 
 While *icl-lens-undistortion-calibration-opencv* internally employs
@@ -82,11 +82,16 @@ additional convenience features, such as automatic acquisition of
 calibration frames and an option to replace the checkerboard-input
 image by a fiducial-marker-based input grid.
 
-*As we had the impression
-that the OpenCV-based calibration tool in some cases has a tendency to
-yield very bad results we implemented an alternative system, that in
-our opinion behaves better in the presence of a very few or many
-calibration images*.
+*We initially had the impression that the OpenCV-based calibration
+tool in some cases has a tendency to yield very bad results so we put
+some effort into a standalone application. However, it later turned
+out that the OpenCV tool actually works very well. The unsatisfying
+results that we obtained were mainly caused by the misconception of
+the to-be-used calibration pattern. When performing a google search
+on "opencv calibration", one could come to the conclusion that a small
+8 by 6 checkerboard pattern is most commonly used and therefore also
+optimally suited. We, however, came to the conclusion that a much more
+detailed pattern leads to much better results.*
 
 
 OpenCV-based Lens Undistortion

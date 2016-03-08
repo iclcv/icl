@@ -71,6 +71,7 @@ namespace icl{
       const std::vector<double> &getParams() const;
       const std::string &getModel() const;
       const utils::Point32f operator()(const utils::Point32f &distortedPos) const;
+      void setParams(const std::vector<double> &params);
       const core::Img32f &createWarpMap() const;
       
       inline bool isNull() const { return !impl; }

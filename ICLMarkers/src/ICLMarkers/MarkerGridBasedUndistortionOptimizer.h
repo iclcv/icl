@@ -36,6 +36,7 @@
 namespace icl{
   namespace markers{
     class MarkerGridBasedUndistortionOptimizer{
+      typedef AdvancedMarkerGridDetector::Marker Marker;
       typedef AdvancedMarkerGridDetector::MarkerGrid MarkerGrid;
       struct Data;
       Data *m_data;

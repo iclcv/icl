@@ -104,6 +104,7 @@ void init(){
                     << CheckBox("Use OpenCL",true).handle("use opencl")
                     << Label("--").handle("ncap").label("num captured")
                     << Label("--").handle("caperr").label("base error")
+                    << Combo("simplex,sampling").handle("calibmode").label("calibration mode")
                     << Button("optimize").handle("optimize")
                     << Button("save").handle("save")
                     )
@@ -166,7 +167,15 @@ void run(){
   if(optimize.wasTriggered()){
     //    std::vector<float> kOpt = storage.optimizeSample(k, 0,-1,1, std::vector<int>(5,10));
     opt.setUseOpenCL(gui["use opencl"]);
-    std::vector<float> kOpt = opt.optimizeAutoSimplex(useImage.getSize());
+    std::string mode = gui["calibmode"];
+    std::vector<float> kOpt;
+    if(mode == "simplex"){
+      kOpt = opt.optimizeAutoSimplex(useImage.getSize());
+    }else if(mode == "sampling"){
+      kOpt = opt.optimizeAutoSample(useImage.getSize());
+    }else{
+      ERROR_LOG("invalid calibration mode");
+    }
     udist->setParamVector(kOpt.data());
   }
 
@@ -269,6 +278,8 @@ int main(int n, char **ppc){
              "order. The ID-string can either be a comma-seperated list of IDs\n"
              ", such as '{0,2,3,4,5,99}', or a range string, such as '[0-99]'");
 
+  std::cout << "Please don't use this application! use icl-lens-undistortion-calibration-opencv instead"
+            << std::endl;
 
   return ICLApp(n,ppc,"-input|-i(2) -grid-dim|-g(cellSize=30x21) "
                 "-marker-type|-m(type=bch) -marker-ids|-mi(ids)", init, run).exec();
