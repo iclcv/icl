@@ -86,6 +86,7 @@ struct ConfigurableUDist : public Configurable{
   }
 
   void cb(const Property &p){
+    return ;
     DEBUG_LOG("before: " << *udist);
     std::vector<double> ps = udist->getParams();
     if(p.name == "fx"){
@@ -131,7 +132,7 @@ struct ConfigurableUDist : public Configurable{
       add(k2,-100,100,0);
       add(k3,-10,10,0);
       add(k4,-10,10,0);
-      add(k5,-100,100,0);
+      add(k5,-10000,10000,0);
       registerCallback(function(this,&ConfigurableUDist::cb));
     }
      
@@ -466,8 +467,9 @@ void init(){
 
     maxMarkers = s.width*s.height;
 
-    QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
-    qd.setConfigurableID("detectionProps");
+    //QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
+    fid->setConfigurableID("detectionProps");
+    fid->setPropertyValue("max bch errors",1);
   } else {
     throw ICLException("other modes than checkerboard and markers "
                        "detection are not yet supported\nPlease use "
