@@ -47,7 +47,7 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
-
+#include <ICLUtils/Array2D.h>
 using namespace icl::utils;
 using namespace icl::qt;
 using namespace icl::cv;
@@ -74,6 +74,22 @@ DisplacementMap dmap;
 struct MarkerInfo {
   std::vector<int> markerIdList;
   Size gridSize;
+
+  Array2D<Fiducial> sort2D(const std::vector<Fiducial> & fids){
+    std::map<int,Point> posLut;
+    int idx = 0;
+    for(int y=0;y<gridSize.height;++y){
+      for(int x=0;x<gridSize.width;++x, ++idx){
+        posLut[markerIdList[idx]] = Point(x,y);
+      }
+    }
+    Array2D<Fiducial> a(gridSize);
+    for(size_t i=0;i<fids.size();++i){
+      Point p = posLut[fids[i].getID()];
+      a(p.x,p.y) = fids[i];
+    }
+    return a;
+  }
 } markerInfo;
 
 struct ConfigurableUDist : public Configurable{
@@ -86,7 +102,7 @@ struct ConfigurableUDist : public Configurable{
   }
 
   void cb(const Property &p){
-    return ;
+    //return ;
     DEBUG_LOG("before: " << *udist);
     std::vector<double> ps = udist->getParams();
     if(p.name == "fx"){
@@ -212,7 +228,23 @@ void resetData() {
 
 
 // This functions removes all non-unique markers
+/** Doubled markers are removed (all instances, as we don't
+    know which one is the right one) */
 std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
+  
+  std::map<int,std::vector<Fiducial> > lut; // id->count
+  for(size_t i=0;i<fids.size();++i){
+    lut[fids[i].getID()].push_back(fids[i]);
+  }
+  std::vector<Fiducial> r;
+  for(std::map<int,std::vector<Fiducial> >::iterator it = lut.begin();
+      it != lut.end();++it){
+    if(it->second.size() == 1){
+      r.push_back(it->second.front());
+    }
+  }
+  return r;
+  /*
   std::vector<Fiducial> ret;
   std::vector<Fiducial>::const_iterator it = fids.begin();
   std::vector<Fiducial>::const_iterator prevIt = it;
@@ -231,6 +263,7 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
   if (prevIt != fids.end()) ret.push_back(*prevIt);
 
   return ret;
+      */
 }
 
 // For every id in "markerIdList" this function creates a list
@@ -265,7 +298,16 @@ void createObjCoords(const std::vector<Point32f> &grid,
   ICLASSERT(grid.size() == 4 * foundList.size());
   obj.clear();
 
-  std::vector<Point32f>::const_iterator gridIt = grid.begin();
+  std::vector<Point32f>::const_iterator it = grid.begin();
+  
+  for(size_t i=0;i<foundList.size();++i){
+    if(foundList[i]){
+      for(int j=0;j<4;++j) obj.push_back(*it++);
+    }else{
+      it+=4;
+    }
+  }
+  /*
   std::vector<bool>::const_iterator it  = foundList.begin();
   std::vector<bool>::const_iterator end = foundList.end();
 
@@ -281,7 +323,7 @@ void createObjCoords(const std::vector<Point32f> &grid,
       gridIt++;
       gridIt++;
     }
-  }
+  }*/
 }
 
 // comparision between two fiducial objects
@@ -295,88 +337,120 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
   std::vector<Fiducial> fids = fid->detect(img);
   gui["nfound"] = str(fids.size());
 
+  bool haveEnoughMarkers = ((int)fids.size() >= minMarkers);
   // first check if enough markers were found
-  if ((int)fids.size() >= minMarkers) {
-    std::vector<bool> foundList;
-
-    std::sort(fids.begin(), fids.end(), comp);
-    fids = removeDuplicates(fids);
-
-    // second check if there are enough markers after sorting out invalid markers
-    if ((int)fids.size() >= minMarkers) {
-      const bool autoCapture = gui["autoCapture"];
-      const float displacement = gui["captureDis"];
-      float diff = -1.f;
-
-      // visualize markers
-      for (unsigned int i = 0; i < fids.size(); ++i){
-        draw->color(255, 0, 0, 255);
-        draw->linestrip(fids[i].getCorners2D());
-        draw->color(0, 100, 255, 255);
-        draw->text(fids[i].getName(), fids[i].getCenter2D().x, fids[i].getCenter2D().y, 9);
-      }
-
-      // if automatic capturing is on, calculate the current displacement
-      if (autoCapture) {
-        if (lastCapturedMarkers.size()) {
-          int count = 0;
-          std::vector<Fiducial>::const_iterator it = fids.begin();
-          diff = 0;
-
-          for (; it != fids.end(); ++it) {
-            if (lastCapturedMarkers[it->getID()] != Point32f()) {
-              Point32f tmp = it->getCenter2D() - lastCapturedMarkers[it->getID()];
-              diff += sqrt(tmp.x*tmp.x + tmp.y*tmp.y);
-              ++count;
-            }
+  
+  std::vector<bool> foundList;
+  
+  std::sort(fids.begin(), fids.end(), comp);
+  fids = removeDuplicates(fids);
+  
+  Array2D<Fiducial> fids2D = markerInfo.sort2D(fids);
+  
+  
+  
+  for(int y=0;y<fids2D.getHeight();++y){
+    for(int x=0;x<fids2D.getWidth();++x){
+      Fiducial &f = fids2D(x,y);
+      if(f){
+        if(haveEnoughMarkers) draw->color(0,255,0,255);
+        else draw->color(255,0,0,255);
+        draw->linewidth(1);
+        draw->linestrip(f.getCorners2D());
+        draw->color(255,0,0,255);
+        
+        draw->linewidth(2);
+        if(x < fids2D.getWidth()-1){
+          Fiducial &left = fids2D(x+1,y);
+          if(left){
+            draw->line(f.getCenter2D(), left.getCenter2D());
           }
-
-          if (count < 3) diff = std::numeric_limits<float>::max();
-          else diff /= count;
         }
-        else diff = std::numeric_limits<float>::max();
+        if(y < fids2D.getHeight()-1){
+          Fiducial &bottom = fids2D(x,y+1);
+          if(bottom){
+            draw->line(f.getCenter2D(), bottom.getCenter2D());
+          }
+        }
       }
-
-      // handle capturing
-      if (capture.wasTriggered() || (diff >= displacement)) {
-        std::vector<Point32f> obj;
-        std::vector<Point32f> corners;
-        LensUndistortionCalibrator::Info info = calib.getInfo();
-        Size &grid = markerInfo.gridSize;
+      
+    }
+  }
+  
+  // second check if there are enough markers after sorting out invalid markers
+  if (haveEnoughMarkers) {
+    const bool autoCapture = gui["autoCapture"];
+    const float displacement = gui["captureDis"];
+    float diff = -1.f;
+    
+    // visualize markers
+    //for (unsigned int i = 0; i < fids.size(); ++i){
+    //  draw->color(255, 0, 0, 255);
+    //  draw->linestrip(fids[i].getCorners2D());
+    //  draw->color(0, 100, 255, 255);
+    //  draw->text(fids[i].getName(), fids[i].getCenter2D().x, fids[i].getCenter2D().y, 9);
+    //}
+    
+    // if automatic capturing is on, calculate the current displacement
+    if (autoCapture) {
+      if (lastCapturedMarkers.size()) {
+        int count = 0;
         std::vector<Fiducial>::const_iterator it = fids.begin();
-
-        for (; it != fids.end(); ++it)
-          lastCapturedMarkers[it->getID()] = it->getCenter2D();
-
-        for (it = fids.begin(); it != fids.end(); ++it) {
-          const std::vector<Fiducial::KeyPoint> &points = it->getKeyPoints2D();
-          corners.push_back(points[3].imagePos);
-          corners.push_back(points[0].imagePos);
-          corners.push_back(points[1].imagePos);
-          corners.push_back(points[2].imagePos);
-        }
-
-        createFoundList(fids, foundList);
-        createObjCoords(info.gridDef, foundList, obj);
-        ICLASSERT(corners.size() == obj.size());
-
-        calib.addPoints(corners, obj);
-
-        std::vector<Vec> ps = estimage_grid_preview(corners, obj, scene.getCamera(1), grid);
-
-        struct LineStrip : public SceneObject{
-          LineStrip(const std::vector<Vec> &ps){
-            m_vertices = ps;
-            m_vertexColors.resize(ps.size(), geom_red());
-            for (size_t i = 0; i<ps.size(); ++i){
-              addLine(i, (i + 1) % ps.size(), geom_red());
-            }
+        diff = 0;
+        
+        for (; it != fids.end(); ++it) {
+          if (lastCapturedMarkers[it->getID()] != Point32f()) {
+            Point32f tmp = it->getCenter2D() - lastCapturedMarkers[it->getID()];
+            diff += sqrt(tmp.x*tmp.x + tmp.y*tmp.y);
+            ++count;
           }
-        };
-        scene.addObject(new LineStrip(ps));
-
-        gui["calibrate"].enable();
+        }
+        
+        if (count < 3) diff = std::numeric_limits<float>::max();
+        else diff /= count;
       }
+      else diff = std::numeric_limits<float>::max();
+    }
+    
+    // handle capturing
+    if (capture.wasTriggered() || (diff >= displacement)) {
+      std::vector<Point32f> obj;
+      std::vector<Point32f> corners;
+      LensUndistortionCalibrator::Info info = calib.getInfo();
+      Size &grid = markerInfo.gridSize;
+      std::vector<Fiducial>::const_iterator it = fids.begin();
+      
+      for (; it != fids.end(); ++it)
+        lastCapturedMarkers[it->getID()] = it->getCenter2D();
+      
+      for (it = fids.begin(); it != fids.end(); ++it) {
+        const std::vector<Fiducial::KeyPoint> &points = it->getKeyPoints2D();
+        corners.push_back(points[3].imagePos);
+        corners.push_back(points[0].imagePos);
+        corners.push_back(points[1].imagePos);
+        corners.push_back(points[2].imagePos);
+      }
+      
+      createFoundList(fids, foundList);
+      createObjCoords(info.gridDef, foundList, obj);
+      ICLASSERT(corners.size() == obj.size());
+      
+      calib.addPoints(corners, obj);
+      
+      std::vector<Vec> ps = estimage_grid_preview(corners, obj, scene.getCamera(1), grid);
+      
+      struct LineStrip : public SceneObject{
+        LineStrip(const std::vector<Vec> &ps){
+          m_vertices = ps;
+          m_vertexColors.resize(ps.size(), geom_red());
+          for (size_t i = 0; i<ps.size(); ++i){
+            addLine(i, (i + 1) % ps.size(), geom_red());
+          }
+        }
+      };
+      scene.addObject(new LineStrip(ps));
+      
+      gui["calibrate"].enable();
     }
   }
 }
