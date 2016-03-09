@@ -58,9 +58,10 @@ namespace icl{
           push_back(Point32f(float(x)*size.width, float(y)*size.height));
         }
       }
+      m_gridBoundarySize = Size32f(dims.width * size.width, dims.height * size.height);
     }
     
-    static void init_grid(std::vector<Point32f> &dst,
+    static Size init_grid(std::vector<Point32f> &dst,
                           const Size &dims, 
                           const Size32f &markerSize, 
                           const Size32f &markerSpacing){
@@ -76,17 +77,20 @@ namespace icl{
           }
         }
       }
+      return Size((dims.width-1) * markerSpacing.width + markerSize.width,
+                  (dims.height-1) * markerSpacing.height + markerSize.height);
+
     }
     
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                              const Size32f &markerSize, 
                                                              const Size32f &markerSpacing){
-      init_grid(*this, markerGridDims, markerSize, markerSpacing);
+      m_gridBoundarySize = init_grid(*this, markerGridDims, markerSize, markerSpacing);
     }
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                                float markerDim, 
                                                                float markerSpacing){
-      init_grid(*this, markerGridDims, Size32f(markerDim,markerDim), Size32f(markerSpacing,markerSpacing));
+      m_gridBoundarySize = init_grid(*this, markerGridDims, Size32f(markerDim,markerDim), Size32f(markerSpacing,markerSpacing));
     }
 
     LensUndistortionCalibrator::LensUndistortionCalibrator():m_data(0){

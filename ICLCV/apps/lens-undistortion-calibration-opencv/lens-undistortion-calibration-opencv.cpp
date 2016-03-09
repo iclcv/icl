@@ -103,28 +103,31 @@ struct ConfigurableUDist : public Configurable{
 
   void cb(const Property &p){
     //return ;
-    DEBUG_LOG("before: " << *udist);
-    std::vector<double> ps = udist->getParams();
-    if(p.name == "fx"){
-      ps[0] = parse<double>(p.value);
-    }else if(p.name == "fy"){
-      ps[1] = parse<double>(p.value);
-    }else if(p.name == "ix"){
-      ps[2] = parse<double>(p.value);
-    }else if(p.name == "iy"){
-      ps[3] = parse<double>(p.value);
-    }else if(p.name == "skew"){
-      ps[4] = parse<double>(p.value);
-    }else{
-      int idx = parse<int>(p.name.substr(1));
-      ps[idx+4] = parse<double>(p.value);
+    if(p.name != "activated" && getPropertyValue("activated").as<bool>()){
+      DEBUG_LOG("before: " << *udist);
+      std::vector<double> ps = udist->getParams();
+      if(p.name == "fx"){
+        ps[0] = parse<double>(p.value);
+      }else if(p.name == "fy"){
+        ps[1] = parse<double>(p.value);
+      }else if(p.name == "ix"){
+        ps[2] = parse<double>(p.value);
+      }else if(p.name == "iy"){
+        ps[3] = parse<double>(p.value);
+      }else if(p.name == "skew"){
+        ps[4] = parse<double>(p.value);
+      }else{
+        int idx = parse<int>(p.name.substr(1));
+        ps[idx+4] = parse<double>(p.value);
+      }
+      udist->setParams(ps);
+      DEBUG_LOG("after: " << *udist);
+      paramChanged = true;
     }
-    udist->setParams(ps);
-    DEBUG_LOG("after: " << *udist);
-    paramChanged = true;
   }
 
   void updateConfigurableParams(){
+    setPropertyValue("activated",false);
     const std::vector<double> &values = udist->getParams();
     std::vector<std::string> ps = tok("fx,fy,ix,iy,skew,k1,k2,k3,k4,k5",",");
     for(int i=0;i<10;++i){
@@ -154,6 +157,9 @@ struct ConfigurableUDist : public Configurable{
      
     udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);
     paramChanged = true;
+    addProperty("activated","flag","",false,0,"Activate this to manually adapt values.<b>Please note</b> that the "
+                "slider-based setting of the parameters doesn't allow all parameter to be set as accurate as it would "
+                "be needed. Therefore, this flag is automatically disabled when the automatic calibration is performed");
   }
   
   void reset(){
@@ -191,6 +197,63 @@ void save_params(){
   std::cout << "parameters saved" << std::endl;
 }
 
+
+SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorners, 
+                                        const std::vector<Point32f> &objCoordsXY,
+                                        const Camera &cam, const Size &gridDim,
+                                        const LensUndistortionCalibrator::Info &info){
+  CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
+  Mat T = cpe.getPose(objCoordsXY.size(), objCoordsXY.data(), markerCorners.data(), cam);
+
+  static std::vector<GeomColor> cs;
+  if(!cs.size()){
+    const int c[3] = {0,128,255};
+    for(int r=0;r<3;++r){
+      for(int g=0;g<3;++g){
+        for(int b=0;b<3;++b){
+          if(c[r] + c[g] + c[b] > 128){
+            cs.push_back(GeomColor(c[r], c[g], c[b],200));
+          }
+        }
+      }
+    }
+  }
+  static size_t cidx = 0;
+  GeomColor c = cs[cidx++];
+  if(cidx >= cs.size()) cidx = 0;
+    
+  
+  SceneObject *obj = new SceneObject;
+  int n = (int)objCoordsXY.size();
+  for(int i=0; i<n; i+=4){
+    for(int d=0;d<4;++d){
+      obj->addVertex(Vec(objCoordsXY[i+d].x, objCoordsXY[i+d].y, 0, 1));
+    }
+    obj->addLine(i,i+1, c);
+    obj->addLine(i+1,i+2,c);
+    obj->addLine(i+2,i+3, c);
+    obj->addLine(i+3,i, c);
+  }
+  const int w = info.gridDef.getGridBoundarySize().width, h = info.gridDef.getGridBoundarySize().height;
+
+  obj->addVertex(Vec(0,0,0,1));
+  obj->addVertex(Vec(w,0,0,1));
+  obj->addVertex(Vec(w,h,0,1));
+  obj->addVertex(Vec(0,h,0,1));
+  obj->addLine(n,n+1, c);
+  obj->addLine(n+1,n+2, c);
+  obj->addLine(n+2,n+3, c);
+  obj->addLine(n+3,n,c);
+  
+  obj->setVisible(Primitive::vertex,false);
+  obj->setVisible(Primitive::quad,true);
+  obj->setVisible(Primitive::line,true);
+  obj->setTransformation(T);
+  
+  return obj;
+}
+
+#if 0
 std::vector<Vec> estimage_grid_preview(const std::vector<Point32f> &imageCoords,
                                        const std::vector<Point32f> &obj,
                                        const Camera &cam, const Size32f &realBoardDim){
@@ -208,7 +271,7 @@ std::vector<Vec> estimage_grid_preview(const std::vector<Point32f> &imageCoords,
 
   return r;
 }
-
+#endif
 // delete all collected and calculated data
 void resetData() {
   static DrawHandle vecDraw = gui["vecImage"];
@@ -436,7 +499,10 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
       ICLASSERT(corners.size() == obj.size());
       
       calib.addPoints(corners, obj);
-      
+
+      /// yyy 
+      scene.addObject(create_grid_preview_object(corners, obj, scene.getCamera(1), grid, info));
+      /*
       std::vector<Vec> ps = estimage_grid_preview(corners, obj, scene.getCamera(1), grid);
       
       struct LineStrip : public SceneObject{
@@ -449,7 +515,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
         }
       };
       scene.addObject(new LineStrip(ps));
-      
+      */
       gui["calibrate"].enable();
     }
   }
@@ -486,7 +552,10 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
     if (capture.wasTriggered() || (diff >= displacement)){
       lastCapturedCorners = cb.corners;
       calib.addPoints(cb.corners);
-      LensUndistortionCalibrator::Info info = calib.getInfo();
+      //LensUndistortionCalibrator::Info info = calib.getInfo();
+      TODO_LOG("add correct object!");
+      //      scene.addObject(create_grid_preview_object(cb.corners, ubfi,gridDef, scene.getCamera(1), grid, info);xxx
+#if 0
       std::vector<Vec> ps = estimage_grid_preview(cb.corners, info.gridDef, scene.getCamera(1), pa("-r"));
       struct LineStrip : public SceneObject{
         LineStrip(const std::vector<Vec> &ps){
@@ -498,6 +567,7 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
         }
       };
       scene.addObject(new LineStrip(ps));
+#endif
       gui["calibrate"].enable();
     }
   }
@@ -537,7 +607,8 @@ void init(){
     fid = new FiducialDetector(pa("-m").as<std::string>(),
                                pa("-m", 1).as<std::string>(),
                                ParamList("size", (*pa("-m", 2))));
-    calib.init(image->getSize(), LensUndistortionCalibrator::GridDefinition(pa("-g").as<Size>(), pa("-m", 2).as<Size>(), pa("-sp").as<Size>()));
+    LensUndistortionCalibrator::GridDefinition def(pa("-g").as<Size>(), pa("-m", 2).as<Size32f>(), pa("-sp").as<Size32f>());
+    calib.init(image->getSize(), def);
 
     maxMarkers = s.width*s.height;
 
@@ -556,7 +627,7 @@ void init(){
            << Image().label("undistorted image").handle("uimage")
          )
       << ( VSplit().label("data")
-           << Draw3D().label("recorded planes").handle("plot")
+           << Draw3D(image->getSize()).label("recorded planes").handle("plot")
            << Draw().label("displacement map").handle("vecImage")
          )
       << ( VBox().label("controls").minSize(15,1)

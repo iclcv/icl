@@ -72,6 +72,13 @@ namespace icl{
         
         /// as above but assuming square markers alligned in a uniform grid
         GridDefinition(const utils::Size &markerGridDims, float markerDim, float markerSpacing);
+
+        /// returns the outer physical size of the used grid
+        const utils::Size32f &getGridBoundarySize() const { return m_gridBoundarySize; }
+
+        private:
+        /// outer physical size of the used grid
+        utils::Size32f m_gridBoundarySize;
       };
       
       /// Internally used info structure (also returned by LensUndistortionCalibrator::getInfo)
