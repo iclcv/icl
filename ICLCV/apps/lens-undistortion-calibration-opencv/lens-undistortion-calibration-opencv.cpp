@@ -638,10 +638,12 @@ void init(){
               .tooltip("if checked and the displacement is higher than a threshold,\n"
                        "the current detection will be captured.")
            << FSlider(0.f, 200.f, 10.f).out("captureDis").label("displacement")
+           << CamCfg()
            << Button("capture").handle("capture")
            << Button("calibrate").handle("calibrate")
            << Button("save").handle("save")
            << Button("reset").handle("reset")
+           
            << (HBox()
                << Slider(5, maxMarkers, 5).hideIf(!fid).out("minMarkers")
                   .label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")

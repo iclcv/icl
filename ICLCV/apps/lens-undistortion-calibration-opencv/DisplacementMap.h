@@ -102,13 +102,15 @@ namespace icl{
         
         draw = displacement; 
 
+        float arrowDim = (3.0*w)/640;
+        
         for(int y=0;y<h;y+=20){
           for(int x=0;x<w;x+=20){
             float d = ::sqrt(utils::sqr(cx(x,y)-x) + utils::sqr(cy(x,y)-y));
             int cidx = d/maxLen * 255;
             draw->color(lut[0][cidx], lut[1][cidx], lut[2][cidx], 255);
             draw->fill(lut[0][cidx], lut[1][cidx], lut[2][cidx], 255);
-            draw->arrow(cx(x,y), cy(x,y), x, y, 3);
+            draw->arrow(cx(x,y), cy(x,y), x, y, arrowDim);
           }
         }
         draw->color(0,0,0,255);
