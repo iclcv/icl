@@ -529,7 +529,7 @@ namespace icl{
           }else{
             draw->color(200,200,200,255);
           }
-          draw->text(str(m.id),m.imagePos.x, m.imagePos.y+12, -10);
+          draw->text(str(m.id),m.imagePos.x, m.imagePos.y+12, 12);
         }
       }
     std::vector<CameraCalibrationUtils::FoundMarker> CameraCalibrationUtils::detect_markers(const core::ImgBase *image,
