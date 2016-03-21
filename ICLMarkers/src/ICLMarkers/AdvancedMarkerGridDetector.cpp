@@ -170,8 +170,8 @@ namespace icl{
         
     utils::VisualizationDescription AdvancedMarkerGridDetector::MarkerGrid::vis() const{
       utils::VisualizationDescription vd;
-      vd.color(0,100,255,255);
-      vd.fill(0,100,255,10);
+      vd.color(255,0,0,255);
+      vd.fill(0,0,0,0);
       for(Super::const_iterator it = begin(); it != Super::end(); ++it){
         it->visTo(vd);
       }

@@ -134,7 +134,7 @@ int main(int n, char **ppc){
       << svg << std::endl
       << group << std::endl;
   
-  int idx = 0;
+  int idx = -1;
   for(int y=0;y<ny;++y){
     for(int x=0;x<nx;++x){
       Rect32f bounds(ox+x*(md+m), oy+y*(md+m), md, md);
