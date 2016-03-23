@@ -557,6 +557,16 @@ namespace icl{
           while(2 * v.width * f < vd.width) f*=2;
           dx /= f;
         }
+
+        static const int MIN_TIC_DISTANCE = 10;
+        if(str(mx) != "inf" && str(mx) != "-inf"){
+          float amx = fabs(mx);
+          if(dx*amx < MIN_TIC_DISTANCE){
+            while(dx*amx < MIN_TIC_DISTANCE) dx *= 10;
+            while(dx*amx > (2*MIN_TIC_DISTANCE)) dx /= 5;
+            while(dx*amx < MIN_TIC_DISTANCE) dx *= 2;
+          }
+        }
         
         const float tl = getPropertyValue("tics.length").as<float>()/(2*my) ;
         const float y1 = winToDrawY(h-b_bottom) - tl, y2 =  winToDrawY(h-b_bottom) + tl;
@@ -612,7 +622,17 @@ namespace icl{
           while(v.height * f < vd.height) f*=2;
           dy /= f;
         }
-  
+
+        static const int MIN_TIC_DISTANCE = 10;
+        if(str(my) != "inf" && str(my) != "-inf"){
+          float amy = fabs(my);
+          if(dy*amy < MIN_TIC_DISTANCE){
+            while(dy*amy < MIN_TIC_DISTANCE) dy *= 10;
+            while(dy*amy > (2*MIN_TIC_DISTANCE)) dy /= 5;
+            while(dy*amy < MIN_TIC_DISTANCE) dy *= 2;
+          }
+        }
+        
         const float tl = getPropertyValue("tics.length").as<float>()/(2*mx) ;
         const float x1 = rx.minVal - tl, x2 = rx.minVal + tl;
         // const float numTics = ryd.getLength()/dy;
@@ -628,7 +648,7 @@ namespace icl{
         float lastVisibleTic = winToDrawY(b_top);
         dyUnits = floor(lastVisibleTic/dy);
         lastVisibleTic = dy * dyUnits;
-        
+
         for(float y=firstVisibleTic; y <= lastVisibleTic; y+=dy){
           
           if(ygrid && data->setPen(Y_GRID_PEN)){
