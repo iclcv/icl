@@ -95,17 +95,17 @@ std::string create_marker_text(const Rect32f &r, int id){
   static FiducialDetector fd("bch", Any(),ParamList("size","1x1"));
   core::Img8u m = fd.createMarker(id, Size(300,300), ParamList("border width",2));
   std::ostringstream str;
-  str << "<image x=\"" << r.x << "\" y=\"" << r.y << "\" id=\"marker_"
+  str << "<image x=\"" << r.x << "mm\" y=\"" << r.y << "mm\" id=\"marker_"
       << id << "\" style=\"image-rendering:optimizeSpeed\" "
       << "preserveAspectRatio=\"none\" width=\"" << r.width
-      << "\" height=\"" << r.height << "\" xlink:href=\""
+      << "mm\" height=\"" << r.height << "mm\" xlink:href=\""
       << "data:image/png;base64," << getPngDataBase64(m) << "\"/>" << std::endl;
   return str.str();
 }
 
 int main(int n, char **ppc){
   pa_init(n,ppc,
-          "-offset|-ofs(x=25,y=25) "
+          "-offset|-ofs(x=12,y=12) "
           "-size|-s(size=30x21) "
           "-output|-o(filename) "
           "-marker-dim|-d(dim=30mm) "
