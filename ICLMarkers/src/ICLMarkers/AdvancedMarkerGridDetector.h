@@ -99,6 +99,10 @@ namespace icl{
 
           // internally used function that concatenates all points (without the center point)
           std::vector<utils::Point32f> corners() const;
+          
+          /// appends the corner points to the given vector
+          void appendCornersTo(std::vector<utils::Point32f> &dst) const;
+
         };
 
         private:

@@ -81,6 +81,14 @@ namespace icl{
       ps[3] = ul;
       return ps;
     }
+    
+    void AdvancedMarkerGridDetector::Marker::KeyPoints::appendCornersTo(std::vector<utils::Point32f> &dst) const{
+      dst.push_back(ul);
+      dst.push_back(ur);
+      dst.push_back(lr);
+      dst.push_back(ll);
+    }
+
 
     
     AdvancedMarkerGridDetector::Marker::Marker():id(-1),found(false){}
@@ -107,6 +115,8 @@ namespace icl{
       dst[2] = imagePts.ll;
       dst[3] = imagePts.ul;
     }
+
+
 
     
     AdvancedMarkerGridDetector::MarkerGrid::MarkerGrid(){}

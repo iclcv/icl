@@ -88,6 +88,7 @@ namespace icl{
       bool timeMonitoring;
       bool poseCorrection;
 
+      CoplanarPointPoseEstimator::RANSACSpec ransacSpec;
     };
 
     static const std::string &get_all_algorithms(){
@@ -113,7 +114,7 @@ namespace icl{
 
 
     CoplanarPointPoseEstimator::CoplanarPointPoseEstimator(ReferenceFrame returnedPoseReferenceFrame,
-                                                           PoseEstimationAlgorithm a):
+                                                           PoseEstimationAlgorithm a, const RANSACSpec &spec):
       data(new Data){
 
       data->algorithm = a;
@@ -125,22 +126,27 @@ namespace icl{
       data->timeMonitoring = false;
       data->poseCorrection = false;
       data->referenceFrame = returnedPoseReferenceFrame;
+      data->ransacSpec = spec;
 
-      addProperty("algorithm","menu",get_all_algorithms(),algorithm_to_string(a),0,
-                  "Specifies the used algorithm:\n"
-                  "HomographyBasedOnly: straight forward least-square based\n"
-                  "SamplingCoarse:  Use exhaustive sampling around the result\n"
-                  "                 of the linear result (using parameters for\n"
-                  "                 coarse sampling)\n"
-                  "SamplingMedium:  As above, but finer sampling (more\n"
-                  "                 accurate, but slower\n"
-                  "SamplingFine:    As abouve, but even finer (again more\n"
-                  "                 accurate and slower\n"
-                  "SamplingCustom:  Exhaustive sampling with custom parameters\n"
-                  "SimplexSampling: Use the Simplex-Search algorithm for\n"
-                  "                 optimization (usually, this provides the best\n"
-                  "                 result and is still much faster than exhaustive\n"
-                  "                 sampling");
+      for(int i=0;i<2;++i){
+        std::string pfx = i ? "RANSAC." : "";
+        PoseEstimationAlgorithm ua = i ? spec.poseEstimationDuringSampling : a;
+        addProperty(pfx+"algorithm","menu",get_all_algorithms(),algorithm_to_string(ua),0,
+                    "Specifies the used algorithm:\n"
+                    "HomographyBasedOnly: straight forward least-square based\n"
+                    "SamplingCoarse:  Use exhaustive sampling around the result\n"
+                    "                 of the linear result (using parameters for\n"
+                    "                 coarse sampling)\n"
+                    "SamplingMedium:  As above, but finer sampling (more\n"
+                    "                 accurate, but slower\n"
+                    "SamplingFine:    As abouve, but even finer (again more\n"
+                    "                 accurate and slower\n"
+                    "SamplingCustom:  Exhaustive sampling with custom parameters\n"
+                    "SimplexSampling: Use the Simplex-Search algorithm for\n"
+                    "                 optimization (usually, this provides the best\n"
+                    "                 result and is still much faster than exhaustive\n"
+                    "                 sampling");
+      }
       addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval,0,
                   "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                   "Defines the angle search range for exhaustive search");
@@ -163,7 +169,18 @@ namespace icl{
       addProperty("pose correction","flag","",data->poseCorrection,0,
                   "If set to true, the pose is corrected using robust pose estimation algorithm");
 #endif
-
+      addProperty("RANSAC.enable", "flag", "", data->ransacSpec.useRANSAC, 0, 
+                  "Enable RANSAC sampling. This is only needed when more than 5 points are "
+                  "used and when these points are prone to outliers");
+      addProperty("RANSAC.num points for model","range","[4,100]", 
+                  data->ransacSpec.numPointsForModel, 0,
+                  "Number of points used for generating models during RANSAC sampling");
+      addProperty("RANSAC.number of cycles","range","[10,10000]:1", 
+                  data->ransacSpec.numRandomCycles, 0,
+                  "Number of RANSAC cycles performed");
+      addProperty("RANSAC.max projection distance","range","[0,100]", 
+                  data->ransacSpec.maxPointProjectionDistance, 0, 
+                  "Maximum projection error for points to be classified as inlier");
 
       registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));
     }
@@ -177,6 +194,11 @@ namespace icl{
       else if(p.name == "position multiplier") data->positionMultiplier = parse<float>(p.value);
       else if(p.name == "time monitoring") data->timeMonitoring = parse<bool>(p.value);
       else if(p.name == "pose correction") data->poseCorrection = parse<bool>(p.value);
+      else if(p.name == "RANSAC.algorithm") data->ransacSpec.poseEstimationDuringSampling = string_to_algorithm(p.value);
+      else if(p.name == "RANSAC.enable") data->ransacSpec.useRANSAC = parse<bool>(p.value);
+      else if(p.name == "RANSAC.num points for model") data->ransacSpec.numPointsForModel = parse<int>(p.value);
+      else if(p.name == "RANSAC.number of cycles") data->ransacSpec.numRandomCycles = parse<int>(p.value);
+      else if(p.name == "RANSAC.max projection distance") data->ransacSpec.maxPointProjectionDistance = parse<float>(p.value);
       else {
         WARNING_LOG("invalid property name: " << p.name);
       }
@@ -587,11 +609,12 @@ namespace icl{
         delete VV;
       }
 
-    void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints, std::vector<Point32f> &ips) {
+    void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints, 
+                                                          const utils::Point32f *normalizedImagePoints) {
       std::vector< FixedMatrix<icl32f, 1, 3> > V(n), P(n), P_(n);
 
       for (int i = 0; i < n ; ++i) {
-        V[i] = FixedMatrix<icl32f, 1, 3>(ips[i].x, ips[i].y, 1.0f);
+        V[i] = FixedMatrix<icl32f, 1, 3>(normalizedImagePoints[i].x, normalizedImagePoints[i].y, 1.0f);
         P[i] = FixedMatrix<icl32f, 1, 3>(modelPoints[i].x, modelPoints[i].y, 0.0f);
       }
 
@@ -692,7 +715,30 @@ namespace icl{
       return simplex;
     }
 
-    Mat CoplanarPointPoseEstimator::getPose(int n,
+
+    static std::pair<int,float> find_inliers_and_get_error(const Mat &T, const Camera &cam, 
+                                                           int N, const Point32f *mpts, 
+                                                           const Point32f *ipts,
+                                                           int *inliers,
+                                                           float maxSquaredError){
+      std::pair<int,float> r(0,0.0f);
+      
+      Mat PT = cam.getProjectionMatrix() * cam.getCSTransformationMatrix();
+      for(int i=0;i<N;++i){
+        Vec p = PT * Vec(mpts[i].x, mpts[i].y, 0, 1);
+        if(p[3]) {
+          Point32f ph(p[0]/p[3], p[1]/p[3]);
+          float e = sqr(ph.x - ipts[i].x) + sqr(ph.y - ipts[i].y);
+          if(e <= maxSquaredError){
+            r.second += ::sqrt(e);
+            inliers[r.first++] = i;
+          }
+        }
+      }
+      return r;
+    }
+
+     Mat CoplanarPointPoseEstimator::getPose(int n,
                                             const Point32f *modelPoints,
                                             const Point32f *imagePoints,
                                             const Camera &cam){
@@ -702,13 +748,68 @@ namespace icl{
       float icy = -ify * cam.getPrincipalPointOffset().y;
 
       // please note, the old implementation can be found in svn rev. 2753
-      std::vector<Point32f> ips(n);//, pbs(n);
+      std::vector<Point32f> normalizedImagePoints(n);//, pbs(n);
       for(int i=0;i<n;++i){
-        ips[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
+        normalizedImagePoints[i] = Point32f(ifx*imagePoints[i].x+icx, ify * imagePoints[i].y+icy);
       }
 
+
+
+      if(data->ransacSpec.useRANSAC){
+        int bestNumInliers = 0;
+        float bestProjectionError = 0;
+        std::vector<int> bestConsensusSet;
+        const PoseEstimationAlgorithm a = data->ransacSpec.poseEstimationDuringSampling;
+        const int N = iclMin(data->ransacSpec.numPointsForModel, n);
+        const int nIter = data->ransacSpec.numRandomCycles;
+        const float maxSquaredPtError = sqr(data->ransacSpec.maxPointProjectionDistance);
+
+        std::vector<int> r(n); // use use only the first N of these!
+        std::vector<int> inliers(n);
+        for(int i=0;i<n;++i) r[i] = i;
+
+        for(int i=0;i<nIter; ++i){
+          std::random_shuffle(r.begin(), r.end());
+          std::vector<Point32f> mpts(N), ipts(N), nipts(N);
+          for(int j=0;j<N;++j){
+            const int idx = r[j];
+            mpts[j] = modelPoints[idx];
+            ipts[j] = imagePoints[idx];
+            nipts[j] = normalizedImagePoints[idx];
+          }
+          Mat T = getPoseInternal(a, N, mpts.data(), ipts.data(), nipts.data(), cam);
+
+          /// numInliers, error
+          std::pair<int,float> eval = find_inliers_and_get_error(T, cam, N, mpts.data(), ipts.data(), 
+                                                                 inliers.data(), maxSquaredPtError);
+          if(eval.first > bestNumInliers || ( eval.first == bestNumInliers && eval.second < bestProjectionError)){
+            bestNumInliers = eval.first;
+            bestProjectionError = eval.second;
+            bestConsensusSet.assign(inliers.begin(),inliers.begin()+bestNumInliers);
+          }            
+        }
+        std::vector<Point32f> mpts(N), ipts(N), nipts(N);
+        for(size_t j=0;j<bestConsensusSet.size();++j){
+          const int idx = bestConsensusSet[j];
+          mpts[j] = modelPoints[idx];
+          ipts[j] = imagePoints[idx];
+          nipts[j] = normalizedImagePoints[idx];
+        }
+        return getPoseInternal(data->algorithm, mpts.size(), mpts.data(), ipts.data(), nipts.data(), cam);
+      }else{
+        return getPoseInternal(data->algorithm, n, modelPoints, imagePoints, normalizedImagePoints.data(), cam);
+      }
+    }
+    
+    Mat CoplanarPointPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n, 
+                                                    const utils::Point32f *modelPoints, 
+                                                    const utils::Point32f *imagePoints, 
+                                                    const utils::Point32f *normalizedImagePoints, 
+                                                    const Camera &cam){
+    
       typedef float real;
-      GenericHomography2D<real> H(ips.data(),modelPoints,n); // tested the homography error which is always almost 0
+      GenericHomography2D<real> H(normalizedImagePoints,modelPoints,n); 
+    // tested the homography error which is always almost 0
 
 #ifdef USE_OLD_VERSION
 
@@ -767,12 +868,12 @@ namespace icl{
 
       
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
-      if (data->poseCorrection) robustPoseCorrection(n, modelPoints, ips);
+      if (data->poseCorrection) robustPoseCorrection(n, modelPoints, normalizedImagePoints);
 #endif
 
 
-      if(data->algorithm != HomographyBasedOnly){
-        switch(data->algorithm){
+      if(a != HomographyBasedOnly){
+        switch(a){
           case SamplingCustom:
             data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
                                      data->samplingInterval, data->positionMultiplier, data->samplingSteps, data->samplingSubSteps,

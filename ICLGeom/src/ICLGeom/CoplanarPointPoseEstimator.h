@@ -89,6 +89,11 @@ namespace icl{
         \section BENCH Benchmark Results
         Simple Pose estimation with 4 points needs about 80 ns on an Intel(R) Xeon(R) E5530
         (2.40GHz). If 9 points are used, it needs about 110 ns.
+
+
+        \section RANSAC Enabling RANSAC 
+        As a new feature, the pose estimation step can be optimized using RANSAC internally.
+        @TODO perhaps, we need some more text here !
     */
     class ICLGeom_API CoplanarPointPoseEstimator : public utils::Configurable{
   
@@ -103,7 +108,8 @@ namespace icl{
       
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       /// Internally used to correct the first transformation matrix using robust pose estimation algorithm
-      void robustPoseCorrection(int n, const utils::Point32f *modelPoints, std::vector<utils::Point32f> &ips);
+      void robustPoseCorrection(int n, const utils::Point32f *modelPoints, 
+                                const utils::Point32f *normalizedImagePoints);
 #endif
       
       public:
@@ -125,13 +131,39 @@ namespace icl{
         SamplingCustom,      //!< uses custom properties to define sampling parameters for brute force sampling
       };
       
+      /// Parameter struct that is used to specify optional RANSAC parameters for the internal pose estimation
+      struct RANSACSpec{
+        bool useRANSAC;         //!< enables/disables RANSAC (if disabled, the other parameters are obsolete)
+        int numPointsForModel;  //!< number of points used for finding initial models
+        int numRandomCycles;    //!< number of RANSAC cycles performed
+        float maxPointProjectionDistance; //!< maximun distance of model points to be in the consensus set
+
+        /// poseestimation algorithm that is used during the RANSAC sampling
+        /** In the final step, where the model is finalized using all points of the consensus set,
+            the CoplanarPointPoseEstimator's PoseEstimationAlgorithm is used */
+        PoseEstimationAlgorithm poseEstimationDuringSampling; 
+
+        /// Constructor with given parameters and defaults
+        /** By default, RANSAC is disabled */
+        RANSACSpec(bool useRANSAC = false, int numPointsForModel = 5, int numRandomCycles=100, 
+                    float maxPointProjectionDistance = 2.0f,
+                    PoseEstimationAlgorithm poseEstimationDuringSampling = HomographyBasedOnly):
+          useRANSAC(useRANSAC), numPointsForModel(numPointsForModel),numRandomCycles(numRandomCycles),
+          maxPointProjectionDistance(maxPointProjectionDistance),
+          poseEstimationDuringSampling(poseEstimationDuringSampling){}
+      };
       
       /// Default constructor with given reference-frame for the returned poses
       /** Please note that the Downhill Simplex based pose optimization is very accurate and very fast.
           Using other modes does usually slowdown the pose estimation process <b>and</b> also decrease
-          the result quality. Hovever the brute force search is still provided due to 'historic' reasons */
+          the result quality. Hovever the brute force search is still provided due to 'historic' reasons.
+          
+          @param spec Optionally the CoplanarPointPoseEstimator can be set up to use RANSAC to 
+                      automatically filter out invalid points by means for stochastic sampling. 
+          */
       CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame, 
-                                 PoseEstimationAlgorithm a = SimplexSampling);
+                                 PoseEstimationAlgorithm a = SimplexSampling,
+                                 const RANSACSpec &spec = RANSACSpec());
   
       /// Destructor
       ~CoplanarPointPoseEstimator();
@@ -157,6 +189,14 @@ namespace icl{
       */
       math::FixedMatrix<float,4,4> getPose(int n, const utils::Point32f *modelPoints, 
                                            const utils::Point32f *imagePoints, const Camera &cam);
+
+      private:
+      /// internal utility function
+      math::FixedMatrix<float,4,4> getPoseInternal(PoseEstimationAlgorithm a, int n, 
+                                                   const utils::Point32f *modelPoints, 
+                                                   const utils::Point32f *imagePoints, 
+                                                   const utils::Point32f *normalizedImagePoints, 
+                                                   const Camera &cam);
     };
   } // namespace geom
 }
