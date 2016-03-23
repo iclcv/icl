@@ -172,13 +172,13 @@ namespace icl{
       addProperty("RANSAC.enable", "flag", "", data->ransacSpec.useRANSAC, 0, 
                   "Enable RANSAC sampling. This is only needed when more than 5 points are "
                   "used and when these points are prone to outliers");
-      addProperty("RANSAC.num points for model","range","[4,100]", 
+      addProperty("RANSAC.num points for model","range","[4,100]:1", 
                   data->ransacSpec.numPointsForModel, 0,
                   "Number of points used for generating models during RANSAC sampling");
       addProperty("RANSAC.number of cycles","range","[10,10000]:1", 
                   data->ransacSpec.numRandomCycles, 0,
                   "Number of RANSAC cycles performed");
-      addProperty("RANSAC.max projection distance","range","[0,100]", 
+      addProperty("RANSAC.max projection distance","range","[0,300]", 
                   data->ransacSpec.maxPointProjectionDistance, 0, 
                   "Maximum projection error for points to be classified as inlier");
 
@@ -723,9 +723,9 @@ namespace icl{
                                                            float maxSquaredError){
       std::pair<int,float> r(0,0.0f);
       
-      Mat PT = cam.getProjectionMatrix() * cam.getCSTransformationMatrix();
+      Mat PTT = cam.getProjectionMatrix() * cam.getCSTransformationMatrix() * T;
       for(int i=0;i<N;++i){
-        Vec p = PT * Vec(mpts[i].x, mpts[i].y, 0, 1);
+        Vec p = PTT * Vec(mpts[i].x, mpts[i].y, 0, 1);
         if(p[3]) {
           Point32f ph(p[0]/p[3], p[1]/p[3]);
           float e = sqr(ph.x - ipts[i].x) + sqr(ph.y - ipts[i].y);
@@ -767,6 +767,7 @@ namespace icl{
         std::vector<int> r(n); // use use only the first N of these!
         std::vector<int> inliers(n);
         for(int i=0;i<n;++i) r[i] = i;
+        //DEBUG_LOG("staring RANSAC interation");
 
         for(int i=0;i<nIter; ++i){
           std::random_shuffle(r.begin(), r.end());
@@ -777,25 +778,49 @@ namespace icl{
             ipts[j] = imagePoints[idx];
             nipts[j] = normalizedImagePoints[idx];
           }
-          Mat T = getPoseInternal(a, N, mpts.data(), ipts.data(), nipts.data(), cam);
+          //DEBUG_LOG("cycle " << i << " using indices " << cat(std::vector<int>(r.begin(), r.begin()+N)));
+          
+          try{
+            Mat T = getPoseInternal(a, N, mpts.data(), ipts.data(), nipts.data(), cam);
+            
+            /// numInliers, error
+            std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints, 
+                                                                   inliers.data(), maxSquaredPtError);
+            
+            // DEBUG_LOG("found " << eval.first << " inliers (mean projection error was " << (eval.first ? eval.second/eval.first : 0));
+            
+            if(eval.first > bestNumInliers || ( eval.first == bestNumInliers && eval.second < bestProjectionError)){
+              bestNumInliers = eval.first;
+              bestProjectionError = eval.second;
+              bestConsensusSet.assign(inliers.begin(),inliers.begin()+bestNumInliers);
+            }       
+          }catch(...) {}     
+        }
 
-          /// numInliers, error
-          std::pair<int,float> eval = find_inliers_and_get_error(T, cam, N, mpts.data(), ipts.data(), 
+        // ok, now we iterate this to find include an optimal number of inliers:
+        size_t M = bestConsensusSet.size();
+        size_t M_last = 0;
+        static const int MAX_OPT_STEPS = 10;
+        Mat T;
+        //DEBUG_LOG("starting optimization: initial consensus set size is : " 
+        //          << M);
+        for(int i=0;i<MAX_OPT_STEPS && M_last < M ;++i){
+          //DEBUG_LOG("optimization step " << i << " new consensus size is " << M);
+          M_last = M;
+          std::vector<Point32f> mpts(M), ipts(M), nipts(M);
+          for(size_t j=0;j<M;++j){
+            const int idx = bestConsensusSet[j];
+            mpts[j] = modelPoints[idx];
+            ipts[j] = imagePoints[idx];
+            nipts[j] = normalizedImagePoints[idx];
+          }
+          T = getPoseInternal(data->algorithm, M, mpts.data(), ipts.data(), nipts.data(), cam);
+          std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints, 
                                                                  inliers.data(), maxSquaredPtError);
-          if(eval.first > bestNumInliers || ( eval.first == bestNumInliers && eval.second < bestProjectionError)){
-            bestNumInliers = eval.first;
-            bestProjectionError = eval.second;
-            bestConsensusSet.assign(inliers.begin(),inliers.begin()+bestNumInliers);
-          }            
+          bestConsensusSet.assign(inliers.begin(),inliers.begin()+eval.first);
+          M = bestConsensusSet.size();
         }
-        std::vector<Point32f> mpts(N), ipts(N), nipts(N);
-        for(size_t j=0;j<bestConsensusSet.size();++j){
-          const int idx = bestConsensusSet[j];
-          mpts[j] = modelPoints[idx];
-          ipts[j] = imagePoints[idx];
-          nipts[j] = normalizedImagePoints[idx];
-        }
-        return getPoseInternal(data->algorithm, mpts.size(), mpts.data(), ipts.data(), nipts.data(), cam);
+        return T;
       }else{
         return getPoseInternal(data->algorithm, n, modelPoints, imagePoints, normalizedImagePoints.data(), cam);
       }

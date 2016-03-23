@@ -145,8 +145,8 @@ namespace icl{
 
         /// Constructor with given parameters and defaults
         /** By default, RANSAC is disabled */
-        RANSACSpec(bool useRANSAC = false, int numPointsForModel = 5, int numRandomCycles=100, 
-                    float maxPointProjectionDistance = 2.0f,
+        RANSACSpec(bool useRANSAC = false, int numPointsForModel = 4, int numRandomCycles=20, 
+                    float maxPointProjectionDistance = 10.0f,
                     PoseEstimationAlgorithm poseEstimationDuringSampling = HomographyBasedOnly):
           useRANSAC(useRANSAC), numPointsForModel(numPointsForModel),numRandomCycles(numRandomCycles),
           maxPointProjectionDistance(maxPointProjectionDistance),
