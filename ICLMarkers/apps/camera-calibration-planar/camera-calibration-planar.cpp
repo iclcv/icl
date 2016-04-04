@@ -30,161 +30,98 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
-#include <ICLGeom/GridSceneObject.h>
-#include <ICLMarkers/FiducialDetector.h>
-#include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
-#include <ICLGeom/CoplanarPointPoseEstimator.h>
 #include <ICLGeom/Geom.h>
-#include <ICLMath/Homography2D.h>
+#include <ICLMarkers/MarkerGridPoseEstimator.h>
+
+//#include <ICLIO/ImageUndistortion.h>
+#include <ICLMarkers/AdvancedMarkerGridDetector.h>
+#include <ICLMarkers/FiducialDetectorPlugin.h>
+//#include <ICLGeom/CoplanarPointPoseEstimator.h>
+
+#include "GridIndicatorObject.h"
+#include "PlanarCalibrationTools.h"
 #include <fstream>
 
-struct Marker{
-  int id;
-  Point32f center;
-  Point32f corners[4];
-};
 
-struct Grid{
-  Grid(int idoffset, int nx, int ny,  Size32f size, float dxmm, float dymm):
-    idoffset(idoffset),nx(nx),ny(ny),size(size),dxmm(dxmm),dymm(dymm){
-  
-    markers = Array2D<Marker>(nx,ny);
+VBox gui;
+GUI relGUI,poseEstGUI,fidGUI;
 
-    obj = new SceneObject;
-    
-    Point32f d(dxmm,dymm);
-    Point32f s(size.width/2,size.height/2);
-
-    
-    for(int y=0,k=0;y<ny;++y){
-      for(int x=0;x<nx;++x,++k){
-        Marker &m = markers(x,y);
-        m.center = d.transform(x,y);
-        m.id = idoffset + x + y*nx;
-        m.corners[0] = m.center + s.transform(1,-1);
-        m.corners[1] = m.center + s.transform(1,1);
-        m.corners[2] = m.center + s.transform(-1,1);
-        m.corners[3] = m.center + s.transform(-1,-1); //??
-      
-        obj->addVertex(Vec(m.corners[0].x, m.corners[0].y, 0, 1));
-        obj->addVertex(Vec(m.corners[1].x, m.corners[1].y, 0, 1));
-        obj->addVertex(Vec(m.corners[2].x, m.corners[2].y, 0, 1));
-        obj->addVertex(Vec(m.corners[3].x, m.corners[3].y, 0, 1));
-        
-        obj->addLine(k*4,k*4+1, geom_blue());
-        obj->addLine(k*4+1,k*4+2, geom_blue());
-        obj->addLine(k*4+2,k*4+3, geom_blue());
-        obj->addLine(k*4+3,k*4, geom_blue());
-      }
-    }
-    
-    plane = new SceneObject;
-    
-    Marker m = markers(0,0);
-    plane->addVertex(Vec(m.corners[3].x, m.corners[3].y, 0,1));
-    
-    m = markers(nx-1,0);
-    plane->addVertex(Vec(m.corners[0].x, m.corners[0].y, 0,1));
-    
-    m = markers(nx-1,ny-1);
-    plane->addVertex(Vec(m.corners[1].x, m.corners[1].y, 0,1));
-    
-    m = markers(0,ny-1);
-    plane->addVertex(Vec(m.corners[2].x, m.corners[2].y, 0,1));
-    
-    plane->addQuad(0,1,2,3,geom_blue(100));
-    plane->addLine(0,1,geom_blue(200));  
-    plane->addLine(1,2,geom_blue(200));  
-    plane->addLine(2,3,geom_blue(200));  
-    plane->addLine(3,0,geom_blue(200));  
-    
-  }
-  
-  Mat T;
-  int idoffset;
-  int nx;
-  int ny;
-  Size32f size;
-  float dxmm;
-  float dymm;
-  SmartPtr<SceneObject> obj;
-  SmartPtr<SceneObject> plane;
-  
-  void clear(){
-    modelPoints.clear();
-    imagePoints.clear();
-    objPoints.clear();
-  }
-  
-  bool contains(int id){
-    return (id >= idoffset && id < idoffset+nx*ny);
-  }
-  
-  Marker &getMarker(int id){
-    if(!contains(id)) throw ICLException("wrong marker ID");
-    id-=idoffset;
-    return markers(id%nx,id/nx);
-  }
-  
-  void add(const Fiducial &f){
-    Marker &m = getMarker(f.getID());
-    const std::vector<Fiducial::KeyPoint> &ks = f.getKeyPoints2D();
-    if(ks.size() != 4) throw ICLException("markers with 4 keypoints needed!");
-    for(int i=0;i<4;++i){
-      modelPoints.push_back(m.corners[i]);
-      objPoints.push_back(Vec(m.corners[i].x, m.corners[i].y, 0, 1));
-      imagePoints.push_back(ks[i].imagePos);
-    }
-  }
-  
-  Array2D<Marker> markers;
-  
-  std::vector<Point32f> modelPoints;
-  std::vector<Point32f> imagePoints;
-  std::vector<Vec>      objPoints;
-  
-};
 
 GenericGrabber grabber;
-HSplit gui;
-GUI rel;
+typedef AdvancedMarkerGridDetector Detector;
+typedef Detector::AdvancedGridDefinition GridDef;
+typedef Detector::Marker Marker;
+typedef Detector::MarkerGrid MarkerGrid;
+
+Detector detector;
 Scene scene;
-FiducialDetector fd("bch");
-ComplexCoordinateFrameSceneObject *CS = 0;
-CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame,
-                               CoplanarPointPoseEstimator::SamplingCoarse);
-std::vector<Grid> grids;
+GridIndicatorObject *gridIndicator = 0;
+MarkerGridPoseEstimator poseEst;
+ComplexCoordinateFrameSceneObject *cs = 0;
+
 
 void init(){
-  if(pa("-p")){
-    fd.loadProperties(*pa("-p"));
-  }
+  grabber.init(pa("-i"));
 
-  std::ostringstream gridnames;
-  ProgArg p = pa("-g");
-  for(int i=0;i<p.n();++i){
-    std::string g = p[i];
-    for(size_t j=0;j<g.length();++j){
-      if(g[j] == ',') g[j] = ' ';
-    }
-    gridnames << "Grid " << i << ": [" << g << "]"<< (i < p.n()-1 ? "," : "");
+  std::vector<int> ids;
+  if(pa("-ids")){
+    ids = FiducialDetectorPlugin::parse_list_str(*pa("-ids"));
   }
+  GridDef d(pa("-g"),pa("-mb"), pa("-gb"), ids, pa("-m"));
+  detector.init(d);
+  FiducialDetector *fd = detector.getFiducialDetector();
+  fd->setPropertyValue("thresh.mask size", 15);
+  fd->setPropertyValue("thresh.global threshold", -10);
+  fd->setConfigurableID("fd");
   
+  poseEst.setConfigurableID("poseEst");
   
-  gui << Draw3D().handle("draw").minSize(32,24)
-      << (VBox().maxSize(12,99).minSize(12,1)
-          << Button("save cam").handle("save")
-          << Button("use cam").handle("use").tooltip("aligns the world frame with the object frame")
-          << (VBox().label("reference frame")
-              << Combo(gridnames.str()).handle("ref").label("relative to grid")
-              << CheckBox("centered at grid",true).handle("cen")
-              << Button("relative transform").handle("rel")
+  const ImgBase *image = grabber.grab();
+  gui << (HSplit()
+          << Draw3D(image->getSize()).handle("draw").minSize(32,24)
+          << (VBox().label("controls").maxSize(14,99).minSize(14,1)
+              << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
+              << ( HBox()
+                   << CamCfg()
+                   << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
+                   )
+              << ( HBox()
+                   << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
+                   << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
+                 )
+              << Button("define relative transform ...").handle("rel")
+              << Button("pose estimation options ...").handle("poseEst")
+              << Button("fiducial detection options ...").handle("fid")
+              << Plot().handle("variancePlot").label("10-frame pose variance plot")
+              << Button("save calibration").handle("save")
               )
-          << Disp(4,4).label("current object transform").handle("T")
           )
       << Show();
 
-  rel << ( VBox().label("rel-transformation")
+
+  gridIndicator = new GridIndicatorObject(d);
+  
+  Camera cam = extract_camera_from_udist_file(image->getSize(), pa("-u"));
+  scene.addCamera(cam);
+  scene.addCamera(cam);
+  scene.addObject(gridIndicator);
+  
+  //gui["draw"].install(scene.getMouseHandler(1));
+  gui["draw"].link(scene.getGLCallback(1));
+
+  static PlotHandle plot = gui["variancePlot"];
+  plot->setPropertyValue("tics.x-distance",10);
+  plot->setPropertyValue("tics.y-distance",0.00001);
+  plot->setPropertyValue("labels.x-precision",0);
+  plot->setPropertyValue("labels.y-precision",6);
+  plot->setPropertyValue("borders.left", 60);
+  plot->setPropertyValue("borders.bottom", 60);
+  plot->setPropertyValue("legend.y", -34);
+  plot->setPropertyValue("legend.width", -44);
+  plot->setPropertyValue("legend.x", 1);
+  plot->setPropertyValue("legend.height", 30);
+
+  relGUI << ( VBox().label("rel-transformation")
            << ( HBox()
                 << Spinner(0,8,pa("-t",0)).label("x-rotation *pi/4").out("rx")
                 << Spinner(0,8,pa("-t",1)).label("y-rotation *pi/4").out("ry")
@@ -196,144 +133,162 @@ void init(){
                 << Float(-100000,100000,pa("-t",5)).label("z-offset").out("tz")
                 )
            )
-  //<< Button("show transformation matrix").handle("showRelTrans") 
       << Create();
 
-  gui["rel"].registerCallback(utils::function(rel,&GUI::switchVisibility)); 
-  
-  grabber.init(pa("-i"));
-  
-  scene.addCamera(*pa("-c"));
-  
-  for(int i=0;i<p.n();++i){
-    std::vector<std::string> ts = tok(p[i],",");
-    if(ts.size() != 6) {
-      pa_show_usage("invalid token for -grid");
-      ::exit(-1);
-    }
-    Grid g(parse<int>(ts[0]),
-           parse<int>(ts[1]),
-           parse<int>(ts[2]),
-           parse<Size32f>(ts[3]),
-           parse<float>(ts[4]),
-           parse<float>(ts[5]) );
-    grids.push_back(g);
-    
-    scene.addObject(g.obj.get());
-    scene.addObject(g.plane.get());
-    
-    fd.loadMarkers(Range32s(g.idoffset,g.idoffset+g.nx*g.ny-1),"size="+str(g.size)); 
-  }  
+  poseEstGUI << Prop("poseEst") << Create();
 
-  CS = new ComplexCoordinateFrameSceneObject;
-  scene.addObject(CS);
+  fidGUI << Prop("fd") << Create();
 
-  scene.setBounds(1000);
-  gui["draw"].link(scene.getGLCallback(0));
-  gui["draw"].install(scene.getMouseHandler(0));
+
+  gui["rel"].registerCallback(utils::function(relGUI,&GUI::switchVisibility));  
+  gui["poseEst"].registerCallback(utils::function(poseEstGUI,&GUI::switchVisibility));  
+  gui["fid"].registerCallback(utils::function(fidGUI,&GUI::switchVisibility));  
   
-}
-
-float r2(float x){
-  return float(round(x*100))*0.01;
-}
-float r1(float x){
-  return float(round(x*10))*0.1;
+  cs = new ComplexCoordinateFrameSceneObject;
+  cs->setVisible(false);
+  scene.addObject(cs,true);
 }
 
 void run(){
+
+  cs->setVisible(gui["show CS"].as<bool>());
   static DrawHandle3D draw = gui["draw"];
-  const ImgBase *image = grabber.grab();
-  
-  draw = image;
-
-  std::vector<Fiducial> fids = fd.detect(image);
-  for(size_t i=0;i<grids.size();++i){
-    grids[i].clear();
-  }
-
-  draw->linewidth(1);
-  draw->color(255,0,0,255);
-  draw->fill(255,0,0,20);
-  for(size_t i=0;i<fids.size();++i){
-    Fiducial &f = fids[i];
-    int id = f.getID();
-    draw->polygon(f.getCorners2D());
-    for(size_t j=0;j<grids.size();++j){
-      if(grids[j].contains(id)){
-        grids[j].add(f);
-      }
-    }
-  }
-  for(size_t i=0;i<grids.size();++i){
-    Grid &g = grids[i];
-    if(!g.modelPoints.size()) continue;
-    g.T = cpe.getPose(g.modelPoints.size(),g.modelPoints.data(), g.imagePoints.data(), scene.getCamera(0));
-    //    g.T = optimize_pose(g.T, g.objPoints, g.imagePoints, camera);
-    g.obj->setTransformation(g.T);
-    g.plane->setTransformation(g.T);
-  }
-  
-  Grid g = grids[gui["ref"].as<int>()];
-  
-  Mat T = g.T;
-  if(gui["cen"]){
-    float dx = (g.nx-1) * g.dxmm * 0.5;
-    float dy = (g.ny-1) * g.dymm * 0.5;
-    T = T * create_hom_4x4<float>(0,0,0, dx,dy,0);
-  }
-
-  const Mat R = create_hom_4x4<float>(rel["rx"].as<float>()*M_PI/4,
-                                      rel["ry"].as<float>()*M_PI/4,
-                                      rel["rz"].as<float>()*M_PI/4,
-                                      rel["tx"],rel["ty"],rel["tz"]);
-  T = T * R;
-
-  CS->setTransformation(T);
-  
-  static DispHandle disp = gui.get<DispHandle>("T");
   static ButtonHandle save = gui["save"];
-  static ButtonHandle use = gui["use"];
-  
-  for(int x=0;x<4;++x){
-    for(int y=0;y<4;++y){
-      disp(x,y) = x == 3 ? r1(T(x,y)) : r2(T(x,y));
-    }
+
+  static const ImgBase *lastImage = 0;
+  const ImgBase *image = lastImage;
+  if(gui["acquisition"]){
+    image = grabber.grab();
   }
+  lastImage = image;
   
-  
-  if(use.wasTriggered()){
-    scene.getCamera(0).setWorldFrame(T);
+  const MarkerGrid &grid = detector.detect(image);
+
+  Camera cam = scene.getCamera(0);
+  Mat T = poseEst.computePose(grid, cam);
+  Mat dT = Mat::id();
+
+
+  if(gui["cen"]){
+    Size32f bounds = pa("-gb");
+    dT = dT * create_hom_4x4<float>(0,0,0, bounds.width/2,bounds.height/2,0);
   }
-  if(save.wasTriggered()){
-    struct Evt : public ICLApp::AsynchronousEvent{
-      Mat T;
-      Camera cam;
-      Evt(const Mat &T, const Camera &cam):T(T), cam(cam){}
-      virtual void execute() {
+
+  const Mat R = create_hom_4x4<float>(relGUI["rx"].as<float>()*M_PI/4,
+                                      relGUI["ry"].as<float>()*M_PI/4,
+                                      relGUI["rz"].as<float>()*M_PI/4,
+                                      relGUI["tx"],relGUI["ty"],relGUI["tz"]);
+  dT = dT * R;
+
+
+  try{
+    bool saveWasTriggered = save.wasTriggered();
+
+    cam.setWorldFrame(T * dT);
+    if(saveWasTriggered){
+      std::string filename;
+      if(pa("-o")){
+        filename = *pa("-o");
+      }else{
         try{
-          std::string fn = saveFileDialog("XML-Files (*.xml)");
-          cam.setWorldFrame(T);
-          std::ofstream file(fn.c_str());
-          file << cam;
+          filename = saveFileDialog("XML-Files (*.xml)",
+                                    "save calibration file");
         }catch(...){}
       }
-    };
+      if(filename.length()){
+        std::ofstream f(filename.c_str());
+        f << cam;
+        std::cout << " saved calibration file as " << filename << std::endl;
+      }
+    }
+    scene.getCamera(1) = cam;
+    gridIndicator->setTransformation(dT.inv());
+  }catch(...){
+    /// this sometimes happens when the estimated transform is weakly conditioned
+  }
+  draw = detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
+  draw->draw(grid.vis());
+
+  draw->render();
+
+  std::vector<float> vars = estimate_pose_variance(T);
+  static const int n = 100;
+  static PlotWidget::SeriesBuffer bufs[6] = {
+    PlotWidget::SeriesBuffer(n),
+    PlotWidget::SeriesBuffer(n),
+    PlotWidget::SeriesBuffer(n),
+    PlotWidget::SeriesBuffer(n),
+    PlotWidget::SeriesBuffer(n),
+    PlotWidget::SeriesBuffer(n)
+  };
+  for(int i=0;i<6;++i){
+    bufs[i].push((i>=3?100:1)*vars[i]);
+  }
+  static PlotHandle plot = gui["variancePlot"];
+  
+  static const int cs[6][4] = {
+    { 255, 0, 0, 255 },
+    { 0, 255 ,0, 255 },
+    { 0, 0, 255, 255 },
+    { 255, 255, 0, 255 },
+    { 255, 0, 255, 255},
+    { 0, 255, 255, 255 }
+  };
     
-    ICLApp::instance()->executeInGUIThread(new Evt(T, scene.getCamera(0)));
+  static std::string labels[6] = {
+    "x", "y", "z", "rx", "ry", "rz" 
+  };
+
+
+ 
+  plot->lock();
+  plot->reset();
+  for(int i=0;i<6;++i){
+    plot->color(cs[i]);
+    plot->label((i>=3 ? "100 x " : "") + str("var(" + labels[i] + ")"));
+    plot->series(bufs[i]);
   }
   
-  draw.render();
+  plot->unlock();
+  plot->render();
+  
 }
 
-int main(int n, char **a){
-  pa_explain("-g","list of grid tokens 'ID-offset,nx,ny,marker-size,dx,dy' size units are in mm");
+int main(int n, char **ppc){
+  pa_explain("-g", "marker grid dimension in cells");
+  pa_explain("-mb", "width and height of a sigle marker in mm");
+  pa_explain("-gb", "width and height of the whole grid (left of \n"
+             "left-most marker to the right of the right-most marker \n"
+             " and top of the top-most marker to the bottom of the \n"
+             " bottom most marker");
+  pa_explain("-m", "marker type to use, this should actually not be \n"
+            "adapted as the default type 'bch' provides best detection \n"
+            "and reliability properties");
+  pa_explain("-ids", "marker IDs to use. If not specified, the IDs \n"
+             "[0-w*h-1] are used. The string can either be a comma-\n"
+             "separated list of entries or a range specification such \n" 
+             "'[0-100]'");
+  pa_explain("-ugc","if given, the center of the grid initially defines the \n"
+             "world frame origin");
+  pa_explain("-u", "gives the filename of the undistortion file that is \n"
+             "used to specifiy the intrinsic camera paramters. Here, we \n"
+             "assume that initially 'icl-lense-undistortion-calibration-opencv'\n"
+             "is used to generate an undistortion parameter file that contains \n"
+             "not only the undistortion parameters, but also the estimated \n"
+             "horizontal and vertical focal length and principal point offset of \n"
+             "the camera. Please note that the undistortion file is not \n"
+             "automatically also used for the input image undistortion. \n"
+             "Therefore a lens-undistortion file (e.g. udist.xml) usually \n"
+             "has to be provided twice, once for the image undistortion \n"
+             "and once for the extraction of the intrinsic camera parameters (e.g. \n"
+             " [...] -input dc800 0@udist=udist.xml -u udist.xml -m -g [...]");
   pa_explain("-t","gives initial transform paramters (rotation is given in integer units of PI/2)");
-  return ICLApp(n,a,"[m]-input|-i(2) "
-                "[m]-initial-camera|-c(1) "
-                "[m]-grids|-g(...) -fiducial-detector-props|-p(filename) "
-                "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0)",init,run).exec();
+
+  return ICLApp(n, ppc, " [m]-input|-i(2) [m]-grid-cell-dim|-g(cells) "
+                "[m]-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
+                "-marker-type|-m(type=bch) -marker-ids|-ids "
+                "-udist-file|-u(filename) -camera-file -use-grid-center|-ugc " 
+                "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "
+                "-output-filename|-o(filename)",
+                init, run).exec();
 }
-
-
-

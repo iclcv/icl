@@ -50,7 +50,8 @@ SET(SOURCES src/ICLMarkers/BCHCode.cpp
             src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.cpp
             src/ICLMarkers/InverseUndistortionProcessor.cpp
             src/ICLMarkers/MarkerGridDetector.cpp
-            src/ICLMarkers/MarkerGridEvaluater.cpp)
+            src/ICLMarkers/MarkerGridEvaluater.cpp
+            src/ICLMarkers/MarkerGridPoseEstimator.cpp)
           
 SET(HEADERS src/ICLMarkers/BCHCode.h
             src/ICLMarkers/Fiducial.h
@@ -77,7 +78,8 @@ SET(HEADERS src/ICLMarkers/BCHCode.h
             src/ICLMarkers/AdvancedMarkerGridDetector.h
             src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.h
             src/ICLMarkers/MarkerGridEvaluater.h
-            src/ICLMarkers/MarkerGridDetector.h)
+            src/ICLMarkers/MarkerGridDetector.h
+            src/ICLMarkers/MarkerGridPoseEstimator.h)
 
 
 # ---- Library build instructions ----

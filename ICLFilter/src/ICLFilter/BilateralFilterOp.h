@@ -32,7 +32,7 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/Core.h>
+#include <ICLCore/Img.h>
 
 namespace icl {
 
