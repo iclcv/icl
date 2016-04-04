@@ -42,72 +42,95 @@
 #include "PlanarCalibrationTools.h"
 #include <fstream>
 
-
+#if 0
 VBox gui;
 GUI relGUI,poseEstGUI,fidGUI;
 
-
-GenericGrabber grabber;
 typedef AdvancedMarkerGridDetector Detector;
 typedef Detector::AdvancedGridDefinition GridDef;
 typedef Detector::Marker Marker;
 typedef Detector::MarkerGrid MarkerGrid;
 
-Detector detector;
-Scene scene;
-GridIndicatorObject *gridIndicator = 0;
-MarkerGridPoseEstimator poseEst;
-ComplexCoordinateFrameSceneObject *cs = 0;
 
+Scene scene;
+
+
+ComplexCoordinateFrameSceneObject *cs = 0;
+GridIndicatorObject *gridIndicator;
+
+struct View{
+  GenericGrabber grabber;
+  Detector detector;
+  MarkerGridPoseEstimator poseEst;
+  Camera cam;
+  ImgBase *lastImage;
+};  
+typedef SmartPtr<View> ViewPtr;
+
+std::vector<ViewPtr> views;
 
 void init(){
-  grabber.init(pa("-i"));
-
   std::vector<int> ids;
   if(pa("-ids")){
     ids = FiducialDetectorPlugin::parse_list_str(*pa("-ids"));
   }
   GridDef d(pa("-g"),pa("-mb"), pa("-gb"), ids, pa("-m"));
-  detector.init(d);
-  FiducialDetector *fd = detector.getFiducialDetector();
-  fd->setPropertyValue("thresh.mask size", 15);
-  fd->setPropertyValue("thresh.global threshold", -10);
-  fd->setConfigurableID("fd");
+
+  ProgArg pai = pa("-i");
+  views.resize(pai.n()/3);
+  std::string inputIDs;
   
-  poseEst.setConfigurableID("poseEst");
+  for(int i=0;i<pai.n();i+=3){
+    int id = i/3;
+    views[id] = new View;
+    View &v = *views[id3];
+    v.lastImage = 0;
+    v.grabber.init(pai[i], pa[i] + "=" + pa[i+1]);
+    inputIDs += "input-" + str(id) + ",";
+    const ImgBase  *image = v.grabber.grab();
+    v.camera = extract_camera_from_udist_file(image->getSize(), pai[i+2]);
+    scene.addCamera(v.camera);
+
+    FiducialDetector *fd = detector.getFiducialDetector();
+    fd->setPropertyValue("thresh.mask size", 15);
+    fd->setPropertyValue("thresh.global threshold", -10);
+    fd->setConfigurableID("fd-cam"+str(id));
+    v.detector.init(d);
+    poseEst.setConfigurableID("poseEst-cam"+str(id));
+  }
+  inputIDs = inputIDs.substr(0,inputIDs.legth()-1);
+  VBox controls;
+  controls.label("controls").maxSize(14,99).minSize(14,1);
+  constrols << Combo(inputIDs).handle("visinput").label("input index")
+            << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
+            << ( HBox()
+                 << CamCfg()
+                 << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
+                 )
+            << ( HBox()
+                 << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
+                 << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
+                 )
+            << Button("define relative transform ...").handle("rel")
+            << Button("pose estimation options ...").handle("poseEst")
+            << Button("fiducial detection options ...").handle("fid")
+            << Plot().handle("variancePlot").label("10-frame pose variance plot")
+            << Button("save calibration").handle("save");
   
-  const ImgBase *image = grabber.grab();
   gui << (HSplit()
           << Draw3D(image->getSize()).handle("draw").minSize(32,24)
-          << (VBox().label("controls").maxSize(14,99).minSize(14,1)
-              << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
-              << ( HBox()
-                   << CamCfg()
-                   << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
-                   )
-              << ( HBox()
-                   << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
-                   << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
-                 )
-              << Button("define relative transform ...").handle("rel")
-              << Button("pose estimation options ...").handle("poseEst")
-              << Button("fiducial detection options ...").handle("fid")
-              << Plot().handle("variancePlot").label("10-frame pose variance plot")
-              << Button("save calibration").handle("save")
-              )
+          << controls
           )
       << Show();
-
-
+  
+  
   gridIndicator = new GridIndicatorObject(d);
   
-  Camera cam = extract_camera_from_udist_file(image->getSize(), pa("-u"));
-  scene.addCamera(cam);
-  scene.addCamera(cam);
+  scene.addCamera(scene.getCamera(0));
   scene.addObject(gridIndicator);
   
   //gui["draw"].install(scene.getMouseHandler(1));
-  gui["draw"].link(scene.getGLCallback(1));
+  gui["draw"].link(scene.getGLCallback(views.size()));
 
   static PlotHandle plot = gui["variancePlot"];
   plot->setPropertyValue("tics.x-distance",10);
@@ -135,9 +158,14 @@ void init(){
            )
       << Create();
 
-  poseEstGUI << Prop("poseEst") << Create();
-
-  fidGUI << Prop("fd") << Create();
+  Tab poseEstTab(inputIDs), fidTag(inputIDs);
+  for(size_t i=0;i<views.size();++i){
+    fidTab << Prop("fd-cam"+str(id));
+    poseEstTab << Prop("poseEst-cam"+str(id));
+  }
+  
+  poseEstGUI << poseEstTab << Create();
+  fidGUI << fidTab << Create();
 
 
   gui["rel"].registerCallback(utils::function(relGUI,&GUI::switchVisibility));  
@@ -151,61 +179,44 @@ void init(){
 
 void run(){
 
+  int currentView = gui["visinput"];
+
   cs->setVisible(gui["show CS"].as<bool>());
   static DrawHandle3D draw = gui["draw"];
   static ButtonHandle save = gui["save"];
 
-  static const ImgBase *lastImage = 0;
-  const ImgBase *image = lastImage;
-  if(gui["acquisition"]){
-    image = grabber.grab();
-  }
-  lastImage = image;
-  
-  const MarkerGrid &grid = detector.detect(image);
+  bool acquisition = gui["acquisition"], centeredGrid = gui["cen"];
 
-  Camera cam = scene.getCamera(0);
-  Mat T = poseEst.computePose(grid, cam);
-  Mat dT = Mat::id();
+  static Size32f bounds = pa("-gb");
+  static Mat dC = create_hom_4x4<float>(0,0,0, bounds.width/2,bounds.height/2,0);
 
+  Mat dT = centerdGrid ? dC : Mat::id();
+  gridIndicator->setTransformation(dT.inv());
+  Mat R = create_hom_4x4<float>(relGUI["rx"].as<float>()*M_PI/4,
+                                relGUI["ry"].as<float>()*M_PI/4,
+                                relGUI["rz"].as<float>()*M_PI/4,
+                                relGUI["tx"],relGUI["ty"],relGUI["tz"]);
 
-  if(gui["cen"]){
-    Size32f bounds = pa("-gb");
-    dT = dT * create_hom_4x4<float>(0,0,0, bounds.width/2,bounds.height/2,0);
-  }
+  for(size_t i=0;i<views.size();++i){
+    View &v = *views[i];
+    const ImgBase *image = acquisition ? v.lastImage : v.grabber.grab();
+    v.lastImage = image;
+    
+    const MarkerGrid &grid = v.detector.detect(image);
+    
+    Camera cam = v.cam;
+    Mat T = poseEst.computePose(grid, cam);
 
-  const Mat R = create_hom_4x4<float>(relGUI["rx"].as<float>()*M_PI/4,
-                                      relGUI["ry"].as<float>()*M_PI/4,
-                                      relGUI["rz"].as<float>()*M_PI/4,
-                                      relGUI["tx"],relGUI["ty"],relGUI["tz"]);
-  dT = dT * R;
+    dT = dT * R;
 
-
-  try{
-    bool saveWasTriggered = save.wasTriggered();
-
-    cam.setWorldFrame(T * dT);
-    if(saveWasTriggered){
-      std::string filename;
-      if(pa("-o")){
-        filename = *pa("-o");
-      }else{
-        try{
-          filename = saveFileDialog("XML-Files (*.xml)",
-                                    "save calibration file");
-        }catch(...){}
-      }
-      if(filename.length()){
-        std::ofstream f(filename.c_str());
-        f << cam;
-        std::cout << " saved calibration file as " << filename << std::endl;
-      }
+    try{
+      cam.setWorldFrame(T * dT);
+      scene.getCamera(i) = cam;
+    }catch(...){
+      /// this sometimes happens when the estimated transform is weakly conditioned
     }
-    scene.getCamera(1) = cam;
-    gridIndicator->setTransformation(dT.inv());
-  }catch(...){
-    /// this sometimes happens when the estimated transform is weakly conditioned
-  }
+    
+    /// todo: here, we continue! We do need one Draw3D for each input
   draw = detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
   draw->draw(grid.vis());
 
@@ -292,3 +303,36 @@ int main(int n, char **ppc){
                 "-output-filename|-o(filename)",
                 init, run).exec();
 }
+
+
+
+
+#if 0
+
+
+    bool saveWasTriggered = save.wasTriggered();
+
+    if(saveWasTriggered){
+      std::string filename;
+      if(pa("-o")){
+        filename = *pa("-o");
+      }else{
+        try{
+          filename = saveFileDialog("XML-Files (*.xml)",
+                                    "save calibration file");
+        }catch(...){}
+      }
+      if(filename.length()){
+        std::ofstream f(filename.c_str());
+        f << cam;
+        std::cout << " saved calibration file as " << filename << std::endl;
+      }
+    }
+
+  }catch(...){
+
+  }
+#endif
+
+#endif
+int main(){}
