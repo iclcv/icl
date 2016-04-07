@@ -55,6 +55,26 @@ typedef Detector::MarkerGrid MarkerGrid;
 Scene scene;
 
 
+Mat compute_relative_transform(const Camera &s, const Camera &d){
+  Mat ms = s.getInvCSTransformationMatrix();
+  Mat md = d.getInvCSTransformationMatrix();
+  //    Mat rel = d.getInvCSTransformationMatrix() * s.getCSTransformationMatrix();
+  
+  Mat3 Rs = ms.part<0,0,3,3>();
+  Mat3 Rd = md.part<0,0,3,3>();
+  
+  Vec3 Ts = ms.part<3,0,1,3>();
+  Vec3 Td = md.part<3,0,1,3>();
+  
+  Mat3 Rrel = Rs.transp() * Rd;
+  Vec3 Trel = Td - Ts;
+  
+  Mat T = Rrel.resize<4,4>(0);
+  T.col(3) = Trel.resize<1,4>(1);
+
+  return T;
+}
+
 ComplexCoordinateFrameSceneObject *cs = 0;
 GridIndicatorObject *gridIndicator;
 
@@ -63,6 +83,7 @@ struct View{
   Detector detector;
   MarkerGridPoseEstimator poseEst;
   Camera camera;
+  Camera calibratedCamera;
   const ImgBase *lastImage;
 };  
 typedef SmartPtr<View> ViewPtr;
@@ -77,6 +98,8 @@ struct GLCallback : public ICLDrawWidget3D::GLCallback{
 };
 
 void init(){
+  ProgArg po = pa("-o");
+
   std::vector<int> ids;
   if(pa("-ids")){
     ids = FiducialDetectorPlugin::parse_list_str(*pa("-ids"));
@@ -85,6 +108,11 @@ void init(){
 
   ProgArg pai = pa("-i");
   views.resize(pai.n()/3);
+  
+  if(po && po.n() != (int)views.size()){
+    throw ICLException("number of -o sub-arguments must be equal to number of sub-arguments for -i devided by 3");
+  }
+  
   std::string inputIDs;
   
   FiducialDetector *fd = 0;
@@ -105,7 +133,7 @@ void init(){
     inputIDs += "input-" + str(id) + ",";
     const ImgBase  *image = v.grabber.grab();
     if(!i) imageSize0 = image->getSize();
-    v.camera = extract_camera_from_udist_file(image->getSize(), pai[i+2]);
+    v.camera = extract_camera_from_udist_file(pai[i+2]);
     scene.addCamera(v.camera);
     v.detector.init(d);
     fd = v.detector.getFiducialDetector();
@@ -133,9 +161,9 @@ void init(){
            << Button("fiducial detection options ...").handle("fid")
            << Plot().handle("variancePlot").label("10-frame pose variance plot")
            << Button("save calibration").handle("save").tooltip("saves the calibration file of the current view's camera")
-           << Button("save relative calibration").handle("save").tooltip("saves the calibration file of the current view's "
-                                                                         "camera <b>and</b> the relative calibrations of all "
-                                                                         "other views wrt. the current view camera").hideIf(pai.n() < 6);
+           << Button("save relative calibration").handle("saveRel").tooltip("saves the calibration file of the current view's "
+                                                                            "camera <b>and</b> the relative calibrations of all "
+                                                                            "other views wrt. the current view camera").hideIf(pai.n() < 6);
   
   gui << (HSplit()
           << Draw3D(imageSize0).handle("draw").minSize(32,24)
@@ -204,7 +232,6 @@ void run(){
 
   cs->setVisible(gui["show CS"].as<bool>());
   static DrawHandle3D draw = gui["draw"];
-  static ButtonHandle save = gui["save"];
 
   bool acquisition = gui["acquisition"], centeredGrid = gui["cen"];
 
@@ -233,6 +260,7 @@ void run(){
     try{
       cam.setWorldFrame(T * dT);
       scene.getCamera(i) = cam;
+      v.calibratedCamera = cam;
     }catch(...){
       /// this sometimes happens when the estimated transform is weakly conditioned
     }
@@ -297,6 +325,53 @@ void run(){
   }
   draw->render();
 
+  std::string names[]={"save", "saveRel"};
+  for(int i=0;i<2;++i){
+    if(i && views.size() < 2) break;
+    ProgArg p = pa("-o");
+    ButtonHandle save = gui[names[i]];
+    
+    bool saveWasTriggered = save.wasTriggered();
+    
+    if(saveWasTriggered){
+      std::string filename;
+      if(pa("-o")){
+        filename = *pa("-o",currentView);
+      }else{
+        try{
+          filename = saveFileDialog("XML-Files (*.xml)",
+                                    "save current view's calibration file");
+        }catch(...){}
+      }
+      if(filename.length()){
+        std::ofstream f(filename.c_str());
+        f << views[currentView]->calibratedCamera;
+        std::cout << " saved current view's calibration file as " << filename << std::endl;
+      }
+      if(i){
+        // do the relative calibration aswell
+        for(size_t j=0;j<views.size();++j){
+          if((int)j == currentView) continue;
+          std::string filename;
+          if(pa("-o")){
+            filename = p[j];
+          }else{
+            try{
+              filename = saveFileDialog("DAT-Files (*.dat)",
+                                        "save relative calibration files for view " + str(j));
+            }catch(...){}
+          }
+          if(filename.length()){
+            Mat rel = compute_relative_transform(views[j]->calibratedCamera, views[currentView]->calibratedCamera);
+            std::ofstream f(filename.c_str());
+            f << rel << std::endl;
+            std::cout << " saved relative calibration of view " << j << " to file " << filename << std::endl;
+          }
+        }
+      }
+    }
+
+  }
   
 }
 
@@ -339,36 +414,10 @@ int main(int n, char **ppc){
                 "-marker-type|-m(type=bch) -marker-ids|-ids "
                 "-camera-file -use-grid-center|-ugc " 
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "
-                "-output-filename|-o(filename)",
+                "-output-filenames|-o(...)",
                 init, run).exec();
 }
 
 
 
 
-#if 0
-
-
-    bool saveWasTriggered = save.wasTriggered();
-
-    if(saveWasTriggered){
-      std::string filename;
-      if(pa("-o")){
-        filename = *pa("-o");
-      }else{
-        try{
-          filename = saveFileDialog("XML-Files (*.xml)",
-                                    "save calibration file");
-        }catch(...){}
-      }
-      if(filename.length()){
-        std::ofstream f(filename.c_str());
-        f << cam;
-        std::cout << " saved calibration file as " << filename << std::endl;
-      }
-    }
-
-  }catch(...){
-
-  }
-#endif

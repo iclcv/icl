@@ -32,6 +32,7 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLUtils/XML.h>
+#include <ICLIO/ImageUndistortion.h>
 #include <ICLUtils/File.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
@@ -952,6 +953,28 @@ namespace icl {
       getRenderParams().chipSize = newScreenSize;
       getRenderParams().viewport = Rect(Point::null,newScreenSize);
       setPrincipalPointOffset(newPrincipalPointOffset);
+    }
+
+    Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename) throw (utils::ICLException){
+      SmartPtr<io::ImageUndistortion> udist;
+      try{
+        udist = new io::ImageUndistortion(filename);
+      }catch(...){
+        return Camera(filename);
+      }
+      if(udist->getModel() != "MatlabModel5Params"){
+        throw ICLException("unable to parse udist file: wrong Model!");
+      }
+      
+      const std::vector<double> &params = udist->getParams();
+      Camera cam;
+
+      ConfigFile f(filename);
+      cam.setResolution(Size(f["config.size.width"], f["config.size.height"]));
+      cam.setFocalLength(1);
+      cam.setSamplingResolution(params[0], params[1]);
+      cam.setPrincipalPointOffset(Point32f(params[2], params[3]));
+      return cam;
     }
   
   } // namespace geom

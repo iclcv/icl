@@ -47,18 +47,8 @@ namespace icl{
 
   namespace markers{
 
-    Camera extract_camera_from_udist_file(const Size &size, const std::string &filename){
-      io::ImageUndistortion udist(filename);
-      const std::vector<double> &params = udist.getParams();
-      if(udist.getModel() != "MatlabModel5Params"){
-        throw ICLException("unable to parse udist file: wrong Model!");
-      }
-      Camera cam;
-      cam.setResolution(size);
-      cam.setFocalLength(1);
-      cam.setSamplingResolution(params[0], params[1]);
-      cam.setPrincipalPointOffset(Point32f(params[2], params[3]));
-      return cam;
+    Camera extract_camera_from_udist_file(const std::string &filename){
+      return Camera::create_camera_from_calibration_or_udist_file(filename);
     }
 
     static Vec push_and_get_var(const Vec &v, std::deque<Vec> &vs){

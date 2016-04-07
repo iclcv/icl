@@ -590,6 +590,14 @@ namespace icl {
                                  const std::vector<utils::Point32f> &UVs);
   
       /** @}*/
+
+      /// parses a given image-undistortion file and creates a camera
+      /** Please note that only the camera's intrinsic parameters are in the file, 
+          so extrinsic parameters for position and orientation will be identical to a
+          defautl created Camera instance. The undistortion file must use the model
+          "MatlabModel5Params". The given resolution is not used if the given
+          file is a standard camera-calibration file */
+      static Camera create_camera_from_calibration_or_udist_file(const std::string &filename) throw (utils::ICLException);
   
       protected:
       static Mat createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos);

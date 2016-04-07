@@ -66,7 +66,7 @@ int main(int n, char**ppc){
   pa_init(n,ppc,
           "-compute-transform|-c(src-xml-file,dst-xml-file) "
           "-add-transform|-a(src-xml-file,transform-output-file) "
-          "-add-camera-template|-t(xml-file) "
+          "-add-camera-template|-t(xml-camera-or-udist-file) "
           "-output-file|-o(filename) -how-to|-explain|-?");
 
   if(pa("-how-to")){
@@ -102,7 +102,9 @@ int main(int n, char**ppc){
     say("transform defined in rel.dat to it. The result is written to C1s.xml.");
     say("In this case, we use the -t argument to provide a template configuration");
     say("for the resulting camera, so that the intrinsic parameters of C1s.xml are");
-    say("identical to those of C1.xml. If -t is not used, the resulting camera will");
+    say("identical to those of C1.xml. Please note that the sub-argument of -t");
+    say("can either be a camera calibration filename or an image-undistortion");
+    say("filename. If -t is not used, the resulting camera will");
     say("use the intrinsic parameters of the given source camera -- here, C2s.xml");
     return 0;
   }
@@ -126,7 +128,7 @@ int main(int n, char**ppc){
     Vec Prel = T.part<3,0,1,4>();
     
     if(pa("-t")){
-      c = Camera(*pa("-t"));
+      c = Camera::create_camera_from_calibration_or_udist_file(*pa("-t"));
     }
     Mat3 Rnew = Rcur * Rrel;
     Vec Pnew = Pcur + Prel;
