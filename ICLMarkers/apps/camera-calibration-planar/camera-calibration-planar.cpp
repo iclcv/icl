@@ -42,7 +42,7 @@
 #include "PlanarCalibrationTools.h"
 #include <fstream>
 
-#if 0
+
 VBox gui;
 GUI relGUI,poseEstGUI,fidGUI;
 
@@ -62,12 +62,19 @@ struct View{
   GenericGrabber grabber;
   Detector detector;
   MarkerGridPoseEstimator poseEst;
-  Camera cam;
-  ImgBase *lastImage;
+  Camera camera;
+  const ImgBase *lastImage;
 };  
 typedef SmartPtr<View> ViewPtr;
 
 std::vector<ViewPtr> views;
+
+struct GLCallback : public ICLDrawWidget3D::GLCallback{
+  virtual void draw(ICLDrawWidget3D *w){
+    int curr = gui["visinput"];
+    scene.getGLCallback(curr)->draw(w);
+  }
+};
 
 void init(){
   std::vector<int> ids;
@@ -80,45 +87,58 @@ void init(){
   views.resize(pai.n()/3);
   std::string inputIDs;
   
+  FiducialDetector *fd = 0;
+  Size imageSize0;
+  if(pai.n() % 3) {
+    throw ICLException("invalid sub-argument count to argument -input!"
+                       "sub-argument count must be multiple of 3 (found " 
+                       + str(pai.n())+ ")");
+  }
   for(int i=0;i<pai.n();i+=3){
     int id = i/3;
+    DEBUG_LOG("creating input " << i);
     views[id] = new View;
-    View &v = *views[id3];
+    View &v = *views[id];
     v.lastImage = 0;
-    v.grabber.init(pai[i], pa[i] + "=" + pa[i+1]);
+    SHOW(pai[i] + "=" + pai[i+1] + " @udist=" + pai[i+2]);
+    v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);
     inputIDs += "input-" + str(id) + ",";
     const ImgBase  *image = v.grabber.grab();
+    if(!i) imageSize0 = image->getSize();
     v.camera = extract_camera_from_udist_file(image->getSize(), pai[i+2]);
     scene.addCamera(v.camera);
-
-    FiducialDetector *fd = detector.getFiducialDetector();
+    v.detector.init(d);
+    fd = v.detector.getFiducialDetector();
     fd->setPropertyValue("thresh.mask size", 15);
     fd->setPropertyValue("thresh.global threshold", -10);
     fd->setConfigurableID("fd-cam"+str(id));
-    v.detector.init(d);
-    poseEst.setConfigurableID("poseEst-cam"+str(id));
+
+    v.poseEst.setConfigurableID("poseEst-cam"+str(id));
   }
-  inputIDs = inputIDs.substr(0,inputIDs.legth()-1);
+  inputIDs = inputIDs.substr(0,inputIDs.length()-1);
   VBox controls;
-  controls.label("controls").maxSize(14,99).minSize(14,1);
-  constrols << Combo(inputIDs).handle("visinput").label("input index")
-            << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
-            << ( HBox()
-                 << CamCfg()
-                 << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
-                 )
-            << ( HBox()
-                 << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
-                 << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
-                 )
-            << Button("define relative transform ...").handle("rel")
-            << Button("pose estimation options ...").handle("poseEst")
-            << Button("fiducial detection options ...").handle("fid")
-            << Plot().handle("variancePlot").label("10-frame pose variance plot")
-            << Button("save calibration").handle("save");
+  controls.label("controls").maxSize(17,99).minSize(17,1);
+  controls << Combo(inputIDs).handle("visinput").label("input index")
+           << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
+           << ( HBox()
+                << CamCfg()
+                << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
+                )
+           << ( HBox()
+                << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
+                << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
+                )
+           << Button("define relative transform ...").handle("rel")
+           << Button("pose estimation options ...").handle("poseEst")
+           << Button("fiducial detection options ...").handle("fid")
+           << Plot().handle("variancePlot").label("10-frame pose variance plot")
+           << Button("save calibration").handle("save").tooltip("saves the calibration file of the current view's camera")
+           << Button("save relative calibration").handle("save").tooltip("saves the calibration file of the current view's "
+                                                                         "camera <b>and</b> the relative calibrations of all "
+                                                                         "other views wrt. the current view camera").hideIf(pai.n() < 6);
   
   gui << (HSplit()
-          << Draw3D(image->getSize()).handle("draw").minSize(32,24)
+          << Draw3D(imageSize0).handle("draw").minSize(32,24)
           << controls
           )
       << Show();
@@ -130,7 +150,7 @@ void init(){
   scene.addObject(gridIndicator);
   
   //gui["draw"].install(scene.getMouseHandler(1));
-  gui["draw"].link(scene.getGLCallback(views.size()));
+  gui["draw"].link(new GLCallback);//scene.getGLCallback(views.size()));
 
   static PlotHandle plot = gui["variancePlot"];
   plot->setPropertyValue("tics.x-distance",10);
@@ -158,10 +178,10 @@ void init(){
            )
       << Create();
 
-  Tab poseEstTab(inputIDs), fidTag(inputIDs);
+  Tab poseEstTab(inputIDs), fidTab(inputIDs);
   for(size_t i=0;i<views.size();++i){
-    fidTab << Prop("fd-cam"+str(id));
-    poseEstTab << Prop("poseEst-cam"+str(id));
+    fidTab << Prop("fd-cam"+str(i));
+    poseEstTab << Prop("poseEst-cam"+str(i));
   }
   
   poseEstGUI << poseEstTab << Create();
@@ -180,6 +200,7 @@ void init(){
 void run(){
 
   int currentView = gui["visinput"];
+  static int lastView = currentView;
 
   cs->setVisible(gui["show CS"].as<bool>());
   static DrawHandle3D draw = gui["draw"];
@@ -190,7 +211,7 @@ void run(){
   static Size32f bounds = pa("-gb");
   static Mat dC = create_hom_4x4<float>(0,0,0, bounds.width/2,bounds.height/2,0);
 
-  Mat dT = centerdGrid ? dC : Mat::id();
+  Mat dT = centeredGrid ? dC : Mat::id();
   gridIndicator->setTransformation(dT.inv());
   Mat R = create_hom_4x4<float>(relGUI["rx"].as<float>()*M_PI/4,
                                 relGUI["ry"].as<float>()*M_PI/4,
@@ -199,13 +220,13 @@ void run(){
 
   for(size_t i=0;i<views.size();++i){
     View &v = *views[i];
-    const ImgBase *image = acquisition ? v.lastImage : v.grabber.grab();
+    const ImgBase *image = !acquisition ? v.lastImage : v.grabber.grab();
     v.lastImage = image;
     
     const MarkerGrid &grid = v.detector.detect(image);
     
-    Camera cam = v.cam;
-    Mat T = poseEst.computePose(grid, cam);
+    Camera cam = v.camera;
+    Mat T = v.poseEst.computePose(grid, cam);
 
     dT = dT * R;
 
@@ -216,52 +237,66 @@ void run(){
       /// this sometimes happens when the estimated transform is weakly conditioned
     }
     
-    /// todo: here, we continue! We do need one Draw3D for each input
-  draw = detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
-  draw->draw(grid.vis());
+    if((int)i == currentView){
+      //try{
+      //  cs->setTransformation(T.inv());
+      //}catch(...){}
+      /// todo: here, we continue! We do need one Draw3D for each input
+      draw = v.detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
+      draw->draw(grid.vis());
+      
+      if(lastView!=currentView){
+        for(int i=0;i<10;++i) estimate_pose_variance(T);
+      }
 
+      std::vector<float> vars = estimate_pose_variance(T);
+      static const int n = 100;
+      static PlotWidget::SeriesBuffer bufs[6] = {
+        PlotWidget::SeriesBuffer(n),
+        PlotWidget::SeriesBuffer(n),
+        PlotWidget::SeriesBuffer(n),
+        PlotWidget::SeriesBuffer(n),
+        PlotWidget::SeriesBuffer(n),
+        PlotWidget::SeriesBuffer(n)
+      };
+      for(int j=0;j<6;++j){
+        float val = (j>=3?100:1)*vars[j];
+        if(lastView!=currentView){
+          std::fill(bufs[j].begin(), bufs[j].end(), 0);
+        }
+        bufs[j].push(val);
+      }
+      lastView = currentView;
+
+      static PlotHandle plot = gui["variancePlot"];
+      
+      static const int cs[6][4] = {
+        { 255, 0, 0, 255 },
+        { 0, 255 ,0, 255 },
+        { 0, 0, 255, 255 },
+        { 255, 255, 0, 255 },
+        { 255, 0, 255, 255},
+        { 0, 255, 255, 255 }
+      };
+      
+      static std::string labels[6] = {
+        "x", "y", "z", "rx", "ry", "rz" 
+      };
+      
+      plot->lock();
+      plot->reset();
+      for(int i=0;i<6;++i){
+        plot->color(cs[i]);
+        plot->label((i>=3 ? "100 x " : "") + str("var(" + labels[i] + ")"));
+        plot->series(bufs[i]);
+      }
+      
+      plot->unlock();
+      plot->render();
+    }
+  }
   draw->render();
 
-  std::vector<float> vars = estimate_pose_variance(T);
-  static const int n = 100;
-  static PlotWidget::SeriesBuffer bufs[6] = {
-    PlotWidget::SeriesBuffer(n),
-    PlotWidget::SeriesBuffer(n),
-    PlotWidget::SeriesBuffer(n),
-    PlotWidget::SeriesBuffer(n),
-    PlotWidget::SeriesBuffer(n),
-    PlotWidget::SeriesBuffer(n)
-  };
-  for(int i=0;i<6;++i){
-    bufs[i].push((i>=3?100:1)*vars[i]);
-  }
-  static PlotHandle plot = gui["variancePlot"];
-  
-  static const int cs[6][4] = {
-    { 255, 0, 0, 255 },
-    { 0, 255 ,0, 255 },
-    { 0, 0, 255, 255 },
-    { 255, 255, 0, 255 },
-    { 255, 0, 255, 255},
-    { 0, 255, 255, 255 }
-  };
-    
-  static std::string labels[6] = {
-    "x", "y", "z", "rx", "ry", "rz" 
-  };
-
-
- 
-  plot->lock();
-  plot->reset();
-  for(int i=0;i<6;++i){
-    plot->color(cs[i]);
-    plot->label((i>=3 ? "100 x " : "") + str("var(" + labels[i] + ")"));
-    plot->series(bufs[i]);
-  }
-  
-  plot->unlock();
-  plot->render();
   
 }
 
@@ -281,7 +316,11 @@ int main(int n, char **ppc){
              "'[0-100]'");
   pa_explain("-ugc","if given, the center of the grid initially defines the \n"
              "world frame origin");
-  pa_explain("-u", "gives the filename of the undistortion file that is \n"
+  pa_explain("-i", "Defines a number of cameras that are supposed to be\n"
+             "calibrated at once. The variable argument count must be a\n"
+             "multiple of 3. The argument order is\n"
+             "input-type-0 input-id-0 udist-file-0 input-type-1 ...\n"
+             "The given udist-filenames for the particular inputs are \n"
              "used to specifiy the intrinsic camera paramters. Here, we \n"
              "assume that initially 'icl-lense-undistortion-calibration-opencv'\n"
              "is used to generate an undistortion parameter file that contains \n"
@@ -292,13 +331,13 @@ int main(int n, char **ppc){
              "Therefore a lens-undistortion file (e.g. udist.xml) usually \n"
              "has to be provided twice, once for the image undistortion \n"
              "and once for the extraction of the intrinsic camera parameters (e.g. \n"
-             " [...] -input dc800 0@udist=udist.xml -u udist.xml -m -g [...]");
+             " [...] -input dc800 0@udist=udist.xml udist.xml -m -g [...]");
   pa_explain("-t","gives initial transform paramters (rotation is given in integer units of PI/2)");
 
-  return ICLApp(n, ppc, " [m]-input|-i(2) [m]-grid-cell-dim|-g(cells) "
+  return ICLApp(n, ppc, " [m]-input|-i(...) [m]-grid-cell-dim|-g(cells) "
                 "[m]-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
                 "-marker-type|-m(type=bch) -marker-ids|-ids "
-                "-udist-file|-u(filename) -camera-file -use-grid-center|-ugc " 
+                "-camera-file -use-grid-center|-ugc " 
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "
                 "-output-filename|-o(filename)",
                 init, run).exec();
@@ -333,6 +372,3 @@ int main(int n, char **ppc){
 
   }
 #endif
-
-#endif
-int main(){}
