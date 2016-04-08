@@ -85,6 +85,7 @@ struct View{
   Camera camera;
   Camera calibratedCamera;
   const ImgBase *lastImage;
+  ComplexCoordinateFrameSceneObject *cs;
 };  
 typedef SmartPtr<View> ViewPtr;
 
@@ -124,16 +125,15 @@ void init(){
   }
   for(int i=0;i<pai.n();i+=3){
     int id = i/3;
-    DEBUG_LOG("creating input " << i);
     views[id] = new View;
     View &v = *views[id];
     v.lastImage = 0;
-    SHOW(pai[i] + "=" + pai[i+1] + " @udist=" + pai[i+2]);
     v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);
     inputIDs += "input-" + str(id) + ",";
     const ImgBase  *image = v.grabber.grab();
     if(!i) imageSize0 = image->getSize();
     v.camera = extract_camera_from_udist_file(pai[i+2]);
+    v.camera.setName("Input: " + pai[i] + " " + pai[i+1]);
     scene.addCamera(v.camera);
     v.detector.init(d);
     fd = v.detector.getFiducialDetector();
@@ -142,6 +142,8 @@ void init(){
     fd->setConfigurableID("fd-cam"+str(id));
 
     v.poseEst.setConfigurableID("poseEst-cam"+str(id));
+    v.cs = new ComplexCoordinateFrameSceneObject(10,1);
+    scene.addObject(v.cs);
   }
   inputIDs = inputIDs.substr(0,inputIDs.length()-1);
   VBox controls;
@@ -159,14 +161,24 @@ void init(){
            << Button("define relative transform ...").handle("rel")
            << Button("pose estimation options ...").handle("poseEst")
            << Button("fiducial detection options ...").handle("fid")
-           << Plot().handle("variancePlot").label("10-frame pose variance plot")
+           << Plot().handle("variancePlot").label("10-frame pose std-deviation")
            << Button("save calibration").handle("save").tooltip("saves the calibration file of the current view's camera")
            << Button("save relative calibration").handle("saveRel").tooltip("saves the calibration file of the current view's "
                                                                             "camera <b>and</b> the relative calibrations of all "
                                                                             "other views wrt. the current view camera").hideIf(pai.n() < 6);
   
   gui << (HSplit()
-          << Draw3D(imageSize0).handle("draw").minSize(32,24)
+          << (Tab("input view,3D scene view") 
+              << Draw3D(imageSize0).handle("draw").minSize(32,24)
+              << (VBox()
+                  << (HBox().maxSize(99,2)
+                      << Button("sync cam").handle("sync")
+                      << CheckBox("visualize cameras",false).handle("vis cams")
+                      << CheckBox("show 10mm camera coordinate frames",false).handle("show ccs")
+                      )
+                  << Draw3D(imageSize0).handle("3D").minSize(32,24)
+                  )
+             )
           << controls
           )
       << Show();
@@ -179,6 +191,9 @@ void init(){
   
   //gui["draw"].install(scene.getMouseHandler(1));
   gui["draw"].link(new GLCallback);//scene.getGLCallback(views.size()));
+
+  gui["3D"].link(scene.getGLCallback(views.size()));
+  gui["3D"].install(scene.getMouseHandler(views.size()));
 
   static PlotHandle plot = gui["variancePlot"];
   plot->setPropertyValue("tics.x-distance",10);
@@ -226,7 +241,6 @@ void init(){
 }
 
 void run(){
-
   int currentView = gui["visinput"];
   static int lastView = currentView;
 
@@ -261,6 +275,8 @@ void run(){
       cam.setWorldFrame(T * dT);
       scene.getCamera(i) = cam;
       v.calibratedCamera = cam;
+      v.cs->setVisible(gui["show ccs"].as<bool>());
+      v.cs->setTransformation(cam.getInvCSTransformationMatrix());
     }catch(...){
       /// this sometimes happens when the estimated transform is weakly conditioned
     }
@@ -288,7 +304,7 @@ void run(){
         PlotWidget::SeriesBuffer(n)
       };
       for(int j=0;j<6;++j){
-        float val = (j>=3?100:1)*vars[j];
+        float val = (j>=3?100:1)*sqrt(vars[j]);
         if(lastView!=currentView){
           std::fill(bufs[j].begin(), bufs[j].end(), 0);
         }
@@ -362,7 +378,8 @@ void run(){
             }catch(...){}
           }
           if(filename.length()){
-            Mat rel = compute_relative_transform(views[j]->calibratedCamera, views[currentView]->calibratedCamera);
+            Mat rel = compute_relative_transform(views[currentView]->calibratedCamera, 
+                                                 views[j]->calibratedCamera);
             std::ofstream f(filename.c_str());
             f << rel << std::endl;
             std::cout << " saved relative calibration of view " << j << " to file " << filename << std::endl;
@@ -372,7 +389,14 @@ void run(){
     }
 
   }
-  
+
+  scene.setPropertyValue("visualize cameras", gui["vis cams"].as<bool>());
+
+  static ButtonHandle sync = gui["sync"];
+  if(sync.wasTriggered()){
+    scene.getCamera(views.size()) = scene.getCamera(0);
+  }  
+  gui["3D"].render();
 }
 
 int main(int n, char **ppc){
