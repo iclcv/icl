@@ -31,20 +31,20 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+#include <ICLGeom/PoseEstimator.h>
 #include <ICLMarkers/MarkerGridPoseEstimator.h>
 
 //#include <ICLIO/ImageUndistortion.h>
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 //#include <ICLGeom/CoplanarPointPoseEstimator.h>
-
 #include "GridIndicatorObject.h"
 #include "PlanarCalibrationTools.h"
 #include <fstream>
 
 
 VBox gui;
-GUI relGUI,poseEstGUI,fidGUI;
+GUI relGUI,poseEstGUI,fidGUI,captureFramesGUI;
 
 typedef AdvancedMarkerGridDetector Detector;
 typedef Detector::AdvancedGridDefinition GridDef;
@@ -54,6 +54,31 @@ typedef Detector::MarkerGrid MarkerGrid;
 
 Scene scene;
 
+
+Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector<Camera> &d){
+  int n = (int)iclMin(s.size(), d.size());
+  DynMatrix<float> Rs(3,3*n), Rd(3,3*n);
+  Vec3 dT(0,0,0);
+  for(int i=0;i<n;++i){
+    Mat ms = s[i].getInvCSTransformationMatrix();
+    Mat md = d[i].getInvCSTransformationMatrix();
+    Vec3 Ts = ms.part<3,0,1,3>();
+    Vec3 Td = md.part<3,0,1,3>();
+    dT = dT + (Td - Ts);
+    for(int r=0;r<3;++r){
+      std::copy(ms.row_begin(r), ms.row_begin(r)+3, Rs.row_begin(3*i+r));
+      std::copy(md.row_begin(r), md.row_begin(r)+3, Rd.row_begin(3*i+r));
+    }
+  }
+  dT *= 1./n;
+  DynMatrix<float> Rrel = Rs.pinv(true) * Rd;
+  Mat D(Rrel(0,0), Rrel(1,0), Rrel(2,0), dT[0],
+        Rrel(0,1), Rrel(1,1), Rrel(2,1), dT[1],
+        Rrel(0,2), Rrel(1,2), Rrel(2,2), dT[2],
+        0,0,0,1);
+  
+  return D;
+}
 
 Mat compute_relative_transform(const Camera &s, const Camera &d){
   Mat ms = s.getInvCSTransformationMatrix();
@@ -72,8 +97,12 @@ Mat compute_relative_transform(const Camera &s, const Camera &d){
   Mat T = Rrel.resize<4,4>(0);
   T.col(3) = Trel.resize<1,4>(1);
 
+  //Mat T2 = compute_relative_transform_n(std::vector<Camera>(10,s),
+  //                                      std::vector<Camera>(10,d));
   return T;
 }
+
+
 
 ComplexCoordinateFrameSceneObject *cs = 0;
 GridIndicatorObject *gridIndicator;
@@ -86,6 +115,7 @@ struct View{
   Camera calibratedCamera;
   const ImgBase *lastImage;
   ComplexCoordinateFrameSceneObject *cs;
+  std::vector<Camera> capturedFrames;
 };  
 typedef SmartPtr<View> ViewPtr;
 
@@ -161,6 +191,10 @@ void init(){
            << Button("define relative transform ...").handle("rel")
            << Button("pose estimation options ...").handle("poseEst")
            << Button("fiducial detection options ...").handle("fid")
+           << (HBox()
+               << Button("accumulate frames ...").handle("cap").tooltip("allows a set of frames to be accumulated to get a better relative result")
+               << Label("0").handle("ncap").maxSize(3,2).tooltip("Number of currenly captured frames. <b>Please note:</b> if this number is larger than 0, the internally captured frames are used for calibration (and not the current frame)")
+               )
            << Plot().handle("variancePlot").label("10-frame pose std-deviation")
            << Button("save calibration").handle("save").tooltip("saves the calibration file of the current view's camera")
            << Button("save relative calibration").handle("saveRel").tooltip("saves the calibration file of the current view's "
@@ -238,6 +272,17 @@ void init(){
   cs = new ComplexCoordinateFrameSceneObject;
   cs->setVisible(false);
   scene.addObject(cs,true);
+
+
+  captureFramesGUI << Button("capture current frame").handle("capture")
+                   << Label("--").label("num captured frames").handle("n")
+                   << (HBox()
+                       << Button("undo last").handle("undo")
+                       << Button("reset").handle("reset")
+                       )
+                   << Create();
+
+  gui["cap"].registerCallback(utils::function(captureFramesGUI,&GUI::switchVisibility));  
 }
 
 void run(){
@@ -341,6 +386,27 @@ void run(){
   }
   draw->render();
 
+  static ButtonHandle captureFrame = captureFramesGUI["capture"];
+  static ButtonHandle captureUndo = captureFramesGUI["undo"];
+  static ButtonHandle captureReset = captureFramesGUI["reset"];
+
+  bool cf = captureFrame.wasTriggered(), cu = captureUndo.wasTriggered(), cr = captureReset.wasTriggered();
+  for(size_t i=0;i<views.size();++i){
+    if(cf){
+      views[i]->capturedFrames.push_back(views[i]->calibratedCamera);
+    }else if(cu){
+      if(views[i]->capturedFrames.size()){
+        views[i]->capturedFrames.pop_back();
+      }
+    }else if(cr){
+      views[i]->capturedFrames.clear();
+    }
+  }
+  std::string nCap = str(views[0]->capturedFrames.size());
+  captureFramesGUI["n"] = nCap;
+  gui["ncap"] = nCap;
+
+  
   std::string names[]={"save", "saveRel"};
   for(int i=0;i<2;++i){
     if(i && views.size() < 2) break;
@@ -378,11 +444,23 @@ void run(){
             }catch(...){}
           }
           if(filename.length()){
-            Mat rel = compute_relative_transform(views[currentView]->calibratedCamera, 
-                                                 views[j]->calibratedCamera);
+            Mat rel;
+            if(views[currentView]->capturedFrames.size()){
+              rel = compute_relative_transform_n(views[currentView]->capturedFrames, 
+                                                 views[j]->capturedFrames);
+            }else{
+              rel = compute_relative_transform(views[currentView]->calibratedCamera, 
+                                               views[j]->calibratedCamera);
+            }
             std::ofstream f(filename.c_str());
             f << rel << std::endl;
             std::cout << " saved relative calibration of view " << j << " to file " << filename << std::endl;
+            size_t n = views[currentView]->capturedFrames.size();
+            if(n){
+              std::cout << " (relative calibration was performed on " << n << " captured relative transform tuples)" << std::endl;
+            }else{
+              std::cout << " (relative calibration was performed the single current frame)" << std::endl;
+            }
           }
         }
       }
