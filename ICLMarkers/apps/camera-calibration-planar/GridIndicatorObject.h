@@ -41,6 +41,8 @@ namespace icl{
       
       public:
       GridIndicatorObject(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def);
+      GridIndicatorObject(const utils::Size &checkerBoardCells, 
+                          const utils::Size32f &bounds);
     };
 
   }

@@ -32,12 +32,11 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/PoseEstimator.h>
+#include <ICLGeom/CoplanarPointPoseEstimator.h>
 #include <ICLMarkers/MarkerGridPoseEstimator.h>
-
-//#include <ICLIO/ImageUndistortion.h>
+#include <ICLCV/CheckerboardDetector.h>
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
-//#include <ICLGeom/CoplanarPointPoseEstimator.h>
 #include "GridIndicatorObject.h"
 #include "PlanarCalibrationTools.h"
 #include <fstream>
@@ -110,12 +109,16 @@ GridIndicatorObject *gridIndicator;
 struct View{
   GenericGrabber grabber;
   Detector detector;
+  CheckerboardDetector cbDetector;
   MarkerGridPoseEstimator poseEst;
+  CoplanarPointPoseEstimator cbPoseEst;
   Camera camera;
   Camera calibratedCamera;
   const ImgBase *lastImage;
   ComplexCoordinateFrameSceneObject *cs;
   std::vector<Camera> capturedFrames;
+  View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
+                   CoplanarPointPoseEstimator::SimplexSampling){}
 };  
 typedef SmartPtr<View> ViewPtr;
 
@@ -128,14 +131,41 @@ struct GLCallback : public ICLDrawWidget3D::GLCallback{
   }
 };
 
+struct CheckerBoardDef{
+  bool used;
+  Size32f bounds;
+  Size cells;
+  std::vector<Point32f> pts;
+} cbDef = { false, Size32f(0,0), Size(0,0) };
+
 void init(){
   ProgArg po = pa("-o");
 
   std::vector<int> ids;
   if(pa("-ids")){
+    if(!pa("-m")){
+      throw ICLException("argument -ids can only be used in combination with -m (for markers)");
+    }
     ids = FiducialDetectorPlugin::parse_list_str(*pa("-ids"));
   }
-  GridDef d(pa("-g"),pa("-mb"), pa("-gb"), ids, pa("-m"));
+  GridDef d;
+  if(pa("-m")){
+    d = GridDef(pa("-g"),pa("-mb"), pa("-gb"), ids, pa("-m"));
+  }else{
+    if(pa("-mb")){
+      WARNING_LOG("disregarding program argument -mb, which is only used in the marker-grid mode  (-m ..)");
+    }
+    cbDef.used = true;
+    cbDef.cells = pa("-g").as<Size>();
+    cbDef.bounds = pa("-gb").as<Size32f>();
+    float dx = cbDef.bounds.width/cbDef.cells.width;
+    float dy = cbDef.bounds.height/cbDef.cells.height;
+    for(int y=0;y<cbDef.cells.height;++y){
+      for(int x=0;x<cbDef.cells.width;++x){
+        cbDef.pts.push_back(Point32f(x*dx, y*dy));
+      }
+    }
+  }
 
   ProgArg pai = pa("-i");
   views.resize(pai.n()/3);
@@ -165,22 +195,30 @@ void init(){
     v.camera = extract_camera_from_udist_file(pai[i+2]);
     v.camera.setName("Input: " + pai[i] + " " + pai[i+1]);
     scene.addCamera(v.camera);
-    v.detector.init(d);
-    fd = v.detector.getFiducialDetector();
-    fd->setPropertyValue("thresh.mask size", 15);
-    fd->setPropertyValue("thresh.global threshold", -10);
-    fd->setConfigurableID("fd-cam"+str(id));
-
-    v.poseEst.setConfigurableID("poseEst-cam"+str(id));
+    if(cbDef.used){
+      v.cbDetector.init(cbDef.cells);
+      v.cbDetector.setConfigurableID("cbd-cam"+str(id));
+      v.cbPoseEst.setConfigurableID("cbPoseEst-cam"+str(id));
+      
+    }else{
+      v.detector.init(d);
+      fd = v.detector.getFiducialDetector();
+      fd->setPropertyValue("thresh.mask size", 15);
+      fd->setPropertyValue("thresh.global threshold", -10);
+      fd->setConfigurableID("fd-cam"+str(id));
+      v.poseEst.setConfigurableID("poseEst-cam"+str(id));
+    }
     v.cs = new ComplexCoordinateFrameSceneObject(10,1);
     scene.addObject(v.cs);
   }
   inputIDs = inputIDs.substr(0,inputIDs.length()-1);
   VBox controls;
   controls.label("controls").maxSize(17,99).minSize(17,1);
-  controls << Combo(inputIDs).handle("visinput").label("input index")
-           << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis")
-           << ( HBox()
+  controls << Combo(inputIDs).handle("visinput").label("input index");
+  if(fd){
+    controls << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis");
+  }
+  controls << ( HBox()
                 << CamCfg()
                 << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
                 )
@@ -190,7 +228,7 @@ void init(){
                 )
            << Button("define relative transform ...").handle("rel")
            << Button("pose estimation options ...").handle("poseEst")
-           << Button("fiducial detection options ...").handle("fid")
+           << Button("detection options ...").handle("fid")
            << (HBox()
                << Button("accumulate frames ...").handle("cap").tooltip("allows a set of frames to be accumulated to get a better relative result")
                << Label("0").handle("ncap").maxSize(3,2).tooltip("Number of currenly captured frames. <b>Please note:</b> if this number is larger than 0, the internally captured frames are used for calibration (and not the current frame)")
@@ -217,10 +255,14 @@ void init(){
           )
       << Show();
   
-  
-  gridIndicator = new GridIndicatorObject(d);
-  
+
   scene.addCamera(scene.getCamera(0));
+  
+  if(!cbDef.used){
+    gridIndicator = new GridIndicatorObject(cbDef.cells, cbDef.bounds);
+  }else{
+    gridIndicator = new GridIndicatorObject(d);
+  }
   scene.addObject(gridIndicator);
   
   //gui["draw"].install(scene.getMouseHandler(1));
@@ -257,8 +299,14 @@ void init(){
 
   Tab poseEstTab(inputIDs), fidTab(inputIDs);
   for(size_t i=0;i<views.size();++i){
-    fidTab << Prop("fd-cam"+str(i));
-    poseEstTab << Prop("poseEst-cam"+str(i));
+    if(cbDef.used){
+      fidTab << Prop("cbd-cam"+str(i));
+      poseEstTab << Prop("cbPoseEst-cam"+str(i));
+    }else{
+      fidTab << Prop("fd-cam"+str(i));
+      poseEstTab << Prop("poseEst-cam"+str(i));
+    }
+
   }
   
   poseEstGUI << poseEstTab << Create();
@@ -303,18 +351,26 @@ void run(){
                                 relGUI["ry"].as<float>()*M_PI/4,
                                 relGUI["rz"].as<float>()*M_PI/4,
                                 relGUI["tx"],relGUI["ty"],relGUI["tz"]);
+  dT = dT * R;
 
   for(size_t i=0;i<views.size();++i){
     View &v = *views[i];
     const ImgBase *image = !acquisition ? v.lastImage : v.grabber.grab();
     v.lastImage = image;
-    
-    const MarkerGrid &grid = v.detector.detect(image);
-    
-    Camera cam = v.camera;
-    Mat T = v.poseEst.computePose(grid, cam);
 
-    dT = dT * R;
+    Camera cam = v.camera;    
+    Mat T;
+    const MarkerGrid *grid = 0;
+    const CheckerboardDetector::Checkerboard *cb = 0;
+    if(cbDef.used){
+      cb = &v.cbDetector.detect(image);
+      T = v.cbPoseEst.getPose(cbDef.pts.size(), 
+                              cbDef.pts.data(), 
+                              cb->corners.data(), cam);
+    }else{
+      grid = &v.detector.detect(image);
+      T = v.poseEst.computePose(*grid, cam);
+    }
 
     try{
       cam.setWorldFrame(T * dT);
@@ -331,8 +387,13 @@ void run(){
       //  cs->setTransformation(T.inv());
       //}catch(...){}
       /// todo: here, we continue! We do need one Draw3D for each input
-      draw = v.detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
-      draw->draw(grid.vis());
+      if(cbDef.used){
+        draw = image;
+        draw->draw(cb->visualize());
+      }else{
+        draw = v.detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
+        draw->draw(grid->vis());
+      }
       
       if(lastView!=currentView){
         for(int i=0;i<10;++i) estimate_pose_variance(T);
@@ -486,7 +547,8 @@ int main(int n, char **ppc){
              " bottom most marker");
   pa_explain("-m", "marker type to use, this should actually not be \n"
             "adapted as the default type 'bch' provides best detection \n"
-            "and reliability properties");
+            "and reliability properties. If -m is not given, a simple \n"
+             " checkerboard is tried to be detected.");
   pa_explain("-ids", "marker IDs to use. If not specified, the IDs \n"
              "[0-w*h-1] are used. The string can either be a comma-\n"
              "separated list of entries or a range specification such \n" 
@@ -512,7 +574,7 @@ int main(int n, char **ppc){
   pa_explain("-t","gives initial transform paramters (rotation is given in integer units of PI/2)");
 
   return ICLApp(n, ppc, " [m]-input|-i(...) [m]-grid-cell-dim|-g(cells) "
-                "[m]-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
+                "-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
                 "-marker-type|-m(type=bch) -marker-ids|-ids "
                 "-camera-file -use-grid-center|-ugc " 
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "

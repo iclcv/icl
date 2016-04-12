@@ -89,6 +89,29 @@ namespace icl{
         }
       }
     }
+
+    GridIndicatorObject::GridIndicatorObject(const Size &cells, const Size32f &bounds){
+      float dx = bounds.width/cells.width;
+      float dy = bounds.height/cells.height;
+      
+      for(int y=0;y<cells.height;++y){
+        for(int x=0;x<cells.width;++x){
+          addVertex(Vec(x*dx, y*dy, 0, 1));
+        }
+      }
+
+      for(int y=0;y<cells.height;++y){
+        for(int x=0;x<cells.width;++x){
+          int idx = x + cells.width * y;
+          if(x){
+            addLine(idx, idx -1, geom_blue());
+          }
+          if(y){
+            addLine(idx, idx - cells.width, geom_blue());
+          }
+        }
+      }      
+    }
   }
 }
  
