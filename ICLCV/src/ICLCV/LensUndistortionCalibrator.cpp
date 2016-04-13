@@ -30,6 +30,7 @@
 
 #include <ICLCV/LensUndistortionCalibrator.h>
 #include <ICLCore/OpenCV.h>
+#include <ICLUtils/StringUtils.h>
 
 #include <opencv/cv.h>
 
@@ -124,7 +125,9 @@ namespace icl{
       ICLASSERT_THROW(m_data, ICLException("LensUndistortionCalibrator::addPoints: instance is null"));
       ICLASSERT_THROW(imagePoints.size() == gridDef.size(),
         ICLException("LensUndistortionCalibrator::addPoints: "
-        "number of points in the grid does not match with the number of image points"));
+        "number of points in the grid does not match with the number of image points ("
+                     "imagePoints.size():" + str(imagePoints.size()) + " gridDef.size(): "
+                     + str(gridDef.size()) + ")"));
       std::copy(imagePoints.begin(), imagePoints.end(), std::back_inserter(m_data->points));
       std::copy(gridDef.begin(), gridDef.end(), std::back_inserter(m_data->objPoints));
       m_data->subSetSizes.push_back(imagePoints.size());

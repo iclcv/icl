@@ -47,6 +47,8 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
+//#include <ICLMarkers/AdvancedMarkerGridDetector.h>
+
 #include <ICLUtils/Array2D.h>
 using namespace icl::utils;
 using namespace icl::qt;
@@ -69,6 +71,7 @@ std::map<int,Point32f> lastCapturedMarkers;
 ImgBase *splitImage = 0;
 WarpOp warp;
 FiducialDetector *fid = 0;
+//AdvancedMarkerGridDetector markerGridDetector;
 DisplacementMap dmap;
 
 struct MarkerInfo {
@@ -338,6 +341,19 @@ int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundL
   std::vector<Fiducial>::const_iterator it = fids.begin();
 
   foundList = std::vector<bool>(s.width*s.height, false);
+  for(size_t i=0;i<fids.size();++i){
+    int id = fids[i].getID();
+    std::vector<int>::iterator it = std::find(ids.begin(), ids.end(), id);
+    if(it != ids.end()){
+      foundList[(int)(it - ids.begin())] = true;
+    }
+  }
+  for(size_t i=0;i<foundList.size();++i){
+    if(foundList[i]) ++validMarkers;
+  }
+
+#if 0
+  
 
   for (int y = 0; y < s.height && it != fids.end(); ++y) {
     for (int x = 0; x < s.width; ++x) {
@@ -349,6 +365,7 @@ int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundL
       }
     }
   }
+#endif
 
   return validMarkers;
 }
@@ -360,13 +377,17 @@ void createObjCoords(const std::vector<Point32f> &grid,
                      std::vector<Point32f> &obj) {
   ICLASSERT(grid.size() == 4 * foundList.size());
   obj.clear();
+  SHOW(grid.size());
+  SHOW(foundList.size());
 
   std::vector<Point32f>::const_iterator it = grid.begin();
   
   for(size_t i=0;i<foundList.size();++i){
     if(foundList[i]){
+      std::cout << "found index " << i << std::endl;
       for(int j=0;j<4;++j) obj.push_back(*it++);
     }else{
+      std::cout << "didn't find index " << i << std::endl;
       it+=4;
     }
   }
@@ -598,7 +619,7 @@ void init(){
     Size &s = markerInfo.gridSize;
 
     idList = FiducialDetectorPlugin::parse_list_str(pa("-m", 1).as<std::string>());
-    std::sort(idList.begin(), idList.end());
+    //std::sort(idList.begin(), idList.end()); // nooooo!
 
     s = pa("-g").as<Size>();
     if (s.width*s.height != (int)idList.size())
