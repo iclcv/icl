@@ -108,28 +108,6 @@ bool is_far_enough(const Mat &T, float f){
   return allFarEnough;
 }
 
-/*
-struct MarkerInfo {
-  std::vector<int> markerIdList;
-  Size gridSize;
-
-  Array2D<Fiducial> sort2D(const std::vector<Fiducial> & fids){
-    std::map<int,Point> posLut;
-    int idx = 0;
-    for(int y=0;y<gridSize.height;++y){
-      for(int x=0;x<gridSize.width;++x, ++idx){
-        posLut[markerIdList[idx]] = Point(x,y);
-      }
-    }
-    Array2D<Fiducial> a(gridSize);
-    for(size_t i=0;i<fids.size();++i){
-      Point p = posLut[fids[i].getID()];
-      a(p.x,p.y) = fids[i];
-    }
-    return a;
-  }
-} markerInfo;
-    */
 struct ConfigurableUDist : public Configurable{
   std::vector<double> defaultValues;
   bool paramChanged;
@@ -140,7 +118,6 @@ struct ConfigurableUDist : public Configurable{
   }
 
   void cb(const Property &p){
-    //return ;
     if(p.name != "activated" && getPropertyValue("activated").as<bool>()){
       DEBUG_LOG("before: " << *udist);
       std::vector<double> ps = udist->getParams();
@@ -240,11 +217,6 @@ SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorne
                                         const std::vector<Point32f> &objCoordsXY,
                                         const AdvancedMarkerGridDetector::MarkerGrid &grid,
                                         const Camera &cam, const Mat &T){
-  //
-  //
-  //CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
-  //Mat T = cpe.getPose(objCoordsXY.size(), objCoordsXY.data(), markerCorners.data(), cam);
-
   static std::vector<GeomColor> cs;
   if(!cs.size()){
     const int c[3] = {0,128,255};
@@ -312,6 +284,7 @@ std::vector<Vec> estimage_grid_preview(const std::vector<Point32f> &imageCoords,
   return r;
 }
 #endif
+
 // delete all collected and calculated data
 void resetData() {
   static DrawHandle vecDraw = gui["vecImage"];
@@ -322,8 +295,9 @@ void resetData() {
   calib.clear();
   udist.reset();
 
-  //gui["calibrate"].disable();
-  //  gui["save"].disable();
+  gui["calibrate"].disable();
+  gui["save"].disable();
+
   capturedPoses.clear();
   vecDraw->render();
 }
@@ -367,111 +341,10 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
     }
   }
   return r;
-  /*
-  std::vector<Fiducial> ret;
-  std::vector<Fiducial>::const_iterator it = fids.begin();
-  std::vector<Fiducial>::const_iterator prevIt = it;
-
-  for (++it; it != fids.end(); ++it) {
-    if (prevIt->getID() != it->getID()) {
-      ret.push_back(*prevIt);
-      prevIt = it;
-    } else {
-      do ++it; while (it != fids.end() && prevIt->getID() == it->getID());
-      prevIt = it;
-      if (it == fids.end()) break;
-    }
-  }
-
-  if (prevIt != fids.end()) ret.push_back(*prevIt);
-
-  return ret;
-      */
 }
 
-/*
-// For every id in "markerIdList" this function creates a list
-// of bool values indicating if the marker was found
-int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundList) {
-  int validMarkers = 0;
-  Size &s = markerInfo.gridSize;
-  std::vector<int> &ids = markerInfo.markerIdList;
-  std::vector<Fiducial>::const_iterator it = fids.begin();
 
-  foundList = std::vector<bool>(s.width*s.height, false);
-  for(size_t i=0;i<fids.size();++i){
-    int id = fids[i].getID();
-    std::vector<int>::iterator it = std::find(ids.begin(), ids.end(), id);
-    if(it != ids.end()){
-      foundList[(int)(it - ids.begin())] = true;
-    }
-  }
-  for(size_t i=0;i<foundList.size();++i){
-    if(foundList[i]) ++validMarkers;
-  }
 
-#if 0
-  
-
-  for (int y = 0; y < s.height && it != fids.end(); ++y) {
-    for (int x = 0; x < s.width; ++x) {
-      int pos = x + y*s.width;
-
-      if (it != fids.end() && ids[pos] == it->getID()) {
-        foundList[pos] = true;
-        it++;
-      }
-    }
-  }
-#endif
-
-  return validMarkers;
-}
-    */
-// This functions fills the vector "obj" with object coordinates
-// of the marker grid, but only with the found markers
-void createObjCoords(const std::vector<Point32f> &grid,
-                     const std::vector<bool> &foundList,
-                     std::vector<Point32f> &obj) {
-  ICLASSERT(grid.size() == 4 * foundList.size());
-  obj.clear();
-  SHOW(grid.size());
-  SHOW(foundList.size());
-
-  std::vector<Point32f>::const_iterator it = grid.begin();
-  
-  for(size_t i=0;i<foundList.size();++i){
-    if(foundList[i]){
-      std::cout << "found index " << i << std::endl;
-      for(int j=0;j<4;++j) obj.push_back(*it++);
-    }else{
-      std::cout << "didn't find index " << i << std::endl;
-      it+=4;
-    }
-  }
-  /*
-  std::vector<bool>::const_iterator it  = foundList.begin();
-  std::vector<bool>::const_iterator end = foundList.end();
-
-  for (; it != end; ++it) {
-    if (*it) {
-      obj.push_back(*gridIt); gridIt++;
-      obj.push_back(*gridIt); gridIt++;
-      obj.push_back(*gridIt); gridIt++;
-      obj.push_back(*gridIt); gridIt++;
-    } else {
-      gridIt++;
-      gridIt++;
-      gridIt++;
-      gridIt++;
-    }
-  }*/
-}
-
-// comparision between two fiducial objects
-struct fidComp {
-  bool operator() (Fiducial i, Fiducial j) { return (i.getID()<j.getID()); }
-} comp;
 
 void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured) {
   static ButtonHandle capture = gui["capture"];
@@ -511,126 +384,6 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured)
       gui["calibrate"].enable();
     }
   }
-  /*
-   createObjCoords(info.gridDef, foundList, obj);
-      ICLASSERT(corners.size() == obj.size());
-      
-      calib.addPoints(corners, obj);
-
-      /// yyy 
-      scene.addObject(create_grid_preview_object(corners, obj, scene.getCamera(1), grid, info));
-
-
-
-  std::vector<Fiducial> fids = fid->detect(img);
-  gui["nfound"] = str(fids.size());
-
-  bool haveEnoughMarkers = ((int)fids.size() >= minMarkers);
-  // first check if enough markers were found
-  
-  std::vector<bool> foundList;
-  
-  std::sort(fids.begin(), fids.end(), comp);
-  fids = removeDuplicates(fids);
-  
-  Array2D<Fiducial> fids2D = markerInfo.sort2D(fids);
-  
-  
-  
-  for(int y=0;y<fids2D.getHeight();++y){
-    for(int x=0;x<fids2D.getWidth();++x){
-      Fiducial &f = fids2D(x,y);
-      if(f){
-        if(haveEnoughMarkers) draw->color(0,255,0,255);
-        else draw->color(255,0,0,255);
-        draw->linewidth(1);
-        draw->linestrip(f.getCorners2D());
-        draw->color(255,0,0,255);
-        
-        draw->linewidth(2);
-        if(x < fids2D.getWidth()-1){
-          Fiducial &left = fids2D(x+1,y);
-          if(left){
-            draw->line(f.getCenter2D(), left.getCenter2D());
-          }
-        }
-        if(y < fids2D.getHeight()-1){
-          Fiducial &bottom = fids2D(x,y+1);
-          if(bottom){
-            draw->line(f.getCenter2D(), bottom.getCenter2D());
-          }
-        }
-      }
-      
-    }
-  }
-  
-  // second check if there are enough markers after sorting out invalid markers
-  if (haveEnoughMarkers) {
-    const bool autoCapture = gui["autoCapture"];
-    const float displacement = gui["captureDis"];
-    float diff = -1.f;
-    
-    // visualize markers
-    //for (unsigned int i = 0; i < fids.size(); ++i){
-    //  draw->color(255, 0, 0, 255);
-    //  draw->linestrip(fids[i].getCorners2D());
-    //  draw->color(0, 100, 255, 255);
-    //  draw->text(fids[i].getName(), fids[i].getCenter2D().x, fids[i].getCenter2D().y, 9);
-    //}
-    
-    // if automatic capturing is on, calculate the current displacement
-    if (autoCapture) {
-      if (lastCapturedMarkers.size()) {
-        int count = 0;
-        std::vector<Fiducial>::const_iterator it = fids.begin();
-        diff = 0;
-        
-        for (; it != fids.end(); ++it) {
-          if (lastCapturedMarkers[it->getID()] != Point32f()) {
-            Point32f tmp = it->getCenter2D() - lastCapturedMarkers[it->getID()];
-            diff += sqrt(tmp.x*tmp.x + tmp.y*tmp.y);
-            ++count;
-          }
-        }
-        
-        if (count < 3) diff = std::numeric_limits<float>::max();
-        else diff /= count;
-      }
-      else diff = std::numeric_limits<float>::max();
-    }
-    
-    // handle capturing
-    if (capture.wasTriggered() || (diff >= displacement)) {
-      std::vector<Point32f> obj;
-      std::vector<Point32f> corners;
-      LensUndistortionCalibrator::Info info = calib.getInfo();
-      Size &grid = markerInfo.gridSize;
-      std::vector<Fiducial>::const_iterator it = fids.begin();
-      
-      for (; it != fids.end(); ++it)
-        lastCapturedMarkers[it->getID()] = it->getCenter2D();
-      
-      for (it = fids.begin(); it != fids.end(); ++it) {
-        const std::vector<Fiducial::KeyPoint> &points = it->getKeyPoints2D();
-        corners.push_back(points[3].imagePos);
-        corners.push_back(points[0].imagePos);
-        corners.push_back(points[1].imagePos);
-        corners.push_back(points[2].imagePos);
-      }
-      
-      createFoundList(fids, foundList);
-      createObjCoords(info.gridDef, foundList, obj);
-      ICLASSERT(corners.size() == obj.size());
-      
-      calib.addPoints(corners, obj);
-
-      /// yyy 
-      scene.addObject(create_grid_preview_object(corners, obj, scene.getCamera(1), grid, info));
-      gui["calibrate"].enable();
-      }
-      }
-   */
 }
 
 void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw, bool &captured) {
@@ -718,24 +471,8 @@ void init(){
     AdvancedMarkerGridDetector::AdvancedGridDefinition def(gridCells, markerBounds, gridBounds, ids, pa("-m",0));
     markerGridDetector.init(def);
     calib.init(image->getSize());
-    //std::vector<int> &idList = markerInfo.markerIdList;
-    //Size &s = markerInfo.gridSize;
-    //std::sort(idList.begin(), idList.end()); // nooooo!
-    //
-    //s = pa("-g").as<Size>();
-    //if (s.width*s.height != (int)idList.size())
-    //  throw ICLException("the number of markers must be equal to the grid size");
-    //
-    //fid = new FiducialDetector(pa("-m").as<std::string>(),
-    //                           pa("-m", 1).as<std::string>(),
-    //                           ParamList("size", (*pa("-m", 2))));
-    //LensUndistortionCalibrator::GridDefinition def(pa("-g").as<Size>(), pa("-m", 2).as<Size32f>(), pa("-sp").as<Size32f>());
-    //calib.init(image->getSize(), def);
-
+   
     markerGridDetector.setConfigurableID("detectionProps");
-    // QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
-    // fid->setConfigurableID("detectionProps");
-    // fid->setPropertyValue("max bch errors",1);
   } else {
     throw ICLException("other modes than checkerboard and markers "
                        "detection are not yet supported\nPlease use "
