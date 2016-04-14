@@ -102,6 +102,9 @@ namespace icl{
       /// for deferred initialization
       void init(const utils::Size &imagesSize, const GridDefinition &gridDef);
 
+      /// deferred initialization (only when using addPoints with given gridDef)
+      void init(const utils::Size &imageSize);
+
       /// returns whether this instance was already initialized
       bool isNull() const;
       
@@ -113,6 +116,10 @@ namespace icl{
 
       /// removes all points added before
       void clear();
+
+      /// removes lastly added point
+      /** If the internal list is empty, this function does nothing */
+      void undoLast();
       
       /// returns current info
       Info getInfo();

@@ -113,6 +113,12 @@ namespace icl{
       clear();
     }
 
+    void LensUndistortionCalibrator::init(const Size &imageSize){
+      if(!m_data) m_data = new Data;
+      m_data->imageSize = imageSize;
+      clear();
+    }
+
     bool LensUndistortionCalibrator::isNull() const{
       return !m_data;
     }
@@ -138,6 +144,14 @@ namespace icl{
       m_data->points.clear();
       m_data->objPoints.clear();
       m_data->subSetSizes.clear();
+    }
+
+    void LensUndistortionCalibrator::undoLast(){
+      if(!m_data->subSetSizes.size()) return;
+      int lastSize = m_data->subSetSizes.back();
+      m_data->points.resize(m_data->points.size()-lastSize);
+      m_data->objPoints.resize(m_data->objPoints.size()-lastSize);
+      m_data->subSetSizes.pop_back();
     }
     
     io::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){

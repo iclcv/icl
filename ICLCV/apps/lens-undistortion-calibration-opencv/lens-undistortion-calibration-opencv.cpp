@@ -47,7 +47,8 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
-//#include <ICLMarkers/AdvancedMarkerGridDetector.h>
+#include <ICLMarkers/AdvancedMarkerGridDetector.h>
+#include <ICLMarkers/MarkerGridPoseEstimator.h>
 
 #include <ICLUtils/Array2D.h>
 using namespace icl::utils;
@@ -70,10 +71,44 @@ std::vector<Point32f> lastCapturedCorners;
 std::map<int,Point32f> lastCapturedMarkers;
 ImgBase *splitImage = 0;
 WarpOp warp;
-FiducialDetector *fid = 0;
-//AdvancedMarkerGridDetector markerGridDetector;
-DisplacementMap dmap;
+//FiducialDetector *fid = 0;
+AdvancedMarkerGridDetector markerGridDetector;
+MarkerGridPoseEstimator markerGridPoseEstimator;
 
+DisplacementMap dmap;
+std::vector<Mat> capturedPoses;
+
+
+bool is_far_enough(const Mat &T, float f){
+  float fEuler = f/200.0 * M_PI/2; // 45 deg
+  float fTrans = f;                // 200 mm
+  
+  Mat3 R = T.part<0,0,3,3>();
+  Vec3 t = T.part<3,0,1,3>();
+  
+  bool allFarEnough = true;
+  for(size_t i=0;i<capturedPoses.size();++i){
+    const Mat &C = capturedPoses[i];
+    Mat3 CR = C.part<0,0,3,3>();
+    Vec3 Ct = C.part<3,0,1,3>();
+    Vec3 dEuler = extract_euler_angles(R.transp() * CR);
+    Vec3 dTrans = t - Ct;
+    
+    bool oneFarEnough = false;
+    for(int i=0;i<3;++i){
+      if(fabs(dEuler[i]) > fEuler || fabs(dTrans[i]) > fTrans){
+        oneFarEnough = true; break;
+      }
+    }
+    if(!oneFarEnough){
+      allFarEnough = false;
+      break;
+    }
+  }
+  return allFarEnough;
+}
+
+/*
 struct MarkerInfo {
   std::vector<int> markerIdList;
   Size gridSize;
@@ -94,7 +129,7 @@ struct MarkerInfo {
     return a;
   }
 } markerInfo;
-
+    */
 struct ConfigurableUDist : public Configurable{
   std::vector<double> defaultValues;
   bool paramChanged;
@@ -203,10 +238,12 @@ void save_params(){
 
 SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorners, 
                                         const std::vector<Point32f> &objCoordsXY,
-                                        const Camera &cam, const Size &gridDim,
-                                        const LensUndistortionCalibrator::Info &info){
-  CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
-  Mat T = cpe.getPose(objCoordsXY.size(), objCoordsXY.data(), markerCorners.data(), cam);
+                                        const AdvancedMarkerGridDetector::MarkerGrid &grid,
+                                        const Camera &cam, const Mat &T){
+  //
+  //
+  //CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
+  //Mat T = cpe.getPose(objCoordsXY.size(), objCoordsXY.data(), markerCorners.data(), cam);
 
   static std::vector<GeomColor> cs;
   if(!cs.size()){
@@ -237,7 +274,7 @@ SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorne
     obj->addLine(i+2,i+3, c);
     obj->addLine(i+3,i, c);
   }
-  const int w = info.gridDef.getGridBoundarySize().width, h = info.gridDef.getGridBoundarySize().height;
+  const int w = grid.getGridDef().getGridBounds().width, h = grid.getGridDef().getGridBounds().height;
 
   obj->addVertex(Vec(0,0,0,1));
   obj->addVertex(Vec(w,0,0,1));
@@ -287,8 +324,28 @@ void resetData() {
 
   //gui["calibrate"].disable();
   //  gui["save"].disable();
-
+  capturedPoses.clear();
   vecDraw->render();
+}
+
+void undoLast() {
+  static DrawHandle vecDraw = gui["vecImage"];
+
+  if (scene.getObjectCount() < 2) return;
+
+  calib.undoLast();
+  if(capturedPoses.size()){
+    capturedPoses.pop_back();
+    scene.removeObject(scene.getObjectCount()-1);
+    if(gui["autoCalib"]){
+      *udist.udist = calib.computeUndistortion();
+      udist.updateConfigurableParams();
+      udist.paramChanged = true;
+      SHOW(udist.udist);
+    }
+    vecDraw->render();
+  }
+
 }
 
 
@@ -332,6 +389,7 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
       */
 }
 
+/*
 // For every id in "markerIdList" this function creates a list
 // of bool values indicating if the marker was found
 int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundList) {
@@ -369,7 +427,7 @@ int createFoundList(const std::vector<Fiducial> &fids, std::vector<bool> &foundL
 
   return validMarkers;
 }
-
+    */
 // This functions fills the vector "obj" with object coordinates
 // of the marker grid, but only with the found markers
 void createObjCoords(const std::vector<Point32f> &grid,
@@ -415,9 +473,55 @@ struct fidComp {
   bool operator() (Fiducial i, Fiducial j) { return (i.getID()<j.getID()); }
 } comp;
 
-void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
+void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured) {
   static ButtonHandle capture = gui["capture"];
   const int minMarkers = gui["minMarkers"];
+  
+  typedef AdvancedMarkerGridDetector::Marker Marker;
+  typedef AdvancedMarkerGridDetector::MarkerGrid MarkerGrid;
+  
+  const MarkerGrid &grid = markerGridDetector.detect(img);
+  std::vector<Point32f> imageCoords, objectCoords;
+  for(int i=0;i<grid.getDim();++i){
+    const Marker &m = grid[i];
+    if(m.wasFound()){
+      m.getImagePoints().appendCornersTo(imageCoords);
+      m.getGridPoints().appendCornersTo(objectCoords);
+    }
+  }
+  draw->draw(grid.vis());
+
+  if((int)imageCoords.size()/4 >= minMarkers){
+    bool autoCapture = gui["autoCapture"];
+    bool doCapture = capture.wasTriggered();
+    Mat T = markerGridPoseEstimator.computePose(grid, scene.getCamera(1));
+    
+    if(!doCapture && autoCapture){
+      float f = gui["captureDis"];
+      if(is_far_enough(T, f)){
+        doCapture = true;
+      }
+    }
+    if(doCapture){
+      captured = true;
+      capturedPoses.push_back(T);
+      calib.addPoints(imageCoords, objectCoords);
+      scene.addObject(create_grid_preview_object(imageCoords, objectCoords, 
+                                                 grid, scene.getCamera(1), T));
+      gui["calibrate"].enable();
+    }
+  }
+  /*
+   createObjCoords(info.gridDef, foundList, obj);
+      ICLASSERT(corners.size() == obj.size());
+      
+      calib.addPoints(corners, obj);
+
+      /// yyy 
+      scene.addObject(create_grid_preview_object(corners, obj, scene.getCamera(1), grid, info));
+
+
+
   std::vector<Fiducial> fids = fid->detect(img);
   gui["nfound"] = str(fids.size());
 
@@ -523,26 +627,13 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw) {
 
       /// yyy 
       scene.addObject(create_grid_preview_object(corners, obj, scene.getCamera(1), grid, info));
-      /*
-      std::vector<Vec> ps = estimage_grid_preview(corners, obj, scene.getCamera(1), grid);
-      
-      struct LineStrip : public SceneObject{
-        LineStrip(const std::vector<Vec> &ps){
-          m_vertices = ps;
-          m_vertexColors.resize(ps.size(), geom_red());
-          for (size_t i = 0; i<ps.size(); ++i){
-            addLine(i, (i + 1) % ps.size(), geom_red());
-          }
-        }
-      };
-      scene.addObject(new LineStrip(ps));
-      */
       gui["calibrate"].enable();
-    }
-  }
+      }
+      }
+   */
 }
 
-void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
+void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw, bool &captured) {
   static ButtonHandle capture = gui["capture"];
 
   const CheckerboardDetector::Checkerboard &cb = checker.detect(*img->as8u());
@@ -571,6 +662,7 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
 
     // handle capturing
     if (capture.wasTriggered() || (diff >= displacement)){
+      captured = true;
       lastCapturedCorners = cb.corners;
       calib.addPoints(cb.corners);
       //LensUndistortionCalibrator::Info info = calib.getInfo();
@@ -595,9 +687,8 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw) {
 }
 
 void init(){
-  int maxMarkers = 5;
   string dStr;
-
+  int maxMarkers = 5;
   grabber.init(pa("-i"));
   if(pa("-s")){
     grabber.useDesired(pa("-s").as<Size>());
@@ -615,27 +706,36 @@ void init(){
     checker.setConfigurableID("detectionProps");
   }else if (pa("-m")) {
     dStr = string("quad detection");
-    std::vector<int> &idList = markerInfo.markerIdList;
-    Size &s = markerInfo.gridSize;
 
-    idList = FiducialDetectorPlugin::parse_list_str(pa("-m", 1).as<std::string>());
+    std::vector<int> ids = FiducialDetectorPlugin::parse_list_str(pa("-m", 1).as<std::string>());
+    Size gridCells = pa("-g");
+    Size32f markerBounds = pa("-m",2);
+    Size32f spacing = pa("-sp");
+    Size32f gridBounds((gridCells.width-1) * spacing.width + markerBounds.width,
+                       (gridCells.height-1) * spacing.height + markerBounds.height);
+    
+    maxMarkers = gridCells.getDim();
+    AdvancedMarkerGridDetector::AdvancedGridDefinition def(gridCells, markerBounds, gridBounds, ids, pa("-m",0));
+    markerGridDetector.init(def);
+    calib.init(image->getSize());
+    //std::vector<int> &idList = markerInfo.markerIdList;
+    //Size &s = markerInfo.gridSize;
     //std::sort(idList.begin(), idList.end()); // nooooo!
+    //
+    //s = pa("-g").as<Size>();
+    //if (s.width*s.height != (int)idList.size())
+    //  throw ICLException("the number of markers must be equal to the grid size");
+    //
+    //fid = new FiducialDetector(pa("-m").as<std::string>(),
+    //                           pa("-m", 1).as<std::string>(),
+    //                           ParamList("size", (*pa("-m", 2))));
+    //LensUndistortionCalibrator::GridDefinition def(pa("-g").as<Size>(), pa("-m", 2).as<Size32f>(), pa("-sp").as<Size32f>());
+    //calib.init(image->getSize(), def);
 
-    s = pa("-g").as<Size>();
-    if (s.width*s.height != (int)idList.size())
-      throw ICLException("the number of markers must be equal to the grid size");
-
-    fid = new FiducialDetector(pa("-m").as<std::string>(),
-                               pa("-m", 1).as<std::string>(),
-                               ParamList("size", (*pa("-m", 2))));
-    LensUndistortionCalibrator::GridDefinition def(pa("-g").as<Size>(), pa("-m", 2).as<Size32f>(), pa("-sp").as<Size32f>());
-    calib.init(image->getSize(), def);
-
-    maxMarkers = s.width*s.height;
-
-    //QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
-    fid->setConfigurableID("detectionProps");
-    fid->setPropertyValue("max bch errors",1);
+    markerGridDetector.setConfigurableID("detectionProps");
+    // QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
+    // fid->setConfigurableID("detectionProps");
+    // fid->setPropertyValue("max bch errors",1);
   } else {
     throw ICLException("other modes than checkerboard and markers "
                        "detection are not yet supported\nPlease use "
@@ -655,20 +755,28 @@ void init(){
            << CheckBox("detection", true).out("detection")
               .tooltip("if checked the application will try to find\n"
                        "a checkboard inside the image.")
-           << CheckBox("auto capture", false).out("autoCapture")
-              .tooltip("if checked and the displacement is higher than a threshold,\n"
-                       "the current detection will be captured.")
-           << FSlider(0.f, 200.f, 10.f).out("captureDis").label("displacement")
-           << CamCfg()
-           << Button("capture").handle("capture")
-           << Button("calibrate").handle("calibrate")
-           << Button("save").handle("save")
-           << Button("reset").handle("reset")
-           
            << (HBox()
-               << Slider(5, maxMarkers, 5).hideIf(!fid).out("minMarkers")
+               << CheckBox("auto capture", false).out("autoCapture")
+               .tooltip("if checked and the displacement is higher than a threshold,\n"
+                        "the current detection will be captured.")
+               << CheckBox("auto calib",false).out("autoCalib")
+               .tooltip("automatically trigger calibration after capturing a frame")
+              )
+           << FSlider(0.f, 200.f, 60.f).out("captureDis").label("min displacement").tooltip("minimal displacement for automatic capturing")
+           << CamCfg()
+           << ( HBox()
+                << Button("capture").handle("capture")
+                << Button("calibrate").handle("calibrate")
+              )
+           << ( HBox()
+                << Button("reset").handle("reset")
+                << Button("undo last").handle("undo")
+              )
+           << Button("save").handle("save")           
+           << (HBox()
+               << Slider(5, maxMarkers, 5).hideIf(!pa("-g")).out("minMarkers")
                   .label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")
-               << Label("--").handle("nfound").label("#markers found").hideIf(!fid).maxSize(5,2)
+               << Label("--").handle("nfound").label("#markers found").hideIf(!pa("-g")).maxSize(5,2)
                )
            << ( Tab("manual params,detection")
                 << Prop("udist")
@@ -679,6 +787,7 @@ void init(){
 
   
   Camera cam(Vec(0,0,-1,1));
+  cam.setFocalLength(5);
   cam.setResolution(image->getSize());
   
   struct Frustrum : public SceneObject{
@@ -700,7 +809,8 @@ void init(){
   scene.addCamera(cam);
   scene.addCamera(cam);
   scene.addObject(new Frustrum(cam,image->getSize()));
-  
+  scene.setCursor(Vec(0,0,-400,1));
+        
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
   gui["calibrate"].disable();
@@ -711,6 +821,7 @@ void run(){
   static ButtonHandle reset     = gui["reset"];
   static ButtonHandle calibrate = gui["calibrate"];
   static ButtonHandle save      = gui["save"];
+  static ButtonHandle undo      = gui["undo"];
   static DrawHandle draw = gui["image"];
   static ImageHandle udraw = gui["uimage"];
   static DrawHandle vecDraw = gui["vecImage"];
@@ -720,6 +831,10 @@ void run(){
   if (reset.wasTriggered()) {
     resetData();
   }
+  if(undo.wasTriggered()){
+    undoLast();
+  }
+
 
   const ImgBase *img = grabber.grab();
   draw = img;
@@ -730,17 +845,19 @@ void run(){
     udraw = warped;
   }
 
+  bool captured = false;
   if(detection){
-    if(fid) {
-      handleMarkerDetection(img, draw);
+    static bool useMarkers = pa("-g");
+    if(useMarkers) {
+      handleMarkerDetection(img, draw, captured);
     }
     if(!checker.isNull()) {
-      handleCheckerboardDetection(img, draw);
+      handleCheckerboardDetection(img, draw, captured);
     }
   }
 
   // handle calibrate button
-  if(calibrate.wasTriggered()){
+  if(calibrate.wasTriggered() || (gui["autoCalib"].as<bool>() && captured)){
     *udist.udist = calib.computeUndistortion();
     udist.updateConfigurableParams();
     udist.paramChanged = true;
