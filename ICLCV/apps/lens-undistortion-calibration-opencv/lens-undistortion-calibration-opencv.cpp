@@ -315,7 +315,6 @@ void undoLast() {
       *udist.udist = calib.computeUndistortion();
       udist.updateConfigurableParams();
       udist.paramChanged = true;
-      SHOW(udist.udist);
     }
     vecDraw->render();
   }
@@ -382,6 +381,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured)
       scene.addObject(create_grid_preview_object(imageCoords, objectCoords, 
                                                  grid, scene.getCamera(1), T));
       gui["calibrate"].enable();
+      gui["save"].enable();
     }
   }
 }
@@ -524,9 +524,9 @@ void init(){
 
   
   Camera cam(Vec(0,0,-1,1));
-  cam.setFocalLength(5);
+  cam.setFocalLength(1);
   cam.setResolution(image->getSize());
-  
+  cam.setSamplingResolution(image->getSize().width, image->getSize().width);
   struct Frustrum : public SceneObject{
     Frustrum(const Camera &cam, const Size &size){
       const Point ps[] = { Point(0,0), Point(size.width-1, 0),
@@ -534,7 +534,7 @@ void init(){
                            Point(0, size.height-1) };
       addVertex(cam.getPosition());
       for(int i=0;i<4;++i){
-        addVertex(cam.getViewRay(ps[i])(1000));
+        addVertex(cam.getViewRay(ps[i])(2*size.width));
         addLine(0,i+1);
         addLine(i+1, i==3 ? 1 : i+2);
       }
@@ -546,7 +546,7 @@ void init(){
   scene.addCamera(cam);
   scene.addCamera(cam);
   scene.addObject(new Frustrum(cam,image->getSize()));
-  scene.setCursor(Vec(0,0,-400,1));
+  scene.setCursor(Vec(0,0,-image->getSize().width));
         
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
@@ -575,10 +575,13 @@ void run(){
 
   const ImgBase *img = grabber.grab();
   draw = img;
+
   if(warp.getWarpMap().getSize().getDim()){
-    static Img8u warped;
-    warped.fill(0);
-    warp.apply(img,bpp(warped));
+    static ImgBase *warped = 0;
+    if(warped){
+      warped->clear(-1,0,false);
+    }
+    warp.apply(img,&warped);
     udraw = warped;
   }
 
