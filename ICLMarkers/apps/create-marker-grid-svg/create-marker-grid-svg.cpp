@@ -104,6 +104,7 @@ std::string create_marker_text(const Rect32f &r, int id){
 }
 
 int main(int n, char **ppc){
+  pa_explain("-m","margin between markers if <=0, a 10th of the marker-dim is used"); 
   pa_init(n,ppc,
           "-offset|-ofs(x=12,y=12) "
           "-size|-s(size=30x21) "
