@@ -101,7 +101,7 @@ void init(){
     throw ICLException("The program arguments -if -ip and -is are exclusive");
   }
   if(pif){
-    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(*pa("-if")));
+    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(Camera::create_camera_from_calibration_or_udist_file(*pa("-if"))));
   }else if(pip){
     Camera c;
     c.setFocalLength(1);

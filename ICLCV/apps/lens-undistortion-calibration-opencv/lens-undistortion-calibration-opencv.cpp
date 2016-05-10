@@ -464,8 +464,8 @@ void init(){
     Size gridCells = pa("-g");
     Size32f markerBounds = pa("-m",2);
     Size32f spacing = pa("-sp");
-    Size32f gridBounds((gridCells.width-1) * spacing.width + markerBounds.width,
-                       (gridCells.height-1) * spacing.height + markerBounds.height);
+    Size32f gridBounds((gridCells.width-1) * spacing.width + markerBounds.width * gridCells.width,
+                       (gridCells.height-1) * spacing.height + markerBounds.height * gridCells.height);
     
     maxMarkers = gridCells.getDim();
     AdvancedMarkerGridDetector::AdvancedGridDefinition def(gridCells, markerBounds, gridBounds, ids, pa("-m",0));
@@ -629,14 +629,15 @@ int main(int n, char **ppc){
     ("-r", "dimension of the checker board in milimeter")
     ("-m", "The first sub-argument defines the marker type. "
     "The second one defines the marker ids, for which the application will search for."
-    "(number of ids should match the marker grid size)"
-    "The last argument defines the size of one marker in milimeter.")
-    ("-g", "size of the marker grid")
-    ("-sp", "spacing between markers")
+    "(number of ids must match the marker grid size)"
+    "The last argument defines the size of one marker in milimeters.")
+    ("-g", "size of the marker grid, i.e. number of grid cells")
+    ("-sp", "spacing between markers in mm (usually in the order of a 10th of "
+     "the marker-size, i.e. the size of the white space between the markers)")
     ("-s", "output size of the input image");
   return ICLApp(n,ppc,"[m]-input|-i(2) -checkerboard|-cb(WxH) "
                 "-real-checkerboard-dim-mm|-r(WxH=240x180) "
-                "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) "
-                "-marker-spacing|-sp(WxH=35x35) -marker-grid|-g(WxH=4x3) "
+                "-marker-type|-m(type=bch,whichToLoad=[0-629],size=8x8) "
+                "-marker-spacing|-sp(WxH=0.8x0.8) -marker-grid|-g(WxH=30x21) "
                 "-force-size|-s(size)",init,run).exec();
 }

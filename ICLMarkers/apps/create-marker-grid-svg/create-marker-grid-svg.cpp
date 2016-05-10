@@ -109,7 +109,7 @@ int main(int n, char **ppc){
           "-offset|-ofs(x=12,y=12) "
           "-size|-s(size=30x21) "
           "-output|-o(filename) "
-          "-marker-dim|-d(dim=30mm) "
+          "-marker-dim|-d(dim=8mm) "
           "-margin|-m(margin=-1) "
           "-marker-resolution|-r(size=300x300)");
   float ox = pa("-ofs",0);
