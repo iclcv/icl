@@ -39,7 +39,7 @@ namespace icl{
 
     /// Utility class that can estimate the pose of a defined marker grid
     /** The internal geom.:CoplanarPointPoseEstimator is added as child-configurable */
-    class MarkerGridPoseEstimator : public utils::Configurable{
+	  class ICLMarkers_API MarkerGridPoseEstimator : public utils::Configurable{
       struct Data;   //!< internal data structure
       Data *m_data;  //!< internal data pointer
       

@@ -70,7 +70,7 @@ namespace icl{
     
       try{
         C.eigen(pca.evecs,pca.evals);
-      }catch(ICLException &e){
+      }catch(ICLException &){
         //DEBUG_LOG("eigen failed:" << e.what());
         return pca;
       }

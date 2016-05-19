@@ -42,7 +42,7 @@ namespace icl{
     /** The MarkerGridDetector is initialized with a definition of a regular marker grid.
         
         */
-    class MarkerGridDetector : public utils::Configurable{
+	  class ICLMarkers_API MarkerGridDetector : public utils::Configurable{
       struct Data;   //!< internal data type
       Data *m_data;  //!< hidden data pointer
 
@@ -56,7 +56,7 @@ namespace icl{
           and also the marker IDs that are to be used. By default, the trivial set of 
           marker IDs {0, ..,  N-1} is used. The class returns a 2D array of Fiducials. 
           Markers that are not found result in a null Fiducial in that cell. **/
-      class GridDefinition{
+	class ICLMarkers_API GridDefinition{
         std::map<int,utils::Point> posLUT; //!< internally used lookup for marker IDs/grid-positions
         utils::Size numCells;              //!< grid dimension 
         std::vector<int> ids;              //!< used marker IDs

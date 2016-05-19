@@ -40,11 +40,11 @@ namespace icl{
   namespace markers{
 
     /// Extension of the MarkerGridDetector class that provides a more advanced output
-    class AdvancedMarkerGridDetector : public MarkerGridDetector{
+	  class ICLMarkers_API AdvancedMarkerGridDetector : public MarkerGridDetector{
       public:
       typedef MarkerGridDetector Super;
       
-      class AdvancedGridDefinition : public Super::GridDefinition{
+	  class ICLMarkers_API AdvancedGridDefinition : public Super::GridDefinition{
         utils::Size32f markerBounds; //!< size of a single marker in mm
 
         ///  size of the whole grid
@@ -78,7 +78,7 @@ namespace icl{
       };
       
       /// internal data-class the represents a more sophisticated 
-      class Marker{
+	  class ICLMarkers_API Marker{
         int id;      //!< marker id
         bool found;  //!< was it found
         public:
@@ -122,6 +122,9 @@ namespace icl{
         void setImagePoints(const utils::Point32f corners[4],
                             const utils::Point32f &center=utils::Point32f::null);
 
+		/// for sorting (is that needed)
+		inline bool operator<(const Marker &m) const { return id < m.id; }
+
         /// sets the 'found' flag
         void setFound(bool found){
           this->found = found;
@@ -164,7 +167,7 @@ namespace icl{
       };
 
       /// Represents whole grid of markers
-      class MarkerGrid : public utils::Array2D<Marker>{
+	  class ICLMarkers_API MarkerGrid : public utils::Array2D<Marker>{
         typedef utils::Array2D<Marker> Super; //!< convenience typedef
         AdvancedGridDefinition gridDef;       //!< internal metrics
 

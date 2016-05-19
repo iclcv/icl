@@ -70,7 +70,7 @@ namespace icl{
           - o: little circles
           - .: point
     */
-    class VisualizationDescription{
+	  class VisualizationDescription{
       public:
       
       /// Single part of the the visualization pipeline

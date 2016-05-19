@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace markers{
-    struct MarkerGridEvaluater{
+	  struct ICLMarkers_API MarkerGridEvaluater{
       typedef AdvancedMarkerGridDetector::MarkerGrid MarkerGrid;
       typedef AdvancedMarkerGridDetector::Marker Marker;
       

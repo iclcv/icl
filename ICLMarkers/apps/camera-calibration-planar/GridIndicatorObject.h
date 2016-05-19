@@ -36,8 +36,8 @@
 namespace icl{
   namespace markers{
     /// local utility class
-    class GridIndicatorObject : public geom::SceneObject{
-      class MarkerObj;
+	  class GridIndicatorObject : public geom::SceneObject{
+      struct MarkerObj;
       
       public:
       GridIndicatorObject(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def);

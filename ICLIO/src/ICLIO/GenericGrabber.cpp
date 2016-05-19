@@ -200,9 +200,11 @@ namespace icl{
         // delete old grabber
         GrabberInstanceTable::get()->deleteGrabber(m_poDesc);
       }
+#ifdef ICL_HAVE_RSB
       if(m_remoteServer){
         delete m_remoteServer;
       }
+#endif
       m_poDesc = GrabberDeviceDescription();
       m_poGrabber = NULL;
       m_remoteServer = NULL;
