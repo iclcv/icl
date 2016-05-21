@@ -135,7 +135,6 @@ namespace icl{
       if(isNull()) throw ICLException("GenericPointCloudGrabber::getDepthImage: called on a null instance");
       return m_data->impl->getDepthImage();
     }
-    
 
     const core::Img8u *GenericPointCloudGrabber::getColorImage() const{
       if(isNull()) throw ICLException("GenericPointCloudGrabber::getColorImage: called on a null instance");

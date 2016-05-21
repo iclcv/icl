@@ -67,6 +67,7 @@ namespace icl{
       virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException){
         throw utils::ICLException("PointCloudGrabber::setCameraWorldFrame() is not implemented by current backend");
       }
+
       
       /// re-initializes the current device
       /** The backend can choose to throw an exception */

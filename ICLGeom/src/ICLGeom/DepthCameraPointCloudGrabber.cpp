@@ -169,7 +169,9 @@ namespace icl{
 
       addProperty("focal length factor","range","[0.8:1.2]",1);
       addProperty("positioning fix","range","[-50,50]",0);
-      
+      addProperty("re-use exisiting images","flag","",false, 0,
+                  "if set, the grabber will re-create the point-cloud without grabbing new images");
+
       addProperty("pp.enable median","flag","",false);
       addProperty("pp.enable temporal smoothing","flag","",false);
       addProperty("pp.enable gaussian","flag","",false);
@@ -268,61 +270,72 @@ namespace icl{
     
     void DepthCameraPointCloudGrabber::grab(PointCloudObjectBase &dst){
       dst.lock();
-      Img32f *depthImage = const_cast<Img32f*>(m_data->depthGrabber.grab()->as32f());
-
-      if(getPropertyValue("pp.enable gaussian")){
+      bool useNewImages = !getPropertyValue("re-use exisiting images").as<bool>();
+      Img32f *depthImage = 0;
+      if(useNewImages || !m_data->lastDepthImage){
+        depthImage = const_cast<Img32f*>(m_data->depthGrabber.grab()->as32f());
+        if(getPropertyValue("pp.enable gaussian")){
           int s = getPropertyValue("pp.spacial filter size");
           m_data->blurTool->setMaskDim(s);
           depthImage = const_cast<Img32f*>(m_data->blurTool->apply(depthImage)->as32f());
           depthImage->setFullROI();
-      }
-      if(getPropertyValue("pp.enable median")){
-        int s = getPropertyValue("pp.spacial filter size");
-        m_data->median = new MedianOp(Size(s,s));
-        m_data->median->setClipToROI(false);
-        depthImage = const_cast<Img32f*>(m_data->median->apply(depthImage)->as32f());
-        depthImage->setFullROI();
-      }
-      if(getPropertyValue("pp.enable temporal smoothing")){
-        int nFrames = getPropertyValue("pp.temporal smoothing frames");
-        int nullValue = getPropertyValue("pp.temporal smoothing null");
-        int threshold = getPropertyValue("pp.temporal smoothing threshold");
-        if(nullValue != m_data->lastNullValue){
-          m_data->lastNullValue = nullValue;
-          m_data->temporalSmoothing = SmartPtr<MotionSensitiveTemporalSmoothing>();
-          m_data->temporalSmoothing = new MotionSensitiveTemporalSmoothing(nullValue,20);
         }
-        m_data->temporalSmoothing->setFilterSize(nFrames);
-        m_data->temporalSmoothing->setDifference(threshold);
-        m_data->temporalSmoothing->setClipToROI(false);
-        depthImage = const_cast<Img32f*>(m_data->temporalSmoothing->apply(depthImage)->as32f());
-        depthImage->setFullROI();
-      }
-      
-      if(m_data->depthMask){
-        ICLASSERT_THROW(m_data->depthMask->getSize() == depthImage->getSize(),
-                        ICLException("DepthCameraPointCloudGrabber::grab: "
-                                     "wrong depth image mask size"));
-        const icl8u *m = m_data->depthMask->begin(0);
-        icl32f *d = depthImage->begin(0);
-        const int dim = depthImage->getDim();
-        for(int i=0;i<dim;++i){
-          if(!m[i]) d[i] = 0;
+        if(getPropertyValue("pp.enable median")){
+          int s = getPropertyValue("pp.spacial filter size");
+          m_data->median = new MedianOp(Size(s,s));
+          m_data->median->setClipToROI(false);
+          depthImage = const_cast<Img32f*>(m_data->median->apply(depthImage)->as32f());
+          depthImage->setFullROI();
         }
-      }
-      Img8u *rgbImage = m_data->colorGrabber.isNull() ? 0 : (Img8u*)m_data->colorGrabber.grab()->as8u();
-      if(rgbImage && m_data->colorMask){
-        ICLASSERT_THROW(m_data->colorMask->getSize() == rgbImage->getSize(),
-                        ICLException("DepthCameraPointCloudGrabber::grab: "
-                                     "wrong color image mask size"));
-        const icl8u *m = m_data->colorMask->begin(0);
-        const int dim = rgbImage->getDim();
-        for(int chan=0;chan<rgbImage->getChannels();++chan){
-          icl8u *c = rgbImage->begin(chan);
+        if(getPropertyValue("pp.enable temporal smoothing")){
+          int nFrames = getPropertyValue("pp.temporal smoothing frames");
+          int nullValue = getPropertyValue("pp.temporal smoothing null");
+          int threshold = getPropertyValue("pp.temporal smoothing threshold");
+          if(nullValue != m_data->lastNullValue){
+            m_data->lastNullValue = nullValue;
+            m_data->temporalSmoothing = SmartPtr<MotionSensitiveTemporalSmoothing>();
+            m_data->temporalSmoothing = new MotionSensitiveTemporalSmoothing(nullValue,20);
+          }
+          m_data->temporalSmoothing->setFilterSize(nFrames);
+          m_data->temporalSmoothing->setDifference(threshold);
+          m_data->temporalSmoothing->setClipToROI(false);
+          depthImage = const_cast<Img32f*>(m_data->temporalSmoothing->apply(depthImage)->as32f());
+          depthImage->setFullROI();
+        }
+        
+        if(m_data->depthMask){
+          ICLASSERT_THROW(m_data->depthMask->getSize() == depthImage->getSize(),
+                          ICLException("DepthCameraPointCloudGrabber::grab: "
+                                       "wrong depth image mask size"));
+          const icl8u *m = m_data->depthMask->begin(0);
+          icl32f *d = depthImage->begin(0);
+          const int dim = depthImage->getDim();
           for(int i=0;i<dim;++i){
-            if(!m[i]) c[i] = 0;
+            if(!m[i]) d[i] = 0;
           }
         }
+      }else{
+        depthImage = const_cast<Img32f*>(m_data->lastDepthImage);
+      }
+      
+      Img8u *rgbImage = 0;
+      if(useNewImages || !m_data->lastColorImage){
+        rgbImage = m_data->colorGrabber.isNull() ? 0 : (Img8u*)m_data->colorGrabber.grab()->as8u();
+        if(rgbImage && m_data->colorMask){
+          ICLASSERT_THROW(m_data->colorMask->getSize() == rgbImage->getSize(),
+                          ICLException("DepthCameraPointCloudGrabber::grab: "
+                                       "wrong color image mask size"));
+          const icl8u *m = m_data->colorMask->begin(0);
+          const int dim = rgbImage->getDim();
+          for(int chan=0;chan<rgbImage->getChannels();++chan){
+            icl8u *c = rgbImage->begin(chan);
+            for(int i=0;i<dim;++i){
+              if(!m[i]) c[i] = 0;
+            }
+          }
+        }
+      }else{
+        rgbImage = const_cast<Img8u*>(m_data->lastColorImage);
       }
 
       float fFactor = getPropertyValue("focal length factor");
@@ -335,6 +348,7 @@ namespace icl{
       m_data->lastColorImage = rgbImage;
       dst.unlock();
     }
+
   
     const Img32f &DepthCameraPointCloudGrabber::getLastDepthImage() const{
       if(!m_data->lastDepthImage){
