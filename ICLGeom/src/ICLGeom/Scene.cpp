@@ -1182,7 +1182,7 @@ namespace icl{
         float maxLen = iclMax(m_bounds[0].getLength(), m_bounds[1].getLength());
         maxLen = iclMax(m_bounds[2].getLength(), maxLen);
         newSceneMouseHandler->setSensitivities(maxLen);
-      }else{
+			} else {
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
       }
       m_mouseHandlers.push_back(newSceneMouseHandler);

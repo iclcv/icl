@@ -43,7 +43,7 @@ using namespace icl::filter;
 
 int main(int n, char **ppc){
   pa_explain("-i","specify input file (type by filename extension)\n\t[also as 1st unspecified arg]")
-      ("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]")
+      ("-o","specify output file (type by filename extension)\n\t[also as 2nd unspecified arg]\t %D in filename will be replaced by the image time HHMMSSZZZ")
       ("-depth","define output file depth")
       ("-format","define output file format")
       ("-size","define output file size")
@@ -93,6 +93,12 @@ int main(int n, char **ppc){
     ERROR_LOG("unable to grab file!");
     exit(-1);
   }
+
+	std::string time_string = image->getTime().toStringFormated("%H%M%S%#");
+	std::string::size_type pos = outFileName.find("%D");
+	if (pos != std::string::npos) {
+		outFileName.replace(pos,2,time_string);
+	}
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
   

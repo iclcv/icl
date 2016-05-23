@@ -32,6 +32,7 @@
 
 #include <ICLGeom/FeatureGraphSegmenter.h>
 #include <ICLGeom/PointCloudObject.h>
+#include <ICLGeom/PointCloudCreator.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/DataSegment.h>
 #include <ICLGeom/Camera.h>
@@ -50,8 +51,12 @@ namespace icl{
       /** Constructs an object of this class. 
           @param mode GPU, CPU and BEST (default) 
           @param depthCam the depth camera*/
-      ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam);
-      ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam);
+			ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam,
+																			icl::geom::PointCloudCreator::DepthImageMode depth_mode
+																			= icl::geom::PointCloudCreator::KinectRAW11Bit);
+			ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam,
+																			icl::geom::PointCloudCreator::DepthImageMode depth_mode
+																			= icl::geom::PointCloudCreator::KinectRAW11Bit);
   	  
   	  ///Destructor
       ~ConfigurableDepthImageSegmenter();
@@ -100,6 +105,10 @@ namespace icl{
       std::vector<std::vector<int> > getSegments();
       
 	  void setNormals(core::DataSegment<float,4> &normals);
+
+		void setEdgeSegData(core::Img8u &edges, core::Img8u &normal_img);
+
+		void setUseExternalEdges(bool use_external_edges);
             
       private:
 

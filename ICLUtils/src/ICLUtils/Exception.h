@@ -103,6 +103,14 @@ namespace icl {
         ICLException(std::string("Invalid Depth in: ")+functionName) {}
       virtual ~InvalidDepthException() throw() {}
     };
+
+		/// Exception thrown if a function should process an unsupported image depth \ingroup EXCEPT
+		class InvalidNumChannelException : public ICLException {
+			public:
+			InvalidNumChannelException(const std::string &functionName) throw():
+				ICLException(std::string("Invalid number of Channels in: ")+functionName) {}
+			virtual ~InvalidNumChannelException() throw() {}
+		};
    
     /// Exception thrown if a function should process an unsupported sizes (e.g. with negative dim..) \ingroup EXCEPT
     class InvalidSizeException : public ICLException {

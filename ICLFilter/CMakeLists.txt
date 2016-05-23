@@ -126,10 +126,10 @@ SET(HEADERS src/ICLFilter/AffineOp.h
 	    src/ICLFilter/UnaryOpWork.h
 	    src/ICLFilter/WarpOp.h
 	    src/ICLFilter/WeightChannelsOp.h
-	    src/ICLFilter/WeightedSumOp.h
-		src/ICLFilter/ImageRectification.h
-		src/ICLFilter/DitheringOp.h
-		src/ICLFilter/BilateralFilterOp.h)
+			src/ICLFilter/WeightedSumOp.h
+			src/ICLFilter/ImageRectification.h
+			src/ICLFilter/DitheringOp.h
+			src/ICLFilter/BilateralFilterOp.h)
 
 # opencl kernel integration
 SET(KERNEL )

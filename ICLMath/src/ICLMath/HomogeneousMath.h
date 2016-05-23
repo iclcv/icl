@@ -206,7 +206,13 @@ namespace icl{
                                  v1[0]*v2[1]-v1[1]*v2[0],
                                  1 );
     }
-  
+
+		template<class T>
+		inline math::FixedColVector<T,3> cross(const math::FixedMatrix<T,1,3> &v1, const math::FixedMatrix<T,1,3> &v2){
+			return math::FixedColVector<T,3>(v1[1]*v2[2]-v1[2]*v2[1],
+																 v1[2]*v2[0]-v1[0]*v2[2],
+																 v1[0]*v2[1]-v1[1]*v2[0]);
+		}
     
     /// rotates a vector around a given axis
     inline Vec4 rotate_vector(const Vec4 &axis, float angle, const Vec4 &vec){

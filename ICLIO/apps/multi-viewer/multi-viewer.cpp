@@ -215,7 +215,7 @@ int main(int n, char **ppc){
   pa_explain
   ("-size","grabbing size")
   ("-o","automatically output each input image (output correspond to the inputs)")
-  ("-i","list of inputs, two tokens per input, e.g. -i dc 0 dc 1 dc 2 file '*.jpg'");
+	("-i","list of inputs, two tokens per input, e.g. -i dc 0 dc 1 dc 2 file '*.jpg'");
 
   pa_init(n,ppc,
           "-size|-s(size) "
@@ -225,7 +225,7 @@ int main(int n, char **ppc){
           "-layout|-l(size) " 
           "-asynchronous|-a "
           "-output|-o(...) "
-          "-sync-all-grabbers|-sync "
+					"-sync-all-grabbers|-sync "
           "-i(...)");
   ICLApp app(n,ppc,"",init);
 
