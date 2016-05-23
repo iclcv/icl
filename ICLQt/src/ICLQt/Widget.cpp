@@ -819,6 +819,7 @@ namespace icl{
       }
       bool stopRecording(){
         Mutex::Locker l(mutex);
+        imageOutput.release();
         recording = false;
         return recording;
       }

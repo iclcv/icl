@@ -79,7 +79,11 @@ namespace icl{
     void GenericImageOutput::init(const ProgArg &pa){
       init(*pa,utils::pa(pa.getID(),1));
     }
-  
+
+    void GenericImageOutput::release(){
+      impl = SmartPtr<ImageOutput>();
+    }
+
     void GenericImageOutput::init(const std::string &type, const std::string &description){
       impl = SmartPtr<ImageOutput>();
             

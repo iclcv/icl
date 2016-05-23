@@ -55,6 +55,8 @@ namespace icl{
     struct LibAVVideoWriter::Data{
       Data(const std::string &filename, const std::string &fourcc, double fps, const Size &frame_size):
         video_st(),filename(filename),fps(fps),frame_size(frame_size){
+        
+        DEBUG_LOG("fps:" << fps);
         if(File(filename).exists()){
           throw ICLException("file already exists");
         }
@@ -208,15 +210,20 @@ namespace icl{
 
     void LibAVVideoWriter::Data::close_stream(AVFormatContext *oc, OutputStream *ost)
     {
+
+
         avcodec_close(ost->st->codec);
+
 #if LIBAVCODEC_VERSION_MAJOR > 54
+
         av_frame_free(&ost->frame);
         av_frame_free(&ost->tmp_frame);
 #else
-        av_free(&ost->frame->data[0]);
-        av_free(&ost->frame);
-        av_free(&ost->tmp_frame->data[0]);
-        av_free(&ost->tmp_frame);
+        WARNING_LOG("warning: proper memory deallocation is skipped to avoid seg-fault! please fix!");
+        //av_free(&ost->frame->data[0]);  if we do this, feeing the frame crashes!
+        //av_free(&ost->frame);
+        //av_free(&ost->tmp_frame->data[0]);
+        //av_free(&ost->tmp_frame);
 #endif
         sws_freeContext(ost->sws_ctx);
     }
