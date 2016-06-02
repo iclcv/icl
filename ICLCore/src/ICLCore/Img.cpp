@@ -1834,7 +1834,7 @@ namespace icl {
       ICLASSERT_RETURN(poSrc);
 
     //    SHOW(*poSrc);
-      if(ppoDst) SHOW(*ppoDst);
+      //if(ppoDst) SHOW(*ppoDst);
     
       ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getSize(),poSrc->getChannels(),poSrc->getFormat());
     //SHOW(poDst);
