@@ -226,6 +226,8 @@ void init(){
                 << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
                 << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
                 )
+           << CheckBox("show grid CSs",true).handle("show grid CSs").tooltip("Show a coordinate frame attached to a grid")
+
            << Button("define relative transform ...").handle("rel")
            << Button("pose estimation options ...").handle("poseEst")
            << Button("detection options ...").handle("fid")
@@ -334,6 +336,12 @@ void init(){
 }
 
 void run(){
+
+  bool sgcss = gui["show grid CSs"];
+  for(size_t i=0 ;i < views.size();++i){
+    views[i]->cs->setVisible(sgcss);
+  }
+  
   int currentView = gui["visinput"];
   static int lastView = currentView;
 
@@ -575,7 +583,7 @@ int main(int n, char **ppc){
 
   return ICLApp(n, ppc, " [m]-input|-i(...) [m]-grid-cell-dim|-g(cells) "
                 "-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
-                "-marker-type|-m(type=bch) -marker-ids|-ids "
+                "-marker-type|-m(type=bch) -marker-ids|-ids(idlist) "
                 "-camera-file -use-grid-center|-ugc " 
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "
                 "-output-filenames|-o(...)",
