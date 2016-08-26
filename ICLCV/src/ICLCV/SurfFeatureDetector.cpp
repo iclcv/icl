@@ -248,10 +248,17 @@ namespace icl{
           m_data->distsKernel = m_data->matchProgram.createKernel("dists");
           m_data->matchKernel = m_data->matchProgram.createKernel("match");
         }catch(ICLException &e){
+          (void)e;
           if(plugin == "best"){
+#ifdef ICL_HAVE_OPENCV
             DEBUG_LOG("detected an error while initializing OpenCL backend [" + str(e.what()) + "]: using CPU-fallback");
-            m_data->opensurf_backend = true;
+		    m_data->opensurf_backend = true;
             m_data->clsurf_backend = false;
+#else
+			  throw ICLException("Error creating Surf-feature detector: could "
+								 "neither instantiate OpenCL-backend nor use "
+								 "OpenCV-based opensurf-backend");
+#endif
           }else{
             throw;
           }

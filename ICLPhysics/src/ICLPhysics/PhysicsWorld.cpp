@@ -35,6 +35,10 @@
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <BulletCollision/BroadphaseCollision/btAxisSweep3.h>
 #include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
+#include <BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h>
+#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
+#include <BulletDynamics/MLCPSolvers/btMLCPSolver.h>
+#include <BulletDynamics/MLCPSolvers/btLemkeSolver.h>
 
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
@@ -64,6 +68,7 @@ namespace icl{
       btConstraintSolver* m_solver;
       btDefaultCollisionConfiguration* m_collisionConfiguration;
       btSoftBodyWorldInfo *m_worldInfo;
+			btMLCPSolverInterface *m_mlcp_solver;
       btSoftRigidDynamicsWorld *m_dynamicsWorld;
       btOverlapFilterCallback* m_filterCallback;
       math::DynMatrix<bool>* m_collisionMatrix;
@@ -73,10 +78,12 @@ namespace icl{
       std::vector<Constraint*> m_ownedConstraints;
       
       utils::Time lastTime;
+			double timeDelta;
     };
 
     int collisions = 0;
-    PhysicsWorld::PhysicsWorld():utils::Lockable(true),data(new Data){
+
+		PhysicsWorld::PhysicsWorld(BulletSolverType solver_type):utils::Lockable(true),data(new Data){
 
       //const float WORLD_AABB_MIN_X = icl2bullet(-1000);
       //const float WORLD_AABB_MIN_Y = icl2bullet(-1000);
@@ -94,14 +101,15 @@ namespace icl{
 
       const float WORLD_AIR_DENSITY = 1.2;
 
+			data->timeDelta = 0.0;
+
       //btVector3 aabbmin(WORLD_AABB_MIN_X,WORLD_AABB_MIN_Y,WORLD_AABB_MIN_Z);
       //btVector3 aabbmax(WORLD_AABB_MAX_X,WORLD_AABB_MAX_Y,WORLD_AABB_MAX_Z);
       //data->m_broadphase = new btAxisSweep3(aabbmin,aabbmax,33000);
       data->m_broadphase = new btDbvtBroadphase();
       data->m_collisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration;
-      data->m_dispatcher = new btCollisionDispatcher(data->m_collisionConfiguration);
-      data->m_solver = new btSequentialImpulseConstraintSolver;
-
+			data->m_dispatcher = new btCollisionDispatcher(data->m_collisionConfiguration);
+			setSolver(solver_type);
 
       data->m_dynamicsWorld = new btSoftRigidDynamicsWorld(data->m_dispatcher,
                                                      data->m_broadphase,
@@ -180,7 +188,7 @@ namespace icl{
 
       //add the callback to the world
       data->m_dynamicsWorld->setInternalTickCallback(tickCallback::callback);
-    }
+		}
     
     PhysicsWorld::~PhysicsWorld() {
       //removing constraints from the world
@@ -199,6 +207,28 @@ namespace icl{
       delete data;
       
     }
+
+		void PhysicsWorld::setSolver(BulletSolverType type) {
+			switch(type) {
+				case(MLCP_Dantzig): {
+					data->m_mlcp_solver = new btDantzigSolver();
+					data->m_solver = new btMLCPSolver(data->m_mlcp_solver);
+					break;
+				}
+				case(NNCG): {
+					data->m_solver = new btNNCGConstraintSolver();
+					break;
+				}
+				case(Lemke): {
+					data->m_mlcp_solver = new btLemkeSolver();
+					data->m_solver = new btMLCPSolver(data->m_mlcp_solver);
+				}
+				default: { // BulletSolverType::Default
+					data->m_solver = new btSequentialImpulseConstraintSolver();
+					break;
+				}
+			}
+		}
     
     void PhysicsWorld::addObject(PhysicsObject *obj){
       utils::Mutex::Locker lock(this);
@@ -279,15 +309,22 @@ namespace icl{
       if(dtSecs < 0){
         if(data->lastTime == utils::Time::null){
           data->lastTime = utils::Time::now();
+					data->timeDelta = 0;
         }else{
           utils::Time now = utils::Time::now();
-          data->m_dynamicsWorld->stepSimulation((now-data->lastTime).toSecondsDouble(),maxSubSteps, fixedTimeStep); // default is 1/60
+					data->timeDelta = (now-data->lastTime).toSecondsDouble();
+					data->m_dynamicsWorld->stepSimulation(data->timeDelta,maxSubSteps, fixedTimeStep); // default is 1/60
           data->lastTime = now;
         }
       }else{
         data->m_dynamicsWorld->stepSimulation(dtSecs,maxSubSteps, fixedTimeStep); // default is 1/60
+				data->timeDelta = dtSecs;
       }
     }
+
+		double PhysicsWorld::getLastTimeDelta() {
+			return data->timeDelta;
+		}
     
     bool PhysicsWorld::collideWithWorld(RigidObject* obj, bool ignoreJoints)
     {

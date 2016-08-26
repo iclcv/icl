@@ -51,6 +51,9 @@ namespace icl {
       m_ops[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
       m_derivatives[0]=m_derivatives[1]=0;
       m_preBlurOp = 0;
+
+	  m_use_derivatives_info = false;
+
       setUpPreBlurOp();
       
       registerCallback(function(this,&CannyOp::property_callback));
@@ -64,6 +67,8 @@ namespace icl {
       FUNCTION_LOG("");
       m_ops[0] = dxOp;
       m_ops[1] = dyOp;
+
+	  m_use_derivatives_info = false;
 
       m_derivatives[0]=m_derivatives[1]=0;
 
@@ -332,8 +337,12 @@ namespace icl {
 
       if (getClipToROI()) {
         if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
-      } else {
-        if (!prepare (ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
+	  } else {
+		  if (m_use_derivatives_info) {
+			  if (!prepare (ppoDst, depth8u, poSrc->getSize(), m_derivatives[0]->getFormat(), m_derivatives[0]->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
+		  } else {
+			  if (!prepare (ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
+		  }
       }
 
   #ifdef ICL_HAVE_IPP

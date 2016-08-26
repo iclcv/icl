@@ -41,9 +41,10 @@ SET(SOURCES src/ICLMath/DynMatrix.cpp
 	    src/ICLMath/SimplexOptimizer.cpp
 	    src/ICLMath/SOM.cpp
 	    src/ICLMath/StochasticOptimizer.cpp
-					src/ICLMath/StraightLine2D.cpp
-					src/ICLMath/EigenICLConverter.cpp
-            src/ICLMath/HomogeneousMath.cpp)
+	    src/ICLMath/StraightLine2D.cpp
+	    src/ICLMath/EigenICLConverter.cpp
+            src/ICLMath/HomogeneousMath.cpp
+            src/ICLMath/Projective4PointTransform.cpp)
 
 SET(HEADERS src/ICLMath/DynMatrix.h
             src/ICLMath/DynMatrixUtils.h
@@ -76,8 +77,9 @@ SET(HEADERS src/ICLMath/DynMatrix.h
 	    src/ICLMath/SOM.h
 	    src/ICLMath/StochasticOptimizer.h
 	    src/ICLMath/StraightLine2D.h
-					src/ICLMath/EigenICLConverter.h
-            src/ICLMath/HomogeneousMath.h)
+	    src/ICLMath/EigenICLConverter.h
+            src/ICLMath/HomogeneousMath.h
+            src/ICLMath/Projective4PointTransform.h)
 
 IF(WIN32)
 INCLUDE_DIRECTORIES(BEFORE src

@@ -37,6 +37,7 @@
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/CLDeviceContext.h>
 #include <string.h>
 #include <fstream>
 
@@ -258,17 +259,27 @@ namespace icl {
     class ICLUtils_API CLProgram {
       struct Impl;
       Impl *impl;
-      
+
       public:
 
       /// Default constructor (creates dummy instance)
       CLProgram();
       
+	  CLProgram(const CLDeviceContext &device_context, const string &sourceCode) throw(CLInitException, CLBuildException);
+
+	  CLProgram(const CLDeviceContext &device_context, ifstream &fileStream) throw(CLInitException, CLBuildException);
+
       /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code
-      CLProgram(const string deviceType, const string &sourceCode) throw(CLInitException, CLBuildException);
+	  CLProgram(const string deviceType, const string &sourceCode) throw(CLInitException, CLBuildException);
 
       /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code file
-      CLProgram(const string deviceType, ifstream &fileStream) throw(CLInitException, CLBuildException);
+	  CLProgram(const string deviceType, ifstream &fileStream) throw(CLInitException, CLBuildException);
+
+	  /// create CLProgram with given cl-program parent and souce-code
+	  CLProgram(const string &sourceCode, const CLProgram &parent) throw(CLInitException, CLBuildException);
+
+	  /// create CLProgram with given cl-program parent and souce-code file
+	  CLProgram(ifstream &fileStream, const CLProgram &parent) throw(CLInitException, CLBuildException);
 
       /// copy constructor (creating shallow copy)
       CLProgram(const CLProgram& other);
@@ -279,7 +290,18 @@ namespace icl {
       /// Destructor
       ~CLProgram();
       
-      
+	  /**
+	   * @brief isValid checks whether this is not a dummy but a valid initialized cl-program
+	   * @return true if the instance is a initialized with valid cl-code and device
+	   */
+	  bool isValid();
+
+	  /**
+	   * @brief isValid checks whether this is not a dummy but a valid initialized cl-program
+	   * @return true if the instance is a initialized with valid cl-code and device
+	   */
+	  bool isValid() const;
+
       //accessMode = "r" only read
       //accessMode = "w" only write
       //accessMode = "rw" read and write
@@ -309,11 +331,15 @@ namespace icl {
           */
       CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException);
 
+	  CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException);
+
       /// extract a kernel from the program
       /** Kernels in the CLProgram's source code have to be qualified with the
           __kernel qualifier. The kernel (aka function) name in the OpenCL source code
           is used as id. */
       CLKernel createKernel(const string &id) throw (CLKernelException);
+
+	  CLDeviceContext getDeviceContext();
       
       /// lists various properties of the selected platform
       void listSelectedPlatform();

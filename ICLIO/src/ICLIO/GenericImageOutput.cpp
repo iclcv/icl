@@ -52,6 +52,10 @@
 #include <ICLIO/RSBImageOutput.h>
 #endif
 
+#ifdef ICL_HAVE_VIDEODEV
+#include <ICLIO/V4L2LoopBackOutput.h>
+#endif
+
 #include <ICLIO/FileWriter.h>
 
 #include <ICLUtils/StringUtils.h>
@@ -75,7 +79,11 @@ namespace icl{
     void GenericImageOutput::init(const ProgArg &pa){
       init(*pa,utils::pa(pa.getID(),1));
     }
-  
+
+    void GenericImageOutput::release(){
+      impl = SmartPtr<ImageOutput>();
+    }
+
     void GenericImageOutput::init(const std::string &type, const std::string &description){
       impl = SmartPtr<ImageOutput>();
             
@@ -130,6 +138,13 @@ namespace icl{
   #endif
   #endif
 
+  #ifdef ICL_HAVE_VIDEODEV
+      plugins.push_back("v4l~device name or ID~V4L2-loopback device based image transfer");
+      if(type == "v4l"){
+        o = new V4L2LoopBackOutput(d);
+      }
+
+  #endif
   #ifdef ICL_HAVE_ZMQ
       plugins.push_back("zmq~port~ZMQ-based network transfer");
       if(type == "zmq"){

@@ -190,7 +190,7 @@ namespace icl{
     template<>
     inline const char* parse(const std::string &s){
       std::istringstream str(s);
-      char* t;
+      char* t = NULL;
       str >> t;
       return t;
     }

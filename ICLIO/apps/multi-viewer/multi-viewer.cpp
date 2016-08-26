@@ -97,6 +97,12 @@ void save_all(){
   }  
 }
 
+std::string fix_at_stuff(const std::string &s){
+  std::vector<std::string> ts = tok(s,"@");
+  if(!ts.size()) return "";
+  return ts[0];
+}
+
 void init(){
   if(pa("-r")) GenericGrabber::resetBus("dc");
 
@@ -123,7 +129,7 @@ void init(){
     if(pa("-f")) in.grabber.useDesired(pa("-f").as<format>());
     if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
     
-    rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+in.b).handle(in.id);
+    rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
     
     if(pa("-o")){
       ProgArg o = pa("-o");
@@ -208,8 +214,8 @@ void run(){
 int main(int n, char **ppc){
   pa_explain
   ("-size","grabbing size")
-  ("-i","automatically output each input image (output correspond to the inputs)")
-  ("-i","list of inputs, two tokens per input, e.g. -i dc 0 dc 1 dc 2 file '*.jpg'");
+  ("-o","automatically output each input image (output correspond to the inputs)")
+	("-i","list of inputs, two tokens per input, e.g. -i dc 0 dc 1 dc 2 file '*.jpg'");
 
   pa_init(n,ppc,
           "-size|-s(size) "
@@ -219,7 +225,7 @@ int main(int n, char **ppc){
           "-layout|-l(size) " 
           "-asynchronous|-a "
           "-output|-o(...) "
-          "-sync-all-grabbers|-sync "
+					"-sync-all-grabbers|-sync "
           "-i(...)");
   ICLApp app(n,ppc,"",init);
 

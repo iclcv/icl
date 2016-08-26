@@ -54,9 +54,11 @@ namespace icl {
 
       utils::Function<void,PhysicsObject*,PhysicsObject*, geom::Vec> m_collisionCallback;
 
+			std::string m_id;
+
       public:
       /// Default constructor (initializint m_physicalObject with 0)
-      PhysicsObject():m_world(0), m_physicalObject(0),m_collisionGroup(0), m_stateChanged(true){
+			PhysicsObject():m_world(0), m_physicalObject(0),m_collisionGroup(0), m_stateChanged(true), m_id("") {
         setLockingEnabled(true);
         //create an empty default callback
         struct defaultCallback {
@@ -129,8 +131,16 @@ namespace icl {
       /// sets the restitution of this object
       void setRestitution(float restitution);
       
-      /// sets the restitution of this object
+			/// sets the activation mode of this object
       void activate(bool forceActivation = false);
+
+			int getCollisionObjectType();
+
+			void setCollisionObjectType(int type);
+
+			int getCollisionFlags();
+
+			void setCollisionFlags(int flags);
       
       /// sets an internal flag to update the sceneobject
       void stateChanged();
@@ -141,8 +151,17 @@ namespace icl {
       /// sets the collision callback of the object
       void setCollisionCallback(utils::Function<void,PhysicsObject*,PhysicsObject*, geom::Vec> collisionCallback);
 
-      /// sets the collision callback of the object
+			/// calls the collision callback of the object
       void collisionCallback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos);
+
+			/// sets the identifier string. There is no proof for beeing unique within the world
+			void setObjectID(std::string const &id);
+
+			/// returns the (not unique) object identifier
+			std::string getObjectID();
+
+			/// returns the (not unique) object identifier (const)
+			std::string getObjectID() const;
     };
   }
 }

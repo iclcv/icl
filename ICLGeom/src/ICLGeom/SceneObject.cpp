@@ -51,6 +51,10 @@ namespace icl{
     std::vector<Vec> &SceneObject::getVertices() { 
       return m_vertices;
     }
+
+		const std::vector<Vec> &SceneObject::getNormals() const {
+			return m_normals;
+		}
   
     const std::vector<GeomColor> &SceneObject::getVertexColors() const { 
       return m_vertexColors; 

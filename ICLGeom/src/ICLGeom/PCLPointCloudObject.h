@@ -50,6 +50,7 @@ namespace icl{
     /** Right now, the following pcl-point types are supported. Due to the non-inline
         implementation of the class, all other point-types are not available. For other
         point types, one can specialize the offset()-template in the source file.
+				- pcl::PointXYZ
         - pcl::PointXYZI
         - pcl::PointXYZL
         - pcl::PointXYZRGB

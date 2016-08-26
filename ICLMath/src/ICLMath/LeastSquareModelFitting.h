@@ -203,7 +203,7 @@ namespace icl{
         DynMatrix<T> Si;
         try{ 
           Si = m_C ? m_S.inv()* (*m_C) : m_S.inv();
-        }catch(SingularMatrixException &ex){
+        }catch(SingularMatrixException &){
           Si = m_C ? m_S.pinv(true)* (*m_C) : m_S.pinv(true); 
         }
         

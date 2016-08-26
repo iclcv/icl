@@ -1,7 +1,10 @@
 IF(QT_FOUND)
   ADD_SUBDIRECTORY(camera-calibration)
-  ADD_SUBDIRECTORY(camera-calibration-planar)
+  IF(OpenCV_FOUND)
+	ADD_SUBDIRECTORY(camera-calibration-planar)
+  ENDIF()
   ADD_SUBDIRECTORY(create-marker)
+  ADD_SUBDIRECTORY(create-marker-grid-svg)
   ADD_SUBDIRECTORY(marker-detection)
 ENDIF()
 

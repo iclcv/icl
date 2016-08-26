@@ -158,7 +158,7 @@ namespace icl {
       ICLASSERT_RETURN( poDst );
       
       if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){
-        ERROR_LOG("source and destination images are compatible [operation skipped!]");
+        ERROR_LOG("source and destination images are not compatible [operation skipped!]");
         return;
       }
       switch(m_eOpType){

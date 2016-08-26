@@ -89,6 +89,9 @@ namespace icl{
           either the constructor or in init, the returned corners are
           automatically optimized using cvFindCornerSubPix */
       const Checkerboard &detect(const core::Img8u &image);
+
+      /// convenience method that automatically scales the source images range to 0,255 if it is not already of type Img8u
+      const Checkerboard &detect(const core::ImgBase *image);
     };
 
   } // namespace cv

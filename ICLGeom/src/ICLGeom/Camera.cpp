@@ -30,7 +30,9 @@
 
 #include <ICLUtils/ConfigFile.h>
 #include <ICLMath/DynMatrixUtils.h>
+#include <ICLMath/LevenbergMarquardtFitter.h>
 #include <ICLUtils/XML.h>
+#include <ICLIO/ImageUndistortion.h>
 #include <ICLUtils/File.h>
 #include <ICLGeom/Camera.h>
 #include <fstream>
@@ -82,6 +84,13 @@ namespace icl {
   
       return T;
     }
+
+    void Camera::orthogonalizeRotationMatrix(){
+      Mat3 R = getCSTransformationMatrix().part<0,0,3,3>();
+      Mat3 Ro = gramSchmidtOrtho(R);
+      setRotation(Ro);
+    }
+
   
     Mat Camera::getInvCSTransformationMatrix() const{
       Vec hh = cross(m_up,m_norm);
@@ -211,6 +220,7 @@ namespace icl {
       return Point32f(xi[0],xi[1]);
     }
   
+    
     // Projects a set of points
     void Camera::project(const std::vector<Vec> &Xws, std::vector<Point32f> &dst) const{
       dst.resize(Xws.size());
@@ -335,10 +345,167 @@ namespace icl {
       cam.setSkew(K(1,0));
       return cam;
     }
+
+    Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                       const Camera &intrinsicCamValue, const RenderParams &renderParams,
+                                       bool performLMAbasedOptimiziation)
+      throw (NotEnoughDataPointsException,SingularMatrixException) {
+      return calibrate_extrinsic(Xws, xis, intrinsicCamValue.getProjectionMatrix(), renderParams, performLMAbasedOptimiziation);
+    }
+
+    
+    Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                       const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams,
+                                       bool performLMAbasedOptimiziation)
+      throw (NotEnoughDataPointsException,SingularMatrixException) {
+      const Mat &k = camIntrinsicProjectionMatrix;
+      return calibrate_extrinsic(Xws, xis, k(0,0), k(1,1), k(1,0), k(2,0), k(2,1), renderParams, performLMAbasedOptimiziation);
+    }
+
+    template<class T, unsigned int N, unsigned int M>
+    inline T norm3_local(const FixedMatrix<T, N, M> &m){
+      return ::sqrt(sqr(m[0]) + sqr(m[1]) + sqr(m[2]) );
+    }
+
+    Camera Camera::calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
+                                       float fx, float fy, float s, float px ,float py,
+                                       const RenderParams &renderParams, bool performLMAbasedOptimiziation)
+    throw (NotEnoughDataPointsException,SingularMatrixException) {
+      checkAndFixPoints(Xws,xis);
+      
+      int n = (int)Xws.size();
+    
+      DynMatrix<double> M(12,2*n);
+      for(int i=0;i<n;++i){
+        double x = Xws[i].x, y = Xws[i].y, z = Xws[i].z, u = xis[i].x, v = xis[i].y;
+        double du = px-u, dv = py-v;
+        const double F[12] = {x,y,z,1,x,y,z,1,x,y,z,1};
+        const double A[12] = { fx,fx,fx,fx, s, s, s, s, du,du,du,du };
+        const double B[12] = { 0, 0, 0, 0, fy,fy,fy,fy, dv,dv,dv,dv };
+        double *a = &M(0,2*i), *b = &M(0,2*i+1);
+        for(int j=0;j<12;++j){
+          a[j] = A[j] * F[j];
+          b[j] = B[j] * F[j];
+        }
+      }
+
+      DynMatrix<double> _U,_s,V;
+      M.svd(_U,_s,V);
   
+      typedef math::FixedMatrix<double,4,4> DMat;
+      typedef math::FixedMatrix<double,3,3> DMat3;
+      typedef math::FixedMatrix<double,1,3> DVec3;
+
+      DMat RT = Mat::id();
+      std::copy(V.col_begin(11), V.col_end(11), RT.begin());
+        
+      DMat3 R = RT.part<0,0,3,3>();
+      DVec3 t = RT.part<3,0,1,3>();
+
+      DMat3 r,q;
+      R.decompose_RQ(r,q);
+      DMat3 Ri = q.transp();
+      
+      double norm = 3./(r(0,0) + r(1,1) + r(2,2));
+      t = -Ri * ( t * norm );
+      
+      Camera cam(Vec(t[0],    t[1],    t[2],    1),
+                 Vec(Ri(2,0), Ri(2,1), Ri(2,2), 1),
+                 Vec(Ri(1,0), Ri(1,1), Ri(1,2), 1),
+                 1, Point32f(px,py), fx, fy, s, renderParams);
+      if(performLMAbasedOptimiziation){
+        return optimize_camera_calibration_lma(Xws, xis, cam);
+      }else{
+        return cam;
+      }
+    }
+      /** @} @{ @name utils::projection functions */
+  
+    namespace{
+      struct LMAOptUtil{
+        typedef math::LevenbergMarquardtFitter<double> LMA;
+        typedef LMA::Vector vec;
+        typedef LMA::Params params;
+        typedef LMA::Matrix mat;
+        
+        Camera cam;
+        Mat P,T;
+        LMAOptUtil(const Camera &cam):cam(cam){
+          P = cam.getProjectionMatrix();
+          T = cam.getCSTransformationMatrix();
+        }
+
+        static Mat m(const params &p){
+          return create_hom_4x4<float>(p[0],p[1],p[2],p[3]*1000,p[4]*1000,p[5]*1000);
+        }
+        
+        Camera fixCam(const params &par){
+          Mat3 R = T.part<0,0,3,3>();
+          Vec3 pOrig =  cam.getPosition().resize<1,3>(); //T.part<3,0,1,3>();
+          Mat d = m(par);
+          Mat3 dR = d.part<0,0,3,3>();
+          Vec3 dt = d.part<3,0,1,3>();
+
+          Mat3 dRR = dR * R;
+ 
+          Camera c = cam;
+          c.setUp(Vec(dRR(0,1), dRR(1,1), dRR(2,1), 1));
+          c.setNorm(Vec(dRR(0,2), dRR(1,2), dRR(2,2), 1));
+          c.setPosition( (pOrig - dRR.transp() * dt).resize<1,4>(1));
+
+          return c;
+        }
+        Mat getFixedCSMatrix(const params &p){
+          return  m(p) * T;
+        }
+        
+        vec f(const params &p, const vec &x) const{
+          Mat Q = P * m(p) * T;
+          Vec y = Q * Vec(x[0],x[1],x[2],1);
+          vec r(2);
+          r[0] = y[0]/y[3];
+          r[1] = y[1]/y[3];
+          return r;
+        }
+        
+        static Camera optimize(const Camera &init, 
+                               const std::vector<Vec> &Xws, 
+                               const std::vector<Point32f> &xis){
+        
+          DEBUG_LOG("staring optimization at cam position " << init.getPosition().transp());
+          LMAOptUtil u(init);
+          LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
+                  0.1, 1000);
+          //lma.setDebugCallback();
+
+          int n = (int)Xws.size();
+          mat xs(3,n), ys(2,n);
+          for(int i=0;i<n;++i){
+            xs(0,i) = Xws[i].x;
+            xs(1,i) = Xws[i].y;
+            xs(2,i) = Xws[i].z;
+
+            ys(0,i) = xis[i].x;
+            ys(1,i) = xis[i].y;
+          }
+                    
+          LMA::Result r = lma.fit(xs, ys, params(6,0.0));
+          std::cout << "LMA Optimization Results: " << std::endl << r << std::endl;
+          
+          return u.fixCam(r.params);
+        }
+      };
+    }
+    Camera Camera::optimize_camera_calibration_lma(const std::vector<Vec> &Xws,
+                                                   const std::vector<utils::Point32f> xis, 
+                                                   const Camera &init){
+      return LMAOptUtil::optimize(init, Xws, xis); 
+    }
+
     Camera Camera::calibrate_pinv(std::vector<Vec> Xws,
-                                      std::vector<Point32f> xis,
-                                      float focalLength)
+                                  std::vector<Point32f> xis,
+                                  float focalLength,
+                                  bool performLMAbasedOptimiziation)
       throw (NotEnoughDataPointsException,SingularMatrixException) {
       // TODO: normalize points
       checkAndFixPoints(Xws,xis);
@@ -365,18 +532,23 @@ namespace icl {
       FixedMatrix<float,4,3> Q(Cv[0],Cv[1],Cv[2],Cv[3],
                                Cv[4],Cv[5],Cv[6],Cv[7],
                                Cv[8],Cv[9],Cv[10],1);
-  
-      return Camera::createFromProjectionMatrix(Q, focalLength);
+      Camera cam = Camera::createFromProjectionMatrix(Q, focalLength);
+      if(performLMAbasedOptimiziation){
+        return optimize_camera_calibration_lma(Xws, xis, cam);
+      }else{
+        return cam;
+      }
     }
   
     Camera Camera::calibrate(std::vector<Vec> Xws,
-                                 std::vector<Point32f> xis,
-                                 float focalLength)
+                             std::vector<Point32f> xis,
+                             float focalLength,
+                             bool performLMAbasedOptimiziation)
       throw (NotEnoughDataPointsException,SingularMatrixException) {
   
-  #ifndef ICL_HAVE_MKL
-  	return calibrate_pinv(Xws,xis,focalLength);
-  #else
+      //  #ifndef ICL_HAVE_MKL
+      // 	return calibrate_pinv(Xws,xis,focalLength);
+      //#else
       // TODO: normalize points
       // TODO: check whether we have svd (IPP) available
       checkAndFixPoints(Xws,xis);
@@ -404,8 +576,13 @@ namespace icl {
       for (int i=0; i<4; i++) for (int j=0; j<3; j++) {
         Q(i,j) = V(11,j*4+i);
       }
-      return Camera::createFromProjectionMatrix(Q, focalLength);
-  #endif
+
+      Camera cam = Camera::createFromProjectionMatrix(Q, focalLength);
+      if(performLMAbasedOptimiziation){
+        return optimize_camera_calibration_lma(Xws, xis, cam);
+      }else{
+        return cam;
+      }
     }
   
     void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis) throw (NotEnoughDataPointsException) {
@@ -650,6 +827,8 @@ namespace icl {
     }
   
     // }}}
+
+
   
     Vec Camera::estimate_3D(const std::vector<Camera*> cams,
                             const std::vector<Point32f> &UVs,
@@ -672,6 +851,14 @@ namespace icl {
       }
     }
     // }}}
+
+    Mat Camera::estimatePose(const std::vector<Vec> &objectCoords,
+      const std::vector<utils::Point32f> &imageCoords,
+                             bool performLMAOptimization){
+      Camera cam = calibrate_extrinsic(objectCoords, imageCoords, *this, RenderParams(), performLMAOptimization);
+      return cam.getInvCSTransformationMatrix();
+    }
+    
   
     /// returns the tensor obtained by contraction of v with epsilon tensor.
     static inline FixedMatrix<icl32f,3,3> contr_eps(const FixedMatrix<icl32f,1,3> &v){
@@ -766,6 +953,28 @@ namespace icl {
       getRenderParams().chipSize = newScreenSize;
       getRenderParams().viewport = Rect(Point::null,newScreenSize);
       setPrincipalPointOffset(newPrincipalPointOffset);
+    }
+
+    Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename) throw (utils::ICLException){
+      SmartPtr<io::ImageUndistortion> udist;
+      try{
+        udist = new io::ImageUndistortion(filename);
+      }catch(...){
+        return Camera(filename);
+      }
+      if(udist->getModel() != "MatlabModel5Params"){
+        throw ICLException("unable to parse udist file: wrong Model!");
+      }
+      
+      const std::vector<double> &params = udist->getParams();
+      Camera cam;
+
+      ConfigFile f(filename);
+      cam.setResolution(Size(f["config.size.width"], f["config.size.height"]));
+      cam.setFocalLength(1);
+      cam.setSamplingResolution(params[0], params[1]);
+      cam.setPrincipalPointOffset(Point32f(params[2], params[3]));
+      return cam;
     }
   
   } // namespace geom

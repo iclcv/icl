@@ -31,6 +31,13 @@
 #include <ICLMath/FFTUtils.h>
 #include <limits>
 
+#ifdef ICL_SYSTEM_WINDOWS
+#ifdef min
+#undef min
+#undef max
+#endif
+#endif
+
 //#define FFT_DEBUG(X) std::cout << X << std::endl;
 #define FFT_DEBUG(X)
 

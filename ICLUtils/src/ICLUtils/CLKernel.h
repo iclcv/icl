@@ -109,6 +109,7 @@ namespace icl {
       
       /// for tight integration with the CLProgram class
       friend class CLProgram;
+	  friend class CLDeviceContext;
 
       /// Overloaded Kernel argument setter for unsigned int values
       void setArg(const unsigned idx, const unsigned int &value) throw (CLKernelException);

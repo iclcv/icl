@@ -38,15 +38,19 @@ namespace icl{
   namespace geom{  
     
     struct ConfigurableDepthImageSegmenter::Data {
-        Data(Mode mode, Camera depthCam, Camera colorCam){
+				Data(Mode mode, Camera depthCam, Camera colorCam,
+						 PointCloudCreator::DepthImageMode depth_mode){
             depthCamera=depthCam;
-            creator = new PointCloudCreator(depthCam, colorCam, PointCloudCreator::KinectRAW11Bit);
+						creator = new PointCloudCreator(depthCam, colorCam, depth_mode);
+						use_extern_edge_image = false;
             init(mode);
 	    }
 
-        Data(Mode mode, Camera depthCam){
+				Data(Mode mode, Camera depthCam,
+						 PointCloudCreator::DepthImageMode depth_mode){
             depthCamera=depthCam;
-            creator = new PointCloudCreator(depthCam, PointCloudCreator::KinectRAW11Bit);
+						creator = new PointCloudCreator(depthCam, depth_mode);
+						use_extern_edge_image = false;
             init(mode);
         }
 
@@ -76,16 +80,20 @@ namespace icl{
       
       core::Img8u edgeImage;
       core::Img8u normalImage;
+
+			bool use_extern_edge_image;
     };
     
     
-    ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam) :
-	      m_data(new Data(mode, depthCam)){
+		ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam,
+																																		 PointCloudCreator::DepthImageMode depth_mode) :
+				m_data(new Data(mode, depthCam, depth_mode)){
         initProperties();
     }
 
-    ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam) :
-          m_data(new Data(mode, depthCam, colorCam)){
+		ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam,
+																																		 icl::geom::PointCloudCreator::DepthImageMode depth_mode) :
+					m_data(new Data(mode, depthCam, colorCam, depth_mode)){
         initProperties();
     }
   	
@@ -144,6 +152,8 @@ namespace icl{
         addProperty("remaining.min size","range","[5,50]:1",10);
         addProperty("remaining.euclidean distance","range","[2.0,20.0]",10.0);
         addProperty("remaining.radius","range","[0,10]:1",0);
+        addProperty("remaining.assign euclidean distance","range","[2.0,20.0]",10.0);
+        addProperty("remaining.support tolerance","range","[0,30]:1",9);
 
         addProperty("graphcut.threshold","range","[0.0, 1.1]",0.5);
 
@@ -207,16 +217,18 @@ namespace icl{
       m_data->objectEdgeDetector->setAngleNeighborhoodRange(neighbrange);
       m_data->objectEdgeDetector->setBinarizationThreshold(threshold);
 		 
-		  if(useTempSmoothing==true){
-        m_data->edgeImage=m_data->objectEdgeDetector->calculate(*filteredImage->as32f(), usedFilterFlag,
-                                               useAveraging, usedSmoothingFlag);
-      }else{
-        m_data->edgeImage=m_data->objectEdgeDetector->calculate(*depthImage.as32f(), usedFilterFlag,
-                                               useAveraging, usedSmoothingFlag);
-      }  
+			if (!m_data->use_extern_edge_image) {
+				if(useTempSmoothing==true){
+					m_data->edgeImage=m_data->objectEdgeDetector->calculate(*filteredImage->as32f(), usedFilterFlag,
+																								 useAveraging, usedSmoothingFlag);
+				}else{
+					m_data->edgeImage=m_data->objectEdgeDetector->calculate(*depthImage.as32f(), usedFilterFlag,
+																								 useAveraging, usedSmoothingFlag);
+				}
+				m_data->objectEdgeDetector->applyWorldNormalCalculation(m_data->depthCamera);
+				m_data->normalImage=m_data->objectEdgeDetector->getRGBNormalImage();
+			}
 		 
-      m_data->objectEdgeDetector->applyWorldNormalCalculation(m_data->depthCamera);
-      m_data->normalImage=m_data->objectEdgeDetector->getRGBNormalImage();
 
       obj.lock();
       
@@ -268,6 +280,8 @@ namespace icl{
         int remainingMinSize = getPropertyValue("remaining.min size");
         float remainingEuclDist = getPropertyValue("remaining.euclidean distance");
         int remainingRadius = getPropertyValue("remaining.radius");
+        float remainingAssignEuclDist = getPropertyValue("remaining.assign euclidean distance");
+        int remainingSupportTolerance = getPropertyValue("remaining.support tolerance");
         
         float graphcutThreshold = getPropertyValue("graphcut.threshold");     
       
@@ -286,17 +300,17 @@ namespace icl{
         m_data->segmentation->setCoplanarityParams(coplanMaxAngle, coplanDistance, coplanOutlier, coplanNumTriangles, coplanNumScanlines);
         m_data->segmentation->setCurvatureParams(curveHistogram, curveUseOpen, curveMaxDist, curveUseOccluded, curveMaxError, 
                                 curvePasses, curveDistance, curveOutlier);
-        m_data->segmentation->setRemainingPointsParams(remainingMinSize, remainingEuclDist, remainingRadius);
+        m_data->segmentation->setRemainingPointsParams(remainingMinSize, remainingEuclDist, remainingRadius, remainingAssignEuclDist, remainingSupportTolerance);
         m_data->segmentation->setGraphCutThreshold(graphcutThreshold);
         
-        if(useTempSmoothing){
-          core::Img8u lI=m_data->segmentation->apply(obj.selectXYZH(),m_data->edgeImage,*filteredImage->as32f(), m_data->objectEdgeDetector->getNormals(), 
-                            stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
-          obj.setColorsFromImage(lI);          
+				if(useTempSmoothing){
+					core::Img8u lI=m_data->segmentation->apply(obj.selectXYZH(),m_data->edgeImage,*filteredImage->as32f(), m_data->objectEdgeDetector->getNormals(),
+																										 stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
+					obj.setColorsFromImage(lI);
         }else{
-          core::Img8u lI=m_data->segmentation->apply(obj.selectXYZH(), m_data->edgeImage, *depthImage.as32f(), m_data->objectEdgeDetector->getNormals(), 
-                            stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
-          obj.setColorsFromImage(lI);
+					core::Img8u lI=m_data->segmentation->apply(obj.selectXYZH(), m_data->edgeImage, *depthImage.as32f(), m_data->objectEdgeDetector->getNormals(),
+																										 stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
+					obj.setColorsFromImage(lI);
         }
       } 
       
@@ -309,8 +323,12 @@ namespace icl{
 	}
 
     const core::DataSegment<float,4> ConfigurableDepthImageSegmenter::getNormalSegment() {
-        return m_data->objectEdgeDetector->getNormals();
+		return m_data->objectEdgeDetector->getNormals();
     }
+
+	const core::Img32f ConfigurableDepthImageSegmenter::getAngleImage() {
+		return m_data->objectEdgeDetector->getAngleImage();
+	}
 
     const core::Img8u ConfigurableDepthImageSegmenter::getNormalImage(){
       return m_data->normalImage;
@@ -338,7 +356,23 @@ namespace icl{
         m_data->creator->mapImage(&image,bpp(mapped));
         return mapped;
     }
-    
+
+	void ConfigurableDepthImageSegmenter::mapImageToDepth(const core::ImgBase *src, core::ImgBase **dst) {
+		m_data->creator->mapImage(src,dst);
+	}
+
+	void ConfigurableDepthImageSegmenter::setNormals(core::DataSegment<float,4> &normals) {
+		m_data->objectEdgeDetector->setNormals(normals);
+	}
+
+	void ConfigurableDepthImageSegmenter::setEdgeSegData(core::Img8u &edges, core::Img8u &normal_img) {
+		m_data->edgeImage = edges;
+		m_data->normalImage = normal_img;
+	}
+
+	void ConfigurableDepthImageSegmenter::setUseExternalEdges(bool use_external_edges) {
+		m_data->use_extern_edge_image = use_external_edges;
+	}
     
     std::vector<std::vector<int> > ConfigurableDepthImageSegmenter::getSurfaces(){
       return m_data->segmentation->getSurfaces();

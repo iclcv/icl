@@ -102,7 +102,7 @@ namespace icl{
               pose(x,y) *= -1;
             }
           }
-        }catch(ICLException &e){
+        }catch(ICLException &){
           // pose estimation did not converge while trying to find eigenvectors ...
           pose = fids[0].getPose3D();
         }

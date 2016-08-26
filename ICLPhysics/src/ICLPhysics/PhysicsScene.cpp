@@ -31,6 +31,10 @@
 #include <ICLPhysics/PhysicsObject.h>
 namespace icl{
   namespace physics{
+
+			PhysicsScene::PhysicsScene(PhysicsWorld::BulletSolverType type)
+				: geom::Scene(), PhysicsWorld(type) {}
+
       void PhysicsScene::addObject(PhysicsObject *object, bool passOwnerShip) {
         Scene::addObject((geom::SceneObject*)object, passOwnerShip);
         PhysicsWorld::addObject(object);

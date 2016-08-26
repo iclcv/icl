@@ -72,6 +72,13 @@ namespace icl{
         
         /// as above but assuming square markers alligned in a uniform grid
         GridDefinition(const utils::Size &markerGridDims, float markerDim, float markerSpacing);
+
+        /// returns the outer physical size of the used grid
+        const utils::Size32f &getGridBoundarySize() const { return m_gridBoundarySize; }
+
+        private:
+        /// outer physical size of the used grid
+        utils::Size32f m_gridBoundarySize;
       };
       
       /// Internally used info structure (also returned by LensUndistortionCalibrator::getInfo)
@@ -95,6 +102,9 @@ namespace icl{
       /// for deferred initialization
       void init(const utils::Size &imagesSize, const GridDefinition &gridDef);
 
+      /// deferred initialization (only when using addPoints with given gridDef)
+      void init(const utils::Size &imageSize);
+
       /// returns whether this instance was already initialized
       bool isNull() const;
       
@@ -106,6 +116,10 @@ namespace icl{
 
       /// removes all points added before
       void clear();
+
+      /// removes lastly added point
+      /** If the internal list is empty, this function does nothing */
+      void undoLast();
       
       /// returns current info
       Info getInfo();

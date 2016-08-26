@@ -39,9 +39,13 @@
 #endif
 
 #ifdef WIN32
+  // disable warning: 'class' : multiple assignment operators specified	
+#pragma warning(disable: 4522;  disable: 4996)
   #define NOMINMAX
   #define _USE_MATH_DEFINES
+#ifndef M_PI
   #define M_PI 3.14159265358979323846
+#endif
   // TODOWW: test with _MSC_VER == 1700
   #if (defined _MSC_VER && _MSC_VER < 1800)
     #include <cmath>

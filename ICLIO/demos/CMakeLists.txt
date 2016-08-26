@@ -13,5 +13,7 @@ INCLUDE(ICLHelperMacros)
 
 ADD_SUBDIRECTORY(png_write_test)
 
+ADD_SUBDIRECTORY(depth_img_endcoding_test)
+
 ENDIF()
 

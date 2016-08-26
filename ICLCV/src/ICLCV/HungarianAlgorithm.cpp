@@ -469,11 +469,9 @@ namespace icl{
     template<class real>
     vec HungarianAlgorithm<real>::apply(const Array2D<real> &m, bool isCostMatrix){
       // {{{ open
-  
-      mat cost;
-      if(isCostMatrix){
-        cost = m.deepCopy();
-      }else{
+      if(!m.getDim()) return vec();
+      mat cost = m.deepCopy();
+      if(!isCostMatrix){
         real maxWeight = cost.maxElem();
         for(int i=0;i<cost.getWidth(); i++){
           for(int j=0;j<cost.getHeight(); j++){
@@ -519,7 +517,7 @@ namespace icl{
     void HungarianAlgorithm<real>::visualizeAssignment(const Array2D<real> &cost, const vec &a){
       // {{{ open
       mat v(cost.getWidth(),cost.getHeight());
-      
+      v.fill(0);
       for(unsigned int i=0;i<a.size();i++){
         v(i,a[i]) = 1;
       }

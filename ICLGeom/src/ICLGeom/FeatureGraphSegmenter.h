@@ -134,11 +134,13 @@ namespace icl{
       void setCurvatureParams(float histogramSimilarity, bool useOpenObjects, int maxDistance, bool useOccludedObjects, float maxError, 
                               int ransacPasses, float distanceTolerance, float outlierTolerance);
       
-      /// Sets the remaining points assignment parameters
+            /// Sets the remaining points assignment parameters
       /**       @param minSize the minimum size of a remaining point blob
                 @param euclideanDistance the maximum euclidean distance for point clustering
-                @param radius the radius for local minima search */
-      void setRemainingPointsParams(int minSize, float euclideanDistance, int radius);
+                @param radius the radius for local minima search
+                @param assignEuclideanDistance the euclidean distance for assigning to neighbouring surfaces
+                @param supportTolerance the max tolerance for detecting a blob as supported and therefore separate object */
+      void setRemainingPointsParams(int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance);
       
       /// Sets the graphcut threshold
       /**       @param threshold the maximum weight of a cut */

@@ -69,7 +69,8 @@ namespace icl{
       Buffer &b = *reinterpret_cast<Buffer*>(arg);
       b.image.setChannels(1);
       b.image.setSize(Size(w,h));
-      b.image.setTime(Time(timestamp));
+      //      b.image.setTime(Time(timestamp));
+      b.image.setTime(Time::now()); // the timestamp has some other meaning!
       Channel32f c = b.image[0];
       for(size_t i=0;i<w*h;++i){
         c[i] = 0.1*(float(data[i])-1000.f);
@@ -82,6 +83,7 @@ namespace icl{
       PseudoColorConverter pcc;
       Img8u pccSrc;
       Img8u pccOutNull;
+      Img32f pccOutNull32f;
       Img32f combinedImage;
       filter::LocalThresholdOp lt;
 
@@ -98,10 +100,19 @@ namespace icl{
         pccSrc.setSize(s.getSize());
         pccOutNull.setFormat(formatRGB);
         pccOutNull.setSize(s.getSize());
+        pccOutNull32f.setChannels(4);
+        pccOutNull32f.setSize(s.getSize());
         
         if(!r.getLength()){
-          pccOutNull.fill(0);
-          return &pccOutNull;
+          if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
+            pccOutNull32f.fill(0);
+            pccOutNull32f.setTime(s.getTime());
+            return &pccOutNull32f;
+          }else{
+            pccOutNull.fill(0);
+            pccOutNull.setTime(s.getTime());
+            return &pccOutNull;
+          }
         }
         LinearTransform1D t(r, Range32f(0,255));
         const Channel32f cs = s[0];
@@ -119,6 +130,7 @@ namespace icl{
             convertChannel(pcImage, c, &combinedImage, c);
           }
           deepCopyChannel(&s,0,&combinedImage,3);
+
           return &combinedImage;
         }else{
           return pcImage;
@@ -309,6 +321,7 @@ namespace icl{
 
       const ImgBase *cvt = m_data->convert_output(m_data->buffer.outBuf, 
                                                   getPropertyValue("format"));
+
       if(getPropertyValue("threshold output")){
         cvt = m_data->lt.apply(cvt);
       }

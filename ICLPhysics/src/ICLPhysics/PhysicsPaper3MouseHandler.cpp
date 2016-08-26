@@ -161,9 +161,21 @@ namespace icl{
           unlock();
         }
       };
-    
+      SceneObject *indicatorParent;
       DragIndicator *indicator;
     };
+
+    void PhysicsPaper3MouseHandler::setDragIndicatorsVisible(bool on){
+      SceneObject *p = m_data->indicatorParent, *i = m_data->indicator;
+      p->lock();
+      bool in = p->hasChild(i);
+      if(on && !in){
+        p->addChild(i,false);
+      }else if(!on && in){
+        p->removeChild(i);
+      }
+      p->unlock();
+    }
 
     PhysicsPaper3MouseHandler::PhysicsPaper3MouseHandler(PhysicsPaper3 *model, Scene *scene, int camIndex):m_data(new Data){
       m_data->model = model;
@@ -175,7 +187,10 @@ namespace icl{
       m_data->lastRadius = 0.25;
 
       m_data->indicator = new Data::DragIndicator(m_data);
-      m_data->scene->addObject(m_data->indicator);
+      m_data->indicatorParent = new SceneObject;
+      m_data->indicatorParent->setLockingEnabled(true);
+      m_data->indicatorParent->addChild(m_data->indicator,false);
+      m_data->scene->addObject(m_data->indicatorParent);
     
       m_data->men.addEntries("remove,streangthen,weaken,memorize weak,memorize strong");
       m_data->men.setCallback(function(this,&PhysicsPaper3MouseHandler::menuCallback));

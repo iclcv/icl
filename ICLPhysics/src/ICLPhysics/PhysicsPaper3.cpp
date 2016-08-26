@@ -567,10 +567,13 @@ namespace icl{
     }
 
     void PhysicsPaper3::updateCollisionClusters(){
-      btSoftBody *s = getSoftBody();
-  #if 1
-      s->generateClusters(0);
-  #else
+
+
+
+      btSoftBody *sOrig = getSoftBody();
+#if 1
+      sOrig->generateClusters(0);
+#else
       s->releaseClusters();
       std::vector<btSoftBody::Face*> clusterFaces; // todo: create
       // add faces that have no "fold"-edge
@@ -1106,6 +1109,66 @@ namespace icl{
 
       m_data->lastUsedFaceIdx = -1;
 
+
+#if 1
+      // try for a workaround in case of self-collision
+      if(m_data->enableSelfCollision){
+        /// super-ugly and also no 100% stable workaround
+        btSoftBody *sOrig = getSoftBody();
+
+        PhysicsWorld *world = m_data->physicsWorld; 
+        
+        std::vector<btVector3> ns(sOrig->m_nodes.size());
+        for(size_t i=0;i<ns.size();++i){
+          ns[i] = sOrig->m_nodes[i].m_x;
+        }
+        world->removeObject(this);
+        
+        btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
+                                       ns.size(), ns.data(), 0);
+        
+        s->m_cfg = sOrig->m_cfg;
+        s->getCollisionShape()->setMargin(icl2bullet(2));
+        
+        s->appendMaterial();
+        s->m_materials[0]->m_kLST = 1.0;
+        s->m_materials[0]->m_kAST = 1.0;
+        s->m_materials[0]->m_kVST = 1.0;
+        
+        
+        s->setTotalMass(ns.size()*0.01,false);
+        
+        forgetPhysicalObject(false); // avoids deletion of sOrig
+        setPhysicalObject(s);      
+        
+        // copy triangles
+        const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
+        for(int i=0;i<sOrig->m_faces.size();++i){
+          const btSoftBody::Face &f = sOrig->m_faces[i];
+          addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
+          s->m_faces[i].m_normal = f.m_normal;
+          s->m_faces[i].m_ra = f.m_ra;
+        }
+        
+        // copy constraints
+        for(int i=0;i<sOrig->m_links.size();++i){
+          const btSoftBody::Link &l = sOrig->m_links[i];
+          addLink((int)(l.m_n[0]-n0),(int)(l.m_n[1]-n0),
+                  l.m_material->m_kLST);
+          s->m_links[i].m_tag = ((LinkState*)l.m_tag)->p();
+          s->m_links[i].m_bbending = l.m_bbending;
+          s->m_links[i].m_c0 = l.m_c0;
+          s->m_links[i].m_c1 = l.m_c1;
+          s->m_links[i].m_c2 = l.m_c2;
+          s->m_links[i].m_c3 = l.m_c3;
+        }
+        
+        // s->generateClusters(0);
+        world->addObject(this);
+        delete sOrig;
+      }
+#endif
+
       createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
@@ -1256,7 +1319,7 @@ namespace icl{
             }
           }
         }
-        if(isFlat){
+        if(isFlat && ns.size()){
           Vec aS = ns[0];
           for(size_t j=1;j<ns.size();++j){
             aS += ns[j];
@@ -1352,37 +1415,7 @@ namespace icl{
         
         glEnable(GL_CULL_FACE);
         for(int i=0;i<s->m_faces.size();++i){
-          /*
-          btSoftBody::Face &f = s->m_faces[i];
-          Vec c[3],n[3];
-          Point32f t[3];
-
-          bool isFlat = true;
-          for(int j=0;j<3;++j){
-            c[j] = bullet2icl_scaled(f.m_n[j]->m_x);
-            if(m_data->useSmoothNormals){
-              n[j] = m_data->smoothNormals[(int)(f.m_n[j]-o)];
-              if(!n[j][3]) isFlat = false;
-            }else{
-              n[j] = bullet2icl_unscaled(f.m_n[j]->m_n);
-            }
-            t[j] = m_data->texCoords[(int)(f.m_n[j] - &s->m_nodes[0])];
-          }
-
-          if(!isFlat){
-            int good = -1;
-            for(int j=0;j<3;++j){
-              if(n[j][3]) good = j; break;
-            }
-            if(good == -1) {
-              n[2] = n[1] = n[0] = compute_normal(c[0], c[1], c[2]);
-            }else{
-              for(int j=0;j<3;++j){
-                if(!n[j][3]) n[j] = n[good];
-              }
-            }
-          }
-              */
+       
           RenderedTriangleImpl &ti = *ts[i].impl;
           const Vec *c = ti.nodes;
           const Vec *n = ti.normals;

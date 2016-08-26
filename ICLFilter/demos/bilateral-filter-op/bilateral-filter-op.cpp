@@ -97,7 +97,8 @@ void grab_cb(const ImgBase *img) {
 
 	bool use_gray = gui["to_gray"].as<bool>();
 	Img<T> gray_image(color_original.getSize(),core::formatGray);
-	Img<T> edge_;
+	//color_original.setFormat(core::formatRGB);
+	Img8u edge_;
 	if (use_gray) {
 		core::cc(&color_original,&gray_image);
 		canny.apply(&gray_image,bpp(edge_));
@@ -113,7 +114,7 @@ void grab_cb(const ImgBase *img) {
 			median.apply(&color_original,bpp(color_median));
 
 	}
-	Img<T> edge_median;
+	Img8u edge_median;//(color_median.getSize(),core::formatGray);
 	canny.apply(&color_median,bpp(edge_median));
 
 	bi_filter->setRadius(gui["bi_radius"].as<int>());
@@ -129,7 +130,7 @@ void grab_cb(const ImgBase *img) {
 			bi_filter->apply(&color_median,bpp(color_bilateral));
 	}
 
-	Img<T> edge_bi_filtered;
+	Img8u edge_bi_filtered;//(edge_bi_filtered.getSize(),core::formatGray);
 	canny.apply(&color_bilateral,bpp(edge_bi_filtered));
 
 	// set images
@@ -140,9 +141,9 @@ void grab_cb(const ImgBase *img) {
 	gui["view2"] = &color_median;
 	gui["view3"] = &color_bilateral;
 
-	gui["viewedge3"] = &edge_bi_filtered;
-	gui["viewedge2"] = &edge_median;
 	gui["viewedge1"] = &edge_;
+	gui["viewedge2"] = &edge_median;
+	gui["viewedge3"] = &edge_bi_filtered;
 
 	// update view:
 	gui["view1"].render();
@@ -199,11 +200,7 @@ void init() {
 
 void run() {
 
-	const ImgBase* img = 0;
-	{
-		BENCHMARK_THIS_SECTION(grabber);
-		img = grabber.grab();
-	}
+	const ImgBase* img = grabber.grab();
 
 	switch(img->getDepth()) {
 		case(core::depth8u): {

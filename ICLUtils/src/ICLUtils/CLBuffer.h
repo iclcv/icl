@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/CLMemory.h>
 #include <string>
 
 /** \cond */
@@ -48,7 +49,7 @@ namespace icl {
     /// Wrapper for an OpenCL Buffer
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
-    class ICLUtils_API CLBuffer{
+	class ICLUtils_API CLBuffer : public CLMemory {
       struct Impl; //!< internal hidden implementation type
       Impl *impl;  //!< internal implemetation
       
@@ -56,6 +57,9 @@ namespace icl {
       CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, 
                const string &accessMode, size_t size, const void *src=NULL) throw (CLBufferException);
       
+	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode,
+			   size_t length, size_t byte_depth, const void *src=NULL) throw (CLBufferException);
+
       /// provides access to the underlying cl-buffer
       cl::Buffer &getBuffer();
       const cl::Buffer &getBuffer() const;
@@ -63,6 +67,7 @@ namespace icl {
     public:
       friend class CLProgram; //!< for tight integration with CLProgram instances
       friend class CLKernel;  //!< for tight integration with CLKernel instances
+	  friend class CLDeviceContext;//!< for tight integration with CLDeviceContext instances
 
       /// default constructor (creates null instance)
       CLBuffer();

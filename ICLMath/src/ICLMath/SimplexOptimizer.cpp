@@ -38,6 +38,13 @@
 
 using namespace icl::utils;
 
+#ifdef ICL_SYSTEM_WINDOWS
+#ifdef min
+#undef min
+#undef max
+#endif
+#endif
+
 namespace icl{
   namespace math{
   
@@ -93,6 +100,47 @@ namespace icl{
     
     template<class T, class Vector>
     struct SimplexOptimizer<T,Vector>::Data{
+
+      struct DeeplyCopiedResult{
+        Vector x;                      
+        T fx;                          
+        int iterations;                
+        std::vector<Vector> vertices;
+
+        DeeplyCopiedResult(){}
+
+        //DeeplyCopiedResult(const DeeplyCopiedResult &r):
+        //  x(r.x),fx(r.fx),iterations(r.iterations), vertices(r.vertices){}
+
+        DeeplyCopiedResult(const SimplexOptimizationResult<T,Vector> &r):
+          x(r.x),fx(r.fx),iterations(r.iterations), vertices(r.vertices){}
+        
+        DeeplyCopiedResult &operator=(const SimplexOptimizationResult<T,Vector> &r){
+          x = r.x;
+          fx = r.fx;
+          iterations = r.iterations;
+          vertices = r.vertices;
+          return *this;
+        }
+        //DeeplyCopiedResult &operator=(const DeeplyCopiedResult &r){
+        //  x = r.x;
+        // fx = r.fx;
+        //  iterations = r.iterations;
+        //  vertices = r.vertices;
+        //  return *this;
+        //}
+      } deeplyCopiedResult;
+
+      SimplexOptimizationResult<T,Vector> storeResult(const DeeplyCopiedResult &dcr){
+        deeplyCopiedResult = dcr;
+        SimplexOptimizationResult<T,Vector> r = { deeplyCopiedResult.x,
+                                                  deeplyCopiedResult.fx,
+                                                  deeplyCopiedResult.iterations,
+                                                  deeplyCopiedResult.vertices };
+        return r;
+      }
+
+      
       Data(error_function f, int dim, int iterations, T minError, T minDelta, T a, T b, T g, T h):
         dim(dim),num(dim+1),f(f),x(dim+1),
         iterations(iterations),minError(minError),minDelta(minDelta),
@@ -333,6 +381,21 @@ namespace icl{
     template<class T, class Vector>
     void SimplexOptimizer<T,Vector>::setIterationCallback(const typename SimplexOptimizer<T,Vector>::iteration_callback &cb){
       m_data->iteration_callback = cb;
+    }
+
+
+    template<class T, class Vector>
+    SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(init_gen gen, int nInitCycles){
+      typename Data::DeeplyCopiedResult best = optimize(gen());
+      if(best.fx <= m_data->minError) return m_data->storeResult(best);
+      for(int i=1;i<nInitCycles;++i){
+        SimplexOptimizationResult<T,Vector> r = optimize(gen());
+        if(r.fx <= m_data->minError) return m_data->storeResult(best);
+        if(r.fx < best.fx){
+          best = r;
+        }
+      }
+      return m_data->storeResult(best);
     }
   
     

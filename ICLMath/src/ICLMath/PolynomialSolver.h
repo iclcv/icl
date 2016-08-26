@@ -175,14 +175,26 @@ namespace icl{
     static void noshft(const int l1, int deg, xcomplex *P, xcomplex *H)
     {
       int i, j, jj;
-      xcomplex t, tmp;
+#ifndef ICL_SYSTEM_WINDOWS
+#warning "why is tmp not iniitialized here?"
+#endif
+      xcomplex t, tmp; 
 
       // compute the first H-polynomial as the (normed) derivative of P
       for (i = 0; i < deg; i++) {
+        // CE: shouldn't it be this here (I add it since it seems to not make sense
+        // to use the uninitiylized tmp here a multipliler ...
+        // 
+        tmp = P[i]; // added by CE
         tmp *= (deg - i);
         tmp /= deg;
         H[i] = tmp;
       }
+#if 0
+      // possible fix? found here: https://github.com/gap-packages/float/blob/master/src/cpoly.C
+      for(i = 0; i < deg; i++)
+        H[i] = (P[i] * (deg-i)) / deg;
+#endif
 
       for(jj = 1; jj <= l1; jj++) {
         if(xnorm(H[deg - 1]) > xeta(P[deg-1])*xeta(P[deg-1])* 10*10 * xnorm(P[deg - 1])) {

@@ -33,7 +33,12 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/Rect.h>
+#include <ICLUtils/CLMemory.h>
 #include <string>
+
+#include <set>
+#include <map>
+#include <stdint.h>
 
 /** \cond */
 namespace cl {
@@ -49,25 +54,28 @@ namespace icl {
         /// Wrapper for an OpenCL Image2D
         /** Valid CLImage2D instances can only be created by a CLProgram instance.
          @see CLProgram for more details */
-      class ICLUtils_API CLImage2D {
+	  class ICLUtils_API CLImage2D : public CLMemory {
             struct Impl; //!< internal hidden implementation type
             Impl *impl;//!< internal implemetation
 
             /// private constructor (image can only be created by CLProgram instances)
-            CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
-                    const string &accessMode, const size_t width, const size_t height,
-                    int depth, const void *src=NULL) throw (CLBufferException);
+			CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
+					const string &accessMode, const size_t width, const size_t height,
+					int depth, int num_channel, const void *src=NULL, std::map< uint32_t, std::set<uint32_t> > const
+					  &supported_formats = std::map< uint32_t, std::set<uint32_t> >()) throw (CLBufferException);
 
             /// provides access to the underlying cl-Image2D object
             cl::Image2D getImage2D();
-            const cl::Image2D getImage2D() const;
+			const cl::Image2D getImage2D() const;
 
-        public:
+		public:
+
             friend class CLProgram;//!< for tight integration with CLProgram instances
             friend class CLKernel;//!< for tight integration with CLKernel instances
+			friend class CLDeviceContext;//!< for tight integration with CLDeviceContext instances
 
             /// default constructor (creates null instance)
-            CLImage2D();
+			CLImage2D();
 
             /// copy constructor (always performs shallow copy)
             CLImage2D(const CLImage2D& other);
@@ -98,6 +106,11 @@ namespace icl {
             operator bool() const {
                 return impl;
             }
+
+			icl32s getWidth() const { return m_dimensions[0]; }
+			icl32s getHeight() const { return m_dimensions[1]; }
+			icl32s getChannelSize() const { return m_dimensions[0]*m_dimensions[1]; }
+			icl32s getNumChannels() const { return m_dimensions[2]; }
 
         };
     }

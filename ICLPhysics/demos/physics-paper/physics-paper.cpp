@@ -50,6 +50,7 @@ VBox propGUI;
 
 
 DefaultGroundObject ground;
+DefaultGroundObjectVisualization groundVis;
 
 SmartPtr<ManipulatablePaper> paper;
 SmartPtr<SceneMultiCamCapturer> capturer;
@@ -188,7 +189,7 @@ void init(){
   gui["globalStiffness"].registerCallback(change_global_stiffness);
 
   scene.PhysicsWorld::addObject(&ground);
-
+  scene.Scene::addObject(&groundVis);
 
   DrawHandle3D draw = gui["draw"];
   draw->install(paper->createMouseHandler(0));

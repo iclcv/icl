@@ -35,6 +35,7 @@ namespace icl{
   namespace physics{
     class ICLPhysics_API PhysicsScene: public geom::Scene, public PhysicsWorld {
       public:
+			PhysicsScene(PhysicsWorld::BulletSolverType type = PhysicsWorld::Default);
       /// adds a new top-level object to the Scene instance 
       /** By default, the object's memory is managed externally. If you want
           to pass the ownership to the Scene instance, you have to set

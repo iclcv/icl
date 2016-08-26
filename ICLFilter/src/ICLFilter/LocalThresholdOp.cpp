@@ -37,6 +37,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Time.h>
 #include <ICLFilter/LocalThresholdOpHelpers.h>
+#include <ICLFilter/UnaryCompareOp.h>
 
 #include <stdio.h>
 
@@ -86,9 +87,9 @@ namespace icl{
           - algorithm (menu, region mean, tiled lin, tiled NN)
           */
       addProperty("mask size","range:slider","[1,100]:1",str(maskSize));
-      addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
-      addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
-      addProperty("algorithm","menu","region mean,tiled linear,tiled NN","region mean");
+      addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
+      addProperty("gamma slope","range:slider","[-255,255]",str(gammaSlope));
+      addProperty("algorithm","menu","region mean,tiled linear,tiled NN,global","region mean");
       addProperty("actually used mask size","info","","0");
       addProperty("invert output","flag","",false);
     }
@@ -103,9 +104,9 @@ namespace icl{
       m_tiledBuf1(0),m_tiledBuf2(0){
       
       addProperty("mask size","range:slider","[1,100]",str(maskSize));
-      addProperty("global threshold","range:slider","[-100,100]",str(globalThreshold));
+      addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
       addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
-      addProperty("algorithm","menu","region mean,tiled linear,tiled NN",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
+      addProperty("algorithm","menu","region mean,tiled linear,tiled NN,gobal",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
       addProperty("actually used mask size","info","","0");
     }
     // }}}
@@ -183,7 +184,9 @@ namespace icl{
     LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithm() const{
       // {{{ open
       const std::string &a = prop("algorithm").value;
-      return a == "region mean" ? regionMean : a =="tiled NN" ? tiledNN : tiledLIN;
+      return ( a == "region mean" ? regionMean :
+               a =="tiled NN" ? tiledNN :
+               a == "global" ? global : tiledLIN );
     }
   
     // }}}
@@ -191,7 +194,7 @@ namespace icl{
     /// sets internally used algorithm
     void LocalThresholdOp::setAlgorithm(algorithm a){
       // {{{ open
-      prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN":"tiled linear");
+      prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN": a == global ? "global" : "tiled linear");
       call_callbacks("algorithm",this);
     }
   
@@ -630,7 +633,12 @@ namespace icl{
       ICLASSERT_RETURN( src->getChannels() );
       ICLASSERT_RETURN( dst );
       ICLASSERT_RETURN( src != *dst );
-      
+
+      if(getAlgorithm() == global){
+        UnaryCompareOp cmp(">",getGlobalThreshold());
+        cmp.apply(src,dst);
+        return;
+      }
       const ImgBase *srcOrig = src;
       bool roi = false;
       // cut the roi of src if set

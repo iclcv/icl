@@ -71,7 +71,14 @@ void run(){
   }else{
     grabber.grab()->convert(&image);
     if(pa("-o")){
-      output.send(&scene.render(0));
+      const Img8u &image = scene.render(0);
+      if(pa("-d")){
+        static Img8u buf(pa("-d").as<Size>(),formatRGB);
+        image.scaledCopyROI(&buf,interpolateRA);
+        output.send(&buf);
+      }else{
+        output.send(&image);
+      }
     }
     gui["draw"].render();
     Thread::msleep(10);
@@ -83,14 +90,14 @@ void init(){
   if(pa("-o")){
     output.init(pa("-o"));
   }
-  gui << Draw3D().handle("draw").minSize(20,15) << Show();
+ 
 
   grabber.grab()->convert(&image);  
   obj = new ImgObj;
 
   scene.addObject(obj);
-  if(pa("-r")){
-    scene.addCamera(Camera(*pa("-r")));
+  if(pa("-c")){
+    scene.addCamera(Camera(*pa("-c")));
     scene.getCamera(0).setPosition(Vec(-123.914,18.5966,-633.489,1));
     scene.getCamera(0).setNorm(Vec(0.0202104,-0.00327371,0.99979,1));
     scene.getCamera(0).setUp(Vec(0.999566,-0.0213787,0.0202811,1));
@@ -99,7 +106,12 @@ void init(){
                            Vec(0.0202104,-0.00327371,0.99979,1),
                            Vec(0.999566,-0.0213787,0.0202811,1)));
   }
+  if(pa("-r")){
+    scene.getCamera(0).setResolution(pa("-r"));
+  }
 
+  gui << Draw3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
+  
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));
   
@@ -119,7 +131,12 @@ int main(int n, char **ppc){
   pa_explain
   ("-i","icl typical input specification")
   ("-o","generic image output output specification (e.g. -o sm xyz) writes images to shared memory segment \"xyz\"")
-  ("-s","if given, the image will only be grabbed once");
+  ("-s","if given, the image will only be grabbed once")
+  ("-r","defines the rendering camera resolution, overwrites the resolution of the camera provided by -cam")
+  ("-d","downsampling resolution for reduced aliasing effects when using low-res output");
 
-  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s -rendering-camera|-r(camerafile)" ,init,run).exec();
+  return ICLApp(n,ppc,"-input|-i(2) -o(2) -single-grab|-s "
+                "-rendering-camera|-c(camerafile) "
+                "-resolution|-r(size) "
+                "-downsampling-resolution|-d(size)" ,init,run).exec();
 }

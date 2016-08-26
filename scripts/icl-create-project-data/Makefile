@@ -124,6 +124,7 @@ CXXCPP_PC:=${CXXCPP} -I${INC_INSTALL_PREFIX_PC}
 
 # parsing pkg-config files
 ifneq "${PC_DEPS}" ""
+PKG_CONFIG_PATH:=${INSTALL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}
 CXXFLAGS:=${CXXFLAGS} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-I ${PC_DEPS})
 CXXCPP:=${CXXCPP} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-other ${PC_DEPS})
 #LDFLAGS:=$(shell pkg-config --libs-only-L ${PC_DEPS}) ${LDFLAGS} 

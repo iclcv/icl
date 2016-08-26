@@ -30,6 +30,13 @@
 
 #include <ICLMath/HomogeneousMath.h>
 
+#ifdef ICL_SYSTEM_WINDOWS
+#ifdef min
+#undef min
+#undef max
+#endif
+#endif
+
 namespace icl{
   namespace math{
 

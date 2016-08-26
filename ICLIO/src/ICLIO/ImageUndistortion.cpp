@@ -45,6 +45,8 @@ namespace icl{
       Img32f warpMap;
       std::string model;
       std::vector<double> params;
+      std::vector<double> warpMapParams;
+
       Size imageSize;
       virtual Point32f undistort(const Point32f &point) const{
         const double &x0 = params[0];
@@ -58,6 +60,13 @@ namespace icl{
         float xd = (p*x + x0);
         float yd = (p*y + y0);
         return Point32f(xd,yd);
+      }
+      virtual size_t getNumParams() const { return 4; }
+      virtual void setParams(const std::vector<double> &params){
+        if(params.size() != getNumParams()){
+          throw ICLException("invalid parameter count for ImageUndistorion model "  + model);
+        }
+        this->params = params;
       }
     };
     
@@ -77,6 +86,7 @@ namespace icl{
         //Kinv = Kinv.inv();
         Kinv = Kinv.pinv(true);
       }
+      virtual size_t getNumParams() const { return 10; }
       virtual Point32f undistort(const Point32f &point) const{
         FixedMatrix<icl64f,1,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;
         FixedMatrix<icl64f,1,3> rays = Kinv*p;
@@ -168,9 +178,13 @@ namespace icl{
     const std::vector<double> &ImageUndistortion::getParams() const{
       ICLASSERT_THROW(!isNull(), ICLException("unable to query the undistortion parameters from a null-ImageUndistortion instance"));
       return impl->params;
-  
-    
     }
+
+    void ImageUndistortion::setParams(const std::vector<double> &params){
+      ICLASSERT_THROW(!isNull(), ICLException("unable to set the undistortion parameters for a null-ImageUndistortion instance"));
+      impl->setParams(params);
+    }
+
     const std::string &ImageUndistortion::getModel() const{
       ICLASSERT_THROW(!isNull(), ICLException("unable to query the model from a null-ImageUndistortion instance"));
       return impl->model;
@@ -260,6 +274,10 @@ namespace icl{
       if(!impl->warpMap.getChannels()){
         impl->warpMap.setChannels(2);
         impl->warpMap.setSize(getImageSize());
+      }
+      if(impl->params != impl->warpMapParams){
+        impl->warpMapParams = impl->params;
+        
         Channel32f cs[2] = { impl->warpMap[0], impl->warpMap[1] };
         const Size size = getImageSize();
         for(int xi=0;xi<size.width;++xi){

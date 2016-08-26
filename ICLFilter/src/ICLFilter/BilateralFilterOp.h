@@ -32,7 +32,7 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/Core.h>
+#include <ICLCore/Img.h>
 
 namespace icl {
 
@@ -50,17 +50,18 @@ class ICLFilter_API BilateralFilterOp : public filter::UnaryOp, public utils::Un
 public:
 
 	enum Mode {BEST, GPU, CPU};
+	enum Method {GAUSS, KUWAHARA};
 	/**
 	 * @brief BilateralFilterICL Standard constructor
 	 */
-	BilateralFilterOp(Mode mode = BEST);
+	BilateralFilterOp(Mode mode = BEST, Method method = GAUSS);
 	/**
 	 * @brief BilateralFilterICL Custom constructor to init radius, sigma_s and sigma_r
 	 * @param radius kernel radius
 	 * @param sigma_s sigma_s component
 	 * @param sigma_r sigma_r component
 	 */
-	BilateralFilterOp(int radius, float sigma_s, float sigma_r, bool _use_lab = true, Mode mode = BEST);
+	BilateralFilterOp(int radius, float sigma_s, float sigma_r, bool _use_lab = true, Mode mode = BEST, Method method = GAUSS);
 	/// Destructor
 	virtual ~BilateralFilterOp();
 
@@ -91,6 +92,8 @@ public:
 	float getSigmaS() { return this->sigma_s; }
 	float getSigmaR() { return this->sigma_r; }
 
+	core::Img32f const &getSumImg();
+
 protected:
 
 	bool use_lab;
@@ -100,6 +103,8 @@ protected:
 	float sigma_s;
 	/// “Minimum” amplitude of an edge
 	float sigma_r;
+	/// Bilateral filter method used
+	Method _method;
 
 private:
 
@@ -111,7 +116,7 @@ private:
 	/**
 	 * @brief init internal initialization function
 	 */
-	void init(Mode mode);
+	void init(Mode mode, Method method);
 
 };
 

@@ -30,6 +30,7 @@
 
 #include <ICLCV/LensUndistortionCalibrator.h>
 #include <ICLCore/OpenCV.h>
+#include <ICLUtils/StringUtils.h>
 
 #include <opencv/cv.h>
 
@@ -58,9 +59,10 @@ namespace icl{
           push_back(Point32f(float(x)*size.width, float(y)*size.height));
         }
       }
+      m_gridBoundarySize = Size32f(dims.width * size.width, dims.height * size.height);
     }
     
-    static void init_grid(std::vector<Point32f> &dst,
+    static Size init_grid(std::vector<Point32f> &dst,
                           const Size &dims, 
                           const Size32f &markerSize, 
                           const Size32f &markerSpacing){
@@ -76,17 +78,20 @@ namespace icl{
           }
         }
       }
+      return Size((dims.width-1) * markerSpacing.width + markerSize.width,
+                  (dims.height-1) * markerSpacing.height + markerSize.height);
+
     }
     
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                              const Size32f &markerSize, 
                                                              const Size32f &markerSpacing){
-      init_grid(*this, markerGridDims, markerSize, markerSpacing);
+      m_gridBoundarySize = init_grid(*this, markerGridDims, markerSize, markerSpacing);
     }
     LensUndistortionCalibrator::GridDefinition::GridDefinition(const Size &markerGridDims, 
                                                                float markerDim, 
                                                                float markerSpacing){
-      init_grid(*this, markerGridDims, Size32f(markerDim,markerDim), Size32f(markerSpacing,markerSpacing));
+      m_gridBoundarySize = init_grid(*this, markerGridDims, Size32f(markerDim,markerDim), Size32f(markerSpacing,markerSpacing));
     }
 
     LensUndistortionCalibrator::LensUndistortionCalibrator():m_data(0){
@@ -108,6 +113,12 @@ namespace icl{
       clear();
     }
 
+    void LensUndistortionCalibrator::init(const Size &imageSize){
+      if(!m_data) m_data = new Data;
+      m_data->imageSize = imageSize;
+      clear();
+    }
+
     bool LensUndistortionCalibrator::isNull() const{
       return !m_data;
     }
@@ -120,7 +131,9 @@ namespace icl{
       ICLASSERT_THROW(m_data, ICLException("LensUndistortionCalibrator::addPoints: instance is null"));
       ICLASSERT_THROW(imagePoints.size() == gridDef.size(),
         ICLException("LensUndistortionCalibrator::addPoints: "
-        "number of points in the grid does not match with the number of image points"));
+        "number of points in the grid does not match with the number of image points ("
+                     "imagePoints.size():" + str(imagePoints.size()) + " gridDef.size(): "
+                     + str(gridDef.size()) + ")"));
       std::copy(imagePoints.begin(), imagePoints.end(), std::back_inserter(m_data->points));
       std::copy(gridDef.begin(), gridDef.end(), std::back_inserter(m_data->objPoints));
       m_data->subSetSizes.push_back(imagePoints.size());
@@ -131,6 +144,14 @@ namespace icl{
       m_data->points.clear();
       m_data->objPoints.clear();
       m_data->subSetSizes.clear();
+    }
+
+    void LensUndistortionCalibrator::undoLast(){
+      if(!m_data->subSetSizes.size()) return;
+      int lastSize = m_data->subSetSizes.back();
+      m_data->points.resize(m_data->points.size()-lastSize);
+      m_data->objPoints.resize(m_data->objPoints.size()-lastSize);
+      m_data->subSetSizes.pop_back();
     }
     
     io::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){

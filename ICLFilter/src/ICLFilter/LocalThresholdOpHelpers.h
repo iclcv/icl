@@ -182,9 +182,9 @@ namespace icl{
 
 #define INST_FAST_LT(TS,TI,TD,WITH_GAMMA)                               \
   template void fast_lt<lt_icl##TS,lt_icl##TI,lt_icl##TD,               \
-    typename ThreshType<lt_icl##TS>::T,WITH_GAMMA>                      \
+    ThreshType<lt_icl##TS>::T,WITH_GAMMA>                      \
   (const lt_icl##TS*, const lt_icl##TI*, lt_icl##TD*, int, int,         \
-   int,typename ThreshType<lt_icl##TS>::T,float,int)
+   int, ThreshType<lt_icl##TS>::T,float,int)
 
 #define INST_FAST_LT_FOR_SRC_TYPE(SRC,WITH_GAMMA) \
   INST_FAST_LT(SRC,32s,8u,WITH_GAMMA);            \

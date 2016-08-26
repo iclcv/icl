@@ -69,8 +69,6 @@ namespace icl{
         "                             const float4 position,                                                                                                                          \n"
         "                             const int type, const int groupBit) {                                                                                                           \n"
         "    const int i = get_global_id(0);                                                                                                                                          \n"
-        "    if(groupmapbuffer[i])                                                                                                                                                    \n"
-        "        return;                                                                                                                                                              \n"
         "    float4 relpoint;                                                                                                                                                         \n"
         "    relpoint.x = pcbuffer[4*i] - position.x;                                                                                                                                 \n"
         "    relpoint.y = pcbuffer[4*i+1] - position.y;                                                                                                                               \n"
@@ -79,11 +77,11 @@ namespace icl{
         "    if(a == 0 || b == 0 || c == 0)                                                                                                                                           \n"
         "        return;                                                                                                                                                              \n"
         "    if(type == 0)                                                                                                                                                            \n"
-        "        groupmapbuffer[i] = ( (relpoint.x <= a) && (relpoint.x >= -a) && (relpoint.y <= b) && (relpoint.y >= -b) &&(relpoint.z <= c) && (relpoint.z >= -c) ) << groupBit;    \n"
+        "        groupmapbuffer[i] |= ( (relpoint.x <= a) && (relpoint.x >= -a) && (relpoint.y <= b) && (relpoint.y >= -b) &&(relpoint.z <= c) && (relpoint.z >= -c) ) << groupBit;   \n"
         "    else if(type == 1)                                                                                                                                                       \n"
-        "        groupmapbuffer[i] = ( (relpoint.x*relpoint.x)/(a*a) + (relpoint.y*relpoint.y)/(b*b) + (relpoint.z*relpoint.z)/(c*c) <= 1 ) << groupBit;                              \n"
+        "        groupmapbuffer[i] |= ( (relpoint.x*relpoint.x)/(a*a) + (relpoint.y*relpoint.y)/(b*b) + (relpoint.z*relpoint.z)/(c*c) <= 1 ) << groupBit;                             \n"
         "    else if(type == 2)                                                                                                                                                       \n"
-        "        groupmapbuffer[i] = ( ((relpoint.x*relpoint.x)/(a*a) + (relpoint.y*relpoint.y)/(b*b) <= 1) && (relpoint.z <= c) && (relpoint.z >= -c) ) << groupBit;                 \n"
+        "        groupmapbuffer[i] |= ( ((relpoint.x*relpoint.x)/(a*a) + (relpoint.y*relpoint.y)/(b*b) <= 1) && (relpoint.z <= c) && (relpoint.z >= -c) ) << groupBit;                \n"
         "}                                                                                                                                                                            \n"
         "                                                                                                                                                                             \n"
         "__kernel void createActionMap(const __global unsigned char *groupmapbuffer,                                                                                                  \n"
@@ -205,6 +203,8 @@ namespace icl{
                                it->position, opencltype, groupBit);
                 kernelCreateGroupMap.apply(dim);
 
+                groupmapbuffer.read(groupMap.data(), dim);
+
                 #else
 
                 // for all points
@@ -225,10 +225,6 @@ namespace icl{
                 #endif
 
             }
-
-            #ifdef ICL_HAVE_OPENCL
-            groupmapbuffer.read(groupMap.data(), dim);
-            #endif
 
             // for all filter actions
             for(std::vector<utils::SmartPtr<FilterAction> >::iterator actionit = config.filterActions.begin(); actionit != config.filterActions.end(); ++actionit) {
@@ -342,7 +338,7 @@ namespace icl{
                         throw utils::ParseException("Part attribute must be inner or outer.");
                     try{
                         groupBit = mapGroupIdToBit.at(id);
-                    } catch(const std::out_of_range& oor) {
+                    } catch(const std::out_of_range&) {
                         throw utils::ParseException("No primitive group with id " + id + " has been defined.");
                     }
                     formula.push_back(newIntersection);
@@ -370,7 +366,7 @@ namespace icl{
                             throw utils::ParseException("Part attribute must be inner or outer.");
                         try{
                             groupBit = mapGroupIdToBit.at(id);
-                        } catch(const std::out_of_range& oor) {
+                        } catch(const std::out_of_range&) {
                             throw utils::ParseException("No primitive group with id " + id + " has been defined.");
                         }
                         formula.push_back(newIntersection);

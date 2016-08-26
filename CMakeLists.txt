@@ -75,10 +75,10 @@ ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
 
 #if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
-#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
-#                              -Werror -Wno-\\#warnings 
-#                              -Wno-deprecated-declarations 
-#                              -Wno-uninitialized 
+#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline
+#                              -Werror -Wno-\\#warnings
+#                              -Wno-deprecated-declarations
+#                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
   set(ICL_DEACTIVATED_WARNING "")
@@ -141,7 +141,7 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "7" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "12" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 SET(ICL_NAME                   icl)
@@ -229,20 +229,23 @@ ENDIF(WIN32)
 
 IF(WIN32)
   SET(PKG_SEARCH_PATHS "")
-
+  SET(ARCH_DEPENDENT_INCLUDE_PATHS "")
   IF(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/x64;lib/msvc_x64")
   ELSE(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86;lib/msvc;lib/Win32")
   ENDIF(ICL_64BIT)
 ELSEIF(APPLE)
+  SET(ARCH_DEPENDENT_INCLUDE_PATHS "")
   SET(PKG_SEARCH_PATHS "/usr;/usr/local")
 ELSE(WIN32)
   SET(PKG_SEARCH_PATHS "/usr;/usr/local")
   IF(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/x86_64-linux-gnu;lib/intel64")
+    SET(ARCH_DEPENDENT_INCLUDE_PATHS "include/x86_64-linux-gnu")
   ELSE(ICL_64BIT)
     SET(ARCH_DEPENDENT_LIB_PATHS "lib/i386-linux-gnu;lib/ia32")
+    SET(ARCH_DEPENDENT_INCLUDE_PATHS "include/i386-linux-gnu")
   ENDIF(ICL_64BIT)
 ENDIF(WIN32)
 
@@ -352,7 +355,11 @@ IF(BUILD_WITH_OPENCL)
   FIND_PACKAGE(OpenCL REQUIRED)
   IF(OpenCL_FOUND)
     SET(OPENCL_FOUND TRUE)
+    IF(WIN32)
+    SET(CMAKE_CXX_FLAGS "/arch:SSE2 ${CMAKE_CXX_FLAGS}")
+    ELSE()
     SET(CMAKE_CXX_FLAGS "-msse2 ${CMAKE_CXX_FLAGS}")
+    ENDIF()
    ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCL)
    SET(OPENCL_LIBRARIES ${OpenCL_LIBRARIES})
   ENDIF()
@@ -392,7 +399,7 @@ IF(BUILD_WITH_OPENCV)
     # don't show it in the GUI
     MARK_AS_ADVANCED(OPENCV_FOUND)
     MARK_AS_ADVANCED(OpenCV_FOUND)
-    
+
     IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_OLD_STYLE)
     ELSE()
@@ -539,7 +546,7 @@ IF(BUILD_WITH_QT)
   SET(ICL_QT_MODULES Core Gui Multimedia Widgets OpenGL)
 
   SET(ICL_ALL_QT_LIBS_FOUND TRUE)
-  
+
   FOREACH(M ${ICL_QT_MODULES})
     FIND_PACKAGE(Qt5${M} REQUIRED HINTS ${QT_ROOT})
     IF(NOT Qt5${M}_FOUND)
@@ -549,7 +556,7 @@ IF(BUILD_WITH_QT)
       MESSAGE(STATUS "Found Qt-Module ${M}")
     ENDIF()
   ENDFOREACH()
-  
+
   IF(ICL_ALL_QT_LIBS_FOUND)
     MESSAGE(STATUS "Found: All Qt Modules")
     SET(QT_FOUND TRUE)
@@ -559,7 +566,7 @@ IF(BUILD_WITH_QT)
     IF(NOT WIN32)
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     ENDIF(NOT WIN32)
-    
+
     # This creates full library paths from Qt's colon separated paths.
     # Colon separated Qt library paths only work when Qt's find package was called.
     # This is not necessarily done in projects linking against icl so we need full
@@ -574,18 +581,18 @@ IF(BUILD_WITH_QT)
       SET(QWHAT SONAME)
       SET(QPFX "")
     ENDIF()
-    
+
     FOREACH(M ${ICL_QT_MODULES})
       get_target_property(ICLQt5${M}Lib${QPFX} Qt5::${M} IMPORTED_${QWHAT}_RELEASE)
     ENDFOREACH()
-    
+
     IF(UNIX AND NOT APPLE)
       # For some reason cmake does not add library paths to rpath when they end
       # with a number like libQt5Core.so.5. Changing the linked libraries to the
       # simple .so resolves this problem.
       get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
       get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} ${ICL_FILE_NAME_COMPONENT_DIR})
-      
+
       FOREACH(M ${ICL_QT_MODULES})
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5${M}LibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5${M}Lib}")
       ENDFOREACH()
@@ -861,11 +868,37 @@ FOREACH(EXT SSE2 SSE3 SSSE3)
 ENDFOREACH()
 
 IF(BUILD_WITH_BULLET)
-  FIND_PACKAGE(Bullet REQUIRED)
-  IF(BULLET_FOUND)
-    ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
+  #SET(BULLET_ROOT BULLET_ROOT CACHE PATH "Root directory BULLET")
+  IF(BUILD_WITH_BULLET_OPTIONAL)
+	FIND_PACKAGE(Bullet QUIET HINTS ${BULLET_ROOT})
+    IF(BULLET_FOUND)
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
+    ELSE()
+      MESSAGE(STATUS "Cloud NOT find OPTIONAL BULLET (missing: libs and/or headers, continuing...)")
+      SET(BUILD_WITH_BULLET FALSE)
+      SET(BULLET_INCLUDE_DIRS "")
+      SET(BULLET_LIBRARIES "")
+	  SET(BULLET_ROOT_DIR "")
+    ENDIF()
+  ELSE()
+	FIND_PACKAGE(Bullet REQUIRED HINTS ${BULLET_ROOT})
+    IF(BULLET_FOUND)
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
+    ENDIF()
   ENDIF()
+  IF(BULLET_FOUND)
+	FOREACH(L ${BULLET_LIBRARIES})
+	  IF(NOT EXISTS ${L})
+		LIST( APPEND BULLET_LIBS_NEW "${BULLET_ROOT_DIR}/${BULLET_LIBRARY_DIRS}/lib${L}${CMAKE_FIND_LIBRARY_SUFFIXES}" )
+	  ELSE()
+		LIST( APPEND BULLET_LIBS_NEW "${L}")
+	  ENDIF()
+	ENDFOREACH()
+	SET(BULLET_LIBRARIES ${BULLET_LIBS_NEW})
+	MESSAGE(STATUS "Found Bullet: \n INCLUDES: ${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS} \n LIBS: ${BULLET_LIBRARIES}")
+  ENDIF(BULLET_FOUND)
 ENDIF()
+
 
 IF(BUILD_WITH_LIBAV)
   ICL_FIND_PACKAGE(NAME libav
@@ -921,7 +954,7 @@ INCLUDE_DIRECTORIES(${IPP_INCLUDE_DIRS}
                     ${Qt5Multimedia_INCLUDE_DIRS}
                     ${Qt5Widgets_INCLUDE_DIRS}
                     ${Qt5OpenGL_INCLUDE_DIRS}
-                    ${BULLET_INCLUDE_DIRS}
+					"${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}"
                     ${RST_INCLUDE_DIRS}
                     ${XIAPI_INCLUDE_DIRS}
                     ${LIBIRIMAGER_INCLUDE_DIRS})
@@ -1073,7 +1106,7 @@ ENDIF()
 
 
 # ----- Summary of all dependencies
-SET(OPTS OPENCV QT OPENGL RSB RST RSC PROTOBUF EIGEN3 IPP MKL MESASR IMAGEMAGICK LIBAV LIBDC LIBFREENECT LIBFREENECT2 XINE 
+SET(OPTS OPENCV QT OPENGL RSB RST RSC PROTOBUF EIGEN3 IPP MKL MESASR IMAGEMAGICK LIBAV LIBDC LIBFREENECT LIBFREENECT2 XINE
   V4L LIBUSB ZMQ PYLON OPENCL OPENNI PCL BULLLET XIAPI LIBIRIMAGER LIBUDEV)
 IF(NOT WIN32)
   LIST(APPEND OPTS DL)
@@ -1093,10 +1126,10 @@ ENDFOREACH()
 SET(BUILD_MODULES  Utils Math Core Filter IO CV Geom Markers)
 IF(QT_FOUND)
   LIST(APPEND BUILD_MODULES Qt)
-ENDIF()     
+ENDIF()
 IF(BULLET_FOUND)
   LIST(APPEND BUILD_MODULES Physics)
-ENDIF()     
+ENDIF()
 
 MESSAGE(" ------------ Build Options: --------------------------------------")
 MESSAGE(" Build Type: .............. ${CMAKE_BUILD_TYPE}")
@@ -1112,7 +1145,7 @@ FOREACH(O ${OPTS})
     SET(FILL ".${FILL}")
     MATH(EXPR L "${L}-1")
   ENDWHILE()
-  
+
   IF(${O}_FOUND)
     SET(WHERE "--")
     IF(${O}_DIR)
@@ -1173,5 +1206,3 @@ FOREACH(G Generic_cameras|OPENCV|QT
   ENDIF()
   MESSAGE(" ${WHAT} ${FILL} ${HAVE}")
 ENDFOREACH()
-
-

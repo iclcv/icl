@@ -1832,8 +1832,14 @@ namespace icl {
       // {{{ open
   
       ICLASSERT_RETURN(poSrc);
-      
+
+    //    SHOW(*poSrc);
+      //if(ppoDst) SHOW(*ppoDst);
+    
       ImgBase *poDst = ensureCompatible(ppoDst,poSrc->getDepth(),poSrc->getSize(),poSrc->getChannels(),poSrc->getFormat());
+    //SHOW(poDst);
+    // SHOW(*poDst);
+    
       poDst->setTime(poSrc->getTime());
       poDst->setMetaData(poSrc->getMetaData());
       
@@ -1861,7 +1867,9 @@ namespace icl {
       }
       const ImgBase *poFullSrc = poSrc->shallowCopy(Rect(Point::null,poSrc->getSize()));
       ImgBase *poFullDst = poDst->shallowCopy(Rect(Point::null,poDst->getSize()));
-      flippedCopyROI(eAxis,poFullSrc,&poFullDst);                 
+      flippedCopyROI(eAxis,poFullSrc,&poFullDst);            
+      delete poFullSrc;
+      delete poFullDst;
     }
   
     // }}}

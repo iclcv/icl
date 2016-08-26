@@ -48,6 +48,12 @@ namespace icl{
       CheckerboardDetector::Checkerboard cb;
       IplImage *ipl;
       Img8u grayBuf;
+      Img8u buf8u;
+      ImgBase *buf;
+      Data():buf(0){}
+      ~Data(){
+        ICL_DELETE(buf);
+      }
     };
 
     CheckerboardDetector::CheckerboardDetector():m_data(0){
@@ -82,6 +88,24 @@ namespace icl{
    
     bool CheckerboardDetector::isNull() const{
       return !m_data;
+    }
+
+    const CheckerboardDetector::Checkerboard &
+    CheckerboardDetector::detect(const core::ImgBase *image){
+      if(!image) throw ICLException("CheckerboardDetector::detect(const core::ImgBase *image): image is null");
+      if(image->getDepth() == depth8u){
+        return detect(*image->as8u());
+      }
+      utils::Range<icl64f> mm = image->getMinMax();
+      if(mm.minVal >= 0 && mm.maxVal <= 255){
+        image->convert(&m_data->buf8u);
+      }else{
+        image->deepCopy(&m_data->buf);
+        ImgBase *buf = m_data->buf;
+        buf->normalizeImg(mm, Range64f(0,255));
+        buf->convert(&m_data->buf8u);
+      }
+      return detect(m_data->buf8u);
     }
 
     const CheckerboardDetector::Checkerboard &

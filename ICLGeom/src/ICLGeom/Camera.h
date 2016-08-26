@@ -193,18 +193,142 @@ namespace icl {
           defining the projection). Therefore an arbitrary value for f != 0 may be passed to the
           function.
           The method minimizes the algebraic error with the direct linear transform algorithm in
-          which a SVD is used.
-          If IPP is not available, this function uses calibrate_pinv(std::vector<Vec>,std::vector<utils::Point32f>,float)
+          which an SVD is used.
       */
-      static Camera calibrate(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+      static Camera calibrate(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1, 
+                              bool performLMAOptimization=true)
+        throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
       /// Uses the passed world point -- image point references to estimate the projection parameters.
       /** Same as the method calibrate, but using a pseudoinvers instead of the SVD for the estimation.
           This method is less stable and less exact. */
-      static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+      static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1, 
+                                   bool performLMAOptimization=true)
+        throw (NotEnoughDataPointsException,math::SingularMatrixException);
   
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
+      static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                        const Camera &intrinsicCamValue, const RenderParams &renderParams=RenderParams(),
+                                        bool performLMAOptimization=true)
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
+      static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis, 
+                                        const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams=RenderParams(),
+                                        bool performLMAOptimization=true)
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+
+      /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
+      /** In many cases, when camera calibration is performed in a realy scene, it is quite difficult to place the calibration
+          object well alligned and still in such a way that it covers a major fraction of the camera image. Instead, the calibration
+          object usually is rather small, which leads to a poor calibration performace. 
+          
+          Tests showed (here, we used rendered images of a calibration object to get real ground-truth data) that in case
+          of the common calibration performed by Camera::calibrate or Camera::calibrate_pinv sometimes lead to extreme camera
+          positioning errors when the calibration object is too far away. The reason for this is that a far-awys calibration object
+          looks more and more isometric in the camera image which makes it more and more difficult for the method to distinguish
+          between a closer camera with a shot focal length or a futher-away camera with a higher focal length. Unfortunately,
+          this effect often seems to be optimized by favoring one or another of these quantities, so even z-positioning errors of
+          more than 10 cm could be observed. This effect is less important, when using such a camera in a multi-camera setup,
+          as here, the error that is introduced is similarly smally as the missing-vanishing-point-effect that caused it 
+          in the first place. However, in other applications or even when calibrating a Kinect-Device, the camera position 
+          defines the basis for point cloud creation, so here a better positioning is mandatory.
+          
+          To avoid these issues, it is recommended to perform the camera calibration in two steps. In the first step, only the 
+          intrinsic camera parameters are optimized. During this step, camera and calibration object can be positioned arbitrarily
+          so that the calibration object perfectly covers the whole image space. In the 2nd step, the already obtained intrinsic 
+          parameters are fixed so that only the camera's extrinsic parameters (position and orientation) has to be optimized
+          
+          \section ALG Algorithm
+          
+          Outgoing from the a the camera's projection law: (u',v', 0, h) = P C x, which results in homogenized real screen coordinates 
+          u = u'/h and v = v'/h the method internally creates a system of linear equation to get a least square algebraic optimum.
+          
+          Let \f[
+           P = \left(\begin{array}{cccc} 
+           fm_x & s     & p_x & 0 \\
+           0    & f m_y & p_y & 0 \\
+           0    & 0     & 0 &   0 \\
+           0    & 0     & 1 &   0
+         \end{array}\right)
+          \f]
+          
+          be the projection matrix and C the camera's coordinate frame transformation matrix (which transforms points from
+          the world frame into the local camera frame. Further, we denote the lines of C by C<sub>1</sub>, C<sub>2</sub>, 
+          C<sub>3</sub> and C<sub>4</sub>. 
+
+          The projection law leads to the two formulas for u and v:
+
+          \f[
+          u = \frac{fm_x C_1 x + s C_2 x + p_x C_3 x}{C_3 x} 
+          \f]
+          and 
+          \f[
+          v = \frac{fm_y C_2 x + p_y C_3 x}{C_3 x} 
+          \f]
+
+          which can be made linear wrt. the coefficients of C by deviding by C<sub>3</sub>x  and then bringing the 
+          left part to the right, yielding:
+
+          \f[
+          fm_x C_1 x + s C_2 x + (p_x - u) C_3 x = 0
+          \f]
+          and 
+          \f[
+          fm_y C_2 x + (p_y - v) C_3 x = 0
+          \f]
+
+          This allows us to create a linear system of equations of the shape Ax=0, which is solved 
+          by finding the eigenvector to the smallest eigenvalue of A (which is internally done using SVD).
+
+          For each input point x=(x,y,z,1) and corresponding image point (u,v), 
+          we define d<sub>u</sub> = p<sub>x</sub> - u and  d<sub>v</sub> = p<sub>y</sub> - v 
+          in order to get two lines of the equation
+
+          \f[
+           P = \left(\begin{array}{cccccccccccc} 
+           fm_x x & fm_x y & fm_z x & fm_x & s x & s y & s z & s & d_u x & d_u y & d_u z & d_u \\
+           0 & 0 & 0 & 0 & fm_y x & fm_y y & fm_y x & fm_y & d_v x & d_v y & d_v z & d_v \\
+           ...
+         \end{array}\right) ( C_1 C_2 C_3 )^T
+          \f].
+
+          Solving Px=0, yields a 12-D vectors whose elements written row-by-row into the first 3 lines 
+          of a 4x4 identity matrix is almost our desired relative camera transform matrix C. Actually, 
+          we receive only a scaled version of the solution C' = kC, which has to be normalized to make the 
+          rotation part become unitary. The normalization is performed using RQ-decomposition on the 
+          rotation part R' (upper left 3x3 sub-matrix of C'), which decomposes R' into a product R'=R*Q.
+          Here, per definition, the resulting Q is unitary and therefore it is identical to the actual 
+          desired rotation part of C. As the RQ-decomposition does two things at once, it normalizes 
+          and it orthogonalizes the rows and colums of R', the factor k that is needed to also scale the 
+          translation part of C' cannot simply be extracted using e.g. R'(0,0) / Q(0,0) or a mean 
+          fraction between corresponding elements. Instead, we use the trace(R)/3, which could be shown to 
+          provide better results.
+          
+          \section LMA Further non-linear optimization
+
+          Optionally, the resulting camera parameters, which result from an algebraic error minimization,
+          can be optimized wrt. the pixel projection error. Experiments showed, that this can reduce the actual
+          error by a factor of 10. The LMA-based optimization takes slightly longer then the normal
+          linear optimization, but it is still real-time applicable and it should not increase the error, which 
+          is why, it is recommended to be used!
+          
+          \section PARAMS The function parameters
+
+          fx, fy are the known camera x- and y-focal lengths, s is the skew, and px and py is the principal point offset */
+      static Camera calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, 
+                                        float fx, float fy, float s, float px ,float py,
+                                        const RenderParams &renderParams=RenderParams(),
+                                        bool performLMAOptimization=true)
+      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+
+      /// performs a non-linear LMA-based optimization to improve camera calibration results
+      static Camera optimize_camera_calibration_lma(const std::vector<Vec> &Xws,
+                                                    const std::vector<utils::Point32f> xis, 
+                                                    const Camera &init);
+
       /** @} @{ @name putils::rojection functions */
   
       // projections normal
@@ -242,6 +366,7 @@ namespace icl {
       
       /// Returns a view-ray equation of given point in the world
       ViewRay getViewRay(const Vec &Xw) const;
+
       /// returns estimated 3D point for given pixel and plane equation
       Vec estimate3DPosition(const utils::Point32f &pixel, const PlaneEquation &plane) const throw (utils::ICLException);
       /// calculates the intersection point between this view ray and a given plane
@@ -329,8 +454,18 @@ namespace icl {
   
       void setName(const std::string &name) { m_name = name; }
       void setPosition(const Vec &pos) { m_pos = pos; }
-      void setNorm(const Vec &norm) { m_norm = norm; m_norm[3] = 0; m_norm.normalize(); m_norm[3] = 1; } //!< gets automatically normalized
-      void setUp(const Vec &up) { m_up = up; m_up[3] = 0; m_up.normalize(); m_up[3] = 1; } //!< gets automatically normalized
+      void setNorm(const Vec &norm, bool autoOrthogonalizeRotationMatrix=false) {
+        m_norm = norm; m_norm[3] = 0; m_norm.normalize(); m_norm[3] = 1;
+        if(autoOrthogonalizeRotationMatrix) orthogonalizeRotationMatrix();
+      }
+      /// gets automatically normalized
+      void setUp(const Vec &up, bool autoOrthogonalizeRotationMatrix=false) {
+        m_up = up; m_up[3] = 0; m_up.normalize(); m_up[3] = 1;
+        if(autoOrthogonalizeRotationMatrix) orthogonalizeRotationMatrix();
+      } 
+      /// extracts the current rotation matrix and uses gramSchmidth orthogonalization
+      void orthogonalizeRotationMatrix();
+      
       void setFocalLength(float value) { m_f = value; }
       void setPrincipalPointOffset(float px, float py) { m_px = px; m_py = py; }
       void setPrincipalPointOffset(const utils::Point32f &p) { m_px = p.x; m_py = p.y; }
@@ -443,6 +578,11 @@ namespace icl {
                              const std::vector<utils::Point32f> &UVs,
                              bool removeInvalidPoints=false) throw (utils::ICLException);
   
+      /// estimate world frame pose of object specified by given object points
+      Mat estimatePose(const std::vector<Vec> &objectCoords,
+                       const std::vector<utils::Point32f> &imageCoords,
+                       bool performLMAOptimization=true);
+
       /// multiview 3D point estimation using svd-based linear optimization (should not be used)
       /** This functions seems to provide false results for more than 2 views:
           use estimate_3D instead*/
@@ -450,6 +590,14 @@ namespace icl {
                                  const std::vector<utils::Point32f> &UVs);
   
       /** @}*/
+
+      /// parses a given image-undistortion file and creates a camera
+      /** Please note that only the camera's intrinsic parameters are in the file, 
+          so extrinsic parameters for position and orientation will be identical to a
+          defautl created Camera instance. The undistortion file must use the model
+          "MatlabModel5Params". The given resolution is not used if the given
+          file is a standard camera-calibration file */
+      static Camera create_camera_from_calibration_or_udist_file(const std::string &filename) throw (utils::ICLException);
   
       protected:
       static Mat createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos);

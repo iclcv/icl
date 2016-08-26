@@ -76,7 +76,7 @@ void init(){
   gui << ( VBox() 
            << Image().handle("input").minSize(8,6)
            << (HBox().label("desired params").maxSize(100,4) 
-               << Combo("QVGA,!VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
+               << Combo("1:1,QVGA,VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("size")
                << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
                )
@@ -92,7 +92,11 @@ void init(){
 
 void run(){
   g.useDesired(parse<depth>(gui["ddepth"]));
-  g.useDesired(parse<Size>(gui["dsize"]));
+  if(gui["dsize"].as<std::string>() == "1:1"){
+    g.useDesired(Size::null);
+  }else{
+    g.useDesired(parse<Size>(gui["dsize"]));
+  }
   g.useDesired(parse<format>(gui["dformat"]));
   
   const ImgBase *image = g.grab();

@@ -127,22 +127,37 @@ namespace icl {
 
     CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
                        const string &accessMode, size_t size,const void *src)
-      throw (CLBufferException) {
-      impl = new Impl(context, cmdQueue, accessMode, size, src);
-
+	  throw (CLBufferException)
+		: CLMemory(CLMemory::Buffer) {
+		impl = new Impl(context, cmdQueue, accessMode, size, src);
+		setDimensions(size,1,1);
+		m_byte_depth = 1; // here we only have the bytes and cannot estimate the original number of bytes for a single element
     }
 
-    CLBuffer::CLBuffer(){
+	CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
+					   const string &accessMode, size_t length, size_t byteDepth,const void *src)
+	  throw (CLBufferException)
+		: CLMemory(CLMemory::Buffer) {
+		impl = new Impl(context, cmdQueue, accessMode, byteDepth*length, src);
+		setDimensions(length,1,1);
+		m_byte_depth = byteDepth; // here we only have the bytes and cannot estimate the original number of bytes for a single element
+	}
+
+	CLBuffer::CLBuffer()
+		: CLMemory(CLMemory::Buffer) {
       impl = new Impl();
     }
-    CLBuffer::CLBuffer(const CLBuffer& other){
+
+	CLBuffer::CLBuffer(const CLBuffer& other)
+		: CLMemory(other) {
       impl = new Impl(*(other.impl));
     }
 
-    CLBuffer& CLBuffer::operator=(CLBuffer const& other){
-      impl->cmdQueue = other.impl->cmdQueue;
-      impl->buffer = other.impl->buffer;
-      return *this;
+	CLBuffer& CLBuffer::operator=(CLBuffer const& other) {
+		CLMemory::operator=(other);
+		impl->cmdQueue = other.impl->cmdQueue;
+		impl->buffer = other.impl->buffer;
+		return *this;
     }
 
     CLBuffer::~CLBuffer() {

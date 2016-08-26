@@ -81,6 +81,7 @@ namespace icl{
 
       /// forwards call to current backend
       void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException);
+
       
       /// deferred initialization from ProgArg (most common perhaps)
       /** Prog-arg is assumed to have 2 sub-args */

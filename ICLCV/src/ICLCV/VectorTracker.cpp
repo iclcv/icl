@@ -263,10 +263,13 @@ namespace icl{
   
       Data(int dim, bool tryOpt,VectorTracker::IDmode idMode, 
            float distanceThreshold, float largeVal, 
-           const std::vector<float> &normFactors):
+           const std::vector<float> &normFactors,
+           VectorTracker::DistanceFunction df,
+           bool dfIsQualityFunction):
         VTMat(dim),tryOpt(tryOpt),nextID(0),idMode(idMode),
         thresh(distanceThreshold),largeVal(largeVal),
-        normFactors(normFactors),extrapolationMask(dim,true){
+        normFactors(normFactors),extrapolationMask(dim,true),
+        distanceFunction(df),dfIsQualityFunction(dfIsQualityFunction){
         
         bool all1 = true;
         for(unsigned int i=0;i<normFactors.size();++i){
@@ -291,6 +294,9 @@ namespace icl{
       std::vector<bool> idMask;
       std::vector<float> normFactors;
       std::vector<bool> extrapolationMask;
+      VectorTracker::DistanceFunction distanceFunction;
+      bool dfIsQualityFunction;
+      Array2D<float> lastDistMat;
       
       virtual void notifyIDLoss(int id){
         // DEBUG_LOG("notify id loss: " << id << "(idsMask.size is " << idMask.size() << ")");
@@ -361,8 +367,9 @@ namespace icl{
     }
     
     VectorTracker::VectorTracker(int dim, float largeDistance, const std::vector<float> &normFactors,
-                                 IDmode idMode, float distanceThreshold, bool tryOpt):
-      m_data(new VectorTracker::Data(dim,tryOpt,idMode,distanceThreshold,largeDistance,normFactors)){
+                                 IDmode idMode, float distanceThreshold, bool tryOpt, DistanceFunction df,
+                                 bool dfIsQualityFunction):
+      m_data(new VectorTracker::Data(dim,tryOpt,idMode,distanceThreshold,largeDistance,normFactors,df,dfIsQualityFunction)){
     }
     
     VectorTracker::VectorTracker(const VectorTracker &other):
@@ -392,6 +399,11 @@ namespace icl{
     bool VectorTracker::isNull() const{
       return !m_data;
     }
+
+    void VectorTracker::setDistanceFunction(DistanceFunction df){
+      m_data->distanceFunction = df;
+    }
+    
     
     void VectorTracker::pushData(const std::vector<Vec> &newData){
       if(!m_data){
@@ -419,8 +431,12 @@ namespace icl{
       }
       
       m_data->predict(m_data->extrapolationMask);
-      Array2D<float> distMat;
-      if((int)m_data->normFactors.size() == m_data->dim){
+      Array2D<float> &distMat = m_data->lastDistMat;
+      bool useCostMatrix = true;
+      if(m_data->distanceFunction){
+        distMat = m_data->createDistanceMatrix(newData,m_data->distanceFunction,m_data->largeVal);
+        useCostMatrix = !m_data->dfIsQualityFunction;
+      }else if((int)m_data->normFactors.size() == m_data->dim){
         distMat = m_data->createDistanceMatrix(newData,PearsonDist(m_data->normFactors),m_data->largeVal);
       }else{
         if(m_data->normFactors.size()){
@@ -429,7 +445,7 @@ namespace icl{
         distMat = m_data->createDistanceMatrix(newData,sqrt_eucl_dist,m_data->largeVal);
       }
       if(diff){
-        m_data->ass = HungarianAlgorithm<float>::apply(distMat);
+        m_data->ass = HungarianAlgorithm<float>::apply(distMat,useCostMatrix);
         // otherwise this is deferred to after trivial assignmnent check
       }
       
@@ -501,20 +517,21 @@ namespace icl{
       }
     }  
   
-    int VectorTracker::getID(int index) const{
+    int VectorTracker::getID(int index,float *lastErrorOrScore) const{
       ICLASSERT_RETURN_VAL(!isNull(),-1);
-  
-      // DEBUG_LOG("get id(" << index << ")");
-      // DEBUG_LOG("... ass.size:" << m_data->ass.size());
-      // DEBUG_LOG("... ids.size:" << m_data->ids.size());
       if(index >= 0 && index < (int)m_data->ass.size()){
-        
         int ass = m_data->ass.at(index);
-        // DEBUG_LOG("... ass[idx]: " << ass);
-        if(ass == -1) return -1;
-        return m_data->ids.at(ass);
-  
-        //      return m_data->ids[ m_data->ass[index] ];
+        if(ass == -1){
+          if(lastErrorOrScore){
+            *lastErrorOrScore = m_data->largeVal;
+          }
+          return -1;
+        }
+        int id = m_data->ids.at(ass);
+        if(lastErrorOrScore){
+          *lastErrorOrScore = m_data->lastDistMat(ass,id); // or perhaps, the other way around!
+        }
+        return id;
       }else{
         return -1;
       }

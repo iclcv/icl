@@ -600,11 +600,11 @@ namespace icl{
       string name = string(".tmpImage.")+timeStr+postfix;
       try{
         FileWriter(name).write(image);
-      }catch(FileOpenException &ex){
+      }catch(FileOpenException &){
         ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
         ERROR_LOG("                      image file in the current working directory)");
         return;
-      }catch(ICLException &ex){
+      }catch(ICLException &){
         ERROR_LOG("unable to show image (image could not be written to a temporary file)");
         return;
       }
@@ -640,11 +640,11 @@ namespace icl{
       }
       try{
         FileWriter(name).write(image);
-      }catch(FileOpenException &ex){
+      }catch(FileOpenException &){
         ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
         ERROR_LOG("                      image file in the current working directory)");
         return;
-      }catch(ICLException &ex){
+      }catch(ICLException &){
         ERROR_LOG("unable to show image (image could not be written to a temporary file)");
         return;
       }

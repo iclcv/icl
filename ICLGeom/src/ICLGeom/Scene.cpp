@@ -79,11 +79,8 @@ namespace icl{
       std::string lastName;
       Img8u nameTexture;
       CameraObject(Scene *parent, int cameraIndex, const float camSize, bool isShadowCam = false):
-      scene(parent),
-      index(cameraIndex),
-      S(camSize*50),
-      isShadowCam(isShadowCam)
-      {
+        scene(parent),index(cameraIndex), S(camSize*50), isShadowCam(isShadowCam){
+
         nameTexture = Img8u(Size(1,1),4);
 
         addVertex(Vec(0,0,0,1),geom_white());
@@ -127,8 +124,18 @@ namespace icl{
         int h = cam.getRenderParams().viewport.height;
 
         Mat T = cam.getCSTransformationMatrix().inv();
+        //if(isShadowCam){
+        //  DEBUG_LOG("index: " << index << "camera: " << cam);
+        //} ??
   #if 1
-
+        // this has some severe issue in some configurations? Why?
+        /** Idea: Yes, we could rotate stuff, but that wont help either!
+            CE in oktober '15:
+            I hope there is no fundamental issue with the camera stuff????
+            
+            ok, I found out that setting a light's norm does not update its up-vector
+            which can of course lead to any issues!
+            */
         try{
           PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
           const Point32f ps[4] = { Point32f(w-1,0), Point32f(0,0), Point32f(w-1,h-1), Point32f(0,h-1) };
@@ -1175,7 +1182,7 @@ namespace icl{
         float maxLen = iclMax(m_bounds[0].getLength(), m_bounds[1].getLength());
         maxLen = iclMax(m_bounds[2].getLength(), maxLen);
         newSceneMouseHandler->setSensitivities(maxLen);
-      }else{
+			} else {
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
       }
       m_mouseHandlers.push_back(newSceneMouseHandler);

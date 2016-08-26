@@ -41,6 +41,7 @@
 #include <ICLMath/StraightLine2D.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Configurable.h>
 
 namespace icl{
   namespace cv{
@@ -105,7 +106,10 @@ namespace icl{
         to the other two optizations.
         
     */
-    class ICLCV_API HoughLineDetector : public utils::Uncopyable{
+    class ICLCV_API HoughLineDetector : public utils::Configurable{
+      struct Data;
+      Data *m_data;
+      
       public:
   
       /// Create a new HoughLineDetectorInstance
@@ -126,44 +130,31 @@ namespace icl{
                         bool blurHoughSpace=true,
                         bool dilateEntries=true,
                         bool blurredSampling=false);
+
+      ~HoughLineDetector();
   
-      /// initializes the HoughLineDetector
-      void init(float dRho, float dR, const utils::Range32f &rRange, 
-                float rInhibitionRange, float rhoInhibitionRange,
-                bool gaussianInhibition=true,
-                bool blurHoughSpace=true,
-                bool dilateEntries=true,
-                bool blurredSampling=false);
       
       /// adds a new point
-      inline void add(const utils::Point &p){ 
-        add_intern(p.x,p.y); 
-      }
+      void add(const utils::Point &p);
   
       /// adds new points
-      inline void add(const std::vector<utils::Point> &ps){
-        for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
-      }
+      void add(const std::vector<utils::Point> &ps);
       
       /// adds a new point
-      inline void add(const utils::Point32f &p){ 
-        add_intern(p.x,p.y); 
-      }
+      void add(const utils::Point32f &p);
   
       /// adds new points
-      inline void add(const std::vector<utils::Point32f> &ps){
-        for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
-      }
+      void add(const std::vector<utils::Point32f> &ps);
   
       /// adds a new point
       template<class T>
-      inline void add(const math::FixedColVector<T,2> &p){ 
+      void add(const math::FixedColVector<T,2> &p){ 
         add_intern(p[0],p[1]); 
       }    
       
       /// adds new points
       template<class T>
-      inline void add(const std::vector<const math::FixedColVector<T,2> > &ps){
+      void add(const std::vector<const math::FixedColVector<T,2> > &ps){
         for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
       }
   
@@ -171,72 +162,55 @@ namespace icl{
       void add(const core::Img8u &binaryImage);
   
       /// returns current hough-table image
-      const core::Img32s &getImage() const { return m_image; }
+      const core::Img32s &getImage() const;
   
       /// returns current gaussian inhibition map
-      const core::Img32f &getInhibitionMap() const { return m_inhibitImage; }
+      const core::Img32f &getInhibitionMap() const;
   
       /// sets all hough table entries to 0
-      void clear();
+      void reset();
       
       /// detects up to max lines
-      std::vector<math::StraightLine2D> getLines(int max);
+      std::vector<math::StraightLine2D> getLines(int max, bool resetAfterwards=true);
   
       /// detects up to max lines and pushes the line significances into given destination vector
       /** significances are relative to the first line match, which's significance is always 1.0*/
-      std::vector<math::StraightLine2D> getLines(int max, std::vector<float> &significances);
+      std::vector<math::StraightLine2D> getLines(int max, std::vector<float> &significances, bool resetAfterwards=true);
       
       private:
-  
+      void prepare_all();
+      
+      /// initializes the HoughLineDetector
+      void prepare(float dRho, float dR, const utils::Range32f &rRange, 
+                   float rInhibitionRange, float rhoInhibitionRange,
+                   bool gaussianInhibition=true,
+                   bool blurHoughSpace=true,
+                   bool dilateEntries=true,
+                   bool blurredSampling=false);
+      
       /// internal utility function
-      inline float r(float rho, float x, float y) const{ 
-        return x*cos(rho) + y*sin(rho);
-      }
+      float r(float rho, float x, float y) const;
+
       /// internal utility function
-      inline int getX(float rho) const {
-        return round(rho * m_mrho);
-      }
+      int getX(float rho) const;
+
       /// internal utility function
-      inline int getY(float r) const {
-        return round(m_mr * r + m_br); 
-      }
+      int getY(float r) const;
+
       /// internal utility function
-      inline float getRho(int x) const{
-        return x/m_mrho;
-      }
+      float getRho(int x) const;
+
       /// internal utility function
-      inline float getR(int y) const{
-        return (y-m_br)/m_mr;
-      }
+      float getR(int y) const;
+
       /// internal utility function
-      inline void incLut(float rho, float r){
-        int x = getX(rho);
-        int y = getY(r);
-        if(y >= 0 && y < m_h){
-          m_lut(x,y)++;
-        }
-      }
+      void incLut(float rho, float r);
+
       /// internal utility function
-      inline void incLutBlurred(float rho, float r){
-        int x = getX(rho);
-        int y = getY(r);
-        if(y >= 0 && y < m_h){
-          if(y>0) m_lut(x,y-1)++;
-          m_lut(x,y)+=2;
-          if(y<m_w-1) m_lut(x,y+1)++;
-        }
-      }
+      void incLutBlurred(float rho, float r);
+
       /// internal utility function
-      inline int &cyclicLUT(int x, int y){
-        static int _null = 0;
-        if(y<0||y>=m_h) return _null;
-        int dx = x<0 ? m_w : x>=m_w ? -m_w : 0;
-        if(!m_image.getImageRect().contains(x+dx,y)){
-          ERROR_LOG("tryed to access " << x+dx << "," << y);
-          return _null;
-        }
-        return m_lut(x+dx,y);
-      }
+      int &cyclicLUT(int x, int y);
     
       /// internal utility function
       void apply_inhibition(const utils::Point &p);
@@ -250,27 +224,6 @@ namespace icl{
       /// internal utility function
       void blur_hough_space_if_necessary();
       
-  
-      float m_dRho;
-      utils::Range32f m_rRange;
-      int m_w;
-      int m_h;
-  
-      float m_mr;
-      float m_br;
-      float m_mrho;
-  
-      float m_rInhib;
-      float m_rhoInhib;
-  
-      bool m_gaussianInhibition;
-      bool m_blurHoughSpace;
-      bool m_dilateEntries;
-      bool m_blurredSampling;
-      
-      core::Channel32s m_lut;
-      core::Img32s m_image;
-      core::Img32f m_inhibitImage;
     };
     
   } // namespace cv

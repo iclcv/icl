@@ -83,7 +83,9 @@ namespace icl{
   
       /// initialization method (from given progarg)
       void init(const utils::ProgArg &pa);
-  
+      
+      /// releases the internal plugin (after this, isNull() returns true again!)
+      void release();
       
       /// sends a new image
       virtual void send(const core::ImgBase *image){

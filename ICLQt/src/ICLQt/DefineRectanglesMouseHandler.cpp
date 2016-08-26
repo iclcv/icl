@@ -30,6 +30,7 @@
 
 #include <ICLQt/DefineRectanglesMouseHandler.h>
 #include <ICLQt/DrawWidget.h>
+#include <ICLUtils/CompatMacros.h>
 
 using namespace icl::utils;
 using namespace icl::core;
