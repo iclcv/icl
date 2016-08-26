@@ -31,6 +31,7 @@
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Factory.h>
 #include <rsb/Handler.h>
+#include <rsb/Event.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
@@ -95,11 +96,13 @@ namespace icl{
           }
         }
 
-        struct Handler : public DataHandler<RSBImage>{
+        struct Handler : public rsb::Handler {
             RSBGrabber::Data *data;
             RSBGrabber *impl;
             Handler(RSBGrabber::Data *data, RSBGrabber *impl):data(data),impl(impl){}
-            virtual void notify(shared_ptr<RSBImage> image){
+            virtual void handle(shared_ptr<Event> event){
+              shared_ptr<RSBImage> image = boost::static_pointer_cast<RSBImage>(event->getData());
+              impl->setPropertyValue("rsb event received", event->getScope().toString());
               data->update(*image,impl);
               data->lastImageDataSize = image->data().length();
 
@@ -111,8 +114,6 @@ namespace icl{
         shared_ptr<rsb::Handler> handler;
 
 		void update(RSBImage &image, RSBGrabber *impl){
-
-		  impl->setPropertyValue("rsb event received","");
 		  Mutex::Locker lock(mutex); // "reentrant-ness" and external access
           const std::string &data = image.data();
 		  const std::string &mode = image.compressionmode();
@@ -130,11 +131,11 @@ namespace icl{
 		  impl->notifyNewImageAvailable(bufferImage);
         }
     };
-    
+
     RSBGrabber::RSBGrabber(){
       m_data = 0;
     }
-    
+
     RSBGrabber::RSBGrabber(const std::string &scope, const std::string &transportList):m_data(0){
       init(scope,transportList);
     }
@@ -145,13 +146,13 @@ namespace icl{
       m_data->outputImage = 0;
       m_data->bufferImage = 0;
       m_data->hasNewImage = false;
-      
+
       Scope rsbScope(scope);
       Factory &factory = rsb::getFactory();
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
-      
+
       TSet ts2 = rsbCfg.getTransports(true);
       TVec ts(ts2.begin(),ts2.end());
       std::vector<std::string> transports = tok(transportList,",");
@@ -190,7 +191,7 @@ namespace icl{
       addProperty("rsb event received","command","",0,0,"");
       Configurable::registerCallback(utils::function(this,&RSBGrabber::processPropertyChange));
     }
-    
+
     RSBGrabber::~RSBGrabber(){
       if(m_data){
         ICL_DELETE(m_data->outputImage);
@@ -200,7 +201,7 @@ namespace icl{
       }
     }
 
-     
+
     const ImgBase *RSBGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL(!isNull(),0);
       Mutex::Locker lock(m_data->mutex);
@@ -221,7 +222,7 @@ namespace icl{
     const std::vector<GrabberDeviceDescription> &RSBGrabber::getDeviceList(bool rescan){
       static std::vector<GrabberDeviceDescription> all;
       if(!rescan) return all;
-      
+
       /// TODO: list segments
 
       return all;
