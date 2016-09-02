@@ -40,13 +40,7 @@
 namespace icl{
   namespace math{
 
-  #ifdef WIN32
-    typedef std::complex<double> xcomplex;
-    #define __real__(C) (C)._Val[0]
-    #define __imag__(C) (C)._Val[1]
-  #else
-    typedef _Complex double xcomplex;
-  #endif
+  typedef std::complex<double> xcomplex;
 
     /****************************************************************************
      *
@@ -67,15 +61,15 @@ namespace icl{
     typedef double xreal;
     static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
     xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
-    static xreal xnorm(xcomplex z) { return __real__(z)*__real__(z) + __imag__(z)*__imag__(z); }
-    static xreal xabs(xcomplex z) { return sqrt(xnorm(z)); }
+    static xreal xnorm(xcomplex z) { return std::norm(z); }
+    static xreal xabs(xcomplex z) { return std::abs(z); }
     static xreal xroot(xreal x, int n) { return pow(x, 1.0 / n); }
     static int xlogb(xcomplex z) { return ilogb(xnorm(z)) / 2; }
     #define xbits(z) DBL_MANT_DIG
     #define xeta(z) DBL_EPSILON
     static void xscalbln(xcomplex *z, int e) {
-      __real__(*z) = scalbln(__real__(*z), e);
-      __imag__(*z) = scalbln(__imag__(*z), e);
+      z->real(scalbln(z->real(), e));
+      z->imag(scalbln(z->imag(), e));
     }
 
     // CAUCHY COMPUTES A LOWER BOUND ON THE MODULI OF THE ZEROS OF A
@@ -308,11 +302,7 @@ namespace icl{
       b = true;
       if(relstp < xeta(P[0])) tp = xeta(P[0]);
 
-  #ifdef WIN32
       *s *= 1.0 + xcomplex(1.0, 1.0)*sqrt(tp);
-  #else
-      *s *= 1.0 + (1.0 + 1.0i)*sqrt(tp);
-  #endif
 
       Ps = polyev(deg, *s, P, p);
       for(j = 1; j <= 5; j++){
@@ -506,15 +496,15 @@ namespace icl{
       xcomplex *roots = new xcomplex[degree+1];
 
       for (int i = 0; i <= degree; ++i) {
-        __real__(poly[i]) = in_real[i];
-        __imag__(poly[i]) = in_imag[i];
+        poly[i].real(in_real[i]);
+        poly[i].imag(in_imag[i]);
       }
 
       nroots = cpoly(degree, poly, roots);
 
       for (int i = 0; i < nroots; ++i) {
-        out_real[i] = __real__(roots[i]);
-        out_imag[i] = __imag__(roots[i]);
+        out_real[i] = roots[i].real();
+        out_imag[i] = roots[i].imag();
       }
 
       delete[] poly;
