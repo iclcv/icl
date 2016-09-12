@@ -84,6 +84,10 @@ namespace icl{
       /// returns a buffer that marks the current window of frequencies
       /// that is considered for the estimation of the heartrate.
       qt::PlotWidget::SeriesBuffer getWindowBuffer() const;
+      /// returns the framerate
+      int getFramerate() const;
+      /// returns the history depth
+      int getHistoryDepth() const;
 
       /// Destructor
       virtual ~HeartrateDetector();

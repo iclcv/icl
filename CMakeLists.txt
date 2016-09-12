@@ -400,7 +400,12 @@ IF(BUILD_WITH_OPENCV)
     # don't show it in the GUI
     MARK_AS_ADVANCED(OPENCV_FOUND)
     MARK_AS_ADVANCED(OpenCV_FOUND)
-    
+
+    message(STATUS "top:")
+    message(STATUS "${OpenCV_INSTALL_PATH}/share/opencv")
+    message(STATUS "bot:")
+    ADD_ICL_DEFINITIONS(-DICL_OPENCV_INSTALL_PATH="${OpenCV_INSTALL_PATH}")
+
     IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_OLD_STYLE)
     ELSE()

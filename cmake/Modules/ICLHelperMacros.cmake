@@ -341,7 +341,15 @@ ENDFUNCTION()
 FUNCTION(ADD_ICL_DEFINITIONS)
   foreach(var ${ARGV})
     string(REPLACE "-D" "" var "${var}")
-    SET(${var} 1 PARENT_SCOPE) # this is needed for ICLConfig.h
+    if("${var}" MATCHES "=")
+      string(REPLACE "=" ";" split "${var}")
+      list(GET split 0 var_name)
+      list(GET split 1 arg_value)
+      set(${var_name} ${arg_value} PARENT_SCOPE)
+    else()
+      SET(${var} 1 PARENT_SCOPE) # this is needed for ICLConfig.h
+    endif()
+
   endforeach()
 
   ADD_DEFINITIONS(${ARGV})

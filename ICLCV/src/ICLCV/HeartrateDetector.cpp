@@ -38,7 +38,7 @@ namespace icl{
     static const int SECONDS_IN_MINUTE = 60;
     static const int MINIMUM_HEARTRATE = 40;
     static const int MAXIMUM_HEARTRATE = 200;
-    static const float DATA_SCALE_FACTOR = 100;
+    static const float DATA_SCALE_FACTOR = 200;
     static const float MIN_WINDOW_RADIUS = 5;
     static const float WINDOW_RADIUS_WIDEN = 3;
     static const float WINDOW_RADIUS_TIGHTEN = 0.5;
@@ -51,7 +51,7 @@ namespace icl{
         std::size_t currentSize;
         std::vector<T> buffer;
       public:
-        CircularBuffer(std::size_t size): bufferSize(size), index(-1), buffer(bufferSize) {}
+        CircularBuffer(std::size_t size): bufferSize(size), index(-1), currentSize(0), buffer(bufferSize) {}
 
         void push(T t) {
           index = (index+1)%bufferSize;
@@ -84,6 +84,10 @@ namespace icl{
           return currentSize;
         }
 
+        T* data() {
+          return buffer.data();
+        }
+
         ~CircularBuffer(){}
       };
 
@@ -93,7 +97,7 @@ namespace icl{
       float windowRadius, previousHeartrate, currentHeartrate;
       CircularBuffer<std::vector<float> > frequencyHistory;
       std::vector<float> averagedFrequencies;
-      qt::PlotWidget::SeriesBuffer averageDataBuffer, processedFrequenciesBuffer;
+      CircularBuffer<float> averageDataBuffer;
 
       Data(int framerate, int historyDepth):framerate(framerate), historyDepth(historyDepth),
                                             minIndex(heartrateToIndex(MINIMUM_HEARTRATE)),
@@ -102,8 +106,7 @@ namespace icl{
                                             windowLeft(minIndex), windowRight(maxIndex),
                                             windowRadius(heartrateRange), previousHeartrate(0), currentHeartrate(0),
                                             frequencyHistory(framerate), averagedFrequencies(heartrateRange),
-                                            averageDataBuffer(historyDepth),
-                                            processedFrequenciesBuffer(heartrateRange){}
+                                            averageDataBuffer(historyDepth){}
 
       float indexToHeartrate(int i) {
         if(imageCounter != 0)
@@ -131,7 +134,7 @@ namespace icl{
         frequencyHistory<<std::vector<float>(heartrateRange);
         for(int i = minIndex; i < maxIndex; ++i) {
             float magnitude = sqrt(frequencies[i].real()*frequencies[i].real()+frequencies[i].imag()*frequencies[i].imag());
-            magnitude *= i; //flatten the curve for more useful values
+            magnitude *= sqrt(i); //flatten the curve for more useful values
             frequencyHistory.back()[i-minIndex] = magnitude;
         }
         delete frequencies;
@@ -150,7 +153,6 @@ namespace icl{
               max = averagedFrequencies[i];
               maxId = gi;
           }
-          processedFrequenciesBuffer[i] = averagedFrequencies[i]*DATA_SCALE_FACTOR/float(historyDepth);
         }
         previousHeartrate = currentHeartrate;
         currentHeartrate = indexToHeartrate(maxId);
@@ -218,6 +220,14 @@ namespace icl{
         window[i] = gi>=m_data->windowLeft&&gi<=m_data->windowRight?1000000:0;
       }
       return window;
+    }
+
+    int HeartrateDetector::getFramerate() const {
+      return m_data->framerate;
+    }
+
+    int HeartrateDetector::getHistoryDepth() const {
+      return m_data->historyDepth;
     }
 
   } // namespace cv
