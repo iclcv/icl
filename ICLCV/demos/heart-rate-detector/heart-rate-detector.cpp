@@ -88,8 +88,10 @@ void init(){
 
   grabber.init(pa("-i"));
   detector = new icl::cv::HeartrateDetector(pa("-maxfps"), pa("-historydepth"));
-  if(!faceCascade.load(string(ICL_OPENCV_INSTALL_PATH)+string("/share/opencv/lbpcascades/lbpcascade_frontalface.xml"))){
-    std::cout<<("--(!)Error loading face cascade")<<std::endl;
+  std::string pathToCascades = pa_def("-c",string(""));
+  if(pathToCascades.length() == 0)pathToCascades = string(ICL_OPENCV_INSTALL_PATH)+string("/share/opencv/lbpcascades/lbpcascade_frontalface.xml");
+  if(!faceCascade.load(pathToCascades)){
+    std::cout<<("Error loading face cascade:")<<pathToCascades<<std::endl;
     exit(1);
   };
 }
@@ -157,6 +159,7 @@ int main(int n, char **ppc){
   ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm\ngrabber parameter -list 0 lists all available grabbers")
   ("-gl","use opengl to render the plot");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
+                      "-cascades|-c(string) "
                       "-maxfps(float=30) "
                       "-historydepth(int=512) "
                       "-use-opengl|-gl ",
