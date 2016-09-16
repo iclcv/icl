@@ -7,7 +7,6 @@ IF(QT_FOUND)
   ADD_SUBDIRECTORY(region-curvature)
   ADD_SUBDIRECTORY(simple-blob-searcher)
   ADD_SUBDIRECTORY(vector-tracker)
-  ADD_SUBDIRECTORY(heart-rate-detector)
 ENDIF()
 
 IF(QT_FOUND AND IPP_FOUND)
@@ -16,4 +15,5 @@ ENDIF()
 
 IF(OPENCV_FEATURES_2D_FOUND)
   ADD_SUBDIRECTORY(orb-feature-detection)
+  ADD_SUBDIRECTORY(heart-rate-detector)
 ENDIF()
