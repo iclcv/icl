@@ -339,22 +339,21 @@ ENDFUNCTION()
 # ---- Add definitions ----
 #*********************************************************************
 FUNCTION(ADD_ICL_DEFINITIONS)
+  # iterate over list of arguments and define variable values in outer scope (for ICLConfig.h)
   foreach(var ${ARGV})
     string(REPLACE "-D" "" var "${var}")
-    if("${var}" MATCHES "=")
+    if("${var}" MATCHES "=") # var_name=arg_value
       string(REPLACE "=" ";" split "${var}")
       list(GET split 0 var_name)
       list(GET split 1 arg_value)
       set(${var_name} ${arg_value} PARENT_SCOPE)
-    else()
-      SET(${var} 1 PARENT_SCOPE) # this is needed for ICLConfig.h
+    else() # var_name only
+      SET(${var} 1 PARENT_SCOPE)
     endif()
-
   endforeach()
 
   ADD_DEFINITIONS(${ARGV})
-		#LIST(APPEND ICL_DEFINITIONS ${ARGV})
-		SET(ICL_DEFINITIONS ${ICL_DEFINITIONS} ${ARGV} PARENT_SCOPE)
+  SET(ICL_DEFINITIONS ${ICL_DEFINITIONS} ${ARGV} PARENT_SCOPE)
 ENDFUNCTION()
 
 
