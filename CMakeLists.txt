@@ -672,25 +672,34 @@ IF(BUILD_WITH_LIBFREENECT2)
                    HEADERS "libfreenect2/opengl.h;libfreenect2/libfreenect2.hpp;libfreenect2/frame_listener_impl.h"
                    LIBS "freenect2"
                    HEADER_PATH_SUFFIXES "examples/protonect/include"
-                   LIB_PATH_SUFFIXES "examples/protonect/lib")
+                   LIB_PATH_SUFFIXES "examples/protonect/lib"
+                   OPTIONAL)
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_GLFW3
                    HEADERS "GLFW/glfw3.h"
                    LIBS "glfw"
                    HEADER_PATH_SUFFIXES "depends/glfw/include"
-                   LIB_PATH_SUFFIXES "depends/glfw/lib")
+                   LIB_PATH_SUFFIXES "depends/glfw/lib"
+                   OPTIONAL)
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_LIBUSB
                    HEADERS "libusb-1.0/libusb.h"
                    LIBS "usb-1.0"
                    HEADER_PATH_SUFFIXES "depends/libusb/include"
-                   LIB_PATH_SUFFIXES "depends/libusb/lib")
+                   LIB_PATH_SUFFIXES "depends/libusb/lib"
+                   OPTIONAL)
 
 
   IF(LIBFREENECT2_FOUND AND LIBFREENECT2_GLFW3_FOUND AND LIBFREENECT2_LIBUSB_FOUND)
     LIST(APPEND LIBFREENECT2_LIBRARIES ${LIBFREENECT2_GLFW3_LIBRARIES} ${LIBFREENECT2_LIBUSB_LIBRARIES})
     LIST(APPEND LIBFREENECT2_INCLUDE_DIRS ${LIBFREENECT2_GLFW3_INCLUDE_DIRS} ${LIBFREENECT2_LIBUSB_INCLUDE_DIRS})
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBFREENECT2)
+  ELSE()
+     IF(BUILD_WITH_LIBFREENECT2_OPTIONAL)
+       MESSAGE(STATUS "Could NOT find all dependencies for OPTIONAL LIBFREENECT2 (continuing...)")
+     ELSE()
+       MESSAGE(SEND_ERROR "Could NOT find all dependencies for LIBFREENECT2")
+    ENDIF()
   ENDIF()
 ENDIF()
 
