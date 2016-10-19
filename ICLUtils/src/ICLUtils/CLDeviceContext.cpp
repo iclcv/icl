@@ -57,24 +57,25 @@ namespace icl {
 
 			Impl() : m_device_type_str("") {}
 
-			void init(std::string const &device_type_str) throw(CLInitException) {
-				m_device_type_str = device_type_str;
-				cl_device_type device_type = stringToDeviceType(m_device_type_str);
-				try {
-				  std::vector<cl::Platform> platformList; //get number of available openCL platforms
-				  cl::Platform::get(&platformList);
-				  selectFirstDevice(device_type, platformList);
-				  std::cout << "[CLDeviceContext] desired openCL " << deviceTypeToString(device_type) << " device selected" << std::endl;
-				  std::vector<cl::Device> deviceList;
-				  deviceList.push_back(device);
-				  context = cl::Context(deviceList);//select GPU device
-				  cmdQueue = cl::CommandQueue(context, device, 0);//create command queue
-				  prepareSupportedImageFormats();
-				} catch (cl::Error& error) { //catch openCL errors
-					m_device_type_str = "";
-				  throw CLInitException(CLException::getMessage(error.err(), error.what()));
-				}
-			}
+                  void init(std::string const &device_type_str) throw(CLInitException) {
+                    m_device_type_str = device_type_str;
+                    cl_device_type device_type = stringToDeviceType(m_device_type_str);
+                    try {
+                      std::vector<cl::Platform> platformList; //get number of available openCL platforms
+                      cl::Platform::get(&platformList);
+                      selectFirstDevice(device_type, platformList);
+
+                      std::cout << "[CLDeviceContext] desired OpenCL " << deviceTypeToString(device_type) << " device selected" << std::endl;
+                      std::vector<cl::Device> deviceList;
+                      deviceList.push_back(device);
+                      context = cl::Context(deviceList);//select GPU device
+                      cmdQueue = cl::CommandQueue(context, device);//create command queue
+                      prepareSupportedImageFormats();
+                    } catch (cl::Error& error) { //catch openCL errors
+                      m_device_type_str = "";
+                      throw CLInitException(CLException::getMessage(error.err(), error.what()));
+                    }
+                  }
 
 			void initDeviceFromExisting(cl::Context &other_context, cl::Device &other_device, cl::CommandQueue &other_cmd_queue) {
 				m_device_type_str = "";
@@ -89,26 +90,27 @@ namespace icl {
 			}
 
 			void selectFirstDevice(const cl_device_type deviceType,
-								   const std::vector<cl::Platform>& platformList) throw (CLInitException) {
+                                               const std::vector<cl::Platform>& platformList) throw (CLInitException) {
 			  for (unsigned int i = 0; i < platformList.size(); i++) { //check all platforms
-				std::vector<cl::Device> deviceList;
-				try {
-				  platformList.at(i).getDevices(deviceType, &deviceList);
-				  device = deviceList[0];
-				  platform = platformList[i];
-				  return;
-				} catch(cl::Error &) {
-				  /*explicit catching of exception!
-					  getDevices throws an exception when a platform doesn't provide the desired device,
-					  in this case the remaining platform should be asked.
-					  */
-				}
+                            std::vector<cl::Device> deviceList;
+                            try {
+                              platformList.at(i).getDevices(deviceType, &deviceList);
+                              device = deviceList[0];
+                              platform = platformList[i];
+                              return;
+                            } catch(cl::Error &e) {
+                              DEBUG_LOG("error selecting a device: " << e.what());
+                              /*explicit catching of exception!
+                                  getDevices throws an exception when a platform doesn't provide the desired device,
+                                  in this case the remaining platform should be asked.
+                                  */
+                            }
 			  }
 			  string errorMsg = "No appropriate OpenCL device found for type ";
 			  errorMsg = errorMsg.append(deviceTypeToString(deviceType));
 			  throw CLInitException(errorMsg);
 			}
-
+                  
 			void prepareSupportedImageFormats() {
 				  std::vector<cl::ImageFormat> formats;
 				  cl_mem_flags memFlags = CL_MEM_READ_WRITE;

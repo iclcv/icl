@@ -17,7 +17,6 @@
 
 //#define CL_HPP_CL_1_2_DEFAULT_BUILD
 
-#warning "including cl2.hpp now"
 #include <CL/cl2.hpp>
 //using namespace  cl::compatibility;
 #include <CL/cl.h>
