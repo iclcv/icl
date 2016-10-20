@@ -281,6 +281,11 @@ namespace icl{
       
       /// returns visibility of given primitive type
       ICLGeom_API bool isVisible(Primitive::Type t) const;
+
+      /// this can be overwrittern in subclasses to hide an object for given camera indices
+      /** Please note that this mechanism does not work in case of optimizing object rendering using
+          display-lists */
+      ICLGeom_API virtual bool isInvisibleForCamera(int camIndex) const { return false; }
       
       /// adds a new vertex to this object
       /** Please note, that colors are defined in ICL's commong [0,255] range,

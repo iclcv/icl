@@ -572,7 +572,7 @@ namespace icl{
       };
     }
   #ifdef ICL_HAVE_QT
-    void Scene::renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o) const{
+    void Scene::renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o, int camID) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
           createDisplayList(o);
@@ -660,7 +660,7 @@ namespace icl{
 
 
 
-      if(o->isVisible()){
+      if(o->isVisible() && !o->isInvisibleForCamera(camID)){
 
         o->complexCustomRender(util);
         if(o->m_primitives.size()){
@@ -742,7 +742,7 @@ namespace icl{
       } // is visible
 
       for(unsigned int i=0;i<o->m_children.size();++i){
-        renderSceneObjectRecursive(util, o->m_children[i].get());
+        renderSceneObjectRecursive(util, o->m_children[i].get(), camID);
       }
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
@@ -755,7 +755,7 @@ namespace icl{
       o->unlock();
     }
 
-   void Scene::renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const{
+    void Scene::renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o, int camID) const{
       if(!creatingDisplayList){
         if(o->m_createDisplayListNextTime == 1){
           createDisplayList(o);
@@ -780,7 +780,7 @@ namespace icl{
          glPushMatrix();
          const Mat &T = o->getTransformation(true);
          glMultMatrixf(T.transp().data());
-         if(o->isVisible()){
+         if(o->isVisible() && !o->isInvisibleForCamera(camID)){
 
            o->complexCustomRender(util);
            if(o->m_primitives.size()){
@@ -800,7 +800,7 @@ namespace icl{
            }
          }
          for(unsigned int i=0;i<o->m_children.size();++i){
-           renderSceneObjectRecursiveShadow(util, o->m_children[i].get());
+           renderSceneObjectRecursiveShadow(util, o->m_children[i].get(), camID);
          }
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
@@ -935,7 +935,7 @@ namespace icl{
         for(int i = 0; i < 8; i++) {
           if(m_lights[i]) {
             if(m_lights[i]->on && m_lights[i]->getShadowEnabled()) {
-              renderShadow(i, currentShadow++, m_fboData->shadow_size);
+              renderShadow(i, currentShadow++, m_fboData->shadow_size, camIndex);
               project2shadow.push_back(m_lights[i]->getShadowCam()->getProjectionMatrixGL()
                              * m_lights[i]->getShadowCam()->getCSTransformationMatrixGL()
                              * cam.getCSTransformationMatrixGL().inv());
@@ -1006,18 +1006,18 @@ namespace icl{
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading){
         ShaderUtil util(&cam, m_shaders, &project2shadow, m_renderSettings->shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get());
+          renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get(), camIndex);
         }
       } else {
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive((SceneObject*)m_objects[i].get());
+          renderSceneObjectRecursive((SceneObject*)m_objects[i].get(), camIndex);
         }
       }
 
       if(((Configurable*)this)->getPropertyValue("visualize cameras")){
         for(unsigned int i=0;i<m_cameraObjects.size();++i){
           if((int)i == camIndex) continue;
-          renderSceneObjectRecursive((SceneObject*)m_cameraObjects[i].get());
+          renderSceneObjectRecursive((SceneObject*)m_cameraObjects[i].get(), camIndex);
         }
       }
 
@@ -1029,9 +1029,9 @@ namespace icl{
             if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
                (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
               m_lights[i]->updatePositions(*this,getCamera(camIndex));
-              renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject());
+              renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject(), camIndex);
               if(m_lights[i]->getShadowEnabled()) {
-                renderSceneObjectRecursive((SceneObject*)m_shadowCameraObjects[i].get());
+                renderSceneObjectRecursive((SceneObject*)m_shadowCameraObjects[i].get(), camIndex);
               }
             }
           }
@@ -1053,7 +1053,7 @@ namespace icl{
           }
         }
         for(size_t i=0;i<m_objects.size();++i){
-          renderObjectFramesRecursive((SceneObject*)m_objects[i].get(), (SceneObject*)m_objectFrameObject.get());
+          renderObjectFramesRecursive((SceneObject*)m_objects[i].get(), (SceneObject*)m_objectFrameObject.get(), camIndex);
         }
       }
 
@@ -1076,21 +1076,21 @@ namespace icl{
           iclMax(m_globalAmbientLight[3],250),
         };
         glLightModeliv(GL_LIGHT_MODEL_AMBIENT, minumum_ambience);
-        renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get());
+        renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get(), camIndex);
       }
 
       if(((Configurable*)this)->getPropertyValue("visualize cursor")){
-        renderSceneObjectRecursive(m_cursor);
+        renderSceneObjectRecursive(m_cursor, camIndex);
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         m_cursor->setDepthTestEnabled(false);
-        renderSceneObjectRecursive(m_cursor);
+        renderSceneObjectRecursive(m_cursor, camIndex);
         m_cursor->setDepthTestEnabled(true);
         if(!m_renderSettings->wireframe)glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
       }
 
     }
 
-   void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size) const{
+    void Scene::renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size, int camID) const{
       FBOData::Glints &glints = m_fboData->glints;
       if(!glints.created)m_fboData->createShadowFBO();
       GLint prev_framebuffer;
@@ -1130,7 +1130,7 @@ namespace icl{
 
         ShaderUtil util;
       for(size_t i=0;i<m_objects.size();++i){
-        renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get());
+        renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get(), camID);
       }
         // enable the default framebuffer
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_framebuffer);
@@ -1139,16 +1139,16 @@ namespace icl{
         glDisable(GL_SCISSOR_TEST);
     }
 
-    void Scene::renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const{
+    void Scene::renderObjectFramesRecursive(SceneObject *o, SceneObject *cs, int camID) const{
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
       const Mat &T = o->getTransformation(true);
       glMultMatrixf(T.transp().data());
 
-      renderSceneObjectRecursive(cs);
+      renderSceneObjectRecursive(cs, camID);
 
       for(unsigned int i=0;i<o->m_children.size();++i){
-        renderObjectFramesRecursive(o->m_children[i].get(),cs);
+        renderObjectFramesRecursive(o->m_children[i].get(),cs, camID);
       }
 
       glPopMatrix();
@@ -1449,7 +1449,7 @@ namespace icl{
       }
       creatingDisplayList = true;
       glNewList(*(GLuint*)o->m_displayListHandle, GL_COMPILE_AND_EXECUTE);
-      renderSceneObjectRecursive(o);
+      renderSceneObjectRecursive(o, -1);
       glEndList();
       creatingDisplayList = false;
     }
