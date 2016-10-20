@@ -29,12 +29,12 @@
 ********************************************************************/
 #ifdef ICL_HAVE_OPENCL
 
-#include <ICLUtils/CLIncludes.h>
+
 
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/Macros.h>
 
-
+#include <ICLUtils/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>
