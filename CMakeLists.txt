@@ -142,7 +142,7 @@ ENDIF(MSVC)
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
 SET(ICL_VERSION_MINOR "12" CACHE STRING "Minor project version part")
-SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
+SET(ICL_VERSION_PATCH "1" CACHE STRING "Patch project version part")
 
 SET(ICL_NAME                   icl)
 SET(PROJECT_VERSION            "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
