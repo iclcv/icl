@@ -133,7 +133,7 @@ namespace icl{
       float maxDeltaValue;
       bool useTexturing;
       core::Img8u textureImage;
-      core::DataSegment<float,2> textureCoordinates=texCoords;
+      core::DataSegment<float,2> textureCoordinates;
       
       public:
   
