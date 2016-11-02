@@ -49,33 +49,36 @@ namespace icl{
       const DataSegment<float,3> xyz = selectXYZ(); 
   
       glDisable(GL_LIGHTING);
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(3, GL_FLOAT, xyz.stride, xyz.data);
+
+      if(useTriangulation==false){
+        if(useMasking==false){//points without masking
+          glEnableClientState(GL_VERTEX_ARRAY);
+          glVertexPointer(3, GL_FLOAT, xyz.stride, xyz.data);
       
-      size_t numElements = xyz.numElements;
+          size_t numElements = xyz.numElements;
   
-      static GLFragmentShader swapRB( "","void main(){\n"
+          static GLFragmentShader swapRB( "","void main(){\n"
                                       "  gl_FragColor = vec4(gl_Color[2],gl_Color[1],gl_Color[0],gl_Color[3]);\n"
                                       "}\n");
-  
-      if(supports(RGBA32f)){
-        const DataSegment<icl32f,4> rgba = selectRGBA32f(); 
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(4, GL_FLOAT, rgba.stride, rgba.data);
-        numElements = iclMin(numElements,rgba.numElements);
-      }else if(supports(BGR)){
-        const DataSegment<icl8u,3> bgr = selectBGR(); 
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(3, GL_UNSIGNED_BYTE, bgr.stride, bgr.data);
-        numElements = iclMin(numElements,bgr.numElements);
-        swapRB.activate();
-      }else if(supports(BGRA)){
-        const DataSegment<icl8u,4> bgra = selectBGRA(); 
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(4, GL_UNSIGNED_BYTE, bgra.stride, bgra.data);
-        numElements = iclMin(numElements,bgra.numElements);
-        swapRB.activate();
-      }
+      
+          if(supports(RGBA32f)){
+            const DataSegment<icl32f,4> rgba = selectRGBA32f(); 
+            glEnableClientState(GL_COLOR_ARRAY);
+            glColorPointer(4, GL_FLOAT, rgba.stride, rgba.data);
+            numElements = iclMin(numElements,rgba.numElements);
+          }else if(supports(BGR)){
+            const DataSegment<icl8u,3> bgr = selectBGR(); 
+            glEnableClientState(GL_COLOR_ARRAY);
+            glColorPointer(3, GL_UNSIGNED_BYTE, bgr.stride, bgr.data);
+            numElements = iclMin(numElements,bgr.numElements);
+            swapRB.activate();
+          }else if(supports(BGRA)){
+            const DataSegment<icl8u,4> bgra = selectBGRA(); 
+            glEnableClientState(GL_COLOR_ARRAY);
+            glColorPointer(4, GL_UNSIGNED_BYTE, bgra.stride, bgra.data);
+            numElements = iclMin(numElements,bgra.numElements);
+            swapRB.activate();
+          }
   #if 0
       else if(supports(Intensity)){
         const DataSegment<float,1> rgba = selectIntensity(); 
@@ -84,18 +87,165 @@ namespace icl{
         numElements = iclMin(numElements,rgba.numElements);
       }
   #endif
-      else{
-        glColor3fv(m_defaultPointColor.data());
-  
-      }
+          else{
+            glColor3fv(m_defaultPointColor.data());
+          }
       
-      glDrawArrays(GL_POINTS, 0, numElements);
+          glDrawArrays(GL_POINTS, 0, numElements);
   
-      swapRB.deactivate();
+          swapRB.deactivate();
   
   
-      glDisableClientState(GL_VERTEX_ARRAY);
-      glDisableClientState(GL_COLOR_ARRAY);
+          glDisableClientState(GL_VERTEX_ARRAY);
+          glDisableClientState(GL_COLOR_ARRAY);
+        }else{//points with masking
+          glEnableClientState(GL_VERTEX_ARRAY);
+          glEnableClientState(GL_COLOR_ARRAY);
+      
+          //size_t numElements = xyz.numElements;
+          const DataSegment<float,4> xyz = selectXYZH();
+          std::vector<Vec> points;
+          const DataSegment<icl32f,4> rgb = selectRGBA32f(); 
+          std::vector<Vec> colors;
+          int w = xyz.getWidth();
+          for(int y=0; y<xyz.getSize().height; y++){
+            for(int x=0; x<xyz.getSize().width; x++){
+              if(roiImage(x,y,0)==0){
+                points.push_back(xyz[x+y*w]);
+                colors.push_back(rgb[x+y*w]);
+              }
+            }
+          }
+          glVertexPointer(4, GL_FLOAT, 0, points.size());          
+          glColorPointer(4, GL_FLOAT, 0, colors.size());
+          
+          glDrawArrays(GL_POINTS, 0, points.size());
+  
+          glDisableClientState(GL_VERTEX_ARRAY);
+          glDisableClientState(GL_COLOR_ARRAY);
+        }
+      }else{//triangulation
+        const DataSegment<float,4> xyz = selectXYZH();
+        std::vector<Vec> points;
+        const DataSegment<icl32f,4> rgb = selectRGBA32f(); 
+        std::vector<Vec> colors;
+        std::vector<Point32f> texture;
+        int w = xyz.getSize().width;
+        int cw,h;
+        if(useTexturing==true){
+          cw = colorImage.getSize().width;
+          h = colorImage.getSize().height;
+        }
+        if(useMasking==true){
+          for(int y=0; y<xyz.getSize().height-1; y++){
+            for(int x=0; x<xyz.getSize().width-1; x++){
+              if(roiImage(x,y,0)==0 && roiImage(x+1,y,0)==0 && roiImage(x,y+1,0)==0){
+                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDelta){
+                  points.push_back(xyz[x+y*w]);
+                  points.push_back(xyz[(x+1)+y*w]);
+                  points.push_back(xyz[x+(y+1)*w]); 
+                  colors.push_back(rgb[x+y*w]);
+                  colors.push_back(rgb[(x+1)+y*w]);
+                  colors.push_back(rgb[x+(y+1)*w]);
+                  if(useTexturing==true){ 
+                    texture.push_back(Point32f(texCoords[x+y*w].x/cw,texCoords[x+y*w].y/h));
+                    texture.push_back(Point32f(texCorrds[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                  }
+                }
+              }
+              if(roiImage(x+1,y+1,0)==0 && roiImage(x+1,y,0)==0 && roiImage(x,y+1,0)==0){
+                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDelta){
+                  points.push_back(xyz[(x+1)+(y+1)*w]); 
+                  points.push_back(xyz[x+(y+1)*w]);
+                  points.push_back(xyz[(x+1)+y*w]);
+                  colors.push_back(rgb[(x+1)+(y+1)*w]); 
+                  colors.push_back(rgb[x+(y+1)*w]);
+                  colors.push_back(rgb[(x+1)+y*w]);
+                  if(useTexturing==true){
+                    texture.push_back(Point32f(texCoords[(x+1)+(y+1)*w].x/cw,texCoords[(x+1)+(y+1)*w].y/h));
+                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(texCoords[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                  }
+                }
+              }
+            }
+          } 
+
+        }else{//without mask
+          for(int y=0; y<xyz.getSize().height-1; y++){
+            for(int x=0; x<xyz.getSize().width-1; x++){
+                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDelta){
+                  points.push_back(xyz[x+y*w]);
+                  points.push_back(xyz[(x+1)+y*w]);
+                  points.push_back(xyz[x+(y+1)*w]); 
+                  colors.push_back(rgb[x+y*w]);
+                  colors.push_back(rgb[(x+1)+y*w]);
+                  colors.push_back(rgb[x+(y+1)*w]);
+                  if(useTexturing==true){ 
+                    texture.push_back(Point32f(texCoords[x+y*w].x/cw,texCoords[x+y*w].y/h));
+                    texture.push_back(Point32f(texCorrds[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                  }
+              }
+                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDelta){
+                  points.push_back(xyz[(x+1)+(y+1)*w]); 
+                  points.push_back(xyz[x+(y+1)*w]);
+                  points.push_back(xyz[(x+1)+y*w]);
+                  colors.push_back(rgb[(x+1)+(y+1)*w]); 
+                  colors.push_back(rgb[x+(y+1)*w]);
+                  colors.push_back(rgb[(x+1)+y*w]);
+                  if(useTexturing==true){
+                    texture.push_back(Point32f(texCoords[(x+1)+(y+1)*w].x/cw,texCoords[(x+1)+(y+1)*w].y/h));
+                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(texCoords[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                  }
+              }
+            }
+          } 
+        }//end without masking
+        glPointSize(1);
+
+        static GLuint texName;
+        if(useTexturing==true){ 
+          glColor3f(1,1,1);
+          glActiveTextureARB(GL_TEXTURE0);
+          glGenTextures(1,&texName);
+          glBindTexture(GL_TEXTURE_2D, texName);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_EDGE);//GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_EDGE);//GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          static std::vector<unsigned char> ptt(cw*h*3);
+          planarToInterleaved(&textureImage,ptt.data());//.scaledCopy(Size(256,256)),ptt.data());
+          glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,cw, h,0,GL_RGB,GL_UNSIGNED_BYTE,ptt.data());
+        }    
+      
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(4, GL_FLOAT, 0, points.data());//xyz.getStride(), xyz.getDataPointer());
+
+        if(useTexturing==true){
+          glEnableClientState(GL_TEXTURE_COORD_ARRAY);     
+          glTexCoordPointer(2, GL_FLOAT, 0, texture.data());
+        }else{
+          glEnableClientState(GL_COLOR_ARRAY);
+          glColorPointer(4, GL_FLOAT, 0, colors.data());
+        }
+        size_t numElements = points.size();//xyz.getDim();
+      
+        glDrawArrays(GL_TRIANGLES, 0, numElements);
+
+        glDisableClientState(GL_VERTEX_ARRAY);
+  
+        if(useTexturing){
+          glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+          glDeleteTextures(1,&texName);//rewrite instead of create and delete
+        }else{
+          glDisableClientState(GL_COLOR_ARRAY);  
+        }
+
+      }//end triangulation
+
       glEnable(GL_LIGHTING);
     }
     
@@ -103,6 +253,22 @@ namespace icl{
       useDrawNormalLines=use;
       normalLineLength=lineLength;
       normalLineGranularity=granularity;
+    }
+
+    void PointCloudObjectBase::setUseMasking(bool use, core::Img8u &mask){
+      useMasking=use;
+      maskImage=mask;
+    }
+
+    void PointCloudObjectBase::setUseTriangulation(bool use, float maxDelta){
+      useTriangulation=use;
+      maxDeltaValue=maxDelta;
+    }
+
+    void PointCloudObjectBase::setUseTexturing(bool use, core::Img8u &tex, DataSegment<float,2> texCoords){
+      useTexturing=use;
+      textureImage=tex;
+      textureCoordinates=texCoords;
     }
     
     void PointCloudObjectBase::drawNormalLines(){

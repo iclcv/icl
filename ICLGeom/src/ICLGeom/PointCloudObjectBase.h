@@ -126,6 +126,14 @@ namespace icl{
       bool useDrawNormalLines;
       float normalLineLength;
       int normalLineGranularity;
+
+      bool useMasking;
+      Img8u maskImage;
+      bool useTriangulation;
+      float maxDeltaValue;
+      bool useTexturing;
+      Img8u textureImage;
+      DataSegment<float,2> textureCoordinates=texCoords;
       
       public:
   
@@ -155,6 +163,10 @@ namespace icl{
         setLockingEnabled(true);
         m_defaultPointColor = GeomColor(0,0.5,1,1);
         useDrawNormalLines=false;
+        useMasking=false;
+        useTriangulation=false;
+        useTexturing=false;
+
       }
   
       /// sets the current timestamp
@@ -305,6 +317,15 @@ namespace icl{
       
       /// set use draw normal lines
       void setUseDrawNormalLines(bool use, float lineLength=40, int granularity=4);
+
+      // set use masking (0 render, 1 dont render)
+      void setUseMasking(bool use, core::Img8u &mask);
+
+      //set use triangulation
+      void setUseTriangulation(bool use, float maxDelta=50);
+
+      //set texturing
+      void setUseTexturing(bool use, core::Img8u &tex, DataSegment<float,2> texCoords);
       
       /// deep copy interface (needs to be implemented by subclasses)
       virtual PointCloudObjectBase *copy() const {
