@@ -128,12 +128,12 @@ namespace icl{
       int normalLineGranularity;
 
       bool useMasking;
-      Img8u maskImage;
+      core::Img8u maskImage;
       bool useTriangulation;
       float maxDeltaValue;
       bool useTexturing;
-      Img8u textureImage;
-      DataSegment<float,2> textureCoordinates=texCoords;
+      core::Img8u textureImage;
+      core::DataSegment<float,2> textureCoordinates=texCoords;
       
       public:
   
@@ -325,7 +325,7 @@ namespace icl{
       void setUseTriangulation(bool use, float maxDelta=50);
 
       //set texturing
-      void setUseTexturing(bool use, core::Img8u &tex, DataSegment<float,2> texCoords);
+      void setUseTexturing(bool use, core::Img8u &tex, core::DataSegment<float,2> texCoords);
       
       /// deep copy interface (needs to be implemented by subclasses)
       virtual PointCloudObjectBase *copy() const {
