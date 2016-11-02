@@ -32,6 +32,7 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLQt/GLFragmentShader.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLCore/CCFunctions.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -107,17 +108,17 @@ namespace icl{
           std::vector<Vec> points;
           const DataSegment<icl32f,4> rgb = selectRGBA32f(); 
           std::vector<Vec> colors;
-          int w = xyz.getWidth();
+          int w = xyz.getSize().width;
           for(int y=0; y<xyz.getSize().height; y++){
             for(int x=0; x<xyz.getSize().width; x++){
-              if(roiImage(x,y,0)==0){
+              if(maskImage(x,y,0)==0){
                 points.push_back(xyz[x+y*w]);
                 colors.push_back(rgb[x+y*w]);
               }
             }
           }
-          glVertexPointer(4, GL_FLOAT, 0, points.size());          
-          glColorPointer(4, GL_FLOAT, 0, colors.size());
+          glVertexPointer(4, GL_FLOAT, 0, points.data());          
+          glColorPointer(4, GL_FLOAT, 0, colors.data());
           
           glDrawArrays(GL_POINTS, 0, points.size());
   
@@ -133,14 +134,14 @@ namespace icl{
         int w = xyz.getSize().width;
         int cw,h;
         if(useTexturing==true){
-          cw = colorImage.getSize().width;
-          h = colorImage.getSize().height;
+          cw = textureImage.getSize().width;
+          h = textureImage.getSize().height;
         }
         if(useMasking==true){
           for(int y=0; y<xyz.getSize().height-1; y++){
             for(int x=0; x<xyz.getSize().width-1; x++){
-              if(roiImage(x,y,0)==0 && roiImage(x+1,y,0)==0 && roiImage(x,y+1,0)==0){
-                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDelta){
+              if(maskImage(x,y,0)==0 && maskImage(x+1,y,0)==0 && maskImage(x,y+1,0)==0){
+                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDeltaValue && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDeltaValue){
                   points.push_back(xyz[x+y*w]);
                   points.push_back(xyz[(x+1)+y*w]);
                   points.push_back(xyz[x+(y+1)*w]); 
@@ -148,14 +149,14 @@ namespace icl{
                   colors.push_back(rgb[(x+1)+y*w]);
                   colors.push_back(rgb[x+(y+1)*w]);
                   if(useTexturing==true){ 
-                    texture.push_back(Point32f(texCoords[x+y*w].x/cw,texCoords[x+y*w].y/h));
-                    texture.push_back(Point32f(texCorrds[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
-                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+y*w].x/cw,textureCoordinates[x+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+y*w].x/cw,textureCoordinates[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+(y+1)*w].x/cw,textureCoordinates[x+(y+1)*w].y/h));
                   }
                 }
               }
-              if(roiImage(x+1,y+1,0)==0 && roiImage(x+1,y,0)==0 && roiImage(x,y+1,0)==0){
-                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDelta){
+              if(maskImage(x+1,y+1,0)==0 && maskImage(x+1,y,0)==0 && maskImage(x,y+1,0)==0){
+                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDeltaValue && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDeltaValue){
                   points.push_back(xyz[(x+1)+(y+1)*w]); 
                   points.push_back(xyz[x+(y+1)*w]);
                   points.push_back(xyz[(x+1)+y*w]);
@@ -163,9 +164,9 @@ namespace icl{
                   colors.push_back(rgb[x+(y+1)*w]);
                   colors.push_back(rgb[(x+1)+y*w]);
                   if(useTexturing==true){
-                    texture.push_back(Point32f(texCoords[(x+1)+(y+1)*w].x/cw,texCoords[(x+1)+(y+1)*w].y/h));
-                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
-                    texture.push_back(Point32f(texCoords[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+(y+1)*w].x/cw,textureCoordinates[(x+1)+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+(y+1)*w].x/cw,textureCoordinates[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+y*w].x/cw,textureCoordinates[(x+1)+y*w].y/h));
                   }
                 }
               }
@@ -175,7 +176,7 @@ namespace icl{
         }else{//without mask
           for(int y=0; y<xyz.getSize().height-1; y++){
             for(int x=0; x<xyz.getSize().width-1; x++){
-                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDelta){
+                if(length(xyz[x+y*w]-xyz[(x+1)+y*w])<maxDeltaValue && length(xyz[x+y*w]-xyz[x+(y+1)*w])<maxDeltaValue){
                   points.push_back(xyz[x+y*w]);
                   points.push_back(xyz[(x+1)+y*w]);
                   points.push_back(xyz[x+(y+1)*w]); 
@@ -183,12 +184,12 @@ namespace icl{
                   colors.push_back(rgb[(x+1)+y*w]);
                   colors.push_back(rgb[x+(y+1)*w]);
                   if(useTexturing==true){ 
-                    texture.push_back(Point32f(texCoords[x+y*w].x/cw,texCoords[x+y*w].y/h));
-                    texture.push_back(Point32f(texCorrds[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
-                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+y*w].x/cw,textureCoordinates[x+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+y*w].x/cw,textureCoordinates[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+(y+1)*w].x/cw,textureCoordinates[x+(y+1)*w].y/h));
                   }
               }
-                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDelta && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDelta){
+                if(length(xyz[(x+1)+(y+1)*w]-xyz[(x+1)+y*w])<maxDeltaValue && length(xyz[(x+1)+(y+1)*w]-xyz[x+(y+1)*w])<maxDeltaValue){
                   points.push_back(xyz[(x+1)+(y+1)*w]); 
                   points.push_back(xyz[x+(y+1)*w]);
                   points.push_back(xyz[(x+1)+y*w]);
@@ -196,9 +197,9 @@ namespace icl{
                   colors.push_back(rgb[x+(y+1)*w]);
                   colors.push_back(rgb[(x+1)+y*w]);
                   if(useTexturing==true){
-                    texture.push_back(Point32f(texCoords[(x+1)+(y+1)*w].x/cw,texCoords[(x+1)+(y+1)*w].y/h));
-                    texture.push_back(Point32f(texCoords[x+(y+1)*w].x/cw,texCoords[x+(y+1)*w].y/h));
-                    texture.push_back(Point32f(texCoords[(x+1)+y*w].x/cw,texCoords[(x+1)+y*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+(y+1)*w].x/cw,textureCoordinates[(x+1)+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[x+(y+1)*w].x/cw,textureCoordinates[x+(y+1)*w].y/h));
+                    texture.push_back(Point32f(textureCoordinates[(x+1)+y*w].x/cw,textureCoordinates[(x+1)+y*w].y/h));
                   }
               }
             }
