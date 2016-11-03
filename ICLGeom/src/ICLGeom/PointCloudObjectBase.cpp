@@ -132,7 +132,7 @@ namespace icl{
         std::vector<Vec> colors;
         std::vector<Point32f> texture;
         int w = xyz.getSize().width;
-        int cw,h;
+        int cw=0,h=0;
         if(useTexturing==true){
           cw = textureImage.getSize().width;
           h = textureImage.getSize().height;

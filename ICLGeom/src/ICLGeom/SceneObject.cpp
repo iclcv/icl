@@ -145,7 +145,8 @@ namespace icl{
       m_fragmentShader(0),
       m_castShadows(true),
       m_receiveShadows(true),
-      m_pointHitMaxDistance(10)
+      m_pointHitMaxDistance(10),
+      m_useCustomRender(false)
     {
   
       m_visibleMask = Primitive::all;
@@ -963,6 +964,16 @@ namespace icl{
       }
     
     }
+
+    void SceneObject::setUseCustomRender(bool use, bool recursive){
+      m_useCustomRender = use;
+      if(recursive){
+        for(unsigned int i=0;i<m_children.size();++i){
+          m_children[i]->setUseCustomRender(use);
+        }
+      }
+    } 
+
     SceneObject &SceneObject::operator=(const SceneObject &other){
       if(this == &other) return *this;
   #define DEEP_COPY(X) X = other.X

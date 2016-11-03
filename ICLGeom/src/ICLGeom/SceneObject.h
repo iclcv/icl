@@ -476,7 +476,7 @@ namespace icl{
       /// sets point size
       ICLGeom_API void setLineWidth(float lineWidth, bool recursive = true);
   
-     
+      ICLGeom_API void setUseCustomRender(bool use, bool recursive = true);   
       
       /// performs a deep copy of this object
       ICLGeom_API virtual SceneObject *copy() const;
@@ -822,6 +822,8 @@ namespace icl{
       bool m_triangleColorsFromVertices;
       bool m_quadColorsFromVertices;
       bool m_polyColorsFromVertices;
+
+      bool m_useCustomRender;
   
       float m_pointSize;
       float m_lineWidth;

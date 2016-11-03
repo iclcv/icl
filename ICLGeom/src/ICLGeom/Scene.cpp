@@ -660,7 +660,7 @@ namespace icl{
 
 
 
-      if(o->isVisible() && !o->isInvisibleForCamera(camID)){
+      if(o->isVisible() && !o->isInvisibleForCamera(camID) && !o->m_useCustomRender){
 
         o->complexCustomRender(util);
         if(o->m_primitives.size()){
@@ -740,7 +740,9 @@ namespace icl{
           }
         }
       } // is visible
-
+      else if(o->isVisible() && !o->isInvisibleForCamera(camID)){
+        o->customRender();
+      }
       for(unsigned int i=0;i<o->m_children.size();++i){
         renderSceneObjectRecursive(util, o->m_children[i].get(), camID);
       }
