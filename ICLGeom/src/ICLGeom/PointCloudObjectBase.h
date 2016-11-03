@@ -139,7 +139,10 @@ namespace icl{
       bool useTexturing;
       core::Img8u textureImage;
       core::DataSegment<float,2> textureCoordinates;
-      
+
+      //GLuint texName;//      
+
+
       public:
   
       /// List of well known features
@@ -171,6 +174,7 @@ namespace icl{
         useMasking=false;
         useTriangulation=false;
         useTexturing=false;
+        //glGenTextures(1,&texName);
 
       }
   
