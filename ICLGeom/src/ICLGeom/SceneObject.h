@@ -475,7 +475,8 @@ namespace icl{
   
       /// sets point size
       ICLGeom_API void setLineWidth(float lineWidth, bool recursive = true);
-  
+
+      /// if set, only custom render is used 
       ICLGeom_API void setUseCustomRender(bool use, bool recursive = true);   
       
       /// performs a deep copy of this object
