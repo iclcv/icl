@@ -140,7 +140,8 @@ namespace icl{
       core::Img8u textureImage;
       core::DataSegment<float,2> textureCoordinates;
 
-      //GLuint texName;//      
+      //GLuint texName;//
+      //int lastTextureWidth, lastTextureHeight;//      
 
 
       public:
@@ -174,7 +175,9 @@ namespace icl{
         useMasking=false;
         useTriangulation=false;
         useTexturing=false;
-        //glGenTextures(1,&texName);
+        //glGenTextures(1,&texName);//
+        //lastTextureWidth=0;//
+        //lastTextureHeight=0;//
 
       }
   

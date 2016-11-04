@@ -138,7 +138,7 @@ namespace icl{
           cw = textureImage.getSize().width;
           h = textureImage.getSize().height;
         }
-        utils::Time t = Time::now();
+        //utils::Time t = Time::now();
        /* if(useTexturing==true){ 
           for(int j=0; j<textureCoordinates.getDim(); j++){
             textureCoordinates[j][0]/=cw;
@@ -230,12 +230,25 @@ namespace icl{
             }
           } 
         }//end without masking
-        std::cout<<"prepare: "<<t.age().toMilliSeconds()<<std::endl;
+        //std::cout<<"prepare: "<<t.age().toMilliSeconds()<<std::endl;
         glPointSize(1);
         indices.resize(i*3);//num Triangles*3values
         static GLuint texName;
+        static int VERTEX_BUFFER=0, COLOR_BUFFER=1, TEX_BUFFER=2, INDEX_BUFFER=3;
+        static GLuint buffers[4];
+        //static bool bound=false;//
+        //static int lastWidth=0;//
+        //static int lastHeight=0;//
         if(useTexturing==true){ 
-          glColor3f(1,1,1);
+          //glColor3f(1,1,1);
+          /*if(bound==false || cw!=lastWidth || h!=lastHeight){
+             bound=true;
+             lastWidth=cw;
+             lastHeight=h;
+             std::cout<<"bind"<<std::endl;
+          }else{
+             std::cout<<lastWidth<<" , "<<lastHeight<<std::endl;
+          }*/
           glActiveTextureARB(GL_TEXTURE0);
           glGenTextures(1,&texName);
           glBindTexture(GL_TEXTURE_2D, texName);
@@ -243,30 +256,43 @@ namespace icl{
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_EDGE);//GL_REPEAT);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
           static std::vector<unsigned char> ptt(cw*h*3);
           planarToInterleaved(&textureImage,ptt.data());//.scaledCopy(Size(256,256)),ptt.data());
           glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,cw, h,0,GL_RGB,GL_UNSIGNED_BYTE,ptt.data());
         }    
-      
+        glGenBuffers(4,buffers);        
+        glBindBuffer(GL_ARRAY_BUFFER,buffers[VERTEX_BUFFER]);
+        glBufferData(GL_ARRAY_BUFFER,xyz.getDim()*4*sizeof(float),xyz.data,GL_DYNAMIC_DRAW);
+        glVertexPointer(4, GL_FLOAT, 0, (GLubyte*)NULL+0);
         glEnableClientState(GL_VERTEX_ARRAY);
         //glVertexPointer(4, GL_FLOAT, 0, points.data());//xyz.getStride(), xyz.getDataPointer());
-        glVertexPointer(4, GL_FLOAT, xyz.stride, xyz.data);
+        //glVertexPointer(4, GL_FLOAT, xyz.stride, xyz.data);
         if(useTexturing==true){
+          glBindBuffer(GL_ARRAY_BUFFER,buffers[TEX_BUFFER]);
+          glBufferData(GL_ARRAY_BUFFER,textureCoordinates.getDim()*2*sizeof(float),textureCoordinates.data,GL_DYNAMIC_DRAW);
+          glTexCoordPointer(2, GL_FLOAT, 0, (GLubyte*)NULL+0);
           glEnableClientState(GL_TEXTURE_COORD_ARRAY);     
           //glTexCoordPointer(2, GL_FLOAT, 0, texture.data());
-          glTexCoordPointer(2, GL_FLOAT, textureCoordinates.stride, textureCoordinates.data);
+          //glTexCoordPointer(2, GL_FLOAT, textureCoordinates.stride, textureCoordinates.data);
         }else{
+          glBindBuffer(GL_ARRAY_BUFFER,buffers[COLOR_BUFFER]);
+          glBufferData(GL_ARRAY_BUFFER,rgb.getDim()*4*sizeof(float),rgb.data,GL_DYNAMIC_DRAW);
+          glColorPointer(4, GL_FLOAT, 0, (GLubyte*)NULL+0);
           glEnableClientState(GL_COLOR_ARRAY);
           //glColorPointer(4, GL_FLOAT, 0, colors.data());
-          glColorPointer(4, GL_FLOAT, rgb.stride, rgb.data);
+          //glColorPointer(4, GL_FLOAT, rgb.stride, rgb.data);
         }
-        size_t numElements = points.size();//xyz.getDim();
+        //size_t numElements = points.size();//xyz.getDim();
       
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[INDEX_BUFFER]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,indices.size()*sizeof(unsigned int),indices.data(),GL_DYNAMIC_DRAW);
+        glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,(GLubyte*)NULL+0);
         //glDrawArrays(GL_TRIANGLES, 0, numElements);
-        glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,indices.data());
+        //glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,indices.data());
 
-        glFlush();
-        glFinish();
+        //glFlush();
+        //glFinish();
        
         glDisableClientState(GL_VERTEX_ARRAY);
   
@@ -276,7 +302,9 @@ namespace icl{
         }else{
           glDisableClientState(GL_COLOR_ARRAY);  
         }
-        std::cout<<"render: "<<t.age().toMilliSeconds()<<std::endl;
+        glDeleteBuffers(4,buffers);
+
+        //std::cout<<"render: "<<t.age().toMilliSeconds()<<std::endl;
       }//end triangulation
 
       glEnable(GL_LIGHTING);
