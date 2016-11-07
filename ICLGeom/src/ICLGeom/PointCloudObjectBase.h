@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/PointCloudObjectBase.h             **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter, Patrick Nobou, Andre Ueckermann   **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **

@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/PointCloudCreator.h                **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter, Patrick Nobou, Andre Ueckermann   **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -146,6 +146,15 @@ namespace icl{
                  the camera's view normal
           */
       void setFixes(float focalLengthMultiplier=1, float positionOffsetAlongNorm=0);
+
+      /// returns for each pointcloud point the corresponding color image point
+      /** @return the DataSegment with the corresponding color image points*/
+      core::DataSegment<float,2> getColorTexturePoints();
+
+      /// returns the normalized color texture points (normalized with color image size to range 0 to 1)
+      /** @return the DataSegment with normalized color image points*/
+      core::DataSegment<float,2> getNormalizedColorTexturePoints();
+
     };
   
   } // namespace geom
