@@ -1608,7 +1608,7 @@ namespace icl{
     }
 
     const Img8u &Scene::render(int camIndex, const ImgBase *background, Img32f *depthBuffer,
-      DepthBufferMode mode) {
+      DepthBufferMode mode, bool fastRendering) {
       struct RenderEvent : public ICLApplication::AsynchronousEvent{
         const Scene *scene;
         std::map<PBufferIndex, PBuffer*> *pbufferMap;
@@ -1617,14 +1617,16 @@ namespace icl{
         Img32f *depthBuffer;
         DepthBufferMode mode;
         Img8u const** out;
-        RenderEvent(const Scene *scene, std::map<PBufferIndex, PBuffer*> *pbufferMap, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode mode, Img8u const** out) :
+        bool fastRendering;
+        RenderEvent(const Scene *scene, std::map<PBufferIndex, PBuffer*> *pbufferMap, int camIndex, const ImgBase *background, Img32f *depthBuffer, DepthBufferMode mode, Img8u const** out, bool fastRendering) :
           scene(scene),
           pbufferMap(pbufferMap),
           camIndex(camIndex),
           background(background),
           depthBuffer(depthBuffer),
           mode(mode),
-          out(out){}
+          out(out),
+          fastRendering(fastRendering){}
 
         virtual void execute(){
           scene->lock();
@@ -1635,7 +1637,9 @@ namespace icl{
           PBufferIndex idx(s);
           std::map<PBufferIndex, PBuffer*>::iterator it = pbufferMap->find(idx);
           PBuffer *pbuffer = (it == pbufferMap->end()) ? ((*pbufferMap)[idx] = new PBuffer(s)) : it->second;
-          pbuffer->update(cam);
+          if(!fastRendering){
+            pbuffer->update(cam);
+          }
           pbuffer->m_buffer.makeCurrent();
           GeomColor c = scene->getBackgroundColor();
           glClearColor(c[0] / 255., c[1] / 255., c[2] / 255., 1);
@@ -1703,7 +1707,7 @@ namespace icl{
       };
       Img8u const* img = 0;
       ICLApplication *app = ICLApplication::instance();
-      if(app)app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img), true);
+      if(app)app->executeInGUIThread(new RenderEvent(this, &m_pbuffers, camIndex, background, depthBuffer, mode, &img,fastRendering), true);
       return *img;
     }
 #endif //QT

@@ -270,7 +270,7 @@ namespace icl{
         DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
       };
       const core::Img8u &render(int camIndx, const core::ImgBase *background = 0, core::Img32f *depthBuffer = 0,
-        DepthBufferMode mode = DistToCamCenter);
+        DepthBufferMode mode = DistToCamCenter, bool fastRendering=false);
     
       /// renders the current scene using an instance of pbuffer
       /** This method is currently only supported on linux systems, since
