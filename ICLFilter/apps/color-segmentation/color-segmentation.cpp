@@ -416,7 +416,9 @@ void run(){
   static const ImgBase *inputImage = 0;
   if(!inputImage || !gui["paused"]){
     inputImage = grabber.grab();
-  }
+  }else{
+    Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
+  }        
   
   const Img8u *grabbedImage = inputImage->asImg<icl8u>();
 
