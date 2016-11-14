@@ -49,6 +49,7 @@ namespace icl{
       std::string m_device;
       int m_handle;
       utils::Size m_deviceSize;
+      core::format m_deviceFormat;
       v4l2_capability caps;
       v4l2_format fmt;
       Data():m_handle(-1){}
@@ -73,14 +74,17 @@ namespace icl{
         int r = ioctl(m_handle, VIDIOC_QUERYCAP, &caps);
         if(r == -1) throw utils::ICLException("could not query device capabilities");
       }
-      void ensureDeviceSize(const utils::Size &s){
-        if(m_deviceSize != s){
+      void ensureDeviceSizeAndFormat(const utils::Size &s, const core::format f){
+        if(m_deviceSize != s || m_deviceFormat != f){
           m_deviceSize = s;
-          
+          m_deviceFormat = f;
           fmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
           fmt.fmt.pix.width = s.width;
           fmt.fmt.pix.height = s.height;
-          fmt.fmt.pix.pixelformat =  V4L2_PIX_FMT_RGB24; //V4L2_PIX_FMT_YUYV;
+          fmt.fmt.pix.pixelformat =  (f == core::formatGray
+                                      ? V4L2_PIX_FMT_GREY
+                                      : V4L2_PIX_FMT_RGB24);
+          
           fmt.fmt.pix.sizeimage = fmt.fmt.pix.width * fmt.fmt.pix.height  * 3;
           fmt.fmt.pix.field = V4L2_FIELD_NONE;
           fmt.fmt.pix.bytesperline = fmt.fmt.pix.width * 3;
@@ -112,19 +116,27 @@ namespace icl{
       void send(const core::ImgBase *image){
         using namespace utils;
         using namespace core;
-        
+
+        core::format f = image->getFormat();
         ICLASSERT_THROW(m_handle > 0, ICLException("V4L2LoopBackOutput::send: device not initialized"));
         ICLASSERT_THROW(image, ICLException("V4L2LoopBackOutput::send: image was null"));
         ICLASSERT_THROW(image->getDim(), ICLException("V4L2LoopBackOutput::send: image dimension is null"));
-        ICLASSERT_THROW(image->getFormat() == formatRGB, ICLException("V4L2LoopBackOutput::send: image must be in rgb format"));
+        ICLASSERT_THROW(f == formatRGB || f == formatGray, ICLException("V4L2LoopBackOutput::send: image must be in gray or RGB format"));
         ICLASSERT_THROW(image->getDepth() == depth8u, ICLException("V4L2LoopBackOutput::send: image must have depth8u"));
+
+
+        ensureDeviceSizeAndFormat(image->getSize(), f);
         
-        ensureDeviceSize(image->getSize());
-        
-        m_out.resize(image->getDim()*3);
-        planarToInterleaved(image->as8u(), m_out.data());
-        
-        int r = write(m_handle, m_out.data(), m_out.size());
+
+        int r = 0;
+        if(f == formatRGB){
+          m_out.resize(image->getDim()*(f == core::formatGray ? 1 : 3));
+          planarToInterleaved(image->as8u(), m_out.data());
+          r = write(m_handle, m_out.data(), m_out.size());
+        }else{
+          r = write(m_handle, image->getDataPtr(0), image->getDim());
+        }
+
         if(r < 0){
           DEBUG_LOG("V4L2LoopBackOutput::send: could not write data to " << m_device);
         }
