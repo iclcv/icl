@@ -339,6 +339,16 @@ namespace icl{
       try{
         const ImgBase* img = grabImage();
         updateProperties(img);
+
+        std::string print = getPropertyValue("print meta-data");
+        if(print != "disregard"){
+          if(print == "to std::out"){
+            std::cout << "image meta data: [" << img->getMetaData() << "]" << std::endl;
+          }else if(print == "to meta-data label"){
+            setPropertyValue("meta-data", img->getMetaData());
+          }
+        }
+        
         return img;
       } catch (ICLException &e){
         DEBUG_LOG("could not grab image. Name: "
@@ -442,6 +452,9 @@ namespace icl{
       addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
       //addProperty("frame-index","range","[0," + str(m_data->oFileList.size()-1) + "]1",m_data->iCurrIdx,20,"Currently grabbed frame");
       addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
+      addProperty("print meta-data","menu","disregard,to std::out,to meta-data label","disregard");
+      addProperty("meta-data","info","","",0,"current image meta-data. Depends on mode set in print meta-data.");
+      
       Configurable::registerCallback(utils::function(this,&FileGrabber::processPropertyChange));
     }
 
