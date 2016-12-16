@@ -69,6 +69,12 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
+    namespace{
+      struct FileListEndedException : public ICLException{
+        inline FileListEndedException(const std::string &what):ICLException(what){}
+      };
+    }
+
     struct FileGrabber::Data{
         /// internal file list
         FileList oFileList;
@@ -350,6 +356,8 @@ namespace icl{
         }
         
         return img;
+      } catch(FileListEndedException &ex){
+        throw;
       } catch (ICLException &e){
         DEBUG_LOG("could not grab image. Name: "
                   << m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]
@@ -380,7 +388,7 @@ namespace icl{
         if(m_data->loop){
           m_data->iCurrIdx = 0;
         }else{
-          throw ICLException("No more files available");
+          throw FileListEndedException("No more files available");
         }
       }
 
