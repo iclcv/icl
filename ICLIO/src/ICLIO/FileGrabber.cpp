@@ -320,7 +320,7 @@ namespace icl{
 
       ICLASSERT_RETURN(m_data->oFileList.size());
       m_data->iCurrIdx--;
-      if(m_data->iCurrIdx <= 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
+      if(m_data->iCurrIdx < 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
     }
 
     // }}}
@@ -335,8 +335,10 @@ namespace icl{
     
     const std::string &FileGrabber::getNextFileName() const{
       // {{{ open
-
-      return m_data->oFileList[m_data->iCurrIdx];
+      static const std::string myNull("null");
+      return ( m_data->iCurrIdx >= m_data->oFileList.size()
+               ? (m_data->loop ? m_data->oFileList[0] : myNull)
+               : m_data->oFileList[m_data->iCurrIdx] );
     }
 
     // }}}
@@ -381,15 +383,20 @@ namespace icl{
       }
 
       ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
-      File f(m_data->oFileList[m_data->iCurrIdx]);
-      if(m_data->bAutoNext) ++m_data->iCurrIdx;
-      if(!f.exists()) throw FileNotFoundException(f.getName());
+      
       if(m_data->iCurrIdx >= m_data->oFileList.size()){
         if(m_data->loop){
           m_data->iCurrIdx = 0;
         }else{
           throw FileListEndedException("No more files available");
         }
+      }
+      //DEBUG_LOG("creating file with index " << m_data->iCurrIdx);
+      File f(m_data->oFileList[m_data->iCurrIdx]);
+      if(!f.exists()) throw FileNotFoundException(f.getName());
+      if(m_data->bAutoNext){
+        ++m_data->iCurrIdx;
+        //DEBUG_LOG("updating curr idx to " << m_data->iCurrIdx);
       }
 
       FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
@@ -511,10 +518,15 @@ namespace icl{
       utils::Mutex::Locker l(m_propertyMutex);
       m_updatingProperties = true;
       int s = m_data->oFileList.size();
-      setPropertyValue("next filename", getNextFileName());
-      setPropertyValue("current filename", m_data->oFileList[m_data->iCurrIdx ? m_data->iCurrIdx-1 : s-1]);
-      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(s))+" %");
-      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(s));
+      int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);
+      if(usedIdx < 0) usedIdx = s-1;
+      
+      //DEBUG_LOG("in update properties: use idx = " << usedIdx);
+      //std::cout << "--" << std::endl;
+      setPropertyValue("next filename", m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1]);
+      setPropertyValue("current filename", m_data->oFileList[usedIdx]);
+      setPropertyValue("relative progress", str((100* (usedIdx+1)) / float(s))+" %");
+      setPropertyValue("absolute progress", str(usedIdx+1) + " / " + str(s));
       setPropertyValue("format", Any(img -> getFormat()));
       setPropertyValue("size", Any(img -> getSize()));
       //setPropertyValue("frame-index", m_data->iCurrIdx);
