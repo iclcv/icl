@@ -510,10 +510,11 @@ namespace icl{
     void FileGrabber::updateProperties(const ImgBase* img){
       utils::Mutex::Locker l(m_propertyMutex);
       m_updatingProperties = true;
+      int s = m_data->oFileList.size();
       setPropertyValue("next filename", getNextFileName());
-      setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
-      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
-      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
+      setPropertyValue("current filename", m_data->oFileList[m_data->iCurrIdx ? m_data->iCurrIdx-1 : s-1]);
+      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(s))+" %");
+      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(s));
       setPropertyValue("format", Any(img -> getFormat()));
       setPropertyValue("size", Any(img -> getSize()));
       //setPropertyValue("frame-index", m_data->iCurrIdx);
