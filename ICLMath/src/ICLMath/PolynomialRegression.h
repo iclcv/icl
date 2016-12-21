@@ -83,14 +83,15 @@ namespace icl{
     */
     template<class T>
     class ICLMath_IMP PolynomialRegression{
-      
+
+      public:
+
       /// internally used matrxi type
       typedef DynMatrix<T> Matrix;
       
       /// internally used type
       typedef PolynomialRegressionAttrib<T> Attrib;
       
-      public:
       
       /// result type
       class ICLMath_API Result{
