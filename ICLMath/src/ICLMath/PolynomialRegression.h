@@ -40,12 +40,14 @@ namespace icl{
   namespace math{
     
     /** \cond */
-    
+
     /// utility class
     template<class T>
     struct PolynomialRegressionAttrib{
+      virtual ~PolynomialRegressionAttrib(){}
       virtual T compute(const T *row) const = 0; 
       virtual std::string toString() const = 0;
+      virtual PolynomialRegressionAttrib<T> *copy() const = 0;
     };
     /** \endcond */
     
@@ -120,6 +122,12 @@ namespace icl{
         
         /// constructor with given xml file saved with the save method
         Result(const std::string &xmlfilename);
+
+        /// custom copy constructor
+        Result(const Result &r);
+
+        /// custom assignment operator
+        Result &operator=(const Result &r);
         
         /// set of parameters (on row for each output dimension)
         const Matrix &getParams() const { return m_params; }
