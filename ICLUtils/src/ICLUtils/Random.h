@@ -37,6 +37,7 @@
 #include <ICLUtils/ClippedCast.h>
 #include <cmath>
 #include <cstdlib>
+#include <vector>
 
 #ifdef WIN32
   #undef max
