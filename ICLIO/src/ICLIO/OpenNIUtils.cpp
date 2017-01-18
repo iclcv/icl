@@ -48,12 +48,14 @@ using namespace io;
 using namespace icl_openni;
 
 // checks whether status is OK. else throws an Exception.
-void assertStatus(XnStatus &status){
+void assertStatus(XnStatus status, bool throwing=true){
   if (status != XN_STATUS_OK){
     std::ostringstream st;
     st << "XnStatus != XN_STATUS_OK. Got '" << xnGetStatusString(status) << "'";
     ERROR_LOG(st.str());
-    throw new ICLException(st.str());
+    if(throwing){
+      throw new ICLException(st.str());
+    }
   }
 }
 
@@ -225,7 +227,8 @@ OpenNIDepthGenerator::OpenNIDepthGenerator(int num)
   }
   // create GeneratorOptions for DepthGenerator
   m_Options = new DepthGeneratorOptions(m_DepthGenerator);
-  m_DepthGenerator -> StartGenerating();
+  status = m_DepthGenerator -> StartGenerating();
+  DEBUG_LOG("Done creating OpenNIIRGenerator: " << xnGetStatusString(status));
 }
 
 // Destructor frees all resouurces
@@ -315,8 +318,8 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(int num)
 
   // create generator options
   m_Options = new ImageGeneratorOptions(m_RgbGenerator);
-  m_RgbGenerator -> StartGenerating();
-  DEBUG_LOG2("done creating OpenNIRgbGenerator");
+  status = m_RgbGenerator -> StartGenerating();
+  DEBUG_LOG("Done creating OpenNIRgbGenerator: " << xnGetStatusString(status));
 }
 
 // Destructor frees all resouurces
@@ -411,12 +414,12 @@ OpenNIIRGenerator::OpenNIIRGenerator(int num)
   mo.nFPS = 30;
   mo.nXRes = 640;
   mo.nYRes = 480;
-  m_IrGenerator -> SetMapOutputMode(mo);
+  assertStatus(m_IrGenerator -> SetMapOutputMode(mo),false);
 
   // create generator options
   m_Options = new MapGeneratorOptions(m_IrGenerator);
   status = m_IrGenerator -> StartGenerating();
-  DEBUG_LOG2("startgenerating: " << xnGetStatusString(status));
+  DEBUG_LOG("Done creating OpenNIIRGenerator: " << xnGetStatusString(status));
 }
 
 // Destructor frees all resouurces
@@ -1035,27 +1038,27 @@ void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Pro
   if(prop.name == "Pixel Format"){
     if (prop.value == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24);
+        assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24),false);
       }
     }
     if (prop.value == "yuv422"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422);
+        assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422),false);
       }
     }
     if (prop.value == "grayscale8"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT);
+        assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT),false);
       }
     }
     if (prop.value == "grayscale16"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT);
+        assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT),false);
       }
     }
     if (prop.value == "mjpeg"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
-        m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_MJPEG);
+        assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_MJPEG),false);
       }
     }
   }
