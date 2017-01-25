@@ -71,6 +71,7 @@ void init(){
     if(pa("-do")) d_out.init(pa("-do"));
     if(pa("-co")) c_out.init(pa("-co"));
   }
+  gui << CamCfg("");
   
   if(pa("-man")){
     if(!pa("-co") && !pa("-do")){

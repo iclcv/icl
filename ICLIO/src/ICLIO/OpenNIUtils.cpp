@@ -975,6 +975,23 @@ DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
               "Horizontal field of view.");
   addProperty("field of view Y", "info", "", fov.fVFOV, 0,
               "Vertical field of view.");
+  XnUInt64 gmcMode = 0;
+  m_DepthGenerator->GetIntProperty("GmcMode", gmcMode);
+  addProperty("GmcMode", "flag", "", gmcMode, 0,
+              "GmcMode");
+  Configurable::registerCallback(
+        utils::function(this,&DepthGeneratorOptions::processPropertyChange));
+}
+
+// callback for changed configurable properties
+void DepthGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
+  if(prop.name == "GmcMode"){
+    if (prop.value == "false"){
+        assertStatus(m_DepthGenerator->SetIntProperty("GmcMode", 0));
+    } else {
+        assertStatus(m_DepthGenerator->SetIntProperty("GmcMode", 1));
+    }
+  }
 }
 
 //##############################################################################

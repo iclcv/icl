@@ -382,6 +382,9 @@ namespace icl {
           /// constructor
           DepthGeneratorOptions(xn::DepthGenerator* generator);
 
+          /// callback for changed configurable properties
+          void processPropertyChange(const utils::Configurable::Property &prop);
+
         private:
           /// the used DepthGenerator
           xn::DepthGenerator* m_DepthGenerator;
