@@ -30,6 +30,7 @@
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Factory.h>
+//#include <rsc/patterns/Factory.h>
 #include <rsb/Handler.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>

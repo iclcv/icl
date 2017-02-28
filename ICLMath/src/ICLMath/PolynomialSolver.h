@@ -169,9 +169,9 @@ namespace icl{
     static void noshft(const int l1, int deg, xcomplex *P, xcomplex *H)
     {
       int i, j, jj;
-#ifndef ICL_SYSTEM_WINDOWS
-#warning "why is tmp not iniitialized here?"
-#endif
+      //#ifndef ICL_SYSTEM_WINDOWS removed by CE
+      //#warning "why is tmp not iniitialized here?"
+      //#endif
       xcomplex t, tmp; 
 
       // compute the first H-polynomial as the (normed) derivative of P

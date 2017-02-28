@@ -52,7 +52,7 @@ namespace icl{
       std::vector<utils::Point32f> lastConsensusSet;
     };
 
-
+#if 0
     static icl64f err_coplanar_verbose(const std::vector<float> &m, const std::vector<float> &p, const Camera &cam){
       std::cout << "model: [" 
                 << m[0] << ", "
@@ -75,6 +75,7 @@ namespace icl{
       
       return err;
     }
+#endif
 
     icl64f RansacBasedPoseEstimator::err_coplanar(const std::vector<float> &m, const std::vector<float> &p){
       Mat T = create_hom_4x4<float>(m[0],m[1],m[2],m[3],m[4],m[5]);
@@ -85,6 +86,7 @@ namespace icl{
       return err;
     }
 
+#if 0
     static icl64f mean_error(const std::vector<std::vector<float> > &pts, const std::vector<float> &m,
                              Function<icl64f,const std::vector<float> &, const std::vector<float> &> err_coplanar,
                              const Camera &cam){
@@ -101,6 +103,7 @@ namespace icl{
       return err / pts.size();
 
     }
+#endif
 
     std::vector<float> RansacBasedPoseEstimator::fit_coplanar(const std::vector<std::vector<float> > &pts){
       //DEBUG_LOG("------------- fitting on " << pts.size() << " point");

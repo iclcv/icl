@@ -32,7 +32,6 @@ SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
             src/ICLCV/CV.cpp
             src/ICLCV/Extrapolator.cpp
             src/ICLCV/FloodFiller.cpp
-            src/ICLCV/HeartrateDetector.cpp
             src/ICLCV/HoughLine.cpp
             src/ICLCV/HoughLineDetector.cpp
             src/ICLCV/HungarianAlgorithm.cpp
@@ -51,11 +50,13 @@ SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
             src/ICLCV/CurvatureExtractor.cpp
             src/ICLCV/RDPApproximation.cpp)
 
+
+
+          
 SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/CV.h
             src/ICLCV/Extrapolator.h
             src/ICLCV/FloodFiller.h
-            src/ICLCV/HeartrateDetector.h
             src/ICLCV/HoughLine.h
             src/ICLCV/HoughLineDetector.h
             src/ICLCV/HungarianAlgorithm.h
@@ -80,6 +81,11 @@ SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/CurvatureExtractor.h
             src/ICLCV/RDPApproximation.h)
 
+IF (QT_FOUND)
+  LIST(APPEND HEADERS src/ICLCV/HeartrateDetector.h)
+  LIST(APPEND SOURCES src/ICLCV/HeartrateDetector.cpp)
+ENDIF()
+                    
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLCV/ViewBasedTemplateMatcher.cpp
                       src/ICLCV/TemplateTracker.cpp)
