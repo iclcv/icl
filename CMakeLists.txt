@@ -381,8 +381,10 @@ IF(BUILD_WITH_OPENNI)
 ENDIF()
 
 IF(BUILD_WITH_OPENCV)
-  IF(${OPENCV_ROOT})
+  message(STATUS "opencv root x: ${OPENCV_ROOT}")
+  IF(OPENCV_ROOT)
     SET(OpenCV_DIR ${OPENCV_ROOT})
+    message(STATUS "opencv root: ${OPENCV_ROOT}")
   ENDIF()
   SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
   SET(OPENCV_FEATURES_2D_FOUND "FALSE")
@@ -398,9 +400,8 @@ IF(BUILD_WITH_OPENCV)
     MARK_AS_ADVANCED(OPENCV_FOUND)
     MARK_AS_ADVANCED(OpenCV_FOUND)
 
-    message(STATUS "top:")
-    message(STATUS "${OpenCV_INSTALL_PATH}/share/opencv")
-    message(STATUS "bot:")
+    message(STATUS "using opencv from : ${OpenCV_INSTALL_PATH}/share/opencv")
+
     ADD_ICL_DEFINITIONS(-DICL_OPENCV_INSTALL_PATH="${OpenCV_INSTALL_PATH}")
 
     IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")

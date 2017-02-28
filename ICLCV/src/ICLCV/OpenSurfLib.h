@@ -46,7 +46,8 @@
 #pragma once
 
 #include <vector>
-#include <opencv/cv.h>
+#include <ICLCore/OpenCV.h>
+//#include <opencv/cv.h>
 
 #include <ICLCV/SurfFeature.h>
 
