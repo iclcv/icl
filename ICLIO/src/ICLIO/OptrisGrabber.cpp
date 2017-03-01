@@ -58,6 +58,8 @@ namespace icl{
 
 #ifdef ICL_HAVE_LIBIRIMAGER_EVO
 #endif
+
+
     
     namespace{
       struct Buffer{
@@ -68,6 +70,22 @@ namespace icl{
         Time lastTimeAcquired;
 
         Img8u visibleFrame;
+        Img8u visibleOutBuf;
+        OptrisGrabber::Mode mode;
+
+        ImgBase &getImage() { return mode == OptrisGrabber::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
+        ImgBase &getOutBuf() { return mode == OptrisGrabber::IR_IMAGE ?  (ImgBase&)outBuf : (ImgBase&)visibleOutBuf; }
+        void deepCopy(){
+          if(mode == OptrisGrabber::IR_IMAGE){
+            image.deepCopy(&outBuf);
+          }else{
+            visibleFrame.deepCopy(&visibleOutBuf);
+          }
+        }
+        Buffer(){
+          image = Img32f(Size(1,1),1);
+          visibleFrame = Img8u(Size(1,1),1);
+        }
       };
     }
     
@@ -86,14 +104,14 @@ namespace icl{
 
     void visible_frame_callback(unsigned char* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
       Buffer &b = *reinterpret_cast<Buffer*>(arg);
-      b.image.setChannels(3);
+      b.image.setChannels(1);
       b.image.setSize(Size(w,h));
       //      b.image.setTime(Time(timestamp));
       b.image.setTime(Time::now()); // the timestamp has some other meaning!
       
-      Channel32f c = b.image[0];
+      Channel8u c = b.visibleFrame[0];
       for(size_t i=0;i<w*h;++i){
-        c[i] = 0.1*(float(data[i])-1000.f);
+        c[i] = data[i];
       }
     }
 
@@ -200,7 +218,9 @@ namespace icl{
           del_temp_calib_file(fn);
        }
           */
-      std::string  init(const std::string &serialPattern) throw (utils::ICLException){
+      std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) throw (utils::ICLException){
+        buffer.mode = mode;
+        
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
        
         int64_t serial = parse<int64_t>(serialPattern);
@@ -232,12 +252,13 @@ namespace icl{
             continue;
           }
           
-          static const int framerate = 120;
+          const int framerate = (mode == VISIBLE_IMAGE) ? 32 : 120;
           static const int videoformatindex = 0;
           
           imager = new IRImager;
+
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
-                       fov, TM20_100, framerate, Temperature, 0);
+                       fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
           
           if((int64_t)imager->getSerial() != serial){
             DEBUG_LOG("serials do not match! trying next v4l device (if there is any)");
@@ -246,7 +267,7 @@ namespace icl{
           }
         }
         if(!v4lDev.length()){
-          throw ICLException("could not open find any v4l device for serial " + str(serial));
+          throw ICLException("could not find any v4l device for serial " + str(serial));
         }
         if(!imager->isOpen()){
           throw ICLException("could not open device /dev/video" + str(v4lDev) + 
@@ -257,8 +278,11 @@ namespace icl{
 
       void start_capturing(){
         buffer.buf.resize(imager->getRawBufferSize());
-        imager->setFrameCallback(frame_callback);
-        imager->setFrameCallback(visible_frame_callback);
+        if(buffer.mode == VISIBLE_IMAGE){
+          imager->setVisibleFrameCallback(visible_frame_callback);
+        }else{
+          imager->setFrameCallback(frame_callback);
+        }
         imager->startStreaming();
         start();
       }
@@ -272,9 +296,13 @@ namespace icl{
         while(true){
           {
             Mutex::Locker lock(buffer.mutex);
+            DEBUG_LOG("A");
             imager->getFrame(buffer.buf.data());
+            DEBUG_LOG("B");
             imager->process(buffer.buf.data(), &buffer);
+            DEBUG_LOG("C");
             imager->releaseFrame();
+            DEBUG_LOG("D");
           }
           Thread::msleep(5);
         }
@@ -284,8 +312,9 @@ namespace icl{
     
  
     
-    OptrisGrabber::OptrisGrabber(const std::string &serialPattern, bool testOnly) throw(utils::ICLException) : m_data(new Data){
-      std::string v4lDev = m_data->init(serialPattern);
+    OptrisGrabber::OptrisGrabber(const std::string &serialPattern, bool testOnly,
+                                 Mode mode) throw(utils::ICLException) : m_data(new Data){
+      std::string v4lDev = m_data->init(serialPattern,mode);
       addProperty("v4l device","info","",v4lDev);
       addProperty("format","menu","Temperature celsius [32f],Pseudo Color [RGB8],Pseudo Color + Temp. [RGBT 32f]","Temperature celsius [32f]");
       addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
@@ -331,17 +360,22 @@ namespace icl{
       
       Mutex::Locker lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
-        while(m_data->buffer.image.getTime() == m_data->buffer.lastTimeAcquired){
+        while(m_data->buffer.getImage().getTime() == m_data->buffer.lastTimeAcquired){
           m_data->buffer.mutex.unlock();
           Thread::msleep(1);
           m_data->buffer.mutex.lock();
         }
       }
-      m_data->buffer.lastTimeAcquired = m_data->buffer.image.getTime();
-      m_data->buffer.image.deepCopy(&m_data->buffer.outBuf);
+      m_data->buffer.lastTimeAcquired = m_data->buffer.getImage().getTime();
+      m_data->buffer.deepCopy();
 
-      const ImgBase *cvt = m_data->convert_output(m_data->buffer.outBuf, 
-                                                  getPropertyValue("format"));
+      const ImgBase *cvt = 0;
+      if(m_data->buffer.mode == IR_IMAGE){
+        cvt = m_data->convert_output(m_data->buffer.outBuf, 
+                                     getPropertyValue("format"));
+      }else{
+        cvt = &m_data->buffer.visibleOutBuf;
+      }
 
       if(getPropertyValue("threshold output")){
         cvt = m_data->lt.apply(cvt);
@@ -354,13 +388,18 @@ namespace icl{
       
     } 
 
+    template<OptrisGrabber::Mode M>
     static Grabber *create_micro_epsilon_grabber(const std::string &param){
-      return new OptrisGrabber(param,false);
+      return new OptrisGrabber(param,false,M);
     }
 
-    REGISTER_GRABBER(optris,utils::function(create_micro_epsilon_grabber), 
+    REGISTER_GRABBER(optris,utils::function(create_micro_epsilon_grabber<OptrisGrabber::IR_IMAGE>), 
                      utils::function(OptrisGrabber::getDeviceList), 
-                     "optris:camera serial ID or pattern:LibImager-based camera grabber source");
+                     "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
+
+    REGISTER_GRABBER(optrisv,utils::function(create_micro_epsilon_grabber<OptrisGrabber::VISIBLE_IMAGE>), 
+                     utils::function(OptrisGrabber::getDeviceList), 
+                     "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
   
     //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
