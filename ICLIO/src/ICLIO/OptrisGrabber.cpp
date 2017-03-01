@@ -45,6 +45,7 @@
 #include <fstream>
 
 namespace optris {}
+namespace evo {}
 
 namespace icl{
   using namespace utils;
@@ -53,6 +54,10 @@ namespace icl{
 
   namespace io{
     using namespace optris;
+    using namespace evo;
+
+#ifdef ICL_HAVE_LIBIRIMAGER_EVO
+#endif
     
     namespace{
       struct Buffer{
@@ -61,6 +66,8 @@ namespace icl{
         Img32f outBuf;
         Mutex mutex;
         Time lastTimeAcquired;
+
+        Img8u visibleFrame;
       };
     }
     
@@ -77,8 +84,21 @@ namespace icl{
       }
     }
 
+    void visible_frame_callback(unsigned char* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
+      Buffer &b = *reinterpret_cast<Buffer*>(arg);
+      b.image.setChannels(3);
+      b.image.setSize(Size(w,h));
+      //      b.image.setTime(Time(timestamp));
+      b.image.setTime(Time::now()); // the timestamp has some other meaning!
+      
+      Channel32f c = b.image[0];
+      for(size_t i=0;i<w*h;++i){
+        c[i] = 0.1*(float(data[i])-1000.f);
+      }
+    }
+
     struct OptrisGrabber::Data : public utils::Thread{
-      SmartPtr<optris::IRImager> imager;
+      SmartPtr<IRImager> imager;
       Buffer buffer;
       PseudoColorConverter pcc;
       Img8u pccSrc;
@@ -215,7 +235,7 @@ namespace icl{
           static const int framerate = 120;
           static const int videoformatindex = 0;
           
-          imager = new optris::IRImager;
+          imager = new IRImager;
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
                        fov, TM20_100, framerate, Temperature, 0);
           
@@ -238,6 +258,7 @@ namespace icl{
       void start_capturing(){
         buffer.buf.resize(imager->getRawBufferSize());
         imager->setFrameCallback(frame_callback);
+        imager->setFrameCallback(visible_frame_callback);
         imager->startStreaming();
         start();
       }
