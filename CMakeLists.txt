@@ -50,6 +50,7 @@ SET(CMAKE_CXX_STANDARD 11)
 IF(APPLE)
   SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
   SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")
 ELSE(APPLE)
   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -81,7 +82,7 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
 #                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
-  set(ICL_DEACTIVATED_WARNING "-Wno-narrowing")
+  set(ICL_DEACTIVATED_WARNING "")
 #endif()
 
 IF(NOT CMAKE_BUILD_TYPE)

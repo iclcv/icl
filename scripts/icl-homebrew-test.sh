@@ -34,7 +34,6 @@ cmake -DBUILD_APPS=On \
       -DBUILD_WITH_LIBUSB=On \
       -DBUILD_WITH_ZMQ=On \
       -DBUILD_WITH_OPENNI=On \
-      -DCMAKE_CXX_STANDARD=11 \
       ..
 sleep 5
 make -j5
