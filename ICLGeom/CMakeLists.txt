@@ -146,13 +146,13 @@ IF(QT_FOUND)
                        src/ICLGeom/Primitive3DFilter.h)
 ENDIF()
 
-IF(PCL_FOUND)
+IF(PCL_FOUND AND QT_FOUND)
   LIST (APPEND SOURCES src/ICLGeom/PCLPointCloudObject.cpp)
   LIST (APPEND HEADERS src/ICLGeom/PCLPointCloudObject.h)
   # requires pcl_io lib that depends on openni!!
 ENDIF()
 
-IF(OPENCL_FOUND)
+IF(OPENCL_FOUND AND QT_FOUND)
     LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp
                          src/ICLGeom/IterativeClosestPoint.cpp
 	                 src/ICLGeom/IterativeClosestPointCLCode.cl)
@@ -161,7 +161,8 @@ IF(OPENCL_FOUND)
 	                 src/ICLGeom/IterativeClosestPointCLCode.h)
 ENDIF()
 
-IF(RSB_FOUND)
+IF(RSB_FOUND AND QT_FOUND)
+  # note the pointcloud-grabber needs the PointCloudObjectBase, which in turn needs qt
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
     PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLGeom/proto/RSBPointCloud.proto)
     INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR})

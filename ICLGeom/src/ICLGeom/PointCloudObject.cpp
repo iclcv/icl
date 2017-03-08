@@ -197,7 +197,11 @@ namespace icl{
     
     
     void PointCloudObject::customRender() {
-      drawNormalLines();
+      if(m_useCustomRender){
+        PointCloudObjectBase::customRender();
+      }else{
+        drawNormalLines();
+      }
     }
   
     void PointCloudObject::setSize(const Size &size){

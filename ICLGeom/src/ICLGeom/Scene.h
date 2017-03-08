@@ -270,7 +270,7 @@ namespace icl{
         DistToCamCenter  //!< core::depth buffer values define distanct to the camera center
       };
       const core::Img8u &render(int camIndx, const core::ImgBase *background = 0, core::Img32f *depthBuffer = 0,
-        DepthBufferMode mode = DistToCamCenter);
+        DepthBufferMode mode = DistToCamCenter, bool fastRendering=false);
     
       /// renders the current scene using an instance of pbuffer
       /** This method is currently only supported on linux systems, since
@@ -434,23 +434,24 @@ namespace icl{
       void renderScene(int camIndex, qt::ICLDrawWidget3D *widget=0) const;
       
       /// renders the shadowmap
-      void renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size = 512) const;
+      void renderShadow(const unsigned int light, const unsigned int shadow, unsigned int size,
+                        int camID) const;
       
       //// internally used rendering method for recursive rendering of the scene graph of shadowcasting objects
-      void renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o) const;
+      void renderSceneObjectRecursiveShadow(ShaderUtil* util, SceneObject *o, int camID) const;
 #endif
 
       /// internally used rendering method for recursive rendering of the scene graph
-      void renderSceneObjectRecursive(SceneObject *o) const{
+      void renderSceneObjectRecursive(SceneObject *o, int camID) const{
         ShaderUtil util;
-        renderSceneObjectRecursive(&util, o);
+        renderSceneObjectRecursive(&util, o, camID);
       };
       
       /// internally used rendering method for recursive rendering of the scene graph
-      void renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o) const;
+      void renderSceneObjectRecursive(ShaderUtil* util, SceneObject *o, int camID) const;
 
       /// recursively renders object frames for all scene objects
-      void renderObjectFramesRecursive(SceneObject *o, SceneObject *cs) const;
+      void renderObjectFramesRecursive(SceneObject *o, SceneObject *cs, int camID) const;
 
       /// internally used utility method that computes the extend of the Scene content
       /** The extend is used when scene mouse handlers are created. Here, it will e.g. 

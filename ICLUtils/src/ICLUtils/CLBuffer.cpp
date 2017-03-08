@@ -29,7 +29,8 @@
 ********************************************************************/
 #ifdef ICL_HAVE_OPENCL
 
-#define __CL_ENABLE_EXCEPTIONS
+
+
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/Macros.h>
 

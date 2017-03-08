@@ -45,7 +45,7 @@ SET(ICL_FILE_NAME_COMPONENT_DIR PATH)
 IF(CMAKE_VERSION VERSION_LESS 2.8.12)
   SET(ICL_FILE_NAME_COMPONENT_DIR DIRECTORY)
 ENDIF()
-
+SET(CMAKE_CXX_STANDARD 11) 
 
 IF(APPLE)
   SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
@@ -81,7 +81,7 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
 #                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
-  set(ICL_DEACTIVATED_WARNING "")
+  set(ICL_DEACTIVATED_WARNING "-Wno-narrowing")
 #endif()
 
 IF(NOT CMAKE_BUILD_TYPE)
@@ -142,7 +142,7 @@ ENDIF(MSVC)
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
 SET(ICL_VERSION_MINOR "12" CACHE STRING "Minor project version part")
-SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
+SET(ICL_VERSION_PATCH "1" CACHE STRING "Patch project version part")
 
 SET(ICL_NAME                   icl)
 SET(PROJECT_VERSION            "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
@@ -159,11 +159,8 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLVersion.h.in ${CMAKE_BINARY
 CURRENT_ARCHITECTURE(ICL_BUILD_ARCH)
 
 IF(${ICL_BUILD_ARCH} EQUAL "64_BIT_FOUND")
-  SET(ICL_64BIT TRUE)
   ADD_ICL_DEFINITIONS(-DICL_64BIT)
-  #SET_PROPERTY(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 ELSE()
-  SET(ICL_32BIT TRUE)
   ADD_ICL_DEFINITIONS(-DICL_32BIT)
 ENDIF()
 
@@ -362,7 +359,9 @@ IF(BUILD_WITH_OPENCL)
     ENDIF()
    ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCL)
    SET(OPENCL_LIBRARIES ${OpenCL_LIBRARIES})
-  ENDIF()
+ ENDIF()
+ #wait what? that's not a definition!
+  #add_definitions("-std=gnu++11")
 ENDIF()
 
 IF(BUILD_WITH_EIGEN3)
@@ -383,8 +382,10 @@ IF(BUILD_WITH_OPENNI)
 ENDIF()
 
 IF(BUILD_WITH_OPENCV)
-  IF(${OPENCV_ROOT})
+  message(STATUS "opencv root x: ${OPENCV_ROOT}")
+  IF(OPENCV_ROOT)
     SET(OpenCV_DIR ${OPENCV_ROOT})
+    message(STATUS "opencv root: ${OPENCV_ROOT}")
   ENDIF()
   SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
   SET(OPENCV_FEATURES_2D_FOUND "FALSE")
@@ -399,6 +400,10 @@ IF(BUILD_WITH_OPENCV)
     # don't show it in the GUI
     MARK_AS_ADVANCED(OPENCV_FOUND)
     MARK_AS_ADVANCED(OpenCV_FOUND)
+
+    message(STATUS "using opencv from : ${OpenCV_INSTALL_PATH}/share/opencv")
+
+    ADD_ICL_DEFINITIONS(-DICL_OPENCV_INSTALL_PATH="${OpenCV_INSTALL_PATH}")
 
     IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
       ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_OLD_STYLE)
@@ -453,7 +458,15 @@ IF(BUILD_WITH_LIBIRIMAGER)
   ICL_FIND_PACKAGE(NAME LIBUDEV
                   LIBS "udev")
 
-  IF(LIBIRIMAGER_FOUND AND LIBUDEV_FOUND)
+ IF(LIBIRIMAGER_FOUND AND LIBUDEV_FOUND)
+   # check version:
+    FILE(READ "${LIBIRIMAGER_INCLUDE_DIRS}/libirimager/IRImager.h" IRImagerH)
+    #    message(SEND_ERROR ":file content: ${IRImagerH}")
+
+    STRING(FIND "${IRImagerH}" "namespace evo" EVO_NAMESPACE_FOUND)
+    IF(NOT "${EVO_NAMESPACE_FOUND}" STREQUAL "-1")
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBIRIMAGER_EVO)
+    ENDIF()
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBIRIMAGER -DICL_HAVE_LIBUDEV)
   ELSE()
     SET(HAVE_LIBIRIMAGER FALSE)
@@ -669,25 +682,34 @@ IF(BUILD_WITH_LIBFREENECT2)
                    HEADERS "libfreenect2/opengl.h;libfreenect2/libfreenect2.hpp;libfreenect2/frame_listener_impl.h"
                    LIBS "freenect2"
                    HEADER_PATH_SUFFIXES "examples/protonect/include"
-                   LIB_PATH_SUFFIXES "examples/protonect/lib")
+                   LIB_PATH_SUFFIXES "examples/protonect/lib"
+                   OPTIONAL)
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_GLFW3
                    HEADERS "GLFW/glfw3.h"
                    LIBS "glfw"
                    HEADER_PATH_SUFFIXES "depends/glfw/include"
-                   LIB_PATH_SUFFIXES "depends/glfw/lib")
+                   LIB_PATH_SUFFIXES "depends/glfw/lib"
+                   OPTIONAL)
 
   ICL_FIND_PACKAGE(NAME LibFreenect2_LIBUSB
                    HEADERS "libusb-1.0/libusb.h"
                    LIBS "usb-1.0"
                    HEADER_PATH_SUFFIXES "depends/libusb/include"
-                   LIB_PATH_SUFFIXES "depends/libusb/lib")
+                   LIB_PATH_SUFFIXES "depends/libusb/lib"
+                   OPTIONAL)
 
 
   IF(LIBFREENECT2_FOUND AND LIBFREENECT2_GLFW3_FOUND AND LIBFREENECT2_LIBUSB_FOUND)
     LIST(APPEND LIBFREENECT2_LIBRARIES ${LIBFREENECT2_GLFW3_LIBRARIES} ${LIBFREENECT2_LIBUSB_LIBRARIES})
     LIST(APPEND LIBFREENECT2_INCLUDE_DIRS ${LIBFREENECT2_GLFW3_INCLUDE_DIRS} ${LIBFREENECT2_LIBUSB_INCLUDE_DIRS})
     ADD_ICL_DEFINITIONS(-DICL_HAVE_LIBFREENECT2)
+  ELSE()
+     IF(BUILD_WITH_LIBFREENECT2_OPTIONAL)
+       MESSAGE(STATUS "Could NOT find all dependencies for OPTIONAL LIBFREENECT2 (continuing...)")
+     ELSE()
+       MESSAGE(SEND_ERROR "Could NOT find all dependencies for LIBFREENECT2")
+    ENDIF()
   ENDIF()
 ENDIF()
 
@@ -874,7 +896,7 @@ IF(BUILD_WITH_BULLET)
     IF(BULLET_FOUND)
       ADD_ICL_DEFINITIONS(-DICL_HAVE_BULLET)
     ELSE()
-      MESSAGE(STATUS "Cloud NOT find OPTIONAL BULLET (missing: libs and/or headers, continuing...)")
+      MESSAGE(STATUS "Could NOT find OPTIONAL BULLET (missing: libs and/or headers, continuing...)")
       SET(BUILD_WITH_BULLET FALSE)
       SET(BULLET_INCLUDE_DIRS "")
       SET(BULLET_LIBRARIES "")
@@ -1018,7 +1040,7 @@ IF(QT_FOUND)
 ENDIF()
 ADD_SUBDIRECTORY(ICLGeom)
 ADD_SUBDIRECTORY(ICLMarkers)
-IF(BULLET_FOUND)
+IF(BULLET_FOUND AND QT_FOUND)
   ADD_SUBDIRECTORY(ICLPhysics)
 ENDIF()
 

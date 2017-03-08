@@ -321,6 +321,12 @@ namespace icl{
     //   return 0;
     // }
 
+#define ICL_INSTANTIATE_DEPTH(D) \
+    template const Img<icl##D> *QImageConverter::getImg<icl##D>();
+    ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+    
+
     // }}}
 
     void QImageConverter::setImage(const ImgBase *image){

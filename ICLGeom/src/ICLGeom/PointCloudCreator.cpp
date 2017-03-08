@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/PointCloudCreator.cpp              **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter, Patrick Nobou, Andre Ueckermann   **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -56,6 +56,8 @@ namespace icl{
       Size colorImageSize;
       Vec viewRayOffset;
       Array2D<ViewRayDir> viewRayDirections;
+      DataSegment<float,2> textureIDs;
+      Array2D<Point32f> textureIDsData;
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
       const Img32f *lastDepthImageMM;
  
@@ -107,6 +109,9 @@ namespace icl{
                                       colorCam->getCSTransformationMatrix());
         }
         
+        textureIDsData=Array2D<Point32f>(depthImageSize.width,depthImageSize.height);
+	textureIDs=DataSegment<float,2>(&textureIDsData(0,0).x, sizeof(Point32f), textureIDsData.getDim(), textureIDsData.getWidth());
+
         Array2D<ViewRay> viewRays = depthCam->getAllViewRays();
         viewRayOffset = viewRays(0,0).offset;
         viewRayDirections = Array2D<ViewRayDir>(depthImageSize);
@@ -276,7 +281,7 @@ namespace icl{
                            DataSegment<float,3> xyz, 
                            RGBA_DATA_SEGMENT_TYPE rgba,
                            const Channel8u rgbIn[3],
-                           const Array2D<ViewRayDir> &dirs, float depthScaling){
+                           const Array2D<ViewRayDir> &dirs, float depthScaling, DataSegment<float,2> &colorIDs){
       
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
 
@@ -298,8 +303,12 @@ namespace icl{
           if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
             const int idx = p.x + COLOR_W * p.y;
             assign_rgba(rgba[i], rgb[0][idx], rgb[1][idx], rgb[2][idx], 255);
+            colorIDs[i][0]=p.x;
+            colorIDs[i][1]=p.y;
           }else{
             assign_rgba(rgba[i], 0,0,0,0);
+            colorIDs[i][0]=-1;
+            colorIDs[i][1]=-1;
           }
         }
       }
@@ -402,22 +411,22 @@ namespace icl{
               m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
-            if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-            else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+            if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
+            else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
           }
 #else
-          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
 #endif
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
-          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
-          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else if(destination.supports(PointCloudObjectBase::BGR)){
-          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling);
-          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else if(destination.supports(PointCloudObjectBase::BGRA32s)){
-          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
-          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,true>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
@@ -425,10 +434,10 @@ namespace icl{
           if(canUseOpenCL){
             m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
-            point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            
+            point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);            
           }
 #else
-          point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);
+          point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
 #endif
           //throw ICLException("unable to apply RGBD-Mapping given destination PointCloud type does not support rgb information");
         }
@@ -443,22 +452,22 @@ namespace icl{
               m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
-            if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-            else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+            if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
+            else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
           }
 #else
-          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
-          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectRGBA32f(), rgb, dirs, depthScaling, m_data->textureIDs);
 #endif
         }else if(destination.supports(PointCloudObjectBase::BGRA)){
-          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
-          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else if(destination.supports(PointCloudObjectBase::BGR)){
-          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling);
-          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling, m_data->textureIDs);
+          else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGR(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else if(destination.supports(PointCloudObjectBase::BGRA32s)){
-          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
-        else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling);
+          if(X) point_loop<true,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling, m_data->textureIDs);
+        else point_loop<false,false>(dv, M, O, W, H, DIM, xyz, destination.selectBGRA32s(), rgb, dirs, depthScaling, m_data->textureIDs);
         }else{
           // point cloud supports no color information: deactivate mapping
           static DataSegment<float,4> dummy;
@@ -466,10 +475,10 @@ namespace icl{
           if(canUseOpenCL){
             m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
-            point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);            
+            point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);            
           }
 #else
-          point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling);
+          point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
 #endif
         }
       }
@@ -606,6 +615,20 @@ namespace icl{
     
     void PointCloudCreator::setFixes(float focalLengthMultiplier, float positionOffsetAlongNorm){
       m_data->reinitIfNecessary(focalLengthMultiplier, positionOffsetAlongNorm);
+    }
+
+    core::DataSegment<float,2> PointCloudCreator::getColorTexturePoints(){
+      return m_data->textureIDs;
+    }
+
+    core::DataSegment<float,2> PointCloudCreator::getNormalizedColorTexturePoints(){
+      int w=m_data->colorImageSize.width;
+      int h=m_data->colorImageSize.height;
+      for(int i=0; i<m_data->textureIDs.getDim(); i++){
+        m_data->textureIDs[i][0]/=w;
+        m_data->textureIDs[i][1]/=h;
+      }
+      return m_data->textureIDs;
     }
 
   } // namespace geom

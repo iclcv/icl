@@ -4,9 +4,9 @@ IF(QT_FOUND)
   ADD_SUBDIRECTORY(llm-2D)
   ADD_SUBDIRECTORY(polynomial-regression)
   ADD_SUBDIRECTORY(quad-tree)
+  IF(PCL_FOUND)
+    ADD_SUBDIRECTORY(octree)
+  ENDIF()
 ENDIF()
 
-IF(PCL_FOUND)
-  ADD_SUBDIRECTORY(octree)
-ENDIF()
 

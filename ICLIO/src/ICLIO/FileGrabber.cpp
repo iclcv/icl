@@ -69,6 +69,12 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
+    namespace{
+      struct FileListEndedException : public ICLException{
+        inline FileListEndedException(const std::string &what):ICLException(what){}
+      };
+    }
+
     struct FileGrabber::Data{
         /// internal file list
         FileList oFileList;
@@ -314,7 +320,7 @@ namespace icl{
 
       ICLASSERT_RETURN(m_data->oFileList.size());
       m_data->iCurrIdx--;
-      if(m_data->iCurrIdx <= 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
+      if(m_data->iCurrIdx < 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
     }
 
     // }}}
@@ -329,8 +335,10 @@ namespace icl{
 
     const std::string &FileGrabber::getNextFileName() const{
       // {{{ open
-
-      return m_data->oFileList[m_data->iCurrIdx];
+      static const std::string myNull("null");
+      return ( m_data->iCurrIdx >= m_data->oFileList.size()
+               ? (m_data->loop ? m_data->oFileList[0] : myNull)
+               : m_data->oFileList[m_data->iCurrIdx] );
     }
 
     // }}}
@@ -339,7 +347,19 @@ namespace icl{
       try{
         const ImgBase* img = grabImage();
         updateProperties(img);
+
+        std::string print = getPropertyValue("print meta-data");
+        if(print != "disregard"){
+          if(print == "to std::out"){
+            std::cout << "image meta data: [" << img->getMetaData() << "]" << std::endl;
+          }else if(print == "to meta-data label"){
+            setPropertyValue("meta-data", img->getMetaData());
+          }
+        }
+        
         return img;
+      } catch(FileListEndedException &ex){
+        throw;
       } catch (ICLException &e){
         DEBUG_LOG("could not grab image. Name: "
                   << m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]
@@ -363,15 +383,20 @@ namespace icl{
       }
 
       ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
-      File f(m_data->oFileList[m_data->iCurrIdx]);
-      if(m_data->bAutoNext) ++m_data->iCurrIdx;
-      if(!f.exists()) throw FileNotFoundException(f.getName());
+      
       if(m_data->iCurrIdx >= m_data->oFileList.size()){
         if(m_data->loop){
           m_data->iCurrIdx = 0;
         }else{
-          throw ICLException("No more files available");
+          throw FileListEndedException("No more files available");
         }
+      }
+      //DEBUG_LOG("creating file with index " << m_data->iCurrIdx);
+      File f(m_data->oFileList[m_data->iCurrIdx]);
+      if(!f.exists()) throw FileNotFoundException(f.getName());
+      if(m_data->bAutoNext){
+        ++m_data->iCurrIdx;
+        //DEBUG_LOG("updating curr idx to " << m_data->iCurrIdx);
       }
 
       FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
@@ -442,6 +467,9 @@ namespace icl{
       addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
       //addProperty("frame-index","range","[0," + str(m_data->oFileList.size()-1) + "]1",m_data->iCurrIdx,20,"Currently grabbed frame");
       addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
+      addProperty("print meta-data","menu","disregard,to std::out,to meta-data label","disregard");
+      addProperty("meta-data","info","","",0,"current image meta-data. Depends on mode set in print meta-data.");
+      
       Configurable::registerCallback(utils::function(this,&FileGrabber::processPropertyChange));
     }
 
@@ -489,10 +517,16 @@ namespace icl{
     void FileGrabber::updateProperties(const ImgBase* img){
       utils::Mutex::Locker l(m_propertyMutex);
       m_updatingProperties = true;
-      setPropertyValue("next filename", getNextFileName());
-      setPropertyValue("current filename", m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]);
-      setPropertyValue("relative progress", str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %");
-      setPropertyValue("absolute progress", str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()));
+      int s = m_data->oFileList.size();
+      int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);
+      if(usedIdx < 0) usedIdx = s-1;
+      
+      //DEBUG_LOG("in update properties: use idx = " << usedIdx);
+      //std::cout << "--" << std::endl;
+      setPropertyValue("next filename", m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1]);
+      setPropertyValue("current filename", m_data->oFileList[usedIdx]);
+      setPropertyValue("relative progress", str((100* (usedIdx+1)) / float(s))+" %");
+      setPropertyValue("absolute progress", str(usedIdx+1) + " / " + str(s));
       setPropertyValue("format", Any(img -> getFormat()));
       setPropertyValue("size", Any(img -> getSize()));
       //setPropertyValue("frame-index", m_data->iCurrIdx);

@@ -126,13 +126,18 @@ namespace icl{
       void find_random_consensus_set(DataSet &currConsensusSet,
                                      const DataSet &allPoints,
                                      std::vector<int> &usedIndices){
+        utils::get_random_subset(allPoints, (int) currConsensusSet.size(),
+                                 currConsensusSet, usedIndices);
+        /*const std::vector<T> &s, int subsetSize,
+                          std::vector<T> &subset, std::vector<int> &indices)
+        
         const int n = currConsensusSet.size();
         utils::URandI r(allPoints.size()-1);
         
         for(int i=0;i<n;++i){
           do { usedIndices[i] = r; } while ( find_in(usedIndices, usedIndices[i], i-1) );
           currConsensusSet[i] = allPoints[ usedIndices[i] ];
-        }
+            }*/
       }
       
       public:

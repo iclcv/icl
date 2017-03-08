@@ -51,8 +51,12 @@ namespace icl{
         friend class Data;
       public:
 
+        enum Mode{
+          IR_IMAGE, VISIBLE_IMAGE
+        };
+
         /// Creates a new OptrisGrabber instance (please use the GenericGrabber instead)
-        OptrisGrabber(const std::string &serialPattern, bool testOnly=false) throw(utils::ICLException);
+        OptrisGrabber(const std::string &serialPattern, bool testOnly=false, Mode mode=IR_IMAGE) throw(utils::ICLException);
 
         /// Destructor
         ~OptrisGrabber();

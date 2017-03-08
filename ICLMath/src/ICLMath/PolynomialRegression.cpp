@@ -47,6 +47,9 @@ namespace icl{
         virtual std::string toString() const{
           return str(t);
         }
+        virtual PolynomialRegressionAttrib<T> *copy() const{
+          return new ConstAttrib<T>(t);
+        }
       };
     
       template<class T>
@@ -59,6 +62,10 @@ namespace icl{
         virtual std::string toString() const{
           return "x"+str(idx)+"^"+str(exponent);
         }
+        virtual PolynomialRegressionAttrib<T> *copy() const{
+          return new GenPowerAttrib<T>(idx,exponent);
+        }
+
       };
 
       template <class T, int EXPONENT>
@@ -69,7 +76,9 @@ namespace icl{
         virtual std::string toString() const{
           return "x"+str(idx)+"^"+str(EXPONENT);
         }
-
+        virtual PolynomialRegressionAttrib<T> *copy() const{
+          return new PowerAttrib<T,EXPONENT>(idx);
+        }
       };
 
       template<class T>
@@ -92,6 +101,10 @@ namespace icl{
           }
           return stream.str();
         }
+        virtual PolynomialRegressionAttrib<T> *copy() const{
+          return new GenMixedAttrib<T>(idxs);
+        }
+
 
       };
 
@@ -122,6 +135,10 @@ namespace icl{
             if(i < N-1) stream << "*";
           }
           return stream.str();
+        }
+
+        virtual PolynomialRegressionAttrib<T> *copy() const{
+          return new MixedAttrib<T,N>(idxs);
         }
 
       };
@@ -155,7 +172,31 @@ namespace icl{
     PolynomialRegression<T>::PolynomialRegression(const std::string &function){
       m_result.setup(function);
     }
-    
+
+
+    template<class T>
+    PolynomialRegression<T>::Result::Result(const PolynomialRegression<T>::Result &r){
+      *this = r;
+    }
+
+    template<class T>
+    typename PolynomialRegression<T>::Result &PolynomialRegression<T>::Result::operator=(const PolynomialRegression<T>::Result &r){
+      for(size_t i=0;i<m_attribs.size();++i){
+        delete m_attribs[i];
+      }
+      m_attribs.resize(r.m_attribs.size());
+      for(size_t i=0;i<m_attribs.size();++i){
+        m_attribs[i] = r.m_attribs[i]->copy();
+      }
+
+      m_function = r.m_function;
+      m_params = r.m_params;
+      m_xbuf = r.m_xbuf;
+      m_resultBuf = r.m_resultBuf;
+      m_attribMaxIndex = r.m_attribMaxIndex;
+      return *this;
+    }
+
   
 
     template<class T>

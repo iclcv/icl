@@ -690,6 +690,32 @@ installed. In contrast to what is suggested by MicroEpsilon, we
 recommend to use Optris' version of the **libirimager** library directly
 rather than MicroEpsilons adapted (and apparently outdated version).
 
+**please note:**
+
+The driver development was updated, so please check the following page
+
+http://evocortex.com/libirimager/html/index.html
+
+In particular, this describes how to set the nodrop option of the
+uvcvideo kernel module, which is mandatory::
+
+  Before installation, a basic test should be performed in order to
+  verify that the PI imager series can be run on the desired
+  system. For some devices passing the nodrop option to the UVC kernel
+  module is mandatory. The need for this can be checked with a
+  standard application like guvcview. If the camera's raw data (a
+  green noisy image) cannot be displayed at a high framerate the
+  nodrop option needs to be activated. The nodrop option can be passed
+  at system startup by creating the following file
+
+  sudo bash -c 'echo "options uvcvideo nodrop=1" > /etc/modprobe.d/uvcvideo.conf'
+  This makes the option permanent for the UVC driver. Temporary activation can be achieved with:
+
+  sudo rmmod uvcvideo; sudo modprobe uvcvideo nodrop=1 
+
+  Alternatively, the parameter can be modified via sysfs during runtime:
+  sudo bash - c 'echo -n 1 > /sys/module/uvcvideo/parameters/nodrop'
+
 A basic instruction to installation process is given at
 http://www.optris.de/optris-pi-linux-bibliothek . Here, debian
 packages can be obtained. Please note that you'll need administrator

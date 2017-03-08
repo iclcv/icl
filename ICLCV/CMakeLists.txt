@@ -50,6 +50,9 @@ SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
             src/ICLCV/CurvatureExtractor.cpp
             src/ICLCV/RDPApproximation.cpp)
 
+
+
+          
 SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/CV.h
             src/ICLCV/Extrapolator.h
@@ -78,6 +81,11 @@ SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/CurvatureExtractor.h
             src/ICLCV/RDPApproximation.h)
 
+IF (QT_FOUND)
+  LIST(APPEND HEADERS src/ICLCV/HeartrateDetector.h)
+  LIST(APPEND SOURCES src/ICLCV/HeartrateDetector.cpp)
+ENDIF()
+                    
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLCV/ViewBasedTemplateMatcher.cpp
                       src/ICLCV/TemplateTracker.cpp)

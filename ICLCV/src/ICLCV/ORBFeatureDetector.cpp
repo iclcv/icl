@@ -47,6 +47,8 @@ namespace icl{
     
     struct ORBFeatureDetector::Data{
       SmartPtr<ocv::ORB> orb;
+      ocv::Ptr<ocv::ORB> orbp;
+      
       MatWrapper inputBuffer;
       ocv::Ptr<ocv::DescriptorMatcher> matcher;
       
@@ -92,12 +94,24 @@ namespace icl{
             WARNING_LOG("patch size was increased to " << p.patchSize << " to ensure proper operation"); 
           }
           params = p;
-          orb = new ocv::ORB(p.maxFeatures, p.pyScale, p.pyLevels, 
+
+          // todo is this the point in development where this was adapted?
+#ifdef ICL_HAVE_OPENCV_3
+          int edgeThreshold = 31;
+          int fastThreshold = 20;
+          orbp = ocv::ORB::create(p.maxFeatures, p.pyScale, p.pyLevels, edgeThreshold, p.pyLevel0, p.WTA_K,
+                                  p.scoreType == 0 ? ocv::ORB::HARRIS_SCORE : ocv::ORB::FAST_SCORE,
+                                  p.patchSize, fastThreshold);
+#else
+          orb = new ocv::ORB(p.maxFeatures,
+                             p.pyScale,
+                             p.pyLevels,
                              p.patchSize, p.pyLevel0, p.WTA_K, 
                              ( p.scoreType == 0 ? 
                                ocv::ORB::HARRIS_SCORE : 
                                ocv::ORB::FAST_SCORE ),
                              p.patchSize);
+#endif
         }
       }
     };
@@ -229,11 +243,17 @@ namespace icl{
       Time tOrb = Time::now();
 
       FeatureSetClass *ret = new FeatureSetClass;
-
+#ifdef ICL_HAVE_OPENCV_3
+      m_data->orbp->detectAndCompute(m_data->inputBuffer.mat,
+                                     ocv::noArray(),
+                                     ret->impl->keyPoints, 
+                                     ret->impl->descriptors.mat);
+#else
       m_data->orb->operator()(m_data->inputBuffer.mat,
                               ocv::noArray(),
                               ret->impl->keyPoints, 
                               ret->impl->descriptors.mat);
+#endif
 
       if(bench){
         setPropertyValue("bench.ORB extraction time",bench_time_string(tOrb.age()));      

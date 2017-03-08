@@ -281,6 +281,11 @@ namespace icl{
       
       /// returns visibility of given primitive type
       ICLGeom_API bool isVisible(Primitive::Type t) const;
+
+      /// this can be overwrittern in subclasses to hide an object for given camera indices
+      /** Please note that this mechanism does not work in case of optimizing object rendering using
+          display-lists */
+      ICLGeom_API virtual bool isInvisibleForCamera(int camIndex) const { return false; }
       
       /// adds a new vertex to this object
       /** Please note, that colors are defined in ICL's commong [0,255] range,
@@ -470,8 +475,9 @@ namespace icl{
   
       /// sets point size
       ICLGeom_API void setLineWidth(float lineWidth, bool recursive = true);
-  
-     
+
+      /// if set, only custom render is used 
+      ICLGeom_API void setUseCustomRender(bool use, bool recursive = true);   
       
       /// performs a deep copy of this object
       ICLGeom_API virtual SceneObject *copy() const;
@@ -817,6 +823,8 @@ namespace icl{
       bool m_triangleColorsFromVertices;
       bool m_quadColorsFromVertices;
       bool m_polyColorsFromVertices;
+
+      bool m_useCustomRender;
   
       float m_pointSize;
       float m_lineWidth;

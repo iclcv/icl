@@ -382,6 +382,9 @@ namespace icl {
           /// constructor
           DepthGeneratorOptions(xn::DepthGenerator* generator);
 
+          /// callback for changed configurable properties
+          void processPropertyChange(const utils::Configurable::Property &prop);
+
         private:
           /// the used DepthGenerator
           xn::DepthGenerator* m_DepthGenerator;
@@ -490,22 +493,22 @@ namespace icl {
 
         private:
           /// A NodeInfo for the used device
-          xn::NodeInfo* m_DeviceInfo;
+          xn::NodeInfo* m_DeviceInfo = NULL;
           /// the underlying rgb-image generator
-          xn::ImageGenerator* m_RgbGenerator;
+          xn::ImageGenerator* m_RgbGenerator = NULL;
           /// the id of the last grabbed frame
           unsigned int m_FrameId;
           /// the underlying core::depth generator
           /**
             The Xtion cam does not provide rgb images without depthGenerator
             being created.
-        **/
-          xn::DepthGenerator* m_DepthGenerator;
-          xn::IRGenerator* m_IrGenerator;
+          **/
+          xn::DepthGenerator* m_DepthGenerator = NULL;
+          xn::IRGenerator* m_IrGenerator = NULL;
           /// a ImagehMetaData object holding image information
           xn::ImageMetaData m_RgbMD;
           /// pointer to internally used MapGeneratorOptions
-          MapGeneratorOptions* m_Options;
+          MapGeneratorOptions* m_Options = NULL;
       };
 
       /// IR Image Generator

@@ -296,8 +296,29 @@ namespace icl{
       GLfloat h2= 0.5*(r.height);
       GLfloat cx = r.x+w2;
       GLfloat cy = r.y+h2;
-      static const GLint NSTEPS = 32;
-      static const GLfloat D_ARC = (2*M_PI)/NSTEPS;
+
+      GLint NSTEPS = 32;
+      float circumference = 0;
+      if(w2 == h2){
+        circumference = 2* M_PI * w2;
+      }else{
+        if(!(w2+h2)){
+          circumference = 0;
+        }else{
+          float l = 3 * (w2-h2) / (w2+h2), l3s = 3*l*l;
+          circumference = (w2+h2) * M_PI * ( 1 + l3s / 10 + ::sqrt(4-l3s));
+        }
+        // compute circumference of ellipse using Ramanujan's approximation
+      }
+      if(circumference > 50000) NSTEPS = 4000;
+      else if(circumference > 10000) NSTEPS = 2000;
+      else if(circumference > 5000) NSTEPS = 1000;
+      else if(circumference > 1000) NSTEPS = 256;
+      else if(circumference > 100) NSTEPS = 64;
+
+      //DEBUG_LOG("circumference: " << circumference << " using nSteps:" << NSTEPS << " Rect was: " << r);
+      
+      const GLfloat D_ARC = (2*M_PI)/(double)NSTEPS;
       glBegin(GL_POLYGON);
       for(int i=0;i<NSTEPS;i++){
         float arc = i*D_ARC;

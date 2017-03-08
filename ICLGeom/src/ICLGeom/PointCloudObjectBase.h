@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLGeom/src/ICLGeom/PointCloudObjectBase.h             **
 ** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Patrick Nobou                     **
+** Authors: Christof Elbrechter, Patrick Nobou, Andre Ueckermann   **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -100,6 +100,11 @@ namespace icl{
       utils::Time timestamp;
       
       protected:
+
+      static float length(Vec d){
+         float l = sqrt(d[0]*d[0]+d[1]*d[1]+d[2]*d[2]);
+         return l;
+      }
       
       /// default color used to render points that have no color information
       GeomColor m_defaultPointColor;
@@ -126,7 +131,19 @@ namespace icl{
       bool useDrawNormalLines;
       float normalLineLength;
       int normalLineGranularity;
-      
+
+      bool useMasking;
+      core::Img8u maskImage;
+      bool useTriangulation;
+      float maxDeltaValue;
+      bool useTexturing;
+      core::Img8u textureImage;
+      core::DataSegment<float,2> textureCoordinates;
+
+      //GLuint texName;//
+      //int lastTextureWidth, lastTextureHeight;//      
+
+
       public:
   
       /// List of well known features
@@ -155,6 +172,13 @@ namespace icl{
         setLockingEnabled(true);
         m_defaultPointColor = GeomColor(0,0.5,1,1);
         useDrawNormalLines=false;
+        useMasking=false;
+        useTriangulation=false;
+        useTexturing=false;
+        //glGenTextures(1,&texName);//
+        //lastTextureWidth=0;//
+        //lastTextureHeight=0;//
+
       }
   
       /// sets the current timestamp
@@ -305,6 +329,15 @@ namespace icl{
       
       /// set use draw normal lines
       void setUseDrawNormalLines(bool use, float lineLength=40, int granularity=4);
+
+      // set use masking (0 render, 1 dont render)
+      void setUseMasking(bool use, core::Img8u &mask);
+
+      //set use triangulation
+      void setUseTriangulation(bool use, float maxDelta=50);
+
+      //set texturing
+      void setUseTexturing(bool use, core::Img8u &tex, core::DataSegment<float,2> texCoords);
       
       /// deep copy interface (needs to be implemented by subclasses)
       virtual PointCloudObjectBase *copy() const {

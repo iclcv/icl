@@ -93,9 +93,11 @@ namespace icl{
             libfreenect2::Frame *depth = (*frames)[libfreenect2::Frame::Depth];
             
             Mutex::Locker lock(this);
+            rgbImage.setChannels(4);
             interleavedToPlanar(rgb->data, &rgbImage);
             rgbImage.swapChannels(0,2);
-            
+            rgbImage.removeChannel(3);
+         
             const float *depthData = reinterpret_cast<const float*>(depth->data);
             const float *irData = reinterpret_cast<const float*>(ir->data);
             std::copy(depthData, depthData+depthImage.getDim(), depthImage.begin(0));

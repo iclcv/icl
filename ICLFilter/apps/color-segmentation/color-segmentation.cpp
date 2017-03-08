@@ -295,6 +295,7 @@ void init(){
                   )
                )
            << ( VBox()
+                << CheckBox("Pause Image Acquisition",false).handle("paused")
                 << ( HBox() 
                      << Combo(classes.str()).handle("currClass").label("current class")
                      << Button("current class","background").label("left button").handle("lb")
@@ -411,7 +412,15 @@ void run(){
 
   int zAxis = gui["zAxis"];
   int &z = gui.get<int>("z");
-  const Img8u *grabbedImage = grabber.grab()->asImg<icl8u>();
+
+  static const ImgBase *inputImage = 0;
+  if(!inputImage || !gui["paused"]){
+    inputImage = grabber.grab();
+  }else{
+    Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
+  }        
+  
+  const Img8u *grabbedImage = inputImage->asImg<icl8u>();
 
   Mutex::Locker lock(mtex);
   
