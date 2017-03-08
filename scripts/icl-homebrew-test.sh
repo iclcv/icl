@@ -9,7 +9,7 @@ cmake -DBUILD_APPS=On \
       -DBUILD_DEMOS=On \
       -DBUILD_EXAMPLES=On \
       -DCMAKE_INSTALL_PREFIX="${HOMEBREW_PREFIX}" \
-	  -DBUILD_WITH_OPENCV=On \
+	-DBUILD_WITH_OPENCV=On \
       -DBUILD_WITH_QT=On \
       -DQT_ROOT="${HOMEBREW_PREFIX}/opt/qt5" \
       -DBUILD_WITH_OPENGL=On \
@@ -34,6 +34,7 @@ cmake -DBUILD_APPS=On \
       -DBUILD_WITH_LIBUSB=On \
       -DBUILD_WITH_ZMQ=On \
       -DBUILD_WITH_OPENNI=On \
+      -DCMAKE_CXX_STANDARD=11 \
       ..
 sleep 5
 make -j5
