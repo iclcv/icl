@@ -56,7 +56,7 @@ FUNCTION(BUILD_DEMO)
   LIST(GET DEMO_SOURCES 0 FIRST_SOURCE)
   get_filename_component(SOURCE_ABSOLUTE ${FIRST_SOURCE} ABSOLUTE)
   get_filename_component(SOURCE_FOLDER ${SOURCE_ABSOLUTE} PATH)
-  
+
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ICLUtils/src
                       ${CMAKE_SOURCE_DIR}/ICLMath/src
                       ${CMAKE_SOURCE_DIR}/ICLCore/src
@@ -83,7 +83,7 @@ FUNCTION(BUILD_APP)
   SET(oneValueArgs NAME)
   SET(multiValueArgs SOURCES LIBRARIES)
   CMAKE_PARSE_ARGUMENTS(APP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  
+
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ICLUtils/src
                       ${CMAKE_SOURCE_DIR}/ICLMath/src
                       ${CMAKE_SOURCE_DIR}/ICLCore/src
@@ -197,23 +197,27 @@ IF(NOT WIN32)
   SET(oneValueArgs NAME)
   SET(multiValueArgs PKGCONFIG_DEPS LIBRARY_DEPS RPATH_DEPS)
   CMAKE_PARSE_ARGUMENTS(CONFIG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-  
+
   # Set appropriate variables
   SET(PKG_NAME ${CONFIG_NAME} CACHE INTERNAL "Name of the pkg-config file")
-  
+
   MESSAGE(STATUS "Creatig Package Config file for ${PKG_NAME}")
-  
+
   # Link against specific library (if not ICL-meta package)
   IF(${CONFIG_NAME} STREQUAL "ICL")
     SET(PKG_LIB "")
   ELSE()
-    SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.so.${SO_VERSION}")
+    IF(APPLE)
+      SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.${SO_VERSION}.dylib")
+    ELSE(APPLE)
+      SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.so.${SO_VERSION}")
+    ENDIF(APPLE)
   ENDIF()
-  
+
   # Prepare include paths
   GET_PROPERTY(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
   LIST(REMOVE_DUPLICATES INCLUDE_DIRS)
-  
+
   # remove local include dirs
   FOREACH(M Utils Math Core Filter IO CV Qt Geom Markers Physics)
     LIST(REMOVE_ITEM INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/ICL${M}/src)
@@ -227,13 +231,13 @@ IF(NOT WIN32)
   STRING(REPLACE ";" " -I" # first -I is in icl.pc.in
          INCLUDE_DIRS
          "${INCLUDE_DIRS}")
-       
+
   # Prepare pkg-config dependencies
   SET(PKG_DEPENDS_ON ${CONFIG_PKGCONFIG_DEPS} CACHE INTERNAL "Dependencies for this pkg-config")
   STRING(REPLACE ";" " "
          PKG_DEPENDS_ON
          "${PKG_DEPENDS_ON}")
-       
+
   # Prepare libraries list
   SET(_LIBRARY_DEPS "")
   SET(_LIBRARY_DIRS "")
@@ -264,13 +268,13 @@ IF(NOT WIN32)
   SET(LIB_DEPENDS_ON "${_LIBRARY_DIRS} ${_LIBRARY_DEPS} ${CONFIG_RPATH_DEPS}" CACHE INTERNAL "Library dependencies for this pkg-config")
   # removing /usr/lib and also the architecture dependent default library paths for the list
   #MESSAGE(STATUS "before filtering: ${LIB_DEPENDS_ON}")
- 
-  # tokenize the list properly: i.e. replace " " by ";" so that each 
+
+  # tokenize the list properly: i.e. replace " " by ";" so that each
   # token actually becomes a cmake list token
   SET(LIB_DEPENDS_ON_NEW "")
   FOREACH(T ${LIB_DEPENDS_ON})
  #   MESSAGE(STATUS "---- ${T}")
-    STRING(REGEX REPLACE " " ";" T ${T}) 
+    STRING(REGEX REPLACE " " ";" T ${T})
     FOREACH(T2 ${T})
 #      MESSAGE(STATUS "      ${T2}")
       LIST(APPEND LIB_DEPENDS_ON_NEW ${T2})
@@ -324,10 +328,10 @@ IF(NOT WIN32)
   STRING(REPLACE ";" " "
          ICL_DEFINITIONS
          "${ICL_DEFINITIONS}")
-  
+
   # Prepare pkg-config file
   CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/icl.pc.in icl.pc @ONLY)
-  
+
   # Install pkg-config
   INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/icl.pc
           DESTINATION lib/pkgconfig
@@ -361,25 +365,25 @@ function(get_ipp_version _INCLUDE_DIR)
   file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR2 REGEX "IPP_VERSION_MINOR")
   file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR3 REGEX "IPP_VERSION_BUILD")
   file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR4 REGEX "IPP_VERSION_STR")
-  
+
   if (NOT STR3)
     file(STRINGS ${_INCLUDE_DIR}/ippversion.h STR3 REGEX "IPP_VERSION_UPDATE")
   endif(NOT STR3)
-  
+
   # extract info and assign to variables
   string(REGEX MATCHALL "[0-9]+" _MAJOR ${STR1})
   string(REGEX MATCHALL "[0-9]+" _MINOR ${STR2})
   string(REGEX MATCHALL "[0-9]+" _BUILD ${STR3})
   string(REGEX MATCHALL "[0-9]+[.]+[0-9]+[^\"]+|[0-9]+[.]+[0-9]+" _VERSION_STR ${STR4})
-  
+
   # export info to parent scope
   set(IPP_VERSION_STR   ${_VERSION_STR} PARENT_SCOPE)
   set(IPP_VERSION_MAJOR ${_MAJOR}       PARENT_SCOPE)
   set(IPP_VERSION_MINOR ${_MINOR}       PARENT_SCOPE)
   set(IPP_VERSION_BUILD ${_BUILD}       PARENT_SCOPE)
-  
+
   MESSAGE(STATUS "           IPP Version: ${_MAJOR}.${_MINOR}.${_BUILD} [${_VERSION_STR}]")
-  
+
   return()
 endfunction()
 

@@ -102,9 +102,9 @@ namespace icl{
 
         /// also for time stamp based image acquisition
         Time referenceTimeReal;
-      
+
     };
-    
+
     static FileGrabberPlugin *find_plugin(const std::string &type){
       static std::map<std::string,SmartPtr<FileGrabberPlugin> > plugins;
       if(!plugins.size()){
@@ -160,7 +160,7 @@ namespace icl{
           "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
           "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
         };
-        
+
         for(const char **pc=imageMagickFormats;*pc;++pc){
           plugins[std::string(".")+*pc] = new FileGrabberPluginImageMagick;
         }
@@ -175,7 +175,7 @@ namespace icl{
       if(it == plugins.end()) return 0;
       else return it->second.get();
     }
-    
+
     FileGrabber::FileGrabber()
       :  m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
     {
@@ -187,7 +187,7 @@ namespace icl{
       m_data->useTimeStamps = false;
       addProperties();
     }
-    
+
     FileGrabber::FileGrabber(const std::string &pattern,
                                      bool buffer,
                                      bool ignoreDesired) throw(FileNotFoundException)
@@ -241,8 +241,8 @@ namespace icl{
       m_data->loop = true;
       m_data->poBufferImage = 0;
       m_data->useTimeStamps = false;
-      
-      
+
+
       if(buffer){
         bufferImages(false);
       }
@@ -318,7 +318,7 @@ namespace icl{
     }
 
     // }}}
-    
+
     unsigned int FileGrabber::getFileCount() const{
       // {{{ open
 
@@ -326,7 +326,7 @@ namespace icl{
     }
 
     // }}}
-    
+
     const std::string &FileGrabber::getNextFileName() const{
       // {{{ open
 
@@ -334,7 +334,7 @@ namespace icl{
     }
 
     // }}}
-    
+
     const ImgBase *FileGrabber::acquireImage(){
       try{
         const ImgBase* img = grabImage();
@@ -527,4 +527,3 @@ namespace icl{
 
   } // namespace io
 }
-
