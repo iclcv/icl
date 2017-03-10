@@ -296,13 +296,9 @@ namespace icl{
         while(true){
           {
             Mutex::Locker lock(buffer.mutex);
-            DEBUG_LOG("A");
             imager->getFrame(buffer.buf.data());
-            DEBUG_LOG("B");
             imager->process(buffer.buf.data(), &buffer);
-            DEBUG_LOG("C");
             imager->releaseFrame();
-            DEBUG_LOG("D");
           }
           Thread::msleep(5);
         }
@@ -347,6 +343,10 @@ namespace icl{
               all.push_back(GrabberDeviceDescription("optris",s,
                                                      "IR-IMAGER (serial: " +s+ 
                                                      " @ " + g.getPropertyValue("v4l device") +")"));
+              all.push_back(GrabberDeviceDescription("optrisv",s,
+                                                     "IR-IMAGER (serial: " +s+ 
+                                                     " @ " + g.getPropertyValue("v4l device") +")"));
+
             }catch(...){ /* Combination did not work*/
             }
           }
@@ -389,16 +389,29 @@ namespace icl{
     } 
 
     template<OptrisGrabber::Mode M>
-    static Grabber *create_micro_epsilon_grabber(const std::string &param){
+    static Grabber *create_optris_grabber(const std::string &param){
       return new OptrisGrabber(param,false,M);
     }
 
-    REGISTER_GRABBER(optris,utils::function(create_micro_epsilon_grabber<OptrisGrabber::IR_IMAGE>), 
-                     utils::function(OptrisGrabber::getDeviceList), 
+    template<OptrisGrabber::Mode M>
+    const std::vector<GrabberDeviceDescription> &create_optris_grabber_device_list(std::string hint, bool rescan){
+      static std::vector<GrabberDeviceDescription> devices;
+      if(!devices.size() || rescan){
+        const std::vector<GrabberDeviceDescription> &get = OptrisGrabber::getDeviceList(hint,rescan);
+        std::string s = str("optris") + (M == OptrisGrabber::IR_IMAGE ? "" : "v");
+        for(size_t i=0;i<get.size();++i){
+          if(get[i].type == s) devices.push_back(get[i]);
+        }
+      }
+      return devices;
+    }
+
+    REGISTER_GRABBER(optris,utils::function(create_optris_grabber<OptrisGrabber::IR_IMAGE>), 
+                     utils::function(create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>), 
                      "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
 
-    REGISTER_GRABBER(optrisv,utils::function(create_micro_epsilon_grabber<OptrisGrabber::VISIBLE_IMAGE>), 
-                     utils::function(OptrisGrabber::getDeviceList), 
+    REGISTER_GRABBER(optrisv,utils::function(create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>), 
+                     utils::function(create_optris_grabber_device_list<OptrisGrabber::VISIBLE_IMAGE>),
                      "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
   
     //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
