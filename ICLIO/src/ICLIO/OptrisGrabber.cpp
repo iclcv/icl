@@ -41,6 +41,7 @@
 #include <ICLFilter/LocalThresholdOp.h>
 
 #include <ICLIO/V4L2Grabber.h>
+#include <ICLIO/ColorFormatDecoder.h>
 #include <ICLMath/LinearTransform1D.h>
 #include <fstream>
 
@@ -63,6 +64,7 @@ namespace icl{
     
     namespace{
       struct Buffer{
+        ColorFormatDecoder decoder;
         std::vector<unsigned char> buf;
         Img32f image;
         Img32f outBuf;
@@ -84,7 +86,7 @@ namespace icl{
         }
         Buffer(){
           image = Img32f(Size(1,1),1);
-          visibleFrame = Img8u(Size(1,1),1);
+          visibleFrame = Img8u(Size::VGA,formatRGB);
         }
       };
     }
@@ -104,15 +106,8 @@ namespace icl{
 
     void visible_frame_callback(unsigned char* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
       Buffer &b = *reinterpret_cast<Buffer*>(arg);
-      b.image.setChannels(1);
-      b.image.setSize(Size(w,h));
-      //      b.image.setTime(Time(timestamp));
-      b.image.setTime(Time::now()); // the timestamp has some other meaning!
-      
-      Channel8u c = b.visibleFrame[0];
-      for(size_t i=0;i<w*h;++i){
-        c[i] = data[i];
-      }
+      b.decoder.decode("YUYV", data, Size(w,h), bpp(b.visibleFrame));
+      b.visibleFrame.setTime(Time::now());
     }
 
     struct OptrisGrabber::Data : public utils::Thread{
@@ -259,6 +254,10 @@ namespace icl{
 
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
                        fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
+
+          if(!imager->hasBispectralTechnology() && mode == VISIBLE_IMAGE){
+            throw ICLException("the device does not supoort bispectral technology, so color images cannot be aquired!");
+          }
           
           if((int64_t)imager->getSerial() != serial){
             DEBUG_LOG("serials do not match! trying next v4l device (if there is any)");
@@ -278,12 +277,18 @@ namespace icl{
 
       void start_capturing(){
         buffer.buf.resize(imager->getRawBufferSize());
+                  
         if(buffer.mode == VISIBLE_IMAGE){
           imager->setVisibleFrameCallback(visible_frame_callback);
+          //imager->setFrameCallback(frame_callback);
         }else{
           imager->setFrameCallback(frame_callback);
         }
-        imager->startStreaming();
+        if(imager->startStreaming() == IRIMAGER_DISCONNECTED){
+          throw ICLException("could not connect to camera: please re-connect device");
+        }else{
+          //DEBUG_LOG("IRImages started steaming");
+        }
         start();
       }
       
@@ -296,9 +301,10 @@ namespace icl{
         while(true){
           {
             Mutex::Locker lock(buffer.mutex);
-            imager->getFrame(buffer.buf.data());
-            imager->process(buffer.buf.data(), &buffer);
-            imager->releaseFrame();
+            if(imager->getFrame(buffer.buf.data()) == IRIMAGER_SUCCESS){
+              imager->process(buffer.buf.data(), &buffer);
+              imager->releaseFrame();
+            }
           }
           Thread::msleep(5);
         }
@@ -312,8 +318,13 @@ namespace icl{
                                  Mode mode) throw(utils::ICLException) : m_data(new Data){
       std::string v4lDev = m_data->init(serialPattern,mode);
       addProperty("v4l device","info","",v4lDev);
-      addProperty("format","menu","Temperature celsius [32f],Pseudo Color [RGB8],Pseudo Color + Temp. [RGBT 32f]","Temperature celsius [32f]");
-      addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
+      if(mode == IR_IMAGE){
+        addProperty("format","menu","Temperature celsius [32f],Pseudo Color [RGB8],Pseudo Color + Temp. [RGBT 32f]","Temperature celsius [32f]");
+        addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
+      }else{
+        addProperty("format","menu","RGB 8");
+        addProperty("size","menu","640x480",Size::VGA);
+      }
       addProperty("omit doubled frames","flag","",true);
       addProperty("threshold output","flag","",false);
       addChildConfigurable(&m_data->lt,"thresh");
