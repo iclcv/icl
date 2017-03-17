@@ -253,7 +253,8 @@ namespace icl{
           const int framerate = (mode == VISIBLE_IMAGE) ? 32 : 120;
           static const int videoformatindex = 0;
           
-          imager = new IRImager(true);
+          bool verbose = false;
+          imager = new IRImager(verbose);
 
           //          std::cout << "initializing IRImager device " << v4lDev << std::endl;
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
