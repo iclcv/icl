@@ -217,7 +217,10 @@ namespace icl{
         buffer.mode = mode;
         
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
-       
+        if(cfgs.size() > 2){
+          WARNING_LOG("note: if you face problem instantiating your camera, please consider moving unused "
+                      "calibration files /usr/share/libirimager/cali/Cali-*.xml to somewhere else");
+        }
         int64_t serial = parse<int64_t>(serialPattern);
         
         std::string fn = "/usr/share/libirimager/cali/Cali-"+str(serial)+".xml";
