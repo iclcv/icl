@@ -250,8 +250,9 @@ namespace icl{
           const int framerate = (mode == VISIBLE_IMAGE) ? 32 : 120;
           static const int videoformatindex = 0;
           
-          imager = new IRImager;
+          imager = new IRImager(true);
 
+          //          std::cout << "initializing IRImager device " << v4lDev << std::endl;
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
                        fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
 
@@ -346,11 +347,14 @@ namespace icl{
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
         
         for(int c=0;c<cfgs.size();++c){
+          //std::cout << "processing cali file " << cfgs[c] << std::endl;
           MatchResult r = match(cfgs[c], "Cali-([0-9]+).xml",2);
           if(r && r.submatches.size() == 2){
             try{
               std::string s = r.submatches[1];
+              //              std::cout << "trying to create grabber " << s << std::endl;
               OptrisGrabber g(s,true);
+              //std::cout << "--> creation successful" << std::endl;
               all.push_back(GrabberDeviceDescription("optris",s,
                                                      "IR-IMAGER (serial: " +s+ 
                                                      " @ " + g.getPropertyValue("v4l device") +")"));
@@ -358,7 +362,8 @@ namespace icl{
                                                      "IR-IMAGER (serial: " +s+ 
                                                      " @ " + g.getPropertyValue("v4l device") +")"));
 
-            }catch(...){ /* Combination did not work*/
+            }catch(std::exception &ex){ /* Combination did not work*/
+              //std::cout << "--> creation threw exception ex:-" << ex.what() << "-" << std::endl;
             }
           }
         }
@@ -412,6 +417,7 @@ namespace icl{
         std::string s = str("optris") + (M == OptrisGrabber::IR_IMAGE ? "" : "v");
         for(size_t i=0;i<get.size();++i){
           if(get[i].type == s) devices.push_back(get[i]);
+          //std::cout << "XXX device list[" << i << "] := " << get[i].type << " id: " << get[i].id << std::endl;
         }
       }
       return devices;
