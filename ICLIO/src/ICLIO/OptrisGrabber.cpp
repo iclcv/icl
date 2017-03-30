@@ -170,49 +170,7 @@ namespace icl{
         }
       }
 
-
-      
-      /* right now, this is not used. If we (later) must be able to specify the cali-path: use this here
-      static std::string create_temp_calib_file(int serial, int minTemp, int maxTemp, int framerate, 
-                                         int fov, const std::string &calibrationFileDir){
-        std::string fn = "/tmp/temp_optris_calib_file_"+str(Time::now().toMilliSeconds())+".xml";
-        {
-          std::ofstream s(fn.c_str());
-          s << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            << "<imager xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n"
-            << "  <serial>" << serial << "</serial>\n"
-            << "  <videoformatindex>0</videoformatindex> <!-- index of the used video format (USB enpoint) -->\n"
-            << "  <fov>"<< fov <<"</fov>\n"
-            << "  <temperature>\n"
-            << "    <min>"<< minTemp << "</min>\n"
-            << "    <max>"<< maxTemp << "</max>\n"
-            << "  </temperature>\n"
-          //<< "  <calipath>" << calibrationFileDir << "</calipath>\n"
-            << "  <framerate>" << framerate << "</framerate>\n"
-            << "  <controller>1</controller>  <!-- 1=HID, 2=UVC -->\n"
-            << "  <outputmode>2</outputmode>  <!-- 1=Energy, 2=Temperature -->\n"
-            << "  <bispectral>0</bispectral>  <!-- 0=only thermal sensor, 1=bispectral technology (only PI200/PI230) -->\n"
-            << "  <average>0</average>        <!-- average callback frames over intermediate frames -->\n"
-            << "</imager>" << std::endl;
-        }
-        return fn;
-      }
         
-      void del_temp_calib_file(const std::string &filename){
-        File f(filename);
-        if(f.exists()){
-          f.erase();
-        }
-      }
-      
-          ...
-      this would also be needed if a custom cali-path is neccessary{
-          std::string fn = create_temp_calib_file(serial, -20, 100, 120, 72, 
-                                                  "/usr/share/libirimager/cali");
-          imager = new optris::IRImager(fn.c_str());
-          del_temp_calib_file(fn);
-       }
-          */
       std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) throw (utils::ICLException){
         buffer.mode = mode;
         
