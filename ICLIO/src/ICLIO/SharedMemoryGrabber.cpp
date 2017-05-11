@@ -111,7 +111,7 @@ namespace icl{
             virtual void run(){
               while(true){
                 while(!data->callbacksEnabled){
-                  Thread::sleep(100);
+                  Thread::msleep(100);
                 }
                 try{
                 const ImgBase* ptr = impl->acquireImage();
