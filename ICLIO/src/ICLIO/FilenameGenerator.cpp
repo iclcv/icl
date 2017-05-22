@@ -59,12 +59,18 @@ namespace icl{
     
     class FilenameGeneratorImpl{
     public:
-      FilenameGeneratorImpl(const string &pattern, int maxFiles)
+      FilenameGeneratorImpl(const string &patternIn, int maxFiles)
         // {{{ open
   
         :m_iMaxFiles(maxFiles),m_bInfinite(maxFiles<0){
         
         ICLASSERT(maxFiles != 0);
+
+        std::string pattern = patternIn;
+        bool startedWithHashHack = pattern.length() && pattern[0] == '#'; // here, we start with a hash
+        if(startedWithHashHack){
+          pattern = "_" + pattern;
+        }
         
         m_eMode = hashPatterns;
         string::size_type postfixpos=0;
@@ -73,6 +79,10 @@ namespace icl{
         m_sPostfix = pattern.substr(postfixpos);
         m_iCurrIdx = 0;
         m_iFilesLeft = m_bInfinite ? FilenameGenerator::INFINITE_FILE_COUNT : maxFiles;
+
+        if(startedWithHashHack){
+          m_sPraefix.clear();
+        }
       }
   
       // }}}
