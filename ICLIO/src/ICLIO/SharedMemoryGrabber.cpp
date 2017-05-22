@@ -85,7 +85,8 @@ namespace icl{
             WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
             lastValidImageGrabbed = Time::now();
             return true;
-          }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+          //}else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+          }else if( (Time::now() - t).toSeconds() > 5){
             WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
             g.setPropertyValue("omit-doubled-frames",false);
             return false;
