@@ -465,12 +465,12 @@ namespace icl{
       }
 
       if(scene.m_bounds){
-        setBounds(scene.m_bounds[0].minVal,
-                  scene.m_bounds[0].maxVal,
-                  scene.m_bounds[1].minVal,
-                  scene.m_bounds[1].maxVal,
-                  scene.m_bounds[2].minVal,
-                  scene.m_bounds[2].maxVal);
+        setBounds(scene.m_bounds.get()[0].minVal,
+                  scene.m_bounds.get()[0].maxVal,
+                  scene.m_bounds.get()[1].minVal,
+                  scene.m_bounds.get()[1].maxVal,
+                  scene.m_bounds.get()[2].minVal,
+                  scene.m_bounds.get()[2].maxVal);
       }else{
         m_bounds = 0;
       }
@@ -1181,8 +1181,8 @@ namespace icl{
       SceneMouseHandler* newSceneMouseHandler = new SceneMouseHandler(camIndex,this);
       ICLASSERT(newSceneMouseHandler!=0);
       if(m_bounds){
-        float maxLen = iclMax(m_bounds[0].getLength(), m_bounds[1].getLength());
-        maxLen = iclMax(m_bounds[2].getLength(), maxLen);
+        float maxLen = iclMax(m_bounds.get()[0].getLength(), m_bounds.get()[1].getLength());
+        maxLen = iclMax(m_bounds.get()[2].getLength(), maxLen);
         newSceneMouseHandler->setSensitivities(maxLen);
 			} else {
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
@@ -1473,19 +1473,19 @@ namespace icl{
         }
       }
       if(minX > maxX){
-        m_bounds[0] = Range32f(maxX,minX);
+        m_bounds.get()[0] = Range32f(maxX,minX);
       }else{
-        m_bounds[0] = Range32f(minX,maxX);
+        m_bounds.get()[0] = Range32f(minX,maxX);
       }
       if(minY == maxY){
-        m_bounds[1] = Range32f(minX,maxX);
+        m_bounds.get()[1] = Range32f(minX,maxX);
       }else{
-        m_bounds[1] = Range32f(minY,maxY);
+        m_bounds.get()[1] = Range32f(minY,maxY);
       }
       if(minZ == maxZ){
-        m_bounds[2] = Range32f(minX,maxX);
+        m_bounds.get()[2] = Range32f(minX,maxX);
       }else{
-        m_bounds[2] = Range32f(minZ,maxZ);
+        m_bounds.get()[2] = Range32f(minZ,maxZ);
       }
     }
 

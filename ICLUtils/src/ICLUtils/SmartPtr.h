@@ -35,7 +35,10 @@
 
 namespace icl{
   namespace utils{
-    
+#ifdef ICL_USE_STD_SHARED_PTR
+    template<class T>
+    using SmartPtr = SmartPtrBase<T,PointerDelOp>;
+#else
     /// Specialization of the SmartPtrBase class for Pointers
     /** If the internal reference counter becomes 0, the contained
         data pointer is release using <tt>delete</tt> 
@@ -88,7 +91,7 @@ namespace icl{
       /// reference counting copy constructor
       SmartPtr(const SmartPtrBase<T,PointerDelOp>& r):super(r){}
     };
-  
+#endif
   } // namespace utils
 }
 

@@ -35,7 +35,10 @@
 
 namespace icl{
   namespace utils{
-    
+#ifdef ICL_USE_STD_SHARED_PTR
+    template<class T>
+    using SmartArray = SmartPtrBase<T,ArrayDelOp>;
+#else
     /// Specialization of the SmartPtrBase class for Arrays
     /** If the internal reference counter becomes 0, the contained
         data pointer is release using <tt>delete []</tt>*/
@@ -66,8 +69,7 @@ namespace icl{
       /// index access operator (const, no index checks)
       const T&operator[](int idx) const{ ICLASSERT(super::e); return super::e[idx]; }
     };
-  
-  
+#endif  
   } // namespace utils
 }
 

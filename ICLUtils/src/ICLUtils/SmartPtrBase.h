@@ -33,9 +33,21 @@
 #include <ICLUtils/Macros.h>
 #include <cstdlib>
 
+/// undocument this line if you encounter any issues!
+//#define ICL_USE_STD_SHARED_POINTER_IF_POSSIBLE
+#if __cplusplus >= 201103L
+#ifdef ICL_USE_STD_SHARED_POINTER_IF_POSSIBLE
+#define ICL_USE_STD_SHARED_PTR
+#endif
+#endif
+
+#ifdef ICL_USE_STD_SHARED_PTR
+#include <memory>
+#endif
+
 namespace icl{
   namespace utils{
-    
+
     /// Pure Interface class for DelOps \ingroup UTILS
     class DelOpBase { public: virtual ~DelOpBase(){} };
     
@@ -48,6 +60,140 @@ namespace icl{
     /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
     struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
     
+
+#ifdef ICL_USE_STD_SHARED_PTR
+    //#warning "Using new std::shared_ptr - based SmartPtr class "
+    template<class T, class delOp = ArrayDelOp > 
+    class SmartPtrBase{
+
+      std::shared_ptr<T> impl;
+      
+      template<class DerivedT>
+      inline SmartPtrBase<T,delOp> &assign(const SmartPtrBase<DerivedT,delOp>& r){
+        impl = r.impl;
+        return *this;
+      }
+
+      public:
+      /// for template-based assignment
+      template<class A, class B> friend class SmartPtrBase;
+    
+      /// e and c will become NULL
+      inline SmartPtrBase(){}
+        
+      /// ptData is given, reference counter is set to 1
+      template<class DerivedT>
+      SmartPtrBase(DerivedT *ptData, bool bOwn=true) :
+      impl(ptData, [bOwn](T *t){ if(bOwn) delOp::delete_func(t); }){
+      }
+        
+      /// Create a copy of given smart pointer with more general type
+      /** This does of course only work, if DeriveT is T or if it extends T */
+      template<class DerivedT>
+      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r) :
+        impl(std::static_pointer_cast<T,DerivedT>(r.impl)){
+      }
+  
+      /// Create a copy of given smart pointer
+      /** This does of course only work, if DeriveT is T or if it extends T */
+      SmartPtrBase(const SmartPtrBase<T,delOp> &r): impl(r.impl){}
+        
+      /// sets the pointer to hold another reference
+      /** If the new reference r.e is identical to the current
+          reference, nothing is done at all.
+          Else, the current reference counter is decreased by 1, 
+          if it becomes NULL, the hold reference is deleted.
+          Following, the current reference and reference counter is
+          copied from the given r. At the end, the copied reference
+          counter is increased by 1.
+          */
+      template<class DerivedT>
+      SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<DerivedT,delOp>& r){
+        return assign(r);  
+      }
+  
+      /// explicit implmentation of the same type assignment operator
+      /** This operator needs to be implemented explicitly because
+          the template based assignment operator does not match the
+          default assignment operator type for some reason. */
+      SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<T,delOp>& r){
+        return assign(r);
+      }
+  
+      /// allows for direct assignment of pointers to a SmartPtr object
+      /** Rvalue pointer must be of type T of a type is derived from T */
+      template<class DerivedT>
+      SmartPtrBase<T,delOp> &operator=(DerivedT *p){
+        return this->operator=(SmartPtrBase<T,delOp>(p));
+      }
+  
+      /// allows for direct assignment of pointers to a SmartPtr object
+      SmartPtrBase<T,delOp> &operator=(T *p){
+        return this->operator=(SmartPtrBase<T,delOp>(p));
+      }
+  
+      /// decreases the reference counter (cleanup on demand)
+      virtual ~SmartPtrBase() {}
+          
+      /// returns a reference of the currently hold element
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      T &operator* () { return *impl; }
+  
+      /// returns a reference of the currently hold element (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      const T &operator* () const { return *impl; }
+        
+  
+      /// returns the pointer to the data
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      T* get () { return impl.get(); }
+  
+      /// returns the pointer to the data (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      const T* get () const { return impl.get(); }
+  
+  
+      /// returns the currently hold element
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      T *operator-> () { return impl.get(); }
+  
+      /// returns the currently hold element (const)
+      /** If the element pointer is null, an error will
+          terminate the program with -1;
+          */
+      const T *operator-> () const { return impl.get(); }
+  
+  
+      /// this may be used to check if * or -> operator may be used
+      operator bool() const { return (bool)impl; }
+    
+      /// current reference count
+      int use_count() const { return impl.use_count(); }
+        
+      /// sets the smart pointer to null
+      /** This is equivalent to 
+          \code
+          SmartPtr<X> p(new X);
+          p = SmartPtr<X>();
+          \endcode
+          */
+      void setNull() { 
+        impl.reset();
+      }
+    };
+#else
+    
+   
     /// Base class for reference counting smart-pointers  \ingroup UTILS
     /** \section Gen General Information
         The icl::SmartPtrBase class defines an abstract interface for managed
@@ -177,7 +323,7 @@ namespace icl{
       }
   
       /// decreases the reference counter (cleanup on demand)
-      ~SmartPtrBase() { dec(); }
+      virtual  ~SmartPtrBase() { dec(); }
           
       /// returns a reference of the currently hold element
       /** If the element pointer is null, an error will
@@ -236,7 +382,7 @@ namespace icl{
         set(0,0,0);
       }
     };
-  
+#endif
   } // namespace utils
 }
 
