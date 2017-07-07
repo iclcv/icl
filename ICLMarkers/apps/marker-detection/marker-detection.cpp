@@ -63,7 +63,8 @@ void init(){
   grabber.useDesired(formatGray);
 
   gui << Draw3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
-      << (VBox().maxSize(16,100) 
+      << (VBox().maxSize(16,100)
+          << FSlider(1,10,2).handle("label-size-factor").label("label size factor")
           << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")
           << Prop("fid")
           << (HBox() 
@@ -144,6 +145,7 @@ void run(){
   const bool showAngles = gui["showAngles"];
 
   static bool use3Dfor1stVisibleMarker = pa("-3D-for-first-visible-marker");
+  float factor = gui["label-size-factor"];
   for(unsigned int i=0;i<fids.size();++i){
     
     if((enable3D && fids[i].getID() == 0)
@@ -159,8 +161,12 @@ void run(){
     }
 
     if(showIDs){
-      draw->color(0,100,255,255);
-      draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9);
+      draw->color(0,0,0,255);
+      draw->text(fids[i].getName(),fids[i].getCenter2D().x+1,
+                 fids[i].getCenter2D().y+1,9*factor);
+      draw->color(255,255,0,255);
+      draw->text(fids[i].getName(),fids[i].getCenter2D().x, fids[i].getCenter2D().y,9*factor);
+
     }
     if(showRegionCorners){
       static QuadDetector &qd = ((FiducialDetectorPluginForQuads*)fid->getPlugin())->getQuadDetector();
