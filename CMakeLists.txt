@@ -45,7 +45,7 @@ SET(ICL_FILE_NAME_COMPONENT_DIR PATH)
 IF(CMAKE_VERSION VERSION_LESS 2.8.12)
   SET(ICL_FILE_NAME_COMPONENT_DIR DIRECTORY)
 ENDIF()
-set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD 11)
 
 IF(APPLE)
   SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
@@ -75,10 +75,10 @@ ENDIF()
 OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization flag" OFF)
 
 #if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+$") # little ugly here
-#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline 
-#                              -Werror -Wno-\\#warnings 
-#                              -Wno-deprecated-declarations 
-#                              -Wno-uninitialized 
+#  set(ICL_DEACTIVATED_WARNING -Wno-internal-linkage-in-inline
+#                              -Werror -Wno-\\#warnings
+#                              -Wno-deprecated-declarations
+#                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
   set(ICL_DEACTIVATED_WARNING "")
@@ -141,8 +141,8 @@ ENDIF(MSVC)
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
 SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "12" CACHE STRING "Minor project version part")
-SET(ICL_VERSION_PATCH "1" CACHE STRING "Patch project version part")
+SET(ICL_VERSION_MINOR "13" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 
 SET(ICL_NAME                   icl)
 SET(PROJECT_VERSION            "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
@@ -570,7 +570,7 @@ IF(BUILD_WITH_QT)
   SET(ICL_QT_MODULES Core Gui Multimedia Widgets OpenGL)
 
   SET(ICL_ALL_QT_LIBS_FOUND TRUE)
-  
+
   FOREACH(M ${ICL_QT_MODULES})
     FIND_PACKAGE(Qt5${M} REQUIRED HINTS ${QT_ROOT})
     IF(NOT Qt5${M}_FOUND)
@@ -580,7 +580,7 @@ IF(BUILD_WITH_QT)
       MESSAGE(STATUS "Found Qt-Module ${M}")
     ENDIF()
   ENDFOREACH()
-  
+
   IF(ICL_ALL_QT_LIBS_FOUND)
     MESSAGE(STATUS "Found: All Qt Modules")
     SET(QT_FOUND TRUE)
@@ -590,7 +590,7 @@ IF(BUILD_WITH_QT)
     IF(NOT WIN32)
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     ENDIF(NOT WIN32)
-    
+
     # This creates full library paths from Qt's colon separated paths.
     # Colon separated Qt library paths only work when Qt's find package was called.
     # This is not necessarily done in projects linking against icl so we need full
@@ -605,18 +605,18 @@ IF(BUILD_WITH_QT)
       SET(QWHAT SONAME)
       SET(QPFX "")
     ENDIF()
-    
+
     FOREACH(M ${ICL_QT_MODULES})
       get_target_property(ICLQt5${M}Lib${QPFX} Qt5::${M} IMPORTED_${QWHAT}_RELEASE)
     ENDFOREACH()
-    
+
     IF(UNIX AND NOT APPLE)
       # For some reason cmake does not add library paths to rpath when they end
       # with a number like libQt5Core.so.5. Changing the linked libraries to the
       # simple .so resolves this problem.
       get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
       get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} ${ICL_FILE_NAME_COMPONENT_DIR})
-      
+
       FOREACH(M ${ICL_QT_MODULES})
         STRING(REGEX REPLACE "[.]so([.][0-9])+" ".so" ICLQt5${M}LibAbs "${_QT5CORE_ABSOLUTE}/${ICLQt5${M}Lib}")
       ENDFOREACH()
@@ -1139,7 +1139,7 @@ ENDIF()
 
 
 # ----- Summary of all dependencies
-SET(OPTS OPENCV QT OPENGL RSB RST RSC PROTOBUF EIGEN3 IPP MKL MESASR IMAGEMAGICK LIBAV LIBDC LIBFREENECT LIBFREENECT2 XINE 
+SET(OPTS OPENCV QT OPENGL RSB RST RSC PROTOBUF EIGEN3 IPP MKL MESASR IMAGEMAGICK LIBAV LIBDC LIBFREENECT LIBFREENECT2 XINE
   V4L LIBUSB ZMQ PYLON OPENCL OPENNI PCL BULLLET XIAPI LIBIRIMAGER LIBUDEV)
 IF(NOT WIN32)
   LIST(APPEND OPTS DL)
@@ -1159,10 +1159,10 @@ ENDFOREACH()
 SET(BUILD_MODULES  Utils Math Core Filter IO CV Geom Markers)
 IF(QT_FOUND)
   LIST(APPEND BUILD_MODULES Qt)
-ENDIF()     
+ENDIF()
 IF(BULLET_FOUND)
   LIST(APPEND BUILD_MODULES Physics)
-ENDIF()     
+ENDIF()
 
 MESSAGE(" ------------ Build Options: --------------------------------------")
 MESSAGE(" Build Type: .............. ${CMAKE_BUILD_TYPE}")
@@ -1178,7 +1178,7 @@ FOREACH(O ${OPTS})
     SET(FILL ".${FILL}")
     MATH(EXPR L "${L}-1")
   ENDWHILE()
-  
+
   IF(${O}_FOUND)
     SET(WHERE "--")
     IF(${O}_DIR)
@@ -1239,5 +1239,3 @@ FOREACH(G Generic_cameras|OPENCV|QT
   ENDIF()
   MESSAGE(" ${WHAT} ${FILL} ${HAVE}")
 ENDFOREACH()
-
-
