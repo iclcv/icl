@@ -29,10 +29,17 @@
 #**                                                                 **
 #*********************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
-PROJECT(ICL)
+# ---- global definitions ----
+# todo: add "-debug" postfix here and there!
+SET(ICL_VERSION_MAJOR "10" CACHE STRING "Major project version part")
+SET(ICL_VERSION_MINOR "0" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
+SET(PROJECT_VERSION "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
+
+PROJECT(ICL VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 # ---- cmake settings ----
 INCLUDE(ICLHelperMacros)
@@ -42,9 +49,6 @@ INCLUDE(FindSSE)
 
 # for using GET_FILENAME_COMPONENT
 SET(ICL_FILE_NAME_COMPONENT_DIR PATH)
-IF(CMAKE_VERSION VERSION_LESS 2.8.12)
-  SET(ICL_FILE_NAME_COMPONENT_DIR DIRECTORY)
-ENDIF()
 set(CMAKE_CXX_STANDARD 11)
 
 IF(APPLE)
@@ -138,14 +142,9 @@ ELSE(MSVC)
   ENDIF()
 ENDIF(MSVC)
 
-# ---- global definitions ----
-# todo: add "-debug" postfix here and there!
-SET(ICL_VERSION_MAJOR "9" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "13" CACHE STRING "Minor project version part")
-SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
+
 
 SET(ICL_NAME                   icl)
-SET(PROJECT_VERSION            "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
 SET(SO_VERSION                 "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}")
 SET(INSTALL_PATH_PREFIX        "${ICL_NAME}-${SO_VERSION}")
 SET(BINARY_PREFIX              "${ICL_NAME}-")
