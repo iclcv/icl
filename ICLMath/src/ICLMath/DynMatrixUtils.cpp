@@ -33,7 +33,6 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/StringUtils.h>
 #include <cmath>
-#include <cctype>
 
 #ifdef ICL_HAVE_MKL
   #include "mkl_types.h"

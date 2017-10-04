@@ -32,19 +32,12 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
-#include <QImage>
-#include <QtCore/QVector>
-#include <ICLCore/Img.h>
-#include <ICLCore/CCFunctions.h>
 
 // forward declared QImage class
 class QImage;
 
 namespace icl{
   namespace qt{
-
-    template<class T>
-    void qimage_to_img(const QImage *src, core::Img<T> **ppDst, bool useSpeudoColors);
 
     /// class for conversion between QImage and core::ImgBase/Img\<T\> \ingroup COMMON
     /** The QImageConverter class provides functionality for conversion
