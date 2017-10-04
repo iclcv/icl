@@ -70,6 +70,7 @@ namespace icl{
         Time lastImageTimeStamp;
         Time lastValidImageGrabbed;
         ImageCompressor compressor;
+        bool loopWarning;
 
         bool isNew(const Time &t, Grabber &g){
           if(t == Time::null){
@@ -80,13 +81,19 @@ namespace icl{
           }else if(lastImageTimeStamp == Time::null){
             lastImageTimeStamp = t;
             lastValidImageGrabbed = Time::now();
+            WARNING_LOG("Init grabber time stamp");
             return true;
           }else if(lastImageTimeStamp > t){
-            WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+            if(loopWarning == true){
+            	WARNING_LOG("SharedMemoryGrabber received an image with an older timestamp than the last one. Loop? This warning is only displayed once.");// Deactivating \"omit-doubled-frames\"-feature to avoid dead-locks!");
+            	loopWarning=false;
+            }
             lastValidImageGrabbed = Time::now();
+            lastImageTimeStamp=t;
             return true;
-          }else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
-            WARNING_LOG("SharedMemoryGrabber alread waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
+          //}else if( (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+          }else if( (Time::now() - t).toSeconds() > 5 && (Time::now() - lastValidImageGrabbed).toSeconds() > 5){
+            WARNING_LOG("SharedMemoryGrabber already waited 5 seconds for a new image which might be caused by an image source that does not provide usefull timestamps. Therefore the 'omit-doubled-frames'-property is deactivated automatically!");
             g.setPropertyValue("omit-doubled-frames",false);
             return false;
           }else if(t == lastImageTimeStamp){
@@ -111,7 +118,7 @@ namespace icl{
             virtual void run(){
               while(true){
                 while(!data->callbacksEnabled){
-                  Thread::sleep(100);
+                  Thread::msleep(100);
                 }
                 try{
                 const ImgBase* ptr = impl->acquireImage();
@@ -135,6 +142,7 @@ namespace icl{
       m_data->omitDoubledFrames = true;
       m_data->callbacksEnabled = false;
       m_data->caller = new Data::CallbackCaller(this,m_data);
+      m_data->loopWarning=true;
 
       if(sharedMemorySegmentID.length()){
         try{

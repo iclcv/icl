@@ -147,7 +147,7 @@ namespace icl{
             for(int q=-1; q<=1; q++){
               int p1 = surfaces[x][y];
               int p2 = surfaces[x][y]+p+s.width*q;
-              if(p2>=0 && p2<s.width*s.height && p1!=p2 && labelImageC[p1]!=labelImageC[p2] && labelImageC[p2]!=0){//bounds, id, value, not 0
+              if(p2>=0 && p2<s.width*s.height && p1!=p2 && labelImageC[p1]>labelImageC[p2] && labelImageC[p2]!=0){//bounds, id, value, not 0
                 if(checkNotExist(labelImageC[p2]-1, nb, nbPoints) && math::dist3(xyz[p1], xyz[p2])<assignEuclideanDistance){// /4.
                   nb.push_back(labelImageC[p2]-1);//id, not label-value
                   nbPoints.push_back(1); 

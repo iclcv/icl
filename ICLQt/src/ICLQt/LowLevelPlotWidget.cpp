@@ -88,8 +88,8 @@ namespace icl{
         SmartArray<float> xs;
         SmartArray<float> ys;
   
-        float xAt(int i) const { return xs[i*xStride]; }
-        float yAt(int i) const { return ys[i*xStride]; }
+        float xAt(int i) const { return xs.get()[i*xStride]; }
+        float yAt(int i) const { return ys.get()[i*xStride]; }
       };
       
       struct SeriesData : public AbstractData{
@@ -100,7 +100,7 @@ namespace icl{
         }
         int stride;
         SmartArray<float> data;
-        float at(int i) const { return data[i*stride]; }
+        float at(int i) const { return data.get()[i*stride]; }
       };
   
   
@@ -708,7 +708,7 @@ namespace icl{
       if(deepCopyData){
         s->data = new float[len];
         for(int i=0;i<len;++i){
-          s->data[i] = data[i*stride];
+          s->data.get()[i] = data[i*stride];
         }
       }else{
         s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
@@ -728,8 +728,8 @@ namespace icl{
         s->xs = new float[num];
         s->ys = new float[num];
         for(int i=0;i<num;++i){
-          s->xs[i] = xs[i*xStride];
-          s->ys[i] = ys[i*yStride];
+          s->xs.get()[i] = xs[i*xStride];
+          s->ys.get()[i] = ys[i*yStride];
         }
       }else{
         s->xs = SmartArray<float>(const_cast<float*>(xs), passDataOwnerShip);
@@ -748,7 +748,7 @@ namespace icl{
       if(deepCopyData){
         s->data = new float[len];
         for(int i=0;i<len;++i){
-          s->data[i] = data[i*stride];
+          s->data.get()[i] = data[i*stride];
         }
       }else{
         s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
