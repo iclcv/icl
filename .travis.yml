@@ -1,0 +1,45 @@
+language: cpp
+compiler: gcc
+before_script: mkdir -p build && cd build
+script:  cmake ${ICL_OPTIONS} .. && make -j 3
+sudo: false
+matrix:
+  include:
+    # works on Precise and Trusty
+    - addons:
+        apt:
+          packages:
+            - cmake
+            - libpng-dev
+            - libjpeg-dev
+      env:
+          - ICL_OPTIONS=""
+    - addons:
+        apt:
+          packages:
+            - cmake
+            - libpng-dev
+            - libjpeg-dev
+            - qtmultimedia5-dev
+            - libqt5opengl5-dev
+            - libglew-dev
+            - libopencv-dev
+            - ocl-icd-opencl-dev
+            - opencl-headers
+            - libeigen3-dev
+            - libmagick++-dev
+            - libfreenect-dev
+            - libxine2-dev
+            # - libpcl-dev -DBUILD_WITH_PCL=TRUE \ Cannot use PCL with travis atm
+      env:
+        - ICL_OPTIONS="\
+              -DBUILD_WITH_QT=TRUE \
+              -DBUILD_WITH_OPENCV=TRUE  \
+              -DBUILD_WITH_OPENCL=TRUE \
+              -DBUILD_WITH_EIGEN3=TRUE \
+              -DBUILD_WITH_IMAGEMAGICK=TRUE \
+              -DBUILD_WITH_V4L=TRUE \
+              -DBUILD_WITH_LIBFREENECT=TRUE \
+              -DBUILD_WITH_XINE=TRUE \
+              -DBUILD_WITH_LIBDC=TRUE \
+              "
