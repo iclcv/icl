@@ -158,35 +158,35 @@ namespace icl{
 
     // }}}
 
-    // template<class T>
-    // void qimage_to_img(const QImage *src, Img<T> **ppDst, bool useSpeudoColors){
-    //   // {{{ open
-    //   Img<T> *&dst = *ppDst;
-    //
-    //   ICLASSERT_RETURN(src);
-    //   ICLASSERT_RETURN(!src->isNull());
-    //   if(!dst) dst = new Img<T>(Size(1,1),1);
-    //
-    //   if(src->format() == QImage::Format_Indexed8){
-    //     dst->setFormat(formatGray);
-    //   }else{
-    //     dst->setFormat(formatRGB);
-    //   }
-    //   dst->setSize(Size(src->width(),src->height()));
-    //   //append temporarily a white image channel
-    //   static Img<T> wBuf(Size(1,1),formatGray);
-    //   if(wBuf.getDim() < src->width()*src->height()){
-    //     wBuf.setSize(Size(src->width(),src->height()));
-    //   }
-    //   std::vector<T*> vecChannels;
-    //   vecChannels.push_back(dst->getData(2));
-    //   vecChannels.push_back(dst->getData(1));
-    //   vecChannels.push_back(dst->getData(0));
-    //   vecChannels.push_back(wBuf.getData(0));
-    //   Img<T> tmp(dst->getSize(),4,vecChannels);
-    //
-    //   interleavedToPlanar(src->bits(),&tmp);
-    // }
+    template<class T>
+    void qimage_to_img(const QImage *src, Img<T> **ppDst, bool useSpeudoColors){
+      // {{{ open
+      Img<T> *&dst = *ppDst;
+
+      ICLASSERT_RETURN(src);
+      ICLASSERT_RETURN(!src->isNull());
+      if(!dst) dst = new Img<T>(Size(1,1),1);
+
+      if(src->format() == QImage::Format_Indexed8){
+        dst->setFormat(formatGray);
+      }else{
+        dst->setFormat(formatRGB);
+      }
+      dst->setSize(Size(src->width(),src->height()));
+      //append temporarily a white image channel
+      static Img<T> wBuf(Size(1,1),formatGray);
+      if(wBuf.getDim() < src->width()*src->height()){
+        wBuf.setSize(Size(src->width(),src->height()));
+      }
+      std::vector<T*> vecChannels;
+      vecChannels.push_back(dst->getData(2));
+      vecChannels.push_back(dst->getData(1));
+      vecChannels.push_back(dst->getData(0));
+      vecChannels.push_back(wBuf.getData(0));
+      Img<T> tmp(dst->getSize(),4,vecChannels);
+
+      interleavedToPlanar(src->bits(),&tmp);
+    }
 
     // }}}
 
@@ -296,36 +296,36 @@ namespace icl{
 
     // }}}
 
-    // template<class T>
-    // const Img<T> *QImageConverter::getImg(){
-    //   // {{{ open
-    //
-    //   depth d = getDepth<T>();
-    //   if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
-    //   // else find a given image
-    //   for(int i=0;i<5;i++){
-    //     if(i!=d && m_aeStates[i] < 2){
-    //       //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
-    //       m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
-    //       m_aeStates[d] = uptodate;
-    //       return m_apoBuf[d]->asImg<T>();
-    //     }
-    //   }
-    //   // check if the qimage was given
-    //   if(m_eQImageState < 2){
-    //     qimage_to_img(m_poQBuf,reinterpret_cast<Img<T>**>(&m_apoBuf[d]), m_usePC);
-    //     m_aeStates[d] = uptodate;
-    //     return m_apoBuf[d]->asImg<T>();
-    //   }
-    //   WARNING_LOG("could not create an Image because no image/qimage was given yet!");
-    //   return 0;
-    // }
+    template<class T>
+    const Img<T> *QImageConverter::getImg(){
+      // {{{ open
+
+      depth d = getDepth<T>();
+      if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
+      // else find a given image
+      for(int i=0;i<5;i++){
+        if(i!=d && m_aeStates[i] < 2){
+          //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
+          m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
+          m_aeStates[d] = uptodate;
+          return m_apoBuf[d]->asImg<T>();
+        }
+      }
+      // check if the qimage was given
+      if(m_eQImageState < 2){
+        qimage_to_img(m_poQBuf,reinterpret_cast<Img<T>**>(&m_apoBuf[d]), m_usePC);
+        m_aeStates[d] = uptodate;
+        return m_apoBuf[d]->asImg<T>();
+      }
+      WARNING_LOG("could not create an Image because no image/qimage was given yet!");
+      return 0;
+    }
 
 #define ICL_INSTANTIATE_DEPTH(D) \
     template const Img<icl##D> *QImageConverter::getImg<icl##D>();
     ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
-    
+
 
     // }}}
 

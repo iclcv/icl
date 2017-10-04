@@ -44,34 +44,7 @@ namespace icl{
   namespace qt{
 
     template<class T>
-    void qimage_to_img(const QImage *src, core::Img<T> **ppDst, bool useSpeudoColors){
-      // {{{ open
-      core::Img<T> *&dst = *ppDst;
-
-      ICLASSERT_RETURN(src);
-      ICLASSERT_RETURN(!src->isNull());
-      if(!dst) dst = new core::Img<T>(utils::Size(1,1),1);
-
-      if(src->format() == QImage::Format_Indexed8){
-        dst->setFormat(core::formatGray);
-      }else{
-        dst->setFormat(core::formatRGB);
-      }
-      dst->setSize(utils::Size(src->width(),src->height()));
-      //append temporarily a white image channel
-      static core::Img<T> wBuf(utils::Size(1,1),core::formatGray);
-      if(wBuf.getDim() < src->width()*src->height()){
-        wBuf.setSize(utils::Size(src->width(),src->height()));
-      }
-      std::vector<T*> vecChannels;
-      vecChannels.push_back(dst->getData(2));
-      vecChannels.push_back(dst->getData(1));
-      vecChannels.push_back(dst->getData(0));
-      vecChannels.push_back(wBuf.getData(0));
-      core::Img<T> tmp(dst->getSize(),4,vecChannels);
-
-      interleavedToPlanar(src->bits(),&tmp);
-    }
+    void qimage_to_img(const QImage *src, core::Img<T> **ppDst, bool useSpeudoColors);
 
     /// class for conversion between QImage and core::ImgBase/Img\<T\> \ingroup COMMON
     /** The QImageConverter class provides functionality for conversion
@@ -149,29 +122,7 @@ namespace icl{
 
       /// template returing an image of given datatype
       template<class T>
-      const core::Img<T> *getImg(){
-        // {{{ open
-
-        core::depth d = core::getDepth<T>();
-        if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
-        // else find a given image
-        for(int i=0;i<5;i++){
-          if(i!=d && m_aeStates[i] < 2){
-            //      m_apoBuf[d] = m_apoBuf[i]->deepCopy(m_apoBuf[d]);
-            m_apoBuf[d] = m_apoBuf[i]->convert(m_apoBuf[d]->asImg<T>());
-            m_aeStates[d] = uptodate;
-            return m_apoBuf[d]->asImg<T>();
-          }
-        }
-        // check if the qimage was given
-        if(m_eQImageState < 2){
-          qimage_to_img(m_poQBuf,reinterpret_cast<core::Img<T>**>(&m_apoBuf[d]), m_usePC);
-          m_aeStates[d] = uptodate;
-          return m_apoBuf[d]->asImg<T>();
-        }
-        WARNING_LOG("could not create an Image because no image/qimage was given yet!");
-        return 0;
-      }
+      const core::Img<T> *getImg();
       /// sets the current source image of type core::Img8u or Img32f
       /** All further set images get the state "outdated". Hence all later
           <em>getImg[Base]-calls</em> must perform a deep conversion first
