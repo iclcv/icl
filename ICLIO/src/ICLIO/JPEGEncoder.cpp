@@ -38,36 +38,36 @@ using namespace icl::utils;
 using namespace icl::core;
 namespace icl{
   namespace io{
-  
+
     namespace jpeg_encoder{
       struct MemDst {
         struct jpeg_destination_mgr mgr;
         JOCTET* buffer;
-        int bufsize; 
+        int bufsize;
         size_t datasize;
-        int* outsize; 
+        int* outsize;
       };
       void init_destination(j_compress_ptr compress){
         MemDst *md = (MemDst*)compress->dest;
         md->mgr.next_output_byte = md->buffer; // target buffer
         md->mgr.free_in_buffer = md->bufsize;  // buffer size
-        md->datasize = 0;                      
+        md->datasize = 0;
       }
-      int empty_output_buffer (j_compress_ptr compress){
+      boolean empty_output_buffer (j_compress_ptr compress){
         MemDst *md = (MemDst*)compress->dest;
         md->mgr.next_output_byte = md->buffer;
         md->mgr.free_in_buffer = md->bufsize;
-        return true;
+        return TRUE;
       }
       void term_destination (j_compress_ptr compress){
         MemDst *md = (MemDst*)compress->dest;
         md->datasize = md->bufsize - md->mgr.free_in_buffer;
         if (md->outsize) *md->outsize += (int)md->datasize;
       }
-  
+
       void install_MemDst(j_compress_ptr compress, JOCTET* buffer, int bufsize, int* outsize){
         if(!compress->dest){
-          compress->dest = ( (jpeg_destination_mgr*)(*compress->mem->alloc_small) 
+          compress->dest = ( (jpeg_destination_mgr*)(*compress->mem->alloc_small)
                              ((j_common_ptr) compress, JPOOL_PERMANENT, sizeof(MemDst)));
         }
         MemDst *md = (MemDst*)compress->dest;
@@ -84,30 +84,30 @@ namespace icl{
       }
     }
     using namespace jpeg_encoder;
-  
+
     struct JPEGEncoder::Data{
       int quality;
       JPEGEncoder::EncodedData encoded;
       Img8u buffer8u;
       std::vector<icl8u> dataBuffer;
     };
-  
-    
+
+
     JPEGEncoder::JPEGEncoder(int quality):m_data(new Data){
       m_data->quality = quality;
       m_data->encoded.bytes = 0;
       m_data->encoded.len = 0;
     }
-    
+
     JPEGEncoder::~JPEGEncoder(){
       delete m_data;
     }
-  
+
     void JPEGEncoder::setQuality(int quality){
       m_data->quality = quality;
     }
-      
-      
+
+
     const JPEGEncoder::EncodedData &JPEGEncoder::encode(const ImgBase *image){
       if(!image){
         m_data->encoded.bytes = 0;
@@ -115,10 +115,10 @@ namespace icl{
         ERROR_LOG("JPEGEncoder::encode: given image is NULL");
         return m_data->encoded;
       }
-  
+
       format fmt = image->getFormat();
       int channels = image->getChannels();
-      
+
       if(channels != 1 && channels != 3){
         throw ICLException("JEPGEncoder:encode: jpeg does only support 1 or 3 channels");
       }
@@ -136,7 +136,7 @@ namespace icl{
         psrc = image->as8u();
       }
       const Img8u &src = *psrc;
-      
+
       //////////////////////////////////////////////////////////////////////
       /// WRITE HEADER DATA ////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
@@ -147,23 +147,23 @@ namespace icl{
         case formatRGB:  jCS = JCS_RGB; break;
         case formatMatrix:{
           if(channels == 1){
-            jCS = JCS_GRAYSCALE; 
+            jCS = JCS_GRAYSCALE;
           }else if(channels == 3){
             jCS = JCS_RGB;
           }else{
             throw ICLException(str(__FUNCTION__)+": matrix format with " + str(channels) + " channels is not supported");
           }
         }
-  
-        default: 
+
+        default:
           throw ICLException(str(__FUNCTION__)+":"+str(fmt) + " not supported by jpeg");
       }
-      
+
       ICLException err(str(__FUNCTION__)+": Error in JPEG compression");
-  
+
       struct jpeg_compress_struct jpgCinfo;
       struct icl_jpeg_error_mgr   jpgErr;
-      
+
       // Step 1: Set up the error handler first, in case initialization fails
       jpgCinfo.err = jpeg_std_error(&jpgErr);
       if (setjmp(jpgErr.setjmp_buffer)) {
@@ -172,36 +172,36 @@ namespace icl{
         jpeg_destroy_compress(&jpgCinfo);
         throw err;
       }
-      
+
       /* Now we can initialize the JPEG compression object. */
       jpeg_create_compress(&jpgCinfo);
-      
+
       // Step 2: specify data destination
       int bytesWritten = 0;
       m_data->dataBuffer.resize(4000 + src.getWidth() * src.getHeight() * src.getChannels() * 2);
       install_MemDst(&jpgCinfo,(JOCTET*)m_data->dataBuffer.data(),m_data->dataBuffer.size(),&bytesWritten);
-      
+
       /* Step 3: set parameters for compression */
       jpgCinfo.image_width  = src.getSize().width;
       jpgCinfo.image_height = src.getSize().height;
-      jpgCinfo.input_components = src.getChannels(); // # of color components 
+      jpgCinfo.input_components = src.getChannels(); // # of color components
       jpgCinfo.in_color_space = jCS; 	/* colorspace of input image */
-      
+
       /* Now use the library's routine to set default compression parameters.
           * (You must set at least jpgCinfo.in_color_space before calling this,
           * since the defaults depend on the source color space.) */
       jpeg_set_defaults(&jpgCinfo);
-      
+
       /* Now you can set any non-default parameters you wish to.
           * Here we just illustrate the use of quality (quantization table) scaling: */
       jpeg_set_quality(&jpgCinfo, m_data->quality, TRUE /* limit to baseline-JPEG values */);
-      
+
       /* Step 4: Start compressor */
       /* TRUE ensures that we will write a complete interchange-JPEG file.
           * Pass TRUE unless you are very sure of what you're doing. */
       jpeg_start_compress(&jpgCinfo, TRUE);
-  
-  #ifdef ICL_HAVE_JPEG_MARKERS    
+
+  #ifdef ICL_HAVE_JPEG_MARKERS
       // this leads to errors when loading the encoded stuff from data segment
       /* Step 5: Write comments */
       char acBuf[1024];
@@ -211,19 +211,19 @@ namespace icl{
   #else
       sprintf (acBuf, "TimeStamp %lld", src.getTime().toMicroSeconds());
   #endif
-  
+
       jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
-      
+
       // ROI
       Rect roi = src.getROI ();
       sprintf (acBuf, "ROI %d %d %d %d", roi.x, roi.y, roi.width, roi.height);
       jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
   #endif
-  
+
       //////////////////////////////////////////////////////////////////////
       /// WRITE IMAGE DATA  ////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
-      
+
       /* Step 6: while (scan lines remain to be written) */
       if (src.getChannels () == 1) {
         int iLineStep = src.getSize().width;
@@ -245,28 +245,28 @@ namespace icl{
             *pc++ = pcR[c];
             *pc++ = pcG[c];
             *pc++ = pcB[c];
-          } 
+          }
           pcR += size.width;
           pcG += size.width;
           pcB += size.width;
           icl8u *pcBuf = buf.data();
           (void) jpeg_write_scanlines(&jpgCinfo, &pcBuf, 1);
-        } 
+        }
       }
-  
-      
+
+
       /* Step 7: Finish compression */
       jpeg_finish_compress(&jpgCinfo);
-      
+
       /* Step 8: release JPEG compression object */
       jpeg_destroy_compress(&jpgCinfo);
-  
+
       m_data->encoded.bytes = m_data->dataBuffer.data();
       m_data->encoded.len = bytesWritten;
       return m_data->encoded;
-  
+
     }
-  
+
     void JPEGEncoder::writeToFile(const ImgBase *image, const std::string &filename){
       const EncodedData &encoded = encode(image);
       File file(filename);

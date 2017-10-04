@@ -33,6 +33,7 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/StringUtils.h>
 #include <cmath>
+#include <cctype>
 
 #ifdef ICL_HAVE_MKL
   #include "mkl_types.h"
@@ -282,7 +283,7 @@ namespace icl{
       return ippStsNoErr;
     }
   #endif
-    
+
   #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                                         \
     template<class T>                                                                                                                     \
     DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst)                                            \
@@ -482,8 +483,7 @@ namespace icl{
   #undef INSTANTIATE_DYN_MATRIX_MATH_OP
 
 
-    // binary functions
-
+  // binary functions
   #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
     template<class T>                                                     \
     DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
@@ -502,10 +502,20 @@ namespace icl{
     INSTANTIATE_DYN_MATRIX_MATH_OP(sub,icl::math::subc<T>)
     INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::math::mulc<T>)
     INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::math::divc<T>)
-#ifndef ICL_SYSTEM_WINDOWS // TODO: for windows // TODOW
-    INSTANTIATE_DYN_MATRIX_MATH_OP(pow,::pow)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,::atan2)
-#endif
+
+  // TODO: Implement for Windows
+  // GCC uses its builtin variants of pow and atan which are not available
+  // for clang. Clang falls back to std::pow/atan and requires specific type
+  // signatures for these functions.
+  #ifndef ICL_SYSTEM_WINDOWS
+    #if defined(__clang__)
+      INSTANTIATE_DYN_MATRIX_MATH_OP(pow, static_cast<T(*)(T, T)>(::pow))
+      INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, static_cast<T(*)(T, T)>(::atan2))
+    #else
+      INSTANTIATE_DYN_MATRIX_MATH_OP(pow, ::pow)
+      INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, ::atan2)
+    #endif
+  #endif
 
   #undef INSTANTIATE_DYN_MATRIX_MATH_OP
 
@@ -1504,4 +1514,3 @@ namespace icl{
 
   } // namespace math
 }
-
