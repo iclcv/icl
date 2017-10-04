@@ -2,3 +2,4 @@
 .obj
 cmake-build-debug
 .idea/workspace.xml
+build
