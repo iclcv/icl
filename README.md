@@ -3,10 +3,11 @@
   <br>
   Image Component Library
 </h1>
+
 [![Build Status](https://travis-ci.org/iclcv/icl.svg?branch=master)](https://travis-ci.org/iclcv/icl)
 [![Version](https://img.shields.io/badge/version-10.0.0-brightgreen.svg)](https://github.com/iclcv/icl)
 [![Commits](https://img.shields.io/github/commits-since/iclcv/icl/latest.svg)](https://github.com/iclcv/icl/compare/9.13.0...master)
-[![License](https://img.shields.io/github/license/iclcv/icl.svg)](./LICENSE.LGPL)
+[![License](https://img.shields.io/github/license/iclcv/icl.svg)](LICENSE.LGPL)
 
 ## Table of Contents
 - [About ICL](#about-icl)
