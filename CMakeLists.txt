@@ -29,17 +29,29 @@
 #**                                                                 **
 #*********************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2)
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
+
+# Version information
 SET(ICL_VERSION_MAJOR "10" CACHE STRING "Major project version part")
 SET(ICL_VERSION_MINOR "0" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 SET(PROJECT_VERSION "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
 
-PROJECT(ICL VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
+# Since version 3.0.2 CMake warns about CMP0048 policy which should be
+# set to NEW to allow PROJECT() to handle version and language information
+IF(CMAKE_VERSION VERSION_LESS 3.0.0)
+  PROJECT(ICL)
+  IF(CMAKE_VERSION VERSION_LESS 2.8.12)
+    SET(ICL_FILE_NAME_COMPONENT_DIR DIRECTORY)
+  ENDIF()
+ELSE()
+  cmake_policy(SET CMP0048 NEW)
+  PROJECT(ICL VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
+ENDIF()
 
 # ---- cmake settings ----
 INCLUDE(ICLHelperMacros)
