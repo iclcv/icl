@@ -2,3 +2,6 @@
 .obj
 cmake-build-debug
 .idea/workspace.xml
+build
+ICLFilter/src/ICLFilter/OpenCL/BilateralFilterOpKernel.h
+doc/icl-manual/js.rst
