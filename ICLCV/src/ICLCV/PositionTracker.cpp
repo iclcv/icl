@@ -39,11 +39,11 @@
 /**                             new data
                          | o   o  x(t)  o   o
 -------------------------+-----------------------
-   o      o     o      o | d   d   d    d   d      
+   o      o     o      o | d   d   d    d   d
                          |
-   o      o     o      o | d   ...                 
+   o      o     o      o | d   ...
                          |
-x(t-3) x(t-2) x(t-1) ŷ(t)|                         
+x(t-3) x(t-2) x(t-1) ŷ(t)|
                          |
    o      o     o      o |
                          |
@@ -71,24 +71,24 @@ namespace icl{
       const int BLIND_VALUE = 9999;
     }
     using namespace positiontracker;
-  
+
   #define SAY(X)
-  
+
     void show_vec(const std::vector<int> &v, const std::string &s){
       // {{{ open
-  
+
   	 printf("%s[%d][ ",s.c_str(),(unsigned int)v.size());
       for(unsigned int i=0;i<v.size();i++){
         printf("%d ",v[i]);
       }
       printf("]\n");
     }
-  
+
     // }}}
-    
+
     void showDataMatrix(std::deque<std::vector<int> > m[2]){
       // {{{ open
-  
+
       int DIM = m[0][0].size();
       for(int d=0;d<DIM;d++){
         for(int i=0;i<3;i++){
@@ -98,10 +98,10 @@ namespace icl{
       }
       printf("\n");
     }
-  
+
     // }}}
-  
-  
+
+
     template<class valueType>
     void removeElemsFromVector(std::vector<valueType> &v,const  std::vector<int> &rows){
       // {{{ open
@@ -119,17 +119,17 @@ namespace icl{
       }
       v=newV;
      }
-  
+
     // }}}
-    
+
     template<class valueType>
     void removeRowsFromDataMatrix(std::deque<std::vector<valueType> > *m,const std::vector<int> &rows){
       // {{{ open
-  
+
       /// rows must be sorted !
       for(int d=0; d <= 1; d++){
         std::deque<std::vector<valueType> > &md = m[d];
-        for(int x=0;x<3;x++){ 
+        for(int x=0;x<3;x++){
           vector<valueType> &v = md[x];
           removeElemsFromVector(v,rows);
           /*
@@ -146,15 +146,15 @@ namespace icl{
         }
       }
     }
-  
+
     // }}}
-    
-  
-     
+
+
+
     template<class valueType>
     void PositionTracker<valueType>::pushData(valueType *xys, int n){
       // {{{ open
-  
+
       Vec x(n),y(n);
       for(int i=0;i<n;i++){
         x[i] = xys[2*i];
@@ -162,14 +162,14 @@ namespace icl{
       }
       pushData(x,y);
     }
-  
+
     // }}}
-  
-  
+
+
     template<class valueType>
     void PositionTracker<valueType>::pushData(std::vector<Point32f> points){
       // {{{ open
-  
+
       int n = points.size();
       Vec x(n),y(n);
       for(int i=0;i<n;i++){
@@ -178,14 +178,14 @@ namespace icl{
       }
       pushData(x,y);
     }
-  
+
     // }}}
-  
-  
+
+
     template<class valueType>
     Array2D<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
       // {{{ open
-  
+
       ICLASSERT( a[X].size() == b[X].size() );
       // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());
       int dim = (int)a[X].size();
@@ -202,9 +202,9 @@ namespace icl{
       }
       return m;
     }
-  
+
     // }}}
-    
+
     template<class valueType>
     inline vector<valueType> predict(int dim, std::deque<std::vector<valueType> > &data, const vector<int> &good){
       // {{{ open
@@ -220,12 +220,12 @@ namespace icl{
         // ok old pred.push_back( Extrapolator<valueType,int>::predict( data[0][y], data[1][y], data[2][y] ) );
       return pred;
     }
-  
+
     // }}}
-  
-    
+
+
     inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::cv::IDAllocationMode iaMode, int& lowestUnusedID){
-     // {{{ open 
+     // {{{ open
       vector<int> ids;
       set<int> lut;
       switch(iaMode){
@@ -238,7 +238,7 @@ namespace icl{
               id++;
             }
             ids.push_back(id);
-            lut.insert(id);      
+            lut.insert(id);
           }
           return ids;
         case allocateBrandNewIDs:{
@@ -253,85 +253,85 @@ namespace icl{
           return ids;
       }
     }
-  
+
     // }}}
-    
+
     template<class valueType>
-    void push_and_rearrange_data(int                       dim, 
+    void push_and_rearrange_data(int                       dim,
                                  std::deque<std::vector<valueType> > data[2],
                                  const vector<int>         &assignment,
                                  const vector<valueType>   newData[2]){
       // {{{ open
       vector<valueType> arrangedData[2] = {vector<valueType>(dim),vector<valueType>(dim)};
       for(int i=0;i<dim;i++){
-        arrangedData[X][ assignment[i] ] = newData[X][i]; 
-        arrangedData[Y][ assignment[i] ] = newData[Y][i]; 
+        arrangedData[X][ assignment[i] ] = newData[X][i];
+        arrangedData[Y][ assignment[i] ] = newData[Y][i];
       }
       data[X].push_back(arrangedData[X]);
       data[Y].push_back(arrangedData[Y]);
-      
+
       data[X].pop_front();
       data[Y].pop_front();
     }
     // }}}
-  
+
     template<class valueType>
     void push_data_intern_diff_zero(int dim,
-                                    std::deque<vector<valueType> > data[2], 
-                                    vector<int>               &assignment,  
+                                    std::deque<vector<valueType> > data[2],
+                                    vector<int>               &assignment,
                                     vector<valueType>         newData[2],
                                     vector<int>               &good){
-      
+
       // {{{ open
-  
+
       vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
-      
+
       Array2D<valueType> distMat = createDistMat( pred , newData );
-      
+
       assignment = HungarianAlgorithm<valueType>::apply(distMat);
-      
+
       push_and_rearrange_data(dim, data, assignment, newData);
-      
+
       for(unsigned int i=0;i<good.size();++i){
         good[i]++;
       }
-      
+
     }
-  
+
     // }}}
-  
+
     template<class valueType>
     inline valueType distance(valueType x1, valueType y1, valueType x2, valueType y2){
       return (valueType) sqrt( pow((double)(x1-x2),2) +  pow((double)(y1-y2),2) );
     }
-  
+
     template<class valueType>
     bool push_data_first_optimized_try(int dim,
-                                       std::deque<vector<valueType> > data[2], 
-                                       vector<int>               &assignment,  
+                                       std::deque<vector<valueType> > data[2],
+                                       vector<int>               &assignment,
                                        vector<valueType>         newData[2],
                                        vector<int>               &good,
                                        valueType threshold){
-      
+
       // {{{ open
-  
+
       vector<valueType> xsOld(dim);
       vector<valueType> ysOld(dim);
-      
+
       for(int y=0 ; y < dim; ++y){
         xsOld[y] = data[0][2][y];
         ysOld[y] = data[1][2][y];
       }
-      
+
       vector<valueType> &xsNew = newData[0];
       vector<valueType> &ysNew = newData[1];
-  
+
       vector<bool> assigned(dim,false);
-  
+
       vector<int> newAssignment(dim,-1);
       //    printf("==================== step ============\n");
       //printf("optimzation ... for %d centers\n",dim);
-      
+
       for(int i=0;i<dim;i++){
         //printf("processing step old data index %d \n",i);
         // find best hit for nr i
@@ -355,31 +355,31 @@ namespace icl{
           return false;
         }
       }
-  
+
       assignment = newAssignment;
-  
+
       push_and_rearrange_data(dim, data, assignment, newData);
-      
+
       for(unsigned int i=0;i<good.size();++i){
         good[i]++;
       }
-  
+
       return true;
-      
-      
+
+
     }
     // }}}
-   
-  
+
+
     template<class valueType>
-    void push_data_intern_diff_gtz(int DIFF, 
-                                   deque<vector<valueType> > data[2], 
-                                   vector<int>               &ids, 
-                                   vector<int>               &assignment,  
+    void push_data_intern_diff_gtz(int DIFF,
+                                   deque<vector<valueType> > data[2],
+                                   vector<int>               &ids,
+                                   vector<int>               &assignment,
                                    vector<valueType>         newData[2],
                                    vector<int>               &good){
       // {{{ open
-  
+
       // new data contains less points -> enlarge new new data
       for(int i=0;i<DIFF;i++){
         newData[X].push_back(BLIND_VALUE);
@@ -387,51 +387,51 @@ namespace icl{
       }
       int dim = data[X][0].size();
       vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
-      
+
       Array2D<valueType> distMat = createDistMat( pred , newData );
-      
+
       assignment = HungarianAlgorithm<valueType>::apply(distMat);
-  
+
       push_and_rearrange_data(dim, data, assignment, newData);
-      
+
       vector<int> delRows;
       for(int i=0;i<DIFF;i++){
         delRows.push_back( assignment [dim-1-i]);
       }
       std::sort(delRows.begin(),delRows.end());
       removeRowsFromDataMatrix(data,delRows);
-      
+
       removeElemsFromVector(ids, delRows);
-  
+
       removeElemsFromVector(good, delRows);
-      
+
       for(unsigned int i=0;i<good.size();++i){
         good[i]++;
       }
-  
-    } 
-  
+
+    }
+
     // }}}
-  
+
     template<class valueType>
     void push_data_intern_diff_ltz(int DIFF,
-                                   deque<vector<valueType> > data[2], 
-                                   vector<int>               &ids, 
-                                   vector<int>               &assignment,  
+                                   deque<vector<valueType> > data[2],
+                                   vector<int>               &ids,
+                                   vector<int>               &assignment,
                                    vector<valueType>         newData[2],
                                    vector<int>               &good,
                                    icl::cv::IDAllocationMode iaMode,
                                    int                       &lowestUnusedID){
       // {{{ open
-  
+
       DIFF *= -1; // now positive
       for(int j=0;j<DIFF;j++){
         for(int i=0;i<3;i++){
           data[X][i].push_back(BLIND_VALUE);
           data[Y][i].push_back(BLIND_VALUE);
         }
-      }  
-  
+      }
+
       int dim = data[X][0].size();
       /// good vector is temporarily filled with ones for prediction
       for(int i=0;i<DIFF;i++){
@@ -440,11 +440,11 @@ namespace icl{
       vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
       /// restore good
       good.resize(good.size()-DIFF);
-      
+
       Array2D<valueType> distMat = createDistMat( pred , newData );
-      
+
       assignment = HungarianAlgorithm<valueType>::apply(distMat);
-      
+
       /// <old>
       //vector<int> newDataCols;
       vector<valueType> newDataColsValues[2];
@@ -457,9 +457,9 @@ namespace icl{
       if((int)newDataColsValues[X].size() != DIFF){
         printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);
       }
-          
+
       vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode, lowestUnusedID);
-      
+
       for(int i=0;i<DIFF;i++){
         for(int j=0;j<3;j++){
           data[X][j][dim-DIFF+i] = newDataColsValues[X][i]; //newData[X][newDataCols[i]];
@@ -468,25 +468,25 @@ namespace icl{
         ids.push_back( newIDS[i] );
         good.push_back( 0 );
       }
-      
+
       for(unsigned int i=0;i<good.size();++i){
         good[i]++;
-      }    
-  
+      }
+
       push_and_rearrange_data(dim, data, assignment, newData);
-  
+
     }
-  
+
     // }}}
-  
+
     template<class valueType>
-    void push_data_intern_first_step(deque<vector<valueType> > data[2], 
-                                     vector<int>               &ids, 
-                                     vector<int>               &assignment,  
+    void push_data_intern_first_step(deque<vector<valueType> > data[2],
+                                     vector<int>               &ids,
+                                     vector<int>               &assignment,
                                      vector<valueType>         newData[2],
                                      vector<int>               &good){
       // {{{ open
-  
+
       for(int i=0;i<3;i++){
         data[X].push_back(newData[X]);
         data[Y].push_back(newData[Y]);
@@ -497,19 +497,19 @@ namespace icl{
         good.push_back(1);
       }
     }
-  
+
     // }}}
-    
-  
-   
-    
+
+
+
+
     template<class valueType>
     void PositionTracker<valueType>::pushData(const Vec &dataXs, const Vec &dataYs){
       // {{{ open
-  
+
       ICLASSERT_RETURN( dataXs.size() > 0 );
       ICLASSERT_RETURN( dataXs.size() == dataYs.size() );
-  
+
       Vec newData[2] = {dataXs, dataYs};
       if(!m_matData[X].size()){
         push_data_intern_first_step(m_matData, m_vecIDs, m_vecCurrentAssignment, newData, m_vecGoodDataCount);
@@ -518,7 +518,7 @@ namespace icl{
       const int DATA_MATRIX_HEIGHT = (int)(m_matData[X][0].size());
       const int NEW_DATA_DIMENSION = (int)(dataXs.size());
       const int DIFF = DATA_MATRIX_HEIGHT - NEW_DATA_DIMENSION;
-  
+
       if(DIFF <  0){
         push_data_intern_diff_ltz(DIFF,m_matData, m_vecIDs, m_vecCurrentAssignment, newData,m_vecGoodDataCount, m_IDAllocationMode, m_currentID);
       }else if(DIFF > 0){
@@ -528,17 +528,17 @@ namespace icl{
           bool succ = push_data_first_optimized_try(DATA_MATRIX_HEIGHT,m_matData,m_vecCurrentAssignment,newData,m_vecGoodDataCount,m_tThreshold);
           if(!succ){
             push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
-          }        
+          }
         }else{
           push_data_intern_diff_zero(DATA_MATRIX_HEIGHT,m_matData, m_vecCurrentAssignment, newData,m_vecGoodDataCount);
         }
       }
     }
-  
+
     // }}}
-      
+
     // {{{ old code
-  
+
     /*
       if(!m_matData[X].size()){ // first step
       for(int i=0;i<3;i++){
@@ -569,7 +569,7 @@ namespace icl{
       m_matData[X][i].push_back(BLIND_VALUE);
       m_matData[Y][i].push_back(BLIND_VALUE);
       }
-      }      
+      }
       }
       const int DATA_AND_MATRIX_DIM = (int)(newData[X].size());
       Vec vecPrediction[2];
@@ -610,34 +610,34 @@ namespace icl{
       }
       }
       }
-      
+
       /// rearrange the new data arrays
       vector<valueType> rearrangedData[2] = { vector<valueType>(DATA_AND_MATRIX_DIM), vector<valueType>(DATA_AND_MATRIX_DIM)} ;
       for(int i=0;i < DATA_AND_MATRIX_DIM ;i++){
       rearrangedData[X][i] = newData[X][ m_vecCurrentAssignement[i] ];
       rearrangedData[Y][i] = newData[Y][ m_vecCurrentAssignement[i] ];
-  
+
       }
-        
+
       if(DIFF > 0){
       rearrangedData[X].resize(DATA_AND_MATRIX_DIM-DIFF);
       rearrangedData[Y].resize(DATA_AND_MATRIX_DIM-DIFF);
       }
-    
+
       m_matData[X].push_back( rearrangedData[X] );
       m_matData[Y].push_back( rearrangedData[Y] );
-      
+
       m_matData[X].pop_front();
       m_matData[Y].pop_front();
       */
-  
+
     // }}}
-  
-                              
+
+
     template<class valueType>
     int PositionTracker<valueType>::getID(valueType x, valueType y){
       // {{{ open
-  
+
       vector<valueType> &rX = m_matData[X][2];
       vector<valueType> &rY = m_matData[Y][2];
       for(unsigned int i=0;i<rX.size();++i){
@@ -647,9 +647,9 @@ namespace icl{
       }
       return -1;
     }
-  
+
     // }}}
-  
+
     template<class valueType>
     int PositionTracker<valueType>::getID(int index){
       // {{{ open
@@ -659,12 +659,12 @@ namespace icl{
         return -1;
       }
     }
-  
+
     // }}}
-    
+
     template ICLCV_API class PositionTracker<icl32s>;
     template ICLCV_API class PositionTracker<icl32f>;
     //template class  PositionTracker<icl64f>;
-  
+
   } // namespace cv
 }

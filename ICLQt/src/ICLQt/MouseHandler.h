@@ -36,30 +36,30 @@
 
 namespace icl{
   namespace qt{
-    
+
     /** \cond */
     class ICLWidget;
     /** \endcond */
-    
-    
+
+
     /// MouseEvent Handler  \ingroup COMMON
     /** Here's a short example:
         \code
         #include <ICLQt/Common.h>
         #include <iterator>
-        
+
         GenericGrabber *grabber;
         ICLWidget *widget;
-        
+
         class Mouse : public MouseHandler{
           public:
           virtual void process(const MouseEvent &event){
-            std::cout << "image location: " << event.getPos() << std::endl;    
+            std::cout << "image location: " << event.getPos() << std::endl;
             std::cout << "widget location: " << event.getWidgetPos() << std::endl;
-        
+
             std::string eventNames[] = {"MoveEvent","DragEvent","PressEvent","ReleaseEvent", "EnterEvent","LeaveEvent"};
             std::cout << "type: " << eventNames[event.getType()] << std::endl;
-      
+
             if(event.isPressEvent()){
               if(event.getColor().size()){
                 std::cout << "color:";
@@ -69,7 +69,7 @@ namespace icl{
                 std::cout << "no color here!" << std::endl;
               }
             }
-          } 
+          }
         } mouse;
 
         void init(){
@@ -78,7 +78,7 @@ namespace icl{
           widget->show();
           grabber = new GenericGrabber;
           widget->install(&mouse);
-        }  
+        }
         void run(){
           widget->setImage(grabber->grab());
           widget->update();
@@ -102,22 +102,22 @@ namespace icl{
       /// Create a mouse handler with given callback function
       /** In most cases a MouseHandler can be used directly by passing
           a mouse_handler function to it's constructor. The mouse
-          handler function is called by virtual void process 
+          handler function is called by virtual void process
           automatically */
       explicit MouseHandler(mouse_handler handler):
       m_handler(handler){}
-    
+
       protected:
-      
+
       /// This constructor can be called from derived classes
-      /** derived classes will reimplement 
+      /** derived classes will reimplement
           virtual void process(const MouseEvent &event), so in
           this case, no external mouse_handler function needs to
           be passed */
       MouseHandler():
       m_handler(0){}
 
-    
+
       public Q_SLOTS:
 
       /// connected to the ICLWidget's signal mouseEventOccured
@@ -125,9 +125,9 @@ namespace icl{
 
       public:
       /// this function is called automatically when the handleEvent slot is invoked
-      /** It can be reimplemented for custom mouse interaction. 
+      /** It can be reimplemented for custom mouse interaction.
           If a mouse handling function is enough for your purpose, you can also
-          pass a function of type mouse_handler to the constructor of a 
+          pass a function of type mouse_handler to the constructor of a
           MouseHandler instance. The default implementation of process
           calls the handler function if it's not null.
           **/

@@ -32,7 +32,7 @@
 
 namespace icl{
   using namespace utils;
-  
+
   namespace math{
 
      static Mat3 create_mapping_matrix(const Point32f &a, const Point32f &b,
@@ -53,7 +53,7 @@ namespace icl{
         B[2] = 1;
 
         DynMatrix<float> x = M.solve(B,"svd");
-        
+
         const float &l1 = x[0], &l2 = x[1], &l3 = x[2];
         return Mat3(l1*a.x,l2*b.x,l3*c.x,
                           l1*a.y,l2*b.y,l3*c.y,
@@ -74,7 +74,7 @@ namespace icl{
     }
 
     Projective4PointTransform::Projective4PointTransform(){
-      
+
     }
     Projective4PointTransform::Projective4PointTransform(const utils::Point32f srcQuad[4],
                                                          const utils::Point32f dstQuad[4]){
@@ -84,13 +84,13 @@ namespace icl{
                                                          const std::vector<Point32f> dstQuad){
       init(srcQuad.data(), dstQuad.data());
     }
-    
+
     Projective4PointTransform::Projective4PointTransform(const Mat3 &C){
       m_Ainv = Mat3::id();
       m_B = Mat3::id();
       m_C = C;
     }
-    
+
     void Projective4PointTransform::init(const utils::Rect32f &srcRect,
                                          const utils::Rect32f &dstRect){
       const Point32f s[4] = { srcRect.ul(), srcRect.ur(), srcRect.lr(), srcRect.ll() };
@@ -105,7 +105,7 @@ namespace icl{
            Rect32f(dstRect.x, dstRect.y, dstRect.width, dstRect.height));
     }
 
-    
+
     void Projective4PointTransform::setSrcQuad(const utils::Point32f s[4]){
       m_Ainv = create_mapping_matrix(s[0],s[1],s[2],s[3]).pinv();
       m_C = m_B * m_Ainv;
@@ -126,8 +126,8 @@ namespace icl{
       const Point32f ps[4] = { a, b, c, d };
       setDstQuad(ps);
     }
-    
-    
+
+
     std::vector<Point32f> Projective4PointTransform::map(const std::vector<Point32f> &src){
       std::vector<Point32f> dst(src.size());
       map(src.begin(), src.end(), dst.begin());

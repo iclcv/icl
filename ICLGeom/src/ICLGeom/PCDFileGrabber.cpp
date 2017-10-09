@@ -50,7 +50,7 @@ namespace icl{
       struct RGBFloat{
         icl8u r,g,b,a;
       };
-      
+
       template<int N>
       inline FixedColVector<float,N> create_xyz_vec(float x, float y, float z){
         return FixedColVector<float,N>(x,y,z);
@@ -103,7 +103,7 @@ namespace icl{
 
 
     }
-    
+
     struct PCDFileGrabber::Data{
       FileList flist;
       bool loop;
@@ -116,9 +116,9 @@ namespace icl{
         for(end=t.size()-1;end>start && isspace(t[end]);--end);
         return t.substr(start, end - start+1);
       }
-      
+
       struct LineParser{
-        
+
         struct Parser{
           virtual void parse(std::istream &str) = 0;
         };
@@ -137,7 +137,7 @@ namespace icl{
             }
           }
         };
-        
+
         std::vector<Parser*> ps;
         std::vector<std::vector<icl8u> > data;
         std::vector<std::string> fields;
@@ -149,30 +149,30 @@ namespace icl{
           int size;
           int count;
         };
-        
+
         std::map<std::string,FieldDef> m_typeLUT;
-        
-        LineParser(const std::string &fieldsS, 
+
+        LineParser(const std::string &fieldsS,
                    const std::string &sizesS,
                    const std::string &typesS,
                    const std::string &countsS,
                    int dim){
           this->fields = tok(trim(fieldsS)," ");
-         
+
           std::vector<int> sizes = parseVecStr<int>(trim(sizesS)," ");
           std::vector<std::string> types = tok(trim(typesS)," ");
           std::vector<int> counts = parseVecStr<int>(trim(countsS)," ");
-          
+
           size_t nFields = fields.size();
           if(nFields != sizes.size() || nFields != types.size() || nFields != counts.size()){
             throw ICLException("invalid PCD file format: expected fields, "
                                "sizes, types and counts to have the same number of tokens");
           }
-        
+
           if(data.size() != nFields){
             data.resize(nFields);
           }
-          
+
           for(size_t i=0;i<nFields;++i){
             int s = sizes[i], n = counts[i];
             FieldDef def = {(int)i, this->fields[i], types[i], s, n};
@@ -199,7 +199,7 @@ namespace icl{
             }
           }
         }
-        
+
         void parseData(std::istream &str, int n){
           for(int i=0;i<n;++i){
             for(size_t i=0;i<ps.size();++i){
@@ -207,15 +207,15 @@ namespace icl{
             }
           }
         }
-        
+
         const FieldDef &findDef(const std::string &name) throw (ICLException){
           std::map<std::string,FieldDef>::const_iterator it = m_typeLUT.find(name);
           if(it == m_typeLUT.end()){
             throw ICLException("PCDFileGrabber: feature type " + name + " not found");
-          }          
+          }
           return it->second;
         }
-        
+
         template<class T>
         const T *find(const std::string &name, int count=1){
           const FieldDef &def = findDef(name);
@@ -225,9 +225,9 @@ namespace icl{
           if(def.count != count){
             throw ICLException("PCDFileGrabber: invalid count for feature " + name);
           }
-          return reinterpret_cast<const T*>( data[def.dataIdx].data());        
+          return reinterpret_cast<const T*>( data[def.dataIdx].data());
         }
-        
+
         template<int N>
         void copy_xyz(DataSegment<float,N> xyz, int dim){
           const float *px = find<float>("x");
@@ -237,7 +237,7 @@ namespace icl{
             xyz[i] = create_xyz_vec<N>(px[i],py[i],pz[i]);
           }
         }
-        
+
         template<int R, int G, int B, int A, class T, int N>
         void copy_rgb(const RGBFloat *src, DataSegment<T,N> dst, int dim){
           for(int i=0;i<dim;++i){
@@ -249,7 +249,7 @@ namespace icl{
             d[B] = src[i].b;
           }
         }
-        
+
         void copyData(PointCloudObjectBase &dst, const Size &size, bool extend){
           if(size.height > 1){
             dst.setSize(size);
@@ -257,7 +257,7 @@ namespace icl{
             dst.setDim(size.width);
           }
           const int dim = dst.getDim();
-          
+
           // x y z are combined
           if(dst.supports(PointCloudObjectBase::XYZH)){
             copy_xyz(dst.selectXYZH(),dim);
@@ -273,11 +273,11 @@ namespace icl{
             throw ICLException("PCDFileGrabber: destination point cloud neither accepts any "
                                "x/y/z feature not allows to add one");
           }
-          
+
           try{
-           
+
             const RGBFloat * rgb = reinterpret_cast<const RGBFloat*>(find<float>("rgb"));
-            
+
             if(dst.supports(PointCloudObjectBase::BGR)){
               copy_rgb<2,1,0,0,icl8u,3>(rgb, dst.selectBGR(), dim);
             }else if(dst.supports(PointCloudObjectBase::BGRA)){
@@ -302,13 +302,13 @@ namespace icl{
 
           }catch(ICLException &){
           }
-          
+
         }
       };
     };
-    
-    
-      
+
+
+
     PCDFileGrabber::PCDFileGrabber(const std::string &filepattern, bool loop):
       m_data(new Data){
       m_data->flist = FileList(filepattern);
@@ -319,13 +319,13 @@ namespace icl{
       }
       m_data->nextFile = 0;
     }
-      
-    
+
+
     PCDFileGrabber::~PCDFileGrabber(){
       delete m_data;
     }
-    
-    
+
+
     void PCDFileGrabber::grab(PointCloudObjectBase &dst){
       if(m_data->nextFile >= m_data->flist.size()){
         if(m_data->loop) m_data->nextFile = 0;
@@ -347,9 +347,9 @@ namespace icl{
         str >> name;
         std::getline(str,*s[i]);
       }
-      Size ds(utils::parse<int>(Data::trim(width)), 
+      Size ds(utils::parse<int>(Data::trim(width)),
               utils::parse<int>(Data::trim(height)));
-                        
+
       Data::LineParser parser(fields, sizes, types, counts, ds.getDim());
       parser.parseData(str,parse<int>(Data::trim(points)));
       parser.copyData(dst,ds,true);
@@ -357,9 +357,9 @@ namespace icl{
 
       DataSegment<float,4> aa = dst.selectXYZH();
       DataSegment<float,4> bb = dst.selectRGBA32f();
-    
+
       SHOW(aa.getSize());
-      
+
       for(int i=0;i<10;++i){
         SHOW(aa[i].transp());
         SHOW(bb[i].transp());
@@ -383,9 +383,9 @@ namespace icl{
       }else {
         return 0;
       }
-     
+
     }
-    
+
     REGISTER_PLUGIN(PointCloudGrabber,pcd,create_pcd_file_grabber,
                     "Point cloud grabber using an input patter for grabbing pcd-files",
                     "creation-string: filepattern[@loop=off]");

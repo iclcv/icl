@@ -68,7 +68,7 @@ So that is that. What you could do now is relacing the reference to this file
 (test-template.cpp) in the Makefile.test.am file with a reference to your own
 custom test. There you might test an actual feature of the software you have /
 want to write and then write and modify your code until it succeeds. Any test
-file that you want to be included into the test run, must be referenced in the 
+file that you want to be included into the test run, must be referenced in the
 Makefile.test.am variable 'icl_test_XXXX_SOURCES'.
 The remaining part the text deals with naming conventions and how to write tests
 in GTest. More information about TDD can easily be found online.
@@ -131,7 +131,7 @@ Assertions:
 Tests:
 * TEST(test_case_name, test_name) {
     # any commands, assertions
-  } 
+  }
 
 Fixtures:
 * when several test operate on similar data, use fixtures
@@ -141,7 +141,7 @@ Fixtures:
   {
     # any commands, assertions
   }
-  
+
 (see http://code.google.com/p/googletest/wiki/GoogleTestPrimer for more
 information)
 

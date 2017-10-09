@@ -41,13 +41,13 @@ using namespace icl::qt;
 
 namespace icl{
   namespace geom{
-  
+
   #ifdef ICL_HAVE_QT
-  
+
     SceneMouseHandler::~SceneMouseHandler(){
       ICL_DELETE(mGUI);
     }
-    
+
     SceneMouseHandler::SceneMouseHandler(const int pCameraIndex,
                                          Scene *pParentScene):
       mParentScene( pParentScene ),
@@ -56,10 +56,10 @@ namespace icl{
       mGUI(0){
       // clear mouse mapping table (2^6 = 64)
       memset( mMouseMappingTable, 0, sizeof( MouseMappingTableEntry ) * ( MAX_MOUSE_EVENT + 1 ) * 64 );
-      
+
       // mouse sensitivities
       setSensitivities( 10.0, 1.0, 1.0, 0.001, 10.0 );
-      
+
       // default mouse mappings
       setMouseMappings();
     }
@@ -139,7 +139,7 @@ namespace icl{
       //   additional data
 
       // left mouse button: free view
-      setMouseMapping(MouseDragEvent, true, false, false, false, false, false, 
+      setMouseMapping(MouseDragEvent, true, false, false, false, false, false,
                       &SceneMouseHandler::freeView, &mMouseSensitivities[NormalMouseSensitivity] );
       setMouseMapping(MouseDragEvent, true, false, false, true,  false, false,
                       &SceneMouseHandler::freeView, &mMouseSensitivities[LowMouseSensitivity] );
@@ -147,35 +147,35 @@ namespace icl{
                       &SceneMouseHandler::freeView, &mMouseSensitivities[HighMouseSensitivity] );
 
       // middle mouse button: strafe
-      setMouseMapping(MouseDragEvent, false, true, false, false, false, false, &strafe, 
+      setMouseMapping(MouseDragEvent, false, true, false, false, false, false, &strafe,
                        &mMouseSensitivities[NormalMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, false, true, false, true,  false, false, &strafe, 
+      setMouseMapping(MouseDragEvent, false, true, false, true,  false, false, &strafe,
                        &mMouseSensitivities[LowMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, false, true, false, false, true,  false, &strafe, 
+      setMouseMapping(MouseDragEvent, false, true, false, false, true,  false, &strafe,
                        &mMouseSensitivities[HighMouseSensitivity] );
 
       // right mouse button: rotate around origin
-      setMouseMapping(MouseDragEvent, false, false, true, false, false, false, 
+      setMouseMapping(MouseDragEvent, false, false, true, false, false, false,
                        &rotateAroundOrigin, &mMouseSensitivities[NormalMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, false, false, true, true,  false, false, 
+      setMouseMapping(MouseDragEvent, false, false, true, true,  false, false,
                        &rotateAroundOrigin, &mMouseSensitivities[LowMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, false, false, true, false, true,  false, 
+      setMouseMapping(MouseDragEvent, false, false, true, false, true,  false,
                        &rotateAroundOrigin, &mMouseSensitivities[HighMouseSensitivity] );
 
       // mouse wheel: roll and distance
-      setMouseMapping(MouseWheelEvent, false, false, false, false, false, false, 
+      setMouseMapping(MouseWheelEvent, false, false, false, false, false, false,
                        &rollAndDistance, &mMouseSensitivities[NormalMouseSensitivity] );
-      setMouseMapping(MouseWheelEvent, false, false, false, true,  false, false, 
+      setMouseMapping(MouseWheelEvent, false, false, false, true,  false, false,
                        &rollAndDistance, &mMouseSensitivities[LowMouseSensitivity] );
-      setMouseMapping(MouseWheelEvent, false, false, false, false, true,  false, 
+      setMouseMapping(MouseWheelEvent, false, false, false, false, true,  false,
                        &rollAndDistance, &mMouseSensitivities[HighMouseSensitivity] );
 
       // left + right mouse button: roll and distance
-      setMouseMapping(MouseDragEvent, true, false, true, false, false, false, 
+      setMouseMapping(MouseDragEvent, true, false, true, false, false, false,
                        &rollAndDistance, &mMouseSensitivities[NormalMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, true, false, true, true,  false, false, 
+      setMouseMapping(MouseDragEvent, true, false, true, true,  false, false,
                        &rollAndDistance, &mMouseSensitivities[LowMouseSensitivity] );
-      setMouseMapping(MouseDragEvent, true, false, true, false, true,  false, 
+      setMouseMapping(MouseDragEvent, true, false, true, false, true,  false,
                        &rollAndDistance, &mMouseSensitivities[HighMouseSensitivity] );
 
       // left mouse button and shift and control: place cursor

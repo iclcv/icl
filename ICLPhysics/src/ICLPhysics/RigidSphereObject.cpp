@@ -40,7 +40,7 @@ namespace icl{
   namespace physics{
     RigidSphereObject::RigidSphereObject(float x, float y, float z, float r, float mass){
       so = addSphere(0,0,0,r,16,16);
-      
+
       btSphereShape *shape = new btSphereShape(icl2bullet(r));
       btTransform T;
       T.setIdentity();

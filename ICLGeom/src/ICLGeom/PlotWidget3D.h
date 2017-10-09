@@ -49,25 +49,25 @@ namespace icl{
 
       PlotWidget3D(QWidget *parent=0);
       ~PlotWidget3D();
-      
+
       void setViewPort(const utils::Range32f &xrange,
                        const utils::Range32f &yrange,
                        const utils::Range32f &zrange);
-      
+
       const utils::Range32f *getViewPort() const;
-      
+
       Scene &getScene();
       const Scene &getScene() const;
-      
+
       SceneObject *getRootObject();
       const SceneObject *getRootObject() const;
-      
+
       const Camera &getCamera() const;
       void setCamera(const Camera &cam);
-      
+
       void add(SceneObject *obj, bool passOwnerShip=true);
       void remove(Handle h);
-      
+
       void color(int r, int g, int b, int a);
       void nocolor();
       void fill(int r, int g, int b, int a);
@@ -78,7 +78,7 @@ namespace icl{
       void lock();
       void unlock();
       void clear();
-      
+
       Handle scatter(const std::vector<Vec> &points);
 
       Handle scatter(const std::vector<Vec> &points,
@@ -86,7 +86,7 @@ namespace icl{
                      const utils::Range32f &colorRange=utils::Range32f(0,255));
 
       Handle linestrip(const std::vector<Vec> &points);
-      
+
       Handle surf(const std::vector<Vec> &points, int nx, int ny);
 
       Handle surf(utils::Function<float,float,float> fxy,

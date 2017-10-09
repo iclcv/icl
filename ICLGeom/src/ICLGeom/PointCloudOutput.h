@@ -35,12 +35,12 @@
 
 namespace icl{
   namespace geom{
-  
+
     /// Generic interface for PointCloud sources
     struct PointCloudOutput{
       /// fills the given point cloud with grabbed information
       virtual void send(const PointCloudObjectBase &dst) = 0;
-      
+
       /// virtual, but empty destructor
       virtual ~PointCloudOutput(){}
     };

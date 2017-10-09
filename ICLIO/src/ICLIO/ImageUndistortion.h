@@ -35,37 +35,37 @@
 
 namespace icl{
   namespace io{
-  
+
     class ICLIO_API ImageUndistortion{
       public:
       struct Impl; //!< internal impl
-      
+
       private:
       Impl *impl;  //!< internal impl pointer
-      
-      
+
+
       public:
       /// creates a null instance
       ImageUndistortion();
-      
+
       /// creates an Undistortion instance given parameters
       /** @param model distortion mode possible values are MatlabModel5Params and SimpleARTBased
           @param params parameters for the given model
-            (MatlabModel5Params needs 10 parameters: fx, fy, ix, iy, skew, k1, k2, k3, k4, k5; 
+            (MatlabModel5Params needs 10 parameters: fx, fy, ix, iy, skew, k1, k2, k3, k4, k5;
             SimpleARTBased needs 4 parameters: x, y, f, scale)
           @param imageSize underlying image size */
       ImageUndistortion(const std::string &model, const std::vector<double> &params,
                         const utils::Size &imageSize);
-      
+
       /// copy constructor
       ImageUndistortion(const ImageUndistortion &other);
-      
+
       /// assignment operator
       ImageUndistortion &operator=(const ImageUndistortion &other);
-      
+
       /// loads ImageUndistortion from file using the istream operator
       ImageUndistortion(const std::string &filename);
-      
+
       /// returns current image size
       const utils::Size &getImageSize() const;
       const std::vector<double> &getParams() const;
@@ -73,14 +73,14 @@ namespace icl{
       const utils::Point32f operator()(const utils::Point32f &distortedPos) const;
       void setParams(const std::vector<double> &params);
       const core::Img32f &createWarpMap() const;
-      
+
       inline bool isNull() const { return !impl; }
     };
-    
-    /// overloaded ostream operator for ImageUndistortion instances 
+
+    /// overloaded ostream operator for ImageUndistortion instances
     ICLIO_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
-    
-    /// overloaded istream operator for ImageUndistortion instances 
+
+    /// overloaded istream operator for ImageUndistortion instances
     ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
   } // namespace io
 }

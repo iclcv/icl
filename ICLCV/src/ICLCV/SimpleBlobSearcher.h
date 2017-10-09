@@ -38,14 +38,14 @@
 
 namespace icl{
   namespace cv{
-  
+
     /// Utility class for region-based colored blob detection
-    /** The SimpleBlobSearcher is a re-implementation of the 
+    /** The SimpleBlobSearcher is a re-implementation of the
         RegionBasedBlobSearcher class. It provides less features, but
         it's usability was increased significantly.
-    
+
         \section ALGO The Detection Algorithm
-     
+
         \subsection PRE Prerequisites
         Given: A set of reference color tuples \f[\{R_i | i \in \{1,N\} \}\f]
         with \f[R_i=(\mbox{RC}_i,\mbox{T}_i,\mbox{S}_i,\mbox{RD}_i, \mbox{BUF}_i)\f]
@@ -55,11 +55,11 @@ namespace icl{
         - <b>S</b> contains min- and maximum pixel count of detected blobs of that color
         - <b>RD</b> is an internal RegionDetector instance, dedicated for that color
         - <b>BUF</b> is an internal image Image for that color
-  
+
         And a given image \f$I\f$
-        
+
         \subsection ACALGO Actual Algorithm (Step by Step)
-  
+
         - clear(OUTPUT_DATA)
         - SIZE <- size(I)
         - set_size(\f$\mbox{BUF}_i\f$,SIZE)
@@ -72,55 +72,55 @@ namespace icl{
     */
     class ICLCV_API SimpleBlobSearcher : public utils::Uncopyable{
       public:
-      
+
       /// Internal blob-result type
         struct ICLCV_API Blob{
         Blob():region(0),refColorIndex(-1){}
         Blob(const ImageRegion *region, const core::Color &refColor, int refColorIndex);
-        
+
         /// corresponding regions (provides access to region features)
         const ImageRegion *region;
-        
+
         /// corresponding reference color
         core::Color refColor;
-        
+
         /// corresponding ref color index
         int refColorIndex;
       };
-      
+
       /// Default constructor
       SimpleBlobSearcher();
-  
+
       /// Destructor
       ~SimpleBlobSearcher();
-      
+
       /// Adds a new reference color, with threshold and size range
-      void add(const core::Color &color, 
-               float thresh, 
+      void add(const core::Color &color,
+               float thresh,
                const utils::Range32s &sizeRange);
-  
+
       /// Updates data for given index
-      void adapt(int index, const core::Color &color, 
+      void adapt(int index, const core::Color &color,
                  float thresh, const utils::Range32s &sizeRange);
-  
+
       /// removes reference color at given index
       void remove(int index);
       void clear();
-      
+
       /// Actual detection function (no ROI support yet!)
       /** detects blobs in given image*/
-  
+
       const std::vector<Blob> &detect(const core::Img8u &image);
-      
+
     private:
       /// Internal data representation (hidden)
       struct Data;
-      
+
       /// internal data pointer
       Data *m_data;
     };
-    
-    
+
+
   } // namespace cv
 }
 

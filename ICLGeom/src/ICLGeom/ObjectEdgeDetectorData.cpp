@@ -42,14 +42,14 @@ ObjectEdgeDetectorData::~ObjectEdgeDetectorData() {
 
 ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
     m_kernel returnKernel;
-	
+
 	//set default values
     returnKernel.norm = 1;
     returnKernel.kernel = DynMatrix<float>(1, 1, 0.0);
     returnKernel.l = 0;
     returnKernel.kSize = 1;
     returnKernel.rowSize = 1;
-	
+
 	if (size <= 1) {
 	    // nothing!
     } else if (size <= 3) {
@@ -92,10 +92,10 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 
     return returnKernel;
 }
-	
+
 ObjectEdgeDetectorData::m_params ObjectEdgeDetectorData::getParameters(){
     m_params returnParams;
-    
+
     returnParams.medianFilterSize = 3;
 	returnParams.normalRange = 2;
 	returnParams.normalAveragingRange = 1;
@@ -104,7 +104,7 @@ ObjectEdgeDetectorData::m_params ObjectEdgeDetectorData::getParameters(){
 	returnParams.binarizationThreshold = 0.89;
 	returnParams.useNormalAveraging = true;
 	returnParams.useGaussSmoothing = false;
-    
+
     return returnParams;
 }
 

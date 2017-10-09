@@ -36,23 +36,23 @@
 
 namespace icl{
   namespace utils{
-  
+
     /// Interface for objects, that can be locked using an internal mutex
     class Lockable{
-      
+
       /// wrapped mutex variable
       Mutex *m_mutex;
 
       public:
-      
+
       /// Default constructor
       Lockable(bool recursive=false):
       m_mutex(new Mutex(recursive ? Mutex::mutexTypeRecursive : Mutex::mutexTypeNormal)){
       }
-      
+
       /// copy constructor (does not copy the source mutex)
       Lockable(const Lockable &l) : m_mutex(new Mutex(l.m_mutex->type)){
-        
+
       }
 
       /// assignment operator (does not copy the source mutex)
@@ -61,22 +61,22 @@ namespace icl{
         m_mutex = new Mutex(l.m_mutex->type);
         return *this;
       }
-      
+
       /// Destructor
       ~Lockable(){
         delete m_mutex;
       }
-      
+
       /// lock object
       void lock() const { m_mutex->lock(); }
-      
+
       /// unlock object
       void unlock() const { m_mutex->unlock(); }
-      
+
       /// returns mutex of this object
       Mutex &getMutex() const { return *m_mutex; }
     };
-    
+
   } // namespace utils
 }
 

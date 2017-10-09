@@ -43,7 +43,7 @@ namespace icl{
   class InverseUndistortionProcessor : public utils::Uncopyable{
     struct Data;   //!< internal data structure
     Data *m_data;  //!< internal data pointer
-    
+
     public:
 
     /// constructor

@@ -58,7 +58,7 @@ namespace icl{
         - estimateCameraID
         - bool DCDevice::needsBayerDecoding() const
         - dc1394color_filter_t DCDevice::getBayerFilterLayout() const
-        
+
         **/
 
     const DCDevice DCDevice::null = DCDevice(0);
@@ -103,8 +103,8 @@ namespace icl{
       TRANSLATE(pointGrey_Flea2_03S2M);
       TRANSLATE(pointGrey_Flea2_03S2C);
       TRANSLATE(pointGrey_Flea2G_13S2CC);
-      
-#undef TRANSLATE 
+
+#undef TRANSLATE
       else return unknownCameraType;
     }
 
@@ -223,22 +223,22 @@ namespace icl{
     }
 
     // }}}
-    
+
     // **NEW-CAM**
     void DCDevice::estimateBayerFilterMode(){
       // {{{ open
-      
+
       if(isNull()) {
         m_eBayerFilterMode = BF_NONE;
         return;
       }
-      
+
       std::string id = getTypeID(m_poCam);
-      
+
       if(id.compare(0,19,"Point Grey Research") == 0){
         // 1st: try to read control register
         uint32_t value = 0;
-        // see Point Grey Digital Camera Register Reference 
+        // see Point Grey Digital Camera Register Reference
         // 7.5 BAYER_TILE_MAPPING: 1040h
         // thanx to Alexander Neumann for this patch
         dc1394error_t err = dc1394_get_control_register(m_poCam, 0x1040, &value);
@@ -264,7 +264,7 @@ namespace icl{
               m_eBayerFilterMode = BF_BGGR;
               //DEBUG_LOG("set mode to bggr");
               break;
-            default: 
+            default:
               //DEBUG_LOG("set mode to none");
               m_eBayerFilterMode = BF_NONE;
           }
@@ -311,17 +311,17 @@ namespace icl{
       dc1394camera_t *camera;
       dc1394camera_list_t * list;
       dc1394error_t err;
-      
+
       d = dc1394_new ();
       err=dc1394_camera_enumerate (d, &list);
       DC1394_ERR(err,"Failed to enumerate cameras");
       int num = list->num;
       dc1394_camera_free_list (list);
-      
+
       if(verbose){
         std::cout << "found " << num << " cameras" << std::endl;
       }
-      
+
       for(int i=0;i<num;++i){
 
         err=dc1394_camera_enumerate (d, &list);
@@ -555,7 +555,7 @@ namespace icl{
       dc::set_iso_speed(getCam(),mbits);
     }
     // }}}
-    
+
 
     bool DCDevice::supportsDC800(){
       return is_dc800_capable(getCam());

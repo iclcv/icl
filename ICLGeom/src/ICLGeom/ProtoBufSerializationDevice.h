@@ -42,16 +42,16 @@
 #endif
 
 namespace icl{
-  
+
   namespace geom{
-    class ICLGeom_API ProtoBufSerializationDevice : public PointCloudSerializer::SerializationDevice,  
+    class ICLGeom_API ProtoBufSerializationDevice : public PointCloudSerializer::SerializationDevice,
                                                     public PointCloudSerializer::DeserializationDevice{
       protected:
-      
+
       void null_check(const std::string &function) throw (utils::ICLException);
 
       RSBPointCloud *protoBufObject;
-      
+
       public:
 
       ProtoBufSerializationDevice(RSBPointCloud *protoBufObject);
@@ -59,13 +59,13 @@ namespace icl{
       virtual  ~ProtoBufSerializationDevice(){}
 
       void init(RSBPointCloud *protoBufObject);
-      
+
       bool isNull() const;
-      
+
       // serialization
       virtual void initializeSerialization(const PointCloudSerializer::MandatoryInfo &info);
       virtual icl8u *targetFor(const std::string &featureName, int bytes);
-      
+
       // deserialization
       virtual PointCloudSerializer::MandatoryInfo getDeserializationInfo();
       virtual std::vector<std::string> getFeatures();

@@ -44,22 +44,22 @@
 
 namespace icl{
   namespace geom{
-  
+
     /** \cond */
     class Scene;
     /** \endcond */
-   
-    
+
+
     /// The SceneObjectBase class defines and abstract interface for visible entities in 3D scenes
     /** TODO */
     class SceneObjectBase{
       public:
       virtual SceneObjectBase *copy() const = 0;
-  
+
       virtual void customRender() = 0;
     };
-  
-  
+
+
   } // namespace geom
 }
 

@@ -33,10 +33,10 @@
 #include <ICLUtils/CompatMacros.h>
 #include <QtCore/QEvent>
 
-namespace icl{ 
+namespace icl{
   namespace qt{
-    
-    /// Utility class for threaded updatable sliders 
+
+    /// Utility class for threaded updatable sliders
     struct SliderUpdateEvent : public QEvent{
       int value;
       static const QEvent::Type EVENT_ID=(QEvent::Type)(QEvent::User+1);
@@ -44,7 +44,7 @@ namespace icl{
         QEvent(EVENT_ID),value(value){
       }
     };
-    
+
   } // namespace qt
 }
 

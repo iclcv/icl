@@ -59,7 +59,7 @@ namespace icl{
         Factory& factory = getFactory();
         remoteServer = factory.createRemoteServer(serverScope);
       }
-      
+
       virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
         remoteServer->call<void>("setPropertyValue",pack(propertyName+"="+value));
       }
@@ -72,9 +72,9 @@ namespace icl{
           return tok(*s,",");
         }
       }
-      
+
       std::string rmi(const std::string &propertyName, const std::string &method, bool intVersion=false) const{
-        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getProperty"+method, 
+        boost::shared_ptr<std::string> s = remoteServer->call<std::string>("getProperty"+method,
                                                                            pack(propertyName));
         if(!s){
           if(intVersion){
@@ -87,7 +87,7 @@ namespace icl{
           return *s;
         }
       }
-      
+
       virtual std::string getPropertyType(const std::string &propertyName) const{
         return rmi(propertyName,"Type");
       }
@@ -106,18 +106,18 @@ namespace icl{
 
     };
 
-    
+
     struct ConfigurableRemoteServer::Data{
       Configurable *c;
       LocalServerPtr server;
-      
+
       struct GenericCallback{
         Configurable *c;
         GenericCallback(Configurable *c):c(c){}
-        
-      
+
+
       };
-      
+
       struct ListCallback : public LocalServer::Callback<void,std::string>, public GenericCallback{
         ListCallback(Configurable *c):GenericCallback(c){}
 
@@ -175,7 +175,7 @@ namespace icl{
     };
 
     ConfigurableRemoteServer::ConfigurableRemoteServer():m_data(0){}
-    ConfigurableRemoteServer::ConfigurableRemoteServer(utils::Configurable *configurable, 
+    ConfigurableRemoteServer::ConfigurableRemoteServer(utils::Configurable *configurable,
                                                        const std::string &scope):m_data(0){
       init(configurable,scope);
     }
@@ -183,8 +183,8 @@ namespace icl{
                                                        const std::string &scope):m_data(0){
       init(configurableID,scope);
     }
-    
-    void ConfigurableRemoteServer::init(utils::Configurable *configurable, 
+
+    void ConfigurableRemoteServer::init(utils::Configurable *configurable,
                                         const std::string &scope){
       if(!configurable){
         ERROR_LOG("Could not initialize ConfigurableRemoteServer:"
@@ -205,11 +205,11 @@ namespace icl{
                   "invalid configurableID:" << configurableID);
       }
     }
-      
+
     ConfigurableRemoteServer::~ConfigurableRemoteServer(){
       ICL_DELETE(m_data);
     }
-    
+
     utils::Configurable *ConfigurableRemoteServer::create_client(const std::string &remoteServerScope){
       /// well that is actually some work here!
       return new Client(remoteServerScope);

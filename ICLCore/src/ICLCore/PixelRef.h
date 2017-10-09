@@ -46,30 +46,30 @@ namespace icl{
         <code>
         Img8u a = ...;
         Img8u b = ...;
-        
+
         a(5,6) = b(3,2);
         </code>
         Furthermore it provides a list of setter functions, which allow to set up
         image pixels form other data types like vectors, ranges (iterator based)
         and even icl::FixedMatrix.
-  
+
         Most of the functions are channel count save, i.e. they throw an ICLException
         if source channel count is not compatible.
     */
     template<class T>
     class PixelRef{
-      
+
       /// Internal data
       std::vector<T*> m_data;
-      
+
       public:
-      
+
       /// Empty constructor, create a null pixel ref with 0 length
       inline PixelRef(){}
-      
+
       /// returs whether this instance is null (created with the empty constructor)
       inline bool isNull() const { return !m_data->size(); }
-  
+
       /// single constructor to create a pixelref instance
       /** This should not be used manually. Rather you should use Img<T>'s operator()(int x, int y) */
       inline PixelRef(int x, int y, int width, std::vector<utils::SmartArray<T> > &data):
@@ -79,12 +79,12 @@ namespace icl{
           this->m_data[i] = data[i].get()+offs;
         }
       }
-      
+
       /// PixelRef copy constructor (copies the reference, not the values)
       inline PixelRef(const PixelRef &other):m_data(other.m_data){}
-  
+
       /// assignment operator which copies the values (most common)
-      /** This operator allows to write 
+      /** This operator allows to write
           <code>
           imageA(x,y) = imageB(a,b);
           </code>
@@ -96,7 +96,7 @@ namespace icl{
         }
         return *this;
       }
-      
+
       /// assigns reference pixel values from vector data
       inline PixelRef &operator=(const std::vector<T> &vec)throw (utils::ICLException){
         ICLASSERT_THROW(vec.size() == m_data.size(),utils::ICLException("incompatible channel count"));
@@ -105,12 +105,12 @@ namespace icl{
         }
         return *this;
       }
-  
+
       /// assigns reference pixel values from FixedMatrix data
       /** This can e.g. be used to assign an icl::Color value to an image pixel
           (Color is a part of the ICLCore package, and it is typedef'ed to some
           FixedMatrix type)
-          
+
           <code>
           imageA(x,y) = Color(2,3,4);
           </code>
@@ -123,7 +123,7 @@ namespace icl{
         }
         return *this;
       }
-      
+
       /// copies image data into a std::vector
       inline std::vector<T> asVec() const{
         std::vector<T> v(m_data.size());
@@ -132,19 +132,19 @@ namespace icl{
         }
         return v;
       }
-      
+
       /// sets up the first index (unsafe)
       inline void set(const T &v0) { *m_data[0] = v0; }
-  
+
       /// sets up the first two indices (unsafe)
       inline void set(const T &v0, const T&v1) { set(v0); *m_data[1] = v1; }
-  
+
       /// sets up the first three indices (unsafe)
       inline void set(const T &v0, const T&v1, const T&v2) { set(v0,v1); *m_data[2] = v2; }
-  
+
       /// sets up the first four indices (unsafe)
       inline void set(const T &v0, const T&v1, const T&v2, const T &v3) { set(v0,v1,v2); *m_data[3] = v3; }
-      
+
       /// assigns a ranges contents to the pixel data
       /** An exception is only thrown of the given range is too short*/
       template<class ForwardIterator>
@@ -154,19 +154,19 @@ namespace icl{
           *m_data[i] = *begin;
         }
       }
-      
+
       /// references a single element (safe)
       T &operator[](unsigned int channel) throw (utils::ICLException){
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
-      
+
       /// references a single element (const) (safe)
       const T &operator[](unsigned int channel) const throw (utils::ICLException){
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
-      
+
       /// returns the channel count
       int getChannels() const {
         return (int)m_data.size();

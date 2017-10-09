@@ -9,8 +9,8 @@ int currFilter = 0;
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Image().handle("result") 
-      << ( VBox() 
+  gui << Image().handle("result")
+      << ( VBox()
            << Button("next filter").handle("next")
            << Button("save").handle("save")
            << Button("show src").handle("show")
@@ -33,18 +33,18 @@ void run(){
     currFilter = (currFilter+1)%10;
     op.setOptype((MorphologicalOp::optype)currFilter);
   }
-  
+
   const ImgBase *result = op.apply(image);
-  
+
   gui["result"] = result;
 
   if(input.isVisible()){
     input["image"] = image;
-  } 
-  
+  }
+
   if(save.wasTriggered()){
     qt::save(*result,"current-image.png");
-  }   
+  }
 }
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();

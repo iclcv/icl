@@ -38,5 +38,5 @@ ADD_LIBRARY(regex_icl STATIC ${SOURCES} ${HEADERS})
 set_property(TARGET regex_icl PROPERTY CXX_STANDARD 11)
 
 SET_TARGET_PROPERTIES(regex_icl
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})

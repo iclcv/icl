@@ -59,7 +59,7 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  
+
   pa_explain
   ("r","resets the dc bus on startup")
   ("8","scan for dc800 devices")
@@ -82,7 +82,7 @@ int main(int n, char **ppc){
           " -reset-bus|-r|r -kinect|k -pylon|b -qt|q "
           "-input|-i(device-type,device-ID) -list-devices-only|-l");
 
-  
+
   std::ostringstream str;
   if(pa("d")) str << ",dc";
   if(pa("8")) str << ",dc800";
@@ -101,7 +101,7 @@ int main(int n, char **ppc){
   if(pa("b"))str << ",pylon";
   if(pa("-i")) str << "," << pa("-i",0) << "=" << pa("-i",1);
   if(pa("a") || pa("-all")) str.flush();
-  
+
   devlist = str.str();
   if(!devlist.length()){
     //pa_show_usage("no devices selected!");
@@ -109,9 +109,9 @@ int main(int n, char **ppc){
   } else {
     devlist = devlist.substr(1); // removes the trailing comma!
   }
-  
+
   if(pa("r")) GenericGrabber::resetBus(devlist);
-  
+
   if(pa("-l")){
     std::vector<GrabberDeviceDescription> gds = GenericGrabber::getDeviceList(devlist);
     std::string lastType = "";

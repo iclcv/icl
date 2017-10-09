@@ -31,7 +31,7 @@
 #pragma once
 
 /** \cond file only contains the doxygen mainpage for the ICL library \endcond
-    
+
     \mainpage ICL Modules
 
     ICL is split over a set of modules, each providing a special set
@@ -50,21 +50,21 @@
     - The ::icl::markers module provides a full featuered highspeed fiducial marker tracking library
 
     \section SC Shortcuts
-    
-    - <b>Utils</b> icl::utils::ConfigFile, icl::utils::Configurable, icl::utils::Function, 
-      icl::utils::ProgArg, icl::utils::SmartPtr, icl::utils::Thread 
-    - <b>Math</b> icl::math::DynMatrix, icl::math::FixedMatrix, icl::math::Octree, 
-      icl::math::QuadTree, icl::math::LLM, icl::math::PolynomialRegression, 
-      icl::math::RansacFitter, icl::math::LevenbergMarquardtFitter, 
+
+    - <b>Utils</b> icl::utils::ConfigFile, icl::utils::Configurable, icl::utils::Function,
+      icl::utils::ProgArg, icl::utils::SmartPtr, icl::utils::Thread
+    - <b>Math</b> icl::math::DynMatrix, icl::math::FixedMatrix, icl::math::Octree,
+      icl::math::QuadTree, icl::math::LLM, icl::math::PolynomialRegression,
+      icl::math::RansacFitter, icl::math::LevenbergMarquardtFitter,
       icl::math::SimplexOptimizer, icl::math::SOM
     - <b>Core</b> icl::core::ImgBase, icl::core::ImgBase, icl::core::Converter, icl::core::Line,
       icl::core::Line32f, icl::core::LineSampler, icl::core::PseudoColorConverter, icl::core::cc
     - <b>Filter</b> icl::filter::UnaryOp, icl::filter::BinaryOp
     - <b>Io</b> icl::io::GenericGrabber, icl::io::GenericImageOutput
-    - <b>Qt</b> icl::qt::GUI, icl::qt::ICLApplication, icl::qt::ICLWidget, 
+    - <b>Qt</b> icl::qt::GUI, icl::qt::ICLApplication, icl::qt::ICLWidget,
       icl::qt::ICLDrawWidget, icl::qt::ICLDrawWidget3D, icl::qt::PlotWidget, icl::qt::QImageConverter
     - <b>Cv</b> icl::cv::FloodFiller, icl::cv::GenericSurfDetector, icl::cv::HoughLineDetector
-      icl::cv::RegionDetector, icl::cv::MeanShiftTracker, icl::cv::VectorTracker, 
+      icl::cv::RegionDetector, icl::cv::MeanShiftTracker, icl::cv::VectorTracker,
       icl::cv::RunLengthEncoder, icl::cv::SimpleBlobSearcher, icl::cv::TemplateTracker
     - <b>Geom</b> icl::geom::Camera, icl::geom::Scene, icl::geom::SceneObject, icl::geom::ICP,
       icl::geom::PlaneEquation, icl::geom::PlotWidget3D, icl::geom::PointCloudCreator,

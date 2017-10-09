@@ -40,7 +40,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
+
     OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
                                          double fps, Size frame_size, int frame_color) throw (ICLException){
       if(File(filename).exists()){
@@ -55,7 +55,7 @@ namespace icl{
       /*if(0){
           throw ICLException("frame color invalid");
           }*/
-          
+
       int FOURCC = -1;
       if(fourcc.length() == 4){
         FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
@@ -64,13 +64,13 @@ namespace icl{
       writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
                                    cvSize(frame_size.width,frame_size.height)
                                    , frame_color);
-  
+
     }
-    
+
     OpenCVVideoWriter::~OpenCVVideoWriter(){
       cvReleaseVideoWriter(&writer);
     }
-    
+
     void OpenCVVideoWriter::write(const ImgBase *image){
       ICLASSERT_RETURN(image);
       ICLASSERT_RETURN(image->getDim());
@@ -80,7 +80,7 @@ namespace icl{
       cvWriteFrame(writer,im );
       cvReleaseImage(&im);
     }
-    
+
     OpenCVVideoWriter &OpenCVVideoWriter::operator<<(const ImgBase *image){
       write(image);
       return *this;

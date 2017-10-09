@@ -36,10 +36,10 @@
 
 namespace icl {
   namespace physics{
-    
+
     /// Base Class for constraints
     class ICLPhysics_API Constraint:public utils::Uncopyable{
-      
+
       protected:
       /// internal constraint
       btTypedConstraint *m_constraint;
@@ -54,10 +54,10 @@ namespace icl {
 
       /// Destructor
       virtual ~Constraint();
-      
+
       /// Getter for the internal constraint
       btTypedConstraint* getConstraint();
-      
+
       /// Getter for the objects involved in the constraint
       std::vector<RigidObject*>& getObjects();
     };

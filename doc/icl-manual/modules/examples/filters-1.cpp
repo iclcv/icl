@@ -12,16 +12,16 @@ int main(){
 
   // fill with random values
   random.fill(URand(0,255));
-  
+
   // create filter
   filter::UnaryCompareOp cmp(">",128);
-  
+
   // create destination image
   ImgBase *dst = 0;
-  
+
   // apply (will instantiate dst)
   cmp.apply(&random,&dst);
-  
+
   // show the image
   show(*dst);
 }

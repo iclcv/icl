@@ -53,7 +53,7 @@ void step(const std::string &handle){
 
   const float mult = gui["mult"];
   static float lastMult = -1;
-  const int maxVal = mult*256;  
+  const int maxVal = mult*256;
   if(mult != lastMult){
     update_color(maxVal);
   }
@@ -102,10 +102,10 @@ void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
   std::string si = str(idx);
 
 
-  dst << ( HBox() 
+  dst << ( HBox()
            << CheckBox("use",true).out("use"+si).handle(si)
            << FSlider(0,1,pos).out("relPos"+si).handle("p"+si)
-           << ColorSelect(r,g,b).out("color"+si).handle("c"+si) 
+           << ColorSelect(r,g,b).out("color"+si).handle("c"+si)
            );
 
 
@@ -116,7 +116,7 @@ void init(){
   grabber.useDesired(formatGray);
   grabber.useDesired(depth8u);
   grabber.grab();
-  
+
   GUI colors = ( VBox().minSize(18,1)
                  << CheckBox("use custom gradient below").out("custom").handle("customH")
                );
@@ -126,27 +126,27 @@ void init(){
   stop_chooser(colors,3,0.4,0,0,255);
   stop_chooser(colors,4,0.5,255,0,255);
   stop_chooser(colors,5,0.6,255,255,255);
-  
 
-  colors << ( HBox() 
+
+  colors << ( HBox()
               << Button("load").handle("load")
-              << Button("save").handle("save") 
-             ) 
+              << Button("save").handle("save")
+             )
          << FSlider(0.1,10,1).handle("mult").label("range multiplier")
-         << Label("--").handle("dt").label("time");    
-  
-  gui << ( VBox() 
-           << Image().handle("color").minSize(32,10) 
+         << Label("--").handle("dt").label("time");
+
+  gui << ( VBox()
+           << Image().handle("color").minSize(32,10)
            << Image().handle("image").minSize(32,24)
-         ) 
-      << colors 
+         )
+      << colors
       << Show();
-  
+
   gui.registerCallback(utils::function(step),"customH,load,save");
   for(int i=0;i<6;++i){
     gui.registerCallback(utils::function(step),str(i)+",c"+str(i)+",p"+str(i));
   }
-  
+
   step("");
 }
 

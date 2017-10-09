@@ -43,17 +43,17 @@ namespace icl{
 
       public:
       ConfigurableRemoteServer();
-      ConfigurableRemoteServer(utils::Configurable *configurable, 
+      ConfigurableRemoteServer(utils::Configurable *configurable,
                                const std::string &scope);
       ConfigurableRemoteServer(const std::string &configurableID,
                                const std::string &scope);
 
-      void init(utils::Configurable *configurable, 
+      void init(utils::Configurable *configurable,
                 const std::string &scope);
 
       void init(const std::string &configurableID,
                 const std::string &scope);
-      
+
       ~ConfigurableRemoteServer();
 
       static utils::Configurable *create_client(const std::string &remoteServerScope);

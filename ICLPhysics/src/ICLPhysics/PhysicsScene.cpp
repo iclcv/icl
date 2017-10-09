@@ -39,7 +39,7 @@ namespace icl{
         Scene::addObject((geom::SceneObject*)object, passOwnerShip);
         PhysicsWorld::addObject(object);
       }
-    
+
       void PhysicsScene::removeObject(int idx) {
         PhysicsObject* object = dynamic_cast<PhysicsObject*>(Scene::getObject(idx));
         if(!object) {
@@ -47,7 +47,7 @@ namespace icl{
         }
         Scene::removeObject(idx);
       }
-    
+
       void PhysicsScene::removeObject(PhysicsObject *obj) {
         PhysicsWorld::removeObject(obj);
         Scene::removeObject((geom::SceneObject*)obj);

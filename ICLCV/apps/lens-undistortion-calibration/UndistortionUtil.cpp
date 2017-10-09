@@ -51,12 +51,12 @@ namespace icl{
     addProperty("ix-offset","range","[-100,100]", 0);
     addProperty("iy-offset","range","[-100,100]", 0);
     addProperty("reset","command","","");
-    
+
     init(imageSize, std::vector<float>(5,0), Point32f::null, true);
 
     registerCallback(function(this, &UndistortionUtil::propertyCallback));
   }
-    
+
   void UndistortionUtil::propertyCallback(const utils::Configurable::Property &p){
     if(inInit) return;
     if(p.name == "reset"){
@@ -82,12 +82,12 @@ namespace icl{
   void UndistortionUtil::save(){
     ConfigFile f;
     f.setPrefix("config.");
-    
+
     f["size.width"] = imageSize.width;
     f["size.height"] = imageSize.height;
     f["model"] = str("MatlabModel5Params");
-    
-    
+
+
     f["intrin.fx"] = imageSize.width/2.;
     f["intrin.fy"] = imageSize.height/2.;
     f["intrin.ix"] = double(k[5]);
@@ -98,7 +98,7 @@ namespace icl{
     f["udist.k3"] = double(k[2]);
     f["udist.k4"] = double(k[3]);
     f["udist.k5"] = double(k[4]);
-    
+
     try{
       std::string fn = saveFileDialog();
       if(fn.length()){
@@ -128,7 +128,7 @@ namespace icl{
     std::copy(k.begin(), k.end(), this->k);
     this->k[5] = imageSize.width/2.0 + coffset.x;
     this->k[6] = imageSize.height/2.0 + coffset.y;
-    
+
     if(updateMap){
       updateWarpMap();
     }
@@ -137,7 +137,7 @@ namespace icl{
     }
     setPropertyValue("ix-offset",coffset.x);
     setPropertyValue("ix-offset",coffset.y);
-    
+
     inInit = false;
     warpMapDirty = true;
   }
@@ -164,13 +164,13 @@ namespace icl{
   static inline Point32f abs_diff(const Point32f &a, const Point32f &b){
     return Point32f(fabs(a.x-b.x), fabs(a.y-b.y));
   }
-  
+
   /*  static bool is_alternating(const Point32f &a, const Point32f &b){
     return fabs(a.x+b.x) < 0.00001 && fabs(a.y+b.y) < 0.00001;
   }
       */
 
-  
+
   utils::Point32f UndistortionUtil::undistort_point_inverse(const utils::Point32f &s,
                                                  const float k[7]){
     Point32f p = s;
@@ -214,7 +214,7 @@ namespace icl{
     return p;
   }
 #endif
-  
+
   void UndistortionUtil::updateWarpMap(){
     warpMapBuffer.setChannels(2);
     warpMapBuffer.setSize(imageSize);
@@ -242,7 +242,7 @@ namespace icl{
       }
     }
 #endif
-    
+
 #if 0
     static const float T = 1;//0.2;
     static const float D = 1;
@@ -281,7 +281,7 @@ namespace icl{
         }
         nns.push_back(nn);
         //cs[0][idx] = p.x;
-        //cs[1][idx] = p.y; 
+        //cs[1][idx] = p.y;
         if((unsigned)p.x < w && (unsigned)p.y < h){
           cs[0](xi,yi) = p.x;
           cs[1](xi,yi) = p.y;
@@ -302,7 +302,7 @@ namespace icl{
     typedef FixedColVector<float,4> V4;
     typedef QuadTree<float,4,1,4096,V4> QTree;
     QTree tree(-100,-100, w+200, h+200);
-    
+
     DEBUG_LOG("creating quadtree");
     for(unsigned int yi=0;yi<h; ++yi){
       for(unsigned int xi=0;xi<w; ++xi, ++idx){
@@ -324,7 +324,7 @@ namespace icl{
     typedef FixedColVector<float,4> V4;
     typedef QuadTree<float,4,1,4096,V4> QTree;
     QTree tree(-100,-100, w+200, h+200);
-    
+
     DEBUG_LOG("creating quadtree");
     for(unsigned int yi=0;yi<h; ++yi){
       for(unsigned int xi=0;xi<w; ++xi, ++idx){
@@ -346,7 +346,7 @@ namespace icl{
       for(unsigned int xi=0;xi<w; ++xi, ++idx){
         Point32f p = undistort(Point32f(xi,yi));
         //cs[0][idx] = p.x;
-        //cs[1][idx] = p.y; 
+        //cs[1][idx] = p.y;
         if((unsigned)p.x < w && (unsigned)p.y < h){
           cs[0](p.x,p.y) = xi;
           cs[1](p.x,p.y) = yi;
@@ -358,7 +358,7 @@ namespace icl{
     warpOp.setWarpMap(warpMapBuffer);
     warpMapDirty = false;
   }
-  
+
   const Img8u &UndistortionUtil::undistort(const Img8u &src){
     if(warpMapDirty){
       updateWarpMap();

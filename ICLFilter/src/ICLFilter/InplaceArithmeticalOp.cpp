@@ -37,18 +37,18 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-    
+
     namespace{
-      
-      // general implementation for transforming a single value 
+
+      // general implementation for transforming a single value
       // implemented as class to provide part-specialization
       template<class T,InplaceArithmeticalOp::optype O> struct Apply{
         Apply(icl64f val):val(val){}
         inline void operator()(T &t){}
-        icl64f val;      
+        icl64f val;
       };
-  
-      
+
+
       // define how to specialize a single optype O##Op with given func F
   #define SPECIALIZE(O,F)                                              \
       template<class T> struct Apply<T,InplaceArithmeticalOp::O##Op>{  \
@@ -58,7 +58,7 @@ namespace icl{
         }                                                              \
         icl64f val;                                                    \
       };
-      
+
       // define specializations for all optypes
       SPECIALIZE(add,t+val);
       SPECIALIZE(sub,t-val);
@@ -72,9 +72,9 @@ namespace icl{
 #else
       SPECIALIZE(abs, ::fabs(t));
 #endif
-  #undef SPECIALIZE    
-      
-      
+  #undef SPECIALIZE
+
+
       // expand the optype from runtime parameter to template parameter
       // by this means, switching over optype is done at compile type
       template<class T>
@@ -97,32 +97,32 @@ namespace icl{
         return src;
       }
     }
-    
+
     // underlying apply function: switches over the src images depth
     ImgBase *InplaceArithmeticalOp::apply(ImgBase *srcIn){
       ICLASSERT_RETURN_VAL(srcIn,0);
       ICLASSERT_RETURN_VAL(srcIn->getChannels(),srcIn);
-     
+
       ImgBase *src = 0;
       if(!getROIOnly() && !srcIn->hasFullROI()){
         src = srcIn->shallowCopy(srcIn->getImageRect());
       }else{
         src = srcIn;
       }
-      
+
       switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                                                         \
         case depth##D:                                                                                     \
           return apply_inplace_arithmetical_op(src->asImg<icl##D>(), getROIOnly(),getValue(),getOpType()); \
           break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH  
+  #undef ICL_INSTANTIATE_DEPTH
       }
       if (!getROIOnly() && !srcIn->hasFullROI()){
         delete src;
       }
       return srcIn;
     }
-    
+
   } // namespace filter
 }

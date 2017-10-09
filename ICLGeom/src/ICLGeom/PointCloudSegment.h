@@ -37,7 +37,7 @@ namespace icl{
   namespace geom{
     /// PointCloudSegment class used to describe data segments in the scene
     /** Extends the PointCloudObject class (which stores the points in unordered fashion)
-		  with some meta information about the point cloud, 
+		  with some meta information about the point cloud,
 		  i.e. eigenvalues, eigenvectors, bounding box, centroid
     */
     struct PointCloudSegment : public PointCloudObject{
@@ -53,22 +53,22 @@ namespace icl{
         math::Vec3 min, max;
       } aabb;
 
-      
-      PointCloudSegment() 
+
+      PointCloudSegment()
         : PointCloudObject(0,false,true),
           featuresComputed(false),
           numPoints(0) {}
       PointCloudSegment(int dim, bool withColors=true);
       PointCloudSegment(PointCloudObject &obj);
-      PointCloudSegment(PointCloudObject &obj, 
+      PointCloudSegment(PointCloudObject &obj,
                         const std::vector<int> &indices);
-      PointCloudSegment(PointCloudObject &obj, 
+      PointCloudSegment(PointCloudObject &obj,
                         const std::vector<const std::vector<int>*> &indices);
-      
+
       PointCloudSegment *copy() const;
-      
+
       Mat computeEigenVectorFrame() const throw (utils::ICLException);
-      
+
       /// updates the instances features
       /** parent instances update their features from their children's featuers */
       void updateFeatures();
@@ -76,31 +76,31 @@ namespace icl{
       /// parent objects have children and a dimension of 0
       /** i.e. parent objects have no own points */
       bool isParent() { return getChildCount (); }
-      
+
       /// returns number of sub-segements (i.e. the number of children)
       int getNumSubSegments(){
         return getChildCount();
       }
-     
+
       /// returns week pointer to the i-th child (already casted to PointCloudSegment type)
-      utils::SmartPtr<PointCloudSegment> getSubSegment(int i) 
+      utils::SmartPtr<PointCloudSegment> getSubSegment(int i)
         throw (utils::ICLException);
 
       /// creates a flattened deep copy of the segment
       utils::SmartPtr<PointCloudSegment> flatten() const;
-      
-      
+
+
       /// returns a vector containing this and all recursive children
       std::vector<utils::SmartPtr<PointCloudSegment> > extractThisAndChildren() const;
-      
+
     protected:
-      void init(PointCloudObject &obj, 
+      void init(PointCloudObject &obj,
                 const std::vector<const std::vector<int>*> &indices);
     };
-    
-    /// 
+
+    ///
     typedef utils::SmartPtr<PointCloudSegment> PointCloudSegmentPtr;
-    
+
     inline std::ostream &operator<<(std::ostream &str, const PointCloudSegment::AABB &a){
       return str << "AABB(min: " << a.min.transp() << "  max: " << a.max.transp() << ")";
     }

@@ -94,7 +94,7 @@ void save_all(){
     }else{
       ERROR_LOG("the given filename must have a '#'-token, which can be replaced by the input ID");
     }
-  }  
+  }
 }
 
 std::string fix_at_stuff(const std::string &s){
@@ -109,13 +109,13 @@ void init(){
   ProgArg p = pa("-i");
   Size layout = pa("-l") ? pa("-l").as<Size>() : Size(ceil(nInputs*0.5),2);
 
-  ICLASSERT_THROW(layout.getDim() >= nInputs, 
+  ICLASSERT_THROW(layout.getDim() >= nInputs,
                    ICLException("given layout has less cells than the given number of inputs"));
 
   std::vector<HSplit> rows(layout.height);
 
   inputs  = Array2D<Input>(layout);
-  
+
   for(int i=0;i<nInputs;++i){
     Input &in = inputs[i];
 
@@ -124,13 +124,13 @@ void init(){
     in.b = p[2*i+1];
 
     in.grabber.init(in.a,in.a+"="+in.b);
-    
+
     if(pa("-s")) in.grabber.useDesired(pa("-s").as<Size>());
     if(pa("-f")) in.grabber.useDesired(pa("-f").as<format>());
     if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
-    
+
     rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
-    
+
     if(pa("-o")){
       ProgArg o = pa("-o");
 
@@ -159,13 +159,13 @@ void init(){
     camcfg << CamCfg();
   }
 
-  
-  gui << ( HBox().minSize(0,2).maxSize(99,2) 
+
+  gui << ( HBox().minSize(0,2).maxSize(99,2)
            << Button("stopped","running",true).handle("on")
            << camcfg
            << Fps(10).handle("fps")
            << Button("save").handle("save")
-         ) 
+         )
       <<   Show();
 
   for(int i=0;i<nInputs;++i){
@@ -191,7 +191,7 @@ void run(){
     gui["fps"].render();
     if(!asyncMode){
       static ButtonHandle save = gui["save"];
-      
+
       for(int i=0;i<nInputs;++i){
         inputs[i]();
       }
@@ -199,7 +199,7 @@ void run(){
       for(int i=0;i<nInputs;++i){
         inputs[i].save();
       }
-      
+
       if(save.wasTriggered()){
         save_all();
       }
@@ -222,7 +222,7 @@ int main(int n, char **ppc){
           "-format|-f(format) "
           "-depth|-d(depth) "
           "-reset-bus|-r "
-          "-layout|-l(size) " 
+          "-layout|-l(size) "
           "-asynchronous|-a "
           "-output|-o(...) "
 					"-sync-all-grabbers|-sync "

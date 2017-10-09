@@ -37,11 +37,11 @@
 namespace icl{
 namespace physics{
   /// This class combines a soft-body physics object and it's graphical representation in ICL
-  /** Actually, this sub-class is just an explicit restriction of the general PhysicalObject 
+  /** Actually, this sub-class is just an explicit restriction of the general PhysicalObject
       class, that can represent:
-      - collision objects 
+      - collision objects
       - rigid object
-      - soft body objects 
+      - soft body objects
   */
   class ICLPhysics_API SoftObject : public PhysicsObject, public utils::Configurable{
     /// internal property wrapped from bullet
@@ -51,10 +51,10 @@ namespace physics{
     bool m_useVolumeConversion;
 
     protected:
-    
+
     /// protected constructor ..
     SoftObject();
-    
+
     /// this MUST be called by the real implementation class AFTER the real softbody instance is created
     void createAllProperties();
 

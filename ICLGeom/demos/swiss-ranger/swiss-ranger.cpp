@@ -49,12 +49,12 @@ Vec estimate_3D_pos(const Point32f &p, const Img32f &image, const Camera &cam){
   Vec o = vr.offset;
   Vec v = vr.direction;
   v = v/v.length();
-  
+
   float val = image.subPixelLIN(p.x,p.y,0);
   Vec r = o + v*val;
 
   r[3] = val;
-  
+
   return r;
 }
 
@@ -63,11 +63,11 @@ Vec estimate_3D_pos(const Point32f &p, float val, const Camera &cam){
   Vec o = vr.offset;
   Vec v = vr.direction;
   v = v/v.length();
-  
+
   Vec r = o + v*val;
 
   r[3] = val;
-  
+
   return r;
 }
 
@@ -79,27 +79,27 @@ struct ImageObj : public SceneObject{
 
   virtual void lock(){ mutex.lock(); }
   virtual void unlock(){ mutex.unlock(); }
-  
+
   inline int idx(int x, int y){
     return x+y*size.width;
   }
-  
+
   inline Vec &node(int x, int y){
     return m_vertices[idx(x,y)];
   }
   inline GeomColor &col(int x, int y){
     return m_vertexColors[idx(x,y)];
   }
-  
+
   ImageObj(const Size &s):size(s){
     image = Img8u(size,formatRGB);
-    
+
     for(int x=0;x<s.width;++x){
       for(int y=0;y<s.height;++y){
         addVertex(Vec(0,0,0,1));
       }
     }
-    
+
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
@@ -107,28 +107,28 @@ struct ImageObj : public SceneObject{
     addVertex(Vec(0,0,0,1),GeomColor(0,0,0,0));
 
     addTexture(s.getDim(),size.getDim()+1,size.getDim()+2,size.getDim()+3,&image,false);
-    
+
     for(int x=0;x<s.width-1;++x){
       for(int y=0;y<s.height-1;++y){
         addLine(idx(x,y),idx(x+1,y));
         addLine(idx(x,y),idx(x,y+1));
-        
+
         addQuad(idx(x,y),idx(x+1,y),
                 idx(x+1,y+1),idx(x,y+1));
       }
-    }  
+    }
     for(int x=0;x<s.width-1;++x){
       addLine(idx(x,s.height-1),idx(x+1,s.height-1));
-    }  
+    }
     for(int y=0;y<s.height-1;++y){
       addLine(idx(s.width-1,y),idx(s.width-1,y+1),GeomColor(255,255,255,40));
-    }  
-    
+    }
+
     addLine(size.getDim(),size.getDim()+4,GeomColor(255,255,255,255));
     addLine(size.getDim()+1,size.getDim()+4,GeomColor(255,255,255,255));
     addLine(size.getDim()+2,size.getDim()+4,GeomColor(255,255,255,255));
     addLine(size.getDim()+3,size.getDim()+4,GeomColor(255,255,255,255));
-    
+
     setColorsFromVertices(Primitive::quad,true);
   }
   void update(const Img32f &image, const Camera &cam, VisMode m, int pointSize, bool imageOn){
@@ -138,7 +138,7 @@ struct ImageObj : public SceneObject{
       rs[i] = image.getMinMax(i);
     }
     lock();
-    
+
     setVisible(Primitive::texture,imageOn);
     if(imageOn){
       image.convert(&this->image);
@@ -150,10 +150,10 @@ struct ImageObj : public SceneObject{
 
       m_vertices[size.getDim()+4] = cam.getPosition();
     }
-    
 
-    
-    
+
+
+
     for(int x=0;x<size.width;++x){
       for(int y=0;y<size.height;++y){
         node(x,y) = estimate_3D_pos(Point32f(x,y),image,cam);
@@ -162,7 +162,7 @@ struct ImageObj : public SceneObject{
             col(x,y) = GeomColor(0,100,255,255);
             break;
           case DEPTH:
-            if(image.getChannels() > 0){ 
+            if(image.getChannels() > 0){
               float c = 255-(255*(image(x,y,0)-rs[0].minVal)/rs[0].getLength());
               col(x,y) = GeomColor(c,c,c,255);
             }
@@ -215,12 +215,12 @@ void init(){
                 )
            )
       << Show();
-  
+
   gui["draw"].install(mouse);
-  
+
   grabber = new GenericGrabber();
   grabber -> init(pa("-i"));
-  
+
   CAM = Camera(*pa("-input",2));
 
   static DrawHandle draw = gui["draw"];
@@ -238,7 +238,7 @@ void init(){
 
   scene.addCamera(CAM);
   scene.addCamera(CAM);
-  
+
 
   (*draw3D)->install(scene.getMouseHandler(0));
   (*draw3D)->setViewPort(Size(176,144));
@@ -247,13 +247,13 @@ void init(){
 }
 
 
-void run(){ 
+void run(){
   DrawHandle draw = gui["draw"];
   static ButtonHandle resPos = gui["resPos"];
   static ICLDrawWidget &w = **draw;
   bool grab = gui["grab"];
   bool pp = gui["pp"];
-  
+
   if(grab){
     const ImgBase *image = grabber->grab();
     if(pp){
@@ -269,7 +269,7 @@ void run(){
   draw = IMAGE;
 
   Vec p3D = estimate_3D_pos(POS,IMAGE,CAM);
-  
+
   w.color(0,100,255,255);
   w.fill(0,100,255,100);
   w.rect(POS.x-1,POS.y-1,1,1);
@@ -291,7 +291,7 @@ void run(){
   if(resPos.wasTriggered()){
     scene.getCamera(0) = scene.getCamera(1);
   }
-  
+
   if((*tab)->currentIndex() == 1){
 
 
@@ -305,7 +305,7 @@ void run(){
     dw.link(scene.getGLCallback(0));
     dw.render();
   }
-  
+
   Thread::msleep(10);
 }
 

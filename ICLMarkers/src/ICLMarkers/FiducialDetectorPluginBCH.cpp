@@ -41,13 +41,13 @@ using namespace icl::cv;
 
 namespace icl{
   namespace markers{
-    
+
     namespace{
-      struct PatternBinarization{  
-        virtual void apply(icl8u *p) = 0;  
+      struct PatternBinarization{
+        virtual void apply(icl8u *p) = 0;
         virtual ~PatternBinarization() {}
       };
-      
+
       struct PatternBinarizationThresh : public PatternBinarization{
         int t;
         PatternBinarizationThresh(int t=0):t(t){}
@@ -55,12 +55,12 @@ namespace icl{
           for(int i=0;i<36;++i) p[i] = 255*(p[i]>t);
         }
       };
-      
+
       struct PatternBinarizationKMeans : public PatternBinarizationThresh{
         int maxIterations;
         PatternBinarizationKMeans(int maxIterations):
           maxIterations(maxIterations){}
-  
+
         virtual void apply(icl8u *p){
           float mean = std::accumulate(p,p+36,0.0f)/36.0f;
           for(int j=0;j<maxIterations;++j){
@@ -75,27 +75,27 @@ namespace icl{
         }
       };
     }
-  
+
     struct FiducialDetectorPluginBCH::Data{
       Img8u buffer;
       std::bitset<4096> loaded;
       int maxLoaded;
       std::vector<Size32f> sizes;
-  
+
       SmartPtr<PatternBinarization> bin;
       int maxBCHErr;
       BCHCoder bch;
     };
-    
+
     FiducialDetectorPluginBCH::FiducialDetectorPluginBCH():
       data(new Data){
       data->buffer.setChannels(1);
       data->buffer.setSize(Size(6,6));
-  
+
       data->loaded.reset();
       data->maxLoaded = -1;
       data->sizes.resize(4096);
-  
+
       addProperty("max bch errors","range","[0,4]:1",3,0,
                   "Maximum amount of binary BCH code error\n");
       addProperty("match factor","range","[1,10]:1",2,0,
@@ -120,15 +120,15 @@ namespace icl{
                   "         two-center k-means"
                   "threshold: use a custom global threshold value");
     }
-  
+
     FiducialDetectorPluginBCH::~FiducialDetectorPluginBCH(){
       delete data;
     }
-  
-  
+
+
     void FiducialDetectorPluginBCH::addOrRemoveMarkers(bool add, const Any &which, const ParamList &l){
       Size s = l["size"];
-  
+
       std::vector<int> ids = parse_list_str(which);
       for(unsigned int i=0;i<ids.size();++i){
         int x = ids[i];
@@ -136,7 +136,7 @@ namespace icl{
         data->loaded[x] = add;
         if(add) data->sizes[x] = s;
       }
-      
+
       data->maxLoaded=-1;
       for(int i=4095;i>=0;--i){
         if(data->loaded[i]){
@@ -144,12 +144,12 @@ namespace icl{
           break;
         }
       }
-  
+
     }
-  
-  
-   
-    
+
+
+
+
     void FiducialDetectorPluginBCH::prepareForPatchClassification(){
       data->maxBCHErr = getPropertyValue("max bch errors");
       std::string mode = getPropertyValue("binarize.mode");
@@ -159,21 +159,21 @@ namespace icl{
         data->bin = new PatternBinarizationKMeans(getPropertyValue("binarize.k-means steps").as<int>());
       }
     }
-    
-  
-    FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot, 
+
+
+    FiducialImpl *FiducialDetectorPluginBCH::classifyPatch(const Img8u &image, int *rot,
                                                            bool returnRejectedQuads, ImageRegion r){
       image.scaledCopyROI(&data->buffer, interpolateRA);
-      
+
       data->bin->apply(data->buffer.begin(0));
-      
+
       DecodedBCHCode2D p = data->bch.decode2D(data->buffer,data->maxLoaded,false);
-  
+
       static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
-      static Fiducial::FeatureSet computed = ( Fiducial::Center2D | 
+      static Fiducial::FeatureSet computed = ( Fiducial::Center2D |
                                                Fiducial::Rotation2D |
                                                Fiducial::Corners2D );
-      
+
       if(p && (p.id >=0) && (p.id < 4096) && (data->loaded[p.id]) && p.errors <= data->maxBCHErr){
         FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                               p.id, -1,data->sizes[p.id]);
@@ -189,7 +189,7 @@ namespace icl{
         return 0;
       }
     }
-  
+
     void FiducialDetectorPluginBCH::getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                                    Size &markerSizeWithoutBorder){
       int f = getPropertyValue("match factor");
@@ -197,11 +197,11 @@ namespace icl{
       markerSizeWithBorder = Size(f*(2*b+6), f*(2*b+6));
       markerSizeWithoutBorder = Size(f*6,f*6);
     }
-  
+
     Img8u FiducialDetectorPluginBCH::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
       return BCHCoder::createMarkerImage(whichOne,params["border width"],size);
     }
-  
-  
+
+
   } // namespace markers
 }

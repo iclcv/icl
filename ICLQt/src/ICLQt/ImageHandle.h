@@ -40,47 +40,47 @@ namespace icl{
   /** \endcond */
 
   namespace qt{
-    
+
     /** \cond */
     class ICLWidget;
     /** \endcond */
-  
+
     /// Handle class for image components \ingroup HANDLES
     class ICLQt_API ImageHandle : public GUIHandle<ICLWidget>{
       public:
       /// Create an empty handle
       ImageHandle(){}
-      
+
       /// create a new ImageHandel
       ImageHandle(ICLWidget *w, GUIWidget *guiw):GUIHandle<ICLWidget>(w,guiw){}
-      
+
       /// make the wrapped ICLWidget show a given image
       void setImage(const core::ImgBase *image);
-      
+
       /// make the wrapped ICLWidget show a given image (as set Image)
       void operator=(const core::ImgBase *image) { setImage(image); }
-  
+
       /// make the wrapped ICLWidget show a given image (as set Image)
       void operator=(const core::ImgBase &image) { setImage(&image); }
-      
+
       /// calles updated internally
       void render();
-  
+
       /// passes callback registration to wrapped ICLWidget instance)
       /** allowed event names are all,move,drag,press,release,enter,leave */
       virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all");
-  
+
       /// complex callbacks are not allowed for image-components (this method will throw an exception)
       virtual void registerCallback(const GUI::ComplexCallback&, const std::string &){
         throw utils::ICLException("ImageHandle::registerCallback: you cannot register "
                            "GUI::ComplexCallback instances to an image GUI component");
       }
-      
+
       /// passes callback registration to wrapped ICLWidget instance)
       virtual void removeCallbacks();
-                    
+
     };
-    
+
   } // namespace qt
 }
 

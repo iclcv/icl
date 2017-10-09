@@ -48,12 +48,12 @@ namespace icl{
     /** \endcond */
 
     /// QApplication extension for ICL based applications
-    /** After the 100th time of writing 
+    /** After the 100th time of writing
         \code
         void init(){...}
-        
+
         void run(){...}
-        
+
         int main(int n, char **ppc){
           pa_init("...");
           ExecThread x(run);
@@ -66,25 +66,25 @@ namespace icl{
         I wrote a utility class that does all the stuff above for me:
         \code
         void init(){...}
-        
+
         void run(){...}
-        
+
         int main(int n, char **ppc){
           return ICLApplication(n,ppc,"...",init,run).exec();
         }
-        
+
         \endcode
-        Of course sometimes we need more than on initialization functions or even 
+        Of course sometimes we need more than on initialization functions or even
         more than one extra-thread:
-  
+
         \code
         void init1(){...}
         void init2(){...}
-        
+
         void run1(){...}
         void run2(){...}
         void run3(){...}
-        
+
         int main(int n, char **ppc){
            ICLApplication app(n,ppc,"...");
            app.addInit(init1);
@@ -106,16 +106,16 @@ namespace icl{
       public:
       QApplication *app;
       QGLWidget *sharedWidget;
-      
+
       /// just type definition for convenience a void valued function with no args)
       typedef void (*callback)(void);
-      
+
       /// Such an exception is returned if a 2nd instance of ICLApplication is created
       struct SecondSingeltonException : public utils::ICLException{
         /// Basic constructor
         SecondSingeltonException(const std::string &reason):utils::ICLException(reason){}
       };
-  
+
       /// Constructor
       /** @param argc C++-main function arg-count
           @param argv C++-main function argument list (as obtained by int main(argc,argv))
@@ -127,25 +127,25 @@ namespace icl{
           @param run3 third threaded function which is called in a loop before the QApplication is started using QApplication::exec();
           @param run4 fourth threaded function which is called in a loop before the QApplication is started using QApplication::exec();
           @param run5 fifth threaded function which is called in a loop before the QApplication is started using QApplication::exec();
-  
+
           */
-      ICLApplication(int argc, char **argv, const std::string &paInitString="", 
+      ICLApplication(int argc, char **argv, const std::string &paInitString="",
                      callback init=0, callback run=0,
                      callback run2=0, callback run3=0,
                      callback run4=0, callback run5=0)throw (SecondSingeltonException);
-  
+
       /// Destructor
       ~ICLApplication();
-      
+
       /// adds a new threaded function
       /** Threaded function are executed in a loop. Execution is started immediately before the
           QApplication is executed within ICLApplication::exec() */
       void addThread(callback cb);
-  
+
       /// adds a new initialization function
       /** Initialization functions are called at the beginning of an ICLApplication::exec() call*/
       void addInit(callback cb);
-      
+
       /// adds a new finalization function
       /** Finalization functions are called, when the singelton ICLApplication instance is deleted */
       void addFinalization(callback cb);
@@ -153,7 +153,7 @@ namespace icl{
 			/// adds a new preparation-for-shutdown function
 			/** Prepare for shutdown functions are called, when the singelton ICLApplication instance is deleted and before the worker threads are stopped! */
 			void addPrepareShutDown(callback cb);
-  
+
       /// executes this ICLApplication
       /** callbacks are executed in the following order:
           * init functions, entry by entry in same order as their addition to this instance
@@ -161,22 +161,22 @@ namespace icl{
           * QApplication is executed and it's return code is f passed using 'return QApplication::exec();'
       */
       int exec();
-      
+
       /// interface for events that must be executed in the GUI Thread
       struct AsynchronousEvent{
         /// pure virtual execution method
         virtual void execute() = 0;
-        
+
         /// virtual destructor
         virtual ~AsynchronousEvent(){}
       };
-      
+
       /// internally posts the event to the GUI Thread
-      /** The event's ownwership is passed. It is deleted internally after 
+      /** The event's ownwership is passed. It is deleted internally after
           it is processed (please note, that the deletion will also take place
           within the GUI thread */
       void executeInGUIThread(AsynchronousEvent *event, bool blocking = false, bool forcePostEvent = false);
-      
+
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T>
@@ -191,7 +191,7 @@ namespace icl{
         };
         executeInGUIThread(new TmpAsynchronousEvent(data,f),blocking, forcePostEvent);
       }
-      
+
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T,class U>
@@ -207,40 +207,40 @@ namespace icl{
         };
         executeInGUIThread(new TmpAsynchronousEvent(t,u,f),blocking, forcePostEvent);
       }
-      
+
 
       /// overloaded event function
       virtual bool event(QEvent *eIn);
-      
+
       /// returns the singelton ICLApplication instance (or NULL if there is none)
       static ICLApplication *instance();
-      
+
       /// returns whether we are currently in the GUI thread
       static bool isGUIThreadActive();
 
       private:
       /// singelton instance
       static ICLApplication *s_app;
-      
+
       /// list of threads
       static std::vector<ExecThread*> s_threads;
-      
+
       /// list of initialization functions
       static std::vector<callback> s_inits;
-      
-      
+
+
       /// list of callback functions
       static std::vector<callback> s_callbacks;
-  
+
       /// list of finalization functions
       static std::vector<callback> s_finalizes;
 
 			/// list of finalization functions
 			static std::vector<callback> s_prepare_shutdowns;
     };
-  
+
     /// this is just a shortcut typedef
-    typedef ICLApplication ICLApp; 
+    typedef ICLApplication ICLApp;
   } // namespace qt
 }
 

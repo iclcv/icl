@@ -45,10 +45,10 @@
 
 namespace icl{
   namespace geom{
-    
+
     /// Special SceneObject implementation that define a visible coordinate frame
     /** In constrast to the <em>normal</em> CoordinateFrameSceneObject class, the
-        ComplexCoordinateFrameSceneObject is build of cones and cylinders and 
+        ComplexCoordinateFrameSceneObject is build of cones and cylinders and
         it uses billboard text as axix label.
         The ComplexCoordinateFrameSceneObject is already integrated with the Scene
         class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
@@ -57,29 +57,29 @@ namespace icl{
     class ComplexCoordinateFrameSceneObject : public SceneObject{
       /// internally used mutex
       utils::Mutex mutex;
-  
+
       /// length of each axis
       float axisLength;
-      
+
       /// thickness of each axis
       float axisThickness;
-      
+
       /// axis labels
       std::string xLabel, yLabel, zLabel;
-      
+
       public:
-      
+
       /// Default constructor with useful default size
-      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5, 
-                                                    bool withXYZLabels=true, 
-                                                    const std::string &xLabel="x", 
+      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLength=100,float axisThickness=5,
+                                                    bool withXYZLabels=true,
+                                                    const std::string &xLabel="x",
                                                     const std::string &yLabel="y",
                                                     const std::string &zLabel="z");
 
       /// forwards initialization to setParams
-      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness=5, 
-                                                    bool withXYZLabels=true, 
-                                                    const std::string &xLabel="x", 
+      ICLGeom_API ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness=5,
+                                                    bool withXYZLabels=true,
+                                                    const std::string &xLabel="x",
                                                     const std::string &yLabel="y",
                                                     const std::string &zLabel="z",
                                                     const GeomColor &xAxisColor=GeomColor(255,0,0,255),
@@ -88,7 +88,7 @@ namespace icl{
                                                     const GeomColor &textLabelColor=GeomColor(255,255,255,255),
                                                     float textScaling=1.0f);
 
-  
+
       /// Dynamic adaption
       /** The default text label size is 3 x axisThickness. If you use very thin axes, textScaling
           can be used to compensate a resulting too small text size */
@@ -98,16 +98,16 @@ namespace icl{
                                  const GeomColor &zAxisColor=GeomColor(0,0,255,255),
                                  const GeomColor &textLabelColor=GeomColor(255,255,255,255),
                                  float textScaling = 1.0f);
-      
+
       /// returns current length of the axis'
       inline float getAxisLength() const { return axisLength; }
-  
+
       /// returns current thickness of the axis'
       inline float getAxisThickness() const { return axisThickness; }
-      
+
       /// locks the internal mutex
       virtual void lock() { mutex.lock(); }
-  
+
       /// unlocks the internal mutex
       virtual void unlock() { mutex.unlock(); }
     };

@@ -123,14 +123,14 @@ namespace icl{
     };
 
 #define XI_CALL(X) DEBUG_LOG("calling xiFunction " << #X); X
-    
+
     struct XiGrabber::Data{
       HANDLE xiH;
       XI_IMG image;
       Img8u buf;
       Mutex mutex;
       Size imageSize;
-      
+
       Data(int deviceID){
         DEBUG_LOG("Generic Grabber created");
         xiH = NULL;
@@ -138,20 +138,20 @@ namespace icl{
         image.size = sizeof(XI_IMG);
         image.bp = NULL;
         image.bp_size = 0;
-        
+
         XI_RETURN s = xiOpenDevice(deviceID, &xiH);
         handle_result(s,"xiOpenDevice");
-        
+
         int time_us = 30000;
         s = xiSetParam(xiH, XI_PRM_EXPOSURE, &time_us, sizeof(time_us), xiTypeInteger);
         handle_result(s,"xiSetParam(exposure");
-        
+
         s = xiSetParamInt(xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
         handle_result(s,"xiSetParamInt(format)");
-        
+
         xiSetParamInt(xiH, XI_PRM_RECENT_FRAME, 1);
         handle_result(s,"xiSetParamInt(use recent frame)");
-        
+
         // hmm ? we assume here, that this gives the maximum size and not
         // only the size that is currently set inside the device
         xiGetParamInt(xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &imageSize.width);
@@ -159,7 +159,7 @@ namespace icl{
 
         s = xiStartAcquisition(xiH);
       }
-      
+
       ~Data(){
         if (xiH){
           XI_RETURN s = xiStopAcquisition(xiH);
@@ -169,19 +169,19 @@ namespace icl{
           xiH = 0;
         }
       }
-      
+
       template<class T>
       struct Info{
         T min;
         T max;
         T step;
         T curr;
-        
+
         std::string rangeString() const {
           return "[" + str(min) + "," +str(max) + "]:" + str(step);
         }
       };
-      
+
       Info<int> get_info_int(const std::string &what){
         Info<int> info = {0,0,0,0};
         xiGetParamInt(xiH, (what + XI_PRM_INFO_MIN).c_str(), &info.min);
@@ -207,7 +207,7 @@ namespace icl{
       }
 
 
-      void addRangeProperty(const std::string &type, XiGrabber *g, const std::string &what, 
+      void addRangeProperty(const std::string &type, XiGrabber *g, const std::string &what,
                             const std::string &propertyName=""){
         if(type == "int"){
           Info<int> info = get_info_int(what);
@@ -219,8 +219,8 @@ namespace icl{
                          "range",info.rangeString(), info.curr);
         }
       }
-      
-      static void handle_result(XI_RETURN s, const std::string &where, 
+
+      static void handle_result(XI_RETURN s, const std::string &where,
                                 bool throwException=true){
         if(s != XI_OK){
           static std::map<int,std::string> errors;
@@ -229,7 +229,7 @@ namespace icl{
               errors.insert(error_codes[i]);
             }
           }
-          std::string errorText = "XiGrabber: error in XiApi in " + where + " (error code was: " 
+          std::string errorText = "XiGrabber: error in XiApi in " + where + " (error code was: "
             + str(s)  + ":" + errors[s] + ")";
           if(throwException){
             throw ICLException(errorText);
@@ -240,7 +240,7 @@ namespace icl{
       }
 
     };
-    
+
     void XiGrabber::init(int deviceID) throw (utils::ICLException){
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
@@ -249,7 +249,7 @@ namespace icl{
       addProperty("size", "info", "", "", 0, "");
 
       addProperty("roi.enabled","flag","",false);
-      
+
       int maxw=0, maxh=0, xstep=0, ystep=0;
       xiGetParamInt(m_data->xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &maxw);
       xiGetParamInt(m_data->xiH, XI_PRM_HEIGHT XI_PRM_INFO_MAX, &maxh);
@@ -271,7 +271,7 @@ namespace icl{
 
     XiGrabber::XiGrabber(int deviceID) throw(utils::ICLException) : m_data(0){
       init(deviceID);
-      
+
     }
 
     XiGrabber::~XiGrabber(){
@@ -295,7 +295,7 @@ namespace icl{
         }
         /** this is even worse!
         for(int i=0;true;++i){
-            HANDLE h = NULL; 
+            HANDLE h = NULL;
             DEBUG_LOG("opening device " << i);
             XI_RETURN s = xiOpenDevice(i, &h);
             DEBUG_LOG("opened device " << i);
@@ -307,7 +307,7 @@ namespace icl{
             }
             */
       }
-      return all;      
+      return all;
     }
 
     const core::ImgBase* XiGrabber::acquireImage(){
@@ -325,11 +325,11 @@ namespace icl{
           Data::handle_result(s1,"xiStartAcquisition because of timeout");
         }
       }while(s == XI_TIMEOUT);
-      
+
       Data::handle_result(s,"xiGetImage");
 
       m_data->buf.setSize(Size(m_data->image.width, m_data->image.height));
-      
+
       if(m_data->image.frm == XI_RGB24){
         m_data->buf.setFormat(formatRGB);
         interleavedToPlanar((const icl8u*)m_data->image.bp, &m_data->buf);
@@ -353,10 +353,10 @@ namespace icl{
           Data::handle_result(s,"setPaxiSetParamInt(format=RGB24)");
         }else{
           s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
-          Data::handle_result(s,"setPaxiSetParamInt(format=mono8)");          
+          Data::handle_result(s,"setPaxiSetParamInt(format=mono8)");
         }
       }else if(prop.name == str(XI_PRM_EXPOSURE)){
-        int value = getPropertyValue(prop.name);   
+        int value = getPropertyValue(prop.name);
         std::cout << "settings exposure to " << value << " !!" << std::endl;
         //s = xiStopAcquisition(m_data->xiH);
         // Data::handle_result(s,"xiStopAcquistion()");
@@ -372,24 +372,24 @@ namespace icl{
       }else if(prop.name == "pixel binning" ||
                ( prop.name.length() > 4 && prop.name.substr(0,4) == "roi.")){
         XI_RETURN s,s2;
-        
-        std::string sbinning = getPropertyValue("pixel binning");        
-        int binning = (sbinning == "no binning" ? 1 : 
+
+        std::string sbinning = getPropertyValue("pixel binning");
+        int binning = (sbinning == "no binning" ? 1 :
                        sbinning == "2x2 to 1" ? 2 :
                        sbinning == "4x4 to 1" ? 4 : 0);
         if(binning){
           try{
             s = xiSetParamInt(m_data->xiH, XI_PRM_DOWNSAMPLING, binning);
-            Data::handle_result(s,"setPaxiSetParamInt(downsampling)");  
+            Data::handle_result(s,"setPaxiSetParamInt(downsampling)");
           }catch(ICLException &e){
             ERROR_LOG("error setting property 'pixel binning':"
                       << e.what());
           }
         }
-        
+
         int x=0, y=0, w=m_data->imageSize.width, h=m_data->imageSize.height;
 
-        
+
         if(getPropertyValue("roi.enabled")){
           x = getPropertyValue("roi.x");
           y = getPropertyValue("roi.y");
@@ -411,45 +411,45 @@ namespace icl{
         y = y/(iy.stepping) * iy.stepping;
         w = w/(iw.stepping) * iw.stepping;
         h = h/(ih.stepping) * ih.stepping;
-        
+
         try{
-          Size maxSize(m_data->imageSize.width/binning, 
+          Size maxSize(m_data->imageSize.width/binning,
                        m_data->imageSize.height/binning);
-          
+
           if(x + w > maxSize.width ||
              y + h > maxSize.height){
-            WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect " 
+            WARNING_LOG("roi " << Rect(x,y,w,h) << " outside image rect "
                         << Rect(Point::null, maxSize)
                         << " (skipping xiApi call to avoid undefined behavior");
           }else{
             //DEBUG_LOG("setting roi to " << Rect(x,y,w,h));
-            
+
             s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
             s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
-            
+
             if(s != XI_OK || s2 != XI_OK){
               s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_X, x);
               Data::handle_result(s2,"xiSetParamInt(x-offset)");
               s = xiSetParamInt(m_data->xiH, XI_PRM_WIDTH, w);
               Data::handle_result(s,"xiSetParamInt(width)");
-            } 
+            }
 
             s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
             s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
-              
+
             if(s != XI_OK || s2 != XI_OK){
               s2 = xiSetParamInt(m_data->xiH, XI_PRM_OFFSET_Y, y);
               Data::handle_result(s2,"xiSetParamInt(y-offset)");
               s = xiSetParamInt(m_data->xiH, XI_PRM_HEIGHT, h);
               Data::handle_result(s,"xiSetParamInt(height)");
-            } 
+            }
           }
         }catch(ICLException &e){
           ERROR_LOG("Error setting image ROI:" << e.what());
         }
       }
     }
-    
+
     static Grabber *create_xi_grabber(const std::string &param){
       return new XiGrabber(parse<int>(param));
     }
@@ -468,12 +468,12 @@ namespace icl{
             if(productIDs[v][p] == idProduct) {
               return true;
             }
-          } 
+          }
         }
       }
       return false;
     }
-    
+
     static void reset_xi_bus(bool verbose){
       libusb_context *ctx;
       if(libusb_init(&ctx)){

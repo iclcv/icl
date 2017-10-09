@@ -134,7 +134,7 @@ void init(){
   scene.setGravity(Vec(0,0,-9810));
 
   gui["draw"].install(&handler);
-  
+
   //link the visualization
   gui["draw"].link(scene.getGLCallback(0));
 }

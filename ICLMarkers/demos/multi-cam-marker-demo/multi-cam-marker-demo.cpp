@@ -67,16 +67,16 @@ void init(){
     grabbers[i] -> useDesired(formatGray);
     scene.addCamera(Camera(*pa("-c",i)));
   }
-  
-  fd.init(pa("-m",0), *pa("-m",1), ParamList("size",*pa("-m",2)), 
+
+  fd.init(pa("-m",0), *pa("-m",1), ParamList("size",*pa("-m",2)),
           scene.getAllCameras(), !pa("-nosync").as<bool>());
   fd.setConfigurableID("fd");
-  
+
   if(!pa("-nosync").as<bool>()){
     fd.setPropertyValue("thresh.global threshold",4.8);
   }
-  gui << Draw3D().handle("draw").minSize(16,12) 
-      << (VBox().maxSize(15,99).minSize(15,1) 
+  gui << Draw3D().handle("draw").minSize(16,12)
+      << (VBox().maxSize(15,99).minSize(15,1)
           << Combo(fd.getIntermediateImageNames()).handle("vis").label("visualized image")
           << Prop("fd")
           )
@@ -92,7 +92,7 @@ void run(){
   for(unsigned int i=0;i<grabbers.size();++i){
     images[i] = grabbers[i]->grab();
   }
- 
+
   const std::vector<MultiCamFiducial> &fs = fd.detect(images,1);
 
   if(pa("-verbose")){
@@ -121,7 +121,7 @@ int main(int n, char **args){
   ("-m", "markers to load (type can be e.g. bch or art, \n"
    "which are the bch-indices/ or artoolkit pattern images\n"
    "(e.g. [0-100]) and size are the real sizes in mm of the markers");
-   
+
   return ICLApp(n,args,"[m]-input|-i(...) [m]-cameras|-c(...) "
                  "[m]-markers-to-load|-m(type,which,size) "
                  "-do-not-sync-2D-detectors|-nosync -verbose",init,run).exec();

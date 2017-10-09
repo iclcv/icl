@@ -135,7 +135,7 @@ ADD_LIBRARY(ICLPhysics SHARED ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(ICLPhysics ICLMarkers ${ICLPhysics_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLPhysics
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

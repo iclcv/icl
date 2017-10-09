@@ -32,7 +32,7 @@
 #include <ICLPhysics/PhysicsScene.h>
 
 namespace icl{
-  
+
   /// Utility scene class
   /** The scene will automatically add the given camera (from file) and it
       will set up the 2nd scene Light as a centered spot */
@@ -46,7 +46,7 @@ namespace icl{
                          Vec(0.228754,-0.409613,-0.883113,1),
                          3, Point32f(320,240),200,200,
                          0, Camera::RenderParams(Size(640,480),
-                                                 1,100000, 
+                                                 1,100000,
                                                  Rect(0,0,640,480),
                                                  0,1)));
       }
@@ -65,9 +65,9 @@ namespace icl{
       SceneLight &l0 = getLight(0);
       l0.setAmbientEnabled(true);
       l0.setAmbient(GeomColor(255,255,255,5));
-#endif 
+#endif
 
     }
   };
-  
+
 }

@@ -33,7 +33,7 @@
 
 namespace icl{
   namespace qt{
-    
+
     void SliderHandle::setMin(int min){
       (**this)->setMinimum(min);
     }
@@ -56,7 +56,7 @@ namespace icl{
     int SliderHandle::getValue() const{
       return (**this)->value();
     }
-  
-    
+
+
   } // namespace qt
 }

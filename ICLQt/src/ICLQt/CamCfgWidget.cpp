@@ -57,7 +57,7 @@ using namespace icl::io;
 
 namespace icl{
   namespace qt{
-    
+
     class CamCfgWidget::Data{
     public:
       bool complex;
@@ -70,8 +70,8 @@ namespace icl{
       bool settingUpDevice;
       bool grabbing;
       bool loadParamsScope;
-      
-      
+
+
       Data(bool complex):complex(complex),mutex(QMutex::Recursive),fps(5),fpsLimiter(10,10){
         scanScope = false;
         settingUpDevice = false;
@@ -80,21 +80,21 @@ namespace icl{
         end = false;
         loadParamsScope = false;
       }
-      
+
       QScrollArea *scroll;
       GUI propGUI; // contains the dataStore ...
       QMutex mutex;
-      
+
       FPSEstimator fps;
       FPSLimiter fpsLimiter;
       bool useFPSLimiter;
       bool end;
     };
-    
+
     CamCfgWidget::CamCfgWidget(const std::string &deviceFilter,QWidget *parent):
       QWidget(parent), data(new Data(true)){
       data->deviceFilter = deviceFilter;
-      
+
       data->gui = VSplit(this);
       data->gui <<  (HSplit()
                       << Image().handle("image").minSize(10,14).label("preview")
@@ -113,48 +113,48 @@ namespace icl{
 
       data->gui << VBox().handle("props").minSize(10,18).label("Camera properties");
       data->gui.create();
-  
+
       setLayout(new QBoxLayout(QBoxLayout::LeftToRight,this));
       layout()->setContentsMargins(2,2,2,2);
       layout()->addWidget(data->gui.getRootWidget());
-  
+
       data->gui.registerCallback(function(this,&icl::qt::CamCfgWidget::callback),"device,scan,capture,fps,hz");
 
       scan();
     }
-  
+
     const ImgBase *CamCfgWidget::getCurrentImage(){
       QMutexLocker __lock(&data->mutex);
       if(data->grabber.isNull()) return 0;
-      
+
       const ImgBase *image = data->grabber.grab();
-      
+
       if(data->complex){
         data->gui["image"] = image;
         data->gui["fps"] = data->fps.getFPSString();
       }
-  
+
       return image;
     }
-  
-    
+
+
     CamCfgWidget::~CamCfgWidget(){
       if(data->complex){
         data->end = true;
       }
       ICL_DELETE(data);
     }
-    
+
     void CamCfgWidget::setVisible (bool visible){
       if(!visible){
         data->grabbing = false;
       }
       QWidget::setVisible(visible);
     }
-    
+
     void CamCfgWidget::callback(const std::string &source){
       QMutexLocker __lock(&data->mutex);
-  
+
       if(source == "scan"){
         scan();
       }else if(data->scanScope || data->settingUpDevice){
@@ -162,7 +162,7 @@ namespace icl{
       }else if(source == "device"){
         data->settingUpDevice = true;
         if(data->properties.hasBeenCreated()) data->properties.hide();
-        
+
         try{
           if(data->foundDevices.size() == 1){
             data->grabber.init(data->foundDevices[0]);
@@ -198,10 +198,10 @@ namespace icl{
         }
       }
     }
-  
+
     void CamCfgWidget::scan(){
       data->scanScope = true;
-      
+
       ComboHandle &devices = data->gui.get<ComboHandle>("device");
       devices.clear();
       data->foundDevices = GenericGrabber::getDeviceList(data->deviceFilter);
@@ -216,7 +216,7 @@ namespace icl{
       data->scanScope = false;
       callback("device");
     }
-  
+
     void CamCfgWidget::update(){
       data->mutex.lock();
       bool &b = data->gui.get<bool>("grabbing");

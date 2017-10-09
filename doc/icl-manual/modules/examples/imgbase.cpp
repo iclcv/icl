@@ -24,9 +24,9 @@ int main(){
   core::Img8u  a(utils::Size(512,512),core::formatRGB);
   core::Img32f b(utils::Size::VGA,core::formatGray);
   core::Img16s  c;
-  
+
   process_image(a); // works
   process_image(b); // works
   process_image(c); // exception is thrown
-      
+
 }

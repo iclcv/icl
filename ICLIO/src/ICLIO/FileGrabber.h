@@ -40,7 +40,7 @@ namespace icl{
     /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
     /** This implementation of a file grabber class provides an internally used
         and expendable plugin-based interface for reading files of different types.
-        
+
         \section EX Example
         \code
         FileGrabber g("image/image*.jpg"); //
@@ -72,7 +72,7 @@ namespace icl{
                         caught internally (i.e. these exceptions are thrown). This is necessary
                         because, the FileGrabber can become inconsistent in this case, which
                         must be reported explicitly using an exception.\n
-                        
+
                         To pre-buffer images in a error-tolerant way, use the constructor without
                         a set buffer flag and call bufferImages(false) after the FileGrabber
                         instantiation.
@@ -172,7 +172,7 @@ namespace icl{
         utils::Mutex m_propertyMutex;
         bool m_updatingProperties;
     };
-    
+
   } // namespace io
 }
 

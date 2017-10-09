@@ -38,19 +38,19 @@ namespace icl{
     struct ImgBuffer::Data{
       std::vector<ImgBase*> bufs[depthLast+1];
     };
-    
+
     ImgBuffer::ImgBuffer(){
       data = new ImgBuffer::Data;
     }
     ImgBuffer::~ImgBuffer(){
       delete data;
     }
-    
+
     ImgBuffer *ImgBuffer::instance(){
       static SmartPtr<ImgBuffer> i = new ImgBuffer;
       return i.get();
     }
-  
+
     ImgBase *ImgBuffer::get(depth d){
       switch(d){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return get<icl##D>();
@@ -59,7 +59,7 @@ namespace icl{
       }
       return 0;
     }
-  
+
     ImgBase *ImgBuffer::get(depth d, const Size &size, int channels){
       switch(d){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return get<icl##D>(size,channels);
@@ -68,7 +68,7 @@ namespace icl{
       }
       return 0;
     }
-  
+
     ImgBase *ImgBuffer::get(depth d, const ImgParams &params){
       switch(d){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return get<icl##D>(params);
@@ -77,12 +77,12 @@ namespace icl{
       }
       return 0;
     }
-    
+
     template<class T>
     Img<T> *ImgBuffer::get(const Size &size, int channels){
       return get<T>(ImgParams(size,channels));
     }
-    
+
     template<class T>
     Img<T> *ImgBuffer::get(const ImgParams &params){
       std::vector<ImgBase*> &buf = data->bufs[getDepth<T>()];
@@ -108,7 +108,7 @@ namespace icl{
         return buf.back()->asImg<T>();
       }
     }
-  
+
     template<class T>
     Img<T> *ImgBuffer::get(){
       std::vector<ImgBase*> &buf = data->bufs[getDepth<T>()];

@@ -45,9 +45,9 @@ namespace icl{
     */
 
     class RegionGrower{
-      	
+
   	  public:
-        
+
         /// Applies the region growing on an input image with a growing criterion
         /** @param image the input image for region growing
             @param crit the region growing criterion
@@ -55,7 +55,7 @@ namespace icl{
             @param minSize the minimum size of regions (smaller regions are removed)
             @param startID the start id for the result label image
             @return the result label image
-        */      
+        */
         template<class Criterion>
         const core::Img32s &apply(const core::Img8u &image, Criterion crit, core::Img8u *initialMask = 0,
                             const unsigned int minSize=0, const unsigned int startID=1){
@@ -98,7 +98,7 @@ namespace icl{
             @param minSize the minimum size of regions (smaller regions are removed)
             @param startID the start id for the result label image
             @return the result label image
-        */   
+        */
         template<class Criterion>
         const core::Img32s &apply(const core::DataSegment<float,4> &dataseg, Criterion crit, core::Img8u *initialMask = 0,
                             const unsigned int minSize=0, const unsigned int startID=1){
@@ -108,8 +108,8 @@ namespace icl{
           region_grow<core::DataSegment<float,4>,float,4, Criterion>(dataseg, useMask, this->result, crit, minSize, startID);
           return this->result;
         }
-  
-  
+
+
         /// Applies the region growing on an input data segment with euclidean distance criterion
         /** @param dataseg the input data segment for region growing
             @param mask the initial mask (e.g. ROI)
@@ -117,13 +117,13 @@ namespace icl{
             @param minSize the minimum size of regions (smaller regions are removed)
             @param startID the start id for the result label image
             @return the result label image
-        */   
-        const core::Img32s &applyFloat4EuclideanDistance(const core::DataSegment<float,4> &dataseg, core::Img8u mask, 
+        */
+        const core::Img32s &applyFloat4EuclideanDistance(const core::DataSegment<float,4> &dataseg, core::Img8u mask,
                             const int threshold, const unsigned int minSize=0, const unsigned int startID=1){
           return apply(dataseg, Float4EuclideanDistance(threshold), &mask, minSize, startID);
         }
-  
-        
+
+
         /// Applies the region growing on an input image with value-equals-threshold criterion
         /** @param image the input image for region growing
             @param mask the initial mask (e.g. ROI)
@@ -131,27 +131,27 @@ namespace icl{
             @param minSize the minimum size of regions (smaller regions are removed)
             @param startID the start id for the result label image
             @return the result label image
-        */     
-        const core::Img32s &applyEqualThreshold(const core::Img8u &image, core::Img8u mask, const int threshold, 
+        */
+        const core::Img32s &applyEqualThreshold(const core::Img8u &image, core::Img8u mask, const int threshold,
                             const unsigned int minSize=0, const unsigned int startID=1){
           return apply(image, EqualThreshold(threshold), &mask, minSize, startID);
         }
-  
-  
+
+
         /// Returns a vector of regions containing the image IDs. This is an additional representation of the result.
         /** @return the vector of regions with the image IDs.
-        */     
+        */
         std::vector<std::vector<int> > getRegions(){
           return regions;
         }
-  
-  
+
+
       private:
 
         core::Img8u mask;
         core::Img32s result;
         std::vector<std::vector<int> > regions;
-      
+
         template<class T, class DataT, int DIM>
         struct RegionGrowerDataAccessor{
           RegionGrowerDataAccessor(const T &t){};
@@ -159,7 +159,7 @@ namespace icl{
           int h() const { return 0; }
           math::FixedColVector<DataT, DIM> operator()(int x, int y) const { return math::FixedColVector<DataT,DIM>(); }
         };
-        
+
         static float dist3u8(const math::FixedColVector<icl8u,3> &a, const math::FixedColVector<icl8u,3> &b) {
             math::FixedColVector<icl8u,3> c = b-a;
             return sqrt( c[0]*c[0] + c[1]*c[1] + c[2]*c[2] );
@@ -172,7 +172,7 @@ namespace icl{
                 return dist3u8(a,b) < t;
             }
         };
-        
+
         struct EqualThreshold{
           int t;
           EqualThreshold(int t):t(t){}
@@ -181,7 +181,7 @@ namespace icl{
           }
         };
 
-        
+
         struct Float4EuclideanDistance{
           float t;
           Float4EuclideanDistance(float t):t(t){}
@@ -189,17 +189,17 @@ namespace icl{
             return math::dist3(a,b) < t;
           }
         };
-        
-  
+
+
         template<class T, class DataT, int DIM, class Criterion>
-        static void flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart, 
+        static void flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart,
                                core::Channel8u &processed, Criterion crit, std::vector<int> &result,  core::Channel32s &result2, int id);
-                               
-                               
+
+
         template<class T, class DataT, int DIM, class Criterion>
         void region_grow(const T &data, core::Img8u &mask, core::Img32s &result, Criterion crit, const unsigned int minSize, const unsigned int startID=1){
           RegionGrowerDataAccessor<T,DataT,DIM> a(data);
-          
+
           core::Img8u processed = mask;
           core::Channel8u p = processed[0];
           std::vector<int> r;
@@ -234,10 +234,10 @@ namespace icl{
             }
           }
         }
-      
+
       };
-     
-     
+
+
       template<>
       struct RegionGrower::RegionGrowerDataAccessor<core::Img8u, icl8u, 1>{
         const core::Channel8u c;
@@ -257,7 +257,7 @@ namespace icl{
         }
         int w() const { return c[0].getWidth(); }
         int h() const { return c[0].getHeight(); }
-        math::FixedColVector<icl8u, 3> operator()(int x, int y) const { 
+        math::FixedColVector<icl8u, 3> operator()(int x, int y) const {
           return math::FixedColVector<icl8u,3>(c[0](x,y), c[1](x,y), c[2](x,y));
         }
       };
@@ -274,13 +274,13 @@ namespace icl{
         int h() const { return hh; }
         math::FixedColVector<float,4> operator()(int x, int y) const { return data(x,y); }
       };
-        
+
       template<class T, class DataT, int DIM, class Criterion>
-      void RegionGrower::flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart, 
+      void RegionGrower::flood_fill(const RegionGrowerDataAccessor<T,DataT,DIM> &a, int xStart, int yStart,
                                core::Channel8u &processed, Criterion crit, std::vector<int> &result,  core::Channel32s &result2, int id){
         std::vector<utils::Point> stack(1,utils::Point(xStart,yStart));
         processed(xStart,yStart) = true;//update mask
-        result2(xStart,yStart) = id;//update result image           
+        result2(xStart,yStart) = id;//update result image
         result.push_back(xStart+yStart*a.w());//add to region vector
         unsigned int next = 0;
         while(next < stack.size()){
@@ -297,13 +297,13 @@ namespace icl{
               if(crit(a(p.x,p.y),a(x,y)) && processed(x,y)==false){
                 stack.push_back(utils::Point(x,y));
                 processed(x,y) = true;
-                result2(x,y) = id;           
+                result2(x,y) = id;
                 result.push_back(x+y*a.w());
               }
             }
-          }      
+          }
         }
-      }    
-     
+      }
+
   } // namespace cv
 }

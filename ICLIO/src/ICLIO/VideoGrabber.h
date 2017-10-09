@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// Xine-based Video Grabber (grabs most common image formats) \ingroup MOVIE_FILE_G
     /** The VideoGrabber implementation differs somehow from other Grabber implementations, as
         video playback is heavily constrained by the current video framerate. The
@@ -43,10 +43,10 @@ namespace icl{
         speed.
         Internally video frames are obtained successively (using xine's 'experimental feature:
         framegrab_video_port').
-        
+
         Currently, drop-frames are not allowed/possible, so if the grabber is too slow to reach the
         desired Video-framerate, playback speed is decreased implicitly
-        
+
         \section KI Known Issues
         The video grabber does not really work very stable.
         * In particular when linked against

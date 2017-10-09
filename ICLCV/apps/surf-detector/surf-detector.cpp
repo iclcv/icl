@@ -40,8 +40,8 @@ Img8u templ,vis(Size(1,1),formatRGB);
 int iH=0, iW=0, tH=0, tW=0;
 VisualizationDescription vdtempl;
 
-inline int fround(float flt) {  
-  return (int) floor(flt+0.5f); 
+inline int fround(float flt) {
+  return (int) floor(flt+0.5f);
 }
 
 struct Mouse : public MouseHandler{
@@ -63,7 +63,7 @@ struct Mouse : public MouseHandler{
   virtual void process(const MouseEvent &e){
     Point p = e.getPos();
     p.x -= xoffset;
-    
+
     if(!bounds.contains(p.x,p.y)){
       return;
     }
@@ -129,7 +129,7 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-r")) grabber.resetBus();
 
-  gui << Draw().handle("draw").minSize(48,18) 
+  gui << Draw().handle("draw").minSize(48,18)
       << ( VBox().maxSize(14,99).minSize(14,1)
            << ( HBox().label("template ...")
                 << Button("extract from image").handle("extract")
@@ -150,7 +150,7 @@ void init(){
            << Slider(0,10,2).handle("step").label("sample step")
            << FSlider(0,0.04,0.005).out("thresh").label("threshold")
 
-           << (HBox() 
+           << (HBox()
                << Fps().handle("fps")
                << CamCfg()
               )
@@ -213,12 +213,12 @@ void load(){
 
 
 void run(){
-  
+
   surf->setOctaves(gui["octaves"]);
   surf->setIntervals(gui["intervals"]);
   surf->setSampleStep(gui["step"]);
   surf->setThreshold(gui["thresh"]);
-  
+
 
   DrawHandle draw = gui["draw"];
   ButtonHandle extract = gui["extract"];
@@ -248,11 +248,11 @@ void run(){
   }
 
   vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
-  
+
   mouse->setXOffset(tW);
   vis.setSize(Size(iW+tW,iclMax(iH,tH)));
-  
-  
+
+
   vis.fill(0);
   vis.setROI(Rect(0,(iH-tH)/2, tW, tH));
   templ.deepCopyROI(&vis);
@@ -287,8 +287,8 @@ void run(){
     surf->match(&image);
   }
   //
-  // 
-  // 
+  //
+  //
   draw = vis;
   if(gui["vis quad"]){
     draw->draw(mouse->vis());

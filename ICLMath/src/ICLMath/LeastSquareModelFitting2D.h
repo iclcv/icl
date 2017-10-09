@@ -36,7 +36,7 @@
 
 namespace icl{
   namespace math{
-  
+
     /// Direct Least Square Fitting specialization for 2D input data
     /** Specialized least square model fitting for 2D data. Also
         some special desing matrix creation methods are provided */
@@ -46,20 +46,20 @@ namespace icl{
       public:
       /// Default constructor for creating dummy instances
       LeastSquareModelFitting2D(){}
-      
+
       /// Constructor with given parameters
-      LeastSquareModelFitting2D(int modelDim, DesignMatrixGen gen, 
+      LeastSquareModelFitting2D(int modelDim, DesignMatrixGen gen,
                            DynMatrix<double> *constraintMatrix = 0):
       Super(modelDim,gen,constraintMatrix){}
-      
+
       /// DesignMatrixGenerator for the 3-parameter line model
       /** @see LeastSquareModelFitting */
       static inline void line_gen(const utils::Point32f &p, double *d){
-        d[0] = p.x; 
-        d[1] = p.y; 
+        d[0] = p.x;
+        d[1] = p.y;
         d[2] = 1;
       }
-      
+
       /// DesignMatrixGenerator for the 4 parameter circle model
       /** @see LeastSquareModelFitting */
       static inline void circle_gen(const utils::Point32f &p, double *d){
@@ -68,7 +68,7 @@ namespace icl{
         d[2] = p.y;
         d[3] = 1;
       }
-  
+
       /// DesignMatrixGenerator for the 5 parameter restricted ellipse model
       /** @see LeastSquareModelFitting */
       static inline void restr_ellipse_gen(const utils::Point32f &p, double *d){
@@ -78,7 +78,7 @@ namespace icl{
         d[3] = p.y;
         d[4] = 1;
       }
-  
+
       /// DesignMatrixGenerator for the 6 parameter general ellipse model
       /** @see LeastSquareModelFitting */
       static inline void ellipse_gen(const utils::Point32f &p, double *d){
@@ -89,7 +89,7 @@ namespace icl{
         d[4] = p.y;
         d[5] = 1;
       }
-      
+
       inline std::vector<double> fit(const std::vector<utils::Point32f> &points){
         return Super::fit(points);
       }
@@ -97,8 +97,8 @@ namespace icl{
         return Super::getError(model,p);
       }
     };
-  
-  
+
+
   } // namespace math
 }
 

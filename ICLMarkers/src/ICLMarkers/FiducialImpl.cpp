@@ -32,15 +32,15 @@
 
 namespace icl{
   namespace markers{
-    
+
     FiducialImpl::FiducialImpl(const FiducialImpl &o):
       parent(o.parent),supported(o.supported),computed(o.computed),
       id(o.id),index(o.index){
-      
+
       info2D = o.info2D ? new Info2D(*o.info2D) : 0;
       info3D = o.info3D ? new Info3D(*o.info3D) : 0;
     }
-    
+
     FiducialImpl &FiducialImpl::operator=(const FiducialImpl &o){
       parent = o.parent;
       supported = o.supported;
@@ -61,6 +61,6 @@ namespace icl{
       }
       return *this;
     }
-  
+
   } // namespace markers
 }

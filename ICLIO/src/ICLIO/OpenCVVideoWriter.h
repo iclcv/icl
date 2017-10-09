@@ -48,13 +48,13 @@
 
 namespace icl{
   namespace io{
-  
+
     class ICLIO_API OpenCVVideoWriter :public ImageOutput{
       private:
       ///OpenCV VideoWriter struct
   	CvVideoWriter *writer;
       public:
-        
+
   	/// Creates a new videowriter with given filename
   	/** @param filename the filename to write to
   	    @param fourcc this is translated into an instance of FOURCC
@@ -69,23 +69,23 @@ namespace icl{
             * FLV1 (for FLV1 code)
             * on linux: IYUV for IYUV codec ??
             * on windows: "" for open dialog
-            
+
   	    @param fps frames per second
   	    @param frame_size size of the frames to be written out
   	    @param frame_color currently only supported on windows 0 for greyscale else color
             **/
   	OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
                           double fps, utils::Size frame_size, int frame_color=1) throw (utils::ICLException);
-        
+
   	/// Destructor
   	~OpenCVVideoWriter();
-        
+
   	/// writes the next image
   	void write(const core::ImgBase *image);
-        
+
         /// wraps write to implement ImageOutput interface
         virtual void send(const core::ImgBase *image) { write(image); }
-        
+
   	/// as write but in stream manner
   	OpenCVVideoWriter &operator<<(const core::ImgBase *image);
     };

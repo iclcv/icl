@@ -37,23 +37,23 @@ namespace icl{
   using namespace geom;
 
   namespace markers{
-    
+
     struct MarkerGridPoseEstimator::Data{
       CoplanarPointPoseEstimator poseEst;
       Data():poseEst(CoplanarPointPoseEstimator::worldFrame,
                      CoplanarPointPoseEstimator::SimplexSampling,
                      CoplanarPointPoseEstimator::RANSACSpec(true)){
-        
+
       }
     };
-    
+
     MarkerGridPoseEstimator::MarkerGridPoseEstimator() : m_data(new Data){
       addChildConfigurable(&m_data->poseEst);
     }
     MarkerGridPoseEstimator::~MarkerGridPoseEstimator(){
       delete m_data;
     }
-    
+
     Mat MarkerGridPoseEstimator::computePose(const AdvancedMarkerGridDetector::MarkerGrid &grid,
                                              const Camera &cam){
       typedef AdvancedMarkerGridDetector::MarkerGrid Grid;
@@ -76,6 +76,6 @@ namespace icl{
         return Mat::id();
       }
     }
-    
+
   }
 }

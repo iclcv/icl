@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
- /****************************************************************************\ 
+ /****************************************************************************\
  * Copyright (c) 2011, Advanced Micro Devices, Inc.                           *
  * All rights reserved.                                                       *
  *                                                                            *
@@ -136,8 +136,8 @@ namespace icl{
     	        "           BoxIntegral(img, width, height, row-s/2, column-s/2, s/2, s);        \n"
     	        "}                                                                               \n";
 
-      
-      const char *normalizeDescriptors_kernel =  
+
+      const char *normalizeDescriptors_kernel =
         "__kernel void                                                                   \n"
         "normalizeDescriptors(__global float* surfDescriptors,                           \n"
         "                     __global float* descLengths)                               \n"
@@ -185,8 +185,8 @@ namespace icl{
         "    surfDescriptors[descOffset + tid] *= lengthOfDescriptor;	                 \n"
         "}                                                                               \n";
 
-      
-      const char *nonMaxSuppression_kernel = 
+
+      const char *nonMaxSuppression_kernel =
         "#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable              \n"
         "                                                                                \n"
         "int getLaplacian(lap_t layer, int c, int r, int width)                          \n"
@@ -232,7 +232,7 @@ namespace icl{
         "                                                                                \n"
         "    float dx, dy, ds;                                                           \n"
         "    dx = (getResponse(m, c+1, r,   mWidth, mScale) -                            \n"
-        "          getResponse(m, c-1, r,   mWidth, mScale)) / 2.0f;                     "                    
+        "          getResponse(m, c-1, r,   mWidth, mScale)) / 2.0f;                     "
         "    dy = (getResponse(m, c,   r+1, mWidth, mScale) -                            \n"
         "          getResponse(m, c,   r-1, mWidth, mScale)) / 2.0f;                     \n"
         "    ds = (getResponse(t, c,   r,   tWidth, 1)      -                            \n"
@@ -457,7 +457,7 @@ namespace icl{
         "}                                                                               \n";
 
 
-      const char *nearestNeighbor_kernel =  
+      const char *nearestNeighbor_kernel =
         "typedef struct{                                                                 \n"
         "    int point1;                                                                 \n"
         "    float x1;                                                                   \n"
@@ -538,7 +538,7 @@ namespace icl{
         "    }                                                                           \n"
         "}                                                                               \n";
 
-      const char *integralImage_kernels =  
+      const char *integralImage_kernels =
         "#define WG_SIZE 64                                                              \n"
         "#define HALF_WG_SIZE (WG_SIZE/2)                                                \n"
         " /* This kernel does a prefix scan on any size image.  Each work group marches  \n"
@@ -905,8 +905,8 @@ namespace icl{
         "    }                                                                           \n"
         "}                                                                               \n";
 
-    
-      const char *hessianDet_kernel = 
+
+      const char *hessianDet_kernel =
         "typedef __global float* int_img_t;                                              \n"
         "// Compute the hessian determinant                                              \n"
         "__kernel void                                                                   \n"

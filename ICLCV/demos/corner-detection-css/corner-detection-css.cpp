@@ -56,12 +56,12 @@ void init(){
   if(pa("-r")){
     GenericGrabber::resetBus();
   }
-  
+
   css.setConfigurableID("css");
   css.setPropertyValue("debug-mode","on");
 
   gui << ( VBox()
-           << ( HBox() 
+           << ( HBox()
                 << CamCfg("")
                 <<  Combo("color image,binary image").handle("vis")
               )
@@ -80,7 +80,7 @@ void init(){
 
   gui["img_in"].install(mouse);
 
-  
+
   // grabber
   grabber = new GenericGrabber();
   grabber -> init(pa("-i"));
@@ -99,11 +99,11 @@ template<class T>
   for(int i=0;i<cs[0].getDim();++i){
     int d = 0;
     for(int c=0;c<3;++c){
-      d += pow( double(cs[c][i] - ref[c]) ,2.0); 	
-    } 
+      d += pow( double(cs[c][i] - ref[c]) ,2.0);
+    }
     dst[i] = 255 * (d < t);
   }
-} 
+}
 
 template <class T>
 inline std::string to_string (const T& t)
@@ -148,7 +148,7 @@ void drawStep3(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 	int n = css_inf.kurvature.size();
 	float lx=0, ly=0, x, y;
 	float s=0.25; // scaling
-	
+
 	for (int i=0; i<n; i++) {
 		if (i<css_inf.offset || i>=n-css_inf.offset) w->color(180,180,180);
 		else w->color(0, 0, 0);
@@ -168,7 +168,7 @@ void drawStep3(ICLDrawWidget *w, const CornerDetectorCSS::DebugInformation &css_
 	for (unsigned int i=0; i<css_inf.maxima_without_round_corners.size(); i++) {
 		w->ellipse(float(css_inf.maxima_without_round_corners[i])/n-0.005,1-s*css_inf.kurvature[css_inf.maxima_without_round_corners[i]]-0.005,0.01,0.01);
 	}
-	
+
 	int count = 0;
 	// draw extrema without false corners
 	for (unsigned int i=0; i<css_inf.maxima_without_false_corners.size(); i++) {
@@ -207,7 +207,7 @@ void run(){
   static Img8u bgImage2(image.getSize(), 1); bgImage2.clear(0,255);
   static Img8u bgImage3(image.getSize(), 1); bgImage3.clear(0,255);
   thresh(image,threshedImage,gui.get<float>("t"),refColor);
-	
+
 	// draw background images
   std::string vis = gui["vis"];
   h = (vis == "color image") ? &image : &threshedImage;
@@ -229,14 +229,14 @@ void run(){
     drawStep1(w1, css_inf);
     drawStep2(w2, css_inf);
     drawStep3(w3, css_inf);
-    
+
     Point32f cog = rs[i].getCOG();
     w->color(255,0,0,255); w->fill(255,0,0,255);
-    w->ellipse(cog.x-1, cog.y-1,2,2);  
+    w->ellipse(cog.x-1, cog.y-1,2,2);
   }
-	
+
   // update the draw widgets
-  h.render(); 
+  h.render();
   h1.render();
   h2.render();
   h3.render();

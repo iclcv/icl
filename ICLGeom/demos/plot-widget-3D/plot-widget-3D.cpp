@@ -71,19 +71,19 @@ void add_scatter(PlotHandle3D &plot){
   static const int N = 100000;
   static std::vector<Vec> ps(N);
   static std::vector<GeomColor> cs(N);
-  
+
   GRand r(0,4);
   FixedMatrix<float,3,3> T(0.000001,0,0,
                            0,0.000002,0,
                            0,0,0.000004);
   //  T *= create_rot_3D<float>(1,2,3);
-  
+
   for(int i=0;i<N;++i){
     Vec3 v = Vec3(1,1,1) + T * Vec3(r,r,r);
     ps[i] = Vec(v[0],v[1],v[2],1);
     cs[i] = GeomColor(ps[i][0]-1,ps[i][1]-1,ps[i][2]-1,0.0001);
   }
-  
+
   plot->scatter(ps,cs,Range32f(-0.00001,0.00001));
 }
 
@@ -98,7 +98,7 @@ float f(float x, float y){
 
 
 void add_function(PlotHandle3D &plot){
-  plot->setViewPort(Range32f(0,0),Range32f(0,0),Range32f(-3,3)); 
+  plot->setViewPort(Range32f(0,0),Range32f(0,0),Range32f(-3,3));
   plot->nocolor();
   t = tt.age().toSecondsDouble();
   static SceneObject *o = 0;
@@ -117,22 +117,22 @@ void add_label(PlotHandle3D &plot){
 void run(){
   PlotHandle3D plot = gui["plot"];
   plot->lock();
-  
+
   plot->clear();
-  
+
   add_scatter(plot);
   add_function(plot);
   add_label(plot);
 
   plot->unlock();
   plot->render();
-  
+
   Thread::msleep(30);
 }
 
 int main(int n, char **a){
-  
-  
-  
+
+
+
   return ICLApp(n,a,"-r(2)",init,run).exec();
 }

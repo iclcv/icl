@@ -400,7 +400,7 @@ namespace icl {
                 b2 = std::max(a1, a2);
                 b1 = std::max(a0, b1);
                 *dstIt = std::min(b1, b2);
-              } 
+              }
             }
           }
         }

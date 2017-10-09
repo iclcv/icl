@@ -45,7 +45,7 @@ namespace icl{
       Vec4  d2(lineEnd-lineStart);
       Vec4  min_v(lineStart);
       float t = sprod3(d2,d2);
-    
+
       if(t > std::numeric_limits<float>::min()){
         t = sprod3(d1,d2)/t;
         if(t > 1.0){
@@ -54,7 +54,7 @@ namespace icl{
           d1 = p - (min_v = lineStart + d2*t);
         }
       }
-    
+
       if(nearestPoint) *nearestPoint = min_v;
       return norm3(d1);
     }
@@ -64,24 +64,24 @@ namespace icl{
       Vec4  ac = c - a;
       Vec4  n = cross(ab,ac); // not normalized !
       float d = sqrnorm3(n);
-    
+
       // Check if the triangle is degenerated -> measure dist to line segments
       if(fabs(d) < std::numeric_limits<float>::min()){
         Vec4  q, qq;
         float d, dd(std::numeric_limits<float>::max());
-      
+
         dd = dist_point_linesegment(p, a, b, &qq);
-      
+
         d = dist_point_linesegment(p, b, c, &q);
         if(d < dd) { dd = d; qq = q; }
-      
+
         d = dist_point_linesegment(p, c, a, &q);
         if(d < dd) { dd = d; qq = q; }
-      
+
         if(nearestPoint) *nearestPoint = qq;
         return dd;
       }
-    
+
       float invD = 1.0 / d;
       Vec4  v1v2 = c; v1v2 -= b;
       Vec4  v0p = p; v0p -= a;
@@ -89,8 +89,8 @@ namespace icl{
       float aa= sprod3(t,ac) * -invD;
       float bb = sprod3(t,ab) * invD;
       float s01, s02, s12;
-    
-    
+
+
       // Calculate the distance to an edge or a corner vertex
       if(aa < 0){
         s02 = sprod3(ac,v0p) / sqrnorm3(ac);

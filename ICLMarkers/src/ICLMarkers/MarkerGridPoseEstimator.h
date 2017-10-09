@@ -42,14 +42,14 @@ namespace icl{
 	  class ICLMarkers_API MarkerGridPoseEstimator : public utils::Configurable{
       struct Data;   //!< internal data structure
       Data *m_data;  //!< internal data pointer
-      
+
       public:
       /// default constructor
       MarkerGridPoseEstimator();
 
       /// destructor
       ~MarkerGridPoseEstimator();
-      
+
       /// Computes the pose of the given deteced marker-grid
       /** All pose detection options are accessible to the Configurable interface */
       geom::Mat computePose(const AdvancedMarkerGridDetector::MarkerGrid &grid,
@@ -58,4 +58,4 @@ namespace icl{
 
   }
 }
-    
+

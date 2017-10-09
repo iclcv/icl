@@ -41,20 +41,20 @@
 
 namespace icl{
   namespace markers{
-    
+
     /// Tool-class for detecting tilted quads in images
     /** The quad detector combines usual steps that are used
         to find quad-like structures in input images.\n
-        
+
         \section GEN General Information
-  
+
         The QuadDetector combines a local threshold preprocessor, optional
         further preprocessing steps such as median or morphological
         operations with an icl::cv::RegionDetector based search for
         regions with 4 corners.
-        
+
         \section CONF utils::Configurable interface
-        The QuadDetector forwards the local-threshold and the 
+        The QuadDetector forwards the local-threshold and the
         RegionDetector options. It also adds some extra properties
         for the post-processing the local-threshold result image before
         it's passed to the region detector internally
@@ -63,10 +63,10 @@ namespace icl{
 
       /// Internal Data class
       class Data;
-      
+
       /// Internal data pointer (hidden)
       Data *data;
-  
+
       public:
 
 
@@ -76,30 +76,30 @@ namespace icl{
         WhiteOnly,    //!< only quads that are white (value 255)
         BlackAndWhite //!< white and black quads
       };
-  
+
       /// Base constructor
-      /** @param c the detected quads binary value 
+      /** @param c the detected quads binary value
           @param dynamic if this is set to true, there will be a changable
                          property for the quad color, otherwise, the initial
                          value will remain fixed
-  
+
           */
       QuadDetector(QuadColor c = BlackOnly, bool dynamic=false,
     		  float minQRating = 0.4);
-      
+
       /// Destructor
       ~QuadDetector();
-  
+
       /// apply-method, that extracts quad-like structures in the input image
-      /** This method first applys a local threshold to the given input image, 
+      /** This method first applys a local threshold to the given input image,
           which results in a binary icl8u-image. This image is then optionally
           processed by a median and/or by some morphological operations */
       const std::vector<TiltedQuad> &detect(const core::ImgBase *image);
-  
+
       /// returns the last binary image that was produced internally
       const core::Img8u &getLastBinaryImage() const;
 
-      
+
       /// returns the internal region detector instance
       icl::cv::RegionDetector* getRegionDetector();
 
@@ -121,7 +121,7 @@ namespace icl{
 
       /// returns longest corners
       PVecVec &getLongestCorners();
-      
+
       /// returns 2nd longest corners (const)
       const PVecVec &getSecLongestCorners() const;
 
@@ -139,26 +139,26 @@ namespace icl{
 
       /// returns perpendicular corners
       PVecVec &getPerpCorners();
-      
+
       /// returns mirror corners (const)
       const PVecVec &getMirrorCorners() const;
 
       /// returns mirror corners (const)
       PVecVec &getMirrorCorners();
-      
+
       /// computes corners for the given image region
       std::vector<utils::Point32f> computeCorners(const cv::ImageRegion &r) const;
     };
-    
-    
+
+
     /// ostream operator for QuadDetector::QuadColor instances
     ICLMarkers_API std::ostream &operator<<(std::ostream &s, const QuadDetector::QuadColor &c);
-  
+
     /// istream operator for QuadDetector::QuadColor instances
     ICLMarkers_API std::istream &operator>>(std::istream &s, QuadDetector::QuadColor &c);
 
 
-  
+
   } // namespace markers
 }
 

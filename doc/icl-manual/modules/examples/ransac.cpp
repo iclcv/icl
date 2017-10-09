@@ -20,7 +20,7 @@ Line fit_line(const std::vector<Point32f> &pts){
     xs(i,0) = 1;
     xs(i,1) = pts[i].x;
     ys(i,0) = pts[i].y;
-  } 
+  }
   DynMatrix<float> fit = ys * xs.pinv(true);
   return Line(fit[0],fit[1]);
 }
@@ -50,20 +50,20 @@ const std::vector<Point32f> get_line_points(){
   }
   return pts;
 }
-  
+
 int main(int n, char **ppc){
   randomSeed();
-        
+
   // create the fitter
   RansacFitter<Point32f,Line> fitLine(2,1000,fit_line,line_dist,1.5,30);
-        
+
   // fit ...
   RansacFitter<Point32f,Line>::Result r = fitLine.fit(get_line_points());
-  
+
   // show results
   std::cout << "original line was " << THE_LINE.transp() << std::endl;
   std::cout << "fitted result was " << r.model.transp() << std::endl;
   std::cout << "fitting error was " << r.error << std::endl;
 }
-        
-  
+
+

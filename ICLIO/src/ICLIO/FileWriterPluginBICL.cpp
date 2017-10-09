@@ -38,13 +38,13 @@ namespace icl{
     FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,
                                                const std::string &quality):
       compressor(ImageCompressor::CompressionSpec(compressionType,quality)){}
-    
+
     void FileWriterPluginBICL::write(File &file, const ImgBase *image){
       Mutex::Locker lock(mutex);
       const ImageCompressor::CompressedData data = compressor.compress(image);
       file.open(File::writeBinary);
       file.write(data.bytes,data.len);
     }
-  
+
   } // namespace io
 }

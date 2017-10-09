@@ -2237,7 +2237,7 @@ namespace icl{
     228,161,210,  9,  3,254,239,147, 95,255,217
   };
   // }}}
-  
+
   }//end namespace
     ImgBase* createImage_cameraman(){
       // {{{ open

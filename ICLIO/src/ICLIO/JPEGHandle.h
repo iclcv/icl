@@ -39,21 +39,21 @@
 #include <setjmp.h>
 
 
-/** \cond  this is not commented, because this are only support structs and functions */ 
+/** \cond  this is not commented, because this are only support structs and functions */
 namespace icl{
   namespace io{
-  
+
     // returns controll to the caller
     struct icl_jpeg_error_mgr : jpeg_error_mgr {
-      jmp_buf setjmp_buffer; 
+      jmp_buf setjmp_buffer;
     };
-    
+
     // passes controll back to the caller
     ICLIO_API void icl_jpeg_error_exit(j_common_ptr cinfo);
-    
+
     // }}}
-  
-    
+
+
     /// Handles JPEG info and error manager
     struct ICLIO_API JPEGDataHandle{
       inline JPEGDataHandle(){
@@ -63,7 +63,7 @@ namespace icl{
       struct jpeg_decompress_struct info;
       struct icl_jpeg_error_mgr     em;
     };
-  
+
   } // namespace io
 }// namespace icl
 

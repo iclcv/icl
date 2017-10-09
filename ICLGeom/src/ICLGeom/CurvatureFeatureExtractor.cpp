@@ -32,20 +32,20 @@
 #include <ICLGeom/SegmenterUtils.h>
 
 namespace icl{
-  namespace geom{    
+  namespace geom{
 
     math::DynMatrix<bool> CurvatureFeatureExtractor::apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrix<bool> &initialMatrix,
                           std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
-                          std::vector<std::vector<int> > &surfaces, core::DataSegment<float,4> &normals, bool useOpenObjects, bool useOccludedObjects, 
+                          std::vector<std::vector<int> > &surfaces, core::DataSegment<float,4> &normals, bool useOpenObjects, bool useOccludedObjects,
                           float histogramSimilarity, int distance, float maxError, int ransacPasses, float distanceTolerance, float outlierTolerance){
       int w = depthImg.getSize().width;
       math::DynMatrix<bool> curvature = math::DynMatrix<bool>(initialMatrix.rows(),initialMatrix.rows(), true);//result matrix
       //initialize
       for(size_t i=0; i<initialMatrix.rows(); i++){
         for(size_t j=0; j<initialMatrix.rows(); j++){
-          //only test pairs of non-adjacent curved surfaces 
-          if(initialMatrix(i,j)==true || 
-              (features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_1D && features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_2D) || 
+          //only test pairs of non-adjacent curved surfaces
+          if(initialMatrix(i,j)==true ||
+              (features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_1D && features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_2D) ||
               (features[j].curvatureFactor!=SurfaceFeatureExtractor::CURVED_1D && features[j].curvatureFactor!=SurfaceFeatureExtractor::CURVED_2D) ){
             curvature(i,j)=false;
           }
@@ -61,33 +61,33 @@ namespace icl{
             if(similarityScore<histogramSimilarity){
               proceed=false;
             }
-            
+
             //compute cases
             if(proceed){
               proceed=false;
               if(useOpenObjects){
-                proceed = computeOpenObject(normals, features[i], features[j], 
+                proceed = computeOpenObject(normals, features[i], features[j],
                                     surfaces[i], surfaces[j], distance, w);
               }
               if(useOccludedObjects && !proceed){//only if first case does not match
-                proceed = computeOccludedObject(depthImg, xyz, normals, features[i], features[j], 
+                proceed = computeOccludedObject(depthImg, xyz, normals, features[i], features[j],
                                     surfaces[i], surfaces[j], w, maxError, ransacPasses, distanceTolerance, outlierTolerance);
               }
-            } 
- 
+            }
+
             if(!proceed){//remove if no case succeeded
               curvature(i,j)=false;
               curvature(j,i)=false;
-            }                     
-          }          
+            }
+          }
         }
       }
-           
+
       return curvature;
     }
-    
-    
-    bool CurvatureFeatureExtractor::computeOpenObject(core::DataSegment<float, 4> &normals, SurfaceFeatureExtractor::SurfaceFeature feature1, SurfaceFeatureExtractor::SurfaceFeature feature2, 
+
+
+    bool CurvatureFeatureExtractor::computeOpenObject(core::DataSegment<float, 4> &normals, SurfaceFeatureExtractor::SurfaceFeature feature1, SurfaceFeatureExtractor::SurfaceFeature feature2,
                                     std::vector<int> &surface1, std::vector<int> &surface2, int distance, int w){
       //1. neighbouring in image space
       std::pair<utils::Point,utils::Point> bBox1 = feature1.boundingBox2D; //min, max
@@ -103,21 +103,21 @@ namespace icl{
         }
       }
       //2. one surface concave and one surface convex
-      if(proceed){      
+      if(proceed){
         float direction1 = computeConvexity(normals, feature1, surface1, w);
         float direction2 = computeConvexity(normals, feature2, surface2, w);
-        //>=0 convex (front), <0 concave (back)        
+        //>=0 convex (front), <0 concave (back)
         if((direction1>=0 && direction2<0 && bBox2.second.y>bBox1.second.y) || (direction1<0 && direction2>=0 && bBox1.second.y>bBox2.second.y)){
           return true;
         }
       }
-        
+
       return false;
     }
-    
-    
-    bool CurvatureFeatureExtractor::computeOccludedObject(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, core::DataSegment<float, 4> &normals, 
-                                    SurfaceFeatureExtractor::SurfaceFeature feature1, SurfaceFeatureExtractor::SurfaceFeature feature2, 
+
+
+    bool CurvatureFeatureExtractor::computeOccludedObject(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, core::DataSegment<float, 4> &normals,
+                                    SurfaceFeatureExtractor::SurfaceFeature feature1, SurfaceFeatureExtractor::SurfaceFeature feature2,
                                     std::vector<int> &surface1, std::vector<int> &surface2, int w, float maxError, int ransacPasses, float distanceTolerance, float outlierTolerance){
       //select most populated bin (same bin for both histograms)
       float maxBinValue=0;
@@ -132,7 +132,7 @@ namespace icl{
           }
         }
       }
-      
+
       //backproject the points
       std::vector<int> pointIDs1 = backprojectPointIDs(normals, maxBin, surface1);
       std::vector<int> pointIDs2 = backprojectPointIDs(normals, maxBin, surface2);
@@ -163,29 +163,29 @@ namespace icl{
           pointPairImg.second=idToPoint(currentPointPairID.second,w);
         }
       }
-      
+
       //occlusion check
       if(minError<maxError){
         return SegmenterUtils::occlusionCheck((core::Img32f&)depthImg, pointPairImg.first, pointPairImg.second, distanceTolerance, outlierTolerance);
-      }   
+      }
       return false;
     }
-    
-    
+
+
     float CurvatureFeatureExtractor::computeConvexity(core::DataSegment<float, 4> &normals, SurfaceFeatureExtractor::SurfaceFeature feature, std::vector<int> &surface, int w){
       //select extremal bins in histogram
       std::pair<utils::Point,utils::Point> histoExtremalBins = computeExtremalBins(feature);
 
       //backproject to image space and calculate mean
       std::pair<utils::Point,utils::Point> imgBackproject = backproject(normals, histoExtremalBins, surface, w);
-      
+
       //scalar product to determine concave and convex
       float direction = computeConvexity(histoExtremalBins, imgBackproject);
-      
+
       return direction;
     }
-    
-    
+
+
     std::pair<utils::Point,utils::Point> CurvatureFeatureExtractor::computeExtremalBins(SurfaceFeatureExtractor::SurfaceFeature feature){
       //normal histogram bounding box
       std::pair<utils::Point,utils::Point> histoBBox;
@@ -202,9 +202,9 @@ namespace icl{
             if(y>histoBBox.second.y) histoBBox.second.y=y;
           }
         }
-      }      
+      }
       //normal histogram extremal bins
-      std::pair<utils::Point,utils::Point> histoExtremalBins; //min, max      
+      std::pair<utils::Point,utils::Point> histoExtremalBins; //min, max
       if(histoBBox.second.x-histoBBox.first.x>=histoBBox.second.y-histoBBox.first.y){//sample x
         int x1 = histoBBox.first.x;
         histoExtremalBins.first.x=x1;
@@ -232,22 +232,22 @@ namespace icl{
           }
         }
       }
-      return histoExtremalBins;      
+      return histoExtremalBins;
     }
-    
-    
-    std::pair<utils::Point,utils::Point> CurvatureFeatureExtractor::backproject(core::DataSegment<float, 4> &normals, 
+
+
+    std::pair<utils::Point,utils::Point> CurvatureFeatureExtractor::backproject(core::DataSegment<float, 4> &normals,
                         std::pair<utils::Point,utils::Point> &histoExtremalBins, std::vector<int> &surface, int w){
       std::vector<int> imgMinPoints=backprojectPointIDs(normals, histoExtremalBins.first, surface);
       std::vector<int> imgMaxPoints=backprojectPointIDs(normals, histoExtremalBins.second, surface);
-      
+
       std::pair<utils::Point,utils::Point> imgMeans;
       imgMeans.first = computeMean(imgMinPoints, w);
       imgMeans.second = computeMean(imgMaxPoints, w);
       return imgMeans;
     }
-    
-    
+
+
     std::vector<int> CurvatureFeatureExtractor::backprojectPointIDs(core::DataSegment<float,4> &normals, utils::Point bin, std::vector<int> &surface){
       std::vector<int> pointIDs;
       for(unsigned int i=0; i<surface.size(); i++){
@@ -257,12 +257,12 @@ namespace icl{
       }
       return pointIDs;
     }
-    
-    
+
+
     utils::Point CurvatureFeatureExtractor::computeMean(std::vector<int> &imgIDs, int w){
       std::vector<utils::Point> points = createPointsFromIDs(imgIDs, w);
       utils::Point imgMean(0,0);
-      
+
       for(unsigned int i=0; i<points.size(); i++){
         imgMean.x+=points[i].x;
         imgMean.y+=points[i].y;
@@ -271,8 +271,8 @@ namespace icl{
       imgMean.y/=points.size();
       return imgMean;
     }
-    
-    
+
+
     std::vector<utils::Point> CurvatureFeatureExtractor::createPointsFromIDs(std::vector<int> &imgIDs, int w){
       std::vector<utils::Point> points(imgIDs.size());
       for(unsigned int i=0; i<imgIDs.size(); i++){
@@ -283,8 +283,8 @@ namespace icl{
       }
       return points;
     }
-    
-    
+
+
     std::vector<Vec> CurvatureFeatureExtractor::createPointsFromIDs(core::DataSegment<float,4> &xyz, std::vector<int> &imgIDs){
       std::vector<Vec> points(imgIDs.size());
       for(unsigned int i=0; i<imgIDs.size(); i++){
@@ -292,8 +292,8 @@ namespace icl{
       }
       return points;
     }
-    
-    
+
+
     float CurvatureFeatureExtractor::computeConvexity(std::pair<utils::Point,utils::Point> histoExtremalBins, std::pair<utils::Point,utils::Point> imgBackproject){
       utils::Point histoVec;
       utils::Point imgVec;
@@ -304,21 +304,21 @@ namespace icl{
       imgVec.y=imgBackproject.second.y-imgBackproject.first.y;
       float lengthImg = sqrt(imgVec.x*imgVec.x+imgVec.y*imgVec.y);
       float direction = (histoVec.x/lengthHisto)*(imgVec.x/lengthImg)+(histoVec.y/lengthHisto)*(imgVec.y/lengthImg);
-      return direction;      
+      return direction;
     }
-    
-    
+
+
     float CurvatureFeatureExtractor::linePointDistance(std::pair<Vec,Vec> line, Vec point){
       float d = norm3(cross(point-line.first,point-line.second))/norm3(line.second-line.first);
       return d;
     }
-    
-    
+
+
     utils::Point CurvatureFeatureExtractor::idToPoint(int id, int w){
       int y = (int)floor((float)id/(float)w);
       int x = id-y*w;
       return utils::Point(x,y);
     }
-    
+
   } // namespace geom
 }

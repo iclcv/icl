@@ -44,7 +44,7 @@ namespace icl {
     /** \cond */
     class ConfigurableRemoteServer;
     /** \endcond */
-    
+
     /// Common interface class for all grabbers \ingroup GRABBER_G
     /** The generic grabber provides an interface for a multi-platform
         compatible grabber.
@@ -64,7 +64,7 @@ namespace icl {
 
       public:
         using utils::ConfigurableProxy::registerCallback;
-        
+
         /// Initialized the grabber from given prog-arg
         /** The progarg needs two sub-parameters */
         GenericGrabber(const utils::ProgArg &pa) throw (utils::ICLException):m_poGrabber(0),m_remoteServer(0){
@@ -392,5 +392,5 @@ namespace icl {
     };
 
   } // namespace io
-} 
+}
 

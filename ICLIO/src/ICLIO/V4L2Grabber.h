@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// The Video for Linux 2 Grabber uses the v4l2-api to access video capturing devices \ingroup GRABBER_G \ingroup V4L_G
     /** This grabber backend is usually used for USB-Webcams as well as for Grabber cards */
     class V4L2Grabber : public Grabber{
@@ -52,7 +52,7 @@ namespace icl{
 
         /// obtains the next image
         ICLIO_API virtual const core::ImgBase *acquireImage();
-        
+
         /// returns a list of all supported video devices
         ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 

@@ -78,7 +78,7 @@ public:
   MyThread(){
     initI();
 
-    
+
     gui << Image().minSize(20,15).label("Original").handle("orig-image")
         << Image().minSize(20,15).label("Net Output").handle("net-image")
         << ( VBox().minSize(15,0)
@@ -99,12 +99,12 @@ public:
         << Show();
 
     gui["orig-image"] = image;
-    
+
     initLLM();
   }
   virtual void run(){
     static ICLWidget &w = **gui.get<ImageHandle>("net-image");
-    static ButtonHandle &trainButton = gui.get<ButtonHandle>("train");    
+    static ButtonHandle &trainButton = gui.get<ButtonHandle>("train");
     static ButtonHandle &showKernelsButton = gui.get<ButtonHandle>("show-k");
     static ButtonHandle &resetButton = gui.get<ButtonHandle>("reset");
 
@@ -119,15 +119,15 @@ public:
     w.setImage(&netImage);
 
     w.render();
-    
+
     while(1){
-      
+
       llm.setEpsilonIn(gui.get<float>("e-in"));
       llm.setEpsilonOut(gui.get<float>("e-out"));
       llm.setEpsilonA(gui.get<float>("e-a"));
       llm.setEpsilonSigma(gui.get<float>("e-sigma"));
       llm.setSoftMaxEnabled(*softMaxEnabled);
-      
+
       if(trainButton.wasTriggered() || gui.get<bool>("train-loop")){
         trainLLM();
 
@@ -147,7 +147,7 @@ public:
         w.setImage(&netImage);
 
         for(int j=0;j<3;++j){
-          (*mseDisp)(j,0) = mse[j]/(W*H);    
+          (*mseDisp)(j,0) = mse[j]/(W*H);
         }
         w.render();
       }
@@ -157,7 +157,7 @@ public:
       if(resetButton.wasTriggered()){
         initLLM();
       }
-      
+
       msleep(15);
     }
   }
@@ -166,11 +166,11 @@ public:
 
 int main(int n, char **ppc){
   QApplication app(n,ppc);
-  
+
   randomSeed();
 
   MyThread x;
   x.start();
-    
+
   return app.exec();
 }

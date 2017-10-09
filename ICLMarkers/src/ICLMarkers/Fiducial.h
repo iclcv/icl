@@ -39,13 +39,13 @@
 
 namespace icl{
   namespace markers{
-    
+
     /** \cond */
     struct FiducialImpl;
     struct FiducialDetectorPlugin;
     /** \endcond */
-    
-    
+
+
     /// Main class for detected image markers/fiducials
     /** Internally, each fiducial is just a shallow wrapper
         around a FiducialImpl instance, which is managed
@@ -56,10 +56,10 @@ namespace icl{
     class ICLMarkers_API Fiducial{
       /// hidden implementation (always managed by the parent MarkerDetector)
       FiducialImpl *impl;
-      
+
       public:
-      
-      
+
+
       /// Currently supported feature types
       /** Features can be binary-ored in order to create FeatureSet instances */
       enum Feature{
@@ -73,17 +73,17 @@ namespace icl{
         Pose3D,       //!< 3D orientation information
         FeatureCount  //!< number of features
       };
-      
+
       /// FeatureSet class
       /** given a SeatureSet instances s, Feature x is supported if
           s[x] is true */
       typedef std::bitset<(int)FeatureCount> FeatureSet;
-  
-      /// a full feature set 
+
+      /// a full feature set
       static const FeatureSet AllFeatures;
-      
+
       /// key point structure
-      /** A key point is a certain known point on the marker 
+      /** A key point is a certain known point on the marker
           for each keypoint, an image position as well as
           position in (real world) marker coordinates. Furthermore
           KeyPoints have an ID, which can be used e.g. for
@@ -92,91 +92,91 @@ namespace icl{
       struct KeyPoint{
         /// Default constructor (does nothing)
         inline KeyPoint(){}
-        
+
         /// Special constructor with given params
         inline KeyPoint(const utils::Point32f &imagePos, const utils::Point32f &markerPos, int ID):
         imagePos(imagePos),markerPos(markerPos),ID(ID){}
-  
+
         utils::Point32f imagePos;  //!< key point in image space
         utils::Point32f markerPos; //!< key point in marker space
         int ID;             //!< key point ID
       };
-      
+
       /// private Constructor
       inline Fiducial(FiducialImpl *impl=0):impl(impl){}
-  
+
       /// the marker ID
       int getID() const;
-      
+
       /// returns a string representation of the marker name
       std::string getName() const;
-      
+
       /// returns wheather the Marker provides given information
       bool supports(Feature f) const;
-      
+
       /// returns the marker'S center in the image
       const utils::Point32f &getCenter2D() const;
-      
+
       /// retrurs the marker's rotation in the image plain
       const float &getRotation2D() const;
-      
+
       /// returns the markers corners
       const std::vector<utils::Point32f> &getCorners2D() const;
-  
+
       /// returns key points in the marker
       const std::vector<KeyPoint> &getKeyPoints2D() const;
-  
+
       /// returns the associated image region
       const cv::ImageRegion getImageRegion() const;
-  
+
       /// returns the markers
       const geom::Vec &getCenter3D() const;
-      
+
       /// returns the markers
       const geom::Vec &getRotation3D() const;
-      
+
       /// returns the markers
-      const geom::Mat &getPose3D() const;    
-  
+      const geom::Mat &getPose3D() const;
+
       /// returns whether is marker has been initialized
       inline operator bool() const { return impl; }
-  
+
       /// returns whether is marker has not been initialized
       inline bool operator!() const { return isNull(); }
-  
+
       /// returns whether is marker has not been initialized
       inline bool isNull() const { return !impl; }
-  
+
       /// returns whether the fiducials have the same impl
       inline bool operator==(const Fiducial &a) const { return impl == a.impl; }
-  
+
       /// returns whether the fiducials have not the same impl
       inline bool operator!=(const Fiducial &a) const{ return impl != a.impl; }
-      
+
       /// returns the marker's internal implementation structure
       inline FiducialImpl *getImpl() { return impl; }
-  
+
       /// returns the marker's internal implementation structure (const)
       inline const FiducialImpl *getImpl() const { return impl; }
-      
+
       /// returns the parent fiducial detector
       FiducialDetectorPlugin *getDetector();
-  
+
       /// returns the parent fiducial detector (const)
       const FiducialDetectorPlugin *getDetector() const;
     };
-    
-    
+
+
     /// or operator for convenient creation of Fiducial::FeatureSet instances
     inline Fiducial::FeatureSet operator|(Fiducial::FeatureSet s, Fiducial::Feature f){
       s.set(f); return s;
     }
-  
+
     /// or operator for convenient creation of Fiducial::FeatureSet instances
     inline Fiducial::FeatureSet operator|(Fiducial::Feature f, Fiducial::FeatureSet s){
       return s|f;
     }
-  
+
     /// or operator for convenient creation of Fiducial::FeatureSet instances
     inline Fiducial::FeatureSet operator|(Fiducial::Feature f1, Fiducial::Feature f2){
       Fiducial::FeatureSet s; s.reset(); s.set(f1); s.set(f2); return s;

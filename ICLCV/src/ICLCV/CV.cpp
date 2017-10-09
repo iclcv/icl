@@ -34,7 +34,7 @@
 #include <ICLFilter/BinaryLogicalOp.h>
 #ifdef ICL_HAVE_IPP
 #include <ippi.h>
-#endif 
+#endif
 #include <ICLCore/Img.h>
 //#include <ICLQt/Quick.h>
 
@@ -52,7 +52,7 @@ namespace icl{
     void enshure_linkage_against_iclio(){
       icl::io::FileList l;
     }
-    
+
     template<int N,typename BinaryCompare>
     inline void apply_inplace_threshold(Img8u &image,int dim, icl8u thresh, BinaryCompare cmp){
       int threshN = N*thresh;
@@ -66,9 +66,9 @@ namespace icl{
           sumVal += pc[j][i];
         }
         pc[0][i] = 255 * cmp(sumVal,threshN);
-      }          
+      }
     }
-    
+
     template<int N,typename BinaryCompare>
     inline void apply_inplace_threshold_roi(Img8u &image, icl8u thresh, BinaryCompare cmp){
       const Rect &r = image.getROI();
@@ -77,13 +77,13 @@ namespace icl{
       int yStart = r.y;
       int yEnd = r.bottom();
       int w = image.getWidth();
-      
+
       int threshN = N*thresh;
       icl8u *pc[N];
       for(int j=0;j<N;++j){
         pc[j] = image.getData(j);
       }
-      
+
       for(int x=xStart;x<xEnd;++x){
         for(int y=yStart;y<yEnd;++y){
           int sumVal = 0;
@@ -92,26 +92,26 @@ namespace icl{
             sumVal += pc[i][idx];
           }
           pc[0][idx] = 255 * cmp(sumVal,threshN);
-        }          
+        }
       }
     }
-    
-    std::vector<Rect> matchTemplate(const Img8u &src, 
-                                    const Img8u &templ, 
+
+    std::vector<Rect> matchTemplate(const Img8u &src,
+                                    const Img8u &templ,
                                     float significance,
                                     Img8u *bufferGiven,
                                     bool clipBuffersToROI,
                                     RegionDetector *rdGiven,
-                                    bool useCrossCorrCoeffInsteadOfSqrDistance){    
-  
+                                    bool useCrossCorrCoeffInsteadOfSqrDistance){
+
       //DEBUG_LOG("src:" << src << "\ntempl:" << templ);
       Size bufSize = src.getROISize()-templ.getROISize()+Size(1,1);
       ICLASSERT_RETURN_VAL(bufSize.width > 0 && bufSize.height > 0, std::vector<Rect>());
-  
+
       Img8u *useBuffer = bufferGiven ? bufferGiven : new Img8u;
       RegionDetector *useRD = rdGiven ? rdGiven : new RegionDetector;
-  
-  
+
+
       useBuffer->setChannels(src.getChannels());
       if(clipBuffersToROI){
         useBuffer->setSize(bufSize);
@@ -138,25 +138,25 @@ namespace icl{
                                               useBuffer->getLineStep(),-8);
         }
   #else
-  
-  
+
+
     ERROR_LOG("not supported without IPP");
   #endif
-      }    
-  
+      }
+
       Img8u &m = *useBuffer;
-      
+
       //    show(cvt(m));
-  
+
       icl8u t = useCrossCorrCoeffInsteadOfSqrDistance ? (icl8u)(float(255)*significance) : 255 - (icl8u)(float(255)*significance);
-      
+
       if(m.hasFullROI()){
         if(!useCrossCorrCoeffInsteadOfSqrDistance){
           switch(m.getChannels()){
             case 1: apply_inplace_threshold<1,std::less<int> >(m,m.getDim(),t,std::less<int>());  break;
             case 2: apply_inplace_threshold<2,std::less<int> >(m,m.getDim(),t,std::less<int>());  break;
             case 3: apply_inplace_threshold<3,std::less<int> >(m,m.getDim(),t,std::less<int>());  break;
-            default: 
+            default:
               ERROR_LOG("this function is only supported for 1,2 and 3 channel images (channel count was " << m.getChannels() << ")");
               return std::vector<Rect>();
           }
@@ -165,7 +165,7 @@ namespace icl{
             case 1: apply_inplace_threshold<1,std::greater<int> >(m,m.getDim(),t,std::greater<int>());  break;
             case 2: apply_inplace_threshold<2,std::greater<int> >(m,m.getDim(),t,std::greater<int>());  break;
             case 3: apply_inplace_threshold<3,std::greater<int> >(m,m.getDim(),t,std::greater<int>());  break;
-            default: 
+            default:
               ERROR_LOG("this function is only supported for 1,2 and 3 channel images (channel count was " << m.getChannels() << ")");
               return std::vector<Rect>();
           }
@@ -176,7 +176,7 @@ namespace icl{
             case 1: apply_inplace_threshold_roi<1,std::less<int> >(m,t,std::less<int>());  break;
             case 2: apply_inplace_threshold_roi<2,std::less<int> >(m,t,std::less<int>());  break;
             case 3: apply_inplace_threshold_roi<3,std::less<int> >(m,t,std::less<int>());  break;
-            default: 
+            default:
               ERROR_LOG("this function is only supported for 1,2 and 3 channel images (channel count was " << m.getChannels() << ")");
               return std::vector<Rect>();
           }
@@ -185,21 +185,21 @@ namespace icl{
             case 1: apply_inplace_threshold_roi<1,std::greater<int> >(m,t,std::greater<int>());  break;
             case 2: apply_inplace_threshold_roi<2,std::greater<int> >(m,t,std::greater<int>());  break;
             case 3: apply_inplace_threshold_roi<3,std::greater<int> >(m,t,std::greater<int>());  break;
-            default: 
+            default:
               ERROR_LOG("this function is only supported for 1,2 and 3 channel images (channel count was " << m.getChannels() << ")");
               return std::vector<Rect>();
           }
         }
       }
-  
-      
+
+
       Img8u c0 = p2o(useBuffer->selectChannel(0));
-  
+
       //    show(norm(cvt(c0)));
       useRD->setConstraints(0,2<<20,1,255);
       const std::vector<ImageRegion> &blobData = useRD->detect(&c0);
       std::vector<Rect> resultVec(blobData.size());
-      
+
       Point halfTemplROI(templ.getROISize().width/2,templ.getROISize().height/2);
       Point offs = src.getROIOffset()+halfTemplROI+Point(1,1);
       Rect templRect(halfTemplROI * (-1),templ.getROISize());
@@ -214,18 +214,18 @@ namespace icl{
         // show(copyroi(cvt(tmp)));
         // delete tmp;
       }
-      
-      
+
+
       if(!rdGiven) delete useRD;
       if(!bufferGiven) delete useBuffer;
       return resultVec;
     }
-                  
-  
-  
-    std::vector<Rect> matchTemplate(const Img8u &src, 
+
+
+
+    std::vector<Rect> matchTemplate(const Img8u &src,
                                     const Img8u *srcMask,
-                                    const Img8u &templ, 
+                                    const Img8u &templ,
                                     const Img8u *templMask,
                                     float significance,
                                     Img8u *srcBuffer,
@@ -250,19 +250,19 @@ namespace icl{
       }
       if(templMask){
         useTemplBuffer = templBuffer ? templBuffer : new Img8u;
-  
+
         Img8u templMaskRepChannel(ImgParams(templMask->getSize(),0,templMask->getROI()));
         for(int i=0;i<templ.getChannels()/templMask->getChannels();i++){
           templMaskRepChannel.append(const_cast<Img8u*>(templMask));
         }
-        
+
         BinaryLogicalOp binop(BinaryLogicalOp::andOp);
         binop.setClipToROI(clipBuffersToROI);
         binop.apply(&templ,&templMaskRepChannel,bpp(useTemplBuffer));
       }else{
         useTemplBuffer = const_cast<Img8u*>(&templ);
       }
-      
+
       std::vector<Rect> results = matchTemplate(*useSrcBuffer,
                                                 *useTemplBuffer,
                                                 significance,
@@ -270,22 +270,22 @@ namespace icl{
                                                 clipBuffersToROI,
                                                 rd,
                                                 useCrossCorrCoeffInsteadOfSqrDistance);
-      
+
       if(clipBuffersToROI && srcMask){
         DEBUG_LOG("");
         for(unsigned int i=0;i<results.size();++i){
           results[i]+=src.getROIOffset();
         }
       }
-      
+
       if(!srcBuffer && srcMask) delete useSrcBuffer;
       if(!templBuffer && templMask) delete useTemplBuffer;
-      
+
       return results;
     }
-                       
-    
-    
+
+
+
 
 
 

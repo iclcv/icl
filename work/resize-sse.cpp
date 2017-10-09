@@ -10,7 +10,7 @@
 #ifdef __SSE4_1__
 #include <smmintrin.h>
 #ifdef __SSE4_2__
-#include <nmmintrin.h> 
+#include <nmmintrin.h>
 #endif
 #endif
 #endif
@@ -31,18 +31,18 @@ inline icl8u pix(const Channel8u &c, float x, float y){
   icl8u p2 = c(px+1,py);
   icl8u p3 = c(px,py+1);
   icl8u p4 = c(px+1,py+1);
-  
+
   // Calculate the weights for each pixel
   float fx = x - px;
   float fy = y - py;
   float fx1 = 1.0f - fx;
   float fy1 = 1.0f - fy;
-  
+
   int w1 = fx1 * fy1 * 256.0f;
   int w2 = fx  * fy1 * 256.0f;
   int w3 = fx1 * fy  * 256.0f;
   int w4 = fx  * fy  * 256.0f;
- 
+
   // Calculate the weighted sum of pixels (for each color channel)
   unsigned int out = p1 * w1 + p2 * w2 + p3 * w3 + p4 * w4;
 
@@ -62,8 +62,8 @@ inline icl8u pixfix(const Channel8u &c, float x, float y){
   icl8u p2 = c(px+1,py);
   icl8u p3 = c(px,py+1);
   icl8u p4 = c(px+1,py+1);
-  
-  
+
+
   unsigned int fx = Fx & (fixed-1);
   unsigned int fy = Fy & (fixed-1);
   unsigned int fx1 = fixed - fx;
@@ -73,7 +73,7 @@ inline icl8u pixfix(const Channel8u &c, float x, float y){
   unsigned int w2 = (fx * fy1) >> shift;
   unsigned int w3 = (fx1 * fy ) >> shift;
   unsigned int w4 = (fx * fy ) >> shift;
-  
+
   // Calculate the weighted sum of pixels (for each color channel)
   unsigned int out = (p1 * w1 + p2 * w2 + p3 * w3 + p4 * w4) >> shift;
 
@@ -141,11 +141,11 @@ const Img8u &scale_fix(const Img8u &src, const Size &size){
   }
 
   const icl8u *data = &s[0];
-  
+
   for(int y=0;y<size.height-1;++y){
     const Pre &py = pre_y[y];
     //const icl8u *datarow = data + py.p * size.width;
-    
+
     for(int x=0;x<size.width-1;++x){
       const Pre &px = pre_x[x];
 
@@ -156,13 +156,13 @@ const Img8u &scale_fix(const Img8u &src, const Size &size){
       icl8u p2 = s(px.p+1,py.p);
       icl8u p3 = s(px.p,py.p+1);
       icl8u p4 = s(px.p+1,py.p+1);
-      
+
       unsigned int w1 = (px.f1 * py.f1) >> shift;
       unsigned int w2 = (px.f * py.f1) >> shift;
       unsigned int w3 = (px.f1 * py.f) >> shift;
       unsigned int w4 = (px.f * py.f) >> shift;
 
-      /* sse: 
+      /* sse:
           A = load left colum,
           B = load right column
           C = A*B
@@ -190,7 +190,7 @@ const Img8u &scale_fix(const Img8u &src, const Size &size){
       __m128i vsum = _mm_add_epi32(m, _mm_srli_si128(m, 8));
       vsum = _mm_add_epi32(vsum, _mm_srli_si128(vsum, 4));
       d(x,y) = (_mm_cvtsi128_si32(vsum) >> shift) & 0xff;
-          */      
+          */
 #else
       //unsigned int out = (p1 * w1 + p2 * w2 + p3 * w3 + p4 * w4) >> shift;
       //d(x,y) = out & 0xff;

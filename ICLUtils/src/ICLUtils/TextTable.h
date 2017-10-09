@@ -36,7 +36,7 @@
 
 namespace icl{
   namespace utils{
-  
+
     /// Utility class for pretty console output
     /** The text table implements a simple tabular structure
         (rows x colums cells that have string content).
@@ -51,33 +51,33 @@ namespace icl{
         \code
         #include <ICLUtils/TextTable.h>
         #inclue <iostream>
-        
+
         using namespace icl::utils;
-        
+
         int main(int n, char **ppc){
           TextTable t;
-        
+
           t(0,0) = "name";
           t(1,0) = "forename";
           t(2,0) = "age";
           t(3,0) = "address";
-        
+
           t[1] = tok("elbrechter,christof,34,Some Street in Oerlinghausen (close to Bielefeld)",",");
           t[2] = tok("gotting,michael,??,Somewhere else",",");
-        
+
           std::cout << t << std::endl;
-        } 
-        
-        
+        }
+
+
         //  output
         //  +------------+----------+-----+----------------------+
-        //  |    name    | forename | age |       address        | 
+        //  |    name    | forename | age |       address        |
         //  +------------+----------+-----+----------------------+
-        //  | elbrechter | christof | 34  | Some Street in Oerli | 
-        //  |            |          |     | nghausen (close to B | 
-        //  |            |          |     |      ielefeld)       | 
+        //  | elbrechter | christof | 34  | Some Street in Oerli |
+        //  |            |          |     | nghausen (close to B |
+        //  |            |          |     |      ielefeld)       |
         //  +------------+----------+-----+----------------------+
-        //  |  gotting   | michael  | ??  |    Somewhere else    | 
+        //  |  gotting   | michael  | ??  |    Somewhere else    |
         //  +------------+----------+-----+----------------------+
 
       \endcode
@@ -88,7 +88,7 @@ namespace icl{
       int m_maxCellWidth; //!< current maximum cell width for serialization
 
       public:
-    
+
       /// creates a new table with optionally given dimensions
       /** The table size is automatically expanded whenever a non-
           existing row- or column-index is passed to the (x,y)-
@@ -104,30 +104,30 @@ namespace icl{
         ensureSize(xCell+1, yCell+1);
         return m_texts[xCell + m_size.width*yCell];
       }
-    
+
       /// allocates at least as much memory for given amount of rows and columns
       void ensureSize(int width, int height);
-    
-    
+
+
       /// returns the maximum cell width
       /** This option is just for serialization. Cells will never become wider than
           this size. If a cell's content is larger than the maxCellWidth
           the row-height is increased automatically
           **/
       inline int getMaxCellWidth() const { return m_maxCellWidth; }
-    
+
       /// returns the current maxCellWidth value
       inline void setMaxCellWidth(int maxCellWidth) { m_maxCellWidth = maxCellWidth; }
-    
+
       /// returns the current table size
       inline const Size &getSize() const { return m_size; }
-    
-      /// returns the internal data vector 
+
+      /// returns the internal data vector
       inline const std::vector<std::string> &getData() const { return m_texts; }
 
       /// Utility class that is used, to assign a table row at once
       class RowAssigner{
-        TextTable &t; //!< parent TextTable 
+        TextTable &t; //!< parent TextTable
         int row;      //!< parent
         inline RowAssigner(TextTable &t, int row):t(t),row(row){}
 
@@ -148,20 +148,20 @@ namespace icl{
           }
         }
       };
-    
+
       /// gives access to the table row (this can be assigned directly if needed)
       inline RowAssigner operator[](int row){
         return RowAssigner(*this,row);
       }
-    
+
       /// serializes the table to a std::string
       std::string toString() const;
-    
+
       /// clears all current existing table cells
       /** Please note: the table size is not changed here. */
       void clear();
     };
-  
+
     /// overloaded ostream-operator that uses the TextTable's toString method for serialization
     inline std::ostream &operator<<(std::ostream &stream, const TextTable &t){
       return stream << t.toString();

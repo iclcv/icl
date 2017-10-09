@@ -42,7 +42,7 @@ namespace icl {
                                                                   useLinearReferenceFrameA);
 
       m_constraint = cons;
-      //per default all axes are locked                                  
+      //per default all axes are locked
       setLinearLowerLimit(geom::Vec(0,0,0));
       setLinearUpperLimit(geom::Vec(0,0,0));
       setAngularLowerLimit(geom::Vec(0,0,0));
@@ -78,7 +78,7 @@ namespace icl {
           0,0,0,1),
       useLinearReferenceFrameA);
     }
-    
+
     void SixDOFConstraint::setFrames(const geom::Mat &frameA, const geom::Mat &frameB) {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setFrames(icl2bullet_scaled_mat(frameA),icl2bullet_scaled_mat(frameB));
     }
@@ -93,7 +93,7 @@ namespace icl {
                           0,0,1,pivotInB[2],
                           0,0,0,1));
       }
-    
+
     void SixDOFConstraint::setLinearLowerLimit(const geom::Vec &lower) {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setLinearLowerLimit(icl2bullet_scaled(lower));
     }
@@ -110,11 +110,11 @@ namespace icl {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getLinearUpperLimit(upper);
       return bullet2icl_scaled(upper);
     }
-    
+
 		float SixDOFConstraint::getAngle(int index) {
 			return dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getAngle(index);
 		}
-    
+
     void SixDOFConstraint::setAngularLowerLimit(const geom::Vec &lower) {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->setAngularLowerLimit(icl2bullet_unscaled(lower));
     }
@@ -131,7 +131,7 @@ namespace icl {
       dynamic_cast<btGeneric6DofConstraint*>(m_constraint)->getAngularUpperLimit(upper);
       return bullet2icl_unscaled(upper);
     }
-      
+
 		void SixDOFConstraint::setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation) {
       btGeneric6DofConstraint *cons = dynamic_cast<btGeneric6DofConstraint*>(m_constraint);
       cons->getRotationalLimitMotor(index)->m_enableMotor = enableMotor;
@@ -142,7 +142,7 @@ namespace icl {
 				m_objects[1]->setActive(true);
 			}
     }
-    
+
 		void SixDOFConstraint::setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation) {
       btGeneric6DofConstraint *cons = dynamic_cast<btGeneric6DofConstraint*>(m_constraint);
       cons->getTranslationalLimitMotor()->m_enableMotor[index] = enableMotor;

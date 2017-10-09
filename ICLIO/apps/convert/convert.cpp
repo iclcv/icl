@@ -54,13 +54,13 @@ int main(int n, char **ppc){
       ("-scalemode", "defines scalemode to use (one of NN, LIN, or RA)");
   pa_init(n,ppc,"-input|-i(filename) -output|-o(filename) -depth|-d(depth) "
           "-format|-f(format) -c|-clip|-crop(x,y,width,height) -size|-s(Size) -scale(factor) -scalemode(scalemode) -rotate(angle) -flip(axis)",true);
-  
+
   std::string inFileName,outFileName;
 
   if(!pa("-i")){
-    if(!pa(0)) { 
-      pa_show_usage("please define input filename"); 
-      exit(-1); 
+    if(!pa(0)) {
+      pa_show_usage("please define input filename");
+      exit(-1);
     }else{
       inFileName = *pa(0);
     }
@@ -69,9 +69,9 @@ int main(int n, char **ppc){
   }
 
   if(!pa("-o")){
-    if(!pa(1)) { 
-      pa_show_usage("please define output filename"); 
-      exit(-1); 
+    if(!pa(1)) {
+      pa_show_usage("please define output filename");
+      exit(-1);
     }else{
       outFileName = *pa(1);
     }
@@ -101,7 +101,7 @@ int main(int n, char **ppc){
 	}
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
-  
+
   format fmt = pa("-format") ? parse<format>(pa("-format")) : image->getFormat();
   int channels = pa("-format") ? getChannelsOfFormat(fmt) : image->getChannels();
   Size size = pa("-size") ? parse<Size>(pa("-size")) : image->getSize();
@@ -110,16 +110,16 @@ int main(int n, char **ppc){
     s32 = s32 * parse<float>(pa("-scale"));
     size.width = round(s32.width);
     size.height = round(s32.height);
-    
+
   }
   ImgParams p(size,
               channels,
               fmt);
   depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image->getDepth();
-              
+
   FixedConverter conv(p,d);
   scalemode sm = interpolateLIN;
-  
+
   if(pa("-scalemode")){
     std::string sm = pa("-scalemode").as<std::string>();
     if(sm == "NN"){
@@ -134,10 +134,10 @@ int main(int n, char **ppc){
     }
   }
   conv.setScaleMode(sm);
-  
+
   ImgBase *dst = 0;
   conv.apply(image,&dst);
-  
+
   if(pa("-flip")){
     std::string axis = pa("-flip").as<std::string>();
     core::axis a = axisHorz;
@@ -149,7 +149,7 @@ int main(int n, char **ppc){
       return -1;
     }
     dst->mirror(a);
-  }       
+  }
   if(pa("-rotate")){
     float angle = pa("-rotate");
     static RotateOp rot(angle,sm);
@@ -157,22 +157,22 @@ int main(int n, char **ppc){
     rot.apply(dst,&dst2);
     dst = dst2;
   }
-  
+
   if(pa("-c")){
     static ImgBase *tmp = 0;
-    Rect r(pa("-c",0), 
-           pa("-c",1), 
-           pa("-c",2), 
+    Rect r(pa("-c",0),
+           pa("-c",1),
+           pa("-c",2),
            pa("-c",3));
     if( (dst->getImageRect() | r) != dst->getImageRect()){
-      ERROR_LOG("wrong option -crop|-clip: given rectangle was " 
+      ERROR_LOG("wrong option -crop|-clip: given rectangle was "
                 << r << " but the image rect is only " << dst->getImageRect() );
     }
     dst->setROI(r);
     dst->deepCopyROI(&tmp);
     dst = tmp;
   }
-  
+
   FileWriter fw(outFileName);
   fw.write(dst);
 }

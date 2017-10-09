@@ -34,7 +34,7 @@
 namespace icl {
   namespace physics{
     class RigidObject;
-  
+
     /// This constraint simulates a Hinge joint.
     class ICLPhysics_API HingeConstraint: public SliderConstraint{
       int m_rotationAxis;

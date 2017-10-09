@@ -34,7 +34,7 @@
 
 namespace icl{
   namespace utils{
-    
+
     /// Utility class for class instances that are created brand new on copy
     /** Consider the following problem:
         You have a class with some mutex'ed interface
@@ -48,7 +48,7 @@ namespace icl{
            ...
         };
         \endcode
-        As the mutex class is an instance of the Uncopyable interfaces, it cannot 
+        As the mutex class is an instance of the Uncopyable interfaces, it cannot
         be copied. Furthermore, all classes X that have a member of type Mutex are Uncopyable too, unless,
         A special copy constructor and assignment operator for X is defined. This can be bypassed using the
         UncopiedInstance interface.\n
@@ -71,16 +71,16 @@ namespace icl{
     template<class T>
     class UncopiedInstance : public T{
       public:
-      
+
       /// copy from parent constructor
       inline UncopiedInstance(const T &t):T(t){}
-      
+
       /// default constructor calls T()
       inline UncopiedInstance():T(){}
-      
+
       /// default copy constructor calls T()
       inline UncopiedInstance(const UncopiedInstance &other):T(){}
-      
+
       /// assignment operator (does NOT call T::operator=(other))
       inline UncopiedInstance &operator=(const UncopiedInstance &other){
         return *this;

@@ -79,7 +79,7 @@ namespace icl{
       data->m_buffer = 0;
       data->use_video_fps = true;
       data->filename = fileName;
-      
+
       if(!File(fileName).exists()){
         throw FileNotFoundException(fileName);
       }

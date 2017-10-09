@@ -54,7 +54,7 @@ namespace icl{
   using namespace core;
 
   namespace geom{
-  
+
     struct RSBPointCloudGrabber::Data{
       Mutex mutex;
       bool initialized;
@@ -63,7 +63,7 @@ namespace icl{
       SmartPtr<Camera> depthCam;
       SmartPtr<Camera> colorCam;
       Data():sdev(&buffer){}
-      
+
       struct Handler : public DataHandler<RSBPointCloud>{
         RSBPointCloudGrabber::Data *data;
         Handler(RSBPointCloudGrabber::Data *data):data(data){}
@@ -72,13 +72,13 @@ namespace icl{
           data->buffer.CopyFrom(*image);
         }
       };
-      
+
       shared_ptr<rsb::Handler> handler;
       ListenerPtr listener;
     };
-    
-    
-    RSBPointCloudGrabber::RSBPointCloudGrabber(const std::string &scope, 
+
+
+    RSBPointCloudGrabber::RSBPointCloudGrabber(const std::string &scope,
                                                const std::string &trasportList,
                                                Camera *depthCam,
                                                Camera *colorCam){
@@ -89,11 +89,11 @@ namespace icl{
       if(scope.length()) init(scope,trasportList);
 
     }
-    
+
     RSBPointCloudGrabber::~RSBPointCloudGrabber(){
       delete m_data;
     }
-    
+
     void RSBPointCloudGrabber::init(const std::string &scope, const std::string &transportList){
       if(m_data->initialized){
         m_data->listener->removeHandler(m_data->handler);
@@ -103,7 +103,7 @@ namespace icl{
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
-      
+
       TSet ts2 = rsbCfg.getTransports(true);
       TVec ts(ts2.begin(),ts2.end());
       std::vector<std::string> transports = tok(transportList,",");
@@ -127,7 +127,7 @@ namespace icl{
       m_data->handler = shared_ptr<Handler>(new Data::Handler(m_data));
       m_data->listener->addHandler(m_data->handler);
     }
-      
+
     void RSBPointCloudGrabber::grab(PointCloudObjectBase &dst){
       Mutex::Locker lock(m_data->mutex);
       while(!m_data->buffer.IsInitialized()){
@@ -135,7 +135,7 @@ namespace icl{
         Thread::msleep(10);
         m_data->mutex.lock();
       }
-      PointCloudSerializer::deserialize(dst, m_data->sdev);      
+      PointCloudSerializer::deserialize(dst, m_data->sdev);
     }
 
     Camera RSBPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
@@ -143,11 +143,11 @@ namespace icl{
         throw ICLException("RSBPointCloudGrabber::getDepthCamera(): the depth camera can only "
                            "be returned if explicitly given to the grabber creation string "
                            "e.g. \"app -pci rsb /foo,depth-camfile.xml,color-cam-file.xml\"");
-                           
+
       }
       return *m_data->depthCam;
     }
-    
+
     Camera RSBPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
       if(!m_data->colorCam){
         throw ICLException("RSBPointCloudGrabber::getColorCamera(): the color camera can only "
@@ -157,7 +157,7 @@ namespace icl{
 
       return *m_data->colorCam;
     }
-    
+
     static std::vector<std::string> extract_cams(std::string &s){
       std::vector<std::string> ts = tok(s,",");
       if(ts.size() == 1) return std::vector<std::string>();
@@ -171,7 +171,7 @@ namespace icl{
         throw ICLException("create_rsb_point_cloud_grabber from program argument: invalid syntax!");
       }
     }
-    
+
     static PointCloudGrabber *create_rsb_point_cloud_grabber(const std::map<std::string,std::string> &d){
       std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
       if(it == d.end()) return 0;
@@ -200,7 +200,7 @@ namespace icl{
       }
       return 0;
     }
-    
+
     REGISTER_PLUGIN(PointCloudGrabber,rsb,create_rsb_point_cloud_grabber,
                     "RSB based point cloud grabber",
                     "creation-string: [comma-sep-transport-list:]rsb-scope[,depth-cam-file[,color-cam-file]]");

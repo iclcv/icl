@@ -43,7 +43,7 @@
 
 namespace icl{
   namespace utils{
-    
+
     class ThreadImpl{
     public:
       pthread_t thread;
@@ -51,30 +51,30 @@ namespace icl{
       bool on;
       void *data;
     };
-    
+
     void ThreadImplDelOp::delete_func(ThreadImpl* impl){
       ICL_DELETE(impl);
     }
-    
+
     void *icl_thread_handler(void *t);
-  
-    
+
+
     Thread::Thread():ShallowCopyable<ThreadImpl,ThreadImplDelOp>(new ThreadImpl){
       impl->on = false;
       impl->data = 0;
     }
-    
+
     Thread::~Thread(){
       stop();
     }
-    
+
     void Thread::start(){
       Mutex::Locker l(impl->mutex);
       if(impl->on){
         ERROR_LOG("unable to start thread (it's still running)");
       }else{
         impl->on = true;
-  	  pthread_create(&impl->thread,0,icl_thread_handler, (void*)this); 
+  	  pthread_create(&impl->thread,0,icl_thread_handler, (void*)this);
   	}
     }
     void Thread::stop(){
@@ -106,7 +106,7 @@ namespace icl{
     void Thread::join() {
       pthread_join(impl->thread,&impl->data);
     }
-    
+
     void Thread::usleep(unsigned int usec){
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(usec / 1000);
@@ -114,7 +114,7 @@ namespace icl{
       ::usleep(usec);
     #endif
     }
-  
+
     void Thread::msleep(unsigned int msecs){
   #ifdef ICL_SYSTEM_WINDOWS
       Sleep(msecs);
@@ -129,7 +129,7 @@ namespace icl{
       ::usleep((long)secs * 1000000);
   #endif
     }
-  
+
     // Maybe this works
     bool Thread::running() const{
       Mutex::Locker l(const_cast<Mutex&>(impl->mutex));
@@ -139,7 +139,7 @@ namespace icl{
     bool Thread::runningNoLock() const {
       return impl->on;
     }
-    
+
     void Thread::exit(){
       impl->mutex.lock();
       if(impl->on){
@@ -149,7 +149,7 @@ namespace icl{
       }
       impl->mutex.unlock();
     }
-    
+
     void *icl_thread_handler(void *t){
       ((Thread*)t)->run();
       //pthread_exit(0);

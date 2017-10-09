@@ -30,36 +30,36 @@
 
 #pragma once
 
-/** 
-    H1 ICLQuick - an ICLPackage for rapid prototyping 
-    
+/**
+    H1 ICLQuick - an ICLPackage for rapid prototyping
+
     \section sec1 The ICLQuick Package (Overview)
     In contrast to all other ICL-packages, the ICLQuick package
     focuses only on the programmers convenience. It should
     be used for rapid prototyping or for test applications.\n
-    Consider a default test or benchmark application: The 
+    Consider a default test or benchmark application: The
     programmer has to do several things that are identical for
     most of this kind of application:
     - including all necessary headers
     - making use of the namespaces "icl" and "std"
     - acquiring source images / creating a set of source images
-    - running the tests / benchmarks ( this is the most variable 
+    - running the tests / benchmarks ( this is the most variable
       point)
-    - visualizing the result image or images 
-    
-    The ICLQuick package provides the most common functions 
-    and operators to create the desired result application 
+    - visualizing the result image or images
+
+    The ICLQuick package provides the most common functions
+    and operators to create the desired result application
     in much less time, that is even much better readable!
-    
+
     \section sec2 Example
-    
+
     <table border=0><tr><td>
     The following demo application demonstrates how powerful
     The ICLQuick functions are, if no real-time performance is
     required:
     \code
     #include <ICLQt/Quick.h>
-    // no using namespace etc, ICLQuick automatically 
+    // no using namespace etc, ICLQuick automatically
     // uses namespace icl and std
     int main(){
       ImgQ b;
@@ -67,13 +67,13 @@
         ImgQ a;
         for(int j=0;j<10;j++){
            // horizontal concatenation using the comma operator
-           a = (a,scale(grab("dc","0"),0.1)); 
+           a = (a,scale(grab("dc","0"),0.1));
         }
         // vertical concatenation of a the "10xa-row" to the current b
         b=(b%a);
       }
       // visualize b using icl-xv
-      show(b);    
+      show(b);
     }
     \endcode
     </td><td>
@@ -81,26 +81,26 @@
     </td></tr></table>
 
     \section AFFINITY Template Functions with Affinity (to icl32f)
-    
+
     Most ICLQuick functions are implemented twice -- as template and
-    as non-template with ImgQ parameters/return type. By this means,  
-    the template functions behave as if a default template parameter 
+    as non-template with ImgQ parameters/return type. By this means,
+    the template functions behave as if a default template parameter
     was given (which is not possible in the current C++-standard).
-    
+
     Implementation example:
     \code
     #include <iostream>
     #include <typeinfo>
-    
+
     template<class T> std::string name(){ return "??"; }
     template<> std::string name<int>(){ return "int"; }
     template<> std::string name<float>(){ return "float"; }
-    
+
     template<class T>
     T foo(){
        std::cout << "foo<T> T=" << name<T>() << std::endl;
     }
-    
+
     int foo(){
       std::cout << "XX" ;
       foo<int>();
@@ -112,11 +112,11 @@
       foo<int>();
     }
     \endcode
-    
+
     \section sec3 Essential functions / features
-    
+
     - <b>zeros, ones, load, create, grab, pwc and ieee</b>\n
-      creating images from different sources 
+      creating images from different sources
     - <b>filter,scaled, cc, levels, copy, flipx, ... </b>\n
       filtering functions, creating a new image from a given source image
     - <b>save, show and print</b>\n
@@ -130,20 +130,20 @@
       the "%"-operator concatenates images vertically.
     - <b>The roi-access function </b>\n
       for copying into an images ROI just use the roi function\n
-      "roi(ImgA) = ImgB;" or "roi(ImgA) = 255;"  
-    
+      "roi(ImgA) = ImgB;" or "roi(ImgA) = 255;"
+
     \section ARITH Pixel-wise Arithmetical and Logical Operations
- 
- <table border=0><tr><td>   
-    Another essential set of ICLQuick-functions are the arithmetical and logical 
+
+ <table border=0><tr><td>
+    Another essential set of ICLQuick-functions are the arithmetical and logical
     functions and operators. Instead for creating UnaryOp instances from the ICLFilter
     package, in non-realtime applications, images can simply be added or multiplied
     pixel-wise using the common operators '+','*',etc\n
 
     Internally, most arithmetical and logical operations use a static
     memory managing system to avoid most memory allocation calls at run-time.
-    
-    
+
+
 \code
 #include <ICLQt/Common.h>
 
@@ -171,7 +171,7 @@ int main(int n, char **ppc){
 }
 
 \endcode
-    
+
     </td><td>
     \image html quick-example-2.png "Arithmetical operations for creation of difference images"
     </td></tr></table>

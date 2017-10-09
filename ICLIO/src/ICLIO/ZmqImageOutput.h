@@ -34,7 +34,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// image output implementation using the ZeroMQ (ZMQ) framwork
     class ZmqImageOutput : public ImageOutput{
       public:
@@ -42,10 +42,10 @@ namespace icl{
 
       private:
       Data *m_data; //!< pimpl pointer
-      
+
       public:
-  
-      
+
+
       /// Create UdpImageOutput with given targetPC and port
       /** Of targetPC is "", a null output is created, that must be initialized
           with init before send can be called */
@@ -54,16 +54,16 @@ namespace icl{
       /// Destructor
       ICLIO_API ~ZmqImageOutput();
 
-      
-      /// deferred initialization 
+
+      /// deferred initialization
       ICLIO_API void init(int port=44444);
-      
+
       /// sender method
       ICLIO_API virtual void send(const core::ImgBase *image);
-      
+
       /// returns whether this is a null instance
       inline bool isNull() const { return !m_data; }
-      
+
       /// returns whether this is not a null instance
       inline operator bool() const { return static_cast<bool>(m_data); }
     };

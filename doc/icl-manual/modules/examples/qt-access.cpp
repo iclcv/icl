@@ -1,9 +1,9 @@
 #include <ICLQt/Common.h>
 #include <ICLFilter/UnaryCompareOp.h>
 
-GUI gui;                 
-GenericGrabber grabber;  
-UnaryCompareOp cmp(">"); 
+GUI gui;
+GenericGrabber grabber;
+UnaryCompareOp cmp(">");
 
 void init(){
   gui << Image().handle("image")
@@ -16,7 +16,7 @@ void init(){
 void run(){
   // extract current slider value
   cmp.setValue(gui["thresh"]);
-  
+
   // set displayed image
   gui["image"] = cmp.apply(grabber.grab());
 }

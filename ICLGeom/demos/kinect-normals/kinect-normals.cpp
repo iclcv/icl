@@ -53,8 +53,8 @@ void init(){
   Size size = pa("-size");
   edgeImage.setSize(size);
   angleImage.setSize(size);
-  
-  if(pa("-fcpu")){  
+
+  if(pa("-fcpu")){
     objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::CPU);
     std::cout<<"force CPU"<<std::endl;
   }else if(pa("-fgpu")){
@@ -64,7 +64,7 @@ void init(){
     objectEdgeDetector = new ObjectEdgeDetector(ObjectEdgeDetector::BEST);
     std::cout<<"use best"<<std::endl;
   }
-    
+
   grabDepth.init("kinectd","kinectd=0");
   grabDepth.setPropertyValue("depth-image-unit","raw");
   grabColor.init("kinectc","kinectc=0");
@@ -80,7 +80,7 @@ void init(){
            << Slider(1,15,1).out("avgrange").label("averaging range").handle("avgrangeHandle")
            << ButtonGroup("max,mean").handle("usedAngle")
            << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle");
-  
+
   gui << Image().handle("depth").minSize(16,12)
       << Image().handle("color").minSize(16,12)
       << Image().handle("angle").minSize(16,12)
@@ -88,7 +88,7 @@ void init(){
       << Image().handle("normal").minSize(16,12)
       << controls
       << Show();
-      
+
   if(pa("-cam")){
     string camname = pa("-cam").as<std::string>();
     cam=Camera(camname);
@@ -101,7 +101,7 @@ void init(){
   usedSmoothingHandle.select(0);
   usedAngleHandle= gui.get<ButtonGroupHandle>("usedAngle");
   usedAngleHandle.select(0);
-	
+
   gui.get<ImageHandle>("depth")->setRangeMode(ICLWidget::rmAuto);
   gui.get<ImageHandle>("angle")->setRangeMode(ICLWidget::rmAuto);
 }
@@ -116,12 +116,12 @@ void run(){
   const Img32f &depthImage = *grabDepth.grab()->asImg<icl32f>();
 
   WARNING_LOG("Hello");
-      
+
   int normalrange = gui["normalrange"];
   int neighbrange = gui["neighbrange"];
   float threshold = gui["threshold"];
   int avgrange = gui["avgrange"];
-	
+
   Time start, end;
   start = Time::now();
 
@@ -137,28 +137,28 @@ void run(){
 
   WARNING_LOG("Hello");
 
-  objectEdgeDetector->setNormalCalculationRange(normalrange);	
-  objectEdgeDetector->setNormalAveragingRange(avgrange);	
-  
+  objectEdgeDetector->setNormalCalculationRange(normalrange);
+  objectEdgeDetector->setNormalAveragingRange(avgrange);
+
   usedSmoothingHandle = gui.get<ButtonGroupHandle>("usedSmoothing");
   usedAngleHandle = gui.get<ButtonGroupHandle>("usedAngle");
 
   objectEdgeDetector->setAngleNeighborhoodMode(usedAngleHandle.getSelected());
-  
+
   objectEdgeDetector->setAngleNeighborhoodRange(neighbrange);
   objectEdgeDetector->setBinarizationThreshold(threshold);
-    
+
   WARNING_LOG("Hello");
 
   bool disableAveraging = gui["disableAveraging"];
   edgeImage=objectEdgeDetector->calculate(depthImage, usedFilterHandle.getSelected(),
                                            !disableAveraging, usedSmoothingHandle.getSelected());
-    
+
   WARNING_LOG("Hello");
 
   //access interim result
   angleImage=objectEdgeDetector->getAngleImage();
-  
+
   if(pa("-cam")){
     objectEdgeDetector->applyWorldNormalCalculation(cam);
     normalImage=objectEdgeDetector->getRGBNormalImage();

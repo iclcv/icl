@@ -42,10 +42,10 @@ ImageRectification<icl8u> ir;
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
-  
-  gui << Draw().handle("draw") 
-      << (VBox() 
-          << Image().handle("rectified") 
+
+  gui << Draw().handle("draw")
+      << (VBox()
+          << Image().handle("rectified")
           << (HBox().label("target size").maxSize(99,3)
               << Spinner(2,2000,512).handle("width")
               << Label("x")
@@ -57,7 +57,7 @@ void init(){
              )
          )
       << Show();
-  
+
   mouse.init(grabber.grab()->getSize());
 
   gui["draw"].install(&mouse);
@@ -67,10 +67,10 @@ void run(){
   DrawHandle draw = gui["draw"];
   ButtonHandle now = gui["now"];
   bool automatic = gui["auto"];
-  
+
   const Img8u image = *grabber.grab()->as8u();
   draw = image;
-  
+
   if(now.wasTriggered() || automatic){
     Size s(gui["width"],gui["height"]);
     std::vector<Point> ps = mouse.getQuadrangle();
@@ -82,7 +82,7 @@ void run(){
       WARNING_LOG("rectification failed: " << e.what());
     }
   }
-  
+
   draw->draw(mouse.vis());
   draw->render();
 }

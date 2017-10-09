@@ -45,16 +45,16 @@
 
 namespace icl{
   namespace utils{
-  
+
     struct ProcessMonitor::Data{
       Mutex mutex;
       ProcessMonitor::Info info;
       FILE *pipe;
       std::vector<std::pair<int,ProcessMonitor::Callback> > callbacks;
       int nextCallbackID;
-      
+
       Data():pipe(0),nextCallbackID(0){}
-      
+
       void evaluate_proc(){
         std::ifstream proc("/proc/self/status");
         std::string s;
@@ -72,22 +72,22 @@ namespace icl{
           info.cpuUsage = parse<float>(ts.at(8));
         }catch(...){}
       }
-  
+
       void parse_top_line_cpus(const std::string &top){
         std::vector<std::string> ts = tok(top," \t");
         try{
           info.allCpuUsage = 100.0 - parse<float>(ts.at(4));
         }catch(...){}
       }
-      
+
       void call_callbacks(){
         for(unsigned int i=0;i<callbacks.size();++i){
           callbacks[i].second(info);
         }
       }
-      
+
     };
-      
+
     ProcessMonitor::ProcessMonitor(){
       m_data = new Data;
       m_data->info.pid = getpid();
@@ -102,7 +102,7 @@ namespace icl{
   #endif
       start();
     }
-  
+
     ProcessMonitor::~ProcessMonitor(){
       stop();
 #ifdef ICL_SYSTEM_WINDOWS
@@ -112,18 +112,18 @@ namespace icl{
 #endif
       delete m_data;
     }
-    
+
     static std::string strip_line(const std::string &s){
       int i=0;
       for(;s.length() && s[i]==' '; ++i);
       return s.substr(i);
     }
-    
+
     void ProcessMonitor::run(){
   #ifndef ICL_SYSTEM_WINDOWS
       const static std::string pid = str(getpid());
       const static std::string &command = "top -bd 0.1 -p "+pid;
-  
+
       m_data->pipe = popen(command.c_str(), "r");
       if (!m_data->pipe) {
         ERROR_LOG("ProcessMonitor::run: unable to open pipe to 'top'-command");
@@ -153,18 +153,18 @@ namespace icl{
       WARNING_LOG("this tool is not avaialble for Windows");
   #endif
     }
-    
+
     ProcessMonitor::Info ProcessMonitor::getInfo() const {
       Mutex::Locker l(m_data->mutex);
       return m_data->info;
     }
-  
+
     int ProcessMonitor::registerCallback(ProcessMonitor::Callback cb){
       Mutex::Locker l(m_data->mutex);
       m_data->callbacks.push_back(std::make_pair(m_data->nextCallbackID++,cb));
       return m_data->callbacks.back().first;
     }
-    
+
     void ProcessMonitor::removeCallback(int id){
       Mutex::Locker l(m_data->mutex);
       for(unsigned int i=0;i<m_data->callbacks.size();++i){
@@ -175,12 +175,12 @@ namespace icl{
       }
       WARNING_LOG("tryed to removed callback with id " << id << " which was not registered before!");
     }
-    
+
     void ProcessMonitor::removeAllCallbacks(){
       Mutex::Locker l(m_data->mutex);
       m_data->callbacks.clear();
     }
-  
+
     std::ostream &operator<<(std::ostream &s, const ProcessMonitor::Info &info){
   #ifdef ICL_SYSTEM_WINDOWS
       return s << "The ProcessMonitor class is not available for Windows";
@@ -193,7 +193,7 @@ namespace icl{
                << "memory usage : " << info.memoryUsage << " MB" << std::endl;
   #endif
     }
-    
+
     ProcessMonitor *ProcessMonitor::getInstance(){
       static ProcessMonitor pm;
       return &pm;

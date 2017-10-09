@@ -38,7 +38,7 @@ DitheringOp op;
 
 void init(){
   grabber.init(pa("-i"));
-  
+
   gui << Image().handle("image").minSize(32,24).label("input image")
       << Image().handle("result").minSize(32,24).label("dithered image")
       << ( VBox().maxSize(12,99).minSize(12,1)
@@ -62,6 +62,6 @@ void run(){
 
 int main(int n, char **ppc){
   return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
- 
-  
+
+
 }

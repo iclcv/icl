@@ -64,23 +64,23 @@ void init(){
                 << Label().label("sub regions").handle("nSub").minSize(6,2)
                 << Label().label("all sub regions").handle("nAllSub").minSize(6,2)
                 )
-           << ( HBox() 
+           << ( HBox()
                 << CheckBox("show boundary",true).out("showBoundary")
                 << Button("normal","!thinned").out("showThinnedBoundary")
                 )
-           << ( HBox() 
+           << ( HBox()
                 << CheckBox("show sub regions",true).out("showSubRegions")
                 << Button("direct","all").out("showAllSubRegions")
                 )
-           << ( HBox() 
+           << ( HBox()
                 << CheckBox("show sur. regions",true).out("showSurRegions")
                 << Button("direct","all").out("showAllSurRegions")
                 )
-           << ( HBox() 
+           << ( HBox()
                 << CheckBox("show neighbours").out("showNeighbours")
                 << CheckBox("show bounding rect").out("showBB")
                 )
-           << ( HBox() 
+           << ( HBox()
                 << Button("stopped","!grabbing").out("grabbing").handle("grab-handle").minSize(3,2)
                 << Button("grab next").handle("grab-next-handle").minSize(3,2)
                 )
@@ -97,22 +97,22 @@ void init(){
   grabber.useDesired<Size>(pa("-s"));
   grabber.useDesired(formatGray);
 
-  
+
   gui["image"].install(mouse);
 }
 
 void run(){
   static DrawHandle d = gui["image"];
-  
+
   static LabelHandle timeRD = gui["timeRD"];
   static LabelHandle timeNB = gui["timeNB"];
   static LabelHandle timeSR = gui["timeSR"];
   static LabelHandle timeSU = gui["timeSU"];
-  
+
   static LabelHandle nSub = gui["nSub"];
   static LabelHandle nAllSub = gui["nAllSub"];
   static LabelHandle total = gui["total"];
-  
+
   static LabelHandle &valHandle = gui.get<LabelHandle>("val-handle");
   static LabelHandle &cogHandle = gui.get<LabelHandle>("cog-handle");
   static LabelHandle &sizeHandle = gui.get<LabelHandle>("size-handle");
@@ -136,19 +136,19 @@ void run(){
   static int lastLevels = levels;
   static int lastMedianSize = medianSize;
   static const Img8u *grabbedImage;
-  static Img8u reducedLevels;  
+  static Img8u reducedLevels;
 
   static const Img8u *useImage = 0;
   static const std::vector<ImageRegion> *rs = 0;
   static SmartPtr<MedianOp> mo;
-  
-  
+
+
   int ms = medianSize;
   bool rdUpdated = false;
   if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
     grabbedImage = grabber.grab()->as8u();
     useImage = grabbedImage;
-    
+
     if(levels != 256){
       reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
       useImage = &reducedLevels;
@@ -158,10 +158,10 @@ void run(){
       mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
       useImage = mo->apply(useImage)->asImg<icl8u>();
     }
-    
+
     d.setImage(useImage);
 
-    rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions);      
+    rd.setCreateGraph(showSubRegions || showNeighbours || showSurRegions);
     Time t = Time::now();
     rs = &rd.detect(useImage);
     Time dt = (Time::now()-t);
@@ -204,15 +204,15 @@ void run(){
     d.setImage(useImage);
   }
   lastLevels = levels;
-    
+
   Point m = mousePos;
-  
+
   if(useImage->getImageRect().contains(m.x,m.y)){
     // find the region, that contains mouseX,mouseY
     ImageRegion r = rd.click(m);
-      
+
     if(r){
-        
+
       d->nofill();
       if(showBoundary){
         d->color(0,150,255,200);
@@ -228,7 +228,7 @@ void run(){
         d->color(255,200,100,100);
         Time t=Time::now();
 
-        std::vector<ImageRegion> sur = showAllSurRegions ? r.getParentTree() : 
+        std::vector<ImageRegion> sur = showAllSurRegions ? r.getParentTree() :
         std::vector<ImageRegion>(1,r.getParentRegion());
 
         timeSU = str((Time::now()-t).toMilliSeconds())+"ms";
@@ -267,7 +267,7 @@ void run(){
         for(unsigned int i=0;i<ns.size();++i){
           d->linestrip(ns[i].getBoundary());
         }
-          
+
       }
       valHandle = r.getVal();
       cogHandle = str(r.getCOG());
@@ -282,7 +282,7 @@ void run(){
       ffHandle = "";
       evratioHandle = "";
       blHandle = "";
-      
+
     }
   }
   d.render();

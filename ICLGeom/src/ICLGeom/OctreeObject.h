@@ -48,15 +48,15 @@
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
-#endif 
+#endif
 
 namespace icl{
   namespace geom{
-    
+
     /** \cond */
     ICLGeom_API void octree_object_render_box(float x0, float y0, float z0,
                                               float x1, float y1, float z1);
-    
+
     template<class Scalar, int CAPACITY, int SF, class Pt, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer{
       typedef typename math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node Node;
@@ -68,7 +68,7 @@ namespace icl{
         glEnd();
       }
     };
-    
+
 #if 0
     /// this optimization is not working: Why?
     template<int CAPACITY, int SF, int ALLOC_CHUNK_SIZE>
@@ -81,7 +81,7 @@ namespace icl{
         glDrawArrays(GL_POINTS, 0, (int)(node->next - node->points));
         glDisableClientState(GL_VERTEX_ARRAY);
       }
-    };  
+    };
 
     template<int CAPACITY, int SF, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer<icl32s,CAPACITY,SF,math::FixedColVector<icl32s,4>,ALLOC_CHUNK_SIZE>{
@@ -95,20 +95,20 @@ namespace icl{
       }
     };
 #endif
-    
+
     /** \endcond */
-    
+
 
 
     /// The OctreeObjects provides a visualizable SceneObject interface for the Octree class
     /** \section Insertion Speed
-        
-        Please note that the insertion speed heavily depends on the data that is actually 
+
+        Please note that the insertion speed heavily depends on the data that is actually
         inserted. A very common problem is an incredible slow insertion of Kinect-Point clouds.
         The main reason for this is the fact that Kinect's depth image contains many holes
         with depth value 0.0, originated by -- for the device -- invisible parts of the scene.
         These holes in point-cloud points that are all exactly at the camera center. \n
-        However, a large set of points at the same location leads to a very deep Octree node 
+        However, a large set of points at the same location leads to a very deep Octree node
         structure which affects the insertion performance extremely negatively.
 
         In order to avoid this, it is recommended to use a point filter, most commonly the
@@ -116,22 +116,22 @@ namespace icl{
         another point cloud into an octree.
 
         Please note: another very common misconception is an issue with low speed of debug
-        builds. As a matter of fact, in particular structures as the OctreeObject profit 
-        tremendously from the automatic compiler optimizations, so between "-O0 -g3" and 
-        "-O3 -g0 -march=native" a speedup factor of 10 is not very unlikely. 
-        
+        builds. As a matter of fact, in particular structures as the OctreeObject profit
+        tremendously from the automatic compiler optimizations, so between "-O0 -g3" and
+        "-O3 -g0 -march=native" a speedup factor of 10 is not very unlikely.
+
         As a general guideline, the insertion of a full QVGA (320x240) point cloud from a kinect
         device (employing the PointFilter to avoid insertion thousands of camera center points)
         takes about 5ms on a mobile Core i7 (Intel(R) Core(TM) i7-4700MQ CPU @ 2.40GHz)
      */
-    
+
     template<class Scalar, int CAPACITY=4, int SF=32, class Pt=math::FixedColVector<Scalar,4>, int ALLOC_CHUNK_SIZE=1024>
     class OctreeObject : public math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>, public SceneObject{
 
       /// typedef to the parent class type
       typedef math::Octree<Scalar,CAPACITY,SF,Pt, ALLOC_CHUNK_SIZE> Parent;
       bool m_renderPoints;     //!< flag whether points are rendered as well
-      bool m_renderBoxes;      //!< flag whether aabb boxes are rendered 
+      bool m_renderBoxes;      //!< flag whether aabb boxes are rendered
       GeomColor m_pointColor;  //!< color used for the points (if rendered)
       GeomColor m_boxColor;    //!< color used for the aabb-boxes
 
@@ -143,24 +143,24 @@ namespace icl{
         m_boxColor = GeomColor(0,1,0,0.3);
         setLockingEnabled(true);
       }
-      
+
       public:
-      
+
       /// create OctreeObject from given axis-aligned bounding box
       OctreeObject(const Scalar &minX, const Scalar &minY, const Scalar &minZ,
                    const Scalar &width, const Scalar &height, const Scalar &depth):
-      Parent(minX,minY,minZ,width,height,depth){ 
+      Parent(minX,minY,minZ,width,height,depth){
         init();
         SceneObject::setLockingEnabled(true);
       }
-      
+
       /// create OctreeObject from given cubic axis-aligned bounding box
       OctreeObject(const Scalar &min, const Scalar &len):Parent(min,len){
         init();
       }
 
       /// Adds all points from the given point cloud object to the octree
-      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock 
+      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock
           is used to avoid issues during update */
       void fill(const PointCloudObjectBase &obj, bool clearBefore=true){
         SceneObject::lock();
@@ -180,13 +180,13 @@ namespace icl{
       }
 
       /// Adds all points from the given point cloud object to the octree
-      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock 
+      /** this only works for Pt == Vec, Internally SceneObject::lock/unlock
           is used to avoid issues during update. Supporting a filtering function that
-          provides both bool operator()(const Vec&) const 
-          and bool operator()(const Vec3 &) const. 
+          provides both bool operator()(const Vec&) const
+          and bool operator()(const Vec3 &) const.
 
           A most common filter is provided as an internal class: PointFilter
-          Which is able to 
+          Which is able to
           */
       template<class Filter>
       void fill(const PointCloudObjectBase &obj, Filter f, bool clearBefore){
@@ -213,7 +213,7 @@ namespace icl{
 
       /// Internal most common fill-Filter to filter out single points
       /** The single point that is usually filtered out is the camera center.
-          Therefore, two constructors are provided. One that can be 
+          Therefore, two constructors are provided. One that can be
           arbitrarily defined and another one that uses a camera's position
           and it's focal length as distance threshold directly
 
@@ -229,18 +229,18 @@ namespace icl{
           pos = p.resize<1,3>();
           sqrRadius = radius*radius;
         }
-        
+
         /// Create point filter with given camera
-        /** Internally uses the Camera's position and its focal length as 
+        /** Internally uses the Camera's position and its focal length as
             radius*/
         PointFilter(const geom::Camera &cam){
           pos = cam.getPosition().resize<1,3>();
           this->sqrRadius = utils::sqr(cam.getFocalLength());
         }
-        
+
         /// actual filter function
         /** realized as an inline template */
-        template<int N> 
+        template<int N>
         inline bool operator()(const math::FixedColVector<float,N> &v) const{
           return ( ( sqr(v[0]-pos[0]) +
                      sqr(v[1]-pos[1]) +
@@ -248,35 +248,35 @@ namespace icl{
         }
       };
 
-      
+
       /// sets whether points are rendered as well
       /** Please not, that the point rendering of the OctreeObject is less efficient
           the the point-rendering used in SceneObject or in the PointCouldObjectBase
           sub-classes. Furthermore, all points are rendered with the same color */
       void setRenderPoints(bool enabled) {
-        m_renderPoints = enabled; 
+        m_renderPoints = enabled;
       }
-      
+
       /// return whether points are rendered as well
-      bool getRenderPoints() const { 
-        return m_renderPoints; 
+      bool getRenderPoints() const {
+        return m_renderPoints;
       }
 
       /// sets whether aabbs are to be rendered (default: true)
       void setRenderBoxes(bool enabled) {
-        m_renderBoxes= enabled; 
+        m_renderBoxes= enabled;
       }
-      
+
       /// return whether aabbs are rendered
-      bool getRenderBoxes() const { 
-        return m_renderBoxes; 
+      bool getRenderBoxes() const {
+        return m_renderBoxes;
       }
-      
+
       /// sets the color used for boxes (default is semi-transparent green)
       void setBoxColor(const GeomColor &color){
         m_boxColor = color/255;
       }
-      
+
       /// returns the box color
       GeomColor getBoxColor() const{
         return m_boxColor*255;
@@ -287,24 +287,24 @@ namespace icl{
       void setPointColor(const GeomColor &color){
         m_pointColor = color/255;
       }
-      
+
       /// returns the point rendering color
       GeomColor getPointColor() const{
         return m_pointColor*255;
       }
 
-      /// adapted customRenderMethod 
+      /// adapted customRenderMethod
       virtual void customRender(){
         if(!m_renderPoints && !m_renderBoxes) return;
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-        
+
         glScalef(1./SF,1./SF,1./SF);
-        
+
         GLboolean lightWasOn = true;
         glGetBooleanv(GL_LIGHTING,&lightWasOn);
         glDisable(GL_LIGHTING);
-        
+
         glPointSize(m_pointSize);
         if(m_renderPoints){
           renderNodeWithPoints(Parent::root);
@@ -320,7 +320,7 @@ namespace icl{
       }
 
       protected:
-      
+
       /// utility function to render AABB-boxes
       void box(const typename Parent::AABB &bb) const {
         const Pt &c = bb.center, s = bb.halfSize;
@@ -338,14 +338,14 @@ namespace icl{
 
         glColor4fv(m_pointColor.data());
         OctreePointRenderer<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::render(node);
-        
+
         if(node->children){
           for(int i=0;i<8;++i){
             renderNodeWithPoints(node->children+i);
           }
         }
       }
-      
+
       /// recursive render function rendering a node's AABB only
       void renderNode(const typename Parent::Node *node) const{
         box(node->boundary);

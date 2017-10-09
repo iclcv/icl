@@ -53,7 +53,7 @@ namespace icl{
           << QVideoFrame::Format_ARGB32
           << QVideoFrame::Format_ARGB32_Premultiplied
           << QVideoFrame::Format_RGB32
-          << QVideoFrame::Format_RGB565 
+          << QVideoFrame::Format_RGB565
           << QVideoFrame::Format_RGB555;
     }
 
@@ -125,7 +125,7 @@ namespace icl{
                 res_r[i] = src[i*4+2]; // red channel
                 res_g[i] = src[i*4+1]; // green channel
                 res_b[i] = src[i*4+0]; // blue channel
-              } 
+              }
             } else {
               // fallback if no native conversion is available
               imgWork->setChannels(3);
@@ -134,7 +134,7 @@ namespace icl{
                            cloneFrame.width(),
                            cloneFrame.height(),
                            QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
-              QVideoFrame tmp = QVideoFrame(tmpImg.convertToFormat(QImage::Format_RGB888));  
+              QVideoFrame tmp = QVideoFrame(tmpImg.convertToFormat(QImage::Format_RGB888));
               tmp.map(QAbstractVideoBuffer::ReadWrite);
               cloneFrame = tmp;
               imgWork->setChannels(3);

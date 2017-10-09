@@ -36,19 +36,19 @@
 
 namespace icl{
   namespace geom{
-  
+
     /// Generic interface for PointCloud sources
     class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber {
       struct Data;
       Data *m_data;
-      
+
       public:
-      
+
       /// Empty constructor (creates a null instance)
       GenericPointCloudGrabber();
 
       /// Constructor with initialization
-      /** Possible plugins: 
+      /** Possible plugins:
           * <b>dcam</b> device description is then: "depth-cam-type,depth-cam-id,depth-cam-file"
             * optionally ",color-cam-type,color-cam-id,color-cam-file"
             * an additional comma-seperated token "raw" can be passed to make the grabber
@@ -61,13 +61,13 @@ namespace icl{
       /// direct initialization from program argument
       /** Prog-arg is assumed to have 2 sub-args */
       GenericPointCloudGrabber(const utils::ProgArg &pa);
-      
+
       /// destructor
       ~GenericPointCloudGrabber();
-      
+
       /// deferred intialization
       void init(const std::string &sourceType, const std::string &srcDescription);
-      
+
       /// re-initializes the current device
       /** The backend can choose to throw an exception. The syntax
           for reinitialization is defined by each backend individually */
@@ -82,23 +82,23 @@ namespace icl{
       /// forwards call to current backend
       void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException);
 
-      
+
       /// deferred initialization from ProgArg (most common perhaps)
       /** Prog-arg is assumed to have 2 sub-args */
       void init(const utils::ProgArg &pa);
-      
+
       /// not initialized yet?
       bool isNull() const;
-      
+
       /// fills the given point cloud with grabbed information
       virtual void grab(PointCloudObjectBase &dst);
-      
+
       /// returns the last grabbed point cloud's underlying depth image (if available)
       virtual const core::Img32f *getDepthImage() const;
 
       /// returns the last grabbed point cloud's underlying depth image (if available)
       virtual const core::Img8u *getColorImage() const;
-      
+
     };
   } // namespace geom
 }

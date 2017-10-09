@@ -41,7 +41,7 @@ namespace icl{
     FiducialDetectorPlugin::FiducialDetectorPlugin():camera(0){
       addChildConfigurable(&poseEst,"pose");
     }
-  
+
     void FiducialDetectorPlugin::getCenter2D(Point32f &dst, FiducialImpl &impl){
       throw ICLException("FiducialDetectorPlugin::getCenter2D not supported for this type");
     }
@@ -81,12 +81,12 @@ namespace icl{
         throw ICLException("FiducialDetectorPlugin:getPose3D unable to estimate 3D pose with less than 4 key-points");
       }
     }
-  
-  
+
+
     std::string FiducialDetectorPlugin::getName(const FiducialImpl *impl){
       return str(impl->id);
     }
-  
+
     std::vector<int> FiducialDetectorPlugin::parse_list_str(const Any &s){
       if(!s.length()) throw ICLException("FiducialDetectorPlugin::parse_list_str: got empty string");
       std::vector<int> back;
@@ -106,13 +106,13 @@ namespace icl{
       }
       return back;
     }
-  
+
     struct FiducialDetectorPlugin_VIRTUAL : public FiducialDetectorPlugin{
       virtual void getFeatures(Fiducial::FeatureSet&){}
       virtual void detect(std::vector<FiducialImpl*> &, const Img8u &){}
       virtual void addOrRemoveMarkers(bool, const Any &, const ParamList &){}
     };
-    
+
     REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPlugin_VIRTUAL);
   } // namespace markers
 }

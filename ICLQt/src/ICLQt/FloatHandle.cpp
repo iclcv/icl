@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace qt{
-    
+
     void FloatHandle::operator=(float f){
       (**this)->setText(QString::number(f));
     }

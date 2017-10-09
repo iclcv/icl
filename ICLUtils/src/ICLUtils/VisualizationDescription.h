@@ -37,22 +37,22 @@
 
 namespace icl{
   namespace utils{
-    
+
 
     /// Abstract class for visualization tasks
     /** The visualization class provides an interface for tools
         to provide visualization information. It's idea is
-        to provide an easy interface -- it's implementation is 
+        to provide an easy interface -- it's implementation is
         rather slow, but completely neglegible for most applications;
-        
+
         Right now, this is a very simple interface which still needs
         to be extended
-        
+
         \section PART Supported Parts
         Right now, the following parts are supported. Color and Fill parts remain
         active untill the next color/fill  part is put into the list
         - c draw color (serialized as VisualizationDescription::Color)
-        - f fill color (analoguous to c) 
+        - f fill color (analoguous to c)
         - r rectangle (serialized as Rect32f)
         - e ellipse (serialized as Rect32f, cicles are also ellipses)
         - l line (serialized as Rect32f)#
@@ -63,7 +63,7 @@ namespace icl{
         - L line width (serialized as float)
         - F font size (serialized as float)
         - A text angle (serialized as float given in degrees, default is 0, which is no rotation, rotation is performed clock-wise)
-        
+
         - +xo. for symbols (serialized as Point32f)
           - +: plus symbols
           - x: x-symbols
@@ -72,18 +72,18 @@ namespace icl{
     */
 	  class VisualizationDescription{
       public:
-      
+
       /// Single part of the the visualization pipeline
       struct Part{
         /// constructor
         inline Part(){}
-        
+
         /// constructor with given parameters
         Part(char type, const Any &content):type(type),content(content){}
 
         /// type
         char type;
-        
+
         /// strind-serialized content
         Any content;
       };
@@ -94,11 +94,11 @@ namespace icl{
         std::string text; //!< text content
         /// Empty constructor
         Text(){}
-        
+
         /// Constructor with given pos and content
         Text(const Point32f &pos, const std::string &text):pos(pos),text(text){}
       };
-      
+
       /// Utility Color class
       struct Color{
         /// color union
@@ -108,7 +108,7 @@ namespace icl{
         };
         /// Empty default constructor
         Color(){}
-        
+
         /// Constructor with given color values
         Color(icl8u r, icl8u g, icl8u b, icl8u a=255){
           this->r() = r;
@@ -141,23 +141,23 @@ namespace icl{
         inline const icl8u &a() const { return comp[3]; }
 
       };
-      
+
       protected:
 
       /// internal part list
       std::vector<Part> parts;
       public:
-      
+
       /// returns the parts
-      inline const std::vector<Part> &getParts() const { 
-        return parts; 
+      inline const std::vector<Part> &getParts() const {
+        return parts;
       }
-      
+
       /// clears the list
-      inline void clear() { 
-        parts.clear(); 
+      inline void clear() {
+        parts.clear();
       }
-      
+
       /// adds a given part
       inline void addPart(const Part &part){
         parts.push_back(part);
@@ -166,7 +166,7 @@ namespace icl{
       inline void addPart(char c, const Any &content){
         addPart(Part(c,content));
       }
-      
+
       /// adds another visualization description
       /** Internally the part-lists are just concatenated */
       VisualizationDescription &operator+=(const VisualizationDescription &other){
@@ -175,7 +175,7 @@ namespace icl{
         std::copy(other.parts.begin(),other.parts.end(),parts.begin()+oldSize);
         return *this;
       }
-      
+
       /// adds two descriptions
       /** Internally the part-lists are just concatenated */
       VisualizationDescription operator+(const VisualizationDescription &other){
@@ -185,7 +185,7 @@ namespace icl{
         std::copy(other.parts.begin(),other.parts.end(),sum.parts.begin()+parts.size());
         return sum;
       }
-      
+
       /// sets the current draw color (no alpha)
       void color(icl8u r, icl8u g, icl8u b);
 
@@ -228,7 +228,7 @@ namespace icl{
         addPart('l',Rect32f(x1,y1,x2-x1,y2-y1));
       }
 
-      /// adds a line (intnerally represented by bounding rectangle)      
+      /// adds a line (intnerally represented by bounding rectangle)
       inline void line(const Point32f &a, const Point32f &b){
         addPart('l',Rect32f(a.x,a.y,b.x-a.x,b.y-a.y));
       }
@@ -237,31 +237,31 @@ namespace icl{
       inline void sym(char type, icl32f x, icl32f y){
         addPart(type,Point32f(x,y));
       }
-      
+
       /// adds a symbol (supported types are +*x and .)
       inline void sym(char type, const Point32f &p){
         addPart(type,p);
       }
-      
+
       /// adds text
       /** note that the text must be single lined */
       void text(icl32f x, icl32f y, const std::string &text);
-      
+
       /// adds text
       /** note that the text must be single lined */
       void text(const Point32f &pos, const std::string &text);
-      
+
       /// adds a point (internally handles as a sym of type '.')
       void point(const Point32f &p){
         sym('.',p);
       }
-      
+
       /// adds points (data is in order [x1,y1,x2,y2]
       template<class Iterator>
       void points(Iterator begin, Iterator end){
         addPart('p',std::vector<float>(begin,end));
       }
-      
+
       /// adds points from given float vector
       void points(const std::vector<Point32f> &ps){
         points(&ps[0].x,&ps[0].x + ps.size() * 2);
@@ -272,12 +272,12 @@ namespace icl{
         points(&ps[0].x,&ps[0].x + ps.size() * 2);
       }
 
-      /// template based creation of a polygon 
+      /// template based creation of a polygon
       template<class Iterator>
       void polygon(Iterator begin, Iterator end){
         addPart('y',std::vector<float>(begin,end));
       }
-      
+
       /// adds polygon from given float vector
       void polygon(const std::vector<Point32f> &ps){
         polygon(&ps[0].x,&ps[0].x + ps.size() * 2);
@@ -287,12 +287,12 @@ namespace icl{
       void polygon(const std::vector<Point> &ps){
         polygon(&ps[0].x,&ps[0].x + ps.size() * 2);
       }
-      
+
       /// defines the linewidth
       void linewidth(float w){
         addPart('L',w);
       }
-      
+
       /// defines the point size
       void pointsize(float s){
         addPart('P',s);
@@ -308,7 +308,7 @@ namespace icl{
         addPart('A',angle);
       }
     };
-    
+
     /// overloaded ostream operator for VisualizationDescription::Text
     /// syntax: (x,y)text
     inline std::ostream &operator<<(std::ostream &stream, const VisualizationDescription::Text &t){
@@ -333,32 +333,32 @@ namespace icl{
       stream >> c.rgba;
       return stream;
     }
-    
+
     /// adds text
     inline void VisualizationDescription::text(icl32f x, icl32f y, const std::string &text){
       addPart('t',VisualizationDescription::Text(Point32f(x,y),text));
     }
-    
+
       /// adds text
     inline void VisualizationDescription::text(const Point32f &pos, const std::string &text){
       addPart('t',VisualizationDescription::Text(pos,text));
     }
-    
+
     /// sets the current draw color (no alpha)
     inline void VisualizationDescription::color(icl8u r, icl8u g, icl8u b){
       addPart('c',VisualizationDescription::Color(r,g,b));
     }
-    
+
     /// sets the current draw color (with alpha)
     inline void VisualizationDescription::color(icl8u r, icl8u g, icl8u b, icl8u a){
       addPart('c',VisualizationDescription::Color(r,g,b,a));
     }
-    
+
     /// sets the current fill color (no alpha)
     inline void VisualizationDescription::fill(icl8u r, icl8u g, icl8u b){
       addPart('f',VisualizationDescription::Color(r,g,b));
     }
-    
+
     /// sets the current fill color (with alpha)
     inline void VisualizationDescription::fill(icl8u r, icl8u g, icl8u b, icl8u a){
       addPart('f',VisualizationDescription::Color(r,g,b,a));

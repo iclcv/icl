@@ -50,24 +50,24 @@ namespace icl{
 
     /// Pure Interface class for DelOps \ingroup UTILS
     class DelOpBase { public: virtual ~DelOpBase(){} };
-    
+
     /// Pointer delete operation class for the SmartPtr class \ingroup UTILS
     struct PointerDelOp : public DelOpBase{ template<class T> static void delete_func(T *t){ delete t; } };
-  
+
     /// Array delete operation class for the SmartPtr class \ingroup UTILS
     struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete[] t; } };
-  
+
     /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
     struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
-    
+
 
 #ifdef ICL_USE_STD_SHARED_PTR
     //#warning "Using new std::shared_ptr - based SmartPtr class "
-    template<class T, class delOp = ArrayDelOp > 
+    template<class T, class delOp = ArrayDelOp >
     class SmartPtrBase{
 
       std::shared_ptr<T> impl;
-      
+
       template<class DerivedT>
       inline SmartPtrBase<T,delOp> &assign(const SmartPtrBase<DerivedT,delOp>& r){
         impl = r.impl;
@@ -77,31 +77,31 @@ namespace icl{
       public:
       /// for template-based assignment
       template<class A, class B> friend class SmartPtrBase;
-    
+
       /// e and c will become NULL
       inline SmartPtrBase(){}
-        
+
       /// ptData is given, reference counter is set to 1
       template<class DerivedT>
       SmartPtrBase(DerivedT *ptData, bool bOwn=true) :
       impl(ptData, [bOwn](T *t){ if(bOwn) delOp::delete_func(t); }){
       }
-        
+
       /// Create a copy of given smart pointer with more general type
       /** This does of course only work, if DeriveT is T or if it extends T */
       template<class DerivedT>
       SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r) :
         impl(std::static_pointer_cast<T,DerivedT>(r.impl)){
       }
-  
+
       /// Create a copy of given smart pointer
       /** This does of course only work, if DeriveT is T or if it extends T */
       SmartPtrBase(const SmartPtrBase<T,delOp> &r): impl(r.impl){}
-        
+
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
           reference, nothing is done at all.
-          Else, the current reference counter is decreased by 1, 
+          Else, the current reference counter is decreased by 1,
           if it becomes NULL, the hold reference is deleted.
           Following, the current reference and reference counter is
           copied from the given r. At the end, the copied reference
@@ -109,9 +109,9 @@ namespace icl{
           */
       template<class DerivedT>
       SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<DerivedT,delOp>& r){
-        return assign(r);  
+        return assign(r);
       }
-  
+
       /// explicit implmentation of the same type assignment operator
       /** This operator needs to be implemented explicitly because
           the template based assignment operator does not match the
@@ -119,136 +119,136 @@ namespace icl{
       SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<T,delOp>& r){
         return assign(r);
       }
-  
+
       /// allows for direct assignment of pointers to a SmartPtr object
       /** Rvalue pointer must be of type T of a type is derived from T */
       template<class DerivedT>
       SmartPtrBase<T,delOp> &operator=(DerivedT *p){
         return this->operator=(SmartPtrBase<T,delOp>(p));
       }
-  
+
       /// allows for direct assignment of pointers to a SmartPtr object
       SmartPtrBase<T,delOp> &operator=(T *p){
         return this->operator=(SmartPtrBase<T,delOp>(p));
       }
-  
+
       /// decreases the reference counter (cleanup on demand)
       virtual ~SmartPtrBase() {}
-          
+
       /// returns a reference of the currently hold element
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T &operator* () { return *impl; }
-  
+
       /// returns a reference of the currently hold element (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T &operator* () const { return *impl; }
-        
-  
+
+
       /// returns the pointer to the data
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T* get () { return impl.get(); }
-  
+
       /// returns the pointer to the data (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T* get () const { return impl.get(); }
-  
-  
+
+
       /// returns the currently hold element
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T *operator-> () { return impl.get(); }
-  
+
       /// returns the currently hold element (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T *operator-> () const { return impl.get(); }
-  
-  
+
+
       /// this may be used to check if * or -> operator may be used
       operator bool() const { return (bool)impl; }
-    
+
       /// current reference count
       int use_count() const { return impl.use_count(); }
-        
+
       /// sets the smart pointer to null
-      /** This is equivalent to 
+      /** This is equivalent to
           \code
           SmartPtr<X> p(new X);
           p = SmartPtr<X>();
           \endcode
           */
-      void setNull() { 
+      void setNull() {
         impl.reset();
       }
     };
 #else
-    
-   
+
+
     /// Base class for reference counting smart-pointers  \ingroup UTILS
     /** \section Gen General Information
         The icl::SmartPtrBase class defines an abstract interface for managed
         pointers that use reference counting for save memory management
         It is not recommended to use the SmartPtrBase class itself. Most of
         the time, either The icl::SmartPtr or the icl::SmartArray
-  
+
         <b>Important:</b> The data of a SmartPtrBase is released
         using the second template class parameter delOp::delete_func.
-        Predefined delOps are: 
-        - PointerDelOp  (using delete []) 
+        Predefined delOps are:
+        - PointerDelOp  (using delete [])
         - ArrayDelOp  (using delete [])   [ default ]
         - FreeDelOp  (using free)
         Take care, that shared data, which is given to a specific SmartPtrBase,
-        is allocated using the correct allocation method (new, new[] or 
+        is allocated using the correct allocation method (new, new[] or
         malloc).
-        <b>Use the derived classes SmartPtrBase and SmartArray in order to 
+        <b>Use the derived classes SmartPtrBase and SmartArray in order to
         avoid misunderstandings </b>
-        
+
         <h2>How a SmartPtrBase works</h2>
         In contrast with the auto pointers provided by the stdlib
         an SmartPtrBase has an internal reference counter, which is
         used to care about the deletion of the managed data segment.
     */
-    template<class T, class delOp = ArrayDelOp > 
+    template<class T, class delOp = ArrayDelOp >
     class SmartPtrBase{
       protected:
       T   *e; /**< corresponding data element */
       int *c; /**< reference counters */
       bool d; /**< deletion flag (indicates if the hold data must be deleted) */
-        
+
       /// save reference counter increment
       void inc() {
-        if(c) (*c)++; 
+        if(c) (*c)++;
       }
-  
+
       /// save reference counter decrement (cleanup on demand)
-      void dec() { 
-        if(c && *c) { 
-          if ( --(*c) == 0) { 
-            //               if(d) delete[] e; 
+      void dec() {
+        if(c && *c) {
+          if ( --(*c) == 0) {
+            //               if(d) delete[] e;
             if(d) delOp::delete_func(e);
             delete c;
             c = 0;
           }
         }
       }
-  
+
       /// sets e and c
       void set(T *e,int *c, bool d) {
-        this->e=e; 
-        this->c=c; 
+        this->e=e;
+        this->c=c;
         this->d=d;
       }
-        
+
       /// utility assignment method used in the SmartPtrBase assignment operators
       template<class DerivedT>
       inline SmartPtrBase<T,delOp> &assign(const SmartPtrBase<DerivedT,delOp>& r){
@@ -258,39 +258,39 @@ namespace icl{
         inc();
         return *this;
       }
-           
+
       public:
-        
+
       /// for template-based assignment
       template<class A, class B> friend class SmartPtrBase;
-    
+
       /// e and c will become NULL
       SmartPtrBase(): e(0),c(0),d(0){
-      }    
-        
+      }
+
       /// ptData is given, reference counter is set to 1
       template<class DerivedT>
       SmartPtrBase(DerivedT *ptData, bool bOwn=true): e(ptData), c(new int(1)),d(bOwn){
       }
-        
+
       /// Create a copy of given smart pointer with more general type
       /** This does of course only work, if DeriveT is T or if it extends T */
       template<class DerivedT>
-      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(&dynamic_cast<T&>(*r.e)), c(r.c), d(r.d){ 
-        //      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(r.e), c(r.c), d(r.d){ 
-        inc(); 
+      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(&dynamic_cast<T&>(*r.e)), c(r.c), d(r.d){
+        //      SmartPtrBase(const SmartPtrBase<DerivedT,delOp> &r): e(r.e), c(r.c), d(r.d){
+        inc();
       }
-  
+
       /// Create a copy of given smart pointer
       /** This does of course only work, if DeriveT is T or if it extends T */
-      SmartPtrBase(const SmartPtrBase<T,delOp> &r): e(r.e), c(r.c), d(r.d){ 
-        inc(); 
+      SmartPtrBase(const SmartPtrBase<T,delOp> &r): e(r.e), c(r.c), d(r.d){
+        inc();
       }
-        
+
       /// sets the pointer to hold another reference
       /** If the new reference r.e is identical to the current
           reference, nothing is done at all.
-          Else, the current reference counter is decreased by 1, 
+          Else, the current reference counter is decreased by 1,
           if it becomes NULL, the hold reference is deleted.
           Following, the current reference and reference counter is
           copied from the given r. At the end, the copied reference
@@ -299,9 +299,9 @@ namespace icl{
       template<class DerivedT>
       SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<DerivedT,delOp>& r){
         return assign(r);
-  
+
       }
-  
+
       /// explicit implmentation of the same type assignment operator
       /** This operator needs to be implemented explicitly because
           the template based assignment operator does not match the
@@ -309,75 +309,75 @@ namespace icl{
       SmartPtrBase<T,delOp> &operator=(const SmartPtrBase<T,delOp>& r){
         return assign(r);
       }
-  
+
       /// allows for direct assignment of pointers to a SmartPtr object
       /** Rvalue pointer must be of type T of a type is derived from T */
       template<class DerivedT>
       SmartPtrBase<T,delOp> &operator=(DerivedT *p){
         return this->operator=(SmartPtrBase<T,delOp>(p));
       }
-  
+
       /// allows for direct assignment of pointers to a SmartPtr object
       SmartPtrBase<T,delOp> &operator=(T *p){
         return this->operator=(SmartPtrBase<T,delOp>(p));
       }
-  
+
       /// decreases the reference counter (cleanup on demand)
       virtual  ~SmartPtrBase() { dec(); }
-          
+
       /// returns a reference of the currently hold element
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T &operator* () { ICLASSERT(e); return *e; }
-  
+
       /// returns a reference of the currently hold element (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T &operator* () const { ICLASSERT(e); return *e; }
-        
-  
+
+
       /// returns the pointer to the data
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T* get () { return e; }
-  
+
       /// returns the pointer to the data (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T* get () const { return e; }
-  
-  
+
+
       /// returns the currently hold element
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       T *operator-> () { ICLASSERT(e); return e; }
-  
+
       /// returns the currently hold element (const)
       /** If the element pointer is null, an error will
           terminate the program with -1;
           */
       const T *operator-> () const { ICLASSERT(e); return e; }
-  
-  
+
+
       /// this may be used to check if * or -> operator may be used
       operator bool() const { return (e != 0); }
-    
+
       /// current reference count
       int use_count() const { return c ? *c : 0; }
-        
+
       /// sets the smart pointer to null
-      /** This is equivalent to 
+      /** This is equivalent to
           \code
           SmartPtr<X> p(new X);
           p = SmartPtr<X>();
           \endcode
           */
-      void setNull() { 
+      void setNull() {
         dec();
         set(0,0,0);
       }

@@ -39,7 +39,7 @@ using namespace icl::qt;
 namespace icl{
   namespace geom{
     ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels,
-                                                                          const std::string &xLabel, 
+                                                                          const std::string &xLabel,
                                                                           const std::string &yLabel,
                                                                           const std::string &zLabel):
       xLabel(xLabel),yLabel(yLabel),zLabel(zLabel){
@@ -47,9 +47,9 @@ namespace icl{
       setParams(al,axisThickness,withLabels);
     }
 
-    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness, 
-                                                                         bool withXYZLabels, 
-                                                                         const std::string &xLabel, 
+    ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLengths[3],float axisThickness,
+                                                                         bool withXYZLabels,
+                                                                         const std::string &xLabel,
                                                                          const std::string &yLabel,
                                                                          const std::string &zLabel,
                                                                          const GeomColor &xAxisColor,
@@ -61,19 +61,19 @@ namespace icl{
       setParams(axisLengths,axisThickness,withXYZLabels,xAxisColor, yAxisColor, zAxisColor, textLabelColor, textScaling);
     }
 
-    
-    void ComplexCoordinateFrameSceneObject::setParams(float axisLengths[3], float axisThickness, bool withLabels, 
+
+    void ComplexCoordinateFrameSceneObject::setParams(float axisLengths[3], float axisThickness, bool withLabels,
                                                       const GeomColor &xAxisColor, const GeomColor &yAxisColor,
                                                       const GeomColor &zAxisColor, const GeomColor &textLabelColor,
                                                       float textScaling){
       Mutex::Locker lock(mutex);
-      
+
       m_vertices.clear();
       m_normals.clear();
       m_vertexColors.clear();
       m_primitives.clear();
       m_children.clear();
-      
+
       const float d=axisThickness;
       const float p = M_PI_2;
       const float rxs[3]={0,-p,0},rys[3]={p,0,0},rzs[3]={0,0,0};
@@ -94,18 +94,18 @@ namespace icl{
         o->setColor(Primitive::triangle,cs[i]);
         o->setColor(Primitive::polygon,cs[i]);
       }
-      
+
       float dFac = (xLabel.length() == 1 && yLabel.length() == 1 && zLabel.length() == 1) ? 3 : 5;
       addVertex(Vec(axisLengths[0]+dFac*d,0,0,1),GeomColor(0,0,0,0));
       addVertex(Vec(0,axisLengths[1]+dFac*d,0,1),GeomColor(0,0,0,0));
       addVertex(Vec(0,0,axisLengths[2]+dFac*d,1),GeomColor(0,0,0,0));
-  
+
       if(withLabels){
         addText(0,xLabel,textScaling * axisThickness*3, textLabelColor);
         addText(1,yLabel,textScaling * axisThickness*3, textLabelColor);
         addText(2,zLabel,textScaling * axisThickness*3, textLabelColor);
       }
     }
-  
+
   } // namespace geom
 }

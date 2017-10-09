@@ -48,7 +48,7 @@ using namespace icl::utils;
 using namespace icl::core;
 namespace icl{
   namespace cv{
-  
+
     namespace{
       struct JoinRegionsIf{
         ImageRegionPart *m_oldR;
@@ -56,7 +56,7 @@ namespace icl{
         inline JoinRegionsIf(ImageRegionPart*oldR, ImageRegionPart*newR):
           m_oldR(oldR),m_newR(newR){
         }
-        inline void operator()(WorkingLineSegment &sl) const { 
+        inline void operator()(WorkingLineSegment &sl) const {
           if(sl.reg == m_oldR){
             m_newR->children.push_back(m_oldR->adopt());
             sl.reg = m_newR;
@@ -64,26 +64,26 @@ namespace icl{
         }
       };
     }
-    
+
     using namespace region_detector_tools;
-    
+
     struct RegionDetector::Data{
       const ImgBase *image;
       Point roiOffset;
       Rect roi;
       RunLengthEncoder rle;
-      
+
       std::vector<ImageRegionPart> parts;
       int nUsedParts;
-      
+
       std::vector<ImageRegion> regions;
       std::vector<ImageRegion> filteredRegions;
-  
+
       std::vector<ImageRegionData*> regionData;
-      
-      
+
+
       Data():image(0){}
-  
+
       ~Data(){
         for(unsigned int i=0;i<regionData.size();++i){
           delete regionData[i];
@@ -91,11 +91,11 @@ namespace icl{
       }
       CornerDetectorCSS css;
     };
-  
-  
+
+
     RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
       m_data = new Data;
-  
+
       addProperty("minimum region size","range:spinbox","[0,100000]","0",0,
                   "Minimum amount of pixels, detection regions must have.");
       addProperty("maximum region size","range:spinbox","[0,100000]","1000000",0,
@@ -110,14 +110,14 @@ namespace icl{
                   "detection step. This graph is used to find\n"
                   "region neighbours, children (fully contained\n"
                   "regions) and parents.");
-  
+
       addChildConfigurable(&m_data->css,"CSS");
     }
-  
+
     RegionDetector::RegionDetector(int minSize, int maxSize, int minVal, int maxVal, bool createRegionGraph,
                                    const std::string &configurableID):Configurable(configurableID){
       m_data = new Data;
-  
+
       addProperty("minimum region size","range:spinbox","[0,100000]",str(minSize));
       addProperty("maximum region size","range:spinbox","[0,100000]",str(maxSize));
       addProperty("minimum value","range:slider","[0,255]",str(minVal));
@@ -130,18 +130,18 @@ namespace icl{
       addProperty("track times.create graph","info","","-");
       addProperty("track times.filter regions","info","","-");
       addProperty("track times.total","info","","-");
-  
+
       addChildConfigurable(&m_data->css,"CSS");
     }
-  
+
     void RegionDetector::setCreateGraph(bool on){
       setPropertyValue("create region graph", on ? "on" : "off");
-    }  
-  
+    }
+
     RegionDetector::~RegionDetector(){
       delete m_data;
     }
-  
+
     const ImageRegion RegionDetector::click(const Point &pos){
       std::vector<ImageRegion> &rs = m_data->regions;
       for(unsigned int i=0;i<rs.size();++i){
@@ -151,54 +151,54 @@ namespace icl{
       }
       return ImageRegion(0);
     }
-  
+
     void RegionDetector::setConstraints(int minSize, int maxSize, int minVal, int maxVal){
       setPropertyValue("minimum region size",str(minSize));
       setPropertyValue("maximum region size",str(maxSize));
       setPropertyValue("minimum value",str(minVal));
       setPropertyValue("maximum value",str(maxVal));
     }
-    
+
     void RegionDetector::setCSSParams(float angle_thresh,
-                                      float rc_coeff, 
-                                      float sigma, 
-                                      float curvature_cutoff, 
+                                      float rc_coeff,
+                                      float sigma,
+                                      float curvature_cutoff,
                                       float straight_line_thresh){
       m_data->css.setAngleThreshold(angle_thresh);
       m_data->css.setRCCoeff(rc_coeff);
       m_data->css.setSigma(sigma);
       m_data->css.setCurvatureCutoff(curvature_cutoff);
       m_data->css.setStraightLineThreshold(straight_line_thresh);
-    }                                             
-  
-  
+    }
+
+
     void RegionDetector::useImage(const ImgBase *image) throw (ICLException){
-      ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f, 
+      ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f,
                       ICLException("RegionDetector::prepareImage: depth32f and depth64f are not supported"));
       m_data->roi = image->getROI();
       m_data->image = image;
     }
-    
+
     void RegionDetector::analyseRegions(){
       //BENCHMARK_THIS_FUNCTION;
       int W = m_data->roi.width, H = m_data->roi.height;
       if((int)m_data->parts.size() != W*H){
         m_data->parts.resize(W*H);
       }
-      
+
       ImageRegionPart *nextReg = m_data->parts.data()-1;
       RunLengthEncoder &rle = m_data->rle;
-      
+
       // start region-detection on scan-line basis
       // first line: each sl gets a new region
       for(WorkingLineSegment *s=rle.begin(0); s != rle.end(0); ++s){
-        s->reg = (++nextReg)->init(s); 
+        s->reg = (++nextReg)->init(s);
       }
-  
+
       for(int y=1;y<H;++y){
-        WorkingLineSegment *l = rle.begin(y-1); 
+        WorkingLineSegment *l = rle.begin(y-1);
         WorkingLineSegment *c = l+W;
-        
+
         WorkingLineSegment *lEnd = rle.end(y-1);
         WorkingLineSegment *cEnd = rle.end(y);
         WorkingLineSegment *cStart = c;
@@ -215,9 +215,9 @@ namespace icl{
               }
             }
           }while(c->xend > l->xend && ++l);
-  
+
           if(!c->reg){
-            c->reg = (++nextReg)->init(c); 
+            c->reg = (++nextReg)->init(c);
           }
           if(c->xend == l->xend) ++l;
           ++c;
@@ -226,7 +226,7 @@ namespace icl{
       ++nextReg;
       m_data->nUsedParts =  (int)(nextReg-m_data->parts.data());
     }
-  
+
     void RegionDetector::joinRegions(){
       //BENCHMARK_THIS_FUNCTION;
       /// clear former data regions and their data
@@ -236,9 +236,9 @@ namespace icl{
         delete m_data->regionData[i];
       }
       m_data->regionData.clear();
-      
+
       bool crg = getPropertyValue("create region graph") == "on";
-      
+
       int nextID = -1;
       ImageRegionPart *parts = m_data->parts.data();
       ImageRegionPart *partsEnd = parts + m_data->nUsedParts;
@@ -249,33 +249,33 @@ namespace icl{
         }
       }
     }
-    
+
     void RegionDetector::linkRegions(){
       //BENCHMARK_THIS_FUNCTION;
       RunLengthEncoder &rle = m_data->rle;
       const int H = m_data->roi.height;
-      
+
       for(WorkingLineSegment *s=rle.begin(0)+1; s < rle.end(0); ++s){
         s->ird->link(s[-1].ird);
       }
-      
+
       for(int y=1;y<H;++y){
         //    DEBUG_LOG("y:" << y << " num sl for y: " << (int)(slEnds[y] - (sldata + w*y) ));
         WorkingLineSegment *l = rle.begin(y-1);
         WorkingLineSegment *c = rle.begin(y);
-        
+
         //    SL *lEnd = slEnds[y-1];
         WorkingLineSegment *cEnd = rle.end(y);
         // SL *cStart = c;
-        
+
         while(c < cEnd){
           do{
             l->ird->link(c->ird);
             //std::cout << "linking " << *l << " <--> " << *c << std::endl;
           }while(c->xend > l->xend && ++l);
-          
+
           if(c->xend == l->xend) ++l;
-          
+
           if(++c != cEnd){
             //std::cout << "linking " << c[-1]  << " <--> " << *c << std::endl;
             (c-1)->ird->link(c->ird);
@@ -283,16 +283,16 @@ namespace icl{
         }
       }
     }
-  
-  
-  
-  
+
+
+
+
     void RegionDetector::setUpBorders(){
       //BENCHMARK_THIS_FUNCTION;
       RunLengthEncoder &rle = m_data->rle;
       const int H = m_data->roi.height;
-      
-        
+
+
       // first row
       for(WorkingLineSegment *s = rle.begin(0); s < rle.end(0); ++s){
         s->ird->graph->isBorder = true;
@@ -306,12 +306,12 @@ namespace icl{
         rle.begin(y)->ird->graph->isBorder = true;
         (rle.end(y)-1)->ird->graph->isBorder = true;
       }
-      
+
       // detection of children is no longer done here
       // children and surrounding regions are detected
       // on demand in the ImageRegion
     }
-    
+
     struct SimpleRegionFilter{
       int minVal,maxVal,minSize,maxSize;
       inline SimpleRegionFilter(int minVal, int maxVal, int minSize, int maxSize):
@@ -324,7 +324,7 @@ namespace icl{
         return true;
       }
     };
-    
+
     const std::vector<ImageRegion> & RegionDetector::getLastDetectedRegions(){
     	return m_data->filteredRegions;
     }
@@ -340,8 +340,8 @@ namespace icl{
                                  parse<int>(getPropertyValue("maximum region size"))
                                  ));
     }
-    
-    
+
+
     inline std::string msec_string_and_reset(Time &t){
       Time ct = Time::now();
       Time dt = ct - t;
@@ -349,18 +349,18 @@ namespace icl{
       t =  ct;
       return str( 0.01*(int)(msec * 100) );
     }
-    
+
     const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
       bool trackTimes = getPropertyValue("track times.on");
 
       Time t,tTotal;
-      
+
       if(trackTimes){
         tTotal = Time::now();
       }
-       
+
       useImage(image);
-  
+
       if(trackTimes){
         t = Time::now();
         tTotal = t;
@@ -371,7 +371,7 @@ namespace icl{
       if(trackTimes){
         setPropertyValue("track times.rle", msec_string_and_reset(t));
       }
-  
+
       // find all image region parts
       analyseRegions();
 
@@ -379,7 +379,7 @@ namespace icl{
         setPropertyValue("track times.analyse regions", msec_string_and_reset(t));
       }
 
-  
+
       // join parts and create image regions
       joinRegions();
 
@@ -387,11 +387,11 @@ namespace icl{
         setPropertyValue("track times.join regions", msec_string_and_reset(t));
       }
 
-  
+
       if(getPropertyValue("create region graph") == "on"){
         // create connectivity graph
         linkRegions();
-  
+
         // which region contains which other region
         setUpBorders();
 
@@ -400,8 +400,8 @@ namespace icl{
           setPropertyValue("track times.create graph", msec_string_and_reset(t));
         }
 
-      }      
-  
+      }
+
       // removed regions that do not match the given filter criteria
       filterRegions();
 
@@ -410,11 +410,11 @@ namespace icl{
         setPropertyValue("track times.filter regions", msec_string_and_reset(t));
         setPropertyValue("track times.total", msec_string_and_reset(tTotal));
       }
-      
-      
+
+
       return m_data->filteredRegions;
     }
-  
+
     REGISTER_CONFIGURABLE_DEFAULT(RegionDetector)
   } // namespace cv
 }

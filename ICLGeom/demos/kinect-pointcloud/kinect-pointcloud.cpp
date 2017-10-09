@@ -59,10 +59,10 @@ Img8u normalsImage;
 struct AdaptedSceneMouseHandler : public MouseHandler{
   Mutex mutex;
   MouseHandler *h;
-  
+
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
-  
+
   void process(const MouseEvent &e){
     Mutex::Locker l(mutex);
       h->process(e);
@@ -75,14 +75,14 @@ void init(){
   grabDepth.init("kinectd","kinectd=0");
   grabDepth.setPropertyValue("depth-image-unit","raw");
   grabColor.init("kinectc","kinectc=0");
-  
+
   grabDepth.useDesired(depth32f, pa("-size"), formatMatrix);
   grabColor.useDesired(depth8u, pa("-size"), formatRGB);
-  
+
   Size size = pa("-size");
 
   normalEstimator = new PointCloudNormalEstimator(size);
-  
+
   std::vector<PseudoColorConverter::Stop> stops; //create heatmap
   stops.push_back(PseudoColorConverter::Stop(0.25, Color(255,0,0)));
   stops.push_back(PseudoColorConverter::Stop(0.35, Color(255,255,0)));
@@ -90,13 +90,13 @@ void init(){
   stops.push_back(PseudoColorConverter::Stop(0.55, Color(0,255,255)));
   stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
   pseudoColorConverter = new PseudoColorConverter(stops, 2046);
-  
+
   temporalSmoothing = new MotionSensitiveTemporalSmoothing(2047, 15);
 
   //create GUI
   GUI controls = HBox().minSize(12,12);
   GUI controls2 = HBox().minSize(12,12);
-    
+
   controls << ( VBox()
             << Button("reset view").handle("resetView")
             << Fps(10).handle("fps")
@@ -122,12 +122,12 @@ void init(){
             << Slider(1,15,5).out("filterSize").label("filterSize").maxSize(100,2).handle("filterSize-handle")
             << Slider(1,22,10).out("difference").label("difference").maxSize(100,2).handle("difference-handle")
         );
-  gui << ( VBox() 
+  gui << ( VBox()
            << Draw3D().handle("hdepth").minSize(10,8)
            << Button("heatmap","gray").out("heatmap")
            << Draw3D().handle("hcolor").minSize(10,8)
          )
-      << ( HSplit() 
+      << ( HSplit()
            << Draw3D().handle("draw3D").minSize(40,30)
            << controls
            << controls2
@@ -143,7 +143,7 @@ void init(){
     depthCam.setResolution(size);
   }
   depthCam.setName("Kinect Depth Camera");
- 
+
   if(pa("-c")){//get color cam
     string colorcamname = pa("-c").as<std::string>();
     colorCam = Camera(colorcamname);
@@ -157,16 +157,16 @@ void init(){
 
   // kinect camera
   scene.addCamera(depthCam);
-  
+
   //  view camera
   scene.addCamera(depthCam);
-  
+
   scene.setDrawCoordinateFrameEnabled(true);
   scene.setDrawCamerasEnabled(true);
-  
+
   usedVisualizationHandle.disable(1);
   usedVisualizationHandle.disable(3);
-    
+
   if(pa("-d") && pa("-c")){//enable all options for depth and color
     usedVisualizationHandle.enable(1);
     usedVisualizationHandle.enable(3);
@@ -174,9 +174,9 @@ void init(){
   else if(pa("-d")){//enable normal mapping for depth only
     usedVisualizationHandle.enable(3);
   }
-  
+
   obj  = new PointCloudObject(size.width, size.height,true,true,true);
-  
+
   //create pointcloud
   if(pa("-c")){
     creator = new PointCloudCreator(depthCam, colorCam, PointCloudCreator::KinectRAW11Bit);
@@ -184,15 +184,15 @@ void init(){
   else{
     creator = new PointCloudCreator(depthCam, PointCloudCreator::KinectRAW11Bit);
   }
-  
+
   scene.addObject(obj);
   scene.setBounds(1000);
-  
+
   DrawHandle3D draw3D = gui["draw3D"];
-  
+
   mouse = new AdaptedSceneMouseHandler(scene.getMouseHandler(VIEW_CAM));
   draw3D->install(mouse);
- 
+
   scene.setLightingEnabled(false);
 
   DrawHandle3D hdepth = gui["hdepth"];
@@ -202,7 +202,7 @@ void init(){
 
 void run(){
   bool heatSet=false;
- 
+
   if(gui["disableCL"]){//enable/disable OpenCL
     normalEstimator->setUseCL(false);
     temporalSmoothing->setUseCL(false);
@@ -217,17 +217,17 @@ void run(){
 
   int normalrange = gui["normalrange"];
   int avgrange = gui["avgrange"];
-  
+
   int lineWidth = gui["lineWidth"];
   obj->setLineWidth(lineWidth);
-  
+
   int granularity =gui["lineGranularity"];
   float lineLength =gui["lineLength"];
-  
+
   int pointSize=gui["pointSize"];
   float depthScaling=gui["depthScaling"];
   obj->setPointSize(pointSize);
- 
+
   ButtonHandle resetView = gui["resetView"];
   DrawHandle3D hdepth = gui["hdepth"];
   DrawHandle3D hcolor = gui["hcolor"];
@@ -235,13 +235,13 @@ void run(){
   if(resetView.wasTriggered()){
     scene.getCamera(VIEW_CAM) = scene.getCamera(KINECT_CAM);
   }
-  
+
   //grab images
   const ImgBase &colorImage = *grabColor.grab();
   const ImgBase &depthImage = *grabDepth.grab();
-    
-  static ImgBase *heatmapImage = 0;  
-  
+
+  static ImgBase *heatmapImage = 0;
+
   int filterSize = gui["filterSize"];
   int difference = gui["difference"];
   temporalSmoothing->setFilterSize(filterSize);
@@ -249,8 +249,8 @@ void run(){
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
     temporalSmoothing->apply(&depthImage,&filteredImage);
-    
-    if(gui["heatmap"]){//heatmap image  
+
+    if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
       heatSet=true;//heatmap image calculated
       hdepth = heatmapImage;//->as8u();
@@ -258,7 +258,7 @@ void run(){
       hdepth = filteredImage;
     }
 	}else{
-    if(gui["heatmap"]){//heatmap image  
+    if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(&depthImage,&heatmapImage);
       heatSet=true;//heatmap image calculated
       hdepth = heatmapImage;//->as8u();
@@ -266,9 +266,9 @@ void run(){
       hdepth = &depthImage;
     }
   }
-	
+
 	usedVisualizationHandle = gui.get<ButtonGroupHandle>("usedVisualization");
-	
+
 	if(usedVisualizationHandle.getSelected()==0){//unicolor
 	  int cR=gui["unicolorR"];
 	  int cG=gui["unicolorG"];
@@ -280,14 +280,14 @@ void run(){
 	  }else{
 	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
-  
+
   }else if(usedVisualizationHandle.getSelected()==1){//rgb
     if(gui["enableSmoothing"]){
       creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
     }else{
       creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
 	  }
-  
+
   }else if(usedVisualizationHandle.getSelected()==2){//pseudocolor
     if(heatSet==false){//if heatmap image not calculated
       if(gui["enableSmoothing"]){
@@ -302,8 +302,8 @@ void run(){
       creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
     }
     obj->setColorsFromImage(*heatmapImage);////*heatmapImage->as8u());
-	  
-  }else if(usedVisualizationHandle.getSelected()==3){//normals cam    
+
+  }else if(usedVisualizationHandle.getSelected()==3){//normals cam
     usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
 	  if(usedFilterHandle.getSelected()==1){ //median 3x3
 		  normalEstimator->setMedianFilterSize(3);
@@ -330,14 +330,14 @@ void run(){
               normalEstimator->setDepthImage(*depthImage.as32f());
             }
 	  }
-	  normalEstimator->setNormalCalculationRange(normalrange);	
-	  normalEstimator->setNormalAveragingRange(avgrange);	   
+	  normalEstimator->setNormalCalculationRange(normalrange);
+	  normalEstimator->setNormalAveragingRange(avgrange);
     if(gui["disableAveraging"]){
       normalEstimator->setUseNormalAveraging(false);
     }
     else{
       normalEstimator->setUseNormalAveraging(true);
-    }  
+    }
     normalEstimator->applyNormalCalculation();
     normalEstimator->applyWorldNormalCalculation(depthCam);
     normalsImage=normalEstimator->getRGBNormalImage();
@@ -347,31 +347,31 @@ void run(){
       creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
 	  }
     obj->setColorsFromImage(normalsImage);
-        
-    const DataSegment<float,4> normal = obj->selectNormal();//get pointcloud normal data 
-    
+
+    const DataSegment<float,4> normal = obj->selectNormal();//get pointcloud normal data
+
     const Vec *norms=normalEstimator->getWorldNormals(); //get world normals
-    
+
     DataSegment<float,4>((float*)norms,sizeof(Vec),normal.getDim()).deepCopy(normal); //set pointcloud normal data
   }
-  
+
   bool drawLines=gui["drawLines"];
   if(drawLines && usedVisualizationHandle.getSelected()==3){//draw normal lines
     obj->setUseDrawNormalLines(true, lineLength, granularity);
   }else{
     obj->setUseDrawNormalLines(false, lineLength, granularity);
   }
-  
+
   obj->unlock();
-      
+
   hcolor = &colorImage;
-  
+
   gui["fps"].render();
   hdepth.render();
   hcolor.render();
 
   gui["draw3D"].link(scene.getGLCallback(VIEW_CAM));
-  gui["draw3D"].render();  
+  gui["draw3D"].render();
 }
 
 

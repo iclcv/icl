@@ -29,10 +29,10 @@ void init(){
    // Qt-based GUI creation framework. Here, GUI components
    // can conveniently streamed into each other to create
    // complex GUIs, but also for simple GUI as necessary
-   // in this example, it is convenient to use. 
+   // in this example, it is convenient to use.
    gui << Image().handle("image") << Show();
 }
-       
+
 // the run function contains our processing loop which is
 // acutually very simple in this case. It just grabs a new
 // image and visualizes it with our image visualization GUI
@@ -48,7 +48,7 @@ void run(){
 // specifies the list of allowed program arguments. In this
 // case, only a single argument is allowed, that gets two
 // sub-arguments. The "[m]"-prefix makes the argument
-// mandatory  
+// mandatory
 int main(int n, char **args){
    return ICLApp(n,args,"[m]-input|-i(2)",init,run).exec();
 }

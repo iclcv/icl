@@ -41,7 +41,7 @@ namespace icl{
 
 
   namespace markers{
-    
+
     /// region structure interface class
     /** A region structure can be defined arbitrarily, It defines
         how a single image region is matched agains a given structure
@@ -49,17 +49,17 @@ namespace icl{
     struct RegionStructure{
       /// answers the question whether a given region matches a region structure
       /** Usually, this method is called for every region in an image. Therefore,
-          a particular match-implementation should try to reject a match as fast 
-          as possible. E.g. by first checking whether the root region has a 
+          a particular match-implementation should try to reject a match as fast
+          as possible. E.g. by first checking whether the root region has a
           correct color value */
       virtual bool match(const cv::ImageRegion &r) const = 0;
     };
-    
+
     /// Managed pointer type definition
     typedef utils::SmartPtr<RegionStructure> RegionStructurePtr;
-    
-    
-    
+
+
+
   } // namespace markers
 }
 

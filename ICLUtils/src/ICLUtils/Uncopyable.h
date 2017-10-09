@@ -47,16 +47,16 @@ namespace icl{
         a picture from being copied:
         \code
         #include <ICLUtils/Uncopyable.h>
-        
+
         class Picasso : public Uncopyable{
            ...
-        }; 
-        
+        };
+
         int main(){
           Picasso guernica;
           Picasso copyOfGuernica = guernica; // not allowed
           Picasso anotherTryToCopyGuernica( guernica ); // also not allowed
-    
+
           return 0;
         }
         \endcode
@@ -65,7 +65,7 @@ namespace icl{
       protected:
       /// Empty base constructor
       Uncopyable(){}
-  
+
       private:
       /// forbidden copy constructor
       Uncopyable(const Uncopyable &other){

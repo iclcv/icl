@@ -38,30 +38,30 @@
 
 namespace icl{
   namespace io{
-  
+
     /// Publisher, that can be used to publish images via SharedMemorySegment
     class ICLIO_API SharedMemoryPublisher : public ImageOutput{
       struct Data;  //!< intenal data
       Data *m_data; //!< intenal data
-      
+
       public:
-      
+
       /// Creates a new publisher instance
       /** If memorySegmentName is "", no connection is performed */
       SharedMemoryPublisher(const std::string &memorySegmentName="") throw (utils::ICLException);
-      
+
       /// Destructor
       ~SharedMemoryPublisher();
-      
+
       /// sets the publisher to use a new segment
       void createPublisher(const std::string &memorySegmentName="") throw (utils::ICLException);
-      
+
       /// publishs given image
       void publish(const core::ImgBase *image);
-      
+
       /// wraps publish to implement ImageOutput interface
       virtual void send(const core::ImgBase *image) { publish(image); }
-  
+
       /// returns current memory segment name
       std::string getMemorySegmentName() const throw (utils::ICLException);
     };

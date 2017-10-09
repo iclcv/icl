@@ -53,7 +53,7 @@ struct Obj : public SceneObject{
     addTexture(image,100,idx, ts, idx, createTextureOnce);
   }
 
-#if 0  
+#if 0
   // manual version using a GLImg directly
   virtual void customRender(){
     static Img8u lena = create<icl8u>("lena");
@@ -77,12 +77,12 @@ void init(){
   image = grabber.grab();
   scene.addCamera(Camera());
 
-  obj = new Obj;  
+  obj = new Obj;
   scene.addObject(obj);
   scene.addObject(SceneObject::cube(0,0,0,100));
-  
+
   gui << Draw3D().handle("draw") << Show();
-  
+
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));
 }

@@ -36,19 +36,19 @@ namespace icl{
   using namespace utils;
 
   namespace geom{
- 
+
     struct GenericPointCloudGrabber::Data{
       PointCloudGrabber *impl;
-      
+
     };
-    
-    
+
+
     GenericPointCloudGrabber::GenericPointCloudGrabber():m_data(new Data)
     {
       m_data->impl = 0;
     }
 
-    GenericPointCloudGrabber::GenericPointCloudGrabber(const std::string &sourceType, 
+    GenericPointCloudGrabber::GenericPointCloudGrabber(const std::string &sourceType,
                                                        const std::string &srcDescription):m_data(new Data){
       m_data->impl = 0;
       init(sourceType,srcDescription);
@@ -58,7 +58,7 @@ namespace icl{
       m_data->impl = 0;
       init(pa[0],pa[1]);
     }
-    
+
     GenericPointCloudGrabber::~GenericPointCloudGrabber(){
       ICL_DELETE(m_data->impl);
       delete m_data;
@@ -92,12 +92,12 @@ namespace icl{
       m_data->impl->setCameraWorldFrame(T);
     }
 
-    
+
     void GenericPointCloudGrabber::init(const std::string &sourceType, const std::string &srcDescription){
       if(sourceType == "list"){
-        std::cout << PluginRegister<PointCloudGrabber>::instance().getRegisteredInstanceDescription() 
+        std::cout << PluginRegister<PointCloudGrabber>::instance().getRegisteredInstanceDescription()
                   << std::endl;
-        
+
 
         throw ICLException("GenericPointCloudGrabber list presented successfully");
       }
@@ -113,7 +113,7 @@ namespace icl{
         throw ICLException("GenericPointCloudGrabber::init::unable to create"
                            " GenericPointGrabber instance of type" + sourceType);
       }
-      
+
       addChildConfigurable(m_data->impl);
     }
 
@@ -121,11 +121,11 @@ namespace icl{
       init(pa[0],pa[1]);
     }
 
-    
+
     bool GenericPointCloudGrabber::isNull() const{
       return !m_data->impl;
     }
-      
+
     void GenericPointCloudGrabber::grab(PointCloudObjectBase &dst){
       if(isNull()) throw ICLException("GenericPointCloudGrabber::grab: called on a null instance");
       return m_data->impl->grab(dst);

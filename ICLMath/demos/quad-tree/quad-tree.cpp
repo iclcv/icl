@@ -48,17 +48,17 @@ struct QuadTree2{
     Node *children;
     bool *on;
   };
-  
+
   Node *root;
 
-  QuadTree2() { 
+  QuadTree2() {
     root = new Node;
   }
-  
+
   void insert(const Pt &p){
     insert(p[0],p[1]);
   }
-  
+
   void insert(int x, int y){
     Node *n = root;
     for(int i=0;i<TREE_LEVELS;++i){
@@ -68,14 +68,14 @@ struct QuadTree2{
       y >>= 1;
     }
     static const int X = p2<LEAVE_LEVELS>();
-    
+
     if(!n->on){
       n->on = new bool[X*X];
       memset(n->on,0,X*X);
     }
     n->on[x + X * y] = true;
   }
-  
+
   int nn(int x, int y){
     // dunno!
   }
@@ -95,26 +95,26 @@ inline void toc(){
 
 void init(){
   HBox gui;
-  
+
   gui << Plot().handle("plot").minSize(64*0.7,48*0.7) << Show();
-  
+
   PlotHandle plot = gui["plot"];
-  
+
   //GRandClip rx(320,3*32, Range64f(0,640));
   //GRandClip ry(240,3*24, Range64f(0,480));
   URand rx(0,639), ry(0,479);
-  
+
   typedef QuadTree<icl32s,32,1,1024> QT;
   typedef QT::Pt Pt;
   QT t(Size::VGA);
   //  QuadTree2<> t2;
-  
+
   // create data
   std::vector<Pt> ps(100*1000);
   for(size_t i=0;i<ps.size();++i){
     ps[i] = Pt(rx,ry);
   }
-  
+
   // insert data into the QuadTree
   ::tic("insertion");
   for(size_t i=0;i<ps.size();++i){
@@ -129,13 +129,13 @@ void init(){
   }
   ::toc();
 #endif
-  
+
   //  t.printStructure();
-  
-  plot->sym('x');  
+
+  plot->sym('x');
   plot->scatter(ps.data(),ps.size());
-  
-  
+
+
   /// Query a huge rectangular region with 57% coverage
   Rect r(100,100,500,350);
   ::tic("query");
@@ -187,7 +187,7 @@ void init(){
   }
   ::toc();
 #endif
- 
+
 
 
   // visualize nn-search results

@@ -35,7 +35,7 @@ using namespace std;
 
 namespace icl {
   namespace utils{
-    
+
     Timer::Timer(int iTimerMode){
       m_iTimerMode = iTimerMode;
     }
@@ -44,51 +44,51 @@ namespace icl {
       m_vecTime.push_back(getTime());
       m_vecTimerName.push_back("_START_");
     }
-    
+
     void Timer::stopSubTimer(string sName){
       m_vecTime.push_back(getTime());
-      m_vecTimerName.push_back(sName);  
+      m_vecTimerName.push_back(sName);
     }
-    
+
     void Timer::stopTimer(string sName){
       long int lTmpTimeDiff = 0;
-      
+
       m_vecTime.push_back(getTime());
-      m_vecTimerName.push_back(sName);  
-      
+      m_vecTimerName.push_back(sName);
+
       cout << endl;
       cout << " ------------------------------------------- " << endl;
       cout << " --             Time measure              -- " << endl;
-      
+
       if (m_vecTime.size() > 2) {
         for (unsigned int i=1;i<m_vecTime.size();i++)
           {
             lTmpTimeDiff = (long int)(m_vecTime[i] - m_vecTime[i-1]);
-            
+
             switch(m_iTimerMode)
               {
                 case 0:
-                  cout << " --  [" << m_vecTimerName[i] << "] -> Time: " 
+                  cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
                        << lTmpTimeDiff << " ms" << endl;
                   break;
-                  
+
                 case 1:
                   cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
                        << lTmpTimeDiff << " micro sec" << endl;
                   break;
               }
-          }    
+          }
       }
-      
+
       lTmpTimeDiff = (long int)(m_vecTime[m_vecTime.size()-1] - m_vecTime[0]);
-      
+
       switch(m_iTimerMode)
         {
           case 0:
             cout << " ------------------------------------------- " << endl;
             cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ms" << endl;
             break;
-            
+
           case 1:
             cout << " ------------------------------------------- " << endl;
             cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ns" << endl;
@@ -96,16 +96,16 @@ namespace icl {
         }
       cout << endl;
     }
-    
+
     long int Timer::stopSilent(){
       return  (long int)(getTime() - m_vecTime[0]);
     }
-    
+
     Time::value_type Timer::getTime(){
       switch (m_iTimerMode){
         case 0: //ms
           return Time::now().toMilliSeconds();
-          
+
         default: //µs
           return Time::now().toMicroSeconds();
       }
@@ -114,4 +114,4 @@ namespace icl {
   } // utils
 
 } // icl
-  
+

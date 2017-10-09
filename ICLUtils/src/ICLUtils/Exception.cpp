@@ -42,12 +42,12 @@
 
 namespace icl {
   namespace utils{
-  
+
     void ICLException::report() {
        FUNCTION_LOG("");
-       
+
        std::cout << "ICL Exception: " << what() << std::endl;
     }
-  
+
   } // namespace utils
 } // namespace icl

@@ -41,7 +41,7 @@ namespace  icl{
     };
 
     MarkerGridDetector::GridDefinition::GridDefinition(){}
-    
+
     MarkerGridDetector::GridDefinition::GridDefinition(const utils::Size &numCells,
                                                        const std::vector<int> &markerIDs,
                                                        const std::string &markerType)
@@ -74,7 +74,7 @@ namespace  icl{
         return utils::Point(id%getWidth(), id/getWidth());
       }
     }
-    
+
     int MarkerGridDetector::GridDefinition::getIndex(int id) const{
       if(posLUT.size()){
         std::map<int,utils::Point>::const_iterator it = posLUT.find(id);
@@ -105,11 +105,11 @@ namespace  icl{
     const std::vector<int> &MarkerGridDetector::GridDefinition::getMarkerIDs() const{
       return ids;
     }
-    
+
     MarkerGridDetector::MarkerGridDetector() : m_data(new Data){
 
     }
-    
+
     MarkerGridDetector::MarkerGridDetector(const MarkerGridDetector::GridDefinition &griddef,
                                            const utils::ParamList &extraParams) :
       m_data(new Data){
@@ -128,7 +128,7 @@ namespace  icl{
                                         extraParams);
       addChildConfigurable(m_data->fd.get());
     }
-    
+
     MarkerGridDetector::~MarkerGridDetector(){
       delete m_data;
     }
@@ -136,14 +136,14 @@ namespace  icl{
     const MarkerGridDetector::GridDefinition &MarkerGridDetector::getGridDefinition() const{
       return m_data->def;
     }
-    
+
     const MarkerGridDetector::Result &MarkerGridDetector::detect(const core::ImgBase *image)
       throw (utils::ICLException){
       if(isNull()){
         throw utils::ICLException("MarkerGridDetector::detect: instance not yet initialized");
       }
       const std::vector<Fiducial> &fs = m_data->fd->detect(image);
-     
+
       m_data->fids.fill(Fiducial());
 
       for(size_t i=0;i<fs.size();++i){

@@ -43,19 +43,19 @@ void init(){
       << (VBox()
           << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")
           << FSlider(0,2000,100).out("high").label("high").maxSize(100,2).handle("high-handle")
-          <<  ( HBox()  
+          <<  ( HBox()
                 << Slider(0,2,0).out("preGaussRadius").handle("pre-gauss-handle").label("pre gaussian radius")
                 << Label("time").handle("dt").label("filter time in ms")
                 << Button("stopped","running").out("running").label("capture")
-                << CamCfg() 
+                << CamCfg()
                )
           )
       << Show();
 
   grabber.init(pa("-i"));
-  
+
   gui.registerCallback(update,"low-handle,high-handle,pre-gauss-handle");
-  
+
   update();
 }
 
@@ -69,15 +69,15 @@ void update(){
   float low = gui["low"];
   float high = gui["high"];
   int preGaussRadius = gui["preGaussRadius"];
-  
+
   CannyOp canny(low,high,preGaussRadius);
   static ImgBase *dst = 0;
 
   Time t = Time::now();
   canny.apply(grabber.grab(),&dst);
-  
+
   dt = (Time::now()-t).toMilliSecondsDouble();
-  
+
   image = dst;
 }
 
@@ -91,6 +91,6 @@ void run(){
 
 int main(int n, char **ppc){
   return ICLApplication(n,ppc,"[m]-input|-i(2)",init,run).exec();
- 
-  
+
+
 }

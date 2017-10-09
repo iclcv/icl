@@ -51,7 +51,7 @@ struct B : public Configurable, public Thread{
     addChildConfigurable(&c);
     start();
   }
-  
+
   virtual void run(){
     while(true){
       Thread::msleep(100);
@@ -80,7 +80,7 @@ struct A : public Configurable{
     addProperty("general.hey its a flag","flag","",true);
 
     setConfigurableID("a");
-    
+
     addChildConfigurable(&b,"b");
   }
 } a;

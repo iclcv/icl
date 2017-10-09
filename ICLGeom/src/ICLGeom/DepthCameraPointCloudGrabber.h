@@ -37,11 +37,11 @@
 
 namespace icl{
   namespace geom{
-    
+
     /** \cond */
     class PointCloudCreator;
     /** \endcond */
-    
+
     /// PointCloudGrabber implementation for 2D core::depth-image based creation of point clouds
     /** This Grabber implementation can be used for all point-cloud sources,
         where the point cloud must still be created from a given core::depth images.
@@ -49,7 +49,7 @@ namespace icl{
     class ICLGeom_API DepthCameraPointCloudGrabber : public PointCloudGrabber{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
-        
+
       public:
       /// constructor with a set of given parameters
       /** @param depthCam core::depth camera parameters (if nothing is passed, a simple
@@ -58,8 +58,8 @@ namespace icl{
                           then no color camera information will be available, no
                           color images will be grabbed and only xyz point cloud data
                           is created (all other fiels are just left untouched)
-          
-          @param depthDeviceType, depthDeviceID: device type (e.g. kinectd for Kinect source of file 
+
+          @param depthDeviceType, depthDeviceID: device type (e.g. kinectd for Kinect source of file
           filepattern for using a list of source files that contained
           core::depth images) Analogously for <b>colorDeviceType</b> and <b>colorDeviceID</b>, however the latter two
           are ignored if not colorCam was passed.
@@ -72,32 +72,32 @@ namespace icl{
                                    const std::string &colorDeviceType="kinectc",
                                    const std::string &colorDeviceID="0",
                                    bool needsKinectRawDepthInput=false);
-      
+
       /// Destructor
       ~DepthCameraPointCloudGrabber();
-      
+
       /// sets a mask, that is applied to the color image before creatig the point cloud
       /** color pixels that correspond to 0-mask pixels are set to black */
       void setColorImageMask(const core::Img8u *mask, bool passOwnerShip=true);
-      
+
       /// sets a mask, that is applied to the depth image before creatig the point cloud
       /** depth image pixels that correspond to 0-mask pixels are set to 0 */
       void setDepthImageMask(const core::Img8u *mask, bool passOwnerShip=true);
-    
+
       /// virtual grab implementation
       virtual void grab(PointCloudObjectBase &dst);
-      
+
       /// returns the last grabbed core::depth image
       const core::Img32f &getLastDepthImage() const;
-      
+
       /// returns the last grabbed color image
       /** Throws an exception if no color camera or not valid color camera device
           type and ID were passed. */
       const core::Img8u &getLastColorImage() const throw (utils::ICLException);
-      
+
       /// creates the defautl VGA core::depth camera
       static const Camera &get_default_depth_cam();
-  
+
       /// creates the defautl null color camera
       /** The camera is never really used, only it's address is used to decide
           whether it is the static null-color-camera or not */
@@ -113,14 +113,14 @@ namespace icl{
       /// defines whether opencl is to be used
       /** Please note that OpenCL is only used if
           * The graphics card supports OpenCL
-          * ICL is build with OpenCL support 
+          * ICL is build with OpenCL support
           * for the most common point cloud types (i.e. color type is rgba32f)
           * color- and depth-camera size are equal */
       void setUseCL(bool enable);
-      
+
       /// returns the internal point cloud creator instance
       PointCloudCreator &getCreator();
-      
+
       /// returns the internal point cloud creator instance (const)
       const PointCloudCreator &getCreator() const;
 
@@ -129,7 +129,7 @@ namespace icl{
       RGBDMapping getMapping() const throw (utils::ICLException);
 
       /// reinitisize the backend (here, only new camera parameters can be given)
-      /** The syntax is @dcam=depth-cam-filename@ccam=color-cam-filename. 
+      /** The syntax is @dcam=depth-cam-filename@ccam=color-cam-filename.
           It is also possible to pass only one of the @ tokens. */
       void reinit(const std::string &description) throw (utils::ICLException);
 
@@ -152,7 +152,7 @@ namespace icl{
           relative transform between the depth camera and the color camera
           remains the same. Otherwise, the RGBD-mapping would become broken */
       virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) throw (utils::ICLException);
-      
+
     };
   } // namespace geom
 }

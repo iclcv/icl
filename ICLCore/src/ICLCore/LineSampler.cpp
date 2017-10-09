@@ -31,11 +31,11 @@
 #include <ICLCore/LineSampler.h>
 
 namespace icl{
-  
+
   using namespace utils;
-  
+
   namespace core{
-    
+
     namespace{
 
       template<bool useBounds>
@@ -49,15 +49,15 @@ namespace icl{
           void push(const Point &p);
           void inc(int direction);
         */
-      
+
       template<class UnaryPointFunc, int ystep, bool steep2, bool steep, bool usebr>
       inline void bresenham_internal_generic_level_4(int x0, int y0, int x1, int y1,const int bounds[4], UnaryPointFunc f){
         const int deltax = x1 - x0;
         const int deltay = std::abs(y1 - y0);
         int error = 0;
         const int dp = steep2 ? -1 : 1;
-        f.init(steep2); 
-        
+        f.init(steep2);
+
         for(int x=x0,y=y0;x<=x1;x++){
           if( bounds_check<usebr>(steep?y:x,steep?x:y,bounds) ){
             f.push(Point(steep?y:x,steep?x:y));
@@ -70,7 +70,7 @@ namespace icl{
           }
         }
       }
-      
+
       template<class UnaryPointFunc, int ystep, bool steep2, bool steep>
       inline void bresenham_internal_generic_level_3(int x0, int y0, int x1, int y1,const int br[4],UnaryPointFunc f){
         if(br){
@@ -79,7 +79,7 @@ namespace icl{
           bresenham_internal_generic_level_4<UnaryPointFunc,ystep,steep2,steep,false>(x0,y0,x1,y1,br,f);
         }
       }
-      
+
 
       template<class UnaryPointFunc, int ystep, bool steep2>
       inline void bresenham_internal_generic_level_2(int x0, int y0, int x1, int y1,const int br[4], bool steep, UnaryPointFunc f){
@@ -89,10 +89,10 @@ namespace icl{
           bresenham_internal_generic_level_3<UnaryPointFunc,ystep,steep2,false>(x0,y0,x1,y1,br,f);
         }
       }
-      
-      
+
+
       template<class UnaryPointFunc, int ystep>
-      inline void bresenham_internal_generic_level_1(int x0, int y0, int x1, int y1,const int br[4], 
+      inline void bresenham_internal_generic_level_1(int x0, int y0, int x1, int y1,const int br[4],
                                                      bool steep, bool steep2, UnaryPointFunc f){
         if(steep2){
           bresenham_internal_generic_level_2<UnaryPointFunc,ystep,true>(x0,y0,x1,y1,br,steep,f);
@@ -100,7 +100,7 @@ namespace icl{
           bresenham_internal_generic_level_2<UnaryPointFunc,ystep,false>(x0,y0,x1,y1,br,steep,f);
         }
       }
-      
+
       template<class UnaryPointFunc>
       inline void bresenham_internal_generic_level_0(int x0, int y0, int x1, int y1,const int br[4], UnaryPointFunc f){
         // new optimization: if start and end point are IN the bounding rect,
@@ -109,7 +109,7 @@ namespace icl{
         if(br && bounds_check<true>(x0, y0, br) && bounds_check<true>(x1, y1, br) ){
           useBR =  0;
         }
-        
+
         bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
         if(steep){
           std::swap(x0, y0);
@@ -120,25 +120,25 @@ namespace icl{
           std::swap(x0, x1);
           std::swap(y0, y1);
         }
-        
+
         if(y0 < y1){
           bresenham_internal_generic_level_1<UnaryPointFunc,1>(x0,y0,x1,y1,useBR,steep,steep2,f);
         }else{
           bresenham_internal_generic_level_1<UnaryPointFunc,-1>(x0,y0,x1,y1,useBR,steep,steep2,f);
-        } 
-      } 
+        }
+      }
     }
 
 
     LineSampler::LineSampler(int maxLen):
       m_buf(maxLen){}
-    
+
     LineSampler::LineSampler(const Rect &br):
       m_buf(iclMax(br.width,br.height)){
       setBoundingRect(br);
     }
-    
-    
+
+
     void LineSampler::setBoundingRect(const Rect &bb){
       m_br.resize(4);
       m_br[0] = bb.x;
@@ -146,13 +146,13 @@ namespace icl{
       m_br[2] = bb.right();
       m_br[3] = bb.bottom();
     }
-    
+
     void LineSampler::removeBoundingBox(int bufferSize){
       m_buf.resize(bufferSize);
       m_br.clear();
     }
-    
-    
+
+
     template<bool vertical, bool forward, bool useBR>
     std::pair<Point*,Point*> sample_simple_line_level_3(int c, int a, int b, const int br[4], Point *buf, int bufSize){
       Point *p = forward ? buf : buf+bufSize-1;
@@ -164,12 +164,12 @@ namespace icl{
           if(forward) ++p; else --p;
         }
       }
-      
+
       return forward ? std::make_pair(buf, p) : std::make_pair(p+1, buf+bufSize);
     }
 
     template<bool vertical, bool forward>
-    std::pair<Point*,Point*> sample_simple_line_level_2(int c, int a, int b, const int br[4], 
+    std::pair<Point*,Point*> sample_simple_line_level_2(int c, int a, int b, const int br[4],
                                                         Point *buf, int bufSize){
       if(br){
         return sample_simple_line_level_3<vertical,forward,true>(c,a,b,br, buf, bufSize);
@@ -177,9 +177,9 @@ namespace icl{
         return sample_simple_line_level_3<vertical,forward,false>(c,a,b, br, buf, bufSize);
       }
     }
-    
+
     template<bool vertical>
-    std::pair<Point*,Point*> sample_simple_line_level_1(int c, int a, int b, const int br[4], 
+    std::pair<Point*,Point*> sample_simple_line_level_1(int c, int a, int b, const int br[4],
                                                         Point *buf, int bufSize){
       const int *useBR = br;
 
@@ -188,16 +188,16 @@ namespace icl{
       }else{
         if(br && bounds_check<true>(a,c,br) && bounds_check<true>(b,c,br) ) useBR = br;
       }
-                                    
+
       if(a<=b){
         return sample_simple_line_level_2<vertical,true>(c,a,b, useBR, buf, bufSize);
       }else{
         return sample_simple_line_level_2<vertical,false>(c,a,b, useBR, buf, bufSize);
       }
     }
-    
-  
-    std::pair<Point*,Point*> sample_simple_line_level_0(bool vertical, int x0, int y0, int x1, int y1, const int br[4], 
+
+
+    std::pair<Point*,Point*> sample_simple_line_level_0(bool vertical, int x0, int y0, int x1, int y1, const int br[4],
                                                         std::vector<Point> &dst){
       if(vertical){
         return sample_simple_line_level_1<true>(x0,y0,y1, br, dst.data(), dst.size());
@@ -213,7 +213,7 @@ namespace icl{
       bool &inverted;
       inline PushList(Point *buf, int size, Point *&cp, bool &inverted):
         buf(buf),size(size), cp(cp),inverted(inverted){}
-      
+
       inline void init(bool invertOrder){
         if(invertOrder) {
           cp = buf + size-1;
@@ -222,18 +222,18 @@ namespace icl{
         }
         inverted = invertOrder;
       }
-      
+
       inline void push(const Point &p){
         *cp = p;
       }
-      
+
       inline void inc(int dir){
         cp += dir;
       }
     };
 
 
-    
+
     LineSampler::Result LineSampler::sample(const Point &a, const Point &b){
       int dx = std::abs(a.x - b.x);
       int dy = std::abs(a.y - b.y);
@@ -243,7 +243,7 @@ namespace icl{
         std::pair<Point*,Point*> res = sample_simple_line_level_0(!dx, a.x, a.y, b.x, b.y, m_br.size() ? m_br.data() : 0, m_buf);
         Result r = { res.first, (int)(res.second - res.first) };
         return r;
-      }                     
+      }
 
 
       bool inverted = false;
@@ -257,17 +257,17 @@ namespace icl{
       return r;
     }
 
-   
+
       /// samples the line into the given destination vector
     void LineSampler::sample(const Point &a, const Point &b, std::vector<Point> &dst){
       int dx = std::abs(a.x - b.x);
       int dy = std::abs(a.y - b.y);
-      dst.resize(iclMax(dx,dy)+1); 
+      dst.resize(iclMax(dx,dy)+1);
 
       if(!dx || !dy){
         sample_simple_line_level_0(!dx, a.x, a.y, b.x, b.y, m_br.size() ? m_br.data() : 0, dst);
-      }     
-      
+      }
+
       bool inverted = false;
       Point *cp = 0;
       PushList pl(dst.data(), dst.size(), cp, inverted);

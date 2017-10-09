@@ -1591,7 +1591,7 @@ namespace icl{
       139,  9,158,162,  1, 46,128,106,143,255,217
     };
     // }}}
-    
+
     }//end namespace
     ImgBase* createImage_flowers(){
       // {{{ open

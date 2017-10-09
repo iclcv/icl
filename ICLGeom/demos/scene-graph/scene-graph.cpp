@@ -52,7 +52,7 @@ struct Planet : public SceneObject{
     SceneObject *s = addSphere(0,0,0,radius,30,30);
     s->setVisible(Primitive::vertex,false);
     s->setVisible(Primitive::line,false);
-    s->setColor(Primitive::quad,color);   
+    s->setColor(Primitive::quad,color);
   }
   void prepareForRendering(){
     float dt = (Time::now()-startTime).toSecondsDouble();
@@ -85,7 +85,7 @@ MouseHandler *sceneHandler = 0;
 
 struct Handler : public MouseHandler{
   void process(const MouseEvent &evt){
-    if(evt.isModifierActive(ShiftModifier) || 
+    if(evt.isModifierActive(ShiftModifier) ||
        evt.isModifierActive(AltModifier) ||
        evt.isModifierActive(ControlModifier)){
       if(evt.isLeft() && evt.isPressEvent()){
@@ -122,7 +122,7 @@ void init(){
 
   gui << Draw3D().handle("view")
       << Draw().handle("image")
-      << (VBox() 
+      << (VBox()
           << Combo("none,rgb,depth").handle("capture").label("offscreen rendering")
           << Combo("raw,dist. to z0,dist to cam center").handle("dmode").label("depth map mode")
           )
@@ -156,7 +156,7 @@ void init(){
   sceneHandler = scene.getMouseHandler(0);
   gui["view"].install(new Handler);
   gui["image"].install(new MouseHandler(mouse_2));
-  
+
   scene.getLight(0).setDiffuse(GeomColor(10,10,255,100));
 
   scene.getLight(1).setOn(true);
@@ -174,25 +174,25 @@ void init(){
   scene.getLight(2).getShadowCam()->setNorm(-Vec(0,0,-60,1));
 
   scene.setDrawCoordinateFrameEnabled(true,400);
-  
+
   scene.getLight(2).setShadowEnabled(true);
 
 
-  
+
   DrawHandle ih = gui["image"];
   ih->setAutoResetQueue(false);
-  
+
   gui["view"].link(scene.getGLCallback(0));
 }
 
 void run(){
   ICLDrawWidget3D *d = gui["view"];
   static FPSLimiter fps(100,10);
-  std::string fpsString = fps.getFPSString(); 
+  std::string fpsString = fps.getFPSString();
   d->color(255,0,0,255);
   d->text(fpsString,550,10,8);
   d->render();
-  
+
   int capture = gui["capture"];
   static Img32f db;
   switch(capture){

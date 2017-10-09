@@ -36,37 +36,37 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
-  
+
   #define ICL_COMP_ZERO 0
   #define ICL_COMP_NONZERO 255
-  
+
     namespace{
-    
+
   #define CREATE_COMPARE_OP(NAME,OPERATOR)                              \
     template <typename T> struct CompareOp_##NAME {                     \
       static inline icl8u cmp(T val1, T val2){                          \
         return val1 OPERATOR val2 ? ICL_COMP_NONZERO : ICL_COMP_ZERO;   \
       }                                                                 \
     }
-  
+
     CREATE_COMPARE_OP(eq,==);
     CREATE_COMPARE_OP(lt,<);
     CREATE_COMPARE_OP(lteq,<=);
     CREATE_COMPARE_OP(gteq,>=);
     CREATE_COMPARE_OP(gt,>);
-    
+
   #undef CREATE_COMPARE_OP
-    
-    template <typename T> struct CompareOp_eqt {                   
+
+    template <typename T> struct CompareOp_eqt {
       // {{{ open
-  
-      static inline icl8u cmp(T val1, T val2, T tolerance){               
-        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO; 
-      }                                                               
+
+      static inline icl8u cmp(T val1, T val2, T tolerance){
+        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
+      }
     };
-  
+
     // }}}
-    
+
     template <class T, template<typename X> class C>
     inline void fallbackCompare(const Img<T> *src1,const Img<T> *src2,Img<icl8u> *dst){
       // {{{ open
@@ -80,9 +80,9 @@ namespace icl {
         }
       }
     }
-  
+
     // }}}
-    
+
     template <typename T>
     inline void fallbackCompareWithTolerance(const Img<T> *src1,const Img<T> *src2, Img8u *dst,T tolerance) {
       // {{{ open
@@ -97,37 +97,37 @@ namespace icl {
        }
      }
      // }}}
-    
+
     template<class T>
     void cmp(const Img<T> *src1,const  Img<T> *src2, Img8u *dst, T tolerance, BinaryCompareOp::optype ot){
        // {{{ open
-  
-       switch(ot){                
+
+       switch(ot){
          case BinaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src1,src2,dst); break;
          case BinaryCompareOp::gt: fallbackCompare<T,CompareOp_gt>(src1,src2,dst); break;
          case BinaryCompareOp::lteq: fallbackCompare<T, CompareOp_lteq>(src1,src2,dst); break;
          case BinaryCompareOp::gteq: fallbackCompare<T, CompareOp_gteq>(src1,src2,dst); break;
          case BinaryCompareOp::eq: fallbackCompare<T, CompareOp_eq>(src1,src2,dst); break;
-         case BinaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src1,src2,dst,tolerance); break; 
+         case BinaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src1,src2,dst,tolerance); break;
        }
      }
-  
+
     // }}}
-     
-  
-  #ifdef ICL_HAVE_IPP 
+
+
+  #ifdef ICL_HAVE_IPP
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,const T*,int, icl8u*,int,IppiSize,IppCmpOp)>
     inline void ippCall(const Img<T> *src1,const Img<T>*src2, Img8u *dst, BinaryCompareOp::optype cmpOp){
       // {{{ open
       for (int c=src1->getChannels()-1; c >= 0; --c) {
-        ippiFunc (src1->getROIData (c), src1->getLineStep(), 
+        ippiFunc (src1->getROIData (c), src1->getLineStep(),
                   src2->getROIData(c), src2->getLineStep(),
                   dst->getROIData (c), dst->getLineStep(),
                   dst->getROISize(),(IppCmpOp) cmpOp);
       }
     }
     // }}}
-  
+
     template<> void cmp<icl8u>(const Img8u *src1, const Img8u *src2, Img8u *dst, icl8u tolerance, BinaryCompareOp::optype ot){
       // {{{ open
       if(ot == BinaryCompareOp::eqt){
@@ -135,7 +135,7 @@ namespace icl {
       }else{
         ippCall<icl8u,ippiCompare_8u_C1R>(src1,src2,dst,ot);
       }
-    }  
+    }
     // }}}
     template<> void cmp<icl16s>(const Img16s *src1,const Img16s *src2, Img8u *dst, icl16s tolerance, BinaryCompareOp::optype ot){
       // {{{ open
@@ -156,26 +156,26 @@ namespace icl {
                                        dst->getROISize(), tolerance);
         }
       }else{
-        ippCall<icl32f,ippiCompare_32f_C1R>(src1,src2,dst,ot); 
+        ippCall<icl32f,ippiCompare_32f_C1R>(src1,src2,dst,ot);
       }
     }
     // }}}
   #endif
     } // end of anonymous namespace
-    
+
     void BinaryCompareOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
        // {{{ open
       ICLASSERT_RETURN( poSrc1 );
       ICLASSERT_RETURN( poSrc2 );
       ICLASSERT_RETURN( ppoDst );
-  
+
       if(!BinaryOp::check(poSrc1,poSrc2)){
         ERROR_LOG("source images are not compatible: src 1:" << *poSrc1 << " src 2:" << *poSrc2);
-      } 
+      }
       if(!BinaryOp::prepare(ppoDst,poSrc1,depth8u)){
         ERROR_LOG("unable to prepare the destintaion imaage to source image params and depth8u, src 1/2: " << *poSrc1);
       }
-  
+
       switch (poSrc1->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                             \
                                    cmp(poSrc1->asImg<icl##T>(),               \
@@ -188,8 +188,8 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
        }
      }
-  
+
     // }}}
-  
+
   } // namespace filter
 }// end of namespace icl

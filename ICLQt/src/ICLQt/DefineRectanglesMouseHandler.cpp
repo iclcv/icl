@@ -37,16 +37,16 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-    
+
     DefineRectanglesMouseHandler::Options::Options(const Color4D &edgeColor,
                                                    const Color4D &fillColor,
                                                    const Color4D &centerColor,
                                                    const Color4D &metaColor,
-                                                   int handleWidth, 
+                                                   int handleWidth,
                                                    bool visualizeCenter,
                                                    bool visualizeHovering,
                                                    bool showOffsetText,
-                                                   bool showSizeText, 
+                                                   bool showSizeText,
                                                    bool showCenterText,
                                                    bool showMetaData,
                                                    int lineWidth,
@@ -58,13 +58,13 @@ namespace icl{
       showCenterText(showCenterText),showMetaData(showMetaData),
       lineWidth(lineWidth),textSize(textSize),xStepping(1),yStepping(1),canDeleteRects(true){
     }
-  
-    DefineRectanglesMouseHandler::DefinedRect::DefinedRect(const Rect &r, 
+
+    DefineRectanglesMouseHandler::DefinedRect::DefinedRect(const Rect &r,
                                                            DefineRectanglesMouseHandler::Options *options):
       Rect(r),options(options){
       std::fill(states,states+4,nothing);
     }
-        
+
     inline Rect DefineRectanglesMouseHandler::DefinedRect::edge(DefineRectanglesMouseHandler::DefinedRect::Edge e) const{
       const int &D = options->handleWidth;
       const int D2 = 2*D;
@@ -77,22 +77,22 @@ namespace icl{
       }
     }
     inline Rect DefineRectanglesMouseHandler::DefinedRect::edgei(int i) const{ return edge((Edge)i); }
-    
+
     inline Rect DefineRectanglesMouseHandler::DefinedRect::inner() const { return enlarged(-options->handleWidth); }
     inline Rect DefineRectanglesMouseHandler::DefinedRect::outer() const { return enlarged(options->handleWidth); }
-    inline bool DefineRectanglesMouseHandler::DefinedRect::allHovered() const { 
+    inline bool DefineRectanglesMouseHandler::DefinedRect::allHovered() const {
       return states[0] == hovered && states[1] == hovered &&
       states[2] == hovered && states[3] == hovered ;
     }
-    inline bool DefineRectanglesMouseHandler::DefinedRect::allDragged() const { 
+    inline bool DefineRectanglesMouseHandler::DefinedRect::allDragged() const {
       return states[0] == dragged && states[1] == dragged &&
       states[2] == dragged && states[3] == dragged ;
     }
-    inline bool DefineRectanglesMouseHandler::DefinedRect::anyDragged() const { 
+    inline bool DefineRectanglesMouseHandler::DefinedRect::anyDragged() const {
       return states[0] == dragged || states[1] == dragged ||
       states[2] == dragged || states[3] == dragged ;
     }
-        
+
     DefineRectanglesMouseHandler::DefinedRect::State DefineRectanglesMouseHandler::DefinedRect::event(const MouseEvent &e){
       int x = e.getX(), y=e.getY();
       x = (x/options->xStepping)*options->xStepping;
@@ -103,7 +103,7 @@ namespace icl{
         }
         return nothing;
       }
-      
+
       if(e.isReleaseEvent() || e.isMoveEvent()){
         if(inner().contains(x,y)){
           std::fill(states,states+4,hovered);
@@ -143,17 +143,17 @@ namespace icl{
         (Rect&)(*this) = normalized();
         return dragged;
       }
-      
+
       return hovered;
     }
-    
+
     void DefineRectanglesMouseHandler::DefinedRect::visualize(ICLDrawWidget &w){
       w.linewidth(options->lineWidth);
       w.color(options->edgeColor);
       w.fill(options->fillColor);
       w.rect((Rect&)*this);
       w.color(0,0,0,0);
-      
+
       if(options->visualizeHovering){
         for(int i=0;i<4;++i){
           switch(states[i]){
@@ -207,20 +207,20 @@ namespace icl{
         w.text(meta,center().x,center().y,options->textSize);
       }
     }
-  
-  
+
+
     DefineRectanglesMouseHandler::DefineRectanglesMouseHandler(int maxRects, int minDim):
       Lockable(true),maxRects(maxRects),minDim(minDim),draggedRect(0){
     }
-  
+
     DefineRectanglesMouseHandler::Options &DefineRectanglesMouseHandler::getOptions(){
       return options;
     }
     const DefineRectanglesMouseHandler::Options &DefineRectanglesMouseHandler::getOptions() const{
       return options;
     }
-  
-  
+
+
     void DefineRectanglesMouseHandler::process(const MouseEvent &e){
       Mutex::Locker l(this);
 
@@ -229,7 +229,7 @@ namespace icl{
         CallCallbacksAtEnd(Function<void> f):f(f){}
         ~CallCallbacksAtEnd(){ f(); }
       } call_callbacks_at_end(function(this, &DefineRectanglesMouseHandler::callCallbacks));
- 
+
       if(draggedRect){
         draggedRect->event(e);
         if(e.isReleaseEvent()){
@@ -249,7 +249,7 @@ namespace icl{
       int x = (e.getX()/options.xStepping)*options.xStepping;
       int y = (e.getY()/options.yStepping)*options.yStepping;
       Point pos(x,y);
-      
+
       if(currBegin == Point::null && currCurr == Point::null){
         for(unsigned int i=0;i<rects.size();++i){
           if(e.isPressEvent() && rects[i].contains(x,y)){
@@ -263,7 +263,7 @@ namespace icl{
               return;
             }
           }
-  
+
           DefinedRect::State state = rects[i].event(e);
           if(state == DefinedRect::nothing) {
             continue;
@@ -275,9 +275,9 @@ namespace icl{
           }
         }
       }
-      
+
       if(!e.isLeft()) return;
-  
+
       if(e.isPressEvent()){
         currBegin  = pos;
         currCurr   = pos;
@@ -292,13 +292,13 @@ namespace icl{
         currCurr = currBegin = Point::null;
       }
     }
-    
+
     void DefineRectanglesMouseHandler::visualize(ICLDrawWidget &w){
       Mutex::Locker l(this);
       for(unsigned int i=0;i<rects.size();++i){
         rects[i].visualize(w);
       }
-      
+
       if(currBegin != Point::null || currCurr != Point::null){
         w.color(options.edgeColor);
         w.fill(options.fillColor);
@@ -311,17 +311,17 @@ namespace icl{
         }
       }
     }
-  
+
     void DefineRectanglesMouseHandler::clearAllRects(){
       Mutex::Locker l(this);
       if(rects.size()){
         rects.clear();
       }
     }
-    
+
     void DefineRectanglesMouseHandler::clearRectAt(int x, int y, bool all){
       Mutex::Locker l(this);
-      
+
       bool anyChanged = false;
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].contains(x,y)){
@@ -333,14 +333,14 @@ namespace icl{
       if(anyChanged){
       }
     }
-    
+
     void DefineRectanglesMouseHandler::addRect(const Rect &rect){
       Mutex::Locker l(this);
-      if((int)rects.size() < maxRects && rect.getDim() >= minDim){ 
+      if((int)rects.size() < maxRects && rect.getDim() >= minDim){
         rects.push_back(DefinedRect(rect,&options));
       }
     }
-    
+
     void DefineRectanglesMouseHandler::setMaxRects(int maxRects){
       Mutex::Locker l(this);
       this->maxRects = maxRects;
@@ -357,12 +357,12 @@ namespace icl{
         it->second(rects);
       }
     }
-    
+
     void DefineRectanglesMouseHandler::registerCallback(const std::string &id, Callback cb){
       Mutex::Locker l(this);
       callbacks[id] = cb;
     }
-    
+
     void DefineRectanglesMouseHandler::unregisterCallback(const std::string &id){
       Mutex::Locker l(this);
       std::map<std::string,Callback>::iterator it = callbacks.find(id);
@@ -373,7 +373,7 @@ namespace icl{
       }
     }
 
-    
+
     void DefineRectanglesMouseHandler::setMinDim(int minDim){
       Mutex::Locker l(this);
       this->minDim = minDim;
@@ -383,13 +383,13 @@ namespace icl{
         }
       }
     }
-    
-    
+
+
     std::vector<Rect> DefineRectanglesMouseHandler::getRects() const{
       Mutex::Locker l(this);
       return std::vector<Rect>(rects.begin(),rects.end());
     }
-    
+
     Rect DefineRectanglesMouseHandler::getRectAt(int x, int y) const{
       Mutex::Locker l(this);
       for(unsigned int i=0;i<rects.size();++i){
@@ -399,7 +399,7 @@ namespace icl{
       }
       return Rect::null;
     }
-    
+
     std::vector<Rect> DefineRectanglesMouseHandler::getAllRectsAt(int x, int y) const{
       Mutex::Locker l(this);
       std::vector<Rect> rs;
@@ -410,39 +410,39 @@ namespace icl{
       }
       return rs;
     }
-    
+
     int DefineRectanglesMouseHandler::getMinDim() const{
       return minDim;
     }
-    
+
     int DefineRectanglesMouseHandler::getMaxRects() const{
       return maxRects;
     }
-  
+
     int  DefineRectanglesMouseHandler::getNumRects() const{
       Mutex::Locker l(this);
       return (int)rects.size();
     }
-    
+
     Rect  DefineRectanglesMouseHandler::getRectAtIndex(int index) const{
       Mutex::Locker l(this);
       if(index < 0 || index >= (int)rects.size()) return Rect::null;
       return rects[index];
     }
-      
+
     const Any &DefineRectanglesMouseHandler::getMetaData(int index) const{
       Mutex::Locker l(this);
       static Any null;
       if(index < 0 || index >= (int)rects.size()) return null;
       return rects[index].meta;
     }
-    
+
     void DefineRectanglesMouseHandler::setMetaData(int index, const Any &data){
       Mutex::Locker l(this);
       ICLASSERT_RETURN(index >= 0 && index < (int)rects.size());
       rects[index].meta = data;
     }
-  
+
     const Any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
       Mutex::Locker l(this);
       for(unsigned int i=0;i<rects.size();++i){
@@ -453,7 +453,7 @@ namespace icl{
       static Any null;
       return null;
     }
-  
+
     void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const Any &meta){
       Mutex::Locker l(this);
       for(unsigned int i=0;i<rects.size();++i){
@@ -463,7 +463,7 @@ namespace icl{
         }
       }
     }
-  
+
     void DefineRectanglesMouseHandler::bringToFront(int idx){
       Mutex::Locker l(this);
       ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
@@ -471,7 +471,7 @@ namespace icl{
       rects.erase(rects.begin()+idx);
       rects.insert(rects.begin(),1,r);
     }
-      
+
     void DefineRectanglesMouseHandler::bringToBack(int idx){
       Mutex::Locker l(this);
       ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
@@ -479,8 +479,8 @@ namespace icl{
       rects.erase(rects.begin()+idx);
       rects.push_back(r);
     }
-    
-  
-  
+
+
+
   } // namespace qt
 }

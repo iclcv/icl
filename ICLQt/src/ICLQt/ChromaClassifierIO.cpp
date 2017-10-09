@@ -35,7 +35,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-    
+
     namespace{
       float &auxget(Parable &p, int idx){
         switch(idx){
@@ -48,7 +48,7 @@ namespace icl{
         return auxget(const_cast<Parable&>(p),idx);
       }
     }
-    
+
     void ChromaClassifierIO::save(const ChromaClassifier &cc,const  std::string &filename, const std::string &name){
       ConfigFile f;
       try{
@@ -84,7 +84,7 @@ namespace icl{
       }
       return cc;
     }
-    
+
     ChromaAndRGBClassifier ChromaClassifierIO::loadRGB(const std::string &filename){
       ChromaClassifier cc = load(filename,"chroma-and-rgb-classifier");
       ConfigFile f(filename);

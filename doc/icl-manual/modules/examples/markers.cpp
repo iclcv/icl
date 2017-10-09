@@ -13,13 +13,13 @@ void init(){
   gui << Draw().handle("draw")
       << Prop("fid").maxSize(18,99)
       << Show();
-  grabber.init(pa("-input")); 
+  grabber.init(pa("-input"));
 }
 
 void run(){
   static DrawHandle draw = gui["draw"];
   const core::ImgBase *image = grabber.grab();
-    
+
   const std::vector<Fiducial> &fids = fid.detect(image);
 
   draw = image;
@@ -28,7 +28,7 @@ void run(){
   for(unsigned int i=0;i<fids.size();++i){
     utils::Point32f c = fids[i].getCenter2D();
     float rot = fids[i].getRotation2D();
-    
+
     draw->color(0,100,255,255);
     draw->text(fids[i].getName(),c.x,c.y,10);
     draw->color(0,255,0,255);

@@ -46,7 +46,7 @@ int main(){
   }
 
   {
-    BENCHMARK_THIS_FUNCTION  
+    BENCHMARK_THIS_FUNCTION
     for(int i=0;i<1000;++i){
       cc(&a,&b);
     }
@@ -69,7 +69,7 @@ icl64f errorSum(Img64f *img){
 }
 
 string getName(int i){
-  switch(i){ 
+  switch(i){
     case 0: return "orderScaleConvertCC";
     case 1: return "orderScaleCCConvert";
     case 2: return "orderConvertScaleCC";
@@ -94,14 +94,14 @@ int main2(){
          "average pixel errors are < 15. \n\n" );
   /// test for PCA compress
   Img64f image = cvt64f(create("parrot"));
-  
+
   /// Testing 64f,rgb,750,1002 -> 8u,lab,222x817 ->  and back
 
   ImgBase *src = image.deepCopy();
   ImgBase *mid = new Img8u(Size(222,817), formatYUV);
   ImgBase *dst = new Img64f(src->getParams());
-  
-  
+
+
   Converter::oporder oos[6] = { Converter::orderScaleConvertCC,
                                 Converter::orderScaleCCConvert,
                                 Converter::orderConvertScaleCC,
@@ -112,17 +112,17 @@ int main2(){
   for(int i=0;i<6;i++){
     Converter(oos[i]).apply(src,mid);
     Converter(oos[i]).apply(mid,dst);
-  
+
     ImgBase *diff = createDiffImage(src,dst);
-    
+
     icl64f err = errorSum(diff->asImg<icl64f>());
 
     if(err/(diff->getDim()*diff->getChannels()) > 15.0){
       foundErr = true;
       printf("per pixel error for mode %s is too high: %f \n",getName(i).c_str(),err/(diff->getDim()*diff->getChannels()));
-    }    
+    }
     show( scale((label(cvt(dst),"result"),label(cvt(diff),"diff-map")),0.2) );
-    delete diff;    
+    delete diff;
 
   }
   delete src;
@@ -136,6 +136,6 @@ int main2(){
     printf("Converter test successfull \n");
     return 0;
   }
-  
+
   return 0;
 }

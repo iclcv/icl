@@ -36,8 +36,8 @@
 
 namespace icl{
   namespace io{
-    
-    
+
+
     /// Grabber-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup GRABBER_G
     class SwissRangerGrabber : public Grabber{
       public:
@@ -64,7 +64,7 @@ namespace icl{
 
         /// grab an undistorted image
         ICLIO_API const core::ImgBase *acquireImage();
-        
+
         /// Internally used utility function, that might be interesting elsewhere
         ICLIO_API static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
 
@@ -84,7 +84,7 @@ namespace icl{
         /// Internally used mutex locks grabbing and setting of properties
         utils::Mutex m_mutex;
     };
-    
+
   } // namespace io
 }
 

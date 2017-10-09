@@ -110,7 +110,7 @@ namespace icl {
 			  errorMsg = errorMsg.append(deviceTypeToString(deviceType));
 			  throw CLInitException(errorMsg);
 			}
-                  
+
 			void prepareSupportedImageFormats() {
 				  std::vector<cl::ImageFormat> formats;
 				  cl_mem_flags memFlags = CL_MEM_READ_WRITE;

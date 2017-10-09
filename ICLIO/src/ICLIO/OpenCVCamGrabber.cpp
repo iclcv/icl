@@ -60,12 +60,12 @@ namespace icl{
       Configurable::registerCallback(
             utils::function(this,&OpenCVCamGrabber::processPropertyChange));
     }
-    
+
     OpenCVCamGrabber::~OpenCVCamGrabber(){
       cvReleaseCapture(&cvc);
       ICL_DELETE(m_buffer);
     }
-    
+
     const ImgBase *OpenCVCamGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL( !(cvc==0), 0);
       Mutex::Locker lock(m_mutex);
@@ -98,7 +98,7 @@ namespace icl{
         cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(prop.value)*0.01);
       }
     }
-    
+
     const std::vector<GrabberDeviceDescription> &OpenCVCamGrabber::getDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
       if(rescan){

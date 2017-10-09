@@ -40,7 +40,7 @@ namespace icl{
 
     /// Utility class that allows a regular grid of fiducial markers to be tracked
     /** The MarkerGridDetector is initialized with a definition of a regular marker grid.
-        
+
         */
 	  class ICLMarkers_API MarkerGridDetector : public utils::Configurable{
       struct Data;   //!< internal data type
@@ -51,17 +51,17 @@ namespace icl{
 
       public:
       /// Marker Grid geometry definition type
-      /** The grid is defined by a number of grid cells WxH in horizontal and vertical 
+      /** The grid is defined by a number of grid cells WxH in horizontal and vertical
           direction resulting in a total of N=W*H markers. The marker type can chosen freely
-          and also the marker IDs that are to be used. By default, the trivial set of 
-          marker IDs {0, ..,  N-1} is used. The class returns a 2D array of Fiducials. 
+          and also the marker IDs that are to be used. By default, the trivial set of
+          marker IDs {0, ..,  N-1} is used. The class returns a 2D array of Fiducials.
           Markers that are not found result in a null Fiducial in that cell. **/
 	class ICLMarkers_API GridDefinition{
         std::map<int,utils::Point> posLUT; //!< internally used lookup for marker IDs/grid-positions
-        utils::Size numCells;              //!< grid dimension 
+        utils::Size numCells;              //!< grid dimension
         std::vector<int> ids;              //!< used marker IDs
         std::string markerType;            //!< marker type
-        
+
         public:
         // empty constructor
         GridDefinition();
@@ -94,10 +94,10 @@ namespace icl{
         const std::string &getMarkerType() const;
 
         /// returns the internal list of marker IDs
-        const std::vector<int> &getMarkerIDs() const;                
+        const std::vector<int> &getMarkerIDs() const;
       };
-      
-      
+
+
       /// Empty constructor (results in a null instance that must be initialized using init(..)"
       MarkerGridDetector();
 
@@ -110,7 +110,7 @@ namespace icl{
       ~MarkerGridDetector();
 
       /// Initialization function (equivalent to the well defined constructor)
-      /** Initializes the underlying marker grid with a numCells marker cells. 
+      /** Initializes the underlying marker grid with a numCells marker cells.
           If the marker ID vector is empty, the trival id set {0, ..., n-1} is used.
           If a non-zero number m of IDs is given, m must be eqaul to numCells.getDim().
           The extraParams list is directly passed to the internal FiducialDetector instance
@@ -120,14 +120,14 @@ namespace icl{
 
       /// returns the internal grid definition
       const GridDefinition &getGridDefinition() const;
-      
+
       /// result data type
       typedef utils::Array2D<Fiducial> Result;
 
 
       /// actual detection function
       const Result &detect(const core::ImgBase *image) throw (utils::ICLException);
-      
+
       /// returns whether the instance has already been already initialized
       bool isNull() const;
 

@@ -45,23 +45,23 @@ using namespace icl::filter;
 
 namespace icl{
   namespace markers{
-  
+
     struct FiducialDetectorPluginForQuads::Data{
       QuadDetector quadd;
       const std::vector<TiltedQuad> *quads;
       std::vector<FiducialImpl*> impls;
       ImageRectification<icl8u> rectify;
     };
-    
+
     FiducialDetectorPluginForQuads::FiducialDetectorPluginForQuads():
       data(new Data){
       addChildConfigurable(&data->quadd);
-    
+
       data->quads = 0;
-    
-      
+
+
       deactivateProperty("quads.create region graph");
-  
+
       addProperty("max tilt","range","[1,200]",150,0,
                   "Maximum tilt for quad markers (1: only perfect squares are\n"
                   "detected, 5-10 most tilted quads are detected, >10\n"
@@ -69,13 +69,13 @@ namespace icl{
       addProperty("return rejected quads","flag","",false,0,
                   "If set to true, also quads that were not identified as valid markers\n"
                   "are retuned (as dummy markers with an invalid ID");
-  
+
     }
-  
+
     FiducialDetectorPluginForQuads::~FiducialDetectorPluginForQuads(){
       delete data;
     }
-  
+
     namespace{
       struct Point32fAndAngle{
         Point32f p;
@@ -85,7 +85,7 @@ namespace icl{
         }
       };
     }
-    
+
     static inline Point32fAndAngle get_angle(const Point32f &p, const Point32f &c, float relAngle){
       float a = atan2(p.y-c.y, p.x-c.x);
       a = a + (a<0) * (2 * M_PI) - relAngle;
@@ -94,7 +94,7 @@ namespace icl{
       Point32fAndAngle pa = { p, a };
       return pa;
     }
-    
+
     void FiducialDetectorPluginForQuads::getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst,
                                                         FiducialImpl &impl){
       const float &angle = impl.info2D->infoRotation;
@@ -104,7 +104,7 @@ namespace icl{
         get_angle(corners[0],center,angle),
         get_angle(corners[1],center,angle),
         get_angle(corners[2],center,angle),
-        get_angle(corners[3],center,angle) 
+        get_angle(corners[3],center,angle)
       };
       std::sort(pas,pas+4);
       dst.resize(4);
@@ -117,23 +117,23 @@ namespace icl{
         dst[i].ID = i;
       }
     }
-    
+
     void FiducialDetectorPluginForQuads::getFeatures(Fiducial::FeatureSet &dst){
       dst.set();
     }
-  
-  
+
+
     static inline Point32f get_intersection(const Point32f ps[4]){
       StraightLine2D a(ps[0],ps[2]-ps[0]);
       StraightLine2D b(ps[1],ps[3]-ps[1]);
       StraightLine2D::Pos p = a.intersect(b);
       return Point32f(p[0],p[1]);
     }
-  
-  
+
+
     // rot is given in units of 90deg that are neccessary to rotate the marker to
     // some defined orientation
-    static inline float estimate_marker_rotation(const FixedMatrix<float,3,3> &H, int rot, 
+    static inline float estimate_marker_rotation(const FixedMatrix<float,3,3> &H, int rot,
                                                  const Size &size, const Point32f &c){
       float cx = (size.width-1)*0.5, cy=(size.height-1)*0.5;
       Point32f p;
@@ -144,7 +144,7 @@ namespace icl{
         case 3: p = Point32f(2*cx,cy); break;
         default: break;
       }
-  
+
       Point32f upDir = Homography2D::apply_homography(H,p) - c;
       float angle = atan2(upDir.y,upDir.x);
       if(angle < 0) angle += 2*M_PI;
@@ -159,16 +159,16 @@ namespace icl{
         delete data->impls[i];
       }
       data->impls.clear();
-  
+
       int m = getPropertyValue("max tilt");
       bool returnRejected = getPropertyValue("return rejected quads");
       data->quads = &data->quadd.detect(&image);
-  
-  
+
+
   #if 0
       int f = getPropertyValue("match factor");
       int b = getPropertyValue("border width");
-      
+
       const Size s(f*(6+2*b),f*(6+2*b));
       const Rect roi(f*b,f*b,f*6,f*6);
   #endif
@@ -178,25 +178,25 @@ namespace icl{
       const Rect roi((outerSize.width-innerSize.width)/2,
                      (outerSize.height-innerSize.height)/2,
                      innerSize.width,innerSize.height);
-      
-  
+
+
       FixedMatrix<float,3,3> HOM;
-  
+
       prepareForPatchClassification();
-   
-  
-      
+
+
+
       for(unsigned int i=0;i<data->quads->size();++i){
         const TiltedQuad &q = data->quads->operator[](i);
         /// !! add some heuristics that skip detection of too tilted quads
-        
+
         //#warning remove static here!
         Img8u rect;
         try {
           rect = data->rectify.apply(q.data(),image,s,&HOM,0,0,m,true,&roi);
           //static_data_set("rectified-image",Any::ptr(&rect));
         }catch(const ICLException){ continue; }
-  
+
         try{
           rect.setROI(roi);
         }catch(InvalidImgParamException&){
@@ -206,17 +206,17 @@ namespace icl{
 
           return;
         }
-  
-  
-  
+
+
+
         int rot = 0;
         FiducialImpl *impl = classifyPatch(rect, &rot,returnRejected,q.getRegion());
-        
+
         if(impl){
           impl->index = data->impls.size();
           data->impls.push_back(impl);
           dst.push_back(impl);
-  
+
           FiducialImpl::Info2D *info2D = impl->ensure2D();
           info2D->infoCenter = get_intersection(q.data());
           info2D->infoRotation = estimate_marker_rotation(HOM, rot, s, info2D->infoCenter);
@@ -224,13 +224,13 @@ namespace icl{
         }
       }
     }
-  
-    
+
+
     std::string FiducialDetectorPluginForQuads::getIntermediateImageNames() const{
       return "binary";
     }
-    
-    const ImgBase *FiducialDetectorPluginForQuads::getIntermediateImage(const std::string &name) 
+
+    const ImgBase *FiducialDetectorPluginForQuads::getIntermediateImage(const std::string &name)
       const throw (ICLException){
       if(name != "binary") return FiducialDetectorPlugin::getIntermediateImage(name);
       return &data->quadd.getLastBinaryImage();

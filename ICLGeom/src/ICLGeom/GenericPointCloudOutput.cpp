@@ -43,22 +43,22 @@ namespace icl{
       };
       return new NullOutput;
     }
-    
+
     REGISTER_PLUGIN(PointCloudOutput,null,create_null_point_cloud_output,
                     "Null output, not sending images",
                     "creation-string: dummy");
- 
+
     struct GenericPointCloudOutput::Data{
       PointCloudOutput *impl;
     };
-    
-    
+
+
     GenericPointCloudOutput::GenericPointCloudOutput():m_data(new Data)
     {
       m_data->impl = 0;
     }
 
-    GenericPointCloudOutput::GenericPointCloudOutput(const std::string &sourceType, 
+    GenericPointCloudOutput::GenericPointCloudOutput(const std::string &sourceType,
                                                        const std::string &srcDescription):m_data(new Data){
       m_data->impl = 0;
       init(sourceType,srcDescription);
@@ -68,15 +68,15 @@ namespace icl{
       m_data->impl = 0;
       init(pa[0],pa[1]);
     }
-    
+
     GenericPointCloudOutput::~GenericPointCloudOutput(){
       ICL_DELETE(m_data->impl);
       delete m_data;
     }
-    
+
     void GenericPointCloudOutput::init(const std::string &sourceType, const std::string &srcDescription){
       if(sourceType == "list"){
-        std::cout << PluginRegister<PointCloudOutput>::instance().getRegisteredInstanceDescription() 
+        std::cout << PluginRegister<PointCloudOutput>::instance().getRegisteredInstanceDescription()
                   << std::endl;
         throw ICLException("GenericPointCloudOutput list presented successfully");
       }
@@ -94,11 +94,11 @@ namespace icl{
       init(pa[0],pa[1]);
     }
 
-    
+
     bool GenericPointCloudOutput::isNull() const{
       return !m_data->impl;
     }
-      
+
     void GenericPointCloudOutput::send(const PointCloudObjectBase &src){
       if(isNull()) throw ICLException("GenericPointCloudOutput::grab: called on a null instance");
       return m_data->impl->send(src);

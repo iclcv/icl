@@ -34,7 +34,7 @@
 #include <ICLUtils/Any.h>
 #include <ICLQt/GUIComponentWithOutput.h>
 
-namespace icl{  
+namespace icl{
   /** \cond */
   namespace utils{
     class Configurable;
@@ -65,14 +65,14 @@ namespace icl{
       Button(const std::string &text, const std::string &toggledText="", bool initiallyToggled=false):
       GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",form_args(text,toggledText,initiallyToggled)){}
     };
-      
+
     /// ButtonGroup component (aka vertical list of radio buttons)
     /** Creates a ButtonGroupHandle and an int-valued output, that contains the index of the currently checked radio-button */
     struct ButtonGroup : public GUIComponentWithOutput{
       ButtonGroup(const std::string &commaSepTexts):
       GUIComponentWithOutput("buttongroup",commaSepTexts){}
     };
-  
+
     /// CheckBox component
     /** Creates a CheckBoxHandle and a boolean output that is true as long as the check box is checked */
     struct CheckBox : public GUIComponentWithOutput{
@@ -80,14 +80,14 @@ namespace icl{
       CheckBox(const std::string &label, bool checked=false):
       GUIComponentWithOutput("checkbox",label+','+(checked ? "checked":"unchecked")){}
     };
-      
+
     /// Label component for displaying text
     /** Creates a LabelHandle, that can be used to display text. The text can have several lines */
     struct Label : public GUIComponent{
       /// create label with optionally given initial text
       Label(const std::string &text=""):GUIComponent("label",text){}
     };
-  
+
     /// Slider component for int-ranges
     /** Creates a SliderHandle and an int-valued ouptut that contains the current slider value.
         Sliders always come with an QLCDNumber component, that displays the current slider value */
@@ -95,12 +95,12 @@ namespace icl{
       /// creates a slider with given POD parameters
       Slider(int min=0, int max=100, int curr=50, bool vertical=false, int stepping=1):
       GUIComponentWithOutput("slider",form_args_6(min,max,curr,vertical?"vertical":"horizontal","on",stepping)){}
-  
+
       /// creates a slider from given int-range
       Slider(const utils::Range32f &r, int curr, bool vertical=false, int stepping=1):
       GUIComponentWithOutput("slider",form_args_6(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal","on",stepping)){}
     };
-  
+
     /// Float-valued Slider component
     /** Creates a FSliderHandle and an float-valued ouptut that contains the current slider value.
         Sliders always come with an QLCDNumber component, that displays the current slider value */
@@ -108,12 +108,12 @@ namespace icl{
       /// creates a FSlider with given POD parameters
       FSlider(float min=0, float max=1, float curr=0.5, bool vertical=false):
       GUIComponentWithOutput("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
-      
+
       /// creates a FSlider from given float-range
       FSlider(const utils::Range32f &r, float curr=0.5, bool vertical=false):
       GUIComponentWithOutput("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
     };
-  
+
     /// Text Input component, that allows integer inputs in a given range
     /** Creates an IntHandle and an int-valued output */
     struct Int : public GUIComponentWithOutput{
@@ -121,7 +121,7 @@ namespace icl{
       Int(int min=0, int max=100, int curr=50):
       GUIComponentWithOutput("int",form_args_3(min, max, curr)){}
     };
-  
+
     /// Text Input component, that allows float inputs in a given range
     /** Creates an FloatHandle and an float-valued output */
     struct Float : public GUIComponentWithOutput{
@@ -129,28 +129,28 @@ namespace icl{
       Float(float min=0, float max=1, float curr=0.5):
       GUIComponentWithOutput("float",form_args_3(min, max, curr)){}
     };
-  
+
     /// Text Input component, that allows float inputs with a given maximun length
     /** Creates an StringHandle (but no output) */
     struct String : public GUIComponent{
       /// create string input compoent with given max length
       String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+utils::str(maxLen)){}
     };
-  
+
     /// Display component for a 2D Array of labels
     /** Creates a DispHandle that provides access to each label */
     struct Disp : public GUIComponent{
       Disp(int nxCells, int nyCells):
       GUIComponent("disp",utils::str(nxCells)+','+utils::str(nyCells)){}
     };
-  
+
     /// Image visualization component
     /** Creates an ImageHandle for image visualization */
     struct Image : public GUIComponent{
       /// constructor
       Image():GUIComponent("image"){}
     };
-  
+
     /// Image visualization component that allows for overlayed 2D image annotation
     /** Creates an DrawHandle for image visualization and annotation */
     struct Draw : public GUIComponent{
@@ -160,7 +160,7 @@ namespace icl{
       Draw(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw",str(defaultViewPortsize)){}
     };
-  
+
     /// Image visualization compoent that allows for 2D and 3D image annotation
     /** Creates a DrawHandle3D for image visualization and annotation. The Draw3D component
         is closely integrated with the icl::geom::Scene class. Together these classes can
@@ -172,13 +172,13 @@ namespace icl{
       Draw3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw3D",str(defaultViewPortsize)){}
     };
-  
+
     /// a 2D function and data plotting component
     /** Creates a PlotHandle */
     struct Plot : public GUIComponent{
       private:
       /// utility method
-      static std::string form_args(const utils::Range32f xRange, 
+      static std::string form_args(const utils::Range32f xRange,
                                    const utils::Range32f yRange, bool useOpenGL,
                                    const std::string &xLabel,  const std::string &yLabel){
         std::ostringstream str;
@@ -192,35 +192,35 @@ namespace icl{
         }
         return str.str();
       }
-  
+
       public:
       /// Create Plot component with optionally given range parameters
-      /** @param xRange horizontal range of the data view-port. If [0,0], then it is derived from the data 
-          @param yRange vertical range of the data view-port. If [0,0], then it is derived from the data 
-          @param useOpenGL if true, the renderering is performed in OpenGL (this can be faster in case of transparency) 
-          @param xLabel x-axis label 
-          @param yLabel y-axis label 
+      /** @param xRange horizontal range of the data view-port. If [0,0], then it is derived from the data
+          @param yRange vertical range of the data view-port. If [0,0], then it is derived from the data
+          @param useOpenGL if true, the renderering is performed in OpenGL (this can be faster in case of transparency)
+          @param xLabel x-axis label
+          @param yLabel y-axis label
       */
       Plot(const utils::Range32f xRange=utils::Range32f(0,0),
            const utils::Range32f yRange=utils::Range32f(0,0),
            bool useOpenGL=false,
            const std::string &xLabel="",
-           const std::string &yLabel=""): 
+           const std::string &yLabel=""):
       GUIComponent("plot",form_args(xRange,xRange, useOpenGL, xLabel, yLabel)){}
-  
+
       /// Create Plot component with optionally given POD parameters
       /** The parameters are described well in the other constructor */
       Plot(float minX, float maxX=0, float minY=0, float maxY=0,
            bool useOpenGL=false,
            const std::string &xLabel="",
-           const std::string &yLabel=""): 
+           const std::string &yLabel=""):
       GUIComponent("plot",form_args(utils::Range32f(minX,maxX),utils::Range32f(minY,maxY), useOpenGL, xLabel, yLabel)){}
     };
 
 
 
-      
-    /// ComboBox GUI component 
+
+    /// ComboBox GUI component
     /** Creates a ComboHandle*/
     struct Combo : public GUIComponent{
       private:
@@ -239,7 +239,7 @@ namespace icl{
       Combo(const std::string &commaSepEntries, int initialIndex=0):
       GUIComponent("combo",form_args(commaSepEntries,initialIndex)){}
     };
-      
+
     /// SpinBox component
     /** Creates a SpinnerHandle and an int-valued output that reflects the current value */
     struct Spinner : public GUIComponentWithOutput{
@@ -247,19 +247,19 @@ namespace icl{
       Spinner(int min, int max, int curr):
       GUIComponentWithOutput("spinner",form_args_3(min,max,curr)){}
     };
-      
-  
+
+
     /// Frames per second estimator component
-    /** create an FpsHandle that must be explicitly re-rendered in every loop-cycle of the 
+    /** create an FpsHandle that must be explicitly re-rendered in every loop-cycle of the
         FPS-monitored loop */
     struct Fps : public GUIComponent{
       /// creates fps component with given time window for estimating a running-average of the computed FPS-values
       Fps(int timeWindowSize=10):
       GUIComponent("fps",utils::str(timeWindowSize)){}
     };
-      
+
     /// camera configuration component
-    /** Create no handle and no output. Results in a button, that opens a real-time camera 
+    /** Create no handle and no output. Results in a button, that opens a real-time camera
         property configuration dialog. The component can either be used to adjust all camera,
         a grabber was instantiated for or, it can be tuned for a certain camera with given
         non-default constructor parameters.
@@ -283,16 +283,16 @@ namespace icl{
       /// create a camera configurabion component with optionally specified device
       CamCfg(const std::string &deviceTypeHint="", const std::string &deviceIDHint=""):GUIComponent("camcfg",form_args(deviceTypeHint,deviceIDHint)){}
     };
-  
+
     /// Propery adjustment component for configuable instances
-    /** creates an embedded tabbed vertical scroll widget that allows for 
+    /** creates an embedded tabbed vertical scroll widget that allows for
         adjust properties of a configurable instance in real-time. The referenced
         configurable must be create before the GUI-creation.
         Creates no handle and no output */
     struct Prop : public GUIComponent{
       /// create configurable component reflecting the properties of the given Configurable instance
       Prop(const std::string &configurableID):GUIComponent("prop",configurableID){}
-      
+
       /// create configurable component from given configurable (pointer)
       Prop(const utils::Configurable *cfg) throw (utils::ICLException) : GUIComponent("prop","@pointer@:"+utils::Any::ptr(cfg)){
         ICLASSERT_THROW(cfg, utils::ICLException("GUIComponent Prop(NULL-Pointer) cannot be created!"));
@@ -301,7 +301,7 @@ namespace icl{
       /// create configurable component from given configurable (reference)
       Prop(const utils::Configurable &cfg):GUIComponent("prop","@pointer@:"+utils::Any::ptr(&cfg)){}
     };
-  
+
     /// Color selection component
     /** Creates a ColorHandle. */
     struct ColorSelect : public GUIComponentWithOutput{
@@ -309,7 +309,7 @@ namespace icl{
       /** if the alpha parameter is set to -1, no alpha value can be specified */
       ColorSelect(int r, int g, int b, int a=-1):GUIComponentWithOutput("color",a>=0 ? form_args_4(r,g,b,a) : form_args_3(r,g,b)){}
     };
-      
+
     /// Process status component
     /** Creates a complex compoment that lists online-process information, such as processor usage, memory consumption and curren thread count */
     struct Ps : public GUIComponent{
@@ -323,21 +323,21 @@ namespace icl{
       /// create state widget
       State(int maxLines=100):GUIComponent("state",utils::str(maxLines)){}
     };
-    
+
     /// Creates not component
     struct Dummy : public GUIComponent{
       Dummy():GUIComponent(""){}
     };
-      
+
     /// Finalizes GUI creation (actually creates the Qt-GUI and makes it visible)
     struct Show : public GUIComponent{
       Show():GUIComponent("!show"){};
     };
-  
+
     /// Finalizes GUI creation (actually creates the Qt-GUI but initially hidden)
     struct Create : public GUIComponent{
       Create():GUIComponent("!create"){};
     };
-  
+
   } // namespace qt
 }

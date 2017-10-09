@@ -74,7 +74,7 @@ struct LUT3DSceneObject : public SceneObject {
   Mutex mtex;
   virtual void lock(){ mtex.lock(); }
   virtual void unlock(){ mtex.unlock(); }
-  
+
   LUT3DSceneObject(){
 
     segmenter->getLUTDims(w,h,t);
@@ -114,7 +114,7 @@ struct LUT3DSceneObject : public SceneObject {
     o->setVisible(Primitive::vertex,false);
     o->setColor(Primitive::line,GeomColor(255,255,255,255));
 
-    
+
     float wl = 1.3*(w/2);
     float hl = 1.3*(h/2);
     float tl = 1.3*(t/2);
@@ -125,12 +125,12 @@ struct LUT3DSceneObject : public SceneObject {
     addVertex(Vec(0,hl,0,1),geom_invisible());
     addVertex(Vec(0,0,-tl,1),geom_invisible());
     addVertex(Vec(0,0,tl,1),geom_invisible());
-    
+
     addLine(0,1,geom_red(255));
     addLine(2,3,geom_green(255));
     addLine(4,5,geom_blue(255));
-    
-    
+
+
     for(int i=0;i<6;++i){
       std::string s = (i&1)? "" : "-";
       switch(segmenter->getSegmentationFormat()){
@@ -142,10 +142,10 @@ struct LUT3DSceneObject : public SceneObject {
       }
       addText(i,s,2);
     }
-    
-    
+
+
   }
-  
+
   void update(float alpha){
     const icl8u *lut = segmenter->getLUT();
     for(int i=0;i<dim;++i){
@@ -156,7 +156,7 @@ struct LUT3DSceneObject : public SceneObject {
     // createDisplayList(); // this does not help yet, since we update
     // the object every cycle even if nothing was changed ...
   }
-  
+
 } *lut3D=0;
 
 void init_3D_LUT(){
@@ -169,10 +169,10 @@ void highlight_regions(int classID){
   drawIM_AND_SEG.clear();
   drawLUT.clear();
 
-    
+
   static RegionDetector rdLUT(1,1<<22,1,255);
   static RegionDetector rdSEG(1,1<<22,1,255);
-  
+
   drawLUT = rdLUT.detect(&currLUT);
 
   if(classID < 1) return;
@@ -188,13 +188,13 @@ void highlight_regions(int classID){
 void mouse(const MouseEvent &e){
   Mutex::Locker lock(mtex);
   if(!currLUT.getDim()) return;
-  
+
   static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
   static const ICLWidget *wLUT = *gui.get<DrawHandle>("lut");
   static const ICLWidget *wSEG = *gui.get<DrawHandle>("seg");
 
   Point p = e.getPos();
-  
+
   if(e.isLeaveEvent()){
     highlight_regions(-1);
     return;
@@ -207,17 +207,17 @@ void mouse(const MouseEvent &e){
       gui["currClass"] = (hoveredClassID-1);
     }
   }else if (e.getWidget() == wIM){
-    int cc = gui["currClass"]; 
+    int cc = gui["currClass"];
     int r = gui["radius"];
     std::vector<double> c = e.getColor();
-    
+
     if(c.size() == 3){
       if(e.isLeft()){
         segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, (!gui["lb"].as<bool>()) * (cc+1) );
       }
-        
+
       highlight_regions(segmenter->classifyPixel(c[0],c[1],c[2]));
-      
+
       if(e.isRight()){
         gui["currClass"] = (hoveredClassID-1);
       }
@@ -255,11 +255,11 @@ void init(){
   for(int i=1;i<=n;++i){
     classes << "class " << i << ',';
   }
-  
+
   if(pa("-r")){
     GenericGrabber::resetBus();
   }
-  
+
   grabber.init(pa("-i"));
   grabber.useDesired(formatRGB);
   grabber.useDesired(depth8u);
@@ -267,63 +267,63 @@ void init(){
   if( pa("-l").as<bool>() && pa("-s").as<bool>()){
     WARNING_LOG("program arguments -l and -s are exclusive:(-l is used here)");
   }
-  
+
   segmenter = new ColorSegmentationOp(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f"));
-  
- 
-  
+
+
+
   if(pa("-l")){
     segmenter->load(pa("-l"));
   }
-  
+
   gui << ( HSplit()
            << Draw().handle("image").minSize(16,12).label("camera image")
            << Draw().handle("seg").minSize(16,12).label("segmentation result")
            )
-      << ( HSplit()  
+      << ( HSplit()
            << (Tab("2D,3D").handle("tab")
-               << ( HBox() 
+               << ( HBox()
                     << Draw().handle("lut").minSize(16,12).label("lut")
                     << ( VBox().maxSize(3,100).minSize(4,1)
                          << Combo("x,y,z").handle("zAxis")
                          << Slider(0,255,0,true).out("z").label("vis. plane")
                          )
                     )
-               << ( HBox() 
+               << ( HBox()
                     << Draw3D(Size::VGA).handle("lut3D")
                     << Slider(0,255,200,true).maxSize(2,100).out("alpha").label("alpha")
                   )
                )
            << ( VBox()
                 << CheckBox("Pause Image Acquisition",false).handle("paused")
-                << ( HBox() 
+                << ( HBox()
                      << Combo(classes.str()).handle("currClass").label("current class")
                      << Button("current class","background").label("left button").handle("lb")
                    )
                 << Slider(0,255,4).out("radius").label("color radius")
-                
+
                 << (HBox().label("smooth LUT")
                     << Slider(0,27,10).out("smoothThresh").label("threshold")
                     << Button("do it").handle("smooth")
                     )
-                << ( HBox() 
+                << ( HBox()
                      <<Button("load").handle("load")
                      << Button("save").handle("save")
                    )
-                << ( HBox() 
+                << ( HBox()
                      << CheckBox("pre median").out("preMedian")
                      << CheckBox("post median").out("postMedian")
                    )
-                << ( HBox() 
+                << ( HBox()
                      << CheckBox("post dilation").out("postDilatation")
                      << CheckBox("post erosion").out("postErosion")
                    )
-                << ( HBox() 
+                << ( HBox()
                      << Label("?").handle("time").label("time for segm.")
                      << Fps(10).handle("fps").label("system fps")
                    )
-                << ( HBox() 
-                     << CamCfg("") 
+                << ( HBox()
+                     << CamCfg("")
                      << Button("clear").handle("clear") )
                 )
            )
@@ -333,7 +333,7 @@ void init(){
   gui["seg"].install(new MouseHandler(mouse));
   gui["image"].install(new MouseHandler(mouse));
   gui["lut"].install(new MouseHandler(mouse));
-  
+
   DrawHandle lut = gui["lut"];
   DrawHandle seg = gui["seg"];
 
@@ -344,8 +344,8 @@ void init(){
   gui["save"].registerCallback(save_dialog);
   gui["clear"].registerCallback(clear_lut);
 
-  int dim =  ( (1+(0xff >> pa("-s",0).as<int>())) 
-               *(1+(0xff >> pa("-s",1).as<int>())) 
+  int dim =  ( (1+(0xff >> pa("-s",0).as<int>()))
+               *(1+(0xff >> pa("-s",1).as<int>()))
                *(1+(0xff >> pa("-s",2).as<int>())) );
   if(dim <= MAX_LUT_3D_DIM){
     init_3D_LUT();
@@ -371,13 +371,13 @@ void run(){
       data.push_back(lut+w*h*i);
     }
     Img8u l(Size(w,h), t, data);
-    int hs[256]={0}; 
+    int hs[256]={0};
     int n = pa("-n");
     for(int z=1;z<t-1;++z){
       for(int y=1;y<h-1;++y){
         for(int x=1;x<w-1;++x){
           std::fill(hs,hs+n+1,0);
-          
+
           for(int zz=-1;zz<2;++zz){
             for(int yy=-1;yy<2;++yy){
               for(int xx=-1;xx<2;++xx){
@@ -398,7 +398,7 @@ void run(){
 
 
   }
-  
+
   static const Point xys[3]={Point(1,2),Point(0,2),Point(0,1)};
   DrawHandle image = gui["image"];
   DrawHandle lut = gui["lut"];
@@ -418,17 +418,17 @@ void run(){
     inputImage = grabber.grab();
   }else{
     Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
-  }        
-  
+  }
+
   const Img8u *grabbedImage = inputImage->asImg<icl8u>();
 
   Mutex::Locker lock(mtex);
-  
+
   if(preMedian){
     static MedianOp m(Size(3,3));
     grabbedImage = m.apply(grabbedImage)->asImg<icl8u>();
   }
-  
+
   image = grabbedImage;
   Time t = Time::now();
   segImage = *segmenter->apply(grabbedImage)->asImg<icl8u>();
@@ -450,17 +450,17 @@ void run(){
   seg = &segImage;
   time = str(t.age().toMilliSecondsDouble())+"ms";
 
-  
+
 
   currLUT = segmenter->getLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
   currLUTColor = segmenter->getColoredLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
- 
+
   highlight_regions(hoveredClassID);
-  
+
   //--lut--
   lut = &currLUTColor;
   lut->linewidth(2);
-  
+
   for(unsigned int i=0;i<drawLUT.size();++i){
     float x = drawLUT[i].getCOG().x, y=drawLUT[i].getCOG().y;
     lut->color(255,255,255,255);
@@ -476,7 +476,7 @@ void run(){
     }
   }
   lut.render();
-  
+
   //--image and seg--
   ICLDrawWidget *ws[2] = {*image,*seg};
   for(int i=0;i<2;++i){
@@ -487,9 +487,9 @@ void run(){
     }
     ws[i]->render();
   }
-  
+
   gui["fps"].render();
-  
+
   if(lut3D){
     lut3D->update(gui["alpha"]);
     gui["lut3D"].render();

@@ -42,7 +42,7 @@ namespace icl{
 
     using namespace utils;
     using namespace core;
-    
+
     struct AdjustGridMouseHandler::Data{
       struct Handle{
         Point pos;
@@ -51,7 +51,7 @@ namespace icl{
       };
 
       struct Grid;
-    
+
       struct Texture{
         Size32f size;
         std::vector<Line32f> lines;
@@ -78,23 +78,23 @@ namespace icl{
             B[2] = 1;
 
             math::DynMatrix<float> x = M.solve(B,"svd");
-        
+
             const float &l1 = x[0], &l2 = x[1], &l3 = x[2];
             return math::Mat3(l1*a.x,l2*b.x,l3*c.x,
             l1*a.y,l2*b.y,l3*c.y,
             l1,    l2,    l3);
             }
             */
-      
+
         Texture(const Size32f &size, const std::vector<core::Line32f> &lines):
           size(size),lines(lines){
-        
+
           t4.init(Rect32f(0,0,size.width,size.height));
           /*
               Ainv = create_mapping_matrix(Point32f(0,0), Point32f(size.width,0),
               Point32f(size.width,size.height),
               Point32f(0,size.height)).pinv();
-              */                           
+              */
         }
         Point ref[4];
         std::vector<Line32f> linesToRender;
@@ -111,11 +111,11 @@ namespace icl{
             const Point32f b = g.handles[1].pos;
             const Point32f c = g.handles[2].pos;
             const Point32f d = g.handles[3].pos;
-        
+
             return create_mapping_matrix(a,b,c,d) * Ainv;
             }
             */
-      
+
         std::vector<Point32f> mapPoints(const Data::Grid &g, const std::vector<Point32f> &srcPoints) const{
           t4.setDstQuad(g.handles[0].pos, g.handles[1].pos,
                         g.handles[2].pos, g.handles[3].pos);
@@ -128,7 +128,7 @@ namespace icl{
               }
               return dst;*/
         }
-               
+
         void computeInterpolations(const Data::Grid &g){
           t4.setDstQuad(g.handles[0].pos, g.handles[1].pos,
                         g.handles[2].pos, g.handles[3].pos);
@@ -140,7 +140,7 @@ namespace icl{
             linesToRender[i].end = t4.mapPoint(lines[i].end);
           }
         }
-      
+
         void checkForUpdate(const Grid &g){
           if(ref[0] != g.handles[0].pos ||
              ref[1] != g.handles[1].pos ||
@@ -158,11 +158,11 @@ namespace icl{
             d.line(linesToRender[i].start,linesToRender[i].end);
           }
         }
-      
 
-      
+
+
       };
-      
+
       struct Grid{
         SmartPtr<Texture> texture;
         Handle handles[4];
@@ -170,14 +170,14 @@ namespace icl{
         int state; // 0: nothing, 1: fully hovered, 2: fully dragged
 
 
-      
+
         Grid():draggedHandle(-1),state(0){}
 
         std::vector<Point32f> mapPoints(const std::vector<Point32f> &srcPoints) const{
           if(!texture) throw std::logic_error("Grid::mapPoint is only supported if a texture is given");
           return texture->mapPoints(*this, srcPoints);
         }
-      
+
         void reset(){
           for(int i=0;i<4;++i){
             handles[i].state = 0;
@@ -212,7 +212,7 @@ namespace icl{
         bool isFullyHovered() const {
           return state > 0;
         }
-      
+
       };
       std::vector<Grid> grids;
       int draggedGrid;
@@ -224,7 +224,7 @@ namespace icl{
       std::vector<Point> fullyDraggedGridOrig;
       Point fullyDraggedGridMouseAnchor;
 
-    
+
       int findFullyDraggedGrid(const Point &p) const{
         for(size_t i=0;i<grids.size();++i){
           if(grids[i].contains(p)){
@@ -233,9 +233,9 @@ namespace icl{
         }
         return -1;
       }
-    
+
       Data():draggedGrid(-1),handleSize(2),convexOnly(false){
-      
+
       }
     };
 
@@ -248,7 +248,7 @@ namespace icl{
       bool c = !Line(ps[1],ps[2]).intersects(Line(ps[3],ps[0]));
       return c;
     }
-    
+
     AdjustGridMouseHandler::AdjustGridMouseHandler():utils::Lockable(true),m_data(0){
 
     }
@@ -257,7 +257,7 @@ namespace icl{
       utils::Lockable(true),m_data(0){
       init(bounds, convexOnly);
     }
-    
+
     AdjustGridMouseHandler::~AdjustGridMouseHandler(){
       ICL_DELETE(m_data);
     }
@@ -276,7 +276,7 @@ namespace icl{
       }
       return m_data->grids[idx].mapPoints(srcPoints);
     }
-    
+
     void AdjustGridMouseHandler::init(const Rect &bounds, bool convexOnly){
       Mutex::Locker lock(this);
       ICL_DELETE(m_data);
@@ -284,7 +284,7 @@ namespace icl{
 
       m_data->bounds = bounds;
       m_data->convexOnly = convexOnly;
-       
+
       Rect r = m_data->bounds.enlarged(-20);
       Data::Grid g;
       g.handles[0].pos = r.ul();
@@ -299,7 +299,7 @@ namespace icl{
       Mutex::Locker lock(this);
       ICL_DELETE(m_data);
     }
-  
+
     void AdjustGridMouseHandler::init(const utils::Rect &bounds,
                                       const std::vector<std::vector<Point> > &grids,
                                       bool convexOnly){
@@ -357,7 +357,7 @@ namespace icl{
         g.handles[i].pos = ps[i];
       }
     }
-    
+
     std::vector<Point> AdjustGridMouseHandler::getGrid(size_t idx) const throw (ICLException){
       Mutex::Locker lock(this);
       if(!m_data) {
@@ -373,19 +373,19 @@ namespace icl{
       }
       return ps;
     }
-    
+
     void AdjustGridMouseHandler::process(const MouseEvent &e){
       Mutex::Locker lock(this);
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
-      
+
       Point p = e.getPos();
-    
+
       if(!m_data->bounds.contains(p.x,p.y)){
         return;
       }
-    
+
       if(e.isReleaseEvent()){
         m_data->draggedGrid = -1;
         for(size_t i=0;i<m_data->grids.size();++i){
@@ -465,10 +465,10 @@ namespace icl{
             m_data->grids[i].state = (int)i == fullyHitIndex ? 1 : 0;
           }
         }
-      
+
       }
     }
-    
+
     void AdjustGridMouseHandler::setHandleSize(float size){
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::setHandlesize() was called before it was initialized!");
@@ -484,7 +484,7 @@ namespace icl{
 
       static const Color colors[3] = { Color(255,0,0), Color(0,255,0), Color(0,100,255) };
 
-      
+
       const float r = m_data->handleSize;
       VisualizationDescription d;
 

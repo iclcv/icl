@@ -46,11 +46,11 @@ namespace icl{
     ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):
       ICLDrawWidget(parent),m_linkedCallback(0){
     }
-    
+
     void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
       Mutex::Locker lock(m_linkMutex);
       //m_oCommandMutex.lock();
-      
+
       glClear(GL_DEPTH_BUFFER_BIT);
       glPushAttrib(GL_ALL_ATTRIB_BITS);
       glMatrixMode(GL_PROJECTION);
@@ -63,25 +63,25 @@ namespace icl{
       glEnable(GL_LIGHTING);
       glEnable(GL_COLOR_MATERIAL);
       glEnable(GL_DEPTH_TEST);
-  
+
       glMatrixMode(GL_PROJECTION);
       gluPerspective( 45,  float(width())/height(), 0.1, 100);
       glMatrixMode(GL_MODELVIEW);
       gluLookAt(0, 0, -1,   // pos
                 0, 0,  0,   // view center point
                 1, 0,  0 );// up vector
-      
+
       if(m_linkedCallback){
         m_linkedCallback->draw(this);
       }
-      
+
       glPopAttrib();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
       //m_oCommandMutex.unlock();
-  
+
       ICLDrawWidget::customPaintEvent(e);
     }
 
@@ -93,13 +93,13 @@ namespace icl{
       if(m_linkedCallback){
         m_linkedCallback->unlink(this);
       }
-      
+
       m_linkedCallback = cb;
-      
+
       if(m_linkedCallback){
         m_linkedCallback->link(this);
       }
     }
-    
+
   } // namespace qt
 }

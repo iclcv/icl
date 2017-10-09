@@ -37,7 +37,7 @@
 namespace icl{
   namespace cv{
     namespace region_detector_tools{
-  
+
       template<class IteratorA, class IteratorB, class Predicate>
       inline void copy_if(IteratorA srcBegin, IteratorA srcEnd, IteratorB dstBegin, Predicate p){
         while(srcBegin != srcEnd){
@@ -48,20 +48,20 @@ namespace icl{
           ++srcBegin;
         }
       }
-  
+
       template<class T>
       inline const T *find_first_not(const T *first,const T* last, T val){
         int n = (int)((last - first) >> 3);
-        
+
         for (; n ; --n){
   #define REGION_DETECTOR_2_ONE if(*first != val) return first; ++first;
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
-          REGION_DETECTOR_2_ONE 
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
+          REGION_DETECTOR_2_ONE
           REGION_DETECTOR_2_ONE
           }
         switch (last - first){
@@ -78,14 +78,14 @@ namespace icl{
   #undef REGION_DETECTOR_2_ONE
   #undef REGION_DETECTOR_2_ONE_R
       }
-      
+
       template<class T>
       inline const T *find_first_not_no_opt(const T *first,const T* last, T val){
         int n = (int)((last - first) >> 3);
-        
+
         for (; n ; --n){
   #define REGION_DETECTOR_2_ONE if(*first != val) return first; ++first;
-          REGION_DETECTOR_2_ONE REGION_DETECTOR_2_ONE 
+          REGION_DETECTOR_2_ONE REGION_DETECTOR_2_ONE
           REGION_DETECTOR_2_ONE REGION_DETECTOR_2_ONE
           REGION_DETECTOR_2_ONE REGION_DETECTOR_2_ONE
           REGION_DETECTOR_2_ONE REGION_DETECTOR_2_ONE
@@ -104,12 +104,12 @@ namespace icl{
   #undef REGION_DETECTOR_2_ONE
   #undef REGION_DETECTOR_2_ONE_R
       }
-      
+
   #define REGION_DETECTOR_2_USE_OPT_4_BYTES
-      
-      
+
+
   #ifdef REGION_DETECTOR_2_USE_OPT_4_BYTES
-      
+
       template<>
       inline const icl8u *find_first_not(const icl8u *first, const icl8u *last, icl8u val){
   #ifdef ICL_32BIT
@@ -123,7 +123,7 @@ namespace icl{
           ++first;
         }
         if(first >= last) return first;
-        
+
         unsigned int n = (last-first)/4;
         const icl32u *p32 = find_first_not(reinterpret_cast<const icl32u*>(first),
                                            reinterpret_cast<const icl32u*>(first)+n,
@@ -134,7 +134,7 @@ namespace icl{
         //  return find_first_not_no_opt(reinterpret_cast<const icl8u*>(p32),last,val);
       }
   #endif
-  
+
     }
   } // namespace cv
 }

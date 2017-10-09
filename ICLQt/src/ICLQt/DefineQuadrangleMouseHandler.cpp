@@ -34,12 +34,12 @@
 #include <ICLCore/Line.h>
 
 namespace icl{
-  
+
   namespace qt{
 
     using namespace utils;
     using namespace core;
-    
+
     struct DefineQuadrangleMouseHandler::Data{
       std::vector<Point> ps;
       Rect bounds;
@@ -57,28 +57,28 @@ namespace icl{
       bool c = !Line(ps[1],ps[2]).intersects(Line(ps[3],ps[0]));
       return a && b && c;
     }
-    
+
     DefineQuadrangleMouseHandler::DefineQuadrangleMouseHandler():m_data(0){
     }
 
     DefineQuadrangleMouseHandler::DefineQuadrangleMouseHandler(const Size &maxSize, bool convexOnly):m_data(0){
       init(maxSize, convexOnly);
     }
-    
+
     DefineQuadrangleMouseHandler::~DefineQuadrangleMouseHandler(){
       ICL_DELETE(m_data);
     }
-    
+
     void DefineQuadrangleMouseHandler::init(const Size &maxSize, bool convexOnly){
       Mutex::Locker lock(this);
       ICL_DELETE(m_data);
       m_data = new Data;
-      
+
       m_data->ps.resize(4);
       m_data->bounds = Rect(Point::null,maxSize-Size(1,1));
       m_data->xoffset = m_data->yoffset = 0;
       m_data->convexOnly = convexOnly;
-       
+
       Rect r = m_data->bounds.enlarged(-20);
       m_data->ps[0] = r.ul();
       m_data->ps[1] = r.ur();
@@ -87,7 +87,7 @@ namespace icl{
 
       std::fill(m_data->handles,m_data->handles+4,0);
       m_data->dragged = -1;
-      
+
       m_data->handleSize = 8;
     }
 
@@ -108,8 +108,8 @@ namespace icl{
       Mutex::Locker lock(this);
       m_data->ps.assign(ps,ps+4);
     }
-    
-    
+
+
     void DefineQuadrangleMouseHandler::setOffset(const Point &o){
       Mutex::Locker lock(this);
       if(!m_data) {
@@ -119,7 +119,7 @@ namespace icl{
       m_data->xoffset = o.x;
       m_data->yoffset = o.y;
     }
-    
+
     std::vector<Point> DefineQuadrangleMouseHandler::getQuadrangle() const{
       Mutex::Locker lock(this);
       if(!m_data) {
@@ -128,21 +128,21 @@ namespace icl{
       std::vector<Point> ps = m_data->ps;
       return ps;
     }
-    
+
     void DefineQuadrangleMouseHandler::process(const MouseEvent &e){
       Mutex::Locker lock(this);
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
-      
+
       Point p = e.getPos();
       p.x -= m_data->xoffset;
       p.y -= m_data->yoffset;
-    
+
       if(!m_data->bounds.contains(p.x,p.y)){
         return;
       }
-    
+
       if(e.isReleaseEvent()){
         m_data->dragged = -1;
         std::fill(m_data->handles,m_data->handles+4,0);
@@ -173,7 +173,7 @@ namespace icl{
         }
       }
     }
-    
+
     void DefineQuadrangleMouseHandler::setHandleSize(float size){
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::setHandlesize() was called before it was initialized!");
@@ -186,7 +186,7 @@ namespace icl{
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::vis() was called before it was initialized!");
       }
-      
+
       const float r = m_data->handleSize;
       VisualizationDescription d;
       d.color(255,0,0,255);
@@ -206,5 +206,5 @@ namespace icl{
       return d;
     }
 
-  } 
+  }
 }

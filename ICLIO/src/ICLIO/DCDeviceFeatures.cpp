@@ -37,14 +37,14 @@ using namespace icl::utils;
 
 namespace icl{
   namespace io{
-    
+
     namespace{
       bool is_trigger_name(const std::string &n, bool withPolarity=false){
         if(n.length() < 8 || n.substr(0,8) != "trigger-") return false;
         const std::string s = n.substr(8);
         return s=="power" || s=="mode" || s=="source" || s=="from-software" || (withPolarity && s=="polarity");
       }
-      
+
       bool has_trigger_polarity(dc1394camera_t *cam){
         dc1394bool_t hasPolarity = DC1394_FALSE;
         dc1394_external_trigger_has_polarity(cam,&hasPolarity);
@@ -54,7 +54,7 @@ namespace icl{
         return s==DC1394_OFF ? "off" :
                s==DC1394_ON  ? "on" : "";
       }
-  
+
       dc1394feature_info_t *getSpecialInfo(){
         // this is a hack here: the device dependent feature map contains feature info types
         // to make this map useful even if some features are special ones, such as trigger-
@@ -62,11 +62,11 @@ namespace icl{
         static dc1394feature_info_t special;
         return &special;
       }
-      
+
       bool isSpecialInfo(dc1394feature_info_t *i){
         return i == getSpecialInfo();
       }
-      
+
       void set_trigger_feature_value(dc1394camera_t *cam, const std::string &feature, const std::string &value){
         const std::string f = feature.substr(8);
         if(f=="polarity"){
@@ -76,7 +76,7 @@ namespace icl{
             dc1394_external_trigger_set_polarity(cam,DC1394_TRIGGER_ACTIVE_HIGH);
           }else{
             ERROR_LOG("invalid value for feature trigger-polarity: " << value);
-          }        
+          }
         }else if(f=="power"){
           if(value == "on"){
             dc1394_external_trigger_set_power(cam,DC1394_ON);
@@ -113,7 +113,7 @@ namespace icl{
           ERROR_LOG("invalid feature name: " << feature << "(value was " << value << ")");
         }
       }
-      
+
       std::string get_trigger_feature_value(dc1394camera_t *cam, const std::string &name){
         const std::string f = name.substr(8);
         if(f=="polarity"){
@@ -162,7 +162,7 @@ namespace icl{
   namespace utils{
     std::string str(dc1394feature_t t){
       // {{{ open
-      
+
   #define X(x) if(t==DC1394_FEATURE_##x) return #x;
       X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
       X(SATURATION);X(GAMMA);X(SHUTTER);X(GAIN);X(IRIS);X(FOCUS);
@@ -172,13 +172,13 @@ namespace icl{
       return "undefined";
   #undef X
       }
-  
+
     // }}}
-  
+
     template<> dc1394feature_t parse<dc1394feature_t>(const std::string &s){
       // {{{ open
-  
-  #define X(x) if(s==#x) return DC1394_FEATURE_##x;      
+
+  #define X(x) if(s==#x) return DC1394_FEATURE_##x;
       X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
       X(SATURATION);X(GAMMA);X(SHUTTER);X(GAIN);X(IRIS);X(FOCUS);
       X(TEMPERATURE);X(TRIGGER);X(TRIGGER_DELAY);X(WHITE_SHADING);
@@ -187,7 +187,7 @@ namespace icl{
       return (dc1394feature_t)0;
     }
   #undef X
-  
+
     //}}}
   }
   namespace io{
@@ -341,30 +341,30 @@ namespace icl{
 
     void DCDeviceFeaturesImplDelOp::delete_func(DCDeviceFeaturesImpl *impl){
       // {{{ open
-  
+
       ICL_DELETE(impl);
     }
-  
+
     // }}}
-    
-    
+
+
     DCDeviceFeatures::DCDeviceFeatures(const DCDevice &dev)
       // {{{ open
-  
+
       : ParentSC(dev.isNull() ? 0 : new DCDeviceFeaturesImpl(dev))
     {
       utils::Configurable::addChildConfigurable(impl.get());
     }
-  
+
     // }}}
-    
+
     DCDeviceFeatures::DCDeviceFeatures():
       // {{{ open
-  
+
        ParentSC(0){DEBUG_LOG("called this. configurable of this will not work")}
-  
-    // }}}    
-  
+
+    // }}}
+
   } // namespace io
 }
 

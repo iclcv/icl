@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace physics{
-    RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z, 
+    RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z,
                                                                const std::vector<int> &indices, const std::vector<geom::Vec> &vertices,
                                                                geom::Vec offset,
                                                                float mass){
@@ -59,8 +59,8 @@ namespace icl{
       ci.m_angularSleepingThreshold *= METER_TO_BULLET_UNIT;
       setPhysicalObject(new btRigidBody(ci));
     }
-    
-    RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z, 
+
+    RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z,
                                                                const std::vector<geom::Vec> &vertices,
                                                                geom::Vec offset,
                                                                float mass){

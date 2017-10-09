@@ -39,19 +39,19 @@ using namespace std;
 
 namespace icl{
   namespace io{
-  
+
     bool FileWriterPluginCSV::s_bExtendFileName = false;
-    
+
     void FileWriterPluginCSV::setExtendFileName(bool value){
       s_bExtendFileName = value;
     }
-  
+
     void FileWriterPluginCSV::write(File &file, const ImgBase *image){
-      
+
       //////////////////////////////////////////////////////////////////////
       /// WRITE HEADER DATA DEPENDEND ON THE CURRENT EXTEND-FLAG-VALUE  ////
       //////////////////////////////////////////////////////////////////////
-  
+
       if(s_bExtendFileName){
         std::ostringstream os;
         os << file.getDir() << file.getBaseName() << "-ICL:" << image->getSize() << 'x'
@@ -68,9 +68,9 @@ namespace icl{
         */
         file = File(os.str());
       }
-      
+
       file.open(File::writeText);
-      
+
       if(!s_bExtendFileName){
         std::ostringstream os;
         static const string H = "# ";
@@ -83,11 +83,11 @@ namespace icl{
            << H << "TimeStamp " << image->getTime() << std::endl;
         file << os.str();
       }
-  
+
       //////////////////////////////////////////////////////////////////////
       /// WRITE THE IMAGE DATA TEMPLATE BASED  /////////////////////////////
       //////////////////////////////////////////////////////////////////////
-      
+
       for(int c=0;c<image->getChannels();++c){
         for(int y=0;y<image->getHeight();++y){
           switch(image->getDepth()){
@@ -102,7 +102,7 @@ namespace icl{
           }
           file << "\n";
         }
-      }    
+      }
     }
   } // namespace io
 }

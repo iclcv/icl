@@ -55,7 +55,7 @@ namespace icl{
     struct LibAVVideoWriter::Data{
       Data(const std::string &filename, const std::string &fourcc, double fps, const Size &frame_size):
         video_st(),filename(filename),fps(fps),frame_size(frame_size){
-        
+
         DEBUG_LOG("fps:" << fps);
         if(File(filename).exists()){
           throw ICLException("file already exists");
@@ -78,7 +78,7 @@ namespace icl{
         }
         avformat_write_header(oc, 0);
       }
-      
+
       ~Data(){
         av_write_trailer(oc);
         close_stream(oc, &video_st);
@@ -109,7 +109,7 @@ namespace icl{
       AVFrame *get_video_frame(const core::ImgBase *src, OutputStream *ost);
       int write_video_frame(const core::ImgBase *src, AVFormatContext *oc, OutputStream *ost);
     };
-    
+
 #define INPUT_FORMAT AV_PIX_FMT_RGB24
 #define STREAM_FORMAT AV_PIX_FMT_YUV420P
     AVFrame *LibAVVideoWriter::Data::alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
@@ -351,12 +351,12 @@ namespace icl{
     LibAVVideoWriter::~LibAVVideoWriter(){
       delete m_data;
     }
-    
+
     void LibAVVideoWriter::send(const ImgBase *image){
        m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
     }
-        
-        
+
+
     LibAVVideoWriter &LibAVVideoWriter::operator<<(const ImgBase *image){
       m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
       return *this;

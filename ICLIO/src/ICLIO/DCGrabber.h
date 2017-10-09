@@ -45,7 +45,7 @@ namespace icl{
       class DCGrabberThread;
     }
     /** \endcond */
-    
+
 
     /// Grabber implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
     /** The DCGrabber class implements the ICL's Grabber interface for
@@ -96,7 +96,7 @@ namespace icl{
                           - 400 -> IEEE-1394-A (400MBit)
                           - 800 -> IEEE-1394-B (800MBit)
                           - 0 (default) value is not chaged!
-                          
+
                           (please note, that this parameter can also
                           be set by the property iso-speed)
 
@@ -105,7 +105,7 @@ namespace icl{
 
         /// Destructor
         ICLIO_API ~DCGrabber();
-        
+
         /// grab function grabs an image (destination image is adapted on demand)
         /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
         ICLIO_API virtual const core::ImgBase *acquireImage();

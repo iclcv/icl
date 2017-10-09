@@ -40,50 +40,50 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-    
+
     template<class T>
     const Img<T> &ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform, const Img<T> &src, const Size &resultSize){
       throw ICLException("ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform,...): this method is not yet implemented!");
       return buffer;
     }
-  
+
     static void convexity_check_and_sorting(Point32f ps[4]) throw (ICLException){
       std::vector<Point32f> hull = convexHull(std::vector<Point32f>(ps,ps+4));
       // first and last points are doubled
       if(hull.size() != 5) throw ICLException("ImageRectification<T>::apply: given points do not define a convex quadrangle");
       ps[0] = hull[0];
       ps[1] = hull[1];
-      ps[2] = hull[2];    
+      ps[2] = hull[2];
       ps[3] = hull[3];
     }
-  
+
     static void convexity_check(const Point32f ps[4]){
       std::vector<Point32f> hull = convexHull(std::vector<Point32f>(ps,ps+4));
       if(hull.size() != 5) {
         throw ICLException("ImageRectification<T>::apply: given points do"
                            " not define a convex quadrangle");
-      }    
+      }
       // check whether the hull re-arranged ps
       hull.resize(4);
       std::deque<Point32f> hulld(hull.begin(),hull.end());
       for(int i=0;i<4;++i){
-        if(hulld[0] == ps[0] && hulld[1] == ps[1] && 
-           hulld[2] == ps[2] && hulld[3] == ps[3]) return; 
+        if(hulld[0] == ps[0] && hulld[1] == ps[1] &&
+           hulld[2] == ps[2] && hulld[3] == ps[3]) return;
         hulld.push_front(hulld.back());
         hulld.pop_back();
       }
       std::reverse(hulld.begin(),hulld.end());
       for(int i=0;i<4;++i){
-        if(hulld[0] == ps[0] && hulld[1] == ps[1] && 
-           hulld[2] == ps[2] && hulld[3] == ps[3]) return; 
+        if(hulld[0] == ps[0] && hulld[1] == ps[1] &&
+           hulld[2] == ps[2] && hulld[3] == ps[3]) return;
         hulld.push_front(hulld.back());
         hulld.pop_back();
       }
-  
+
       throw ICLException("ImageRectification<T>::apply: given points define a crossed quadrangle");
     }
-    
-    template<class T> 
+
+    template<class T>
     static const Homography2D create_and_check_homography(bool validateAndSortPoints,const Point32f psin[4], const Img<T> &src,
                                                           const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                           FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
@@ -97,24 +97,24 @@ namespace icl{
       }else{
         convexity_check(ps);
       }
-      
-  
-      
+
+
+
       buffer.setChannels(src.getChannels());
       buffer.setSize(resultSize);
 
       int W = resultSize.width;
-      int H = resultSize.height; 
+      int H = resultSize.height;
       const Point32f ys[4] = {
         Point32f(0,0),
         Point32f(W-1,0),
         Point32f(W-1,H-1),
         Point32f(0,H-1)
       };
-      
+
       const Homography2D HOM(ps,ys,4, (Homography2D::Algorithm)advanedAlgorithm);
-  
-  
+
+
       if(hom) *hom = HOM;
       if(Q || R || (maxTilt > 0)){
         FixedMatrix<float,2,2> q,r;
@@ -130,7 +130,7 @@ namespace icl{
                                                            "met (diagonal element ratio of R > maxTilt)");
         }
       }
-      
+
       const Rect rect = src.getImageRect();
       for(int i=0;i<4;++i){
         Point32f p = HOM.apply(ys[i]);
@@ -177,7 +177,7 @@ namespace icl{
         Channel<T> r = buffer[c];
         const Channel<T> s = src[c];
         if(resultROI){
-          const int xstart = resultROI->x, xend = resultROI->right(), 
+          const int xstart = resultROI->x, xend = resultROI->right(),
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
 #ifdef ICL_HAVE_SSE2
@@ -285,7 +285,7 @@ namespace icl{
         Channel<T> r = buffer[c];
         const Channel<T> s = src[c];
         if(resultROI){
-          const int xstart = resultROI->x, xend = resultROI->right(), 
+          const int xstart = resultROI->x, xend = resultROI->right(),
                     ystart = resultROI->y, yend = resultROI->bottom();
           for(int y=ystart;y<yend;++y){
 #ifdef ICL_HAVE_SSE2
@@ -378,15 +378,15 @@ namespace icl{
 
   #ifdef ICL_HAVE_IPP
 
-    
-    template<class T, class IppFunc> 
-    static const Img<T> &apply_image_rectificaion_ipp(bool validateAndSortPoints,const Rect *resultROI, bool advanedAlgorithm, 
+
+    template<class T, class IppFunc>
+    static const Img<T> &apply_image_rectificaion_ipp(bool validateAndSortPoints,const Rect *resultROI, bool advanedAlgorithm,
                                                       const Point32f ps[4], const Img<T> &src,
                                                       const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                       FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
                                                       Img<T> &buffer, const core::scalemode eScaleMode, IppFunc ippFunc){
       const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer,advanedAlgorithm);
-      
+
       const double coeffs[3][3]={ {HOM(0,0),HOM(1,0),HOM(2,0)},
                                   {HOM(0,1),HOM(1,1),HOM(2,1)},
                                   {HOM(0,2),HOM(1,2),HOM(2,2)} };
@@ -402,7 +402,7 @@ namespace icl{
 
       return buffer;
     }
-    
+
     template<> const Img8u &ImageRectification<icl8u>::apply(const Point32f ps[4], const Img8u &src,
                                                              const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                              FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
@@ -410,7 +410,7 @@ namespace icl{
                                                              const Rect *resultROI, const core::scalemode eScaleMode){
       return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,eScaleMode,ippiWarpPerspectiveBack_8u_C1R);
     }
-    
+
     template<> const Img32f &ImageRectification<icl32f>::apply(const Point32f ps[4], const Img32f &src,
                                                                const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                                FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
@@ -419,8 +419,8 @@ namespace icl{
       return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,eScaleMode,ippiWarpPerspectiveBack_32f_C1R);
     }
   #endif
-  
-    
+
+
   #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API ImageRectification<icl##D>;
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH

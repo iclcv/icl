@@ -43,7 +43,7 @@ void init_icl() {
   grabber_c.init(pa("-ic"));
   grabber_d.init(pa("-id"));
 
-  
+
   if (pa("-pco")) {
     cloud_out.init(pa("-pco"));
   }
@@ -56,10 +56,10 @@ void init_icl() {
 
   std::string unit = *pa("-depth-image-unit");
   pcc.init(d_cam,c_cam,
-           ( unit == "raw" ? PointCloudCreator::KinectRAW11Bit : 
+           ( unit == "raw" ? PointCloudCreator::KinectRAW11Bit :
              unit == "distToCamCenter" ? PointCloudCreator::DistanceToCamCenter :
              PointCloudCreator::DistanceToCamPlane) );
-  
+
   grabber_c.setDesiredSizeInternal(c_cam.getResolution());
   grabber_d.setDesiredSizeInternal(d_cam.getResolution());
 
@@ -116,8 +116,8 @@ int main(int argc, char **argv) {
                            "[m]-icc(1) "
                            "-pco(2) "
                            "-depth-image-unit|-du(depthImageUnit=distToCamPlane)");
-  
+
   ICLApplication app(argc,argv,args_init,init_icl,run_icl);
-  
+
   return app.exec();
 }

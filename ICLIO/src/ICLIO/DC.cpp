@@ -51,11 +51,11 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     namespace dc{
-  
+
   #define MODE_SWITCH(X) case X: return #X
-  #define MODE_SWITCH_IF(X) if(s==#X) return X 
+  #define MODE_SWITCH_IF(X) if(s==#X) return X
   #define MODE_SWITCH_ELSE(X) else if(s==#X) return X
-  
+
       string to_string(dc1394video_mode_t vm){
         // {{{ open
   #define MODE_SWITCH_A(S,F) case DC1394_VIDEO_MODE_##S##_##F: return #S "-" #F
@@ -98,7 +98,7 @@ namespace icl{
           default: return "unknown video mode";
         }
       }
-  
+
       // }}}
       string to_string(dc1394framerate_t fr){
         // {{{ open
@@ -118,24 +118,24 @@ namespace icl{
           default: return "unknown framerate";
         }
       }
-  
+
       // }}}
       string to_string(dc1394color_filter_t f){
         // {{{ open
-  
+
         switch(f){
           MODE_SWITCH(DC1394_COLOR_FILTER_RGGB);
           MODE_SWITCH(DC1394_COLOR_FILTER_GBRG);
           MODE_SWITCH(DC1394_COLOR_FILTER_GRBG);
           MODE_SWITCH(DC1394_COLOR_FILTER_BGGR);
           default: return "unknown color filter";
-        }  
+        }
       }
-  
+
       // }}}
       string to_string(dc1394bayer_method_t bm){
         // {{{ open
-  
+
         switch(bm){
           MODE_SWITCH(DC1394_BAYER_METHOD_NEAREST);
           MODE_SWITCH(DC1394_BAYER_METHOD_SIMPLE);
@@ -148,11 +148,11 @@ namespace icl{
           default: return "unknown bayer method";
         }
       }
-  
+
       // }}}
       string to_string(dc1394feature_t f){
         // {{{ open
-  
+
         switch(f){
           MODE_SWITCH(DC1394_FEATURE_BRIGHTNESS);
           MODE_SWITCH(DC1394_FEATURE_EXPOSURE);
@@ -175,19 +175,19 @@ namespace icl{
           MODE_SWITCH(DC1394_FEATURE_TILT);
           MODE_SWITCH(DC1394_FEATURE_OPTICAL_FILTER);
           MODE_SWITCH(DC1394_FEATURE_CAPTURE_SIZE);
-          MODE_SWITCH(DC1394_FEATURE_CAPTURE_QUALITY);     
+          MODE_SWITCH(DC1394_FEATURE_CAPTURE_QUALITY);
           default: return "unknown feature id";
         }
       }
-  
+
         // }}}
-        
+
       dc1394video_mode_t videomode_from_string(const string &s){
         // {{{ open
   #define MODE_SWITCH_B_IF(S,F) if(s==#S "-" #F) return DC1394_VIDEO_MODE_##S##_##F
   #define MODE_SWITCH_B_ELIF(S,F) else MODE_SWITCH_B_IF(S,F)
   #define MODE_SWITCH_C_ELIF(S) else if(s==#S) return DC1394_VIDEO_MODE_##S
-        
+
         MODE_SWITCH_B_IF(160x120,YUV444);
         MODE_SWITCH_B_ELIF(320x240,YUV422);
         MODE_SWITCH_B_ELIF(640x480,YUV411);
@@ -223,15 +223,15 @@ namespace icl{
   #undef MODE_SWITCH_B_ELIF
   #undef MODE_SWITCH_B_IF
         return (dc1394video_mode_t)-1;
-        
+
       }
-  
+
       // }}}
       dc1394framerate_t framerate_from_string(const string &s){
         // {{{ open
   #define FR_SWITCH_A(L) if(s== #L "Hz") return DC1394_FRAMERATE_##L
   #define FR_SWITCH_B(L,R) if(s== #L "." #R "Hz") return DC1394_FRAMERATE_##L##_##R
-        
+
         FR_SWITCH_B(1,875);
         FR_SWITCH_B(3,75);
         FR_SWITCH_B(7,5);
@@ -240,16 +240,16 @@ namespace icl{
         FR_SWITCH_A(60);
         FR_SWITCH_A(120);
         FR_SWITCH_A(240);
-  
+
   #undef FR_SWICH_A
   #undef FR_SWICH_B
         return (dc1394framerate_t)-1;
       }
-  
+
       // }}}
       dc1394bayer_method_t bayermethod_from_string(const string &s){
         // {{{ open
-  
+
         MODE_SWITCH_IF(DC1394_BAYER_METHOD_NEAREST);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_SIMPLE);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_BILINEAR);
@@ -260,11 +260,11 @@ namespace icl{
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_AHD);
         return (dc1394bayer_method_t)-1;
       }
-  
+
       // }}}
       dc1394feature_t feature_from_string(const string &s){
         // {{{ open
-  
+
         MODE_SWITCH_IF(DC1394_FEATURE_BRIGHTNESS);
         MODE_SWITCH_ELSE(DC1394_FEATURE_EXPOSURE);
         MODE_SWITCH_ELSE(DC1394_FEATURE_SHARPNESS);
@@ -289,30 +289,30 @@ namespace icl{
         MODE_SWITCH_ELSE(DC1394_FEATURE_CAPTURE_QUALITY);
         return (dc1394feature_t)-1;
       }
-  
+
       // }}}
-  
+
   #undef MODE_SWITCH
   #undef MODE_SWITCH_IF
   #undef MODE_SWITCH_ELSE
-      
+
       const std::vector<std::string> &getListOfAllFeatures(){
         // {{{ open
-  
+
         static vector<string> v;
         if(!v.size()){
           for(dc1394feature_t f = DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; f=(dc1394feature_t)((int)f+1)){
             v.push_back(to_string(f));
           }
         }
-        
+
         return v;
       }
-  
+
       // }}}
-  
-      
-      
+
+
+
       void dc_signal_handler(const string &signal){
         static bool first = true;
         if((signal == "SIGINT" || signal == "SIGTERM") && first){
@@ -323,7 +323,7 @@ namespace icl{
           DCGrabberThread::stopAllGrabberThreads();
         }
       }
-      
+
       void install_signal_handler(){
         // {{{ open
         static bool first = true;
@@ -333,49 +333,49 @@ namespace icl{
           SignalHandler::install("libdc1394", dc_signal_handler, "SIGINT,SIGTERM,SIGSEGV");
         }
       }
-  
+
       // }}}
-  
+
       void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers, DCDeviceOptions *options){
         // {{{ open
-  
+
         dc1394_capture_stop(c);
         set_streaming(c,false);
         //dc1394_cleanup_iso_channels_and_bandwidth(c);
-        
+
         // switch over the camera
         // TODO use max here
-        
+
         set_iso_speed(c,options->isoMBits);
-  
+
         // old      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
-        
-        
+
+
         if((int)options->videomode != -1){
           dc1394_video_set_mode(c,options->videomode);
         }
         if((int)options->framerate != -1){
           dc1394_video_set_framerate(c, options->framerate);
         } // otherwise, the current framerate is used
-        
+
         // falls hier fehler : channel cleanen!
         dc1394_capture_setup(c,nDMABuffers,DC1394_CAPTURE_FLAGS_DEFAULT);
         set_streaming(c,true);
-        
+
       }
-  
+
       // }}}
-      
+
       void release_dc_cam(dc1394camera_t *c){
         // {{{ open
         set_streaming(c,false);
         dc1394_capture_stop(c);
-  
+
         //dc1394_cleanup_iso_channels_and_bandwidth(c);
       }
-  
+
       // }}}
-  
+
       void set_streaming(dc1394camera_t* c, bool on){
         // {{{ open
         dc1394switch_t currVal=DC1394_OFF;
@@ -386,7 +386,7 @@ namespace icl{
           dc1394_video_set_transmission(c,DC1394_OFF);
         }
       }
-  
+
       // }}}
       dc1394video_frame_t *get_newest_frame(dc1394camera_t* c){
         // {{{ open
@@ -399,46 +399,46 @@ namespace icl{
             dc1394_capture_enqueue(c,frame);
           }
         }while(err == DC1394_SUCCESS);
-    
+
         //set_streaming(c,true);
-        dc1394_capture_dequeue(c,DC1394_CAPTURE_POLICY_WAIT,&frame); 
-        return frame;  
+        dc1394_capture_dequeue(c,DC1394_CAPTURE_POLICY_WAIT,&frame);
+        return frame;
       }
-  
+
       // }}}
-      
+
       dc1394video_frame_t *get_a_frame(dc1394camera_t* c){
         // {{{ open
         dc1394video_frame_t *frame=0;
         dc1394error_t err = dc1394_capture_dequeue(c,DC1394_CAPTURE_POLICY_WAIT,&frame);
         if(err == DC1394_SUCCESS){
-          return frame;  
+          return frame;
         }else{
           return 0;
         }
       }
-  
+
       // }}}
-      
+
       namespace{
         void rgb_to_gray_util(const icl8u *src, icl8u *dst, const icl8u *dstEnd, const Size &frameSize){
-  
+
   #ifdef ICL_HAVE_IPP
           int step = frameSize.width*sizeof(icl8u);
-          ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize); 
+          ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize);
   #else
           for(;dst < dstEnd; src+=3, ++dst){
             // we took this conversion from the IPP-manual for compability with IPP
-            // function 
+            // function
             *dst = clipped_cast<float,icl8u>(0.299*src[0]+0.587*src[1]+0.114*src[2]);
           }
   #endif
         }
-  
+
         void convert_YUV411_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
           register int i = (width*height) + ( (width*height) >> 1 )-1;
           register int j = (width*height)-1;
-          
+
           while (i >= 0) {
             dest[j--] = (uint8_t) src[i--];
             dest[j--] = (uint8_t) src[i--];
@@ -471,17 +471,17 @@ namespace icl{
         void convert_YUV444_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
           register int i = (width*height) + ( (width*height) << 1 ) -1;
           register int j = (width*height)-1;
-          
+
           while (i >= 0) {
             i--; dest[j--] = src[i--]; i--;
           }
         }
       }
-  
+
       void extract_image_to_gray(dc1394video_frame_t *f,
                                  dc1394color_filter_t bayerLayout,
-                                  ImgBase **ppoDst, 
-                                  const Size &desiredSizeHint, 
+                                  ImgBase **ppoDst,
+                                  const Size &desiredSizeHint,
                                   depth desiredDepthHint,
                                   std::vector<icl8u> &dataBuffer,
                                  dc1394bayer_method_t bayerMethod){
@@ -490,7 +490,7 @@ namespace icl{
         (void)desiredDepthHint;
         Size frameSize(f->size[0],f->size[1]);
         ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
-  
+
         if(bayerLayout){
           //      if(f->color_filter){ unfortunately this is not set for some cams??
           if((int)dataBuffer.size() < frameSize.getDim()*3){
@@ -505,18 +505,18 @@ namespace icl{
           icl8u *dst = (*ppoDst)->asImg<icl8u>()->getData(0);
           const icl8u *src = dataBuffer.data();
           const icl8u *dstEnd = dst+frameSize.getDim();
-  
+
           rgb_to_gray_util(src,dst,dstEnd,frameSize);
-          
+
         }else{
           //for(int i=0;i<100;++i) std::cout << (int)(f->image[i]) << " ";
           //std::cout << std::endl;
           icl8u *dstData = (*ppoDst)->asImg<icl8u>()->getData(0);
-          dc1394error_t err = dc1394_convert_to_MONO8(f->image, 
+          dc1394error_t err = dc1394_convert_to_MONO8(f->image,
                                                       dstData,
                                                       frameSize.width,
                                                       frameSize.height,
-                                                      f->yuv_byte_order, 
+                                                      f->yuv_byte_order,
                                                       f->color_coding,
                                                       f->data_depth);
           if(err == DC1394_FUNCTION_NOT_SUPPORTED){
@@ -551,26 +551,26 @@ namespace icl{
           (*ppoDst)->setTime(Time(f->timestamp));
         }
       }
-  
+
       // }}}
-      
+
       void extract_image_to_rgb(dc1394video_frame_t *f,
                                 dc1394color_filter_t bayerLayout,
-                                ImgBase **ppoDst, 
-                                const Size &desiredSizeHint, 
+                                ImgBase **ppoDst,
+                                const Size &desiredSizeHint,
                                 depth desiredDepthHint,
                                 std::vector<icl8u> &dataBuffer,
                                 dc1394bayer_method_t bayerMethod){
-        
+
         // {{{ open
-  
+
         (void)desiredDepthHint;
         Size frameSize(f->size[0],f->size[1]);
-       
+
         if(bayerLayout){
           if(f->data_depth == 16){
             ensureCompatible(ppoDst,depth16s, frameSize,formatRGB);
-            
+
             ERROR_LOG("16Bit bayer decoding is not supported yet");
           }else{
             ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
@@ -604,22 +604,22 @@ namespace icl{
           }
         }
       }
-  
+
       // }}}
-  
+
       void extract_image_to(dc1394video_frame_t *f,
                             dc1394color_filter_t bayerLayout,
-                            ImgBase **ppoDst, 
-                            const Size &desiredSizeHint, 
+                            ImgBase **ppoDst,
+                            const Size &desiredSizeHint,
                             format desiredFormatHint,
                             depth desiredDepthHint,
                             std::vector<icl8u> &dataBuffer,
                             dc1394bayer_method_t bayerMethod){
-  
+
         // {{{ open
-  
+
         // This function must work dynamically --> it must not use is_firefly_mono for example !!
-        
+
         (void)desiredDepthHint;
         Size frameSize(f->size[0],f->size[1]);
         switch(desiredFormatHint){
@@ -631,16 +631,16 @@ namespace icl{
             break;
         }
       }
-  
+
       // }}}
-  
+
       void extract_image_to_2(dc1394video_frame_t *f,
                               dc1394color_filter_t bayerLayout,
-                              ImgBase **ppoDst, 
+                              ImgBase **ppoDst,
                               std::vector<icl8u> &dataBuffer,
                               dc1394bayer_method_t bayerMethod){
         // {{{ open xxx
-        
+
         ICLASSERT_RETURN( f );
         unsigned char *data = f->image;
         int width = (int)f->size[0];
@@ -649,11 +649,11 @@ namespace icl{
         //dc1394color_filter_t cf = f->color_filter; // not set (why ever)
         uint32_t yuv_byte_order = f->yuv_byte_order;
         uint32_t data_depth      = f->data_depth;
-      
+
         if(bayerLayout){
           if(data_depth == 16){
             ensureCompatible(ppoDst,depth16s, Size(width,height),formatRGB);
-            
+
             ERROR_LOG("16Bit bayer decoding is not supported yet");
             /** This does not work
                 if((int)dataBuffer.size() < width*height*3*2){
@@ -661,7 +661,7 @@ namespace icl{
                 }
                 dc1394_bayer_decoding_16bit((const uint16_t*)data, (uint16_t*)dataBuffer.data(),
                 width,height,bayerLayout, bayerMethod, 0);
-                
+
                 interleavedToPlanar((const icl16s*)dataBuffer.data(),(*ppoDst)->asImg<icl16s>());
              **/
           }else{
@@ -672,8 +672,8 @@ namespace icl{
             dc1394_bayer_decoding_8bit(data,dataBuffer.data(),width,height,bayerLayout,bayerMethod);
             interleavedToPlanar(dataBuffer.data(),(*ppoDst)->asImg<icl8u>());
           }
-  
-  
+
+
         }else{
           static const dc1394color_coding_t gray_ccs[5] = {
             DC1394_COLOR_CODING_MONO8,
@@ -699,23 +699,23 @@ namespace icl{
         }
       }
       // }}}
-      
+
       bool can_extract_image_to(dc1394video_frame_t *f,
-                                const Size &desiredSizeHint, 
+                                const Size &desiredSizeHint,
                                 format desiredFormatHint,
                                 depth desiredDepthHint){
         // {{{ open
-  
+
         if(desiredDepthHint != depth8u) return false;
         if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
         if(desiredFormatHint == formatGray && f->data_depth == 8) return true;
         if(desiredFormatHint != formatRGB) return false;
-  
+
         return true;
       }
-  
+
       // }}}
-  
+
   #if 0
       void grab_frame(int DUMMY,dc1394camera_t* c, ImgBase **image){
         // {{{ open
@@ -724,42 +724,42 @@ namespace icl{
         ICLASSERT_RETURN(image);
         format fmt = *image ? (*image)->getFormat() : formatRGB;
         ICLASSERT_RETURN( fmt == formatGray || fmt == formatRGB );
-  
+
         //dc1394video_frame_t *f = get_newest_frame(c);
         dc1394video_frame_t *f = get_a_frame(c);
-    
+
         //      dc1394color_filter_t cfilter = f->color_filter;
         Size size = Size(f->size[0],f->size[1]);
-    
-    
+
+
         ensureCompatible(image,depth8u,size,fmt);
         if(fmt == formatGray){
           dc1394_convert_to_MONO8(f->image, (*image)->asImg<icl8u>()->getData(0),size.width,size.height,f->yuv_byte_order,f->color_coding,f->data_depth);
         }else if(fmt == formatRGB){
           static std::vector<icl8u> rgbBuffer;
           if((int)rgbBuffer.size() < size.getDim()*3) rgbBuffer.resize(size.getDim()*3);
-  
+
           //dc1394_convert_to_RGB8(f->image, &(rgbBuffer[0]),size.width,size.height,f->yuv_byte_order,f->color_coding,f->data_depthyyy);
-          dc1394_bayer_decoding_8bit(f->image, 
+          dc1394_bayer_decoding_8bit(f->image,
                                      &(rgbBuffer[0]),
                                      size.width,
                                      size.height,
                                      DC1394_COLOR_FILTER_GBRG,
                                      DC1394_BAYER_METHOD_BILINEAR);
-  
+
           interleavedToPlanar(&(rgbBuffer[0]),(*image)->asImg<icl8u>());
         }
         dc1394_capture_enqueue(c,f);
-  
+
         **/
       }
-  
+
       // }}}
   #endif
-  
+
       class DCContextCreator{
         // {{{ open
-  
+
       public:
         Mutex mutex;
         dc1394_t *context;
@@ -784,25 +784,25 @@ namespace icl{
           mutex.unlock();
         }
       };
-  
+
       // }}}
-      
+
       DCContextCreator STATIC_DC_CONTEXT;
-      
+
       dc1394_t *get_static_context(){
         STATIC_DC_CONTEXT.create();
         return STATIC_DC_CONTEXT.context;
       }
-      
+
       void free_static_context(){
         STATIC_DC_CONTEXT.release();
       }
-  
+
       bool is_dc800_capable(dc1394camera_t* c){
         ICLASSERT_RETURN_VAL(c,false);
         return c->bmode_capable == DC1394_TRUE;
       }
-  
+
       void set_iso_speed(dc1394camera_t* c, int mbits){
         ICLASSERT_RETURN(c);
         if(!mbits) return; // this is the default value for "do nothing"
@@ -830,6 +830,6 @@ namespace icl{
         }
       }
     }
-    
+
   } // namespace io
 }

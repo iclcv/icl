@@ -41,11 +41,11 @@ namespace icl{
     class ICLIO_API JPEGDecoder{
       public:
       /// Decode JPEG-File (E.g. used for FileGrabberPluginJPEG)
-      /** @param file must be opened in mode readBinary or not opend 
+      /** @param file must be opened in mode readBinary or not opend
           @param dst image, which is adapted to the found image parameters
       */
       static void decode(utils::File &file, core::ImgBase **dst) throw (utils::InvalidFileFormatException);
-      
+
       /// Decode a data stream (E.g. used for Decoding Motion-JPEG streams in unicap's DefaultConvertEngine)
       /** @param data jpeg data stream (must be valid, otherwise unpredictable behaviour occurs
           @param maxDataLen length of the given data pointer
@@ -55,10 +55,10 @@ namespace icl{
                             libjpeg obviously reads only necessary bytes.
           @param dst destination image, which is adapted to the found images parameters */
       static void decode(const unsigned char *data,unsigned int maxDataLen,core::ImgBase **dst);
-      
+
       private:
       /// internal utility function, which does all the work
-      static void decode_internal(utils::File *file,const unsigned char *data, 
+      static void decode_internal(utils::File *file,const unsigned char *data,
                                   unsigned int maxDataLen, core::ImgBase **dst) throw (utils::InvalidFileFormatException);
     };
   } // namespace io

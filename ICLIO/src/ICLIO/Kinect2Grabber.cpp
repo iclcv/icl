@@ -59,52 +59,52 @@ using namespace icl::filter;
 
 namespace icl{
   namespace io{
-  
-  
+
+
     struct LibFreenect2Context : public utils::Lockable{
       libfreenect2::Freenect2 *ctx;
-      
+
       struct Device : public utils::Lockable, public Thread{
         int index;
         libfreenect2::Freenect2Device * dev;
         libfreenect2::SyncMultiFrameListener *listener;
         libfreenect2::FrameMap *frames;
-        
+
         int numUsers;
-        
+
         Img32f irImage, depthImage;
         Img8u rgbImage;
-        
+
         Device(){
           irImage = Img32f(Size(512,424),1);
           depthImage = Img32f(Size(512,424),1);
           rgbImage = Img8u(Size(1920,1080),formatRGB);
         }
-        
+
         virtual void run(){
           while(true){
             Thread::lock();
             listener->waitForNewFrame(*frames);
-            
+
             Time t = Time::now();
-            
+
             libfreenect2::Frame *rgb = (*frames)[libfreenect2::Frame::Color];
             libfreenect2::Frame *ir = (*frames)[libfreenect2::Frame::Ir];
             libfreenect2::Frame *depth = (*frames)[libfreenect2::Frame::Depth];
-            
+
             Mutex::Locker lock(this);
             rgbImage.setChannels(4);
             interleavedToPlanar(rgb->data, &rgbImage);
             rgbImage.swapChannels(0,2);
             rgbImage.removeChannel(3);
-         
+
             const float *depthData = reinterpret_cast<const float*>(depth->data);
             const float *irData = reinterpret_cast<const float*>(ir->data);
             std::copy(depthData, depthData+depthImage.getDim(), depthImage.begin(0));
             std::copy(irData, irData+irImage.getDim(), irImage.begin(0));
 
             listener->release(*frames);
-            
+
             irImage.setTime(t);
             depthImage.setTime(t);
             rgbImage.setTime(t);
@@ -113,16 +113,16 @@ namespace icl{
           }
         }
       };
-      
+
       std::set<int> connectedDevices;
       std::map<int,Device*> openDevices;
-      
-      
-      
+
+
+
       LibFreenect2Context(){
         glfwInit();
         ctx = new libfreenect2::Freenect2;
-        
+
         for(int idx=0;idx<8;++idx){
           libfreenect2::Freenect2Device *dev = ctx->openDevice(idx);
           if(dev){
@@ -136,19 +136,19 @@ namespace icl{
         }
       }
     public:
-      
+
       Device *openDevice(int idx){
         Mutex::Locker lock(this);
         if(!connectedDevices.count(idx)){
           throw ICLException("cannot open Kinect2 device " + str(idx) + " (device not found!)");
           return 0;
         }
-      
+
         if(openDevices.find(idx) != openDevices.end()){
           openDevices[idx]->numUsers++;
           return openDevices[idx];
         }
-      
+
         Device *dev = new Device;
         dev->numUsers = 1;
         openDevices[idx] = dev;
@@ -159,20 +159,20 @@ namespace icl{
           throw ICLException("error opening Kinect2 device " + str(idx));
           return 0;
         }
-      
-        dev->listener = new libfreenect2::SyncMultiFrameListener(libfreenect2::Frame::Color 
-                                                                 | libfreenect2::Frame::Ir 
-                                                                 | libfreenect2::Frame::Depth); 
+
+        dev->listener = new libfreenect2::SyncMultiFrameListener(libfreenect2::Frame::Color
+                                                                 | libfreenect2::Frame::Ir
+                                                                 | libfreenect2::Frame::Depth);
         dev->frames = new libfreenect2::FrameMap;
-      
+
         dev->dev->setColorFrameListener(dev->listener);
         dev->dev->setIrAndDepthFrameListener(dev->listener);
         dev->dev->start();
         dev->start(); // grabber thread (grabs ir, depth and rgb in parallel)
-      
+
         return dev;
       }
-      
+
       void freeDevice(Device *dev){
         Mutex::Locker lock(this);
         if(!dev){
@@ -189,20 +189,20 @@ namespace icl{
           delete dev;
         }
       }
-      
+
 
       static LibFreenect2Context &instance(){
         static LibFreenect2Context ctx;
         return ctx;
       }
-      
+
       std::vector<int> getConnectedDeviceList() const{
         Mutex::Locker lock(this);
         return std::vector<int>(connectedDevices.begin(),connectedDevices.end());
       }
     };
-    
-    
+
+
     struct Kinect2Grabber::Impl{
       LibFreenect2Context::Device *dev;
       Kinect2Grabber::Mode mode;
@@ -261,7 +261,7 @@ namespace icl{
       }
 
     };
-    
+
     Kinect2Grabber::Kinect2Grabber(Kinect2Grabber::Mode mode, int deviceID) throw (ICLException) {
       if(mode != DUMMY_MODE){
         LibFreenect2Context &ctx = LibFreenect2Context::instance();
@@ -281,7 +281,7 @@ namespace icl{
 
       addProperty("Avoid double frames","flag","",1,0,"whether to avoid returning the same frame multiple times");
       addProperty("Unflip X-Axis","flag","",1,1,"The driver's output images are flipped. Decide whether to un-flip it");
-          
+
       switch(mode){
         case GRAB_RGB_IMAGE:
           addProperty("format","menu","RGB-8u","RGB (8u)");
@@ -303,7 +303,7 @@ namespace icl{
 
       Configurable::registerCallback(utils::function(this,&Kinect2Grabber::processPropertyChange));
     }
-    
+
     Kinect2Grabber::~Kinect2Grabber(){
       if(m_impl){
         LibFreenect2Context &ctx = LibFreenect2Context::instance();
@@ -339,9 +339,9 @@ namespace icl{
             const int dim = (w+1)*(h+1);
             for(int i=0;i<dim;++i){
               if(c[i] < 0) c[i] = 0;
-            }     
+            }
           }
-     
+
           return &im;
           break;
         }

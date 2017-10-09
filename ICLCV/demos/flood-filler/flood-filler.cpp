@@ -49,7 +49,7 @@ struct Mouse : public MouseHandler{
       this->pos = e.getPos();
     }
   }
-  
+
   bool wasPressed(){
     bool x = pressed;
     this->pressed = false;
@@ -77,16 +77,16 @@ void run(){
       PixelRef<icl8u> ref = image(mouse.pos.x,mouse.pos.y);
       const FloodFiller::Result &res = ff.applyColor(&image,mouse.pos, ref[0], ref[1], ref[2],gui["thresh"]);
       dt = Time::now()-t;
-      
+
       Color c = gui["fill"];
       for(unsigned int i=0;i<res.pixels.size();++i){
         image(res.pixels[i].x,res.pixels[i].y) = c;
       }
-      
+
     }
     gui["dt"] = str(dt.toMilliSecondsDouble()) + " ms";
   }
-  
+
   gui["image"] = image;
 }
 
@@ -98,9 +98,9 @@ void init(){
   }else{
     selector = ColorSelect(255,0,0).handle("fill").label("fill");
   }
-  
+
   gui << Image().handle("image").minSize(16,12)
-      << ( HBox().maxSize(100,3) 
+      << ( HBox().maxSize(100,3)
            << Slider(0,255,10).out("thresh").label("threshold")
            << selector
            << Label(0).handle("dt").label("dt")

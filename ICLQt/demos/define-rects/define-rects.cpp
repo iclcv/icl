@@ -40,7 +40,7 @@ DefineRectanglesMouseHandler mouse;
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(Size::VGA);
-  
+
   gui << Draw().minSize(32,24).handle("draw") << Show();
 
   gui["draw"].install(&mouse);

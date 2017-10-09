@@ -129,7 +129,7 @@ namespace icl{
 #endif
       }
     }
-    
+
     void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
       init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
     }
@@ -150,7 +150,7 @@ namespace icl{
     }
 
     typedef std::map<std::string,SpecifiedDevice> ParamMap;
-    
+
     static ParamMap create_param_map(const std::string &filter){
       std::vector<std::string> ts = tok(filter,",");
 
@@ -179,7 +179,7 @@ namespace icl{
       }
       return pmap;
     }
-    
+
     void addError(std::string &str, std::string id, std::string param, std::string error){
       //#define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; errStr += std::string(P)+"("+pmap[P].id+")"
       str += str.size() ? "," : "";
@@ -298,19 +298,19 @@ namespace icl{
               const std::string ty = m_poGrabber->getPropertyType(p2);
               const bool isCommand = ty == "command";
               const bool isInfo = ty == "info";
-              
+
               t(0,j+1) = p2;
               t(1,j+1) = ty;
               t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getPropertyInfo(p2);
               t(3,j+1) = isCommand ? "-" : m_poGrabber->getPropertyValue(p2);
             }
-            
+
             t(0,ps.size()+1) = str("udist");
             t(1,ps.size()+1) = str("special");
             t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-lens-undistortion-calibration)");
             t(3,ps.size()+1) = str("-");
 
-            
+
             std::string helpText;
 #ifdef ICL_HAVE_RSB
             helpText = "(supported)";
@@ -340,7 +340,7 @@ namespace icl{
             ERROR_LOG("could not create configurable remote server named '" << p.second << "'"
                       << " for this grabber(reason: ICL is compiled without RSB-support)");
 #endif
-            
+
           }else if(p.first == "remote-client"){
 #ifdef ICL_HAVE_RSB
             Configurable *remote = ConfigurableRemoteServer::create_client(p.second);

@@ -169,17 +169,17 @@ namespace icl{
       addProperty("pose correction","flag","",data->poseCorrection,0,
                   "If set to true, the pose is corrected using robust pose estimation algorithm");
 #endif
-      addProperty("RANSAC.enable", "flag", "", data->ransacSpec.useRANSAC, 0, 
+      addProperty("RANSAC.enable", "flag", "", data->ransacSpec.useRANSAC, 0,
                   "Enable RANSAC sampling. This is only needed when more than 5 points are "
                   "used and when these points are prone to outliers");
-      addProperty("RANSAC.num points for model","range","[4,100]:1", 
+      addProperty("RANSAC.num points for model","range","[4,100]:1",
                   data->ransacSpec.numPointsForModel, 0,
                   "Number of points used for generating models during RANSAC sampling");
-      addProperty("RANSAC.number of cycles","range","[10,10000]:1", 
+      addProperty("RANSAC.number of cycles","range","[10,10000]:1",
                   data->ransacSpec.numRandomCycles, 0,
                   "Number of RANSAC cycles performed");
-      addProperty("RANSAC.max projection distance","range","[0,300]", 
-                  data->ransacSpec.maxPointProjectionDistance, 0, 
+      addProperty("RANSAC.max projection distance","range","[0,300]",
+                  data->ransacSpec.maxPointProjectionDistance, 0,
                   "Maximum projection error for points to be classified as inlier");
 
       registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));
@@ -364,7 +364,7 @@ namespace icl{
       return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
     }
 
-    
+
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       FixedMatrix<icl32f, 3, 3> getRzyx(icl32f a, icl32f b, icl32f c) {
         FixedMatrix<icl32f, 3, 3> R;
@@ -609,7 +609,7 @@ namespace icl{
         delete VV;
       }
 
-    void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints, 
+    void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints,
                                                           const utils::Point32f *normalizedImagePoints) {
       std::vector< FixedMatrix<icl32f, 1, 3> > V(n), P(n), P_(n);
 
@@ -667,7 +667,7 @@ namespace icl{
       calculateMinima(n, P_, V_, Rz, t_, sol);
 
 
-      // calculate the errors of all solutions and 
+      // calculate the errors of all solutions and
       // take the solution with the lowest error
 
       FixedMatrix<icl32f, 3, 3> Rt_inv = Rt.transp();
@@ -716,13 +716,13 @@ namespace icl{
     }
 
 
-    static std::pair<int,float> find_inliers_and_get_error(const Mat &T, const Camera &cam, 
-                                                           int N, const Point32f *mpts, 
+    static std::pair<int,float> find_inliers_and_get_error(const Mat &T, const Camera &cam,
+                                                           int N, const Point32f *mpts,
                                                            const Point32f *ipts,
                                                            int *inliers,
                                                            float maxSquaredError){
       std::pair<int,float> r(0,0.0f);
-      
+
       Mat PTT = cam.getProjectionMatrix() * cam.getCSTransformationMatrix() * T;
       for(int i=0;i<N;++i){
         Vec p = PTT * Vec(mpts[i].x, mpts[i].y, 0, 1);
@@ -779,22 +779,22 @@ namespace icl{
             nipts[j] = normalizedImagePoints[idx];
           }
           //DEBUG_LOG("cycle " << i << " using indices " << cat(std::vector<int>(r.begin(), r.begin()+N)));
-          
+
           try{
             Mat T = getPoseInternal(a, N, mpts.data(), ipts.data(), nipts.data(), cam);
-            
+
             /// numInliers, error
-            std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints, 
+            std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints,
                                                                    inliers.data(), maxSquaredPtError);
-            
+
             // DEBUG_LOG("found " << eval.first << " inliers (mean projection error was " << (eval.first ? eval.second/eval.first : 0));
-            
+
             if(eval.first > bestNumInliers || ( eval.first == bestNumInliers && eval.second < bestProjectionError)){
               bestNumInliers = eval.first;
               bestProjectionError = eval.second;
               bestConsensusSet.assign(inliers.begin(),inliers.begin()+bestNumInliers);
-            }       
-          }catch(...) {}     
+            }
+          }catch(...) {}
         }
 
         // ok, now we iterate this to find include an optimal number of inliers:
@@ -802,7 +802,7 @@ namespace icl{
         size_t M_last = 0;
         static const int MAX_OPT_STEPS = 10;
         Mat T;
-        //DEBUG_LOG("starting optimization: initial consensus set size is : " 
+        //DEBUG_LOG("starting optimization: initial consensus set size is : "
         //          << M);
         for(int i=0;i<MAX_OPT_STEPS && M_last < M ;++i){
           //DEBUG_LOG("optimization step " << i << " new consensus size is " << M);
@@ -815,7 +815,7 @@ namespace icl{
             nipts[j] = normalizedImagePoints[idx];
           }
           T = getPoseInternal(data->algorithm, M, mpts.data(), ipts.data(), nipts.data(), cam);
-          std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints, 
+          std::pair<int,float> eval = find_inliers_and_get_error(T, cam, n, modelPoints, imagePoints,
                                                                  inliers.data(), maxSquaredPtError);
           bestConsensusSet.assign(inliers.begin(),inliers.begin()+eval.first);
           M = bestConsensusSet.size();
@@ -825,15 +825,15 @@ namespace icl{
         return getPoseInternal(data->algorithm, n, modelPoints, imagePoints, normalizedImagePoints.data(), cam);
       }
     }
-    
-    Mat CoplanarPointPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n, 
-                                                    const utils::Point32f *modelPoints, 
-                                                    const utils::Point32f *imagePoints, 
-                                                    const utils::Point32f *normalizedImagePoints, 
+
+    Mat CoplanarPointPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n,
+                                                    const utils::Point32f *modelPoints,
+                                                    const utils::Point32f *imagePoints,
+                                                    const utils::Point32f *normalizedImagePoints,
                                                     const Camera &cam){
-    
+
       typedef float real;
-      GenericHomography2D<real> H(normalizedImagePoints,modelPoints,n); 
+      GenericHomography2D<real> H(normalizedImagePoints,modelPoints,n);
     // tested the homography error which is always almost 0
 
 #ifdef USE_OLD_VERSION
@@ -891,7 +891,7 @@ namespace icl{
 
 #endif
 
-      
+
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
       if (data->poseCorrection) robustPoseCorrection(n, modelPoints, normalizedImagePoints);
 #endif

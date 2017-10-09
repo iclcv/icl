@@ -37,20 +37,20 @@
 
 namespace icl{
   namespace math{
-  
+
     template<class T>
     StochasticOptimizerResult<T>::StochasticOptimizerResult(const T *data,T error, T startError, int steps):
       data(data),error(error),startError(startError),steps(steps){
     }
-    
+
     template<class T>
     StochasticOptimizer<T>::StochasticOptimizer(int dataDim):
       m_dataDim(dataDim){
     }
-  
-    template<class T>  
+
+    template<class T>
     void StochasticOptimizer<T>::notifyProgress(int,int,int, int, int,const T *, int){}
-  
+
     template<class T>
     StochasticOptimizerResult<T> StochasticOptimizer<T>::optimize(T minError, int maxSteps){
       reinitialize();
@@ -64,7 +64,7 @@ namespace icl{
         std::transform(data,data+m_dataDim,getNoise(t,maxSteps),
                        noisedData.data(),std::plus<T>());
         T currError = getError(noisedData.data());
-  
+
         notifyProgress(t,maxSteps,startError,error,currError,data,m_dataDim);
         if(currError < error){
           error = currError;
@@ -77,9 +77,9 @@ namespace icl{
       }while(t<maxSteps);
       return Result(data,error,startError,maxSteps);
     }
-  
+
     template class ICLMath_API StochasticOptimizer<float>;
     template class ICLMath_API StochasticOptimizer<double>;
-    
+
   } // namespace math
 }

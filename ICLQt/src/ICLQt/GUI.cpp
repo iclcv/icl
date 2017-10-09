@@ -414,7 +414,7 @@ namespace icl{
           deferredAssignList[handle] = str(pt);
           gui << String(" ",100).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }
-        
+
 
         else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
@@ -592,7 +592,7 @@ namespace icl{
 
         gui << sub_gui;
         gui.create();
-        
+
         for(std::map<std::string,std::string>::const_iterator it = deferredAssignList.begin();
             it != deferredAssignList.end(); ++it){
           gui[it->first] = it->second;
@@ -1360,7 +1360,7 @@ namespace icl{
 
     struct SliderGUIWidget : public GUIWidget{
       // {{{ open
-      
+
       static bool vertical(const GUIDefinition &def){
         return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
       }
@@ -1375,7 +1375,7 @@ namespace icl{
           m_stepping = 1;
         }
         /// min,max,curr,vertical ,"off" for no display
-        
+
         m_piValue = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
 
         int iVerticalFlag = vertical(def);
@@ -2413,7 +2413,7 @@ namespace icl{
       if(def.minSize() != Size::null) str << " minsize=\"" << def.minSize() << "\"";
       if(def.maxSize() != Size::null) str << " maxsize=\"" << def.maxSize() << "\"";
       if(def.margin() != 2) str << " margin=\"" << def.margin() << "\"";
-      if(def.spacing() != 2) str << " spacing=\"" << def.spacing() << "\""; 
+      if(def.spacing() != 2) str << " spacing=\"" << def.spacing() << "\"";
       if(def.hasToolTip()) str << " tooltip=\"" << def.toolTip() << "\"";
       if(gui->m_children.size()){
         str << ">" << std::endl;

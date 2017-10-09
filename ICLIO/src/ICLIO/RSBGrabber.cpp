@@ -139,7 +139,7 @@ namespace icl{
     RSBGrabber::RSBGrabber(const std::string &scope, const std::string &transportList):m_data(0){
       init(scope,transportList);
     }
-    
+
     void RSBGrabber::init(const std::string &scope, const std::string &transportList){
       ICL_DELETE(m_data);
       m_data = new Data;

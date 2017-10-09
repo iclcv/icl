@@ -43,10 +43,10 @@ using namespace icl::math;
 
 namespace icl{
   namespace core{
-    
+
     ImgBase *imgNew(depth d, const ImgParams &params){
       // {{{ open
-    
+
       switch (d){
         case depth8u:  return new Img8u(params); break;
         case depth16s: return new Img16s(params); break;
@@ -56,36 +56,36 @@ namespace icl{
         default: ICL_INVALID_DEPTH; break;
       }
     }
-  
+
     // }}}
-  
+
     int getChannelsOfFormat(format eFormat){
       // {{{ open
-  
+
       switch (eFormat){
         case formatRGB:
         case formatHLS:
         case formatLAB:
         case formatYUV:
           return 3;
-          
+
         case formatChroma:
           return 2;
-          
+
         case formatGray:
         case formatMatrix:
         default:
           return 1;
       }
     }
-  
+
     // }}}
-  
-  
+
+
     /// puts a string representation of format into the given stream
     std::ostream &operator<<(std::ostream &s,const format &f){
       if( ((int)f<0) || ((int)f)>=7) return s << "formatUnknown";
-      static const char *fmts[7] = { 
+      static const char *fmts[7] = {
         "formatGray",
         "formatRGB",
         "formatHLS",
@@ -96,11 +96,11 @@ namespace icl{
       };
       return s << fmts[f];
     }
-    
+
     /// puts a string representation of depth into the given stream
     std::ostream &operator<<(std::ostream &s,const depth &d){
       if( ((int)d<0) || ((int)d)>=5) return s << "depthUnknown";
-      static const char *depths[7] = { 
+      static const char *depths[7] = {
         "depth8u",
         "depth16s",
         "depth32s",
@@ -108,20 +108,20 @@ namespace icl{
         "depth64f"
       };
       return s << depths[d];
-      
+
     }
-  
+
     /// puts a string representation of format into the given stream
     std::istream &operator>>(std::istream &s, format &f){
       char cs[7]={0};
-      
-      s >> cs[0]; 
+
+      s >> cs[0];
       s.unget();
       if(cs[0] == 'f'){
         for(int i=0;i<6;++i)s>>cs[i];
         ICLASSERT(str(cs) == "format");
       }else{
-        // nothing, this is just a compability mode for 
+        // nothing, this is just a compability mode for
         // someone forgetting the format prefix!
       }
       std::fill(cs,cs+7,'\0');
@@ -174,7 +174,7 @@ namespace icl{
       }
       return s;
     }
-    
+
     /// puts a string representation of depth into the given stream
     std::istream &operator>>(std::istream &s, depth &d){
       char cs[6]={0};
@@ -189,7 +189,7 @@ namespace icl{
       std::fill(cs,cs+6,'\0');
       s >> cs[0];
       switch(cs[0]){
-        case '8': 
+        case '8':
           s >> cs[1];
           ICLASSERT(str(cs) == "8u");
           d = depth8u;
@@ -209,7 +209,7 @@ namespace icl{
             d = depth32f;
           }
           return s;
-        case '6':    
+        case '6':
           s >> cs[1] >> cs[2];
           ICLASSERT(str(cs) == "64f");
           d = depth64f;
@@ -217,12 +217,12 @@ namespace icl{
         default:
           ERROR_LOG("error parsing depth-type");
           return s;
-      }    
+      }
     }
-    
-  
-  
-  
+
+
+
+
     ImgBase *ensureDepth(ImgBase **ppoImage, depth d){
       // {{{ open
       if(!ppoImage){
@@ -234,13 +234,13 @@ namespace icl{
       else if((*ppoImage)->getDepth() != d){
         ImgBase *poNew = imgNew(d,(*ppoImage)->getParams());
         delete *ppoImage;
-        *ppoImage = poNew;     
+        *ppoImage = poNew;
       }
       return *ppoImage;
     }
-  
+
     // }}}
-    
+
     ImgBase *ensureCompatible(ImgBase **ppoDst, depth d, const ImgParams &params){
       // {{{ open
       if(!ppoDst){
@@ -254,12 +254,12 @@ namespace icl{
       }
       return *ppoDst;
     }
-  
+
     // }}}
-    
+
     ImgBase* ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       if(fmt != formatMatrix && getChannelsOfFormat(fmt) != channels){
         ensureCompatible(dst,d,size,channels,roi);
@@ -271,33 +271,33 @@ namespace icl{
         return ret;
       }
     }
-  
+
     // }}}
-  
+
     ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src){
       // {{{ open
       return ensureCompatible(dst,src->getDepth(),src->getParams());
     }
     // }}}
-  
+
     unsigned int getSizeOf(depth eDepth){
       // {{{ open
       static unsigned int s_aiSizeTable[]= { sizeof(icl8u),
                                              sizeof(icl16s),
                                              sizeof(icl32s),
-                                             sizeof(icl32f),                                           
+                                             sizeof(icl32f),
                                              sizeof(icl64f) };
       return s_aiSizeTable[eDepth];
     }
-  
+
     // }}}
 
 
     // {{{ convert
 
-  
 
-  #ifdef ICL_HAVE_IPP 
+
+  #ifdef ICL_HAVE_IPP
   #elif defined ICL_HAVE_SSE2
     // --- from icl8u to icl32f ---
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
@@ -376,7 +376,7 @@ namespace icl{
     template<> void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
       }
@@ -403,7 +403,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
       }
@@ -413,7 +413,7 @@ namespace icl{
     template<> void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
       }
@@ -445,18 +445,18 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
       }
     }
-    
+
 
     // --- from icl32s to icl16s ---
     template<> void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
       }
@@ -473,7 +473,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
       }
@@ -483,7 +483,7 @@ namespace icl{
     template<> void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
       }
@@ -499,7 +499,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
       }
@@ -509,7 +509,7 @@ namespace icl{
     template<> void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
       }
@@ -530,18 +530,18 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() : 
+        *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
       }
     }
 
-  
+
     // --- from icl32f to icl8u ---
     template <> void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() :
         *poSrcStart > std::numeric_limits<icl8u>::max() ? std::numeric_limits<icl8u>::max() :
         static_cast<icl8u>(*poSrcStart);
       }
@@ -576,17 +576,17 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() :
         *poSrcStart > std::numeric_limits<icl8u>::max() ? std::numeric_limits<icl8u>::max() :
         static_cast<icl8u>(*poSrcStart);
       }
-    } 
+    }
 
     // --- from icl32f to icl16s ---
     template <> void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
       }
@@ -613,7 +613,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
       }
@@ -623,7 +623,7 @@ namespace icl{
     template <> void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
       }
@@ -647,7 +647,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
       }
@@ -680,7 +680,7 @@ namespace icl{
       }
     }
 
-  
+
     // --- from icl64f to icl32f ---
     template<> void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
@@ -712,7 +712,7 @@ namespace icl{
     template <> void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst) {
       // cast the first unaligned values
       for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
       }
@@ -743,7 +743,7 @@ namespace icl{
 
       // cast the last values
       for(; poSrcStart < poSrcEnd; ++poSrcStart, ++poDst) {
-        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() : 
+        *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
       }
@@ -783,15 +783,15 @@ namespace icl{
       }
   #endif
     }
-  
+
     std::vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
       FUNCTION_LOG("");
       std::vector<double> vecMean;
       ICLASSERT_RETURN_VAL(poImg,vecMean);
-  
+
       int firstChannel = iChannel<0 ? 0 : iChannel;
       int lastChannel = iChannel<0 ? poImg->getChannels()-1 : firstChannel;
-      
+
       switch(poImg->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                               \
         case depth##D:                                                           \
@@ -804,13 +804,13 @@ namespace icl{
       }
       return vecMean;
     }
-    
-    
-    
+
+
+
     // }}}
-  
+
     // {{{ variance
-  
+
    namespace{
       template<class T>
       double channel_var_with_mean(const Img<T> &image, int channel,double mean,bool empiricMean, bool roiOnly){
@@ -822,15 +822,15 @@ namespace icl{
       }
       // no IPP function available with given mean
     }
-  
+
     std::vector<double> variance(const ImgBase *poImg, const std::vector<double> &mean, bool empiricMean,  int iChannel, bool roiOnly){
       FUNCTION_LOG("");
       std::vector<double> vecVar;
       ICLASSERT_RETURN_VAL(poImg,vecVar);
-  
+
       int firstChannel = iChannel<0 ? 0 : iChannel;
       int lastChannel = iChannel<0 ? poImg->getChannels()-1 : firstChannel;
-      
+
       switch(poImg->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                                                           \
         case depth##D:                                                                                       \
@@ -843,10 +843,10 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
       }
       return vecVar;
-    
-    
+
+
     }
-    
+
     /// Compute the variance value of an image a \ingroup MATH
     /** @param poImg input imge
         @param iChannel channel index (-1 for all channels)
@@ -856,9 +856,9 @@ namespace icl{
       return variance(poImg,mean(poImg,iChannel,roiOnly),true,iChannel,roiOnly);
     }
     // }}}
-    
+
     // {{{ std-deviation
-  
+
     std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel, bool roiOnly){
       std::vector<double> v = variance(poImage,iChannel,roiOnly);
       for(unsigned int i=0;i<v.size();++i){
@@ -866,28 +866,28 @@ namespace icl{
       }
       return v;
     }
-  
+
     /// Compute the deviation of an image with given channel means
     /** @param poImage input image
         @param iChannel channel index (all channels if -1)
     */
     std::vector<double> stdDeviation(const ImgBase *poImage, const std::vector<double> mean, bool empiricMean, int iChannel, bool roiOnly){
       std::vector<double> v = variance(poImage,mean,empiricMean, iChannel,roiOnly);
-  
+
       for(unsigned int i=0;i<v.size();++i){
         v[i] = ::sqrt(v[i]);
       }
       return v;
     }
     // }}}
-  
+
     // {{{ mean-and-std-deviation
     std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image,
                                                           int iChannel,
                                                           bool roiOnly){
       std::vector<double> channelMeans = mean(image,iChannel,roiOnly);
       std::vector<double> channelStdDevs = stdDeviation(image,channelMeans,true,iChannel,roiOnly);
-      
+
       std::vector<std::pair<double,double> > md(channelMeans.size());
       for(unsigned int i=0;i<channelMeans.size();++i){
         md[i].first = channelMeans[i];
@@ -896,11 +896,11 @@ namespace icl{
       return md;
     }
     // }}}
-  
+
     // {{{ histogramm functions
-    
+
     namespace{
-  
+
       template<class T>
       void compute_default_histo_256(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         ICLASSERT_RETURN(h.size() == 256);
@@ -918,21 +918,21 @@ namespace icl{
           }
         }
       }
-      
-     
+
+
       template<class T>
       inline void histo_entry(T v, double m, std::vector<int> &h, unsigned int n, double r){
         // todo check 1000 times
         h[ floor( n*(v-m)/(r+1)) ]++;
         //      h[ ceil( n*(v-m)/r) ]++; problem at v=255
       }
-      
+
       template<class T>
       void compute_complex_histo(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         const Range<T> range = image.getMinMax(c);
         double r = range.getLength();
         unsigned int n = h.size();
-  
+
         if(roiOnly && !image.hasFullROI()){
           const ImgIterator<T> it = image.beginROI(c);
           const ImgIterator<T> itEnd = image.endROI(c);
@@ -946,10 +946,10 @@ namespace icl{
             histo_entry(*p++,range.minVal,h,n,r);
           }
         }
-      }    
-  
+      }
+
   #ifdef ICL_HAVE_IPP
-      
+
   #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
       template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){             \
         ICLASSERT_RETURN(h.size() == 256);                                                                                     \
@@ -968,8 +968,8 @@ namespace icl{
       }
       COMPUTE_DEFAULT_HISTO_256_TEMPLATE(8u)
       COMPUTE_DEFAULT_HISTO_256_TEMPLATE(16s)
-      
-  
+
+
   #define COMPUTE_COMPLEX_HISTO_TEMPLATE(D)                                                                                    \
       template<> void compute_complex_histo(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){                         \
         Range<icl##D> range = image.getMinMax(c);                                                                              \
@@ -987,14 +987,14 @@ namespace icl{
                                        &h[0], &levels[0], levels.size(), range.minVal, range.maxVal+1 );                       \
         }                                                                                                                      \
       }
-  
-  
-      COMPUTE_COMPLEX_HISTO_TEMPLATE(8u) 
-      COMPUTE_COMPLEX_HISTO_TEMPLATE(16s) 
-      
+
+
+      COMPUTE_COMPLEX_HISTO_TEMPLATE(8u)
+      COMPUTE_COMPLEX_HISTO_TEMPLATE(16s)
+
   #endif
-  
-  
+
+
       template<class T>
       void compute_channel_histo(const Img<T> &image, int c, std::vector<int> &h, bool roiOnly){
         if(image.getFormat() != formatMatrix && h.size() == 256){
@@ -1004,11 +1004,11 @@ namespace icl{
         }
       }
     }
-    
+
     std::vector<int> channelHisto(const ImgBase *image,int channel, int levels, bool roiOnly){
       ICLASSERT_RETURN_VAL(image && image->getChannels()>channel, std::vector<int>());
       ICLASSERT_RETURN_VAL(levels > 1,std::vector<int>());
-      
+
       std::vector<int> h(levels);
       switch(image->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: compute_channel_histo(*image->asImg<icl##D>(),channel,h,roiOnly); break;
@@ -1017,8 +1017,8 @@ namespace icl{
       }
       return h;
     }
-    
-    
+
+
     std::vector<std::vector<int> > hist(const ImgBase *image, int levels, bool roiOnly){
       ICLASSERT_RETURN_VAL(image && image->getChannels(), std::vector<std::vector<int> >());
       std::vector<std::vector<int> > h(image->getChannels());
@@ -1026,10 +1026,10 @@ namespace icl{
         h[i] = channelHisto(image,i,levels,roiOnly);
       }
       return h;
-    } 
-  
+    }
+
     // }}}
-  
-  
+
+
   } // namespace core
 } //namespace

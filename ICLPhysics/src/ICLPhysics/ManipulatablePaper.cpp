@@ -49,7 +49,7 @@ namespace icl{
   using namespace qt;
   using namespace geom;
 namespace physics{
-  
+
   struct ManipulatablePaperMouseHandler : public MouseHandler{
     MouseHandler *h;
     SceneObject *obj;
@@ -64,13 +64,13 @@ namespace physics{
     Time lastTime;
     int cameraIndex;
     SmartPtr<QMenu> menu;
-    
+
     ManipulatablePaperMouseHandler(MouseHandler *h, PhysicsWorld *world, Scene *scene, ManipulatablePaper *parent, int cameraIndex):
-      h(h), obj(0), scene(scene), world(world), paper(0), parent(parent), 
+      h(h), obj(0), scene(scene), world(world), paper(0), parent(parent),
       lastTime(0), cameraIndex(cameraIndex)
     {}
 
-    
+
     void applyImpulse(const MouseEvent &e){
       //TODO IMPLEMENT LOCKER PhysicsWorld::Locker lock(*world);
       geom::ViewRay v = scene->getCamera(0).getViewRay(e.getPos32f());
@@ -82,14 +82,14 @@ namespace physics{
       if(!robj) return;
       btRigidBody *rigid = robj->getRigidBody();
       if(!rigid) return;
-      
+
       rigid->activate(true);
-      
+
       btVector3 impulse = btVector3(v.direction[0],v.direction[1],v.direction[2]) * 1000;
       btVector3 relObjPos = btVector3(icl2bullet(pos[0]),icl2bullet(pos[1]),icl2bullet(pos[2])) - rigid->getCenterOfMassPosition();
       rigid->applyImpulse(impulse,relObjPos);
     }
-    
+
     void showContexMenu(const MouseEvent &e){
       Hit h = scene->findObject(0,e.getX(),e.getY());
       SceneObject *o = h.obj;
@@ -110,7 +110,7 @@ namespace physics{
           menu->addAction("change show constraints");
 
         }
-          
+
         QAction *action = menu->exec(QCursor::pos()+QPoint(-2,-2));
         if(!action) return;
         std::string selectedText = action->text().toLatin1().data();
@@ -138,7 +138,7 @@ namespace physics{
         }
       }
     }
-    
+
     virtual void process(const MouseEvent &e){
       if(e.isModifierActive(ControlModifier)){
         if(e.isPressEvent()){
@@ -195,10 +195,10 @@ namespace physics{
           paper->setDraggedNode(Point(-1,-1));
           paper = 0;
         }
-        h->process(e);        
+        h->process(e);
       }
     }
-    
+
     void applyForce(float factor){
       if(lastTime == Time(0)) lastTime = Time::now();
       Time now = Time::now();
@@ -222,14 +222,14 @@ namespace physics{
 
 
 
-  ManipulatablePaper::ManipulatablePaper(PhysicsWorld *world, Scene *scene, 
+  ManipulatablePaper::ManipulatablePaper(PhysicsWorld *world, Scene *scene,
                                          int W, int H, const Vec *init,
                                          bool initByCorners,
                                          const Img8u *texture,
                                          const Img8u *backTexture):
     PhysicsPaper(*world,W,H,init,initByCorners,texture,backTexture),world(world),scene(scene),showAllConstraints(false){
     const Size dim = getDimensions();
-    
+
     for(int y=0;y<dim.height;++y){
       for(int x=0;x<dim.width;++x){
         SceneObject *cube = addCube(0,0,0,2);
@@ -239,7 +239,7 @@ namespace physics{
     }
     setVisible(Primitive::vertex,false);
     setVisible(Primitive::line,false);
-    
+
     world->addObject(this);
     scene->addObject(this);
     setConfigurableID("paper");
@@ -251,7 +251,7 @@ namespace physics{
     setLineSmoothingEnabled(false);
 
   }
-  
+
   Vec ManipulatablePaper::getPos(const Point &idx){
     lock();
     Size dim = getDimensions();
@@ -259,7 +259,7 @@ namespace physics{
     return Vec(m(3,0),m(3,1),m(3,2),1);
     unlock();
   }
-  
+
   void ManipulatablePaper::prepareForRendering(){
     PhysicsPaper::prepareForRendering();
     Size dim = getDimensions();
@@ -287,7 +287,7 @@ namespace physics{
       nodes[coords.x + getDimensions().width * coords.y]->setColor(Primitive::quad,color);
     }
   }
-    
+
   void ManipulatablePaper::removeAttractor(Point coords){
     Mutex::Locker lock(attractorMutex);
     std::string hash = str(coords);
@@ -298,7 +298,7 @@ namespace physics{
       nodes[coords.x + getDimensions().width * coords.y]->setColor(Primitive::quad,geom_red(255));
     }
   }
-  
+
   void ManipulatablePaper::removeAllAttractors(){
     Mutex::Locker lock(attractorMutex);
     for(AttractorMap::iterator it = attractors.begin(); it != attractors.end(); ++it){
@@ -348,7 +348,7 @@ namespace physics{
       time = Time::now();
     };
     startPos = parent->getNodePosition(idx);
-    
+
     addVertex(startPos,geom_red(255));
     addVertex(startPos,geom_blue(255));
     addLine(0,1,geom_red(255));
@@ -358,13 +358,13 @@ namespace physics{
     scene->addObject(this);
     scene->unlock();
   }
-  
+
   ManipulatablePaper::VertexAttractor::~VertexAttractor(){
     scene->lock();
     scene->removeObject(this);
     scene->unlock();
   }
-  
+
   void ManipulatablePaper::VertexAttractor::apply(float streangth){
     m_vertices[0] = parent->getNodePosition(idx);
     if(oscillating){
@@ -385,25 +385,25 @@ namespace physics{
       if(x) addLineAnnotation(Point32f(x-1,row), Point32f(x,row));
     }
   }
-    
+
   void ManipulatablePaper::adaptColStiffness(float val, int col){
     PhysicsPaper::adaptColStiffness(val,col);
     Size s = getDimensions();
     for(int y=0;y<s.height;++y){
       // nodes[col + s.width*y]->setColor(Primitive::quad,GeomColor(255,255-255*val,0,255));
       if(y) addLineAnnotation(Point32f(col,y-1), Point32f(col,y));
-    }    
+    }
   }
-    
+
   void ManipulatablePaper::adaptGlobalStiffness(float val){
     PhysicsPaper::adaptGlobalStiffness(val);
     for(size_t i=0;i<nodes.size();++i){
       nodes[i]->setColor(Primitive::quad,GeomColor(255,255-255*val,0,255));
-    }  
-    
+    }
+
     removeAllLineAnnoations();
   }
-  
+
   namespace{
     struct LineIntersection{
       int idx;
@@ -412,7 +412,7 @@ namespace physics{
       float r,s;
     };
   }
-  
+
   /// gets the boundary as complete loop
   static std::vector<LineIntersection> find_quad_intersections(const Point32f quad[5], const Point32f &a, const Point32f &b){
     std::vector<LineIntersection> intersections;
@@ -429,11 +429,11 @@ namespace physics{
     const Camera &cam = scene->getCamera(0);
     Vec pa = cam.getViewRay(a).direction;
     Vec pb = cam.getViewRay(b).direction;
-    
+
     PlaneEquation plane(cam.getPosition(),cross(pa,pb));
 
     adaptStiffnessAlongIntersection(plane,val);
-        
+
     // --- create line-annotations -------------
 
     // 1st: get projected 2D grid positions
@@ -446,7 +446,7 @@ namespace physics{
     }
     std::vector<Point32f> ps1D = cam.project(nodeCenters);
     Array2D<Point32f> ps(w,h,ps1D.data(),false);
-    
+
     // 2nd: check_intersection for every quad
     Array2D<Point32f> projections(w,h);
     for(int x=1;x<w;++x){
@@ -468,7 +468,7 @@ namespace physics{
         addLineAnnotation(ps[0],ps[1],val > 0.5 ? geom_blue(255) : GeomColor(255,100,0,255));
       }
     }
-    
+
   }
 
 
@@ -476,7 +476,7 @@ namespace physics{
     lines.push_back(new LineAnnotation(this,a,b,color));
     addChild(lines.back());
   }
-  
+
   void  ManipulatablePaper::removeAllAnnoations(){
     lock();
     for(size_t i=0;i<lines.size();++i){
@@ -493,7 +493,7 @@ namespace physics{
     setVisible(false);
     setVisible(Primitive::line,false);
     setVisible(Primitive::vertex,false);
-                 
+
   }
   void ManipulatablePaper::DraggedPositionIndicator::prepareForRendering(){
     if(p.x < 0){
@@ -505,9 +505,9 @@ namespace physics{
     }
   }
 
-  
+
   ManipulatablePaper::LineAnnotation::LineAnnotation(PhysicsPaper *parent,
-                                                     const Point32f &a, 
+                                                     const Point32f &a,
                                                      const Point32f &b,
                                                      const GeomColor &color):a(a),b(b),parent(parent){
     setDepthTestEnabled(false);
@@ -519,7 +519,7 @@ namespace physics{
     setPointSize(10);
     setLineWidth(3);
   }
-  
+
 
   void ManipulatablePaper::LineAnnotation::prepareForRendering(){
     if(a == b){
@@ -546,8 +546,8 @@ namespace physics{
     return getPaperCoordinates(scene->getCamera(0).getViewRay(screenPosition2D));
   }
 
- 
- 
+
+
   void ManipulatablePaper::setDraggedPosition(const Point32f &paperPos){
     if(paperPos.x < 0){
       draggedPositionIndicator->setVisible(false);
@@ -563,10 +563,10 @@ namespace physics{
     u->deactivateShaders();
     glDisable(GL_LIGHTING);
     //glDisable(GL_DEPTH_TEST);
-      
+
     if(showAllConstraints){
       glBegin(GL_LINES);
-    
+
       glLineWidth(2);
       for(size_t i=0;i<constraints.size();++i){
         const BendingConstraint &c = constraints[i];
@@ -582,13 +582,13 @@ namespace physics{
     }
     glEnable(GL_LIGHTING);
     //glEnable(GL_DEPTH_TEST);
-          
+
   }
-                          
+
   ManipulatablePaper::Shadow::Shadow(float zLevel, ManipulatablePaper *parent):
     zLevel(zLevel),parent(parent){
   }
-  
+
   void ManipulatablePaper::Shadow::customRender(){
     lock();
     Size s =  parent->getDimensions();
@@ -596,7 +596,7 @@ namespace physics{
 
     glDisable(GL_LIGHTING);
     glColor3f(.2,.2,.2);
-    
+
     for(int y=1;y<s.height;++y){
       glBegin(GL_QUAD_STRIP);
       for(int x=0;x<s.width;++x){
@@ -608,7 +608,7 @@ namespace physics{
       glEnd();
     }
     glEnable(GL_LIGHTING);
-    
+
     unlock();
   }
 
@@ -619,25 +619,25 @@ namespace physics{
 #if 0
     ConfigFile cfg;
     cfg.setPrefix("config.");
-    
+
     cfg["orig-rest-length"] = cat(originalRestLengths);
     cfg["num-constraints"] = (int)constaints.size();
 
     for(size_t i=0;i<constaints.size();++i){
       BendingConstaint &c = constaints[i];
       cfg["constraints."+str(i)+".stiffness"] = c.getStiffness();
-      
+
     }
-    
+
     removeAllLineAnnoations();
 #endif
   }
-  
-  /// loads current constraints 
+
+  /// loads current constraints
   void ManipulatablePaper::loadCFG(const std::string &filename){
     (void)filename;
   }
-  
+
 
 }
 }

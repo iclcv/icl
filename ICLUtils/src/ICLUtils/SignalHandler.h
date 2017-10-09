@@ -39,11 +39,11 @@
 
 namespace icl{
   namespace utils{
-    
+
     /// C++ Signal-Handler interface class \ingroup UTILS
     /** Just create an own signal handler class,  implement its handleSignal()
         function and create a static object of that signal handler.
-        
+
         example:
         \code
         class MySignalHandler : public icl::utils::SignalHandler{
@@ -64,8 +64,8 @@ namespace icl{
       /// Create a new Signal handler with a list of signals
       /** The default parameters can be used to catch some common signals
           that may occur, when the program is uncommonly killed.
-          
-          @param signals comma-separated list of string representations of 
+
+          @param signals comma-separated list of string representations of
           the following Q_SIGNALS:
           - <b>SIGABRT</b> ( process abort signal)
           - <b>SIGALRM</b> ( Alarm clock)
@@ -93,7 +93,7 @@ namespace icl{
           - <b>SIGTRAP</b> ( Trace/breakpoint trap )
           - <b>SIGURG</b>  ( High bandwidth data is available at a socket)
           - <b>SIGVTALRM</b> ( Virtual timer expired)
-          - <b>SIGXCPU</b> ( CPU time limit exceeded) 
+          - <b>SIGXCPU</b> ( CPU time limit exceeded)
           - <b>SIGXFSZ</b> ( File size limit exceeded)
       */
       private:
@@ -103,40 +103,40 @@ namespace icl{
       //public:
       /// this cannot be instantiated manually! Use SignalHandler::install instead
       //SignalHandler(const std::string &signalsList="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
-      
+
 
       public:
       //friend class NamedCallbackHandler;
-      
+
       /// installs a handler to the given signals!
       /** several handlers can be installed to the same signals.
           If a handler is installed twice under the same ID, the
-          handler installation is skipped! 
+          handler installation is skipped!
           @param orderPercent can be used to define an execution order of signal handlers
                  Handlers with a higher value of orderPercent are triggered later
-                 The value 100 is used for shutting down the global QApplication, 
+                 The value 100 is used for shutting down the global QApplication,
                  which usually ends Qt's event loop, so it should not be used.
       */
       static void install(const std::string &id,
                           Function<void,const std::string&> handler,
                           const std::string &signalList="SIGINT,SIGTERM,SIGSEGV",
                           int orderPercent = 0);
-      
+
       static void uninstall(const std::string &id);
-      
-      
+
+
       /// Destructor
       /** When the destructor is called the system default signal handlers are
           substituted instead of the handleSignals function */
       // virtual ~SignalHandler();
-      
+
       /// virtual signal handling function
       /** The SignalHandler implementation will track all instantiated
           subclassed and, on signal, call the handleSignals functions
           and in the end kill the process with the Hangup-signal.
       **/
       // virtual void handleSignals(const std::string &signalAsString)=0;
-  
+
       /// removes the signal handle for this instance
       /** If this is the last instance registered to a certain signal, the
           sygnal handle will be released and the default signal handlers are
@@ -153,11 +153,11 @@ namespace icl{
       /** This seems to be not practible, as the old actions are not defined by
           callable functions in the old action sigaction struct. */
       //void oldAction(const std::string &signal);
-        
+
       //private:
       /// internal storage of associated signals
       //std::vector<int> m_vecAssocitatedSignals;
     };
-  
+
   } // namespace utils
 } // namespace icl

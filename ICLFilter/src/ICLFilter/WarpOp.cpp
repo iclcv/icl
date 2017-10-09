@@ -99,7 +99,7 @@ namespace icl{
         cl_filter_mode filterMode;
         int w = src->getWidth();
         int h = src->getHeight();
-        
+
         if (mode == interpolateNN)
           filterMode = CL_FILTER_NEAREST;
         else if (mode == interpolateLIN)
@@ -130,31 +130,31 @@ namespace icl{
       if(x < 0) return T(0);
       return src(round(x),round(y));
     }
-    
+
     template<class T>
     T interpolate_pixel_lin(float x, float y, const Channel<T> &src){
       float fX0 = x - floor(x), fX1 = 1.0 - fX0;
       float fY0 = y - floor(y), fY1 = 1.0 - fY0;
       int xll = (int) x;
       int yll = (int) y;
-     
+
       const T* pLL = &src(xll,yll);
       float a = *pLL;        //  a b
       float b = *(++pLL);    //  c d
       pLL += src.getWidth();
       float d = *pLL;
       float c = *(--pLL);
-  
+
       return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
     }
-    
-  
+
+
     template<class T>
     static inline void apply_warp_2(const Channel32f warpMap[2],
                                     const Channel<T> &src,
                                     Channel<T> &dst,
                                     const Size &size, T (*interpolator)(float x, float y, const Channel<T> &src)){
-  
+
       for(int x=0;x<size.width;++x){
         for(int y=0;y<size.height;++y){
           int idx = x+size.width*y;
@@ -164,8 +164,8 @@ namespace icl{
     }
 
     template<class T>
-    static void apply_warp(const Channel32f warpMap[2], 
-                           const Img<T>&src, 
+    static void apply_warp(const Channel32f warpMap[2],
+                           const Img<T>&src,
                            Img<T> &dst,
                            scalemode mode){
       for(int c=0;c<src.getChannels();++c){
@@ -180,12 +180,12 @@ namespace icl{
           return;
         }
       }
-    }          
-  
+    }
+
   #ifdef ICL_HAVE_IPP
-    template<>  
-    void apply_warp<icl8u>(const Channel32f warpMap[2], 
-                                  const Img<icl8u> &src, 
+    template<>
+    void apply_warp<icl8u>(const Channel32f warpMap[2],
+                                  const Img<icl8u> &src,
                                   Img<icl8u> &dst,
                                   scalemode mode){
       for(int c=0;c<src.getChannels();++c){
@@ -199,9 +199,9 @@ namespace icl{
         }
       }
     }
-    template<>  
-    void apply_warp<icl32f>(const Channel32f warpMap[2], 
-                                   const Img<icl32f> &src, 
+    template<>
+    void apply_warp<icl32f>(const Channel32f warpMap[2],
+                                   const Img<icl32f> &src,
                                    Img<icl32f> &dst,
                                    scalemode mode){
       for(int c=0;c<src.getChannels();++c){
@@ -215,28 +215,28 @@ namespace icl{
         }
       }
     }
-  
-    
+
+
     // specialization for apply_warp<icl8u> and <icl32f>
   #endif
-  
+
     void prepare_warp_table_inplace(Img32f &warpMap){
       const Rect r = warpMap.getImageRect();
-      
+
       Channel32f cs[2];
       warpMap.extractChannels(cs);
       const Size size = warpMap.getSize();
-  
+
       for(int x=0;x<size.width;++x){
         for(int y=0;y<size.height;++y){
           if(!r.contains(round(cs[0](x,y)),round(cs[1](x,y)))){
             cs[0](x,y) = cs[1](x,y) = -1;
           }
         }
-      } 
+      }
     }
-    
-  
+
+
     WarpOp::WarpOp(const Img32f &warpMap,scalemode mode, bool allowWarpMapScaling):
       m_allowWarpMapScaling(allowWarpMapScaling),m_scaleMode(mode),m_tryUseOpenCL(false){
       warpMap.deepCopy(&m_warpMap);
@@ -251,7 +251,7 @@ namespace icl{
       delete m_clWarp;
   #endif
     }
-    
+
     void WarpOp::setScaleMode(scalemode scaleMode){
       m_scaleMode = scaleMode;
     }
@@ -266,26 +266,26 @@ namespace icl{
     void WarpOp::setAllowWarpMapScaling(bool allow){
       m_allowWarpMapScaling = allow;
     }
-    
-    
+
+
     void WarpOp::apply(const ImgBase *src, ImgBase **dst){
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
       ICLASSERT_RETURN(src != *dst);
       ICLASSERT_RETURN(m_warpMap.getSize() != Size::null);
-  
+
       if(!src->hasFullROI()){
         ERROR_LOG("warp op does currently not support ROI");
         return;
       }
-  
+
       if(!UnaryOp::prepare(dst,src->getDepth(),src->getSize(),
                            src->getFormat(),src->getChannels(),
                            src->getROI(),src->getTime())){
         ERROR_LOG("unable to prepare destination image (returning)");
         return;
       }
-      
+
       Channel32f cwm[2];
 
       if(src->getSize() != m_warpMap.getSize()){
@@ -325,14 +325,14 @@ namespace icl{
         default:
           ICL_INVALID_DEPTH;
   #undef ICL_INSTANTIATE_DEPTH
-  
+
       }
     }
-  
+
     void WarpOp::setTryUseOpenCL(bool on){
       m_tryUseOpenCL = on;
     }
-  
-  
+
+
   } // namespace filter
 }

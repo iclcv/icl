@@ -42,7 +42,7 @@
 
 namespace icl{
   namespace utils{
-    
+
     /// Abstract and associative Data Container for Data of different types
     /** The MultiTypeMap class can be used to create an associative container
         for different types. It provides an interface for a type-save handling
@@ -50,13 +50,13 @@ namespace icl{
         Single elements are created internally as a copy (copy constructor)
         of a given value (by default the empty constructor for a specific type
         is used to create a default initializing instance). Arrays elements and
-        value elements may not be mixed up as array elements must be created 
-        and released in a different way (using new[] and delete[] instead of 
+        value elements may not be mixed up as array elements must be created
+        and released in a different way (using new[] and delete[] instead of
         new() and delete).\n
         In addition the class provides some utility functions to get information
         about all contained data elements.\n
-        The type-safety is facilitated using the C++ RTTI (Run-Time Type 
-        Identification) which is not very fast. Also the access functions 
+        The type-safety is facilitated using the C++ RTTI (Run-Time Type
+        Identification) which is not very fast. Also the access functions
         getValue() and getArray() are not very fast, because the underlying memory
         is organized in a std::map, which must be searched. Hence, the more
         elements a MultiTypeMap object contains, the slower a single data element
@@ -68,20 +68,20 @@ namespace icl{
       public:
       /// Default constructor (create a new MultiTypeMap object)
       MultiTypeMap();
-      
+
       /// Destructor (deletes all remaining data)
       ~MultiTypeMap();
-      
+
       /// internally used wrapper function for RTTI
       template<class T>
       static inline const std::string &get_type_name(){
         static std::string NAME = typeid(T).name();
         return NAME;
       }
-     
+
       /// Allocates a new memory block (new T[n]) for the given id string
       /** @param id name of this data block
-          @param n count of elements (min 1) 
+          @param n count of elements (min 1)
           @return data pointer that was just created
       */
       template<class T>
@@ -101,9 +101,9 @@ namespace icl{
         da.release_func = DataArray::release_data_array<T>;
         return reinterpret_cast<T*>(da.data);
       }
-      
+
       /// Allocates a new memory elements (new T(val)) for the given id string
-      /** @param id name of this data block 
+      /** @param id name of this data block
           @param val initial value for this data block
           @return reference the the data element, that was just created
       */
@@ -118,11 +118,11 @@ namespace icl{
         da.data = new T(val);
         da.len = 0; // indicates a single value !
         da.type = get_type_name<T>();
-  
+
         da.release_func = DataArray::release_data_array<T>;
         return *(reinterpret_cast<T*>(da.data));
       }
-      
+
       /// release the data element that is associated with the given id
       /** @param id name of the entry to release */
       template<class T>
@@ -140,11 +140,11 @@ namespace icl{
         da.release_func(&da);
         m_oDataMapPtr->erase(m_oDataMapPtr->find(id));
       }
-      
+
       /// get a T* that is associated with the given id
-      /** @param id name of the entry to get 
-          @param lenDst pointer to store the array len (in T's) in if not NULL 
-          @return data pointer that is associated with id or NULL if the id is invalid 
+      /** @param id name of the entry to get
+          @param lenDst pointer to store the array len (in T's) in if not NULL
+          @return data pointer that is associated with id or NULL if the id is invalid
       */
       template<class T>
       inline T* getArray(const std::string &id, int *lenDst=0){
@@ -152,9 +152,9 @@ namespace icl{
           ERROR_LOG("id "<<  id  << " not found \n");
           return 0;
         }
-  
+
         DataArray &da = (*m_oDataMapPtr)[id];
-  
+
         if(da.type != get_type_name<T>()){
           ERROR_LOG("unable to cast "<<  id  << " to a given type "<< get_type_name<T>() <<"\n");
           return 0;
@@ -166,10 +166,10 @@ namespace icl{
         if(lenDst) *lenDst = da.len;
         return reinterpret_cast<T*>(da.data);
       }
-     
+
       /// get a T reference that is associated with the given id
       /** @param id name of the entry to get
-	  @param checkType  
+	  @param checkType
           @return reference to the value that is associated with the given id
       */
       template<class T>
@@ -179,7 +179,7 @@ namespace icl{
           ERROR_LOG("id "<<  id  << " not found \n");
           return _NULL;
         }
-  
+
         // orig
         DataArray &da = (*m_oDataMapPtr)[id];
         //DEBUG_LOG("type of da is " << da.type);
@@ -194,20 +194,20 @@ namespace icl{
         }
         return *reinterpret_cast<T*>(da.data);
       }
-        
+
       template<class T>
       inline const T &getValue(const std::string &id, bool checkType=true) const{
         return const_cast<MultiTypeMap*>(this)->getValue<T>(id,checkType);
       }
-  
-     
-      
+
+
+
       /// returns the RTTI string type identifier, for the entry associated with id
       /** @param id name of the entry
           @return RTTI string type identifier
       */
       const std::string &getType(const std::string &id) const;
-      
+
       /// checks if the type-id associated with the template parameter T is compatible to the entry for id
       /** @param id name of the entry
           @return whether the entry associated with id has type T */
@@ -215,31 +215,31 @@ namespace icl{
       inline bool checkType(const std::string &id) const{
         return check_type_internal(id,get_type_name<T>());
       }
-      
+
       /// returns whether an entry is an array or a value
       /** @param id name of the entry to check
-          @return whether the entry for id is an array 
+          @return whether the entry for id is an array
       */
       bool isArray(const std::string &id) const;
-      
+
       /// returns whether a given value is already set
       /** @param id name of the parameter
           @return whether a parameter with that id is contained*/
       bool contains(const std::string &id) const;
-  
-      
+
+
       // internally locks the datastore
       inline void lock() const { m_oMutexPtr->lock(); }
-      
+
       /// internally unlocks the data store
       inline void unlock() const { m_oMutexPtr->unlock(); }
       protected:
-  
+
       bool check_type_internal(const std::string &id, const std::string &typestr) const;
-      
+
       /// internally used data handling structure
       struct DataArray{
-        
+
         /// delete function, given to the data Array after construction to delete its own data
         /** @param da filled with the "this" argument internally by the Parent MultiTypeMap object
         */
@@ -256,15 +256,15 @@ namespace icl{
         std::string type; //<! created using RTTI
         void (*release_func)(DataArray*); //<! data release function called by the parent MultiTypeMap object
       };
-      
+
       public:
       /// shows a list of currently contained data
       void listContents() const;
-  
+
       // removes all data from this data store
       void clear();
-  
-      
+
+
       /// entry struct used in getEntryList function
       struct Entry{
         Entry(){}
@@ -274,24 +274,24 @@ namespace icl{
         std::string type;
         int len;
       };
-      
+
       /// returns a list of all entries
       std::vector<Entry> getEntryList() const;
-  
+
       protected:
-  
+
       /// internal definition
       typedef std::map<std::string,DataArray> DataMap;
-  
+
       /// internal definition
       typedef SmartPtr<DataMap> SmartDataMapPtr;
-      
+
       /// internal definition
       typedef SmartPtr<Mutex> SmartMutexPtr;
-   
+
       /// Smart-Pointer to the underlying data (allows shallow copies)
       mutable SmartDataMapPtr m_oDataMapPtr;
-      
+
       /// mutex to handle syncronous calls
       mutable SmartMutexPtr m_oMutexPtr;
     };

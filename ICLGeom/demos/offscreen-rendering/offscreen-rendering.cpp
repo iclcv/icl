@@ -44,7 +44,7 @@ struct OSRCube : public SceneObject{
 
   virtual void lock(){ mutex.lock(); }
   virtual void unlock(){ mutex.unlock(); }
-  
+
   OSRCube():SceneObject("cube",Vec(0,0,0,3).data()){
     image = Img8u(Size(300,300),formatRGB);
     std::fill(image.begin(0),image.end(0),255);
@@ -54,7 +54,7 @@ struct OSRCube : public SceneObject{
     addTexture(5,6,2,1,&image,false);
     addTexture(4,5,1,0,&image,false);
     addTexture(3,2,6,7,&image,false);
-    
+
     setVisible(Primitive::texture,true);
     setVisible(Primitive::quad,false);
   }
@@ -88,7 +88,7 @@ void init(){
   gui << Draw3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
       << Draw().minSize(16,16).handle("image").label("offscreen rendered image")
       << Show();
-  
+
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-13), // position
              Vec(0,0,1),   // view-direction
@@ -119,7 +119,7 @@ void run(){
 
 
 int main(int n, char**ppc){
-  /// create a whole application 
+  /// create a whole application
   return ICLApplication(n,ppc,"",init,run).exec();
 }
 

@@ -65,7 +65,7 @@ void init(){
         << String("",100).handle("text").label("write some text message here!")
         << Fps(10).handle("fps")
         << Show();
-    
+
     grabber.init(pa("-i"));
     sender.init(t,t+"="+*pa("-s"));
     if(pa("-compression")){
@@ -75,7 +75,7 @@ void init(){
     gui = HSplit();
     gui << ( VBox().label("loop based")
              << Label().handle("text").label("received text")
-             << Image().handle("image") 
+             << Image().handle("image")
            );
     if(!pa("-no-callback")){
       gui<< ( VBox().label("callback based")
@@ -95,7 +95,7 @@ void init(){
     }
   }
 }
-  
+
 void run(){
   if(MODE == Send || MODE == Both){
     const ImgBase *image = grabber.grab();

@@ -32,7 +32,7 @@ SET(SOURCES src/ICLUtils/ConfigFile.cpp
             src/ICLUtils/Configurable.cpp
 		src/ICLUtils/ConsoleProgress.cpp
 	    src/ICLUtils/CLBuffer.cpp
-	    src/ICLUtils/CLImage2D.cpp	    
+	    src/ICLUtils/CLImage2D.cpp
 	    src/ICLUtils/CLKernel.cpp
 		src/ICLUtils/CLProgram.cpp
 		src/ICLUtils/CLDeviceContext.cpp
@@ -73,7 +73,7 @@ SET(HEADERS src/ICLUtils/Any.h
 		src/ICLUtils/CLIncludes.h
 	    src/ICLUtils/CLBuffer.h
 		src/ICLUtils/CLMemory.h
-	    src/ICLUtils/CLImage2D.h	    
+	    src/ICLUtils/CLImage2D.h
 	    src/ICLUtils/CLException.h
 	    src/ICLUtils/CLKernel.h
 		src/ICLUtils/CLProgram.h
@@ -146,7 +146,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            "${ICL_SOURCE_DIR}/3rdparty/regex"
                            "${CMAKE_BINARY_DIR}/src")
 ELSE()
-INCLUDE_DIRECTORIES(BEFORE src 
+INCLUDE_DIRECTORIES(BEFORE src
 						   "${CMAKE_BINARY_DIR}/src")
 ENDIF()
 
@@ -156,7 +156,7 @@ ADD_LIBRARY(ICLUtils SHARED ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(ICLUtils ${ICLUtils_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLUtils
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples ----

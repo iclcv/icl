@@ -51,7 +51,7 @@ namespace icl{
         }
       }
     }
-    
+
 
     DemoGrabber::DemoGrabber(float maxFPS)
       : m_mutex(Mutex::mutexTypeRecursive)
@@ -63,7 +63,7 @@ namespace icl{
       m_maxFPS = maxFPS;
       m_maxV = Point32f(0.2,0.2);
       m_lastTime = Time::now();
-      
+
       m_drawBuffer = 0;
       m_drawFormat = formatRGB;
       m_drawSize = Size::VGA;
@@ -113,13 +113,13 @@ namespace icl{
     DemoGrabber::~DemoGrabber(){
       ICL_DELETE(m_drawBuffer);
     }
-    
-    
+
+
     template<class T>
     void erode_buffer(Img<T> &t){
       t.transform(std::bind2nd(std::multiplies<float>(),0.99),t);
     }
-    
+
     const ImgBase* DemoGrabber::acquireImage(){
       Mutex::Locker __lock(m_mutex);
       ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
@@ -153,13 +153,13 @@ namespace icl{
              (int)(m_size.width*s.width),
              (int)(m_size.height*s.height));
       r &= m_drawBuffer->getImageRect();
-      
+
       if(m_drawBuffer->getDepth() == depth8u){
         rect(*m_drawBuffer->asImg<icl8u>(),m_color,r);
       }else{
         rect(*m_drawBuffer->asImg<icl32f>(),m_color,r);
       }
-      
+
       if(m_drawBuffer->getDepth() == depth8u){
         erode_buffer(*m_drawBuffer->asImg<icl8u>());;
       }else{
@@ -172,7 +172,7 @@ namespace icl{
         Time restSleepTime = neededInterval-(now-m_lastTime);
         Thread::msleep(restSleepTime.toMilliSeconds());
       }
-      
+
       m_drawBuffer->setTime(now);
       m_lastTime = now;
 

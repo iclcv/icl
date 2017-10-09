@@ -41,7 +41,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
+
     namespace color_format_converter{
 
       template<BayerConverter::bayerPattern P>
@@ -52,7 +52,7 @@ namespace icl{
         Img8u src(size,1,cs);
         bc.apply(&src, dst);
       }
-      
+
       // can be used to grab kinect IR-image via V4L2
       void y10b(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         ensureCompatible(dst,depth16s,size,formatGray);
@@ -70,26 +70,26 @@ namespace icl{
           *d++ = (buf >> bs) & 1023;
 	}
       }
-  
+
       void myrm(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         static MyrmexDecoder dec;
         dec.decode(reinterpret_cast<const icl16s*>(rawData), size, dst);
       }
-        
+
       void gray(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
         ensureCompatible(dst,depth8u,size,formatGray);
         Img8u &image = *(*dst)->as8u();
-  
+
         (void)buffer;
         Img8u tmp(size,1,std::vector<icl8u*>(1,const_cast<icl8u*>(rawData)),false);
         cc(&tmp,&image);
       }
-      
-      
+
+
       void y444(const icl8u* rawData, const Size &size, ImgBase **dst, std::vector<icl8u> *buffer){
         ensureCompatible(dst,depth8u,size,formatRGB);
         Img8u &image = *(*dst)->as8u();
-  
+
   #ifdef ICL_HAVE_IPP
         if(buffer){
           buffer->resize(size.getDim()*3);
@@ -98,13 +98,13 @@ namespace icl{
           return;
         }
   #endif
-  
+
         icl8u *dstR = image.begin(0);
         icl8u *dstG = image.begin(1);
         icl8u *dstB = image.begin(2);
-        
+
         const icl8u *pSrcEnd = rawData+size.getDim()*3;
-        
+
         // data order uyv uyv ...
         for(const icl8u *pSrc = rawData; pSrc <pSrcEnd ; pSrc+=3){
           int tr,tg,tb;
@@ -114,7 +114,7 @@ namespace icl{
           *dstB++ = tb;
         }
       }
-      
+
       // uses ipp if available and if buf is not null
       void yuyv(const icl8u* yuyv, const Size &size, ImgBase **dst, std::vector<icl8u> *buf=0){
         ensureCompatible(dst,depth8u,size,formatRGB);
@@ -139,12 +139,12 @@ namespace icl{
           r[2*i] = tr;
           g[2*i] = tg;
           b[2*i] = tb;
-          
+
           cc_util_yuv_to_rgb(yuyv[2], yuyv[1], yuyv[3],tr,tg,tb);
           r[2*i+1] = tr;
           g[2*i+1] = tg;
           b[2*i+1] = tb;
-          
+
           yuyv += 4;
         }
       }
@@ -162,19 +162,19 @@ namespace icl{
           r[2*i] = tr;
           g[2*i] = tg;
           b[2*i] = tb;
-          
+
           cc_util_yuv_to_rgb(yuy2[3], yuy2[0], yuy2[2],tr,tg,tb);
           r[2*i+1] = tr;
           g[2*i+1] = tg;
           b[2*i+1] = tb;
-          
+
           yuy2 += 4;
         }
       }
 
-     
-  
-  #ifdef ICL_HAVE_LIBJPEG    
+
+
+  #ifdef ICL_HAVE_LIBJPEG
       void mjpg(const icl8u* data, const Size &size, ImgBase **dst, std::vector<icl8u> *buf = 0){
         try{
           // naive check for a correct jpeg file:
@@ -198,7 +198,7 @@ namespace icl{
         ensureCompatible(dst,depth8u,size,formatRGB);
         interleavedToPlanar(data, (*dst)->as8u());
       }
-      
+
     }
     ColorFormatDecoder::ColorFormatDecoder():m_dstBuf(0){
       m_functions[FourCC("GRAY").asInt()] = color_format_converter::gray;
@@ -215,20 +215,20 @@ namespace icl{
       m_functions[FourCC("GBRG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GBRG>;
       m_functions[FourCC("GRBG").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_GRBG>;
       m_functions[FourCC("BGGR").asInt()] = color_format_converter::bayer<BayerConverter::bayerPattern_BGGR>;
-  
+
   #ifdef ICL_HAVE_LIBJPEG
       m_functions[FourCC("MJPG").asInt()] = color_format_converter::mjpg;
   #endif
-  
+
     }
     ColorFormatDecoder::~ColorFormatDecoder(){
       ICL_DELETE(m_dstBuf);
     }
-    
+
     void ColorFormatDecoder::decode(FourCC fourcc, const icl8u *data, const Size &size, ImgBase **dst){
       std::map<icl32u,decoder_func>::iterator it = m_functions.find(fourcc.asInt());
       if(it == m_functions.end()) throw ICLException("ColorFormatDecoder::unable to convert given format " + fourcc.asString());
-  
+
       it->second(data,size,dst,&m_buffer);
     }
   } // namespace io

@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// Grabber class that grabs images using the XiAPI (extension of the M3API)
     /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
         with the generic grabber for this.
@@ -70,7 +70,7 @@ namespace icl{
         /// callback for changed configurable properties
         void processPropertyChange(const utils::Configurable::Property &prop);
     };
-    
+
   } // namespace io
 }
 

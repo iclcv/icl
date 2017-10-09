@@ -35,21 +35,21 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-    
+
     LUTOp::LUTOp(icl8u quantizationLevels):
       m_bLevelsSet(true), m_bLutSet(false),
       m_ucQuantizationLevels(quantizationLevels),
       m_poBuffer(new Img8u()){
-      
+
     }
-  
+
     LUTOp::LUTOp(const std::vector<icl8u> &lut):
       m_bLevelsSet(false), m_bLutSet(true),
       m_vecLUT(lut),
       m_ucQuantizationLevels(0),
       m_poBuffer(new Img8u()){
     }
-  
+
     void LUTOp::setLUT(const std::vector<icl8u> &lut){
       m_vecLUT = lut;
       m_bLutSet = true;
@@ -62,50 +62,50 @@ namespace icl{
       m_bLutSet = false;
       m_bLevelsSet = true;
     }
-    
+
     icl8u LUTOp::getQuantizationLevels() const{
       return m_ucQuantizationLevels;
     }
     const std::vector<icl8u> &LUTOp::getLUT() const{
       return m_vecLUT;
     }
-    
+
     bool LUTOp::isLUTSet() const{
       return m_bLutSet;
     }
     bool LUTOp::isLevelsSet() const{
       return m_bLevelsSet;
     }
-    
-    
+
+
     void LUTOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN(poSrc != *ppoDst);
-      
-  
+
+
       if(poSrc->getDepth() != depth8u){
         poSrc->convert(m_poBuffer);
         poSrc = m_poBuffer;
       }
       if (!prepare (ppoDst, poSrc, depth8u)) return;
-  
+
       if(m_bLevelsSet){
-        reduceBits(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_ucQuantizationLevels); 
+        reduceBits(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_ucQuantizationLevels);
       }else{
-        simple(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_vecLUT); 
+        simple(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_vecLUT);
       }
     }
-  
+
     void LUTOp::simple(const Img8u *src, Img8u *dst, const std::vector<icl8u>& lut){
       ICLASSERT_RETURN( src && dst );
       ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
       ICLASSERT_RETURN( lut.size() >= 256 );
-      
+
       src->lut(lut.data(),dst,8);
     }
-  
+
     void LUTOp::reduceBits(const Img8u *src, Img8u *dst, icl8u n){
   #ifdef ICL_HAVE_IPP
       ICLASSERT_RETURN( src && dst );

@@ -46,29 +46,29 @@ using namespace icl::filter;
 
 namespace icl{
   namespace io{
-  
+
     struct ImageCompressor::Data{
       Img8u ditheringBuffer;
       std::vector<icl8u> encoded_buffer;
       ImgBase *decoded_buffer;
       ImageCompressor::CompressionSpec compression;
-      
+
   #ifdef ICL_HAVE_LIBJPEG
       SmartPtr<JPEGEncoder> jpegEncoder;
   #endif
-  
+
     };
-  
+
     ImageCompressor::ImageCompressor(const ImageCompressor::CompressionSpec &spec):m_data(new Data){
       m_data->decoded_buffer = 0;
       setCompression(spec);
     }
-  
+
     ImageCompressor::~ImageCompressor(){
       ICL_DELETE(m_data->decoded_buffer);
       delete m_data;
     }
-    
+
     /// only decodes an image header
     ImageCompressor::Header ImageCompressor::uncompressHeader(const icl8u *data,int len){
       ICLASSERT_THROW(len > (int)sizeof(Header::Params), ICLException("ImageCompressor::uncompressHeader: data length too small"));
@@ -77,14 +77,14 @@ namespace icl{
       header.data = data;
       return header;
     }
-  
+
     /// internal utlity function
     int ImageCompressor::estimateRawDataSize(const ImgBase *image, bool skipMetaData){
       return (image->getChannels() * image->getDim() * getSizeOf(image->getDepth()) +
               (skipMetaData ? 0 : image->getMetaData().length()) + sizeof(ImgParams) +
               sizeof(depth) + sizeof(Time) );
     }
-  
+
     int ImageCompressor::estimateEncodedBufferSize(const ImgBase *image, bool skipMetaData){
       const int metaDataLength = skipMetaData ? 0 : (int)image->getMetaData().length();
       const int headerSize = sizeof(Header::Params) + metaDataLength;
@@ -95,7 +95,7 @@ namespace icl{
         return headerSize + numPix;
       }
     }
-  
+
     static const icl8u *find_first_not_binarized(const icl8u *curr, const icl8u *end, icl8u val){
       if(val){
         for(;curr<end;++curr){
@@ -108,11 +108,11 @@ namespace icl{
       }
       return end;
     }
-  
-    static icl8u *compressChannel(const icl8u *imageData, 
-                                  icl8u *compressedData, 
-                                  const Size &imageSize, 
-                                  const Rect &roi, 
+
+    static icl8u *compressChannel(const icl8u *imageData,
+                                  icl8u *compressedData,
+                                  const Size &imageSize,
+                                  const Rect &roi,
                                   const ImageCompressor::CompressionSpec &spec,
                                   Img8u &ditheringBuffer){
       if(spec.mode == "none"){
@@ -133,7 +133,7 @@ namespace icl{
             icl8u currVal = !!*imageData;
             int allLen = 0;
             while(imageData < imageDataEnd){
-              const icl8u *other = find_first_not_binarized(imageData,imageDataEnd,currVal); 
+              const icl8u *other = find_first_not_binarized(imageData,imageDataEnd,currVal);
               size_t len = (size_t)(other-imageData);
               while(len >= 128){
                 *compressedData++ = 0xff >> int(!currVal);
@@ -151,7 +151,7 @@ namespace icl{
           }
           case 4:{
             const icl8u *imageDataEnd = imageData+imageSize.getDim();
-            
+
             int currVal = *imageData & 0xf0; // use most significant 4 bits
             int currLen = 0;
             while(imageData < imageDataEnd){
@@ -166,7 +166,7 @@ namespace icl{
               if(currLen){
                 *compressedData++ = currVal | (currLen-1);
               }
-              
+
               currVal = *imageData & 0xf0;
               currLen = 0;
             }
@@ -177,10 +177,10 @@ namespace icl{
             static const int VAL_MASK=0xFC;
             static const int LEN_MASK=0x3;
             static const int MAX_LEN=4;
-            
+
             int currVal = *imageData & VAL_MASK; // use most significant 6 bits
             int currLen = 0;
-            
+
             while(imageData < imageDataEnd){
               while( (imageData < imageDataEnd) && ((*imageData & VAL_MASK) == currVal) ){
                 ++currLen;
@@ -193,7 +193,7 @@ namespace icl{
               if(currLen){
                 *compressedData++ = currVal | (currLen-1);
               }
-              
+
               currVal = *imageData & VAL_MASK;
               currLen = 0;
             }
@@ -223,7 +223,7 @@ namespace icl{
               currVal = *imageData;
               currLen = 0;
             }
-            break;        
+            break;
           }
           default: throw ICLException("ImageCompressor::compressChannel: unsupported RLE compression quality (" + spec.quality + ")");
 				}
@@ -232,10 +232,10 @@ namespace icl{
       }
       return compressedData;
     }
-  
-    static const icl8u *uncompressChannel(icl8u *imageData, 
-                                          int imageDataLen, 
-                                          const icl8u *compressedData, 
+
+    static const icl8u *uncompressChannel(icl8u *imageData,
+                                          int imageDataLen,
+                                          const icl8u *compressedData,
                                           const ImageCompressor::CompressionSpec &spec){
       if(spec.mode == "none"){
         std::copy(compressedData,compressedData+imageDataLen,imageData);
@@ -246,7 +246,7 @@ namespace icl{
             icl8u *pc = imageData;
             icl8u *pcEnd = imageData + imageDataLen;
             const icl8u *p = compressedData;
-            
+
             for(;pc < pcEnd; ++p){
               const int l = ( (*p) & 127) + 1;
               std::fill(pc,pc+l,((*p)>>7) * 255);
@@ -264,13 +264,13 @@ namespace icl{
               std::fill(pc,pc+l,((*p) & 0xf0));
               pc += l;
             }
-            compressedData = p;   
+            compressedData = p;
             break;
           }
           case 6:{
             static const int VAL_MASK=0xFC;
             static const int LEN_MASK=0x3;
-            
+
             icl8u *pc = imageData;
             icl8u *pcEnd = imageData + imageDataLen;
             const icl8u *p = compressedData;
@@ -279,7 +279,7 @@ namespace icl{
               std::fill(pc,pc+l,((*p) & VAL_MASK));
               pc += l;
             }
-            compressedData = p;   
+            compressedData = p;
             break;
           }
           case 8:{
@@ -291,24 +291,24 @@ namespace icl{
               std::fill(pc,pc+l,p[0]);
               pc += l;
             }
-            compressedData = p;   
+            compressedData = p;
             break;
           }
-          default: 
-            throw ICLException("ImageCompressor::uncompressChannel: unsupported RLE compression quality (" + spec.quality + ")"); 
+          default:
+            throw ICLException("ImageCompressor::uncompressChannel: unsupported RLE compression quality (" + spec.quality + ")");
         }
       }else{
-        throw ICLException("ImageCompressor::uncompressChannel: unsupported compression mode (" + spec.mode + ")"); 
+        throw ICLException("ImageCompressor::uncompressChannel: unsupported compression mode (" + spec.mode + ")");
       }
       return compressedData;
     }
-    
+
     inline void set_4(char p[4], const char *s){
       for(int i=0;i<4;++i){
         p[i] = s[i];
       }
     }
-    
+
     ImageCompressor::Header ImageCompressor::createHeader(const ImgBase *image, bool skipMetaData){
       Header::Params params;
       set_4(params.magick,"!icl");
@@ -329,24 +329,24 @@ namespace icl{
       Header header = { params, 0 };
       return header;
     }
-  
-    const ImageCompressor::CompressedData ImageCompressor::compress(const ImgBase *image, bool skipMetaData){ 
+
+    const ImageCompressor::CompressedData ImageCompressor::compress(const ImgBase *image, bool skipMetaData){
       ICLASSERT_THROW(image,ICLException("ImageCompressor::compress: image width null"));
-  
+
 			if( (m_data->compression.mode != "none") && image->getDepth() != depth8u
 					&& ( (m_data->compression.mode != "1611") && image->getDepth() != depth16s) ){
         throw ICLException("ImageCompressor::compress: image compression is only supported for Img8u images");
       }
-      
+
       Header header = createHeader(image,skipMetaData);
-      
+
       if(m_data->compression.mode == "jpeg"){
   #ifdef ICL_HAVE_LIBJPEG
-  
+
         if(!m_data->jpegEncoder) m_data->jpegEncoder = new JPEGEncoder;
         m_data->jpegEncoder->setQuality(parse<int>(m_data->compression.quality));
         const JPEGEncoder::EncodedData &jpeg = m_data->jpegEncoder->encode(image->as8u());
-        
+
         int minLen = sizeof(Header::Params) + header.params.metaLen + jpeg.len;
         if((int)m_data->encoded_buffer.size() < minLen){
           m_data->encoded_buffer.resize(minLen);
@@ -356,14 +356,14 @@ namespace icl{
         header.params.dataLen = minLen;
         *reinterpret_cast<Header::Params*>(dst) = header.params;
         dst += sizeof(Header::Params);
-        
+
         if(!skipMetaData){
           std::copy(image->getMetaData().begin(), image->getMetaData().end(),dst);//header.metaBegin(), header.metaBegin()+header.params.metaLen,dst);
           dst+= header.params.metaLen;
         }
-        
+
         std::copy(jpeg.bytes,jpeg.bytes+jpeg.len, dst);
-                                        
+
         return CompressedData(m_data->encoded_buffer.data(),minLen,float(minLen)/estimateRawDataSize(image,skipMetaData));
   #else
         throw ICLException("ImageCompressor:encode jpeg compression is not supported without libjpeg");
@@ -403,22 +403,22 @@ namespace icl{
 
 				return CompressedData(m_data->encoded_buffer.data(),finalSize,encoded_len/float(len));
 			}
-      
+
       m_data->encoded_buffer.resize(estimateEncodedBufferSize(image,skipMetaData));
-      
+
       icl8u *dst = m_data->encoded_buffer.data();
       header.data = dst;
       header.params.dataLen = m_data->encoded_buffer.size();
-  
+
       *reinterpret_cast<Header::Params*>(dst) = header.params;
       dst += sizeof(Header::Params);
       if(!skipMetaData){
         std::copy(image->getMetaData().begin(), image->getMetaData().end(),dst);
         dst+= header.params.metaLen;
       }
-  
+
       float len = 0;
-    
+
       if(image->getDepth() == depth8u){
         const Img8u *image8u = image->as8u();
         for(int c=0;c<image->getChannels();++c){
@@ -434,39 +434,39 @@ namespace icl{
                     (const icl8u*)image->getDataPtr(c)+l,
                     dst+c*l);
         }
-  
+
         len = l * image->getChannels();
       }
-  
+
       return CompressedData(m_data->encoded_buffer.data(), (int)len+sizeof(Header::Params), len/m_data->encoded_buffer.size());
     }
-  
+
     Time ImageCompressor::pickTimeStamp(const icl8u *data){
       ICLASSERT_THROW(data, ICLException("ImageCompressor::decompressTimeStamp: "
                                          "given data pointer is NULL"));
       return Time(reinterpret_cast<const Header::Params*>(data)->timeStamp);
     }
-  
+
     void ImageCompressor::Header::setupImage(ImgBase **image){
-      ensureCompatible(image, (depth)params.depth, Size(params.width,params.height), 
-                       params.channels, (format)params.colorFormat, 
+      ensureCompatible(image, (depth)params.depth, Size(params.width,params.height),
+                       params.channels, (format)params.colorFormat,
                        Rect(params.roiX,params.roiY,params.roiWidth,params.roiHeight));
       (*image)->setTime(Time(params.timeStamp));
     }
-  
+
     ImageCompressor::CompressionSpec ImageCompressor::Header::compressionSpec() const{
       return CompressionSpec(getCompressionMode(), str(params.compressionQuality));
     }
-    
+
     const ImgBase *ImageCompressor::uncompress(const icl8u *data, int len, ImgBase **dst){
       ICLASSERT_THROW(data, ICLException("ImageCompressor::uncompress: "
                                          "given data pointer is NULL"));
-      ICLASSERT_THROW(len > (int)sizeof(Header::Params), 
+      ICLASSERT_THROW(len > (int)sizeof(Header::Params),
                       ICLException("ImageCompressor::uncompress: given data pointer is too short"));
-  
+
       Header header = uncompressHeader(data,len);
 			ImgBase *&useDst = dst ? *dst : m_data->decoded_buffer;
-  
+
       if(header.getCompressionMode() == "jpeg"){
   #ifdef ICL_HAVE_LIBJPEG
         JPEGDecoder::decode(header.imageBegin(), header.imageLen(), &useDst);
@@ -488,12 +488,12 @@ namespace icl{
 					Kinect11BitCompressor::unpack11to16(src16,dst16,len);
 
 			}else{
-  
+
         header.setupImage(&useDst);
         useDst->getMetaData().assign(header.metaBegin(), header.metaBegin()+header.params.metaLen);
-  
+
         const icl8u *p = header.imageBegin();
-  
+
         if(useDst->getDepth() == depth8u){
           Img8u *b8u = useDst->as8u();
           for(int c=0;c<b8u->getChannels();++c){
@@ -508,7 +508,7 @@ namespace icl{
       }
       return useDst;
 		}
-  
+
     void ImageCompressor::setCompression(const ImageCompressor::CompressionSpec &spec){
       if(spec.mode == "none"){
         if(spec.quality.length() && spec.quality != "none"){
@@ -534,10 +534,10 @@ namespace icl{
       }
       m_data->compression = spec;
     }
-    
+
     ImageCompressor::CompressionSpec ImageCompressor::getCompression() const{
       return m_data->compression;
     }
-  
+
   } // namespace io
 }

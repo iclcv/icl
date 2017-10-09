@@ -61,7 +61,7 @@ void mouse(const MouseEvent &e){
       v = octree->rayCastClosest(scene.getCamera(0).getViewRay(e.getPos()), 10);
       pos = v;
     }
-    
+
     indicatorCS->lock();
     indicatorCS->removeTransformation();
     indicatorCS->translate(v[0],v[1],v[2]);
@@ -72,7 +72,7 @@ void mouse(const MouseEvent &e){
 void init(){
   grabber.init(pa("-pci"));
   grabber.setConfigurableID("grabber");
-  
+
   if(pa("-pci2")){
     grabber2.init(pa("-pci2"));
     grabber2.setConfigurableID("grabber2");
@@ -90,7 +90,7 @@ void init(){
            << CheckBox("object 2",true).handle("o2").hideIf(!pa("-pci2"))
          )
       << Show();
-  
+
 
   // kinect camera
   scene.addCamera(cam);
@@ -102,7 +102,7 @@ void init(){
 
   obj.setPointSize(3);
   obj.setPointSmoothingEnabled(false);
-  
+
 
   if(pa("-vc")){
     ProgArg p = pa("-vc");
@@ -113,7 +113,7 @@ void init(){
     }
     scene.setDrawCamerasEnabled(true);
   }
-  
+
   if(pa("-cs")){
     scene.setDrawCoordinateFrameEnabled(true);
   }
@@ -133,7 +133,7 @@ void init(){
     obj2.setPointSmoothingEnabled(false);
     grabber2.grab(obj2);
   }
-  
+
   if(pa("-add-plane")){
     SceneObject *plane = new SceneObject;
     Vec p(pa("-add-plane",0),
@@ -142,7 +142,7 @@ void init(){
     Vec n(pa("-add-plane",3),
           pa("-add-plane",4),
           pa("-add-plane",5),1);
-    
+
     Vec nx;
     if(n[1] || n[2]){
       nx = cross(n, n + Vec(1,0,0));
@@ -150,7 +150,7 @@ void init(){
       nx = Vec(0,1,0,1);
     }
     Vec ny = cross(n, nx);
-    
+
     nx = normalize3(nx);
     nx[3] = 0;
     ny = normalize3(ny);
@@ -160,7 +160,7 @@ void init(){
     plane->addVertex(p + nx * 1500 - ny * 1500);
     plane->addVertex(p - nx * 1500 - ny * 1500);
     plane->addVertex(p - nx * 1500 + ny * 1500);
-    
+
     plane->addQuad(0,1,2,3,GeomColor(255,50,150,100));
     scene.addObject(plane,true);
 
@@ -197,12 +197,12 @@ void run(){
     obj.setVisible(gui["o1"].as<bool>());
     obj2.setVisible(gui["o2"].as<bool>());
   }
-  
+
   draw->color(0,100,255,255);
-  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ", 
+  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ",
              10, 30, -10);
   draw->color(255,255,255,255);
-  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ", 
+  draw->text(str(pos[0]) + "  " + str(pos[1]) + "  " + str(pos[2]) + "  ",
              12, 32, -10);
 
   draw.render();

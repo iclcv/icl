@@ -9,7 +9,7 @@ int main(int n, char **args){
   pa_explain("-input","input definition, the first first arg defines\n"
                       "the input grabber backend, second arg selects\n"
                       "a certain device from this backend");
-  
+
   pa_init(n,args,"-size|-s(Size=VGA) -index(int) -input|-i(2)");
 
 }

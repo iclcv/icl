@@ -37,13 +37,13 @@ using namespace icl::math;
 
 namespace icl {
   namespace core{
-    
+
     ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) { }
-    
+
     ImgBase::~ImgBase(){
       FUNCTION_LOG("");
     }
-  
+
     void ImgBase::print(const std::string title) const{
       std::cout << " -----------------------------------------" << std::endl
                 << "| image     : " << title  << std::endl
@@ -54,13 +54,13 @@ namespace icl {
                 << "| format    : " << getFormat() << std::endl
                 << "| roi       : " << (hasFullROI() ? str("full") : str(getROI())) << std::endl
                 << " -----------------------------------------" << std::endl;
-      
+
       for(int i=0;i<getChannels();++i){
         std::cout << "| range channel " << i << " :" << getMinMax(i) << std::endl;
       }
-      
+
       std::cout << " -----------------------------------------" << std::endl;
-      
+
       if(hasMetaData()){
         std::cout << "| no meta data available " << std::endl;
       }else{
@@ -90,13 +90,13 @@ namespace icl {
       }
     }
     template<class otherT>
-    Img<otherT> *ImgBase::convert(Img<otherT> *poDst) const{ 
+    Img<otherT> *ImgBase::convert(Img<otherT> *poDst) const{
       FUNCTION_LOG("ptr:"<<poDst);
       if(!poDst) poDst = new Img<otherT>(getParams());
       else poDst->setParams(getParams());
       poDst->setTime(getTime());
       poDst->setMetaData(getMetaData());
-    
+
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
       case depth##D: for(int c=getChannels()-1;c>=0;--c){               \
         icl::core::convert<icl##D,otherT>(asImg<icl##D>()->getData(c),  \
@@ -106,7 +106,7 @@ namespace icl {
         ICL_INSTANTIATE_ALL_DEPTHS;
       }
 #undef ICL_INSTANTIATE_DEPTH
-      return poDst;    
+      return poDst;
     }
 
     ImgBase *ImgBase::convertROI(depth d) const{
@@ -131,7 +131,7 @@ namespace icl {
     }
 
     template<class otherT>
-    Img<otherT> *ImgBase::convertROI(Img<otherT> *poDst) const{ 
+    Img<otherT> *ImgBase::convertROI(Img<otherT> *poDst) const{
       FUNCTION_LOG("ptr:"<<poDst);
       if(!poDst){
         poDst = new Img<otherT>(getROISize(),getChannels(),getFormat());
@@ -142,7 +142,7 @@ namespace icl {
       }
       poDst->setTime(getTime());
       poDst->setMetaData(getMetaData());
-    
+
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
       case depth##D:                                                    \
         for(int c=getChannels()-1;c>=0;--c){                            \
@@ -150,12 +150,12 @@ namespace icl {
                             poDst,c,poDst->getROIOffset(),poDst->getROISize()); \
         }                                                               \
         break;
-    
+
       switch(getDepth()){
         ICL_INSTANTIATE_ALL_DEPTHS;
       }
 #undef ICL_INSTANTIATE_DEPTH
-      return poDst;    
+      return poDst;
     }
 
     void ImgBase::setFormat(format fmt){
@@ -176,40 +176,40 @@ namespace icl {
                                  clipped_cast<icl64f,icl##D>(val),      \
                                  bROIOnly); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
     }
- 
+
     void ImgBase::normalizeAllChannels(const Range<icl64f> &dstRange){
       FUNCTION_LOG("");
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D: asImg<icl##D>()->normalizeAllChannels(           \
-                                                             dstRange.castTo<icl##D>()); break;                    
+                                                             dstRange.castTo<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-  
+
     void ImgBase::normalizeChannel(int iChannel,const Range<icl64f> &srcRange,const Range<icl64f> &dstRange){
       FUNCTION_LOG("");
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D: asImg<icl##D>()->normalizeChannel(iChannel,      \
                                                          srcRange.castTo<icl##D>(), \
-                                                         dstRange.castTo<icl##D>()); break;                       
+                                                         dstRange.castTo<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
 
-  
+
     void ImgBase::normalizeChannel(int iChannel,const Range<icl64f> &dstRange){
       FUNCTION_LOG("");
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D: asImg<icl##D>()->normalizeChannel(iChannel,      \
-                                                         dstRange.castTo<icl##D>()); break;                     
+                                                         dstRange.castTo<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
@@ -221,23 +221,23 @@ namespace icl {
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D: asImg<icl##D>()->normalizeImg(                   \
                                                      srcRange.castTo<icl##D>(), \
-                                                     dstRange.castTo<icl##D>()); break;          
+                                                     dstRange.castTo<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-  
+
     void ImgBase::normalizeImg(const Range<icl64f> &dstRange){
       FUNCTION_LOG("");
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D: asImg<icl##D>()->normalizeImg(                   \
-                                                     dstRange.castTo<icl##D>()); break;           
+                                                     dstRange.castTo<icl##D>()); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-  
+
 
     icl64f ImgBase::getMax(int iChannel, Point *coords) const{
       FUNCTION_LOG("");
@@ -253,7 +253,7 @@ namespace icl {
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMin(iChannel,coords);
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
       return 0;
     }
@@ -264,7 +264,7 @@ namespace icl {
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMin();
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
       return 0;
     }
@@ -274,7 +274,7 @@ namespace icl {
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMax();
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
       return 0;
     }
@@ -284,7 +284,7 @@ namespace icl {
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMinMax(iChannel,minCoords,maxCoords).castTo<icl64f>();
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
       return Range<icl64f>();
     }
@@ -294,7 +294,7 @@ namespace icl {
       switch(getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return asImg<icl##D>()->getMinMax().castTo<icl64f>();
         ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH   
+#undef ICL_INSTANTIATE_DEPTH
       }
       return Range<icl64f>();
     }
@@ -306,7 +306,7 @@ namespace icl {
       setFormat(params.getFormat());
       setROI(params.getROI());
     }
-  
+
     std::ostream &operator<<(std::ostream &s, const ImgBase &image){
       return s << "Img<" << image.getDepth() << ">(Size("<<image.getSize() <<"),"
                << image.getFormat() << ","<<image.getChannels() <<","

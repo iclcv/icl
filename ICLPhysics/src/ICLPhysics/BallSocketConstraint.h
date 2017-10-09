@@ -34,7 +34,7 @@
 namespace icl {
   namespace physics{
     class RigidObject;
-  
+
     /// This constraint simulates a ballsocket joint.
     class ICLPhysics_API BallSocketConstraint: public SixDOFConstraint{
       public:

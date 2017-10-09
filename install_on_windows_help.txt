@@ -1,6 +1,6 @@
 Genral note:
 
-We build icl for 32 bit (64 bit applications seem to be more complicated). That is, 
+We build icl for 32 bit (64 bit applications seem to be more complicated). That is,
 even on a 64 bit windows, all stuff is downloaded as 32 (aka x86) binaries/libraries.
 
 * get tortoise svn
@@ -9,7 +9,7 @@ even on a 64 bit windows, all stuff is downloaded as 32 (aka x86) binaries/libra
 * get a good editor (such as emacs)
 * get winrar
 * get cmake for windows (http://www.cmake.org/download/)
-* get windows SDK for your windows version 
+* get windows SDK for your windows version
   (https://msdn.microsoft.com/de-de/windows/desktop/aa904949.aspx)
   In the online installer, check only Windows Headers and Libraries/Headers and X86Libraries
 * If you have not done this already: download your graphics driver ...
@@ -19,7 +19,7 @@ even on a 64 bit windows, all stuff is downloaded as 32 (aka x86) binaries/libra
 * install sphinx using pip from command line:
   > pip install sphinx
   > pip install pyparsing
-* now on command line 
+* now on command line
   > sphinx-build -h
   Should actually produce some help text for sphinx-build
 * for formulas within the doxygen documentation, you'll need latex ans ghostscript
@@ -46,7 +46,7 @@ Download some important dependencies:
 pthread (mandatory)
 ~~~~~~~~~~~~~~~~~~~
 
-Use your browser to get pthread for windows from 
+Use your browser to get pthread for windows from
 ftp://sourceware.org/pub/pthreads-win32/dll-latest
 get dll/x86/pthreadVC2.dll and store to C:\ICL\dependencies\pthread\bin\
 get lib/x86/ptheradVC2.lib and store to c:\ICL\dependencies\pthread\lib\
@@ -61,11 +61,11 @@ Download Qt 5.5 (or maybe another newer or older version)
 using Qt's online installer:
 
 http://download.qt.io/official_releases/online_installers/qt-unified-windows-x86-online.exe
-run the qt-online installer 
+run the qt-online installer
 Chose the destination directory C:\ICL\dependencies\qt
 Deselect all but a single Qt version (e.g. only 5.5)
-In the chosen version, deselect all builds except for msvc2013 32Bit 
-Deselect all extra packages, such as  QtCanvas3D, Qt3D, Qt Script etc. 
+In the chosen version, deselect all builds except for msvc2013 32Bit
+Deselect all extra packages, such as  QtCanvas3D, Qt3D, Qt Script etc.
 Deselect Qt Extras
 You cannot deselect the installation of the QtCreator, so simply install it then :-)
 
@@ -81,7 +81,7 @@ unpack to C:\ICL\dependencies\glew-1.12.0 (or similar if the version is differen
 
 Configure Build using CMake
 ===========================
-cmake.exe should be in you path, if not, you'll have to use an absolute path in 
+cmake.exe should be in you path, if not, you'll have to use an absolute path in
 the commandline or you'll have to add the containing directory to your bin directory
 
 Open command line Window+R cmd -> ENTER
@@ -99,7 +99,7 @@ before we start: ensure to set some default configuration values
 check BUILD_APPS, BUILD_DEMOS and BUILD_DEMOS if you need them
 set the CMAKE_INSTALL_PREFIX to somewhere, where you'll have writing permissions
 please note that you can also leave it at the default value "C:/Program Files (x86)/ICL"
-if you simply create that folder manually and grant yourself writing permissions to that 
+if you simply create that folder manually and grant yourself writing permissions to that
 folder (using right click etc.). It is also recommended to check all BUILD_WITH_SSE* flags.
 
 Set up pthreadVC2
@@ -137,12 +137,12 @@ Import the project to Visual Studio Express 2013 and Combile it
 Open Visual studio
 Choose "Open Project"
 And then open C:\ICL\src\trunk\build\ICL (or the svn branch/tag that you chose)
-Chose the build type (debug or release) 
+Chose the build type (debug or release)
 hit F7 to build the project
 
 Once everything build correctly, right click on INSTALL in the project explorer and chose build
-if you get an error that starts with "the command setlocal ...", you dont have the permission to 
-install ICL into the specified CMAKE_INSTALL_PREFIX. You can either adapt the install prefix in 
+if you get an error that starts with "the command setlocal ...", you dont have the permission to
+install ICL into the specified CMAKE_INSTALL_PREFIX. You can either adapt the install prefix in
 cmake-gui or you can simply create the already specified target folder "C:/Program Files (x86)/ICL"
 and grant yourself writing permissions to that folder.
 
@@ -169,7 +169,7 @@ Installation and Enabling of further dependencies
 Bullet
 ~~~~~~
 
-* download bullet source and unpack 
+* download bullet source and unpack
 * use cmd and go to the unpacked folder
   > cd C:\path\to\folder\bullet3-2.83.5
   > mkdir build

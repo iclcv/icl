@@ -40,7 +40,7 @@ namespace icl{
     void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) throw (ICLException){
       this->nXCells = nXCells;
       this->nYCells = nYCells;
-      
+
       ICLASSERT_THROW((int)allGridPoints.size() == nXCells*nYCells,
                       ICLException("GridSceneObject::Constructor: nXCells*nYCells differs from allGridPoints.size()!"));
       for(int i=0;i<nXCells*nYCells;++i){
@@ -69,15 +69,15 @@ namespace icl{
         if(lines) addLine(getIdx(0,y),getIdx(0,y-1));
       }
     }
-  
+
     GridSceneObject::GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
                                      bool lines, bool quads) throw (ICLException){
       init(nXCells,nYCells,allGridPoints,lines,quads);
     }
-      
+
     GridSceneObject::GridSceneObject(int nXCells, int nYCells, const Vec &origin, const Vec &dx, const Vec &dy,
                                      bool lines, bool quads)throw (ICLException){
-      std::vector<Vec> allGridPoints; 
+      std::vector<Vec> allGridPoints;
       allGridPoints.reserve(nXCells*nYCells);
       for(int y=0;y<nYCells;++y){
         for(int x=0;x<nXCells;++x){
@@ -86,8 +86,8 @@ namespace icl{
       }
       init(nXCells,nYCells,allGridPoints,lines,quads);
     }
-  
-    
-  
+
+
+
   } // namespace geom
 }

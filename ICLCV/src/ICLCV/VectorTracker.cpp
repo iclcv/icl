@@ -44,9 +44,9 @@ using namespace icl::core;
 namespace icl{
   namespace cv{
     typedef VectorTracker::Vec Vec;
-    
+
     static inline float square(const float &a){ return a*a; }
-  
+
     static float eucl_dist(const Vec &a, const Vec &b){
       float sum  = 0;
       for(unsigned int i=0;i<a.size();++i){
@@ -57,7 +57,7 @@ namespace icl{
     static float sqrt_eucl_dist(const Vec &a, const Vec &b){
       return ::sqrt(eucl_dist(a,b));
     }
-    
+
     struct PearsonDist{
       const std::vector<float> &v;
       PearsonDist(const std::vector<float> &normFactors):v(normFactors){ }
@@ -69,14 +69,14 @@ namespace icl{
         return ::sqrt(sum);
       }
     };
-  
+
     struct VTMat{
       int dim;
       int height;
       std::vector<Vec> *cols[4]; // t-3,t-2,t-1, pred
       std::vector<int> goodV;
-      std::vector<int> ids; 
-     
+      std::vector<int> ids;
+
       VTMat(int dim):dim(dim),height(0){
         for(int c=0;c<4;++c){
           cols[c]=new std::vector<Vec>();
@@ -92,7 +92,7 @@ namespace icl{
           cols[c]=new std::vector<Vec>(*other.cols[c]);
         }
       }
-  
+
       VTMat &operator=(const VTMat &other){
         dim = other.dim;
         height = other.height;
@@ -104,20 +104,20 @@ namespace icl{
         }
         return *this;
       }
-      
-      
-      
+
+
+
       Vec &pred(int y){ return (*cols[3])[y]; }
-      
+
       int h() const { return height; }
-      
+
       void reset(){
         height = 0;
         goodV.clear();
         ids.clear();
         for(int c=0;c<4;++c){
           cols[c]->clear();
-        }    
+        }
       }
       static Vec predict_vec(const std::vector<bool> &extrapolationMask,const Vec &a, const Vec &b){
         Vec p(a.size());
@@ -141,26 +141,26 @@ namespace icl{
         }
         return p;
       }
-  
-      
+
+
       void predict(const std::vector<bool> &extrapolationMask){
         for(int y=0;y<height;++y){
           switch(goodV[y]){
             case 0:
               ERROR_LOG("this shell not happen!");
               break;
-            case 1: 
-              (*cols[3])[y] = (*cols[2])[y]; 
+            case 1:
+              (*cols[3])[y] = (*cols[2])[y];
               break;
-            case 2: 
+            case 2:
               (*cols[3])[y] = predict_vec(extrapolationMask, (*cols[1])[y], (*cols[2])[y] );
               break;
-            default: 
+            default:
               (*cols[3])[y] = predict_vec(extrapolationMask, (*cols[0])[y], (*cols[1])[y], (*cols[2])[y] );
           }
         }
       }
-  
+
       static void showVec(const std::vector<Vec> &a, const std::string &title="just a vec"){
         std::cout << "std::vector<Vec>:" << title << ":"<<std::endl;
         if(!a.size()){
@@ -175,18 +175,18 @@ namespace icl{
         }
       }
   #define SHOW_VEC(x) showVec(x,#x)
-      
+
       template<class DistanceFunc>
       Array2D<float> createDistanceMatrix(const std::vector<Vec> &newData, DistanceFunc dist_func, float largeVal){
         // DEBUG_LOG("creating distance matrix:");
         // SHOW_VEC(newData);
         // SHOW_VEC(*cols[3]);
-        
+
         int w = (int)newData.size();
         int h = height;
         int maxWH = iclMax(w,h);
         Array2D<float> distMat(maxWH,maxWH,largeVal);
-  
+
         for(unsigned int x=0;x<newData.size();++x){
           for(int y=0;y<height;++y){
             distMat(x,y) = dist_func(newData[x],pred(y));
@@ -194,10 +194,10 @@ namespace icl{
         }
         return distMat;
       }
-      
+
       virtual void notifyIDLoss(int id)=0;
       virtual void appendNewIDs(int n)=0;
-      
+
       void addRows(int n){
         int newH = height+n;
         for(int c=0;c<4;++c){
@@ -241,28 +241,28 @@ namespace icl{
         ids = newIDs;
         height = newH;
       }
-      
+
       // newCol is already assigned
       void pushCol(const std::vector<Vec> &newCol){
         std::vector<Vec> *c0 = cols[0];
         cols[0]=cols[1];
         cols[1]=cols[2];
         cols[2]=c0;
-        
+
         std::copy(newCol.begin(),newCol.end(),c0->begin());
-        
+
         for(int y=0;y<height;++y){
           if(goodV[y]<3) goodV[y]++;
         }
       }
     };
-    
-    
+
+
     struct VectorTracker::Data : public VTMat{
       virtual ~Data(){}
-  
-      Data(int dim, bool tryOpt,VectorTracker::IDmode idMode, 
-           float distanceThreshold, float largeVal, 
+
+      Data(int dim, bool tryOpt,VectorTracker::IDmode idMode,
+           float distanceThreshold, float largeVal,
            const std::vector<float> &normFactors,
            VectorTracker::DistanceFunction df,
            bool dfIsQualityFunction):
@@ -270,7 +270,7 @@ namespace icl{
         thresh(distanceThreshold),largeVal(largeVal),
         normFactors(normFactors),extrapolationMask(dim,true),
         distanceFunction(df),dfIsQualityFunction(dfIsQualityFunction){
-        
+
         bool all1 = true;
         for(unsigned int i=0;i<normFactors.size();++i){
           if(normFactors[i] != 1) all1 = true;
@@ -283,9 +283,9 @@ namespace icl{
         /// if normFactors are all equal to 1.0, we can just use default euclidian distance
         if(all1) this->normFactors.clear();
       }
-    
+
       std::vector<int> ass;
-      
+
       bool tryOpt;
       int nextID;
       VectorTracker::IDmode idMode;
@@ -297,14 +297,14 @@ namespace icl{
       VectorTracker::DistanceFunction distanceFunction;
       bool dfIsQualityFunction;
       Array2D<float> lastDistMat;
-      
+
       virtual void notifyIDLoss(int id){
         // DEBUG_LOG("notify id loss: " << id << "(idsMask.size is " << idMask.size() << ")");
         if(idMode == VectorTracker::firstFree){
           idMask[id] = false;
         }
       }
-      
+
       virtual void appendNewIDs(int n){
         switch(idMode){
           case VectorTracker::brandNew:
@@ -314,7 +314,7 @@ namespace icl{
             break;
           case VectorTracker::firstFree:{
             //DEBUG_LOG("########################### asking for " << n << " new ids");
-            int idsLeft = n; 
+            int idsLeft = n;
             for(unsigned int i=0;idsLeft && i<idMask.size();++i){
               if(!idMask[i]){
                 idMask[i] = true;
@@ -328,17 +328,17 @@ namespace icl{
             }
             break;
           }
-          default: 
+          default:
             ERROR_LOG("unknown id allocation mode");
         }
       }
       void adaptAssignment(std::vector<int> lostRows,int oldNum, int newNum){
         if(!lostRows.size()) return;
         std::sort(lostRows.begin(),lostRows.end());
-  
+
         unsigned int lostRowIdx = 0;
         int shift = 0;
-        
+
         std::vector<int> shiftTab(oldNum);
         for(int y=0;y<oldNum;++y){
           if(lostRowIdx < lostRows.size() && lostRows[lostRowIdx] == y){
@@ -349,7 +349,7 @@ namespace icl{
             shiftTab[y] = shift;
           }
         }
-  
+
         for(int x=0;x<newNum;++x){
           shift = shiftTab[ ass[x] ];
           if(shift<0){
@@ -360,22 +360,22 @@ namespace icl{
         }
       }
     };
-  
-    
+
+
     VectorTracker::VectorTracker():
       m_data(0){
     }
-    
+
     VectorTracker::VectorTracker(int dim, float largeDistance, const std::vector<float> &normFactors,
                                  IDmode idMode, float distanceThreshold, bool tryOpt, DistanceFunction df,
                                  bool dfIsQualityFunction):
       m_data(new VectorTracker::Data(dim,tryOpt,idMode,distanceThreshold,largeDistance,normFactors,df,dfIsQualityFunction)){
     }
-    
+
     VectorTracker::VectorTracker(const VectorTracker &other):
       m_data(other.m_data ? new VectorTracker::Data(*other.m_data) : 0){
     }
-    
+
     VectorTracker &VectorTracker::operator=(const VectorTracker &other){
       if(&other == this) return *this;
       if(!m_data){
@@ -389,13 +389,13 @@ namespace icl{
       }
       return *this;
     }
-  
-  
-    
+
+
+
     VectorTracker::~VectorTracker(){
       ICL_DELETE(m_data);
     }
-    
+
     bool VectorTracker::isNull() const{
       return !m_data;
     }
@@ -403,8 +403,8 @@ namespace icl{
     void VectorTracker::setDistanceFunction(DistanceFunction df){
       m_data->distanceFunction = df;
     }
-    
-    
+
+
     void VectorTracker::pushData(const std::vector<Vec> &newData){
       if(!m_data){
         ERROR_LOG("tried to push_data on a null-instance");
@@ -413,7 +413,7 @@ namespace icl{
       int newNum = (int)newData.size();
       int oldNum = m_data->h();
       int diff = oldNum-newNum;
-      
+
       if(!newNum){
         //DEBUG_LOG("[[[!newNum case]]]");
         m_data->reset();
@@ -421,7 +421,7 @@ namespace icl{
         m_data->idMask.clear();
         return;
       }
-      
+
       if(!m_data->h()){
         //DEBUG_LOG("[[[!m_data.h() case]]]");
         m_data->addRows(newNum);
@@ -429,7 +429,7 @@ namespace icl{
         m_data->ass.resize(newNum,-1);
         return;
       }
-      
+
       m_data->predict(m_data->extrapolationMask);
       Array2D<float> &distMat = m_data->lastDistMat;
       bool useCostMatrix = true;
@@ -448,12 +448,12 @@ namespace icl{
         m_data->ass = HungarianAlgorithm<float>::apply(distMat,useCostMatrix);
         // otherwise this is deferred to after trivial assignmnent check
       }
-      
+
       if(newNum > oldNum){//----------------------------------------------------
         //DEBUG_LOG("[[[newNum > oldNum case]]]");
         std::vector<Vec> orderedNewData(newNum);
         int nextBlindValIndex = newNum + diff;
-        
+
         for(int i=0;i<newNum;++i){
           if(m_data->ass[i] >= oldNum){
             orderedNewData[nextBlindValIndex++] = newData[i];
@@ -463,7 +463,7 @@ namespace icl{
         }
         m_data->addRows(-diff);
         m_data->pushCol(orderedNewData);
-        
+
       }else if(oldNum > newNum){ //-----------------------------------------------
         //DEBUG_LOG("[[[oldNum > newNum case]]]" << "  ... ( oldNum:"<< oldNum << " newNum:"<< newNum << " )"); // curr problem...
         std::vector<Vec> orderedNewData(oldNum);
@@ -471,7 +471,7 @@ namespace icl{
           orderedNewData[ m_data->ass[i] ] = newData[i];
         }
         m_data->pushCol(orderedNewData);
-        
+
         std::vector<int> lostRows;
         lostRows.reserve(diff);
         for(int i=oldNum-diff;i<oldNum;++i){
@@ -508,15 +508,15 @@ namespace icl{
           m_data->ass = HungarianAlgorithm<float>::apply(distMat);
           // Img32f(Size(distMat.w(),distMat.h()),1,std::vector<float*>(1,distMat.data())).printAsMatrix();
         }
-        
+
         for(int o=0;o<oldNum;++o){
           //DEBUG_LOG("ass[o]: " << m_data->ass[o]);
           orderedNewData[ m_data->ass[o] ] = newData[o];
         }
         m_data->pushCol(orderedNewData);
       }
-    }  
-  
+    }
+
     int VectorTracker::getID(int index,float *lastErrorOrScore) const{
       ICLASSERT_RETURN_VAL(!isNull(),-1);
       if(index >= 0 && index < (int)m_data->ass.size()){
@@ -540,17 +540,17 @@ namespace icl{
       ICLASSERT_RETURN_VAL(!isNull(),-1);
       return m_data->dim;
     }
-  
+
     void VectorTracker::setExtrapolationMask(const std::vector<bool> &mask){
       ICLASSERT_RETURN(m_data->dim == (int)mask.size());
       m_data->extrapolationMask = mask;
     }
-    
+
     const std::vector<bool> &VectorTracker::getExtrapolationMask() const{
       return m_data->extrapolationMask;
     }
-    
-  
+
+
   } // namespace cv
 } // namespace icl
 

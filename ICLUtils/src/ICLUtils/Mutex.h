@@ -36,15 +36,15 @@
 
 namespace icl{
   namespace utils{
-  
+
     /** \cond */
     class Lockable;
-    /** \endcond */  
-  
+    /** \endcond */
+
     /// Mutex class of the ICL \ingroup THREAD
     /** This mutex class is a simple object oriented wrapper of the
         pthread_mutex_t struct.
-        
+
         Mutices can be:
         - created (pthread_mutex_init)
         - locked (pthread_mutex_lock)
@@ -53,7 +53,7 @@ namespace icl{
     **/
     class Mutex : public Uncopyable{
       public:
-  
+
       /// This enum holds available mutex types.
       enum MutexType {
       //#ifndef ICL_SYSTEM_WINDOWS
@@ -62,10 +62,10 @@ namespace icl{
         /// recursive mutex can be locked repeatedly by owner-thread. needs equal unlocks.
         mutexTypeRecursive = PTHREAD_MUTEX_RECURSIVE
       //#else
-  
+
       //#endif
       } type;
-  
+
       /// Create a mutex
       /**
            @param type The default MutexType is MutexType::mutexTypeNormal
@@ -76,7 +76,7 @@ namespace icl{
         pthread_mutexattr_settype(&a, type);
         pthread_mutex_init(&m,&a);
   	  //#else
-  	  
+
   	  //#endif
       }
       /// Destroys the mutex
@@ -84,7 +84,7 @@ namespace icl{
   	  //#ifndef ICL_SYSTEM_WINDOWS
           pthread_mutex_destroy(&m);
   	  //#else
-  	  
+
   	  //#endif
       }
       /// locks the mutex
@@ -92,7 +92,7 @@ namespace icl{
   	  //#ifndef ICL_SYSTEM_WINDOWS
         pthread_mutex_lock(&m);
   	  //#else
-  	  
+
   	  //#endif
       }
       /// locks the mutex without blocking. returns immediately.
@@ -103,34 +103,34 @@ namespace icl{
         //#ifndef ICL_SYSTEM_WINDOWS
         return pthread_mutex_trylock(&m);
         //#else
-  
+
         //#endif
       }
-  
+
       /// unlocks the mutex
       void unlock(){
   	  //#ifndef ICL_SYSTEM_WINDOWS
         pthread_mutex_unlock(&m);
   	  //#else
-  	  
+
   	  //#endif
       }
-      
+
       /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
       class Locker : public Uncopyable{
         public:
         /// Locks the given mutex until the section is leaved
         Locker(Mutex *m);
-  
+
         /// Locks the given mutex until the section is leaved
         Locker(Mutex &m);
-  
+
         /// Locks given lockable until destruction
         ICLUtils_API Locker(const Lockable *l);
-  
+
         /// Locks given lockable until destruction
         ICLUtils_API Locker(const Lockable &l);
-  
+
         /// unlocks the given mutex (automatically called for objects on the stack)
         ~Locker();
         private:
@@ -143,8 +143,8 @@ namespace icl{
       /// wrapped thread_mutexattr struct
       pthread_mutexattr_t a;
     };
-    
-    
+
+
     /** \cond inline implementation of the embedded Locker class */
     inline Mutex::Locker::Locker(Mutex *m):m(m){
       m->lock();

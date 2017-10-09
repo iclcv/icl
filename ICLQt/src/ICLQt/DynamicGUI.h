@@ -48,8 +48,8 @@ namespace icl{
         features of these such as sizes or labels dynamically,
         i.e. without having to recompile the C++ application. The
         abstraction mechanism can also be used to implement different
-        GUI layouts e.g. optimized for different screen resolutions. 
-        
+        GUI layouts e.g. optimized for different screen resolutions.
+
         Here is an examplary xml-definition file
         <pre>
         <?xml version="1.0"?>
@@ -79,7 +79,7 @@ namespace icl{
       </pre>
 
         As one can see, the hierarchical GUI definition syntax is generically
-        translated to the XML-structure. 
+        translated to the XML-structure.
 
         \section INC the include tag
         With the include tag, (e.g. \<include href="other.xml"/\>) GUI files can even be
@@ -87,9 +87,9 @@ namespace icl{
         infinite inclusion loops.
     */
     class DynamicGUI : public qt::GUI, public utils::Uncopyable{
-      /// internal data 
+      /// internal data
       struct Data;
-    
+
       /// internal data pointer
       Data *m_data;
 
@@ -102,7 +102,7 @@ namespace icl{
           Slider) is defined by its name (which is 'slider') and a set
           of arguments. Here, the class distinguishes between direct
           arguments, which are the component specific arguments, e.g. in
-          case of a slider, the min, the max and the initial value, such 
+          case of a slider, the min, the max and the initial value, such
           as  "0,255,128". In addition other arguments are stored in a
           key-value-pair fashion, such as "handle='the slider'".
           */
@@ -119,7 +119,7 @@ namespace icl{
         void grabArgs(const pugi::xml_node &n);
 
         /// makes parent DynamicGUI class a friend of this one
-        friend class DynamicGUI; 
+        friend class DynamicGUI;
 
 
         public:
@@ -127,7 +127,7 @@ namespace icl{
         NodePtr parent;    //!< parent container component (or null for the top-level component)
         int level;         //!< hierarchy containment level of this component
         qt::GUI parsedGUI; //!< corresponding parse (but not created) GUI instance
-      
+
         std::string directArgs;            //!< direct, e.g. component specific arguments
         std::vector<KeyValue> args;        //!< general arguments, such as handle, label or minsize
         std::vector<NodePtr> children;     //!< all child-components (for containers only)
@@ -137,19 +137,19 @@ namespace icl{
         std::string getHandleName() const; //!< returns the handle (if there is one)
 
       };
-    
+
       typedef utils::SmartPtr<Node> NodePtr;  //!< typedef for node-pointers
       typedef Node ParseTree;                 //!< A tree is simply the root-node
       typedef utils::SmartPtr<ParseTree> ParseTreePtr; //!< pointer typedef
-    
+
       /// creates a new DynamicGUI instance from a given XML-description filename
       /** if cfgFileName is "", a null GUI instance is created that can be initialized
           in hindsight using initialize or load */
       DynamicGUI(const std::string &cfgFileName="", QWidget *parent=0);
-    
+
       /// Destructor
       ~DynamicGUI();
-    
+
       /// intialize DynamicGUI instance from given XML-string
       /** here, the XML-string is already in memory */
       void initialize(const std::string &cfgXMLString);
@@ -159,7 +159,7 @@ namespace icl{
 
       /// internally releases everything
       void release();
-    
+
       /// returns the internal parse-tree representation
       ParseTreePtr getParseTree();
 
@@ -167,15 +167,15 @@ namespace icl{
       private:
       /// internally used initialization method
       void initInternal(pugi::xml_node &root);
-    
+
       /// ostream operator for the node class
       friend std::ostream &operator<<(std::ostream &s, const DynamicGUI::Node &n);
-    
+
       /// internal tree-traversal method
-      static void traverse_tree(const pugi::xml_node &n, int level, 
+      static void traverse_tree(const pugi::xml_node &n, int level,
                                 utils::SmartPtr<DynamicGUI::Node> target);
-    
-      /// internal GUI-creation method 
+
+      /// internal GUI-creation method
       static void create_gui(Node &n);
     };
 

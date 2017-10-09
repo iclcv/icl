@@ -41,11 +41,11 @@ namespace icl {
     Constraint::~Constraint(){
       delete m_constraint;
     }
-    
+
     btTypedConstraint* Constraint::getConstraint(){
       return m_constraint;
     }
-    
+
     std::vector<RigidObject*>& Constraint::getObjects() {
       return m_objects;
     }

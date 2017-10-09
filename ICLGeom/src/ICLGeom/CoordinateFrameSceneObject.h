@@ -43,25 +43,25 @@
 
 namespace icl{
   namespace geom{
-    
+
     /// Special SceneObject implementation that define a visible coordinate frame
     /** The CoordinateFrameSceneObject is already integrated with the Scene
         class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
         visualize a Scene's coordintate frame. If you need a coordinate frame
         that is not alligned with the scene's origin, you can use this class. */
     class ICLGeom_API CoordinateFrameSceneObject : public SceneObject{
-      
+
       /// length for x-, y- and z-axis
       float axisLength;
-      
+
       /// thickness of the axis'
       float axisThickness;
-      
+
       /// only internally used for later adaption of parameters
       SceneObject *axis[3];
-  
+
       public:
-      
+
       /// Default constructor with useful default size
       CoordinateFrameSceneObject(float axisLength=100,float axisThickness=5):
       axisLength(axisLength),axisThickness(axisThickness){
@@ -71,7 +71,7 @@ namespace icl{
         }
         setVisible(Primitive::vertex,false,true);
         setVisible(Primitive::line,false,true);
-  
+
         setParams(axisLength,axisThickness);
       }
       /// Dynamic adaption
@@ -79,7 +79,7 @@ namespace icl{
         this->axisLength = axisLength;
         this->axisThickness = axisThickness;
         const float &l = axisLength, t=axisThickness;
-        
+
         for(int i=0;i<3;++i){
           axis[i]->removeTransformation();
           axis[i]->scale((i==0)*l+(i!=0)*t,
@@ -90,10 +90,10 @@ namespace icl{
                              (i==2)*l/2);
         }
       }
-      
+
       /// returns current length of the axis'
       float getAxisLength() const { return axisLength; }
-  
+
       /// returns current thickness of the axis'
       float getAxisThickness() const { return axisThickness; }
     };

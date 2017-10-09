@@ -38,26 +38,26 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
     namespace{
-     
-      template<class T, BinaryLogicalOp::optype OT> struct PixelFunc{ 
-        static inline T apply(const T t1, const T t2){ return t1 & t2; } 
-      };
-      template<class T> struct PixelFunc<T,BinaryLogicalOp::andOp>{ 
+
+      template<class T, BinaryLogicalOp::optype OT> struct PixelFunc{
         static inline T apply(const T t1, const T t2){ return t1 & t2; }
       };
-      template<class T> struct PixelFunc<T,BinaryLogicalOp::orOp>{ 
+      template<class T> struct PixelFunc<T,BinaryLogicalOp::andOp>{
+        static inline T apply(const T t1, const T t2){ return t1 & t2; }
+      };
+      template<class T> struct PixelFunc<T,BinaryLogicalOp::orOp>{
         static inline T apply(const T t1, const T t2){ return t1 | t2; }
       };
-      template<class T> struct PixelFunc<T,BinaryLogicalOp::xorOp>{ 
+      template<class T> struct PixelFunc<T,BinaryLogicalOp::xorOp>{
         static inline T apply(const T t1, const T t2){ return t1 ^ t2; }
       };
-  
-      template<class T, BinaryLogicalOp::optype OT> struct LoopFunc{  
+
+      template<class T, BinaryLogicalOp::optype OT> struct LoopFunc{
         // {{{ open
         static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
           for(int c=src1->getChannels()-1; c >= 0; --c) {
             ImgIterator<T> itDst = dst->beginROI(c);
-            
+
             for(const ImgIterator<T> itSrc1 = src1->beginROI(c),itSrc2 = src2->beginROI(c),
                 itEnd = src1->endROI(c); itSrc1 != itEnd; ++itSrc1, ++itSrc2, ++itDst){
               *itDst = PixelFunc<T,OT>::apply(*itSrc1,*itSrc2);
@@ -65,10 +65,10 @@ namespace icl {
           }
         }
       };
-  
+
       // }}}
-    
-     
+
+
   #ifdef ICL_HAVE_IPP
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
       inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
@@ -76,12 +76,12 @@ namespace icl {
         for (int c=src1->getChannels()-1; c >= 0; --c) {
           func (src1->getROIData (c), src1->getLineStep(),
                 src2->getROIData (c), src2->getLineStep(),
-                dst->getROIData (c), dst->getLineStep(), 
+                dst->getROIData (c), dst->getLineStep(),
                 dst->getROISize());
         }
     }
     // }}}
-         
+
   #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                           \
       template<> struct LoopFunc<icl8u, BinaryLogicalOp::OP##Op>{                                    \
         static inline void apply(const  Img<icl8u> *src1,const  Img<icl8u> *src2, Img<icl8u> *dst ){      \
@@ -96,13 +96,13 @@ namespace icl {
       CREATE_IPP_FUNCTIONS_FOR_OP(and,And);
       CREATE_IPP_FUNCTIONS_FOR_OP(or,Or);
       CREATE_IPP_FUNCTIONS_FOR_OP(xor,Xor);
-  
-  #undef CREATE_IPP_FUNCTIONS_FOR_OP    
-      
-      
+
+  #undef CREATE_IPP_FUNCTIONS_FOR_OP
+
+
   #endif
-      
-     
+
+
       template<BinaryLogicalOp::optype OT>
       void apply_op(const ImgBase *src1,const ImgBase *src2, ImgBase *dst){
         // {{{ open
@@ -112,12 +112,12 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
           default: ICL_INVALID_DEPTH;
         }
-      } 
-      
+      }
+
       // }}}
-    
-    } // end of anonymous namespace 
-  
+
+    } // end of anonymous namespace
+
     void BinaryLogicalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **ppoDst){
       // {{{ open
       ICLASSERT_RETURN( poSrc1 );
@@ -132,7 +132,7 @@ namespace icl {
         ERROR_LOG("unable to prepare destination image (aborting)");
         return;
       }
-      
+
       switch(m_eOpType){
         case andOp:  apply_op<andOp>(poSrc1,poSrc2,*ppoDst); break;
         case orOp:  apply_op<orOp>(poSrc1,poSrc2,*ppoDst); break;
@@ -140,6 +140,6 @@ namespace icl {
       }
     }
     // }}}
-  
+
   } // namespace filter
 }

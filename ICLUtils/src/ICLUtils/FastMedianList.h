@@ -41,27 +41,27 @@ namespace icl{
         To avoid the expensive sorting procedure of the list with runs in O(N*log(N)),
         the FastMedianList can be used.\n
         It exploits the knowledge of the maximum expected value to accelerate median
-        calculation. 
-        Naive approach: 
+        calculation.
+        Naive approach:
         <pre>
         given: set S of length n
-        
+
         1.  sort(S)                                             O(n*log(n))
         return S[n/2]
         </pre>
-        
+
         FastMedianList approach:
         <pre>
         given: an empty set S with max element M
         Create counter array A of size M initialized with 0     O(M)
         Create overall counter C = 0
-  
-        Set creation (iteratively) n times:                          
-        
+
+        Set creation (iteratively) n times:
+
         given: next elem e                                      O(n)
         A[e]++
         C++
-        
+
         Accessing median:                                       O(M)
         mass=0;
         HALF_C = C/2;
@@ -71,16 +71,16 @@ namespace icl{
             return i
           endif
         endfor
-  
+
         Overall complexity                                       O(M+n)
         </pre>
-        
-        
+
+
         The fast median list is faster if O(M+n) < O(n*log(n)). E.g. if we try
         to compute the median pixel x-position of an image of width 640.  We have
         640+n < n*log(n) --> 640 < n*(log(n)+1) which is true if n is larger than
         about 120.
-        
+
     */
     class FastMedianList{
       public:
@@ -90,14 +90,14 @@ namespace icl{
         m_iSize(size),m_iT2(t2),m_iT3(t3),m_iT4(t4), m_piTable(size ? new int[size]: 0){
         clear();
       }
-      
+
       /// Copy cosntructor
       inline FastMedianList(const FastMedianList &l):
         m_iSize(l.m_iSize),m_iT2(l.m_iT2),m_iT3(l.m_iT3),m_iT4(l.m_iT4){
         m_piTable = m_iSize ? new int[m_iSize] : 0;
         clear();
       }
-      
+
       /// Assign operator
       inline FastMedianList &operator=(const FastMedianList &l){
         m_iSize = l.m_iSize;
@@ -108,12 +108,12 @@ namespace icl{
         clear();
         return *this;
       }
-  
+
       /// destructor
       inline ~FastMedianList(){
         if(m_piTable) delete [] m_piTable;
       }
-      
+
       /// initialization function
       inline void init(int size, int t2=-1, int t3=-1, int t4=-1){
         m_iSize = size;
@@ -123,14 +123,14 @@ namespace icl{
         if(m_piTable)delete [] m_piTable;
         m_piTable = new int[size];
       }
-      
+
       /// add a new datum
       inline int add(int index){
         m_piTable[index]++;
         m_iCount++;
         return m_iCount;
       }
-  
+
       /// add a new datum (deprecated)
       inline void add(int index, int val){
         m_piTable[index]++;
@@ -145,7 +145,7 @@ namespace icl{
         m_piTable[index]++;
         m_iCount++;
       }
-      
+
       /// calculates the median value
       inline int median(){
         if(m_iCount == 0)return -1;
@@ -159,26 +159,26 @@ namespace icl{
         }
         return 0;
       }
-      
+
       /// resets the internal lookup table
       inline void clear(){
         memset(m_piTable,0,m_iSize*sizeof(int));
         m_iCount=0;
       }
-      
+
       /// calculates the mean value (not accelerated)
       inline int mean(){
         int m=0;
-        
+
         if (!m_iCount) return 0;
-        
+
         for(int i=0;i<m_iSize;i++){
           m+=m_piTable[i]*i;
         }
         return m/m_iCount;
-        
+
       }
-      
+
       /// calculates the variance of contained elements
       inline int variance(){
         int var=0;
@@ -187,33 +187,33 @@ namespace icl{
           var+=( m_piTable[i]*(int)pow(float(i-m),2) );
         }
         return var/m_iCount;
-        
+
       }
       /// returns the current count of elements
       inline int getSize(){
         return m_iCount;
       }
-      
+
       protected:
       /// internal element count
       int m_iCount;
-  
+
       /// internal storage of max size
       int m_iSize;
-  
+
       /// deprecated variable
       int m_iT2;
-  
+
       /// deprecated variable
       int m_iT3;
-  
+
       /// deprecated variable
       int m_iT4;
-  
+
       /// internal counter array
       int *m_piTable;
     };
-    
+
   } // namespace utils
 }
 

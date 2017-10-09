@@ -37,14 +37,14 @@
 #include <ICLCore/LineSampler.h>
 #include <ICLUtils/Random.h>
 
-/** 
+/**
     \defgroup TYPES Common Data Type Definitions
     \defgroup GENERAL General Utility and Support Functions
     \defgroup IMAGE Image Classes and Support Functions
 
-    ICL is a C++ image processing library, developed in the 
-    <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the 
-    <a href="www.uni-bielefeld.de">University of Bielefeld in Germany</a>. 
+    ICL is a C++ image processing library, developed in the
+    <a href="www.ni.www.techfak.uni-bielefeld.de"> Neuroinformatics Group</a> at the
+    <a href="www.uni-bielefeld.de">University of Bielefeld in Germany</a>.
     ICL provides a large set of features for image acquisition, image processing and
     image visualization. During the design and development process, the following main goals took center stage:
     - Optimal Performace (ensured by internal use of Intel IPP, see \ref IPP_MKL)
@@ -97,27 +97,27 @@
     - <b>ICLUtils</b> Contains general purpose functions and classes that are currently not part of the C++-STL (e.g. threads or matrices).
     - <b>ICLCore</b> basically provides class definitions for ICL's image classes Img and ImgBase and related global functions.
     - <b>ICLCC</b> provides functions and classes for color conversion.
-    - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera 
+    - <b>ICLIO</b> extends the range of functions by input and output classes. Camera grabbers different camera
       types (e.g. IEEE-1394 or Video-4-Linux) can be found     here as well a video file grabber or a file writer class.
     - <b>ICLCV</b> contains classes for blob detection and tracking and for connected component analysis.
     - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
     - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping (no longer exists)
-    - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration. 
-    - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI 
+    - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration.
+    - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
     - <b>ICLMarkers</b> contains a generic Fiducial Marker detection framework
-    - <b>ICLMath</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation. 
+    - <b>ICLMath</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation.
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
-    
-    (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV. 
+
+    (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV.
     Consequently these packages are not available if these dependencies are missing.
-    
+
     </TD><TD>
     \image html icl-components.png "ICL's component collaboration diagram"
     </TD></TR></TABLE>
 
     \section THE_IMAGE The Image Classes
-    
+
 
     <TABLE border=0><TR><TD>
 
@@ -129,17 +129,17 @@
     - type of pixels (see <b>data types</b>)
     - color format (see <b>color formats</b>)
     - raw image data access
-    - Region of Interest (see <b>Region of Interests</b> \ref ROI (ROI)) 
-    - a time stamp 
+    - Region of Interest (see <b>Region of Interests</b> \ref ROI (ROI))
+    - a time stamp
 
-    The ImgBase interface is implemented by the template class Img<T> which implements all abstract ImgBase-functions and aggregates a 
+    The ImgBase interface is implemented by the template class Img<T> which implements all abstract ImgBase-functions and aggregates a
     vector of planar image channel data pointers. Internally, these channel data pointers use reference counting to allow shallow image copies. \n
     <b>Img's copy-constructor and assignment operator use shallow copy on default!</b>
 
     The Img<T> template also adds functions for type-safe data access:
 
     - access to channel data pointers (using <tt>getData(channel)</tt> or <tt>begin(channel)</tt>)
-    - extraction of single image channels (using <tt>operator [](int)</tt>) 
+    - extraction of single image channels (using <tt>operator [](int)</tt>)
     - extraction of single image pixels (using <tt>operator()(x,y,channel-index)</tt> for single values or <tt>operator()(x,y)</tt> to obtain a pixel vector)
     - iterator based access to data of a given channel (using <tt>begin(channel)</tt> and <tt>end(channel)</tt>)
     - iterator based access to the ROI-pixels of a given channel (using <tt>beginROI(channel)</tt> and <tt>endROI(channel)</tt>)
@@ -147,10 +147,10 @@
     </TD><TD>
     \image html image-sketch.png "A sketch of ICL's image type Img<T>"
     </TD></TR></TABLE>
- 
+
     \section SEC_DATA_ORIGN Data Origin
     As most common image formats image processing use the upper left image corner as data origen, ICL follows this convention as well.
-    Howerver, many image operation like filtering or thresholding works without regarding the image contents at all. 
+    Howerver, many image operation like filtering or thresholding works without regarding the image contents at all.
     Nonetheless, we suggest to use this standard, as it is particularly important for I/O-routines or image visualization and - not at least - whenever
     discussing about ICL images.
 
@@ -158,19 +158,19 @@
     The Img treats images as a stack of image slices -- <b>channels</b>.  Channels
     can be shared by multiple Img instances, which is especially important for fast
     shallow images copies. Actually, it is possible to freely compose existing
-    channels (within several "parent images") to another new image.  
+    channels (within several "parent images") to another new image.
 
     Attention: The newly <i>composed</i> image shares its channel data with
     the original images, such that modifications will effect all images equally.
     In order to get an independent image a deep-copy as well as a so called detach method
-    are provided. The latter replaces the "shared" image channel(s) with new 
-    independent ones. Shared channel data are stored using the boost-like 
+    are provided. The latter replaces the "shared" image channel(s) with new
+    independent ones. Shared channel data are stored using the boost-like
     shared pointer class SmartPtr, which uses reference counting for autonomous garbage collection in order
     to realease <i>unused</i> image channels.
 
 
     \section DATA_TYPES Data-Types
-    The Img template is not implemented completely inline to reduce compilation expense. Therefore, the Img template 
+    The Img template is not implemented completely inline to reduce compilation expense. Therefore, the Img template
     is instantiated for the following types T
 
     - <b>icl8u</b> 8bit unsigned char
@@ -192,35 +192,35 @@
     which has the effect, that all information has to be scaled to this
     range, and all image processing functions must take care that
     no range-overflow occurs during calculation. Furthermore
-    the limited range may cause loss of information - particular in 
+    the limited range may cause loss of information - particular in
     complex systems.
     However integer types can often be processed significantly faster. In particular the use of 8-bit unsigned integer images
     relieves the the memory interface due to it's lower memory usage.
 
-    <b>A nice rule of thumb is: If processing speed matters, use Img8u images whenever it's possible and avoid Img64f because 
-    double processing is much slower on (still common) 32 bit machines (as long as you do not really need double precision)</b> 
+    <b>A nice rule of thumb is: If processing speed matters, use Img8u images whenever it's possible and avoid Img64f because
+    double processing is much slower on (still common) 32 bit machines (as long as you do not really need double precision)</b>
 
     \section ROI Region of Interest (ROI)
-    Each image can be set up with a rectangular region of interest. Nearly all algorithms 
+    Each image can be set up with a rectangular region of interest. Nearly all algorithms
     work only on the pixels within the ROI. If a function does not support
     ROI handling it will be noticed in the documentation. There are several ways
     to realize ROI handling in functions. The most common way is to use the
     ImgIterator with can be accessed using the STL-style functions beginROI(channel) and
-    endROI(channel). 
+    endROI(channel).
 
     \section Color Formats
     An ImgBase image provides information about the (color) format, that
     is associated with the image data represented by the images channels. Color
     is written in brackets, as not all available formats imply color-information.
-    The most known color space is probably the RGB color space. 
-    If an ImgBase image has the format <i>formatRGB</i>, than this implies the 
+    The most known color space is probably the RGB color space.
+    If an ImgBase image has the format <i>formatRGB</i>, than this implies the
     following:
     - the image has exactly 3 channels
     - the first channel contains RED-Data in range [0,255]
     - the second channel contains GREEN-Data in range [0,255]
     - the third channel contains BLUE-Data in range [0,255]
 
-    All additional implemented functions and classes regard this information. 
+    All additional implemented functions and classes regard this information.
     The currently available Img formats are member of the enum Format.
     A special format: formatMatrix can be used for arbitrary purpose.
 
@@ -255,8 +255,8 @@
     \code
     template<class T> class Img<T>{ ... };
 
-    Img8u create_image(){ 
-      return Img8u(); 
+    Img8u create_image(){
+      return Img8u();
     }
 
     int main(){
@@ -274,11 +274,11 @@
 
 
     \section IPP_MKL IPP/MKL-optimization
-    The Intel Integrated Performance Primitives (Intel IPP) and the Intel Math Kernel Library (Intel MKL) are assembler libraries that provide a C-interface 
-    to a large set of highly optimized and hardware accelerated functions for image processing, and 
+    The Intel Integrated Performance Primitives (Intel IPP) and the Intel Math Kernel Library (Intel MKL) are assembler libraries that provide a C-interface
+    to a large set of highly optimized and hardware accelerated functions for image processing, and
     other numerical problems for all processors providing MMX and SSE instruction sets,
     i.e. most common Intel and AMD processors.
-    As far as we know, Intel IPP and Intel MKL can be used freely for non-commercial use,<b> but not for research</b>. 
+    As far as we know, Intel IPP and Intel MKL can be used freely for non-commercial use,<b> but not for research</b>.
     Fortunately, IPP/MKL support is purely optional.
     Therefore you can simply develop your application with an ICL-build without IPP/MKL-optimization and re-link it against an optimized ICL-build lateron.
 
@@ -286,7 +286,7 @@
     If Intel IPP is available, it is highly integrated into ICL:
 
     - a large number of image processing functions are IPP-accelerated
-    - iclXX data types are typedef'ed to ippXX data types rather than to default types from the \<stdint.h\> header 
+    - iclXX data types are typedef'ed to ippXX data types rather than to default types from the \<stdint.h\> header
     - icl::Size extends the IppSize struct which enables the programmer to pass an icl::Size instance directly to an ipp-function call
     - the same is true for icl::Point and icl::Rect
     - all ipp-headers will we available, so IPP-functions can be used directly
@@ -295,16 +295,16 @@
 
     \subsection MKL Intel MKL
 
-    In contrast to the matrix package for small matrices, which is optimized for matrices up to dimensions of 6x6, Intel MKL is optimized for larger matrices. 
-    As under certain conditions, MKL is more then 100 times faster, we decided to add MKL support as well. However, MKL is currently only 
+    In contrast to the matrix package for small matrices, which is optimized for matrices up to dimensions of 6x6, Intel MKL is optimized for larger matrices.
+    As under certain conditions, MKL is more then 100 times faster, we decided to add MKL support as well. However, MKL is currently only
     used in the implementation of some DynMatrix multiplication functions in the ICLUtils package.
 
     \section ICLCore Modules
-    If you like to explore the ICLCore documentation by your own, take a 
+    If you like to explore the ICLCore documentation by your own, take a
     look a the following sub modules:\n
-    -# \ref TYPES 
+    -# \ref TYPES
     -# \ref GENERAL
-    -# \ref IMAGE 
+    -# \ref IMAGE
     -# \ref STRUTILS
 
 
@@ -313,4 +313,4 @@
     The list of 3rd party dependencies is given on <a href="http://www.iclcv.org>ICL's website</a>
 
 
-    **/ 
+    **/

@@ -54,7 +54,7 @@ int main(int n, char **ppc){
      ("-g","makes the grabber to grab an image before and after loading all properties\n"
       "for some devices (in particular some dc cameras), this is necessary to actually\n"
       "store the new parameters on the device");
-  
+
   pa_init(n,ppc,"-set|-s(param,value) -get|-g(param) [m]-input|-i(devicetype,devicespec) "
          "-list|-l -parameter-file|-p(input-xml-file) -output|-o(output-xml-file) -grab-once|-go");
 
@@ -66,7 +66,7 @@ int main(int n, char **ppc){
     pa_show_usage("invalid argument combination");
     exit(-1);
   }
-  
+
   GenericGrabber grabber;
   grabber.init(pa("-i"));
 
@@ -94,7 +94,7 @@ int main(int n, char **ppc){
     std::cout << "info" << std::endl;
     write_spaces(3*w,'-');
     std::cout << std::endl;
-    
+
     for(unsigned int i=0;i<l.size();++i){
       const std::string &s = l[i];
       std::string v = grabber.getPropertyValue(s);
@@ -104,5 +104,5 @@ int main(int n, char **ppc){
       write_spaces(w-v.length());
       std::cout << grabber.getPropertyInfo(s) << std::endl;
     }
-  }  
+  }
 }

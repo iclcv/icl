@@ -282,7 +282,7 @@ namespace icl{
       return ippStsNoErr;
     }
   #endif
-    
+
   #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                                         \
     template<class T>                                                                                                                     \
     DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst)                                            \

@@ -52,35 +52,35 @@ using namespace icl::utils;
 
 namespace icl{
   namespace io{
-  
+
     namespace{
       inline void replace_newline (string::value_type& c) {
         // {{{ open
-  
+
         if (c == '\n') c = ' ';
       }
-  
+
       // }}}
     }
-     
+
     class FileListImpl{
     public:
       FileListImpl(const std::string &pattern, bool omitDoubledFiles):
         // {{{ open
         m_bNoDoubledFiles(omitDoubledFiles){
-  
+
         if(pattern == "") return;
         string sPattern = pattern;
         std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
-  
+
   #ifndef ICL_SYSTEM_WINDOWS
   #ifndef ICL_SYSTEM_APPLE
         wordexp_t match;
-        
+
         // search for file matching the pattern(s)
         switch (wordexp (sPattern.c_str(), &match, WRDE_UNDEF)) {
           case 0: break;
-          case WRDE_BADCHAR: 
+          case WRDE_BADCHAR:
             throw ICLException ("illegal chars in pattern (|, &, ;, <, >, (, ), {, }");
             break;
           case WRDE_BADVAL:
@@ -93,65 +93,65 @@ namespace icl{
             throw ICLException ("syntax error, e.g. unbalanced parentheses or quotes");
             break;
         }
-        
+
         char **ppcFiles = match.we_wordv;
         for (unsigned int i=0; i < match.we_wordc; ++i) {
           if(!strchr(ppcFiles[i],'*')){
             add(ppcFiles[i]);
           }
         }
-  
+
         wordfree(&match);
   #else /*__APPLE__*/
         glob_t pglob;
-  
+
         int gflags = GLOB_MARK | GLOB_TILDE;
   //#ifdef __APPLE__ // only supported on __APPLE__
         gflags |= GLOB_QUOTE;
   //#endif
-  
+
         int gerr = glob(sPattern.c_str(), gflags, NULL, &pglob);
         if (gerr) {
             // refine if necessary
             throw ICLException ("wrong use of glob");
             //  pglob.gl_pathc = 0;
         }
-  
+
         for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
           /// only add those patterns without remaining wildchards
           if(!strchr(pglob.gl_pathv[i],'*')){
             add(pglob.gl_pathv[i]);
           }
         }
-  
+
         globfree(&pglob);
   #endif
   #else /* WIN32 */
         add(sPattern);
   #endif /* WIN32 */
       }
-  
+
       // }}}
       FileListImpl(const std::vector<std::string> &filenames)
         // {{{ open
-  
+
         :m_vecFiles(filenames),m_bNoDoubledFiles(false){
       }
-  
+
       // }}}
-      const string &at(int i) const { 
+      const string &at(int i) const {
         // {{{ open
-  
-        return m_vecFiles[i]; 
+
+        return m_vecFiles[i];
       }
-  
+
       // }}}
-      int size() const { 
+      int size() const {
         // {{{ open
-  
-        return (int)m_vecFiles.size(); 
+
+        return (int)m_vecFiles.size();
       }
-  
+
       // }}}
       void add(const string &filename){
         // {{{ open
@@ -167,8 +167,8 @@ namespace icl{
             m_vecFiles.push_back(filename);
           }
         }
-      } 
-      
+      }
+
       // }}}
     private:
       void addSequence(const string &filename){
@@ -179,92 +179,92 @@ namespace icl{
         utils::File seqFile(filename);
         ICLASSERT_RETURN(seqFile.exists());
         m_setSequenceFiles.insert(filename);
-        
+
         seqFile.open(File::readText);
         while(seqFile.hasMoreLines()){
           add(seqFile.readLine());
-        }            
+        }
       }
       // }}}
-  
+
       vector<string> m_vecFiles;
       set<string> m_setFiles;
       set<string> m_setSequenceFiles;
       bool m_bNoDoubledFiles;
     };
-  
+
     void FileListImplDelOp::delete_func(FileListImpl *i){
       // {{{ open
-  
+
       ICL_DELETE( i );
     }
-  
+
     // }}}
-    
+
     FileList::FileList():
       // {{{ open
       ShallowCopyable<FileListImpl,FileListImplDelOp>(0){
     }
-  
+
     // }}}
-    
+
     FileList::FileList(const string &pattern, bool omitDoubledFiles):
       // {{{ open
-  
+
       ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(pattern,omitDoubledFiles)){
     }
-  
+
     // }}}
-    
+
     FileList::FileList(const vector<string> &filenames):
       // {{{ open
-  
+
       ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(filenames)){
     }
-  
+
     // }}}
-    
+
     FileList::~FileList(){
       // {{{ open
-  
+
     }
-  
+
     // }}}
-    
+
     int FileList::size() const{
       // {{{ open
-  
+
       ICLASSERT_RETURN_VAL(!isNull(),0);
       return impl->size();
     }
-  
+
     // }}}
-    
+
     const string &FileList::operator[](int i) const{
       // {{{ open
-  
+
       static string _null;
       ICLASSERT_RETURN_VAL( !isNull() ,_null);
       ICLASSERT_RETURN_VAL( i < size(),_null);
       return impl->at(i);
     }
-  
+
     // }}}
-    
+
     void FileList::join(const FileList &other){
       // {{{ open
-  
+
       ICLASSERT_RETURN(!isNull());
       for(int i=0;i<other.size();i++){
         impl->add(other[i]);
       }
     }
-  
+
     // }}}
-  
+
     void FileList::toSequenceFile(const std::string &seqFileName) const{
       // {{{ open
-  
+
       ICLASSERT_RETURN(endsWith(seqFileName,".seq"));
       File seqFile(seqFileName);
       ICLASSERT_RETURN(!seqFile.exists());
@@ -273,12 +273,12 @@ namespace icl{
         seqFile.write((*this)[i]);
       }
     }
-  
+
     // }}}
-  
+
     void FileList::show() const {
       // {{{ open
-  
+
       if(isNull()){
         std::cout << "FileList: NULL" << std::endl;
         return;
@@ -288,15 +288,15 @@ namespace icl{
         std::cout << i << ": " << (*this)[i] << std::endl;
       }
     }
-  
+
     // }}}
-  
+
     string FileList::translateHashPattern(const std::string& sFileName) {
       // {{{ open
-  
+
       std::string::size_type iSuffixPos=string::npos;
       unsigned int nHashes=0;
-      
+
       // count number of hashes directly before file suffix
       analyseHashes (sFileName, nHashes, iSuffixPos);
       if (nHashes) {
@@ -311,7 +311,7 @@ namespace icl{
       }
       return sFileName;
     }
-  
+
     // }}}
   } // namespace io
 }
