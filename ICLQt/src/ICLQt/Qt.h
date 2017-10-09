@@ -66,11 +66,11 @@
 #include <ICLQt/PlotHandle.h>
 #include <ICLQt/ContainerGUIComponents.h>
 
-/** 
+/**
     \defgroup COMMON "Most common classes"
     \defgroup HANDLES "GUI Component Handle classes"
     \defgroup UNCOMMON "Uncommon classes (internally used)"
-    
+
     As it's core, this package provides a wrapper API for Qt-based GUI components. The main class of this
     package is the icl::GUI class. Further essential components are located in
     the \ref IVF .
@@ -80,15 +80,15 @@
     issues -- such as layouting GUI components and synchronizing GUI events and values with the applications
     working thread. To avoid theses issues, ICL comes up with a string- and stream-based GUI creation framework,
     that allows for creating most complex GUIs with just a few lines of well readable code.
-    However it always provides full access to the underlying Qt-components to enable the user to use 
-    <em>traditional</em> Qt-code to implement custom stuff where it is needed. 
+    However it always provides full access to the underlying Qt-components to enable the user to use
+    <em>traditional</em> Qt-code to implement custom stuff where it is needed.
 
     The GUI-framework provides some special components, such as the image visualization and annotation widgets (\ref IVF)
     and the icl::PlotWidget for 2D data visualization. In addition all common Qt-components, such as sliders and buttons,
     are also wrapped.
 
     \section IVF Image Visualisation and Annotation Framework
-    
+
     Development of a QWidget implementation for image visualisation implies finding answers to the following questions:
     - How can images be visualized at all?
     - How can this be done efficiently?
@@ -105,23 +105,23 @@
     - ...
 
     <TABLE border=0><TR><TD>
-    ICL's image visualization and annotation framework consists essentially of the three widget classes 
+    ICL's image visualization and annotation framework consists essentially of the three widget classes
     - icl::ICLWidget
-    - icl::ICLDrawWidget 
+    - icl::ICLDrawWidget
     - icl::ICLDrawWidget3D.
 
     At the lowest layer, the icl::GLImg provides an interfaces for converting ImgBase
     instances into an OpenGL texture (if the image is larger than OpenGL's maximum texture sizes, it
-    has to be split into several texture) that can be drawn arbitrarily into an OpenGL 
+    has to be split into several texture) that can be drawn arbitrarily into an OpenGL
     scene. Internally, the icl::GLImg class is used for different image depths
-    depths. Here, OpenGL's pixel-transfer parameters are used for hardware accelerated brightness and 
-    contrast adjustment. Furthermore, fitting images into the widget viewport can simply be performed 
+    depths. Here, OpenGL's pixel-transfer parameters are used for hardware accelerated brightness and
+    contrast adjustment. Furthermore, fitting images into the widget viewport can simply be performed
     by the graphics hardware. The GLImg can also be used as efficient video texture.
-    
+
     The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QGLWidget class for
-    creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for 
-    setting different visualisation parameters (explained in the icl::ICLWidget documentation)  as well as 
-    an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets 
+    creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for
+    setting different visualisation parameters (explained in the icl::ICLWidget documentation)  as well as
+    an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets
     provides a function <tt>setImage(core::ImgBase*)</tt> to make it show a new image. Internally, the image
     is buffered into a mutex-protected interleaved intermediate core::format, which can more easily be transferred
     to the graphics buffer. By these means, <tt>setImage</tt> can simply be called from the application's
@@ -140,24 +140,24 @@
     a new background image is given</b>. Since usually setting the background image is followed by posting
     a set of draw-commands, icl::ICLWidget::render() has to be called manually, once the image annotation is
     finished. (TODO add reference to example)
-    
+
     On the last level, the icl::ICLDrawWidget3D, which itself extends the icl::ICLDrawWidget, provides an interfaces
     for rendering 3D stuff on top of an image. The icl::ICLDrawWidget3D provides the icl::ICLDrawWidget3D::link method,
     which links a simple callback function to it. When the icl::ICLDrawWidget3D is rendered, it will also execute
     the linked OpenGL callback function in the GUI Thread, while still being able to render 2D annotations. <b>
     It is highly recommended to use the icl::Scene class to create 3D rendering overlays</b> The scene class can easily
     provide an appropriate OpenGL callback function for it's contained cameras.
-        
+
     Usage examples are given on <a href="http://www.iclcv.org">ICL's webpage</a>. Select info->tutorial in the top-menu.
 
     </TD><TD valign="top">
     \image html drawing-layers.png "Collaboration in ICL's visualisation and annotation framework"
     </TD></TR></TABLE>
-    
+
     \section OSM The ICLWidget's On-Screen-Menu
-    
+
     <TABLE border=0><TR><TD>
-    
+
     <b>note: this section is not up-to-date</b>\n
     The icl::ICLWidget's on-screen-menu provides a lot of basic features to adjust image
     visualisation parameters, such as brightness-contrast adjustment, or zooming to a certain
@@ -168,8 +168,8 @@
     automatically when the mouse is hovered above the widget and disappear automatically when
     the mouse leaves the widget screen area. In cases where the on-screen-menu isn't needed
     the automatic appearing of the widget control buttons can be deactivated.
-    
-    The leftmost button shows or hides the menu. By default, the menu is embedded into the 
+
+    The leftmost button shows or hides the menu. By default, the menu is embedded into the
     widget. The 2nd button detaches the menu from the widget and makes the menu an independent
     window. The next button that shows two diagonally aligned filled squares changes
     the internal image interpolation mode. By default, the image texture is painted using
@@ -184,7 +184,7 @@
     from the widgets menu. It can be used as a shotcut to stop recording even if the
     menu is currently not visible. A detailed explanation of the on-screen-menu itself
     is provided in the icl::ICLWidget's documentation.
-    
+
     </TD><TD>
     \image html osm-1.png "Widget control buttons"
     </TD></TR></TABLE>
@@ -194,6 +194,6 @@
     - \ref COMMON
     - \ref HANDLES
     - (for ICL-developers) \ref UNCOMMON
-    
+
 */
 

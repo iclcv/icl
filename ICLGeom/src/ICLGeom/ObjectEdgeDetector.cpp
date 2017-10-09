@@ -91,7 +91,7 @@ void ObjectEdgeDetector::initialize(Size size){
     if(m_data->isInitialized==true && size!=m_data->currentSize){
         m_data->isInitialized=false;
     }
-    
+
     if(m_data->isInitialized==false || size!=m_data->currentSize){
         objectEdgeDetector->initialize(size);
         m_data->isInitialized=true;

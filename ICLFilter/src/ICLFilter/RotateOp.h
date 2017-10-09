@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace filter{
-    
+
    /// Class to rotate images \ingroup UNARY \ingroup AFFINE
     class ICLFilter_API RotateOp : public AffineOp {
       public:
@@ -44,20 +44,20 @@ namespace icl{
         AffineOp (eInterpolate) {
           setAngle(dAngle);
         }
-      
+
       /// sets the rotation angle
       /**
-        @param dAngle angle in degrees (clockwise) 
+        @param dAngle angle in degrees (clockwise)
       */
       void setAngle (double dAngle) {
         AffineOp::reset ();
         AffineOp::rotate (dAngle);
       }
-      
+
       // apply should still be public
       ///applies the rotation
       using AffineOp::apply;
-  
+
       private: // hide the following methods
       using AffineOp::translate;
       using AffineOp::scale;

@@ -31,21 +31,21 @@
 
 namespace icl{
   namespace math{
-  
+
     KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
       if(list.size()>0){
         buildTree(list, 0, &root);
       }
     }
-    
+
     KDTree::KDTree(std::vector<DynMatrix<icl64f> *> &list){
       if(list.size()>0){
         buildTree(list, 0, &root);
       }
     }
-  
+
     KDTree::~KDTree(){}
-  
+
     struct sort_by_axis{
       unsigned int axis;
       sort_by_axis(unsigned int axis):axis(axis){}
@@ -56,7 +56,7 @@ namespace icl{
         return (*a)[axis] < (*b)[axis];
       }
     };
-  
+
     void KDTree::buildTree(std::vector<DynMatrix<icl64f> > &list, unsigned int depth, Node *node){
       if(list.size() == 1){
         node->point = &(list.at(0));
@@ -66,9 +66,9 @@ namespace icl{
       unsigned int axis = depth % k;
       std::sort(list.begin(),list.end(),sort_by_axis(axis));
       //sortList(list, axis);
-    
+
       unsigned int median = list.size()/2;
-    
+
       node->left = new Node();
       node->median = double((list.at(median)).at(0,axis));
       std::vector<DynMatrix<icl64f> > sublist;

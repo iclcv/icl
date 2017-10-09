@@ -52,7 +52,7 @@ SET(SOURCES src/ICLCV/CornerDetectorCSS.cpp
 
 
 
-          
+
 SET(HEADERS src/ICLCV/CornerDetectorCSS.h
             src/ICLCV/CV.h
             src/ICLCV/Extrapolator.h
@@ -85,7 +85,7 @@ IF (QT_FOUND)
   LIST(APPEND HEADERS src/ICLCV/HeartrateDetector.h)
   LIST(APPEND SOURCES src/ICLCV/HeartrateDetector.cpp)
 ENDIF()
-                    
+
 IF(IPP_FOUND)
   LIST(APPEND SOURCES src/ICLCV/ViewBasedTemplateMatcher.cpp
                       src/ICLCV/TemplateTracker.cpp)
@@ -150,7 +150,7 @@ ADD_LIBRARY(ICLCV SHARED ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(ICLCV ICLIO)
 
 SET_TARGET_PROPERTIES(ICLCV
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

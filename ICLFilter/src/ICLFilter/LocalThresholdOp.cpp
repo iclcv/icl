@@ -72,14 +72,14 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-    
-    LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope): 
+
+    LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope):
       // {{{ open
       m_roiBufSrc(0), m_roiBufDst(0),
       m_iiOp(new IntegralImgOp),
       m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
       m_tiledBuf1(0),m_tiledBuf2(0){
-      
+
       /*
           - mask size (range:spinbox)
           - global threshold (range:slider -100000,100000)
@@ -93,16 +93,16 @@ namespace icl{
       addProperty("actually used mask size","info","","0");
       addProperty("invert output","flag","",false);
     }
-    
+
     // }}}
-    
+
     LocalThresholdOp::LocalThresholdOp(LocalThresholdOp::algorithm a, int maskSize, float globalThreshold, float gammaSlope):
       // {{{ open
       m_roiBufSrc(0), m_roiBufDst(0),
       m_iiOp(new IntegralImgOp),
       m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
       m_tiledBuf1(0),m_tiledBuf2(0){
-      
+
       addProperty("mask size","range:slider","[1,100]",str(maskSize));
       addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
       addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
@@ -110,76 +110,76 @@ namespace icl{
       addProperty("actually used mask size","info","","0");
     }
     // }}}
-    
-    
+
+
     LocalThresholdOp::~LocalThresholdOp(){
       // {{{ open
-      
+
       ICL_DELETE(m_roiBufDst);
       ICL_DELETE(m_iiOp);
       ICL_DELETE(m_cmp);
       ICL_DELETE(m_tiledBuf1);
       ICL_DELETE(m_tiledBuf2);
     }
-    
+
     // }}}
-  
+
     void LocalThresholdOp::setMaskSize(unsigned int maskSize){
       // {{{ open
       prop("mask size").value = str(maskSize);
       call_callbacks("mask size",this);
     }
-  
+
     // }}}
-  
+
     void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
       // {{{ open
       prop("global threshold").value = str(globalThreshold);
       call_callbacks("global threshold",this);
     }
-  
+
     // }}}
-  
+
     void LocalThresholdOp::setGammaSlope(float gammaSlope){
       // {{{ open
       prop("gamma slope").value = str(gammaSlope);
       call_callbacks("gamma slope",this);
     }
-  
+
     // }}}
-  
+
     unsigned int LocalThresholdOp::getMaskSize() const{
       // {{{ open
       return parse<int>(prop("mask size").value);
     }
-  
+
     // }}}
-  
+
     float LocalThresholdOp::getGlobalThreshold() const{
       // {{{ open
       return parse<float>(prop("global threshold").value);
     }
-  
+
     // }}}
-  
+
     float LocalThresholdOp::getGammaSlope() const{
       // {{{ open
       return parse<float>(prop("gamma slope").value);
     }
-  
+
     // }}}
-  
+
     void LocalThresholdOp::setup(unsigned int maskSize, float globalThreshold, LocalThresholdOp::algorithm a, float gammaSlope){
       // {{{ open
-  
+
       setMaskSize(maskSize);
       setGlobalThreshold(globalThreshold);
       setGammaSlope(gammaSlope);
       setAlgorithm(a);
     }
-  
+
     // }}}
-  
+
     /// returns currently used algorithm type
     LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithm() const{
       // {{{ open
@@ -188,21 +188,21 @@ namespace icl{
                a =="tiled NN" ? tiledNN :
                a == "global" ? global : tiledLIN );
     }
-  
+
     // }}}
-    
+
     /// sets internally used algorithm
     void LocalThresholdOp::setAlgorithm(algorithm a){
       // {{{ open
       prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN": a == global ? "global" : "tiled linear");
       call_callbacks("algorithm",this);
     }
-  
+
     // }}}
 
-  
-    
-    
+
+
+
     /// this template resolves the destination images depths and if a gamma slope is set or not
     template<class S, class I>
     void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float tf, int m, float gs){
@@ -271,17 +271,17 @@ namespace icl{
           // this may not happen
           ICL_INVALID_DEPTH;
       }
-  
+
 
     }
-  
+
     // }}}
-  
+
     /// this template resolves the integral image depths
     template<class S>
     void apply_local_threshold_sxx(const Img<S> &src,const ImgBase *ii, ImgBase *dst, float t,unsigned int m, float gs){
       // {{{ open
-  
+
       switch(ii->getDepth()){
         case depth32s:
           apply_local_threshold_six(src,*ii->asImg<icl32s>(),dst,t,m,gs);
@@ -297,18 +297,18 @@ namespace icl{
           ICL_INVALID_DEPTH;
       }
     }
-  
+
     // }}}
-  
-  
+
+
     template<LocalThresholdOp::algorithm a>
     void LocalThresholdOp::apply_a(const ImgBase*, ImgBase**){
       // {{{ open
       throw ICLException("this algorithm is not yet implemented for the LocalThresholdOp class");
     }
     // }}}
-  
-  
+
+
     template<class T, class B>
     inline T roi_mean_gen(const Channel<T> &s, int dim, const Rect &roi){
       B buf = 0;
@@ -332,7 +332,7 @@ namespace icl{
     template<> inline icl32s roi_mean(const Channel<icl32s> &s, int dim, const Rect &roi){
       return roi_mean_gen<icl32s,int64_t>(s,dim,roi);
     }
-  
+
     template <class S>
     static void roi_cmp(const Channel<S> &s, const Rect &r, S val, Channel8u &d, int threshold){
       const int maxy = r.bottom();
@@ -381,24 +381,24 @@ namespace icl{
       linear_interpolate(ur,lr,cR,tsy);
       for(int y=0;y<tsy;++y){
         linear_interpolate_cmp<S>(cL[y], cR[y], tsx,
-                                  &src(roi.x,roi.y+y), 
+                                  &src(roi.x,roi.y+y),
                                   &dst(roi.x,roi.y+y),
                                   threshold,
                                   &cmp(roi.x,roi.y+y));
-        
+
       }
     }
-   
+
     template<class S>
-    static void apply_tiled_thresh(const Img<S> &s, Img8u &dst, 
+    static void apply_tiled_thresh(const Img<S> &s, Img8u &dst,
                                    Img<S> &buf1, Img<S> &buf2, int ts, int threshold,
                                    BinaryCompareOp *cmp, bool lin){
-      
+
       int w = s.getWidth();
       int h = s.getHeight();
       Size t(ts,ts);
       int dim = ts*ts;
-      
+
       int NX = w/ts;
       int NY = h/ts;
       Rect r(0,0,ts,ts);
@@ -408,14 +408,14 @@ namespace icl{
           the old version is outdated now
           Benchmarks: 1280x960 single channel (scaled lena image)
           OLD with IPP: 13.5ms
-          
+
           NEW (no IPP involved) 2.7ms
           */
-      
-#ifdef ICL_HAVE_IPP 
+
+#ifdef ICL_HAVE_IPP
       int bw = w/ts;
       // Time tt = tt2;
-      
+
       for(int c=s.getChannels()-1;c>=0;--c){
         S *pbuf1 = buf1.begin(c);
         const Channel<S> chan = s[c];
@@ -435,13 +435,13 @@ namespace icl{
       //tt = Time::now();
       cmp->apply(&s,&buf2,bpp(dst));
       //tt.printAge("compare");
-    
+
 #else
       for(int c=s.getChannels()-1;c>=0;--c){
         //S *pbuf1 = buf1.begin(c);
         const Channel<S> srcChan = s[c];
         Channel8u dstChan = dst[c];
-        
+
         if(lin){
           Channel<S> bufChan = buf1[0];
           const Channel<S> chan = s[c];
@@ -451,7 +451,7 @@ namespace icl{
               r.x = ts*x;
               bufChan(x,y) = roi_mean(chan,dim,r);
             }
-          } 
+          }
           const Point o(ts/2,ts/2);
           //S c1[ts],c2[ts];
           S *c1 = new S[ts];
@@ -470,7 +470,7 @@ namespace icl{
                           bufChan(x,y-1),
                           bufChan(x-1,y),
                           bufChan(x,y),
-                          srcChan, dstChan, 
+                          srcChan, dstChan,
                           r, threshold, chanCmp);
             }
           }
@@ -507,13 +507,13 @@ namespace icl{
             compare_lin(c1,c2,ts,th,
                         bufChan(x-1,0),bufChan(x,0),
                         bufChan(x-1,0),bufChan(x,0),
-                        srcChan, dstChan, 
+                        srcChan, dstChan,
                         Rect(th+(x-1)*ts,0,ts,th), threshold, chanCmp);
             // bottom
             compare_lin(c1,c2,ts,th,
                         bufChan(x-1,NY-1),bufChan(x,NY-1),
                         bufChan(x-1,NY-1),bufChan(x,NY-1),
-                        srcChan, dstChan, 
+                        srcChan, dstChan,
                         Rect(th+(x-1)*ts,ym,ts,th), threshold, chanCmp);
           }
           for(int y=1;y<NY;++y){
@@ -521,13 +521,13 @@ namespace icl{
             compare_lin(c1,c2,th,ts,
                         bufChan(0,y-1),bufChan(0,y-1),
                         bufChan(0,y),bufChan(0,y),
-                        srcChan, dstChan, 
+                        srcChan, dstChan,
                         Rect(0,th+(y-1)*ts,th,ts), threshold, chanCmp);
             // right
             compare_lin(c1,c2,th,ts,
                         bufChan(NX-1,y-1),bufChan(NX-1,y-1),
                         bufChan(NX-1,y),bufChan(NX-1,y),
-                        srcChan, dstChan, 
+                        srcChan, dstChan,
                         Rect(xm,th+(y-1)*ts,th,ts), threshold, chanCmp);
           }
 
@@ -554,11 +554,11 @@ namespace icl{
     inline bool can_devide_by(int i, int devider){
       return is_int(float(i)/float(devider));
     }
-    
-  
+
+
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledNN>(const ImgBase *src, ImgBase **dst){
       // {{{ open
-      
+
       int ts = 2*getMaskSize();
       // find closes number that devides w and h
       int w = src->getWidth(), h = src->getHeight();
@@ -576,12 +576,12 @@ namespace icl{
       }
       setPropertyValue("actually used mask size",ts);
       //      std::cout << "orig: " << 2*getMaskSize() << " --> adapted:" << ts << std::endl;
-      
+
       ICLASSERT_RETURN(ts>1);
       Size size = src->getSize();
       ensureCompatible(&m_tiledBuf1,src->getDepth(),size/ts, 1, formatMatrix);
       ensureCompatible(&m_tiledBuf2,src->getDepth(),size,1,formatMatrix);
-  
+
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                \
         case depth##D:                                          \
@@ -597,26 +597,26 @@ namespace icl{
         }
     }
     // }}}
-    
+
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledLIN>(const ImgBase *src, ImgBase **dst){
       // {{{ open
       apply_a<tiledNN>(src,dst); // LIN vs NN is handled by a runtime-bool
     }
     // }}}
-    
-    
+
+
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::regionMean>(const ImgBase *src, ImgBase **dst){
       // {{{ open
 
       m_iiOp->setIntegralImageDepth((src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth());
       const ImgBase *ii = m_iiOp->apply(src);
-      
+
       float t = getGlobalThreshold();
       int s = getMaskSize();
 
       setPropertyValue("actually used mask size",s);
       float gs = getGammaSlope();
-      
+
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_local_threshold_sxx<icl##D>(*src->asImg<icl##D>(), ii, *dst, t, s, gs); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
@@ -624,8 +624,8 @@ namespace icl{
       }
     }
     // }}}
-    
-    
+
+
     void LocalThresholdOp::apply(const ImgBase *src, ImgBase **dst){
       // {{{ open
       ICLASSERT_RETURN( src );
@@ -650,7 +650,7 @@ namespace icl{
       }
       ICLASSERT_RETURN(src->getWidth() > 2*(int)getMaskSize());
       ICLASSERT_RETURN(src->getHeight() > 2*(int)getMaskSize());
-      
+
       // prepare the destination image
       depth dstDepth = getAlgorithm() == regionMean ? (getGammaSlope() ? depth32f : depth8u) : depth8u;
       ImgBase **useDst = roi ? &m_roiBufDst : dst;
@@ -658,7 +658,7 @@ namespace icl{
         ERROR_LOG("prepare failure [code 1]");
         return;
       }
-      
+
       switch(getAlgorithm()){
         case regionMean: apply_a<regionMean>(src,useDst); break;
         case tiledNN: apply_a<tiledNN>(src,useDst); break;
@@ -666,7 +666,7 @@ namespace icl{
         default:
           throw ICLException(std::string(__FUNCTION__)+": invalid algorithm value");
       }
-      
+
       if(roi){
         if(!prepare(dst, srcOrig, (*useDst)->getDepth())){
           ERROR_LOG("prepare failure [code 2]");
@@ -683,10 +683,10 @@ namespace icl{
           c[i] = 255-c[i];
         }
       }
-    }  
-    
+    }
+
     // }}}
-    
-    
+
+
   } // namespace filter
 }

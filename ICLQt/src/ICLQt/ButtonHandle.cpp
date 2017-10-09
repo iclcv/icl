@@ -35,11 +35,11 @@
 namespace icl{
   namespace qt{
     ButtonHandle::ButtonHandle(){}
-    
+
     ButtonHandle::ButtonHandle(QPushButton *b, GUIWidget *w):
       GUIHandle<QPushButton>(b,w),m_triggered(new bool(false)){
     }
-  
+
     bool ButtonHandle::wasTriggered(bool reset) {
       if(*m_triggered){
         if(reset) *m_triggered = false;
@@ -47,14 +47,14 @@ namespace icl{
       }
       return false;
     }
-  
-    void ButtonHandle::reset() { 
-      *m_triggered = false; 
+
+    void ButtonHandle::reset() {
+      *m_triggered = false;
     }
-    const std::string &ButtonHandle::getID() const { 
-      return m_sID; 
+    const std::string &ButtonHandle::getID() const {
+      return m_sID;
     }
-  
-  
+
+
   } // namespace qt
 }

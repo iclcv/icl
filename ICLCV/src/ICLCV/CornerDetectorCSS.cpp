@@ -73,9 +73,9 @@ namespace icl{
         deriveAllAndCurvatureKernel = deriveProgram.createKernel("deriveAllAndCurvature");
       }
 
-      void operator()(const icl32f *in_x, const icl32f *in_y, 
+      void operator()(const icl32f *in_x, const icl32f *in_y,
                       float curvature_cutoff, unsigned int length, icl32f *curvature_out){
-        // make sure length is dividable by 2 to avoid prime numbers which can cause 
+        // make sure length is dividable by 2 to avoid prime numbers which can cause
         // weird issues witht the workgroup size and slow down the kernel
         unsigned int save_length = length + length % 2;
         unsigned int dim = length * sizeof(icl32f);
@@ -111,11 +111,11 @@ namespace icl{
                                          float straight_line_thresh,
                                          bool accurate):
       angle_thresh(angle_thresh), rc_coeff(rc_coeff), sigma(sigma),
-      curvature_cutoff(curvature_cutoff), 
-      straight_line_thresh(straight_line_thresh), 
+      curvature_cutoff(curvature_cutoff),
+      straight_line_thresh(straight_line_thresh),
       accurate(accurate), clcurvature(0), useOpenCL(false){
     }
-    
+
     int CornerDetectorCSS::gauss_radius(float sigma, float cutoff) {
       float ssq2 = sigma*sigma*2.f;
       float norm_inv = sqrt(float(M_PI)*ssq2);
@@ -135,7 +135,7 @@ namespace icl{
         mask[i] /= sum;
       }
     }
-    
+
     CornerDetectorCSS::~CornerDetectorCSS(){
       ICL_DELETE(clcurvature);
     }
@@ -166,7 +166,7 @@ namespace icl{
     }
 
     //this functions expects a minimum length of 3
-    void CornerDetectorCSS::calculate_curvatures(const float *smoothed_x, const float *smoothed_y, 
+    void CornerDetectorCSS::calculate_curvatures(const float *smoothed_x, const float *smoothed_y,
                                                  int length, float curvature_cutoff, float *curvatures) {
       //calculate special cases
       //i = 0
@@ -228,10 +228,10 @@ namespace icl{
       curvatures[length-1] = round(k*curvature_cutoff)/curvature_cutoff;
     }
 
-    void CornerDetectorCSS::calculate_curvatures_bulk(int array_length, int num_boundaries, 
+    void CornerDetectorCSS::calculate_curvatures_bulk(int array_length, int num_boundaries,
                                                       const int *lengths, const int *indices,
-                                                      const int *indices_padded, const float *smoothed_x, 
-                                                      const float *smoothed_y, float curvature_cutoff, 
+                                                      const int *indices_padded, const float *smoothed_x,
+                                                      const float *smoothed_y, float curvature_cutoff,
                                                       float *curvature) {
       float *padded_x = new float[array_length + num_boundaries * 4];
       float *padded_y = new float[array_length + num_boundaries * 4];
@@ -257,8 +257,8 @@ namespace icl{
       }
 #endif
       if(!done){
-        calculate_curvatures(padded_x, padded_y, 
-                             array_length + num_boundaries * 4, 
+        calculate_curvatures(padded_x, padded_y,
+                             array_length + num_boundaries * 4,
                              curvature_cutoff, curvature);
       }
       delete padded_x;
@@ -296,8 +296,8 @@ namespace icl{
       return maxima_offset;
     }
 
-    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, int maxima_offset, float* k, 
-                                               int length, int *extrema, int num_extrema, 
+    void CornerDetectorCSS::removeRoundCorners(float rc_coeff, int maxima_offset, float* k,
+                                               int length, int *extrema, int num_extrema,
                                                int *new_extrema, int *num_new_extrema_out) {
       int num_new_extrema = 0;
       for (int i=maxima_offset; i<num_extrema; i+=2) {
@@ -311,9 +311,9 @@ namespace icl{
       *num_new_extrema_out = num_new_extrema;
     }
 
-    void CornerDetectorCSS::removeRoundCornersAccurate(float rc_coeff, int maxima_offset, 
-                                                       float* k, int length, int *extrema, 
-                                                       int num_extrema, int *extrema_out, 
+    void CornerDetectorCSS::removeRoundCornersAccurate(float rc_coeff, int maxima_offset,
+                                                       float* k, int length, int *extrema,
+                                                       int num_extrema, int *extrema_out,
                                                        int *num_extrema_out) {
       int num_new_extrema = 0;
       float mean;
@@ -334,7 +334,7 @@ namespace icl{
       *num_extrema_out = num_new_extrema;
     }
 
-    float CornerDetectorCSS::cornerAngle(float *x, float *y, int prev, int current, 
+    float CornerDetectorCSS::cornerAngle(float *x, float *y, int prev, int current,
                                          int next, int length, float straight_line_thresh) {
       float xr = x[next] - x[current];
       float yr = y[next] - y[current];
@@ -353,8 +353,8 @@ namespace icl{
         return (T(0) < val) - (val < T(0));
     }
 
-    float CornerDetectorCSS::cornerAngleAccurate(float *x, float *y, int prev, int current, 
-                                                 int next, int array_length, 
+    float CornerDetectorCSS::cornerAngleAccurate(float *x, float *y, int prev, int current,
+                                                 int next, int array_length,
                                                  float straight_line_thresh) {
       int last, first, middle;
       float x0,y0,x1,y1,x2,y2,x3,y3;
@@ -398,7 +398,7 @@ namespace icl{
       return (angle < 0) ? angle+360 : (angle > 360) ? angle-360 : angle;
     }
 
-    void CornerDetectorCSS::removeFalseCorners(float angle_thresh, float* x, 
+    void CornerDetectorCSS::removeFalseCorners(float angle_thresh, float* x,
                                                float* y, float* k, int length,
                                                int *maxima, int num_maxima,
                                                int *maxima_out, int *num_maxima_out) {

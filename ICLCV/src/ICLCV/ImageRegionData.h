@@ -43,58 +43,58 @@
 
 namespace icl{
   namespace cv{
-  
+
     /// Utility class for shallow copied data of image region class  \ingroup G_RD
-    /** Note: a nested class of ImageRegion is not possible as we need forward 
+    /** Note: a nested class of ImageRegion is not possible as we need forward
         declarations of this class. Nested classes cannot be 'forward-declared' */
     struct ICLCV_API ImageRegionData{
     private:
       typedef ImageRegionData IRD;
     public:
-      friend class RegionDetector; 
-      friend struct ImageRegion;     
-      friend bool region_search_border(std::set<IRD*>&,IRD*); 
+      friend class RegionDetector;
+      friend struct ImageRegion;
+      friend bool region_search_border(std::set<IRD*>&,IRD*);
       friend void collect_subregions_recursive(std::set<IRD*>&,IRD*);
       friend bool is_region_contained(IRD*,IRD*);
       friend bool region_search_outer_bb(const utils::Rect&,std::set<IRD*>&,IRD*);
-    
+
     private:
       /// image pixle value
-      int  value; 
-      
+      int  value;
+
       /// Region-ID
       int id;
-  
+
       /// pixel-count
       mutable int size;
-  
+
       /// underlying image
       const core::ImgBase *image;
-  
+
       /// list of line segments
       std::vector<LineSegment> segments;
-      
+
       /// meta data, that can be associated with a region structure
       utils::Any meta;
-  
+
       /// structure for representing region-graph information
       struct RegionGraphInfo{
         /// Constructor
         RegionGraphInfo():isBorder(false),parent(0){}
-  
+
         /// is the region connected to the border
         bool isBorder;
-        
+
         // region graph information
         std::set<ImageRegionData*> neighbours;
-  
+
         // child regions
         std::vector<ImageRegionData*> children;
-  
+
         /// parent region
-        ImageRegionData *parent;              
+        ImageRegionData *parent;
       } *graph; //!< optional information about the region graph
-  
+
       // structure for representing simple region information
       struct SimpleInformation{
         inline SimpleInformation():
@@ -113,13 +113,13 @@ namespace icl{
         utils::Point32f *cog;          //!< center of gravity
         RegionPCAInfo *pcainfo; //!< spacial PCA information
         int boundaryLength;     //!< length of the region boundary
-  
+
         std::vector<utils::Point> *boundary;         //!< all boundary pixels
         std::vector<utils::Point> *thinned_boundary; //!< thinned boundary pixels
         std::vector<utils::Point> *pixels;           //!< all pixels
-  
+
       } *simple; //!< simple image region information
-  
+
       struct CSSParams{
         float angle_thresh;
         float rc_coeff;
@@ -127,7 +127,7 @@ namespace icl{
         float curvature_cutoff;
         float straight_line_thresh;
         std::vector<utils::Point32f> resultBuffer;
-  
+
         bool isOk(CornerDetectorCSS *css) const{
           return css->getAngleThreshold() == angle_thresh &&
           css->getRCCoeff() == rc_coeff &&
@@ -135,7 +135,7 @@ namespace icl{
           css->getCurvatureCutoff() == curvature_cutoff &&
           css->getStraightLineThreshold() == straight_line_thresh;
         }
-  
+
         void setFrom(CornerDetectorCSS *css){
           angle_thresh = css->getAngleThreshold();
           rc_coeff = css->getRCCoeff();
@@ -144,8 +144,8 @@ namespace icl{
           straight_line_thresh = css->getStraightLineThreshold();
         }
       };
-  
-      /// contains complex information, 
+
+      /// contains complex information,
       struct ComplexInformation{
         inline ComplexInformation():
           directSubRegions(0),allSubRegions(0),parent(0),
@@ -158,32 +158,32 @@ namespace icl{
           if(publicNeighbours) delete publicNeighbours;
           if(cssParams) delete cssParams;
         }
-        std::vector<ImageRegion> *directSubRegions;         //!< directly contained regions   
-        std::vector<ImageRegion> *allSubRegions;            //!< (even indirectly) contained regions   
+        std::vector<ImageRegion> *directSubRegions;         //!< directly contained regions
+        std::vector<ImageRegion> *allSubRegions;            //!< (even indirectly) contained regions
         ImageRegion *parent;                                //!< adjacent surrounding region
         std::vector<ImageRegion> *parentTree;               //!< surround regions
         std::vector<ImageRegion> *publicNeighbours;         //!< adjacent regions
         CSSParams *cssParams;
       } *complex; //!< more complex image region information
-  
-      
+
+
       CornerDetectorCSS *css; //!< for corner detection
-  
+
       /// Utility factory function
       static ImageRegionData *createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const core::ImgBase *image);
-  
+
       /// Constructor
       inline ImageRegionData(CornerDetectorCSS *css, int value, int id, unsigned int segmentSize, bool createGraph,const core::ImgBase *image):
         value(value),id(id),size(0),image(image),segments(segmentSize),graph(createGraph ? new RegionGraphInfo : 0),
       simple(0),complex(0),css(css){}
-      
+
       /// Destructor
       inline ~ImageRegionData(){
         if(graph) delete graph;
         if(simple) delete simple;
         if(complex) delete complex;
       }
-      
+
       // utility function (only if linkTable is not given)
       inline void link(ImageRegionData *a){
         if(this != a){
@@ -198,32 +198,32 @@ namespace icl{
           }
         }
       }
-      
+
       /// adds a new child region
       inline void addChild(ImageRegionData *a){
         graph->children.push_back(a);
         a->graph->parent = this;
       }
-      
+
       /// for debugging only
       void showTree(int indent=0) const;
-  
-      /// for debugging only 
+
+      /// for debugging only
       void showWithNeighbours() const;
-      
+
       /// utility function
       inline ComplexInformation *ensureComplex(){
         if(!complex) complex = new ComplexInformation;
         return complex;
       }
-      
+
       /// utility function
       inline SimpleInformation *ensureSimple(){
         if(!simple) simple = new SimpleInformation;
         return simple;
       }
     };
-    
+
   } // namespace cv
 }
 

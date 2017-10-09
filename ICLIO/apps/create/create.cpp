@@ -52,7 +52,7 @@ int main(int n, char **ppc){
 
   std::string patternName,outFileName;
 
-  
+
   if( pa("-p") && pa_get_count()){
     pa_show_usage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
     exit(-1);
@@ -61,7 +61,7 @@ int main(int n, char **ppc){
 
   if(pa_get_count() > 2){
     pa_show_usage("only two dangling arguments are allowed");
-  }  
+  }
   if(!pa("-o") && pa_get_count() < 2){
     pa_show_usage("-output or two dangling arguments are mandatory");
     exit(-1);
@@ -75,9 +75,9 @@ int main(int n, char **ppc){
     exit(-1);
   }
   outFileName = pa_get_count()==2 ? *pa(1) : *pa("-o");
-  
+
   ImgBase *image = new ImgQ(create(patternName));
-  
+
   format fmt = pa("-f");
   int channels = image->getChannels();
   Size size = pa_def("-s",image->getSize());
@@ -89,13 +89,13 @@ int main(int n, char **ppc){
   }
   ImgParams p(size,channels,fmt);
   depth d = pa_def("-d",image->getDepth());
-              
+
   FixedConverter conv(p,d);
-  
+
   ImgBase *dst = 0;
   conv.apply(image,&dst);
-  
+
   FileWriter fw(outFileName);
   fw.write(dst);
-  
+
 }

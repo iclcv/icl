@@ -12,7 +12,7 @@ void init(){
       << Prop("fid").maxSize(18,100)
       << Show();
 
-  grabber.init(pa("-input")); 
+  grabber.init(pa("-input"));
 }
 
 void run(){

@@ -54,17 +54,17 @@ void mouse(const MouseEvent &e){
 
 void init(){
   gui << Draw().minSize(32,24).handle("draw");
-  gui << ( HBox().maxSize(100,3) 
+  gui << ( HBox().maxSize(100,3)
            << Spinner(1,100000,100).out("minSize").label("min size")
            << Spinner(1,100000,1000).out("maxSize").label("max size")
-           << FSlider(0,300,30).out("thresh").label("threshold") 
+           << FSlider(0,300,30).out("thresh").label("threshold")
            )
       << Show();
 
-  
+
   gui["draw"].install(new MouseHandler(mouse));
   grabber.init(pa("-i"));
-  
+
   S.add(Color(255,0,0),100,Range32s(100,100));
   S.add(Color(0,255,0),100,Range32s(100,100));
   S.add(Color(0,0,255),100,Range32s(100,100));
@@ -74,9 +74,9 @@ void run(){
   static DrawHandle draw = gui["draw"];
   static FPSLimiter fps(20);
   const Img8u *image = grabber.grab()->asImg<icl8u>();
-  
+
   const std::vector<SimpleBlobSearcher::Blob> &blobs = S.detect(*image);
-  
+
   draw = image;
 
   for(unsigned int i=0;i<blobs.size();++i){

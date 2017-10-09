@@ -52,32 +52,32 @@ namespace icl{
       struct BlurTool : public filter::UnaryOp{
         SmartPtr<ConvolutionOp> c_3x3;
         SmartPtr<ConvolutionOp> c_5x5;
-        SmartPtr<ConvolutionOp> c_horz; 
-        SmartPtr<ConvolutionOp> c_vert; 
-        
+        SmartPtr<ConvolutionOp> c_horz;
+        SmartPtr<ConvolutionOp> c_vert;
+
         int lastDim;
-        
+
         int currMaskDim;
-        
+
         BlurTool():lastDim(-1), currMaskDim(0){
           c_3x3 = new ConvolutionOp(ConvolutionKernel::gauss3x3);
           c_5x5 = new ConvolutionOp(ConvolutionKernel::gauss5x5);
-          
+
           c_3x3->setClipToROI(false);
           c_5x5->setClipToROI(false);
 
           setClipToROI(false);
         }
-        
+
         void setMaskDim(int dim){
           currMaskDim = dim;
         }
-        
+
         using UnaryOp::apply;
         virtual void apply(const ImgBase *src, ImgBase **dst){
           blur_seperated(*src->as32f(), currMaskDim, dst);
         }
-        
+
         void blur_seperated(const Img32f &image, int maskDim, ImgBase **dst){
           if(maskDim == 3){
             c_3x3->apply(&image,dst);
@@ -104,7 +104,7 @@ namespace icl{
         }
       };
     } // anonymous namespace
-  
+
     struct DepthCameraPointCloudGrabber::Data{
       GenericGrabber depthGrabber;
       GenericGrabber colorGrabber;
@@ -112,23 +112,23 @@ namespace icl{
       const Img32f *lastDepthImage;
       const Img8u *lastColorImage;
       SmartPtr<const Img8u> colorMask,depthMask;
-      
+
       SmartPtr<MotionSensitiveTemporalSmoothing> temporalSmoothing;
       int lastNFrames;
       int lastNullValue;
-      
+
       SmartPtr<MedianOp> median;
       SmartPtr<BlurTool> blurTool;
     };
-    
+
     const Camera &DepthCameraPointCloudGrabber::get_default_depth_cam(){
       static const Camera cam; return cam;
     }
     const Camera &DepthCameraPointCloudGrabber::get_null_color_cam(){
       static const Camera cam; return cam;
     }
-    
-    
+
+
     DepthCameraPointCloudGrabber::DepthCameraPointCloudGrabber(const Camera &depthCam,
                                                                const Camera &colorCam,
                                                                const std::string &depthDeviceType,
@@ -139,7 +139,7 @@ namespace icl{
       m_data(new Data){
       m_data->lastColorImage = 0;
       m_data->lastDepthImage = 0;
-      
+
       m_data->depthGrabber.init(depthDeviceType,depthDeviceType+"="+depthDeviceID);
       m_data->depthGrabber.useDesired(formatMatrix);
       m_data->depthGrabber.useDesired(depth32f);
@@ -150,10 +150,10 @@ namespace icl{
       }
 
       addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");
-  
+
       if(&colorCam != &get_null_color_cam()){
-        m_data->creator.init(depthCam, colorCam, 
-                             needsKinectRawDepthInput ? 
+        m_data->creator.init(depthCam, colorCam,
+                             needsKinectRawDepthInput ?
                              PointCloudCreator::KinectRAW11Bit :
                              PointCloudCreator::DistanceToCamPlane);
         m_data->colorGrabber.init(colorDeviceType,colorDeviceType+"="+colorDeviceID);
@@ -162,7 +162,7 @@ namespace icl{
         m_data->colorGrabber.useDesired(colorCam.getResolution());
         addChildConfigurable(m_data->colorGrabber.getGrabber(),"Color Source");
       }else{
-        m_data->creator.init(depthCam,  needsKinectRawDepthInput ? 
+        m_data->creator.init(depthCam,  needsKinectRawDepthInput ?
                              PointCloudCreator::KinectRAW11Bit :
                              PointCloudCreator::DistanceToCamPlane);
       }
@@ -189,7 +189,7 @@ namespace icl{
       m_data->blurTool = new BlurTool;
     }
 
-    void DepthCameraPointCloudGrabber::reinit(const std::string &description) 
+    void DepthCameraPointCloudGrabber::reinit(const std::string &description)
       throw (utils::ICLException){
       std::vector<std::string> ts = tok(description,"@");
       std::string newDCam, newCCam;
@@ -199,7 +199,7 @@ namespace icl{
         }else if(ts[i].size() > 5 && ts[i].substr(0,5) == "ccam="){
           newCCam = ts[i].substr(5);
         }else{
-          throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description + 
+          throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description +
                              "): invalid description syntax [ syntax is "
                              "@dcam=filename@ccam=filename ]");
         }
@@ -212,7 +212,7 @@ namespace icl{
         Camera dcam = m_data->creator.getDepthCamera();
         m_data->creator.init(dcam, Camera(newCCam));
       }else{
-         throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description + 
+         throw ICLException("DepthCameraPointCloudGrabber::reinit(" + description +
                             "): not a single valid token was found [ syntax is "
                             "@dcam=filename@ccam=filename ]");
       }
@@ -225,9 +225,9 @@ namespace icl{
     Camera DepthCameraPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
       return m_data->creator.getColorCamera();
     }
-    
 
-    void DepthCameraPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) 
+
+    void DepthCameraPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T)
       throw (utils::ICLException){
       Camera dCam = getDepthCamera();
       Mat Tdi = dCam.getCSTransformationMatrix();
@@ -240,7 +240,7 @@ namespace icl{
       try{
         Camera cCam = getColorCamera();
         Mat Tc = cCam.getInvCSTransformationMatrix();
-        
+
         Mat Trel = Tdi * Tc;
         // get relative transform between depth and color
         cCam.setWorldTransformation( Td2 * Trel);
@@ -249,7 +249,7 @@ namespace icl{
         m_data->creator.init(dCam);
       }
     }
-    
+
     DepthCameraPointCloudGrabber::~DepthCameraPointCloudGrabber(){
       delete m_data;
     }
@@ -261,13 +261,13 @@ namespace icl{
       }
       m_data->colorMask = SmartPtr<const Img8u>(mask,passOwnerShip);
     }
-    
+
     void DepthCameraPointCloudGrabber::setDepthImageMask(const Img8u *mask, bool passOwnerShip){
       m_data->depthMask = SmartPtr<const Img8u>(mask,passOwnerShip);
     }
 
-    
-    
+
+
     void DepthCameraPointCloudGrabber::grab(PointCloudObjectBase &dst){
       dst.lock();
       bool useNewImages = !getPropertyValue("re-use exisiting images").as<bool>();
@@ -302,7 +302,7 @@ namespace icl{
           depthImage = const_cast<Img32f*>(m_data->temporalSmoothing->apply(depthImage)->as32f());
           depthImage->setFullROI();
         }
-        
+
         if(m_data->depthMask){
           ICLASSERT_THROW(m_data->depthMask->getSize() == depthImage->getSize(),
                           ICLException("DepthCameraPointCloudGrabber::grab: "
@@ -317,7 +317,7 @@ namespace icl{
       }else{
         depthImage = const_cast<Img32f*>(m_data->lastDepthImage);
       }
-      
+
       Img8u *rgbImage = 0;
       if(useNewImages || !m_data->lastColorImage){
         rgbImage = m_data->colorGrabber.isNull() ? 0 : (Img8u*)m_data->colorGrabber.grab()->as8u();
@@ -349,7 +349,7 @@ namespace icl{
       dst.unlock();
     }
 
-  
+
     const Img32f &DepthCameraPointCloudGrabber::getLastDepthImage() const{
       if(!m_data->lastDepthImage){
         throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal depht image was null "
@@ -357,7 +357,7 @@ namespace icl{
       }
       return *m_data->lastDepthImage;
     }
-  
+
     const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const throw (ICLException){
       if(!m_data->lastColorImage){
         throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal color image was null (either"
@@ -369,15 +369,15 @@ namespace icl{
     void DepthCameraPointCloudGrabber::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
       m_data->creator.mapImage(src,dst,depthImageMM);
     }
-    
+
     void DepthCameraPointCloudGrabber::setUseCL(bool enable){
       m_data->creator.setUseCL(enable);
     }
-    
+
     PointCloudCreator &DepthCameraPointCloudGrabber::getCreator(){
       return m_data->creator;
     }
-    
+
     const PointCloudCreator &DepthCameraPointCloudGrabber::getCreator() const{
       return m_data->creator;
     }
@@ -392,18 +392,18 @@ namespace icl{
       //DEBUG_LOG("this function was called!!!");
       return m_data->lastDepthImage;
     }
-    
+
     const Img8u *DepthCameraPointCloudGrabber::getColorImage() const{
       return m_data->lastColorImage;
     }
-    
+
     static PointCloudGrabber *create_depth_camera_point_cloud_grabber(const std::map<std::string,std::string> &d){
       std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
       if(it == d.end()) return 0;
       const std::string &params = it->second;
 
       std::vector<std::string> ts = tok(params,",");
-      
+
       bool raw = false;
       for(size_t i=0;i<ts.size();++i){
         if(ts[i] == "raw" || ts[i] == "RAW"){
@@ -411,18 +411,18 @@ namespace icl{
           ts.erase(ts.begin()+i);
         }
       }
-      
+
       const Camera *dc = 0, *cc = 0;
       Camera dcx,ccx;
-      
-      
+
+
       if(ts[2] == "DEFAULT"){
         dc = &DepthCameraPointCloudGrabber::get_default_depth_cam();
       }else{
         dcx = Camera(ts[2]);
         dc = &dcx;
       }
-      
+
       if(ts.size() == 3){
         cc = &DepthCameraPointCloudGrabber::get_null_color_cam();
       }else if(ts[5] == "DEFAULT"){
@@ -431,14 +431,14 @@ namespace icl{
         ccx = Camera(ts[5]);
         cc = &ccx;
       }
-      
+
       if(ts.size() == 3){
         return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],"","",raw);
       }else{
         return new DepthCameraPointCloudGrabber(*dc,*cc,ts[0],ts[1],ts[3],ts[4],raw);
       }
     }
-    
+
     REGISTER_PLUGIN(PointCloudGrabber,dcam,create_depth_camera_point_cloud_grabber,
                     "Point cloud grabber based on a depth and an optional color camera",
                     "creation-string: depth-camera-type,depth-camera-id,depth-camera-calib-file"

@@ -85,7 +85,7 @@ Assertions:
 Tests:
 • TEST(test_case_name, test_name) {
     # any commands, assertions
-  } 
+  }
 
 Fixtures:
 • when several test operate on similar data, use fixtures
@@ -95,7 +95,7 @@ Fixtures:
   {
     # any commands, assertions
   }
-  
+
 (see http://code.google.com/p/googletest/wiki/GoogleTestPrimer for more
 information)
 

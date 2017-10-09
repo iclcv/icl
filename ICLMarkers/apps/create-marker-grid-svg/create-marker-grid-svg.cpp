@@ -44,7 +44,7 @@ std::string toBase64(const void *data, size_t len){
   int j = 0;
   unsigned char c3[3];
   unsigned char c4[4];
-  
+
   while (len--) {
     c3[i++] = *(src++);
     if (i == 3) {
@@ -52,7 +52,7 @@ std::string toBase64(const void *data, size_t len){
       c4[1] = ((c3[0] & 0x03) << 4) + ((c3[1] & 0xf0) >> 4);
       c4[2] = ((c3[1] & 0x0f) << 2) + ((c3[2] & 0xc0) >> 6);
       c4[3] = c3[2] & 0x3f;
-      
+
       for(i = 0; (i <4) ; i++)
         ret << lut[c4[i]];
       i = 0;
@@ -63,7 +63,7 @@ std::string toBase64(const void *data, size_t len){
     for(j = i; j < 3; j++){
       c3[j] = '\0';
     }
-    
+
     c4[0] = (c3[0] & 0xfc) >> 2;
     c4[1] = ((c3[0] & 0x03) << 4) + ((c3[1] & 0xf0) >> 4);
     c4[2] = ((c3[1] & 0x0f) << 2) + ((c3[2] & 0xc0) >> 6);
@@ -104,7 +104,7 @@ std::string create_marker_text(const Rect32f &r, int id){
 }
 
 int main(int n, char **ppc){
-  pa_explain("-m","margin between markers if <=0, a 10th of the marker-dim is used"); 
+  pa_explain("-m","margin between markers if <=0, a 10th of the marker-dim is used");
   pa_init(n,ppc,
           "-offset|-ofs(x=12,y=12) "
           "-size|-s(size=30x21) "
@@ -121,7 +121,7 @@ int main(int n, char **ppc){
   if(m < 0){
     m = md/10;
   }
-  
+
   std::ofstream out((*pa("-o")).c_str());
 
   std::string encoding = ( "<?xml version=\"1.0\" encoding=\"UTF-8\" "
@@ -130,11 +130,11 @@ int main(int n, char **ppc){
                        "width=\"297mm\" height=\"210mm\" "
                        "xmlns:xlink=\"http://www.w3.org/1999/xlink\">" );
   std::string group = "<g transform=\"translate(0,0)\" id=\"layer1\">";
-  
+
   out << encoding << std::endl
       << svg << std::endl
       << group << std::endl;
-  
+
   int idx = -1;
   for(int y=0;y<ny;++y){
     for(int x=0;x<nx;++x){

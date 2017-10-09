@@ -33,17 +33,17 @@
 
 namespace icl{
   namespace qt{
-  
+
     CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
       ThreadedUpdatableWidget(parent),m_sText(text),m_alignment(Qt::AlignCenter){
     }
-    
-    
+
+
     void CompabilityLabel::paintEvent(QPaintEvent *evt){
       m_oMutex.lock();
       QString t = m_sText;
       m_oMutex.unlock();
-  
+
       //    QWidget::paintEvent(evt); do i need this explicitly ??
       QPainter p(this);
       p.setPen(QColor(0,0,0));
@@ -64,7 +64,7 @@ namespace icl{
       m_sText = text;
       m_oMutex.unlock();
     }
-  
+
     QString CompabilityLabel::text() const{
       QString retVal;
       m_oMutex.lock();
@@ -72,16 +72,16 @@ namespace icl{
       m_oMutex.unlock();
       return retVal;
     }
-  
+
     Qt::Alignment CompabilityLabel::getAlignment() const{
       return m_alignment;
     }
-    
+
     void CompabilityLabel::setAlignment(Qt::Alignment a){
       m_alignment = a;
     }
-  
-  
+
+
   } // namespace qt
 }
 

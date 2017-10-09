@@ -70,13 +70,13 @@ namespace icl{
       }
       return var * 1./vs.size();
     }
-    
+
     std::vector<float> estimate_pose_variance(const geom::Mat &T){
       static std::deque<Vec> ts, rs;
       Vec t = T.part<3,0,1,4>();
       Vec r = extract_euler_angles(T).resize<1,4>(1);
       Vec vt = push_and_get_var(t,ts), vr = push_and_get_var(r,rs);
-      
+
       std::vector<float> ret(6);
       for(int i=0;i<3;++i){
         ret[i] = vt[i];

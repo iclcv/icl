@@ -33,7 +33,7 @@
 
 int main(int n, char **args){
   icl::utils::pa_init(n,args,"-src-type|-s(name) -dst-type|-d(mame)");
-  
+
   icl::qt::DataStore::list_possible_assignments(icl::utils::pa("-s") ? *icl::utils::pa("-s") : icl::utils::str(""),
                                                 icl::utils::pa("-d") ? *icl::utils::pa("-d") : icl::utils::str("") );
 }

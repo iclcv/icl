@@ -44,25 +44,25 @@ namespace icl{
     PointCloudSegment::PointCloudSegment(geom::PointCloudObject &obj):
       PointCloudObject(1,
                        obj.supports(PointCloudObjectBase::Normal),
-                       obj.supports(PointCloudObjectBase::RGBA32f)), 
+                       obj.supports(PointCloudObjectBase::RGBA32f)),
       featuresComputed(false){
       init(obj, std::vector<const std::vector<int>*>());
     }
 
 
-    PointCloudSegment::PointCloudSegment(geom::PointCloudObject &obj, 
+    PointCloudSegment::PointCloudSegment(geom::PointCloudObject &obj,
                                          const std::vector<int> &indices):
       PointCloudObject(1,
                        obj.supports(PointCloudObjectBase::Normal),
                        obj.supports(PointCloudObjectBase::RGBA32f)),
       featuresComputed(false){
-      
+
       std::vector<const std::vector<int>*> v(1,&indices);
       init(obj, v);
     }
 
-    
-    PointCloudSegment::PointCloudSegment(geom::PointCloudObject &obj, 
+
+    PointCloudSegment::PointCloudSegment(geom::PointCloudObject &obj,
                                          const std::vector<const std::vector<int>*> &indices):
       PointCloudObject(1,
                        obj.supports(PointCloudObjectBase::Normal),
@@ -71,13 +71,13 @@ namespace icl{
       init(obj,indices);
     }
 
-    
+
     Mat PointCloudSegment::computeEigenVectorFrame() const throw (utils::ICLException){
       const math::Vec3 &x = eigenvectors[0];
       const math::Vec3 &y = eigenvectors[1];
-      
+
       Vec z = math::cross(x.resize<1,4>(1), y.resize<1,4>(1));
-      
+
       return Mat(x[0], y[0], z[0], mean[0],
                  x[1], y[1], z[1], mean[1],
                  x[2], y[2], z[2], mean[2],
@@ -102,9 +102,9 @@ namespace icl{
       return obj; // implicit smart-pointer cast should carry referrence conter
       //explicit cast//utils::SmartPtr<PointCloudSegment>(p,false);
     }
-    
 
-    static inline void copy_util(core::DataSegment<float,4> s, core::DataSegment<float,4> d, 
+
+    static inline void copy_util(core::DataSegment<float,4> s, core::DataSegment<float,4> d,
                                  const std::vector<const std::vector<int> *> &sidxs){
       if(!sidxs.empty()){
         int k = 0;
@@ -113,7 +113,7 @@ namespace icl{
           for(size_t j=0;j<v.size();++j){
             d[k++] = s[v[j]];
           }
-        }    
+        }
       }else{
         s.deepCopy(d);
       }
@@ -122,7 +122,7 @@ namespace icl{
 
     void PointCloudSegment::updateFeatures(){
       typedef math::FixedMatrix<float,3,3> Mat3;
-      typedef math::FixedColVector<float,3> Vec3;      
+      typedef math::FixedColVector<float,3> Vec3;
       if(featuresComputed) return;
 
       math::Vec3 m(0,0,0);
@@ -130,7 +130,7 @@ namespace icl{
       AABB aabb = { Vec3(1.e38, 1.e38, 1.e38), Vec3(-1.e38, -1.e38, -1.e38) };
       size_t n = 0;
 
-      if(isParent()){ 
+      if(isParent()){
         // update features of children first
         for(int i=0;i<getNumSubSegments();++i){
           getSubSegment(i)->updateFeatures();
@@ -162,9 +162,9 @@ namespace icl{
       }else{
         // compute features!!
         n = getDim();
-        
+
         core::DataSegment<float,3> xyz = selectXYZ();
-        
+
         for(size_t i=0;i<n;++i){
           const math::Vec3 &v = xyz[i];
           // compute bounding box
@@ -197,22 +197,22 @@ namespace icl{
         }
       }
       this->covariance = C;
-      
+
       // compute eigenvectors of covariance C
       try{
         Mat3 evec;
         Vec3 eval;
         C.eigen(evec,eval);
-          
+
         this->eigenvectors[0] = evec.col(0);
         this->eigenvectors[1] = evec.col(1);
         this->eigenvectors[2] = evec.col(2);
-          
+
         this->eigenvalues = eval;
       }catch(utils::ICLException &){
         Vec3 vecZero(0,0,0);
         this->eigenvalues = Vec3(1,1,1);
-          
+
         this->mean = (aabb.min + aabb.max)*0.5;
         for(int i=0;i<3;++i){
           this->eigenvectors[i] = vecZero;
@@ -222,21 +222,21 @@ namespace icl{
       featuresComputed = true;
     }
 
-    
-    void PointCloudSegment::init(geom::PointCloudObject &obj, 
+
+    void PointCloudSegment::init(geom::PointCloudObject &obj,
                                  const std::vector<const std::vector<int> *> &indices){
-      
+
       if(!indices.empty()){
         int n=0;
         for(size_t i=0;i<indices.size();++i){
           n+= indices[i]->size();
-        }   
+        }
         setSize(utils::Size(n,1));
       }else{
         setSize(obj.getSize()); // we leave it organized!
       }
 
-      
+
       copy_util(obj.selectXYZH(), selectXYZH(), indices);
       if(supports(Normal)){
         copy_util(obj.selectNormal(), selectNormal(), indices);
@@ -244,10 +244,10 @@ namespace icl{
       if(supports(RGBA32f)){
         copy_util(obj.selectRGBA32f(), selectRGBA32f(), indices);
       }
-      
+
       updateFeatures();
     }
-    
+
     PointCloudSegment *PointCloudSegment::copy() const{
       return new PointCloudSegment(*this);
     }
@@ -282,8 +282,8 @@ namespace icl{
         }
       }
     }
- 
-    
+
+
     static PointCloudSegmentPtr flatten_segment_hierarcy(PointCloudSegmentPtr p){
       int n = 0;
       count_points_recursive(p,n);
@@ -314,7 +314,7 @@ namespace icl{
         }
       }
     }
-    
+
     /// returns a vector containing this and all recursive children
     std::vector<PointCloudSegmentPtr> PointCloudSegment::extractThisAndChildren() const{
       std::vector<PointCloudSegmentPtr> v;

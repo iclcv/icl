@@ -20,8 +20,8 @@ void saveImage(){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Image().handle("result") 
-      << ( VBox() 
+  gui << Image().handle("result")
+      << ( VBox()
            << Button("next filter").handle("next")
            << Button("save").handle("save")
            << Button("show src").handle("show")
@@ -32,7 +32,7 @@ void init(){
 
   gui["show"].registerCallback(function(input,
                       &GUI::switchVisibility));
-  
+
   gui["save"].registerCallback(saveImage);
 }
 
@@ -44,16 +44,16 @@ void run(){
     currFilter = (currFilter+1)%10;
     op.setOptype((MorphologicalOp::optype)currFilter);
   }
-  
+
   resultMutex.lock();
   op.apply(image,&result);
   resultMutex.unlock();
-  
+
   gui["result"] = result;
 
   if(input.isVisible()){
     input["image"] = image;
-  } 
+  }
 }
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();

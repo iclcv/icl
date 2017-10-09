@@ -39,7 +39,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
+
     struct ImageUndistortion::Impl{
       virtual ~Impl(){}
       Img32f warpMap;
@@ -53,7 +53,7 @@ namespace icl{
         const double &y0 = params[1];
         const double &f = params[2]/100000000.0;
         const double &s = params[3];
-        
+
         float x = s*(point.x-x0);
         float y = s*(point.y-y0);
         float p = 1 - f * (x*x + y*y);
@@ -69,18 +69,18 @@ namespace icl{
         this->params = params;
       }
     };
-    
+
     struct MatlabModel5ParamsImpl : public ImageUndistortion::Impl{
       FixedMatrix<icl64f,3,3> Kinv;
       void updateKinv(){
-        Kinv[0] = params[0]; 
-        Kinv[1] = params[0]*params[4]; 
+        Kinv[0] = params[0];
+        Kinv[1] = params[0]*params[4];
         Kinv[2] = params[2];
-        Kinv[3] = 0.0; 
-        Kinv[4] = params[1]; 
+        Kinv[3] = 0.0;
+        Kinv[4] = params[1];
         Kinv[5] = params[3];
-        Kinv[6] = 0.0; 
-        Kinv[7] = 0.0; 
+        Kinv[6] = 0.0;
+        Kinv[7] = 0.0;
         Kinv[8] = 1.0;
 
         //Kinv = Kinv.inv();
@@ -90,46 +90,46 @@ namespace icl{
       virtual Point32f undistort(const Point32f &point) const{
         FixedMatrix<icl64f,1,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;
         FixedMatrix<icl64f,1,3> rays = Kinv*p;
-        
+
         FixedMatrix<icl64f,1,2> x;
         x[0] = rays[0]/rays[2];
         x[1] = rays[1]/rays[2];
-        
+
         FixedMatrix<icl64f,1,5> k;
         k[0] = params[5]; k[1] = params[6]; k[2] = params[7]; k[3] = params[8]; k[4] = params[9];
         // Add distortion:
         FixedMatrix<icl64f,1,2> pd;
-        
+
         double r2 = x[0]*x[0]+x[1]*x[1];
         double r4 = r2*r2;
         double r6 = r4*r2;
-        
+
         // Radial distortion:
         double cdist = 1 + k[0] * r2 + k[1] * r4 + k[4] * r6;
-        
+
         pd[0] = x[0] * cdist;
         pd[1] = x[1] * cdist;
-        
+
         // tangential distortion:
         double a1 = 2*x[0]*x[1];
         double a2 = r2 + 2*x[0]*x[0];
         double a3 = r2 + 2*x[1]*x[1];
-        
+
         FixedMatrix<icl64f,1,2> delta_x;
         delta_x[0]= k[2]*a1 + k[3]*a2 ;
         delta_x[1]= k[2] * a3 + k[3]*a1;
-        
+
         pd = pd + delta_x;
         // Reconvert in pixels:
         double px2 = params[0]*(pd[0]+params[4]*pd[1])+params[2];
         double py2 = params[1]*pd[1]+params[3];
-        
+
         return Point32f(px2,py2);
       }
     };
-    
+
     ImageUndistortion::ImageUndistortion():impl(0){};
-    
+
     ImageUndistortion::ImageUndistortion(const std::string &model, const std::vector<double> &params, const Size &imageSize){
       if(model == "SimpleARTBased"){
         impl = new Impl;
@@ -145,9 +145,9 @@ namespace icl{
       impl->model = model;
       impl->imageSize = imageSize;
       impl->warpMap.detach();
-      
+
     }
-  
+
     ImageUndistortion::ImageUndistortion(const ImageUndistortion &other):impl(0){
       *this=other;
     }
@@ -159,18 +159,18 @@ namespace icl{
       }
       return *this;
     }
-  
-  
+
+
     ImageUndistortion::ImageUndistortion(const std::string &filename):impl(0){
       std::ifstream s(filename.c_str());
       s >> (*this);
     }
-    
+
     const Point32f ImageUndistortion::operator()(const Point32f &p) const{
       ICLASSERT_THROW(!isNull(), ICLException("unable to use function call operator () on a null-ImageUndistortion instance"));
       return impl->undistort(p);
     }
-    
+
     const Size &ImageUndistortion::getImageSize() const{
       ICLASSERT_THROW(!isNull(), ICLException("unable to query the image size from a null-ImageUndistortion instance"));
       return impl->imageSize;
@@ -189,14 +189,14 @@ namespace icl{
       ICLASSERT_THROW(!isNull(), ICLException("unable to query the model from a null-ImageUndistortion instance"));
       return impl->model;
     }
-  
+
     std::istream &operator>>(std::istream &is, ImageUndistortion &dest){
       utils::XMLDocument *doc = new utils::XMLDocument;
       doc->loadNext(is);
       ConfigFile f(doc);
       f.setPrefix("config.");
       std::vector<double> params;
-  
+
   #define CHECK_THROW(KEY)                                                \
       if(!f.contains("" #KEY)){                                           \
         throw ICLException("unable to parse xml-file to "                \
@@ -205,12 +205,12 @@ namespace icl{
       }
       CHECK_THROW(model);
       std::string model = f["model"].as<std::string>();
-      
+
       if(model == "MatlabModel5Params"){
   #define LFS(KEY)                                                        \
         CHECK_THROW(KEY)                                                  \
-        params.push_back(f["" #KEY]);                             
-        
+        params.push_back(f["" #KEY]);
+
         LFS(intrin.fx);
         LFS(intrin.fy);
         LFS(intrin.ix);
@@ -229,26 +229,26 @@ namespace icl{
       }else{
         throw ICLException("unable to parse xml-file to ImageUndistortion: invalide model name");
       }
-      
+
       CHECK_THROW(size.width);
       CHECK_THROW(size.height);
-      
+
       dest = ImageUndistortion(model, params, Size(f["size.width"], f["size.height"]));
-  
+
   #undef LSF
   #undef CHECK_THROW
       return is;
     }
-    
+
     std::ostream &operator<<(std::ostream &s,const ImageUndistortion &udist){
       ICLASSERT_THROW(!udist.isNull(), ICLException("unable to serialize a null-ImageUndistortion instance"));
       ConfigFile f;
       f.setPrefix("config.");
-      
+
       f["size.width"] = udist.getImageSize().width;
       f["size.height"] = udist.getImageSize().height;
       f["model"] = udist.getModel();
-      
+
       const std::vector<double> &p = udist.getParams();
       if(udist.getModel() == "MatlabModel5Params"){
         f["intrin.fx"] = p[0];
@@ -269,7 +269,7 @@ namespace icl{
       }
       return s << f;
     }
-  
+
     const Img32f &ImageUndistortion::createWarpMap() const{
       if(!impl->warpMap.getChannels()){
         impl->warpMap.setChannels(2);
@@ -277,14 +277,14 @@ namespace icl{
       }
       if(impl->params != impl->warpMapParams){
         impl->warpMapParams = impl->params;
-        
+
         Channel32f cs[2] = { impl->warpMap[0], impl->warpMap[1] };
         const Size size = getImageSize();
         for(int xi=0;xi<size.width;++xi){
           for(int yi=0;yi<size.height; ++yi){
             Point32f p = impl->undistort(Point32f(xi,yi));
             cs[0](xi,yi) = p.x;
-            cs[1](xi,yi) = p.y; 
+            cs[1](xi,yi) = p.y;
           }
         }
       }

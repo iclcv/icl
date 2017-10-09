@@ -43,7 +43,7 @@
 
 namespace icl{
   namespace io{
-  
+
     /**
         This class implements the image undistortion procedure.
         It is a reimplementation from the matlab toolbox
@@ -52,18 +52,18 @@ namespace icl{
         layout of image points must be rowwise.
         */
     class ICLIO_API IntrinsicCalibrator : public utils::Uncopyable{
-      
+
       public:
       ///Simple struct for handle result of computation of intrinsics
       struct ICLIO_API Result : public ImageUndistortion{
-        
+
         /// create a null result
         Result(){}
-        
+
         /// create a result with given parameters
         Result(const std::vector<double> &params, const utils::Size &size):
         ImageUndistortion("MatlabModel5Params",params,size){}
-        
+
         ///returns focal length for x direction
         /** return x component of focal length
             */
@@ -86,7 +86,7 @@ namespace icl{
             * @return skew
             */
         double getSkew() const { return getParams()[4]; }
-  
+
         ///returns first radial distortion param
         /**
             * @return first radial distortion param
@@ -119,7 +119,7 @@ namespace icl{
       Data *m_data;
       ///struct for handling result of computation
       Result m_calres;
-  
+
       ///Computes the rigid motion transformation Y = R*X+T
       /**
           *@param X  3D structure in the world coordinates
@@ -129,11 +129,11 @@ namespace icl{
           *@param dYdom Derivative of Y with respect to om
           *@param dYdT Derivative of Y with respect to T
           */
-      void rigid_motion(const math::DynMatrix<icl64f> &X, 
-                        const math::DynMatrix<icl64f> &om, 
+      void rigid_motion(const math::DynMatrix<icl64f> &X,
+                        const math::DynMatrix<icl64f> &om,
                         const math::DynMatrix<icl64f> &T,
                         math::DynMatrix<icl64f> &Y, math::DynMatrix<icl64f> &dYdom, math::DynMatrix<icl64f> &dYdT);
-  
+
       ///Projects a 3D structure onto the image plane.
       /**
           * @param X 3D world coordinates
@@ -155,7 +155,7 @@ namespace icl{
                            const math::DynMatrix<icl64f> &f, const math::DynMatrix<icl64f> &c, const math::DynMatrix<icl64f> &k, const double alpha,
                            math::DynMatrix<icl64f> &xp, math::DynMatrix<icl64f> &dxpdom, math::DynMatrix<icl64f> &dxpdT, math::DynMatrix<icl64f> &dxpdf,
                            math::DynMatrix<icl64f> &dxpdc, math::DynMatrix<icl64f> &dxpdk, math::DynMatrix<icl64f> &dxpdalpha);
-  
+
       ///Compensates for radial and tangential distortion (Model From Oulu university)
       /**
           * @param xd distorted, normalized image coordinates
@@ -163,7 +163,7 @@ namespace icl{
           * @param x undistorted, normalized image coordinates
           */
       void comp_distortion_oulu(const math::DynMatrix<icl64f> xd,const math::DynMatrix<icl64f> k, math::DynMatrix<icl64f> &x);
-  
+
       ///Computes the planar homography between the point coordinates on the plane (M) and the image point coordinates (m).
       /**
           * @param m homogeneous image coordinates
@@ -171,7 +171,7 @@ namespace icl{
           * @param H Homography matrix
           */
       void compute_homography(const math::DynMatrix<icl64f> &m, const math::DynMatrix<icl64f> &M, math::DynMatrix<icl64f> &H);
-  
+
       ///Levenberg-Marquardt sparse algorithm optimizes all parameters
       /**
           * @param impoints image coordinates
@@ -179,7 +179,7 @@ namespace icl{
           * @param params parameters to be optimized
           */
       void optimize(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldPoints, double *params);
-  
+
       ///Initialization of the intrinsic parameters.
       /**
           * @param x images coordinate
@@ -191,7 +191,7 @@ namespace icl{
           */
       void init_intrinsic_param(const math::DynMatrix<icl64f> &x, const math::DynMatrix<icl64f> &X,
                                 math::DynMatrix<icl64f> &fc, math::DynMatrix<icl64f> &cc, math::DynMatrix<icl64f> &kc, double &alpha_c);
-  
+
       /// Computes the extrinsic parameters
       /**
           * @param x_kk image coordinates
@@ -208,7 +208,7 @@ namespace icl{
       void comp_ext_calib(const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,
   			const math::DynMatrix<icl64f> &cc, const math::DynMatrix<icl64f> &kc, const double alpha_c, const double thresh_cond,
   			math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk);
-  
+
       ///Computes the normalized coordinates xn given the pixel coordinates x_kk and the intrinsic camera parameters fc, cc and kc.
       /**
           * @param x_kk image coordinates
@@ -220,7 +220,7 @@ namespace icl{
           */
       void normalize_pixel(const math::DynMatrix<icl64f> x_kk, const math::DynMatrix<icl64f> fc, const math::DynMatrix<icl64f> cc,
                            const math::DynMatrix<icl64f> kc,const double alpha_c, math::DynMatrix<icl64f> &xn);
-  
+
       ///Computes the mean of each col of x_k
       /**
           * If x_k is is rowvector the mean of the rowvector is computed.
@@ -228,16 +228,16 @@ namespace icl{
           * @param res resultmatrix
           */
       void mean(const math::DynMatrix<icl64f> &x_k, math::DynMatrix<icl64f> &res);
-  
+
       ///Computes the rodrigues transformation and derivative
       /*
           *@param in rotation matrix or vector
           *@param out rotation matrix or vector
           *@param dout derivative of rotation
           */
-  
+
       void rodrigues(const math::DynMatrix<icl64f> &in,math::DynMatrix<icl64f> &out, math::DynMatrix<icl64f> &dout);
-  
+
       ///Computes extrinsic initial parameters
       /**
           * @param x_kk image coordinates
@@ -253,7 +253,7 @@ namespace icl{
       void compute_extrinsic_init(const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,
                                   const math::DynMatrix<icl64f> &cc, const math::DynMatrix<icl64f> &kc, const double &alpha_c,
                                   math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk);
-  
+
       ///optimizes precomputed extrinsic parameters
       /*
           * @param x_kk image coordinates
@@ -271,9 +271,9 @@ namespace icl{
                                     const math::DynMatrix<icl64f> &x_kk, const math::DynMatrix<icl64f> &X_kk, const math::DynMatrix<icl64f> &fc,const math::DynMatrix<icl64f> &cc,
                                     const math::DynMatrix<icl64f> &kc,const double alpha_c, const int MaxIter, double thresh_cond,
                                     math::DynMatrix<icl64f> &omckk, math::DynMatrix<icl64f> &Tckk, math::DynMatrix<icl64f> &Rckk, math::DynMatrix<icl64f> &JJ);
-  
+
       public:
-  
+
       ///Constructs a new object of this class for computation of intrinc parameters
       /**
           * @param boardWidth the width of the chessboard
@@ -284,10 +284,10 @@ namespace icl{
           */
       IntrinsicCalibrator(unsigned int boardWidth=6, unsigned int boardHeight=9, unsigned int boardCount=8,
   			unsigned int imageWidth=640, unsigned int imageHeight=480);
-  
+
       ///Destructor
       ~IntrinsicCalibrator();
-  
+
       ///calibrates the camera
       /**Since for each image the worldcoordinates are/look exactly the same,
           * just pass the worldcoordinates for the first image. This will be used for all computations.
@@ -295,19 +295,19 @@ namespace icl{
           * @param worldpoints coordinates for the first image, sorting depends on image coordinates
           */
       Result calibrate(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldpoints);
-  
+
       ///saves computed/current intrinsics to xml-file
       /**
           * @param filename name of xml-file for saving
           */
       void saveIntrinsics(const std::string &filename);
-  
+
       ///loads intrincs from xml-file
       /**
           * @param filename name of xml-file to load
           */
       void loadIntrinsics(const std::string &filename);
-  
+
       ///resets data to compute new intrinsics with
       /**
           * @param boardWidth the new width of the chessboard
@@ -318,30 +318,30 @@ namespace icl{
           */
       void resetData(unsigned int boardWidth, unsigned int boardHeight,
                      unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight);
-  
+
       ///return the result of computation
       Result getResult() const {
         return m_calres;
       }
-  
+
       //2d coordinates in picture
       typedef math::FixedMatrix<double,1,2> Pos2D;
       //grid of 2d coords in picture
       typedef utils::Array2D<Pos2D> DetectedGrid;
-  
+
       struct CalibrationData{
         // list of detected images (row-major order of points)
         std::vector<DetectedGrid> data;
         //imagesize of data
         utils::Size imageSize;
       };
-  
+
       ///computes the calibration for given CalibrationData
       /**
           * @param data contains detected grids for calibration
           */
       static Result optimize(const CalibrationData &data);
-  
+
     };
   } // namespace io
 }

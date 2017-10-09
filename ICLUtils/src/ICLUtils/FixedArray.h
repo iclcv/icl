@@ -36,7 +36,7 @@ namespace icl{
   namespace utils{
     /// Fixed C++-array wrapper class for data handling
     /** This class is specialized for the DIM values 1,2,3 and 4
-        FixedArray<T,1> contains a union that shares the 
+        FixedArray<T,1> contains a union that shares the
         1-dim data with a single value x. FixedArray<T,2>
         has extra values x,y,  then x,y,z and finally x,y,z,w
         (w can also be called h)
@@ -44,14 +44,14 @@ namespace icl{
     template<class T,unsigned int DIM>
     struct FixedArray{
       T m_data[DIM];
-      
+
       /// index access operator
       T &operator[](unsigned int idx) { return m_data[idx]; }
 
       /// index access operator (const)
       const T &operator[](unsigned int idx) const { return m_data[idx]; }
     };
-    
+
     /// Specialization for 1D-vectors providing a value x
     template<class T>
     struct FixedArray<T, 1u>{
@@ -62,7 +62,7 @@ namespace icl{
 
       /// empty constructor (leaving data uninitialized)
       FixedArray(){}
-      
+
       /// constructor with given value x
       FixedArray(const T &x) : x(x){}
 
@@ -71,7 +71,7 @@ namespace icl{
 
       /// index access operator (const)
       const T &operator[](unsigned int idx) const { return m_data[idx]; }
-      
+
       /// reinterprect FixedArray<T,1u> as a scalar
       inline operator T() const{
         return x;
@@ -133,11 +133,11 @@ namespace icl{
 
       union{
         T m_data[4];
-        struct { 
-          T x; 
-          T y; 
-          T z; 
-          union { 
+        struct {
+          T x;
+          T y;
+          T z;
+          union {
             T h;
             T w;
           };
@@ -146,11 +146,11 @@ namespace icl{
 
       /// index access operator
       T &operator[](unsigned int idx) { return m_data[idx]; }
-      
+
       /// index access operator (const)
       const T &operator[](unsigned int idx) const { return m_data[idx]; }
     };
-        
+
   } // namespace utils
 } // namespace icl
 

@@ -41,7 +41,7 @@ namespace icl{
     using namespace icl::io::dc;
     using namespace icl::utils;
     using namespace icl::core;
-    
+
     DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits):
       // {{{ open
 
@@ -51,13 +51,13 @@ namespace icl{
       dc::install_signal_handler();
 
       m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
-      
+
       m_oOptions.framerate = (dc1394framerate_t)-1; // use default
-      
+
       m_oOptions.videomode = (dc1394video_mode_t)-1; // use default
-      
+
       m_oOptions.enable_image_labeling = false;
-      
+
       m_oOptions.isoMBits = isoMBits;
 
       m_oOptions.suppressDoubledImages = true;
@@ -68,7 +68,7 @@ namespace icl{
     }
 
     // }}}
-    
+
     const ImgBase *DCGrabber::acquireImage(){
       // {{{ open
       ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
@@ -112,14 +112,14 @@ namespace icl{
 
     // }}}
 
-    
+
     std::vector<DCDevice> DCGrabber::getDCDeviceList(bool resetBusFirst){
       // {{{ open
       if(resetBusFirst){
         DCGrabber::dc1394_reset_bus(false);
       }
       std::vector<DCDevice> v;
-      
+
       dc1394_t *context = get_static_context();
       dc1394camera_list_t *list = 0;
       dc1394error_t err = dc1394_camera_enumerate(context,&list);
@@ -140,7 +140,7 @@ namespace icl{
 
         //std::cout << "trying to release all former iso data flow for camera " << v.back().getCam() << std::endl;
         //dc1394_iso_release_all(v.back().getCam());
-        
+
         if(!i){
           // This is very hard so when an icl application is started,
           // it will reset the bus first ??
@@ -148,7 +148,7 @@ namespace icl{
         }
 
       }
-      
+
       if(list){
         dc1394_camera_free_list(list);
       }
@@ -156,7 +156,7 @@ namespace icl{
     }
 
     // }}}
-    
+
     void DCGrabber::restartGrabberThread(){
       Mutex::Locker l (m_GrabberThreadMutex);
       if(m_poGT){

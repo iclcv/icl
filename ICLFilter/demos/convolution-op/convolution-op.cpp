@@ -87,7 +87,7 @@ void run(){
   static ComboHandle srcDepth = gui.get<ComboHandle>("src-depth");
   static ComboHandle srcROI = gui.get<ComboHandle>("src-roi");
   static ComboHandle kernel = gui.get<ComboHandle>("kernel-type");
-  
+
   static bool &forceUnsigned = gui.get<bool>("force-unsigned");
   static bool &clipToROI = gui.get<bool>("clip-to-roi");
 
@@ -95,35 +95,35 @@ void run(){
   static LabelHandle applyTime = gui.get<LabelHandle>("apply-time");
 
   static ImgBase *dstImage = 0;
-  
+
   grabber.useDesired(parse<Size>(srcSize.getSelectedItem()));
   grabber.useDesired(parse<depth>(srcDepth.getSelectedItem()));
-  
+
   const ImgBase *grabbedImage = grabber.grab();
   Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
   const ImgBase *roiedImage = grabbedImage->shallowCopy(roi);
-  
+
   ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
   conv.setClipToROI(clipToROI);
-  
+
   Time t = Time::now();
   conv.apply(roiedImage,&dstImage);
   applyTime = (Time::now()-t).toStringFormated("%Ss %#ms %-us");
   ostringstream sstr; sstr << *dstImage;
-  
+
   src = roiedImage;
   src->color(255,0,0,255);
   src->fill(0,0,0,0);
   src->rect(roi.enlarged(-1));
-  
+
   dst = dstImage;
   dst->color(255,0,0,255);
   dst->text(sstr.str(),10,10,-1,-1,7);
-  
+
   src.render();
   dst.render();
   fps.render();
-  
+
   delete roiedImage;
 }
 

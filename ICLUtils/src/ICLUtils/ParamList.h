@@ -36,45 +36,45 @@
 
 namespace icl{
   namespace utils{
-  
+
     /// Utility structure that utilizes an std::map as parameter list
     /** The ParamList is supposed to be used in function interfaces
         for passing several parameters as one argument. Usually this
         should only be used where efficiency is not compulsory */
     struct ParamList : public std::map<std::string, Any>{
-  
+
       /// The Key type (std::string)
       typedef std::string Key;
-      
+
       /// The Value type (icl::Any)
       typedef Any Value;
-  
+
       /// creates an empty param list instance
       inline ParamList(){}
-  
+
       /// creates a param list from a single given string
       /** The string is a comma seperated list of key=value tokens. Both
           comma and the '='-character can be escaped using backslash */
       inline ParamList(const std::string &commaSepKeyValueString) throw (ICLException){
         init(commaSepKeyValueString);
       }
-  
+
       /// this allows for implicit creation of a ParamList instance from a given const char *
       inline ParamList(const char *commaSepKeyValueString) throw (ICLException){
         init(commaSepKeyValueString);
       }
-  
+
       inline void init(const std::string commaSepKeyValueString) throw (ICLException){
         std::vector<std::string> ts = tok(commaSepKeyValueString,",",true,'\\');
         for(size_t i=0;i<ts.size();++i){
           std::vector<std::string> kv = tok(ts[i],"=",true,'\\');
-          ICLASSERT_THROW(kv.size() == 2, ICLException("ParamList(string): invalid token :'" 
+          ICLASSERT_THROW(kv.size() == 2, ICLException("ParamList(string): invalid token :'"
                                                       + ts[i] + "'"));
           const_cast<ParamList*>(this)->operator[](kv[0]) = kv[1];
         }
       }
-  
-      
+
+
       /// Constructor, that can get up to 10 key-value pairs
       /** zero-length keys are skipped! */
       inline ParamList(const Key &key0, const Value &value0,
@@ -98,30 +98,30 @@ namespace icl{
         if(key8.length()) operator[](key8) = value8;
         if(key9.length()) operator[](key9) = value9;
       }
-      
+
       /// returns whether the map contains the given key
       /** This is just a shortcut to the find()-method that is provided by the std::map */
       inline bool hasKey(const Key &key) const { return find(key) != end(); }
-  
+
       /// removes the given key from the map
       /** This is just a shortcut to the find()-method that is provided by the std::map */
       inline void removeKey(const Key &key){
         iterator it = find(key);
         if(it != end()) erase(it);
       }
-      
+
       /// extension for the unconst operator that is provided by the std::map class
       inline const Any &operator[](const Key &key) const throw (ICLException){
         const_iterator it = find(key);
         if(it == end()) throw ICLException("error in ParamList::operator[](key) with key=" + key + ": key not found!");
         return it->second;
       }
-  
+
       /// also provides the map's not-const index operator
       using std::map<std::string,Any>::operator[];
     };
-  
-    
+
+
   } // namespace utils
 }
 

@@ -34,7 +34,7 @@
 
 namespace icl{
   namespace io{
-  
+
     /// Interface class for reading images using an ImageMagick++ wrapper  \ingroup FILEIO_G
     /** @copydoc icl::io::FileWriterPluginImageMagick
     */
@@ -42,20 +42,20 @@ namespace icl{
       public:
       /// Create a new Plugin
       FileGrabberPluginImageMagick();
-      
+
       /// Destructor
       ~FileGrabberPluginImageMagick();
-      
+
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);
-      
+
       /// Internal data storage class
       struct InternalData;
-      
+
       private:
       /// Internal data storage
       InternalData *m_data;
-    };  
+    };
   } // namespace io
 }
 

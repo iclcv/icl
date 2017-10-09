@@ -35,7 +35,7 @@ namespace icl{
     void PlotHandle::render(){
       (**this)->updateFromOtherThread();
     }
-    
+
     /// todo: more convecience methods
   } // namespace qt
 }

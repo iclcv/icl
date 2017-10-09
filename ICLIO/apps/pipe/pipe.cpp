@@ -67,7 +67,7 @@ std::vector<string> remove_size(const vector<string> &v){
     if(v[i] != "size") r.push_back(v[i]);
   }
   return r;
-}  
+}
 
 void init_grabber(){
   grabber.init(pa("-i"));
@@ -82,10 +82,10 @@ void init_grabber(){
     grabber.useDesired<format>(pa("-format"));
   }
 
-  
+
   if(pa("-camera-config")){
     grabber.loadProperties(pa("-camera-config"));
-  }  
+  }
 }
 
 const ImgBase *grab_image(){
@@ -137,7 +137,7 @@ const ImgBase *grab_image(){
     static format fmt = pa("-reinterpret-input-format");
     format ifmt = img->getFormat();
     if(fmt != formatMatrix && getChannelsOfFormat(fmt) != img->getChannels()){
-      ERROR_LOG("cannot reinterpret image format " << str(ifmt) 
+      ERROR_LOG("cannot reinterpret image format " << str(ifmt)
                 << " to " << str(fmt) << " (cannel cout missmatch)");
     }else{
       re = img->reinterpretChannels(fmt);
@@ -145,7 +145,7 @@ const ImgBase *grab_image(){
     }
   }
    */
-  
+
   if(!(bool)pa("-clip") && !(bool)pa("-crop-and-rescale") && !(bool)pa("-size")){
     return img;
   }else{
@@ -162,7 +162,7 @@ const ImgBase *grab_image(){
         int th = pa("-crop-and-rescale",3);
 
         r = new Rect(bx,by,img->getWidth()-2*bx, img->getHeight()-2*by);
-        
+
         ICLASSERT_THROW(r->width <= img->getWidth(),ICLException("clipping rect width is larger then image width"));
         ICLASSERT_THROW(r->height <= img->getHeight(),ICLException("clipping rect height is larger then image height"));
         ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
@@ -170,7 +170,7 @@ const ImgBase *grab_image(){
         ICLASSERT_THROW(r->right() < img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
         ICLASSERT_THROW(r->bottom() < img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
 
-        croppedAndRescaled = imgNew(img->getDepth(),Size(tw,th),img->getChannels(),img->getFormat()); 
+        croppedAndRescaled = imgNew(img->getDepth(),Size(tw,th),img->getChannels(),img->getFormat());
       }
       const ImgBase *tmp = img->shallowCopy(*r);
       tmp->scaledCopyROI(&croppedAndRescaled, interpolateRA);
@@ -185,21 +185,21 @@ const ImgBase *grab_image(){
         if(!r){
           r = new Rect;
           *r = pa("-clip");
-          
+
           ICLASSERT_THROW(r->width <= img->getWidth(),
-                          ICLException("clipping rect width is larger then image width (image width is " 
-                                       + str(img->getWidth() + " but clip rect width was set to " 
+                          ICLException("clipping rect width is larger then image width (image width is "
+                                       + str(img->getWidth() + " but clip rect width was set to "
                                              + str(r->width))));
           ICLASSERT_THROW(r->height <= img->getHeight(),
-                          ICLException("clipping rect height is larger then image height (image height is " 
-                                       + str(img->getHeight() + " but clip rect height was set to " 
+                          ICLException("clipping rect height is larger then image height (image height is "
+                                       + str(img->getHeight() + " but clip rect height was set to "
                                              + str(r->height))));
 
           ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
           ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
           ICLASSERT_THROW(r->right() <= img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
           ICLASSERT_THROW(r->bottom() <= img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
-          clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat()); 
+          clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat());
         }
         const ImgBase *tmp = img->shallowCopy(*r);
         tmp->deepCopyROI(&clipped);
@@ -229,7 +229,7 @@ void send_app(){
     FPS= gui.get<FPSHandle>("fps");
   }
 #endif
- 
+
   while(first || !(bool)pa("-single-shot")){
     const ImgBase *grabbedImage = grab_image();
     const ImgBase *ppImage = 0;
@@ -281,7 +281,7 @@ void send_app(){
     }
 #endif
     first = false;
-    
+
     bool useGUI = false;
 #ifdef ICL_HAVE_QT
     int fpsLimit = 0;
@@ -322,16 +322,16 @@ void init_gui(){
   output.init(pa("-o"));
 
   bool idu = pa("-idu");
-  
+
   if(pa("-pp")){
-    gui << Image().handle("image").minSize(12,8) 
-        << ( VBox().maxSize(100,8) 
-             <<  ( HBox() 
+    gui << Image().handle("image").minSize(12,8)
+        << ( VBox().maxSize(100,8)
+             <<  ( HBox()
                    << CamCfg().maxSize(5,2)
                    << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
                    << Fps(10).handle("fps")
                    )
-             <<  ( HBox() 
+             <<  ( HBox()
                    << Button("off","on",!idu).out("updateImages").label("update images")
                    << Button("off","!on").handle("_").out("pp-on").label("preprocessing").minSize(5,2)
                    )
@@ -340,13 +340,13 @@ void init_gui(){
 
     ppEnabled = &gui.get<bool>("pp-on");
   }else{
-    gui << Image().handle("image").minSize(12,8) 
-        << ( VBox().maxSize(100,8) 
-             <<  ( HBox() 
+    gui << Image().handle("image").minSize(12,8)
+        << ( VBox().maxSize(100,8)
+             <<  ( HBox()
                    << CamCfg().maxSize(5,2)
                    << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
                    )
-             <<  ( HBox() 
+             <<  ( HBox()
                    << Fps(10).handle("fps")
                    << Button("off","on",!idu).out("updateImages").label("update images")
                    )
@@ -393,7 +393,7 @@ int main(int n, char **ppc){
   // "\tThis parameters can be obtained using ICL application\n"
   //"\ticl-calib-radial-distortion")
   ("-reset","reset bus on startup")
-  //("-reinterpret-input-format","can be used to e.g. reinterpret input matrix-format images as gray") 
+  //("-reinterpret-input-format","can be used to e.g. reinterpret input matrix-format images as gray")
   ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"
    "image is visualized in the preview widget. This helps to reduce network traffic!")
@@ -423,7 +423,7 @@ int main(int n, char **ppc){
     GenericGrabber::resetBus();
   }
 
-  init_grabber();  
+  init_grabber();
 
 #ifdef ICL_HAVE_QT
   if(!pa("-no-gui")){

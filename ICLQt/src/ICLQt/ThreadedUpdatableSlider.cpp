@@ -50,12 +50,12 @@ namespace icl{
           //QObject::eventFilter(watched, event);
           //Qt::MouseButton b = m->button();
           QFlags<Qt::MouseButton> bs = m->buttons();
-          if(m && (bs & Qt::LeftButton || 
-                   bs & Qt::RightButton || 
+          if(m && (bs & Qt::LeftButton ||
+                   bs & Qt::RightButton ||
                    bs & Qt::MidButton)){
-            int val = QStyle::sliderValueFromPosition(m_parent->minimum(), 
-                                                      m_parent->maximum(), 
-                                                      m->x(), 
+            int val = QStyle::sliderValueFromPosition(m_parent->minimum(),
+                                                      m_parent->maximum(),
+                                                      m->x(),
                                                       m_parent->width());
             val = (val/m_parent->m_stepping)*m_parent->m_stepping;
             m_parent->setValue(val);
@@ -68,7 +68,7 @@ namespace icl{
       }
     };
 
-  
+
     ThreadedUpdatableSlider::ThreadedUpdatableSlider(QWidget *parent): QSlider(parent), m_stepping(1){
       QObject::connect(this,SIGNAL(valueChanged(int)),this,SLOT(collectValueChanged(int)));
       QObject::connect(this,SIGNAL(sliderMoved(int)),this,SLOT(collectSliderMoved(int)));
@@ -76,7 +76,7 @@ namespace icl{
       QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
       installEventFilter(new EventFilter(this));
     }
-  
+
     ThreadedUpdatableSlider::ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent): QSlider(o, parent), m_stepping(1){
       QObject::connect(this,SIGNAL(valueChanged(int)),this,SLOT(collectValueChanged(int)));
       QObject::connect(this,SIGNAL(sliderMoved(int)),this,SLOT(collectSliderMoved(int)));
@@ -93,8 +93,8 @@ namespace icl{
       }else{
           return QSlider::event(event);
       }
-    } 
-  
+    }
+
     void ThreadedUpdatableSlider::registerCallback(const Function<void> &cb, const std::string &eventList){
       std::vector<std::string> ts = tok(eventList,",");
       for(unsigned int i=0;i<ts.size();++i){
@@ -109,11 +109,11 @@ namespace icl{
         callbacks.push_back(c);
       }
     }
-  
+
     void ThreadedUpdatableSlider::removeCallbacks(){
       callbacks.clear();
     }
-    
+
     void ThreadedUpdatableSlider::collectValueChanged(int value){
       int stepped = (value/m_stepping)*m_stepping;
       if(stepped != value){
@@ -125,24 +125,24 @@ namespace icl{
         }
       }
     }
-  
+
     void ThreadedUpdatableSlider::collectSliderPressed(){
       for(unsigned int i=0;i<callbacks.size();++i){
         if(callbacks[i].event == CB::all || callbacks[i].event == CB::press) callbacks[i].f();
-      }  
+      }
     }
-  
+
     void ThreadedUpdatableSlider::collectSliderMoved(int){
       for(unsigned int i=0;i<callbacks.size();++i){
         if(callbacks[i].event == CB::all || callbacks[i].event == CB::move) callbacks[i].f();
-      }  
+      }
     }
-  
+
     void ThreadedUpdatableSlider::collectSliderReleased(){
       for(unsigned int i=0;i<callbacks.size();++i){
         if(callbacks[i].event == CB::all || callbacks[i].event == CB::release) callbacks[i].f();
-      }  
+      }
     }
-      
+
   } // namespace qt
 }

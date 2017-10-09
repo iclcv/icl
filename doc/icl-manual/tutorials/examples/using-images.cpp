@@ -18,7 +18,7 @@ int main(){
    // convert the float image into the former byteImage
    // the byte image is adapted automatically
    floatImage.convert(&byteImage);
-   
+
    // create a shallow copy of 'byteImage'
    Img8u byteImage2 = byteImage;
 
@@ -26,15 +26,15 @@ int main(){
    // changes on byteImage2s pixel-data will also effect the pixel-data
    // of byteImage. The image can be made independent by doing this:
    byteImage.detach();
-   
+
    // now lets access the image pixels for a simple thresholding application
-   // note: the image pixel data is organized channel-wise as independend 
-   // row-major ordered data blocks 
+   // note: the image pixel data is organized channel-wise as independend
+   // row-major ordered data blocks
    for(int c=0;c<byteImage.getChannels();++c){
       for(int x=0;x<byteImage.getWidth();++x){
          for(int y=0;y<byteImage.getHeight();++y){
             byteImage(x,y,c) = 255 * (byteImage(x,y,c)>128);
-         } 
+         }
       }
    }
 

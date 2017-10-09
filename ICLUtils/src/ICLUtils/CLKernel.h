@@ -52,9 +52,9 @@ namespace icl {
     /** A Kernel is a callable OpenCL function. CLKernel instances can
         only be created by CLProgram instances. Please refer to the CLProgram
         reference for further details.
-        
+
         \section ARGS Kernel Arguments
-        
+
         Before, a Kernel (aka an OpenCL function) is called, its
         arguments have to be set. This can either be done step by step
         using one of the overloaded CLKernel.setArg-methods or using
@@ -62,7 +62,7 @@ namespace icl {
 
         <code>
         kernel.setArgs(inBuffer, outBuffer, inSize, outSize);
-        
+
         // or:
         kernel[0] = inBuffer;
         kernel[1] = outBuffer;
@@ -71,10 +71,10 @@ namespace icl {
         **/
     class ICLUtils_API CLKernel {
       struct Impl; //!< internal implementation
-      Impl *impl;  //!< internally used data 
-      
+      Impl *impl;  //!< internally used data
+
       /// private constructor (CLKernel instances can only be created by CLPrograms)
-      CLKernel(const string &id, cl::Program & program, 
+      CLKernel(const string &id, cl::Program & program,
                cl::CommandQueue& cmdQueue) throw (CLKernelException);
 
       public:
@@ -89,10 +89,10 @@ namespace icl {
 
       /// Default constructor (creates a dummy instance)
       CLKernel();
-      
+
       /// copy constructor (creates shallow copy)
       CLKernel(const CLKernel &other);
-      
+
       /// assignment operator (creates shallow copy)
       CLKernel const& operator=(CLKernel const& other);
 
@@ -103,10 +103,10 @@ namespace icl {
       /** gloW can be accessed in the kernel code by get_global_id(0), and so on */
       void apply(int gloW, int gloH = 0, int gloC = 0,
                  int locW = 0, int locH = 0, int locC = 0) throw (CLKernelException);
-      
+
 	  /// calls the finish-fkt. of opencl to wait until the command queue is done
 	  void finish() throw (CLKernelException);
-      
+
       /// for tight integration with the CLProgram class
       friend class CLProgram;
 	  friend class CLDeviceContext;
@@ -146,7 +146,7 @@ namespace icl {
 
       /// Overloaded Kernel argument setter for CLBuffer values (aka arrays/pointers)
       void setArg(const unsigned idx, const CLBuffer &value) throw (CLKernelException);
-      
+
       /// Overloaded Kernel argument setter for CLImage2D values (aka arrays/pointers)
       void setArg(const unsigned idx, const CLImage2D &value) throw (CLKernelException);
 
@@ -165,122 +165,122 @@ namespace icl {
         setArgs(valueA);
         setArg(1, valueB);
       }
-      
+
       /// sets mutiple kernel arguments at once
       template<typename A, typename B, typename C>
       void setArgs(const A &valueA, const B &valueB, const C &valueC) throw (CLKernelException) {
         setArgs(valueA, valueB);
         setArg(2, valueC);
       }
-      
+
       /// sets mutiple kernel arguments at once
       template<typename A, typename B, typename C, typename D>
       void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD) throw (CLKernelException) {
         setArgs(valueA, valueB, valueC);
         setArg(3, valueD);
       }
-      
+
       /// sets mutiple kernel arguments at once
       template<typename A, typename B, typename C, typename D, typename E>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
                    const E &valueE) throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD);
         setArg(4, valueE);
       }
-      
+
       /// sets mutiple kernel arguments at once
       template<typename A, typename B, typename C, typename D, typename E, typename F>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
                    const E &valueE, const F &valueF) throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD, valueE);
         setArg(5, valueF);
       }
-      
+
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG) 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG)
                    throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD, valueE, valueF);
         setArg(6, valueG);
       }
-      
+
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH) 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH)
                    throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG);
         setArg(7, valueH);
       }
 
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H, typename I>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
                    const I &valueI) throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH);
         setArg(8, valueI);
       }
-      
+
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H, typename I, typename J>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
                    const I &valueI, const J &valueJ) throw (CLKernelException) {
         setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI);
         setArg(9, valueJ);
       }
 
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H, typename I, typename J, typename K>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
-                   const I &valueI, const J &valueJ, const K &valueK) 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK)
                    throw (CLKernelException) {
-        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, 
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
                 valueJ);
         setArg(10, valueK);
       }
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H, typename I, typename J, typename K, typename L>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
-                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL) 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL)
                    throw (CLKernelException) {
-        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, 
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
                 valueJ, valueK);
         setArg(11, valueL);
       }
 
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
-               typename G, typename H, typename I, typename J, typename K, typename L, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
+               typename G, typename H, typename I, typename J, typename K, typename L,
                typename M>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
                    const E &valueE, const F &valueF, const G &valueG, const H &valueH,
-                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL, 
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL,
                    const M &valueM) throw (CLKernelException) {
-        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, 
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
                 valueJ, valueK, valueL);
         setArg(12, valueM);
       }
-      
+
       /// sets mutiple kernel arguments at once
-      template<typename A, typename B, typename C, typename D, typename E, typename F, 
+      template<typename A, typename B, typename C, typename D, typename E, typename F,
                typename G, typename H, typename I, typename J, typename K, typename L,
                typename M, typename N>
-      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD, 
-                   const E &valueE, const F &valueF, const G &valueG, const H &valueH, 
-                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL, 
+      void setArgs(const A &valueA, const B &valueB, const C &valueC, const D &valueD,
+                   const E &valueE, const F &valueF, const G &valueG, const H &valueH,
+                   const I &valueI, const J &valueJ, const K &valueK, const L &valueL,
                    const M &valueM, const N &valueN) throw (CLKernelException) {
-        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI, 
+        setArgs(valueA, valueB, valueC, valueD, valueE, valueF, valueG, valueH, valueI,
                 valueJ, valueK, valueL, valueM);
         setArg(13, valueN);
       }
@@ -327,12 +327,12 @@ namespace icl {
                 valueJ, valueK, valueL, valueM, valueN, valueP, valueQ);
         setArg(16, valueQ);
       }
-      
+
       /// Utility structure for the CLKernel's index operator
       struct Arg {
         CLKernel &k; //!< parent CLKernel
         int idx;     //!< Argument index
-        
+
         /// constructor
         Arg(CLKernel &k, int idx):k(k),idx(idx) {}
 
@@ -342,10 +342,10 @@ namespace icl {
           k.setArg(idx,t);
         }
       };
-      
+
       /// for index operator-based setting of kernel arguments
       inline Arg operator[](int idx) { return Arg(*this,idx); }
-   
+
     };
   }
 }

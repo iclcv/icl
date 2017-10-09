@@ -45,25 +45,25 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     namespace{
-      
+
       template<class T>
       void tokenzie_line_tmpl(const std::vector<string> &v, T *data){
         // {{{ open
-  
+
         for(unsigned int i=0;i<v.size();i++){
           data[i] = clipped_cast<icl64f,T>(atof(v[i].c_str()));
         }
       }
-  
+
       // }}}
-      
+
       void tokezize_line(const std::vector<string> &v,ImgBase *image, int c, int y){
         // {{{ open
-  
+
         if(image->getWidth() > (int)v.size()){
           throw InvalidFileFormatException(str("image width:")+
-                                           str(image->getWidth())+ 
-                                           str(" line width:") + 
+                                           str(image->getWidth())+
+                                           str(" line width:") +
                                            str(v.size()));
         }
         switch(image->getDepth()){
@@ -72,34 +72,34 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
         }
       }
-  
+
       // }}}
     }
-    
+
     FileGrabberPluginCSV::FileGrabberPluginCSV(){
       // {{{ open
-  
+
       m_poReadBuffer = new Img64f;
       m_poReadBufferMutex = new Mutex;
     }
-  
+
     // }}}
     FileGrabberPluginCSV::~FileGrabberPluginCSV(){
       // {{{ open
-  
+
       ICL_DELETE( m_poReadBuffer );
       ICL_DELETE( m_poReadBufferMutex );
     }
-  
+
     // }}}
-  
+
     void FileGrabberPluginCSV::grab(File &file, ImgBase **dest){
       // {{{ open
-  
+
       ICLASSERT_RETURN(dest);
       file.open(File::readText);
       ICLASSERT_RETURN(file.isOpen());
-      
+
       //////////////////////////////////////////////////////////////////////
       //// Estimate Header Data 1st: look at the filename  /////////////////
       //////////////////////////////////////////////////////////////////////
@@ -110,21 +110,21 @@ namespace icl{
       oInfo.size = Size::null;
       oInfo.roi = Rect::null;
       oInfo.time = Time();
-  
+
       string filename = file.getBaseName();       //printf("basename is {%s} \n",filename.c_str());
       string line;
-      
+
       string::size_type t = string::npos;
       if((t=filename.find("-ICL:"))!= string::npos){
         while(1){ // this is necessary to use break on errors
           vector<string> ts = tok(filename.substr(t+5),":");
           if(ts.size() != 3){
-            ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 1]"); 
+            ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 1]");
             break;
           }
           vector<string> whc = StrTok(ts[0],"x").allTokens();
           if(whc.size() != 3) {
-            ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 2]"); 
+            ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 2]");
             break;
           }
           oInfo.imageDepth = parse<depth>(ts[1]);
@@ -141,7 +141,7 @@ namespace icl{
         if(line.length() && line[0] == '#'){
           vector<string> ts = tok(line," ");
           if(ts.size() < 3) continue;
-          
+
           if (ts[1] == "ROI") {
             oInfo.roi = Rect(atoi(ts[2].c_str()),atoi(ts[3].c_str()),atoi(ts[4].c_str()),atoi(ts[5].c_str()));
             continue;
@@ -162,7 +162,7 @@ namespace icl{
           }
         }else{
           break;
-        }        
+        }
       }while(true);
       //////////////////////////////////////////////////////////////////////
       // CHECK IF A "SIZE" HINT WAS FOUND (IN THE HEADER OR IN THE FILENAME/
@@ -190,16 +190,16 @@ namespace icl{
         oInfo.roi = Rect(Point::null,oInfo.size);
         oInfo.channelCount = 1;
         oInfo.time = Time();
-      }    
+      }
       //////////////////////////////////////////////////////////////////////
       /// ADAPT THE DESTINATION IMAGE //////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
       ensureCompatible (dest, oInfo.imageDepth, oInfo.size,
                         oInfo.channelCount,oInfo.imageFormat, oInfo.roi);
-  
+
       ImgBase *poImg = *dest;
       poImg->setTime(oInfo.time);
-  
+
       //////////////////////////////////////////////////////////////////////
       /// READ THE IMAGE DATA  /////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
@@ -210,9 +210,9 @@ namespace icl{
             line = file.readLine();
           }
         }
-      }    
-    }  
-  
+      }
+    }
+
     // }}}
   } // namespace io
 }

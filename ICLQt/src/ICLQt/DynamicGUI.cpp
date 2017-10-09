@@ -39,9 +39,9 @@
 
 using namespace pugi;
 namespace icl{
-  
+
   using namespace utils;
-  
+
   namespace qt{
 
     struct DynamicGUI::Data{
@@ -64,13 +64,13 @@ namespace icl{
     DynamicGUI::Node::Node(const std::string &name, SmartPtr<Node> parent, int level):
       name(name),parent(parent),level(level){
     }
-  
+
 
     SmartPtr<DynamicGUI::Node> DynamicGUI::Node::appendChild(const std::string &name, SmartPtr<Node> parent, int level){
       children.push_back(SmartPtr<Node>(new Node(name,parent,level)));
       return children.back();
     }
-  
+
     void DynamicGUI::Node::grabArgs(const pugi::xml_node &n){
       for(xml_attribute_iterator it = n.attributes_begin();
           it != n.attributes_end();++it){
@@ -81,7 +81,7 @@ namespace icl{
         }
       }
     }
-  
+
     bool DynamicGUI::Node::isContainer() const {
       static std::set<std::string> cs;
       if(!cs.size()){
@@ -107,7 +107,7 @@ namespace icl{
       if(n.directArgs.length()){
         args.push_front(std::pair<std::string,std::string>("args",n.directArgs));
       }
-    
+
       if(args.size()) s << " ";
       for(int i=0;i<(int)args.size();++i){
         s << args[i].first << "=\"" << args[i].second << "\"";
@@ -125,29 +125,29 @@ namespace icl{
         s << "/>" << std::endl;
       }
       return s;
-    }  
+    }
 
     void DynamicGUI::traverse_tree(const xml_node &n, int level, SmartPtr<DynamicGUI::Node> target){
       std::string name = n.name();
       target->name = name;
       target->grabArgs(n);
-    
+
       for(xml_node_iterator it = n.begin(); it != n.end();++it){
         traverse_tree(*it, level+1, target->appendChild(name,target,level+1));
       }
     }
-  
+
     void DynamicGUI::create_gui(Node &n){
       if(n.name == "include" || n.name == "embed"){
         // first and only arg must be href
-        if(n.args.size() != 1 || 
+        if(n.args.size() != 1 ||
            ( n.args[0].first != "href" && n.args[0].first != "file")){
           throw ICLException("error in <include ..> -tag href|file missing!");
         }
         n.parsedGUI = DynamicGUI(n.args[0].second);
         return;
       }
-    
+
       if(n.isContainer()){
         for(size_t i=0;i<n.children.size();++i){
           create_gui(*n.children[i]);
@@ -171,7 +171,7 @@ namespace icl{
         n.parsedGUI << n.children[i]->parsedGUI;
       }
     }
-  
+
     void DynamicGUI::initialize(const std::string &cfgXMLString){
       xml_document doc;
       xml_parse_result r = doc.load_buffer(cfgXMLString.c_str(), cfgXMLString.size());
@@ -197,18 +197,18 @@ namespace icl{
 
     void DynamicGUI::initInternal(pugi::xml_node &root){
       release();
-    
+
       m_data->parseTree = new Node(root.name());
       traverse_tree(root, 0, m_data->parseTree);
       //    SHOW(*target);
       create_gui(*m_data->parseTree);
       *this << m_data->parseTree->parsedGUI;
     }
-  
+
     DynamicGUI::ParseTreePtr DynamicGUI::getParseTree() {
       return m_data->parseTree;
     }
-  
+
     void DynamicGUI::release(){
       // not implemented properly
     }

@@ -41,7 +41,7 @@ namespace icl{
       /**The function is:
           \code
           bool is_pixel_skin_colored(int r, int g, int b, ChromaClassifier c, int refcol[3], int threshold[3]){
-          return c(r,g,b) 
+          return c(r,g,b)
           && abs(r-refcol[0])<threshold[0]
           && abs(g-refcol[1])<threshold[1]
           && abs(b-refcol[2])<threshold[2];
@@ -53,13 +53,13 @@ namespace icl{
       }
       /// wrapped ChromaClassifier
       ChromaClassifier c;
-      
+
       /// r-g-b reference color
       icl8u ref[3];
-      
+
       /// r-g-b threshold
       icl8u thresh[3];
-      
+
       /// shows this classifier to std::out
       void show()const{
         printf("Combi-Classifier\n");

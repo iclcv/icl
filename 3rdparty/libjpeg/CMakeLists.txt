@@ -88,5 +88,5 @@ SET(HEADERS jconfig.h
 ADD_LIBRARY(libjpeg STATIC ${SOURCES} ${HEADERS})
 
 SET_TARGET_PROPERTIES(libjpeg
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})

@@ -67,7 +67,7 @@ namespace icl{
       Mutex *ctx_mutex;
       freenect_context *ctx_ptr;
       static const int MAX_ERRORS = 100;
-      
+
     public:
       std::vector<std::string> deviceAssociation;
     private:
@@ -89,7 +89,7 @@ namespace icl{
         if(n < 1){
           throw ICLException("no Kinect devices found");
         }
-          
+
         for(freenect_device_attributes *a = attribs; a ; a=a->next){
           if(a->camera_serial){
             deviceAssociation.push_back(a->camera_serial);
@@ -98,7 +98,7 @@ namespace icl{
             deviceAssociation.push_back("null??");
           }
         }
-          
+
         freenect_free_device_attributes(attribs);
       }
 
@@ -373,7 +373,7 @@ namespace icl{
         const bool isVideo = (mode != KinectGrabber::GRAB_DEPTH_IMAGE);
         static const freenect_video_format fvf[5] = { FREENECT_VIDEO_RGB,
                                                       FREENECT_VIDEO_BAYER,
-                                                      (freenect_video_format)-1, // this is used for depth 
+                                                      (freenect_video_format)-1, // this is used for depth
                                                       FREENECT_VIDEO_IR_8BIT,
                                                       FREENECT_VIDEO_IR_10BIT };
         if( size != Size::QVGA){
@@ -559,7 +559,7 @@ namespace icl{
     };
 
     std::map<int,FreenectDevice::Used*> FreenectDevice::devices;
-    
+
     struct KinectGrabber::Impl{
     private:
       SmartPtr<FreenectDevice> device;
@@ -571,7 +571,7 @@ namespace icl{
       Mutex mutex;
       Time lastupdate;
       //std::string deviceSerialString;
-      
+
       static int getIndex(std::string idOrSerial){
         std::vector<std::string> ts = tok(idOrSerial,"|||",false);
         if(ts.size() > 1){
@@ -596,8 +596,8 @@ namespace icl{
         : device(new FreenectDevice(getIndex(idOrSerial),mode, size)),
           ledColor(0), desiredTiltDegrees(0), avoidDoubleFrames(true), mutex(Mutex::mutexTypeRecursive), lastupdate(Time::now())
       {
-        
-          
+
+
       }
 
       ~Impl(){
@@ -625,18 +625,18 @@ namespace icl{
       }
     };
 
-    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size) 
+    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size)
       throw (ICLException) {
       init(mode, str(deviceID),size);
     }
-    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size) 
+    KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size)
       throw (ICLException) {
       init(mode, idOrSerial,size);
     }
-   
-    void KinectGrabber::init(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size) 
+
+    void KinectGrabber::init(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size)
       throw (ICLException){
-      
+
       FreenectContext::getFreenectContext().start();
       m_impl = new Impl(mode,idOrSerial,size);
       // Configurable
@@ -677,7 +677,7 @@ namespace icl{
 
       Configurable::registerCallback(utils::function(this,&KinectGrabber::processPropertyChange));
     }
-    
+
     KinectGrabber::~KinectGrabber(){
       ICL_DELETE(m_impl);
       FreenectContext::getFreenectContext().stop();
@@ -708,7 +708,7 @@ namespace icl{
       m_impl -> lastupdate = Time::now();
     }
 
-    
+
 
     /// callback for changed configurable properties
     void KinectGrabber::processPropertyChange(const utils::Configurable::Property &prop){
@@ -797,14 +797,14 @@ namespace icl{
       if(rescan){
         devices.clear();
         FreenectContext &ctx = FreenectContext::getFreenectContext();
-        
+
         for(size_t i=0;i<ctx.deviceAssociation.size();++i){
           try{
             KinectGrabber g(GRAB_RGB_IMAGE,i);
-            
+
             std::string serial = ctx.deviceAssociation[i];
             std::string s = str(i);
-            if(serial != "null"){            
+            if(serial != "null"){
               s += "|||" + serial;
             }
             devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
@@ -840,7 +840,7 @@ namespace icl{
         for(int i = 0; i < deviceCount; ++i){
           std::string serial = ctx.deviceAssociation[i];
           std::string s = str(i);
-          if(serial != "null"){            
+          if(serial != "null"){
             s += "|||" + serial;
           }
           devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
@@ -858,7 +858,7 @@ namespace icl{
         for(int i = 0; i < deviceCount; ++i){
           std::string serial = ctx.deviceAssociation[i];
           std::string s = str(i);
-          if(serial != "null"){            
+          if(serial != "null"){
             s += "|||" + serial;
           }
           devices.push_back(GrabberDeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
@@ -876,7 +876,7 @@ namespace icl{
         for(int i = 0; i < deviceCount; ++i){
           std::string serial = ctx.deviceAssociation[i];
           std::string s = str(i);
-          if(serial != "null"){            
+          if(serial != "null"){
             s += "|||" + serial;
           }
           devices.push_back(GrabberDeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));

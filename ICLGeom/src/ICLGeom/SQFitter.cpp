@@ -40,8 +40,8 @@ typedef icl::math::LevenbergMarquardtFitter<float> LM;
 
 namespace icl{
   using namespace math;
-  
-  namespace geom{ 
+
+  namespace geom{
 
 
     FixedMatrix<float,4,4> SQParams::getTransformationMatrix() const {
@@ -334,7 +334,7 @@ namespace icl{
       params.pos[2]   = result.params[5];
     }
 
-    bool SQFitter::fit(PointCloudObject& pcObj, 
+    bool SQFitter::fit(PointCloudObject& pcObj,
                  const std::string& sShapePreference,
                  size_t maxN) {
       if (maxN == 0) maxN = pcObj.getDim();

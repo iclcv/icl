@@ -116,7 +116,7 @@ IF(IPP_FOUND)
 		      src/ICLFilter/ProximityOp.cpp)
 
   LIST(APPEND HEADERS src/ICLFilter/WienerOp.h
-		      src/ICLFilter/ProximityOp.h)	    
+		      src/ICLFilter/ProximityOp.h)
 ENDIF()
 
 INCLUDE_DIRECTORIES(BEFORE src

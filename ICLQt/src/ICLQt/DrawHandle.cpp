@@ -44,10 +44,10 @@ namespace icl{
     void DrawHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
       (**this)->registerCallback(cb,events);
     }
-  
+
     void DrawHandle::removeCallbacks(){
       (**this)->removeCallbacks();
     }
-    
+
   } // namespace qt
 }

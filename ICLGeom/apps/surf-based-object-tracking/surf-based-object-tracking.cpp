@@ -64,13 +64,13 @@ void init(){
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
   gui << Draw3D().handle("draw").minSize(32,24)
-      << (HBox() 
+      << (HBox()
           << FSlider(-7,-1,-3).handle("t").maxSize(99,3).label("threshold exponent")
           << Button("ransac ...").handle("ransac options").maxSize(6,3)
           << CheckBox("vis error").handle("vise").maxSize(5,3)
           )
       << Show();
-  
+
   pe->setConfigurableID("pe");
   pe->adaptProperty("iterations","range","[1,5000]:1","");
   pe->adaptProperty("max error","range","[1,100]","");
@@ -85,7 +85,7 @@ void init(){
   pe->setPropertyValue("store last consensus set",true);
 
   ransacOptions << Prop("pe") << Create();
-  
+
   gui["ransac options"].registerCallback(utils::function(ransacOptions, &GUI::switchVisibility));
 
   gui["draw"].link(scene.getGLCallback(0));
@@ -98,7 +98,7 @@ void run(){
   DrawHandle3D draw = gui["draw"];
   const ImgBase *image = grabber.grab();
   draw = image;
-  
+
   float tExp = gui["t"];
   float t = ::pow(10,tExp);
 
@@ -112,17 +112,17 @@ void run(){
       templ[i] = Point32f(ms[i].second.x,ms[i].second.y).transform(ts.width,ts.height);
     }
     RansacBasedPoseEstimator::Result result = pe->fit(templ,curr);
-   
 
-    Mat T = result.T; 
+
+    Mat T = result.T;
     obj->setTransformation(T);
 
     if(gui["vise"]){
 
       draw->linewidth(2);
-      
+
       std::vector<Point32f> lastSet = pe->getLastConsensusSet();
-      
+
       for(size_t i=0;i<ms.size();++i){
         Vec a = T * Vec(templ[i].x, templ[i].y,0,1);
         Point32f pa = scene.getCamera(0).project(a);

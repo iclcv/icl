@@ -42,7 +42,7 @@ class QGridLayout;
 // The icl namespace
 namespace icl{
   namespace qt{
-    
+
     /// A utiltiy class which implements a labeld, double valued QSlider \ingroup UNCOMMON
     class ICLQt_API DoubleSlider : public QWidget{
       Q_OBJECT
@@ -52,32 +52,32 @@ namespace icl{
           @param id label
       */
       DoubleSlider(QWidget *parent, const QString &id);
-      
+
       public Q_SLOTS:
       /// internally used slot to process when the corresponding QSlider is moved
       /** @param i value */
       void receiveValueChanged(int i);
-      
+
       Q_SIGNALS:
       /// emitted when the slider values is changed
       void doubleValueChanged(const QString &id, double doubleValue);
-      
+
       public:
       /// sets the min. double value
       void setMinDouble(double dmin);
-  
+
       /// sets the max. double value
       void setMaxDouble(double dmax);
-  
+
       /// returns the current double value
       double getDoubleValue();
-  
+
       /// sets the current double value
       void setDoubleValue(double d);
-  
+
       /// sets the current double stepping
       void setDoubleStepping(double s);
-            
+
       private:
       QSlider *m_poSlider;        //!< wrapped QSlider (int-valued)
       QLabel *m_poLabel;          //!< label
@@ -86,7 +86,7 @@ namespace icl{
       double m_dMax;              //!< current max value
       double m_dStepping;         //!< current stepping
       QString m_qsID;             //!< current label text
-  
+
     };
   } // namespace qt
 }

@@ -37,7 +37,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
+
     class IntrinsicCalibrator::Data{
     public:
       int bWidth;
@@ -46,10 +46,10 @@ namespace icl{
       int bSize;
       int nx;
       int ny;
-  
+
       DynMatrix<icl64f>* intrinsic_matrix;
       DynMatrix<icl64f>* distortion_coeffs;
-  
+
       Data(unsigned int boardWidth, unsigned int boardHeight, unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight):
         bWidth(boardWidth),bHeight(boardHeight), successes(boardCount),
         bSize(bWidth*bHeight),nx(imageWidth),ny(imageHeight){
@@ -57,7 +57,7 @@ namespace icl{
         (*intrinsic_matrix)[8] = 1.0;
         distortion_coeffs = new DynMatrix<icl64f>(5, 1);
       }
-  
+
       ~Data(){
         delete intrinsic_matrix;
         delete distortion_coeffs;
@@ -1446,7 +1446,7 @@ namespace icl{
 
     void IntrinsicCalibrator::loadIntrinsics(const std::string &filename){
       static_cast<ImageUndistortion&>(m_calres) = ImageUndistortion(filename);
-    
+
       (m_data->intrinsic_matrix)->at(0,0) = m_calres.getParams()[0];
       (m_data->intrinsic_matrix)->at(1,1) = m_calres.getParams()[1];
       (m_data->intrinsic_matrix)->at(2,0) = m_calres.getParams()[2];

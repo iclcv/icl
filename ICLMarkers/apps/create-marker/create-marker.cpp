@@ -41,7 +41,7 @@ int main(int n, char **ppc){
   ("-r","border ratio, which is only relevant for art markers (the detectors default is value is 0.4)")
   ("-o","optionally given output filename. If this is not given, the marker image is shown instead")
   ("-s","output size of the marker image");
-  
+
 
   pa_init(n,ppc,"-id|-i(type,int) -border-size|-b(int=2) "
           "-border-ratio|-r(float=0.4) -output|-o(filename) "
@@ -64,7 +64,7 @@ int main(int n, char **ppc){
     }
   }
 
-  
+
   FiducialDetector d(*pa("-i"));
   ParamList params;
   if(*pa("-i") == "art"){

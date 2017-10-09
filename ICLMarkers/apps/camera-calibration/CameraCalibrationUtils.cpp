@@ -131,7 +131,7 @@ namespace icl{
     std::string CameraCalibrationUtils::get_save_filename(const std::string &progArgName){
       if(pa(progArgName)){
         return *pa(progArgName);
-      }else{ 
+      }else{
         try{
           return saveFileDialog("*.xml","save current camera","./");
         }catch(...){}
@@ -143,7 +143,7 @@ namespace icl{
     void CameraCalibrationUtils::save_cam_filename(geom::Camera cam,
                                                    const std::string &outputSizeProgArg,
                                                    const std::string &filename){
-      
+
       if(filename.length()){
         std::ofstream s(filename.c_str());
         if(pa(outputSizeProgArg)){
@@ -161,18 +161,18 @@ namespace icl{
         s << cam;
       }
     }
-    
-    void CameraCalibrationUtils::save_cam_pa(const geom::Camera &cam, 
+
+    void CameraCalibrationUtils::save_cam_pa(const geom::Camera &cam,
                                              const std::string &outputSizeProgArg,
                                              const std::string &outputFileNameProgArg){
       std::string filename = get_save_filename(outputFileNameProgArg);
       save_cam_filename(cam,outputSizeProgArg,filename);
     }
 
-    
+
     CameraCalibrationUtils::BestOfNSaver::BestOfNSaver(utils::Function<int> nFramesSource):
       inited(false),nFramesSource(nFramesSource){}
-    
+
     bool CameraCalibrationUtils::BestOfNSaver::event ( QEvent * event ){
       ICLASSERT_RETURN_VAL(event,false);
       if(event->type() == QEvent::User){
@@ -181,8 +181,8 @@ namespace icl{
       }else{
         return QObject::event(event);
       }
-    } 
-    
+    }
+
     void CameraCalibrationUtils::BestOfNSaver::init(){
       num_end = nFramesSource();
       Mutex::Locker l(this);
@@ -196,14 +196,14 @@ namespace icl{
       }
       runningBestError = 99999;
     }
-    
+
     void CameraCalibrationUtils::BestOfNSaver::stop(){
       Mutex::Locker l(this);
       if(inited){
         n = num_end;
       }
     }
-    
+
     std::pair<int,float> CameraCalibrationUtils::BestOfNSaver::next_hook(const Camera &cam, float error){
       Mutex::Locker l(this);
       if(!inited) return std::pair<int,float>(0,0);
@@ -214,7 +214,7 @@ namespace icl{
         errors.push_back(error);
       }
       ++n;
-      
+
       //gui["save_remaining_frames"] = num_end - n;
       if(error > 0 && (error < runningBestError)){
         runningBestError = error;
@@ -229,10 +229,10 @@ namespace icl{
         else{
           int best = (int)(std::min_element(errors.begin(),errors.end())-errors.begin());
           int worst = (int)(std::max_element(errors.begin(),errors.end())-errors.begin());
-          
+
           std::cout << "best error:" << errors[best] << std::endl;
           std::cout << "worst error:" << errors[worst] << std::endl;
-            
+
           CameraCalibrationUtils::save_cam_filename(cams[best],"-os",filename);
           lastBestError = errors[best];
           lastFileName = filename;
@@ -241,7 +241,7 @@ namespace icl{
         inited = false;
       }
       return std::pair<int,float>(num_end -n, runningBestError);
-            
+
     }
 
     CameraCalibrationUtils::CalibFile CameraCalibrationUtils::parse_calib_file(const std::string &fn, int c,
@@ -250,12 +250,12 @@ namespace icl{
       cf.filename = fn;
       cf.obj = 0;
       ConfigFile cfg(cf.filename);
-    
+
       std::cout << "* parsing given configuration file '" << cf.filename << "'" << std::endl;
-    
 
 
-      std::ostringstream transformNameList;    
+
+      std::ostringstream transformNameList;
       for(int t=0;true;++t){
         try{
           const std::string name = cfg["config.world-transform-" + str(t) + ".name"].as<std::string>();
@@ -311,10 +311,10 @@ namespace icl{
       }catch(ICLException &e){
         SHOW(e.what());
       }catch(int){}
-    
+
       int systemResult = system(string(ICL_SYSTEMCALL_RM).append(tmpFilename.c_str()).c_str());
       (void)systemResult;
-    
+
       enum Mode{
         ExtractGrids,
         ExtractSingleMarkers,
@@ -322,8 +322,8 @@ namespace icl{
       } mode = ExtractGrids;
 
       for(int i=0;mode != ExtractionDone ;++i){
-      
-        cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");  
+
+        cfg.setPrefix(str("config.") + ((mode == ExtractGrids) ? "grid-" : "marker-")+str(i)+".");
         if(!cfg.contains("offset")) {
           mode = (Mode)(mode+1);
           i = -1;
@@ -336,7 +336,7 @@ namespace icl{
         std::vector<int> markerIDs;
         MarkerType t;
         bool haveCorners;
-      
+
         t = (MarkerType)(cfg["marker-type"].as<std::string>() == "amoeba");
         o = parse<Vec3>(cfg["offset"]);
         if(mode == ExtractGrids){
@@ -348,22 +348,22 @@ namespace icl{
 
           markerIDs = FiducialDetectorPlugin::parse_list_str(cfg["marker-ids"].as<std::string>());
 
-          ICLASSERT_THROW((int)markerIDs.size() == s.getDim(), 
+          ICLASSERT_THROW((int)markerIDs.size() == s.getDim(),
                           ICLException("error loading configuration file at given grid " + str(i)
                                        + ": given size " +str(s) + " is not compatible to "
-                                       + "given marker ID range "  + 
+                                       + "given marker ID range "  +
                                        cfg["marker-ids"].as<std::string>()));
         }else{
           markerIDs.push_back(cfg["marker-id"].as<int>());
         }
-        
+
         if(!d.fds[t]){
           static SmartPtr<Size> s = pa("-s") ? SmartPtr<Size>(new Size(pa("-s").as<Size>())) : SmartPtr<Size>();
           d.fds[t] = create_new_fd(t,d.configurables,d.iin,s.get());
           d.lastFD = d.fds[t].get();
         }
-        try{ 
-          ms = parse<Size32f>(cfg["marker-size"]); 
+        try{
+          ms = parse<Size32f>(cfg["marker-size"]);
         } catch(...){}
 
         if(markerIDs.size() > 1){
@@ -375,18 +375,18 @@ namespace icl{
         if(mode == ExtractGrids){
           MarkerGrid g = { o, dx, dy, s, ms, markerIDs, t };
           cf.grids.push_back(g);
-                    
-          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker ids: {" 
+
+          std::cout << "** registering grid with " << (t?"amoeba":"bch") << " marker ids: {"
                     << markerIDs.front() << ", ..., " << markerIDs.back() << "}"  << std::endl;
         }else{
-          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << markerIDs[0] << std::endl; 
+          std::cout << "** registering single " << (t?"amoeba":"bch") << " marker with id " << markerIDs[0] << std::endl;
         }
 
-        
+
         int idIdx = 0;
         std::vector<PossibleMarker> &lut = d.possible[t];
         //  std::vector<Vec> vertices;
-        
+
         haveCorners = (mode==ExtractGrids) && (ms != Size32f::null) && (t==BCH);
 
         for(int y=0;y<s.height;++y){
@@ -401,7 +401,7 @@ namespace icl{
               Vec3 ur = v + dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 ll = v - dx1*(ms.width/2) + dy1*(ms.height/2);
               Vec3 lr = v - dx1*(ms.width/2) - dy1*(ms.height/2);
-              
+
               lut[id] = PossibleMarker(c,
                                        v.resize<1,4>(1),
                                        ul.resize<1,4>(1),
@@ -444,7 +444,7 @@ namespace icl{
         scene.removeObject(calibFileData.planeObj);
         ICL_DELETE(calibFileData.planeObj);
       }
-  
+
       const std::string t = planeOptionGUI["planeDim"].as<std::string>();
       const float offset = planeOptionGUI["planeOffset"];
       const float radius = parse<float>(planeOptionGUI["planeRadius"]);
@@ -481,7 +481,7 @@ namespace icl{
 
       calibFileData.planeObj->addVertex(set_3_to_1(o-dy*n2));
       calibFileData.planeObj->addVertex(set_3_to_1(o+dy*n2));
-  
+
       calibFileData.planeObj->addLine(n*n,n*n+1,GeomColor(255,0,0,255));
       calibFileData.planeObj->addLine(n*n+2,n*n+3,GeomColor(0,255,0,255));
 
@@ -496,7 +496,7 @@ namespace icl{
       for(unsigned int i=0;i<markers.size();++i){
         const FoundMarker &m = markers[i];
         draw->linewidth(2);
-        
+
         const int idx = markers[i].cfgFileIndex;
           if(enabled[idx]){
             draw->color(0,100,255,255);
@@ -504,7 +504,7 @@ namespace icl{
           }else{
             draw->color(200,200,200,255);
             draw->fill(100,100,100,100);
-            
+
           }
           if(m.hasCorners){
             draw->polygon(std::vector<Point32f>(m.imageCornerPositions,m.imageCornerPositions+4));
@@ -514,7 +514,7 @@ namespace icl{
           }else{
             draw->color(200,200,200,255);
           }
-          
+
           draw->linewidth(1);
           draw->sym(m.imagePos,'x');
           if(useCorners && m.hasCorners){
@@ -539,18 +539,18 @@ namespace icl{
         if(!calibFileData.fds[x]) continue;
         const std::vector<Fiducial> &fids = calibFileData.fds[x]->detect(image);
         for(unsigned int i=0;i<fids.size();++i){
-          
+
           const PossibleMarker &p = calibFileData.possible[x][fids[i].getID()];
           if(p.loaded){
             if(p.hasCorners && fids[i].getKeyPoints2D().size() == 4){
               const std::vector<Fiducial::KeyPoint> &kps = fids[i].getKeyPoints2D();
-              Point32f imagePositions[4] = { 
-                kps[0].imagePos, 
-                kps[1].imagePos, 
+              Point32f imagePositions[4] = {
+                kps[0].imagePos,
+                kps[1].imagePos,
                 kps[2].imagePos,
-                kps[3].imagePos 
+                kps[3].imagePos
               };
-              
+
               markers.push_back(FoundMarker(fids[i].getID(), &p,(MarkerType)x,fids[i],fids[i].getCenter2D(),p.center,
                                             imagePositions,p.corners,p.cfgFileIndex));
             }else{
@@ -573,15 +573,15 @@ namespace icl{
       const float o = planeOffset;
       const float x=t=="x",y=t=="y",z=t=="z";
       PlaneEquation pe(Vec(o*x,o*y,o*z,1),Vec(x,y,z,1));
-      
+
       const Vec w = scene.getCamera(0).getViewRay(p).getIntersection(pe);
       const Vec wx = x ? Vec(w[0],o,w[2],1) : Vec(o,w[1],w[2],1);
       const Vec wy = y ? Vec(w[0],w[1],o,1) : Vec(w[0],o,w[2],1);
-      
+
       draw->color(0,100,255,255);
       draw->line(p,scene.getCamera(0).project(wx));
       draw->line(p,scene.getCamera(0).project(wy));
-      
+
       const std::string tx = str("(")+str(w[0])+","+str(w[1])+","+str(w[2])+")";
       draw->color(0,0,0,255);
       draw->text(tx,p.x+1,p.y-11,8);
@@ -594,13 +594,13 @@ namespace icl{
         static ImgBase *normalized = 0;
         image->deepCopy(&normalized);
         normalized->normalizeAllChannels(Range64f(0,255));
-        
+
         static Img8u normalized8u;
         normalized->convert(&normalized8u);
-        
-        image = &normalized8u;    
+
+        image = &normalized8u;
       }
-      
+
       if(pa("-crop-and-rescale")){
         static Rect *r = 0;
         static ImgBase *croppedAndRescaled = 0;
@@ -609,23 +609,23 @@ namespace icl{
           int by = pa("-crop-and-rescale",1);
           int tw = pa("-crop-and-rescale",2);
           int th = pa("-crop-and-rescale",3);
-          
+
           r = new Rect(bx,by,image->getWidth()-2*bx, image->getHeight()-2*by);
-          
+
           ICLASSERT_THROW(r->width <= image->getWidth(),ICLException("clipping rect width is larger then image width"));
           ICLASSERT_THROW(r->height <= image->getHeight(),ICLException("clipping rect height is larger then image height"));
           ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
           ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
           ICLASSERT_THROW(r->right() < image->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
           ICLASSERT_THROW(r->bottom() < image->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
-          
-          croppedAndRescaled = imgNew(image->getDepth(),Size(tw,th),image->getChannels(),image->getFormat()); 
+
+          croppedAndRescaled = imgNew(image->getDepth(),Size(tw,th),image->getChannels(),image->getFormat());
         }
         const ImgBase *tmp = image->shallowCopy(*r);
-        
+
         tmp->scaledCopyROI(&croppedAndRescaled, interpolateLIN);
         delete tmp;
-        image = croppedAndRescaled; 
+        image = croppedAndRescaled;
       }
       return image;
     }
@@ -637,7 +637,7 @@ namespace icl{
         typedef LMA::Vector vec;
         typedef LMA::Params params;
         typedef LMA::Matrix mat;
-        
+
         Camera cam;
         Mat P,T;
         LMAOptUtil(const Camera &cam):cam(cam){
@@ -648,7 +648,7 @@ namespace icl{
         static Mat m(const params &p){
           return create_hom_4x4<float>(p[0],p[1],p[2],p[3]*1000,p[4]*1000,p[5]*1000);
         }
-        
+
         Camera fixCam(const params &par){
           Mat3 R = T.part<0,0,3,3>();
           Vec3 pOrig =  cam.getPosition().resize<1,3>(); //T.part<3,0,1,3>();
@@ -657,7 +657,7 @@ namespace icl{
           Vec3 dt = d.part<3,0,1,3>();
 
           Mat3 dRR = dR * R;
- 
+
           Camera c = cam;
           c.setUp(Vec(dRR(0,1), dRR(1,1), dRR(2,1), 1));
           c.setNorm(Vec(dRR(0,2), dRR(1,2), dRR(2,2), 1));
@@ -668,7 +668,7 @@ namespace icl{
         Mat getFixedCSMatrix(const params &p){
           return  m(p) * T;
         }
-        
+
         vec f(const params &p, const vec &x) const{
           Mat Q = P * m(p) * T;
           Vec y = Q * Vec(x[0],x[1],x[2],1);
@@ -677,11 +677,11 @@ namespace icl{
           r[1] = y[1]/y[3];
           return r;
         }
-        
-        static Camera optimize(const Camera &init, 
-                               const std::vector<Vec> &Xws, 
+
+        static Camera optimize(const Camera &init,
+                               const std::vector<Vec> &Xws,
                                const std::vector<Point32f> &xis){
-        
+
           LMAOptUtil u(init);
           LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
                   0.1, 1000);
@@ -697,16 +697,16 @@ namespace icl{
             ys(0,i) = xis[i].x;
             ys(1,i) = xis[i].y;
           }
-                    
+
           LMA::Result r = lma.fit(xs, ys, params(6,0.0));
           std::cout << "LMA Optimization Results: " << std::endl << r << std::endl;
-          
+
           return u.fixCam(r.params);
         }
       };
     }
-    
-    Camera CameraCalibrationUtils::optimize_extrinsic_lma(const Camera &init, const std::vector<Vec> &Xws, 
+
+    Camera CameraCalibrationUtils::optimize_extrinsic_lma(const Camera &init, const std::vector<Vec> &Xws,
                                                           const std::vector<Point32f> &xis){
       return LMAOptUtil::optimize(init, Xws, xis);
     }
@@ -725,17 +725,17 @@ namespace icl{
       res.error = 0;
       std::vector<Vec> xws,xwsCentersOnly;
       std::vector<Point32f> xis,xisCentersOnly;
-      
+
       for(unsigned int i=0;i<markers.size();++i){
         const int idx = markers[i].cfgFileIndex;
         if(!enabledCfgFiles[idx]) continue;
         Mat T = Trel * Ts[idx];
         xws.push_back(T *markers[i].worldPos);
         xis.push_back(markers[i].imagePos);
-        
+
         xwsCentersOnly.push_back(xws.back());
         xisCentersOnly.push_back(xis.back());
-        
+
         if(useCorners && markers[i].hasCorners){
           for(int j=0;j<4;++j){
             xws.push_back(T * markers[i].worldCornerPositions[j]);
@@ -743,7 +743,7 @@ namespace icl{
           }
         }
       }
-      
+
       std::vector<Vec> *W[2] = { &xws, &xwsCentersOnly };
       std::vector<Point32f> *I[2] = { &xis, &xisCentersOnly };
       int idx = 0;
@@ -756,7 +756,7 @@ namespace icl{
             Mutex::Locker lock(saver);
             try{
               if(givenIntrinsicParams){
-                cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams, 
+                cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams,
                                                   Camera::RenderParams(),  performLMAbasedOptimiziation);
               }else{
                 cam = Camera::calibrate_pinv(*W[idx], *I[idx], 1, performLMAbasedOptimiziation);
@@ -768,7 +768,7 @@ namespace icl{
 
             cam.getRenderParams().viewport = Rect(Point::null,imageSize);
             cam.getRenderParams().chipSize = imageSize;
-            
+
             //if(performLMAbasedOptimiziation){
             //  cam = optimize_extrinsic_lma(cam, *W[idx], *I[idx]);
             //}
@@ -776,9 +776,9 @@ namespace icl{
           scene.getCamera(0) = cam;
           scene.unlock();
 
-          
+
           float error = 0;
-          
+
           for(unsigned int i=0;i<W[idx]->size();++i){
             error += I[idx]->operator[](i).distanceTo(cam.project(W[idx]->operator[](i)));
           }
@@ -788,17 +788,17 @@ namespace icl{
           }else{
             error /= W[idx]->size();
           }
-          
+
           //gui["error"] = error;
           res.error = error;
           //gui["status"] = str("ok") + ((idx&&useCorners) ? "(used centers only)" : "");
           res.status =  str("ok") + ((idx&&useCorners) ? "(used centers only)" : "");
           if(idx) deactivatedCenters = true;
-          
+
           std::pair<int,float> r = saver->next_hook(cam,error);
           res.saveRemainingFrames = r.first; //gui["save_remaining_frames"] = r.first;
           res.saveBestError = r.second; //gui["save_best_error"] = r.second;
-          
+
           if(error > 0 && !haveAnyCalibration){
             haveAnyCalibration = true;
             for(int i=0;i<scene.getObjectCount();++i){
@@ -843,13 +843,13 @@ namespace icl{
     }
 
 
-    
+
     CameraCalibrationUtils::DetectedGrid::DetectedGrid():realGrid(0){}
 
     CameraCalibrationUtils::DetectedGrid::operator bool() const {
       return !!realGrid;
     }
-    
+
     void CameraCalibrationUtils::DetectedGrid::setup(const CameraCalibrationUtils::MarkerGrid *realGrid){
       this->realGrid = realGrid;
       foundMarkers.resize(realGrid->getDim(),(const CameraCalibrationUtils::FoundMarker*)0);
@@ -865,7 +865,7 @@ namespace icl{
     static float len_3(const math::Vec3 &v){
       return ::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     }
-    
+
     static Point32f get_marker_center(int cellIdx, const CameraCalibrationUtils::MarkerGrid &g){
       Point cell = g.getCellFromCellIdx(cellIdx);
       float x = cell.x * len_3(g.dx) + g.markerSize.width/2;
@@ -904,10 +904,10 @@ namespace icl{
                                       CoplanarPointPoseEstimator::SamplingFine);
       Mat pose = cppe.getPose(modelCoords.size(), modelCoords.data(),
                               imageCoords.data(), cam);
-      
+
       return pose;
     }
-    
+
     void CameraCalibrationUtils::DetectedGrid::getGridCornersAndTexture(const Camera &cam,
                                                                         std::vector<Point> &points,
                                                                         std::vector<Line32f> &lines,
@@ -919,16 +919,16 @@ namespace icl{
       bool pointsInBounds = true;
       if(numFound()){
         Mat T = estimatePose(cam);
-   
+
         const Vec cs[4] = {
           T * Vec(0,0,0,1),
           T * Vec(c.x,0,0,1),
           T * Vec(c.x,c.y,0,1),
           T * Vec(0, c.y, 0, 1)
         };
-        
+
         std::vector<Point32f> ps = cam.project(std::vector<Vec>(cs,cs+4));
-        
+
         points = std::vector<Point>(ps.begin(), ps.end());
         for(int i=0;i<4;++i){
           if(!bounds.contains(ps[i].x,ps[i].y)){
@@ -939,13 +939,13 @@ namespace icl{
       if(!numFound() || !pointsInBounds){
         Rect r = Rect(Point::null,cam.getResolution()).enlarged(-10);
         Point ps[4] = { r.ul(), r.ur(), r.lr(), r.ll() };
-        points.assign(ps,ps+4);                        
+        points.assign(ps,ps+4);
       }
-      
+
       size = Size32f(c.x,c.y);
-      
+
       lines.clear();
-      
+
       int cellIdx = 0;
       for(int y=0;y<realGrid->dim.height;++y){
         for(int x=0;x<realGrid->dim.width;++x,++cellIdx){

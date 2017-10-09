@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace cv{
-    
+
     struct ContourImpl{
       virtual bool hasHierarchy() const = 0;
       virtual int getID() const = 0;
@@ -47,15 +47,15 @@ namespace icl{
       virtual const utils::Point *begin() const = 0;
       virtual const utils::Point *end() const = 0;
     };
-    
+
     /// Utility class used by the ContourDetector
-    class ICLCV_API Contour{ 
+    class ICLCV_API Contour{
       ContourImpl *impl;
 
       public:
       Contour(ContourImpl *impl = 0):impl(impl){}
-      
-      inline bool isNull() const { 
+
+      inline bool isNull() const {
         return !impl;
       }
       inline operator bool() const {
@@ -96,29 +96,29 @@ namespace icl{
         the image is copied/converted before
 
         \section HIER Contour Hierarchy
-        
+
         The ContourDetector can be set up to also extract a countour
         hierarchy.
-        
+
         \section ALG Algorithms
-        
+
         Internally 2 different contour tracing algorithms are implemented. While
-        the "Fast" method uses a 4-point neighbourhood, the Accurate method uses 
+        the "Fast" method uses a 4-point neighbourhood, the Accurate method uses
         a 8-point neighborhood an can also optionally be used to obtain a region
         hierarchy. The fast method uses its own memory allocator to improve runtime
         performance.
 
     **/
     class ICLCV_API ContourDetector : public utils::Uncopyable{
-      
+
       /// internal data type
       struct Data;
 
       /// internal data pointer
       Data *m_data;
-      
+
       public:
-      
+
       /// contour tracing algorithm used
       enum Algorithm{
         Fast,                  //!< fast contour detection algorithm (using 4-point neighbourhood)
@@ -131,7 +131,7 @@ namespace icl{
           @param hierarchy shows if the relationship of the contours should be calculated
       */
       ContourDetector(const icl8u thresh=128, Algorithm a = Fast);
-  
+
       // destructor
       virtual ~ContourDetector();
 
@@ -146,10 +146,10 @@ namespace icl{
 
       /// sets new binarization threshold
       void setThreshold(const icl8u &threshold);
-      
+
       /// sets whether a contour hierarchy is created
       void setAlgorithm(Algorithm a);
     };
-  
+
   } // namespace cv
 }

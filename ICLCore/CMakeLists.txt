@@ -46,9 +46,9 @@ SET(SOURCES src/ICLCore/BayerConverter.cpp
 	    src/ICLCore/Line.cpp
 	    src/ICLCore/LineSampler.cpp
 	    src/ICLCore/ConvexHull.cpp
-	    src/ICLCore/AbstractCanvas.cpp            
+	    src/ICLCore/AbstractCanvas.cpp
 	    src/ICLCore/PseudoColorConverter.cpp)
-          
+
 SET(HEADERS src/ICLCore/BayerConverter.h
             src/ICLCore/CCFunctions.h
 	    src/ICLCore/CCLUT.h
@@ -100,7 +100,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLUtils/src
                            ${ICL_SOURCE_DIR}/ICLMath/src)
 ENDIF()
-	    
+
 ADD_LIBRARY(ICLCore SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
@@ -108,7 +108,7 @@ TARGET_LINK_LIBRARIES(ICLCore ICLMath
                               ${ICLCore_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLCore
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples ----

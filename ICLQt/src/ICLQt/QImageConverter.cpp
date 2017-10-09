@@ -78,11 +78,11 @@ namespace icl{
     template<class T>
     void img_to_qimage(const Img<T> *src, QImage *&dst, bool useSpeudoColors){
       // {{{ open
-  
+
     ICLASSERT_RETURN(src);
     static QVector<QRgb> palette;
     static QVector<QRgb> pc_palette;
-    if(!palette.size()){ 
+    if(!palette.size()){
       for(int i=0;i<256;++i){
         palette.push_back(qRgb(i,i,i));
         pc_palette.push_back(qRgb(pseudo_colors[0][i], pseudo_colors[1][i], pseudo_colors[2][i] ));
@@ -95,7 +95,7 @@ namespace icl{
     }
     dst->setColorTable( useSpeudoColors ? pc_palette : palette );
 
-  
+
     if(src->getChannels() == 1){
       if(dst->width() != w || dst->height() != h || dst->format() != QImage::Format_Indexed8){
         delete dst;
@@ -108,12 +108,12 @@ namespace icl{
         dst = new QImage(w,h,QImage::Format_RGB32);
       }
     }
-    
+
     static Img<T> bBuf(Size(1,1),1),wBuf(Size(1,1),1);
     std::vector<T*> channelVec;
-    
+
     switch(src->getChannels()){
-      case 1: 
+      case 1:
         planarToInterleaved<T,icl8u>(src, dst->bits());
         break;
       case 2:{
@@ -140,7 +140,7 @@ namespace icl{
         channelVec.push_back(const_cast<T*>(src->getData(0)));
         channelVec.push_back(wBuf.getData(0));
         const Img<T> tmp(src->getSize(),4,channelVec);
-  
+
         planarToInterleaved<T,icl8u>(&tmp,dst->bits());
         break;
       }
@@ -155,18 +155,18 @@ namespace icl{
       }
     }
   }
-    
+
     // }}}
-    
+
     template<class T>
     void qimage_to_img(const QImage *src, Img<T> **ppDst, bool useSpeudoColors){
       // {{{ open
       Img<T> *&dst = *ppDst;
-  
+
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(!src->isNull());
       if(!dst) dst = new Img<T>(Size(1,1),1);
-  
+
       if(src->format() == QImage::Format_Indexed8){
         dst->setFormat(formatGray);
       }else{
@@ -227,7 +227,7 @@ namespace icl{
       m_poQBuf = 0;
       m_eQImageState=undefined;
       setQImage(qimage);
-  
+
     }
 
     // }}}
@@ -246,7 +246,7 @@ namespace icl{
     }
 
     // }}}
-    
+
 
     const QImage *QImageConverter::getQImage(){
       // {{{ open
@@ -256,7 +256,7 @@ namespace icl{
         if(m_aeStates[i] < 2){
           switch((depth)i){
             case depth8u:{
-              img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf, m_usePC); 
+              img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf, m_usePC);
               break;
             }
             case depth16s: img_to_qimage(m_apoBuf[i]->asImg<icl16s>(), m_poQBuf, m_usePC); break;
@@ -264,7 +264,7 @@ namespace icl{
             case depth32f: img_to_qimage(m_apoBuf[i]->asImg<icl32f>(), m_poQBuf, m_usePC); break;
             case depth64f: img_to_qimage(m_apoBuf[i]->asImg<icl64f>(), m_poQBuf, m_usePC); break;
             default: ICL_INVALID_DEPTH;
-          }          
+          }
           m_eQImageState = uptodate;
           return  m_poQBuf;
         }
@@ -325,7 +325,7 @@ namespace icl{
     template const Img<icl##D> *QImageConverter::getImg<icl##D>();
     ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
-    
+
 
     // }}}
 
@@ -348,7 +348,7 @@ namespace icl{
           }
           m_aeStates[i] = undefined;
         }
-      }  
+      }
       if(m_eQImageState == given){
         m_poQBuf = 0;
       }
@@ -362,7 +362,7 @@ namespace icl{
 
       ICLASSERT_RETURN( qimage );
       ICLASSERT_RETURN( !qimage->isNull() );
-  
+
       for(int i=0;i<5;i++){
         if(m_apoBuf[i] && m_aeStates[i] == given){
           m_apoBuf[i] = 0;
@@ -379,5 +379,5 @@ namespace icl{
     // }}}
   } // namespace qt
 
- 
+
 } // namespace icl

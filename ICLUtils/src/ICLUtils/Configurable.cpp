@@ -34,20 +34,20 @@
 
 namespace icl{
   namespace utils{
-  
+
     namespace{
       struct DefInt{
         int value;
         DefInt():value(0){}
       };
     }
-    
+
     std::string Configurable::create_default_ID(const std::string &prefix){
       static std::map<std::string,DefInt> numbers;
       DefInt &i = numbers[prefix];
       return prefix+str(i.value++);
     }
-    
+
      Configurable::Property &Configurable::prop(const std::string &propertyName) throw (ICLException){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
       if(it == m_properties.end()){
@@ -55,7 +55,7 @@ namespace icl{
       }
       return it->second;
     }
-  
+
     void Configurable::addChildConfigurable(Configurable *configurable, const std::string &childPrefix){
       ICLASSERT_RETURN(configurable);
       std::string pfx = childPrefix;
@@ -82,11 +82,11 @@ namespace icl{
       (void) configurable;
       throw ICLException("removeChildConfigurable: is not yet implemented");
     }
-  
+
     const Configurable::Property &Configurable::prop(const std::string &propertyName) const throw (ICLException){
       return const_cast<Configurable*>(this)->prop(propertyName);
     }
-  
+
     std::vector<std::string> Configurable::getPropertyList() const{
       std::vector<std::string> v(m_properties.size());
       if(!m_isOrdered){
@@ -103,10 +103,10 @@ namespace icl{
       }
       return v;
     }
-  
-  
-    void Configurable::addProperty(const std::string &name, const std::string &type, 
-                                   const std::string &info, const Any &value, 
+
+
+    void Configurable::addProperty(const std::string &name, const std::string &type,
+                                   const std::string &info, const Any &value,
                                    int volatileness, const std::string &tooltip) throw (ICLException){
       try{
         prop(name);
@@ -116,11 +116,11 @@ namespace icl{
         if(m_isOrdered) m_ordering[m_properties.size()] = name;
       }
     }
-    
-  
+
+
     const std::vector<std::string> Configurable::EMPTY_VEC;
     std::map<std::string,Configurable*> Configurable::m_instances;
-    
+
     Configurable* Configurable::get(const std::string &id) {
       std::map<std::string,Configurable*>::iterator it = m_instances.find(id);
       if(it != m_instances.end()){
@@ -129,7 +129,7 @@ namespace icl{
         return 0;
       }
     }
-  
+
     Configurable::Configurable(const std::string &ID, bool ordered) throw (ICLException)
       : m_isOrdered(ordered), m_elderConfigurable(NULL), m_ID(ID){
       if(ID.length()){
@@ -137,7 +137,7 @@ namespace icl{
       }
       m_instances[ID] = this;
     }
-    
+
     Configurable::Configurable(const Configurable &other){
       m_properties = other.m_properties;
       m_isOrdered = other.m_isOrdered;
@@ -151,7 +151,7 @@ namespace icl{
       m_elderConfigurable = other.m_elderConfigurable;
       m_ID = "";
     }
-    
+
     Configurable &Configurable::operator=(const Configurable &other) {
       setConfigurableID("");
       m_properties = other.m_properties;
@@ -166,8 +166,8 @@ namespace icl{
       m_elderConfigurable = other.m_elderConfigurable;
       return *this;
     }
-  
-  
+
+
     void Configurable::setConfigurableID(const std::string &ID) throw (ICLException){
       if(m_ID.length()){
         std::map<std::string,Configurable*>::iterator it = m_instances.find(m_ID);
@@ -181,7 +181,7 @@ namespace icl{
         m_instances[ID] = this;
       }
     }
-  
+
     void Configurable::call_callbacks(
         const std::string &propertyName, const Configurable* caller) const
     {
@@ -205,7 +205,7 @@ namespace icl{
       m_elderConfigurable -> call_callbacks(propname, this);
     }
     }
-  
+
     void Configurable::removedCallback(const Callback &cb){
       for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
         if( *it == cb ){
@@ -221,12 +221,12 @@ namespace icl{
         return p.value;
       }
     }
-    
+
     bool Configurable::supportsProperty(const std::string &propertyName) const{
       std::vector<std::string> l = getPropertyList();
       return find(l.begin(),l.end(),propertyName) != l.end();
     }
-  
+
     void Configurable::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
       Property &p = prop(propertyName);
       if(p.configurable != this){
@@ -237,8 +237,8 @@ namespace icl{
       }
       call_callbacks(propertyName, this);
     }
-    
-    std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps, 
+
+    std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,
                                               const std::vector<std::string> &filter){
       std::vector<std::string> ps2;
       for(unsigned int i=0;i<ps.size();++i){
@@ -249,18 +249,18 @@ namespace icl{
       }
       return ps;
     }
-  
-  
-  
+
+
+
     void Configurable::saveProperties(const std::string &filename, const std::vector<std::string> &filterOUT) const{
       ConfigFile f;
       f["config.title"] = std::string("Configuration file for Configurable ID: ") + m_ID;
       std::vector<std::string> psSupported = getPropertyListWithoutDeactivated();
-      
+
       if(filterOUT.size()){
         psSupported = remove_by_filter(psSupported,filterOUT);
       }
-  
+
       /* // sometimes, property-name contains '.'-delimiters, then, we have deeper section also
           <config>
             <data id="property-name" type="float|string">PROPERTY_VALUE</data>
@@ -274,9 +274,9 @@ namespace icl{
         std::string type = getPropertyType(prop);
         if(type == "info") continue;
         if(type == "command") continue;
-  
+
         std::string val = getPropertyValue(prop);
-        
+
         if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
           f[prop] = parse<icl32f>(val);
         }else if(type == "int"){
@@ -286,14 +286,14 @@ namespace icl{
         }else if(type == "menu"){
           f[prop] = val;
         }else if(type == "flag"){
-          f[prop] = parse<bool>(val) ? (bool)1 : (bool)0; 
+          f[prop] = parse<bool>(val) ? (bool)1 : (bool)0;
         }else if(type == "color"){
           f[prop] = val;
         }
       }
       f.save(filename);
     }
-  
+
     void setOptions(Configurable* conf, ConfigFile &f, const std::vector<std::string> &supported){
       for(unsigned int i=0;i<supported.size();++i){
         const std::string &prop = supported[i];
@@ -328,12 +328,12 @@ namespace icl{
         }
       }
     }
-    
+
     void Configurable::loadProperties(const std::string &filename, const std::vector<std::string> &filterOUT){
       ConfigFile f(filename);
       f["config.title"] = std::string("Configuration file for Configurable ID:") + m_ID +  ")";
       std::vector<std::string> psSupported = getPropertyListWithoutDeactivated();
-      
+
       if(filterOUT.size()){
         psSupported = remove_by_filter(psSupported,filterOUT);
       }
@@ -343,7 +343,7 @@ namespace icl{
         std::string type = getPropertyType(prop);
         if(type == "info") continue;
         if(type == "command") continue;
-  
+
         if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
           try{
             setPropertyValue(prop,str(f[prop].as<float>()));
@@ -374,11 +374,11 @@ namespace icl{
       setOptions(this, f, psSupported);
       setOptions(this, f, psSupported);
     }
-  
+
     void Configurable::deactivateProperty(const std::string &pattern){
       m_deactivated.push_back(pattern);
     }
-  
+
     void Configurable::deleteDeactivationPattern(const std::string &pattern){
       std::vector<std::string>::iterator it = std::find(m_deactivated.begin(),m_deactivated.end(),pattern);
       if(it == m_deactivated.end()){
@@ -386,7 +386,7 @@ namespace icl{
                   "in the current list of deactivated patterns");
       }
     }
-      
+
     std::vector<std::string> Configurable::getPropertyListWithoutDeactivated() const{
       if(!m_deactivated.size()) return getPropertyList();
       std::vector<std::string> passed;
@@ -406,7 +406,7 @@ namespace icl{
       }
       return passed;
     }
-  
+
     void Configurable::adaptProperty(const std::string &name,const std::string &newType,
                                      const std::string &newInfo, const std::string &newToolTip) throw (ICLException){
       Property &p = prop(name);
@@ -418,14 +418,14 @@ namespace icl{
         p.tooltip = newToolTip;
       }
     }
-  
+
     typedef std::map<std::string, Function<Configurable*> > CRM;
-  
+
     static CRM &get_configurable_registration_map(){
       static SmartPtr<CRM> crm = new CRM;
       return *crm;
     }
-    
+
     void Configurable::register_configurable_type(const std::string &classname,
                                                   Function<Configurable*> creator) throw (ICLException){
       CRM &crm = get_configurable_registration_map();
@@ -433,7 +433,7 @@ namespace icl{
       if(it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");
       crm[classname] = creator;
     }
-    
+
     std::vector<std::string> Configurable::get_registered_configurables(){
       std::vector<std::string> all;
       CRM &crm = get_configurable_registration_map();
@@ -442,15 +442,15 @@ namespace icl{
       }
       return all;
     }
-    
+
     Configurable *Configurable::create_configurable(const std::string &classname) throw (ICLException){
       CRM &crm = get_configurable_registration_map();
       CRM::iterator it = crm.find(classname);
       if(it == crm.end()) throw ICLException("unable to create configurable " + classname + ": name not registered");
       return it->second();
     }
-  
-    
+
+
     namespace{
       struct SyncImpl : public FunctionImpl<void,const Configurable::Property&>{
         Configurable *src, *synced;
@@ -465,10 +465,10 @@ namespace icl{
         }
       };
     }
-    
+
     void Configurable::syncChangesTo(Configurable *others, int num){
       registerCallback(Function<void,const Configurable::Property&>(new SyncImpl(this,others,num)));
     }
-  
+
   } // namespace utils
 }

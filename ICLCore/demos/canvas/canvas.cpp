@@ -36,14 +36,14 @@
 
 struct Canvas : public AbstractCanvas{
   typedef void (*point_func)(const Point32f&, void **, int, const AbstractCanvas::Color&);
-  typedef void (*line_func)(LineSampler &ls, const Point32f&, const Point32f&, 
+  typedef void (*line_func)(LineSampler &ls, const Point32f&, const Point32f&,
                             void **, int, const AbstractCanvas::Color&);
-  typedef void (*triangle_func)(const Point32f&, const Point32f &, 
-                                const Point32f&,void **, const int, 
+  typedef void (*triangle_func)(const Point32f&, const Point32f &,
+                                const Point32f&,void **, const int,
                                 const AbstractCanvas::Color &,
                                 const AbstractCanvas::ClipRect&);
-  typedef void (*ellipse_func)(const Point32f&, const Point32f &, 
-                               const Point32f&, void **, const int, 
+  typedef void (*ellipse_func)(const Point32f&, const Point32f &,
+                               const Point32f&, void **, const int,
                                const AbstractCanvas::Color &,
                                const AbstractCanvas::ClipRect&);
 
@@ -53,14 +53,14 @@ struct Canvas : public AbstractCanvas{
   depth d;
   int c;
   static const float ALPHA_SCALE; // 1./255
-  
+
   struct Functions{
     point_func f_point;
     line_func f_line;
     triangle_func f_triangle;
     ellipse_func f_ellipse;
   } funcs[2]; // 0=no alpha, 1 = with alpha
-  
+
   template<class T>
   static inline void set_color_alpha(T &t, const float c, const float a){
     t = clipped_cast<float,T>(c*a + t*(1-a));
@@ -81,8 +81,8 @@ struct Canvas : public AbstractCanvas{
   static inline int get_idx(const Point &p, int w){
     return get_idx(p.x,p.y,w);
   }
-  
-  template<class T, int CHAN, bool WITH_ALPHA> 
+
+  template<class T, int CHAN, bool WITH_ALPHA>
   static inline void set_color_gen(void **data, int o, const AbstractCanvas::Color &c, float aScaled=0){
     if(WITH_ALPHA){
       if(CHAN > 0) set_color_alpha((((T**)data)[0])[o],c[0],aScaled);
@@ -97,21 +97,21 @@ struct Canvas : public AbstractCanvas{
     }
   }
 
-  
+
   template<int CHAN, class T, bool WITH_ALPHA>
-  static void point_template(const Point32f &p, void **data, const int w, 
+  static void point_template(const Point32f &p, void **data, const int w,
                              const AbstractCanvas::Color &c){
     // we hope that c[3]*A is optimized out if not needed
-    set_color_gen<T,CHAN,WITH_ALPHA>(data, get_idx(p,w), c, c[3]*ALPHA_SCALE); 
+    set_color_gen<T,CHAN,WITH_ALPHA>(data, get_idx(p,w), c, c[3]*ALPHA_SCALE);
   }
-  
+
   template<int CHAN, class T, bool WITH_ALPHA>
   static void line_template(LineSampler &ls,
-                            const Point32f &a, const Point32f &b, 
-                            void **data, const int w, 
+                            const Point32f &a, const Point32f &b,
+                            void **data, const int w,
                             const AbstractCanvas::Color &c){
     LineSampler::Result r = ls.sample(a,b);
-    const float aScaled = c[3]*ALPHA_SCALE;      
+    const float aScaled = c[3]*ALPHA_SCALE;
     for(int i=0;i<r.n;++i){
       set_color_gen<T,CHAN,WITH_ALPHA>(data, get_idx(r[i],w), c, aScaled);
     }
@@ -122,7 +122,7 @@ struct Canvas : public AbstractCanvas{
   }
 
   template<int CHAN, class T, bool WITH_ALPHA>
-  static inline void hlinef(void **data, float x1, float x2, float y, int w, 
+  static inline void hlinef(void **data, float x1, float x2, float y, int w,
                             const AbstractCanvas::Color &cFill, float aScaled,
                             const AbstractCanvas::ClipRect &clip){
     if(y < clip.miny || y > clip.maxy || x2 < clip.minx || x1 > clip.maxx) return;
@@ -142,7 +142,7 @@ struct Canvas : public AbstractCanvas{
   static void triangle_template(const Point32f &p1, const Point32f &p2, const Point32f &p3,
                                 void **data, const int w, const AbstractCanvas::Color &cFill,
                                 const AbstractCanvas::ClipRect &clip){
-    const float aScaled = cFill[3]*ALPHA_SCALE;      
+    const float aScaled = cFill[3]*ALPHA_SCALE;
 
     Point ps[3] = { p1, p2, p3 };
     std::sort((Point*)ps,(Point*)(ps+3),less_pt_y);
@@ -163,7 +163,7 @@ struct Canvas : public AbstractCanvas{
     }else{
       dx3=0;
     }
-    
+
     Point32f S = Point32f(A.x,A.y);
     Point32f E = Point32f(A.x,A.y);
     if(dx1 > dx2) {
@@ -187,7 +187,7 @@ struct Canvas : public AbstractCanvas{
       }
     }
   }
-  
+
   template<class Func>
   static void for_each_in_triangle(const Point32f &p1, const Point32f &p2, const Point32f &p3,
                                    const AbstractCanvas::ClipRect &clip, Func f){
@@ -210,7 +210,7 @@ struct Canvas : public AbstractCanvas{
     }else{
       dx3=0;
     }
-    
+
     Point32f S = Point32f(A.x,A.y);
     Point32f E = Point32f(A.x,A.y);
     if(dx1 > dx2) {
@@ -239,7 +239,7 @@ struct Canvas : public AbstractCanvas{
       }
     }
   }
-  
+
   struct InsideEllipse{
     typedef FixedColVector<float,2> Vec2;
     typedef FixedMatrix<float,2,2> Mat2;
@@ -258,7 +258,7 @@ struct Canvas : public AbstractCanvas{
     const InsideEllipse in;
     const float aScaled;
     void **data;
-    
+
     void operator()(int x, int y) const{
       if(in(x,y)){
         set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y,w),cFill,aScaled);
@@ -269,39 +269,39 @@ struct Canvas : public AbstractCanvas{
       //}
     }
   };
-    
-  
-  
+
+
+
   template<int CHAN, class T, bool WITH_ALPHA>
-  static void ellipse_template(const Point32f&cc, const Point32f &axis1, 
-                               const Point32f&axis2, void **data, const int w, 
+  static void ellipse_template(const Point32f&cc, const Point32f &axis1,
+                               const Point32f&axis2, void **data, const int w,
                                const AbstractCanvas::Color &cFill,
                                const AbstractCanvas::ClipRect &clip){
     // axis are relative to (0,0)
-    const float aScaled = cFill[3]*ALPHA_SCALE;  
-    
+    const float aScaled = cFill[3]*ALPHA_SCALE;
+
     typedef FixedColVector<float,2> Vec2;
     typedef FixedMatrix<float,2,2> Mat2;
-    
+
     const Point32f ax = axis1.normalized();
     const Point32f ay = axis2.normalized();
-    
+
     const Mat2 R(ax.x, ax.y,
            ay.x, ay.y);
-    
+
     const Vec2 t(cc.x,cc.y);
-    
+
     const Mat2 S(1./sqr(axis1.norm()),0,
            0, 1./sqr(axis2.norm()));
 
     InsideEllipse in = { R,S,t };
     SetEllipsePixels<CHAN,T,WITH_ALPHA> sep = { cFill, w, in, aScaled, data };
-    
+
     Point32f pa = cc + axis1 + axis2;
     Point32f pb = cc + axis1 - axis2;
     Point32f pc = cc - axis1 - axis2;
     Point32f pd = cc - axis1 + axis2;
-    
+
     for_each_in_triangle(pa,pb,pc,clip,sep);
     for_each_in_triangle(pa,pc,pd,clip,sep);
 
@@ -312,9 +312,9 @@ struct Canvas : public AbstractCanvas{
         => Sx Vx^2 + Sy Vy^2 = 1
         where R = [A0, A1,  = [ -A-
                    B0, B1 ]     -B- ]
-        Vx = A0x + A1y - Ac  
+        Vx = A0x + A1y - Ac
         Vy = B0x + B1y - Bc
-        
+
         Vx^2 := ...
         Vy^2 :=
 
@@ -330,7 +330,7 @@ struct Canvas : public AbstractCanvas{
       const float A = Sx, D = Sy;
       const float S = a*cc.x + b*cc.y;
       const float Q = c*cc.x + d*cc.y;
-      
+
       const float a0 = 2*(A*sqr(b)+D*sqr(d));
       const float a1 = 2*(a*A*b + c*d*D);
       const float a2 = 2*(A*b*S + d*D*Q);
@@ -342,30 +342,30 @@ struct Canvas : public AbstractCanvas{
       const float b1 = sqr(a1) - a3*a4;
       const float b2 = 2*a1*a2+a5;
       const float b3 = sqr(a2)+a6;
-      
+
       static const AbstractCanvas::Color cBorder(0,100,255,255);
-    
+
       for(int x=0;x<1000;++x){
         const float root = b1*sqr(x) + b2*x * b3;
         if(root >= 0){
           const float c1 = 1./a0;
           const float c2 = sqrt(root);
           const float c3 = a1*x+a2;
-          
+
           const int y1 = round(c1*(c2 - c3));
           const int y2 = round(c1*(-c2 -c3));
-          
+
           if(clip.in(x,y1)){
             set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y1,w),cBorder,aScaled);
           }
           if(clip.in(x,y2)){
             set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x,y2,w),cBorder,aScaled);
           }
-          
+
         }
       }
-    } // end of scope    
-    
+    } // end of scope
+
 
 #else
     const float A0 = R(0,0), A1 = R(1,0), B0=R(0,1), B1=R(1,1);
@@ -399,7 +399,7 @@ struct Canvas : public AbstractCanvas{
           set_color_gen<T,CHAN,WITH_ALPHA>(data,get_idx(x2,y,w),cBorder,aScaled);
         }
       }
-      
+
     }
 #endif
   }
@@ -416,11 +416,11 @@ struct Canvas : public AbstractCanvas{
     funcs[1].f_ellipse = &ellipse_template<CHAN,T,true>;
 
   }
-    
+
   Canvas(ImgBase *image){
     ICLASSERT_THROW(image,ICLException("Canvas::Canvas: image was null"));
     ICLASSERT_THROW(image->getDim(), ICLException("Canvas::Canvas: image size was 0x0"));
-    ICLASSERT_THROW(image->getChannels()>0 && image->getChannels()<=4, 
+    ICLASSERT_THROW(image->getChannels()>0 && image->getChannels()<=4,
                     ICLException("Canvas::Canvas: image must have 1,2,3 or 4 channels"));
     std::fill(data,data+4,(void*)0);
     for(int i=0;i<image->getChannels() && i<4;++i){
@@ -446,9 +446,9 @@ struct Canvas : public AbstractCanvas{
   ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
        default: ICL_INVALID_DEPTH; break;
-     }                
+     }
   }
-  
+
   inline bool hasLineAlpha() const{
     return state.linecolor[3] != 255;
   }
@@ -456,20 +456,20 @@ struct Canvas : public AbstractCanvas{
   inline bool hasFillAlpha() const{
     return state.fillcolor[3] != 255;
   }
-  
-  
+
+
   virtual void draw_point_internal(const utils::Point32f &p){
     if(clip(p)){
       funcs[hasLineAlpha()].f_point(p,data,size.width,state.linecolor);
     }
   }
 
-  virtual void draw_line_internal(const utils::Point32f &a, 
+  virtual void draw_line_internal(const utils::Point32f &a,
                                   const utils::Point32f &b){
     ls.setBoundingRect(getClipRect());
     funcs[hasLineAlpha()].f_line(ls, a, b, data,size.width,state.linecolor);
   }
-  virtual void fill_triangle_internal(const utils::Point32f &a, 
+  virtual void fill_triangle_internal(const utils::Point32f &a,
                                       const utils::Point32f &b,
                                       const utils::Point32f &c){
     funcs[hasFillAlpha()].f_triangle(a,b,c, data,size.width, state.fillcolor, state.clip);
@@ -479,16 +479,16 @@ struct Canvas : public AbstractCanvas{
                                      const utils::Point32f &axis1,
                                      const utils::Point32f &axis2){
     funcs[hasFillAlpha()].f_ellipse(c,axis1,axis2, data, size.width, state.fillcolor, state.clip);
-  
+
   }
-  virtual void draw_image_internal(const utils::Point32f &ul, 
-                                   const utils::Point32f &ur, 
-                                   const utils::Point32f &lr, 
+  virtual void draw_image_internal(const utils::Point32f &ul,
+                                   const utils::Point32f &ur,
+                                   const utils::Point32f &lr,
                                    const utils::Point32f &ll,
                                    float alpha, scalemode sm){
-  
+
   }
-  
+
 };
 
 const float Canvas::ALPHA_SCALE = 0.00392156862745098039;
@@ -498,7 +498,7 @@ const float Canvas::ALPHA_SCALE = 0.00392156862745098039;
 void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f r){
   float cx = r.x + r.width/2;
   float cy = r.y + r.height/2;
-  
+
   typedef FixedColVector<float,2> Vec2;
   typedef FixedMatrix<float,2,2> Mat2;
 
@@ -516,7 +516,7 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
          0, 1./sqr(r.height/2));
 
   //  Vec2 c = Vec2(cx,cy) + t;
-  
+
   R = R.transp();
 
   for(float y=0;y<1000;++y){
@@ -532,9 +532,9 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
 #if 0
   float a = T(0,0), b = T(1,0), tx=T(2,0);
   float c = T(0,1), d = T(1,1), ty=T(2,1);
-  
-  
-  
+
+
+
   for(int y=0;y<1000;++y){
     float p = (y*(b+c)+tx)/a;
     float q = (d*sqr(y)+y*ty+1)/a;
@@ -553,7 +553,7 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
 
 HBox gui;
 void init(){
-  gui << Image().handle("image").minSize(32,24) 
+  gui << Image().handle("image").minSize(32,24)
       << ( VBox().minSize(16,0).maxSize(16,99)
            << FSlider(0,1000,500).handle("x").label("x")
            << FSlider(0,1000,500).handle("y").label("y")
@@ -567,9 +567,9 @@ void init(){
 void run(){
   ImgQ image(Size(1000,1000),formatRGB);
   Canvas c(&image);
-  
+
   float x = gui["x"], y=gui["y"], a=gui["a"], w=gui["w"], h=gui["h"];
-  
+
   c.fillcolor(255,0,0,255);
   c.translate(-x,-y);
   c.rotate(a);
@@ -581,8 +581,8 @@ void run(){
   c.sym('+',x,y);
   c.sym('+',x+w/2,y);
   c.sym('+',x,y+h/2);
-  
-  
+
+
   gui["image"] = image;
 }
 
@@ -602,14 +602,14 @@ int main(int n, char **ppc){
   c.sym('+',650,500);
   c.sym('+',500,550);
 
-#if 0  
+#if 0
   c.fillcolor(255,0,0,255);
   c.linecolor(0,255,0,100);
   c.triangle(100,500,400,502,900,500);
   c.triangle(500,100,502,400,500,900);
 #endif
 
-  
+
 #if 0
   Time t = Time::now();
   for(int i=0;i<100;++i){
@@ -647,7 +647,7 @@ int main(int n, char **ppc){
 
 
 #if 0
-  // pixel fill rate ~500 MPIX/sec  
+  // pixel fill rate ~500 MPIX/sec
   Time t = Time::now();
   c.linecolor(255,0,0);
   for(int y=0;y<image.getWidth();++y){
@@ -657,9 +657,9 @@ int main(int n, char **ppc){
   }
   t.showAge("time for filling a " + str(image.getSize()) + " image");
 #endif
-  
+
   SHOW(image.getMinMax());
   show(norm(image));
-  
+
   return 0;
 }

@@ -7,8 +7,8 @@ namespace icl{
   using namespace utils;
   using namespace core;
 
-  void FoldMap::clear() { 
-    m.fill(initialValue); 
+  void FoldMap::clear() {
+    m.fill(initialValue);
   }
 
   FoldMap::FoldMap(const utils::Size &resolution, float initialValue):
@@ -16,13 +16,13 @@ namespace icl{
     clear();
   }
 
-  
+
   void FoldMap::draw_fold(const utils::Point32f &a, const utils::Point32f &b, float value){
     LineSampler ls;
-    
+
     LineSampler::Result r = ls.sample(Point(a.x * (m.getWidth()-1), a.y * (m.getHeight()-1)),
                                       Point(b.x * (m.getWidth()-1), b.y * (m.getHeight()-1)) );
-   
+
     Channel32f c  = m[0];
     for(int i=0;i<r.n;++i){
       const Point &p = r[i];
@@ -31,7 +31,7 @@ namespace icl{
       c(p.x,p.y+1) = value;
     }
   }
-  
+
   void FoldMap::addFold(const utils::Point32f &a, const utils::Point32f &b, float value){
     draw_fold(a,b,value);
   }
@@ -39,7 +39,7 @@ namespace icl{
   void FoldMap::removeFold(const utils::Point32f &a, const utils::Point32f &b){
     draw_fold(a,b,initialValue);
   }
-  
+
 
   float FoldMap::getFoldValue(const utils::Point32f &a, const utils::Point32f &b){
     float min = 10e35;
@@ -53,7 +53,7 @@ namespace icl{
       const Point &p = r[i];
       const float cc = c(p.x,p.y);
       if(cc >= 0){
-        if(cc < min){ 
+        if(cc < min){
           min = cc;
         }
       }else{
@@ -63,7 +63,7 @@ namespace icl{
         }
       }
     }
-    if(min>=1){ 
+    if(min>=1){
       if(anyNeg) return maxNeg;
       else return 1;
     }else{

@@ -67,19 +67,19 @@ namespace icl {
     template <class T> class GrabberHandle;
     class GenericGrabber;
     /** \endcond */
-    
+
     /// Common interface class for all grabbers \ingroup GRABBER_G
     /** The Grabber is ICL's common interface for image acquisition
         tools. A large set of Grabbers is available and wrapped
         by the GenericGrabber class. We strongly recommend to
         use the GenericGrabber class for image acquisition within
         applications.
-        
+
         The Grabber itself has a very short interface for the user:
         usually, a grabber is instantiated and its grab() method is
         called to aquire the next available image.
-        
-        
+
+
         \section DES Desired parameters
 
         In addition, the Grabber supports a set of so called
@@ -97,10 +97,10 @@ namespace icl {
         desired parameters are set, the can be reset to the grabber's
         default by calling grabber::ignoreDesired<T> where one of the
         types core::depth, core::format or icl::utils::Size is used as type T.
-        
-        
+
+
         \section UND Image Undistortion
-        
+
         The Grabber does also provide an interface to set up
         image undistortion parameters. The can be estimated
         with ICL's distortion calibration tool. The undistortion
@@ -109,9 +109,9 @@ namespace icl {
         grabbed images, which lets the user then work with
         undistored images.
 
-        
+
         \section IM Implementing Grabbers
-        
+
         In order to implement a new Grabber class, some steps are necessary.
         First, the new Grabber needs to be implemented. This must
         implement the Grabber::acquireImage method, that uses an underlying
@@ -122,10 +122,10 @@ namespace icl {
         the grabber to inherit the icl::GrabberHandle class that adds
         the ability of instantiating one Grabber several times without
         having to handle double device accesses explicitly.
-        
-        
+
+
         \section PROP Properties
-        
+
         The Grabber implements the Configurable interface that is used
         to implement dynamically settable properties. Each Grabber
         must have at least the two properties 'core::format' and 'size'. These
@@ -134,7 +134,7 @@ namespace icl {
 
 
         \section CB Callback Based Image Akquisition
-        
+
         As a very new experimental features, ICL's Grabber interface provides
         methods to register callback functions to the grabber that are
         then called automatically whenever a new image is available. This
@@ -146,7 +146,7 @@ namespace icl {
         writing applications that are scheduled by the speed of the internal
         image aquisition loop. Therefore, images should never be processed
         in the callback functions that are registred.
-        
+
         So far only a few grabbers provide this feature at all. If it
         is not provided, the registered callbacks will never be called.
     */
@@ -310,7 +310,7 @@ namespace icl {
         void processPropertyChange(const utils::Configurable::Property &prop);
 
     };
-    
+
     /** \cond */
     template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
     template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }

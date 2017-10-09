@@ -42,25 +42,25 @@ struct Grid : public SceneObject{
   int w,h;
   int idx(int x, int y) const { return x + w* y; }
   Grid(const ImgBase *image):w(50),h(50){
-    
+
     m_vertices.resize(w*h,Vec(0,0,0,1));
     m_vertexColors.resize(w*h,GeomColor(1,0,0,1));
-    
+
 
     if(pa("-b")){
       addCustomPrimitive(new TwoSidedTextureGridPrimitive(w,h,image,&backImage,
-                                                          &m_vertices[0][0], 
-                                                          &m_vertices[0][1], 
-                                                          &m_vertices[0][2], 
+                                                          &m_vertices[0][0],
+                                                          &m_vertices[0][1],
+                                                          &m_vertices[0][2],
                                                           0,0,0, 4, false, false ));
     }else{
       addTextureGrid(w,h,image,
-                     &m_vertices[0][0], 
-                     &m_vertices[0][1], 
-                     &m_vertices[0][2], 
+                     &m_vertices[0][0],
+                     &m_vertices[0][1],
+                     &m_vertices[0][2],
                      0,0,0,4,false);
     }
-    
+
     for(int x=1;x<w;++x){
       addLine(idx(x-1,0),idx(x,0),geom_red());
       addLine(idx(x-1,w-1),idx(x,w-1),geom_red());
@@ -86,7 +86,7 @@ struct Grid : public SceneObject{
 
 
   }
-  
+
   void prepareForRendering(){
     const float freq = 10*(gui["freq"].as<float>()+0.05);
     const float ar = float(image.getWidth())/image.getHeight();
@@ -106,7 +106,7 @@ struct Grid : public SceneObject{
 
 
 void run(){
-  grabber.grab()->convert(&image);  
+  grabber.grab()->convert(&image);
   if(pa("-b")){
     backFaceGrabber.grab()->convert(&backImage);
   }
@@ -120,7 +120,7 @@ void run(){
 void init(){
   scene.setBounds(100);
   scene.setDrawCamerasEnabled(false);
-  
+
   grabber.init(pa("-i"));
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
@@ -133,7 +133,7 @@ void init(){
 
   grabber.grab();
   grabber.grab();
-  grabber.grab()->convert(&image);  
+  grabber.grab()->convert(&image);
   obj = new Grid(&image);
 
   scene.addObject(obj);

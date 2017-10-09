@@ -37,16 +37,16 @@ HSplit gui;
 void run(){
   ComboHandle resultMode = gui["resultMode"];
   ComboHandle sizeAdMode = gui["sizeAdMode"];
-  
+
   static FFTOp fft(FFTOp::LOG_POWER_SPECTRUM,FFTOp::NO_SCALE);
   fft.setResultMode((FFTOp::ResultMode)(int)resultMode);
   fft.setSizeAdaptionMode((FFTOp::SizeAdaptionMode)(int)sizeAdMode);
-  
+
   const ImgBase *image = grabber.grab();
-  
+
   gui["image"] = image;
   gui["result"] = fft.apply(image);
-  
+
   gui["fps"].render();
 }
 
@@ -54,7 +54,7 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired<Size>(pa("-s"));
   grabber.useDesired(formatGray);
-  
+
   std::string resultModes = "complex,imag,real,power,log-power,magnitude,phase,magnitude/phase";
   std::string sizeAdaptionModes = "no-scale,pad-zero,pad-copy,pad-mirror,scale-up,scale-down";
   gui << ( VBox()
@@ -66,7 +66,7 @@ void init(){
            << Combo(sizeAdaptionModes).label("size adaption mode").handle("sizeAdMode")
          )
       << Show();
-  
+
   gui.get<ImageHandle>("result")->setRangeMode(ICLWidget::rmAuto);
 }
 

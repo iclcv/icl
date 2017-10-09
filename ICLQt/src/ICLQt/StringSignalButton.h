@@ -41,15 +41,15 @@ namespace icl{
       public:
       /// Create a new StringSignalButton with given text and parent widget
       StringSignalButton(const QString &text,QWidget *parent);
-  
+
       Q_SIGNALS:
       /// the clicked signal (with the buttons text)
       void clicked(const QString &text);
-      
+
       private Q_SLOTS:
       /// internally used slot (connected to the parent buttons clicked() signal)
       void receiveClick(bool checked);
-      
+
     };
   } // namespace qt
 }

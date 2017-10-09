@@ -74,7 +74,7 @@ namespace icl{
       SQFitter(icl::utils::SmartPtr<Vec> camCenter=utils::SmartPtr<Vec>());
 
       /// fits superquadrics into given point cloud, considering only given number of points
-      bool fit(icl::geom::PointCloudObject& pcObj, 
+      bool fit(icl::geom::PointCloudObject& pcObj,
                const std::string& sShapePreference="bsc",
                size_t maxNumPoints=0);
 

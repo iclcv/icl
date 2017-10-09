@@ -44,11 +44,11 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-    
+
   #ifdef ICL_HAVE_IMAGEMAGICK
-  
-    
-  
+
+
+
     class FileWriterPluginImageMagick::InternalData{
     public:
       InternalData(){
@@ -57,17 +57,17 @@ namespace icl{
       ~InternalData(){
         ICL_DELETE(buffer);
       }
-      ImgBase *buffer; 
+      ImgBase *buffer;
       Converter converter;
       std::vector<icl8u> interleavedBuffer;
-      
+
     };
     FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(new FileWriterPluginImageMagick::InternalData){
     }
     FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){
       ICL_DELETE(m_data);
     }
-    
+
   #ifdef ICL_HAVE_IMAGEMAGICK
     Magick::StorageType get_magick_storage_type(depth d){
       switch(d){
@@ -81,10 +81,10 @@ namespace icl{
           return Magick::CharPixel;
       }
     }
-  #endif  
+  #endif
     void FileWriterPluginImageMagick::write(File &file, const ImgBase *image){
       icl_initialize_image_magick_context();
-      
+
       switch(image->getChannels()){
         case 1:{
           const ImgBase *useImage = image;
@@ -120,8 +120,8 @@ namespace icl{
             m_data->buffer->normalizeAllChannels(utils::Range64f(0,1));
             useImage = m_data->buffer;
           }
-          
-          
+
+
           try{
             unsigned int minsize = useImage->getDim()*core::getSizeOf(useImage->getDepth())*3;
             if(m_data->interleavedBuffer.size() < minsize){
@@ -139,21 +139,21 @@ namespace icl{
               ICL_INVALID_DEPTH;
   #undef ICL_INSTANTIATE_DEPTH
             }
-  
+
             Magick::Image mi(useImage->getWidth(),useImage->getHeight(),"RGB",
                              get_magick_storage_type(useImage->getDepth()),
                              data);
-  
+
             mi.write(file.getName());
           }catch(Magick::Error &err){
             throw ICLException(std::string("ImageMagick-FileWriter::")+err.what());
           }
           break;
         }
-  
+
       case 4:{
           const ImgBase *useImage = image;
-          
+
           try{
             unsigned int minsize = useImage->getDim()*core::getSizeOf(useImage->getDepth())*4;
             if(m_data->interleavedBuffer.size() < minsize){
@@ -171,11 +171,11 @@ namespace icl{
               ICL_INVALID_DEPTH;
   #undef ICL_INSTANTIATE_DEPTH
             }
-  
+
             Magick::Image mi(useImage->getWidth(),useImage->getHeight(),"RGBA",
                              get_magick_storage_type(useImage->getDepth()),
                              data);
-  
+
             mi.write(file.getName());
           }catch(Magick::Error &err){
             throw ICLException(std::string("ImageMagick-FileWriter::")+err.what());
@@ -186,7 +186,7 @@ namespace icl{
           ERROR_LOG("Yet ImageMagick FileWriterPlugin supports only 1, 3 and 4 channel data");
           throw ICLException("Unable to write image using FileWriterPluginImageMagick");
       }
-  
+
     }
     void icl_initialize_image_magick_context(){
       static bool first = true;
@@ -195,15 +195,15 @@ namespace icl{
         Magick::InitializeMagick( NULL );
       }
     }
-  
+
   #else
     void icl_initialize_image_magick_context(){}
     class FileWriterPluginImageMagick::InternalData{};
     FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(0){}
     FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){}
-    
+
     void FileWriterPluginImageMagick::write(File&, const ImgBase*){}
   #endif
-  
+
   } // namespace io
 }

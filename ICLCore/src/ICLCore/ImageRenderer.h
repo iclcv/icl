@@ -37,17 +37,17 @@
 
 namespace icl{
   namespace core{
-    
+
     class ICLCore_API ImageRenderer : public utils::Uncopyable{
       struct Data;
       Data *m_data;
-      
+
       public:
       ImageRenderer(ImgBase *image=0);
       ~ImageRenderer();
-      
+
       void setImage(ImgBase *image);
-      
+
       void color(int r, int g, int b, int a);
       void fill(int r, int g, int b, int a);
       void symsize(float size);
@@ -64,6 +64,6 @@ namespace icl{
       void ellipse(int x, int y, int w, int h);
       void text(int x, int y, const std::string &text);
     };
-    
+
   }
 }

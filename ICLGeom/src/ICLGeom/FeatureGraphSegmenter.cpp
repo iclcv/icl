@@ -52,15 +52,15 @@ namespace icl {
           cutfree=new CutfreeAdjacencyFeatureExtractor(CutfreeAdjacencyFeatureExtractor::CPU);
 	        segUtils=new SegmenterUtils(SegmenterUtils::CPU);
         }
-  
+
         region=new cv::RegionDetector(25, 4000000, 254, 255, false);
-        
+
 	      xMinROI = 0, xMaxROI = 0;
 	      yMinROI = 0, yMaxROI = 0;
 	      zMinROI = 0, zMaxROI = 0;
-        
+
         minSurfaceSize = 25;
-        
+
         assignmentRadius=5;
 	      assignmentDistance=10;
 
@@ -68,13 +68,13 @@ namespace icl {
         cutfreeRansacPasses=20;
         cutfreeRansacTolerance=30;
         cutfreeMinAngle=30.;
-        
+
         coplanarityMaxAngle=30.0;
         coplanarityDistanceTolerance=3.0;
         coplanarityOutlierTolerance=5.0;
         coplanarityNumTriangles=20;
         coplanarityNumScanlines=9;
-        
+
         curvatureHistogramSimilarity=0.5;
         curvatureUseOpenObjects=true;
         curvatureMaxDistance=10;
@@ -82,24 +82,24 @@ namespace icl {
         curvatureMaxError=10.0;
         curvatureRansacPasses=20;
         curvatureDistanceTolerance=3.0;
-        curvatureOutlierTolerance=5.0;                        
-      
+        curvatureOutlierTolerance=5.0;
+
         remainingMinSize=10;
         remainingEuclideanDistance=5.0;
         remainingRadius=6;
         remainingAssignEuclideanDistance=5.0;
-        remainingSupportTolerance=9;    
-        
+        remainingSupportTolerance=9;
+
         graphCutThreshold=0.5;
 	    }
 
 	    ~Data() {
 	    }
-      
+
       CutfreeAdjacencyFeatureExtractor* cutfree;
       SegmenterUtils* segUtils;
       cv::RegionDetector* region;
-	        
+
 	    std::vector<std::vector<int> > surfaces;
       std::vector<std::vector<int> > segments;
 
@@ -107,25 +107,25 @@ namespace icl {
       core::Img32s labelImage;
 
 	  std::vector<SurfaceFeatureExtractor::SurfaceFeature> features;
-      
+
       float xMinROI, xMaxROI, yMinROI, yMaxROI, zMinROI, zMaxROI;
-      
+
 	    unsigned int minSurfaceSize;
-      
+
       int assignmentRadius;
       float assignmentDistance;
-      
+
       float cutfreeRansacEuclideanDistance;
       int cutfreeRansacPasses;
       int cutfreeRansacTolerance;
       float cutfreeMinAngle;
-            
+
       float coplanarityMaxAngle;
       float coplanarityDistanceTolerance;
       float coplanarityOutlierTolerance;
       int coplanarityNumTriangles;
       int coplanarityNumScanlines;
-      
+
       float curvatureHistogramSimilarity;
       bool curvatureUseOpenObjects;
       int curvatureMaxDistance;
@@ -133,18 +133,18 @@ namespace icl {
       float curvatureMaxError;
       int curvatureRansacPasses;
       float curvatureDistanceTolerance;
-      float curvatureOutlierTolerance;                        
-    
+      float curvatureOutlierTolerance;
+
       int remainingMinSize;
       float remainingEuclideanDistance;
       int remainingRadius;
       float remainingAssignEuclideanDistance;
       int remainingSupportTolerance;
-           
+
       float graphCutThreshold;
     };
-    
-    
+
+
     FeatureGraphSegmenter::FeatureGraphSegmenter(Mode mode) :
 	    m_data(new Data(mode)) {
     }
@@ -153,30 +153,30 @@ namespace icl {
     FeatureGraphSegmenter::~FeatureGraphSegmenter() {
 	    delete m_data;
     }
-    
 
-    core::Img8u FeatureGraphSegmenter::apply(core::DataSegment<float, 4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
-                                  core::DataSegment<float, 4> normals, bool stabelize, bool useROI, 
+
+    core::Img8u FeatureGraphSegmenter::apply(core::DataSegment<float, 4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg,
+                                  core::DataSegment<float, 4> normals, bool stabelize, bool useROI,
                                   bool useCutfreeAdjacency, bool useCoplanarity, bool useCurvature, bool useRemainingPoints) {
-	
+
 		surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
 
     m_data->segments.clear();
     if(m_data->surfaces.size()>0){
 		  m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
-	      
-	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage, 
+
+	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
                                 m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
-	      
+
 	      math::DynMatrix<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      
+
 	      if(useCutfreeAdjacency){
-	        math::DynMatrix<bool> cutfreeMatrix = m_data->cutfree->apply(xyz, 
-                    m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
+	        math::DynMatrix<bool> cutfreeMatrix = m_data->cutfree->apply(xyz,
+                    m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance,
 				    m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, m_data->features, m_data->cutfreeMinAngle);
           math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
         }
-        
+
         if(useCoplanarity){
 		  math::DynMatrix<bool> coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
                             m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
@@ -185,56 +185,56 @@ namespace icl {
 
         if(useCurvature){
 		  math::DynMatrix<bool> curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
-                                              m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity, 
-                                              m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance, 
+                                              m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity,
+                                              m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance,
                                               m_data->curvatureOutlierTolerance);
           math::GraphCutter::mergeMatrix(resultMatrix, curveMatrix);
         }
-	      
+
 	      m_data->surfaces = m_data->segUtils->createLabelVectors(m_data->labelImage);
-	      
+
 	      m_data->segments = math::GraphCutter::thresholdCut(resultMatrix, m_data->graphCutThreshold);
 	    }
-	      
+
 	    if(useRemainingPoints){
-	      RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage, 
+	      RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage,
                           m_data->surfaces, m_data->segments, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius, m_data->remainingAssignEuclideanDistance, m_data->remainingSupportTolerance);
 	    }
-	    	    
+
 	    m_data->segUtils->relabel(m_data->labelImage, m_data->segments, m_data->surfaces.size());
-      
+
 	    return getColoredLabelImage(stabelize);
     }
 
-    std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
-                  core::DataSegment<float,4> normals, bool useROI, 
+    std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg,
+                  core::DataSegment<float,4> normals, bool useROI,
                   bool useCutfreeAdjacency, bool useCoplanarity, bool useCurvature, bool useRemainingPoints,
                   float weightCutfreeAdjacency, float weightCoplanarity, float weightCurvature, float weightRemainingPoints){
       surfaceSegmentation(xyz, edgeImg, depthImg, m_data->minSurfaceSize, useROI);
-	    
-	    math::DynMatrix<float> probabilityMatrix;  	    	    
-		  if(m_data->surfaces.size()>0){	    	    
+
+	    math::DynMatrix<float> probabilityMatrix;
+		  if(m_data->surfaces.size()>0){
 		    m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
-	      
-	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage, 
+
+	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
                                 m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
-	      
+
 	      math::DynMatrix<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      
+
 	      math::DynMatrix<bool> cutfreeMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 	      math::DynMatrix<bool> coplanMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 	      math::DynMatrix<bool> curveMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 	      math::DynMatrix<bool> remainingMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      
+
 	      m_data->surfaces = m_data->segUtils->createLabelVectors(m_data->labelImage);
-	      
+
 	      if(useCutfreeAdjacency){
-	        cutfreeMatrix = m_data->cutfree->apply(xyz, 
-                    m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance, 
+	        cutfreeMatrix = m_data->cutfree->apply(xyz,
+                    m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance,
 				    m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, m_data->features, m_data->cutfreeMinAngle);
           math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
         }
-        
+
         if(useCoplanarity){
 		  coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
                             m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
@@ -243,36 +243,36 @@ namespace icl {
 
         if(useCurvature){
 		  curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
-                                              m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity, 
-                                              m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance, 
+                                              m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity,
+                                              m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance,
                                               m_data->curvatureOutlierTolerance);
           math::GraphCutter::mergeMatrix(resultMatrix, curveMatrix);
         }
-	        	    
+
 	      if(useRemainingPoints){
-	        remainingMatrix = RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage, 
+	        remainingMatrix = RemainingPointsFeatureExtractor::apply(xyz, depthImg, m_data->labelImage, m_data->maskImage,
                             m_data->surfaces, m_data->remainingMinSize, m_data->remainingEuclideanDistance, m_data->remainingRadius, m_data->remainingAssignEuclideanDistance);
-                            
+
           resultMatrix.setBounds(remainingMatrix.cols(), remainingMatrix.rows(), true, false);//hold content, initializer
           math::GraphCutter::mergeMatrix(resultMatrix, remainingMatrix);
 	      }
-	      
+
 	      cutfreeMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
 	      coplanMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
 	      curveMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
 	      remainingMatrix.setBounds(resultMatrix.cols(), resultMatrix.rows(), true, false);
-	      
+
 	      probabilityMatrix = math::GraphCutter::calculateProbabilityMatrix(resultMatrix, true);
-	      
+
 	      math::GraphCutter::weightMatrix(probabilityMatrix, cutfreeMatrix, weightCutfreeAdjacency);
 	      math::GraphCutter::weightMatrix(probabilityMatrix, coplanMatrix, weightCoplanarity);
 	      math::GraphCutter::weightMatrix(probabilityMatrix, curveMatrix, weightCurvature);
 	      math::GraphCutter::weightMatrix(probabilityMatrix, remainingMatrix, weightRemainingPoints);
-	    
+
 	    }
-	      
+
 	    m_data->segments.clear();
-	    
+
 	    return createHierarchy(probabilityMatrix, xyz, rgb);
     }
 
@@ -290,22 +290,22 @@ namespace icl {
     void FeatureGraphSegmenter::setMinSurfaceSize(unsigned int size) {
 	    m_data->minSurfaceSize = size;
     }
-    
-    
+
+
     void FeatureGraphSegmenter::setAssignmentParams(float distance, int radius){
       m_data->assignmentRadius=radius;
       m_data->assignmentDistance=distance;
     }
-    
-    
+
+
     void FeatureGraphSegmenter::setCutfreeParams(float euclideanDistance, int passes, int tolerance, float minAngle){
       m_data->cutfreeRansacEuclideanDistance=euclideanDistance;
       m_data->cutfreeRansacPasses=passes;
       m_data->cutfreeRansacTolerance=tolerance;
       m_data->cutfreeMinAngle=minAngle;
     }
-    
-    
+
+
     void FeatureGraphSegmenter::setCoplanarityParams(float maxAngle, float distanceTolerance, float outlierTolerance, int numTriangles, int numScanlines){
       m_data->coplanarityMaxAngle=maxAngle;
       m_data->coplanarityDistanceTolerance=distanceTolerance;
@@ -313,9 +313,9 @@ namespace icl {
       m_data->coplanarityNumTriangles=numTriangles;
       m_data->coplanarityNumScanlines=numScanlines;
     }
-     
-      
-    void FeatureGraphSegmenter::setCurvatureParams(float histogramSimilarity, bool useOpenObjects, int maxDistance, bool useOccludedObjects, float maxError, 
+
+
+    void FeatureGraphSegmenter::setCurvatureParams(float histogramSimilarity, bool useOpenObjects, int maxDistance, bool useOccludedObjects, float maxError,
                             int ransacPasses, float distanceTolerance, float outlierTolerance){
       m_data->curvatureHistogramSimilarity=histogramSimilarity;
       m_data->curvatureUseOpenObjects=useOpenObjects;
@@ -324,10 +324,10 @@ namespace icl {
       m_data->curvatureMaxError=maxError;
       m_data->curvatureRansacPasses=ransacPasses;
       m_data->curvatureDistanceTolerance=distanceTolerance;
-      m_data->curvatureOutlierTolerance=outlierTolerance;                        
+      m_data->curvatureOutlierTolerance=outlierTolerance;
     }
-    
-    
+
+
     void FeatureGraphSegmenter::setRemainingPointsParams(int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance){
       m_data->remainingMinSize=minSize;
       m_data->remainingEuclideanDistance=euclideanDistance;
@@ -335,12 +335,12 @@ namespace icl {
       m_data->remainingAssignEuclideanDistance=assignEuclideanDistance;
       m_data->remainingSupportTolerance=supportTolerance;
     }
-  
-    
+
+
     void FeatureGraphSegmenter::setGraphCutThreshold(float threshold){
       m_data->graphCutThreshold=threshold;
     }
-    
+
 	std::vector<SurfaceFeatureExtractor::SurfaceFeature> FeatureGraphSegmenter::getSurfaceFeatures() {
 		return m_data->features;
 	}
@@ -348,12 +348,12 @@ namespace icl {
     std::vector<std::vector<int> > FeatureGraphSegmenter::getSegments() {
 	    return m_data->segments;
     }
-    
-    
+
+
     std::vector<std::vector<int> > FeatureGraphSegmenter::getSurfaces() {
 	    return m_data->surfaces;
     }
-   
+
 
     core::Img32s FeatureGraphSegmenter::getLabelImage(bool stabelize) {
 	    if(stabelize){
@@ -368,30 +368,30 @@ namespace icl {
       return m_data->segUtils->createColorImage(lI);
     }
 
-    
+
     core::Img8u FeatureGraphSegmenter::getMaskImage(){
       return m_data->maskImage;
     }
 
-    
-    void FeatureGraphSegmenter::surfaceSegmentation(core::DataSegment<float,4> &xyz, const core::Img8u &edgeImg, 
+
+    void FeatureGraphSegmenter::surfaceSegmentation(core::DataSegment<float,4> &xyz, const core::Img8u &edgeImg,
                                 const core::Img32f &depthImg, int minSurfaceSize, bool useROI){
       m_data->surfaces.clear();//clear
       if(useROI){//create mask
-		    m_data->maskImage=m_data->segUtils->createROIMask(xyz, (core::Img32f&)depthImg, m_data->xMinROI, 
+		    m_data->maskImage=m_data->segUtils->createROIMask(xyz, (core::Img32f&)depthImg, m_data->xMinROI,
 		            m_data->xMaxROI, m_data->yMinROI, m_data->yMaxROI, m_data->zMinROI, m_data->zMaxROI);
 		  }else{
 		    m_data->maskImage=m_data->segUtils->createMask((core::Img32f&)depthImg);
-		  } 
-		  
+		  }
+
 		  m_data->labelImage.setSize(edgeImg.getSize());
       m_data->labelImage.setChannels(1);
 		  m_data->labelImage.fill(0);
-		  
+
       core::Channel8u maskImageC = m_data->maskImage[0];
       core::Channel32s labelImageC = m_data->labelImage[0];
       int w = edgeImg.getSize().width;
-      
+
       //mask edge image
       core::Img8u edgeImgMasked;
       edgeImgMasked.setSize(edgeImg.getSize());
@@ -408,11 +408,11 @@ namespace icl {
 	        }
 	      }
 	    }
-            
-      int numCluster=0;      
+
+      int numCluster=0;
       m_data->region->setConstraints (minSurfaceSize, 4000000, 254, 255);
       std::vector<cv::ImageRegion> regions;
-      regions = m_data->region->detect(&edgeImgMasked); 	
+      regions = m_data->region->detect(&edgeImgMasked);
       for(unsigned int i=0; i<regions.size(); i++){
         std::vector<utils::Point> ps = regions[i].getPixels();
         if((int)ps.size()>=minSurfaceSize){
@@ -429,11 +429,11 @@ namespace icl {
             }
           }
           m_data->surfaces.push_back(data);
-        }        
+        }
       }
-    }    
-    
-    
+    }
+
+
     std::vector<PointCloudSegmentPtr> FeatureGraphSegmenter::createHierarchy(math::DynMatrix<float> &probabilityMatrix, core::DataSegment<float,4> &xyz, core::DataSegment<float,4> &rgb){
       std::vector<math::GraphCutter::CutNode> cutNodes = math::GraphCutter::hierarchicalCut(probabilityMatrix);
       std::vector<PointCloudSegmentPtr> results;
@@ -470,12 +470,12 @@ namespace icl {
       for(unsigned int i=0; i<cutNodes.size(); i++){//create segments
         if(cutNodes[i].parent==-1){
           results.push_back(pointCloudSegments[i]);
-          results.back()->updateFeatures();//new          
+          results.back()->updateFeatures();//new
         }
       }
-	    
-	    return results; 
+
+	    return results;
     }
-          
+
   } // namespace geom
 }

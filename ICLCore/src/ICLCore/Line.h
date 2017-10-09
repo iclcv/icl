@@ -49,34 +49,34 @@ namespace icl{
       public:
       /// Null line of length 0 with and and end point 0
       static const Line null;
-     
+
       /// Creates a new line from point "start" to point "end"
       /** @param start start point
-          @param end end point 
+          @param end end point
       */
       Line(utils::Point start=utils::Point::null,
            utils::Point end=utils::Point::null):
       start(start),end(end){}
-      
+
       /// Creates a new line by given polar coordinates
       /** @param start start point of the line
-          @param angle angle of the line 
-          @param length length of the line 
+          @param angle angle of the line
+          @param length length of the line
       */
       Line(utils::Point start, float angle, float length);
-      
+
       /// translates a line by a given vector
       /** @param p translation vector
           @return the translated line
       */
       Line operator+(const utils::Point &p) const { return Line(start+p,end+p); }
-      
+
       /// translates a line by a given vector (negative direction)
       /** @param p translation vector
           @return the translated line
       */
       Line operator-(const utils::Point &p) const { return Line(start-p,end-p); }
-      
+
       /// calculates the euclidean norm of this line
       /** @return length of the line */
       float length() const;
@@ -84,8 +84,8 @@ namespace icl{
       /// returns the point on the line closest to the given point
       utils::Point findClosestPoint(const utils::Point &p) const;
 
-      /// returns the minimum distance of the line to a given point 
-      /** The distance can never be longer then the max-distance 
+      /// returns the minimum distance of the line to a given point
+      /** The distance can never be longer then the max-distance
           to start and end of the line */
       inline float getMinDist(const utils::Point &p) const{
         return findClosestPoint(p).distanceTo(p);
@@ -105,29 +105,29 @@ namespace icl{
       /** @param limits each line point is check for being inside of this rect
                         the eases working e.g. on image planes, that have an finite
                         extend. If the limits rect has width*height == 0, the limits
-                        are not regarded. 
-          @return vector of line Points 
-          
+                        are not regarded.
+          @return vector of line Points
+
           Please note: for more efficient line sampling, the core::LineSampler class can be used!
       */
       std::vector<utils::Point> sample( const utils::Rect &limits=utils::Rect::null ) const;
-  
+
       /// swaps the lines start and end point internally
       void swap() { utils::Point x=start; start=end; end=x; }
-      
+
       /// start point of this line
       utils::Point start;
-  
+
       /// end point of this line
       utils::Point end;
     };
-  
+
     /// ostream operator (start-x,start-y)(end-x,end-y)
     ICLCore_API std::ostream &operator<<(std::ostream &s, const Line &l);
-    
+
     /// istream operator
     ICLCore_API std::istream &operator>>(std::istream &s, Line &l);
-  
+
   } // namespace core
 }
 

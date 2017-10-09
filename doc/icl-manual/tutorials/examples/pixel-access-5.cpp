@@ -22,13 +22,13 @@ void thresh(Img8u &image, icl8u t){
 void reduce_channels_example(){
   Img8u rgb = create<icl8u>("lena")
   Img8u gray (rgb.getSize(),1);
-  
-  // ok, for simplicity, lets use a C++-lambda 
+
+  // ok, for simplicity, lets use a C++-lambda
   // expression again. Please note, that
   // auto can be used for implicit type-binding
   auto f = [](const icl8u src[3], icl8u dst[1]){
     dst[0] = ((int)src[0]+src[1]+src[2])/3;
   };
-  
+
   rgb.reduce_channels<icl8u,3,1,decltype(f)>(gray, f );
 }

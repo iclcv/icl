@@ -116,16 +116,16 @@ int main(int n, char **ppc){
   int numParams[4] = { 4, 3, 6, 6};
   int numInputs[4] = { 1, 1, 1, 3};
   int numOutputs[4] = { 1, 1, 1, 3};
-  
+
   bool useAnalyticJacobian = pa("-aj");
   int idx = pa("-f");
   if(idx < 0 || idx > 3) throw ICLException("-f idx: idx must be in range [0,3]");
 
 
-  LM *lm = ( useAnalyticJacobian ? 
+  LM *lm = ( useAnalyticJacobian ?
              new LM(fs[idx],numOutputs[idx],std::vector<LM::Jacobian>(idx!=3,js[idx])) :
              new LM(fs[idx],numOutputs[idx]) );
-  
+
   if(pa("-d")) lm->setDebugCallback(dbg);
 
   LM::Params realParams(numParams[idx]);

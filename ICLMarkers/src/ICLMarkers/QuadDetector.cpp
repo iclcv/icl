@@ -298,7 +298,7 @@ namespace icl {
         CoplanarPointPoseEstimator pe(CoplanarPointPoseEstimator::cameraFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
         static const Point32f obj[4] = {Point32f(-40,-40), Point32f(40,-40), Point32f(40,40), Point32f(-40,40) };
         Mat T = pe.getPose(4,obj,corners.data(),cameraForQuadRating);
-        
+
         FixedMatrix<float,1,3> r = extract_euler_angles(T);
         FixedMatrix<float,1,3> t = T.part<3,0,1,3>();
         Mat P = cameraForQuadRatingProjectionMatrix;
@@ -311,7 +311,7 @@ namespace icl {
         const float Ry0 = -sz*cx, Ry1 = cz*cx, Ry2 = sx;
         const float F = Rx0*A + Rx1*B + Rx2*C;
         const float G = Ry0*A + Ry1*B + Ry2*C;
-        
+
         const float J = Rx1*D + Rx2*E;
         const float K = Ry1*D + Ry2*E;
         const float &N = Rx2;
@@ -319,7 +319,7 @@ namespace icl {
         const float I = tx*A + ty*B + tz*C;
         const float M = ty*D + tz*E;
         const float &Q = tz;
-        
+
         float error = 0;
         for(int i=0;i<4;++i){
           const float &Mix = _M[i].x, Miy = _M[i].y, Iix = _I[i].x, Iiy = _I[i].y;
@@ -329,7 +329,7 @@ namespace icl {
           error += sqr(R*T_inv - Iix) + sqr(S*T_inv - Iiy);
         }
         return error;
-        
+
 #else
         std::vector<Vec2> vecs = getVecsToPoints(corners);
         Vec2 a = vecs[0];
@@ -555,9 +555,9 @@ namespace icl {
     icl::cv::RegionDetector* QuadDetector::getRegionDetector() {
       return data->rd.get();
     }
-  
+
     const std::vector<TiltedQuad> &QuadDetector::detect(const ImgBase *image) {
-    
+
       ICLASSERT_THROW(image,
                       ICLException("QuadDetector::detect: input image was NULL"));
       if (data->dynamicQuadColor) {
@@ -576,7 +576,7 @@ namespace icl {
 
       data->cameraForQuadRating.setResolution(image->getSize());
       data->cameraForQuadRatingProjectionMatrix = data->cameraForQuadRating.getProjectionMatrix();
-      
+
       std::string kernelType = getPropertyValue("pp.filter");
       Size kernelSize = getPropertyValue("pp.mask size");
 
@@ -648,7 +648,7 @@ namespace icl {
         //}
         //PVec corners = data->css.detectCorners(boundary);
         PVec corners = computeCorners(rs[i]);
-        
+
         data->allCorners.push_back(corners);
         if(useAnyHeuristic && (corners.size() > 4)){
           PVec cornersCopy = data->removeObstacleCorners(corners,
@@ -666,7 +666,7 @@ namespace icl {
           if(corners.size() == 4){
             if(optEdges) {
               try{
-                optimize_edges(corners, boundary); 
+                optimize_edges(corners, boundary);
                 data->quads.push_back(TiltedQuad(corners.data(), rs[i]));
               }catch (int code) {
                 (void) code;
@@ -700,19 +700,19 @@ namespace icl {
     QuadDetector::PVecVec &QuadDetector::getAllCorners(){
       return data->allCorners;
     }
-    
+
     const QuadDetector::PVecVec &QuadDetector::getLongestCorners() const{
       return data->longestCorners;
     }
-    
+
     QuadDetector::PVecVec &QuadDetector::getLongestCorners(){
       return data->longestCorners;
     }
-      
+
     const QuadDetector::PVecVec &QuadDetector::getSecLongestCorners() const{
       return data->secLongestCorners;
     }
-    
+
     QuadDetector::PVecVec &QuadDetector::getSecLongestCorners(){
       return data->secLongestCorners;
     }
@@ -720,28 +720,28 @@ namespace icl {
     const QuadDetector::PVecVec &QuadDetector::getInterCorners() const{
       return data->interCorners;
     }
-    
+
     QuadDetector::PVecVec &QuadDetector::getInterCorners(){
       return data->interCorners;
     }
-    
+
     const QuadDetector::PVecVec &QuadDetector::getPerpCorners() const{
       return data->perpCorners;
     }
-    
+
     QuadDetector::PVecVec &QuadDetector::getPerpCorners(){
       return data->perpCorners;
     }
-    
+
     const QuadDetector::PVecVec &QuadDetector::getMirrorCorners() const{
       return data->mirrorCorners;
     }
 
     QuadDetector::PVecVec &QuadDetector::getMirrorCorners(){
       return data->mirrorCorners;
-    } 
+    }
 
-  
+
 
     const Img8u &QuadDetector::getLastBinaryImage() const {
       return *data->lastBinImage->asImg<icl8u>();

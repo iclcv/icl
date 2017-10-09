@@ -31,8 +31,8 @@ int main(){
 
   // extract type instance
   MyPoint p = cfg["config.p"];
-  
+
   SHOW(p);
-  
+
   SHOW(cfg);
 }

@@ -42,14 +42,14 @@ namespace icl{
     /**
        This class computes the whole segmentation pipeline of the feature graph based segmentation. The configurable class provides the GUI with all paramters: Prop("segmentation") */
     class ICLGeom_API ConfigurableDepthImageSegmenter : public utils::Configurable{
-  	
+
       public:
-      
+
       enum Mode {BEST, GPU, CPU};
-      
+
       /// Constructor
-      /** Constructs an object of this class. 
-          @param mode GPU, CPU and BEST (default) 
+      /** Constructs an object of this class.
+          @param mode GPU, CPU and BEST (default)
           @param depthCam the depth camera*/
 			ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam,
 																			icl::geom::PointCloudCreator::DepthImageMode depth_mode
@@ -57,33 +57,33 @@ namespace icl{
 			ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam, Camera colorCam,
 																			icl::geom::PointCloudCreator::DepthImageMode depth_mode
 																			= icl::geom::PointCloudCreator::KinectRAW11Bit);
-  	  
+
   	  ///Destructor
       ~ConfigurableDepthImageSegmenter();
-  		
+
   		/// One line call for the whole segmentation pipeline.
       /** @param depthImage the input depth image
           @param obj the empty pointcloud object for the results (computed in the method) */
       void apply(const core::Img32f &depthImage, PointCloudObject &obj);
-      
+
 	  std::vector<geom::SurfaceFeatureExtractor::SurfaceFeature> getSurfaceFeatures();
 
       /// Returns the colored normal image.
-      /**        @return the colored normal image */  		
+      /**        @return the colored normal image */
       const core::Img8u getNormalImage();
-  	  
+
   	  /// Returns the edge image.
-      /**        @return the edge image */  			
+      /**        @return the edge image */
       const core::Img8u getEdgeImage();
-  	  
+
   	  /// Returns the label image.
-      /**        @return the label image */  		
-  	  core::Img32s getLabelImage();	
+      /**        @return the label image */
+  	  core::Img32s getLabelImage();
 
       const core::DataSegment<float,4> getNormalSegment();
-  	  
+
   	  /// Returns the colored label image.
-      /**        @return the colored label image */  			
+      /**        @return the colored label image */
       core::Img8u getColoredLabelImage();
 
 	  /// Returns the angle image of the object edge detector
@@ -95,21 +95,21 @@ namespace icl{
       core::Img8u getMappedColorImage(const core::Img8u &image);
 
 	  void mapImageToDepth(const core::ImgBase *src, core::ImgBase **dst);
-      
+
       /// Returns the surface cluster from the pre-segmentation.
       /**        @return a vector of surfaces. Every entry contains a vector with the point indices */
       std::vector<std::vector<int> > getSurfaces();
-      
+
       /// Returns the segment blobs.
       /**        @return a vector of segments. Every entry contains a vector with the surface indices */
       std::vector<std::vector<int> > getSegments();
-      
+
 	  void setNormals(core::DataSegment<float,4> &normals);
 
 		void setEdgeSegData(core::Img8u &edges, core::Img8u &normal_img);
 
 		void setUseExternalEdges(bool use_external_edges);
-            
+
       private:
 
       void initProperties();

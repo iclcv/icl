@@ -59,7 +59,7 @@ ENDIF()
 
 IF(SPHINX_FOUND)
   MESSAGE(STATUS "adding target 'manual'")
-  ADD_CUSTOM_TARGET(manual ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual" 
+  ADD_CUSTOM_TARGET(manual ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual"
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html")
 	INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-manual/html" DESTINATION "share/icl-${SO_VERSION}/doc/icl-manual")
 ELSE()
@@ -68,8 +68,8 @@ ENDIF()
 
 IF(SPHINX_FOUND AND DOXYGEN_FOUND)
   MESSAGE(STATUS "adding target 'doc'")
-  ADD_CUSTOM_TARGET(doc ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual" 
-                    ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html"  	
+  ADD_CUSTOM_TARGET(doc ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual"
+                    ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html"
                     DEPENDS api)
 ELSE()
   ADD_CUSTOM_TARGET(doc echo "manual cannot be build due to missing dependencies")
@@ -77,4 +77,4 @@ ENDIF()
 
 
 # does this work?
-SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "exts;js;html") 
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "exts;js;html")

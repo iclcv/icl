@@ -98,7 +98,7 @@ namespace icl{
       std::vector<std::vector<btSoftBody::Face*> > smoothNormalGraph;
       std::vector<Vec> smoothNormals;
       bool useSmoothNormals;
-      
+
       struct LinkColors{
         GeomColor original;
         GeomColor inserted;
@@ -183,7 +183,7 @@ namespace icl{
       m_data->initialStiffness = other.m_data->initialStiffness;
       m_data->texCoords = other.m_data->texCoords;
       m_data->projectedPoints = other.m_data->projectedPoints;
-      
+
       setLockingEnabled(true);
       if(other.m_data->haveTexture){
         m_data->haveTexture = true;
@@ -206,13 +206,13 @@ namespace icl{
       s->m_materials[0]->m_kLST = 1.0;
       s->m_materials[0]->m_kAST = 1.0;
       s->m_materials[0]->m_kVST = 1.0;
-      
-      
+
+
       s->setTotalMass(ns.size()*0.01,false);
-      
-      setPhysicalObject(s);      
+
+      setPhysicalObject(s);
       setCurrentPhysicsWorld(world);
-      
+
       // copy triangles
       const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
       for(int i=0;i<sOrig->m_faces.size();++i){
@@ -236,7 +236,7 @@ namespace icl{
       }
 
       m_data->fm = FoldMap(other.getFoldMap());
-      
+
     }
 
 
@@ -297,7 +297,7 @@ namespace icl{
       m_data->texCoords.assign(texCoords1.begin(),texCoords1.end());
       std::copy(texCoords2.begin(),texCoords2.end(),std::back_inserter(m_data->texCoords));
 
-   
+
       btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
                                      nodes1.size(), nodes1.data(),0);
       s->setTotalMass(nodes1.size()*0.01,false);
@@ -366,24 +366,24 @@ namespace icl{
 
       createBendingConstraints(initialMaxLinkDistnace,initialStiffness);
     }
-    
+
     void PhysicsPaper3::takeSoftBodyFrom(PhysicsPaper3 *other){
       lock();
       other->lock();
-      
+
       btSoftBody *sCur = getSoftBody();
       m_data->physicsWorld->removeObject(this);
-      
+
       btSoftBody *sNew = other->getSoftBody();
       sNew->m_cfg = sCur->m_cfg;
-    
-      setPhysicalObject(sNew);      
+
+      setPhysicalObject(sNew);
       other->forgetPhysicalObject(true);
-      
+
       m_data->physicsWorld->addObject(this);
       sNew->setUserPointer(this);
       sNew->m_worldInfo = m_data->physicsWorld->getWorldInfo();
-      
+
       m_data->fm = FoldMap(other->getFoldMap());
       m_data->texCoords = other->m_data->texCoords;
       other->unlock();
@@ -710,7 +710,7 @@ namespace icl{
       m_data->physicsWorld->unlock();
     }
 
-    void PhysicsPaper3::setLinkColors(const geom::GeomColor &originalLinks, 
+    void PhysicsPaper3::setLinkColors(const geom::GeomColor &originalLinks,
                                       const geom::GeomColor &insertedLinks,
                                       const geom::GeomColor &creaseLines,
                                       const geom::GeomColor &bendingConstraints){
@@ -1116,31 +1116,31 @@ namespace icl{
         /// super-ugly and also no 100% stable workaround
         btSoftBody *sOrig = getSoftBody();
 
-        PhysicsWorld *world = m_data->physicsWorld; 
-        
+        PhysicsWorld *world = m_data->physicsWorld;
+
         std::vector<btVector3> ns(sOrig->m_nodes.size());
         for(size_t i=0;i<ns.size();++i){
           ns[i] = sOrig->m_nodes[i].m_x;
         }
         world->removeObject(this);
-        
+
         btSoftBody *s = new btSoftBody(const_cast<btSoftBodyWorldInfo*>(world->getWorldInfo()),
                                        ns.size(), ns.data(), 0);
-        
+
         s->m_cfg = sOrig->m_cfg;
         s->getCollisionShape()->setMargin(icl2bullet(2));
-        
+
         s->appendMaterial();
         s->m_materials[0]->m_kLST = 1.0;
         s->m_materials[0]->m_kAST = 1.0;
         s->m_materials[0]->m_kVST = 1.0;
-        
-        
+
+
         s->setTotalMass(ns.size()*0.01,false);
-        
+
         forgetPhysicalObject(false); // avoids deletion of sOrig
-        setPhysicalObject(s);      
-        
+        setPhysicalObject(s);
+
         // copy triangles
         const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
         for(int i=0;i<sOrig->m_faces.size();++i){
@@ -1149,7 +1149,7 @@ namespace icl{
           s->m_faces[i].m_normal = f.m_normal;
           s->m_faces[i].m_ra = f.m_ra;
         }
-        
+
         // copy constraints
         for(int i=0;i<sOrig->m_links.size();++i){
           const btSoftBody::Link &l = sOrig->m_links[i];
@@ -1162,7 +1162,7 @@ namespace icl{
           s->m_links[i].m_c2 = l.m_c2;
           s->m_links[i].m_c3 = l.m_c3;
         }
-        
+
         // s->generateClusters(0);
         world->addObject(this);
         delete sOrig;
@@ -1182,7 +1182,7 @@ namespace icl{
 
     void PhysicsPaper3::splitAlongLineInPaperCoords(const utils::Point32f &aIn, const utils::Point32f &bIn, bool extendLineToEdges){
       Point32f a = aIn, b = bIn;
-      Point32f e = (b-a)*100; // elongate each side by 100 % to avoid 
+      Point32f e = (b-a)*100; // elongate each side by 100 % to avoid
       b += e;
       a -= e;
       std::vector<Point32f> wheres;
@@ -1202,12 +1202,12 @@ namespace icl{
         }else{
           a = wheres[0];
           b = wheres[1];
-          Point32f e = (b-a); // elongate each side by 100 % to avoid 
+          Point32f e = (b-a); // elongate each side by 100 % to avoid
           b += e;
           a -= e;
         }
       }
-      
+
       lock();
       m_data->physicsWorld->lock();
 
@@ -1246,7 +1246,7 @@ namespace icl{
       m_data->physicsWorld->unlock();
 
       unlock();
-    
+
     }
 
 
@@ -1339,7 +1339,7 @@ namespace icl{
         Point32f texCoords[3];
         float distToCam;
       };
-      
+
       struct RenderedTriangle{
         utils::SmartPtr<RenderedTriangleImpl> impl;
         RenderedTriangle():
@@ -1360,19 +1360,19 @@ namespace icl{
         updateSmoothNormalGraph(); // todo: if too slow: only do this if something is changed
         computeSmoothNormals();
       }
-      
+
       btSoftBody *s = getSoftBody();
 
       btSoftBody::Node *o = &s->m_nodes[0];
 
       if(m_data->visFaces){
         Vec cc(0,0,0,1);
-        try{ 
-          cc = util->getCurrentCamera().getPosition(); 
+        try{
+          cc = util->getCurrentCamera().getPosition();
         } catch(...){
           // this is the shadow case .. which simply uses un-sorted rendering!
         }
-          
+
         std::vector<RenderedTriangle> ts(s->m_faces.size());
         for(size_t i=0;i<ts.size();++i){
           ts[i] = RenderedTriangle();
@@ -1380,7 +1380,7 @@ namespace icl{
         for(int i=0;i<s->m_faces.size();++i){
           btSoftBody::Face &f = s->m_faces[i];
           RenderedTriangleImpl &t = *ts[i].impl;
-          
+
           bool isFlat = true;
           for(int j=0;j<3;++j){
             t.nodes[j] = bullet2icl_scaled(f.m_n[j]->m_x);
@@ -1406,16 +1406,16 @@ namespace icl{
               }
             }
           }
-          
+
           Vec p = (t.nodes[0] + t.nodes[1] + t.nodes[2]) * (1./3);
           t.distToCam = sqr(p[0]-cc[0]) + sqr(p[1]-cc[1]) + sqr(p[2]-cc[2]);
         }
-        
+
         std::sort(ts.begin(), ts.end());
-        
+
         glEnable(GL_CULL_FACE);
         for(int i=0;i<s->m_faces.size();++i){
-       
+
           RenderedTriangleImpl &ti = *ts[i].impl;
           const Vec *c = ti.nodes;
           const Vec *n = ti.normals;

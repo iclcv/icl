@@ -39,94 +39,94 @@ using namespace icl::utils;
 
 namespace icl{
   namespace core{
-    
+
     using std::string;
-  
+
   #define AVL ccAvailable
   #define IMU ccEmulated
-  #define UAV ccUnavailable 
+  #define UAV ccUnavailable
   #define IPS ccImpossible
   #define ADP ccAdapted
 
     static const unsigned int NFMTS = 7;
   #ifdef ICL_HAVE_SSE2
     static const ccimpl g_aeAvailableTable[NFMTS*NFMTS] = {
-      /*                      |-------------- dst format ------------------> */ 
+      /*                      |-------------- dst format ------------------> */
       /*  ___                 gray   rgb    hls    yuv    lab  chroma matrix */
-      /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  ADP,   
-      /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  ADP,   
-      /*  src-      hls   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP, 
-      /* format     yuv   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP, 
-      /*   |        lab   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP, 
-      /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  ADP, 
+      /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  ADP,
+      /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  ADP,
+      /*  src-      hls   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP,
+      /* format     yuv   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP,
+      /*   |        lab   */  AVL,   AVL,   AVL,   AVL,   AVL,   IMU,  ADP,
+      /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  ADP,
       /*   V       matrix */  ADP,   ADP,   ADP,   ADP,   ADP,   ADP,  ADP
     };
   #else
     static const ccimpl g_aeAvailableTable[NFMTS*NFMTS] = {
-      /*                      |-------------- dst format ------------------> */ 
+      /*                      |-------------- dst format ------------------> */
       /*  ___                 gray   rgb    hls    yuv    lab  chroma matrix */
-      /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  ADP,   
-      /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  ADP,   
-      /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,  ADP, 
-      /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,  ADP, 
-      /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,  ADP, 
-      /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  ADP, 
+      /*   |        gray  */  AVL,   AVL,   AVL,   AVL,   AVL,   IPS,  ADP,
+      /*   |        rgb   */  AVL,   AVL,   AVL,   AVL,   AVL,   AVL,  ADP,
+      /*  src-      hls   */  AVL,   AVL,   AVL,   IMU,   IMU,   IMU,  ADP,
+      /* format     yuv   */  AVL,   AVL,   IMU,   AVL,   IMU,   IMU,  ADP,
+      /*   |        lab   */  AVL,   AVL,   IMU,   IMU,   AVL,   IMU,  ADP,
+      /*   |       chroma */  IPS,   IPS,   IPS,   IPS,   IPS,   AVL,  ADP,
       /*   V       matrix */  ADP,   ADP,   ADP,   ADP,   ADP,   ADP,  ADP
     };
   #endif
-  
-  #undef AVL 
+
+  #undef AVL
   #undef IMU
   #undef UAV
   #undef IPS
     std::string translateCCImpl(ccimpl i){
       // {{{ open
-  
+
       static string s_asNames[5] = { "available" , "emulated","adapted","unavailable", "impossible" };
       return s_asNames[i];
     }
-  
+
     // }}}
-  
+
     ccimpl translateCCImlp(const std::string &s){
       // {{{ open
-  
+
       if(s.length() < 3){
-        ERROR_LOG("ccimpl \""<<s<<"\" is not defined"); 
+        ERROR_LOG("ccimpl \""<<s<<"\" is not defined");
         return ccUnavailable;
       }
       switch(s[0]){
-        case 'a': 
+        case 'a':
           if(s[1] == 'v') return  ccAvailable;
           else return ccAdapted;
         case 'e': return ccEmulated;
         case 'u': return ccUnavailable;
         case 'i': return ccImpossible;
-        default: 
+        default:
           ERROR_LOG("ccimpl \""<<s<<"\" is not defined");
-          return ccUnavailable; 
+          return ccUnavailable;
       }
     }
-  
+
     // }}}
-  
+
     ccimpl cc_available(format srcFmt, format dstFmt){
       return g_aeAvailableTable[srcFmt*NFMTS + dstFmt];
     }
-  
+
     std::map<format, std::map<format,CCLUT*> > g_mapCCLUTs;
-    
+
     bool lut_available(format srcFmt, format dstFmt){
       // {{{ open
-  
+
       return g_mapCCLUTs[srcFmt][dstFmt] != 0;
     }
-  
+
     // }}}
-  
+
     void createLUT(format srcFmt, format dstFmt){
       // {{{ open
-  
+
       CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
       if(!lut){
         lut = new CCLUT(srcFmt,dstFmt);
@@ -134,12 +134,12 @@ namespace icl{
         WARNING_LOG("lookup table created twice!");
       }
     }
-  
+
     // }}}
-    
+
     void releaseLUT(format srcFmt, format dstFmt){
       // {{{ open
-  
+
       CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
       if(lut){
         delete lut;
@@ -148,14 +148,14 @@ namespace icl{
         WARNING_LOG("lookup table does not exist!");
       }
     }
-  
+
     // }}}
-  
+
     void releaseAllLUTs(){
       // {{{ open
-  
+
       typedef std::map<format,CCLUT*> fmap;
-      typedef std::map<format,fmap> ffmap; 
+      typedef std::map<format,fmap> ffmap;
       for(ffmap::iterator it= g_mapCCLUTs.begin(); it!= g_mapCCLUTs.end();it++){
         fmap &f = (*it).second;
         for(fmap::iterator jt = f.begin();jt != f.end(); jt++){
@@ -166,22 +166,22 @@ namespace icl{
         }
       }
     }
-  
+
     // }}}
-    
+
     void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v){
       // {{{ integer open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       /// fixed point approximation of the the rgb2yuv version :
       /** we no longer use this version due to compatibility issues with IPP based code */
-      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;
       u = ( 2366989*(b-y) + 534773760        ) >> 22;
       v = ( 2991658*(r-y) + 534773760        ) >> 22;
   #else
       /// this is the way Intel IPP does rgb-to-yuv conversion
-      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;
       u = (2063598*(b-y) >> 22) + 128;
-      v = (3678405*(r-y) >> 22) + 128; 
+      v = (3678405*(r-y) >> 22) + 128;
       if(v<0) v=0;
       else if(v > 255) v = 255;
   #endif
@@ -193,14 +193,14 @@ namespace icl{
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       /// fixed point approximation of the the rgb2yuv version :
       /** we no longer use this version due to compatibility issues with IPP based code */
-      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;
       u = ( 2366989*(b-y) + 534773760        ) >> 22;
       v = ( 2991658*(r-y) + 534773760        ) >> 22;
   #else
       /// this is the way Intel IPP does rgb-to-yuv conversion
-      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+      y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;
       u = (2063598*(b-y) >> 22) + 128;
-      v = (3678405*(r-y) >> 22) + 128; 
+      v = (3678405*(r-y) >> 22) + 128;
       if(v<0) v=0;
       else if(v > 255) v = 255;
   #endif
@@ -211,7 +211,7 @@ namespace icl{
       /// this is the way Intel IPP does rgb-to-yuv conversion
       y = 0.299f*r + 0.587f*g + 0.114*b;
       u = 0.492f*(b-y) + 128.0f;
-      v = 0.877f*(r-y) + 128.0f; 
+      v = 0.877f*(r-y) + 128.0f;
       if(v < 0.0f) v = 0.0f;
       else if(v > 255.0f) v = 255.0f;
     }
@@ -219,9 +219,9 @@ namespace icl{
     void cc_util_yuv_to_rgb(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b){
       // {{{ open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
-      icl32s u2 = 14343*u - 1828717; 
-      icl32s v2 = 20231*v - 2579497; 
-      
+      icl32s u2 = 14343*u - 1828717;
+      icl32s v2 = 20231*v - 2579497;
+
       r = y +  ( ( 290 * v2 ) >> 22 );
       g = y -  ( ( 100  * u2 + 148 * v2) >> 22 );
       b = y +  ( ( 518 * u2 ) >> 22 );
@@ -232,24 +232,24 @@ namespace icl{
       icl32s u2 = u-128;
       icl32s v2 = v-128;
       icl32s y2 = y<<22;
-      
+
       r = (y2 + 4781506 * v2 ) >> 22;
       g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
       b = (y2 + 8522826 * u2 ) >> 22;
-      
+
       r = utils::clip(r,0,255);
       g = utils::clip(g,0,255);
       b = utils::clip(b,0,255);
   #endif
-    } 
+    }
     // }}}
 
     inline void cc_util_yuv_to_rgb_inline(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b){
       // {{{ open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
-      icl32s u2 = 14343*u - 1828717; 
-      icl32s v2 = 20231*v - 2579497; 
-      
+      icl32s u2 = 14343*u - 1828717;
+      icl32s v2 = 20231*v - 2579497;
+
       r = y +  ( ( 290 * v2 ) >> 22 );
       g = y -  ( ( 100  * u2 + 148 * v2) >> 22 );
       b = y +  ( ( 518 * u2 ) >> 22 );
@@ -260,16 +260,16 @@ namespace icl{
       icl32s u2 = u-128;
       icl32s v2 = v-128;
       icl32s y2 = y<<22;
-      
+
       r = (y2 + 4781506 * v2 ) >> 22;
       g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
       b = (y2 + 8522826 * u2 ) >> 22;
-      
+
       r = utils::clip(r,0,255);
       g = utils::clip(g,0,255);
       b = utils::clip(b,0,255);
   #endif
-    } 
+    }
     // }}}
 
     inline void cc_util_yuv_to_rgb(const icl32f y,const icl32f u,const icl32f v, icl32f &r, icl32f &g, icl32f &b){
@@ -277,11 +277,11 @@ namespace icl{
       // ipp compatible version using 32f values
       icl32f u2 = u-128.0f;
       icl32f v2 = v-128.0f;
-      
+
       r = (y + 1.140f * v2 );
       g = (y - 0.394f * u2 - 0.581f * v2 );
       b = (y + 2.032f * u2 );
-      
+
       r = utils::clip(r,0.0f,255.0f);
       g = utils::clip(g,0.0f,255.0f);
       b = utils::clip(b,0.0f,255.0f);
@@ -289,19 +289,19 @@ namespace icl{
 
     void cc_util_rgb_to_hls(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){
       // {{{ open
-  
+
       icl32f r = r255/255;
       icl32f g = g255/255;
       icl32f b = b255/255;
-      
+
       icl32f m,v;
       getMinAndMax(r,g,b,m,v);
-      
+
       if((l = (m + v) / 2.0) <= 0.0){
         l=0; h=0; s=0; // just define anything!
         return;
       }
-      
+
       icl32f vm = v-m;
       if ( vm > 0.0 ) {
         if(l<=0.5){
@@ -315,21 +315,21 @@ namespace icl{
         h=0; // just define anything!
         return;
       }
-    
-  
+
+
       icl32f r2 = (v - r) / vm;
       icl32f g2 = (v - g) / vm;
       icl32f b2 = (v - b) / vm;
-      
+
       if (r == v)
         h = (g == m ? 5.0 + b2 : 1.0 - g2);
       else if (g == v)
         h = (b == m ? 1.0 + r2 : 3.0 - b2);
       else
         h = (r == m ? 3.0 + g2 : 5.0 - r2);
-      
+
       //    h /= 6;
-  
+
       h *=255./6;
       if(h==255)h=0;
       l *=255;
@@ -339,19 +339,19 @@ namespace icl{
 
     inline void cc_util_rgb_to_hls_inline(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){
       // {{{ open
-  
+
       icl32f r = r255/255;
       icl32f g = g255/255;
       icl32f b = b255/255;
-      
+
       icl32f m,v;
       getMinAndMax(r,g,b,m,v);
-      
+
       if((l = (m + v) / 2.0) <= 0.0){
         l=0; h=0; s=0; // just define anything!
         return;
       }
-      
+
       icl32f vm = v-m;
       if ( vm > 0.0 ) {
         if(l<=0.5){
@@ -365,21 +365,21 @@ namespace icl{
         h=0; // just define anything!
         return;
       }
-    
-  
+
+
       icl32f r2 = (v - r) / vm;
       icl32f g2 = (v - g) / vm;
       icl32f b2 = (v - b) / vm;
-      
+
       if (r == v)
         h = (g == m ? 5.0 + b2 : 1.0 - g2);
       else if (g == v)
         h = (b == m ? 1.0 + r2 : 3.0 - b2);
       else
         h = (r == m ? 3.0 + g2 : 5.0 - r2);
-      
+
       //    h /= 6;
-  
+
       h *=255./6;
       if(h==255)h=0;
       l *=255;
@@ -438,13 +438,13 @@ namespace icl{
       static const icl32f wX = 1/0.950455f;
       static const icl32f wY = 1/1.000;
       static const icl32f wZ = 1/1.088753f;
-      
+
       icl32f XXn = X * wX;
       icl32f YYn = Y * wY;
       icl32f ZZn = Z * wZ;
 
       icl32f fX = (XXn > 0.008856f) ? cbrt(XXn) : 7.787f * XXn + (16.0f / 116.0f);
-      icl32f fY = (YYn > 0.008856f) ? cbrt(YYn) : 7.787f * YYn + (16.0f / 116.0f); 
+      icl32f fY = (YYn > 0.008856f) ? cbrt(YYn) : 7.787f * YYn + (16.0f / 116.0f);
       icl32f fZ = (ZZn > 0.008856f) ? cbrt(ZZn) : 7.787f * ZZn + (16.0f / 116.0f);
 
       L = (116.0f * 2.55f * fY) - 16.0f * (255.0f / 100.0f);
@@ -461,22 +461,22 @@ namespace icl{
 
     void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
       // {{{ open
-  
+
       // H,L,S,R,G,B in range [0,255]
       icl32f h   = h255/255;
       icl32f l   = l255/255;
       icl32f sl  = sl255/255;
-      
+
       icl32f v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
       if (v <= 0) {
         r = g = b = 0.0;
         return;
-      } 
-      
+      }
+
       icl32f m = l + l - v;
       icl32f sv = (v - m ) / v;
       h *= 6.0;
-      int sextant = (int)h;	
+      int sextant = (int)h;
       icl32f fract = h - sextant;
       icl32f vsf = v * sv * fract;
       icl32f mid1 = m + vsf;
@@ -490,7 +490,7 @@ namespace icl{
         case 5: r = v;    g = m;    b = mid2; break;
         case 6: r = v;    g = mid1; b = m;    break; // TODO: delete line?
       }
-      
+
       r *= 255;
       g *= 255;
       b *= 255;
@@ -499,22 +499,22 @@ namespace icl{
 
     inline void cc_util_hls_to_rgb_inline(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
       // {{{ open
-  
+
       // H,L,S,R,G,B in range [0,255]
       icl32f h   = h255/255;
       icl32f l   = l255/255;
       icl32f sl  = sl255/255;
-      
+
       icl32f v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
       if (v <= 0) {
         r = g = b = 0.0;
         return;
-      } 
-      
+      }
+
       icl32f m = l + l - v;
       icl32f sv = (v - m ) / v;
       h *= 6.0;
-      int sextant = (int)h;	
+      int sextant = (int)h;
       icl32f fract = h - sextant;
       icl32f vsf = v * sv * fract;
       icl32f mid1 = m + vsf;
@@ -528,7 +528,7 @@ namespace icl{
         case 5: r = v;    g = m;    b = mid2; break;
         case 6: r = v;    g = mid1; b = m;    break;
       }
-      
+
       r *= 255;
       g *= 255;
       b *= 255;
@@ -537,7 +537,7 @@ namespace icl{
 
     void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG){
       // {{{ open
-  
+
       icl32f sum = r+g+b;
       sum+=!sum; //avoid division by zero
       chromaR=r*255/sum;
@@ -547,22 +547,22 @@ namespace icl{
 
     inline void cc_util_lab_to_xyz(const icl32f l, const icl32f a, const icl32f b, icl32f &x, icl32f &y, icl32f &z){
       // {{{ open
-  
+
       static const icl32f n = 16.0f/116.0f;
-  
+
       // white point values
       static const icl32f wX = 0.950455f;
       static const icl32f wZ = 1.088754f;
-  
+
       icl32f fy = (l+16.0f*2.55)/(2.55f*116.0f);
       icl32f fx = fy+(a-128)/500.0f;
       icl32f fz = fy-(b-128)/200.0f;
-  
+
       y = (fy>0.206893f) ?     pow(fy,3) :    (fy-n)/7.787f;
       x = (fx>0.206893f) ?  wX*pow(fx,3) : wX*(fx-n)/7.787f;
       z = (fz>0.206893f) ?  wZ*pow(fz,3) : wZ*(fz-n)/7.787f;
     }
-  
+
     // }}}
     inline void cc_util_xyz_to_rgb(const icl32f x, const icl32f y, const icl32f z, icl32f &r, icl32f &g, icl32f &b){
       // {{{ open
@@ -575,22 +575,22 @@ namespace icl{
       g = m[1][0] * x + m[1][1] * y + m[1][2] * z;
       b = m[2][0] * x + m[2][1] * y + m[2][2] * z;
     }
-  
+
     // }}}
-   
-    
-  #define GET_3_CHANNEL_POINTERS_DIM(T,I,P1,P2,P3,DIM) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2); int DIM = I->getDim() 
+
+
+  #define GET_3_CHANNEL_POINTERS_DIM(T,I,P1,P2,P3,DIM) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2); int DIM = I->getDim()
   #define GET_3_CHANNEL_POINTERS_NODIM(T,I,P1,P2,P3) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2)
   #define GET_2_CHANNEL_POINTERS_DIM(T,I,P1,P2,DIM) T *P1=I->getData(0),*P2=I->getData(1); int DIM = I->getDim()
   #define GET_2_CHANNEL_POINTERS_NODIM(T,I,P1,P2) T *P1=I->getData(0),*P2=I->getData(1)
-  
+
     template<class S, class D, format srcFmt, format dstFmt> struct CCFunc{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         (void)src; (void)dst; (void)roiOnly;
       }
     };
-  
+
     // }}}
     template<class S, class D, format srcDstFmt> struct CCFunc<S,D,srcDstFmt,srcDstFmt>{
       // {{{ open
@@ -601,11 +601,11 @@ namespace icl{
           src->convert(dst);
         }
       }
-      
+
     };
-  
+
     // }}}
-  
+
     /// FROM FORMAT RGB
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatGray>{
       // {{{ open
@@ -636,7 +636,7 @@ namespace icl{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
-  
+
         register icl32f reg_h, reg_l, reg_s;
         if(roiOnly){
           const ImgIterator<S> itR = src->beginROI(0);
@@ -658,7 +658,7 @@ namespace icl{
         }else{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,h,l,s);
-          
+
           for(int i=0;i<dim;++i){
             cc_util_rgb_to_hls_inline(clipped_cast<S,icl32f>(r[i]),
                                       clipped_cast<S,icl32f>(g[i]),
@@ -670,9 +670,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatChroma>{
       // {{{ open
@@ -703,9 +703,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatYUV>{
       // {{{ open
@@ -732,7 +732,7 @@ namespace icl{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
           register icl32s reg_y, reg_u, reg_v;
-          for(int i=0;i<dim;++i){ 
+          for(int i=0;i<dim;++i){
             cc_util_rgb_to_yuv_inline(clipped_cast<S,icl32s>(r[i]),
                                       clipped_cast<S,icl32s>(g[i]),
                                       clipped_cast<S,icl32s>(b[i]),
@@ -744,7 +744,7 @@ namespace icl{
         }
       }
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatLAB>{
       // {{{ open
@@ -774,7 +774,7 @@ namespace icl{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,LL,aa,bb);
 
-          for(int i=0;i<dim;++i){ 
+          for(int i=0;i<dim;++i){
             cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(r[i]),
                                clipped_cast<S,icl32f>(g[i]),
                                clipped_cast<S,icl32f>(b[i]),
@@ -786,12 +786,12 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
-  
-  
+
+
     /// FROM FORMAT GRAY
     template<class S, class D> struct CCFunc<S,D,formatGray,formatRGB>{
       // {{{ open
@@ -814,9 +814,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatHLS>{
       // {{{ open
@@ -841,9 +841,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatYUV>{
       // {{{ open
@@ -854,7 +854,7 @@ namespace icl{
           ImgIterator<D> itY = dst->beginROI(0);
           ImgIterator<D> itU = dst->beginROI(1);
           ImgIterator<D> itV = dst->beginROI(2);
-  
+
           const ImgIterator<S> itEnd = src->endROI(0);
           for(;itG!= itEnd;++itG,++itY,++itU,++itV){
             *itY = clipped_cast<S,D>(*itG);
@@ -869,9 +869,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatLAB>{
       // {{{ open
@@ -896,9 +896,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatChroma>{
       // {{{ open
@@ -908,24 +908,24 @@ namespace icl{
         (void) src;
         dst->clear(-1,85,roiOnly);
       }
-      
+
     };
-  
+
     // }}}
-   
+
     /// FROM FORMAT HLS
     template<class S, class D> struct CCFunc<S,D,formatHLS,formatGray>{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
-          convertChannelROI(src,1,src->getROIOffset(),src->getROISize(), 
+          convertChannelROI(src,1,src->getROIOffset(),src->getROISize(),
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
           icl::core::convert(src->getData(1),src->getData(1)+src->getDim(), dst->getData(0));
         }
       }
-      
+
     };
     // }}}
 
@@ -933,7 +933,7 @@ namespace icl{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
-        
+
         register icl32f reg_r(0), reg_g(0), reg_b(0);
         if(roiOnly){
           const ImgIterator<S> itH = src->beginROI(0);
@@ -955,7 +955,7 @@ namespace icl{
         }else{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,r,g,b);
-          
+
           for(int i=0;i<dim;++i){
             cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(h[i]),
                                       clipped_cast<S,icl32f>(l[i]),
@@ -969,13 +969,13 @@ namespace icl{
       }
     };
     // }}}
-  
+
 /* the emulated version is faster than this one
     template<class S, class D> struct CCFunc<S,D,formatHLS,formatYUV>{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
-        
+
         register icl32f reg_r(0), reg_g(0), reg_b(0);
         register icl32s reg_y(0), reg_u(0), reg_v(0);
         if(roiOnly){
@@ -999,7 +999,7 @@ namespace icl{
         }else{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,h,l,s,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
-          
+
           for(int i=0;i<dim;++i){
             cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(h[i]),
                                       clipped_cast<S,icl32f>(l[i]),
@@ -1022,15 +1022,15 @@ namespace icl{
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
-          convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
+          convertChannelROI(src,0,src->getROIOffset(),src->getROISize(),
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
-          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
         }
       }
-      
+
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatLAB,formatRGB>{
       // {{{ open
@@ -1070,26 +1070,26 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
-  
-  
+
+
     /// FROM FORMAT YUV
     template<class S, class D> struct CCFunc<S,D,formatYUV,formatGray>{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
-          convertChannelROI(src,0,src->getROIOffset(),src->getROISize(), 
+          convertChannelROI(src,0,src->getROIOffset(),src->getROISize(),
                             dst,0,dst->getROIOffset(),dst->getROISize());
         }else{
-          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));        
+          icl::core::convert(src->getData(0),src->getData(0)+src->getDim(), dst->getData(0));
         }
-      }    
+      }
     };
-  
+
     // }}}
     template<class S, class D> struct CCFunc<S,D,formatYUV,formatRGB>{
       // {{{ open
@@ -1127,9 +1127,9 @@ namespace icl{
           }
         }
       }
-      
+
     };
-  
+
     // }}}
 
 //  the IPP conversion functions are replaced by a SSE implementation
@@ -1153,7 +1153,7 @@ namespace icl{
         convert_color_with_ipp(src,dst,roiOnly,ippi##FUNC);                      \
       }                                                                          \
     };
-  
+
   #define USE_IPP_CONVERT_SWAP_SRC_RG(SRC_FMT,DST_FMT,FUNC)                        \
     template<> struct CCFunc<icl8u,icl8u,format##SRC_FMT,format##DST_FMT>{         \
       static void convert(const Img<icl8u> *srcIn, Img<icl8u> *dst, bool roiOnly){ \
@@ -1169,12 +1169,12 @@ namespace icl{
         dst->swapChannels(0,2);                                                    \
       }                                                                            \
     };
-  
-  
+
+
 
     USE_IPP_CONVERT(RGB,YUV,RGBToYUV_8u_P3R);
     USE_IPP_CONVERT(YUV,RGB,YUVToRGB_8u_P3R);
-    
+
     USE_IPP_CONVERT_SWAP_SRC_RG(RGB,HLS,BGRToHLS_8u_P3R);
     USE_IPP_CONVERT_SWAP_DST_RG(HLS,RGB,HLSToBGR_8u_P3R);
 
@@ -1188,7 +1188,7 @@ namespace icl{
           std::vector<icl8u> sbuf(rw*3),dbuf(rw*3);
           const icl8u* bgrSrc[] = {src->getROIData(2),src->getROIData(1),src->getROIData(0)};
           icl8u* bgrDst[] ={dst->getROIData(0),dst->getROIData(1),dst->getROIData(2)};
-          
+
           for(int y=0;y<rh;++y){
             ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), rw, line);
             ippiBGRToLab_8u_C3R(sbuf.data(),rw,dbuf.data(), rw, line);
@@ -1217,7 +1217,7 @@ namespace icl{
         }
       }
     };
-  
+
    template<> struct CCFunc<icl8u,icl8u,formatLAB ,formatRGB>{
       static void convert(const Img<icl8u> *src, Img<icl8u> *dst, bool roiOnly){
         if(roiOnly){
@@ -1228,7 +1228,7 @@ namespace icl{
           std::vector<icl8u> sbuf(rw*3),dbuf(rw*3);
           const icl8u* bgrSrc[] = {src->getROIData(0),src->getROIData(1),src->getROIData(2)};
           icl8u* bgrDst[] ={dst->getROIData(2),dst->getROIData(1),dst->getROIData(0)};
-          
+
           for(int y=0;y<rh;++y){
             ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), rw, line);
             ippiLabToBGR_8u_C3R(sbuf.data(),rw,dbuf.data(), rw, line);
@@ -1244,7 +1244,7 @@ namespace icl{
           std::vector<icl8u> sbuf(w*3),dbuf(w*3);
           const icl8u* bgrSrc[] = {src->getData(0),src->getData(1),src->getData(2)};
           icl8u* bgrDst[] ={dst->getData(2),dst->getData(1),dst->getData(0)};
-          
+
           for(int y=0;y<h;++y){
             ippiCopy_8u_P3C3R(bgrSrc, w, sbuf.data(), w, line);
             ippiLabToBGR_8u_C3R(sbuf.data(),w,dbuf.data(), w, line);
@@ -1257,7 +1257,7 @@ namespace icl{
         }
       }
     };
-  
+
     /// lab conversion in IPP is only available for planar images
     //USE_IPP_CONVERT_SWAP_RB(RGB,LAB,BGRToLAB);
     //USE_IPP_CONVERT_SWAP_RB(LAB,BGR,LABToBGR);
@@ -1266,7 +1266,7 @@ namespace icl{
 
   #ifdef ICL_HAVE_SSE2
 
-    // ++ for-loops ++ // 
+    // ++ for-loops ++ //
 
     template<class S, class D>
     inline void sse_for_image_roi(const Img<S> *src, Img<D> *dst,
@@ -1434,7 +1434,7 @@ namespace icl{
       sse_for(src0, src1, src2, dst0, dst1, dst2, dstEnd, subMethod, subSSEMethod, step, step);
     }
 
-    // -- for-loops -- // 
+    // -- for-loops -- //
 
 
     #define USE_SSE_CONVERT(SRC_TYPE,DST_TYPE,SRC_FMT,DST_FMT,FUNC,SSEFUNC,NUM_VAL)      \
@@ -3850,16 +3850,16 @@ namespace icl{
     // -- Lab to YUV -- //
 
   #endif
-  
-  
+
+
     template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst, bool roiOnly){
     // {{{ open
-  
+
       // {{{ definition of CASE_LABEL(XXX)
-      
+
   #define INNER_CASE_LABEL(XXX,YYY) \
     case format##YYY: CCFunc<S,D,format##XXX,format##YYY>::convert(src,dst,roiOnly); break
-      
+
   #define CASE_LABEL(XXX)                         \
         case format##XXX:                         \
           switch(dst->getFormat()){               \
@@ -3872,9 +3872,9 @@ namespace icl{
             default: ICL_INVALID_FORMAT;          \
           }                                       \
           break
-  
+
       // }}}
-      
+
       switch(src->getFormat()){
         CASE_LABEL(RGB);
         CASE_LABEL(HLS);
@@ -3885,14 +3885,14 @@ namespace icl{
         default:
           ICL_INVALID_FORMAT;
       }
-  #undef CASE_LABEL                                          
-    }  
-  
+  #undef CASE_LABEL
+    }
+
     // }}}
-   
+
     template<class S> void cc_s(const Img<S> *src, ImgBase *dst, bool roiOnly){
       // {{{ open
-  
+
       switch(dst->getDepth()){      //TODO depth macro
         case depth8u: cc_sd(src, dst->asImg<icl8u>(),roiOnly); break;
         case depth16s: cc_sd(src, dst->asImg<icl16s>(),roiOnly); break;
@@ -3903,12 +3903,12 @@ namespace icl{
           ICL_INVALID_DEPTH;
       }
     }
-  
+
     // }}}
-  
+
     void cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
       // {{{ open
-  
+
       ICLASSERT_RETURN( src );
       ICLASSERT_RETURN( dst );
 
@@ -3922,7 +3922,7 @@ namespace icl{
       }
 
       dst->setTime(src->getTime());
-  
+
       if(roiOnly){
         /// check for equal roi sizes
         ICLASSERT_RETURN(src->getROISize() == dst->getROISize());
@@ -3935,12 +3935,12 @@ namespace icl{
       if(roiOnly && src->hasFullROI() && dst->hasFullROI()){
         roiOnly = false;
       }
-      
+
       if(lut_available(src->getFormat(),dst->getFormat())){
         g_mapCCLUTs[src->getFormat()][dst->getFormat()]->cc(src,dst,roiOnly);
         return;
       }
-      
+
       switch(cc_available(src->getFormat(), dst->getFormat())){
         case ccAvailable:
           switch(src->getDepth()){ //TODO depth macro
@@ -3965,7 +3965,7 @@ namespace icl{
             cc(buf,dst);
             delete buf;
           }
-          break; 
+          break;
         }
         case ccAdapted:{
           int n = iclMin(src->getChannels(),dst->getChannels());
@@ -4001,39 +4001,39 @@ namespace icl{
             break;
             ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
-            
-          }     
+
+          }
           break;
         }
         case ccUnavailable:{
-          ERROR_LOG("no color conversion [" << 
-                    src->getFormat() << 
-                    "-->" << 
-                    dst->getFormat() << 
+          ERROR_LOG("no color conversion [" <<
+                    src->getFormat() <<
+                    "-->" <<
+                    dst->getFormat() <<
                     "] (depth:" <<
                     src->getDepth() <<
-                    "-->" << 
+                    "-->" <<
                     dst->getDepth() <<
                     ") available!" );
           break;
         }
         case ccImpossible:{
-          ERROR_LOG("color conversion [" << 
-                    src->getFormat() << 
-                    "-->" << 
-                    dst->getFormat() << 
+          ERROR_LOG("color conversion [" <<
+                    src->getFormat() <<
+                    "-->" <<
+                    dst->getFormat() <<
                     "] (depth:" <<
                     src->getDepth() <<
-                    "-->" << 
+                    "-->" <<
                     dst->getDepth() <<
                     ") impossible!" );
           break;
         }
-          
+
       }
       dst->setMetaData(src->getMetaData());
     }
-  
+
     // }}}
 
     template<class S, class D>
@@ -4443,11 +4443,11 @@ namespace icl{
   #endif
 
     /// additional misc (planar -> interleaved and interleaved -> planar)
-    
+
     template<class S, class D>
     inline void planarToInterleaved_POD(int channels,int len, const S** src, D* dst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
@@ -4481,12 +4481,12 @@ namespace icl{
     template<class S, class D>
     inline void planarToInterleaved_Generic_NO_ROI(const Img<S> *src, D*dst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-  
-      int c=src->getChannels();    
+
+      int c=src->getChannels();
       const S **srcData = new const S*[c];
       for(int i=0;i<c;i++){
         srcData[i] = src->getData(i);
@@ -4494,38 +4494,38 @@ namespace icl{
       planarToInterleaved_POD(c,src->getDim(),srcData,dst);
       delete [] srcData;
     }
-  
+
     // }}}
-    
+
     template<class S, class D>
     inline void planarToInterleaved_Generic_WITH_ROI(const Img<S> *src, D *dst,int dstLineStep){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-  
+
       int c=src->getChannels();
       int lineLength = src->getROIWidth();
       int dstImageWidth = dstLineStep/(sizeof(D));
       int dstLineJump = dstImageWidth-lineLength;
-  
+
       int srcImageWidth = src->getWidth();
       int srcLineJump = srcImageWidth-lineLength;
-  
+
       if(dstLineJump<0){
-        ERROR_LOG("destination images linestep is too small!"); 
+        ERROR_LOG("destination images linestep is too small!");
         return;
       }
-      
-      srcLineJump+=lineLength;    
+
+      srcLineJump+=lineLength;
       dstLineJump+=lineLength;
-      
+
       const S** srcData=new const S* [c];
       for(int i=0;i<c;++i){
         srcData[i] = src->getROIData(i);
       }
-      
+
       for(int y=0;y<src->getROIHeight();++y){
         planarToInterleaved_POD(c,lineLength,srcData,dst);
         for(int i=0;i<c;++i){
@@ -4535,24 +4535,24 @@ namespace icl{
       }
       delete [] srcData;
     }
-  
+
     // }}}
-    
+
     template<class S, class D>
     inline void planarToInterleaved_Generic(const Img<S> *src, D* dst, int dstLineStep){
       // {{{ open
-      
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-      
+
       if(src->hasFullROI() && ( dstLineStep == -1 || dstLineStep/((int)sizeof(D)) == src->getWidth())){
         planarToInterleaved_Generic_NO_ROI(src,dst);
       }else{
         planarToInterleaved_Generic_WITH_ROI(src,dst,dstLineStep < 0 ? src->getLineStep()*src->getChannels()*sizeof(D)/sizeof(S) : dstLineStep);
       }
     }
-    
+
     // }}}
 
     template<class S, class D>
@@ -4789,7 +4789,7 @@ namespace icl{
     void for_copy_c3p3(const icl32f *src, icl8u *dst0, icl8u *dst1, icl8u *dst2, icl8u *dstEnd) {
       // lead to invalid read of size 16 ??
       icl8u *dstSSEEnd = dstEnd - 20;
-      
+
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
           sse_copy_c3p3(src, dst0, dst1, dst2);
@@ -4853,7 +4853,7 @@ namespace icl{
     template<class S, class D>
     inline void interleavedToPlanar_POD(int channels,int len, const S* src, D **dst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
@@ -4885,16 +4885,16 @@ namespace icl{
       }
     }
     // }}}
-    
+
     template<class S, class D>
     inline void interleavedToPlanar_Generic_NO_ROI(const S* src, Img<D> *dst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-  
-      int c=dst->getChannels();    
+
+      int c=dst->getChannels();
       D **dstData = new D*[c];
       for(int i=0;i<c;i++){
         dstData[i] = dst->getData(i);
@@ -4902,38 +4902,38 @@ namespace icl{
       interleavedToPlanar_POD(c,dst->getDim(),src,dstData);
       delete [] dstData;
     }
-  
+
     // }}}
-    
+
     template<class S, class D>
     inline void interleavedToPlanar_Generic_WITH_ROI(const S *src, Img<D> *dst, int srcLineStep){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-  
+
       int c=dst->getChannels();
       int lineLength = dst->getROIWidth();
       int srcImageWidth = srcLineStep/(sizeof(S));
       int srcLineJump = srcImageWidth-lineLength;
-  
+
       int dstImageWidth = dst->getWidth();
       int dstLineJump = dstImageWidth-lineLength;
-  
+
       if(srcLineJump<0){
-        ERROR_LOG("destination images linestep is too small!"); 
+        ERROR_LOG("destination images linestep is too small!");
         return;
       }
-  
-      dstLineJump+=lineLength;    
-      srcLineJump+=lineLength;    
-  
+
+      dstLineJump+=lineLength;
+      srcLineJump+=lineLength;
+
       D** dstData=new D*[c];
       for(int i=0;i<c;++i){
         dstData[i] = dst->getROIData(i);
       }
-      
+
       for(int y=0;y<dst->getROIHeight();++y){
         interleavedToPlanar_POD(c,lineLength,src,dstData);
         for(int i=0;i<c;++i){
@@ -4943,29 +4943,29 @@ namespace icl{
       }
       delete [] dstData;
     }
-  
+
     // }}}
-    
+
     template<class S, class D>
     inline void interleavedToPlanar_Generic( const S *src, Img<D> *dst, int srcLineStep){
       // {{{ open
-      
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
-      
+
       if(dst->hasFullROI() && ( srcLineStep == -1 || srcLineStep/((int)sizeof(S)) == dst->getWidth())){
         interleavedToPlanar_Generic_NO_ROI(src,dst);
       }else{
         interleavedToPlanar_Generic_WITH_ROI(src,dst,srcLineStep < 0 ? dst->getLineStep()*dst->getChannels() : srcLineStep);
       }
     }
-    
+
     // }}}
-  
-  
+
+
     /****
-  
+
     template<class S, class D>
     inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst, int srcLineStep){
       // {{{ open
@@ -4977,7 +4977,7 @@ namespace icl{
       int srcROIWidth = dst->getROIWidth(); // assume that this are equal
       int c = dst->getChannels();
       Size srcSize = dst->getROISize();
-      
+
       if(srcLineStep != -1 &&  srcROIWidth != srcWidth){
         int lineJump = srcWidth-srcROIWidth;
         if(lineJump < 0){
@@ -5010,8 +5010,8 @@ namespace icl{
           tmpSrcImg.convertROI(dst);
         }
         return;
-      }    
-  
+      }
+
       if(dst->hasFullROI()){
         D** pp=new D* [c];
         D** ppEnd=pp+c;
@@ -5040,27 +5040,27 @@ namespace icl{
         delete [] itDsts;
       }
     }
-    
+
     // }}}
-  
+
     ********/
-    
+
     template<class S,class D>
     void planarToInterleaved(const Img<S> *src, D* dst,int dstLineStep){
       //TODO:: special case for src->getChannels == 1
       planarToInterleaved_Generic(src,dst,dstLineStep);
     }
-    
+
     template<class S, class D>
     void interleavedToPlanar(const S *src, Img<D> *dst, int srcLineStep){
       //TODO:: special case for src->getChannels == 1
       interleavedToPlanar_Generic(src,dst, srcLineStep);
     }
-    
+
   #ifdef ICL_HAVE_IPP
-  
+
    // {{{ PLANAR_2_INTERLEAVED_IPP
-  
+
   #define PLANAR_2_INTERLEAVED_IPP(DEPTH)                                                                       \
     template<> ICLCore_API void planarToInterleaved(const Img<icl##DEPTH>*src, icl##DEPTH *dst, int dstLineStep){ \
       ICLASSERT_RETURN( src );                                                                                  \
@@ -5089,11 +5089,11 @@ namespace icl{
     PLANAR_2_INTERLEAVED_IPP(32s)
     PLANAR_2_INTERLEAVED_IPP(32f)
   #undef PLANAR_2_INTERLEAVED_IPP
-  
+
     // }}}
-  
+
     // {{{ INTERLEAVED_2_PLANAR_IPP
-  
+
   #define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                               \
     template<> ICLCore_API void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst, int srcLineStep){      \
       ICLASSERT_RETURN( src );                                                                                          \
@@ -5124,17 +5124,17 @@ namespace icl{
     INTERLEAVED_2_PLANAR_IPP(32s)
     INTERLEAVED_2_PLANAR_IPP(32f)
   #undef INTERLEAVED_2_PLANAR_IPP
-  
+
     // }}}
-  
+
   #endif // WITH_IPP_OPTINIZATION
-  
+
     // {{{ explicit template instatiations for interleavedToPlanar and planarToInterleaved
-  
+
   #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
     template ICLCore_API void planarToInterleaved<TYPEB, TYPEA>(const Img<TYPEB>*, TYPEA*, int);             \
     template ICLCore_API void interleavedToPlanar<TYPEA, TYPEB>(const TYPEA*, Img<TYPEB>*, int)
-  
+
   #ifndef ICL_HAVE_IPP
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
@@ -5143,43 +5143,43 @@ namespace icl{
   #endif
 
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl8u);
-    
+
     //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl8u);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl8u);
-  
+
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl16s);
     //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl16s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl16s);
-  
+
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl32s);
     //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32s);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl32s);
-  
+
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl32f);
     //EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl32f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl32f);
-  
+
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(signed char,icl64f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl8u,icl64f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl16s,icl64f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32s,icl64f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl32f,icl64f);
     EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(icl64f,icl64f);
-  
+
   #undef EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION
-  
+
     // }}}
 
   #ifdef ICL_HAVE_SSE2
@@ -5224,7 +5224,7 @@ namespace icl{
     icl8u *cB = poDst->getData(2);
 
     if (poDst->getDim() < w*h) {
-      ERROR_LOG("the given size does not match size of the destination image"); 
+      ERROR_LOG("the given size does not match size of the destination image");
     }
     const icl8u *end = cU;
     const icl8u *lEnd = cY + w;
@@ -5284,11 +5284,11 @@ namespace icl{
   #ifdef ICL_HAVE_IPP
       const icl8u *apucSrc[] = {pucSrc,pucSrc+s.getDim(), pucSrc+s.getDim()+s.getDim()/4};
       icl8u *apucDst[] = {poDst->getData(0),poDst->getData(1),poDst->getData(2)};
-      ippiYUV420ToRGB_8u_P3(apucSrc,apucDst,s); 
+      ippiYUV420ToRGB_8u_P3(apucSrc,apucDst,s);
   #endif
 */
   #else
-    
+
       // allocate memory for lookup tables
       static float fy_lut[256];
       static float fu_lut[256];
@@ -5298,7 +5298,7 @@ namespace icl{
       static float g_lut1[65536];
       static float g_lut2[256];
       static int iInitedFlag=0;
-      
+
       // initialize to lookup tables
       if(!iInitedFlag){
         float fy,fu,fv;
@@ -5307,62 +5307,62 @@ namespace icl{
           fu_lut[i] = (127 * (i - 128)) / 112;
           fv_lut[i] = (127 * (i - 128)) / 112;
         }
-        
+
         for(int v=0;v<256;v++){
           g_lut2[v] = 0.714 * fv_lut[v];
         }
-        
+
         for(int y=0;y<256;y++){
           fy = fy_lut[y];
           for(int u=0;u<256;u++){
             g_lut1[y+256*u] = fy - 0.344 * fu_lut[u];
           }
-        }  
-        
+        }
+
         for(int y=0;y<256;y++){
           fy = fy_lut[y];
           for(int v=0;v<256;v++){
             fv = fv_lut[v];
             r_lut[y+256*v]= (int)( fy + (1.402 * fv) );
             fu = fu_lut[v];
-            b_lut[y+256*v]= (int)( fy + (1.772 * fu) ); 
+            b_lut[y+256*v]= (int)( fy + (1.772 * fu) );
           }
-        }    
+        }
         iInitedFlag = 1;
       }
-      
+
       // creating temporary pointer for fast data access
       int iW = s.width;
       int iH = s.height;
-      
+
       icl8u *pucR = poDst->getData(0);
       icl8u *pucG = poDst->getData(1);
       icl8u *pucB = poDst->getData(2);
       const icl8u *ptY = pucSrc;
       const icl8u *ptU = ptY+iW*iH;
       const icl8u *ptV = ptU+(iW*iH)/4;
-      
+
       register int r,g,b,y,u,v;
-      
+
       register int Xflag=0;
       register int Yflag=1;
       register int w2 = iW/2;
-      
+
       // converting the image (ptY,ptU,ptV)----->(pucR,pucG,pucB)
       for(int yy=iH-1; yy >=0 ; yy--){
         for(int xx=0; xx < iW; xx++){
           u=*ptU;
           v=*ptV;
           y=*ptY;
-          
+
           r = r_lut[y+256*v];
           g = (int) ( g_lut1[y+256*u] - g_lut2[v]);
           b = b_lut[y+256*u];
-          
+
           *pucR++=clip(r,0,255);
           *pucG++=clip(g,0,255);
           *pucB++=clip(b,0,255);
-          
+
           if(Xflag++){
             ptV++;
             ptU++;
@@ -5378,8 +5378,8 @@ namespace icl{
       }
   #endif
     }
-    
+
     // }}}
-  
+
   } // namespace core
 }

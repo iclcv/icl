@@ -31,43 +31,43 @@
 #include <ICLMath/GraphCutter.h>
 
 namespace icl{
-  namespace math{    
-    
+  namespace math{
+
     float GraphCutter::minCut(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subset1, std::vector<int> &subset2){
       //Please note: it is possible to add an additional adjacency matrix for faster lookup with values pointing to the edgeList IDs.
-      
+
       //Find minimal cut cost for a single node (initial lambda)
-      int lambda_id = -1;      
+      int lambda_id = -1;
       float lambda_score = initialLambda(adjacencyMatrix, lambda_id);
-      
+
       //create edge list and edge costs
       std::vector<utils::Point> edgeList;
-      std::vector<float> edgeCosts; 
+      std::vector<float> edgeCosts;
       createEdgeList(adjacencyMatrix, edgeList, edgeCosts);
-              
+
       //initial single nodes
       std::vector<std::vector<int> > subsets = createInitialNodes(adjacencyMatrix);
-    
-      //merge to a graph with 2 nodes  
+
+      //merge to a graph with 2 nodes
       bool noQFound=false;
       while(subsets.size()>2 && noQFound==false){
         //calculate lower bounds
-        std::vector<float> q = capforest(edgeList, edgeCosts, subsets.size());        
-        
-        noQFound=true;        
+        std::vector<float> q = capforest(edgeList, edgeCosts, subsets.size());
+
+        noQFound=true;
         for(unsigned int j=0; j<q.size(); j++){ //find q > initial cost of single node
           if((q[j]>lambda_score)||(q[j]>=lambda_score && edgeList[j].x!=lambda_id && edgeList[j].y!=lambda_id)){//the two nodes can be merged
             noQFound=false;
             //merge
             lambda_score = merge(edgeList, edgeCosts, q, subsets, lambda_score, j, lambda_id);
-            j=0;//start searching q from beginning (due to q-updates for merging)  
-          }          
+            j=0;//start searching q from beginning (due to q-updates for merging)
+          }
         }
       }
       if(subsets.size()!=2){
         //lambda_id is already min-cut
         subset1 = subsets[lambda_id];
-        subset2.clear();        
+        subset2.clear();
         for(unsigned int i=0; i<subsets.size(); i++){
           if((int)i!=lambda_id){
             for(unsigned int j=0; j<subsets[i].size(); j++){
@@ -78,18 +78,18 @@ namespace icl{
         return lambda_score;
       }
       subset1 = subsets[0];
-      subset2 = subsets[1];      
+      subset2 = subsets[1];
       return edgeCosts[0];
     }
-    
-    
-    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrix<float> &adjacencyMatrix, float threshold){    
-      std::vector<std::vector<int> > subgraphs = findUnconnectedSubgraphs(adjacencyMatrix); 
-      std::vector<std::vector<int> > children(subgraphs.size());//children IDs (empty = none)  
+
+
+    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrix<float> &adjacencyMatrix, float threshold){
+      std::vector<std::vector<int> > subgraphs = findUnconnectedSubgraphs(adjacencyMatrix);
+      std::vector<std::vector<int> > children(subgraphs.size());//children IDs (empty = none)
       for(unsigned int i=0; i<subgraphs.size(); i++){
         if(subgraphs[i].size()>1){
           DynMatrix<float> subMatrix = createSubMatrix(adjacencyMatrix, subgraphs[i]);
-          
+
           std::vector<int> subset1;
           std::vector<int> subset2;
           float cost = math::GraphCutter::minCut(subMatrix, subset1, subset2);
@@ -110,7 +110,7 @@ namespace icl{
             c.push_back(subgraphs.size()-1);
             children[i]=c;
           }
-        }       
+        }
       }
       for(unsigned int i=0; i<children.size(); i++){//return only children
         if(children[i].size()>0){
@@ -121,14 +121,14 @@ namespace icl{
       }
       return subgraphs;
     }
-    
-        
+
+
     std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrix<bool> &adjacencyMatrix, float threshold){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
-      return thresholdCut(probabilities, threshold);   
+      return thresholdCut(probabilities, threshold);
     }
-    
-    
+
+
     std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrix<float> &adjacencyMatrix){
       std::vector<std::vector<int> > subsets = findUnconnectedSubgraphs(adjacencyMatrix);
       std::vector<CutNode> cutNodes(subsets.size());
@@ -163,18 +163,18 @@ namespace icl{
           cutNodes[i].cost=cost;//set costs in parent
         }else{//leaf nodes
           cutNodes[i].cost=0;
-        }       
+        }
       }
-      return cutNodes;                         
+      return cutNodes;
     }
-    
-                                    
+
+
     std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrix<bool> &adjacencyMatrix){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
       return hierarchicalCut(probabilities);
     }
-    
-    
+
+
     std::vector<float> GraphCutter::capforest(std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts, int subsetsSize){
       //calculate the lower bounds q(e)
       std::vector<bool> vVisited(subsetsSize, false);
@@ -193,9 +193,9 @@ namespace icl{
           }
         }
         //for each unvisited adjacent node to maxV
-        //please note: here a lookup would help to reduce the calls (check vertices instead of edges) 
+        //please note: here a lookup would help to reduce the calls (check vertices instead of edges)
         for(unsigned j=0; j<edgeList.size(); j++){
-          if(eVisited[j]==false){//unvisited 
+          if(eVisited[j]==false){//unvisited
             int neighbour = -1;
             if(edgeList[j].x != maxV && edgeList[j].y != maxV){//not adjacent
             }else if(edgeList[j].x == maxV){
@@ -212,11 +212,11 @@ namespace icl{
         }
         vVisited[maxV] = true;
         unvisitedV--;
-      }     
+      }
       return q;
-    }    
-	  
-	  
+    }
+
+
 	  float GraphCutter::initialLambda(DynMatrix<float> &adjacencyMatrix, int &lambda_id){
 	    float lambda_score = 1000000;
       for(unsigned int j=0; j<adjacencyMatrix.rows(); j++){
@@ -231,9 +231,9 @@ namespace icl{
       }
       return lambda_score;
     }
-	  
-	  
-	  void GraphCutter::createEdgeList(DynMatrix<float> &adjacencyMatrix, std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts){  
+
+
+	  void GraphCutter::createEdgeList(DynMatrix<float> &adjacencyMatrix, std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts){
       for(unsigned int j=0; j<adjacencyMatrix.rows(); j++){
         for(unsigned int k=j+1; k<adjacencyMatrix.rows(); k++){
           if(adjacencyMatrix(j,k)>0){
@@ -244,8 +244,8 @@ namespace icl{
         }
       }
     }
-    
-    
+
+
     std::vector<std::vector<int> > GraphCutter::createInitialNodes(DynMatrix<float> &adjacencyMatrix){
       std::vector<std::vector<int> > subsets;
       for(unsigned int j=0; j<adjacencyMatrix.rows(); j++){
@@ -255,8 +255,8 @@ namespace icl{
       }
       return subsets;
     }
-	  
-	  
+
+
 	  float GraphCutter::merge(std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts, std::vector<float> &q,
 	                                   std::vector<std::vector<int> > &subsets, float lambda_score, int j, int &lambda_id){
 	    int x=edgeList[j].x;
@@ -285,7 +285,7 @@ namespace icl{
         }
         else if(edgeList[k].y==x){
           sameIds[edgeList[k].x].push_back(k);
-        }        
+        }
       }
       //merge edges
       for(unsigned int k=0; k<sameIds.size(); k++){
@@ -298,7 +298,7 @@ namespace icl{
           q[sameIds[k][0]]=maxQ;//new q is the max of all merged q´s
         }
       }
-      
+
       //delete merged edges (edges, costs, and q´s)
       std::vector<int> merged;
       for(unsigned int k=0; k<sameIds.size(); k++){
@@ -315,13 +315,13 @@ namespace icl{
           }
         }
       }
-      
+
       //merge vertices
       for(unsigned int k=0; k<subsets[y].size(); k++){
         subsets[x].push_back(subsets[y][k]);
       }
       subsets.erase(subsets.begin()+y);//delete merged vertex
-      
+
       //calculate cut cost of new single vertex and update initial score if smaller
       float cx=0;
       for(unsigned int k=0; k<edgeList.size(); k++){
@@ -331,7 +331,7 @@ namespace icl{
         //decrease all ids bigger y (removed vertex)
         if(edgeList[k].x>y) edgeList[k].x--;
         if(edgeList[k].y>y) edgeList[k].y--;
-        
+
       }
       if(cx<lambda_score) {//update lambda (merged node is new candidate)
         lambda_score=cx;
@@ -340,16 +340,16 @@ namespace icl{
         lambda_id=x;
       }else if(lambda_id>y){//decrease lambda-id (due to vertex relabeling)
         lambda_id--;
-      }      
+      }
       return lambda_score;
     }
-    
-    
+
+
     std::vector<std::vector<int> > GraphCutter::findUnconnectedSubgraphs(DynMatrix<float> &adjacencyMatrix){
       std::vector<std::vector<int> > subgraphs;
       std::vector<bool> visited(adjacencyMatrix.rows(),false);
-      unsigned int visitCount=0;      
-      while(visitCount<adjacencyMatrix.rows()){//while unassigned vertices      
+      unsigned int visitCount=0;
+      while(visitCount<adjacencyMatrix.rows()){//while unassigned vertices
         std::vector<int> subgraph;//create new subgraph
         int next=0;
         for(unsigned int i=0; i<visited.size(); i++){//find first unassigned
@@ -375,8 +375,8 @@ namespace icl{
       }
       return subgraphs;
     }
-	  
-	  
+
+
 	  DynMatrix<float> GraphCutter::createSubMatrix(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subgraph){
       math::DynMatrix<float> subMatrix(subgraph.size(),subgraph.size());
       for(unsigned int j=0; j<subMatrix.rows(); j++){
@@ -384,10 +384,10 @@ namespace icl{
           subMatrix(j,k)=adjacencyMatrix(subgraph[j],subgraph[k]);
         }
       }
-      return subMatrix;   
+      return subMatrix;
     }
-    
-    
+
+
     math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrix<bool> &initialMatrix, bool symmetry){
       math::DynMatrix<float> probabilities=math::DynMatrix<float>(initialMatrix.rows(),initialMatrix.cols(),0.0);
       for(unsigned int a=0; a<initialMatrix.cols(); a++){
@@ -402,7 +402,7 @@ namespace icl{
             probabilities(b,a)=1./(float)count;
           }
         }
-      } 
+      }
       if(symmetry==true){
         for(unsigned int i=0; i<probabilities.cols(); i++){//symmetry
           for(unsigned int j=i+1; j<probabilities.cols(); j++){
@@ -413,9 +413,9 @@ namespace icl{
         }
       }
       return probabilities;
-    }    
-    
-    
+    }
+
+
     void GraphCutter::mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src){
       if(src.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
@@ -426,8 +426,8 @@ namespace icl{
         }
       }
     }
-	      
-	      
+
+
     void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight){
       if(featureMatrix.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
@@ -436,8 +436,8 @@ namespace icl{
         for(unsigned int j=0; j<featureMatrix.cols(); j++){
           if(featureMatrix(i,j)==true) dst(i,j)*=weight;
         }
-      }  
+      }
     }
-    
+
   }
 }

@@ -37,13 +37,13 @@ using namespace icl::utils;
 
 namespace icl{
   namespace markers{
-    
+
     MarkerMetricsICL1::MarkerMetricsICL1(const MarkerCodeICL1 &c, const Size32f &markerSizeMM):
       MarkerCodeICL1(c),root(markerSizeMM){
-  
+
       const float u = root.width/13.0;
       const float v = root.height/17.0;
-      
+
       for(int i=0;i<4;++i){
         CR &cr = crs[i];
         cr.x = u;
@@ -51,11 +51,11 @@ namespace icl{
         cr.width = 11*u;
         cr.height = 3*v;
         cr.ccrs.resize(c[i]);
-  
+
         float ccry = (i*4+2)*v;
         for(int j=0;j<c[i];++j){
           Rect32f &ccr = cr.ccrs[j];
-  
+
           switch(c[i]){
             case 1: ccr.x = 6*u; break;
             case 2: ccr.x = (2+j*8)*u; break;

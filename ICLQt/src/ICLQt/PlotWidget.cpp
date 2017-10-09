@@ -36,8 +36,8 @@ using namespace icl::math;
 
 namespace icl{
   namespace qt{
-    
-    
+
+
     struct PlotWidget::Data{
       struct Buffer : SmartArray<float>{
         Buffer(){}
@@ -46,14 +46,14 @@ namespace icl{
         bool used;
       };
       std::vector<Buffer> buffers;
-      
+
       void freeBuffers(){
         for(unsigned int i=0;i<buffers.size();++i){
           buffers[i].used = false;
         }
         if(buffers.size() > 20) buffers.resize(20);
       }
-      
+
       float *getBuffer(int len){
         for(unsigned int i=0;i<buffers.size();++i){
           if(!buffers[i].used && buffers[i].len >= len){
@@ -65,22 +65,22 @@ namespace icl{
         buffers.back().used = true;
        return buffers.back().get();
       }
-      
-      
+
+
       AbstractPlotWidget::Pen state;
       std::string label;
     };
-    
+
     PlotWidget::PlotWidget(QWidget *parent):
       LowLevelPlotWidget(parent),m_data(new Data){
-  
+
       clear();
     }
-    
+
     PlotWidget::~PlotWidget(){
       delete m_data;
     }
-    
+
     void PlotWidget::clear() {
       LowLevelPlotWidget::clear();
       m_data->freeBuffers();
@@ -93,35 +93,35 @@ namespace icl{
     void PlotWidget::label(const std::string &l){
       m_data->label = l;
     }
-    
+
     void PlotWidget::color(int r, int g, int b, int a){
       m_data->state.linePen.setColor(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
       m_data->state.symbolPen.setColor(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
     }
     void PlotWidget::pen(const QPen &pen){
       m_data->state.linePen = m_data->state.symbolPen = pen;
-    }  
-  
+    }
+
     void PlotWidget::fill(int r, int g, int b, int a){
       m_data->state.fillBrush = QBrush(a==255 ? QColor(r,g,b) : QColor(r,g,b,a));
     }
     void PlotWidget::brush(const QBrush &brush){
       m_data->state.fillBrush = brush;
     }
-  
+
     void PlotWidget::sym(char s){
       m_data->state.symbol = s;
     }
-    
+
     void PlotWidget::linewidth(float width){
       m_data->state.linePen.setWidthF(width);
       m_data->state.symbolPen.setWidthF(width);
     }
-    
+
     void PlotWidget::symsize(float size){
       m_data->state.symbolSize = size;
     }
-    
+
     template<class T>
     void PlotWidget::scatter(const T *xs, const T *ys, int num, int xStride, int yStride, bool connect){
       float *b = m_data->getBuffer(2*num);
@@ -134,15 +134,15 @@ namespace icl{
         ys += yStride;
       }
       const QColor c = m_data->state.symbolPen.color();
-      
+
       addScatterData((m_data->state.symbol == ' ' && !connect) ? '.' : m_data->state.symbol,
                      startB, startB+1, num, m_data->label,
                      c.red(), c.green(), c.blue(),
                      m_data->state.symbolSize,
                      connect, 2, 2, false, false, false);
     }
-  
-  
+
+
     template<class T>
     void PlotWidget::series(const T *data, int num, int stride){
       float *b = m_data->getBuffer(num);
@@ -155,7 +155,7 @@ namespace icl{
       }
       addSeriesData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
     }
-  
+
     template<class T>
     void PlotWidget::bars(const T *data, int num, int stride){
       float *b = m_data->getBuffer(num);
@@ -168,17 +168,17 @@ namespace icl{
       }
       addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
     }
-  
-    
+
+
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
     template ICLQt_API void PlotWidget::bars<icl##D>(const icl##D*,int,int);        \
     template ICLQt_API void PlotWidget::series<icl##D>(const icl##D*, int, int);      \
     template ICLQt_API void PlotWidget::scatter<icl##D>(const icl##D*, const icl##D*, int, int, int, bool);
-    
+
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
-    
-   
+
+
     void PlotWidget::line(const Point32f &a, const Point32f &b){
       const float data[] = { a.x, a.y, b.x, b.y };
       addAnnotations('l',data, 1, m_data->state.linePen, Qt::NoBrush);
@@ -205,7 +205,7 @@ namespace icl{
             const Rect32f r = parts[i].content.as<Rect32f>();
             const float cx = r.x+r.width/2, cy = r.y+r.height/2;
             const float rx = r.width/2, ry = r.height/2;
-            
+
             std::vector<Point32f> ps(100,Point32f(cx,cy));
             for(float i=0;i<100;++i){
               float a = i/100.0f * 2.0f * M_PI;
@@ -239,7 +239,7 @@ namespace icl{
         }
       }
     }
-    
+
     void PlotWidget::linestrip(const std::vector<Point32f> &ps, bool closedLoop){
       linestrip(&ps[0].x, &ps[0].y, ps.size(), closedLoop,2);
     }
@@ -249,7 +249,7 @@ namespace icl{
     void PlotWidget::linestrip(const Point32f *ps, int num, bool closedLoop){
       linestrip(&ps[0].x, &ps[0].y, num, closedLoop, 2);
     }
-  
+
     void PlotWidget::linestrip(const Point *ps, int num, bool closedLoop){
       std::vector<Point32f> data(num + !!closedLoop);
       std::copy(ps,ps+num,data.begin());
@@ -264,8 +264,8 @@ namespace icl{
       if(closedLoop) data.back() = Point32f(xs[0], ys[0]);
       addAnnotations('L',&data[0].x, data.size(), m_data->state.linePen, Qt::NoBrush);
     }
-    
-    
+
+
     void PlotWidget::rect(const Point32f &ul, const Point32f &lr){
       rect(Rect32f(ul.x,ul.y, lr.x-ul.x, lr.y-ul.y));
     }
@@ -278,7 +278,7 @@ namespace icl{
     void PlotWidget::rect(float x, float y, float w, float h){
       rect(Rect32f(x,y,w,h));
     }
-    
+
     void PlotWidget::circle(const Point32f &c, float r){
       circle(c.x,c.y,r);
     }
@@ -286,14 +286,14 @@ namespace icl{
       const float d[] = {cx,cy,r};
       addAnnotations('c',d,1,m_data->state.linePen, m_data->state.fillBrush);
     }
-    
+
     void PlotWidget::text(float x, float y, const std::string &text){
       this->text(Point32f(x,y),text);
     }
     void PlotWidget::text(const Point32f &p, const std::string &text){
       addAnnotations('t',&p.x,1,m_data->state.linePen, m_data->state.fillBrush, text, "\n");
     }
-    
+
     void PlotWidget::grid(int nX, int nY, const float *xs, const float *ys, int stride){
       const int dim = nX * nY;
       float *b = m_data->getBuffer(dim*2 + 2);
@@ -306,12 +306,12 @@ namespace icl{
       b -= 2;
       addAnnotations('g', b, 1, m_data->state.linePen, Qt::NoBrush);
     }
-    
+
     void PlotWidget::grid(const Array2D<Point> &data){
       const int *xs = &data(0,0).x;
       const int *ys = &data(0,0).y;
       const int stride = 2;
-      
+
       const int dim = data.getDim();
       float *b = m_data->getBuffer(dim*2 + 2);
       *b++ = data.getWidth();
@@ -321,8 +321,8 @@ namespace icl{
         b[2*i+1] = ys[i*stride];
       }
       addAnnotations('g', b-2, 1, m_data->state.linePen, Qt::NoBrush);
-      
+
     }
-  
+
   } // namespace qt
 }

@@ -79,7 +79,7 @@ void save(){
   bestOfNSaver->unlock();
 
   CCU::save_cam_pa(cam,"-os","-o");
-}                   
+}
 
 int get_n_frames(){
   return gui["save_num_frames"];
@@ -128,7 +128,7 @@ void init(){
       std::cout << "List of well known camera specs: " << std::endl;
       for(int i=0;i<N;++i){
         IntrinsicParams &p = ips[i];
-        std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy 
+        std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy
                   << " px:" << p.px  << "py:" << p.py << " skew: " << p.skew << std::endl;
       }
       throw ICLException("aborted after listing known camera specs");
@@ -151,19 +151,19 @@ void init(){
         std::cout << "List of well known camera specs: " << std::endl;
         for(int i=0;i<N;++i){
           IntrinsicParams &p = ips[i];
-          std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy 
+          std::cout << p.id << ": reference size: " << p.size << " fx: " << p.fx << " fy:" << p.fy
                     << " px:" << p.px  << "py:" << p.py << " skew: " << p.skew << std::endl;
         }
         throw ICLException("Error: could not find a known camera spec with name '" + s + "'");
       }
     }
   }
-  
+
   bestOfNSaver = new CCU::BestOfNSaver(get_n_frames);
 
   if( !pa("-c") || !pa("-c").n() ){
     pa_show_usage("program argument -c must be given with at least one sub-argument");
-    ::exit(0); 
+    ::exit(0);
   }
 
   for(int c = 0; c <pa("-c").n(); ++c){
@@ -175,12 +175,12 @@ void init(){
       ERROR_LOG("Error parsing calibration object file " + *pa("-c",c) + ": '" + str(e.what()) + "'");
     }
   }
-  
+
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
   gui << Draw3D().handle("draw").minSize(32,24);
-  
+
   markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
 
   for(unsigned int i=0;i<calibFileData.configurables.size();++i){
@@ -189,11 +189,11 @@ void init(){
 
   gui << ( VBox().minSize(14,28).maxSize(14,100)
            << (VBox().label("visualization").minSize(1,5)
-               << ( HBox().maxSize(100,3).minSize(1,3) 
+               << ( HBox().maxSize(100,3).minSize(1,3)
                     << Combo(calibFileData.iin).handle("iin").label("visualized image")
                     << Slider(0,255,128).out("objAlpha").label("object-alpha")
                     )
-               << ( HBox().maxSize(100,3) 
+               << ( HBox().maxSize(100,3)
                     << CheckBox("use corners",true).out("useCorners")
                     << CheckBox("show CS",false).out("showCS")
                     )
@@ -209,7 +209,7 @@ void init(){
                      )
                 << CheckBox("manually define marker grids").handle("manual mode")
                 )
-           << (VScroll().label("calibration objects") 
+           << (VScroll().label("calibration objects")
                << calibFileData.objGUI
                )
            << (HBox().maxSize(100,4)
@@ -218,7 +218,7 @@ void init(){
                                                                                      "is not devided by the number of calibration points N,\n"
                                                                                      "but by N^2 in order to avoid favoring frames where\n"
                                                                                      "only few markers were found.")
-                    
+
                     << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
                                                                       "of the actually detected points and the points\n"
                                                                       "that are projected into the scene using the\n"
@@ -244,7 +244,7 @@ void init(){
                    )
                )
            << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
-           << ( VBox().maxSize(100,6).minSize(1,6) 
+           << ( VBox().maxSize(100,6).minSize(1,6)
                 << ( HBox()
                      << Spinner(1,10000,10).out("save_num_frames").label("# frames").tooltip("When you press save, "
                                                                                              "the system will\ncapture "
@@ -260,7 +260,7 @@ void init(){
                )
            )
       << Show();
-  
+
   planeOptionGUI << ( HBox()
                       << Combo("none,x,y,z").label("normal").handle("planeDim")
                       << Float(-10000,10000,0).label("offset mm").handle("planeOffset")
@@ -274,8 +274,8 @@ void init(){
                       << ColorSelect(40,40,40,255).handle("planeColor").label("color")
                       )
                  << Create();
-  
-  
+
+
   relTransGUI << ( VBox().label("rel-transformation")
                    << ( HBox()
                         << Spinner(0,8,0).label("x-rotation *pi/4").out("rx")
@@ -288,26 +288,26 @@ void init(){
                         << Float(-100000,100000,0).label("z-offset").out("tz")
                         )
                    )
-              << Button("show transformation matrix").handle("showRelTrans") 
+              << Button("show transformation matrix").handle("showRelTrans")
               << Create();
 
-  
+
   markerDetectionOptionGUI.create();
   gui["show-marker-detection-options"].registerCallback(utils::function(&markerDetectionOptionGUI,&GUI::switchVisibility));
   gui["show-plane-options"].registerCallback(utils::function(&planeOptionGUI, &GUI::switchVisibility));
   gui["save"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::init));
   gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::stop));
   gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
-  
+
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());
-  
+
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
   planeOptionGUI["planeTicDist"].disable();
   planeOptionGUI["planeColor"].disable();
   planeOptionGUI.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
-  
+
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(new MouseHandler(mouse));
 }
@@ -329,15 +329,15 @@ void run(){
   scene.lock();
   scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
   scene.unlock();
-  
+
   const Mat Trel = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
                                          relTransGUI["ry"].as<float>()*M_PI/4,
                                          relTransGUI["rz"].as<float>()*M_PI/4,
                                          relTransGUI["tx"],relTransGUI["ty"],relTransGUI["tz"]);
-  
+
   std::vector<Mat> Ts(calibFileData.loadedFiles.size());
   std::vector<bool> enabled(Ts.size());
-  
+
   for(unsigned int i=0;i<calibFileData.loadedFiles.size();++i){
     int tidx = gui.get<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
     Ts[i] = calibFileData.loadedFiles[i].transforms[tidx].transform;
@@ -365,12 +365,12 @@ void run(){
     }else{
       calibObj->setColor(Primitive::line,GeomColor(255,0,0,a));
     }
-  } 
+  }
 
   const ImgBase *image = CCU::preprocess(grabber.grab());
 
   std::vector<FoundMarker> markers;
-  
+
   bool manualMode = gui["manual mode"];
   static bool lastManualMode = manualMode;
 
@@ -387,7 +387,7 @@ void run(){
 
       detectedGrids.clear();
       detectedGrids.resize(calibFileData.loadedFiles.size());
-      
+
       /// associate detected markers to registered grids
       for(size_t i=0;i<markers.size();++i){
         const CCU::FoundMarker &m = markers[i];
@@ -395,7 +395,7 @@ void run(){
         if(p.gridIdx == -1) continue;
         const CCU::CalibFile &cf = calibFileData.loadedFiles[p.cfgFileIndex];
         const CCU::MarkerGrid &g = cf.grids[p.gridIdx];
-        
+
         std::vector<CCU::DetectedGrid> &dgs = detectedGrids[p.cfgFileIndex];
         if(!dgs.size()) {
           dgs.resize(cf.grids.size());
@@ -412,12 +412,12 @@ void run(){
         }
         dg.foundMarkers[gridIDIdxPos] = &m;
       }
-      
+
       std::vector<std::vector<Point> > manuallyAdjustableGrids;
-      
+
       std::vector<std::vector<core::Line32f> > textureLines;
       std::vector<Size32f> sizes;
-      
+
       for(size_t i=0;i<detectedGrids.size();++i){
         //        std::cout << "Detected grids for CfgFile " << i << ":" << std::endl;
         for(size_t j=0;j<detectedGrids[i].size();++j){
@@ -442,7 +442,7 @@ void run(){
       }
     }
   }
-  
+
   if(manualMode){
     markers.clear();
     /// find marker geometry and use gridAdjuster.mapPoints for the mapping of the marker's points
@@ -456,17 +456,17 @@ void run(){
           const CCU::MarkerGrid &realGrid = *g.realGrid;
           //Vec3 dxn = normalize_vec(realGrid.dx) * realGrid.markerSize.width;
           //Vec3 dyn = normalize_vec(realGrid.dy) * realGrid.markerSize.height;
-          
+
           // in grid space
           float dx = len_vec(realGrid.dx);
           float dy = len_vec(realGrid.dy);
           float rx = realGrid.markerSize.width/2;
           float ry = realGrid.markerSize.height/2;
-          
+
           for(int y=0;y<realGrid.dim.height;++y){
             for(int x=0;x<realGrid.dim.width;++x){
               math::Vec3 center = realGrid.offset + realGrid.dx * x  + realGrid.dy * y;
-              
+
               // corners are actually not needed because all points along the grid are
               // linearly dependend and therefore more points on the grid make the solution
               // only more fragile (they didnt' work anyways :-)
@@ -477,7 +477,7 @@ void run(){
                 center - dxn + dyn,
                 center - dxn - dyn
               };*/
-              
+
               Point32f centerGridSpace(x * dx + rx, y * dy + ry);
               /*Point32f cornersGridSpace[4] = {
                 centerGridSpace + Point32f(dx,-dy),
@@ -486,7 +486,7 @@ void run(){
                 centerGridSpace + Point32f(-dx,-dy)
                   };
 
-              
+
               std::vector<Point32f> ps(5);
               ps[0] = centerGridSpace;
               for(int i=0;i<4;++i){
@@ -500,7 +500,7 @@ void run(){
                 y = realGrid.dim.height;
                 break;
               }
-              
+
               CCU::FoundMarker found;
               found.possible = 0;
               found.type = realGrid.type;
@@ -530,7 +530,7 @@ void run(){
   if(showRelTrans.wasTriggered()){
     std::cout << "current relative transformation is:" << std::endl << Trel << std::endl;
     for(unsigned int i=0;i<calibFileData.loadedFiles.size();++i){
-      std::cout << " * combined transformation matrix for calibration object '" << pa("-c",i) 
+      std::cout << " * combined transformation matrix for calibration object '" << pa("-c",i)
                 << "' is:" << std::endl << (Trel * Ts[i]) << std::endl;
     }
   }
@@ -560,15 +560,15 @@ void run(){
   CCU::CalibrationResult res = CCU::perform_calibration(markers,enabled, Ts, Trel, image->getSize(),
                                                         deactivatedCenters, gui["useCorners"],
                                                         gui["errNormalized"], bestOfNSaver,
-                                                        haveAnyCalibration, scene, 
+                                                        haveAnyCalibration, scene,
                                                         intr, useLMA);
   gui["status"] = res.status;
   gui["error"] = res.error;
   gui["save_remaining_frames"] = res.saveRemainingFrames;
   gui["save_best_error"] = res.saveBestError;
-  
+
   static DrawHandle3D draw = gui["draw"];
-  
+
   draw = calibFileData.lastFD->getIntermediateImage(gui["iin"].as<std::string>());
 
   CCU::visualize_found_markers(draw,markers,enabled,deactivatedCenters,gui["useCorners"]);
@@ -610,7 +610,7 @@ int main(int n, char **ppc){
    "accuracy of the extrinsic camera parameter set. The available spec-names for known camera parameter sets can be "
    "queried, by passing 'list' as a sub-arg of -is (icl-camera-calibration -is list)")
   ("-normalize-input-image","automatically scales the input image range to [0,255] and converts the input image to depth8u");
-  
+
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
                 "-config|-c(...) "
                 "-camera|-cam(camera_file_to_load) "
@@ -623,7 +623,7 @@ int main(int n, char **ppc){
                 "-use-intrinsic-camera-parameter-file|-intr-file|-if(camera-filename) "
                 "-use-intrinsic-camera-parameters|-intr-params|-ip(fx,fy,px,py,skew) "
                 "-use-intrinsic-camera-parameter-spec|-intr-spec|-is(spec) "
-                "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) " 
+                "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) "
                 ,init,run).exec();
 }
 

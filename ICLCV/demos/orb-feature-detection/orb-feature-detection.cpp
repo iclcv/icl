@@ -38,16 +38,16 @@ ORBFeatureDetector orb;
 
 void init(){
    orb.setConfigurableID("orb");
-   
+
    grabber.init(pa("-i"));
-   gui << Draw().handle("image") 
+   gui << Draw().handle("image")
        << ( VBox().minSize(16,1).maxSize(16,99)
             << Combo("input,gray,contrast enhanced").handle("vis")
             << Prop("orb").label("orb properties")
           )
        << Show();
 
-            
+
 }
 void run(){
   const Img8u &image = *grabber.grab()->as8u();
@@ -55,7 +55,7 @@ void run(){
   ORBFeatureDetector::FeatureSet fs = orb.detect(image);
 
   static DrawHandle draw = gui["image"];
-  
+
   draw = orb.getIntermediateImage(gui["vis"]);
   draw->draw(fs->vis());
   draw.render();

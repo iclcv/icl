@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-/****************************************************************************\ 
+/****************************************************************************\
  * Copyright (c) 2011, Advanced Micro Devices, Inc.                           *
  * All rights reserved.                                                       *
  *                                                                            *
@@ -104,9 +104,9 @@ namespace icl{
       /// used typedef for vector of interest points
       typedef std::vector<Ipoint> IpVec;
 
-      
+
       /// OpenCL-based Surf Feature detector implmentation (by AMD)
-      /** Copyright (c) 2011, Advanced Micro Devices, Inc.  
+      /** Copyright (c) 2011, Advanced Micro Devices, Inc.
           (see license text)
       */
       class Surf {
@@ -115,16 +115,16 @@ namespace icl{
         void createKernels();
 
         public:
-    
+
         /// initializer (OpenCL initialization is performed internally)
-        ICLCV_API Surf(int initialPoints, int i_height, int i_width,  int octaves, 
-             int intervals, int sample_step, float threshold); 
+        ICLCV_API Surf(int initialPoints, int i_height, int i_width,  int octaves,
+             int intervals, int sample_step, float threshold);
 
         ICLCV_API ~Surf();
-    
+
         /// our own ICL-based detection method
         ICLCV_API const IpVec &detect(const core::ImgBase *image);
-        
+
         private:
 
         CLProgram program;
@@ -142,7 +142,7 @@ namespace icl{
         CLKernel normalizeDescriptorsKernel;
         /// Compute the integral image
         void computeIntegralImage(const icl::core::Img32f &source);
-    
+
         /// Create the SURF descriptors
         void createDescriptors(int i_width, int i_height);
 

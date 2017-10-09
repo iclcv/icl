@@ -51,7 +51,7 @@ namespace icl{
       const float dy = (gridBounds.height - h*mh)/(h-1);
       return utils::Rect32f( utils::Point32f(x*(dx+mw),y*(dy+mh)), markerBounds);
     }
-    
+
     void AdvancedMarkerGridDetector::Marker::KeyPoints::setup(const utils::Point32f corners[4],
                                                               const utils::Point32f &center){
       ur = corners[0];
@@ -81,7 +81,7 @@ namespace icl{
       ps[3] = ul;
       return ps;
     }
-    
+
     void AdvancedMarkerGridDetector::Marker::KeyPoints::appendCornersTo(std::vector<utils::Point32f> &dst) const{
       dst.push_back(ul);
       dst.push_back(ur);
@@ -90,14 +90,14 @@ namespace icl{
     }
 
 
-    
+
     AdvancedMarkerGridDetector::Marker::Marker():id(-1),found(false){}
     AdvancedMarkerGridDetector::Marker::Marker(int id, const utils::Point32f gridPoints[4],
                                                const utils::Point32f &center):
       id(id),found(false){
       gridPts.setup(gridPoints, center);
     }
-    
+
     void AdvancedMarkerGridDetector::Marker::setImagePoints(const utils::Point32f corners[4],
                                                             const utils::Point32f &center){
       imagePts.setup(corners, center);
@@ -118,17 +118,17 @@ namespace icl{
 
 
 
-    
+
     AdvancedMarkerGridDetector::MarkerGrid::MarkerGrid(){}
 
     AdvancedMarkerGridDetector::MarkerGrid::MarkerGrid(const AdvancedGridDefinition &def){
       init(def);
     }
-    
+
     void AdvancedMarkerGridDetector::MarkerGrid::init(const AdvancedGridDefinition &def){
       this->gridDef = def;
       setSize(def.getSize()); // this function is implemented in a lazy fashion!
-      
+
       int i=0;
       for(int y=0;y<getHeight();++y){
         for(int x=0;x<getWidth();++x, ++i){
@@ -137,9 +137,9 @@ namespace icl{
           (*this)(x,y) = Marker(def.getMarkerIDs()[i], ps, r.center());
         }
       }
-      
+
     }
-    
+
     void AdvancedMarkerGridDetector::MarkerGrid::update(const MarkerGridDetector::Result &r){
       for(int i=0;i<r.getDim();++i){
         const Fiducial &f = r[i];
@@ -162,22 +162,22 @@ namespace icl{
             }
           }
           utils::Point32f c = f.getCenter2D();
-          
+
           m.setImagePoints(ps,c);
         }else{
           m.setFound(false);
         }
       }
     }
-    
-    
+
+
     const AdvancedMarkerGridDetector::Marker &
     AdvancedMarkerGridDetector::MarkerGrid::getMarker(int id) const throw (utils::ICLException){
       int idx = gridDef.getIndex(id);
       if(idx < 0) throw utils::ICLException("invalid marker ID");
       return (*this)[idx];
     }
-        
+
     utils::VisualizationDescription AdvancedMarkerGridDetector::MarkerGrid::vis() const{
       utils::VisualizationDescription vd;
       vd.color(255,0,0,255);
@@ -199,13 +199,13 @@ namespace icl{
 
     AdvancedMarkerGridDetector::AdvancedMarkerGridDetector(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def):
       Super(def,create_param_list(def)), grid(def){
-      
+
     }
     void AdvancedMarkerGridDetector::init(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
       Super::init(def,create_param_list(def));
       grid.init(def);
     }
-    
+
     const AdvancedMarkerGridDetector::MarkerGrid &AdvancedMarkerGridDetector::detect(const core::ImgBase *image){
       grid.update(Super::detect(image));
       return grid;

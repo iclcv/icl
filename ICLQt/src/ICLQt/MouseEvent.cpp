@@ -36,7 +36,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-    
+
     MouseEvent::MouseEvent(const Point &widgetPos,
                            const Point &imagePos,
                            const Point32f &imagePos32f,
@@ -49,17 +49,17 @@ namespace icl{
       m_widgetPos(widgetPos),m_imagePos(imagePos),m_imagePos32f(imagePos32f),
       m_relImagePos(relImagePos),
       m_wheelDelta(wheelDelta),m_color(color),m_widget(widget),m_type(type){
-      
+
       std::copy(downMask,downMask+3,m_downMask);
-      
+
       m_keyboardModifiers = (int)QApplication::keyboardModifiers();
     }
-  
+
     MouseEvent::MouseEvent():
       m_widgetPos(Point::null),m_imagePos(Point::null),
       m_imagePos32f(Point32f::null),m_relImagePos(Point32f::null),
       m_widget(0),m_type(MouseLeaveEvent){
-      
+
       std::fill(m_downMask,m_downMask+3,false);
     }
   } // namespace qt

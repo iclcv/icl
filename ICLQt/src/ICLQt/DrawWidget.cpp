@@ -42,9 +42,9 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-    
-  
-    
+
+
+
     /// internally used classes
     class ICLDrawWidget::State{
       public:
@@ -56,45 +56,45 @@ namespace icl{
       Size32f size;           // current drawing widget size
       Size32f imsize;         // current image size
       //    unsigned char bg[4]; // background color
-      QSizeF symsize;    
+      QSizeF symsize;
       float textAngle; // text orientation
       float defaultFontSize;   // default font size that is use instead of 0
-      
-      
+
+
       //    float transform[6]; not implemented yet!
     };
-  
-    
-  
+
+
+
     class ICLDrawWidget::DrawCommand{
     public:
       virtual ~DrawCommand(){}
       virtual void exec(PaintEngine *e, State* s){
-        (void)e; (void)s; 
+        (void)e; (void)s;
         printf("drawCommand :: exec \n");
       }
     };
-  
-    
-  
+
+
+
     static void clear_queue(std::vector<ICLDrawWidget::DrawCommand*> &q){
       for(std::vector<ICLDrawWidget::DrawCommand*>::iterator it = q.begin();it!= q.end();++it){
         delete (*it);
       }
       q.clear();
     }
-    
+
     // {{{ abstract commands (intelligent, 2f, 3f 4f)
-  
+
     class IntelligentDrawCommand : public ICLDrawWidget::DrawCommand{
-      
+
     protected:
       Point32f tP(float x, float y, ICLDrawWidget::State *s, bool forRect=false){
         return Point32f(tX(x,s,forRect),tY(y,s,forRect));
-      } 
+      }
       Point32f tP(const Point32f &p, ICLDrawWidget::State *s,bool forRect=false){
         return Point32f(tX(p.x,s,forRect),tY(p.y,s,forRect));
-      }  
+      }
       Rect32f tR(float x, float y, float w, float h, ICLDrawWidget::State *s){
         Point32f a = tP(x,y,s,true);
         Point32f b = tP(x+w,y+h,s,true);
@@ -131,57 +131,57 @@ namespace icl{
         return (dy / dx) * (x - xmin) + ymin;
       }
     };
-    
-    
+
+
     class DrawCommand2F : public IntelligentDrawCommand{
-      
-  
+
+
     public:
       DrawCommand2F(float a, float b):m_fA(a),m_fB(b){}
     protected:
       float m_fA, m_fB;
     };
-  
-    
-    
+
+
+
     class DrawCommand3F : public DrawCommand2F{
-      
+
     public:
-      DrawCommand3F(float a, float b, float c): 
+      DrawCommand3F(float a, float b, float c):
         DrawCommand2F(a,b),m_fC(c){}
     protected:
       float m_fC;
     };
-  
-    
-  
+
+
+
     class DrawCommand4F : public DrawCommand3F{
-      
-  
+
+
     public:
       DrawCommand4F(float a, float b, float c, float d):
         DrawCommand3F(a,b,c),m_fD(d){}
     protected:
       float m_fD;
     };
-  
-    
-  
+
+
+
     class DrawCommand5F : public DrawCommand4F{
-      
-  
+
+
     public:
       DrawCommand5F(float a, float b, float c, float d, float e):
         DrawCommand4F(a,b,c,d),m_fE(e){}
     protected:
       float m_fE;
     };
-  
-    
-   
+
+
+
     class DrawCommand6F : public DrawCommand4F{
-      
-      
+
+
     public:
       DrawCommand6F(float a, float b, float c, float d,float e,float f):
         DrawCommand4F(a,b,c,d),m_fE(e),m_fF(f){}
@@ -189,12 +189,12 @@ namespace icl{
       float m_fE;
       float m_fF;
     };
-  
-    
-  
+
+
+
     class DrawCommand8F : public DrawCommand6F{
-      
-      
+
+
     public:
       DrawCommand8F(float a, float b, float c, float d,float e,float f,float g, float h):
         DrawCommand6F(a,b,c,d,e,f),m_fG(g),m_fH(h){}
@@ -202,37 +202,37 @@ namespace icl{
       float m_fG;
       float m_fH;
     };
-  
-    
-  
-    
-    
+
+
+
+
+
     // {{{ geometric commands ( point, line, rect, ellipse )
-  
+
     class PointCommand : public DrawCommand2F{
-      
-  
+
+
       public:
       PointCommand(float x, float y):DrawCommand2F(x,y){};
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         e->point(tP(m_fA,m_fB,s));
       }
     };
-  
-    
-  
+
+
+
     class PointsCommand : public IntelligentDrawCommand{
-      
-  
+
+
       public:
       PointsCommand(const std::vector<Point> &pts, int xfac, int yfac, bool connectPoints, bool closeLoop):
         pts(pts),xfac(xfac),yfac(yfac),connectPoints(connectPoints),closeLoop(closeLoop){}
-  
+
       //PointsCommand(const std::vector<Point32f> &pts32f, int xfac, int yfac, bool connectPoints, bool closeLoop):
       //  pts32f(pts32f),xfac(xfac),yfac(yfac),connectPoints(connectPoints),closeLoop(closeLoop){}
-  
+
       // This could be used for Point32f as well ...
-      
+
       template<class Pt>
       void exec_t(PaintEngine *e, ICLDrawWidget::State *s, const std::vector<Pt> &pts){
         if(!pts.size()) return;
@@ -274,7 +274,7 @@ namespace icl{
           }
         }
       }
-  
+
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         if(pts.size()) exec_t(e,s,pts);
         else exec_t(e,s,pts32f);
@@ -286,13 +286,13 @@ namespace icl{
       bool connectPoints;
       bool closeLoop;
     };
-  
-    
-  
-  
+
+
+
+
     class PolygonCommand : public IntelligentDrawCommand{
-      
-  
+
+
       public:
       PolygonCommand(const std::vector<Point32f> &pts):pts(pts),center(0,0){
         if(pts.size()){
@@ -304,16 +304,16 @@ namespace icl{
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         if(pts.size()< 3) return;
-        
+
         float colorSave[4];
         e->getColor(colorSave);
         e->color(0,0,0,0);
-        
+
         Point c = tP(center.x,center.y,s);
-        
+
         const unsigned int n = pts.size();
         for(unsigned int i=0; i<n;++i){
-          unsigned int next =i+1; 
+          unsigned int next =i+1;
           if(next == n) next = 0;
           const Point32f &a = pts[i];
           const Point32f &b = pts[next];
@@ -324,19 +324,19 @@ namespace icl{
           e->color(colorSave[0],colorSave[1],colorSave[2],colorSave[3]);
           e->line(A,B);
         }
-  
-        
+
+
       }
       std::vector<Point32f> pts;
       Point32f center;
     };
-  
-    
-  
-  
+
+
+
+
    class Points32fCommand : public IntelligentDrawCommand{
-      
-  
+
+
       public:
       Points32fCommand(const std::vector<Point32f> &pts, bool connectPoints, bool closeLoop):
         pts(pts),connectPoints(connectPoints),closeLoop(closeLoop){}
@@ -351,7 +351,7 @@ namespace icl{
           }
           ///  x----------x---------x------------x-------------x
           ///  0          1         2            3             4  n=5
-          
+
           for(unsigned int i=1;i<pts.size();i++){
             e->line(tP(pts[i-1].x,pts[i-1].y,s),tP(pts[i].x,pts[i].y,s));
             e->point(tP(pts[i].x,pts[i].y,s));
@@ -369,14 +369,14 @@ namespace icl{
       bool connectPoints;
       bool closeLoop;
     };
-  
-    
-  
-  
-    
+
+
+
+
+
     class LineCommand : public DrawCommand4F{
-      
-  
+
+
     public:
       LineCommand(float x1, float y1, float x2, float y2):
       DrawCommand4F(x1,y1,x2,y2){
@@ -385,12 +385,12 @@ namespace icl{
         e->line(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s));
       }
     };
-  
-    
-  
-  
+
+
+
+
     class ArrowCommand : public IntelligentDrawCommand{
-      
+
       Point32f a,b;
       float c; // capsize
     public:
@@ -406,12 +406,12 @@ namespace icl{
         e->triangle(tP(b.x,b.y,s),tP(b.x+w.x-v.x,b.y+w.y-v.y,s),tP(b.x-w.x-v.x,b.y-w.y-v.y,s));
       }
     };
-  
-    
-  
-  
+
+
+
+
     class RectCommand : public DrawCommand4F{
-      
+
     public:
       RectCommand(float x, float y, float w, float h):
         DrawCommand4F(x,y,w,h){}
@@ -419,11 +419,11 @@ namespace icl{
         e->rect(tR(m_fA,m_fB,m_fC,m_fD,s));
       }
     };
-  
-    
-  
+
+
+
     class TriangleCommand : public DrawCommand6F{
-      
+
     public:
       TriangleCommand(float x1, float y1, float x2, float y2,float x3,float y3):
         DrawCommand6F(x1,y1,x2,y2,x3,y3){}
@@ -431,11 +431,11 @@ namespace icl{
         e->triangle(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s),tP(m_fE,m_fF,s));
       }
     };
-    
-    
-  
+
+
+
     class QuadCommand : public DrawCommand8F{
-      
+
     public:
       QuadCommand(float x1, float y1, float x2, float y2,float x3,float y3,float x4,float y4):
         DrawCommand8F(x1,y1,x2,y2,x3,y3,x4,y4){}
@@ -443,12 +443,12 @@ namespace icl{
         e->quad(tP(m_fA,m_fB,s),tP(m_fC,m_fD,s),tP(m_fE,m_fF,s),tP(m_fG,m_fH,s));
       }
     };
-    
-    
-  
-    
+
+
+
+
     class EllipseCommand : public DrawCommand4F{
-      
+
     public:
       EllipseCommand(float x, float y, float w, float h):
         DrawCommand4F(x,y,w,h){}
@@ -456,10 +456,10 @@ namespace icl{
         e->ellipse(tR(m_fA,m_fB,m_fC,m_fD,s));
       }
     };
-   
-  
+
+
     class GridCommand : public IntelligentDrawCommand{
-      
+
       std::vector<Point32f> pts;
       int nx,ny;
       bool rowMajor;
@@ -467,8 +467,8 @@ namespace icl{
       GridCommand(const Point32f *points, int nx, int ny, bool rowMajor):
         pts(points,points+nx*ny),nx(nx),ny(ny),rowMajor(rowMajor){
       }
-      
-      
+
+
       struct AnyData{
         std::vector<Point32f> &p;
         int wh;
@@ -482,8 +482,8 @@ namespace icl{
         ColMajorData(std::vector<Point32f> &p, int h):AnyData(p,h){}
         const Point32f &operator()(int x, int y) const { return p[y+wh*x]; }
       };
-  
-      
+
+
       template<class Data>
       void exec_t(PaintEngine *e, ICLDrawWidget::State *s,const Data &data){
         for(int x=0;x<nx-1;++x){
@@ -491,7 +491,7 @@ namespace icl{
             Point32f a = tP(data(x,y),s);
             Point32f b = tP(data(x+1,y),s);
             Point32f c = tP(data(x,y+1),s);
-            
+
             e->line(a,b);
             e->line(a,c);
           }
@@ -507,7 +507,7 @@ namespace icl{
           e->line(a,b);
         }
       }
-      
+
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         if(rowMajor){
           exec_t(e,s,RowMajorData(pts,nx));
@@ -516,10 +516,10 @@ namespace icl{
         }
       }
     };
-    
-  
+
+
     class SymCommand : public IntelligentDrawCommand{
-      
+
     public:
       SymCommand(float x, float y, ICLDrawWidget::Sym s):
         m_fX(x),m_fY(y),m_eS(s){}
@@ -554,13 +554,13 @@ namespace icl{
       float m_fX, m_fY;
       ICLDrawWidget::Sym m_eS;
     };
-  
-    
-  
-    /** old 
+
+
+
+    /** old
     class ImageCommand : public DrawCommand4F{
-      
-  
+
+
     public:
       ImageCommand(ImgBase *image, float x, float y, float w, float h):
         DrawCommand4F(x,y,w,h), m_poImage(0){
@@ -574,18 +574,18 @@ namespace icl{
       }
       ImgBase *m_poImage;
     };
-  
-    
+
+
     **/
     class ImageCommand : public DrawCommand4F{
-      
-  
+
+
     public:
       ImageCommand(ImgBase *image, float x, float y, float w, float h):
         DrawCommand4F(x,y,w,h),image(image){
       }
       virtual ~ImageCommand(){
-        
+
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)e;
@@ -594,11 +594,11 @@ namespace icl{
       }
       GLImg image;
     };
-  
-    
-  
+
+
+
     class ImageQuadrangleCommand : public IntelligentDrawCommand{
-      
+
       float a[2],b[2],c[2],d[2];
     public:
       ImageQuadrangleCommand(const ImgBase *image, const float a[2],const float b[2],
@@ -611,7 +611,7 @@ namespace icl{
         }
       }
       virtual ~ImageQuadrangleCommand(){
-        
+
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)e;
@@ -619,25 +619,25 @@ namespace icl{
         const float db[2] = { tX(b[0],s), tY(b[1],s) };
         const float dc[2] = { tX(c[0],s), tY(c[1],s) };
         const float dd[2] = { tX(d[0],s), tY(d[1],s) };
-  
+
         image.draw2D(da,db,dc,dd, s->size);
       }
       GLImg image;
     };
-  
-    
-  
-  
+
+
+
+
     class TextCommand : public DrawCommand4F{
-      
-  
+
+
     public:
       TextCommand(std::string text, float x, float y, float w, float h, float fontsize):
         DrawCommand4F(x,y,w,h),text(text),fontsize(fontsize){
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         float fs = fontsize ? fontsize : s->defaultFontSize;
- 
+
         int oldFontSize = e->getFontSize();
         e->fontsize(fs < 0 ? (-fs * float(s->rect.height)/float(s->imsize.height)) : fs);
         if(m_fC == -1 || m_fD == -1){
@@ -651,16 +651,16 @@ namespace icl{
       string text;
       float fontsize;
     };
-  
-    
-    
-  
+
+
+
+
     // {{{ state commands( (no)edge, (no)fill, abs, rel, clear, setimagesize)
-  
-   
-  
+
+
+
     class EdgeCommand : public DrawCommand4F{
-      
+
     public:
       EdgeCommand(float r, float g, float b, float alpha):
         DrawCommand4F(r,g,b,alpha){}
@@ -669,11 +669,11 @@ namespace icl{
         e->color((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
       }
     };
-  
-    
-  
+
+
+
     class FillCommand : public DrawCommand4F{
-      
+
     public:
       FillCommand(float r, float g, float b, float alpha):
         DrawCommand4F(r,g,b,alpha){}
@@ -682,61 +682,61 @@ namespace icl{
         e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
       }
     };
-  
-    
-    
+
+
+
     class NoEdgeCommand : public ICLDrawWidget::DrawCommand{
-      
+
     public:
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)s;
         e->color(0,0,0,0);
       }
     };
-  
-    
-    
+
+
+
     class NoFillCommand : public ICLDrawWidget::DrawCommand{
-      
+
     public:
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)s;
         e->fill(0,0,0,0);
       }
     };
-  
-    
-    
+
+
+
     class AbsCommand : public ICLDrawWidget::DrawCommand{
-      
-  
+
+
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)e;
         s->rel = false;
       }
     };
-  
-    
-  
+
+
+
     class RelCommand : public ICLDrawWidget::DrawCommand{
-      
-  
+
+
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         (void)e;
         s->rel = true;
       }
     };
-  
-    
-    
+
+
+
   #if 0
     class ClearCommand : public DrawCommand4F{
-      
-      
+
+
     public:
       ClearCommand(float r, float g, float b, float alpha):
         DrawCommand4F(r,g,b,alpha){}
-      
+
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
         float aiFill[4],aiLine[4];
         e->getFill(aiFill);
@@ -748,12 +748,12 @@ namespace icl{
         e->color(aiLine[0],aiLine[1],aiLine[2],aiLine[3]);
       }
     };
-  
-    
+
+
   #endif
-  
+
     class SetImageSizeCommand : public ICLDrawWidget::DrawCommand{
-      
+
     public:
       SetImageSizeCommand(const Size32f &s):m_oSize(s){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
@@ -763,12 +763,12 @@ namespace icl{
     protected:
       Size32f m_oSize;
     };
-  
-    
-  
+
+
+
     class SymSizeCommand : public ICLDrawWidget::DrawCommand{
-      
-  
+
+
     public:
       SymSizeCommand(float w, float h) : m_fW(w), m_fH(h){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
@@ -778,13 +778,13 @@ namespace icl{
     protected:
       float m_fW, m_fH;
     };
-  
-      
-  
-  
+
+
+
+
     class LineWidthCommand : public ICLDrawWidget::DrawCommand{
-      
-  
+
+
     public:
       LineWidthCommand(float w):m_w(w){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
@@ -793,12 +793,12 @@ namespace icl{
     protected:
       float m_w;
     };
-  
-      
-  
+
+
+
     class PointSizeCommand : public ICLDrawWidget::DrawCommand{
-      
-      
+
+
     public:
       PointSizeCommand(float s):m_s(s){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
@@ -807,12 +807,12 @@ namespace icl{
     protected:
       float m_s;
     };
-  
-    
+
+
 
     class TextAngleCommand : public ICLDrawWidget::DrawCommand{
-      
-      
+
+
     public:
       TextAngleCommand(float angle):m_angle(angle){}
       virtual void exec(PaintEngine *, ICLDrawWidget::State *s){
@@ -821,11 +821,11 @@ namespace icl{
     protected:
       float m_angle;
     };
-  
-    
-  
+
+
+
     class FontSizeCommand : public ICLDrawWidget::DrawCommand{
-      
+
     public:
       FontSizeCommand(float size):m_size(size){}
       virtual void exec(PaintEngine *, ICLDrawWidget::State *s){
@@ -834,14 +834,14 @@ namespace icl{
     protected:
       float m_size;
     };
-  
-    
-    
-    
-   
+
+
+
+
+
     ICLDrawWidget::ICLDrawWidget(QWidget *poParent):
-      
-  
+
+
       ICLWidget(poParent),m_oCommandMutex(QMutex::Recursive){
       m_poState = new State();
       m_poState->aa = false;
@@ -850,34 +850,34 @@ namespace icl{
       m_poState->size = Size(width(),height());
       m_poState->imsize = getImageSize();
       m_poState->symsize = QSizeF(5,5);
-      
+
       //    memset(m_poState->bg,0,4*sizeof(unsigned char));
-  
+
       m_queues[0] = new std::vector<DrawCommand*>;
       m_queues[1] = new std::vector<DrawCommand*>;
-  
+
       setShowNoImageWarnings(false);
-      
+
       setAutoRenderOnSetImage(false);
-      
+
       m_autoResetQueue = true;
     }
-  
-      
+
+
     ICLDrawWidget::~ICLDrawWidget(){
       //lock();
       //reset();
       if(m_poState)delete m_poState;
-  
+
       clear_queue(*m_queues[0]);
       clear_queue(*m_queues[1]);
-  
+
       delete m_queues[0];
       delete m_queues[1];
-  
+
       //unlock();
     }
-  
+
     // {{{ commands: line, sym, rel, ...
     void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
       QMutexLocker lock(&m_oCommandMutex);
@@ -888,12 +888,12 @@ namespace icl{
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new ImageQuadrangleCommand(image,a,b,c,d));
     }
-   
+
     void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new TextCommand(text,x,y,w,h,fontsize));
-    } 
-  
+    }
+
     void ICLDrawWidget::line(float x1, float y1, float x2, float y2){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new LineCommand(x1,y1,x2,y2));
@@ -918,17 +918,17 @@ namespace icl{
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new SymSizeCommand(w,h==-1? w : h));
     }
-  
+
     void ICLDrawWidget::linewidth(float w){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new LineWidthCommand(w));
     }
-  
+
     void ICLDrawWidget::pointsize(float s){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new PointSizeCommand(s));
     }
-  
+
     void ICLDrawWidget::point(float x, float y){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new PointCommand(x,y));
@@ -941,7 +941,7 @@ namespace icl{
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new Points32fCommand(pts,false,false));
     }
-  
+
     void  ICLDrawWidget::linestrip(const std::vector<Point> &pts, bool closeLoop, int xfac, int yfac){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new PointsCommand(pts,xfac,yfac,true,closeLoop));
@@ -950,22 +950,22 @@ namespace icl{
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new Points32fCommand(pts,true,closeLoop));
     }
-  
+
     void ICLDrawWidget::polygon(const std::vector<Point32f> &ps){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new PolygonCommand(ps));
     }
-  
+
     void ICLDrawWidget::polygon(const std::vector<Point> &ps){
       polygon(std::vector<Point32f>(ps.begin(),ps.end()));
     }
-  
-    
+
+
     void ICLDrawWidget::grid(const Point32f *points, int nx, int ny, bool rowMajor){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new GridCommand(points,nx,ny,rowMajor));
     }
-  
+
     void ICLDrawWidget::abs(){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new AbsCommand());
@@ -1046,7 +1046,7 @@ namespace icl{
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new TextAngleCommand(angle));
     }
-  
+
   #if 0
     void ICLDrawWidget::clear(float r, float g, float b, float alpha){
       m_queues[0]->push_back(new ClearCommand(r,g,b,alpha));
@@ -1055,23 +1055,23 @@ namespace icl{
       clear_queue(*m_queues[0]);
     }
   #endif
-  
-      
-  
+
+
+
     void ICLDrawWidget::initializeCustomPaintEvent(PaintEngine *e){
-      
+
       (void)e;
     }
-  
-      
+
+
     void ICLDrawWidget::finishCustomPaintEvent(PaintEngine *e){
-      
+
       (void)e;
     }
-  
-      
+
+
     void ICLDrawWidget::customPaintEvent(PaintEngine *e){
-      
+
       QMutexLocker lock(&m_oCommandMutex);
       //Rect r = getImageRect();
       m_poState->aa = false;
@@ -1086,18 +1086,18 @@ namespace icl{
       e->color(255,255,255);
       e->fill(0,0,0);
       initializeCustomPaintEvent(e);
-  
+
       std::vector<DrawCommand*> &q = *m_queues[1];
-      
+
       for(std::vector<DrawCommand*>::iterator it = q.begin();it!= q.end();++it){
         (*it)->exec(e,m_poState);
       }
-      
+
       finishCustomPaintEvent(e);
     }
-  
-      
-  
+
+
+
     void ICLDrawWidget::swapQueues(){
       QMutexLocker lock(&m_oCommandMutex);
       if(m_autoResetQueue){
@@ -1108,12 +1108,12 @@ namespace icl{
         m_queues[0]->clear();
       }
     }
-  
+
     void ICLDrawWidget::setAutoResetQueue(bool on){
       m_autoResetQueue = on;
     }
-      
-  
+
+
     void ICLDrawWidget::resetQueue(){
       QMutexLocker lock(&m_oCommandMutex);
       clear_queue(*m_queues[0]);

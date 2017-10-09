@@ -33,14 +33,14 @@
 
 namespace icl{
   using namespace utils;
-  
+
   namespace geom{
 
     inline float sqr_ray_point_dist(const ViewRay &ray, const Vec &p){
       const Vec x = p-ray.offset;
       return sqrnorm3(x)-sqr(sprod3(x,ray.direction));
-    } 
-    
+    }
+
     inline bool cmp_2nd(const std::pair<int,float> &a, const std::pair<int,float> &b){
       return a.second < b.second;
     }
@@ -56,11 +56,11 @@ namespace icl{
       }
       return sv;
     }
-    
-    
-    
-    void RayCastOctreeObject::ray_cast_sqr_rec(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray, 
-                                               float maxSqrDist, float maxDist, 
+
+
+
+    void RayCastOctreeObject::ray_cast_sqr_rec(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray,
+                                               float maxSqrDist, float maxDist,
                                                std::vector<Vec> &result){
       for(const Vec *p=n->points; p<n->next;++p){
         if(sqr_ray_point_dist(ray,*p) < maxSqrDist){
@@ -73,12 +73,12 @@ namespace icl{
             if(sqr_ray_point_dist(ray,aabb.center) <= sqr(n->children[i].radius+maxDist)){
               ray_cast_sqr_rec(n->children+i,ray,maxSqrDist, maxDist, result);
             }
-        }            
+        }
       }
     }
 
-    void RayCastOctreeObject::ray_cast_sqr_rec_debug(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray, 
-                                                     float maxSqrDist, float maxDist, 
+    void RayCastOctreeObject::ray_cast_sqr_rec_debug(const RayCastOctreeObject::Super::Node *n, const ViewRay &ray,
+                                                     float maxSqrDist, float maxDist,
                                                      std::vector<Vec> &result,
                                                      std::vector<AABB> &boxes, std::vector<Vec> &points){
       boxes.push_back(n->boundary);
@@ -94,7 +94,7 @@ namespace icl{
           if(sqr_ray_point_dist(ray,aabb.center) <= sqr(n->children[i].radius+maxDist)){
             ray_cast_sqr_rec_debug(n->children+i,ray,maxSqrDist, maxDist, result, boxes, points);
           }
-        }            
+        }
       }
     }
 
@@ -103,9 +103,9 @@ namespace icl{
       const float maxSqrDist = sqr(maxDist);
       std::vector<Vec> result;
       result.reserve(4);
-      
+
       ray_cast_sqr_rec(Super::root, ray, maxSqrDist, maxDist, result);
-      
+
       return result;
     }
 
@@ -114,14 +114,14 @@ namespace icl{
       const float maxSqrDist = sqr(maxDist);
       std::vector<Vec> result;
       result.reserve(4);
-      
+
       ray_cast_sqr_rec_debug(Super::root, ray, maxSqrDist, maxDist, result, boxes, points);
-      
+
       return result;
     }
-    
-    
-    
+
+
+
     std::vector<Vec> RayCastOctreeObject::rayCastSort(const ViewRay &ray, float maxDist) const{
       std::vector<Vec> rays = rayCast(ray,maxDist);
       std::vector<std::pair<int,float> > sv = compute_idx_dists(ray.offset, rays);
@@ -132,7 +132,7 @@ namespace icl{
       }
       return raysSorted;
     }
-    
+
     /// casts a ray and returns the point closest to the ray-offset
     Vec RayCastOctreeObject::rayCastClosest(const ViewRay &ray, float maxDist) const throw (ICLException){
       std::vector<Vec> rays = rayCast(ray,maxDist);
@@ -141,7 +141,7 @@ namespace icl{
       std::vector<std::pair<int,float> > sv = compute_idx_dists(ray.offset, rays);
       return rays[std::min_element(sv.begin(),sv.end(), cmp_2nd)->first];
     }
-    
+
 
   }
 }

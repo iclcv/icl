@@ -36,7 +36,7 @@ namespace icl{
       capturingStarted,
       capturingStopped,
       capturingPaused
-    };  
+    };
   } // namespace qt
 }
 

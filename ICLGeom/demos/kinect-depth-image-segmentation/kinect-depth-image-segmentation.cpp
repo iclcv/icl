@@ -49,10 +49,10 @@ Scene scene;
 struct AdaptedSceneMouseHandler : public MouseHandler{
   Mutex mutex;
   MouseHandler *h;
-  
+
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
-  
+
   void process(const MouseEvent &e){
     Mutex::Locker l(mutex);
       h->process(e);
@@ -78,7 +78,7 @@ void init(){
     depthCam.setResolution(size);
   }
   depthCam.setName("Kinect Depth Camera");
- 
+
   //initialize depth heatmap mapping
   std::vector<PseudoColorConverter::Stop> stops; //create heatmap
   stops.push_back(PseudoColorConverter::Stop(0.25, Color(255,0,0)));
@@ -87,10 +87,10 @@ void init(){
   stops.push_back(PseudoColorConverter::Stop(0.55, Color(0,255,255)));
   stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
   pseudoColorConverter = new PseudoColorConverter(stops, 2046);
-  
+
   obj = new PointCloudObject(size.width, size.height,true,true,true);
-  
-  if(pa("-fcpu")){  
+
+  if(pa("-fcpu")){
     segmentation = new ConfigurableDepthImageSegmenter(ConfigurableDepthImageSegmenter::CPU, depthCam);
   }else if(pa("-fgpu")){
     segmentation = new ConfigurableDepthImageSegmenter(ConfigurableDepthImageSegmenter::GPU, depthCam);
@@ -105,43 +105,43 @@ void init(){
                 << Fps(10).handle("fps")
                 << Prop("segmentation").minSize(10,8)
               );
- 
-  gui << ( VBox() 
+
+  gui << ( VBox()
            << Draw3D().handle("hdepth").minSize(10,8)
            << Draw3D().handle("hcolor").minSize(10,8)
          )
-      << ( VBox() 
+      << ( VBox()
            << Draw3D().handle("hedge").minSize(10,8)
            << Draw3D().handle("hnormal").minSize(10,8)
          )
-      << ( HSplit() 
+      << ( HSplit()
            << Draw3D().handle("draw3D").minSize(40,30)
            << controls
          )
       << Show();
-      
+
   // kinect camera
   scene.addCamera(depthCam);
-  
+
   //  view camera
   scene.addCamera(depthCam);
-  
+
   if(pa("-d")){
     scene.setDrawCoordinateFrameEnabled(true);
   }else{
     scene.setDrawCoordinateFrameEnabled(false);
   }
-  
+
   scene.setDrawCamerasEnabled(true);
-    
-  scene.addObject(obj);    
+
+  scene.addObject(obj);
   scene.setBounds(1000);
-  
+
   DrawHandle3D draw3D = gui["draw3D"];
-  
+
   mouse = new AdaptedSceneMouseHandler(scene.getMouseHandler(VIEW_CAM));
   draw3D->install(mouse);
- 
+
   scene.setLightingEnabled(false);
   obj->setPointSize(3);
 }
@@ -152,40 +152,40 @@ void run(){
   DrawHandle3D hdepth = gui["hdepth"];
   DrawHandle3D hcolor = gui["hcolor"];
   DrawHandle3D hedge = gui["hedge"];
-  DrawHandle3D hnormal = gui["hnormal"];  
- 
+  DrawHandle3D hnormal = gui["hnormal"];
+
   //reset camera view
   if(resetView.wasTriggered()){
     scene.getCamera(VIEW_CAM) = scene.getCamera(KINECT_CAM);
   }
-  
+
   //grab images
   const ImgBase &colorImage = *grabColor.grab();
   const ImgBase &depthImage = *grabDepth.grab();
 
-  //create heatmap    
-  static ImgBase *heatmapImage = 0;  
+  //create heatmap
+  static ImgBase *heatmapImage = 0;
   pseudoColorConverter->apply(&depthImage,&heatmapImage);
-  
-  //segment  
+
+  //segment
   segmentation->apply(*depthImage.as32f(), *obj);
   core::Img8u edgeImg = segmentation->getEdgeImage();
   core::Img8u normImg = segmentation->getNormalImage();
-  
+
   //display
-  hdepth = heatmapImage;     
+  hdepth = heatmapImage;
   hcolor = &colorImage;
   hedge = &edgeImg;
   hnormal = &normImg;
-  
+
   gui["fps"].render();
   hdepth.render();
   hcolor.render();
   hedge.render();
   hnormal.render();
 
-  gui["draw3D"].link(scene.getGLCallback(VIEW_CAM));  
-  gui["draw3D"].render();  
+  gui["draw3D"].link(scene.getGLCallback(VIEW_CAM));
+  gui["draw3D"].render();
 }
 
 

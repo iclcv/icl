@@ -89,7 +89,7 @@ namespace icl{
         xm = tmp[deg] / tmp[deg-1];
         if (xm < x) x = xm;
       }
-      
+
       tmp[deg] = -tmp[deg];
 
       // Chop the interval (0,x) until f < 0
@@ -99,12 +99,12 @@ namespace icl{
         f = tmp[0];
         for(int i = 1; i <= deg; i++)
           f = f * xm + tmp[i];
-        
+
         if(f <= 0.0) break;
         x = xm;
       }
       dx = x;
-       
+
        // Do Newton iteration until x converges to two decimal places
       while(fabs(dx / x) > 0.005) {
         f  = tmp[0];
@@ -113,7 +113,7 @@ namespace icl{
           df = df * x + f;
           f  =  f * x + tmp[i];
         }
-        
+
         dx = f / df;
         x -= dx;				// Newton step
       }
@@ -138,7 +138,7 @@ namespace icl{
        hi = (int)(xdata.MAX_EXP / 2.0);
        lo = (int)(xdata.MIN_EXP - xbits(P[0]));
        max = xlogb(P[0]); // leading coefficient does not vanish!
-       min = xlogb(P[0]); 
+       min = xlogb(P[0]);
 
        for(int i = 0; i <= deg; i++) {
           if (P[i] != xdata.ZERO){
@@ -150,9 +150,9 @@ namespace icl{
 
        // Scale only if there are very large or very small components
        if(min >= lo && max <= hi) return;
-     
+
        x = lo - min;
-       if(x <= 0) 
+       if(x <= 0)
           sc = -(max+min) / 2;
        else {
           sc = x;
@@ -172,13 +172,13 @@ namespace icl{
       //#ifndef ICL_SYSTEM_WINDOWS removed by CE
       //#warning "why is tmp not iniitialized here?"
       //#endif
-      xcomplex t, tmp; 
+      xcomplex t, tmp;
 
       // compute the first H-polynomial as the (normed) derivative of P
       for (i = 0; i < deg; i++) {
         // CE: shouldn't it be this here (I add it since it seems to not make sense
         // to use the uninitiylized tmp here a multipliler ...
-        // 
+        //
         tmp = P[i]; // added by CE
         tmp *= (deg - i);
         tmp /= deg;
@@ -240,7 +240,7 @@ namespace icl{
              H[j] = t * h[j-1] + p[j];
           H[0] = p[0];
           }
-       else { 
+       else {
          // If h[s] is zero replace H with qh
          for(int j = 1; j < deg; j++)
             H[j] = h[j - 1];
@@ -260,7 +260,7 @@ namespace icl{
 
        for(int i = 0; i <= deg; i++)
           e = e * ms + xabs(p[i]);
-       
+
        return e * (xeta(p[0]) + MRE) - MRE * mp;
     }
 
@@ -292,11 +292,11 @@ namespace icl{
           *zero = *s;
           return conv;
         }
-        
+
         if(i != 1) {
           if(!(b || mp < omp || relstp >= 0.05)){
       //       if(!(b || xlogb(mp) < omp || real(relstp) >= 0.05)){
-      // Iteration has stalled. Probably a cluster of zeros. Do 5 fixed 
+      // Iteration has stalled. Probably a cluster of zeros. Do 5 fixed
       // shift steps into the cluster to force one zero to dominate
       tp = relstp;
       b = true;
@@ -312,11 +312,11 @@ namespace icl{
       omp = xdata.INFIN;
       goto _20;
           }
-             
+
           // Exit if polynomial value increase significantly
           if(mp * 0.1 > omp) return conv;
         }
-        
+
         omp = mp;
 
         // Calculate next iterate
@@ -328,7 +328,7 @@ namespace icl{
           *s += t;
         }
       } // end for
-      
+
       return conv;
     }
 
@@ -368,8 +368,8 @@ namespace icl{
                 if(pasd) {
                    // The weak convergence test has been passwed twice, start the third stage
                    // Iteration, after saving the current H polynomial and shift
-                   for(int i = 0; i < deg; i++) 
-                      Tmp[i] = H[i]; 
+                   for(int i = 0; i < deg; i++)
+                      Tmp[i] = H[i];
                    old_S = *s;
 
                    conv = vrshft(10, deg, P, p, H, h, zero, s);
@@ -432,7 +432,7 @@ namespace icl{
       }
 
       if (deg == 0) return degree;
-     
+
       // Make a copy of the coefficients
       for(int i = 0; i <= deg; i++) { P[i] = poly[i]; }
 
@@ -444,15 +444,15 @@ namespace icl{
         Roots[degree-1] = - P[1] / P[0];
         return degree;
       }
-      
+
       // compute a bound of the moduli of the roots (Newton-Raphson)
       bnd = cauchy(deg, P);
-         
+
       // Outer loop to control 2 Major passes with different sequences of shifts
       for(int cnt1 = 1; cnt1 <= 2; cnt1++) {
         // First stage  calculation , no shift
         noshft(5, deg, P, H);
-      
+
         // Inner loop to select a shift
         for(int cnt2 = 1; cnt2 <= 9; cnt2++) {
           // Shift is chosen with modulus bnd and amplitude rotated by 94 degree from the previous shif

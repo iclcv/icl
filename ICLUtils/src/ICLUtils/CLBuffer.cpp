@@ -45,11 +45,11 @@ namespace icl {
     struct CLBuffer::Impl {
       cl::Buffer buffer;
       cl::CommandQueue cmdQueue;
-      
+
       static cl_mem_flags stringToMemFlags(const string &accessMode)
         throw (CLBufferException) {
         switch(accessMode.length()){
-          case 1: 
+          case 1:
             if(accessMode[0] == 'w') return CL_MEM_WRITE_ONLY;
             if(accessMode[0] == 'r') return CL_MEM_READ_ONLY;
           case 2:
@@ -62,15 +62,15 @@ namespace icl {
             return CL_MEM_READ_WRITE;
         }
       }
-      
+
       Impl(){}
       ~Impl() {
       }
-      
+
       Impl(Impl& other):cmdQueue(other.cmdQueue){
         buffer = other.buffer;
       }
-      
+
       Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
            const string &accessMode, size_t size,const void *src = 0)
         throw (CLBufferException):cmdQueue(cmdQueue) {
@@ -86,7 +86,7 @@ namespace icl {
         }
 
       }
-      
+
       void copy(cl::Buffer &dst, int len, int src_offset = 0, int dst_offset = 0)
         throw (CLBufferException) {
         try {
@@ -95,7 +95,7 @@ namespace icl {
           throw CLBufferException(CLException::getMessage(error.err(), error.what()));
         }
       }
-      
+
       void read(void *dst, int len, int offset = 0, bool block = true)
         throw (CLBufferException) {
         cl_bool blocking;

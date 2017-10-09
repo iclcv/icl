@@ -71,7 +71,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
              idx,x,y,r,vx,vy,color[0],color[1],color[2]);
     }
   };
-    
+
   static inline unsigned int distance(int x1, int y1, int x2, int y2){
     return (unsigned int)round(::sqrt(pow(float(x1-x2),2)+pow(float(y1-y2),2)));
   }
@@ -91,7 +91,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       int rr = b.r*b.r;
       int h = image.getHeight();
       int w = image.getWidth();
-      
+
       int ystart = iclMax(-b.r,-b.y);
       int yend = iclMin(b.r,h-b.y-1);
       for(int dy = ystart;dy<=yend;++dy){
@@ -110,7 +110,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       int rr = b.r*b.r;
       int h = image.getHeight();
       int w = image.getWidth();
-      
+
       int ystart = iclMax(-b.r,-b.y);
       int yend = iclMin(b.r,h-b.y-1);
       for(int dy = ystart;dy<=yend;++dy){
@@ -124,8 +124,8 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       }
     }
   }
- 
-  
+
+
   InputGrabber(unsigned int nBlobs=10){
     utils::randomSeed();
     useDesired(Size::VGA);
@@ -143,7 +143,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
 
     setBlobCount(nBlobs);
   }
-  
+
   int find_blob(int x, int y){
     for(unsigned int i=0;i<blobs.size();++i){
       Blob &b = blobs[i];
@@ -155,11 +155,11 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
     }
     return -1;
   }
-  
+
   Blob &get_blob(unsigned int idx){
     return blobs[idx];
   }
-  
+
   bool ok(const Blob &b, int idx_b=-1){
     Rect imageRect = image.getImageRect();
     for(unsigned int i=0;i<blobs.size();++i){
@@ -185,10 +185,10 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       b.y = random((unsigned int)image.getHeight());
       b.r = minr+random(maxr-minr);
       b.vx = random(maxv);
-      b.vy = random(maxv);     
+      b.vy = random(maxv);
       if(++t >= maxtrys){
         throw(ICLException("Max trys reached!"));
-      }   
+      }
 
     }while(!ok(b));
     b.id = -1;
@@ -208,7 +208,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       }
     }
   }
-  
+
   void add_single_blob(){
     Mutex::Locker l(this);
     setBlobCount(blobs.size()+1);
@@ -229,7 +229,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       }
     }
   }
-  
+
   void iterate(){
     for(unsigned int i=0;i<blobs.size(); ++i){
       Blob &b = blobs[i];
@@ -269,18 +269,18 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       }
     }
   }
-  
+
   virtual const ImgBase *acquireImage(){
     Mutex::Locker l(this);
     ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
 
     image.setSize(getDesired<Size>());
     image.setFormat(getDesired<format>());
-    
+
     image.clear();
-    
+
     iterate();
-    
+
     if(image.getChannels() == 1){
       for(unsigned int i=0;i<blobs.size();++i){
         draw_blob<1>(image,blobs[i]);
@@ -292,8 +292,8 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
     }else{
       ERROR_LOG("invalid channel count! (allowed is 1 or 3 but found " << image.getChannels() << ")");
     }
-    
-    return &image;    
+
+    return &image;
   }
 private:
   Img8u image;
@@ -316,9 +316,9 @@ InputGrabber *grabber = 0;
 static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
   static RegionDetector rd;
   rd.setConstraints(10,100000,1,255);
-  
+
   const std::vector<ImageRegion> &bd = rd.detect(&image);
-  
+
   std::vector<std::vector<float> > v;
 
   for(unsigned int i=0;i<bd.size();++i){
@@ -336,44 +336,44 @@ void init(){
   grabber->useDesired(depth8u);
   grabber->useDesired(formatGray);
   gui << Draw().handle("image").minSize(32,24);
-  gui << ( HBox() 
+  gui << ( HBox()
            << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
            << Button("off","on",true).out("Vlo").label("Show labels")
            )
       << Show();
-  
+
   gui["image"].install(grabber);
 }
- 
+
 void run(){
   static ICLDrawWidget *w = *gui.get<DrawHandle>("image");
-  
+
   const ImgBase *image = grabber->grab();
 
   std::vector<std::vector<float> > vVT = getCentersAndSizes(*(image->asImg<icl8u>()));
 
   w->setImage(image);
-  
+
   if(vVT.size()){
-    
+
     std::vector<float> normFactors(3);
     normFactors[0] = pa("-norm",0);
     normFactors[1] = pa("-norm",1);
     normFactors[2] = pa("-norm",2);
 
     static VectorTracker vt(3,               // dim (x,y,size)
-                            10000,           // a large distance 
+                            10000,           // a large distance
                             normFactors,     // weights,
                             *pa("-iam") == "new" ? VectorTracker::brandNew  : VectorTracker::firstFree,
                             pa("-thresh"),   // threshold for optimized trivial assignment
-                            pa("-thresh")    // whether to try trivial assignment                            
+                            pa("-thresh")    // whether to try trivial assignment
                             );
 
     vt.pushData(vVT);
     w->color(255,0,0);
-    
+
     update_error_frames_A();
-    
+
     for(unsigned int i=0;i<vVT.size();i++){
       int curr_id = vt.getID(i);
       int curr_x = vVT[i][0];
@@ -381,9 +381,9 @@ void run(){
 
       w->sym(curr_x,curr_y,ICLDrawWidget::symCross);
       static bool &labelsOnFlag = gui.get<bool>("Vlo");
-      
 
-      
+
+
       int blob_list_idx = ((InputGrabber*)grabber)->find_blob(curr_x,curr_y);
       if(blob_list_idx == -1){
         ERROR_LOG("no blob at location found ???");
@@ -391,7 +391,7 @@ void run(){
         InputGrabber::Blob &b=((InputGrabber*)grabber)->get_blob((unsigned int)blob_list_idx);
         b.set_new_id(curr_id);
       }
-      
+
       if(labelsOnFlag){
         static char buf[100];
         w->text(toStr(curr_id,buf),curr_x,curr_y,10);
@@ -401,14 +401,14 @@ void run(){
   }
 
   frame_counter++;
-  
-  
+
+
   static FPSEstimator fps(10);
   w->color(255,255,255);
   char buf[400];
   sprintf(buf,"blobs:%4d frames:%6d Error-frames:%4d Errors:%4d   ",(unsigned int)vVT.size(),frame_counter,error_frames,error_counter);
-  w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5,-1,-1,8); 
-  
+  w->text(string(buf)+"   "+fps.getFPSString().c_str(),5,5,-1,-1,8);
+
   w->render();
 
   static int &sleepTime = gui.get<int>("Vsl");
@@ -434,4 +434,4 @@ int main(int n, char  **ppc){
                 "-mingap(int=3) -minr(int=10) -maxr(int=20) -maxv(int=10) -maxdv(int=2) "
                 "-thresh(int=5)",init,run).exec();
 }
- 
+

@@ -72,7 +72,7 @@ namespace icl{
   using namespace geom;
 
 namespace physics{
- 
+
 
   btSoftBody *SoftObject::getSoftBody() {
     return dynamic_cast<btSoftBody*>(getCollisionObject());
@@ -86,7 +86,7 @@ namespace physics{
     m_useVolumeConversion = false; // todo: find the defaults !!
     registerCallback(function(this,&SoftObject::propertyChanged));
   }
-  
+
   void SoftObject::createAllProperties(){
     btSoftBody *sb = getSoftBody();
     ICLASSERT_THROW(sb,ICLException("SoftObject::createAllProperties(): was called when internal soft-body object was still NULL"));
@@ -119,7 +119,7 @@ namespace physics{
     addProperty("stiffness.volume","range:slider","[0,1]",mat->m_kVST);
     addProperty("general.collision type","menu","default,soft+rigid","default");
   }
-  
+
   void SoftObject::propertyChanged(const Configurable::Property &prop){
     btSoftBody *sb = getSoftBody();
     btSoftBody::Config *cfg = &sb->m_cfg;
@@ -132,8 +132,8 @@ namespace physics{
       }else{
         cfg->collisions = btSoftBody::fCollision::Default | btSoftBody::fCollision::CL_SELF;
       }
-    } else if(prop.name == "general.aeromodel") { 
-      cfg->aeromodel = parse<btSoftBody::eAeroModel::_>(prop.value); 
+    } else if(prop.name == "general.aeromodel") {
+      cfg->aeromodel = parse<btSoftBody::eAeroModel::_>(prop.value);
     } else if(prop.name == "general.use volume conversion") {
       m_useVolumeConversion = parse<bool>(prop.value);
       sb->setPose(m_useVolumeConversion,m_usePoseMatching);
@@ -142,18 +142,18 @@ namespace physics{
       sb->setPose(m_useVolumeConversion,m_usePoseMatching);
     }
 #define CASE(X,Y) if(prop.name == (section+X)) { Y = parse<float>(prop.value); }
-    
+
     else CASE("velocity correction",cfg->kVCF)
     else CASE("damping",cfg->kDP)
     else CASE("drag",cfg->kDG)
     else CASE("lift",cfg->kLF)
     else CASE("pressure",cfg->kPR)
     else CASE("volume conversion",cfg->kVC)
-    else CASE("dynamic friction",cfg->kDF)    
+    else CASE("dynamic friction",cfg->kDF)
     else CASE("pose matching",cfg->kMT)
 
     section = "hardness.";
-    
+
     CASE("rigid contact",cfg->kCHR)
     else CASE("kinetic contact",cfg->kKHR)
     else CASE("soft contact",cfg->kSHR)
@@ -180,7 +180,7 @@ namespace physics{
         sb->m_materials[i]->m_kVST = parse<float>(prop.value);
       }
     }
-    
+
   }
 
   SoftObject::SoftObject(const std::string &objFileName, PhysicsWorld *world) throw (ICLException){

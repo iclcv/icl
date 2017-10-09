@@ -34,22 +34,22 @@
 #include <string>
 
 namespace icl{
-  namespace qt{ 
-    
+  namespace qt{
+
     /** \cond */
-    class GUI; 
-    /** \endcond */ 
-    
+    class GUI;
+    /** \endcond */
+
     /// Creates an RSB-interface to externally get and set parameters of the wrapped GUI
     /** For each GUI-component that has a given 'handle', the
         RSBRemoteGUI will create an RSB-informer that informs if the
         component's content changes or was pressed and an RSB-listener
-        that can be used to externally set the component state. 
+        that can be used to externally set the component state.
         As informer scopes, the given base-scope is used and the component's handle is
         appended as sub-scope. E.g. if the base-scope is /foo/bar, and the following GUI
         layout is used (@see qt::DynamicGUI):
         <pre>
-        <vbox>         
+        <vbox>
           <image handle="vis" label="Current image"/>
           <hbox>
              <slider args="0,255,128" handle="threshold" label="The Threshold"/>
@@ -61,7 +61,7 @@ namespace icl{
         * /foo/bar/vis Which sends stringified mouse-events that occur on the image component
         * /foo/bar/threshold Which sends slider valus as strings
         * /foo/bar/the_button Which sends a "1" string when the button was pressed
-        
+
         Please note, that spaces in the handle-names are internally
         translated to underscore characters as RSB-scopes do not
         support spaces. All informers uses std::strings as type.
@@ -91,19 +91,19 @@ namespace icl{
       /** The existing GUI instance must have been 'created' before.
           An empty rsbBaseScope can only be used in the null-construction case, i.e.
           when the gui-argument is also null.
-          
-          The createSetterGUI argument is used for debugging purpose only. It allows to 
+
+          The createSetterGUI argument is used for debugging purpose only. It allows to
           create the counter-part of an RSBRemoteGUI for testing the GUI synchronization
       */
       RSBRemoteGUI(GUI *gui=0, const std::string &rsbBaseScope="", bool createSetterGUI=false, bool verboseMode=false);
-      
+
       /// sets up the verbose mode, that writes some debug info to std::out
       void setVerboseMode(bool on);
-      
+
       /// initializes this instance by wrapping around the given GUI
       /** @see RSBRemoteGUI::RSBRemoteGUI*/
       void init(GUI *gui, const std::string &rsbBaseScope, bool createSetterGUI=false);
-      
+
       /// Destructor
       ~RSBRemoteGUI();
     };

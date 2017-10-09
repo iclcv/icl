@@ -47,7 +47,7 @@ void init(){
   gui << Draw3D().minSize(32,24).handle("scene")
       << FSlider(0.5,10,2).handle("ps").label("point size").maxSize(99,2)
       << Show();
-  
+
 
   gui["scene"].link(scene.getGLCallback(0));
   gui["scene"].install(scene.getMouseHandler(0));

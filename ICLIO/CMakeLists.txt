@@ -151,7 +151,7 @@ IF(OpenCV_FOUND)
                       src/ICLIO/OpenCVVideoWriter.h
                       src/ICLIO/OpenCVVideoGrabber.h)
 ENDIF()
- 
+
 IF(LIBAV_FOUND)
   LIST(APPEND SOURCES src/ICLIO/LibAVVideoWriter.cpp)
   LIST(APPEND HEADERS src/ICLIO/LibAVVideoWriter.h)
@@ -169,7 +169,7 @@ IF(QT_FOUND)
   LIST(APPEND SOURCES src/ICLIO/SharedMemoryGrabber.cpp
                       src/ICLIO/SharedMemoryPublisher.cpp
                       src/ICLIO/SharedMemorySegment.cpp)
-                      
+
   LIST(APPEND HEADERS src/ICLIO/SharedMemoryGrabber.h
                       src/ICLIO/SharedMemoryPublisher.h
                       src/ICLIO/SharedMemorySegment.h)
@@ -275,13 +275,13 @@ ADD_LIBRARY(ICLIO SHARED ${SOURCES} ${HEADERS})
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLIO ICLFilter
                             ${ICLIO_3RDPARTY_LIBRARIES})
-                            
+
 
 # Wo sind die hier :-? (UNICAP XCF QT GENICAM OPENNI RSB PROTOBUF)
 
 
 SET_TARGET_PROPERTIES(ICLIO
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

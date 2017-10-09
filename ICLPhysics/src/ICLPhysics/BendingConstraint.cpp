@@ -35,14 +35,14 @@
 #include <iostream>
 
 namespace icl{
-  
+
   using namespace utils;
   using namespace geom;
 namespace physics{
 
   typedef BendingConstraint::Link Link;
   typedef BendingConstraint::Material Material;
-  
+
   BendingConstraint::BendingConstraint(Link *link, utils::Point a, utils::Point b):
     link(link),material(link?link->m_material:0),a(a),b(b){
   }

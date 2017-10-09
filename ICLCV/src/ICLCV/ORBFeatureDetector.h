@@ -46,7 +46,7 @@ namespace icl{
     class ORBFeatureDetector : public utils::Configurable{
       struct Data;
       Data *m_data;
-      
+
       public:
       ORBFeatureDetector();
 
@@ -59,19 +59,19 @@ namespace icl{
         ~FeatureSetClass();
         utils::VisualizationDescription vis() const;
       };
-      
+
       typedef utils::SmartPtr<FeatureSetClass> FeatureSet;
-      
+
 
       struct Match{
         utils::Point32f a,b;
         float distance;
       };
-      
+
       FeatureSet detect(const core::Img8u &image);
 
       const core::ImgBase *getIntermediateImage(const std::string &id);
-      
+
       std::vector<Match> match(const FeatureSet &a, const FeatureSet &b);
     };
   }

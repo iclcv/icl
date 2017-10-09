@@ -38,8 +38,8 @@
 namespace icl{
   namespace utils{
     /// Tool for benchmarking method calls \ingroup TIME
-    /** The stack timer class is an Extension of the Timer class, 
-        that provides very convenient function benchmarking 
+    /** The stack timer class is an Extension of the Timer class,
+        that provides very convenient function benchmarking
         functionality.
         The only thing, a programmer needs to do, is to write the
         Macro <b><em> BENCHMARK_THIS_FUNCTION  </em></b> at the
@@ -47,7 +47,7 @@ namespace icl{
         The underlying implementation will then record each function
         call and execution time.
         At the end of the programm, the implicitly crated
-        StackTimerNotifier will print the following information 
+        StackTimerNotifier will print the following information
         about the benchmarked function:
         - execution count
         - overall execution time
@@ -55,7 +55,7 @@ namespace icl{
         - minimun execution time
         - maximum execution time
         - the function name (nice, isn't it)
-  
+
         See also the following example:
         <pre>
         void funcion1(...){
@@ -75,27 +75,27 @@ namespace icl{
         calls[     361]  time[ 77.7 ms]  avg[  215 us]  min[  183 us]  max[  5.2 ms] {function1}
         calls[     361]  time[  1.7 ms]  avg[    4 us]  min[    4 us]  max[   51 us] {function2}
         </pre>
-  
+
         s = seconds
         ms = milliseconds
         us = microseconds
-  
+
         \section SEC Benchmarking code section
         If sections of code shall be benchmarked, this can be done with the BENCHMARK_THIS_SECTION
         macro
-        
+
         \code
         int main(){
            {
               BENCHMARK_THIS_SECTION(first section);
               // do something
            }
-  
+
            {
               BENCHMARK_THIS_SECTION(another section);
               // do something
            }
-        
+
         }
         \endcode
     }
@@ -105,8 +105,8 @@ namespace icl{
       /// StackTimerNotifier constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
       class StackTimerNotifier{
         public:
-        StackTimerNotifier(const char* functionname, 
-                           bool writeCounts=true, 
+        StackTimerNotifier(const char* functionname,
+                           bool writeCounts=true,
                            bool writeAvg=true,
                            bool writeMin=true,
                            bool writeMax=true){
@@ -142,7 +142,7 @@ namespace icl{
           }
           if(m_bWriteMin){
             printf("min[%s]  ",getTimeStr(m_liMinTime).c_str());
-          } 
+          }
           if(m_bWriteMax){
             printf("max[%s]  ",getTimeStr(m_liMaxTime).c_str());
           }
@@ -164,7 +164,7 @@ namespace icl{
         long int m_liMaxTime;
         long int m_liMinTime;
         std::string m_sFunctionName;
-  
+
         bool m_bWriteCounts;
         bool m_bWriteAvg;
         bool m_bWriteMin;
@@ -185,17 +185,17 @@ namespace icl{
       private:
       Timer *m_poTimer;
       StackTimerNotifier* m_poNotifier;
-     
+
     };
-    
+
   #define BENCHMARK_THIS_SECTION(SECTION_NAME)                            \
     static icl::utils::StackTimer::StackTimerNotifier __notifier(#SECTION_NAME);      \
     icl::utils::StackTimer __stacktimer(&__notifier);
-    
+
   #define BENCHMARK_THIS_FUNCTION                                         \
     static icl::utils::StackTimer::StackTimerNotifier __notifier(__FUNCTION__);       \
     icl::utils::StackTimer __stacktimer(&__notifier);
-    
+
   #define BENCHMARK_THIS_FUNCTION_LITE                                       \
     static icl::utils::StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
     icl::utils::StackTimer __stacktimer(&__notifier);

@@ -49,14 +49,14 @@
 
 namespace icl {
   namespace utils{
-  
+
      const Time Time::null(0);
-  
+
      Time::Time() :
         m_usec(0)
      {
      }
-  
+
      Time
      Time::now(){
   #ifdef ICL_SYSTEM_WINDOWS
@@ -69,49 +69,49 @@ namespace icl {
         return Time(tv.tv_sec * static_cast<value_type>(1000000) + tv.tv_usec);
   #endif
      }
-  
+
     Time Time::seconds(value_type t) {
       return Time(t * static_cast<value_type>(1000000));
     }
-  
+
     Time Time::milliSeconds(value_type t){
       return Time(t * static_cast<value_type>(1000));
     }
-  
+
     Time Time::microSeconds(value_type t){
       return Time(t);
     }
-  
+
     Time::value_type Time::toSeconds() const{
       return m_usec / 1000000;
     }
-  
+
     Time::value_type Time::toMilliSeconds() const{
       return m_usec / 1000;
     }
-  
+
     Time::value_type Time::toMicroSeconds() const{
       return m_usec;
     }
-  
+
     double Time::toSecondsDouble() const{
       return m_usec / 1000000.0;
     }
-  
+
     double Time::toMilliSecondsDouble() const{
       return m_usec / 1000.0;
     }
-  
+
     double Time::toMicroSecondsDouble() const{
       return static_cast<double>(m_usec);
     }
-  
+
     std::string Time::toString() const{
       return toStringFormated("%x %H:%M:%S:%#",32);
     }
     /*
         time_t time = static_cast<long>(m_usec / 1000000);
-  
+
         struct tm* t;
   #ifdef SYSTEM_WINDOWS
         t = localtime(&time);
@@ -120,10 +120,10 @@ namespace icl {
         localtime_r(&time, &tr);
         t = &tr;
   #endif
-  
+
         char buf[32];
         strftime(buf, sizeof(buf), "%x %H:%M:%S", t);
-  
+
        std::string buf = toStringFormated("%x %H:%M:%S:",32);
        std::ostringstream os;
        os << buf << ":";
@@ -132,11 +132,11 @@ namespace icl {
        os << static_cast<long>(m_usec % 1000000 / 1000);
         return os.str();
         */
-  
+
     std::string Time::toStringFormated(const std::string &pattern, unsigned int bufferSize, bool zeropadded) const{
-  
+
       std::ostringstream os;
-  
+
       for(unsigned int i=0;i<pattern.length()-1;++i){
         if(pattern[i]=='%'){
           ++i;
@@ -194,10 +194,10 @@ namespace icl {
           os << pattern[i];
         }
       }
-  
-  
+
+
       time_t time = static_cast<long>(m_usec / 1000000);
-  
+
       struct tm* t;
   #ifdef ICL_SYSTEM_WINDOWS
       t = localtime(&time);
@@ -206,20 +206,20 @@ namespace icl {
       localtime_r(&time, &tr);
       t = &tr;
   #endif
-  
+
       char *buf = new char[bufferSize];
       strftime(buf,bufferSize,os.str().c_str(),t);
       std::string s(buf);
       delete [] buf;
       return s;
     }
-  
+
     Time::Time(value_type usec) : m_usec(usec) {}
-  
+
     std::ostream& operator<<(std::ostream& out, const Time& t){
       return out << t.m_usec;
     }
-  
+
     std::istream& operator>>(std::istream& in, Time &t){
       return in >> t.m_usec;
     }

@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # set lib version
 #SET_TARGET_PROPERTIES(${PROJECT_NAME}
-#                      PROPERTIES 
+#                      PROPERTIES
 #                      VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 # install library

@@ -34,7 +34,7 @@
 
 namespace icl{
   namespace cv{
-    
+
     float SurfFeature::operator-(const SurfFeature &other) const{
       float sum=0.f;
       for(int i=0; i < 64; ++i){
@@ -42,15 +42,15 @@ namespace icl{
       }
       return sum;
     }
-    
+
     utils::VisualizationDescription SurfFeature::vis(int dx, int dy) const {
       utils::VisualizationDescription d;
-      
+
       float s = 2 * scale;
-      
-      int cx = x + dx;    
+
+      int cx = x + dx;
       int cy = y + dy;
-      
+
       d.color(0,255,0,255);
       d.linewidth(2);
       int cx2 = cx + cos(orientation) * s;
@@ -61,10 +61,10 @@ namespace icl{
       if(laplacian == 1) d.color(0,100,255,255);
       else if(laplacian == 0) d.color(255,0,0,255);
       else d.color(0,255,0,255); //  ??
-      
+
       d.fill(255,0,0,30);
       d.circle(cx,cy,s);
-      
+
       return d;
     }
   }

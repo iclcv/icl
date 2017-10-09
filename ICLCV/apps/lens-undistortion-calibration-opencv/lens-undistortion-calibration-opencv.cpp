@@ -82,10 +82,10 @@ std::vector<Mat> capturedPoses;
 bool is_far_enough(const Mat &T, float f){
   float fEuler = f/200.0 * M_PI/2; // 45 deg
   float fTrans = f;                // 200 mm
-  
+
   Mat3 R = T.part<0,0,3,3>();
   Vec3 t = T.part<3,0,1,3>();
-  
+
   bool allFarEnough = true;
   for(size_t i=0;i<capturedPoses.size();++i){
     const Mat &C = capturedPoses[i];
@@ -93,7 +93,7 @@ bool is_far_enough(const Mat &T, float f){
     Vec3 Ct = C.part<3,0,1,3>();
     Vec3 dEuler = extract_euler_angles(R.transp() * CR);
     Vec3 dTrans = t - Ct;
-    
+
     bool oneFarEnough = false;
     for(int i=0;i<3;++i){
       if(fabs(dEuler[i]) > fEuler || fabs(dTrans[i]) > fTrans){
@@ -150,12 +150,12 @@ struct ConfigurableUDist : public Configurable{
     }
     paramChanged = true;
   }
-  
+
   void init(const Size &size, bool addProperties=true){
 #define add(X,MIN,MAX,CUR) \
     addProperty(#X,"range","[" +str(MIN)+ "," +str(MAX)+ "]",CUR);     \
     defaultValues.push_back(CUR);
-    
+
     if(addProperties){
       add(fx,10,10000,1000);
       add(fy,10,10000,1000);
@@ -169,14 +169,14 @@ struct ConfigurableUDist : public Configurable{
       add(k5,-10000,10000,0);
       registerCallback(icl::utils::function(this,&ConfigurableUDist::cb));
     }
-     
+
     udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);
     paramChanged = true;
     addProperty("activated","flag","",false,0,"Activate this to manually adapt values.<b>Please note</b> that the "
                 "slider-based setting of the parameters doesn't allow all parameter to be set as accurate as it would "
                 "be needed. Therefore, this flag is automatically disabled when the automatic calibration is performed");
   }
-  
+
   void reset(){
     init(udist->getImageSize(),false);
   }
@@ -203,7 +203,7 @@ void save_params(){
     f["udist.k3"] = p[7];
     f["udist.k4"] = p[8];
     f["udist.k5"] = p[9];
-    
+
     f.save(filename);
   }
   catch (...){
@@ -213,7 +213,7 @@ void save_params(){
 }
 
 
-SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorners, 
+SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorners,
                                         const std::vector<Point32f> &objCoordsXY,
                                         const AdvancedMarkerGridDetector::MarkerGrid &grid,
                                         const Camera &cam, const Mat &T){
@@ -233,8 +233,8 @@ SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorne
   static size_t cidx = 0;
   GeomColor c = cs[cidx++];
   if(cidx >= cs.size()) cidx = 0;
-    
-  
+
+
   SceneObject *obj = new SceneObject;
   int n = (int)objCoordsXY.size();
   for(int i=0; i<n; i+=4){
@@ -256,12 +256,12 @@ SceneObject *create_grid_preview_object(const std::vector<Point32f> &markerCorne
   obj->addLine(n+1,n+2, c);
   obj->addLine(n+2,n+3, c);
   obj->addLine(n+3,n,c);
-  
+
   obj->setVisible(Primitive::vertex,false);
   obj->setVisible(Primitive::quad,true);
   obj->setVisible(Primitive::line,true);
   obj->setTransformation(T);
-  
+
   return obj;
 }
 
@@ -271,7 +271,7 @@ std::vector<Vec> estimage_grid_preview(const std::vector<Point32f> &imageCoords,
                                        const Camera &cam, const Size32f &realBoardDim){
   static CoplanarPointPoseEstimator cpe(CoplanarPointPoseEstimator::worldFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
   Mat T = cpe.getPose(obj.size(), obj.data(), imageCoords.data(), cam);
-  
+
   // get the boundary point of the object (just for visualization purpose)
   std::vector<Point32f> hull = convexHull(obj);
 
@@ -327,7 +327,7 @@ void undoLast() {
 /** Doubled markers are removed (all instances, as we don't
     know which one is the right one) */
 std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
-  
+
   std::map<int,std::vector<Fiducial> > lut; // id->count
   for(size_t i=0;i<fids.size();++i){
     lut[fids[i].getID()].push_back(fids[i]);
@@ -348,10 +348,10 @@ std::vector<Fiducial> removeDuplicates(const std::vector<Fiducial> &fids) {
 void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured) {
   static ButtonHandle capture = gui["capture"];
   const int minMarkers = gui["minMarkers"];
-  
+
   typedef AdvancedMarkerGridDetector::Marker Marker;
   typedef AdvancedMarkerGridDetector::MarkerGrid MarkerGrid;
-  
+
   const MarkerGrid &grid = markerGridDetector.detect(img);
   std::vector<Point32f> imageCoords, objectCoords;
   for(int i=0;i<grid.getDim();++i){
@@ -367,7 +367,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured)
     bool autoCapture = gui["autoCapture"];
     bool doCapture = capture.wasTriggered();
     Mat T = markerGridPoseEstimator.computePose(grid, scene.getCamera(1));
-    
+
     if(!doCapture && autoCapture){
       float f = gui["captureDis"];
       if(is_far_enough(T, f)){
@@ -378,7 +378,7 @@ void handleMarkerDetection(const ImgBase *img, DrawHandle &draw, bool &captured)
       captured = true;
       capturedPoses.push_back(T);
       calib.addPoints(imageCoords, objectCoords);
-      scene.addObject(create_grid_preview_object(imageCoords, objectCoords, 
+      scene.addObject(create_grid_preview_object(imageCoords, objectCoords,
                                                  grid, scene.getCamera(1), T));
       gui["calibrate"].enable();
       gui["save"].enable();
@@ -448,7 +448,7 @@ void init(){
   }
   const ImgBase *image = grabber.grab();
   udist.init(image->getSize());
-  
+
   if(pa("-cb")){
     dStr = string("checker board detection");
     grabber.useDesired(depth8u);
@@ -466,12 +466,12 @@ void init(){
     Size32f spacing = pa("-sp");
     Size32f gridBounds((gridCells.width-1) * spacing.width + markerBounds.width * gridCells.width,
                        (gridCells.height-1) * spacing.height + markerBounds.height * gridCells.height);
-    
+
     maxMarkers = gridCells.getDim();
     AdvancedMarkerGridDetector::AdvancedGridDefinition def(gridCells, markerBounds, gridBounds, ids, pa("-m",0));
     markerGridDetector.init(def);
     calib.init(image->getSize());
-   
+
     markerGridDetector.setConfigurableID("detectionProps");
   } else {
     throw ICLException("other modes than checkerboard and markers "
@@ -509,7 +509,7 @@ void init(){
                 << Button("reset").handle("reset")
                 << Button("undo last").handle("undo")
               )
-           << Button("save").handle("save")           
+           << Button("save").handle("save")
            << (HBox()
                << Slider(5, maxMarkers, 5).hideIf(!pa("-g")).out("minMarkers")
                   .label("minimum markers").tooltip("minimum number of markers that is needed for the calibration")
@@ -522,7 +522,7 @@ void init(){
          )
       << Show();
 
-  
+
   Camera cam(Vec(0,0,-1,1));
   cam.setFocalLength(1);
   cam.setResolution(image->getSize());
@@ -538,16 +538,16 @@ void init(){
         addLine(0,i+1);
         addLine(i+1, i==3 ? 1 : i+2);
       }
-      
+
       setColor(Primitive::line,geom_blue(200));
     }
   };
-  
+
   scene.addCamera(cam);
   scene.addCamera(cam);
   scene.addObject(new Frustrum(cam,image->getSize()));
   scene.setCursor(Vec(0,0,-image->getSize().width));
-        
+
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
   gui["calibrate"].disable();
@@ -611,7 +611,7 @@ void run(){
     dmap.visualizeTo(mapping, vecDraw);
   }
   draw->render();
-  
+
   // handle save button
   if (save.wasTriggered() && !udist.udist->isNull()) {
     save_params();

@@ -41,10 +41,10 @@ static const float MAXY = 10;
 HBox gui;
 
 inline float tx(float x){
-  return (x-MINX)/(MAXX-MINX); 
+  return (x-MINX)/(MAXX-MINX);
 }
 inline float ty(float y){
-  return (y-MINY)/(MAXY-MINY); 
+  return (y-MINY)/(MAXY-MINY);
 }
 
 float func(float x){
@@ -53,7 +53,7 @@ float func(float x){
 
 void init(){
   llm.setConfigurableID("llm");
-  
+
   gui << Draw().minSize(40,30).label("View").handle("draw")
       << ( VBox().minSize(15,0)
            << Button("Train Step").handle("train")
@@ -66,19 +66,19 @@ void init(){
            )
       << Show();
 
-  
-  
+
+
   llm.init(10, vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
-  
+
 }
 void run(){
   static ButtonHandle train = gui["train"],
                       showKernels = gui["show-k"],
                       reset = gui["reset"];
-  
+
   static DrawHandle draw = gui["draw"];
   draw->setViewPort(Size(100,100));
-  
+
   if(train.wasTriggered() || gui["train-loop"].as<bool>()){
     int I = 1000;
     float mse = 0;
@@ -97,9 +97,9 @@ void run(){
     llm = LLM(1,1);
     llm.init(gui["kernel-count"], vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
   }
-      
+
   draw->rel();
-  
+
   // draw the function AND the net
   static const int STEPS = 100;
   static const float DX = (MAXX-MINX)/STEPS;
@@ -120,23 +120,23 @@ void run(){
     yLast = y;
     ynetLast = ynet;
   }
-  
+
   draw->color(255,255,0);
   for(unsigned int i=0; i< llm.numKernels();++i){
     draw->color(255,255,0);
     float x = tx(llm[i].w_in[0]);
     float y = ty(llm[i].w_out[0]);
     draw->line(x,y,x,0);
-    
+
     float m = llm[i].A[0];
     static const float W = 0.05;
     draw->line(x-W,y-m*W,x+W,y+m*W);
-    
+
     draw->color(255,0,255);
     float stddev = tx(sqrt(llm[i].var[0]));
     draw->line(x-stddev,y-0.01,x+stddev,y-0.01);
   }
-  
+
   draw.render();
 }
 

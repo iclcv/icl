@@ -73,9 +73,9 @@ void init(){
     gui.load(*pa("-l"));
     gui << Show();
 
-    remote.setVerboseMode(pa("-verbose"));    
+    remote.setVerboseMode(pa("-verbose"));
     remote.init(&gui, *pa("-scope"), pa("-c"));
-    
+
     //gui["image"] = create("lena");
   }
 }

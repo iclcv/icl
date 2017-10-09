@@ -34,9 +34,9 @@ void init(){
 
 void run(){
   gui["image"] = grabber.grab();
-  
+
   // image processing stuff ...
-  
+
 }
 
 int main(int n, char **args){

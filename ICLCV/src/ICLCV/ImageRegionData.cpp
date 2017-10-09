@@ -37,8 +37,8 @@ using namespace icl::core;
 
 namespace icl{
   namespace cv{
-  
-  
+
+
     struct TransformLinesegAndSetImageRegionData{
       ImageRegionData *d;
       TransformLinesegAndSetImageRegionData(ImageRegionData *d) : d(d){}
@@ -47,44 +47,44 @@ namespace icl{
         return *in;
       }
     };
-  
+
     static unsigned int collect(ImageRegionPart *r, LineSegment *s, ImageRegionData *ird){
       if(r->is_collected()) return 0;
       r->notify_collected();
       LineSegment *sSave = s;
-      
+
       std::transform(r->segments.begin(),r->segments.end(),s,TransformLinesegAndSetImageRegionData(ird));
-      
+
       s += r->segments.size();
-      
+
       for(ImageRegionPart::children_container::iterator it = r->children.begin(); it != r->children.end(); ++it){
         s += collect(*it,s,ird);
       }
-      
+
       return (unsigned int)(s - sSave);
     }
-  
-  
+
+
     static unsigned int count(ImageRegionPart *r){
       if(r->is_counted()) return 0;
       r->notify_counted();
-      
+
       unsigned int n = r->segments.size();
       for(ImageRegionPart::children_container::iterator it = r->children.begin(); it != r->children.end(); ++it){
         n += count(*it);
       }
       return n;
     }
-    
+
     ImageRegionData * ImageRegionData::createInstance(CornerDetectorCSS *css, ImageRegionPart *topRegionPart, int id, bool createGraphInfo, const ImgBase *image){
       ImageRegionData *data = new ImageRegionData(css,topRegionPart->val,id,count(topRegionPart), createGraphInfo, image);
       collect(topRegionPart, data->segments.data(),data);
       return data;
     }
-  
-  
-  
-    
+
+
+
+
     void ImageRegionData::showTree(int indent) const{
       ICLASSERT_RETURN(graph);
       for(int i=0;i<indent-1;++i) std::cout << "   ";

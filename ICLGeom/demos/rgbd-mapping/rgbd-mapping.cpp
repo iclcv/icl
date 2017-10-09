@@ -51,7 +51,7 @@ SmartPtr<DepthCameraPointCloudGrabber> grabber;
 void init(){
   const Camera cam(*pa("-d",2));
   Size res = cam.getResolution();
-  
+
   if(pa("-c")){
     grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
                                                *pa("-d",0), *pa("-d",1),
@@ -108,7 +108,7 @@ void run(){
   }
   gui["depth"] = grabber->getLastDepthImage();
 
-  // gui["overlay"] = 
+  // gui["overlay"] =
   gui["overlay"].render();
 
   gui["scene"].render();

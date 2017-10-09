@@ -34,12 +34,12 @@
 
 namespace icl{
   namespace geom{
-    
+
     /**
      This class is used in the ObjectEdgeDetector implementations */
     class ICLGeom_API ObjectEdgeDetectorData{
-     
-           
+
+
      public:
       typedef struct{
         int medianFilterSize;
@@ -51,7 +51,7 @@ namespace icl{
         bool useNormalAveraging;
         bool useGaussSmoothing;
       }m_params;
-     
+
       typedef struct{
         float norm;
 	    math::DynMatrix<float> kernel;
@@ -59,22 +59,22 @@ namespace icl{
 	    int kSize;
 	    int rowSize;
       }m_kernel;
-     
-     
+
+
       /// Create new ObjectEdgeDetectorData
-      ObjectEdgeDetectorData(); 
-  	
+      ObjectEdgeDetectorData();
+
       ///Destructor
       virtual ~ObjectEdgeDetectorData();
-      
+
       /// Returns Kernel of a given size
       /** @param size the kernel size
           @return the kernel */
       m_kernel getKernel(int size);
-	
+
       /// Returns the initial parameters.
       /** @return the inital parameters */
-      m_params getParameters();	  
+      m_params getParameters();
     };
   }
 }

@@ -38,7 +38,7 @@ Scene scene;
 
 struct LorenzAttractor  : public Vec{
   float rho,sigma,beta,dt;
-  LorenzAttractor(float rho=28, float sigma=10, float beta=8./3, 
+  LorenzAttractor(float rho=28, float sigma=10, float beta=8./3,
                   float x=0.1, float y=0, float z=0, float dt = 0.001):
     Vec(x,y,z,1), rho(rho),sigma(sigma),beta(beta),dt(dt){
   }
@@ -56,7 +56,7 @@ struct LorenzAttractor  : public Vec{
 
 void reload_obj(){
   scene.removeObject(0);
-  SceneObject *o = new SceneObject(*pa("-o")); 
+  SceneObject *o = new SceneObject(*pa("-o"));
   o->setColor(Primitive::line,GeomColor(255,0,0,255));
   o->setVisible(Primitive::line,true);
   scene.addObject(o);
@@ -65,25 +65,25 @@ void reload_obj(){
 
 void init(){
   // create graphical user interface
-  
-  gui << Draw3D().minSize(16,12).handle("draw").label("scene view") 
+
+  gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
       << ( HBox()
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!pa("-o"))
          )
       << Show();
-  
 
-  
+
+
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
              Vec(0,0,1),   // view-direction
              Vec(1,0,0));   // up-direction
   scene.addCamera(cam);
 
-  
+
   if(pa("-o")){ // either load an .obj file
-    SceneObject *o = new SceneObject(*pa("-o")); 
+    SceneObject *o = new SceneObject(*pa("-o"));
     if(pa("-n")){
       o->createAutoNormals();
     }
@@ -113,7 +113,7 @@ void init(){
       o->setColorsFromVertices(Primitive::line,true);
       if(pa("-dl")) o->createDisplayList();
       scene.addObject(o,true);
-      
+
     }else{
       pa_show_usage("invalid shape arg for -s");
       ::exit(-1);
@@ -144,7 +144,7 @@ void run(){
 int main(int n, char**ppc){
   pa_explain("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
   pa_explain("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone, point-cloud)");
-  /// create a whole application 
+  /// create a whole application
   return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) "
                         "-create-auto-normals|-n -create-display-list|-dl",init,run).exec();
 }

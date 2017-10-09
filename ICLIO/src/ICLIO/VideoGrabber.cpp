@@ -98,7 +98,7 @@ namespace icl{
           return cc4;
         }
     };
-    
+
     struct VideoGrabber::Data{
         Mutex mutex;
         std::string fileName;
@@ -113,7 +113,7 @@ namespace icl{
         bool isSeekable;
 
         float ar;
-      
+
         ColorFormatDecoder cfd;
 
         Data(const std::string &filename, VideoGrabber::XineHandle* xine)
@@ -216,15 +216,15 @@ namespace icl{
           }
         }
     };
-    
-    
+
+
     VideoGrabber::VideoGrabber(const std::string &filename) throw (FileNotFoundException,InvalidFileException):
       m_xine(0),m_data(0),m_params(0){
-      
+
       if(!File(filename).exists()){
         throw FileNotFoundException(filename);
       }
-      
+
       m_xine = new XineHandle(filename);
       m_data = new Data(filename,m_xine);
       m_params = new Params(m_data->fps);
@@ -257,7 +257,7 @@ namespace icl{
       ICL_DELETE(m_data);
       ICL_DELETE(m_params);
     }
-    
+
     /**
         static void convert_frame(icl8u *data, const Size &size,Img8u *image, const std::string &cc4){
         // u and v channels are swapped -> bug in xine?
@@ -299,31 +299,31 @@ namespace icl{
       if(!success){
         throw ICLException("unable to read from stream [" +str(__FUNCTION__)+ "]");
       }
-      
 
-      
+
+
       //      if(f.colorspace != XINE_IMGFMT_YV12){
       //  throw ICLException("invalid xine colorspace (currently only XINE_IMGFMT_YV12 is allowed) ["+str(__FUNCTION__)+"]");
       //}
-      
+
       m_params->streamOffs = f.pos_time;
       setPropertyValue("stream-pos-info", Any(f.pos_time));
       Size size(f.width,f.height);
       setPropertyValue("size", size);
 
-      
+
       SHOW(FourCC(f.colorspace));
 
       //ensureCompatible(&m_data->outputBuffer,depth8u,size,formatRGB);
       m_data->cfd.decode(FourCC(f.colorspace), f.data, size, &m_data->outputBuffer);
       //      convert_frame(f.data,size,m_data->outputBuffer->asImg<icl8u>(),m_xine->get_4cc());
-      
+
 
       xine_free_video_frame (m_xine->vo_port,&f);
-      
+
       return m_data->outputBuffer;
     }
-    
+
     // callback for changed configurable properties
     void VideoGrabber::processPropertyChange(const utils::Configurable::Property &prop){
       if(prop.name == "stream-pos-info"){

@@ -41,7 +41,7 @@ class QHBoxLayout;
 
 namespace icl{
   namespace qt{
-    
+
     /// Internally used widget to define image params \ingroup UNCOMMON
     class ICLQt_API ImgParamWidget : public QWidget{
       Q_OBJECT
@@ -49,18 +49,18 @@ namespace icl{
       ImgParamWidget(QWidget *parent);
       void doEmitState();
       void getParams(int &width, int &height, int &d, int &fmt) const;
-      
+
       private Q_SLOTS:
       void sizeChanged(const QString &val);
       void formatChanged(const QString &val);
       void depthChanged(const QString &val);
-  
+
       void setup(int width, int height, int d, int format);
-      
+
       Q_SIGNALS:
       void somethingChanged(int width, int height, int d, int format);
-  
-      
+
+
       private:
       QComboBox *m_poSizeCombo;
       QComboBox *m_poDepthCombo;

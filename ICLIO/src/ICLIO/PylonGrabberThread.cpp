@@ -40,7 +40,7 @@ PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                                 PylonCameraOptions* options) :
 m_Grabber(grabber), m_Buffers(),
     m_Error(0), m_Timeout(0), m_Acquired(0)
-{  
+{
   m_Converter = converter;
   m_Options = options;
 }

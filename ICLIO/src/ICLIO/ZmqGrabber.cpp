@@ -36,15 +36,15 @@
 #include <zmq.hpp>
 
 namespace icl{
-  
+
   using namespace utils;
   using namespace core;
-  
+
   namespace io{
-    
+
     struct ZmqGrabber::Data : public Thread{
       ImageCompressor cmp;
-      
+
       SmartPtr<zmq::context_t> context;
       SmartPtr<zmq::socket_t> subscriber;
       SmartPtr<zmq::message_t> msg;
@@ -53,7 +53,7 @@ namespace icl{
       int port;
       std::vector<icl8u> rbuf;
       Mutex mutex;
-      
+
       Data(const std::string &host, int port):host(host),port(port){
         context = new zmq::context_t(1);
         subscriber = new zmq::socket_t(*context, ZMQ_SUB);
@@ -72,32 +72,32 @@ namespace icl{
           mutex.unlock();
         }
       }
-      
+
       ~Data(){
         running = false;
         stop();
       }
     };
-    
-    
+
+
     ZmqGrabber::ZmqGrabber(const std::string &host, int port) throw(utils::ICLException):m_data(0){
       m_data = new Data(host,port);
     }
-    
+
     ZmqGrabber::~ZmqGrabber(){
       if(m_data) {
         m_data->running = false;
         delete m_data;
       };
     }
-    
+
 
     const std::vector<GrabberDeviceDescription> &ZmqGrabber::getDeviceList(bool rescan){
       (void)rescan;
       static std::vector<GrabberDeviceDescription> deviceList;
       return deviceList;
     }
-    
+
     const core::ImgBase* ZmqGrabber::acquireImage(){
       m_data->mutex.lock();
       while(!m_data->rbuf.size()){
@@ -127,8 +127,8 @@ namespace icl{
       deviceList.clear();
       // if filter exists, add grabber with filter
       if(filter.size()){
-        GrabberDeviceDescription d("zmq", 
-                                   filter, 
+        GrabberDeviceDescription d("zmq",
+                                   filter,
                                    "A Zmq-based network grabber");
         deviceList.push_back(d);
       }
@@ -136,9 +136,9 @@ namespace icl{
     }
 
 
-    REGISTER_GRABBER(zmq,utils::function(createZmqGrabber), utils::function(getZmqDeviceList), 
+    REGISTER_GRABBER(zmq,utils::function(createZmqGrabber), utils::function(getZmqDeviceList),
                      "zmq:host\\:port (host where data is published) :Zmq-based network grabber")
-    
+
   } // namespace io
 }
 

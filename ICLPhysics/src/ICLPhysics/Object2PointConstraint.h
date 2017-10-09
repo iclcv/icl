@@ -35,7 +35,7 @@
 namespace icl {
   namespace physics{
     class RigidObject;
-  
+
     /// This constraint binds an object to a point with a spring
     class ICLPhysics_API Object2PointConstraint: public Constraint{
       RigidObject* anchor;

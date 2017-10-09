@@ -45,10 +45,10 @@ namespace icl{
     void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
       (**this)->registerCallback(cb,events);
     }
-    
+
     void DrawHandle3D::removeCallbacks(){
       (**this)->removeCallbacks();
     }
-    
+
   } // namespace qt
 }

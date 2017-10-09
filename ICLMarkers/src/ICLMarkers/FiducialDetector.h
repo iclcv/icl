@@ -46,43 +46,43 @@ namespace icl{
   namespace markers{
     /// Main Fiducial Detector class
     class ICLMarkers_API FiducialDetector : public utils::Uncopyable, public utils::Configurable{
-      
+
       /// hidden data class
       struct Data;
-      
+
       /// hidden data pointer
       Data *data;
-      
+
       public:
-      
+
       /// create a FiducialDetector instance with speical plugin type
       /** The given plugin type can be:
-          
+
           - "art"
-            for ARToolkit markers (visit the 
+            for ARToolkit markers (visit the
             <a href="http://www.hitl.washington.edu/artoolkit/">ARToolkit Webpage</a>
             for more details)
             ART Fiducials can provide the full set of information including the 3D pose
             from a single marker
-          - "bch" 
+          - "bch"
             for ARToolkit+/Studierstube-Tracker like bch-code based binary markers
             (visit the <a href="http://studierstube.icg.tugraz.at/handheld_ar/stbtracker.php">
             Studierstube Tracker Homepage</a> for more details)
             BCH Fiducials can provide the full set of information including the 3D pose
             from a single marker. Usually, the detection rate is faster and more accurate
-            in comparison to artoolkit markers. 
+            in comparison to artoolkit markers.
           - "amoeba"
             for The amoeba style hierarchical markers provided by the
             <a href="http://reactivision.sourceforge.net/">reactivision software</a>
             Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
-            rotation and the 2D boundary. 
-          - "icl1" 
-            for ICL's own markers, that were also used for the former version of 
+            rotation and the 2D boundary.
+          - "icl1"
+            for ICL's own markers, that were also used for the former version of
             deformable paper tracking. Here, 32 hierarchical markers are provided. These markers
             do also provide key-point association and 3D pose estimation. all allowed marker IDs
             can be used twice: positive IDs indicate 'normal' markers (with a black root region)
             while negative marker IDs indicate 'inverted' markers (with white root regions)
-          
+
           <b>other parameters</b>\n
           For extraction of 3D marker information, usually a camera
           is needed. The camera can also set later using setCamera
@@ -91,31 +91,31 @@ namespace icl{
           camera can be updated using setCamera() lateron\n
           The also optionally given markersToLoad and params
           are directly passed to the loadMarkers method
-          
+
           <b>benchmarks</b>
           TODO
       */
-      FiducialDetector(const std::string &plugin="bch", 
+      FiducialDetector(const std::string &plugin="bch",
                        const utils::Any &markersToLoad=utils::Any(),
                        const utils::ParamList &params=utils::ParamList(),
                        const geom::Camera *camera=0) throw (utils::ICLException);
-  
+
       /// Destructor
       virtual ~FiducialDetector();
-      
+
       /// returns the current plugin type
       const std::string &getPluginType() const;
-      
+
       /// sets the current camera
-      /** The camera is usually needed for extraction of 3D marker 
+      /** The camera is usually needed for extraction of 3D marker
           information. After setting a camera, some already existent
           Fiducials might become out of date. Therefore, detect
           must be called again when the camera was changed. */
       void setCamera(const geom::Camera &camera);
-      
+
       /// returns the current camera (or throws an exception if no camera is available)
       const geom::Camera &getCamera() const throw (utils::ICLException);
-      
+
       /// loads markers according to the current plugin type
       /** - "bch":\n
             params is a string that is either a range "[a,b]" of markers
@@ -144,49 +144,49 @@ namespace icl{
             (that has a white root-region) with ID -x is added.
       */
       void loadMarkers(const utils::Any &which, const utils::ParamList &params=utils::ParamList()) throw (utils::ICLException);
-  
-      
+
+
       /// unloads all already defined markers
       /** usually, markers are unloaded with the same pattern that was
           also used for loading the markers before */
       void unloadMarkers(const utils::Any &which);
-   
+
       /// detects markers in the given and returns all found markers
       /** Please note, the preferred input core::format is core::Img8u. Other formats
-          are converted to depth8u internally. Usually, your 
+          are converted to depth8u internally. Usually, your
           plugin will use gray images as input. You can query this information
           by calling getPropertyValue("preferred image type") */
       const std::vector<Fiducial> &detect(const core::ImgBase *image) throw (utils::ICLException);
-      
+
       /// returns the list of supported features
       Fiducial::FeatureSet getFeatures() const;
-      
+
       /// returns a list (comma separated) of all available intermediate image results
       /** The returned images can be used for debugging or for further processing.
           the Fiducial Detector does always add the two tokes "input" and "pp", which
           refers to the last input image and the last preprocessing result image
       */
       std::string getIntermediateImageNames() const;
-      
+
       /// returns the intermediate result image associated with given name
       /** If no image is associated with this name, an exception is thrown. Note,
           the image might be associated, but still be null, in particular if detect
           was not called one before */
       const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException);
-      
-      
+
+
       /// creates an image of a given markers
-      /** sice this function call is directly passed to the underlying FiducialDetectorPlugin 
-          instance, its implemention depends on this implementation. 
+      /** sice this function call is directly passed to the underlying FiducialDetectorPlugin
+          instance, its implemention depends on this implementation.
           @param whichOne specifies the marker to create in case of plugin type 'icl1' or 'bch',
-                          this is simply the marker ID. If the plugin type is art, whichOne needs to 
+                          this is simply the marker ID. If the plugin type is art, whichOne needs to
                           be an image filename. Amoeba markers cannot be created automatically
                           because the marker layout is not free.
           @param size resulting image size (please note, that the recommended image size aspect ratio
                       for icl1-typed markers is 13:17 (e.g. 230:300)
           @param params this list contains additional parameters that are neccessary for marker
-                        creation. 
-          
+                        creation.
+
           \section PARAMS params for different plugin types
           * <b>bch</b> needs an integer valued "border-width" parameter, which is used as border width.
             Please note that the bch-code center always consists of 6x6 pixels. The resulting image of size
@@ -203,7 +203,7 @@ namespace icl{
       /// returns the internal plugin
       FiducialDetectorPlugin* getPlugin();
     };
-    
+
   } // namespace markers
 }
 

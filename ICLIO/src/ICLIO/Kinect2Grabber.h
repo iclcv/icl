@@ -40,7 +40,7 @@ namespace icl{
         enum Mode{
           GRAB_RGB_IMAGE,       //!< grabs rgb images form the kinects rgb camera
           GRAB_DEPTH_IMAGE,     //!< grabs the core::depth image from kinect
-          GRAB_IR_IMAGE,        //!< grabs the kinects IR-image 
+          GRAB_IR_IMAGE,        //!< grabs the kinects IR-image
           DUMMY_MODE            //!< for internal use only
         };
 

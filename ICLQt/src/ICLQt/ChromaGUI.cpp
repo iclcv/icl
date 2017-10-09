@@ -57,37 +57,37 @@ using namespace std;
 namespace icl{
   namespace qt{
 
-    
+
     class ChromaWidget : public ICLDrawWidget, public MouseHandler{
       public:
       ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
         // {{{ open
-  
+
         image = Img8u(Size(256,256),formatRGB);
-        
+
         install(this);
-        
+
         static const float d = 0.015;
         D[0] = Dragger(Point32f(0.1,0.1),d, Dragger::Color(255,0,0));
         D[1] = Dragger(Point32f(0.2,0.1),d, Dragger::Color(255,0,0));
         D[2] = Dragger(Point32f(0.3,0.1),d, Dragger::Color(255,0,0));
-        
+
         D[3] = Dragger(Point32f(0.1,0.4),d, Dragger::Color(0,100,255));
         D[4] = Dragger(Point32f(0.2,0.4),d, Dragger::Color(0,100,255));
         D[5] = Dragger(Point32f(0.3,0.4),d, Dragger::Color(0,100,255));
-        
+
         updateImage(128);
         updateDrawings();
       }
-  
+
       // }}}
       virtual void process(const MouseEvent &event){
         // {{{ open
-  
+
         Point32f p = event.getRelPos(); //Point32f(info->relImageX,info->relImageY);
-        
+
         bool left = event.isLeft();//*(info->downmask);
-        
+
         switch(event.getType()){
           case MouseMoveEvent:
             if(left){
@@ -133,9 +133,9 @@ namespace icl{
               }
             }else{
               if(D[0].hit(p) || D[1].hit(p) || D[2].hit(p)){
-                D[0].drag(p); D[1].drag(p); D[2].drag(p); 
+                D[0].drag(p); D[1].drag(p); D[2].drag(p);
               }else if(D[3].hit(p) || D[4].hit(p) || D[5].hit(p)){
-                D[3].drag(p); D[4].drag(p); D[5].drag(p); 
+                D[3].drag(p); D[4].drag(p); D[5].drag(p);
               }
             }
             break;
@@ -144,58 +144,58 @@ namespace icl{
               D[i].drop();
             }
             break;
-          default: // do nothing 
+          default: // do nothing
             break;
         }
         updateDrawings();
       }
-  
+
       // }}}
       void setBlue(icl8u blue){
         // {{{ open
-  
+
         this->blue = blue;
         updateImage(blue);
       }
-  
+
       // }}}
       const core::Parable* getParables() const{
         // {{{ open
-  
+
         return P;
       }
-  
+
       // }}}
       void save(const std::string &filename,const std::vector<int>&other) const{
         // {{{ open
-        
+
         ICLASSERT_RETURN(other.size() == 7);
         ChromaAndRGBClassifier carc;
         carc.c.parables[0] = P[0];
         carc.c.parables[1] = P[1];
         std::copy(other.begin(),other.begin()+3,carc.ref);
         std::copy(other.begin()+3,other.begin()+6,carc.thresh);
-        
+
         ChromaClassifierIO::save(carc,filename);
-        
+
         // now reopen that file and add gui-informamtion
         ConfigFile f(filename);
-  
+
         static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
         for(int i=0;i<6;i++){
           const Dragger &d = D[i];
-          float fs[6] = { (float)d.pos().x, (float)d.pos().y,(float)d.dim(), 
-                          (float)d.col().r, (float)d.col().g, (float)d.col().b }; 
+          float fs[6] = { (float)d.pos().x, (float)d.pos().y,(float)d.dim(),
+                          (float)d.col().r, (float)d.col().g, (float)d.col().b };
           for(int j=0;j<6;++j){
             f.set(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
           }
         }
         f.set("config.gui-info.blue-slider-value",other[6]);
         f.save(filename);
-  
-      
+
+
       }
-  
+
       // }}}
       void load(const std::string &filename,std::vector<int> &other){
         // {{{ open
@@ -207,23 +207,23 @@ namespace icl{
         P[1] = carc.c.parables[1];
         std::copy(carc.ref,carc.ref+3,other.begin());
         std::copy(carc.thresh,carc.thresh+3,other.begin()+3);
-        
+
         // now reopen that file and add gui-informamtion
         ConfigFile f(filename);
         //static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
-      
+
         for(int i=0;i<6;i++){
           std::string pfx = std::string("config.gui-info.dragger-")+str(i)+".";
           D[i].setColor(f.get<float>(pfx+"red"),f.get<float>(pfx+"green"),f.get<float>(pfx+"blue"));
           D[i].setDim(f.get<float>(pfx+"dim"));
           D[i].setPos(Point32f(f.get<float>(pfx+"xpos"),f.get<float>(pfx+"ypos")));
-      
+
         }
         other[6] = f.get<int>("config.gui-info.blue-slider-value");
-     
+
         updateDrawings();
       }
-  
+
       // }}}
       void updateDrawings(){
         // {{{ open
@@ -245,32 +245,32 @@ namespace icl{
         color(255,255,255,255);
         render();
       }
-  
+
       // }}}
       void updateImage(icl8u blue){
         // {{{ open
-  
-  
-        Channel8u rgb[3]; 
+
+
+        Channel8u rgb[3];
         image.extractChannels(rgb);
-        
+
         for(int x=0;x<256;x++){
           for(int y=0;y<255-x;y++){
             Dragger::Color::xyb_to_rg(rgb[0](x,y),rgb[1](x,y),blue,float(x)/255,float(y)/255);
-            rgb[2](x,y) = blue; 
+            rgb[2](x,y) = blue;
           }
         }
-  
-  
-  
+
+
+
         // some misc
         static const int n = 1;
         static const int nn = 2*n+1;
         static Point o[nn][nn];
-              
+
         static Point *po = &(o[0][0]);
         static bool first = true;
-        if(first){ 
+        if(first){
           first = false;
           for(int x=-n;x<=n;x++){
             for(int y=-n;y<=n;y++){
@@ -281,8 +281,8 @@ namespace icl{
         for(int i=n;i<256-n;i++){
           int s[2] = {0,0};
           for(int p=0;p<nn*nn;p++){
-            s[0] += rgb[0](i+po[p].x,255-i+po[p].y); 
-            s[1] += rgb[1](i+po[p].x,255-i+po[p].y); 
+            s[0] += rgb[0](i+po[p].x,255-i+po[p].y);
+            s[1] += rgb[1](i+po[p].x,255-i+po[p].y);
           }
           rgb[0](i,255-i) = clipped_cast<icl32f,icl8u>(float(s[0])/(nn*nn));
           rgb[1](i,255-i) = clipped_cast<icl32f,icl8u>(float(s[1])/(nn*nn));
@@ -290,16 +290,16 @@ namespace icl{
         setImage(&image);
         update();
       }
-  
+
       // }}}
-      
+
       Dragger D[6];
       Parable P[2];
       Img8u image;
       icl8u blue;
     };
-  
-  
+
+
     ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vsplit[@handle=parent]",parent){
       // {{{ open
       (*this) << VBox().handle("image").label("Chromaticity Space").minSize(18,16)
@@ -321,74 +321,74 @@ namespace icl{
                    << Slider(0,255,128).handle("blue-thresh").label("Blue Threshold").out("bluetval")
                   )
               << Show();
-  
+
       BoxHandle &h = get<BoxHandle>("image");
       m_poChromaWidget = new ChromaWidget(*h);
       h.add(m_poChromaWidget);
-  
-  
+
+
       m_aoSliderHandles[0][0] = get<SliderHandle>("red");
       m_aoSliderHandles[0][1] = get<SliderHandle>("green");
       m_aoSliderHandles[0][2] = get<SliderHandle>("blue");
-  
+
       m_aoSliderHandles[1][0] = get<SliderHandle>("red-thresh");
-      m_aoSliderHandles[1][1] = get<SliderHandle>("green-thresh");  
+      m_aoSliderHandles[1][1] = get<SliderHandle>("green-thresh");
       m_aoSliderHandles[1][2] = get<SliderHandle>("blue-thresh");
-   
-  
+
+
       QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
                        (QObject*)this,SLOT(blueSliderChanged(int)));
-  
+
       QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
                        (QObject*)this,SLOT(blueSliderChanged(int)));
-      
+
       QObject::connect((QObject*)*get<ButtonHandle>("load"),SIGNAL(clicked(bool)),
                        (QObject*)this,SLOT(load()));
-      
-      
+
+
       QObject::connect((QObject*)*(get<ButtonHandle>("save")),SIGNAL(clicked(bool)),
                        (QObject*)this,SLOT(save()));
     }
-  
+
     // }}}
     ChromaClassifier ChromaGUI::getChromaClassifier(){
       // {{{ open
-  
+
       ChromaClassifier c;
       c.parables[0] = m_poChromaWidget->getParables()[0];
       c.parables[1] = m_poChromaWidget->getParables()[1];
       return c;
     }
-  
+
     // }}}
     ChromaAndRGBClassifier ChromaGUI::getChromaAndRGBClassifier(){
       // {{{ open
-  
+
       ChromaAndRGBClassifier c;
       c.c = getChromaClassifier();
       c.ref[0] = m_aoSliderHandles[0][0].getValue();
       c.ref[1] = m_aoSliderHandles[0][1].getValue();
       c.ref[2] = m_aoSliderHandles[0][2].getValue();
-  
+
       c.thresh[0] = m_aoSliderHandles[1][0].getValue();
       c.thresh[1] = m_aoSliderHandles[1][1].getValue();
       c.thresh[2] = m_aoSliderHandles[1][2].getValue();
-  
+
       return c;
     }
-  
+
     // }}}
     void ChromaGUI::blueSliderChanged(int val){
       // {{{ open
-  
+
       m_poChromaWidget->setBlue(val);
       m_poChromaWidget->update();
     }
-  
+
     // }}}
     void ChromaGUI::load(const std::string &filenameIn){
       // {{{ open
-  
+
       QString filename;
       if(filenameIn == ""){
         filename = QFileDialog::getOpenFileName( 0, "Select Filename...", "./");
@@ -398,26 +398,26 @@ namespace icl{
       }else{
         filename = filenameIn.c_str();
       }
-  
+
       vector<int> data;
       m_poChromaWidget->load(filename.toLatin1().data(),data);
       ICLASSERT_RETURN(data.size() == 7);
-  
+
       m_aoSliderHandles[0][0] = data[0];
       m_aoSliderHandles[0][1] = data[1];
       m_aoSliderHandles[0][2] = data[2];
-  
+
       m_aoSliderHandles[1][0] = data[3];
       m_aoSliderHandles[1][1] = data[4];
       m_aoSliderHandles[1][2] = data[5];
-      
+
       get<SliderHandle>("bluedisphandle") = data[6];
     }
-  
+
     // }}}
     void ChromaGUI::save(const std::string &filenameIn){
       // {{{ open
-  
+
       QString filename;
       if(filenameIn == ""){
         filename = QFileDialog::getSaveFileName( 0, "Select Filename...", "./");
@@ -427,7 +427,7 @@ namespace icl{
       }else{
         filename = filenameIn.c_str();
       }
-  
+
       vector<int> data;
       data.push_back(m_aoSliderHandles[0][0].getValue());
       data.push_back(m_aoSliderHandles[0][1].getValue());
@@ -435,14 +435,14 @@ namespace icl{
       data.push_back(m_aoSliderHandles[1][0].getValue());
       data.push_back(m_aoSliderHandles[1][1].getValue());
       data.push_back(m_aoSliderHandles[1][2].getValue());
-      
+
       data.push_back(get<SliderHandle>("bluedisphandle").getValue());
-      
+
       m_poChromaWidget->save(filename.toLatin1().data(),data);
-  
+
     }
-  
+
     // }}}
-  
+
   } // namespace qt
 }

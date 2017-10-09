@@ -25,7 +25,7 @@ void init(){
       << Button("exit").handle("exit")
       << Button("show ps").handle("show ps")
       << Show();
-  
+
   // register callbacks (on the specific handles)
   gui["exit"].registerCallback(std::terminate);
   gui["clickme"].registerCallback(complex_cb);

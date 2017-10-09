@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-/*********************************************************** 
+/***********************************************************
 * Please note that this file contains the whole OpenSURF   *
 * library. We decided to include the library by-source     *
 * in order to be able to ship its functionality easier     *
@@ -64,27 +64,27 @@ namespace icl{
          public:
 
          /// Constructor without image
-         FastHessian(std::vector<Ipoint> &ipts, 
-                     const int octaves = OCTAVES, 
-                     const int intervals = INTERVALS, 
-                     const int init_sample = INIT_SAMPLE, 
+         FastHessian(std::vector<Ipoint> &ipts,
+                     const int octaves = OCTAVES,
+                     const int intervals = INTERVALS,
+                     const int init_sample = INIT_SAMPLE,
                      const float thres = THRES);
-    
+
          /// Constructor with image
-         FastHessian(IplImage *img, 
-                     std::vector<Ipoint> &ipts, 
-                     const int octaves = OCTAVES, 
-                     const int intervals = INTERVALS, 
-                     const int init_sample = INIT_SAMPLE, 
+         FastHessian(IplImage *img,
+                     std::vector<Ipoint> &ipts,
+                     const int octaves = OCTAVES,
+                     const int intervals = INTERVALS,
+                     const int init_sample = INIT_SAMPLE,
                      const float thres = THRES);
-    
+
          /// Destructor
          ~FastHessian();
-    
+
          /// Save the parameters
-         void saveParameters(const int octaves, 
+         void saveParameters(const int octaves,
                              const int intervals,
-                             const int init_sample, 
+                             const int init_sample,
                              const float thres);
 
          /// Set or re-set the integral image source
@@ -92,9 +92,9 @@ namespace icl{
 
          /// Find the image features and write into vector of features
          void getIpoints();
-    
+
          private:
-    
+
          /// Build map of DoH responses
          void buildResponseMap();
 
@@ -102,8 +102,8 @@ namespace icl{
          void buildResponseLayer(ResponseLayer *r);
 
          /// 3x3x3 Extrema test
-         int isExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b);    
-    
+         int isExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b);
+
          /// Interpolation functions - adapted from Lowe's SIFT implementation
          void interpolateExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b);
          void interpolateStep(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b,
@@ -111,11 +111,11 @@ namespace icl{
          CvMat* deriv3D(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b);
          CvMat* hessian3D(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b);
 
-         /// Pointer to the integral Image, and its attributes 
+         /// Pointer to the integral Image, and its attributes
          IplImage *img;
          int i_width, i_height;
-    
-         /// Reference to vector of features passed from outside 
+
+         /// Reference to vector of features passed from outside
          std::vector<Ipoint> &ipts;
 
          /// Response stack of determinant of hessian values
@@ -129,17 +129,17 @@ namespace icl{
 
          /// Initial sampling step for Ipoint detection
          int init_sample;
-    
+
          /// Threshold value for blob resonses
          float thresh;
        };
 
-      
+
 
       //! Constructor without image
-      FastHessian::FastHessian(std::vector<Ipoint> &ipts, 
-                               const int octaves, const int intervals, const int init_sample, 
-                               const float thresh) 
+      FastHessian::FastHessian(std::vector<Ipoint> &ipts,
+                               const int octaves, const int intervals, const int init_sample,
+                               const float thresh)
         :i_width(0), i_height(0), ipts(ipts)
       {
         // Save parameter set
@@ -149,9 +149,9 @@ namespace icl{
 
 
       //! Constructor with image
-      FastHessian::FastHessian(IplImage *img, std::vector<Ipoint> &ipts, 
-                               const int octaves, const int intervals, const int init_sample, 
-                               const float thresh) 
+      FastHessian::FastHessian(IplImage *img, std::vector<Ipoint> &ipts,
+                               const int octaves, const int intervals, const int init_sample,
+                               const float thresh)
         : i_width(0), i_height(0),ipts(ipts)
       {
         // Save parameter set
@@ -174,15 +174,15 @@ namespace icl{
 
 
       //! Save the parameters
-      void FastHessian::saveParameters(const int octaves, const int intervals, 
+      void FastHessian::saveParameters(const int octaves, const int intervals,
                                        const int init_sample, const float thresh)
       {
         // Initialise variables with bounds-checked values
-        this->octaves = 
+        this->octaves =
         (octaves > 0 && octaves <= 4 ? octaves : OCTAVES);
-        this->intervals = 
+        this->intervals =
         (intervals > 0 && intervals <= 4 ? intervals : INTERVALS);
-        this->init_sample = 
+        this->init_sample =
         (init_sample > 0 && init_sample <= 6 ? init_sample : INIT_SAMPLE);
         this->thresh = (thresh >= 0 ? thresh : THRES);
       }
@@ -222,7 +222,7 @@ namespace icl{
                                               m = responseMap.at(filter_map[o][i+1]);
                                               t = responseMap.at(filter_map[o][i+2]);
 
-                                              // loop over middle response layer at density of the most 
+                                              // loop over middle response layer at density of the most
                                               // sparse layer (always top), to find maxima across scale and space
                                               for (int r = 0; r < t->height; ++r)
                                                 {
@@ -250,7 +250,7 @@ namespace icl{
         // Oct5: 99, 195,291,387
 
         // Deallocate memory and clear any existing response layers
-        for(unsigned int i = 0; i < responseMap.size(); ++i)  
+        for(unsigned int i = 0; i < responseMap.size(); ++i)
           delete responseMap[i];
         responseMap.clear();
 
@@ -267,7 +267,7 @@ namespace icl{
             responseMap.push_back(new ResponseLayer(w,   h,   s,   21));
             responseMap.push_back(new ResponseLayer(w,   h,   s,   27));
           }
- 
+
         if (octaves >= 2)
           {
             responseMap.push_back(new ResponseLayer(w/2, h/2, s*2, 39));
@@ -313,13 +313,13 @@ namespace icl{
         float inverse_area = 1.f/(w*w);           // normalisation factor
         float Dxx, Dyy, Dxy;
 
-        for(int r, c, ar = 0, index = 0; ar < rl->height; ++ar) 
+        for(int r, c, ar = 0, index = 0; ar < rl->height; ++ar)
           {
-            for(int ac = 0; ac < rl->width; ++ac, index++) 
+            for(int ac = 0; ac < rl->width; ++ac, index++)
               {
                 // get the image coordinates
                 r = ar * step;
-                c = ac * step; 
+                c = ac * step;
 
                 // Compute response components
                 Dxx = BoxIntegral(img, r - l + 1, c - b, 2*l - 1, w)
@@ -335,7 +335,7 @@ namespace icl{
                 Dxx *= inverse_area;
                 Dyy *= inverse_area;
                 Dxy *= inverse_area;
-     
+
                 // Get the determinant of hessian response & laplacian sign
                 responses[index] = (Dxx * Dyy - 0.81f * Dxy * Dxy);
                 laplacian[index] = (Dxx + Dyy >= 0 ? 1 : 0);
@@ -347,7 +347,7 @@ namespace icl{
               }
           }
       }
-  
+
 
 
       //! Non Maximal Suppression function
@@ -358,10 +358,10 @@ namespace icl{
         if (r <= layerBorder || r >= t->height - layerBorder || c <= layerBorder || c >= t->width - layerBorder)
           return 0;
 
-        // check the candidate point in the middle layer is above thresh 
+        // check the candidate point in the middle layer is above thresh
         float candidate = m->getResponse(r, c, t);
-        if (candidate < thresh) 
-          return 0; 
+        if (candidate < thresh)
+          return 0;
 
         for (int rr = -1; rr <=1; ++rr)
           {
@@ -372,7 +372,7 @@ namespace icl{
                     t->getResponse(r+rr, c+cc) >= candidate ||
                     ((rr != 0 && cc != 0) && m->getResponse(r+rr, c+cc, t) >= candidate) ||
                     b->getResponse(r+rr, c+cc, t) >= candidate
-                    ) 
+                    )
                   return 0;
               }
           }
@@ -382,14 +382,14 @@ namespace icl{
 
 
 
-      //! Interpolate scale-space extrema to subpixel accuracy to form an image feature.   
+      //! Interpolate scale-space extrema to subpixel accuracy to form an image feature.
       void FastHessian::interpolateExtremum(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b)
       {
         // get the step distance between filters
         // check the middle filter is mid way between top and bottom
         int filterStep = (m->filter - b->filter);
         assert(filterStep > 0 && t->filter - m->filter == m->filter - b->filter);
- 
+
         // Get the offsets to the actual location of the extremum
         double xi = 0, xr = 0, xc = 0;
         interpolateStep(r, c, t, m, b, &xi, &xr, &xc );
@@ -408,8 +408,8 @@ namespace icl{
 
 
 
-      //! Performs one step of extremum interpolation. 
-      void FastHessian::interpolateStep(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b, 
+      //! Performs one step of extremum interpolation.
+      void FastHessian::interpolateStep(int r, int c, ResponseLayer *t, ResponseLayer *m, ResponseLayer *b,
                                         double* xi, double* xr, double* xc )
       {
         CvMat* dD, * H, * H_inv, X;
@@ -442,7 +442,7 @@ namespace icl{
         dx = (m->getResponse(r, c + 1, t) - m->getResponse(r, c - 1, t)) / 2.0;
         dy = (m->getResponse(r + 1, c, t) - m->getResponse(r - 1, c, t)) / 2.0;
         ds = (t->getResponse(r, c) - b->getResponse(r, c, t)) / 2.0;
-  
+
         dI = cvCreateMat( 3, 1, CV_64FC1 );
         cvmSet( dI, 0, 0, dx );
         cvmSet( dI, 1, 0, dy );
@@ -463,11 +463,11 @@ namespace icl{
         dxx = m->getResponse(r, c + 1, t) + m->getResponse(r, c - 1, t) - 2 * v;
         dyy = m->getResponse(r + 1, c, t) + m->getResponse(r - 1, c, t) - 2 * v;
         dss = t->getResponse(r, c) + b->getResponse(r, c, t) - 2 * v;
-        dxy = ( m->getResponse(r + 1, c + 1, t) - m->getResponse(r + 1, c - 1, t) - 
+        dxy = ( m->getResponse(r + 1, c + 1, t) - m->getResponse(r + 1, c - 1, t) -
                 m->getResponse(r - 1, c + 1, t) + m->getResponse(r - 1, c - 1, t) ) / 4.0;
-        dxs = ( t->getResponse(r, c + 1) - t->getResponse(r, c - 1) - 
+        dxs = ( t->getResponse(r, c + 1) - t->getResponse(r, c - 1) -
                 b->getResponse(r, c + 1, t) + b->getResponse(r, c - 1, t) ) / 4.0;
-        dys = ( t->getResponse(r + 1, c) - t->getResponse(r - 1, c) - 
+        dys = ( t->getResponse(r + 1, c) - t->getResponse(r - 1, c) -
                 b->getResponse(r + 1, c, t) + b->getResponse(r - 1, c, t) ) / 4.0;
 
         H = cvCreateMat( 3, 3, CV_64FC1 );
@@ -485,7 +485,7 @@ namespace icl{
       }
 
 
-      //! Computes the integral image of image img.  Assumes source image to be a 
+      //! Computes the integral image of image img.  Assumes source image to be a
       //! 32-bit floating point.  Returns IplImage of 32-bit float form.
       IplImage *Integral(IplImage *source)
       {
@@ -497,24 +497,24 @@ namespace icl{
         int height = img->height;
         int width = img->width;
         int step = img->widthStep/sizeof(float);
-        float *data   = (float *) img->imageData;  
-        float *i_data = (float *) int_img->imageData;  
+        float *data   = (float *) img->imageData;
+        float *i_data = (float *) int_img->imageData;
 
         // first row only
         float rs = 0.0f;
-        for(int j=0; j<width; j++) 
+        for(int j=0; j<width; j++)
           {
-            rs += data[j]; 
+            rs += data[j];
             i_data[j] = rs;
           }
 
         // remaining cells are sum above and to the left
-        for(int i=1; i<height; ++i) 
+        for(int i=1; i<height; ++i)
           {
             rs = 0.0f;
-            for(int j=0; j<width; ++j) 
+            for(int j=0; j<width; ++j)
               {
-                rs += data[i*step+j]; 
+                rs += data[i*step+j];
                 i_data[i*step+j] = rs + i_data[(i-1)*step+j];
               }
           }
@@ -547,7 +547,7 @@ namespace icl{
 
 
 
-      //! Populate IpPairVec with matched ipts 
+      //! Populate IpPairVec with matched ipts
       void getMatches(IpVec &ipts1, IpVec &ipts2, IpPairVec &matches)
       {
         float dist, d1, d2;
@@ -555,13 +555,13 @@ namespace icl{
 
         matches.clear();
 
-        for(unsigned int i = 0; i < ipts1.size(); i++) 
+        for(unsigned int i = 0; i < ipts1.size(); i++)
           {
             d1 = d2 = FLT_MAX;
 
-            for(unsigned int j = 0; j < ipts2.size(); j++) 
+            for(unsigned int j = 0; j < ipts2.size(); j++)
               {
-                dist = ipts1[i] - ipts2[j];  
+                dist = ipts1[i] - ipts2[j];
 
                 if(dist<d1) // if this feature matches better than current best
                   {
@@ -576,8 +576,8 @@ namespace icl{
               }
 
             // If match has a d1:d2 ratio < 0.65 ipoints are a match
-            if(d1/d2 < 0.65) 
-              { 
+            if(d1/d2 < 0.65)
+              {
                 // Store the change in position
                 ipts1[i].dx = match->x - ipts1[i].x;
                 ipts1[i].dy = match->y - ipts1[i].y;
@@ -600,7 +600,7 @@ namespace icl{
         CvMat _h = cvMat(3, 3, CV_64F, h);
         std::vector<CvPoint2D32f> pt1, pt2;
         CvMat _pt1, _pt2;
-  
+
         int n = (int)matches.size();
         if( n < 4 ) return 0;
 
@@ -724,11 +724,11 @@ namespace icl{
 
         int idx = 0;
         // calculate haar responses for points within radius of 6*scale
-        for(int i = -6; i <= 6; ++i) 
+        for(int i = -6; i <= 6; ++i)
           {
-            for(int j = -6; j <= 6; ++j) 
+            for(int j = -6; j <= 6; ++j)
               {
-                if(i*i + j*j < 36) 
+                if(i*i + j*j < 36)
                   {
                     gauss = static_cast<float>(gauss25[id[i+6]][id[j+6]]);
                     resX[idx] = gauss * haarX(r+j*s, c+i*s, 4*s);
@@ -739,7 +739,7 @@ namespace icl{
               }
           }
 
-        // calculate the dominant direction 
+        // calculate the dominant direction
         float sumX=0.f, sumY=0.f;
         float max=0.f, orientation = 0.f;
         float ang1=0.f, ang2=0.f;
@@ -747,29 +747,29 @@ namespace icl{
         // loop slides pi/3 window around feature point
         for(ang1 = 0; ang1 < 2*pi;  ang1+=0.15f) {
           ang2 = ( ang1+pi/3.0f > 2*pi ? ang1-5.0f*pi/3.0f : ang1+pi/3.0f);
-          sumX = sumY = 0.f; 
-          for(unsigned int k = 0; k < Ang.size(); ++k) 
+          sumX = sumY = 0.f;
+          for(unsigned int k = 0; k < Ang.size(); ++k)
             {
               // get angle from the x-axis of the sample point
               const float & ang = Ang[k];
 
               // determine whether the point is within the window
-              if (ang1 < ang2 && ang1 < ang && ang < ang2) 
+              if (ang1 < ang2 && ang1 < ang && ang < ang2)
                 {
-                  sumX+=resX[k];  
+                  sumX+=resX[k];
                   sumY+=resY[k];
-                } 
-              else if (ang2 < ang1 && 
-                       ((ang > 0 && ang < ang2) || (ang > ang1 && ang < 2*pi) )) 
+                }
+              else if (ang2 < ang1 &&
+                       ((ang > 0 && ang < ang2) || (ang > ang1 && ang < 2*pi) ))
                 {
-                  sumX+=resX[k];  
+                  sumX+=resX[k];
                   sumY+=resY[k];
                 }
             }
 
-          // if the vector produced from this window is longer than all 
+          // if the vector produced from this window is longer than all
           // previous vectors then this forms the new dominant direction
-          if (sumX*sumX + sumY*sumY > max) 
+          if (sumX*sumX + sumY*sumY > max)
             {
               // store largest orientation
               max = sumX*sumX + sumY*sumY;
@@ -797,7 +797,7 @@ namespace icl{
         Ipoint *ipt = &ipts[index];
         scale = ipt->scale;
         x = fRound(ipt->x);
-        y = fRound(ipt->y);  
+        y = fRound(ipt->y);
         desc = ipt->descriptor;
 
         if (bUpright)
@@ -822,7 +822,7 @@ namespace icl{
             cx += 1.f;
             cy = -0.5f;
 
-            while(j < 12) 
+            while(j < 12)
               {
                 dx=dy=mdx=mdy=0.f;
                 cy += 1.f;
@@ -835,9 +835,9 @@ namespace icl{
                 xs = fRound(x + ( -jx*scale*si + ix*scale*co));
                 ys = fRound(y + ( jx*scale*co + ix*scale*si));
 
-                for (int k = i; k < i + 9; ++k) 
+                for (int k = i; k < i + 9; ++k)
                   {
-                    for (int l = j; l < j + 9; ++l) 
+                    for (int l = j; l < j + 9; ++l)
                       {
                         //Get coords of sample point on the rotated axis
                         sample_x = fRound(x + (-l*scale*si + k*scale*co));
@@ -904,7 +904,7 @@ namespace icl{
       //! Calculate Haar wavelet responses in x direction
       inline float Surf::haarX(int row, int column, int s)
       {
-        return BoxIntegral(img, row-s/2, column, s, s/2) 
+        return BoxIntegral(img, row-s/2, column, s, s/2)
         -1 * BoxIntegral(img, row-s/2, column-s/2, s, s/2);
       }
 
@@ -913,7 +913,7 @@ namespace icl{
       //! Calculate Haar wavelet responses in y direction
       inline float Surf::haarY(int row, int column, int s)
       {
-        return BoxIntegral(img, row, column-s/2, s/2, s) 
+        return BoxIntegral(img, row, column-s/2, s/2, s)
         -1 * BoxIntegral(img, row-s/2, column-s/2, s/2, s);
       }
 
@@ -940,7 +940,7 @@ namespace icl{
 
 
       static const int NCOLOURS = 8;
-      static const CvScalar COLOURS [] = {cvScalar(255,0,0), cvScalar(0,255,0), 
+      static const CvScalar COLOURS [] = {cvScalar(255,0,0), cvScalar(0,255,0),
                                           cvScalar(0,0,255), cvScalar(255,255,0),
                                           cvScalar(0,255,255), cvScalar(255,0,255),
                                           cvScalar(255,255,255), cvScalar(0,0,0)};
@@ -948,7 +948,7 @@ namespace icl{
 
 
       //! Display error message and terminate program
-      void error(const char *msg) 
+      void error(const char *msg)
       {
         std::cout << "\nError: " << msg;
         getchar();
@@ -960,8 +960,8 @@ namespace icl{
       //! Show the provided image and wait for keypress
       void showImage(const IplImage *img)
       {
-        cvNamedWindow("Surf", CV_WINDOW_AUTOSIZE); 
-        cvShowImage("Surf", img);  
+        cvNamedWindow("Surf", CV_WINDOW_AUTOSIZE);
+        cvShowImage("Surf", img);
         cvWaitKey(0);
       }
 
@@ -970,8 +970,8 @@ namespace icl{
       //! Show the provided image in titled window and wait for keypress
       void showImage(char *title,const IplImage *img)
       {
-        cvNamedWindow(title, CV_WINDOW_AUTOSIZE); 
-        cvShowImage(title, img);  
+        cvNamedWindow(title, CV_WINDOW_AUTOSIZE);
+        cvShowImage(title, img);
         cvWaitKey(0);
       }
 
@@ -1009,7 +1009,7 @@ namespace icl{
         float s, o;
         int r1, c1, r2, c2, lap;
 
-        for(unsigned int i = 0; i < ipts.size(); i++) 
+        for(unsigned int i = 0; i < ipts.size(); i++)
           {
             ipt = &ipts.at(i);
             s = (2.5f * ipt->scale);
@@ -1116,7 +1116,7 @@ namespace icl{
         float s;
         int r1, c1;
 
-        for(unsigned int i = 0; i < ipts.size(); i++) 
+        for(unsigned int i = 0; i < ipts.size(); i++)
           {
             s = 3;
             r1 = fRound(ipts[i].y);
@@ -1137,7 +1137,7 @@ namespace icl{
         int x, y;
         CvPoint2D32f src[4];
 
-        for(unsigned int i = 0; i < ipts.size(); i++) 
+        for(unsigned int i = 0; i < ipts.size(); i++)
           {
             ipt = &ipts.at(i);
             s = (10 * ipt->scale);
@@ -1153,20 +1153,20 @@ namespace icl{
             src[3].x=sd*-s+cd*s+x;  src[3].y=-cd*-s+sd*s+y;
 
             if (o) // Draw orientation line
-              cvLine(img, cvPoint(x, y), 
+              cvLine(img, cvPoint(x, y),
                      cvPoint(fRound(s*cd + x), fRound(s*sd + y)), cvScalar(0, 255, 0),1);
             else  // Green dot if using upright version
               cvCircle(img, cvPoint(x,y), 1, cvScalar(0, 255, 0),-1);
 
 
             // Draw box window around the point
-            cvLine(img, cvPoint(fRound(src[0].x), fRound(src[0].y)), 
+            cvLine(img, cvPoint(fRound(src[0].x), fRound(src[0].y)),
                    cvPoint(fRound(src[1].x), fRound(src[1].y)), cvScalar(255, 0, 0),2);
-            cvLine(img, cvPoint(fRound(src[1].x), fRound(src[1].y)), 
+            cvLine(img, cvPoint(fRound(src[1].x), fRound(src[1].y)),
                    cvPoint(fRound(src[2].x), fRound(src[2].y)), cvScalar(255, 0, 0),2);
-            cvLine(img, cvPoint(fRound(src[2].x), fRound(src[2].y)), 
+            cvLine(img, cvPoint(fRound(src[2].x), fRound(src[2].y)),
                    cvPoint(fRound(src[3].x), fRound(src[3].y)), cvScalar(255, 0, 0),2);
-            cvLine(img, cvPoint(fRound(src[3].x), fRound(src[3].y)), 
+            cvLine(img, cvPoint(fRound(src[3].x), fRound(src[3].y)),
                    cvPoint(fRound(src[0].x), fRound(src[0].y)), cvScalar(255, 0, 0),2);
 
           }
@@ -1188,7 +1188,7 @@ namespace icl{
         if (counter > 10)
           {
             fps = (10.0f/(clock()-t) * CLOCKS_PER_SEC);
-            t=clock(); 
+            t=clock();
             counter = 0;
           }
 
@@ -1214,7 +1214,7 @@ namespace icl{
         outfile << ipts.size() << "\n";
 
         // create output line as:  scale  x  y  des
-        for(unsigned int i=0; i < ipts.size(); i++) 
+        for(unsigned int i=0; i < ipts.size(); i++)
           {
             outfile << ipts.at(i).scale << "  ";
             outfile << ipts.at(i).x << " ";
@@ -1245,12 +1245,12 @@ namespace icl{
         infile >> count;
 
         // for each ipoint
-        for (int i = 0; i < count; i++) 
+        for (int i = 0; i < count; i++)
           {
             Ipoint ipt;
 
             // read vals
-            infile >> ipt.scale; 
+            infile >> ipt.scale;
             infile >> ipt.x;
             infile >> ipt.y;
             infile >> ipt.orientation;
@@ -1277,13 +1277,13 @@ namespace icl{
       {
         // Create integral-image representation of the image
         IplImage *int_img = Integral(img);
-  
+
         // Create Fast Hessian Object
         FastHessian fh(int_img, ipts, octaves, intervals, init_sample, thres);
- 
+
         // Extract interest points and store in vector ipts
         fh.getIpoints();
-  
+
         // Create Surf Descriptor Object
         Surf des(int_img, ipts);
 
@@ -1323,7 +1323,7 @@ namespace icl{
       void surfDes(IplImage *img,  /* image to find Ipoints in */
                    std::vector<Ipoint> &ipts, /* reference to vector of Ipoints */
                    bool upright) /* run in rotation invariant mode? */
-      { 
+      {
         // Create integral image representation of the image
         IplImage *int_img = Integral(img);
 
@@ -1332,7 +1332,7 @@ namespace icl{
 
         // Extract the descriptors for the ipts
         des.getDescriptors(upright);
-  
+
         // Deallocate the integral image
         cvReleaseImage(&int_img);
       }
@@ -1345,7 +1345,7 @@ namespace icl{
         SetIpoints(ipts);
 
         if (init) InitRandomClusters(clusters);
-  
+
         while (AssignToClusters());
         {
           RepositionClusters();
@@ -1431,9 +1431,9 @@ namespace icl{
 
       float Kmeans::Distance(Ipoint &ip1, Ipoint &ip2)
       {
-        return sqrt(pow(ip1.x - ip2.x, 2) 
+        return sqrt(pow(ip1.x - ip2.x, 2)
                     + pow(ip1.y - ip2.y, 2)
-                    /*+ pow(ip1.dx - ip2.dx, 2) 
+                    /*+ pow(ip1.dx - ip2.dx, 2)
                         + pow(ip1.dy - ip2.dy, 2)*/);
       }
 

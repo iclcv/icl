@@ -50,7 +50,7 @@ int usage(){
          "       jpg file on the hard-disk, which is read using a FileReader object.\n"
          "     - the header information block containing the function declaration for\n"
          "       the according header file\n\n" );
-  
+
   return 1;
 }
 int fileNotFound(char *pc){
@@ -61,7 +61,7 @@ int fileNotFound(char *pc){
 
 void writeLine(vector<unsigned char>::iterator &it, int len, bool isLastRow){
   printf("  {");
-  
+
   vector<unsigned char>::iterator end = it+len-1;
   while(it != end){
     printf("%3d,",*it++);
@@ -72,16 +72,16 @@ void writeLine(vector<unsigned char>::iterator &it, int len, bool isLastRow){
     printf("%3d}\n};\n",*it++);
   }
 }
-               
+
 
 int main(int n, char **ppc){
-  
-  
+
+
   if(n!=3) return usage();
-    
+
   FILE *f = fopen(ppc[1],"rb");
   if(!f) return fileNotFound(ppc[1]);
-  
+
   char buf[10000];
   vector<unsigned char> dataVec;
   int nBytesRead = 0;
@@ -100,7 +100,7 @@ int main(int n, char **ppc){
 
   printf("#include <ICLIO/FileGrabber.h>\n");
   printf("#include <ICLCore/Img.h>\n");
-  
+
 
   //-------------------------------------------
   printf("using namespace icl;\n");
@@ -113,7 +113,7 @@ int main(int n, char **ppc){
   printf("const int NROWS = %d;\n",ROWS);
   printf("const int NCOLS = %d;\n",COLS);
   printf("const int NEXTRA = %d;\n",NEXTRA);
-  
+
   printf("unsigned char %s[NROWS][NCOLS] = {\n",arrayName.c_str());
   printf("  // {{{ open\n");
   vector<unsigned char>::iterator it=dataVec.begin();
@@ -130,7 +130,7 @@ int main(int n, char **ppc){
     }
   }
   printf("\n};\n// }}}\n\n}//end namespace\n");
-  
+
   printf("ImgBase* createImage_%s(){\n",imageName.c_str());
   printf("  // {{{ open\n");
   printf("  static ImgBase *image = 0;\n"
@@ -156,13 +156,13 @@ int main(int n, char **ppc){
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());
 
   printf("} // end namespace icl\n\n\n");
-  
+
   printf("!!! put this into the header file:\n"
          "namespace icl{\n"
          "  /// Create the image named %s\n"
          "  ImgBase *createImage_%s();\n"
          "}\n\n",imageName.c_str(),imageName.c_str());
-        
+
 }
 
 

@@ -42,7 +42,7 @@ namespace icl{
     }
     MultiDrawHandle::MultiDrawHandle(ICLDrawWidget *w, QTabBar *t,std::vector<ImgBase*> *imageBuffer, bool bufferAll, bool copyDeep, GUIWidget *guiw):
       GUIHandle<ICLDrawWidget>(w,guiw),m_imageBuffer(imageBuffer),m_tabBar(t),m_bufferAll(bufferAll),m_bufferDeeply(copyDeep){
-      
+
       if(!t) return;
       for(int i=0;i<t->count();++i){
         std::string tabText = t->tabText(i).toLatin1().data();
@@ -59,29 +59,29 @@ namespace icl{
         }
         imageBuffer->resize(t->count(),0);
         QObject::connect(m_tabBar,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
-      }    
+      }
     }
-  
+
     MultiDrawHandle::MultiDrawHandle(const MultiDrawHandle &other):
       GUIHandle<ICLDrawWidget>(const_cast<ICLDrawWidget*>(*other), const_cast<MultiDrawHandle&>(other).getGUIWidget()){
-  
+
       m_imageBuffer = other.m_imageBuffer;
       m_tabBar = other.m_tabBar;
       m_map = other.m_map;
       m_bufferAll = other.m_bufferAll;
       m_bufferDeeply = other.m_bufferDeeply;
-      
+
       if(m_bufferAll){
         QObject::connect(m_tabBar,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
       }
     }
-  
+
     MultiDrawHandle::~MultiDrawHandle(){
       if(m_bufferAll){
         QObject::disconnect(m_tabBar,SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
       }
     }
-    
+
     void MultiDrawHandle::tabChanged(int idx){
       if(m_bufferAll){
         if(!m_imageBuffer){
@@ -89,12 +89,12 @@ namespace icl{
           return;
         }
         if(idx < (int)m_imageBuffer->size()){
-          (**this)->setImage(m_imageBuffer->at(idx));  
+          (**this)->setImage(m_imageBuffer->at(idx));
           (**this)->render();
         }
       }
     }
-    
+
     void MultiDrawHandle::Assigner::setImage(const ImgBase *image){
       /* original version:
           if(!d){
@@ -115,15 +115,15 @@ namespace icl{
             ICL_DELETE(d->m_imageBuffer->at(this->idx));
           }
         }else{
-          d->m_imageBuffer->at(this->idx) = const_cast<ImgBase*>(image);        
+          d->m_imageBuffer->at(this->idx) = const_cast<ImgBase*>(image);
         }
       }
-      
+
       if(idx == d->getSelectedIndex()){ // this must be performed in each case!
         (**d)->setImage(image);
       }
     }
-      
+
     MultiDrawHandle::Assigner MultiDrawHandle::operator[](int idx){
       MultiDrawHandle::Assigner a;
       a.d = this;
@@ -147,11 +147,11 @@ namespace icl{
         return a;
       }
     }
-      
+
     void MultiDrawHandle::render(){
       (**this)->render();
     }
-    
+
     int MultiDrawHandle::getSelectedIndex(){
       return m_tabBar->currentIndex();
     }
@@ -164,6 +164,6 @@ namespace icl{
     bool MultiDrawHandle::isSelected(const std::string &text){
       return getSelected() == text;
     }
-    
+
   } // namespace qt
 }

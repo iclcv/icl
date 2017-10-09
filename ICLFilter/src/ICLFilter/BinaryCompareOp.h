@@ -35,11 +35,11 @@
 
 namespace icl {
   namespace filter{
-    
+
     /// Class for comparing two images pixel-wise \ingroup BINARY
     /** Compares pixel values of two images using a specified compare
-        operation. The result is written to a binarized image of type Img8u. 
-        If the result of the comparison is true, the corresponding output 
+        operation. The result is written to a binarized image of type Img8u.
+        If the result of the comparison is true, the corresponding output
         pixel is set to 255; otherwise, it is set to 0.
         */
     class ICLFilter_API BinaryCompareOp : public BinaryOp {
@@ -65,52 +65,52 @@ namespace icl {
         eqt   /**< "=="-relation using a given tolerance level */
       };
   #endif
-      
+
       /// creates a new BinaryCompareOp object with given optype and tolerance level
-      /** @param ot optype to use 
+      /** @param ot optype to use
           @param tolerance tolerance level to use
       **/
       BinaryCompareOp(optype ot, icl64f tolerance=0):
       m_eOpType(ot), m_dTolerance(tolerance){}
-      
+
       /// Destructor
       virtual ~BinaryCompareOp(){}
-      
+
       /// applies this compare operation to two source images into the given destination image
       /** @param poSrc1 first source image
           @param poSrc2 second source image
           @param ppoDst destination image
       **/
       virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
-  
+
       /// import apply symbol from parent class
       using BinaryOp::apply;
-  
+
       /// returns the current optype
       /** @return current optype */
       optype getOpType() const { return m_eOpType; }
-  
+
       /// returns the current tolerance level
       /** @return current tolerance level */
       icl64f getTolerance() const { return m_dTolerance; }
-  
+
       /// sets the current opttype
       /** @param ot new optype */
       void setOpType(optype ot) { m_eOpType = ot; }
-  
+
       /// sets the current tolerance level
       /** @param tolerance new tolerance level*/
       void setTolerance(icl64f tolerance){ m_dTolerance = tolerance; }
-  
+
       private:
-        
+
       /// internal storage for the current optype
       optype m_eOpType;
-  
+
       // internal storage for the current tolerance level
       icl64f m_dTolerance;
     };
-  
+
   } // namespace filter
 } // namespace icl
 

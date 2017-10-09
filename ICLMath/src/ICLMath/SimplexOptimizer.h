@@ -38,7 +38,7 @@
 
 namespace icl{
   namespace math{
-    
+
     /// Utility structure, that is used as accumulator for results of the SimplexOptimizer class
     template<class T, class Vector=DynColVector<T> >
     struct SimplexOptimizationResult{
@@ -47,45 +47,45 @@ namespace icl{
       const int iterations;                 //!< actual count of iterations that were used for optimization
       const std::vector<Vector> &vertices;  //!< end simplex vertices (usually only used for debugging purpose)
     };
-    
-    
+
+
     /// Template based implementation for the Downhill Simplex Optimiztation method
     /** \section __ALGO__ Downhill Simplex Optimiztation Algorithm
         Here, we give a very short pseudo code overview
         <pre>
-        input: start position s (in R^D), 
+        input: start position s (in R^D),
         constants: MAX_ITERATIONS, MIN_ERROR, MIN_DELTA, A, B, G, H
-               
+
         error function: f: R^D -> R
         S <- R+1 simplex nodes (R[i]=s, R[i][i] = S[i]*1.1, or given)
         F <- R+1 function values F[i] = f(S[i])
-        
+
         for i=1 to MAX_ITERATIONS
           best <- min_idx(F)
-        
+
           if F(best) < MIN_ERROR
             break
           endif
-        
+
           worst <- max_idx(F)
           worst2 <- max_idx(F \ F[worst]) # 2nd worst point
-  
+
           # find the reflection point xg and data center c
           xg <- sum(S \ S[worst])
           c <- xg + S[worst]
           xg = xg / D
-        
+
           # break if error could not be decreased significantly
           if (i>0) and (|c-c_old| < MIN_DELTA)
             break
           else
             c_old <- c
           endif
-  
+
           # get reflection vector xr using factor A
           xr = xg + A (xg - S[worst])
           fxr = f(xr)
-        
+
           if F[best] <= fxr <= F[worst2]
             # proceed using the reflection
             S[worst] <- xr
@@ -111,7 +111,7 @@ namespace icl{
               # use contraction
               S[worst] = xc
               F[worst] = fxc
-            else{ 
+            else{
               # apply multiple contraction using constant H
               forall j in [0 .. DIM] \ best
                  S[j] = S[best] + H (S[j] - S[best])
@@ -121,22 +121,22 @@ namespace icl{
           endif
         endfor
         return { S[best], F[best], i, S }
-  
-  
+
+
         </pre>
-        
+
         \section __INST__ Explicit Instantiation
-        
+
         The class template is instantated explicitly for all common float and double vector types:
         - icl::DynColVector<float> and icl::DynColVector<double>
         - icl::DynRowVector<float> and icl::DynRowVector<double>
         - icl::DynMatrix<float> and icl::DynMatrix<double> (the entries are used linearily)
         - std::vector<float> and std::vector<double>
-        - FixedRowVector<float,D> and FixedRowVector<double,D> where D is 
+        - FixedRowVector<float,D> and FixedRowVector<double,D> where D is
         - FixedColVector<float,D> and FixedColVector<double,D> where D is 2,3,4,5,6
         - FixedMatrix<float,D,1> and FixedMatrix<double,D,1> where D is 2,3,4,5,6
         - FixedMatrix<float,1,D> and FixedMatrix<double,1,D> where D is 2,3,4,5,6
-  
+
         \section __DEMOS__ Demo Location
         There are two graphical demos located in the ICLGeom-package due to their dependencies
         to 2D/3D rendering
@@ -145,107 +145,107 @@ namespace icl{
     class ICLMath_IMP SimplexOptimizer : public utils::Uncopyable{
       struct Data; //!< internal data structure
       Data *m_data;  //!< internal data pointer
-  
+
       public:
       /// error function type that is used
       typedef utils::Function<T, const Vector&> error_function;
       typedef SimplexOptimizationResult<T,Vector> Result;
       typedef utils::Function<void,const Result &> iteration_callback;
       typedef utils::Function<Vector> init_gen;
-  
+
       /// creates a new instance with given parameters
-      /** @param f error function 
+      /** @param f error function
           @param dim vector dimension (please note, for fixed dim vector types,
                                        this must still be set to the right value)
-          @param iterations maximum iteration count 
-          @param minError minimum error termination criterion 
-          @param minDelta minimum center movement termination criterion 
+          @param iterations maximum iteration count
+          @param minError minimum error termination criterion
+          @param minDelta minimum center movement termination criterion
           @param a reflection factor (default 1.0)
           @param b expansion factor (default 1.0)
           @param g contration factor (default 0.5)
           @param h multiple contraction factor (default 0.5)
       */
       SimplexOptimizer(error_function f, int dim,
-                       int iterations=1E5, T minError=1.0E-10, 
+                       int iterations=1E5, T minError=1.0E-10,
                        T minDelta=1.0E-10,
                        T a=1.0, T b=1.0, T g=0.5, T h=0.5);
-  
+
       /// sets the optimizers dimension (note, that usually the error function must be changed then as well)
       void setDim(int dim);
-      
+
       /// sets the reflection factor
       void setA(T a);
-  
+
       /// sets the extenxion factor
       void setB(T b);
-  
+
       /// sets the contraction factor
       void setG(T g);
-      
+
       /// sets the multiple contraction factor
       void setH(T h);
-      
+
       /// sets the maximum iteration termination criterion
       void setIterations(int iterations);
-      
+
       /// sets the minimum error termination criterion
       void setMinError(T minError);
-      
+
       /// sets the minimum delta termination criterion
       void setMinDelta(T minDelta);
-      
+
       /// sets the error function
       void setErrorFunction(error_function f);
-      
+
       /// returns the data dimesions
       int getDim() const;
-      
+
       /// returns the reflection factor
       T getA() const;
-      
+
       /// returns the extension factor
       T getB() const;
-  
+
       /// returns the contraction factor
       T getG() const;
-      
+
       /// returns the multiple contraction factor
       T getH() const;
-      
+
       /// returns the maximum iteration termination criterion
       int getIterations() const;
-      
+
       /// returns the minimum error termination criterion
       T getMinError() const;
-      
+
       /// returns the minimum delta termination criterion
       T getMinDelta() const;
-  
+
       /// returns the curren error function
       error_function getErrorFunction() const;
-  
+
       /// sets a callback function, that is called after every iteration step
       void setIterationCallback(const iteration_callback &cb);
-      
+
       /// runs an optimization using internal parameters starting at given input vector
       /** the initial simplex is created internally using the heuristic shown in the
           \ref __ALGO__ section.
           */
       Result optimize(const Vector &init);
-      
+
       /// runs an optimization using internal parameters using the given initial simplex
       /** the given input simplex must have init[0].dim+1 entries !*/
       Result optimize(const std::vector<Vector> &init);
 
       /// uses the inititalization generator to run the optimization several times with different initialization values
       Result optimize(init_gen gen, int nInitCycles);
-      
+
       /// create a default simplex structure
       /** the initial simplex is created internally using the heuristic shown in the
           \ref __ALGO__ section. */
       static std::vector<Vector> createDefaultSimplex(const Vector &init);
     };
   } // namespace math
-} 
+}
 
 

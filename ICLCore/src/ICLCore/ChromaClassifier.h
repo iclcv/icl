@@ -57,6 +57,6 @@ namespace icl{
       /// Used two parables
       //    ParableSet parables;
       Parable parables[2];
-    };  
+    };
   } // namespace core
 }

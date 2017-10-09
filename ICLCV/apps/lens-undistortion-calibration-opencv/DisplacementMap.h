@@ -37,7 +37,7 @@
 
 namespace icl{
   namespace cv{
-    
+
     struct DisplacementMap{
       core::Img8u pseudo;
       const icl8u *lut[3];
@@ -56,15 +56,15 @@ namespace icl{
           lut[1] = pseudo.begin(1);
           lut[2] = pseudo.begin(2);
         }
-        
+
         draw->color(0,100,255,255);
         const core::Channel32f cx = warpMap[0], cy = warpMap[1];
         float maxLen = 0;
         const int w = cx.getWidth(), h = cx.getHeight();
-        
+
         displacement.setChannels(1);
         displacement.setSize(warpMap.getSize());
-        
+
         core::Channel32s c = displacement[0];
 
         for(int y=0;y<h;++y){
@@ -81,8 +81,8 @@ namespace icl{
             c[i] *= factor;
           }
         }
-        
-        
+
+
         const std::vector<ImageRegion> &rs = rd.detect(&displacement);
         draw->color(255,255,255,255);
         draw->fill(0,0,0,0);
@@ -99,11 +99,11 @@ namespace icl{
             c[i] *= f;
           }
         }
-        
-        draw = displacement; 
+
+        draw = displacement;
 
         float arrowDim = (3.0*w)/640;
-        
+
         for(int y=0;y<h;y+=20){
           for(int x=0;x<w;x+=20){
             float d = ::sqrt(utils::sqr(cx(x,y)-x) + utils::sqr(cy(x,y)-y));

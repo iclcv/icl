@@ -92,21 +92,21 @@ namespace icl{
         uint32_t area;      // size in pixels/pressure (?)
         uint8_t padding[32];
       };
-      
+
       static std::ostream &operator<<(std::ostream &str, const ps_blob &b){
         return str << b.blob_id << ',' //<< b.action << ','
                    << b.bb_pos_x << ',' << b.bb_pos_y << ',' << b.bb_size_x << ',' << b.bb_size_y << ','
                    << b.pos_x << ',' << b.pos_y << ',' << b.ctr_x << ',' << b.ctr_y << ','
                    << b.axis_x << ',' << b.axis_y << ',' << b.angle << ',' << b.area;
       }
-      
+
       static std::istream &operator>>(std::istream &str, ps_blob &b){
         return str >> b.blob_id //>> b.action
                    >> b.bb_pos_x >> b.bb_pos_y >> b.bb_size_x >> b.bb_size_y
                    >> b.pos_x >> b.pos_y >> b.ctr_x >> b.ctr_y
                    >> b.axis_x >> b.axis_y >> b.angle >> b.area;
       }
-      
+
       // read 512 bytes from endpoint 0x82 -> get header below
       // continue reading 16k blocks until header.size bytes read
       struct ps_image {
@@ -116,7 +116,7 @@ namespace icl{
         uint32_t timestamp; // milliseconds (increases by 16 or 17 each frame)
       uint32_t unknown;   // "epoch?" always 02/03 00 00 00
       };
-      
+
       // read 8 bytes using control message 0xc0,0xb1,0x00,0x00
       struct ps_sensors {
         uint16_t temp;
@@ -124,7 +124,7 @@ namespace icl{
         uint16_t acc_y;
         uint16_t acc_z;
       };
-      
+
       static void hline(Channel8u c, int x, int y, int len){
         std::fill(&c(x,y), &c(x,y)+len, 255);
       }
@@ -135,7 +135,7 @@ namespace icl{
           }
         }
       }
-    
+
     static void vis_bounding_box(Channel8u c, int x, int y, int w, int h){
       hline(c,x,y,w);
       hline(c,x,y+h,w);
@@ -148,7 +148,7 @@ namespace icl{
     std::ostream &operator<<(std::ostream &str, const PixelSenseGrabber::Blob &b){
       return str << ((const ps_blob&)b);
     }
-    
+
     std::istream &operator>>(std::istream &str, PixelSenseGrabber::Blob &b){
       return str >> ((ps_blob&)b);
     }
@@ -163,7 +163,7 @@ namespace icl{
     static int ps_get_image(usb_dev_handle* handle, uint8_t* image );
     static int ps_get_blobs(usb_dev_handle* handle, ps_blob* blob );
     static void ps_get_version(usb_dev_handle* handle, uint16_t index);
-    
+
     struct PixelSenseGrabber::Data{
       usb_dev_handle * s40;
       Img8u image;
@@ -172,29 +172,29 @@ namespace icl{
       Data():mutex(Mutex::mutexTypeRecursive){}
     };
 
-    
+
     PixelSenseGrabber::PixelSenseGrabber(float maxFPS):m_data(new Data){
       m_data->s40 = usb_get_device_handle( ID_MICROSOFT, ID_SURFACE );
-      
+
       if(!m_data->s40) throw ICLException("unable to initializte Surface Grabber (the crazy one)");
       ps_init( m_data->s40 );
-      
+
       m_data->image = Img8u(Size(VIDEO_RES_X,VIDEO_RES_Y),1);
       m_data->blobs.resize(256);
-      
+
       addProperty("format", "menu","formatGray-depth8u","formatGray-depth8u",0,"image format can't be changed");
       addProperty("size", "menu","QHD","QHD",0,"image size can't be changed");
       addProperty("blobs found", "info","",0,0,"number of blobs, found in the current frame");
       addProperty("visualize blobs","flag","",false,0,"if true, blobs are visualized in the output image");
     }
-    
+
     PixelSenseGrabber::~PixelSenseGrabber(){
       delete m_data;
     }
-    
 
-   
-    
+
+
+
     const ImgBase* PixelSenseGrabber::acquireImage(){
       Mutex::Locker __lock(m_data->mutex);
 
@@ -204,18 +204,18 @@ namespace icl{
       if(getPropertyValue("visualize blobs")){
 	Channel8u c = m_data->image[0];
 	for(int i=0;i<bc;++i){
-	  vis_bounding_box(c, m_data->blobs[i].bb_pos_x/2, m_data->blobs[i].bb_pos_y/2, 
+	  vis_bounding_box(c, m_data->blobs[i].bb_pos_x/2, m_data->blobs[i].bb_pos_y/2,
 			   m_data->blobs[i].bb_size_x/2, m_data->blobs[i].bb_size_y/2);
 	}
       }
-      
+
       std::string meta = cat( std::vector<ps_blob>(m_data->blobs.begin(), m_data->blobs.begin()+bc), ",");
       m_data->image.setMetaData(meta);
       return &m_data->image;
     }
 
 
-    std::vector<PixelSenseGrabber::Blob> 
+    std::vector<PixelSenseGrabber::Blob>
     PixelSenseGrabber::extractBlobMetaData(const ImgBase *image){
       ICLASSERT_THROW(image, ICLException("PixelSenseGrabber::extractBlobMetaData: image is null"));
       std::istringstream istr(image->getMetaData());
@@ -223,7 +223,7 @@ namespace icl{
       std::copy(std::istream_iterator<Blob>(istr), std::istream_iterator<Blob>(),
                 std::back_inserter(ps));
       return ps;
-                
+
     }
 
     usb_dev_handle* usb_get_device_handle( int vendor, int product ) {
@@ -347,10 +347,10 @@ namespace icl{
 
         // sanity check. when video data is also being retrieved, the packet ID
         // will usually increase in the middle of a series instead of at the end.
-        if (packet_id != header->packet_id) { 
+        if (packet_id != header->packet_id) {
 	  static bool first = true;
 	  if(first){
-	    printf("packet ID mismatch (this message will be suppressed in the future)\n"); 
+	    printf("packet ID mismatch (this message will be suppressed in the future)\n");
 	    first = false;
 	  }
 	}
@@ -358,7 +358,7 @@ namespace icl{
         int packet_blobs = result / sizeof(ps_blob);
 
         for (int i = 0; i < packet_blobs; i++) outblob[current++] = inblob[i];
-	
+
       }	while (current < need_blobs);
 
       return need_blobs;

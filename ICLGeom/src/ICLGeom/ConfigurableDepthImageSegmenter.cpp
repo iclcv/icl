@@ -35,8 +35,8 @@
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 
 namespace icl{
-  namespace geom{  
-    
+  namespace geom{
+
     struct ConfigurableDepthImageSegmenter::Data {
 				Data(Mode mode, Camera depthCam, Camera colorCam,
 						 PointCloudCreator::DepthImageMode depth_mode){
@@ -56,7 +56,7 @@ namespace icl{
 
 	    ~Data() {
 	    }
-      
+
       void init(Mode mode) {
           temporalSmoothing = new filter::MotionSensitiveTemporalSmoothing(2047, 15);
 
@@ -75,16 +75,16 @@ namespace icl{
       ObjectEdgeDetector *objectEdgeDetector;
       filter::MotionSensitiveTemporalSmoothing *temporalSmoothing;
       FeatureGraphSegmenter *segmentation;
-      
+
       Camera depthCamera;
-      
+
       core::Img8u edgeImage;
       core::Img8u normalImage;
 
 			bool use_extern_edge_image;
     };
-    
-    
+
+
 		ConfigurableDepthImageSegmenter::ConfigurableDepthImageSegmenter(Mode mode, Camera depthCam,
 																																		 PointCloudCreator::DepthImageMode depth_mode) :
 				m_data(new Data(mode, depthCam, depth_mode)){
@@ -96,7 +96,7 @@ namespace icl{
 					m_data(new Data(mode, depthCam, colorCam, depth_mode)){
         initProperties();
     }
-  	
+
     void ConfigurableDepthImageSegmenter::initProperties() {
         addProperty("general.enable segmentation","flag","",true);
         addProperty("general.stabelize segmentation","flag","",true);
@@ -160,12 +160,12 @@ namespace icl{
         setConfigurableID("segmentation");
     }
 
-  	
+
     ConfigurableDepthImageSegmenter::~ConfigurableDepthImageSegmenter(){
       delete m_data;
     }
 
-    		
+
     void ConfigurableDepthImageSegmenter::apply(const core::Img32f &depthImage, PointCloudObject &obj){// const core::Img8u &colorImage){
 
       //pre segmentation
@@ -174,9 +174,9 @@ namespace icl{
       static core::ImgBase *filteredImage = 0;
       bool useTempSmoothing = getPropertyValue("pre.enable temporal smoothing");
       if(useTempSmoothing==true){//temporal smoothing
-        m_data->temporalSmoothing->apply(&depthImage,&filteredImage);    
+        m_data->temporalSmoothing->apply(&depthImage,&filteredImage);
       }
-		
+
       std::string usedFilter=getPropertyValue("pre.filter");
       bool useAveraging=getPropertyValue("pre.averaging");
       std::string usedAngle=getPropertyValue("pre.edge angle method");
@@ -185,7 +185,7 @@ namespace icl{
       int neighbrange = getPropertyValue("pre.edge neighborhood");
       float threshold = getPropertyValue("pre.edge threshold");
       int avgrange = getPropertyValue("pre.averaging range");
-      
+
       bool usedFilterFlag=true;
       if(usedFilter.compare("median3x3")==0){ //median 3x3
         m_data->objectEdgeDetector->setMedianFilterSize(3);
@@ -195,17 +195,17 @@ namespace icl{
       }else{
         usedFilterFlag=false;
       }
-      
-      m_data->objectEdgeDetector->setNormalCalculationRange(normalrange);	
-      m_data->objectEdgeDetector->setNormalAveragingRange(avgrange);	
-		 
+
+      m_data->objectEdgeDetector->setNormalCalculationRange(normalrange);
+      m_data->objectEdgeDetector->setNormalAveragingRange(avgrange);
+
       if(usedAngle.compare("max")==0){//max
         m_data->objectEdgeDetector->setAngleNeighborhoodMode(0);
       }
       else if(usedAngle.compare("mean")==0){//mean
         m_data->objectEdgeDetector->setAngleNeighborhoodMode(1);
       }
-      
+
       bool usedSmoothingFlag = true;
       if(usedSmoothing.compare("linear")==0){//linear
         usedSmoothingFlag = false;
@@ -216,7 +216,7 @@ namespace icl{
 
       m_data->objectEdgeDetector->setAngleNeighborhoodRange(neighbrange);
       m_data->objectEdgeDetector->setBinarizationThreshold(threshold);
-		 
+
 			if (!m_data->use_extern_edge_image) {
 				if(useTempSmoothing==true){
 					m_data->edgeImage=m_data->objectEdgeDetector->calculate(*filteredImage->as32f(), usedFilterFlag,
@@ -228,10 +228,10 @@ namespace icl{
 				m_data->objectEdgeDetector->applyWorldNormalCalculation(m_data->depthCamera);
 				m_data->normalImage=m_data->objectEdgeDetector->getRGBNormalImage();
 			}
-		 
+
 
       obj.lock();
-      
+
       //create pointcloud
       float depthScaling=getPropertyValue("general.depth scaling");
       GeomColor c(1.,0.,0.,1.);
@@ -240,32 +240,32 @@ namespace icl{
         m_data->creator->create(*filteredImage->as32f(), obj, 0, depthScaling);
       }else{
         m_data->creator->create(*depthImage.as32f(), obj, 0, depthScaling);
-      }  
-      
+      }
+
       //high level segmenation
       bool enableSegmentation = getPropertyValue("general.enable segmentation");
-   
+
       if(enableSegmentation){
-        bool useROI = getPropertyValue("general.use ROI");      
+        bool useROI = getPropertyValue("general.use ROI");
         bool stabelizeSegmentation = getPropertyValue("general.stabelize segmentation");
-                    
+
         int surfaceMinSize = getPropertyValue("surfaces.min surface size");
         int surfaceRadius = getPropertyValue("surfaces.assignment radius");
         float surfaceDistance = getPropertyValue("surfaces.assignment distance");
-        
+
         bool cutfreeEnable = getPropertyValue("cutfree.enable cutfree adjacency feature");
         float cutfreeEuclDist = getPropertyValue("cutfree.ransac euclidean distance");
         int cutfreePasses = getPropertyValue("cutfree.ransac passes");
         int cutfreeTolerance = getPropertyValue("cutfree.ransac tolerance");
         float cutfreeMinAngle = getPropertyValue("cutfree.min angle");
-        
+
         bool coplanEnable = getPropertyValue("coplanarity.enable coplanarity feature");
         float coplanMaxAngle = getPropertyValue("coplanarity.max angle");
         float coplanDistance = getPropertyValue("coplanarity.distance tolerance");
         float coplanOutlier = getPropertyValue("coplanarity.outlier tolerance");
         int coplanNumTriangles = getPropertyValue("coplanarity.num triangles");
         int coplanNumScanlines = getPropertyValue("coplanarity.num scanlines");
-        
+
         bool curveEnable = getPropertyValue("curvature.enable curvature feature");
         float curveHistogram = getPropertyValue("curvature.histogram similarity");
         bool curveUseOpen = getPropertyValue("curvature.enable open objects");
@@ -275,16 +275,16 @@ namespace icl{
         int curvePasses = getPropertyValue("curvature.ransac passes");
         float curveDistance = getPropertyValue("curvature.distance tolerance");
         float curveOutlier = getPropertyValue("curvature.outlier tolerance");
-        
+
         bool remainingEnable = getPropertyValue("remaining.enable remaining points feature");
         int remainingMinSize = getPropertyValue("remaining.min size");
         float remainingEuclDist = getPropertyValue("remaining.euclidean distance");
         int remainingRadius = getPropertyValue("remaining.radius");
         float remainingAssignEuclDist = getPropertyValue("remaining.assign euclidean distance");
         int remainingSupportTolerance = getPropertyValue("remaining.support tolerance");
-        
-        float graphcutThreshold = getPropertyValue("graphcut.threshold");     
-      
+
+        float graphcutThreshold = getPropertyValue("graphcut.threshold");
+
         if(useROI){
           m_data->segmentation->setROI(getPropertyValue("general.ROI min x"),
                                       getPropertyValue("general.ROI max x"),
@@ -292,17 +292,17 @@ namespace icl{
                                       getPropertyValue("general.ROI max y"),
                                       getPropertyValue("general.ROI min z"),
                                       getPropertyValue("general.ROI max z"));
-                             
+
         }
         m_data->segmentation->setMinSurfaceSize(surfaceMinSize);
         m_data->segmentation->setAssignmentParams(surfaceDistance, surfaceRadius);
         m_data->segmentation->setCutfreeParams(cutfreeEuclDist, cutfreePasses, cutfreeTolerance, cutfreeMinAngle);
         m_data->segmentation->setCoplanarityParams(coplanMaxAngle, coplanDistance, coplanOutlier, coplanNumTriangles, coplanNumScanlines);
-        m_data->segmentation->setCurvatureParams(curveHistogram, curveUseOpen, curveMaxDist, curveUseOccluded, curveMaxError, 
+        m_data->segmentation->setCurvatureParams(curveHistogram, curveUseOpen, curveMaxDist, curveUseOccluded, curveMaxError,
                                 curvePasses, curveDistance, curveOutlier);
         m_data->segmentation->setRemainingPointsParams(remainingMinSize, remainingEuclDist, remainingRadius, remainingAssignEuclDist, remainingSupportTolerance);
         m_data->segmentation->setGraphCutThreshold(graphcutThreshold);
-        
+
 				if(useTempSmoothing){
 					core::Img8u lI=m_data->segmentation->apply(obj.selectXYZH(),m_data->edgeImage,*filteredImage->as32f(), m_data->objectEdgeDetector->getNormals(),
 																										 stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
@@ -312,9 +312,9 @@ namespace icl{
 																										 stabelizeSegmentation, useROI, cutfreeEnable, coplanEnable, curveEnable, remainingEnable);
 					obj.setColorsFromImage(lI);
         }
-      } 
-      
-    obj.unlock();  
+      }
+
+    obj.unlock();
     }
 
 	std::vector<geom::SurfaceFeatureExtractor::SurfaceFeature>
@@ -333,18 +333,18 @@ namespace icl{
     const core::Img8u ConfigurableDepthImageSegmenter::getNormalImage(){
       return m_data->normalImage;
     }
-    
-	  	
+
+
     const core::Img8u ConfigurableDepthImageSegmenter::getEdgeImage(){
       return m_data->edgeImage;
     }
-    
-	  
+
+
 	  core::Img32s ConfigurableDepthImageSegmenter::getLabelImage(){
 	    return m_data->segmentation->getLabelImage(getPropertyValue("general.stabelize segmentation"));
 	  }
-	  	
-	  	
+
+
     core::Img8u ConfigurableDepthImageSegmenter::getColoredLabelImage(){
       return m_data->segmentation->getColoredLabelImage(getPropertyValue("general.stabelize segmentation"));
     }
@@ -373,15 +373,15 @@ namespace icl{
 	void ConfigurableDepthImageSegmenter::setUseExternalEdges(bool use_external_edges) {
 		m_data->use_extern_edge_image = use_external_edges;
 	}
-    
+
     std::vector<std::vector<int> > ConfigurableDepthImageSegmenter::getSurfaces(){
       return m_data->segmentation->getSurfaces();
     }
-    
-    
+
+
     std::vector<std::vector<int> > ConfigurableDepthImageSegmenter::getSegments(){
       return m_data->segmentation->getSegments();
     }
-     
+
   } // namespace geom
 }

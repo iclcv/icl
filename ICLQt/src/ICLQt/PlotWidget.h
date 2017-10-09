@@ -38,28 +38,28 @@
 
 namespace icl{
   namespace qt{
-    
+
     /// Easy to use widget component for 2D data visualization
     /** In contrast to it's parent class icl::LowLevelPlotWidget, the
         icl::PlotWidget interface is allinged with ICL's 2D image
         annotation framework (see icl::ICLDrawWidget).
-  
+
         \section TYP Visualization Types
-        The PlotWidget has two types of content: 
-        -# <b>Plotting Data</b> (visualized as scatter-plot: 
+        The PlotWidget has two types of content:
+        -# <b>Plotting Data</b> (visualized as scatter-plot:
            PlotWidget::scatter, or series/function plot:
            PlotWidget::series, or bar-plot: PlotWidget::bars)
         -# <b>Annotation data</b> these are extra primitives
            that are used to show/highligh additional information
            in the data plot. Annotations are always drawn in the
-           data coordinate space. 
-        
+           data coordinate space.
+
         Only plotting data is used for automatic view-port estimation.
-        
+
         \section GEN General Usage
         The PlotWidget internally uses a synchronized queue of darw
         commands. Draw commands can only added in a thread-safe manner
-        if the PlotWidget is locked (see PlotWidget::lock() and 
+        if the PlotWidget is locked (see PlotWidget::lock() and
         PlotWidget::unlock() ). The PlotWidget does not support
         to reference to be visualized data using a shallow/pointer
         copy. Instead, the given data is always copied deeply into
@@ -87,7 +87,7 @@ namespace icl{
         - PlotWidget::brush is similar to fill as pen to color. By
           setting a QBrush, special color patterns can be used for
           filling.
-        - PlotWidget::sym sets the symbol, that is used for 
+        - PlotWidget::sym sets the symbol, that is used for
           scatter and series plots. Supported symbols are listed
           in the documentation of the AbstractPlotWidget::Pen::Pen
           constructor.
@@ -96,7 +96,7 @@ namespace icl{
           each of these functions, that are several convenience methods
           and even template that allow for passing differently shaped
           data directly.
-        
+
         For annotation data, the following basic methods are provided.
         Again, for each of these, several convience methods are also
         available.
@@ -106,18 +106,18 @@ namespace icl{
         - PlotWidget::text draws text into the drawing area (using
           the currnet color)
         - PlotWidget::linestrip draws several lines each starting
-          where the last line ended. In this case, only N-1 points 
+          where the last line ended. In this case, only N-1 points
           have to be passed for N lines
         - PlotWidget::grid allows to draw a 2D grid annotation
-        
-        The methods, PlotWidget::title, PlotWidget::xlabel and 
+
+        The methods, PlotWidget::title, PlotWidget::xlabel and
         PlotWidget::ylabel are just convenience function that use
         the derived Configurable's Configurable::setPropertyValue method
         in a direct manner.
-  
+
         \section _GUI_ GUI Embedding
         The plot widget is also a component of ICL's icl::GUI framework.
-        The component tag is "plot" its parameters are 
+        The component tag is "plot" its parameters are
         - X viewport min value
         - X viewport max value
         - Y viewport min value
@@ -125,7 +125,7 @@ namespace icl{
         - an optional flag "gl". If this is given, the PlotWidget
           is rendered in OpenGL. This <b>can</b> increase the rendering
           performance, however it can also make it slower
-        
+
         Example:
         \code
         // create some data
@@ -133,13 +133,13 @@ namespace icl{
         for(float i=0;i<100;++i){
           sinData[i] = sin(i/100 * 2*M_PI);
         }
-  
+
         GUI gui;
         gui << Plot(0,6.283,-1.1,1.1).handle("plot").minSize(20,20) << Show();
-  
+
         // extract the handle
         PlotHandle plot = gui["plot"];
-  
+
         plot->lock();            // lock the draw queue
         plot->color(255,0,0);    // set graph line color
         plot->fill(255,0,0,100); // set graph fill (semi transparent)
@@ -147,67 +147,67 @@ namespace icl{
         plot->series(sinData);   // add data to visualize
         plot->unlock();          // unlock the draw queue
         plot.render();           // post an update event to Qt
-        
+
         \endcode
-        
+
         \section _EX_ More Examples
         *Soon!*
-        
+
     */
     class ICLQt_API PlotWidget : public LowLevelPlotWidget{
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data (pimpl)
-      
+
       public:
-      
+
       /// Constructor with given parent
       /** Usually, the */
       PlotWidget(QWidget *parent=0);
-      
+
       /// Destrutor
       ~PlotWidget();
-      
+
       /// locks the draw queue
       inline void lock() { LowLevelPlotWidget::lock(); }
-  
+
       /// unlocks the draw queue
       inline void unlock() { LowLevelPlotWidget::unlock(); }
-  
+
       /// clears the draw queue
       virtual void clear();
-   
+
       /// synonym for clear()
       inline void reset() { clear(); }
-      
+
       /// sets the legend label for the next scatter-, series- or bar-plot
       void label(const std::string &primitiveLabel);
-      
+
       /// calls label("")
       inline void nolabel() { label(""); }
-      
+
       /// sets the line color
       void color(int r, int g, int b, int a=255);
-  
+
       /// convenience macro for types that provide and index operator []
       /** Please note, that c needs 4 elements at least.  */
       template<class VectorType>
       inline void color(const VectorType &c){
         color(c[0],c[1],c[2],c[3]);
       }
-      
+
       /// sets a fully transparent line color
       inline void nocolor(){ color(0,0,0,0); }
-  
+
       /// sets the line pen
       /** This overwrites the current setting for linewidth and color. The
           pen can e.g. be used to draw dashed lines. */
       void pen(const QPen &pen);
-  
+
       /// sets the fill color for series- and bar-plots
       /** The fill color is also used for rect- and circle annotations */
       void fill(int r, int g, int b, int a=255);
-  
-  
+
+
       /// convenience macro for types that provide and index operator []
       /** Please note, that c needs 4 elements at least.  */
       template<class VectorType>
@@ -216,59 +216,59 @@ namespace icl{
       }
       /// sets a fully transparent fill color
       inline void nofill() { fill(0,0,0,0); }
-      
+
       /// sets the fill brush
-      /** This is more powerful then just setting the fill color using 
+      /** This is more powerful then just setting the fill color using
           PlotWidget::fill. The brush overwrites the current fill color
           setting. In contrast to PlotWidget::fill, the brush can also
           be set up to fill areas with a given pattern */
       void brush(const QBrush &brush);
-      
+
       /// sets the current symbol
       /** The symbol is used for series and scatter plots */
       void sym(char s);
-      
+
       /// sets the current symbol and the symbol size
       /** The symbol size is always given in pixels */
       inline void sym(char s, int symsize){
         sym(s);
         this->symsize(symsize);
       }
-      
+
       /// resets the symbol to ' ' which means no symbols are shown
       inline void nosym() { sym(' '); }
-      
+
       /// sets the linewidth
       void linewidth(float width);
-      
+
       /// sets the symbols size
       void symsize(float size);
-      
-      
+
+
       /// adds a scatter plot with given x- and y-data pointer
-      /** @param xs source pointer for the x-values 
-          @param ys source poitner for the y-value 
+      /** @param xs source pointer for the x-values
+          @param ys source poitner for the y-value
           @param num number of points
-          @param xStride pointer increment to to iterate through the 
+          @param xStride pointer increment to to iterate through the
                  elements of xs (in sizeof(float) units)
-          @param yStride pointer increment to to iterate through the 
+          @param yStride pointer increment to to iterate through the
                  elements of ys (in sizeof(float) units)
           @param connect if set to true, successive points are connected
                  using a line
       */
       template<class T> ICLQt_API
       void scatter(const T *xs, const T *ys, int num, int xStride = 1, int yStride=1, bool connect=false);
-  
+
       /// adds a scatter plot from given vector of points
       inline void scatter(const std::vector<utils::Point32f> &ps, bool connect=false){
         scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
       }
-      
+
       /// adds a scatter plot from given vector of points
       inline void scatter(const std::vector<utils::Point> &ps, bool connect=false){
         scatter(&ps[0].x, &ps[0].y, ps.size(), 2, 2, connect);
       }
-  
+
       /// adds a scatter plot from given set of of fixed vectors
       template<class T>
       inline void scatter(const math::FixedMatrix<T,1,2> *ps, int num, bool connect=false){
@@ -285,21 +285,21 @@ namespace icl{
         scatter((const math::FixedMatrix<float,2,1>*)ps.data(),ps.size(),connect);
       }
 
-      /// adds series data 
+      /// adds series data
       /** @param data data pointer
           @param num number of elements
           @param stride data increment to iterate through the data elements
                  stride is given in sizeof(float) units */
       template<class T> ICLQt_API
       void series(const T *data, int num, int stride=1);
-      
+
       /// adds series data from given std::vector
       template<class T>
       inline void series(const std::vector<T> &data){
         series(data.data(), data.size(), 1);
       }
 
-      /// Utility structure for easier series plots 
+      /// Utility structure for easier series plots
       /** TODO: test test test */
       struct SeriesBuffer : public std::vector<float>{
         explicit SeriesBuffer(int size=0):std::vector<float>(size){}
@@ -314,9 +314,9 @@ namespace icl{
           push(f);
           return *this;
         }
-        
-      };  
-      
+
+      };
+
       /// adds bar plot data
       /** @param data data pointer
           @param num number of elements
@@ -324,131 +324,131 @@ namespace icl{
                  stride is given in sizeof(float) units */
       template<class T> ICLQt_API
       void bars(const T *data, int num, int stride=1);
-      
+
       /// adds bar plot data from given std::vector
       template<class T>
       inline void bars(const std::vector<T> &data){
         bars(data.data(), data.size(), 1);
       }
-      
+
       /// draws a line annotation using the current color
       void line(const utils::Point32f &a, const utils::Point32f &b);
-      
+
       /// draws a line  annotation given 4 coordinates
       inline void line(float x1, float y1, float x2, float y2){
         line(utils::Point32f(x1,y1),utils::Point32f(x2,y2));
       }
-  
+
       /// draws a line strip annotation
       void linestrip(const std::vector<utils::Point32f> &ps, bool closedLoop=true);
-  
+
       /// draws a line strip annotation
       void linestrip(const std::vector<utils::Point> &ps, bool closedLoop=true);
-  
+
       /// draws a line strip annotation
       void linestrip(const utils::Point32f *ps, int num, bool closedLoop=true);
-  
+
       /// draws a line strip annotation
       void linestrip(const utils::Point *ps, int num, bool closedLoop=true);
-  
+
       /// draws a line strip annotation
       void linestrip(const float *xs, const float *ys, int num, bool closedLoop=true, int stride = 1);
-  
+
       /// draws a rectangle annotation with given upper left and lower right coordinate
       void rect(const utils::Point32f &ul, const utils::Point32f &lr);
-  
+
       /// draws a rectangle annotation
       void rect(const utils::Rect &r);
-  
+
       /// draws a rectangle annotation
       void rect(const utils::Rect32f &r);
-  
+
       /// draws a rectangle annotation
       void rect(float x, float y, float w, float h);
-  
+
       /// draws a circle annotation
       void circle(const utils::Point32f &c, float r);
-  
+
       /// draws a circle annotation
       void circle(float cx, float cy, float r);
-        
+
       /// draws a text annotation
       /** Note.: the text anchor is always centered) */
       void text(float x, float y, const std::string &text);
-  
+
       /// draws a text annotation
       /** Note.: the text anchor is always centered) */
       void text(const utils::Point32f &p, const std::string &text);
-  
+
       /// draws a grid-annoation
       void grid(int nX, int nY, const float *xs, const float *ys, int stride=1);
-  
+
       /// draws a grid-annoation
       void grid(const utils::Array2D<utils::Point> &data);
-      
+
       /// draws a grid-annoation
       inline void grid(const utils::Array2D<utils::Point32f> &data){
         grid(data.getWidth(), data.getHeight(), &data(0,0).x, &data(0,0).y, 2);
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const float *xys){
         grid(nX,nY,xys, xys+1,2);
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const utils::Point *ps){
         grid(utils::Array2D<utils::Point>(nX,nY,const_cast<utils::Point*>(ps),false));
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const utils::Point32f *ps){
         grid(nX, nY, &ps[0].x, &ps[0].y, 2);
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const std::vector<utils::Point32f> &ps){
         grid(nX, nY, &ps[0].x, &ps[0].y, 2);
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const std::vector<utils::Point> &ps){
-        grid(utils::Array2D<utils::Point>(nX,nY, const_cast<utils::Point*>(ps.data()), false));    
+        grid(utils::Array2D<utils::Point>(nX,nY, const_cast<utils::Point*>(ps.data()), false));
       }
-  
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const std::vector<float> &xys){
         grid(nX, nY, xys.data(), xys.data()+1,2);
       }
-      
+
       /// draws a grid-annoation
       inline void grid(int nX, int nY, const std::vector<float> &xs, const std::vector<float> &ys){
         grid(nX, nY, xs.data(), ys.data());
       }
-      
+
       /// draws a VisualizationDescription instance
       /** Internally, the description is decomposed to normal function calls*/
       void draw(const utils::VisualizationDescription &d);
-  
+
       /// sets the diagram title
-      /** Please note, that usually the property 
+      /** Please note, that usually the property
           "borders.top" needs to be set to something around 18.
           Otherwise, the tiltle is placed within the drawing area
       */
       void title(const std::string &title){
         setPropertyValue("labels.diagramm",title);
       }
-      
+
       /// sets the x-axis label
       void xlabel(const std::string &xlabel){
         setPropertyValue("labels.x-axis",xlabel);
       }
-  
+
       /// sets the y-axis label
       void ylabel(const std::string &ylabel){
         setPropertyValue("labels.y-axis",ylabel);
       }
-      
+
     };
   } // namespace qt
 }

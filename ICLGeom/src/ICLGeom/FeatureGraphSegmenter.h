@@ -39,19 +39,19 @@ namespace icl{
     /**
        This class implements feature graph segmentation for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. */
     class ICLGeom_API FeatureGraphSegmenter{
-  	
+
      public:
-     
+
       enum Mode {BEST, GPU, CPU};
-      
+
       /// Constructor
       /** Constructs an object of this class. All default parameters are set. Use setters for desired values.
           @param mode GPU, CPU and BEST (default) */
-      FeatureGraphSegmenter(Mode mode=BEST); 
-  	
+      FeatureGraphSegmenter(Mode mode=BEST);
+
       /// Destructor
       ~FeatureGraphSegmenter();
-  	      
+
       /// One line call for the surface feature segmentation.
       /** @param xyz the xyzh DataSegment from the PointCloudObject class
           @param edgeImg the edge image from the ObjectEdgeDetector class
@@ -64,10 +64,10 @@ namespace icl{
           @param useCurvature use the curvature feature
           @param useRemainingPoints use the remaining points assignment
           @return the color image of the segments */
-      core::Img8u apply(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
-                  core::DataSegment<float,4> normals=NULL, bool stabelize=true, bool useROI=false, 
+      core::Img8u apply(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg,
+                  core::DataSegment<float,4> normals=NULL, bool stabelize=true, bool useROI=false,
                   bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true);
-  	  
+
   	  /// One line call for the hierarchical surface feature segmentation.
       /** @param xyz the xyzh DataSegment from the PointCloudObject class
           @param rgb the rgba32f DataSegment from the PointCloudObject class
@@ -84,44 +84,44 @@ namespace icl{
           @param weightCurvature use the curvature feature
           @param weightRemainingPoints use the remaining points assignment
           @return the hierachical segmentation tree */
-  	  std::vector<PointCloudSegmentPtr> applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg, 
-                  core::DataSegment<float,4> normals=NULL, bool useROI=false, 
+  	  std::vector<PointCloudSegmentPtr> applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg,
+                  core::DataSegment<float,4> normals=NULL, bool useROI=false,
                   bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true,
                   float weightCutfreeAdjacency=1.0, float weightCoplanarity=0.9, float weightCurvature=0.8, float weightRemainingPoints=0.7);
-  	  		      
+
       /// Sets the ROI in world coordinates
       /**       @param xMin xMin in mm
                 @param xMax xMax in mm
                 @param yMin yMin in mm
-                @param yMax yMax in mm 
+                @param yMax yMax in mm
                 @param zMin zMin in mm
                 @param zMax zMax in mm*/
       void setROI(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax);
-  		
+
       /// Sets the minimum segment size (default 25)
       /**       @param size minimum segment size in points */
       void setMinSurfaceSize(unsigned int size);
-      
+
       /// Sets the edge point assignment parameters
-      /**       @param distance the maximum euclidean distance between two points 
+      /**       @param distance the maximum euclidean distance between two points
                 @param radius the maximum radius in pixel */
       void setAssignmentParams(float distance, int radius);
-      
+
       /// Sets the cutfree adjacency feature parameters
       /**       @param euclideanDistance the euclidean distance for RANSAC test
                 @param passes the number of RANSAC passes
-                @param tolerance the outlier tolerance in points for RANSAC 
+                @param tolerance the outlier tolerance in points for RANSAC
                 @param minAngle the minimum angle between two adjacent surfaces */
       void setCutfreeParams(float euclideanDistance, int passes, int tolerance, float minAngle);
-      
+
       /// Sets the coplanarity feature parameters
       /**       @param maxAngle the maximum angle between two coplanar surfaces
                 @param distanceTolerance distance tolerance for occlusion check
                 @param outlierTolerance outlier tolerance for occlusion check
-                @param numTriangles number of triangles for common plane test 
+                @param numTriangles number of triangles for common plane test
                 @param numScanlines the number of scanlines for occlusion check */
       void setCoplanarityParams(float maxAngle, float distanceTolerance, float outlierTolerance, int numTriangles, int numScanlines);
-      
+
       /// Sets the curvature feature parameters
       /**       @param histogramSimilarity the minimum similarity score for matching
                 @param useOpenObjects test for open curved objects (e.g. a cup)
@@ -131,9 +131,9 @@ namespace icl{
                 @param ransacPasses the number of RANSAC passes for alignment test
                 @param distanceTolerance distance tolerance for occlusion check
                 @param outlierTolerance outlier tolerance for occlusion check */
-      void setCurvatureParams(float histogramSimilarity, bool useOpenObjects, int maxDistance, bool useOccludedObjects, float maxError, 
+      void setCurvatureParams(float histogramSimilarity, bool useOpenObjects, int maxDistance, bool useOccludedObjects, float maxError,
                               int ransacPasses, float distanceTolerance, float outlierTolerance);
-      
+
             /// Sets the remaining points assignment parameters
       /**       @param minSize the minimum size of a remaining point blob
                 @param euclideanDistance the maximum euclidean distance for point clustering
@@ -141,7 +141,7 @@ namespace icl{
                 @param assignEuclideanDistance the euclidean distance for assigning to neighbouring surfaces
                 @param supportTolerance the max tolerance for detecting a blob as supported and therefore separate object */
       void setRemainingPointsParams(int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance);
-      
+
       /// Sets the graphcut threshold
       /**       @param threshold the maximum weight of a cut */
       void setGraphCutThreshold(float threshold);
@@ -151,34 +151,34 @@ namespace icl{
       /// Returns the segment blobs.
       /**        @return a vector of segments. Every entry contains a vector with the surface indices */
       std::vector<std::vector<int> > getSegments();
-      
+
       /// Returns the surface cluster from the pre-segmentation.
       /**        @return a vector of surfaces. Every entry contains a vector with the point indices */
       std::vector<std::vector<int> > getSurfaces();
-      
+
       /// Returns the labeled segment image.
-      /**        @param stabelize true for consistent label IDs. 
+      /**        @param stabelize true for consistent label IDs.
                  @return the labeled segment image */
       core::Img32s getLabelImage(bool stabelize);
-      
+
       /// Returns the colored segment image. Also returned by the apply method.
-      /**        @param stabelize true for consistent label colors. 
+      /**        @param stabelize true for consistent label colors.
                  @return the colored segment image */
-      core::Img8u getColoredLabelImage(bool stabelize); 
-      
+      core::Img8u getColoredLabelImage(bool stabelize);
+
       /// Returns the mask image.
-      /**        @return the mask image of the segmentation */      
-      core::Img8u getMaskImage();  
-         
+      /**        @return the mask image of the segmentation */
+      core::Img8u getMaskImage();
+
      private:
-      
-      void surfaceSegmentation(core::DataSegment<float,4> &xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, int minSurfaceSize=25, bool useROI=false); 
-      
+
+      void surfaceSegmentation(core::DataSegment<float,4> &xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg, int minSurfaceSize=25, bool useROI=false);
+
       std::vector<PointCloudSegmentPtr> createHierarchy(math::DynMatrix<float> &probabilityMatrix, core::DataSegment<float,4> &xyz, core::DataSegment<float,4> &rgb);
-      
+
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
-                    
+
     };
   } // namespace geom
 }

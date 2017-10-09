@@ -42,11 +42,11 @@ namespace icl{
   #ifdef ICL_HAVE_LIBJPEG
       friend class JPEGDecoder;
   #endif
-  
+
       virtual ~FileGrabberPlugin() {}
       /// pure virtual grab function
       virtual void grab(utils::File &file, core::ImgBase **dest)=0;
-  
+
       protected:
       /// Internally used collection of image parameters
       struct HeaderInfo{
@@ -58,7 +58,7 @@ namespace icl{
         int channelCount;   ///!< image channel count
         int imageCount;     ///!< image count (e.g. when writing color images as .pgm gray-scale images)
       };
-    };  
+    };
   } // namespace io
 }
 

@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// Grabber class that grabs images from SharedMemorySegment instances
     /** Images that are published using the SharedMemoryPublisher can
         be grabbed with this grabber type. Please don't use this
@@ -73,7 +73,7 @@ namespace icl{
         /// resets all 'shared-memory-segents and system-semaphores'
         static void resetBus(bool verbose);
     };
-    
+
   } // namespace io
 }
 

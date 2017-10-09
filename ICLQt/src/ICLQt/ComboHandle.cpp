@@ -33,7 +33,7 @@
 
 namespace icl{
   namespace qt{
-  
+
     void ComboHandle::add(const std::string &item){
       cbx()->addItem(item.c_str());
     }
@@ -57,18 +57,18 @@ namespace icl{
     int ComboHandle::getIndex(const std::string &item) const{
       return cbx()->findText(item.c_str());
     }
-    
+
     int ComboHandle::getSelectedIndex() const{
       return cbx()->currentIndex();
     }
     std::string ComboHandle::getSelectedItem() const{
       return cbx()->currentText().toLatin1().data();
     }
-    
+
     int ComboHandle::getItemCount() const{
       return cbx()->count();
     }
-    
+
     void ComboHandle::setSelectedIndex(int idx){
       cbx()->setCurrentIndex(idx);
     }
@@ -78,7 +78,7 @@ namespace icl{
         cbx()->setCurrentIndex(idx);
       }
     }
-  
-    
+
+
   } // namespace qt
 }

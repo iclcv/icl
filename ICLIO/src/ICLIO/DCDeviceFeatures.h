@@ -37,7 +37,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /** cond */
     class DCDeviceFeaturesImpl : public utils::Configurable {
     public:
@@ -62,8 +62,8 @@ namespace icl{
       ICLIO_API static void delete_func(DCDeviceFeaturesImpl *impl);
     };
     /** endcond */
-  
-    /// Utility class for handling DC-Device features \ingroup G_DC  
+
+    /// Utility class for handling DC-Device features \ingroup G_DC
     /** The DCDeviceFeautre class provides read/write access to the following features of
         DC1394 devices (if supported by the camera):
         - Brightness
@@ -86,8 +86,8 @@ namespace icl{
         - optical filter
         - capture size
         - capture quality
-  
-        
+
+
         The class interface is adapted to the get/set Property interface of the ICL Grabber interface.
         In addition, it is derived from the ShallowCopyable interface to allow cheap copying.
     */
@@ -95,10 +95,10 @@ namespace icl{
       public:
       /// Base constructor create a null Object
       ICLIO_API DCDeviceFeatures();
-  
+
       /// Default constructor with given DCDevice struct
       ICLIO_API DCDeviceFeatures(const DCDevice &dev);
-      
+
     };
   } // namespace io
 }

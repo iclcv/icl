@@ -101,7 +101,7 @@ TARGET_LINK_LIBRARIES(ICLMath ICLUtils
                               ${ICLMath_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLMath
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples ----

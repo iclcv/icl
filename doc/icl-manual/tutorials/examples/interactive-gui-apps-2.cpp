@@ -2,10 +2,10 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLUtils/FPSLimiter.h>
 
-GUI gui;                 
-GenericGrabber grabber;  
-UnaryCompareOp cmp(">"); 
-FPSLimiter fps(25);  
+GUI gui;
+GenericGrabber grabber;
+UnaryCompareOp cmp(">");
+FPSLimiter fps(25);
 
 void init(){
   gui << Image().handle("image")

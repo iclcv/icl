@@ -43,7 +43,7 @@
 
 namespace icl {
   namespace utils{
-  
+
   /** Checks whether all elements of two matrices are pairwise almost equal using
   * a given error bound 'delta'. Use this function in your test by calling, e.g.,
   * EXPECT_TRUE(isNear(A, B, delta));
@@ -85,9 +85,9 @@ testing::AssertionResult isNear(const FixedColVector<T,DIM> &vector_a,
         << i << "] is " << vector_a[i]-vector_b[i] << ", which exceeds delta, where\n"
         << "a=" << vector_a.transp() << "\nb=" << vector_b.transp()
         << "\ndelta=" << delta << ".";
-        
+
     }
-  } 
+  }
   return testing::AssertionSuccess();
 }
 
@@ -108,9 +108,9 @@ testing::AssertionResult isNear(const FixedRowVector<T,DIM> &vector_a,
         << "] is " << vector_a[i]-vector_b[i] << ", which exceeds delta, where\n"
         << "a=" << vector_a << "\nb=" << vector_b
         << "\ndelta=" << delta << ".";
-        
+
     }
-  } 
+  }
   return testing::AssertionSuccess();
 }
 
@@ -125,7 +125,7 @@ testing::AssertionResult isNear(const Point32f &p,
   if (dist > delta) {
     return testing::AssertionFailure()
       << "The distance of points " << p << " and " << q << " is "
-      << dist << ", which exceeds delta=" << delta << ".";        
+      << dist << ", which exceeds delta=" << delta << ".";
   }
   return testing::AssertionSuccess();
 }

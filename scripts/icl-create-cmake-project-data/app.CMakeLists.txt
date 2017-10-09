@@ -55,6 +55,6 @@ install(TARGETS "${PROJECT_NAME}-${APP}"
         ARCHIVE DESTINATION lib/static
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE
        )
-       
+
 endforeach(APP)
 

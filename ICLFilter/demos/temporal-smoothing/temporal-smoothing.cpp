@@ -48,45 +48,45 @@ void init(){
       << Slider(1,22,10).out("difference").label("difference").maxSize(100,2).handle("difference-handle")
       << CheckBox("useCL", true).out("disableCL").maxSize(100,2).handle("disableCL-handle")
       << Show();
-  
+
   int maxFilterSize=pa("-maxFilterSize");
   int nullValue=pa("-nullValue");
-  
+
   smoothing = new MotionSensitiveTemporalSmoothing(nullValue, maxFilterSize);
   grabber.init(pa("-i"));
-  
-  update(); 
+
+  update();
 }
 
 
 void update(){
   static Mutex mutex;
   Mutex::Locker l(mutex);
-  
+
   static ImageHandle image = gui["image"];
   static ImageHandle imageOut = gui["imageOut"];
   int filterSize = gui["filterSize"];
   int difference = gui["difference"];
-  
+
   if(gui["disableCL"]){
     smoothing->setUseCL(true);
   }else{
     smoothing->setUseCL(false);
   }
-  
+
   static ImgBase *dst = 0;
   const ImgBase *src = grabber.grab();
-  
+
   smoothing->setFilterSize(filterSize);
   smoothing->setDifference(difference);
-  
+
   Time startT, endT;
   startT = Time::now();
   smoothing->apply(src, &dst);
   endT = Time::now();
   if(smoothing->isCLActive()){
     std::cout <<"OpenCL :"<< (endT-startT).toMilliSeconds() <<" ms" << endl;
-  }else{     
+  }else{
     std::cout << "CPU :" << (endT - startT).toMilliSeconds() << " ms" << endl;
   }
   imageOut = dst;
@@ -98,5 +98,5 @@ void run(){
 }
 
 int main(int n, char **ppc){
-  return ICLApplication(n,ppc,"[m]-input|-i(2) -nullValue|-nV(int=-1) -maxFilterSize|-mFS(int=20)",init,run).exec(); 
+  return ICLApplication(n,ppc,"[m]-input|-i(2) -nullValue|-nV(int=-1) -maxFilterSize|-mFS(int=20)",init,run).exec();
 }

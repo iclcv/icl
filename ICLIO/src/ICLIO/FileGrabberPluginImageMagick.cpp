@@ -32,8 +32,8 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
-#ifdef ICL_HAVE_IMAGEMAGICK 
-#define OMP_NUM_THREADS 1 
+#ifdef ICL_HAVE_IMAGEMAGICK
+#define OMP_NUM_THREADS 1
 #include <Magick++.h>
 #endif
 
@@ -42,28 +42,28 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-  
-  
-  #ifdef ICL_HAVE_IMAGEMAGICK  
+
+
+  #ifdef ICL_HAVE_IMAGEMAGICK
     struct FileGrabberPluginImageMagick::InternalData{
       std::vector<icl8u> buffer;
-  
-  
+
+
     };
-    
+
     FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
       m_data(new FileGrabberPluginImageMagick::InternalData){
       // from FileWriterPluginImageMagick.h
     }
-    
+
     FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
       delete m_data;
     }
-    
+
     void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
       icl_initialize_image_magick_context();
-  
-      Magick::Image *image = 0;    
+
+      Magick::Image *image = 0;
       try{
         image = new  Magick::Image(file.getName());
       }catch(Magick::Error &err){
@@ -71,25 +71,25 @@ namespace icl{
       }
       image->modifyImage();
       image->type(Magick::TrueColorType);
-      
+
       Size size(image->columns(),image->rows());
       unsigned int minsize=size.getDim()*3;
       if(m_data->buffer.size()<minsize){
         m_data->buffer.resize(minsize);
       }
-      
+
       /**
           Here we faced an error in the Magick++ library when reading png images ?
           image->getConstPixels(0,0,size.width,size.height);
           image->writePixels(Magick::RGBQuantum,m_data->buffer.data());
-          
+
           icl::ensureCompatible(dest,depth8u,size,formatRGB);
           icl::interleavedToPlanar(m_data->buffer.data(),(*dest)->asImg<icl8u>());
       **/
-  
+
       const Magick::PixelPacket *pix = image->getConstPixels(0,0,size.width,size.height);
       core::ensureCompatible(dest,depth8u,size,formatRGB);
-  
+
       icl8u *r = (*dest)->asImg<icl8u>()->begin(0);
       icl8u *g = (*dest)->asImg<icl8u>()->begin(1);
       icl8u *b = (*dest)->asImg<icl8u>()->begin(2);
@@ -111,20 +111,20 @@ namespace icl{
       }
       ICL_DELETE(image);
     }
-    
+
   #else
     struct FileGrabberPluginImageMagick::InternalData{};
-    
+
     FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
       m_data(0){}
-    
+
     FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
-    
+
     void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
       ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
       throw InvalidFileException(file.getName());
     }
-  #endif  
+  #endif
   } // namespace io
 }
 

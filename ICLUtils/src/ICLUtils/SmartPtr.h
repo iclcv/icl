@@ -41,31 +41,31 @@ namespace icl{
 #else
     /// Specialization of the SmartPtrBase class for Pointers
     /** If the internal reference counter becomes 0, the contained
-        data pointer is release using <tt>delete</tt> 
-  
+        data pointer is release using <tt>delete</tt>
+
         \section EX Example
-  
+
         <pre>
         class MyClass{...};
         typedef SmartPtr<MyClass> MyClassPtr;
-  
+
         //create an array of empty auto pointers
         MyClassPtr ps[100];
-  
-        // fill the first element of the array with one reference 
+
+        // fill the first element of the array with one reference
         // of type MyClass*
         ps[0] = new MyClass;
-  
-        // fill the other elements of the array with the 
+
+        // fill the other elements of the array with the
         // SAME reference
         std::fill(ps+1,ps+100,ps[0])
-  
+
         // reference counter is 100 now
         // delete all except the last one
         for(int i=0;i<99;i++){
            array[i].setNull();
         }
-  
+
         // now the reference counter of array[99] is 1, if it
         // is deleted, the hold element is deleted as well
         array[99].setNull();
@@ -80,14 +80,14 @@ namespace icl{
       /// gets pointer, ownership is passed optionally
       template<class DerivedT>
       SmartPtr(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
-  
+
       /// gets pointer, ownership is passed optionally
       SmartPtr(T *ptData, bool bOwn=true):super(ptData,bOwn){}
-  
+
       /// reference counting copy constructor
       template<class DerivedT>
       SmartPtr(const SmartPtrBase<DerivedT,PointerDelOp>& r):super(r){}
-  
+
       /// reference counting copy constructor
       SmartPtr(const SmartPtrBase<T,PointerDelOp>& r):super(r){}
     };

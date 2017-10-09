@@ -92,9 +92,9 @@ GenericGrabber g;
 void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
-  
+
   gui << Draw().label("image").minSize(32,24).handle("image")
-      << ( VBox() 
+      << ( VBox()
            << Draw().label("template").minSize(10,6).handle("templ")
            << Draw().label("buffer").minSize(10,6).handle("buf")
            )
@@ -118,7 +118,7 @@ void vis_roi(ICLDrawWidget *w){
   w->rect(Rect(0,r.y,r.x,imageSize.height-r.y));
   w->rect(Rect(r.right(),r.y,imageSize.width-r.right(),imageSize.height-r.y));
   w->rect(Rect(r.x,r.bottom(),r.width,imageSize.height-r.bottom()));
-  
+
   w->color(200,0,255,200);
   w->fill(255,255,255,0);
   w->rect(r);
@@ -127,7 +127,7 @@ void vis_roi(ICLDrawWidget *w){
 
 void run(){
   g.useDesired(imageSize);
-    
+
   while(1){
     mutex.lock();
     g.grab(bpp(currImage));
@@ -135,7 +135,7 @@ void run(){
       currImage.setROI(currROI.normalized() & currImage.getImageRect());
     }
     mutex.unlock();
-    
+
     static DrawHandle &image = gui.get<DrawHandle>("image");
     static DrawHandle &templ = gui.get<DrawHandle>("templ");
     static DrawHandle &buf = gui.get<DrawHandle>("buf");
@@ -149,7 +149,7 @@ void run(){
     fps.render();
 
     image = &currImage;
-    
+
     if(dragging){
       if(dragging_R){
         vis_roi(*image);
@@ -157,20 +157,20 @@ void run(){
         image->color(255,0,0,200);
         image->fill(255,255,255,50);
         image->rect(currRect);
-      }      
+      }
     }else if(currTempl.getDim()){
-      
+
       if(currROI != currImage.getImageRect()){
         vis_roi(*image);
       }
-      
+
       static ViewBasedTemplateMatcher matcher;
       matcher.setSignificance(significance);
       matcher.setMode(mode ? ViewBasedTemplateMatcher::crossCorrelation : ViewBasedTemplateMatcher::sqrtDistance);
       matcher.setClipBuffersToROI(clipBuffers);
-      
+
       const std::vector<Rect> &rs = matcher.match(currImage,currTempl,useMasks?imageMask:Img8u::null,useMasks?templMask:Img8u::null);
-      
+
       image->color(255,0,0,200);
       image->fill(255,255,255,0);
       for(unsigned int i=0;i<rs.size();++i){
@@ -183,9 +183,9 @@ void run(){
     }
     image.render();
 
-    
 
-    
+
+
     mutex.lock();
     if(currTempl.getDim()){
       templ = &currTempl;
@@ -193,9 +193,9 @@ void run(){
     }
     mutex.unlock();
 
-    
+
     Thread::msleep(10);
-    
+
   }
 }
 

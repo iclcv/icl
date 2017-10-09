@@ -39,34 +39,34 @@
 
 namespace icl{
   typedef math::SimplexOptimizer<float,std::vector<float> > Simplex;
-  
+
   namespace markers{
     using namespace utils;
-    
+
     struct MarkerGridBasedUndistortionOptimizer::Data{
       std::vector<SmartPtr<MarkerGrid> > grids;
       std::vector<SmartPtr<MarkerGrid> > ugrids;
 
       SmartPtr<InverseUndistortionProcessor> iup;
     };
-    
+
     MarkerGridBasedUndistortionOptimizer::MarkerGridBasedUndistortionOptimizer():
       m_data(new Data){}
     MarkerGridBasedUndistortionOptimizer::~MarkerGridBasedUndistortionOptimizer(){
       delete m_data;
     }
-  
+
     void MarkerGridBasedUndistortionOptimizer::add(const MarkerGrid &grid){
       m_data->grids.push_back(new MarkerGrid(grid));
       m_data->grids.back()->detach();
     }
 
-  
+
     int MarkerGridBasedUndistortionOptimizer::size() const{
       return m_data->grids.size();
     }
-  
-    
+
+
     void MarkerGridBasedUndistortionOptimizer::clear(){
       m_data->grids.clear();
     }
@@ -78,7 +78,7 @@ namespace icl{
       return p.x < 0 || p.x > w  || p.y < 0 || p.y > h;
     }
 
-    bool is_not_valid(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d, 
+    bool is_not_valid(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d,
                       float w, float h){
       if(is_pt_nan(a) || is_pt_nan(b) || is_pt_nan(c) || is_pt_nan(d)) return true;
       return is_outside(a,w,h) || is_outside(b,w,h) || is_outside(c,w,h) || is_outside(d,w,h);
@@ -88,7 +88,7 @@ namespace icl{
     void MarkerGridBasedUndistortionOptimizer::undistort(const MarkerGrid &src,
                                       MarkerGrid &dst, const float k[9]) const{
       dst.setSize(src.getSize());
-      
+
       std::vector<Point32f> sp;
       MarkerGrid::iterator jt = dst.begin();
       for(MarkerGrid::const_iterator it = src.begin(); it != src.end(); ++it, ++jt){
@@ -102,11 +102,11 @@ namespace icl{
           sp.push_back(kp.ul);
         }
       }
-      
+
       if(!m_data->iup) m_data->iup = new InverseUndistortionProcessor(false);
       const std::vector<Point32f> &out = m_data->iup->run(sp, k);
 
-      std::vector<Point32f>::const_iterator it2 = out.begin(); 
+      std::vector<Point32f>::const_iterator it2 = out.begin();
       for(MarkerGrid::iterator it = dst.begin(); it != dst.end(); ++it){
         if(it->wasFound()){
           Marker::KeyPoints &kp = it->getImagePoints();
@@ -125,7 +125,7 @@ namespace icl{
         m_data->iup->setPreferOpenCL(on);
       }
     }
-    
+
     /// k = k0,k1,k2,k3,k4, ix-offset, iy-offset
     float MarkerGridBasedUndistortionOptimizer::computeError(const float k[9]){
       //Time t = Time::now();
@@ -133,9 +133,9 @@ namespace icl{
       std::vector<SmartPtr<MarkerGrid> > &us = m_data->ugrids;
 
       if(!gs.size()) return -1;
-      
-      //   DEBUG_LOG("k:" << k[0] << "," << k[1] << "," << k[2] << "," 
-      //          << k[3] << "," << k[4] << "," << k[5] << "," 
+
+      //   DEBUG_LOG("k:" << k[0] << "," << k[1] << "," << k[2] << ","
+      //          << k[3] << "," << k[4] << "," << k[5] << ","
       //          << k[6] << "," << k[7] << "," << k[8]);
       float error = 0;
       us.resize(gs.size()); // shallow copy for existing ones
@@ -148,9 +148,9 @@ namespace icl{
           /*          for(MarkerGrid::const_iterator it=us[i]->begin();
               it != us[i]->end();++it){
             if(it->wasFound()){
-              std::cout << "ul: " << it->getImagePoints().ul 
-                        << "ll: " << it->getImagePoints().ll 
-                        << "ur: " << it->getImagePoints().ur 
+              std::cout << "ul: " << it->getImagePoints().ul
+                        << "ll: " << it->getImagePoints().ll
+                        << "ur: " << it->getImagePoints().ur
                         << "lr: " << it->getImagePoints().lr << std::endl;
             }
           }
@@ -159,16 +159,16 @@ namespace icl{
           return 1000;
         }
         //DEBUG_LOG("distorted error: " << gs[i]->computeError()
-        //          << "UNdistorted error for grid " << i << " : " 
+        //          << "UNdistorted error for grid " << i << " : "
         //          << e);
         error += e;
       }
       //t.showAge("time for computeError with " + str(gs.size()) + " grids");
       return error/float(us.size());
     }
-    
+
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeSample(const float kInit[9],
-                                                         int idx, float min, float max, 
+                                                         int idx, float min, float max,
                                                          const std::vector<int> steps){
       std::vector<float> k(kInit,kInit+9);
 
@@ -191,17 +191,17 @@ namespace icl{
           }
         }
         opt = min + minIdx * d;
-        //DEBUG_LOG("performed step " << s << " [" << min << "," << max 
+        //DEBUG_LOG("performed step " << s << " [" << min << "," << max
         //          << "] (span was " << span << ", d was " << d << ") "
         //          << "opt-value: " << opt << " gave error: " << minError);
-                
+
         min = opt - d;
         max = opt + d;
       }
       k[idx] = opt;
       return k;
     }
-  
+
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSample(const utils::Size &imageSize){
       const float kData[9] = {0,0,0,0,0, imageSize.width/2.f, imageSize.height/2.f,
                               imageSize.width/2.f, imageSize.height/2.f}; // last two (fx, and fy are not optimized)
@@ -235,7 +235,7 @@ namespace icl{
           }
           pInternal[5] = pInternal[7] + p[5]*10;
           pInternal[6] = pInternal[8] + p[6]*10;
-          
+
           float e = opt->computeError(pInternal.data());
           /*     DEBUG_LOG("parameters are: " << pInternal[0] << "," << pInternal[1] << ","
                     << pInternal[2] << "," << pInternal[3] << "," << pInternal[4] << ","
@@ -260,7 +260,7 @@ namespace icl{
         }
       };
     }
-    
+
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSimplex(const utils::Size &imageSize){
       //      utils::randomSeed();
       SimplexErrorFunction e(this, imageSize.width*0.5, imageSize.height*0.5);

@@ -39,27 +39,27 @@ Camera cam;
 GenericGrabber *grabber = 0;
 
 void init(){
-  
- 
+
+
   gui << Draw().handle("draw").minSize(16,12) << Show();
 
   cam = Camera(*pa("-input",2));
   grabber = new GenericGrabber();
   grabber -> init(pa("-i"));
   grabber->useDesired(cam.getRenderParams().viewport.getSize());
-  
+
   Vec p(pa("-grid",0),
         pa("-grid",1),
         pa("-grid",2));
-  
+
   Vec v1(pa("-grid",3),
          pa("-grid",4),
          pa("-grid",5));
-  
+
   Vec v2(pa("-grid",6),
          pa("-grid",7),
          pa("-grid",8));
-  
+
   Nx = pa("-grid",9).as<int>()+1;
   Ny = pa("-grid",10).as<int>()+1;
 
@@ -74,11 +74,11 @@ void init(){
   }
 
 }
-  
+
 
 void run(){
   static DrawHandle draw = gui["draw"];
-  
+
   draw=grabber->grab();
 
   draw->color(0,100,255,200);

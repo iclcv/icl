@@ -62,7 +62,7 @@ inline int set_canon(int flag){
   else
     t.c_lflag &= ~(ICANON|ECHO);
   tcsetattr( fileno(stdin), TCSANOW, &t);
-  
+
   return 1;
 }
 
@@ -89,7 +89,7 @@ namespace icl{
           throw ICLException("..");
       return (ModulationFrq)-1;
     }
-    
+
     static float get_max_range_mm(ModulationFrq m){
       switch(m){
 #define CASE(X,R) case MF_##X##MHz: return R;
@@ -110,7 +110,7 @@ namespace icl{
       }
     }
 
-    
+
 
     /// crazy debug output method (taken from the libmesasr sample application)
     static int swiss_ranger_debug_callback(SRCAM srCam,
@@ -182,7 +182,7 @@ namespace icl{
 #undef ENTRY
       }
     } g_props_initializer_instance;
-    
+
     static int g_use_single_serial = -1;
 
     static int propNr(const std::string &x){
@@ -192,7 +192,7 @@ namespace icl{
       }
       return -1;
     }
-    
+
     /*static std::string propNr(int v){
       for(std::map<std::string,int>::iterator it = g_props.begin();it!=g_props.end();++it){
         if(it->second == v){
@@ -202,7 +202,7 @@ namespace icl{
       return "";
         }*/
 
-    
+
 #define ICL_SR_SUCCESS 0
     template<class T>
     void adapt_result_t(Img<T> &im,  int us_add){
@@ -279,7 +279,7 @@ namespace icl{
       iimUnknownPixelsMinusOne,
       iimUnknownPixelsUnchanged
     };
-    
+
     class SwissRangerGrabber::SwissRanger{
       public:
         SRCAM cam;
@@ -292,13 +292,13 @@ namespace icl{
         std::string depthMapUnit;
         bool createXYZ;
     };
-    
+
     static int g_swissranger_instance_count = 0;
 
 
     SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) throw (ICLException):Grabber(){
       g_swissranger_instance_count++;
-      
+
       if(g_swissranger_instance_count == 1){
         set_canon(0);
 
@@ -328,7 +328,7 @@ namespace icl{
         }
       }
       SR_SetTimeout(m_sr->cam, 10000); // 10 sec
-      
+
       m_sr->iim = iimUnknownPixelsMinusOne;
 
       m_sr->size.width = SR_GetCols(m_sr->cam);
@@ -336,18 +336,18 @@ namespace icl{
 
       m_sr->buf = Img32f(m_sr->size,3);
       m_sr->image = imgNew(bufferDepth,m_sr->size,0);
-      
+
       m_sr->pickChannel = pickChannel;
 
       m_sr->depthMapUnit = "16Bit";
-      
+
       m_sr->createXYZ = true;
-      
+
 
       SR_SetMode(m_sr->cam,AM_COR_FIX_PTRN|AM_CONV_GRAY|AM_DENOISE_ANF|AM_CONF_MAP);
       addProperties();
     }
-    
+
 
     SwissRangerGrabber::~SwissRangerGrabber(){
       ICL_DELETE(m_sr->image);
@@ -444,7 +444,7 @@ namespace icl{
     float SwissRangerGrabber::getMaxRangeMM(const std::string &modulationFreq) throw (ICLException){
       return get_max_range_mm(translate_modulation_freq(modulationFreq));
     }
-    
+
     float SwissRangerGrabber::getMaxRangeVal() const{
       const std::string &u = m_sr->depthMapUnit;
       if(u == "16Bit") return 65535;
@@ -453,22 +453,22 @@ namespace icl{
 
       return unitFactor * maxRange;
     }
-    
+
     const ImgBase *SwissRangerGrabber::acquireImage(){
       Mutex::Locker l(m_mutex);
       SR_Acquire(m_sr->cam);
       Time captureTime = Time::now();
-      
+
       static const unsigned int SF = sizeof(float);
       SR_CoordTrfFlt(m_sr->cam, m_sr->buf.getData(0),m_sr->buf.getData(1),m_sr->buf.getData(2),SF,SF,SF);
 
       ImgBase &result = *m_sr->image;
-      
+
       ImgEntry *imgs = 0;
       int num = SR_GetImageList(m_sr->cam,&imgs);
       result.setChannels((m_sr->pickChannel<0) ? (num +(m_sr->createXYZ*3)) : 1);
 
-      
+
       //      ImgEntry *im_DISTANCE = 0;
       //int DISTANCE_idx = -1;
       ImgEntry *im_AMPLITUDE = 0;
@@ -477,7 +477,7 @@ namespace icl{
       //int INTENSITY_idx = -1;
       ImgEntry *im_CONF_MAP = 0;
       //int CONF_MAP_idx = -1;
-      
+
       for(int i=0;i<num;++i){
         if(imgs[i].width != result.getWidth()){
           ERROR_LOG("grabbed image entry size was " << imgs[i].width << " but internal width was set to " << result.getWidth());
@@ -530,7 +530,7 @@ namespace icl{
           }
         }
       }
-      
+
       if(m_sr->createXYZ && m_sr->pickChannel < 0){
         if(result.getDepth() != depth32f){
           ERROR_LOG("creation of xyz-channels is only supported if an icl32f buffer is used\nyou can specifiy this buffer depth in the SwissRanger constructor");
@@ -540,7 +540,7 @@ namespace icl{
             deepCopyChannel(&m_sr->buf, i, result.asImg<icl32f>(), num+i);
         }
       }
-      
+
       result.setTime(captureTime);
       return &result;
     }
@@ -584,6 +584,6 @@ namespace icl{
     }
 
     REGISTER_GRABBER(sr,utils::function(createSRGrabber), utils::function(SwissRangerGrabber::getDeviceList), "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
-    
+
   } // namespace io
 }

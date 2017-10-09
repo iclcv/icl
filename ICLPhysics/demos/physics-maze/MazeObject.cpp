@@ -19,8 +19,8 @@ namespace icl{
 //                            const Vec &pos_text,
 //                            const GeomColor &color)
 //         : m_text(text), m_pos(pos), m_color(color) {
-// 
-// 
+//
+//
 //         //addLine(0,1,m_color);
 //         QString str(text.c_str());
 //         QStringList list = str.split(",");
@@ -33,9 +33,9 @@ namespace icl{
 //             t_pos[1] += 20;
 //             ++count;
 //         }
-// 
+//
 //         setLineWidth(3);
-// 
+//
 //     }
 
     //***************************************
@@ -66,22 +66,22 @@ namespace icl{
 //         Point32f BC = center-end;
 //         Point32f AB = end-start;
 //         Point32f BA = start-end;
-// 
+//
 //         // project the circle vectors onto the line segment
 //         Point32f AAC = AB*(scalar2D(AC,AB)/scalar2D(AB,AB));
 //         Point32f BBC = BA*(scalar2D(BC,BA)/scalar2D(BA,BA));
-// 
+//
 //         // get the length of the projected vectors
 //         float l_AAC = length2D(AAC);
 //         float l_BBC = length2D(BBC);
 //         float l_AB = this->length();
-// 
+//
 //         // if the length of the projected vectors is longer than the line segment,
 //         // there is no intersection (circle around line-center + radius)
 //         if (l_AAC > r+m_wall_offset+l_AB || l_BBC > r+m_wall_offset+l_AB) {
 //             return false;
 //         }
-// 
+//
 //         // if the perpendicular bisectors of the sides's length is greater than the radius r,
 //         // there is no collision
 //         float dH = length2D(AC-AAC);
@@ -383,7 +383,7 @@ namespace icl{
 //             update(loaded_trajectory[0]);
 //         else
 //             data_index = -1;
-// 
+//
         return true;
     }
 
@@ -475,32 +475,32 @@ namespace icl{
         b !____|_________! a
       */
 //     void MazeObject::update(const MazePoints &pts) {
-// 
+//
 //         Vec x_ = pts.a - pts.b;
 //         x_.normalize();
 //         Vec y_ = pts.c - pts.b;
 //         y_.normalize();
 //         Vec z_ = icl::geom::cross(x_,y_);
-// 
+//
 //         Vec center = (pts.a + pts.b + pts.c + pts.d) / 4.0f;
 //         center_offset = center - pts.b;
-// 
+//
 //         static const Mat offset_rot = create_hom_4x4<float>(0,0,0);//(M_PI,0.0f,0.0f);
-// 
+//
 //         // the visual transformation of the maze (the maze center is the origin)
 //         Mat vis_transform(x_[0],y_[0],z_[0],center[0],
 //                           x_[1],y_[1],z_[1],center[1],
 //                           x_[2],y_[2],z_[2],center[2],
 //                           0,0,0,1);
 //         setTransformation(vis_transform*offset_rot);
-// 
+//
 //         // create the transformation from global to maze coord and vice versa (vicon point 'b' is the origin)
 //         maze_to_world_T = Mat(x_[0],y_[0],z_[0],pts.b[0],
 //                              x_[1],y_[1],z_[1],pts.b[1],
 //                              x_[2],y_[2],z_[2],pts.b[2] - m_z_offset,
 //                              0,0,0,1);
 //         world_to_maze_T = invert_hom_4x4(maze_to_world_T);
-// 
+//
 //         // transform the coord-system representation:
 //         static const float cx = 92, cy = 82;
 //         Mat coord_transform(1,0,0,-cx,
@@ -508,16 +508,16 @@ namespace icl{
 //                            0,0,1,-m_z_offset,
 //                            0,0,0,1);
 //         coord->setTransformation(offset_rot*coord_transform);
-// 
+//
 //         // create the maze plane (for computation of 2D positions of the ball)
 //         Mat plane_transform(1,0,0,0,
 //                             0,1,0,0,
 //                             0,0,1, - m_z_offset + (maze_ball_diameter/2.0f),
 //                             0,0,0,1);
 //         maze_3d_plane = PlaneEquation(plane_transform*pts.b,z_);
-// 
+//
 //         last_data = pts;
-// 
+//
 //     }
 
     void MazeObject::transformForMazeVis(geom::Vec &val) {
@@ -539,7 +539,7 @@ namespace icl{
 //         std::vector<geom::Vec> data(4);
 //         getViconPoints(data);
 //         std::vector<Point32f> p2d = cam.project(data);
-// 
+//
 //         float x_max = 0, y_max = 0;
 //         float x_min = 0, y_min = 0;
 //         for (uint i = 0; i < p2d.size(); ++i) {
@@ -549,7 +549,7 @@ namespace icl{
 //             x_max = std::max(p.x,x_max);
 //             y_max = std::max(p.y,y_max);
 //         }
-// 
+//
 //         return Rect(x_min,y_min,x_max-x_min,y_max-y_min);
 	return Rect(0,0,0,0);
     }
@@ -664,7 +664,7 @@ namespace icl{
     const int MazeObject::sectionWallCount[NUM_MAZE_SECTIONS] = {
         4,5,3,4,3,4,4,3,4,4,2,4,3,3,4,4,4,3,3,3,3,4
     };
-  
+
     const float MazeObject::points[2*39] = {
         // corners
         0,145-0,           //p0

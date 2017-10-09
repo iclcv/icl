@@ -33,7 +33,7 @@
 
 namespace icl{
   namespace utils{
-    
+
     namespace{
       struct StackedBoolTrueSetter{
         bool &m_b;
@@ -53,10 +53,10 @@ namespace icl{
         }
       };
     }
-    
+
     FPSLimiter::FPSLimiter(float maxFPS, int fpsEstimationInterval):
       FPSEstimator(fpsEstimationInterval),m_maxFPS(maxFPS),m_waitOff(false){}
-    
+
     float FPSLimiter::wait() const{
       if(m_waitOff) return 0;
       float desiredInterval = (1000000.0/m_maxFPS);
@@ -69,30 +69,30 @@ namespace icl{
       m_lastTime = Time::now();
       return timeToWait;
     }
-    
+
     void FPSLimiter::tic() const{
       wait();
       StackedBoolTrueSetter x(m_waitOff);
       FPSEstimator::tic();
     }
-    
+
     float FPSLimiter::getFPSVal() const{
       wait();
       StackedBoolTrueSetter x(m_waitOff);
       return FPSEstimator::getFPSVal();
     }
-       
+
     std::string FPSLimiter::getFPSString(const std::string &fmt, int bufferSize) const{
       wait();
       StackedBoolTrueSetter x(m_waitOff);
       return FPSEstimator::getFPSString(fmt,bufferSize);
     }
-      
+
     void FPSLimiter::showFPS(const std::string &text) const{
       wait();
       StackedBoolTrueSetter x(m_waitOff);
       FPSEstimator::showFPS(text);
     }
-  
+
   } // namespace utils
 }

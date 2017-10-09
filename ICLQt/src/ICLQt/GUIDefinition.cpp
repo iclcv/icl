@@ -46,10 +46,10 @@ using namespace icl::core;
 namespace icl{
   namespace qt{
     namespace{
-  
+
       static string cutName(const string &s){
         // {{{ open
-        
+
         string::size_type pos = s.find("=",0);
         if(pos == string::npos){
           throw GUISyntaxErrorException(s,"missing '=' character!");
@@ -61,31 +61,31 @@ namespace icl{
         }
         return s.substr(pos+1);
       }
-      
+
       static void split_string(const std::string &s, string &type, string &params, string &optparams){
         string::size_type obrPos = s.find('(');
         string::size_type cbrPos = s.find(')');
         string::size_type obrPos2 = s.find('[',cbrPos==string::npos ? 0 : cbrPos);
         string::size_type cbrPos2 = s.find(']',cbrPos==string::npos ? 0 : cbrPos);
-        
+
         if(obrPos != string::npos){
           if(cbrPos == string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");
           if(obrPos2 != string::npos){
             if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
             type = s.substr(0,obrPos);
             params = s.substr(obrPos+1, cbrPos-obrPos-1);
-            optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1); 
+            optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1);
           }else{
             type = s.substr(0,obrPos);
             params = s.substr(obrPos+1, cbrPos-obrPos-1);
-            optparams = "";          
+            optparams = "";
           }
         }else{
           if(obrPos2 != string::npos){
             if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
             type = s.substr(0,obrPos2);
             optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1);
-            params = "";          
+            params = "";
           }else{
             optparams = "";
             params = "";
@@ -93,24 +93,24 @@ namespace icl{
           }
         }
       }
-      
+
     // }}}
     }
-    
-    
-    
+
+
+
     GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, icl::qt::ProxyLayout *proxyLayout, QWidget *parentWidget)
       // {{{ open
       :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),
        m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){
-      
+
       // SYNTAX: type(commaSeperatedparamList)[@out=outNameList@inp=inNameList@size=Size@label=label]
       string paramList;
       string optParamList;
       split_string(def,m_sType,paramList,optParamList);
-      
-     
-      
+
+
+
       if(paramList.length()){
         m_vecParams = StrTok(paramList,",",true,'\\').allTokens();
       }
@@ -118,18 +118,18 @@ namespace icl{
       if(m_sType == "string" && paramList.length() && paramList[0] == ','){
         m_vecParams.insert(m_vecParams.begin(), "");
       }
-      
+
       if(optParamList.length()){
         StrTok t(optParamList,"@");
         while(t.hasMoreTokens()){
           string s = t.nextToken();
           if(!s.find("out",0)) m_vecOutputs = StrTok(cutName(s),",").allTokens();
-          else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();  
+          else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();
           else if(!s.find("size",0)) m_oSize = parse<Size>(cutName(s));
           else if(!s.find("minsize",0)) m_oMinSize = parse<Size>(cutName(s));
           else if(!s.find("maxsize",0)) m_oMaxSize = parse<Size>(cutName(s));
           else if(!s.find("label",0)) m_sLabel = cutName(s);
-          else if(!s.find("handle",0)) m_sHandle = cutName(s); 
+          else if(!s.find("handle",0)) m_sHandle = cutName(s);
           else if(!s.find("margin",0)) m_iMargin = (int)abs(atoi(cutName(s).c_str()));
           else if(!s.find("spacing",0)) m_iSpacing = (int)abs(atoi(cutName(s).c_str()));
           else if(!s.find("tooltip",0)) m_toolTip = cutName(s);
@@ -138,18 +138,18 @@ namespace icl{
       }
     }
     // }}}
-  
+
     const std::string &GUIDefinition::param(unsigned int idx) const {
       // {{{ open
-      
+
       static const string DEF;
       return idx < m_vecParams.size() ? m_vecParams[idx] : DEF;
-    }  
-    
+    }
+
     // }}}
     int GUIDefinition::intParam(unsigned int idx) const {
       // {{{ open
-      
+
       const string &s = param(idx);
       if(s != ""){
         return atoi(s.c_str());
@@ -157,11 +157,11 @@ namespace icl{
         return 0;
       }
     }
-    
+
       // }}}
     float GUIDefinition::floatParam(unsigned int idx) const {
       // {{{ open
-      
+
       const string &s = param(idx);
       if(s != ""){
         return atof(s.c_str());
@@ -169,32 +169,32 @@ namespace icl{
         return 0;
       }
     }
-    
+
     // }}}
-    
+
     static std::string &create_def_value(const std::string &base){
       static std::list<std::string> store;
       store.push_back("default-"+base+"-"+str(store.size()));
       return store.back();
     }
-    
+
     const std::string &GUIDefinition::output(unsigned int idx) const {
         // {{{ open
-      
+
         return idx < m_vecOutputs.size() ? m_vecOutputs[idx] : create_def_value("out");
       }
-  
+
       // }}}
     const std::string &GUIDefinition::input(unsigned int idx) const {
       // {{{ open
-      
+
        return idx < m_vecInputs.size() ? m_vecInputs[idx] : create_def_value("in");
     }
-    
+
     // }}}
     void GUIDefinition::show() const{
       // {{{ open
-      
+
       printf("GUI of type \"%s\" \n",m_sType.c_str());
       printf("label is \"%s\" \n",m_sLabel.c_str());
       printf("size is \"%s\" \n",str(m_oSize).c_str());
@@ -211,8 +211,8 @@ namespace icl{
         printf("  nr %d: \"%s\" \n",i,m_vecOutputs[i].c_str());
       }
     }
-    
+
     // }}}
-  
+
   } // namespace qt
 }

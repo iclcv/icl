@@ -41,7 +41,7 @@ using namespace icl::math::fft;
 
 namespace icl{
   namespace filter{
-  
+
     class FFTOp::Data{
     public:
       ResultMode m_rm;
@@ -53,53 +53,53 @@ namespace icl{
       DynMatrix<std::complex<double> > m_buf64f;
       DynMatrix<std::complex<float> > m_dstBuf32f;
       DynMatrix<std::complex<double> > m_dstBuf64f;
-  
+
       Data(ResultMode rm=LOG_POWER_SPECTRUM, SizeAdaptionMode sam=NO_SCALE,bool fftshift=true,bool forceDFT=false):
         m_rm(rm),m_sam(sam), m_fftshift(fftshift),m_forceDFT(forceDFT),m_adaptedSource(0){}
       ~Data(){
         ICL_DELETE(m_adaptedSource);
       }
     };
-  
+
     void FFTOp::setResultMode(ResultMode rm){
       m_data->m_rm = rm;
     }
-  
+
     int FFTOp::getResultMode(){
       return m_data->m_rm;
     }
-  
+
     void FFTOp::setSizeAdaptionMode(SizeAdaptionMode sam){
       m_data->m_sam = sam;
     }
-  
+
     int FFTOp::getSizeAdaptionMode(){
       return m_data->m_sam;
     }
-  
+
     void FFTOp::setForceDFT(bool pForceDFT){
       m_data->m_forceDFT = pForceDFT;
     }
-  
+
     bool FFTOp::getForceDFT(){
       return m_data->m_forceDFT;
     }
-  
+
     void FFTOp::setFFTShift(bool pFFTShift){
       m_data->m_fftshift = pFFTShift;
     }
-  
+
     bool FFTOp::getFFTShift(){
       return m_data->m_fftshift;
     }
-  
+
     FFTOp::FFTOp(ResultMode rm, SizeAdaptionMode zam, bool fftshift, bool forceDFT):
       m_data(new FFTOp::Data(rm, zam, fftshift, forceDFT)){}
-  
+
     FFTOp::~FFTOp(){
       delete m_data;
     }
-  
+
     template<typename T>
     void FFTOp::apply_inplace_fftshift(DynMatrix<T> &mat){
       unsigned int cols = mat.cols();
@@ -204,10 +204,10 @@ namespace icl{
         }
       }
     }
-  
+
     template void FFTOp::apply_inplace_fftshift(DynMatrix<icl32f> &m);
     template void FFTOp::apply_inplace_fftshift(DynMatrix<icl64f> &m);
-  
+
     template<class SrcT, class DstT>
     void FFTOp::apply_internal(const Img<SrcT> &src, Img<DstT> &dst,
                                DynMatrix<std::complex<DstT> > &buf, DynMatrix<std::complex<DstT> > &dstBuf){
@@ -277,7 +277,7 @@ namespace icl{
         }
       }
     }
-  
+
     template void FFTOp::apply_internal(const Img<icl8u> &src, Img<icl32f> &dst,
                                         DynMatrix<std::complex<icl32f> > &buf, DynMatrix<std::complex<icl32f> > &dstBuf);
     template void FFTOp::apply_internal(const Img<icl16s> &src, Img<icl32f> &dst,
@@ -288,7 +288,7 @@ namespace icl{
                                         DynMatrix<std::complex<icl32f> > &buf, DynMatrix<std::complex<icl32f> > &dstBuf);
     template void FFTOp::apply_internal(const Img<icl64f> &src, Img<icl32f> &dst,
                                         DynMatrix<std::complex<icl32f> > &buf, DynMatrix<std::complex<icl32f> > &dstBuf);
-  
+
     template void FFTOp::apply_internal(const Img<icl8u> &src, Img<icl64f> &dst,
                                         DynMatrix<std::complex<icl64f> > &buf, DynMatrix<std::complex<icl64f> > &dstBuf);
     template void FFTOp::apply_internal(const Img<icl16s> &src, Img<icl64f> &dst,
@@ -299,7 +299,7 @@ namespace icl{
                                         DynMatrix<std::complex<icl64f> > &buf, DynMatrix<std::complex<icl64f> > &dstBuf);
     template void FFTOp::apply_internal(const Img<icl64f> &src, Img<icl64f> &dst,
                                         DynMatrix<std::complex<icl64f> > &buf, DynMatrix<std::complex<icl64f> > &dstBuf);
-  
+
     template<class T>
     const Img<T> *FFTOp::adapt_source(const Img<T> *src){
       FFTOp_DEBUG("f: adapt_source");
@@ -355,13 +355,13 @@ namespace icl{
           return src;
       }
     }
-  
+
     template const Img<icl8u> *FFTOp::adapt_source(const Img<icl8u> *src);
     template const Img<icl16s> *FFTOp::adapt_source(const Img<icl16s> *src);
     template const Img<icl32s> *FFTOp::adapt_source(const Img<icl32s> *src);
     template const Img<icl32f> *FFTOp::adapt_source(const Img<icl32f> *src);
     template const Img<icl64f> *FFTOp::adapt_source(const Img<icl64f> *src);
-  
+
     void FFTOp::apply(const ImgBase *src, ImgBase **dst){
       FFTOp_DEBUG("f: apply");
       ICLASSERT_RETURN(src);
@@ -379,11 +379,11 @@ namespace icl{
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
       }
-  
+
       //if TWO_CHANNEL_? is needed, the channelcount of the destinationimage is two times channelcount of sourceimmage
       int nChannels = (m_data->m_rm == TWO_CHANNEL_COMPLEX || m_data->m_rm == TWO_CHANNEL_MAGNITUDE_PHASE)
       ? 2*src->getChannels() : src->getChannels();
-  
+
       if(!prepare(dst,dstDepth,src->getSize(), formatMatrix, nChannels,
                   Rect(Point::null,src->getSize()), src->getTime())){
         throw ICLException("preparation of  destinationimage failed");

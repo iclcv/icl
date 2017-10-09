@@ -41,15 +41,15 @@
 namespace icl {
   namespace io{
     namespace pylon {
-  
+
       /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
       class PylonGrabberThread : public utils::Thread {
         public:
           /// Constructor sets all internal fields and allocates memory
           /**
           * @param grabber The IStreamGrabber providing the images.
-          * @param converter 
-          * @param options 
+          * @param converter
+          * @param options
           */
           ICLIO_API PylonGrabberThread(Pylon::IStreamGrabber* grabber,
                                   PylonColorConverter* converter,
@@ -82,11 +82,11 @@ namespace icl {
           int m_Timeout;
           /// A counter for correct acquisitions.
           int m_Acquired;
-  
+
           /// grabs a single image into m_BufferQueue.
           void grab();
     };
-  
+
     }//namespace pylon
   } // namespace io
 }//namespace icl

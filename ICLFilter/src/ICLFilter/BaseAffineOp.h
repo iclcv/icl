@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace filter{
-  
+
     /// Abtract base class for arbitrary affine operation classes \ingroup AFFINE \ingroup UNARY
     /** The Base affine class complies an abtract interface class
         for all Filter classes implementing affine operations:
@@ -43,17 +43,17 @@ namespace icl{
         - Rotate
         - Translate
         - Mirror
-        - Scale  
+        - Scale
     */
     class ICLFilter_API BaseAffineOp : public UnaryOp{
       public:
       /// Destructor
       virtual ~BaseAffineOp(){}
-      
+
       /// import from super class
       using UnaryOp::apply;
     };
-  
+
   } // namespace filter
 }
 

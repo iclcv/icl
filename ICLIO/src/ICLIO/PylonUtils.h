@@ -41,14 +41,14 @@
 namespace icl {
   namespace io{
     namespace pylon {
-  
+
       /// Buffer, registered to the Pylon-drivers StreamGrabber \ingroup GIGE_G
       template <typename T>
       class PylonGrabberBuffer {
         private:
           T *m_pBuffer;
           Pylon::StreamBufferHandle m_hBuffer;
-  
+
         public:
           PylonGrabberBuffer(size_t size) : m_pBuffer(NULL) {
             m_pBuffer = new T[size];
@@ -69,7 +69,7 @@ namespace icl {
             m_hBuffer = hBuffer;
           }
       };
-  
+
       /// A buffer holding image information and timestamp \ingroup GIGE_G
       template <typename T>
       class TsBuffer {
@@ -80,7 +80,7 @@ namespace icl {
           uint64_t m_Timestamp;
           /// holdss the size of m_Buffer
           size_t m_Size;
-  
+
           /// Constructor allocates required memory
           TsBuffer(size_t size)  : m_Timestamp(0), m_Size(size){
             m_Buffer = new T[m_Size];
@@ -103,7 +103,7 @@ namespace icl {
             core::copy(tmp, tmp + m_Size, m_Buffer);
           }
       };
-  
+
       /// This class holds all buffers needed for ColorConversion
       class ConvBuffers {
         public:
@@ -128,7 +128,7 @@ namespace icl {
           /// boolean showing whether this buffers need a reset
           bool m_Reset;
       };
-  
+
       /// This is used for concurrent writing and reading of ConvBuffers
       /**
           This class holds three pointers to ConvBuffers of which one is the
@@ -140,7 +140,7 @@ namespace icl {
           ICLIO_API ConcGrabberBuffer();
           /// Destructor frees allocated memory.
           ICLIO_API ~ConcGrabberBuffer();
-  
+
           /// returns a pointer to the most recent actualized ConvBuffers.
           /**
               ConvBuffers will then be marked and not overwritten till the
@@ -157,7 +157,7 @@ namespace icl {
           ICLIO_API void setReset();
           /// tells whether a new ConvBuffers is available
           ICLIO_API bool newAvailable();
-  
+
         private:
           /// current objects which alternately are read and written.
           ConvBuffers*  m_Buffers[3];
@@ -172,7 +172,7 @@ namespace icl {
           /// tells whether an actualized object was written.
           bool m_Avail;
       };
-  
+
       /// Utility Structure \ingroup GIGE_G
       /**
        * This struct is used to initialize and terminate the pylon environment.
@@ -193,7 +193,7 @@ namespace icl {
           /** @return whether Pylon::PylontTerminate() actually was called. */
           ICLIO_API static bool termPylonEnv();
       };
-  
+
       /// Utility Structure \ingroup GIGE_G
       /**
       * This struct is used to realize easy interruprion of Pylon grabbing
@@ -211,7 +211,7 @@ namespace icl {
           /// stops grabbing
           virtual void grabbingStop() = 0;
       };
-  
+
       /// Utility Structure \ingroup GIGE_G
       /**
       * This struct is used to stop the acquisition and restart it
@@ -222,7 +222,7 @@ namespace icl {
         private:
           /// A pointer to the PylonGrabberImpl that is to be stopped.
           Interruptable* m_Interu;
-  
+
         public:
           /// stops the acquisiton
           /**
@@ -234,7 +234,7 @@ namespace icl {
           /// Starts acquisition if stopped before.
           ICLIO_API ~AcquisitionInterruptor();
       };
-  
+
       /// Utility Structure \ingroup GIGE_G
       /**
       * This struct is used to stop grabbing and restart it on destruction.
@@ -244,7 +244,7 @@ namespace icl {
       private:
         /// A pointer to the Interruptable that needs to be stopped.
         Interruptable* m_Interu;
-  
+
       public:
         /// Constructor calls grabbingStop().
         /**
@@ -256,7 +256,7 @@ namespace icl {
         /// Destructor calls grabbingStart().
         ICLIO_API ~GrabbingInterruptor();
       };
-  
+
       /// Prints help-information to std::cout
       ICLIO_API void printHelp();
       /// Uses args to find demanded device
@@ -267,7 +267,7 @@ namespace icl {
       /** @param filter if provided will be used to filter available devices */
       ICLIO_API Pylon::DeviceInfoList_t
       getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
-  
+
     } //namespace pylon
   } // namespace io
 } //namespace icl

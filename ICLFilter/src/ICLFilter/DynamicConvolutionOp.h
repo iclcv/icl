@@ -50,16 +50,16 @@ namespace icl{
         @ param poKernel Kernel for the Convolution
       */
       DynamicConvolutionOp (const core::ImgBase* poKernel = 0);
-      
+
       /// Destructor
       ~DynamicConvolutionOp ();
-      
+
       /// sets the Kernel for the Convolution
       void setKernel (const core::ImgBase* poKernel);
       private:
       core::Img<icl32f> *poKernelBuf;
     };
-    
+
   } // namespace filter
 }
 

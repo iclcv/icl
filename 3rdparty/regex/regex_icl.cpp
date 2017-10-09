@@ -15,14 +15,14 @@ namespace icl{
     };
     regex_t::regex_t():m_impl(0){
 	}
-    
+
     regex_t::~regex_t(){
       if(m_impl){
 	     delete m_impl;
 	     m_impl = 0;
       }
     }
-    
+
     int regcomp(regex_t *re, const char *regex, int cflags){
 	  //std::cout << "compiling regular expression -" << regex << "-" << std::endl;
       if(re->m_impl){
@@ -33,7 +33,7 @@ namespace icl{
 	  re->m_impl->re.reset(new std::regex(regex,std::regex_constants::extended));
 	  return 0;
     }
-    
+
 	void regerror(int status, regex_t *re, char *buf, int bufSize){
 		std::string error = "";
 		if (status == -1){
@@ -79,7 +79,7 @@ namespace icl{
 		//std::cout << "returning from regmatch: -" << !sm.size() << "-" << std::endl;
 		return !sm.size();
 	}
-    
+
     void regfree(regex_t *re){
 		//std::cout << "regfree started" << std::endl;
       if(re->m_impl){

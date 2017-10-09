@@ -35,9 +35,9 @@
 
 namespace icl{
   namespace filter{
-    
+
     /// Class to translate images \ingroup UNARY \ingroup AFFINE
-    /** TODO: currently the translation effect is compensated by the AffineOp's 
+    /** TODO: currently the translation effect is compensated by the AffineOp's
         re-centering mechanism*/
     class ICLFilter_API TranslateOp : public AffineOp {
       public:
@@ -47,23 +47,23 @@ namespace icl{
           setTranslation(dX,dY);
           setAdaptResultImage(false);
         }
-      
+
       /// performs a translation
       /**
         @param dX pixels to translate in x-direction
         @param dY pixels to translate in y-direction
       */
-  
+
       void setTranslation (double dX, double dY) {
-        AffineOp::reset (); 
+        AffineOp::reset ();
         AffineOp::translate (dX,dY);
       }
-      
+
       // apply should still be public
-      
+
       ///applies the translation
       using AffineOp::apply;
-  
+
       private: // hide the following methods
       using AffineOp::rotate;
       using AffineOp::scale;

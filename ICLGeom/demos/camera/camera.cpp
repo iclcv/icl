@@ -42,7 +42,7 @@ void init(){
 
   gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
       << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
-      << ( VBox().minSize(12,1) 
+      << ( VBox().minSize(12,1)
            << FSlider(0.1,10,1.7).label("focal length left").out("fl")
            << FSlider(0.1,10,1.7).label("focal length right").out("fr")
            << FSlider(60,660,360).label("principal point offset x").out("px")
@@ -60,10 +60,10 @@ void init(){
 
   gui["w1"].install(scene.getMouseHandler(0));
   gui["w2"].install(scene.getMouseHandler(1));
-  
+
   scene.getCamera(0).setName("Left Camera");
   scene.getCamera(1).setName("Right Camera");
-  
+
   gui["w1"].link(scene.getGLCallback(0));
   gui["w2"].link(scene.getGLCallback(1));
 }
@@ -76,14 +76,14 @@ void run(){
 
   l.setPrincipalPointOffset(Point32f(gui["px"],gui["py"]));
   l.setSamplingResolution(gui["sx"],gui["sy"]);
-  
+
   l.setSkew(gui["skew"]);
 
-  
+
   gui["fps"].render();
   gui["w1"].render();
   gui["w2"].render();
-  
+
   static FPSLimiter limiter(25);
   limiter.wait();
 }

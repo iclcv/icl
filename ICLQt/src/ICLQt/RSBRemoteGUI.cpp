@@ -48,7 +48,7 @@
 namespace icl{
   namespace qt{
     using namespace utils;
-    
+
     struct RSBRemoteGUI::Data{
 
       struct StringHandler : public rsb::DataHandler<std::string>{
@@ -78,12 +78,12 @@ namespace icl{
           }
         }
       };
-    
+
       typedef DynamicGUI::NodePtr NodePtr;
-    
+
       GUI *gui;
 
-    
+
       struct Synchronizer : public Thread{
         SmartPtr<io::RSBGrabber> grabber;
         std::string handle;
@@ -93,7 +93,7 @@ namespace icl{
           grabber(grabber),handle(handle),gui(gui),on(true){
           start();
         }
-      
+
         virtual void run(){
           try{
             while(on){
@@ -104,7 +104,7 @@ namespace icl{
           }catch(std::exception &e){
             DEBUG_LOG("ok, grab threw exception!! :" << e.what());
           }
-      
+
         }
       };
 
@@ -120,13 +120,13 @@ namespace icl{
 
       std::map<std::string,Instance> handleLUT;
       bool verbose;
-      
+
       Data():gui(0),verbose(false){}
 
       ~Data(){
         release();
       }
-    
+
       static void find_child_nodes_with_handle_recursive(NodePtr n, std::vector<NodePtr> &target){
         if(n->isContainer()){
           for(size_t i=0;i<n->children.size();++i){
@@ -136,14 +136,14 @@ namespace icl{
           target.push_back(n);
         }
       }
-    
+
       static std::string fix(std::string in){
         for(size_t i=0;i<in.length();++i){
           if(in[i] == ' ') in[i] = '_';
         }
         return in;
       }
-    
+
       void send_string(const std::string &text, const std::string &fixedHandle){
         rsb::Informer<std::string>::DataPtr data(new std::string(text));
         if(handleLUT.find(fixedHandle) == handleLUT.end()){
@@ -155,15 +155,15 @@ namespace icl{
           std::cout << "RSBRemoteGUI sending string [" << text << "] to " << fixedHandle << std::endl;
         }
       }
-    
+
       void cb_default(const std::string &handle){
         std::string fixed = fix(handle);
-        send_string((*gui)[handle], fixed);      
+        send_string((*gui)[handle], fixed);
       }
 
       void cb_toggle_button(const std::string &handle){
         std::string fixed = fix(handle);
-        send_string( str((*gui)[handle].as<bool>()), fixed);      
+        send_string( str((*gui)[handle].as<bool>()), fixed);
 
       }
 
@@ -178,22 +178,22 @@ namespace icl{
         ImageComponentMouseHandler(Data *data, const std::string &fixedHandle):
           data(data),fixed(fixedHandle){
         }
-      
+
         virtual void process(const MouseEvent &e){
           std::ostringstream text;
           // todo: stringify e
-          text << "mouse " 
-               << (e.isPressEvent() ?  "press" : 
+          text << "mouse "
+               << (e.isPressEvent() ?  "press" :
                    e.isReleaseEvent() ? "release" :
                    e.isDragEvent() ? "drag" :
                    "move")
                << " event at (" << e.getPos().x << "," << e.getPos().y << ")  "
                << "color:[" << cat(e.getColor(),",") << "]"
                << " buttonmask: [ "
-               << (e.isLeft() ? "1 " : "0 ") 
-               << (e.isMiddle() ? "1 " : "0 ") 
+               << (e.isLeft() ? "1 " : "0 ")
+               << (e.isMiddle() ? "1 " : "0 ")
                << (e.isRight() ? "1" : "0 ") << "]";
-                 
+
           data->send_string(text.str(), fixed);
         }
       };
@@ -209,7 +209,7 @@ namespace icl{
         dyn.initialize(gui->createXMLDescription());
         DynamicGUI::ParseTreePtr pt = dyn.getParseTree();
         rsb::Factory& factory = rsb::getFactory();
-      
+
         std::vector<NodePtr> all;
         find_child_nodes_with_handle_recursive(pt,all);
 
@@ -247,10 +247,10 @@ namespace icl{
             rsb::HandlerPtr receiver;
             SmartPtr<io::RSBGrabber> grabber;
             SmartPtr<Synchronizer> sync;
-          
+
             if(type == "image" || type == "draw" || type == "draw3d" || type == "draw3D"){
               grabber = new io::RSBGrabber(baseScope+"/set/"+fixed);
-              //DEBUG_LOG("registered grabber for receiving image on " 
+              //DEBUG_LOG("registered grabber for receiving image on "
               //          << baseScope << "/set/" << fixed);
               sync = new Synchronizer(grabber, handle, gui);
               if(verbose){
@@ -269,26 +269,26 @@ namespace icl{
           }
         }
       }
-    
+
       void release(){
         if(gui){
-      
+
           // release code
         }
         gui = 0;
       }
     };
-  
-    RSBRemoteGUI::RSBRemoteGUI(GUI *gui, const std::string &rsbBaseScope, 
+
+    RSBRemoteGUI::RSBRemoteGUI(GUI *gui, const std::string &rsbBaseScope,
                                bool createSetterGUI, bool verbose) : m_data(new Data){
       m_data->verbose = verbose;
       m_data->init(gui,rsbBaseScope, createSetterGUI);
     }
-    
+
     void RSBRemoteGUI::init(GUI *gui, const std::string &rsbBaseScope, bool createSetterGUI){
       m_data->init(gui,rsbBaseScope, createSetterGUI);
     }
-    
+
     RSBRemoteGUI::~RSBRemoteGUI(){
       try{
         ICL_DELETE(m_data);
@@ -298,7 +298,7 @@ namespace icl{
     void RSBRemoteGUI::setVerboseMode(bool on){
       m_data->verbose = on;
     }
-    
+
   }
 
 }

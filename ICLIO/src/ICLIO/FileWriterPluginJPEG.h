@@ -36,24 +36,24 @@
 
 namespace icl{
   namespace io{
-    
+
     /// A Writer Plugin for writing ".jpeg" and ".jpg" images \ingroup FILEIO_G
     class ICLIO_API FileWriterPluginJPEG : public FileWriterPlugin{
       public:
       /// write implementation
       virtual void write(utils::File &file, const core::ImgBase *image);
-      
+
       /// sets the currently used jped quality (0-100) (by default 90%)
       static void setQuality(int value);
-      
+
       private:
-      
+
       /// current quality (90%) by default
       static int s_iQuality;
-      
+
       /// (static!) internal buffer for Any-to-icl8u conversion
       static core::Img8u s_oBufferImage;
-      
+
       /// mutex to protect the static buffer
       static utils::Mutex s_oBufferImageMutex;
     };

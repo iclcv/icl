@@ -41,8 +41,8 @@ namespace icl{
   namespace qt {class GLFragmentShader;}
     /** \endcond */
   namespace geom{
-    
-    /** The ShaderUtil is an easy to use wrapper for activating the 
+
+    /** The ShaderUtil is an easy to use wrapper for activating the
         correct shader for the primitive that is to be rendered.*/
     class ICLGeom_API ShaderUtil : public utils::Uncopyable{
       const Camera *m_camera;
@@ -59,7 +59,7 @@ namespace icl{
           The main use for this is to make it transparent to the render function of an object if it is to be
           rendered into the shadowbuffer or not.*/
       ShaderUtil();
-      
+
       void activateShader(Primitive::Type type, bool withShadow);
       void deactivateShaders();
       const Camera &getCurrentCamera() const throw (utils::ICLException);

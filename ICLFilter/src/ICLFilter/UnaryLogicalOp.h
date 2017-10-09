@@ -37,12 +37,12 @@
 namespace icl {
   namespace filter{
      /// Class for bitwise logical operations on pixel values. \ingroup UNARY
-     /** 
+     /**
          (all functions: Img8u, Img32s: IPP + Fallback, Img16s: Fallback only!, No support for other Types)
          Supported operations include And, Or, Xor, Not. Clearly all logical operations
          are only supported on integer typed images, i.e. icl8u.
      */
-  
+
     class ICLFilter_API UnaryLogicalOp : public UnaryOp {
       public:
       /// this enum specifiy all possible unary logical operations
@@ -54,47 +54,47 @@ namespace icl {
       };
       /// Constructor
       UnaryLogicalOp(optype t, icl32s val=0):m_eOpType(t), m_dValue(val){}
-      
+
       /// Destructor
       virtual ~UnaryLogicalOp(){}
-  
+
       /// performes the logical operation, given in the constructor or by the setOpType method.
       /**
         @param poSrc first operand (image)
         @param ppoDst pointer to the destination image, to store the result
-      */      
+      */
       virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
-      
+
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
-      
+
       /// sets the second operand, with the source is operated with.
       /**
-        @param value the value for the operand 
+        @param value the value for the operand
       */
       void setValue(icl32s value) { m_dValue = value; }
-  
+
       /// returns the value of the second operand
       /**
         @return  the value of the second operand
       */
       icl32s getValue() const { return m_dValue; }
-  
+
       /// changes the operator type
       /**
         @see optype
         @param t operator type
       */
       void setOpType(optype t){ m_eOpType = t;}
-  
+
       /// returns the operator type
       /**
         @see optype
         @return operator type
       */
       optype getOpType() const { return m_eOpType; }
-      
-  
+
+
       private:
       optype m_eOpType;
       icl32s m_dValue;

@@ -19,7 +19,7 @@ void init(){
 
   // use mouse events for camera movement
   gui["draw"].install(scene.getMouseHandler(0));
-  
+
   // link the visualization
   gui["draw"].link(scene.getGLCallback(0));
 }

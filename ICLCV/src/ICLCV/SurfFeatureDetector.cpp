@@ -50,18 +50,18 @@ namespace icl{
 
     using namespace core;
     using namespace utils;
-    
+
     struct SurfFeatureDetector::Data{
       std::vector<SurfFeature> refFeatures;
       std::vector<SurfFeature> currFeatures;
       std::vector<SurfMatch> currMatches;
-      
+
 #ifdef ICL_HAVE_OPENCV
       bool opensurf_backend;
       IplImage *opensurf_refimage;
       IplImage *opensurf_imagebuffer;
 #endif
-      
+
 #ifdef ICL_HAVE_OPENCL
       bool clsurf_backend;
       clsurf::Surf *clsurf_curimage_backend;
@@ -78,26 +78,26 @@ namespace icl{
       CLBuffer matchBufferCur;
       CLBuffer matchBufferDists;
       CLBuffer matchBufferMatches;
-      
-      int matchBufferRefSize; 
-      int matchBufferCurSize; 
-      int matchBufferDistsSize; 
-      int matchBufferMatchesSize; 
-      
+
+      int matchBufferRefSize;
+      int matchBufferCurSize;
+      int matchBufferDistsSize;
+      int matchBufferMatchesSize;
+
       bool refFeaturesDirty;
 #endif
-      
+
       int octaves;
       int intervals;
       int sampleStep;
       float threshold;
-      
+
       Data(){
 #ifdef ICL_HAVE_OPENCV
         opensurf_refimage = 0;
         opensurf_imagebuffer = 0;
         opensurf_backend = false;
-        
+
 #endif
 
 #ifdef ICL_HAVE_OPENCL
@@ -107,52 +107,52 @@ namespace icl{
         clsurf_refimage = Img8u(Size::null,formatGray);
 #endif
       }
-      
+
       ~Data(){
 #ifdef ICL_HAVE_OPENCL
         ICL_DELETE(clsurf_refimage_backend);
         ICL_DELETE(clsurf_curimage_backend);
 #endif
       }
-      
+
       void updateReferenceFeatures(){
 #ifdef ICL_HAVE_OPENCV
         if(opensurf_backend && opensurf_refimage){
           refFeatures.clear();
           static const bool upright = false;
-          opensurf::surfDetDes(opensurf_refimage, refFeatures, upright, 
+          opensurf::surfDetDes(opensurf_refimage, refFeatures, upright,
                                octaves, intervals, sampleStep,threshold);
         }
 #endif
-        
+
 #ifdef ICL_HAVE_OPENCL
         if(clsurf_backend){
-          ICL_DELETE(clsurf_refimage_backend);          
-          ICL_DELETE(clsurf_curimage_backend);          
+          ICL_DELETE(clsurf_refimage_backend);
+          ICL_DELETE(clsurf_curimage_backend);
           if(clsurf_refimage.getDim()){
             clsurf_refimage_backend = new clsurf::Surf(1000, clsurf_refimage.getHeight(),
-                                                       clsurf_refimage.getWidth(), 
-                                                       octaves, intervals, sampleStep, threshold);        
+                                                       clsurf_refimage.getWidth(),
+                                                       octaves, intervals, sampleStep, threshold);
             clsurf_refimage_size = clsurf_refimage.getSize();
 
             refFeatures = clsurf_refimage_backend->detect(&clsurf_refimage);
           }
         }
 #endif
-      
+
       }
     };
 
-    SurfFeatureDetector::SurfFeatureDetector(int octaves, int intervals, int sampleStep, 
+    SurfFeatureDetector::SurfFeatureDetector(int octaves, int intervals, int sampleStep,
                                              float threshold, const std::string &plugin){
 #if !defined(ICL_HAVE_OPENCV) && !defined(ICL_HAVE_OPENCL)
       throw ICLException("Unable to create SurfFeatureDetector: no backend available");
 #endif
-      
+
       if(plugin != "clsurf" && plugin != "opensurf" && plugin != "best"){
         throw ICLException("Unable to create SurfFeatureDetector: invalid plugin name (allowed is clsurf, opensurf and best)");
       }
-      
+
 #ifndef ICL_HAVE_OPENCV
       if(plugin == "opensurf"){
         throw ICLException("Unable to create SurfFeatureDetector with opensurf-backend (OpenCV dependency is missing)");
@@ -188,7 +188,7 @@ namespace icl{
       m_data->opensurf_backend = true;
 #endif
 #endif
-      
+
 
 #ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
@@ -236,15 +236,15 @@ namespace icl{
                                             "        matches[iCur] = -1;                               \n"
                                             "     }                                                    \n"
                                             "  }                                                       \n"
-                                            );  
+                                            );
         try{
           m_data->matchProgram = CLProgram("gpu",match_program);
-          
+
           m_data->matchBufferRefSize = 0;
           m_data->matchBufferCurSize = 0;
           m_data->matchBufferDistsSize = 0;
           m_data->matchBufferMatchesSize = 0;
-          
+
           m_data->distsKernel = m_data->matchProgram.createKernel("dists");
           m_data->matchKernel = m_data->matchProgram.createKernel("match");
         }catch(ICLException &e){
@@ -265,27 +265,27 @@ namespace icl{
         }
       }
 #endif
-      
+
     }
-    
+
     void SurfFeatureDetector::setOctaves(int octaves){
       if(m_data->octaves == octaves) return;
       m_data->octaves = octaves;
       m_data->updateReferenceFeatures();
     }
-    
+
     void SurfFeatureDetector::setIntervals(int intervals){
       if(m_data->intervals == intervals) return;
       m_data->intervals = intervals;
       m_data->updateReferenceFeatures();
     }
-        
+
     void SurfFeatureDetector::setSampleStep(int sampleStep){
       if(m_data->sampleStep == sampleStep) return;
       m_data->sampleStep = sampleStep;
       m_data->updateReferenceFeatures();
     }
-        
+
     void SurfFeatureDetector::setThreshold(float threshold){
       if(m_data->threshold == threshold) return;
       m_data->threshold = threshold;
@@ -297,14 +297,14 @@ namespace icl{
     SurfFeatureDetector::~SurfFeatureDetector(){
       delete m_data;
     }
-    
+
     const std::vector<SurfFeature> &SurfFeatureDetector::detect(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::detect: given image was null"));
 #ifdef ICL_HAVE_OPENCV
       if(m_data->opensurf_backend){
         core::img_to_ipl(image,&m_data->opensurf_imagebuffer);
         m_data->currFeatures.clear();
-        
+
         static const bool upright = false;
         opensurf::surfDetDes(m_data->opensurf_imagebuffer,m_data->currFeatures, upright,
                              m_data->octaves, m_data->intervals,
@@ -319,9 +319,9 @@ namespace icl{
            m_data->clsurf_curimage_size != image->getSize()){
           ICL_DELETE(m_data->clsurf_curimage_backend);
           m_data->clsurf_curimage_size = image->getSize();
-          m_data->clsurf_curimage_backend = new clsurf::Surf(1000,image->getHeight(), image->getWidth(), 
-                                                             m_data->octaves, m_data->intervals, 
-                                                             m_data->sampleStep, m_data->threshold);        
+          m_data->clsurf_curimage_backend = new clsurf::Surf(1000,image->getHeight(), image->getWidth(),
+                                                             m_data->octaves, m_data->intervals,
+                                                             m_data->sampleStep, m_data->threshold);
         }
         return m_data->clsurf_curimage_backend->detect(image);
       }
@@ -345,25 +345,25 @@ namespace icl{
 
         if(!m_data->clsurf_refimage_backend ||
            m_data->clsurf_refimage_size != image->getSize()){
-          ICL_DELETE(m_data->clsurf_refimage_backend);          
+          ICL_DELETE(m_data->clsurf_refimage_backend);
           m_data->clsurf_refimage_size = image->getSize();
-          m_data->clsurf_refimage_backend = new clsurf::Surf(1000,image->getHeight(), image->getWidth(), 
-                                                             m_data->octaves, m_data->intervals, 
-                                                             m_data->sampleStep, m_data->threshold);        
+          m_data->clsurf_refimage_backend = new clsurf::Surf(1000,image->getHeight(), image->getWidth(),
+                                                             m_data->octaves, m_data->intervals,
+                                                             m_data->sampleStep, m_data->threshold);
         }
         m_data->refFeatures = m_data->clsurf_refimage_backend->detect(&m_data->clsurf_refimage);
         m_data->refFeaturesDirty = true;
       }
 #endif
     }
-        
+
     const std::vector<SurfFeature> &SurfFeatureDetector::getReferenceFeatures() const{
       return m_data->refFeatures;
     }
 
 
-#ifdef ICL_HAVE_OPENCL    
-    static void adapt_cl_buffer_size(CLProgram &prog, CLBuffer &buffer, int &currentSize, int targetSize, 
+#ifdef ICL_HAVE_OPENCL
+    static void adapt_cl_buffer_size(CLProgram &prog, CLBuffer &buffer, int &currentSize, int targetSize,
                                      const char *bufferType, const std::string &name){
       if(currentSize < targetSize || currentSize > targetSize*10){
         buffer = prog.createBuffer(bufferType,targetSize);
@@ -373,26 +373,26 @@ namespace icl{
     }
 #endif
 
-        
+
     const std::vector<SurfMatch> &SurfFeatureDetector::match(const core::ImgBase *image, float significance){
-      
+
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::match: given image was null"));
       const std::vector<SurfFeature> &ref = m_data->refFeatures;
       const std::vector<SurfFeature> &cur = detect(image);
       std::vector<SurfMatch> &matches  = m_data->currMatches;
       matches.clear();
-      
+
       if(!ref.size() || ! cur.size()) return matches;
 
       matches.clear();
-      
+
 #ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         if(m_data->refFeaturesDirty){
           adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferRef, m_data->matchBufferRefSize,
                                64*sizeof(float)*ref.size(), "r", "reference features");
         }
-        
+
         adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferCur, m_data->matchBufferCurSize,
                              64*sizeof(float)*cur.size(), "r", "current features");
         adapt_cl_buffer_size(m_data->matchProgram, m_data->matchBufferDists, m_data->matchBufferDistsSize,
@@ -407,11 +407,11 @@ namespace icl{
           }
           m_data->matchBufferRef.write(refVec.data(),64*sizeof(float)*ref.size());
         }
-          
+
         std::vector<icl8u> curVec(cur.size()*sizeof(float)*64);
         for(size_t i=0;i<cur.size();++i){
           memcpy(curVec.data()+i*64*sizeof(float),cur[i].descriptor, 64*sizeof(float));
-        } 
+        }
         // writing as one buffer is orders faster!
         m_data->matchBufferCur.write(curVec.data(),64*sizeof(float)*cur.size());
         m_data->distsKernel.setArgs(m_data->matchBufferRef,
@@ -419,7 +419,7 @@ namespace icl{
                                     m_data->matchBufferCur,
                                     (int)cur.size(),
                                     m_data->matchBufferDists);
-        
+
         m_data->distsKernel.apply(ref.size(),cur.size());
 
         m_data->matchKernel.setArgs(m_data->matchBufferDists,
@@ -429,7 +429,7 @@ namespace icl{
         m_data->matchKernel.apply(cur.size());
 
         std::vector<int> matchTable(cur.size(),-1);
-        
+
         m_data->matchBufferMatches.read(&matchTable[0],cur.size()*sizeof(int));
 
         // matchTable contains for each curr feature the associated ref-index
@@ -473,6 +473,6 @@ namespace icl{
     }
   }
 
-  
+
 
 }

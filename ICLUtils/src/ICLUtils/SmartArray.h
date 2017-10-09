@@ -48,28 +48,28 @@ namespace icl{
       typedef SmartPtrBase<T,ArrayDelOp> super;
       /// creates a null pointer
       SmartArray():super(){}
-  
+
       /// gets pointer, ownership is passed optionally
       template<class DerivedT>
       SmartArray(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
-  
+
       /// gets pointer, ownership is passed optionally
       SmartArray(T *ptData, bool bOwn=true):super(ptData,bOwn){}
-  
+
       /// reference counting copy constructor
       template<class DerivedT>
       SmartArray(const SmartPtrBase<DerivedT,ArrayDelOp>& r):super(r){}
-  
+
       /// reference counting copy constructor
       SmartArray(const SmartPtrBase<T,ArrayDelOp>& r):super(r){}
-      
+
       /// index access operator (no index checks)
       T &operator[](int idx){ ICLASSERT(super::e); return super::e[idx]; }
-      
+
       /// index access operator (const, no index checks)
       const T&operator[](int idx) const{ ICLASSERT(super::e); return super::e[idx]; }
     };
-#endif  
+#endif
   } // namespace utils
 }
 

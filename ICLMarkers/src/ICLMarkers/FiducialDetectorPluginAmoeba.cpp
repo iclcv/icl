@@ -47,28 +47,28 @@ namespace icl{
       std::vector<ImageRegion> matchingRegions;
       std::vector<FiducialImpl*> fids;
     };
-  
+
     FiducialDetectorPluginAmoeba::FiducialDetectorPluginAmoeba():data(new Data){
     }
-  
+
     FiducialDetectorPluginAmoeba::~FiducialDetectorPluginAmoeba(){
       delete data;
     }
-    
-    
+
+
     void FiducialDetectorPluginAmoeba::getFeatures(Fiducial::FeatureSet &dst){
-      static const Fiducial::FeatureSet f = ( Fiducial::Center2D | 
-                                              Fiducial::Rotation2D | 
+      static const Fiducial::FeatureSet f = ( Fiducial::Center2D |
+                                              Fiducial::Rotation2D |
                                               Fiducial::Corners2D );
       dst = f;
     }
-  
+
     void FiducialDetectorPluginAmoeba::getCorners2D(std::vector<Point32f> &dst, FiducialImpl &impl){
       const std::vector<Point> &b = data->matchingRegions[impl.index].getBoundary();
       dst.resize(b.size());
       std::copy(b.begin(),b.end(),dst.begin());
     }
-  
+
     void FiducialDetectorPluginAmoeba::getRotation2D(float &dst, FiducialImpl &impl){
       const ImageRegion &r = data->matchingRegions[impl.index];
       Point32f meanAll,meanWhite;
@@ -99,25 +99,25 @@ namespace icl{
       }
       Point32f d = meanWhite - meanAll;
       if(d != Point32f::null){
-        dst = atan2(d.y,d.x);      
+        dst = atan2(d.y,d.x);
       }else{
         dst = 0;
       }
     }
-    
+
     void FiducialDetectorPluginAmoeba::detect(std::vector<FiducialImpl*> &dst, const std::vector<ImageRegion> &regions){
-  
-      static const Fiducial::FeatureSet supported = ( Fiducial::Center2D | 
+
+      static const Fiducial::FeatureSet supported = ( Fiducial::Center2D |
                                                       Fiducial::Rotation2D |
                                                       Fiducial::Corners2D |
                                                       Fiducial::ImageRegion );
-  
-      static Fiducial::FeatureSet computed = ( 1<<Fiducial::Center2D ); 
-  
+
+      static Fiducial::FeatureSet computed = ( 1<<Fiducial::Center2D );
+
       for(unsigned int i=0;i<data->fids.size();++i){
         delete data->fids[i];
       }
-      
+
       for(unsigned int i=0;i<regions.size();++i){
         for(unsigned int j=0;j<data->rs.size();++j){
           if(data->rs[j].match(regions[i])){
@@ -132,14 +132,14 @@ namespace icl{
         }
       }
       data->fids = dst;
-  
-  
+
+
     }
-    
-    
+
+
     void FiducialDetectorPluginAmoeba::addOrRemoveMarkers(bool add, const Any &which, const ParamList &params){
       File f(which);
-      
+
       std::vector<TwoLevelRegionStructure> rs;
       if(f.exists()){
         f.open(File::readText);
@@ -160,12 +160,12 @@ namespace icl{
           }
         }
       }
-      
+
       if(!rs.size()){
         ERROR_LOG("no markers were "  << (add ?"added":"removed"));
         return;
       }
-      
+
       if(add){
         for(unsigned int i=0;i<rs.size();++i){
           if(std::find(data->rs.begin(),data->rs.end(),rs[i]) == data->rs.end()){
@@ -181,13 +181,13 @@ namespace icl{
             data->rs.erase(it); // if not contained, no message
           }
         }
-        
+
       }
-      
+
     }
-  
-    
-    
-  
+
+
+
+
   } // namespace markers
 }

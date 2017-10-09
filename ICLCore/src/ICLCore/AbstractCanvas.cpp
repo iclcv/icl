@@ -33,9 +33,9 @@
 
 namespace icl{
   namespace core{
-    
-    
-    
+
+
+
     void AbstractCanvas::point(float x, float y){
       if(state.pointsize == 1){
         draw_point_internal(transform(x,y));
@@ -60,7 +60,7 @@ namespace icl{
       draw_line_internal(b,c);
       draw_line_internal(c,a);
     }
-      
+
     void AbstractCanvas::sym(char c, float x, float y) throw (ICLException){
       const float s = state.symsize;
       switch(c){
@@ -96,8 +96,8 @@ namespace icl{
           throw ICLException("undefined symbol type: " + str(c));
       }
     }
-      
-    void AbstractCanvas::linestrip(int n, const float *xs, const float *ys, 
+
+    void AbstractCanvas::linestrip(int n, const float *xs, const float *ys,
                                    int xStride, int yStride, bool loop){
       if(n<2) return;
       Point32f a = transform(xs[0],ys[0]),b;
@@ -107,10 +107,10 @@ namespace icl{
         a = b;
       }
       if(loop){
-        draw_line_internal(a,transform(xs[0],ys[0]));          
+        draw_line_internal(a,transform(xs[0],ys[0]));
       }
     }
-      
+
     void AbstractCanvas::rect(float x, float y, float w, float h){
       const Point32f ul = transform(x,y);
       const Point32f ur = transform(x+w,y);
@@ -134,8 +134,8 @@ namespace icl{
       const Point32f v = transform(cx,cy+ry) - c;
       draw_ellipse_internal(c,h,v);
     }
-      
-    void AbstractCanvas::image(const ImgBase *image, float xanchor, float yanchor, float alpha, 
+
+    void AbstractCanvas::image(const ImgBase *image, float xanchor, float yanchor, float alpha,
                                scalemode sm, bool centered) throw (ICLException){
       ICLASSERT_THROW(image,ICLException("AbstractCanvas::image: input image is null"));
 
@@ -159,12 +159,12 @@ namespace icl{
 
     void AbstractCanvas::text(const std::string &t, float x, float y, bool centered){
       ERROR_LOG("AbstractCanvas::text: text rendering is not implemented yet");
-      //        draw_text_internal(t, transform(x,y), 
-      // fallback: use image and a hardcoded font (including hardcoded size) 
+      //        draw_text_internal(t, transform(x,y),
+      // fallback: use image and a hardcoded font (including hardcoded size)
       // we need some kind of a font metrics ...
     }
-            
-      
-    
+
+
+
   }
 }

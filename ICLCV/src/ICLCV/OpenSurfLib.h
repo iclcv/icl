@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-/*********************************************************** 
+/***********************************************************
 * Please note that this file contains the whole OpenSURF   *
 * library. We decided to include the library by-source     *
 * in order to be able to ship its functionality easier     *
@@ -54,13 +54,13 @@
 namespace icl{
 
    namespace cv{
-     
+
      namespace opensurf{
 
        typedef SurfFeature Ipoint;
        typedef std::vector<SurfFeature> IpVec;
        typedef std::vector<SurfMatch> IpPairVec;
-  
+
        /** \cond */
        class ResponseLayer;
        class FastHessian;
@@ -68,26 +68,26 @@ namespace icl{
 
 
        ICLCV_API void getMatches(IpVec &ipts1, IpVec &ipts2, IpPairVec &matches);
-  
+
        ICLCV_API int translateCorners(IpPairVec &matches, const CvPoint src_corners[4], CvPoint dst_corners[4]);
-  
-       /// Computes the integral image of image img.  Assumes source image to be a 
+
+       /// Computes the integral image of image img.  Assumes source image to be a
        /** 32-bit floating point.  Returns IplImage in 32-bit float form. **/
        ICLCV_API IplImage *Integral(IplImage *img);
-  
-  
-       /// Computes the sum of pixels within the rectangle 
+
+
+       /// Computes the sum of pixels within the rectangle
        /** specified by the top-left start co-ordinate and size */
        ICLCV_API float BoxIntegral(IplImage *img, int row, int col, int rows, int cols);
 
-  
-       
+
+
 
        /// Kmeans clustering
        /** Kmeans clustering class (under development)
            - Can be used to cluster points based on their location.
            - Create Kmeans object and call Run with IpVec.
-           - Planned improvements include clustering based on motion 
+           - Planned improvements include clustering based on motion
            and descriptor components. */
        class ICLCV_API Kmeans {
          public:
@@ -134,15 +134,15 @@ namespace icl{
 
          inline ResponseLayer(int width, int height, int step, int filter){
            assert(width > 0 && height > 0);
-      
+
            this->width = width;
            this->height = height;
            this->step = step;
            this->filter = filter;
-      
+
            responses = new float[width*height];
            laplacian = new unsigned char[width*height];
-      
+
            memset(responses,0,sizeof(float)*width*height);
            memset(laplacian,0,sizeof(unsigned char)*width*height);
          }
@@ -151,7 +151,7 @@ namespace icl{
            if (responses) delete [] responses;
            if (laplacian) delete [] laplacian;
          }
-    
+
          inline unsigned char getLaplacian(unsigned int row, unsigned int column)
          {
            return laplacian[row * width + column];
@@ -202,20 +202,20 @@ namespace icl{
 
        /// Surf Feation class
        class ICLCV_API Surf {
-  
+
          public:
-    
+
          /// Standard Constructor (img is an integral image)
          Surf(IplImage *img, std::vector<Ipoint> &ipts);
 
          /// Describe all features in the supplied vector
          void getDescriptors(bool bUpright = false);
-  
+
          private:
 
          /// Assign the current Ipoint an orientation
          void getOrientation();
-    
+
          /// Get the descriptor. See Agrawal ECCV 08
          void getDescriptor(bool bUpright = false);
 
@@ -307,7 +307,7 @@ namespace icl{
 
        /// Round float to nearest integer
        inline int fRound(float flt) {  return (int) floor(flt+0.5f); }
- 
+
     } // end of namespace opensurf
 
   } // end of namespace cv

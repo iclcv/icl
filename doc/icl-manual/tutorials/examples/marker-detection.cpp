@@ -20,7 +20,7 @@ void init(){
       << Show();                        // show the main widget
 
   // initialize the grabber from given program argument
-  grabber.init(pa("-input")); 
+  grabber.init(pa("-input"));
 }
 
 
@@ -31,13 +31,13 @@ void run(){
 
   // grab the next image
   const ImgBase *image = grabber.grab();
-    
+
   // detect markers
   const std::vector<Fiducial> &fids = fid.detect(image);
 
   // visualize the image
   draw = image;
-  
+
   // draw marker detection results
   draw->linewidth(2);
   for(unsigned int i=0;i<fids.size();++i){
@@ -55,7 +55,7 @@ void run(){
   draw.render();
 }
 
-// main method 
+// main method
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(2)",init,run).exec();
 }

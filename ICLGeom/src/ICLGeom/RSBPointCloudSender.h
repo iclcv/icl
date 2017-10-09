@@ -35,28 +35,28 @@
 
 namespace icl{
   namespace geom{
-  
+
     /// RSB-based sendig of point cloud data
     class RSBPointCloudSender : public PointCloudOutput, public utils::Uncopyable{
       struct Data;
       Data *m_data;
-      
+
       public:
-      
+
       /// create RSBPointCloudSender sending to given scope via given (comma-sep.) transport List
       /** If the given scope is empty, now initialization is performed and a "null" instance is
           created, that must be initalized afterwards using init */
       RSBPointCloudSender(const std::string &scope="", const std::string &transportList="spread");
-      
+
       /// Destructor
       ~RSBPointCloudSender();
 
       /// deferred intialization
       void init(const std::string &scope, const std::string &transportList="spread");
-      
+
       /// returns initialization state
       bool isNull() const;
-      
+
       /// actual implementation of the PointCloudOutput interface
       virtual void send(const PointCloudObjectBase &dst);
     };

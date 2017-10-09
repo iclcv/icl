@@ -510,7 +510,7 @@ namespace {
 
 namespace icl{
   namespace io{
-  
+
     Img8u *TestImages::internalCreate(const string &name){
       try{
         if(name == "women"){
@@ -540,15 +540,15 @@ namespace icl{
         return 0;
       }
     }
-  
+
     ImgBase* TestImages::create(const string& name, format f, depth d){
       // {{{ open
-  
+
       Img8u *src = internalCreate(name);
       if(!src) return 0;
 
       src -> setTime();
-  
+
       if(src->getDepth() != d || src->getFormat() != f){
         ImgBase *dst = imgNew(d,src->getSize(),f);
         Converter(src,dst);
@@ -558,17 +558,17 @@ namespace icl{
         return src;
       }
     }
-  
+
     // }}}
-  
-  
+
+
     ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
       // {{{ open
-  
+
       Img8u *src = internalCreate(name);
       src->setFullROI();
       if(!src) return 0;
-  
+
       if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){
         ImgBase *dst = imgNew(d,size,f);
         Converter(src,dst);
@@ -578,24 +578,24 @@ namespace icl{
         return src;
       }
     }
-  
+
     // }}}
-  
-  
+
+
     void TestImages::show(const ImgBase *image,
                           const std::string &showCommand,
                           long msec_to_rm_call,
                           const std::string &rmCommand){
-  
+
       ICLASSERT_RETURN(image);
-  
+
       string timeStr = Time::now().toString();
       for(unsigned int i=0;i<timeStr.length();i++){
         if(timeStr[i]=='/') timeStr[i]='_';
         if(timeStr[i]==' ') timeStr[i]='_';
         if(timeStr[i]==':') timeStr[i]='_';
       }
-  
+
       string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
       string name = string(".tmpImage.")+timeStr+postfix;
       try{
@@ -608,17 +608,17 @@ namespace icl{
         ERROR_LOG("unable to show image (image could not be written to a temporary file)");
         return;
       }
-  
+
       char showCommandStr[500];
       sprintf(showCommandStr,showCommand.c_str(),name.c_str());
-  
+
       char rmCommandStr[500];
       sprintf(rmCommandStr,rmCommand.c_str(),name.c_str());
-  
+
       int errorCode = system((string(showCommandStr)+" &").c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
-  
+
       if(string(rmCommand).length()){
         #ifndef ICL_SYSTEM_WINDOWS
         usleep(1000*msec_to_rm_call);
@@ -631,7 +631,7 @@ namespace icl{
           WARNING_LOG( "Error code of system call unequal 0!" );
       }
     }
-  
+
   void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
       // {{{ open
       string name = nameIn;
@@ -648,7 +648,7 @@ namespace icl{
         ERROR_LOG("unable to show image (image could not be written to a temporary file)");
         return;
       }
-  
+
       int errorCode = system(string("xv ").append(name).append(" &").c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
@@ -662,8 +662,8 @@ namespace icl{
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
     }
-  
+
     // }}}
-  
+
   } // namespace io
 }

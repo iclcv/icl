@@ -60,7 +60,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/Geom.h
             src/ICLGeom/PCLIncludes.h
             src/ICLGeom/Posit.h
-            src/ICLGeom/CoordinateFrameSceneObject.h  
+            src/ICLGeom/CoordinateFrameSceneObject.h
             src/ICLGeom/CoplanarPointPoseEstimator.h
             src/ICLGeom/Hit.h
             src/ICLGeom/PlaneEquation.h
@@ -69,7 +69,7 @@ SET(HEADERS src/ICLGeom/Camera.h
             src/ICLGeom/ICP.h
             src/ICLGeom/ICP3D.h
             src/ICLGeom/RGBDMapping.h
-            src/ICLGeom/Plot3D.h          
+            src/ICLGeom/Plot3D.h
             src/ICLGeom/PlotHandle3D.h
             src/ICLGeom/RansacBasedPoseEstimator.h
             src/ICLGeom/PointCloudOutput.h
@@ -112,10 +112,10 @@ IF(QT_FOUND)
                        src/ICLGeom/EuclideanBlobSegmenter.cpp
                        src/ICLGeom/FeatureGraphSegmenter.cpp
                        src/ICLGeom/ConfigurableDepthImageSegmenter.cpp
-                       src/ICLGeom/PointCloudSegment.cpp       
+                       src/ICLGeom/PointCloudSegment.cpp
                        src/ICLGeom/PCDFileGrabber.cpp
                        src/ICLGeom/Primitive3DFilter.cpp)
- 
+
   LIST (APPEND HEADERS src/ICLGeom/Scene.h
                        src/ICLGeom/SceneLight.h
                        src/ICLGeom/SceneLightObject.h
@@ -129,11 +129,11 @@ IF(QT_FOUND)
                        src/ICLGeom/Segmentation3D.h
                        src/ICLGeom/DepthCameraPointCloudGrabber.h
                        src/ICLGeom/PointCloudCreator.h
-                       src/ICLGeom/PointCloudGrabber.h 
+                       src/ICLGeom/PointCloudGrabber.h
                        src/ICLGeom/PointCloudObject.h
                        src/ICLGeom/PointCloudObjectBase.h
                        src/ICLGeom/PointCloudSerializer.h
-                       src/ICLGeom/OctreeObject.h 
+                       src/ICLGeom/OctreeObject.h
                        src/ICLGeom/RayCastOctreeObject.h
                        src/ICLGeom/SQFitter.h
                        src/ICLGeom/PlotWidget3D.h
@@ -217,7 +217,7 @@ ELSE()
 ENDIF()
 
 SET_TARGET_PROPERTIES(ICLGeom
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

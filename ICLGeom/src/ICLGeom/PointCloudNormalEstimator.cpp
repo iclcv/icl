@@ -419,7 +419,7 @@ struct PointCloudNormalEstimator::Data {
 #else
 		std::cout << "no openCL parallelization available" << std::endl;
 		clReady = false;
-#endif   
+#endif
 	}
 	~Data() {
 		delete[] normals;
@@ -516,7 +516,7 @@ void PointCloudNormalEstimator::setDepthImage(const Img32f &depthImg) {
 	if(m_data->useCL==true && m_data->clReady==true) {
           //	m_data->rawImageArray=m_data->rawImage.begin(0); //image to float array
 		try {
-                  //	m_data->rawImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+                  //	m_data->rawImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float),
                   // depthImg.begin(0));
                   m_data->rawImageBuffer.write(depthImg.begin(0),m_data->w*m_data->h*sizeof(float));
 		} catch (CLException &err) { //catch openCL errors
@@ -594,7 +594,7 @@ void PointCloudNormalEstimator::setFilteredDepthImage(const Img32f &filteredImg)
   if(m_data->useCL==true && m_data->clReady==true) {
     //m_data->filteredImageArray=m_data->filteredImage.begin(0); //image to float array
     try {
-      m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+      m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float),
                                                                  filteredImg.begin(0));
 		} catch (CLException &err) { //catch openCL errors
       std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -1126,7 +1126,7 @@ void PointCloudNormalEstimator::setAngleImage(const Img32f &angleImg) {
   if(m_data->useCL==true && m_data->clReady==true) {
     //m_data->angleImageArray=m_data->angleImage.begin(0); //image to float array
     try {
-      m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float), 
+      m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float),
                                                               angleImg.begin(0));
     } catch (CLException &err) { //catch openCL errors
       std::cout<< "ERROR: "<< err.what()<< std::endl;

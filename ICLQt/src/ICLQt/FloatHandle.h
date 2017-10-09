@@ -39,20 +39,20 @@ class QLineEdit;
 
 namespace icl{
   namespace qt{
-    
+
     /// Class for handling "float" textfield components \ingroup HANDLES
     class ICLQt_API FloatHandle : public GUIHandle<QLineEdit> {
       public:
-      
+
       /// Create an empty handle
       FloatHandle(){}
-      
+
       /// Create a new FloatHandel
       FloatHandle(QLineEdit *le, GUIWidget *w):GUIHandle<QLineEdit>(le,w){}
-      
+
       /// make the associated text field show a float
       void operator=(float f);
-      
+
       /// returns the current text as float
       float getValue() const;
     };
