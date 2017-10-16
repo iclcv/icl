@@ -75,7 +75,7 @@ Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector
         Rrel(0,1), Rrel(1,1), Rrel(2,1), dT[1],
         Rrel(0,2), Rrel(1,2), Rrel(2,2), dT[2],
         0,0,0,1);
-  
+
   return D;
 }
 
@@ -83,16 +83,16 @@ Mat compute_relative_transform(const Camera &s, const Camera &d){
   Mat ms = s.getInvCSTransformationMatrix();
   Mat md = d.getInvCSTransformationMatrix();
   //    Mat rel = d.getInvCSTransformationMatrix() * s.getCSTransformationMatrix();
-  
+
   Mat3 Rs = ms.part<0,0,3,3>();
   Mat3 Rd = md.part<0,0,3,3>();
-  
+
   Vec3 Ts = ms.part<3,0,1,3>();
   Vec3 Td = md.part<3,0,1,3>();
-  
+
   Mat3 Rrel = Rs.transp() * Rd;
   Vec3 Trel = Td - Ts;
-  
+
   Mat T = Rrel.resize<4,4>(0);
   T.col(3) = Trel.resize<1,4>(1);
 
@@ -119,7 +119,7 @@ struct View{
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
                    CoplanarPointPoseEstimator::SimplexSampling){}
-};  
+};
 typedef SmartPtr<View> ViewPtr;
 
 std::vector<ViewPtr> views;
@@ -169,18 +169,18 @@ void init(){
 
   ProgArg pai = pa("-i");
   views.resize(pai.n()/3);
-  
+
   if(po && po.n() != (int)views.size()){
     throw ICLException("number of -o sub-arguments must be equal to number of sub-arguments for -i devided by 3");
   }
-  
+
   std::string inputIDs;
-  
+
   FiducialDetector *fd = 0;
   Size imageSize0;
   if(pai.n() % 3) {
     throw ICLException("invalid sub-argument count to argument -input!"
-                       "sub-argument count must be multiple of 3 (found " 
+                       "sub-argument count must be multiple of 3 (found "
                        + str(pai.n())+ ")");
   }
   for(int i=0;i<pai.n();i+=3){
@@ -199,7 +199,7 @@ void init(){
       v.cbDetector.init(cbDef.cells);
       v.cbDetector.setConfigurableID("cbd-cam"+str(id));
       v.cbPoseEst.setConfigurableID("cbPoseEst-cam"+str(id));
-      
+
     }else{
       v.detector.init(d);
       fd = v.detector.getFiducialDetector();
@@ -240,9 +240,9 @@ void init(){
            << Button("save relative calibration").handle("saveRel").tooltip("saves the calibration file of the current view's "
                                                                             "camera <b>and</b> the relative calibrations of all "
                                                                             "other views wrt. the current view camera").hideIf(pai.n() < 6);
-  
+
   gui << (HSplit()
-          << (Tab("input view,3D scene view") 
+          << (Tab("input view,3D scene view")
               << Draw3D(imageSize0).handle("draw").minSize(32,24)
               << (VBox()
                   << (HBox().maxSize(99,2)
@@ -256,17 +256,17 @@ void init(){
           << controls
           )
       << Show();
-  
+
 
   scene.addCamera(scene.getCamera(0));
-  
+
   if(!cbDef.used){
     gridIndicator = new GridIndicatorObject(cbDef.cells, cbDef.bounds);
   }else{
     gridIndicator = new GridIndicatorObject(d);
   }
   scene.addObject(gridIndicator);
-  
+
   //gui["draw"].install(scene.getMouseHandler(1));
   gui["draw"].link(new GLCallback);//scene.getGLCallback(views.size()));
 
@@ -310,15 +310,15 @@ void init(){
     }
 
   }
-  
+
   poseEstGUI << poseEstTab << Create();
   fidGUI << fidTab << Create();
 
 
-  gui["rel"].registerCallback(utils::function(relGUI,&GUI::switchVisibility));  
-  gui["poseEst"].registerCallback(utils::function(poseEstGUI,&GUI::switchVisibility));  
-  gui["fid"].registerCallback(utils::function(fidGUI,&GUI::switchVisibility));  
-  
+  gui["rel"].registerCallback(utils::function(relGUI,&GUI::switchVisibility));
+  gui["poseEst"].registerCallback(utils::function(poseEstGUI,&GUI::switchVisibility));
+  gui["fid"].registerCallback(utils::function(fidGUI,&GUI::switchVisibility));
+
   cs = new ComplexCoordinateFrameSceneObject;
   cs->setVisible(false);
   scene.addObject(cs,true);
@@ -332,7 +332,7 @@ void init(){
                        )
                    << Create();
 
-  gui["cap"].registerCallback(utils::function(captureFramesGUI,&GUI::switchVisibility));  
+  gui["cap"].registerCallback(utils::function(captureFramesGUI,&GUI::switchVisibility));
 }
 
 void run(){
@@ -341,7 +341,7 @@ void run(){
   for(size_t i=0 ;i < views.size();++i){
     views[i]->cs->setVisible(sgcss);
   }
-  
+
   int currentView = gui["visinput"];
   static int lastView = currentView;
 
@@ -366,14 +366,14 @@ void run(){
     const ImgBase *image = !acquisition ? v.lastImage : v.grabber.grab();
     v.lastImage = image;
 
-    Camera cam = v.camera;    
+    Camera cam = v.camera;
     Mat T;
     const MarkerGrid *grid = 0;
     const CheckerboardDetector::Checkerboard *cb = 0;
     if(cbDef.used){
       cb = &v.cbDetector.detect(image);
-      T = v.cbPoseEst.getPose(cbDef.pts.size(), 
-                              cbDef.pts.data(), 
+      T = v.cbPoseEst.getPose(cbDef.pts.size(),
+                              cbDef.pts.data(),
                               cb->corners.data(), cam);
     }else{
       grid = &v.detector.detect(image);
@@ -389,7 +389,7 @@ void run(){
     }catch(...){
       /// this sometimes happens when the estimated transform is weakly conditioned
     }
-    
+
     if((int)i == currentView){
       //try{
       //  cs->setTransformation(T.inv());
@@ -402,7 +402,7 @@ void run(){
         draw = v.detector.getFiducialDetector()->getIntermediateImage(gui["vis"]);
         draw->draw(grid->vis());
       }
-      
+
       if(lastView!=currentView){
         for(int i=0;i<10;++i) estimate_pose_variance(T);
       }
@@ -427,7 +427,7 @@ void run(){
       lastView = currentView;
 
       static PlotHandle plot = gui["variancePlot"];
-      
+
       static const int cs[6][4] = {
         { 255, 0, 0, 255 },
         { 0, 255 ,0, 255 },
@@ -436,11 +436,11 @@ void run(){
         { 255, 0, 255, 255},
         { 0, 255, 255, 255 }
       };
-      
+
       static std::string labels[6] = {
-        "x", "y", "z", "rx", "ry", "rz" 
+        "x", "y", "z", "rx", "ry", "rz"
       };
-      
+
       plot->lock();
       plot->reset();
       for(int i=0;i<6;++i){
@@ -448,7 +448,7 @@ void run(){
         plot->label((i>=3 ? "100 x " : "") + str("var(" + labels[i] + ")"));
         plot->series(bufs[i]);
       }
-      
+
       plot->unlock();
       plot->render();
     }
@@ -475,15 +475,15 @@ void run(){
   captureFramesGUI["n"] = nCap;
   gui["ncap"] = nCap;
 
-  
+
   std::string names[]={"save", "saveRel"};
   for(int i=0;i<2;++i){
     if(i && views.size() < 2) break;
     ProgArg p = pa("-o");
     ButtonHandle save = gui[names[i]];
-    
+
     bool saveWasTriggered = save.wasTriggered();
-    
+
     if(saveWasTriggered){
       std::string filename;
       if(pa("-o")){
@@ -515,10 +515,10 @@ void run(){
           if(filename.length()){
             Mat rel;
             if(views[currentView]->capturedFrames.size()){
-              rel = compute_relative_transform_n(views[currentView]->capturedFrames, 
+              rel = compute_relative_transform_n(views[currentView]->capturedFrames,
                                                  views[j]->capturedFrames);
             }else{
-              rel = compute_relative_transform(views[currentView]->calibratedCamera, 
+              rel = compute_relative_transform(views[currentView]->calibratedCamera,
                                                views[j]->calibratedCamera);
             }
             std::ofstream f(filename.c_str());
@@ -542,7 +542,7 @@ void run(){
   static ButtonHandle sync = gui["sync"];
   if(sync.wasTriggered()){
     scene.getCamera(views.size()) = scene.getCamera(0);
-  }  
+  }
   gui["3D"].render();
 }
 
@@ -559,7 +559,7 @@ int main(int n, char **ppc){
              " checkerboard is tried to be detected.");
   pa_explain("-ids", "marker IDs to use. If not specified, the IDs \n"
              "[0-w*h-1] are used. The string can either be a comma-\n"
-             "separated list of entries or a range specification such \n" 
+             "separated list of entries or a range specification such \n"
              "'[0-100]'");
   pa_explain("-ugc","if given, the center of the grid initially defines the \n"
              "world frame origin");
@@ -584,7 +584,7 @@ int main(int n, char **ppc){
   return ICLApp(n, ppc, " [m]-input|-i(...) [m]-grid-cell-dim|-g(cells) "
                 "-marker-bounds|-mb(mm) [m]-grid-bounds|-gb(mm) "
                 "-marker-type|-m(type=bch) -marker-ids|-ids(idlist) "
-                "-camera-file -use-grid-center|-ugc " 
+                "-camera-file -use-grid-center|-ugc "
                 "-initial-relative-transform|-t(rx=0,ry=0,rz=0,tx=0,ty=0,tz=0) "
                 "-output-filenames|-o(...)",
                 init, run).exec();

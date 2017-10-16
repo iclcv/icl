@@ -34,7 +34,7 @@
 HBox gui;
 GenericGrabber c_in;
 GenericGrabber d_in;
-GenericImageOutput c_out,d_out,both_out; 
+GenericImageOutput c_out,d_out,both_out;
 
 
 void init(){
@@ -45,7 +45,7 @@ void init(){
     }else{
       c_in.init("kinectc","kinectc=0");
     }
-    
+
     if(pa("-d")){
       d_in.init(pa("-d"));
     }else{
@@ -60,19 +60,19 @@ void init(){
     if(!pa("-d") && !pa("-c")) throw ICLException("no input given");
     if(pa("-d")){
       d_in.init(pa("-d"));
-      
+
       gui << Image().handle("depth").minSize(16,12).label("depth image");
     }else if(pa("-do")) throw ICLException("depth output given, but no input!");
     if(pa("-c")){
       c_in.init(pa("-c"));
       gui << Image().handle("color").minSize(16,12).label("color image");
     }else if(pa("-co")) throw ICLException("color output given, but no input!");
-    
+
     if(pa("-do")) d_out.init(pa("-do"));
     if(pa("-co")) c_out.init(pa("-co"));
   }
   gui << CamCfg("");
-  
+
   if(pa("-man")){
     if(!pa("-co") && !pa("-do")){
       throw std::logic_error("manual mode '-man' without given "
@@ -94,7 +94,7 @@ void init(){
             << Label("0").handle("nRecorded").label("num recorded frames")
             );
   }
-  
+
   if(pa("-ds")){
     Size s = pa("-ds");
     if(!d_in.isNull()) d_in.useDesired(s);
@@ -140,13 +140,13 @@ void run(){
         gui["nRecorded"] = n;
       }
       lastMan = man;
-        
+
     }else{
       if(!c_out.isNull() && c) c_out.send(c);
       if(!d_out.isNull() && d) d_out.send(d);
     }
   }
-  
+
   if(c) gui["color"] = c;
   if(d) gui["depth"] = d;
 }

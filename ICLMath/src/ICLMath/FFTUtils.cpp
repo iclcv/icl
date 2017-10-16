@@ -46,17 +46,17 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
     namespace fft{
-      
+
       typedef std::complex<icl32f> icl32c;
       typedef std::complex<icl64f> icl64c;
-      
+
       template<class T1, class T2>
       struct CreateComplex{
   	static inline std::complex<T2> create_complex(const T1 &x){
           return std::complex<T2>(x);
   	}
       };
-      
+
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
       template<class T2>                                                \
       struct CreateComplex<icl##D,T2>{                                  \
@@ -74,7 +74,7 @@ namespace icl{
       ICL_INSTANTIATE_DEPTH(32u);
       ICL_INSTANTIATE_DEPTH(16u);
 #undef ICL_INSTANTIATE_DEPTH
-      
+
       template<typename T>
       DynMatrix<T>&  fftshift(DynMatrix<T> &src,DynMatrix<T> &dst) throw (InvalidMatrixDimensionException){
 	if(src.cols() != dst.cols() || src.rows() != dst.rows())
@@ -118,7 +118,7 @@ namespace icl{
       template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  fftshift(DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<std::complex<icl64f> > &dst);
-      
+
       template<typename T>
       DynMatrix<T>&  ifftshift(DynMatrix<T> &src,
                                DynMatrix<T> &dst) throw (InvalidMatrixDimensionException){
@@ -191,7 +191,7 @@ namespace icl{
       template ICLMath_API
       DynMatrix<std::complex<icl64f> >&  ifftshift(DynMatrix<std::complex<icl64f> > &src,
                                                    DynMatrix<std::complex<icl64f> > &dst);
-      
+
       int priorPowerOf2(int n){
 	int p = 1;
 	while(p<n){
@@ -200,7 +200,7 @@ namespace icl{
 	p=p/2;
 	return p;
       }
-      
+
       int  nextPowerOf2(int n){
 	int p = 1;
 	while(p<n){
@@ -208,7 +208,7 @@ namespace icl{
 	}
 	return p;
       }
-      
+
       static bool  isPowerOfTwo(int n){
 	int p = 1;
 	while(p<n){
@@ -220,7 +220,7 @@ namespace icl{
           return false;
 	}
       }
-      
+
       template<typename T>
       DynMatrix<T>&  logpowerspectrum(const DynMatrix<std::complex<T> > &src,
                                       DynMatrix<T> &dst){
@@ -243,7 +243,7 @@ namespace icl{
       template ICLMath_API
       DynMatrix<icl64f>&  logpowerspectrum(const DynMatrix<std::complex<icl64f> > &src,
                                            DynMatrix<icl64f> &dst);
-      
+
       template<typename T>
       DynMatrix<T>&  powerspectrum(const DynMatrix<std::complex<T> > &src,
                                    DynMatrix<T> &dst){
@@ -310,7 +310,7 @@ namespace icl{
       DynMatrix<icl64f>&  continueMatrixToPowerOf2(const DynMatrix<icl64f> &,
                                                    DynMatrix<icl64f> &dst);
       template ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  
+      DynMatrix<std::complex<icl64f> >&
       continueMatrixToPowerOf2(const DynMatrix<std::complex<icl64f> > &src,
                                DynMatrix<std::complex<icl64f> > &dst);
 
@@ -843,7 +843,7 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32u* a);
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl16s* a);
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32s* a);
-      
+
       template ICLMath_API icl32c*  fft(unsigned int n, const icl32f* a);
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32f* a);
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl64f* a);
@@ -852,7 +852,7 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const icl32c* a);
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
-      
+
 #ifdef ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<T> &src,
@@ -868,7 +868,7 @@ namespace icl{
           throw FFTException(msg);
 	}
 	int dim = src.cols()*src.rows();
-        
+
 	int minBufSize = 0;
 	ippiFFTGetBufSize_R_32f(spec,&minBufSize);
 
@@ -932,10 +932,10 @@ namespace icl{
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException);
-      
+
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft_icl32fc(const DynMatrix<icl32c > &src,
                                                                    DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) throw (FFTException){
-        
+
 	IppiFFTSpec_C_32fc *spec = 0;
 	//IppHintAlgorithm hint;
 	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
@@ -979,7 +979,7 @@ namespace icl{
 #include <mkl_dfti.h>
       template<typename T>
       void unpack_mkl_fft(T *src,std::complex<T> *dst, unsigned int cols, unsigned int rows){
-        
+
 	unsigned int dim = cols*rows;
 	T re = 0.0;
 	T im = 0.0;

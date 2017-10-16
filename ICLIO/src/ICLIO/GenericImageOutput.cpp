@@ -66,16 +66,16 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-    
-    
+
+
     GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
       init(type,description);
     }
-  
+
     GenericImageOutput::GenericImageOutput(const ProgArg &pa){
       init(pa);
     }
-    
+
     void GenericImageOutput::init(const ProgArg &pa){
       init(*pa,utils::pa(pa.getID(),1));
     }
@@ -86,15 +86,15 @@ namespace icl{
 
     void GenericImageOutput::init(const std::string &type, const std::string &description){
       impl = SmartPtr<ImageOutput>();
-            
+
       this->type = type;
       this->description = description;
-      
+
       ImageOutput *o = 0;
-  
+
       std::string d = description;
       if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
-  
+
       if(type == "null"){
         struct NullOutput : public ImageOutput{
           virtual void send(const ImgBase *) {}
@@ -102,7 +102,7 @@ namespace icl{
         o = new NullOutput;
       }
       std::vector<std::string> plugins;
-      
+
   #ifdef ICL_HAVE_LIBAV
       plugins.push_back("video~Video File~libav based video file writer");
       if(type == "video"){
@@ -133,7 +133,7 @@ namespace icl{
         }catch(const std::exception &e){
           ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
         }
-        
+
       }
   #endif
   #endif
@@ -152,7 +152,7 @@ namespace icl{
       }
 
   #endif
-  
+
   #ifdef ICL_HAVE_QT
       plugins.push_back("sm~Shared Memory Segment ID~Qt based shared memory writer");
 
@@ -160,7 +160,7 @@ namespace icl{
         o = new SharedMemoryPublisher(d);
       }
   #endif
-      
+
   #if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
       plugins.push_back("rsb~[transport:]/scope~Network output stream");
       if(type == "rsb"){
@@ -174,18 +174,18 @@ namespace icl{
           }else{
             throw ICLException("invalid definition string (exptected: [transport-list:]scope");
           }
-  
+
         }catch(std::exception &e){
           ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
         }
       }
   #endif
       plugins.push_back("file~File Pattern~File Writer");
-      
+
       if(type == "file"){
         o = new FileWriter(d);
       }
-      
+
       if(type == "list"){
         int numPlugins = plugins.size();
         TextTable t(4,numPlugins+1,50);
@@ -199,14 +199,14 @@ namespace icl{
           t(1,i+1) = ts[0];
           t(2,i+1) = ts[1];
           t(3,i+1) = ts[2];
-        }     
-        
+        }
+
         std::cout << "Supported Image Output Devices: "<< std::endl
                   << std::endl << t << std::endl;
-        
+
         std::terminate();
       }
-      
+
       if(!o){
         ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
       }

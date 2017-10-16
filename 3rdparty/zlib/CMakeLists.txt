@@ -61,5 +61,5 @@ ADD_ICL_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 ADD_LIBRARY(zlib STATIC ${SOURCES} ${HEADERS})
 
 SET_TARGET_PROPERTIES(zlib
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})

@@ -35,7 +35,7 @@
 namespace icl {
   namespace physics{
     class RigidObject;
-  
+
     /// This is a generic constraint that allows to free configuration of the limits on all 6 degrees of freedom.
     class ICLPhysics_API SixDOFConstraint: public Constraint{
       void init(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, const bool useLinearReferenceFrameA);
@@ -48,44 +48,44 @@ namespace icl {
       /// The frames describe the position and orientation of the constraint pivot in the objectspace of the 2 objects.
       void setFrames(const geom::Mat &frameA, const geom::Mat &frameB);
       void setPivot(const geom::Vec &pivotInA, const geom::Vec &pivotInB);
-      
+
       /* Set lower linear limits of the constraint pivot.
        * Setting the lower limit to higher than the upper limit unlocks the axis.
        */
       void setLinearLowerLimit(const geom::Vec &lower);
-      
+
       /* Set upper linear limits of the constraint pivot.
        * Setting the lower limit to higher than the upper limit unlocks the axis.
        */
       void setLinearUpperLimit(const geom::Vec &upper);
-      
+
       /// Return the lower linear limit.
       geom::Vec getLinearLowerLimit();
-      
+
       /// Return the upper linear limit.
       geom::Vec getLinearUpperLimit();
-      
+
 			float getAngle(int index);
-      
+
       /* Set lower angular limits of the constraint pivot.
        * Setting the lower limit to higher than the upper limit unlocks the axis.
        */
       void setAngularLowerLimit(const geom::Vec &lower);
-      
+
       /* Set upper linear limits of the constraint pivot.
        * Setting the lower limit to higher than the upper limit unlocks the axis.
        */
       void setAngularUpperLimit(const geom::Vec &upper);
-      
+
       /// Return the lower angular limit.
       geom::Vec getAngularLowerLimit();
-      
+
       /// Return the upper angular limit.
       geom::Vec getAngularUpperLimit();
-      
+
       /// Set the angular motor settings.
 			void setLinearMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation = false);
-      
+
       /// Set the linear motor settings.
 			void setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation = false);
     };

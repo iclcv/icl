@@ -48,10 +48,10 @@ std::string type = "video";
 std::string len = "stream-length";
 std::string pos = "stream-pos";
 std::string unit = "ms";
-#endif  
+#endif
 
 enum SliderEventType { press,release };
-  
+
 template<SliderEventType t>
 void stream_pos(){
   Mutex::Locker lock(mtex);
@@ -59,7 +59,7 @@ void stream_pos(){
   switch(t){
     case press: paused = true; break;
     case release:{
-      paused = false; 
+      paused = false;
       grabber.setPropertyValue(pos,str(posVal));
       break;
     }
@@ -71,18 +71,18 @@ void init(){
   int len = parse<int>(grabber.getPropertyValue("len"));
   gui << Image().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)
-      << ( HBox().maxSize(1000,3) 
+      << ( HBox().maxSize(1000,3)
 #ifndef ICL_HAVE_OPENCV
            << Slider(0,100,50).out("speed").label("playback speed")
            << Slider(0,100,50).out("volume").label("audio volume")
 #endif
-           << Fps(100).handle("fps").maxSize(5,2).minSize(5,2) 
+           << Fps(100).handle("fps").maxSize(5,2).minSize(5,2)
            << Button("play","pause").out("pause").maxSize(4,2)
            << CamCfg()
          )
       << Show();
 
-  
+
   SliderHandle slider = gui["pos"];
   slider.registerCallback(stream_pos<press>,"press");
   slider.registerCallback(stream_pos<release>,"release");
@@ -98,13 +98,13 @@ void run(){
 #endif
 
   Mutex::Locker lock(mtex);
-  
+
   while(paused || pause){
     mtex.unlock();
     Thread::msleep(100);
     mtex.lock();
   }
-  
+
   image = grabber.grab();
   gui["fps"].render();
 
@@ -119,14 +119,14 @@ void run(){
       grabber.setPropertyValue("speed-mode","manual");
       grabber.setPropertyValue("speed",str(speed));
     }
-  } 
+  }
   if(volume != parse<int>(grabber.getPropertyValue("volume"))){
     grabber.setPropertyValue("volume",str(volume));
   }
 #endif
-  
+
   Thread::msleep(1);
-  
+
 }
 
 int main(int n,char **ppc){

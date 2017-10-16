@@ -36,13 +36,13 @@
 
 namespace icl{
   namespace filter{
-    
+
     /// Class that implements dithering mechanisms
-    /** Dithering techniques approximate gray-scale values using black and white patterns. 
+    /** Dithering techniques approximate gray-scale values using black and white patterns.
 
         \section DATA Data Types
         Internally, the input image is converted to 8u format. The result will always be
-        an Img8u image. 
+        an Img8u image.
 
 
         \section LEVELS Levels
@@ -82,10 +82,10 @@ namespace icl{
       };
       /// Constructor
       DitheringOp (Algorithm a=FloydSteinberg, int levels=2);
-      
+
       /// Destructor
       virtual ~DitheringOp(){}
-      
+
       /// Applies the mirror transform to the images
       void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
 
@@ -108,7 +108,7 @@ namespace icl{
       /// import base-class symbols
       using UnaryOp::apply;
 
-      private:    
+      private:
       Algorithm m_algorithm;
       int m_levels;
     };

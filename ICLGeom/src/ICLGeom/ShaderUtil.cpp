@@ -41,7 +41,7 @@ namespace icl{
       project2shadow(0),
       m_shadowBias(0),
       renderingShadow(true){}
-  
+
     ShaderUtil::ShaderUtil(const Camera *camera, qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow,float shadowBias):
       m_camera(camera),
       m_shaders(shaders),
@@ -49,7 +49,7 @@ namespace icl{
       project2shadow(project2shadow),
       m_shadowBias(shadowBias),
       renderingShadow(false){}
-  
+
     const Camera &ShaderUtil::getCurrentCamera() const throw (utils::ICLException){
       if(!m_camera) throw utils::ICLException("shader util has no camera!");
       return *m_camera;

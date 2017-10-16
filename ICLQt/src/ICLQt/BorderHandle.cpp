@@ -46,7 +46,7 @@ namespace icl{
       if(**this) (**this)->setTitle(title.c_str());
       (**this)->update();
     }
-    
-    
+
+
   } // namespace qt
 }

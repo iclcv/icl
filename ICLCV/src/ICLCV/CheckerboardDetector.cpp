@@ -43,7 +43,7 @@ namespace icl{
   using namespace utils;
 
   namespace cv{
-    
+
     struct CheckerboardDetector::Data{
       CheckerboardDetector::Checkerboard cb;
       IplImage *ipl;
@@ -77,15 +77,15 @@ namespace icl{
     CheckerboardDetector::~CheckerboardDetector(){
       if(m_data) delete m_data;
     }
-      
+
     void CheckerboardDetector::init(const Size &size){
-      if(!m_data){ 
+      if(!m_data){
         m_data = new Data;
         m_data->ipl = 0;
       }
       m_data->cb.size = size;
     }
-   
+
     bool CheckerboardDetector::isNull() const{
       return !m_data;
     }
@@ -114,20 +114,20 @@ namespace icl{
       if(image.getFormat() != formatGray && image.getChannels() != 1){
         m_data->grayBuf.setFormat(formatGray);
         m_data->grayBuf.setSize(image.getSize());
-        
+
         cc(&image, &m_data->grayBuf);
-        
+
         useImage = &m_data->grayBuf;
       }
       img_to_ipl(useImage, &m_data->ipl);
       std::vector<CvPoint2D32f> corners(m_data->cb.size.getDim());
 
       CvSize s = {m_data->cb.size.width, m_data->cb.size.height };
-      
+
       int n = corners.size();
       m_data->cb.found = cvFindChessboardCorners(m_data->ipl, s, corners.data(), &n,
                                                   CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
-      
+
       bool optSubPix = getPropertyValue("subpixel opt.enabled");
       int radius = getPropertyValue("subpixel opt.radius");
       int innerR = getPropertyValue("subpixel opt.inner radius");
@@ -135,13 +135,13 @@ namespace icl{
       if(innerR == 0) innerR = -1;
       int maxIter = getPropertyValue("subpixel opt.max iterations");
       float minErr = getPropertyValue("subpixel opt.min error");
-      
+
       if(m_data->cb.found && optSubPix){
         cvFindCornerSubPix(m_data->ipl, corners.data(), corners.size(), cvSize(radius,radius),
-                           cvSize(innerR, innerR), 
+                           cvSize(innerR, innerR),
                            cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, maxIter, minErr));
       }
-      
+
       if(m_data->cb.found){
         m_data->cb.corners.resize(corners.size());
         for(size_t i=0;i<corners.size();++i){
@@ -156,8 +156,8 @@ namespace icl{
 
     VisualizationDescription CheckerboardDetector::Checkerboard::visualize() const{
       VisualizationDescription vis;
-      static const Color cs[5] = { 
-        Color(255,0,0), 
+      static const Color cs[5] = {
+        Color(255,0,0),
         Color(255,255,0),
         Color(0,255,255),
         Color(0,0,255),

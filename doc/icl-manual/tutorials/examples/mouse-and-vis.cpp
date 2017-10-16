@@ -34,7 +34,7 @@ void init(){
 void run(){
   // extract current threshold from gui slider
   cd.setThreshold(gui["t"]);
-  
+
   // extract handle
   DrawHandle draw = gui["image"];
 
@@ -43,7 +43,7 @@ void run(){
 
   // set the background image
   draw = I;
- 
+
   // set drawing properties
   draw->color(255,0,0);
 

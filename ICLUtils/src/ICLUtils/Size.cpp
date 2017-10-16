@@ -63,7 +63,7 @@ namespace icl{
     const Size Size::HD1080(1920,1080);
     const Size Size::WUXGA(1920,1080);
     const Size Size::UD(3840,2160);
-  
+
     // video formats
     const Size Size::CIF(352,288);
     const Size Size::SIF(360,240);
@@ -71,7 +71,7 @@ namespace icl{
     const Size Size::QCIF(176,144);
     const Size Size::PAL(768,576);
     const Size Size::NTSC(640,480);
-  
+
     static void size_from_string(const std::string &name, Size &size){
       static const Size neg1(-1,-1);
       static std::map<std::string,const Size*> m;
@@ -86,7 +86,7 @@ namespace icl{
         A(WSXGA);A(SXGAP);A(UXGA);A(HD1080);
         A(WUXGA);A(UD);A(CIF);A(SIF);A(SQCIF);
         A(QCIF);A(PAL);A(NTSC);
-  #undef A      
+  #undef A
       }
       std::map<std::string,const Size*>::iterator it = m.find(name);
       if(it!=m.end()){
@@ -95,17 +95,17 @@ namespace icl{
         size = neg1;
       }
     }
-  
+
     std::ostream &operator<<(std::ostream &s, const Size &size){
       return s << size.width << 'x' << size.height;
     }
-    
+
     std::istream &operator>>(std::istream &s, Size &size){
       char c;
       s >> c;
       s.unget();
       if( c >= '0' && c <= '9'){
-        return s >> size.width >> c >> size.height;    
+        return s >> size.width >> c >> size.height;
       }else{
         std::string str;
         s >> str;
@@ -113,15 +113,15 @@ namespace icl{
       }
       return s;
     }
-  
+
     Size::Size(const std::string &name){
       *this = parse<Size>(name);
     }
-  
+
     Size::Size(const Size32f &other){
       width = round(other.width);
       height = round(other.height);
-    }  
-  
+    }
+
   } // namespace utils
 }

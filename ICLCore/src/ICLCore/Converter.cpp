@@ -34,28 +34,28 @@
 
 namespace icl{
   namespace core{
-  
-  
-    Converter::Converter(bool bROIOnly) : 
+
+
+    Converter::Converter(bool bROIOnly) :
       // {{{ open
-  
-      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0), 
+
+      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
       m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC),
       m_scaleMode(interpolateNN){
       FUNCTION_LOG("");
     }
-  
+
     // }}}
-  
+
     Converter::Converter(Converter::oporder o, bool bROIOnly):
-      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0), 
+      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
       m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o),m_scaleMode(interpolateNN){
       FUNCTION_LOG("");
       // {{{ open
-      
+
     }
     // }}}
-    
+
     Converter::Converter(const ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly):
       // {{{ open
       m_poSizeBuffer(0), m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
@@ -63,12 +63,12 @@ namespace icl{
       m_scaleMode(interpolateNN){
       apply(srcImage,dstImage);
     }
-  
+
     // }}}
-  
+
     Converter::~Converter(){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       if(m_poSizeBuffer)delete m_poSizeBuffer;
       if(m_poCCBuffer)delete m_poCCBuffer;
@@ -76,9 +76,9 @@ namespace icl{
       if(m_poROIBuffer)delete m_poROIBuffer;
       if(m_poColorBuffer)delete m_poColorBuffer;
     }
-  
+
     // }}}
-  
+
     void Converter::dynamicConvert(const ImgBase *src, ImgBase *dst){
       // {{{ open
       //case depth##D: src->convert<icl##D>(dst->asImg<icl##D>());
@@ -88,37 +88,37 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
       }
     }
-  
+
     // }}}
-  
+
     void Converter::apply(const ImgBase *poSrc, ImgBase *poDst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN( poSrc );
       ICLASSERT_RETURN( poDst );
-  
+
       poDst->setFullROI();
-      
-      
+
+
       int iScalePos = m_eOpOrder/100;
       int iConvertPos = (m_eOpOrder-100*iScalePos)/10;
       int iCCPos = m_eOpOrder-100*iScalePos-10*iConvertPos;
-        
+
       int iNeedDepthConversion = poSrc->getDepth() != poDst->getDepth();
-        
+
       int iNeedColorConversion =  poSrc->getFormat() != poDst->getFormat();
-                                  //poSrc->getFormat() != formatMatrix && 
-                                  //poDst->getFormat() != formatMatrix && 
-                                  
-      
+                                  //poSrc->getFormat() != formatMatrix &&
+                                  //poDst->getFormat() != formatMatrix &&
+
+
       int iNeedSizeConversion;
-      if(m_bROIOnly){ 
+      if(m_bROIOnly){
         iNeedSizeConversion = poSrc->getROISize() != poDst->getSize();
       }else{
         iNeedSizeConversion = poSrc->getSize() != poDst->getSize();
       }
-      
+
       static const int NOTHING = 0;
       static const int SIZE_ONLY = 1;
       static const int COLOR_ONLY = 2;
@@ -160,7 +160,7 @@ namespace icl{
         case DEPTH_SIZE_AND_COLOR:
           SECTION_LOG("depth size and color conversion");
           if(iScalePos < iCCPos){
-            ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat()); 
+            ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat());
             if(m_bROIOnly){
               poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
             }else{
@@ -178,7 +178,7 @@ namespace icl{
               cc(poSrc,m_poColorBuffer);
               m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
             }
-          }       
+          }
           break;
         case DEPTH_ONLY:
           SECTION_LOG("depth conversion");
@@ -207,21 +207,21 @@ namespace icl{
       }
       poDst->setMetaData(poSrc->getMetaData());
     }
-  
+
     // }}}
-   
+
     void Converter::cc(const ImgBase *srcIn, ImgBase *dst){
       // {{{ open
-  
+
       FUNCTION_LOG("");
       ICLASSERT_RETURN( srcIn );
       ICLASSERT_RETURN( dst );
-  
+
       const ImgBase *src = srcIn;
       if(!srcIn->hasFullROI()){
         src = srcIn->shallowCopy(srcIn->getImageRect());
       }
-      
+
       if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
         SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
         ensureCompatible(&m_poCCBuffer,src->getDepth(), src->getSize(), formatRGB);
@@ -229,23 +229,23 @@ namespace icl{
         cc(m_poCCBuffer,dst);
       }else{
         SECTION_LOG("passing directly icl::cc");
-        
+
         icl::core::cc(src,dst);
       }
-  
+
       if(srcIn != src){
         ICL_DELETE(src);
       }
       dst->setMetaData(src->getMetaData());
     }
-  
+
     // }}}
-  
-  
+
+
     void Converter::setScaleMode(scalemode scaleMode){
       m_scaleMode = scaleMode;
     }
-    
-  
+
+
   } // namespace core
 }

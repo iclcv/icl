@@ -38,16 +38,16 @@ namespace icl {
     /// unary operators that work on each pixels neighborhood \ingroup UNARY \ingroup NBH
     /** TODO:: check!!
         The NeighborhoodOp class builds a base class for unary operations employing
-        a filter mask which is moved over the ROI of the source image(s), 
+        a filter mask which is moved over the ROI of the source image(s),
         e.g. convolution filters use some convolution masks.
         To this end the class provides members to store the size and anchor
         of the filter mask.
-  
+
         Special care has to be taken, when applying a filter mask to the border
         of an image, e.g. in case of full-image ROI. In this case the filter
         might access undefined pixel values outside the image, actually causing
         a segfault in most cases.
-  
+
         Hence, the used ROI size of the source image is <em> shrinked </em> if
         neccessary, such that the filter mask always fits into the image, when
         moved over the ROI. For this purpose the method adaptROI is provided,
@@ -58,12 +58,12 @@ namespace icl {
     */
     class ICLFilter_API NeighborhoodOp : public UnaryOp {
       public:
-      
+
       ///Destructor
       virtual ~NeighborhoodOp(){}
-      
+
       /// compute neccessary ROI offset and size
-      /** This functions computes the to-be-used ROI for the source image, 
+      /** This functions computes the to-be-used ROI for the source image,
           such that the filter mask of given size (oMaskSize) fits everywhere
           into the image if placed arbitrarily within the ROI.
           The original ROI of the source image is not changed, instead the
@@ -74,19 +74,19 @@ namespace icl {
           @return whether a valid ROI remains
           */
       bool computeROI(const core::ImgBase *poSrc, utils::Point& oROIoffset, utils::Size& oROIsize);
-  
+
       /// *NEW* apply function for multithreaded filtering (reimplemented here for special roi handling!)
       virtual void applyMT(const core::ImgBase *operand1, core::ImgBase **dst, unsigned int nThreads);
-      
+
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
-      
+
       protected:
       NeighborhoodOp() : m_oMaskSize(1,1), m_oAnchor (0,0) {}
       NeighborhoodOp(const utils::Size &size) {
         setMask (size);
       }
-      
+
       void setMask(const utils::Size &size) {
           m_oMaskSize = adaptSize(size);
           m_oAnchor   = utils::Point (m_oMaskSize.width/2, m_oMaskSize.height/2);
@@ -101,7 +101,7 @@ namespace icl {
       public:
       const utils::Size &getMaskSize() const{
         return m_oMaskSize;
-      } 
+      }
       const utils::Point &getAnchor() const {
         return m_oAnchor;
       }
@@ -109,13 +109,13 @@ namespace icl {
         return m_oROIOffset;
       }
       protected:
-  
+
       /// prepare filter operation: ensure compatible image format and size
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc);
-      
+
       /// prepare filter operation: as above, but with depth parameter
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepht);
-      
+
       /// this function can be reimplemented e.g to enshure an odd mask width and height
        /** E.g. some implementations of Neighborhood-operation could demand odd or even
            mask size parameters. In this case, this function can be implemented in another
@@ -124,7 +124,7 @@ namespace icl {
            @return the given size in this base implementation
            **/
       virtual utils::Size adaptSize(const utils::Size &size){ return size; }
-       
+
       protected:
        ///TODO: later private with getter and setter functions
       utils::Size  m_oMaskSize;  ///< size of filter mask

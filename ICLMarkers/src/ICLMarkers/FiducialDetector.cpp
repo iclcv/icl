@@ -49,12 +49,12 @@ using namespace icl::geom;
 
 namespace icl{
   namespace markers{
-  
+
     struct Preprocessor{
       virtual const Img8u &pp(const ImgBase *src) = 0;
       virtual ~Preprocessor() {}
     };
-    
+
     struct BinaryPP : public Preprocessor, public Configurable{
       LocalThresholdOp lt;
       BinaryPP(){
@@ -65,7 +65,7 @@ namespace icl{
         return *lt.apply(src)->asImg<icl8u>();
       }
     };
-  
+
     struct FormatPP : public Preprocessor{
       format dstFmt;
       Img8u buf;
@@ -80,7 +80,7 @@ namespace icl{
         }
       }
     };
-  
+
     struct FiducialDetector::Data{
       std::string plugintype;
       SmartPtr<FiducialDetectorPlugin> plugin;
@@ -89,14 +89,14 @@ namespace icl{
       std::vector<Fiducial> fids;
       SmartPtr<Camera> camera;
       SmartPtr<Preprocessor> pp;
-      
+
       struct IntermediaImages{
         IntermediaImages():input(0),pp(0){}
         ImgBase *input;
         ImgBase *pp;
       } iis;
     };
-    
+
     FiducialDetectorPlugin* FiducialDetector::getPlugin(){
     	return data->plugin.get();
     }
@@ -119,12 +119,12 @@ namespace icl{
       }else{
         throw ICLException("FiducialDetector: invalid plugin type: " + plugin);
       }
-      
+
       if(markersToLoad.length()) loadMarkers(markersToLoad,params);
       if(camera) setCamera(*camera);
-      
+
       addChildConfigurable(data->plugin.get());
-		
+
 	  switch(data->plugin->getPreProcessing()){
         case FiducialDetectorPlugin::Binary:{
           BinaryPP *p = new BinaryPP;
@@ -142,57 +142,57 @@ namespace icl{
           throw ICLException("FiducialDetector: invalid preprocessing type returned by plugin");
       }
     }
-    
+
     FiducialDetector::~FiducialDetector(){
       delete data;
     }
-  
+
     void FiducialDetector::setCamera(const Camera &camera){
       data->camera = new Camera(camera);
       data->plugin->camera = data->camera.get();
     }
-    
+
     const Camera &FiducialDetector::getCamera() const throw (ICLException){
       if(!data->camera) throw ICLException("FiducialDetector::getCamera: camera has not been set");
       return *data->camera;
     }
-    
+
     const std::string &FiducialDetector::getPluginType() const{
       return data->plugintype;
     }
-    
+
     void  FiducialDetector::loadMarkers(const Any &which, const ParamList &params) throw (ICLException){
       data->plugin->addOrRemoveMarkers(true,which,params);
     }
-    
+
     void FiducialDetector::unloadMarkers(const Any &which){
       data->plugin->addOrRemoveMarkers(false,which,ParamList());
     }
-    
+
     const std::vector<Fiducial> &FiducialDetector::detect(const ImgBase *image) throw (ICLException){
       ICLASSERT_THROW(image,ICLException("FiducialDetector::detect: image was 0"));
-      
+
       data->iis.input = const_cast<ImgBase*>(image);
       const Img8u &ppImage = data->pp->pp(image);
       data->iis.pp = (ImgBase*)(&ppImage);
       data->fidImpls.clear();
-      
+
       data->plugin->detect(data->fidImpls,ppImage);
-      
+
       data->fids.resize(data->fidImpls.size());
       for(unsigned int i=0;i<data->fids.size();++i){
         data->fids[i] = Fiducial(data->fidImpls[i]);
       }
       return data->fids;
     }
-  
+
     /// returns the list of supported features
     Fiducial::FeatureSet  FiducialDetector::getFeatures() const{
       Fiducial::FeatureSet  fs;
       data->plugin->getFeatures(fs);
       return fs;
     }
-  
+
     std::string FiducialDetector::getIntermediateImageNames() const{
       std::string names="input,pp";
       std::string fromPlugin = data->plugin->getIntermediateImageNames();
@@ -202,19 +202,19 @@ namespace icl{
         return names;
       }
     }
-    
+
     const ImgBase *FiducialDetector::getIntermediateImage(const std::string &name) const throw (ICLException){
       if(name == "input") return data->iis.input;
       if(name == "pp") return data->iis.pp;
       return data->plugin->getIntermediateImage(name);
     }
-  
+
     Img8u FiducialDetector::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
       return data->plugin->createMarker(whichOne,size,params);
     }
-  
+
     REGISTER_CONFIGURABLE_DEFAULT(FiducialDetector);
-    
+
   } // namespace markers
 }
 

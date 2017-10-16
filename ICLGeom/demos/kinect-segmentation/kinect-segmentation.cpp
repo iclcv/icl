@@ -70,10 +70,10 @@ Img8u edgeImage;
 struct AdaptedSceneMouseHandler : public MouseHandler{
   Mutex mutex;
   MouseHandler *h;
-  
+
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
-  
+
   void process(const MouseEvent &e){
     Mutex::Locker l(mutex);
       h->process(e);
@@ -101,7 +101,7 @@ void init(){
   grabColor.useDesired(depth8u, pa("-size"), formatRGB);
 
   Size size = pa("-size");
-  
+
   normalEstimator = new PointCloudNormalEstimator(size);
 
   std::vector<PseudoColorConverter::Stop> stops; //create heatmap
@@ -111,17 +111,17 @@ void init(){
   stops.push_back(PseudoColorConverter::Stop(0.55, Color(0,255,255)));
   stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
   pseudoColorConverter = new PseudoColorConverter(stops, 2046);
-  
+
   temporalSmoothing = new MotionSensitiveTemporalSmoothing(depthNanValue, 15);
-  
+
   segmentation = new Segmentation3D(size);
-  
+
   GUI controlsGeneral = HBox().minSize(12,12);
   GUI controlsLowLevel = HBox().minSize(12,12);
   GUI controlsHighLevel = HBox().minSize(12,12);
   GUI controlsTabs = HBox().minSize(12,12);
-  
-  controlsGeneral 
+
+  controlsGeneral
            << ( VBox()
            << Button("reset view").handle("resetView")
            << Fps(10).handle("fps")
@@ -130,7 +130,7 @@ void init(){
            << ButtonGroup("RGB, Regions, Surfaces, Blobs, Greedy").handle("usedMode")
            << Button("disable CL"," enable CL").out("disableCL")
           );
-  
+
   controlsLowLevel
            << ( VBox()
            << FSlider(0.7,1.0,0.89).out("threshold").label("threshold").handle("thresholdHandle")
@@ -145,8 +145,8 @@ void init(){
            << Slider(1,15,6).out("filterSize").label("filterSize").maxSize(100,2).handle("filterSize-handle")
            << Slider(1,22,10).out("difference").label("difference").maxSize(100,2).handle("difference-handle")
           );
-    
-  controlsHighLevel 
+
+  controlsHighLevel
            << ( VBox()
            << Slider(0,100,25).out("minClusterSize").label("min Cluster Size").handle("minClusterSizeHandle")
            << Button("ROI","FULL").out("useROI")
@@ -163,24 +163,24 @@ void init(){
            << Slider(1,20,2).out("RANSACsubset").label("RANSAC subset").handle("RANSACsubsetHandle")
            << Slider(5,50,15).out("BLOBSeuclDistance").label("BLOBS eucl distance").handle("BLOBSeuclDistanceHandle")
           );
-  
+
   controlsTabs
            << (Tab("general, low level, high level")
            << controlsGeneral
            << controlsLowLevel
            << controlsHighLevel
           );
-  
-  gui << ( VBox() 
+
+  gui << ( VBox()
            << Draw3D().handle("hdepth").minSize(10,8)
            << Button("heatmap","gray").out("heatmap")
            << Draw3D().handle("hcolor").minSize(10,8)
          )
-      << ( VBox() 
+      << ( VBox()
            << Draw3D().handle("hedge").minSize(10,8)
            << Draw3D().handle("hnormal").minSize(10,8)
          )
-      << ( HSplit() 
+      << ( HSplit()
            << Draw3D().handle("draw3D").minSize(40,30)
            << controlsTabs
            )
@@ -195,7 +195,7 @@ void init(){
     depthCam.setResolution(size);
   }
   depthCam.setName("Kinect Depth Camera");
- 
+
   if(pa("-c")){//get color cam config
     string colorcamname = pa("-c").as<std::string>();
     colorCam = Camera(colorcamname);
@@ -211,15 +211,15 @@ void init(){
 
   // kinect camera
   scene.addCamera(depthCam);
-  
+
   //  view camera
   scene.addCamera(depthCam);
-  
+
   scene.setDrawCoordinateFrameEnabled(true);
   scene.setDrawCamerasEnabled(true);
-    
+
   obj = new PointCloudObject(size.width, size.height,true,true,true);
-    
+
   //create pointcloud
   if(pa("-c")){
     creator = new PointCloudCreator(depthCam, colorCam, depthImageMode);
@@ -227,20 +227,20 @@ void init(){
   else{
     creator = new PointCloudCreator(depthCam, depthImageMode);
   }
-  
+
   scene.addObject(obj);
   scene.setBounds(1000);
-  
+
   DrawHandle3D draw3D = gui["draw3D"];
-  
+
   mouse = new AdaptedSceneMouseHandler(scene.getMouseHandler(VIEW_CAM));
   draw3D->install(mouse);
- 
+
   scene.setLightingEnabled(false);
 
   DrawHandle3D hdepth = gui["hdepth"];
   hdepth->setRangeMode(ICLWidget::rmAuto);
-  
+
   obj->setPointSize(3);
 }
 
@@ -250,8 +250,8 @@ void run(){
   DrawHandle3D hdepth = gui["hdepth"];
   DrawHandle3D hcolor = gui["hcolor"];
   DrawHandle3D hedge = gui["hedge"];
-  DrawHandle3D hnormal = gui["hnormal"];  
- 
+  DrawHandle3D hnormal = gui["hnormal"];
+
   if(gui["disableCL"]){//enable/disable OpenCL
     normalEstimator->setUseCL(false);
     temporalSmoothing->setUseCL(false);
@@ -269,7 +269,7 @@ void run(){
   if(resetView.wasTriggered()){
     scene.getCamera(VIEW_CAM) = scene.getCamera(KINECT_CAM);
   }
-  
+
   //grab images
   const ImgBase *colorImagePtr = grabColor.grab();
   const ImgBase *depthImagePtr = grabDepth.grab();
@@ -279,37 +279,37 @@ void run(){
   }
   const ImgBase &colorImage = *colorImagePtr;
   const ImgBase &depthImage = *depthImagePtr;
-    
-  static ImgBase *heatmapImage = 0;  
-    
+
+  static ImgBase *heatmapImage = 0;
+
   int filterSize = gui["filterSize"];
   int difference = gui["difference"];
   temporalSmoothing->setFilterSize(filterSize);
   temporalSmoothing->setDifference(difference);
-  
+
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
-    temporalSmoothing->apply(&depthImage,&filteredImage);    
-    if(gui["heatmap"]){//heatmap image  
+    temporalSmoothing->apply(&depthImage,&filteredImage);
+    if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
       hdepth = heatmapImage;//->as8u();
     }else{//depth image
       hdepth = filteredImage;
     }
 	}else{
-    if(gui["heatmap"]){//heatmap image  
+    if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(&depthImage,&heatmapImage);
       hdepth = heatmapImage;//->as8u();
     }else{//depth image
       hdepth = &depthImage;
     }
   }
-    
+
   int normalrange = gui["normalrange"];
   int neighbrange = gui["neighbrange"];
   float threshold = gui["threshold"];
   int avgrange = gui["avgrange"];
-	
+
   usedFilterHandle = gui.get<ButtonGroupHandle>("usedFilter");
   if(usedFilterHandle.getSelected()==1){ //median 3x3
     normalEstimator->setMedianFilterSize(3);
@@ -318,9 +318,9 @@ void run(){
     normalEstimator->setMedianFilterSize(5);
   }
 
-  normalEstimator->setNormalCalculationRange(normalrange);	
-  normalEstimator->setNormalAveragingRange(avgrange);	
-  
+  normalEstimator->setNormalCalculationRange(normalrange);
+  normalEstimator->setNormalAveragingRange(avgrange);
+
   usedSmoothingHandle = gui.get<ButtonGroupHandle>("usedSmoothing");
   usedAngleHandle = gui.get<ButtonGroupHandle>("usedAngle");
   if(usedAngleHandle.getSelected()==0){//max
@@ -335,7 +335,7 @@ void run(){
 
   normalEstimator->setAngleNeighborhoodRange(neighbrange);
   normalEstimator->setBinarizationThreshold(threshold);
-    
+
   if(gui["enableSmoothing"]){//temporal smoothing
     if(usedFilterHandle.getSelected()==0){//unfiltered
       if(gui["disableAveraging"]){
@@ -387,23 +387,23 @@ void run(){
       }
     }
   }
-      
+
   if(pa("-d")){
     normalEstimator->applyWorldNormalCalculation(depthCam);
     normalImage=normalEstimator->getRGBNormalImage();
-  } 
-	
+  }
+
 	usedModeHandle = gui.get<ButtonGroupHandle>("usedMode");
 	int mode = usedModeHandle.getSelected();
-	
+
 	float depthScaling=gui["depthScaling"];
-	
+
 	if(pa("-c") && mode==0){//RGB
 	  if(gui["enableSmoothing"]){
       creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
     }else{
       creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
-	  }  
+	  }
   }else if(mode==0){//UniColor
 	  GeomColor c(1.,0.,0.,1.);
 	  obj->selectRGBA32f().fill(c);
@@ -420,7 +420,7 @@ void run(){
 	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
 	}
-  
+
   unsigned int minClusterSize = gui["minClusterSize"];
   int assignmentRadius = gui["assignmentRadius"];
   float assignmentMaxDistance = gui["assignmentMaxDistance"];
@@ -429,7 +429,7 @@ void run(){
   int RANSACtolerance = gui["RANSACtolerance"];
   int RANSACsubset = gui["RANSACsubset"];
   int BLOBSeuclDistance = gui["BLOBSeuclDistance"];
-  
+
   segmentation->setMinClusterSize(minClusterSize);
   segmentation->setAssignmentRadius(assignmentRadius);
   segmentation->setAssignmentMaxDistance(assignmentMaxDistance);
@@ -438,7 +438,7 @@ void run(){
   segmentation->setRANSACtolerance(RANSACtolerance);
   segmentation->setRANSACsubset(RANSACsubset);
   segmentation->setBLOBSeuclDistance(BLOBSeuclDistance);
-  
+
   if(gui["useROI"]){
     float xMin=gui["xMin"];
     float xMax=gui["xMax"];
@@ -449,7 +449,7 @@ void run(){
   }else{
     segmentation->setUseROI(false);
   }
-  
+
   if(gui["useFastGrowing"]){
     segmentation->setUseFastGrowing(true);
   }else{
@@ -459,12 +459,12 @@ void run(){
   if(mode==1){//Regions
 	  segmentation->setXYZH(obj->selectXYZH());
 	  segmentation->setEdgeImage(edgeImage);
-	  segmentation->clearData();  
+	  segmentation->clearData();
 	  segmentation->regionGrow();
 	  segmentation->colorPointcloud();
     obj->setColorsFromImage(segmentation->getSegmentColorImage());
   }
-  
+
   else if(mode==2){//Surfaces
 	  segmentation->setXYZH(obj->selectXYZH());
 	  segmentation->setEdgeImage(edgeImage);
@@ -481,7 +481,7 @@ void run(){
 	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
 	  }
   }
-  
+
   else if(mode==4){//Greedy
 	  if(gui["enableSmoothing"]){
 	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*filteredImage->as32f()));
@@ -489,16 +489,16 @@ void run(){
 	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
 	  }
   }
-  
-  
+
+
   obj->unlock();
-   
+
   hcolor = &colorImage;
   hedge = &edgeImage;
   if(pa("-d")){
     hnormal = &normalImage;
   }
-  
+
   gui["fps"].render();
   hdepth.render();
   hcolor.render();
@@ -506,8 +506,8 @@ void run(){
   hnormal.render();
 
   gui["draw3D"].link(scene.getGLCallback(VIEW_CAM));
-  
-  gui["draw3D"].render();  
+
+  gui["draw3D"].render();
 }
 
 

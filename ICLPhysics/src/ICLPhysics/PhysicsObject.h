@@ -37,9 +37,9 @@ class btCollisionObject;
 
 namespace icl {
   namespace physics{
-    
+
     class PhysicsWorld;
-    
+
     /// This class combines an physical object and it's graphical representation in ICL
     class ICLPhysics_API PhysicsObject : public geom::SceneObject, public utils::Uncopyable{
       ///physicsworld this object has been added to
@@ -69,13 +69,13 @@ namespace icl {
 
       /// Destructor (freeing m_physicalObject if not 0)
       virtual ~PhysicsObject();
-      
+
       /// sets the physical object (delets the old one of not 0)
       void setPhysicalObject(btCollisionObject *obj);
 
       /// sets the internal physical object o null, but wont delete it!
       void forgetPhysicalObject(bool removeFromWorld=true);
-      
+
       /// returns internal physical object as collision object
       /** Collision objects are like rigid objects, but they cannot be moved */
       virtual btCollisionObject *getCollisionObject() {
@@ -89,48 +89,48 @@ namespace icl {
 
       /// this method is used to update the visualization object from the physical object
       virtual void updateSceneObject();
-      
+
       /// called by the scene before it's rendered (calling purely virtual updateSceneObject)
-      virtual void prepareForRendering() { 
+      virtual void prepareForRendering() {
         lock();
         updateSceneObject();
         unlock();
       }
-      
+
       /// Sets the transform of this object. Scaling or shearing is not supported: Use setScale instead.
       virtual void setTransformation(const geom::Mat &m);
       /// applies the given transformation matrix. Scaling or shearing is not supported: Use setScale instead.
       virtual void transform(const geom::Mat &m);
       /// returns the transformation of this object
       geom::Mat getTransformation();
-      
+
       void setScale(geom::Vec scale);
       geom::Vec getScale();
-      
+
       /// sets the collision margin for this object
       void setCollisionMargin(float margin);
-      
+
       /// sets the friction of this object
       void setFriction(float friction);
-      
+
       ///sets the rolling friction of this obect
       void setRollingFriction(float friction);
-      
+
       /// sets the collision group of this object
       void setCollisionGroup(int group);
-      
+
       /// returns the collision group of this object
       int getCollisionGroup();
-      
+
       /// enables or disable collision with other objects
       void setContactResponse(bool response);
-      
+
       /// Checks if the object has a collisionresponse
       bool hasContactResponse();
-      
+
       /// sets the restitution of this object
       void setRestitution(float restitution);
-      
+
 			/// sets the activation mode of this object
       void activate(bool forceActivation = false);
 
@@ -141,10 +141,10 @@ namespace icl {
 			int getCollisionFlags();
 
 			void setCollisionFlags(int flags);
-      
+
       /// sets an internal flag to update the sceneobject
       void stateChanged();
-      
+
       /// sets an internal pointer to the world the object is currently in
       void setCurrentPhysicsWorld(PhysicsWorld *world);
 

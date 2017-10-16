@@ -43,68 +43,68 @@
 
 namespace icl{
   namespace qt{
-  
+
     /** \cond */
     class PaintEngine;
     class OSDGLButton;
     /** \endcond */
-   
+
     /// Class for openGL-based image visualization components \ingroup COMMON
-    /** The ICLWidget class provide ICL's fundamental abilities for real-time image visualization. 
+    /** The ICLWidget class provide ICL's fundamental abilities for real-time image visualization.
         It always comes up with a set of special buttons, that are used to affect
         the image display in real-time. The left-most button shows an extra menu, which provides
         a larger set of additional options. The widget can be embedded to external Qt-based
         GUI-applications. However, we recomment to use ICL's GUI-Creation-Framework rather than
         using the ICLWidget class directly
-        
+
         \section PERF Performance
         Internally, the icl::qt:GLImg is used for OpenGL-texture-based image rendering. This allows
         image hardware-scaling -zooming, -intensity and -contrast-adaption.
-        
-        
+
+
     */
     class ICLQt_API ICLWidget : public QGLWidget{
       Q_OBJECT
       public:
-      /// just used internally 
+      /// just used internally
       friend class OSDGLButton;
 
-      class Data;   
+      class Data;
       class OutputBufferCapturer;
-    
+
       /// determines how the image is fit into the widget geometry
-      enum fitmode{ 
+      enum fitmode{
         fmNoScale=0,  /**< the image is not scaled it is centered to the image rect */
         fmHoldAR=1,   /**< the image is scaled to fit into the image rect, but its aspect ratio is hold */
         fmFit=2,      /**< the image is fit into the frame ( this may change the images aspect ratio)*/
         fmZoom=3      /**< new mode where an image rect can be specified in the gui ... */
       };
-    
-      /// determines intensity adaption mode 
-      enum rangemode { 
-        rmOn = 1 ,  /**< range settings of the sliders are used */ 
+
+      /// determines intensity adaption mode
+      enum rangemode {
+        rmOn = 1 ,  /**< range settings of the sliders are used */
         rmOff = 2 , /**< no range adjustment is used */
-        rmAuto      /**< automatic range adjustment */ 
-      };   
-    
+        rmAuto      /**< automatic range adjustment */
+      };
+
       /// creates a new ICLWidget within the parent widget
       ICLWidget(QWidget *parent = 0);
-    
+
       /// destructor
       virtual ~ICLWidget();
 
       /// GLContext initialization
       virtual void initializeGL();
-    
+
       /// called by resizeEvent to adapt the current GL-Viewport
       virtual void resizeGL(int w, int h);
-    
+
       /// draw function
       virtual void paintGL();
 
       /// drawing function for NO-GL fallback
       virtual void paintEvent(QPaintEvent *e);
-    
+
       /// this function can be overwritten do draw additional misc using the given PaintEngine
       virtual void customPaintEvent(PaintEngine *e);
 
@@ -112,17 +112,17 @@ namespace icl{
 
       /// sets the current fitmode
       void setFitMode(fitmode fm);
-    
+
       /// sets the current rangemode
       void setRangeMode(rangemode rm);
-    
+
       /// set up current brightness, contrast and intensity adaption values
       void setBCI(int brightness, int contrast, int intensity);
 
-    
+
       /// returns the widgets size as icl::Size
       utils::Size getSize() { return utils::Size(width(),height()); }
-    
+
       /// returns the current images size
       utils::Size getImageSize(bool fromGUIThread = false);
 
@@ -131,23 +131,23 @@ namespace icl{
 
       /// returns current fit-mode
       fitmode getFitMode();
-        
+
       /// returns current range mode
       rangemode getRangeMode();
 
       /// returns a list of image specification string (used by the OSD)
       std::vector<std::string> getImageInfo();
 
-    
+
       /// adds a new mouse handler via signal-slot connection
       /** Ownership is not passed ! */
       void install(MouseHandler *h);
 
-      /// deletes mouse handler connection 
+      /// deletes mouse handler connection
       /** Ownership was not passed -> h is not deleted  */
       void uninstall(MouseHandler *h);
 
-      /// registers a simple callback 
+      /// registers a simple callback
       /** @param cb callback functor to use
           @param eventList comma-separated list of events. Supported types are:
           - all (for all events)
@@ -169,37 +169,37 @@ namespace icl{
 
       /// overloaded event function processing special thread save update events
       virtual bool event(QEvent *event);
-    
+
       /// returns current ImageStatistics struct (used by OSD)
       const ImageStatistics &getImageStatistics();
 
       /// if the menu is disabled, there will be no menu button at the top left of the widget
       void setMenuEnabled(bool enabled);
-    
+
       /// This can be used in order to hide to label at the lower right image rect
       void setImageInfoIndicatorEnabled(bool enabled);
-    
+
       /// sets wheather to notify, that no image was set
       void setShowNoImageWarnings(bool showWarnings);
-    
+
       /// Sets a viewport size that is used if no image was set
       /** if no image was set, then the OpenGL viewport is adapted as if there was an image with this size.
           If the given size is utils::Size::null  the viewport is not adated */
       void setViewPort(const utils::Size &size);
 
-      
+
       /// show the widget on fullscreen on the (or returns to the original embedded state)
       /** optionally, a screen can be passed on which the widget is to be shown in fullscreen mode */
       void setFullScreenMode(bool on, int screen=-1);
-      
+
 
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
-      /** Special buttons can directly be attached to specific ICLWidget slots, 
+      /** Special buttons can directly be attached to specific ICLWidget slots,
           furthermore special button- clicks and toggle events are notified using
           the ICLWidget-signals specialButtonClicked and specialButtonToggled.
-        
-          @param id handle to reference the button lateron 
-        
+
+          @param id handle to reference the button lateron
+
           @param untoggledIcon optional button icon(recommeded: use buttons from the
           ICLQt::IconFactory class)
 
@@ -211,16 +211,16 @@ namespace icl{
 	  @param toolTipText
           */
       void addSpecialToggleButton(const std::string &id,
-                                  const core::ImgBase* untoggledIcon = 0, 
-                                  const core::ImgBase *toggledIcon = 0, 
-                                  bool initiallyToggled = 0, 
+                                  const core::ImgBase* untoggledIcon = 0,
+                                  const core::ImgBase *toggledIcon = 0,
+                                  bool initiallyToggled = 0,
                                   const utils::Function<void,bool> &cb=(utils::FunctionImpl<void,bool>*)0,//Function<void,bool>(), fix for clang
                                   const std::string &toolTipText="");
 
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
       /** @see addSpecialToggleButton */
       void addSpecialButton(const std::string &id,
-                            const core::ImgBase* icon = 0, 
+                            const core::ImgBase* icon = 0,
                             const utils::Function<void> &cb=(utils::FunctionImpl<void>*)0,//Function<void>(), fix for clang
                             const std::string &toolTipText="");
 
@@ -228,15 +228,15 @@ namespace icl{
       /** If the info text is set, an extra info (Question-Mark) button is created, that
           shows an information dialog with this text, when pressed) */
       void setInfoText(const std::string &text);
-    
+
       /// removes special button with given ID
       void removeSpecialButton(const std::string &id);
 
       /// sets whether the widget will automatically call render when setImage is called
-      /** Default is true for the ICLWidget class and false for the Derived classes 
+      /** Default is true for the ICLWidget class and false for the Derived classes
           ICLDrawWidget and ICLDrawWidget3D */
       void setAutoRenderOnSetImage(bool on);
-    
+
       public Q_SLOTS:
       /// sets up the current image
       void setImage(const core::ImgBase *image);
@@ -244,7 +244,7 @@ namespace icl{
       private Q_SLOTS:
       /// internally used for re-embedding ...
       void reEmbed();
-      
+
       Q_SIGNALS:
       /// invoked when any mouse interaction was performed
       void mouseEvent(const MouseEvent &event);
@@ -268,24 +268,24 @@ namespace icl{
 
 
       /// sets up the capturing GUI and immediately initialized the internal capturer
-      void startRecording(const std::string &outputDevice, 
+      void startRecording(const std::string &outputDevice,
                           const std::string &outputInfo,
                           bool framebuffer=true, int frameskip=0,
                           bool setParamsOnlyButDoNotStartRecording=false);
 
       /// adds a callback function that is executed each time an image is recorded!
-      /** TODO: Use a non-default handle to manage different callbacks in parallel. use 
+      /** TODO: Use a non-default handle to manage different callbacks in parallel. use
           startRecording("null","",...) to use the callbacks without actually
           recording images. */
-      void registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb, 
+      void registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb,
                                      const std::string &handle="default");
 
       /// removes a recording callback function
       void unregisterRecordingCallback(const std::string &handle="default");
 
       protected:
-      
-      /// shows a help dialog 
+
+      /// shows a help dialog
         void showInfoDialog();
 
       /// this is reimplemented by the DrawWidget and by the DrawWidget3D for internal buffers swapping
@@ -303,7 +303,7 @@ namespace icl{
       virtual void hideEvent(QHideEvent *e);
       /// listens for F11 which enables the fullscreen mode
       virtual void keyPressEvent(QKeyEvent *event);
-    
+
       public Q_SLOTS:
       void showHideMenu();
       void setMenuEmbedded(bool embedded);
@@ -312,28 +312,28 @@ namespace icl{
       void brightnessChanged(int val);
       void contrastChanged(int val);
       void intensityChanged(int val);
-    
+
       void scaleModeChanged(int modeIdx);
       void currentChannelChanged(int modeIdx);
 
       void captureCurrentImage();
       void captureCurrentFrameBuffer();
-    
+
       void recordButtonToggled(bool checked);
       void pauseButtonToggled(bool checked);
       void stopButtonClicked();
       void skipFramesChanged(int frameSkip);
       void menuTabChanged(int index);
       void histoPanelParamChanged();
-    
+
       void setEmbeddedZoomModeEnabled(bool enabled);
-    
+
       void setLinInterpolationEnabled(bool enabled);
 
       void setShowPixelGridEnabled(bool enabled);
 
       void setRangeModeNormalOrScaled(bool enabled);
-    
+
       void showBackgroundColorDialog();
       void showGridColorDialog();
       void setGridAlpha(int alpha);
@@ -343,14 +343,14 @@ namespace icl{
       void setGridBlack();
       void setGridWhite();
       void setGridGray();
-    
+
       private:
-      /// internally used, grabs the current framebuffer as core::Img8u 
+      /// internally used, grabs the current framebuffer as core::Img8u
       const core::Img8u &grabFrameBufferICL();
-    
+
       /// internal utility function
       std::string getImageCaptureFileName();
-    
+
       /// internal utility function
       void updateInfoTab();
 

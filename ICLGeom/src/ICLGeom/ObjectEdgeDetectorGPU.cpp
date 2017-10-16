@@ -296,9 +296,9 @@ typedef FixedColVector<float, 4> Vec4;
 
 struct ObjectEdgeDetectorGPU::Data {
 	Data() {
-		
+
 		oedData = new ObjectEdgeDetectorData();
-		
+
 		//set default values
 		params = oedData->getParameters();
 		clReady = false;
@@ -307,7 +307,7 @@ struct ObjectEdgeDetectorGPU::Data {
 		try {
 			program = CLProgram("gpu", normalEstimationKernel);
 			clReady=true; //and mark CL context as available
-			
+
 			//create kernels
 		    kernelMedianFilter = program.createKernel("medianFilter");
 		    kernelNormalCalculation = program.createKernel("normalCalculation");
@@ -316,7 +316,7 @@ struct ObjectEdgeDetectorGPU::Data {
 		    kernelImageBinarization = program.createKernel("imageBinarization");
 		    kernelWorldNormalCalculation = program.createKernel("worldNormalCalculation");
 		    kernelNormalGaussSmoothing = program.createKernel("normalGaussSmoothing");
-		    
+
 		} catch (CLException &err) { //catch openCL errors
 			std::cout<< "ERROR: "<< err.what()<< std::endl;
 			clReady = false;
@@ -374,7 +374,7 @@ struct ObjectEdgeDetectorGPU::Data {
 	utils::CLBuffer normalImageBBuffer;
 	utils::CLBuffer camBuffer;
 	utils::CLBuffer gaussKernelBuffer;
-	
+
 	ObjectEdgeDetectorData* oedData;
 	ObjectEdgeDetectorData::m_params params;
 };
@@ -392,10 +392,10 @@ void ObjectEdgeDetectorGPU::initialize(Size size){
     if(m_data->isInitialized){
 		m_data->isInitialized=false;
     }
-    
+
 	m_data->w = size.width;
 	m_data->h = size.height;
-    
+
     m_data->normalsA=Array2D<Vec4>(m_data->w,m_data->h);
 	m_data->avgNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
 	m_data->worldNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
@@ -422,7 +422,7 @@ void ObjectEdgeDetectorGPU::initialize(Size size){
 	m_data->outputFilteredImage.resize(m_data->w*m_data->h);
 	m_data->outputAngleImage.resize(m_data->w*m_data->h);
 	m_data->outputBinarizedImage.resize(m_data->w*m_data->h);
-	
+
 	try {
 		//create buffer for memory access and allocation
         m_data->rawImageBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(float));
@@ -439,7 +439,7 @@ void ObjectEdgeDetectorGPU::initialize(Size size){
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
 	}
-	
+
 	m_data->isInitialized=true;
 }
 
@@ -460,7 +460,7 @@ void ObjectEdgeDetectorGPU::applyMedianFilter() {
 				m_data->w,
 				m_data->h,
 				m_data->params.medianFilterSize);
-		
+
 		m_data->kernelMedianFilter.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
 		std::cout<< "ERROR: "<< err.what()<< std::endl;
@@ -743,7 +743,7 @@ bool ObjectEdgeDetectorGPU::isCLReady() {
 
 const Img8u &ObjectEdgeDetectorGPU::calculate(const Img32f &depthImage,
 		bool filter, bool average, bool gauss) {
-	
+
 	if (filter == false) {
 		setFilteredDepthImage(depthImage);
 	} else {

@@ -96,7 +96,7 @@ namespace icl{
         void registerCallback(Configurable::Callback cb){
           getInternalConfigurable() -> registerCallback(cb);
         }
-        
+
         /// get type of property
         std::string getPropertyType(const std::string &propertyName) const{
           return getInternalConfigurable() -> getPropertyType(propertyName);
@@ -122,7 +122,7 @@ namespace icl{
         int getPropertyVolatileness(const std::string &propertyName) const{
           return getInternalConfigurable() -> getPropertyVolatileness(propertyName);
         }
-        
+
         /// syncronzies all property changes to the given configurable
         void syncChangesTo(Configurable *configurables, int num=1) {
           getInternalConfigurable()->syncChangesTo(configurables,num);

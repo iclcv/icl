@@ -41,15 +41,15 @@ namespace icl{
     void ProtoBufSerializationDevice::init(RSBPointCloud *protoBufObject){
       this->protoBufObject = protoBufObject;
     }
-      
+
     bool ProtoBufSerializationDevice::isNull() const{
       return !protoBufObject;
     }
-    
+
     void ProtoBufSerializationDevice::null_check(const std::string &function) throw (ICLException){
       if(isNull()) throw ICLException(function + ": instance is null");
     }
-    
+
 
     void ProtoBufSerializationDevice::initializeSerialization(const PointCloudSerializer::MandatoryInfo &info){
       null_check(__FUNCTION__);
@@ -87,7 +87,7 @@ namespace icl{
         return (icl8u*) f->mutable_data()->c_str();
       }
     }
-    
+
     std::vector<std::string> ProtoBufSerializationDevice::getFeatures(){
       null_check(__FUNCTION__);
       std::vector<std::string> fs;
@@ -96,15 +96,15 @@ namespace icl{
       }
       for(int i=0;i<protoBufObject->metadata_size(); ++i){
         fs.push_back("meta:"+protoBufObject->metadata(i).key());
-      }      
-      
+      }
+
       //std::cout << "--" << std::endl;
       //for(size_t i=0;i<fs.size();++i){
       //  std::cout << "received feature " << fs[i] << std::endl;
       //}
       return fs;
     }
-    
+
     const icl8u * ProtoBufSerializationDevice::sourceFor(const std::string &featureName, int &bytes){
       //      DEBUG_LOG("what ????");
       null_check(__FUNCTION__);
@@ -125,7 +125,7 @@ namespace icl{
             bytes = (int)data.length();
             return (icl8u*)data.c_str();
           }
-        }        
+        }
       }
       throw ICLException("unable get find source for feature with name: " + featureName);
       return 0;

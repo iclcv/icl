@@ -110,7 +110,7 @@ namespace icl{
     }
 
     QtCameraGrabber::~QtCameraGrabber() {
-      
+
       /* deletion leads to issues
           if(cam){
           cam->stop();

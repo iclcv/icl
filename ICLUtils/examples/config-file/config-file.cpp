@@ -41,13 +41,13 @@ int main(int n, char **ppc){
     ConfigFile f(*pa("-c"));
     std::cout << "parsed and serialized file:" << std::endl;
     std::cout << f << std::endl;
-    std::cout << "----------------------------------"<< 
+    std::cout << "----------------------------------"<<
     std::endl <<"config file content:" << std::endl;
     f.listContents();
   }else{
     ConfigFile f;
     f.setPrefix("config.");
-    
+
     f["section-1.subsection-1.val1"] = 5;
     f["section-2.subsection-1.val1"] = 5.4;
     f["section-1.subsection-2.val1"] = 544.f;
@@ -56,7 +56,7 @@ int main(int n, char **ppc){
 
     std::cout << "parsed and serialized file:" << std::endl;
     std::cout << f << std::endl;
-    std::cout << "----------------------------------"<< 
+    std::cout << "----------------------------------"<<
     std::endl <<"config file content:" << std::endl;
     f.listContents();
   }

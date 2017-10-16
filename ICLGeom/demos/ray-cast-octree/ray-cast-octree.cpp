@@ -43,11 +43,11 @@ GenericPointCloudGrabber grabber;
 inline float sqr_ray_point_dist(const ViewRay &ray, const Vec &p){
   const Vec x = p-ray.offset;
   return sqrnorm3(x)-sqr(sprod3(x,ray.direction));
-} 
+}
 
 std::vector<Vec> ray_cast_naive_radius(const std::vector<Vec> &points, const ViewRay &v, float maxR){
   std::vector<Vec> result;
-  
+
   for(size_t j=0;j<points.size();++j){
     float d = sqr_ray_point_dist(v, points[j]);
     if(d < maxR){
@@ -66,7 +66,7 @@ struct Mouse : public MouseHandler{
       ViewRay v = c.getViewRay(e.getPos());
       SceneObject *o = new SceneObject;
       static const float r = pa("-r");
-      
+
       if(pa("-1")){
         try{
           octree.lock();
@@ -79,7 +79,7 @@ struct Mouse : public MouseHandler{
 
         o->setPointSize(12);
       scene.addObject(o);
-      
+
       SceneObject *l = new SceneObject;
       l->addVertex(v.offset);
       l->addVertex(v.offset + v.direction * 4000);
@@ -96,7 +96,7 @@ struct Mouse : public MouseHandler{
         o->getVertices() = octree.rayCastDebug(v,r, boxes, points);//0.01);
 
         SHOW(points.size());
-        
+
         SceneObject *oBoxes = new SceneObject;
         SceneObject *oPoints = new SceneObject;
         for(size_t i=0;i<points.size();++i){
@@ -120,14 +120,14 @@ struct Mouse : public MouseHandler{
 
         o->setPointSize(12);
         scene.addObject(o);
-        
+
         SceneObject *l = new SceneObject;
         l->addVertex(v.offset);
         l->addVertex(v.offset + v.direction * 4000);
         l->addLine(0,1,GeomColor(255,0,255,255));
         l->setLineWidth(2);
         scene.addObject(l);
-        
+
         scene.addObject(oPoints);
         scene.addObject(oBoxes);
         //}
@@ -135,7 +135,7 @@ struct Mouse : public MouseHandler{
         /* only a benchmark for native search
         std::vector<Vec> all = octree.queryAll();
         //std::vector<Vec> all = octree.query(-2000,-2000,-2000, 4000, 4000, 4000);
-        t = Time::now();        
+        t = Time::now();
         for(int i=0;i<1000;++i){
           o->getVertices() = ray_cast_naive_radius(all, v, r);
         }
@@ -143,9 +143,9 @@ struct Mouse : public MouseHandler{
         */
         octree.unlock();
       }
-     
+
     }
-  }  
+  }
 } mouse;
 
 
@@ -158,9 +158,9 @@ void init(){
     scene.addCamera(Camera(Vec(0,0,1500,1)));
   }
   scene.addCamera(scene.getCamera(0));
-  
+
   scene.setBounds(2000);
- 
+
   octree.setRenderBoxes(true);
   octree.setRenderPoints(true);
   octree.setLockingEnabled(true);
@@ -178,9 +178,9 @@ void init(){
     }
   }
   octree.setPointSize(2);
-  
+
   scene.addObject(&octree,false);
-  
+
   gui["plot"].link(scene.getGLCallback(0));
   gui["plot"].install(scene.getMouseHandler(0));
   gui["plot"].install(&mouse);

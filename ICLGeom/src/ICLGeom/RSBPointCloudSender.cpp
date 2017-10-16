@@ -63,8 +63,8 @@ namespace icl{
         //#else
         converterRepository<std::string>()->registerConverter(p);
         //#endif
-  
-  
+
+
       }
     } static_RSBImage_type_registration;
 
@@ -74,29 +74,29 @@ namespace icl{
       Informer<RSBPointCloud>::DataPtr out;
       SmartPtr<ProtoBufSerializationDevice> sdev;
     };
-    
-    RSBPointCloudSender::RSBPointCloudSender(const std::string &scope, 
+
+    RSBPointCloudSender::RSBPointCloudSender(const std::string &scope,
                                              const std::string &transportList):m_data(new Data){
       if(scope.length()) init(scope,transportList);
     }
-    
+
     RSBPointCloudSender::~RSBPointCloudSender(){
       delete m_data;
     }
 
-    void RSBPointCloudSender::init(const std::string &scope, 
+    void RSBPointCloudSender::init(const std::string &scope,
                                    const std::string &transportList){
       if(!scope.length()) throw ICLException("RSBPointCloudSender::init: empty scope string");
-      
+
       Scope rsbScope(scope);
       Factory &factory = rsb::getFactory();
       ParticipantConfig rsbCfg = factory.getDefaultParticipantConfig();
       typedef std::set<ParticipantConfig::Transport> TSet;
       typedef std::vector<ParticipantConfig::Transport> TVec;
-      
+
       TSet ts2 = rsbCfg.getTransports(true);
       TVec ts(ts2.begin(),ts2.end());
-       
+
       std::vector<std::string> transports = tok(transportList,",");
       int port = 0;
       for(size_t i=0;i<transports.size();++i){
@@ -106,7 +106,7 @@ namespace icl{
           t = "socket";
         }
       }
-      
+
       for(TVec::iterator it = ts.begin(); it != ts.end(); ++it){
         ParticipantConfig::Transport &t = *it;
         if( find(transports.begin(), transports.end(), it->getName()) == transports.end() ){
@@ -123,14 +123,14 @@ namespace icl{
 
       m_data->informer = factory.createInformer<RSBPointCloud>(rsbScope,rsbCfg);
       m_data->out = Informer<RSBPointCloud>::DataPtr(new RSBPointCloud);
-      
+
       m_data->sdev = new ProtoBufSerializationDevice(&*m_data->out);
     }
-      
+
     bool RSBPointCloudSender::isNull() const{
       return !m_data->informer;
     }
-      
+
     void RSBPointCloudSender::send(const PointCloudObjectBase &dst){
       PointCloudSerializer::serialize(dst,*m_data->sdev);
       m_data->informer->publish(m_data->out);
@@ -151,11 +151,11 @@ namespace icl{
       }
       return 0;
     }
-    
+
     REGISTER_PLUGIN(PointCloudOutput,rsb,create_rsb_point_cloud_sender,
                     "RSB based point cloud output",
                     "creation-string: [comma-sep-transport-list:]rsb-scope");
 
-  } 
+  }
 }
 

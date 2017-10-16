@@ -34,7 +34,7 @@ using namespace icl::utils;
 
 namespace icl{
   namespace core{
-  
+
     IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){
       if(!dst) {
         return cvCreateImage(size,depth,channels);
@@ -48,7 +48,7 @@ namespace icl{
       }
       return *dst;
     }
-  
+
     template<typename DST_T>
     inline Img<DST_T> *ipl_to_img_dstpref(CvArr *src,Img<DST_T> *dst){
       IplImage imageHeader;
@@ -81,7 +81,7 @@ namespace icl{
       }
       return dst;
     }
-  
+
     template<typename SRC_T,typename DST_T>
     inline ImgBase *ipl_to_img_srcpref(IplImage *src, ImgBase **dst){
       ImgBase *tmp = ensureCompatible(dst,getDepth<DST_T>(),Size(src->width,src->height),src->nChannels);
@@ -91,7 +91,7 @@ namespace icl{
       interleavedToPlanar(data,(*dst)->asImg<DST_T>(),src->widthStep);
       return *dst;
     }
-  
+
     ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (utils::ICLException){
       if(!src){
         throw ICLException("Source is NULL");
@@ -144,14 +144,14 @@ namespace icl{
       }
       return *dst;
     }
-  
+
     template<typename SRC_T,typename DST_T>
     inline IplImage* img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
       static const int IPL_DEPTHS[] = {(int)IPL_DEPTH_8U,(int)IPL_DEPTH_16S,(int)IPL_DEPTH_32S,(int)IPL_DEPTH_32F,(int)IPL_DEPTH_64F};
       CvSize s = cvSize(src->getWidth(),src->getHeight());
-  
+
       IplImage *ipl = ensureCompatible(dst,IPL_DEPTHS[(int)src->getDepth()],s,src->getChannels());
-  
+
       Img<SRC_T> tmp = *src->asImg<SRC_T>();
       for(int i=0;i<src->getChannels()/2;++i){
         tmp.swapChannels(i,src->getChannels()-1-i);
@@ -161,16 +161,16 @@ namespace icl{
       return *dst;
       //return ipl;
     }
-  
+
     template<typename SRC_T>
     inline IplImage *img_to_ipl_dstpref(Img<SRC_T> src, IplImage *dst){
-  
+
       for(int i=0;i<src.getChannels()/2;++i){
         src.swapChannels(i,src.getChannels()-1-i);
       }
       int dstDepth = dst->depth;
       ensureCompatible(&dst,dstDepth,cvSize(src.getWidth(),src.getHeight()),src.getChannels());
-  
+
       switch(dstDepth){
         case IPL_DEPTH_8U:{
           planarToInterleaved(&src,(icl8u*)dst->imageData);
@@ -198,10 +198,10 @@ namespace icl{
       }
       return dst;
     }
-  
+
     IplImage *img_to_ipl(const ImgBase *src, IplImage **dst,DepthPreference e) throw (ICLException){
       ICLASSERT_THROW(src,ICLException("Source is NULL"));
-  
+
       if(dst && *dst && e==PREFERE_DST_DEPTH){
         switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) \
@@ -212,7 +212,7 @@ namespace icl{
       } else if(e==PREFERE_DST_DEPTH){
         throw ICLException("Cannot determine depth of destinationimage");
       } else { // DepthPreference == PREFERE_SRC_DEPTH
-  
+
         switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) \
           case depth##D: return img_to_ipl_srcpref<icl##D,icl##D>(src,dst);
@@ -222,8 +222,8 @@ namespace icl{
       }
       return *dst;
     }
-  
-  
+
+
     template<typename T>
     inline CvMat* img_2_cvmat(const Img<T> *src, CvMat *dst,int channel){
       const T *srcdata = src->begin(channel);
@@ -266,7 +266,7 @@ namespace icl{
       }
       return dst;
     }
-  
+
     CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) throw (ICLException){
       if(!src){
         throw ICLException("Source is NULL");
@@ -275,7 +275,7 @@ namespace icl{
       if(channel<0 || channel>=src->getChannels()){
         throw ICLException("Invalid channel");
       }
-  
+
       if(!dst ||src->getWidth() != dst->width || src->getHeight() != dst->height){
         if(!dst)
           delete dst;
@@ -305,7 +305,7 @@ namespace icl{
           }
         }
       }
-  
+
       switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                        \
         case depth##D:{                                   \
@@ -316,8 +316,8 @@ namespace icl{
       }
       return dst;
     }
-  
-  
+
+
     CvMat *ensureCompatible(CvMat **dst, int depth,int rows, int cols){
       if(!dst || !*dst){
         *dst = cvCreateMat(rows,cols,depth);
@@ -331,7 +331,7 @@ namespace icl{
       }
       return *dst;
     }
-  
+
     CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst) throw (ICLException){
       if(!src){
         throw ICLException("Source is NULL");
@@ -372,7 +372,7 @@ namespace icl{
       }
       return dst;
     }
-  
+
     IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst)throw (ICLException){
       if(!src){
         throw ICLException("Source is NULL");
@@ -443,24 +443,24 @@ namespace icl{
     static Size extract_size(const ::cv::Mat *src){
       return Size(src->cols, src->rows);
     }
-    
+
     static int extract_channels(const ::cv::Mat *src){
       return src->channels();
     }
- 
+
 
     MatWrapper::MatWrapper(){}
     MatWrapper::MatWrapper(depth d, const Size &size, int channels){
       adapt(d,size,channels);
     }
-    
+
     void MatWrapper::adapt(depth d, const Size &size, int channels){
       if(d != getDepth() || size != getSize() || channels != getChannels()){
         mat.create(size.height, size.width,
                    estimate_mat_type(d,channels));
       }
     }
-    
+
     MatWrapper &MatWrapper::operator=(const ImgBase &image){
       img_to_mat(&image, &mat);
       return *this;
@@ -471,7 +471,7 @@ namespace icl{
     void MatWrapper::convertTo(ImgBase &dst){
       mat_to_img(&mat, &dst);
     }
-    
+
     Size MatWrapper::getSize() const{
       return extract_size(&mat);
     }
@@ -481,13 +481,13 @@ namespace icl{
     depth MatWrapper::getDepth() const{
       return extract_depth(&mat);
     }
-    
-    template<class T> 
+
+    template<class T>
     T* MatWrapper::getInterleavedData(){
       return (T*) mat.data;
     }
-    
-    template<class T> 
+
+    template<class T>
     const T* MatWrapper::getInterleavedData() const{
       return (const T*) mat.data;
     }
@@ -517,7 +517,7 @@ namespace icl{
 ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
 
-   
+
     ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dstIn) throw (utils::ICLException){
       ICLASSERT_THROW(src && src->getChannels() > 0 && src->getChannels() <=4, ICLException("img_to_mat: invalid source image"));
       ::cv::Mat *dst = dstIn ? dstIn : new ::cv::Mat;
@@ -541,11 +541,11 @@ ICL_INSTANTIATE_ALL_DEPTHS
     ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn) throw (ICLException){
       ICLASSERT_THROW(src, ICLException("mat_to_img: input is null"));
       ICLASSERT_THROW(src->isContinuous(), "mat_to_img: input image must be continoues");
-      
+
       ImgBase *dst = dstIn ? dstIn : imgNew(extract_depth(src),
                                             extract_size(src),
                                             extract_channels(src));
-      
+
       switch(dst->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D:{                                                 \
@@ -566,7 +566,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
       return dst;
     }
 
- 
+
 
   } // namespace core
 }

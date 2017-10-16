@@ -38,10 +38,10 @@ namespace icl{
     /// local utility class
 	  class GridIndicatorObject : public geom::SceneObject{
       struct MarkerObj;
-      
+
       public:
       GridIndicatorObject(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def);
-      GridIndicatorObject(const utils::Size &checkerBoardCells, 
+      GridIndicatorObject(const utils::Size &checkerBoardCells,
                           const utils::Size32f &bounds);
     };
 

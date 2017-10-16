@@ -31,7 +31,7 @@
 #pragma once
 
 
-/** \cond */ 
+/** \cond */
 
 namespace icl{
   namespace cv{
@@ -48,4 +48,4 @@ namespace icl{
   }
 }
 
-/** \endcond */ 
+/** \endcond */

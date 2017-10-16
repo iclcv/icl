@@ -63,7 +63,7 @@ namespace icl{
   namespace utils{
     struct SignalHandlerContext : public Lockable{
       SignalHandlerContext() : Lockable(true){
-#define A_(S) add(str("SIG") + #S,SIG##S) 
+#define A_(S) add(str("SIG") + #S,SIG##S)
         A_(ABRT); A_(ALRM); A_(BUS);  A_(CHLD); A_(CONT); A_(FPE);  A_(HUP);  A_(ILL);    A_(INT);
         A_(KILL); A_(PIPE); A_(QUIT); A_(SEGV); A_(STOP); A_(TERM); A_(TSTP); A_(TTIN);   A_(TTOU);
         A_(USR1); A_(USR2); A_(POLL); A_(PROF); A_(SYS);  A_(TRAP); A_(URG);  A_(VTALRM); A_(XCPU); A_(XFSZ);
@@ -89,36 +89,36 @@ namespace icl{
           return udef;
         }
       }
-    
+
       struct Handler : public std::set<int>{
         Function<void,const std::string&> f;
         int order;
 
       };
-      
+
       static bool cmp_handler_ptr(Handler *a, Handler *b){
         return a->order < b->order;
       }
-      
+
       void handle(int signal){
         Mutex::Locker lock(this);
         std::string name = t(signal);
         std::vector<Handler*> ordered;
-        
+
         for(HMap::iterator it = handlers.begin(); it != handlers.end(); ++it){
           if(it->second.count(signal)){
             ordered.push_back(&it->second);
           }
-        }        
-        
+        }
+
         std::sort(ordered.begin(), ordered.end(), cmp_handler_ptr);
-        
+
         for(size_t i=0;i<ordered.size();++i){
           ordered[i]->f(name);
         }
       }
-      
-    
+
+
 
     private:
       void add(const std::string &s, int signal){
@@ -127,23 +127,23 @@ namespace icl{
       }
       std::map<int,std::string> names;
       std::map<std::string,int> keys;
-      
+
     public:
       std::map<int,int> numHandlers; // for given signal key!
       typedef std::map<std::string, Handler> HMap;
       HMap handlers;
     };
-    
+
     static SignalHandlerContext &ctx(){
       static SignalHandlerContext instance;
       return instance;
     }
-    
-  
-    
+
+
+
     static void register_low_level_handler(void (*handler)(int, siginfo_t*, void*), int signal){
       Mutex::Locker lock(ctx());
-      
+
       struct sigaction action;
       memset(&action, 0, sizeof(action));
       if (handler) {
@@ -159,32 +159,32 @@ namespace icl{
       static bool bQuitting = false;
       if (bQuitting) exit (EXIT_FAILURE); // signal during exit
       bQuitting = true;
-      
+
       //DEBUG_LOG("handling signal " << ctx().t(signum));
       ctx().handle(signum);
       //DEBUG_LOG("done with signal " << ctx().t(signum));
-      
+
       // bQuitting = false; ??
     }
 
     void SignalHandler::install(const std::string &id, Function<void,const std::string&> f,
                                 const std::string &signals, int order){
 
-      SignalHandlerContext &c = ctx();      
+      SignalHandlerContext &c = ctx();
       Mutex::Locker lock(c);
 
       if(c.handlers.find(id) != c.handlers.end()){
-        throw ICLException("SingnalHandler with id " + id 
+        throw ICLException("SingnalHandler with id " + id
                            + " was registered twice");
       }
-         
-      
+
+
       std::vector<std::string> names = tok(signals, ",");
-      
+
       SignalHandlerContext::Handler &h = c.handlers[id];
       h.f = f;
       h.order = order;
-      
+
       for(size_t i=0;i<names.size();++i){
         int signal =  c.t(names[i]);
         if(c.numHandlers.find(signal) == c.numHandlers.end()){
@@ -197,17 +197,17 @@ namespace icl{
       }
 
     }
-    
+
     void SignalHandler::uninstall(const std::string &id){
-      SignalHandlerContext &c = ctx();      
+      SignalHandlerContext &c = ctx();
       Mutex::Locker lock(c);
-      
+
       if(c.handlers.find(id) != c.handlers.end()){
-        throw ICLException("SingnalHandler with id " + id 
+        throw ICLException("SingnalHandler with id " + id
                            +" cannot be uninstalled since it was never installed");
       }
       SignalHandlerContext::Handler &h = c.handlers[id];
-      
+
       std::vector<int> rm;
       for(std::set<int>::iterator it = h.begin(); it != h.end();++it){
         int &n = c.numHandlers[*it];
@@ -220,14 +220,14 @@ namespace icl{
         register_low_level_handler(0, rm[i]); // no handlers left
         c.numHandlers.erase(rm[i]);           // ensure that next call will re-install a low-level handler
       }
-      
+
       // remove the Handler instance
       c.handlers.erase(id);
     }
-    
-    
+
+
   } // namespace utils
-  
+
 }
 
 #endif

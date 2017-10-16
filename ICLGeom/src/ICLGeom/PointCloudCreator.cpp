@@ -60,26 +60,26 @@ namespace icl{
       Array2D<Point32f> textureIDsData;
       PointCloudCreator::DepthImageMode mode;    // memorized for easy copying
       const Img32f *lastDepthImageMM;
- 
+
 #ifdef ICL_HAVE_OPENCL
       bool clReady;
       bool clUse;
       SmartPtr<PointCloudCreatorCL> creatorCL;
 #endif
-      
+
       float focalLengthMultiplier;
       float positionOffsetAlongNorm;
 
       // float focalLengthMultiplierLast;
       //float positionOffsetAlongNormLast;
 
-      
+
       static inline float compute_depth_norm(const Vec &dir, const Vec &centerDir){
         return sprod3(dir,centerDir)/(norm3(dir)*norm3(centerDir));
       }
-  
+
       void init(Camera *depthCam, Camera *colorCam, PointCloudCreator::DepthImageMode mode, bool isReinit=false){
-        
+
         if(depthCamera && (depthCamera->getRenderParams().chipSize != depthCam->getRenderParams().chipSize)){
           throw ICLException("PointCloudCreator::setCameras(d,c): this call cannot be used to adapt the camera chip size");
         }
@@ -87,7 +87,7 @@ namespace icl{
         this->mode = mode;
         depthCamera = depthCam;
         colorCamera = colorCam;
-        
+
         if(!isReinit){
           depthCameraOrig = new Camera(*depthCam);
           if(colorCam){
@@ -101,23 +101,23 @@ namespace icl{
           //          focalLengthMultiplierLast = 1;
           //positionOffsetAlongNormLast = 0;
         }
-        
+
         depthImageSize = depthCam->getRenderParams().chipSize;
         if(colorCam){
           colorImageSize = colorCam->getRenderParams().chipSize;
           this->rgbdMapping = new Mat(colorCam->getProjectionMatrix()*
                                       colorCam->getCSTransformationMatrix());
         }
-        
+
         textureIDsData=Array2D<Point32f>(depthImageSize.width,depthImageSize.height);
 	textureIDs=DataSegment<float,2>(&textureIDsData(0,0).x, sizeof(Point32f), textureIDsData.getDim(), textureIDsData.getWidth());
 
         Array2D<ViewRay> viewRays = depthCam->getAllViewRays();
         viewRayOffset = viewRays(0,0).offset;
         viewRayDirections = Array2D<ViewRayDir>(depthImageSize);
-        const Vec centerViewRayDir = viewRays(depthImageSize.width/2-1, 
+        const Vec centerViewRayDir = viewRays(depthImageSize.width/2-1,
                                               depthImageSize.height/2-1).direction;
-      
+
         for(int y=0;y<depthImageSize.height;++y){
           for(int x=0;x<depthImageSize.width;++x){
             const int idx = x + depthImageSize.width * y;
@@ -137,29 +137,29 @@ namespace icl{
           creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
           clReady = creatorCL->isCLReady();
         }catch(std::exception &e){
-          ERROR_LOG("error creating OpenCL-based point cloud creator: " 
+          ERROR_LOG("error creating OpenCL-based point cloud creator: "
                     << e.what() << " (using C++ fallback)");
           clReady = false;
         }
 #endif
 
-       
+
       }
 
       void reinitIfNecessary(float focalLengthMultiplier, float positionOffsetAlongNorm){
         Mutex::Locker lock(mutex);
         if(this->focalLengthMultiplier == focalLengthMultiplier &&
            this->positionOffsetAlongNorm == positionOffsetAlongNorm) return;
-        
+
         SHOW(focalLengthMultiplier);
         SHOW(positionOffsetAlongNorm);
 
         Camera *dCam = new Camera(*depthCameraOrig);
         Camera *cCam = colorCameraOrig ? new Camera(*colorCameraOrig) : 0;
-        
-        
+
+
         dCam->setFocalLength(focalLengthMultiplier);
-        
+
         Vec dir = dCam->getNorm();
         Vec pos = dCam->getPosition();
         pos += dir * positionOffsetAlongNorm;
@@ -168,52 +168,52 @@ namespace icl{
 
         SHOW(dCam->getPosition().transp());
         SHOW(dCam->getFocalLength());
-        
+
         init(dCam, cCam, mode, true);
-        
+
         this->focalLengthMultiplier = focalLengthMultiplier;
         this->positionOffsetAlongNorm  = positionOffsetAlongNorm;
       }
     };
-    
+
     /// Destructor
     PointCloudCreator::~PointCloudCreator(){
       delete m_data;
     }
-    
-    
+
+
     PointCloudCreator::PointCloudCreator():m_data(new Data){
 #ifdef ICL_HAVE_OPENCL
-      m_data->clUse=true;  
+      m_data->clUse=true;
       m_data->creatorCL = 0;
       m_data->clReady = false;
 #endif
     }
-  
+
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam),0,mode);
     }
-    
+
     PointCloudCreator::PointCloudCreator(const Camera &depthCam, const Camera &colorCam, PointCloudCreator::DepthImageMode mode):m_data(new Data){
       m_data->init(new Camera(depthCam), new Camera(colorCam),mode);
     }
-    
+
     void PointCloudCreator::init(const Camera &depthCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam),0,mode);
     }
-    
+
     void PointCloudCreator::init(const Camera &depthCam, const Camera &colorCam,  PointCloudCreator::DepthImageMode mode){
       delete m_data;
       m_data = new Data;
       m_data->init(new Camera(depthCam), new Camera(colorCam), mode);
     }
-    
+
     PointCloudCreator::PointCloudCreator(const PointCloudCreator &other):m_data(new Data){
       *this = other;
     }
-    
+
     PointCloudCreator &PointCloudCreator::operator=(const PointCloudCreator &other){
       delete m_data;
       m_data = new Data;
@@ -224,17 +224,17 @@ namespace icl{
       }
       return *this;
     }
-    
-  
-  
+
+
+
     inline Point map_rgbd(const Mat &M, const ViewRayDir &v){
       const float phInv = 1.0/ ( M(0,3) * v[0] + M(1,3) * v[1] + M(2,3) * v[2] + M(3,3) );
       const int px = phInv * ( M(0,0) * v[0] + M(1,0) * v[1] + M(2,0) * v[2] + M(3,0) );
       const int py = phInv * ( M(0,1) * v[0] + M(1,1) * v[1] + M(2,1) * v[2] + M(3,1) );
       return Point(px,py);
     }
-  
-  
+
+
     template<class RGBAType>
     inline void assign_rgba(RGBAType &rgba, icl8u r, icl8u g, icl8u b, icl8u a){
       rgba[0] = r;
@@ -242,7 +242,7 @@ namespace icl{
       rgba[2] = b;
       rgba[3] = a;
     }
-  
+
     /// specialization for floats: scale range to [0,255]
     template<>
     inline void assign_rgba(Vec &rgba, icl8u r, icl8u g, icl8u b, icl8u a){
@@ -251,7 +251,7 @@ namespace icl{
       rgba[2] = b * 0.0039216f;
       rgba[3] = a * 0.0039216f;
     }
-  
+
     /// specialization for 3D rgb: no alpha
     template<>
     inline void assign_rgba(FixedColVector<icl8u,3> &rgb, icl8u r, icl8u g, icl8u b, icl8u a){
@@ -260,29 +260,29 @@ namespace icl{
       rgb[2] = b;
       (void)a;
     }
-  
+
     /// specialization for icl32s: reinterpert as FixedColVector<icl8u,4>
     template<>
     inline void assign_rgba(icl32s &rgba, icl8u r, icl8u g, icl8u b, icl8u a){
       //    assign_rgba(*reinterpret_cast<FixedColVector<icl8u,4>*>(&rgba), r,g,b,a);
       assign_rgba(reinterpret_cast<FixedColVector<icl8u,4>&>(rgba), r,g,b,a);
     }
-  
+
     static Camera *static_cam = 0;
-  
+
     static inline float raw_to_mm(float d){
       return 1.046 * (d==2047 ? 0 : 1000. / (d * -0.0030711016 + 3.3309495161));
     }
-    
-  
+
+
     template<bool HAVE_RGBD_MAPPING, bool NEEDS_RAW_TO_MM_MAPPING, class RGBA_DATA_SEGMENT_TYPE>
-    static void point_loop(const icl32f *depthValues, const Mat M, 
-                           const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM, 
-                           DataSegment<float,3> xyz, 
+    static void point_loop(const icl32f *depthValues, const Mat M,
+                           const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H, const int DEPTH_DIM,
+                           DataSegment<float,3> xyz,
                            RGBA_DATA_SEGMENT_TYPE rgba,
                            const Channel8u rgbIn[3],
                            const Array2D<ViewRayDir> &dirs, float depthScaling, DataSegment<float,2> &colorIDs){
-      
+
       const Channel8u rgb[3] = { rgbIn[0], rgbIn[1], rgbIn[2] };
 
 #ifdef USE_OPENMP
@@ -291,16 +291,16 @@ namespace icl{
       for(int i=0;i<DEPTH_DIM;++i){
         const ViewRayDir &dir = dirs[i];
         const float d = (NEEDS_RAW_TO_MM_MAPPING ? raw_to_mm(depthValues[i]) : depthValues[i])*depthScaling;
-        
+
         ViewRayDir &dstXYZ = (ViewRayDir&)xyz[i]; // keep in mind to nerver access 4th component!
-        
-        dstXYZ[0] = O[0] + d * dir[0]; // avoid 3-float temporary 
+
+        dstXYZ[0] = O[0] + d * dir[0]; // avoid 3-float temporary
         dstXYZ[1] = O[1] + d * dir[1];
         dstXYZ[2] = O[2] + d * dir[2];
-        
+
         if(HAVE_RGBD_MAPPING){ // optimized as template parameter
           Point p = map_rgbd(M,dstXYZ);
-          if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
+          if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){
             const int idx = p.x + COLOR_W * p.y;
             assign_rgba(rgba[i], rgb[0][idx], rgb[1][idx], rgb[2][idx], 255);
             colorIDs[i][0]=p.x;
@@ -313,25 +313,25 @@ namespace icl{
         }
       }
     }
-  
-    void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination, 
+
+    void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination,
                                    const Img8u *rgbImage, float depthScaling, bool addDepthFeature){
       Mutex::Locker lock(m_data->mutex);
       m_data->lastDepthImageMM = &depthImageMM;
-      
+
       static_cam  = m_data->colorCamera.get();
-  
+
       if(depthImageMM.getSize() != m_data->depthImageSize){
         throw ICLException("PointCloudCreator::create: depthImage's size is not equal to the camera size");
       }
       if(!destination.supports(PointCloudObjectBase::XYZ)){
         throw ICLException("PointCloudCreator:create: destination point cloud object does not support XYZ data");
       }
-  
+
       destination.setSize(depthImageMM.getSize());
 
       DataSegment<float,3> xyz = destination.selectXYZ();
-  
+
       if(depthImageMM.getSize() != xyz.getSize()){
         if(xyz.getSize() == Size::null){
           throw ICLException("PointCloudCreator::create: given point cloud's size is not 2D-ordered");
@@ -346,8 +346,8 @@ namespace icl{
         if(m_data->colorImageSize != rgbImage->getSize()){
           throw ICLException("PointCloudCreator::create rgbImage size is not compatible to the given color camera calibration data");
         }
-      } 
-   
+      }
+
       /// precaching variables ...
       const icl32f *dv = depthImageMM.begin(0);
       const Array2D<ViewRayDir> &dirs = m_data->viewRayDirections;
@@ -357,24 +357,24 @@ namespace icl{
       const int W = m_data->colorImageSize.width;
       const int H = m_data->colorImageSize.height;
       const int DIM = m_data->depthImageSize.getDim();
-      
+
 #ifdef ICL_HAVE_OPENCL
       bool canUseOpenCL = m_data->clReady && m_data->clUse;
       if(rgbImage) canUseOpenCL &= (depthImageMM.getSize() == rgbImage->getSize());
 #endif
-      
+
       const Channel8u rgb[3];
       if(X){
         for(int i=0;rgbImage && i<3;++i) rgb[i] = (*rgbImage)[i];
       }
-  
+
       //Time t = Time::now();
       if(rgbImage){
         const PointCloudObjectBase::FeatureType cf[] = {
           PointCloudObjectBase::RGBA32f,PointCloudObjectBase::BGRA,
           PointCloudObjectBase::BGR, PointCloudObjectBase::BGRA32s };
 
-        bool anyColorSupported = (destination.supports(cf[0]) || destination.supports(cf[1]) || 
+        bool anyColorSupported = (destination.supports(cf[0]) || destination.supports(cf[1]) ||
                                   destination.supports(cf[2]) || destination.supports(cf[3]) );
         if(!anyColorSupported){
           for(int i=0;i<4;++i){
@@ -385,7 +385,7 @@ namespace icl{
           }
         }
       }
-      
+
       if(addDepthFeature){
         if(!destination.supports(PointCloudObjectBase::Depth)){
           if(!destination.canAddFeature(PointCloudObjectBase::Depth)){
@@ -395,19 +395,19 @@ namespace icl{
             destination.addFeature(PointCloudObjectBase::Depth);
           }
         }
-        const DataSegment<float,1> dimage((float*)depthImageMM.begin(0), sizeof(float), 
+        const DataSegment<float,1> dimage((float*)depthImageMM.begin(0), sizeof(float),
                                           depthImageMM.getDim(), depthImageMM.getWidth());
         dimage.deepCopy(destination.selectDepth());
       }
-      
+
       if(m_data->mode == KinectRAW11Bit){
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
 #ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
-            if(X){ 
+            if(X){
               DataSegment<float,4> rgba = destination.selectRGBA32f();
               m_data->creatorCL->createRGB(true,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
-            }else{ 
+            }else{
               m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
@@ -434,7 +434,7 @@ namespace icl{
           if(canUseOpenCL){
             m_data->creatorCL->create(true,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
-            point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);            
+            point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
           }
 #else
           point_loop<false,true>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
@@ -445,10 +445,10 @@ namespace icl{
         if(destination.supports(PointCloudObjectBase::RGBA32f)){
 #ifdef ICL_HAVE_OPENCL
           if(canUseOpenCL){
-            if(X){ 
+            if(X){
               DataSegment<float,4> rgba = destination.selectRGBA32f();
               m_data->creatorCL->createRGB(false,&depthImageMM, M, O, W, H, DIM, xyz, rgba, rgbImage, dirs, depthScaling);
-            }else{ 
+            }else{
               m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
             }
           }else{
@@ -475,21 +475,21 @@ namespace icl{
           if(canUseOpenCL){
             m_data->creatorCL->create(false,&depthImageMM, O, DIM, xyz, dirs, depthScaling);
           }else{
-            point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);            
+            point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
           }
 #else
           point_loop<false,false>(dv, M, O, W, H, DIM, xyz, dummy, rgb, dirs, depthScaling, m_data->textureIDs);
 #endif
         }
       }
-      
+
       //t.showAge();
     }
-  
+
     const Camera &PointCloudCreator::getDepthCamera() const{
       return *m_data->depthCamera;
     }
-      
+
     const Camera &PointCloudCreator::getColorCamera() const throw (ICLException){
       if(!hasColorCamera()) throw ICLException("PointCloudCreator::getColorCamera(): no color camera available");
       return *m_data->colorCamera;
@@ -499,21 +499,21 @@ namespace icl{
     void PointCloudCreator::setCameras(const Camera &depthCam, const Camera &colorCam){
       m_data->init(new Camera(depthCam),new Camera(colorCam), m_data->mode);
     }
-    
+
     void PointCloudCreator::setDepthCamera(const Camera &depthCam){
       m_data->init(new Camera(depthCam),0, m_data->mode);
     }
 
-      
+
     bool PointCloudCreator::hasColorCamera() const{
       return m_data->colorCamera;
     }
 
     template<class T, int NUM_CHANNELS>
-    void map_image(const Img<T> &src, const Img<T> &dst, const icl32f *depthValues, 
+    void map_image(const Img<T> &src, const Img<T> &dst, const icl32f *depthValues,
                    const Mat M, const Vec O, const unsigned int COLOR_W, const unsigned int COLOR_H,
                    const int DEPTH_DIM,const Array2D<ViewRayDir> &dirs){
-      
+
       const Channel<T> csrc[NUM_CHANNELS];
       Channel<T> cdst[NUM_CHANNELS];
       for(int i=0;i<NUM_CHANNELS;++i){
@@ -524,33 +524,33 @@ namespace icl{
       for(int i=0;i<DEPTH_DIM;++i){
         const ViewRayDir &dir = dirs[i];
         const float d = depthValues[i];
-        
+
         const ViewRayDir xyz(O[0] + d * dir[0],
-                             O[1] + d * dir[1],                
+                             O[1] + d * dir[1],
                              O[2] + d * dir[2]);
-        
+
         Point p = map_rgbd(M,xyz);
-        if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){ 
+        if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){
           const int idx = p.x + COLOR_W * p.y;
-          
+
           switch(NUM_CHANNELS){ // should be optimized out by the compiler
-            case 1: 
-              cdst[0][i] = csrc[0][idx]; 
+            case 1:
+              cdst[0][i] = csrc[0][idx];
               break;
-            case 2: 
-              cdst[0][i] = csrc[0][idx]; 
-              cdst[1][i] = csrc[1][idx]; 
+            case 2:
+              cdst[0][i] = csrc[0][idx];
+              cdst[1][i] = csrc[1][idx];
               break;
-            case 3: 
-              cdst[0][i] = csrc[0][idx]; 
-              cdst[1][i] = csrc[1][idx]; 
-              cdst[2][i] = csrc[2][idx]; 
+            case 3:
+              cdst[0][i] = csrc[0][idx];
+              cdst[1][i] = csrc[1][idx];
+              cdst[2][i] = csrc[2][idx];
               break;
-            case 4: 
-              cdst[0][i] = csrc[0][idx]; 
-              cdst[1][i] = csrc[1][idx]; 
-              cdst[2][i] = csrc[2][idx]; 
-              cdst[3][i] = csrc[3][idx]; 
+            case 4:
+              cdst[0][i] = csrc[0][idx];
+              cdst[1][i] = csrc[1][idx];
+              cdst[2][i] = csrc[2][idx];
+              cdst[3][i] = csrc[3][idx];
               break;
             default:
               ERROR_LOG("PointCloudCreator::mapImage: only 1-,2-,3- and 4-channel images are supported");
@@ -559,7 +559,7 @@ namespace icl{
         }
       }
     }
-                   
+
     void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
       Mutex::Locker lock(m_data->mutex);
       if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
@@ -580,7 +580,7 @@ namespace icl{
       const int COLOR_H = m_data->colorImageSize.height;
       const int DEPTH_DIM = m_data->depthImageSize.getDim();
 
-      ensureCompatible(dst,src->getDepth(), s, c); 
+      ensureCompatible(dst,src->getDepth(), s, c);
 
       switch(src->getDepth()){
 #define ICL_INSTANTIATE_DEPTH(D)                                                                                            \
@@ -599,7 +599,7 @@ namespace icl{
         ICL_INVALID_DEPTH;
       }
     }
-    
+
     void PointCloudCreator::setUseCL(bool use){
 #ifdef ICL_HAVE_OPENCL
       m_data->clUse=use;
@@ -607,12 +607,12 @@ namespace icl{
       (void)use;
 #endif
     }
-    
+
     RGBDMapping PointCloudCreator::getMapping() const throw (ICLException){
       if(!m_data->colorCamera) throw ICLException("PointCloudCreator::getMapping(): no color camera data available");
       return RGBDMapping(*m_data->colorCamera, m_data->viewRayDirections, m_data->viewRayOffset);
     }
-    
+
     void PointCloudCreator::setFixes(float focalLengthMultiplier, float positionOffsetAlongNorm){
       m_data->reinitIfNecessary(focalLengthMultiplier, positionOffsetAlongNorm);
     }

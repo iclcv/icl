@@ -44,7 +44,7 @@ namespace icl {
     template<class T, typename cmp_func>
     void morph_cpp(const Img<T> &src, Img<T> &dst, MorphologicalOp &op,
                    T init, cmp_func cmp, const icl8u *mask){
-  
+
       Point an = op.getAnchor();
       Size si = op.getMaskSize();
       for(int c=0;c<src.getChannels();++c){
@@ -61,7 +61,7 @@ namespace icl {
         }
       }
     }
-  
+
     static Rect shrink_roi(Rect roi, const Size &maskSize){
       int dx = (maskSize.width-1)/2;
       int dy = (maskSize.height-1)/2;
@@ -71,15 +71,15 @@ namespace icl {
       roi.height -= 2*dy;
       return roi;
     }
-  
+
     template<class T>
     static void rep_border(Img<T> image, const Size &maskSize){
       Rect roi = shrink_roi(image.getImageRect(),maskSize);
       image.setROI(roi);
       ImgBorder::copy(&image);
     }
-    
-   
+
+
     template<class T>
     void MorphologicalOp::apply_t(const ImgBase *poSrc, ImgBase **ppoDst){
       const Img<T> &src = *poSrc->asImg<T>();
@@ -95,13 +95,13 @@ namespace icl {
       switch (m_eType){
         case dilate:
         case dilate3x3:
-        case dilateBorderReplicate: 
-          morph_cpp(src,dst,*this,limits.minVal,std::greater<T>(),getMask()); 
+        case dilateBorderReplicate:
+          morph_cpp(src,dst,*this,limits.minVal,std::greater<T>(),getMask());
           break;
-        case erode: 
+        case erode:
         case erode3x3:
-        case erodeBorderReplicate: 
-          morph_cpp(src,dst,*this,limits.maxVal,std::less<T>(),getMask()); 
+        case erodeBorderReplicate:
+          morph_cpp(src,dst,*this,limits.maxVal,std::less<T>(),getMask());
           break;
         case tophatBorder:
         case blackhatBorder:{
@@ -112,18 +112,18 @@ namespace icl {
           BinaryArithmeticalOp sub(BinaryArithmeticalOp::subOp);
           sub.setClipToROI(getClipToROI());
           sub.setCheckOnly(getCheckOnly());
-          
+
           Rect roi = poSrc->getROI();
           roi = shrink_roi(roi,getMaskSize());
           roi = shrink_roi(roi,getMaskSize());
           const ImgBase *srcROIAdapted = poSrc->shallowCopy(roi);
-          
+
           if(m_eType == tophatBorder){
             sub.apply(srcROIAdapted,m_openingAndClosingBuffer,ppoDst);
           }else{
             sub.apply(m_openingAndClosingBuffer,srcROIAdapted,ppoDst);
           }
-  
+
           delete srcROIAdapted;
           break;
         }
@@ -137,7 +137,7 @@ namespace icl {
           BinaryArithmeticalOp sub(BinaryArithmeticalOp::subOp);
           sub.setClipToROI(getClipToROI());
           sub.setCheckOnly(getCheckOnly());
-  
+
           sub.apply(m_gradientBorderBuffer_1,m_gradientBorderBuffer_2,ppoDst);
           break;
         }
@@ -163,12 +163,12 @@ namespace icl {
         setMask(sizeSave,maskSave.data());
       }
     }
-  
-    
+
+
     void MorphologicalOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
-      
+
       switch (poSrc->getDepth()){
         case depth8u:
           apply_t<icl8u>(poSrc,ppoDst);
@@ -181,14 +181,14 @@ namespace icl {
           break;
       }
     }
-  
+
     MorphologicalOp::MorphologicalOp (optype eOptype, const Size &maskSize,const icl8u *pcMask):
       m_openingAndClosingBuffer(0),m_gradientBorderBuffer_1(0),m_gradientBorderBuffer_2(0)
     {
       ICLASSERT_RETURN(maskSize.getDim());
       m_pcMask = 0;
       setMask (maskSize,pcMask);
-      m_eType = eOptype;    
+      m_eType = eOptype;
     }
 
     MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask):
@@ -223,30 +223,30 @@ namespace icl {
       ICL_DELETE(m_gradientBorderBuffer_1);
       ICL_DELETE(m_gradientBorderBuffer_2);
     }
-  
-  
-  
+
+
+
   #else //  ICL_HAVE_IPP is defined !
     MorphologicalOp::MorphologicalOp (optype eOptype, const Size &maskSize,const icl8u *pcMask){
       ICLASSERT_RETURN(maskSize.getDim());
-      
-      m_eType=eOptype;    
-      m_pcMask = 0; 
+
+      m_eType=eOptype;
+      m_pcMask = 0;
       setMask (maskSize,pcMask);
-      
+
       m_bMorphState8u=false;
       m_bMorphState32f=false;
       m_bMorphAdvState8u=false;
       m_bMorphAdvState32f=false;
       m_bHas_changed=true;
       m_bHas_changedAdv=true;
-  
+
       m_pState8u = 0;
       m_pState32f = 0;
       m_pAdvState8u = 0;
       m_pAdvState32f = 0;
     }
-    
+
     MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask){
       ICLASSERT_RETURN(maskSize.getDim());
       m_pcMask = 0;
@@ -258,7 +258,7 @@ namespace icl {
       m_bMorphAdvState32f=false;
       m_bHas_changed=true;
       m_bHas_changedAdv=true;
-  
+
       m_pState8u = 0;
       m_pState32f = 0;
       m_pAdvState8u = 0;
@@ -288,7 +288,7 @@ namespace icl {
       deleteMorphStates();
       ICL_DELETE(m_pcMask);
     }
-  
+
     void MorphologicalOp::deleteMorphStates(){
       if (m_bMorphState8u){
         ippiMorphologyFree(m_pState8u);
@@ -307,7 +307,7 @@ namespace icl {
         m_bMorphAdvState32f=false;
       }
     }
-      
+
     void MorphologicalOp::checkMorphAdvState8u(const Size roiSize){
       if (m_bHas_changedAdv){
         deleteMorphStates();
@@ -316,13 +316,13 @@ namespace icl {
         m_bHas_changedAdv=false;
       }
     }
-  
+
       void MorphologicalOp::checkMorphState8u(const Size roiSize){
       if (m_bHas_changed){
         deleteMorphStates();
-        
+
         ippiMorphologyInitAlloc_8u_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState8u);
-        
+
         m_bMorphState8u=true;
         m_bHas_changed=false;
       }
@@ -335,22 +335,22 @@ namespace icl {
         m_bHas_changedAdv=false;
       }
     }
-    
+
       void MorphologicalOp::checkMorphState32f(const Size roiSize){
       if (m_bHas_changed){
         deleteMorphStates();
-        
+
         ippiMorphologyInitAlloc_32f_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState32f);
-        
+
         m_bMorphState32f=true;
         m_bHas_changed=false;
       }
     }
-  
+
     void MorphologicalOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
-  
+
       IppStatus s = ippStsNoErr;
       switch (poSrc->getDepth()){
         case depth8u:{
@@ -452,12 +452,12 @@ namespace icl {
       if(s != ippStsNoErr){
         ERROR_LOG("IPP-Error: \"" << ippGetStatusString(s) << "\"");
       }
-     
-  
+
+
     }
-  
-    
-  
+
+
+
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
     IppStatus MorphologicalOp::ippiMorphologicalCall (const Img<T> *src, Img<T> *dst) {
       for(int c=0; c < src->getChannels(); c++) {
@@ -471,7 +471,7 @@ namespace icl {
       }
       return ippStsNoErr;
     }
-  
+
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
     IppStatus MorphologicalOp::ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst) {
       for(int c=0; c < src->getChannels(); c++) {
@@ -485,7 +485,7 @@ namespace icl {
       }
       return ippStsNoErr;
     }
-  
+
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
     IppStatus MorphologicalOp::ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState* state) {
       for(int c=0; c < src->getChannels(); c++) {
@@ -501,7 +501,7 @@ namespace icl {
       }
       return ippStsNoErr;
     }
-  
+
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
     IppStatus MorphologicalOp::ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState* advState) {
       for(int c=0; c < src->getChannels(); c++) {
@@ -517,20 +517,20 @@ namespace icl {
       }
       return ippStsNoErr;
     }
-  
+
     // }}}
   #endif
-  
+
     void MorphologicalOp::setMask (Size maskSize,const icl8u* pcMask) {
       //make maskSize odd:
       maskSize = ((maskSize/2)*2)+Size(1,1);
-      
+
       if(m_eType >= 6){
         NeighborhoodOp::setMask (Size(1,1));
       }else{
         NeighborhoodOp::setMask (maskSize);
       }
-  
+
       ICL_DELETE_ARRAY(m_pcMask);
       m_pcMask = new icl8u[maskSize.getDim()];
       if(pcMask){
@@ -538,12 +538,12 @@ namespace icl {
       }else{
         std::fill(m_pcMask,m_pcMask+maskSize.getDim(),255);
       }
-  
+
       m_oMaskSizeMorphOp=maskSize;
       m_bHas_changed=true;
       m_bHas_changedAdv=true;
     }
-    
+
     const icl8u* MorphologicalOp::getMask() const{
       return m_pcMask;
     }
@@ -557,7 +557,7 @@ namespace icl {
     MorphologicalOp::optype MorphologicalOp::getOptype() const{
       return m_eType;
     }
-  
-  
+
+
   } // namespace filter
 }

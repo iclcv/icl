@@ -37,20 +37,20 @@
 
 namespace icl{
   namespace io{
-    
-  
+
+
     /// Plugin class to read "png" images \ingroup FILEIO_G
     class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;
-  
+
       /// ensures, that data and rows is not used from several threads
-      utils::Mutex mutex; 
-      
+      utils::Mutex mutex;
+
       public:
       /// grab implementation
-      virtual void grab(utils::File &file, core::ImgBase **dest); 
-    };  
+      virtual void grab(utils::File &file, core::ImgBase **dest);
+    };
   } // namespace io
 }
 

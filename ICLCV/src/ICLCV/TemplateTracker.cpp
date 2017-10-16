@@ -36,24 +36,24 @@
 
 
 namespace icl{
-  
+
   using namespace utils;
   using namespace core;
   using namespace filter;
-  
+
   namespace cv{
-  
+
     struct TemplateTracker::Data{
       ImgBase *buf;
       SmartPtr<ProximityOp> prox;
       std::vector<SmartPtr<Img8u> > lut;
       TemplateTracker::Result lastResult;
     };
-  
-  
-    TemplateTracker::TemplateTracker(const Img8u *templateImage, 
+
+
+    TemplateTracker::TemplateTracker(const Img8u *templateImage,
                                      float rotationStepSizeDegree,
-                                     int positionTrackingRangePix, 
+                                     int positionTrackingRangePix,
                                      float rotationTrackingRangeDegree,
                                      int coarseSteps,int fineSteps,
                                      const Result &initialResult){
@@ -61,14 +61,14 @@ namespace icl{
       data->buf = 0;
       data->prox = new ProximityOp(ProximityOp::crossCorrCoeff);
       data->lastResult = initialResult;
-      
+
       addProperty("tracking.position range","range","[1,1000]:1",positionTrackingRangePix,0,
                   "Search window size in positive and negative\n"
                   "x- and y-direction in pixels. The tracker searches\n"
                   "for the best-matching new position within a squared\n"
                   "region that is centered at the current postion.");
       addProperty("tracking.rotation range","range","[0,360]",rotationTrackingRangeDegree,0,
-                  "Sets the rotation search window radius in deg.\n"               
+                  "Sets the rotation search window radius in deg.\n"
                   "The rotation search window is centered at the\n"
                   "current rotation.");
       addProperty("tracking.coarse steps","range:spinbox","[1,100000]:1",coarseSteps,0,
@@ -79,29 +79,29 @@ namespace icl{
       addProperty("tracking.fine steps","range:spinbox","[1,100000]:1",fineSteps,0,
                   "Parameter for coarse to fine search\n"
                   "(not supported yet)");
-  
+
       addChildConfigurable(data->prox.get(),"proximity");
-  
-      
+
+
       if(templateImage){
         setTemplateImage(*templateImage,rotationStepSizeDegree);
       }
     }
-    
-    void TemplateTracker::setTemplateImage(const Img8u &templateImage, 
+
+    void TemplateTracker::setTemplateImage(const Img8u &templateImage,
                                            float rotationStepSizeDegree){
-      
-      
+
+
       Img8u test = templateImage;
       test.scale(test.getSize()*4);
-  
-      RotateOp rot;    
+
+      RotateOp rot;
       ICLASSERT_RETURN(rotationStepSizeDegree > 0.001);
-  
+
       const int w = templateImage.getWidth();
       const int h = templateImage.getHeight();
       data->lut.clear();
-      
+
       for(float a=0;a<=360;a+=rotationStepSizeDegree){
         rot.setAngle(a);
         const Img8u *r = rot.apply(&templateImage)->as8u();
@@ -109,18 +109,18 @@ namespace icl{
         const int rh = r->getHeight();
         Rect center((rw-w)/2, (rh-h)/2, w,h);
         SmartPtr<const Img8u> roiimage = r->shallowCopy(center);
-        
+
         Img8u *tmp = new Img8u(test.getSize()/4,1);
         //      data->lut.push_back(roiimage->deepCopyROI());
         roiimage->scaledCopyROI(tmp,interpolateLIN);
         data->lut.push_back(tmp);
-      }    
+      }
     }
-  
+
     void TemplateTracker::setRotationLUT(const std::vector<SmartPtr<Img8u> > &lut){
       data->lut = lut;
     }
-  
+
     void TemplateTracker::showRotationLUT() const{
       // throw ICLException("TemplateTracker::showRotationLUT is not yet implemented!");
       ICLASSERT_RETURN(data->lut.size());
@@ -131,7 +131,7 @@ namespace icl{
         w = 10;
         h = ceil(n/10.);
       }
-      
+
       Size s = data->lut[0]->getSize();
       Img8u r(Size(s.width*w,s.height*h),1);
       for(int y=0;y<h;++y){
@@ -144,23 +144,23 @@ namespace icl{
       }
       r.setFullROI();
       io::TestImages::show(&r);
-      
+
     }
-  
-    
+
+
     TemplateTracker::~TemplateTracker(){
       ICL_DELETE(data->buf);
       delete data;
     }
-    
-    TemplateTracker::Result TemplateTracker::track(const Img8u &image, 
+
+    TemplateTracker::Result TemplateTracker::track(const Img8u &image,
                                                    const Result *initialResult,
                                                    std::vector<Result> *allResults){
       Result last = initialResult ? *initialResult : data->lastResult;
       if(last.pos == Point32f(-1,-1)){
-        last.pos = Point(image.getWidth()/2,image.getHeight()/2); 
+        last.pos = Point(image.getWidth()/2,image.getHeight()/2);
       }
-      
+
       const double angle = last.angle;
       const int X = last.pos.x;
       const int Y = last.pos.y;
@@ -171,27 +171,27 @@ namespace icl{
       const int step1 = getPropertyValue("tracking.coarse steps");
       //const int step2 = getPropertyValue("tracking.fine steps");
       //const float angleStepSize = 360./lutSize;
-  
+
       const Rect roi(X - ROI/2, Y-ROI/2, ROI, ROI);
-      
+
       SmartPtr<const Img8u> roiImageTmp = image.shallowCopy(roi);
       SmartPtr<Img8u> roiImage = roiImageTmp->deepCopyROI();
-  
+
       const int stepRadius = lutSize * rotationRange/720;
-  
+
       Result bestResult = last;
       for(int i = -stepRadius; i <= stepRadius; i+= step1){
         int curIndex = angleIndex + i;
         while(curIndex >= lutSize) curIndex -= lutSize;
         while(curIndex < 0) curIndex += lutSize;
-        
+
         data->prox->apply(roiImage.get(),data->lut.at(curIndex).get(),&data->buf);
-        
+
         Point maxPos;
         float maxValue = data->buf->getMax(0,&maxPos);
-      
+
         Result curr(maxPos+last.pos,
-                    (float(curIndex)/lutSize) * 2 * M_PI, 
+                    (float(curIndex)/lutSize) * 2 * M_PI,
                     maxValue,
                     data->lut.at(curIndex).get());
         if(curr.proximityValue > bestResult.proximityValue){
@@ -202,9 +202,9 @@ namespace icl{
       data->lastResult = bestResult;
       return bestResult;
     }
-  
+
     REGISTER_CONFIGURABLE_DEFAULT(TemplateTracker);
-    
+
   } // namespace cv
 }
 

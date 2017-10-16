@@ -53,11 +53,11 @@ SET(HEADERS png.h
             pngstruct.h)
 
 INCLUDE_DIRECTORIES(BEFORE ${ICL_SOURCE_DIR}/3rdparty/zlib)
-                           
+
 ADD_LIBRARY(libpng STATIC ${SOURCES} ${HEADERS})
 
 TARGET_LINK_LIBRARIES(libpng zlib)
 
 SET_TARGET_PROPERTIES(libpng
-                      PROPERTIES 
+                      PROPERTIES
                       VERSION ${SO_VERSION})

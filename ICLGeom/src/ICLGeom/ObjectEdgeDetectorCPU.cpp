@@ -45,7 +45,7 @@ namespace geom {
 struct ObjectEdgeDetectorCPU::Data {
 	Data() {
 		oedData = new ObjectEdgeDetectorData();
-		
+
 		//set default values
 		params = oedData->getParameters();
 		isInitialized=false;
@@ -69,7 +69,7 @@ struct ObjectEdgeDetectorCPU::Data {
 	core::Img8u binarizedImage;
 	core::Img8u normalImage;
 	bool isInitialized;
-	
+
 	filter::MedianOp* medianFilter;
 	ObjectEdgeDetectorData* oedData;
 	ObjectEdgeDetectorData::m_params params;
@@ -86,12 +86,12 @@ ObjectEdgeDetectorCPU::~ObjectEdgeDetectorCPU() {
 
 void ObjectEdgeDetectorCPU::initialize(Size size){
     if(m_data->isInitialized){
-		m_data->isInitialized=false;  
+		m_data->isInitialized=false;
     }
     //create arrays and images in given size
 	m_data->w = size.width;
 	m_data->h = size.height;
-	
+
 	m_data->normalsA=Array2D<Vec4>(m_data->w,m_data->h);
 	m_data->avgNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
 	m_data->worldNormalsA=Array2D<Vec4>(m_data->w,m_data->h);
@@ -132,7 +132,7 @@ void ObjectEdgeDetectorCPU::applyNormalCalculation() {
 	const int r = m_data->params.normalRange;
 	Vec fa1, fb1, n1, n01;
 	Channel32f filteredI = m_data->filteredImage[0];
-	
+
 	for (int y = 0; y < m_data->h; y++) {
 		for (int x = 0; x < m_data->w; x++) {
 			int i = x + m_data->w * y;
@@ -210,7 +210,7 @@ void ObjectEdgeDetectorCPU::applyGaussianNormalSmoothing() {
 	float norm = kernelData.norm;
 	int l = kernelData.l;
 	DynMatrix<float> kernel = kernelData.kernel;
-	
+
     for (int y = 0; y < m_data->h; y++) {
 	    for (int x = 0; x < m_data->w; x++) {
 		    int i = x + m_data->w * y;
@@ -336,7 +336,7 @@ void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
 					sntr += scalarAndFlip(norm[i],norm[i + w * z + z]);
 					sntl += scalarAndFlip(norm[i],norm[i + w * z - z]);
 					snbr += scalarAndFlip(norm[i],norm[i - w * z + z]);
-					snbl += scalarAndFlip(norm[i],norm[i - w * z - z]);					
+					snbl += scalarAndFlip(norm[i],norm[i - w * z - z]);
 				}
 				snr /= m_data->params.neighborhoodRange;
 				snl /= m_data->params.neighborhoodRange;

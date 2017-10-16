@@ -116,6 +116,7 @@ namespace icl{
       /// template returing an image of given datatype
       template<class T>
       const core::Img<T> *getImg();
+
       /// sets the current source image of type core::Img8u or Img32f
       /** All further set images get the state "outdated". Hence all later
           <em>getImg[Base]-calls</em> must perform a deep conversion first

@@ -36,36 +36,36 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
-  
+
   #define ICL_COMP_ZERO 0
   #define ICL_COMP_NONZERO 255
-  
-    
+
+
   #define CREATE_COMPARE_OP(NAME,OPERATOR)                              \
     template <typename T> struct CompareOp_##NAME {                     \
       static inline icl8u cmp(T val1, T val2){                          \
         return val1 OPERATOR val2 ? ICL_COMP_NONZERO : ICL_COMP_ZERO;   \
       }                                                                 \
     }
-  
+
     CREATE_COMPARE_OP(eq,==);
     CREATE_COMPARE_OP(lt,<);
     CREATE_COMPARE_OP(lteq,<=);
     CREATE_COMPARE_OP(gteq,>=);
     CREATE_COMPARE_OP(gt,>);
-    
+
   #undef CREATE_COMPARE_OP
-    
-    template <typename T> struct CompareOp_eqt {                   
+
+    template <typename T> struct CompareOp_eqt {
       // {{{ open
-  
-      static inline icl8u cmp(T val1, T val2, T tolerance){               
-        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO; 
-      }                                                               
+
+      static inline icl8u cmp(T val1, T val2, T tolerance){
+        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
+      }
     };
-  
+
     // }}}
-    
+
     template <class T, template<typename X> class C>
     inline void fallbackCompare(const Img<T> *src, T value,Img<icl8u> *dst){
       // {{{ open
@@ -78,9 +78,9 @@ namespace icl {
         }
       }
     }
-  
+
     // }}}
-    
+
     template <typename T>
     inline void fallbackCompareWithTolerance(const Img<T> *src, T value, Img8u *dst,T tolerance) {
       // {{{ open
@@ -94,25 +94,25 @@ namespace icl {
        }
      }
      // }}}
-    
+
     template<class T>
     void cmp(const Img<T> *src, Img8u *dst, T value, T tolerance, UnaryCompareOp::optype ot){
        // {{{ open
-  
-       switch(ot){                
+
+       switch(ot){
          case UnaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src,value,dst); break;
          case UnaryCompareOp::gt: fallbackCompare<T,CompareOp_gt>(src,value,dst); break;
          case UnaryCompareOp::lteq: fallbackCompare<T, CompareOp_lteq>(src,value,dst); break;
          case UnaryCompareOp::gteq: fallbackCompare<T, CompareOp_gteq>(src,value,dst); break;
          case UnaryCompareOp::eq: fallbackCompare<T, CompareOp_eq>(src,value,dst); break;
-         case UnaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src,value,dst,tolerance); break; 
+         case UnaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src,value,dst,tolerance); break;
        }
      }
-  
+
     // }}}
-     
-  
-  #ifdef ICL_HAVE_IPP 
+
+
+  #ifdef ICL_HAVE_IPP
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,T,icl8u*,int,IppiSize,IppCmpOp)>
     inline void ippCall(const Img<T> *src, T value, Img8u *dst, UnaryCompareOp::optype cmpOp){
       // {{{ open
@@ -123,7 +123,7 @@ namespace icl {
       }
     }
     // }}}
-  
+
     template<> void cmp<icl8u>(const Img8u *src, Img8u *dst, icl8u value, icl8u tolerance, UnaryCompareOp::optype ot){
       // {{{ open
       if(ot == UnaryCompareOp::eqt){
@@ -131,7 +131,7 @@ namespace icl {
       }else{
         ippCall<icl8u,ippiCompareC_8u_C1R>(src,value,dst,ot);
       }
-    }  
+    }
     // }}}
     template<> void cmp<icl16s>(const Img16s *src, Img8u *dst, icl16s value, icl16s tolerance, UnaryCompareOp::optype ot){
       // {{{ open
@@ -151,12 +151,12 @@ namespace icl {
                                         dst->getROISize(), tolerance);
         }
       }else{
-        ippCall<icl32f,ippiCompareC_32f_C1R>(src,value,dst,ot); 
+        ippCall<icl32f,ippiCompareC_32f_C1R>(src,value,dst,ot);
       }
     }
     // }}}
   #endif
-  
+
     void UnaryCompareOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
        // {{{ open
       ICLASSERT_RETURN(poSrc);
@@ -164,7 +164,7 @@ namespace icl {
       if( *ppoDst ){
         ICLASSERT_RETURN( (*ppoDst)->getDepth()==depth8u || (*ppoDst) != poSrc );
       }
-    
+
        if (!UnaryOp::prepare (ppoDst, poSrc, depth8u)) return;
        switch (poSrc->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                                              \
@@ -177,12 +177,12 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
        }
      }
-  
+
     // }}}
-  
-    
-  
-      
-  
+
+
+
+
+
   } // namespace filter
 }

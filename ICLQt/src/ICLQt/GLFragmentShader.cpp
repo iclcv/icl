@@ -45,9 +45,9 @@ namespace icl{
     static std::string shader_info(GLuint obj){
       int infologLength = 0;
       int charsWritten  = 0;
-      
+
       glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
-      
+
       if (infologLength > 1){
         std::string info(infologLength,'\0');
         glGetShaderInfoLog(obj, infologLength, &charsWritten, (GLchar*)info.c_str());
@@ -62,13 +62,13 @@ namespace icl{
       glGetShaderiv(obj, GL_COMPILE_STATUS, &compiled);
       return compiled;
     }
-    
+
     static std::string program_info(GLuint obj){
       int infologLength = 0;
       int charsWritten  = 0;
-      
+
       glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
-      
+
       if (infologLength > 1){
         std::string info(infologLength,'\0');
         glGetProgramInfoLog(obj, infologLength, &charsWritten, (GLchar*)info.c_str());
@@ -77,11 +77,11 @@ namespace icl{
         return "";
       }
     }
-    
+
     struct GLFragmentShader::Data{
       std::string fragmentProgramString;
       std::string vertexProgramString;
-  
+
       struct GLData{
         bool hasFragmentShader;
         bool hasVertexShader;
@@ -93,7 +93,7 @@ namespace icl{
       };
       GLData data;
       };
-    
+
     void GLFragmentShader::create(){
       static bool first = true;
       if(first){
@@ -120,7 +120,7 @@ namespace icl{
           throw ICLException("unable to compile fragment shader:[ \n" + info + "\n]");
         }
       }
-      
+
       if(haveVertexShader){
         d.vertexShader = glCreateShader(GL_VERTEX_SHADER);
         const char *pV = m_data->vertexProgramString.c_str();
@@ -145,15 +145,15 @@ namespace icl{
       }
 
       glLinkProgram(d.program);
-  
+
       std::string info = program_info(d.program);
       if(info.length()){
         throw ICLException("unable to link shader program:[ \n" + info + "\n]");
       }
       m_data->data.created = true;
     }
-    
-    GLFragmentShader::GLFragmentShader(const std::string &vertexProgram, 
+
+    GLFragmentShader::GLFragmentShader(const std::string &vertexProgram,
                                        const std::string &fragmentProgram,
                                        bool createOnFirstActivate) throw (ICLException):
       m_data(new Data){
@@ -163,15 +163,15 @@ namespace icl{
         }
       m_data->vertexProgramString = vertexProgram;
       m_data->fragmentProgramString = fragmentProgram;
-      
 
-    
-      
+
+
+
       if(!createOnFirstActivate){
         create();
       }
     }
-    
+
     GLFragmentShader::~GLFragmentShader(){
       Data::GLData &d = m_data->data;
       if(m_data->vertexProgramString.length()){
@@ -183,8 +183,8 @@ namespace icl{
       glDeleteProgram(d.program);
       delete m_data;
     }
-    
-        
+
+
     void GLFragmentShader::setUniform(const std::string var, const float &val){
       const QGLContext* ctx = QGLContext::currentContext();
       if(!ctx){
@@ -198,7 +198,7 @@ namespace icl{
 //          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
-    
+
     void GLFragmentShader::setUniform(const std::string var, const math::FixedMatrix<float,4,4> &val){
       const QGLContext* ctx = QGLContext::currentContext();
       if(!ctx){
@@ -212,7 +212,7 @@ namespace icl{
 //          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
-    
+
     void GLFragmentShader::setUniform(const std::string var, const std::vector<math::FixedMatrix<float,4,4> > &val){
       const QGLContext *ctx = QGLContext::currentContext();
       if(!ctx){
@@ -232,7 +232,7 @@ namespace icl{
 //          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
-    
+
     void GLFragmentShader::setUniform(const std::string var, const math::FixedColVector<float,4> &val){
       const QGLContext* ctx = QGLContext::currentContext();
       if(!ctx){
@@ -246,7 +246,7 @@ namespace icl{
 //          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
-    
+
     void GLFragmentShader::setUniform(const std::string var, const int &val){
       const QGLContext* ctx = QGLContext::currentContext();
       if(!ctx){
@@ -260,7 +260,7 @@ namespace icl{
 //          throw ICLException("Tried to set a non-existent uniform.");
       }
     }
-    
+
     void GLFragmentShader::activate(){
       create();
       const QGLContext* ctx = QGLContext::currentContext();
@@ -271,7 +271,7 @@ namespace icl{
       d.enabled = true;
       glUseProgram(d.program);
     }
-  
+
     void GLFragmentShader::deactivate(){
       const QGLContext* ctx = QGLContext::currentContext();
       if(!ctx){
@@ -280,10 +280,10 @@ namespace icl{
       m_data->data.enabled = false;
       glUseProgram(0);
     }
-  
+
     GLFragmentShader *GLFragmentShader::copy() const{
       return new GLFragmentShader(m_data->vertexProgramString,m_data->fragmentProgramString,true);
     }
-  
+
   } // namespace qt
 }

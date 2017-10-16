@@ -36,22 +36,22 @@
 #include <ICLUtils/Configurable.h>
 
 namespace icl{
-  
+
   namespace cv{
-    
+
     /// Utility class wrapping OpenCV's cvFindChessboardCorners
     /** The CheckerboardDetector wrappes OpenCV's cvFindChessboardCorners and provides
-        a flag to optionally optimize the detected corners using 
+        a flag to optionally optimize the detected corners using
         cvFindCornerSubPix */
     class ICLCV_API CheckerboardDetector : public utils::Configurable, public utils::Uncopyable{
       struct Data;   //!< internal data data
       Data *m_data;  //!< internal data pointer
-      
+
       ///intializes configurable properties internally
       void init_properties();
-      
+
       public:
-      
+
       /// Default constructor (creates a null instance)
       CheckerboardDetector();
 
@@ -71,7 +71,7 @@ namespace icl{
           the first row is like BWBWB (Black/White), then you have to pass a size
           of 4x4 */
       void init(const utils::Size &size);
-      
+
       /// Internally used and returned result structure
       struct Checkerboard{
         bool found;        //!< waes it found (i.e. all of the corners)
@@ -79,10 +79,10 @@ namespace icl{
         std::vector<utils::Point32f> corners; //!< found corners
         ICLCV_API utils::VisualizationDescription visualize() const;
       };
-      
+
       /// returns whether this instance has been initilialized yet
       bool isNull() const;
-      
+
       /// detects the defined checkerboard in the given image
       /** The image can have any format, but internally is is always converted
           to gray (if it is not of formatGray). If optSubPix was set in

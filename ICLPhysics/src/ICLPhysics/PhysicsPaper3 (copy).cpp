@@ -18,8 +18,8 @@ namespace icl{
   using namespace qt;
   using namespace geom;
   using namespace physics;
-  
-  
+
+
   bool line_segment_full_intersect(const Point32f &a, const Point32f &b,
                                    const Point32f &c, const Point32f &d){
     float s(-1),t(-1);
@@ -34,26 +34,26 @@ namespace icl{
 
   struct PhysicsPaper3::Data{
     qt::GLImg tex[2];
-    
+
     bool haveTexture;
-    
+
     std::vector<utils::Point32f> texCoords;
     std::vector<utils::Point32f> projectedPoints;
-    
+
     int numPointsBeforeUpdate;
     bool softBodyUpdatesEnabled;
     PhysicsWorld *physicsWorld;
-    
+
     mutable int lastUsedFaceIdx;
-    
+
     bool visLinks;
     bool visFaces;
 
     mutable Mutex mutex;
-    
+
     FoldMap fm;
     utils::Function<void,const Img32f &> fmCallback;
-    
+
     bool enableSelfCollision;
 
     float linkStiffness;
@@ -65,21 +65,21 @@ namespace icl{
     std::vector<std::vector<btSoftBody::Face*> > smoothNormalGraph;
     std::vector<Vec> smoothNormals;
     bool useSmoothNormals;
-    
+
     Data():mutex(Mutex::mutexTypeRecursive),fm(Size(200,300),1.0f){
       visLinks = true;
       visFaces = true;
       linkStiffness = 1.e-5;
-      
+
       straightenFolds = true;
       doubleFolds = true;
       useSmoothNormals = true;
-      
+
       haveTexture = false;
     }
 
     std::map<std::pair<int,int>,float> rlMap;
-    
+
     void clearMemorizedRestDistnaces(){
       rlMap.clear();
     }
@@ -92,17 +92,17 @@ namespace icl{
       else return it->second;
     }
   };
-  
+
   template<class T> inline bool is_face() { return false; }
   template<> inline bool is_face<btSoftBody::Face>() { return true; }
 
   template<class T>
   void free_bullet_array_instance(T &){ }
-  
+
   template<> void free_bullet_array_instance<btSoftBody::Link>(btSoftBody::Link &l){
     PhysicsPaper3::free_link_state(l.m_tag);
   }
-  
+
   template<class T>
   void remove_indices_from_bullet_array(btAlignedObjectArray<T> &array, std::vector<int> &indices){
     std::sort(indices.begin(),indices.end());
@@ -110,7 +110,7 @@ namespace icl{
     tmp.resize(array.size()-indices.size());
 
     const int *is = indices.data(), *isEnd = is+indices.size();
-        
+
     for(int si=0,di=0;di<tmp.size();++si){
       if(is < isEnd && si == *is){
         free_bullet_array_instance<T>(array[si]);
@@ -124,10 +124,10 @@ namespace icl{
   }
 
 
-  PhysicsPaper3::PhysicsPaper3(PhysicsWorld *world, bool enableSelfCollision, const Size &cellsInit, const Vec corners[4], 
+  PhysicsPaper3::PhysicsPaper3(PhysicsWorld *world, bool enableSelfCollision, const Size &cellsInit, const Vec corners[4],
                                const Img8u *front_texture, const Img8u *back_texture, float initialStiffness, float initialMaxLinkDistnace):
     m_data(new Data){
-    
+
     m_data->enableSelfCollision = enableSelfCollision;
     m_data->visLinks = false;
     m_data->physicsWorld = world;
@@ -137,7 +137,7 @@ namespace icl{
     //ftex.clear(0,255);
     //ftex.clear(1,0);
     //ftex.clear(2,0);
-    
+
     //btex.clear(0,0);
     //btex.clear(1,100);
     //btex.clear(2,255);
@@ -151,11 +151,11 @@ namespace icl{
     const float rx = 210./2, ry = 297./2;
     const float init_z = 40;
     static const Vec def_corners[] = {
-      Vec(-rx,-ry,init_z,1),  Vec(rx,-ry,init_z,1), 
+      Vec(-rx,-ry,init_z,1),  Vec(rx,-ry,init_z,1),
       Vec(-rx,ry,init_z,1),  Vec(rx,ry,init_z,1)
     };
     const Vec *cs = corners ? corners : def_corners;
-    
+
     const int nx = cellsInit.width, ny = cellsInit.height;
     const float dx = 1./(nx-1), dy = 1./(ny-1);
 
@@ -176,7 +176,7 @@ namespace icl{
         }
       }
     }
-    
+
     std::copy(nodes2.begin(),nodes2.end(),std::back_inserter(nodes1));
     std::copy(normals2.begin(),normals2.end(),std::back_inserter(normals1));
 
@@ -231,7 +231,7 @@ namespace icl{
         addTriangle(e,b,d);
         addTriangle(e,d,c);
         addTriangle(e,c,a);
-       
+
         addLink(a,b);
         addLink(a,c);
         addLink(a,e);
@@ -244,11 +244,11 @@ namespace icl{
         }
       }
     }
-    
+
     m_data->lastUsedFaceIdx = -1;
-    
+
     createBendingConstraints(initialMaxLinkDistnace,initialStiffness);
-    
+
   }
 
   PhysicsPaper3::~PhysicsPaper3(){
@@ -259,11 +259,11 @@ namespace icl{
     return m_data->texCoords;
   }
 
-  
+
   void PhysicsPaper3::lock(){
     m_data->mutex.lock();
   }
-  
+
   void PhysicsPaper3::unlock(){
     m_data->mutex.unlock();
   }
@@ -281,9 +281,9 @@ namespace icl{
 
     // find-triangle that contains the point (could be sped up later)
     const btSoftBody *s = getSoftBody();
-    
+
     int hit_idx = -1, ia(0),ib(0),ic(0);
-    
+
     if(m_data->lastUsedFaceIdx >= 0){
       const btSoftBody::Face &f = s->m_faces[m_data->lastUsedFaceIdx];
       ia = (int)(f.m_n[0] - &s->m_nodes[0]);
@@ -293,7 +293,7 @@ namespace icl{
         hit_idx = m_data->lastUsedFaceIdx;
       }
     }
-    
+
     if(hit_idx == -1){
       for(int i=0;i<s->m_faces.size();++i){
         const btSoftBody::Face &f = s->m_faces[i];
@@ -314,7 +314,7 @@ namespace icl{
     const Vec a = bullet2icl(f.m_n[0]->m_x);
     const Vec b = bullet2icl(f.m_n[1]->m_x);
     const Vec c = bullet2icl(f.m_n[2]->m_x);
-    
+
 
     const Point32f &ta = m_data->texCoords[ia];
     const Point32f &tb = m_data->texCoords[ib];
@@ -328,20 +328,20 @@ namespace icl{
            c@x3y3
 
         alpha (c-a)  +  beta (b-a) = p-a
-        
+
         |cx-ax  bx-ax|       |px-ax|
         |cy-ay  by-ay| * x = |py-ay|
 
         A x = b
-        
+
         x = a.solve(b,"inv"); // inv is faster and more stable for (cx-ax = 0)
     */
-    
+
     FixedMatrix<float,2,2> M(tc.x - ta.x, tb.x - ta.x,
                             tc.y - ta.y, tb.y - ta.y);
-    
-    FixedMatrix<float,1,2> ff = M.inv()*FixedMatrix<float,1,2>( p.x - ta.x, p.y - ta.y); 
-    
+
+    FixedMatrix<float,1,2> ff = M.inv()*FixedMatrix<float,1,2>( p.x - ta.x, p.y - ta.y);
+
     Vec res = a + (c - a)*ff[0] + (b-a)*ff[1];
     res[3] = 1;
 
@@ -351,7 +351,7 @@ namespace icl{
   void PhysicsPaper3::setStraightenFolds(bool enabled){
     m_data->straightenFolds = enabled;
   }
-  
+
   void PhysicsPaper3::setDoubleFolds(bool enabled){
     m_data->doubleFolds = enabled;
   }
@@ -364,7 +364,7 @@ namespace icl{
   void PhysicsPaper3::setFacesVisible(bool visible){
     m_data->visFaces = visible;
   }
- 
+
   void PhysicsPaper3::createBendingConstraints(float maxDistance, float fixedStiffness){
     m_data->physicsWorld->lock();
     lock();
@@ -388,7 +388,7 @@ namespace icl{
     remove_indices_from_bullet_array(ls,rmLinks);
 
     maxDistance *= maxDistance;
-    
+
 
     std::vector<Point32f> &tex = m_data->texCoords;
 
@@ -408,7 +408,7 @@ namespace icl{
 
     updateNodeAreas();
     s->randomizeConstraints();
-    
+
     //s->generateClusters(0);
     if(m_data->enableSelfCollision){
       updateCollisionClusters();
@@ -433,27 +433,27 @@ namespace icl{
         foldNodes.insert(l.m_n[1]);
       }
     }
-    
+
     btSoftBody::Node *o = &s->m_nodes[0];
 
     for(int i=0;i<s->m_faces.size();++i){
       btSoftBody::Face &f = s->m_faces[i];
-      if(!foldNodes.count(f.m_n[0]) && 
-         !foldNodes.count(f.m_n[1]) && 
+      if(!foldNodes.count(f.m_n[0]) &&
+         !foldNodes.count(f.m_n[1]) &&
          !foldNodes.count(f.m_n[2]) ){
-        
+
         int ia = (int)(f.m_n[0]-o);
         int ib = (int)(f.m_n[1]-o);
         int ic = (int)(f.m_n[2]-o);
-        
+
         const Point32f A = m_data->texCoords[ia].transform(210,294);
         const Point32f B = m_data->texCoords[ib].transform(210,294);
         const Point32f C = m_data->texCoords[ic].transform(210,294);
-        
+
         float area = 0.5 * FixedMatrix<float,3,3>(A.x, B.x, C.x,
                                                   A.y, B.y, C.y,
                                                   1,   1,   1).det();
-        // This does not help, all collision faces seem to be of size 1029 mm^2 
+        // This does not help, all collision faces seem to be of size 1029 mm^2
         if(area > 200){
           clusterFaces.push_back(&f);
         }
@@ -465,7 +465,7 @@ namespace icl{
     s->releaseClusters();
 
     btAlignedObjectArray<btSoftBody::Cluster*> &cl = s->m_clusters;
-    
+
     cl.resize(n);
     for(int i=0;i<n;++i){
       cl[i] = new(btAlignedAlloc(sizeof(btSoftBody::Cluster),16)) btSoftBody::Cluster();
@@ -474,7 +474,7 @@ namespace icl{
         cl[i]->m_nodes.push_back(clusterFaces[i]->m_n[j]);
       }
     }
-    
+
     s->initializeClusters();
     s->updateClusters();
 
@@ -499,28 +499,28 @@ namespace icl{
     }
 #endif
   }
-  
+
   void PhysicsPaper3::movePosition(const Point32f &coords, const Vec &target, float streangth, float radius){
     m_data->physicsWorld->lock();
     Vec pW =  interpolatePosition(coords);
     btVector3 offset = icl2bullet(target - pW);
-    
+
     // find all nodes within radius:
     std::vector<int> closeIndices;
     std::vector<float> distances;
-    
+
     float sumDist = 0;
     btSoftBody *s = getSoftBody();
-    
+
     for(int i=0;i<s->m_nodes.size();++i){
-      float d = coords.distanceTo(m_data->texCoords[i]); 
+      float d = coords.distanceTo(m_data->texCoords[i]);
       if(d < radius){
         closeIndices.push_back(i);
         distances.push_back(d);
         sumDist += d;
       }
     }
-    
+
     if(closeIndices.size() == 1){
       int idx = closeIndices[0];
       btSoftBody::Node &n = s->m_nodes[idx];
@@ -539,28 +539,28 @@ namespace icl{
   void PhysicsPaper3::lockWorld(){
     m_data->physicsWorld->lock();
   }
-  
+
   void PhysicsPaper3::unlockWorld(){
     m_data->physicsWorld->unlock();
   }
 
-  
+
   void PhysicsPaper3::addTriangle(int a, int b, int c){
     btSoftBody *s = getSoftBody();
     s->appendFace(a,b,c);
-            
+
     btSoftBody::Face &f = s->m_faces[s->m_faces.size()-1];
-    
+
     Point32f t0 = m_data->texCoords[a].transform(210,297);
     Point32f t1 = m_data->texCoords[b].transform(210,297);
     Point32f t2 = m_data->texCoords[b].transform(210,297);
-    
+
     float la = t0.distanceTo(t1);
     float lb = t1.distanceTo(t2);
     float lc = t2.distanceTo(t0);
-    
+
     float s_tmp = 0.5*(la+lb+lc);
-    
+
     /// face rest area
     f.m_ra = ::sqrt( s_tmp * (s_tmp-la) * (s_tmp-lb) * (s_tmp-lc) );
   }
@@ -585,21 +585,21 @@ namespace icl{
 
     s->m_fdbvt.clear();
     if(s->m_cfg.collisions&btSoftBody::fCollision::VF_SS){
-      s->initializeFaceTree();			
+      s->initializeFaceTree();
     }
 
     s->m_bUpdateRtCst = false;
   }
-  
+
   const Img32f &PhysicsPaper3::getFoldMap() const{
     return m_data->fm.getImage();
   }
-  
+
   void PhysicsPaper3::setFoldMapChangedCallback(utils::Function<void,const Img32f &> cb){
     m_data->fmCallback = cb;
   }
 
-  
+
 
   void PhysicsPaper3::addLink(int a, int b, float stiffness, const PhysicsPaper3::LinkState &state){
     if(a == b) return;
@@ -641,7 +641,7 @@ namespace icl{
           l.m_material->m_kLST = stiffness;
           const btSoftBody::Node *na  = &s->m_nodes[a];
           const btSoftBody::Node *nb  = &s->m_nodes[b];
-          if( ((l.m_n[0] == na) && (l.m_n[1] == nb)) || 
+          if( ((l.m_n[0] == na) && (l.m_n[1] == nb)) ||
               ((l.m_n[0] == nb) && (l.m_n[1] == na)) ){
             if(!LinkState::is_fold(l.m_tag)){
               delete (LinkState*)(l.m_tag);
@@ -657,7 +657,7 @@ namespace icl{
     }
     s->m_bUpdateRtCst = false;
   }
- 
+
   namespace{
     struct cmp_point_32f{
       const Point32f &a;
@@ -667,7 +667,7 @@ namespace icl{
       }
     };
   }
-  
+
   void PhysicsPaper3::addVertexOrReuseOldOne(Point32f &t, btVector3 &v, int &idx){
     std::vector<Point32f>::iterator it;
     it = std::find_if(m_data->texCoords.begin()+m_data->numPointsBeforeUpdate, m_data->texCoords.end(), cmp_point_32f(t));
@@ -676,7 +676,7 @@ namespace icl{
       t = *it;
       idx = (int)(it - m_data->texCoords.begin());
       v = s->m_nodes[idx].m_x;
-      
+
     }else{
       idx = m_data->texCoords.size();
       m_data->texCoords.push_back(t);
@@ -692,7 +692,7 @@ namespace icl{
     return line_segment_intersect(a,b,m_data->projectedPoints[idx_la],m_data->projectedPoints[idx_lb]);
   }
 
-  
+
   bool PhysicsPaper3::hitTriangle(btSoftBody::Face *f, const Point32f &a, const Point32f &b){
     btSoftBody *s = getSoftBody();
     int idx_la = (int)(f->m_n[0] - &s->m_nodes[0]);
@@ -725,7 +725,7 @@ namespace icl{
     btVector3 a = s->m_nodes[idx_a].m_x;
     btVector3 b = s->m_nodes[idx_b].m_x;
     btVector3 c = s->m_nodes[idx_c].m_x;
-    
+
     Point32f ta = m_data->projectedPoints[idx_a];
     Point32f tb = m_data->projectedPoints[idx_b];
     Point32f tc = m_data->projectedPoints[idx_c];
@@ -734,11 +734,11 @@ namespace icl{
     bool iA = line_segment_intersect(lineA,lineB,ta,tb,0,0,&rA);
     bool iB = line_segment_intersect(lineA,lineB,tb,tc,0,0,&rB);
     bool iC = line_segment_intersect(lineA,lineB,tc,ta,0,0,&rC);
-    
+
     rA = 1.f-rA;
     rB = 1.f-rB;
     rC = 1.f-rC;
-    
+
     if( (!!iA + !!iB + !! iC) != 2){
       // do nothing
       addLink(idx_a,idx_b);
@@ -746,7 +746,7 @@ namespace icl{
       addLink(idx_c,idx_a);
       return false;
     }
-    
+
     if(iA && iB){
       //DEBUG_LOG("no shift");
       // keep it!
@@ -767,7 +767,7 @@ namespace icl{
         shift_back_3(iA,iB,iC);
       }
     }
-    /** Configuration: 
+    /** Configuration:
           A
     a    tta     b
      +----|-----+
@@ -785,12 +785,12 @@ namespace icl{
     c
 
     */
-    
+
     Point32f tta = linear_interpolate(m_data->texCoords[idx_a],m_data->texCoords[idx_b],rA);
     Point32f ttb = linear_interpolate(m_data->texCoords[idx_b],m_data->texCoords[idx_c],rB);
 
     const float MIN_VEC_DIST  = m_data-> enableSelfCollision ? 0.001 : 0.001;
-    
+
     bool too_close_tta_ta = m_data->texCoords[idx_a].distanceTo(tta) < MIN_VEC_DIST;
     bool too_close_tta_tb = m_data->texCoords[idx_b].distanceTo(tta) < MIN_VEC_DIST;
     bool too_close_tta_tc = m_data->texCoords[idx_c].distanceTo(tta) < MIN_VEC_DIST;
@@ -799,9 +799,9 @@ namespace icl{
     bool too_close_ttb_tc = m_data->texCoords[idx_c].distanceTo(ttb) < MIN_VEC_DIST;
 
     bool split = true;
-    
+
     Point *newSoftLink = 0;
-    
+
     if(too_close_tta_ta){
       if(too_close_ttb_ta || too_close_ttb_tb  || too_close_ttb_tc){
         split = false;
@@ -819,7 +819,7 @@ namespace icl{
         addLink(idx_new,idx_a,m_data->linkStiffness,LinkState(true,true));
         addLink(idx_new,idx_c);
         addLink(idx_c,idx_a);
-        
+
         addTriangle(idx_a,idx_b,idx_new);
         addTriangle(idx_a,idx_new,idx_c);
       }
@@ -840,7 +840,7 @@ namespace icl{
         addLink(idx_c,idx_a);
         addLink(idx_new,idx_b);
         addLink(idx_b,idx_c);
-        
+
         addTriangle(idx_a,idx_new,idx_c);
         addTriangle(idx_new,idx_b,idx_c);
       }
@@ -852,23 +852,23 @@ namespace icl{
       btVector3 vNew_b = linear_interpolate(b,c,rB);
       addVertexOrReuseOldOne(tta,vNew_a,idx_new_a);
       addVertexOrReuseOldOne(ttb,vNew_b,idx_new_b);
-      
+
       addLink(idx_new_a,idx_b);
       addLink(idx_b,idx_new_b);
       addLink(idx_new_b,idx_new_a,m_data->linkStiffness, LinkState(true,true));
-      
+
       addLink(idx_a,idx_new_a);
       addLink(idx_new_b,idx_a);
       addLink(idx_new_b,idx_c);
       addLink(idx_c,idx_a);
-      
+
       addTriangle(idx_new_a,idx_b,idx_new_b);
       addTriangle(idx_a,idx_new_a,idx_new_b);
       addTriangle(idx_a,idx_new_b,idx_c);
     }else{
       split=false;
     }
-    
+
     if(!split){
       int k = newSoftLink ? newSoftLink->x : -1;
       int l = newSoftLink ? newSoftLink->y : -1;
@@ -890,7 +890,7 @@ namespace icl{
   }
 
   void PhysicsPaper3::splitAlongLine(const Point32f &a, const Point32f &b, const Camera &currCam){
-    lock();    
+    lock();
     m_data->physicsWorld->lock();
     std::vector<int> delLinks,delTriangles;
     btSoftBody *s = getSoftBody();
@@ -898,7 +898,7 @@ namespace icl{
     for(size_t i=0;i<vertices.size();++i){
       vertices[i] = bullet2icl(s->m_nodes[i].m_x);
     }
-    
+
     m_data->projectedPoints = currCam.project(vertices);
 
     m_data->numPointsBeforeUpdate = vertices.size();
@@ -915,27 +915,27 @@ namespace icl{
       }
     }
 
-    // delete old triangles and links ...    
+    // delete old triangles and links ...
 
     remove_indices_from_bullet_array(s->m_faces, delTriangles);
 
     m_data->lastUsedFaceIdx = -1;
 
     createBendingConstraints(0.5);
-    
+
     if(m_data->fmCallback){
       m_data->fmCallback(m_data->fm.getImage());
     }
-    
+
     m_data->physicsWorld->unlock();
 
     unlock();
   }
-  
-  
+
+
   void PhysicsPaper3::updateSmoothNormalGraph(){
     btSoftBody *s = getSoftBody();
-    
+
     m_data->smoothNormalGraph.resize(s->m_nodes.size());
     for(int i=0;i<s->m_nodes.size();++i){
       m_data->smoothNormalGraph[i].clear();
@@ -952,33 +952,33 @@ namespace icl{
     static inline Vec compute_normal(const Vec &va, const Vec &vb, const Vec &vc, bool *ok=0){
       Vec ac = va - vc;
       Vec bc = vb - vc;
-      
+
       const float lac = ::sqrt (sqr(ac[0]) + sqr(ac[1]) +  sqr(ac[2]) );
       const float lbc = ::sqrt (sqr(bc[0]) + sqr(bc[1]) +  sqr(bc[2]) );
-      
+
       if(lac == 0 || lbc == 0){
         if(ok) *ok = false;
         return Vec(0,0,0,0);
       }
-      
+
       const float ilac = 1.0f/lac;
       const float ilbc = 1.0f/lbc;
-      
+
       for(int i=0;i<3;++i){
         ac[i] *= ilac;
         bc[i] *= ilbc;
       }
-      
+
       return  cross(ac,bc);
     }
 
 
   static Vec get_face_normal(const btSoftBody::Face &f){
-    return compute_normal(bullet2icl(f.m_n[0]->m_x), 
-                          bullet2icl(f.m_n[1]->m_x), 
-                          bullet2icl(f.m_n[2]->m_x)); 
+    return compute_normal(bullet2icl(f.m_n[0]->m_x),
+                          bullet2icl(f.m_n[1]->m_x),
+                          bullet2icl(f.m_n[2]->m_x));
   }
-  
+
   void PhysicsPaper3::computeSmoothNormals(){
     btSoftBody *s = getSoftBody();
     m_data->smoothNormals.resize(s->m_nodes.size());
@@ -1029,9 +1029,9 @@ namespace icl{
       glEnable(GL_CULL_FACE);
       for(int i=0;i<s->m_faces.size();++i){
         btSoftBody::Face &f = s->m_faces[i];
-        Vec c[3],n[3]; 
+        Vec c[3],n[3];
         Point32f t[3];
-        
+
         bool isFlat = true;
         for(int j=0;j<3;++j){
           c[j] = bullet2icl(f.m_n[j]->m_x);
@@ -1043,18 +1043,18 @@ namespace icl{
           }
           t[j] = m_data->texCoords[(int)(f.m_n[j] - &s->m_nodes[0])];
         }
-        
+
         if(!isFlat){
           int good = -1;
           for(int j=0;j<3;++j){
             if(n[j][3]) good = j; break;
           }
-          if(good == -1) { 
+          if(good == -1) {
             n[2] = n[1] = n[0] = compute_normal(c[0], c[1], c[2]);
           }else{
             for(int j=0;j<3;++j){
               if(!n[j][3]) n[j] = n[good];
-            }         
+            }
           }
         }
 
@@ -1075,7 +1075,7 @@ namespace icl{
 
         glFrontFace(GL_BACK);
         glCullFace(GL_BACK);
-      
+
         if(m_data->haveTexture){
           m_data->tex[1].draw3DGeneric(3, &c[0][0], &c[0][1], &c[0][2], 4, t,&n[0][0],&n[0][1],&n[0][2],4);
         }else{
@@ -1090,7 +1090,7 @@ namespace icl{
       }
       glDisable(GL_CULL_FACE);
     }
-  
+
     glLineWidth(2);
 
     //glDisable(GL_DEPTH_TEST);
@@ -1109,11 +1109,11 @@ namespace icl{
           }else{
             glColor3f(255,0,0);
           }
-          
+
           glVertex3f(bullet2icl(l.m_n[0]->m_x[0]),
                      bullet2icl(l.m_n[0]->m_x[1]),
                      bullet2icl(l.m_n[0]->m_x[2]) );
-          
+
           glVertex3f(bullet2icl(l.m_n[1]->m_x[0]),
                      bullet2icl(l.m_n[1]->m_x[1]),
                      bullet2icl(l.m_n[1]->m_x[2]) );
@@ -1123,7 +1123,7 @@ namespace icl{
       glEnable(GL_LIGHTING);
     }
     //glEnable(GL_DEPTH_TEST);
-    
+
     m_data->physicsWorld->unlock();
   }
 
@@ -1163,23 +1163,23 @@ namespace icl{
       }
     };
   }
-  
+
   Point32f PhysicsPaper3::hit(const geom::ViewRay &ray) const{
     m_data->physicsWorld->lock();
     std::vector<GetPaperCoordinatesHit> hits;
     const btSoftBody *s = getSoftBody();
 
-   
-    
+
+
     for(int i=0;i<s->m_faces.size();++i){
       const btSoftBody::Face &f = s->m_faces[i];
       Vec a = bullet2icl(f.m_n[0]->m_x);
       Vec b = bullet2icl(f.m_n[1]->m_x);
       Vec c = bullet2icl(f.m_n[2]->m_x);
 
-      Vec pW; 
+      Vec pW;
       Point32f coords;
-      
+
       geom::ViewRay::TriangleIntersection inter = ray.getIntersectionWithTriangle(a,b,c,&pW,&coords);
 
       if(inter == geom::ViewRay::foundIntersection){
@@ -1188,11 +1188,11 @@ namespace icl{
         const Point32f &tc = m_data->texCoords[ (int)(f.m_n[2] - &s->m_nodes[0]) ];
 
         Point32f pPaper = ta + (tb-ta)*coords.x + (tc-ta)*coords.y;
-        
+
         hits.push_back(GetPaperCoordinatesHit(pPaper,pW,ray.offset));
       }
     }
-    m_data->physicsWorld->unlock();  
+    m_data->physicsWorld->unlock();
 
     if(!hits.size()) return Point32f(-1,-1);
     return std::min_element(hits.begin(),hits.end())->coords;
@@ -1201,11 +1201,11 @@ namespace icl{
   Img32f PhysicsPaper3::paperCoordinateTest(const Camera &cam) const{
     m_data->physicsWorld->lock();
     Img32f image(Size::QVGA,formatRGB);
-    
+
     Array2D<geom::ViewRay> vrs = cam.getAllViewRays();
     ICLASSERT_THROW(vrs.getWidth() == 640 &&
                     vrs.getHeight() == 480, ICLException("PhysicsPaper3D::paperCoordinateTest: this feature is only supported for VGA cameras"));
-    
+
     float *r = image.begin(0);
     float *g = image.begin(1);
     float *b = image.begin(2);
@@ -1225,21 +1225,21 @@ namespace icl{
         }
       }
     }
-    progress_finish();  
+    progress_finish();
     m_data->physicsWorld->unlock();
     return image;
   }
-  
-  
+
+
   inline float sqr_dist(const btVector3 &a, const btVector3 &b){
     return sqr(a[0]-b[0]) + sqr(a[1]-b[1]) + sqr(a[2]-b[2]);
   }
-  
+
   inline float max_3(float a, float b, float c){
     if(a > b) return iclMax(a,c);
     else return iclMax(b,c);
   }
-  
+
   inline const Vec &vec_cast(const btVector3 &v){
     return *reinterpret_cast<const Vec*>(&v);
   }
@@ -1247,7 +1247,7 @@ namespace icl{
   inline Vec &vec_cast_unconst(btVector3 &v){
     return *reinterpret_cast<Vec*>(&v);
   }
-  
+
   void PhysicsPaper3::simulateSelfCollision(){
     //TODO FIX LOCKING
     //PhysicsWorld::Locker lock(*m_data->physicsWorld);
@@ -1258,18 +1258,18 @@ namespace icl{
 
     // move away nodes from triangles that are not connected
     btSoftBody *s = getSoftBody();
-    
+
     btAlignedObjectArray<btSoftBody::Node> &ns = s->m_nodes;
     btAlignedObjectArray<btSoftBody::Face> &ts = s->m_faces;
 
     std::vector<bool> nodesMoved(ns.size(),false);
-    
+
     for(int t=0;t<ts.size();++t){
       btSoftBody::Face &f = ts[t];
       const btVector3 a = f.m_n[0]->m_x, b = f.m_n[1]->m_x, c = f.m_n[2]->m_x;
       btVector3 mean = (a+b+c)* 0.33333333f;
-      float r = max_3( sqr_dist(a,mean), 
-                       sqr_dist(a,mean), 
+      float r = max_3( sqr_dist(a,mean),
+                       sqr_dist(a,mean),
                        sqr_dist(a,mean) ) + TRIANGLE_RADIUS_MARGIN;
       for(int i=0;i<ns.size();++i){
         if(nodesMoved[i]) continue;
@@ -1290,7 +1290,7 @@ namespace icl{
             }
           }
         }
-      }      
+      }
     }
   }
 
@@ -1300,11 +1300,11 @@ namespace icl{
     VisualizationDescription d;
     d.linewidth(6);
     d.color(255,255,0,150);
-    
+
     const btSoftBody *s = getSoftBody();
-    
+
     StraightLine2D ab(a, b-a);
-    
+
     const btSoftBody::Node *o = &s->m_nodes[0];
     for(int i=0;i<s->m_links.size();++i){
       if(!LinkState::is_fold(s->m_links[i].m_tag)) continue;
@@ -1313,10 +1313,10 @@ namespace icl{
       Point32f la = m_data->texCoords[ia];
       Point32f lb = m_data->texCoords[ib];
       if((ab.distance(la) < 0.05) && (ab.distance(lb) < 0.05)){
-        
+
         Vec va = bullet2icl(s->m_nodes[ia].m_x);
         Vec vb = bullet2icl(s->m_nodes[ib].m_x);
-        
+
         Point32f pa = cam.project(va);
         Point32f pb = cam.project(vb);
 
@@ -1326,14 +1326,14 @@ namespace icl{
     return d;
   }
 
-  SmartPtr<PhysicsPaper3::LinkCoords> PhysicsPaper3::getLinkCoords(const Point32f &pix, 
+  SmartPtr<PhysicsPaper3::LinkCoords> PhysicsPaper3::getLinkCoords(const Point32f &pix,
                                                                    const Camera &cam) const {
     geom::ViewRay v = cam.getViewRay(pix);
     Point32f p = hit(v);
 
     const btSoftBody *s = getSoftBody();
     const btSoftBody::Node *o = &s->m_nodes[0];
-    
+
     int bestIA(-1),bestIB(-1), bestD = -1;
     for(int i=0;i<s->m_links.size();++i){
       if(!LinkState::is_fold(s->m_links[i].m_tag)) continue;
@@ -1341,7 +1341,7 @@ namespace icl{
       int ib = (s->m_links[i].m_n[1]-o);
       Point32f la = m_data->texCoords[ia];
       Point32f lb = m_data->texCoords[ib];
-      
+
       StraightLine2D line(la,lb-la);
       float d = line.distance(p);
       if(d < 0.005){
@@ -1362,10 +1362,10 @@ namespace icl{
   void PhysicsPaper3::adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize){
     Point32f a = coords.first, b = coords.second;
     btSoftBody *s = getSoftBody();
-    
+
     StraightLine2D ab(a, b-a);
     std::vector<btSoftBody::Link*> links;
-    
+
     btSoftBody::Node *o = &s->m_nodes[0];
     for(int i=0;i<s->m_links.size();++i){
       btSoftBody::Link &l = s->m_links[i];
@@ -1388,12 +1388,12 @@ namespace icl{
         //l.m_c1 = l.m_rl*l.m_rl;
       }
     }
-    
+
     createBendingConstraints(0.5);
     // all links that cross one of the toBeMemorizedLinks must not update their rest-distances
     // createBendingConstraints2(0.5, toBeMemorizedLinks);
   }
-  
+
   void PhysicsPaper3::serializeStructureTo(std::ostream &str){
     btSoftBody *s = getSoftBody();
     str << s->m_nodes.size() << ' ';
@@ -1413,7 +1413,7 @@ namespace icl{
       str << (int)(s->m_faces[i].m_n[2] - offs) << ' ';
     }
   }
-  
+
   void PhysicsPaper3::Structure::deserializeFrom(std::istream &str){
     Structure &s = *this;
     int n(0),m(0);
@@ -1474,7 +1474,7 @@ namespace icl{
     const Vec a = vertices[f.a];
     const Vec b = vertices[f.b];
     const Vec c = vertices[f.c];
-    
+
     const Point32f ta = texCoords[f.a];
     const Point32f tb = texCoords[f.b];
     const Point32f tc = texCoords[f.c];
@@ -1488,20 +1488,20 @@ namespace icl{
            c@x3y3
 
         alpha (c-a)  +  beta (b-a) = p-a
-        
+
         |cx-ax  bx-ax|       |px-ax|
         |cy-ay  by-ay| * x = |py-ay|
 
         A x = b
-        
+
         x = a.solve(b,"inv"); // inv is faster and more stable for (cx-ax = 0)
     */
-    
+
     FixedMatrix<float,2,2> M(tc.x - ta.x, tb.x - ta.x,
                             tc.y - ta.y, tb.y - ta.y);
-    
-    FixedMatrix<float,1,2> ff = M.inv()*FixedMatrix<float,1,2>( p.x - ta.x, p.y - ta.y); 
-    
+
+    FixedMatrix<float,1,2> ff = M.inv()*FixedMatrix<float,1,2>( p.x - ta.x, p.y - ta.y);
+
     Vec res = a + (c - a)*ff[0] + (b-a)*ff[1];
     res[3] = 1;
 
@@ -1510,16 +1510,16 @@ namespace icl{
 
   Point32f PhysicsPaper3::Structure::hit(const geom::ViewRay &ray) const{
     std::vector<GetPaperCoordinatesHit> hits;
-    
+
     for(size_t i=0;i<faces.size();++i){
       const Face &f = faces[i];
       const Vec &a = vertices[f.a];
       const Vec &b = vertices[f.b];
       const Vec &c = vertices[f.c];
 
-      Vec pW; 
+      Vec pW;
       Point32f coords;
-      
+
       geom::ViewRay::TriangleIntersection inter = ray.getIntersectionWithTriangle(a,b,c,&pW,&coords);
 
       if(inter == ViewRay::foundIntersection){
@@ -1528,12 +1528,12 @@ namespace icl{
         const Point32f &tc = texCoords[f.c];
 
         Point32f pPaper = ta + (tb-ta)*coords.x + (tc-ta)*coords.y;
-        
+
         hits.push_back(GetPaperCoordinatesHit(pPaper,pW,ray.offset));
       }
     }
     if(!hits.size()) return Point32f(-1,-1);
     return std::min_element(hits.begin(),hits.end())->coords;
-  }  
+  }
 
 }

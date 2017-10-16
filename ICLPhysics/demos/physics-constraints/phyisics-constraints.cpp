@@ -70,7 +70,7 @@ void init(){
   scene.addConstraint(hinge_constraint,false,true);
 
   gui["draw"].install(&handler);
-  
+
   //link the visualization
   gui["draw"].link(scene.getGLCallback(0));
 }

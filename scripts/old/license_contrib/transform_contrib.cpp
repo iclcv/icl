@@ -16,9 +16,9 @@ int main(int n, char **ppc){
     int cg = parse<int>(tok(contr[5],":")[1]); // cgroszew
     int ew = parse<int>(tok(contr[6],":")[1]); // eweitnau
     int dd = parse<int>(tok(contr[7],":")[1]); // ddornbus
-    
+
     if(pa("-mode").as<int>() == 0){
-      std::cout << name << " " << ce << " " << mg 
+      std::cout << name << " " << ce << " " << mg
                 << " " << rh << " " << aj  << " " << fr
                 << cg << " " << ew << " " << dd << std::endl;
     }else{
@@ -28,7 +28,7 @@ int main(int n, char **ppc){
         "cgroszew","eweitnau","ddornbus"
       };
       int cs[8] = {ce, mg, rh, aj, fr, cg, ew, dd};
-      
+
       std::cout << name << " ";
       if(sum >= 3){
         for(int i=0;i<8;++i){

@@ -35,7 +35,7 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
 	    src/ICLQt/ButtonHandle.cpp
 	    src/ICLQt/CamCfgWidget.cpp
 	    src/ICLQt/CheckBoxHandle.cpp
-	    src/ICLQt/ChromaClassifierIO.cpp	   
+	    src/ICLQt/ChromaClassifierIO.cpp
 	    src/ICLQt/ChromaGUI.cpp
 	    src/ICLQt/ColorLabel.cpp
 	    src/ICLQt/ComboHandle.cpp
@@ -217,7 +217,7 @@ TARGET_LINK_LIBRARIES(ICLQt ICLCV
                             ${ICLQt_3RDPARTY_LIBRARIES})
 
 SET_TARGET_PROPERTIES(ICLQt
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

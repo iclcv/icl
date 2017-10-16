@@ -37,7 +37,7 @@ using namespace icl::utils;
 
 namespace icl{
   namespace math{
-    
+
     namespace{
       template<class T>
       struct ConstAttrib : public PolynomialRegressionAttrib<T>{
@@ -51,7 +51,7 @@ namespace icl{
           return new ConstAttrib<T>(t);
         }
       };
-    
+
       template<class T>
       struct GenPowerAttrib : public PolynomialRegressionAttrib<T>{
         int idx;
@@ -150,7 +150,7 @@ namespace icl{
         }
         return stream.str();
       }
-    
+
       inline int get_idx(const std::string &s){
         return icl::utils::parse<int>(s.substr(1));
       }
@@ -197,42 +197,42 @@ namespace icl{
       return *this;
     }
 
-  
+
 
     template<class T>
     const typename PolynomialRegression<T>::Result &
-    PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs, 
+    PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs,
                                    const typename PolynomialRegression<T>::Matrix &ys,bool useSVD){
       ICLASSERT_THROW(xs.rows() == ys.rows(),ICLException("PolynomialRegression::apply: xs.rows() must be equal to ys.rows()"));
       const int &M  = m_result.m_attribMaxIndex;
       ICLASSERT_THROW((int)xs.cols() > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
       m_buf.setBounds(m_result.m_attribs.size(), xs.rows());
-    
+
       for(unsigned int i=0;i<xs.rows();++i){
         apply_params(m_result.m_attribs, xs.row_begin(i), m_buf.row_begin(i));
       }
-    
+
       m_buf.pinv(useSVD).mult(ys, m_result.m_params);
       //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
-      
+
       return m_result;
     }
 
-    
+
     template<class T>
     const typename PolynomialRegression<T>::Matrix &PolynomialRegression<T>::Result::operator()
       (const typename PolynomialRegression<T>::Matrix &xs) const{
-      
+
       m_xbuf.setBounds(m_attribs.size(), xs.rows());
       for(unsigned i=0;i<xs.rows();++i){
         apply_params(m_attribs, xs.row_begin(i), m_xbuf.row_begin(i));
       }
 
       m_xbuf.mult(m_params,m_resultBuf);
-      
+
       return m_resultBuf;
     }
-  
+
     template<class T>
     std::string PolynomialRegression<T>::getFunctionString() const{
       std::ostringstream stream;
@@ -242,7 +242,7 @@ namespace icl{
       }
       return stream.str();
     }
-  
+
     template<class T>
     std::string PolynomialRegression<T>::Result::toString(const std::vector<std::string> &rowLabels) const {
       std::ostringstream stream;
@@ -278,7 +278,7 @@ namespace icl{
     template<class T>
     void PolynomialRegression<T>::Result::setup(const std::string &function){
       m_function = function;
-      
+
       std::vector<std::string> ts = icl::utils::tok(remove_spaces(function),"+");
       int maxIdx = -1;
       for(size_t i=0;i<ts.size();++i){
@@ -288,7 +288,7 @@ namespace icl{
           ICLASSERT_THROW(ab.size() == 2, ICLException("PolynomialRegression: error in token: " + s));
           int idx = get_idx(ab[0]);
           if(idx > maxIdx) maxIdx = idx;
-          
+
           float exponent = parse<float>(ab[1]);
           if(is_int(exponent) && exponent < 6){
             int e = exponent;
@@ -325,8 +325,8 @@ namespace icl{
           m_attribs.push_back(new ConstAttrib<T>(parse<int>(s)));
         }
       }
-      m_attribMaxIndex = maxIdx;      
-    }    
+      m_attribMaxIndex = maxIdx;
+    }
 
     template<class T>
     void PolynomialRegression<T>::Result::save(const std::string &xmlFileName) const {
@@ -337,16 +337,16 @@ namespace icl{
       cfg["parameters.dim.cols"] = (int)m_params.cols();
       cfg["parameters.dim.rows"] = (int)m_params.rows();
       cfg["parameters.values"] = str(m_params);
-      
+
       cfg.save(xmlFileName);
      }
-    
+
     template<class T>
     PolynomialRegression<T>::Result::Result(const std::string &xmlFileName){
       ConfigFile cfg(xmlFileName);
       cfg.setPrefix("config.polynomial-regression-result.");
       setup(cfg["function"].as<std::string>());
-      
+
       m_params.setBounds(cfg["parameters.dim.cols"].as<int>(),
                          cfg["parameters.dim.rows"].as<int>());
 

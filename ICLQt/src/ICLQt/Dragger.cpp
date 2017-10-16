@@ -45,6 +45,6 @@ namespace icl{
       w->rect(r.x,r.y,r.width,r.height);
       w->line(p.x-d/2,p.y-d/2, p.x+d/2,p.y+d/2);
       w->line(p.x+d/2,p.y-d/2, p.x-d/2,p.y+d/2);
-    }  
+    }
   } // namespace qt
 }

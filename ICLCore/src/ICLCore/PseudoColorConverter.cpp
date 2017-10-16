@@ -36,7 +36,7 @@ using namespace icl::utils;
 
 namespace icl{
   namespace core{
-    
+
     static const icl8u defLut[3][256]={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,6,9,12,15,19,22,25,28,31,35,38,41,44,
@@ -73,11 +73,11 @@ namespace icl{
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0}};
-    
+
     bool cmp_stop(const PseudoColorConverter::Stop &a, const PseudoColorConverter::Stop &b){
       return a.relPos < b.relPos;
     }
-    
+
     struct PseudoColorConverter::Data{
       std::vector<icl8u> luts[3]; // one Lookup-Table per channel RGB
       std::vector<Stop> stops;
@@ -93,7 +93,7 @@ namespace icl{
         const icl8u *rlut = luts[0].data();
         const icl8u *glut = luts[1].data();
         const icl8u *blut = luts[2].data();
-        
+
         const int dim = src.getDim();
         for(int i=0;i<dim;++i){
           const int si = s[i];
@@ -102,7 +102,7 @@ namespace icl{
           b[i] = blut[si];
         }
       }
-      
+
       void def(int maxValue){
         maxVal = maxValue;
         std::vector<Stop> s(256);
@@ -112,14 +112,14 @@ namespace icl{
         custom(s,maxValue);
         mode = PseudoColorConverter::Default;
       }
-      
+
       void fill_lin(icl8u *p, int a, int b, float c1, float c2){
         for(int i=a;i<b;++i){
           float f = float(i-a)/(b-a);
           p[i] = f*c2 + (1.0f-f)*c1;
         }
       }
-      
+
       void custom(const std::vector<Stop> &stopsIn, int maxValue) throw (ICLException){
         maxVal = maxValue;
         if(!stopsIn.size()) throw ICLException("PseudoColorConverter: no stops found");
@@ -136,7 +136,7 @@ namespace icl{
         ICLASSERT_THROW(stops.back().relPos <= 1, ICLException("PseudoColorConverter: stop with relative position > 1.0 found"));
         if(stops[0].relPos != 0) stops.insert(stops.begin(),Stop(0,Color(0,0,0)));
         if(stops.back().relPos != 1) stops.push_back(Stop(1,Color(255,255,255)));
-           
+
         for(unsigned int i=0;i<3;++i){
           luts[i].resize(maxVal+1);
           for(unsigned int s=0;s<stops.size()-1;++s){
@@ -145,17 +145,17 @@ namespace icl{
         }
       }
     };
-  
+
       /// creates instance with default color table
     PseudoColorConverter::PseudoColorConverter(int maxValue):m_data(new Data){
       m_data->def(maxValue);
     }
-  
+
       /// creates instance with custom mode
     PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue) throw (ICLException):m_data(new Data){
       m_data->custom(stops,maxValue);
     }
-      
+
       /// sets the mode
     void PseudoColorConverter::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue) throw (ICLException){
       if(t == Custom){
@@ -164,7 +164,7 @@ namespace icl{
         m_data->def(maxValue);
       }
     }
-      
+
       /// create a speudo color image from given source image
     void PseudoColorConverter::apply(const ImgBase *src, ImgBase **dst) throw (ICLException){
       ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": src image was NULL"));
@@ -172,7 +172,7 @@ namespace icl{
       ICLASSERT_THROW(src->getChannels() == 1, ICLException(str(__FUNCTION__)+": source image has more than one channel"));
       ensureCompatible(dst,depth8u,src->getSize(),formatRGB);
       if(src->getDepth() == depth8u){
-        apply(*src->asImg<icl8u>(),*(*dst)->asImg<icl8u>());        
+        apply(*src->asImg<icl8u>(),*(*dst)->asImg<icl8u>());
       }else{
         switch(src->getDepth()){
           case depth8u: m_data->lut(*src->as8u(), *(*dst)->as8u()); break;
@@ -185,7 +185,7 @@ namespace icl{
         }
       }
     }
-      
+
     /// create a speudo color image from given source image
     void PseudoColorConverter::apply(const Img8u &src, Img8u &dst){
       dst.setSize(src.getSize());
@@ -198,14 +198,14 @@ namespace icl{
         src.lut(m_data->luts[i].data(),&ci,8);
       }
     }
-  
+
       /// create a speudo color image from given source image (using an internal buffer)
     const Img8u &PseudoColorConverter::apply(const Img8u &src){
       apply(src,m_data->outputBuffer);
       return m_data->outputBuffer;
     }
-  
-  
+
+
     void PseudoColorConverter::save(const std::string &filename){
       ConfigFile f;
       f.setPrefix("config.pseudo-color-converter.");
@@ -214,15 +214,15 @@ namespace icl{
       if(m_data->mode == Custom){
         f["stop-count"] = (int) m_data->stops.size();
         for(unsigned int i=0;i<m_data->stops.size();++i){
-          f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) +  " " 
-                                     + str(m_data->stops[i].color[1]) +  " " 
-                                     +   str(m_data->stops[i].color[2]); 
+          f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) +  " "
+                                     + str(m_data->stops[i].color[1]) +  " "
+                                     +   str(m_data->stops[i].color[2]);
           f["stop-"+str(i)+".relative-position"] = m_data->stops[i].relPos;
         }
       }
       f.save(filename);
     }
-    
+
     void PseudoColorConverter::load(const std::string &filename){
       ConfigFile f(filename);
       f.setPrefix("config.pseudo-color-converter.");
@@ -237,6 +237,6 @@ namespace icl{
         m_data->custom(stops,f["maxVal"]);
       }
     }
-  
+
   } // namespace core
 }

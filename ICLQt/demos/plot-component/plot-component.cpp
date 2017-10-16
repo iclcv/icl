@@ -55,25 +55,25 @@ void init(){
            << Plot(-5,5,-5,5,gl).handle("plot9").minSize(15,12)
            )
       << ( VBox()
-           << Plot(0,6.5,-1,1,gl).handle("plot3").minSize(15,12) 
+           << Plot(0,6.5,-1,1,gl).handle("plot3").minSize(15,12)
            << Plot(0,6.5,-1,1,gl).handle("plot4").minSize(15,12)
-           << Plot(0,0,0,0,gl).handle("plot10").minSize(15,12) 
+           << Plot(0,0,0,0,gl).handle("plot10").minSize(15,12)
            )
       << (VBox()
-          << Plot(-9,9,-9,9,gl).handle("plot5").minSize(15,12) 
-          << Plot(0,0,0,0,gl).handle("plot6").minSize(15,12) 
+          << Plot(-9,9,-9,9,gl).handle("plot5").minSize(15,12)
+          << Plot(0,0,0,0,gl).handle("plot6").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot11").minSize(15,12)
           )
       << (VBox()
-          << Plot(0,0,0,0,gl,"something [pi]").handle("plot7").minSize(15,12) 
-          << Plot(0,0,0,0,gl).handle("plot8").minSize(15,12) 
+          << Plot(0,0,0,0,gl,"something [pi]").handle("plot7").minSize(15,12)
+          << Plot(0,0,0,0,gl).handle("plot8").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot12").minSize(15,12)
           << CheckBox("animate",true).out("run")
           )
       << Show();
 
-      
-  
+
+
   gui["plot1"].install(mouse);
 
 }
@@ -90,7 +90,7 @@ void run(){
   while(!gui["run"].as<bool>()){
     Thread::msleep(100);
   }
-  static PlotHandle plots[] = { 
+  static PlotHandle plots[] = {
     gui["plot1"], gui["plot2"],
     gui["plot3"], gui["plot4"],
     gui["plot5"], gui["plot6"],
@@ -103,7 +103,7 @@ void run(){
   // static std::vector<float> cosData(100);
   //static std::vector<float> tanData(100);
   static PlotWidget::SeriesBuffer sinData(100),cosData(100),tanData(100);
-  
+
   static std::vector<Point32f> scatterData1(5000);
   static std::vector<Point32f> scatterData2(5000);
   static std::vector<Point32f> scatterData3(1000);
@@ -123,14 +123,14 @@ void run(){
   Range32f rxGrid = Range32f::limits(), ryGrid=Range32f::limits();
   std::swap(rxGrid.minVal, rxGrid.maxVal);
   std::swap(ryGrid.minVal, ryGrid.maxVal);
-  
+
   for(int i=0;i<grid.getDim();++i){
     GRand gr(0,0.01*Point32f(grid.getWidth()/2-1, grid.getHeight()/2-1).distanceTo(Point32f(i%grid.getWidth(),i/grid.getWidth())));
     grid[i] += Point32f(gr,gr);
     rxGrid.extend(grid[i].x);
     ryGrid.extend(grid[i].y);
   }
-  
+
   static Point32f sinSeries[101];
   static int sinSeriesUsed = 0;
   sinSeries[sinSeriesUsed++] = Point32f(sin(dtSec), dtSec/M_PI);
@@ -140,9 +140,9 @@ void run(){
     }
     sinSeriesUsed = 100;
   }
-  
+
   static GRand grand;
-  static const float C[] = { 1.9, 1.2, 
+  static const float C[] = { 1.9, 1.2,
                              1.2, 2.8 };
   for(unsigned int i=0;i<scatterData1.size();++i){
     Point32f p(grand, grand);
@@ -158,11 +158,11 @@ void run(){
     scatterData3[i].x  = r * cos(rel);
     scatterData3[i].y  = r * sin(rel);
   }
-  
+
   sinData << sin(2*M_PI + dtSec);
   cosData << cos(2*M_PI + dtSec);
   tanData << (cosData.back() > 1.E-10 ? sinData.back()/cosData.back() : 1.E30);
-  
+
   static std::vector<float> fData(100);
   for(size_t xi=0;xi<fData.size();++xi){
     float x = xi/float(fData.size()-1);
@@ -182,7 +182,7 @@ void run(){
 
   for(size_t i=0;i<fDataSamples.size();++i){
     const float x = fDataSamples[i].x, y = fDataSamples[i].y;
-    X(i,0) = 1; 
+    X(i,0) = 1;
     X(i,1) = x;
     X(i,2) = x*x;
     X(i,3) = x*x*x;
@@ -197,7 +197,7 @@ void run(){
   }
   /// xxx
 
-  
+
 
   for(int i=0;i<12;++i){
     PlotHandle &plot = plots[i];
@@ -263,7 +263,7 @@ void run(){
       plot->series(&sinSeries[0].x, sinSeriesUsed, 2);
       //      plot->addSeriesData(&sinSeries[0].x, sinSeriesUsed,
       //                    new AbstractPlotWidget::Pen(QColor(255,0,0)), "continous data", 2);
-      
+
       plot->setBackgroundFunction(f_sin);
     }
 
@@ -298,7 +298,7 @@ void run(){
         plot->clear();
         last = Time::now();
       }
-      
+
       plot->color(dtS*50,0,255-dtS*50);
       plot->linestrip(scatterData3);
       plot->color(0,0,0);
@@ -313,7 +313,7 @@ void run(){
       plot->setPropertyValue("labels.y-precision",0);
       plot->title("some distorted grid");
       plot->setPropertyValue("borders.top",18);
-      
+
       plot->setBackgroundFunction(f_sin_cos);
     }
     if(i == 10){
@@ -333,7 +333,7 @@ void run(){
       plot->scatter(fDataSamples);
 
       plot->nosym();
-      
+
       plot->color(0,255,0);
       plot->fill(0,255,0,100);
       plot->label("regression result");

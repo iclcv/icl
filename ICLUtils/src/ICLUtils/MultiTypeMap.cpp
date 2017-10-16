@@ -34,12 +34,12 @@
 
 namespace icl{
   namespace utils{
-  
+
     MultiTypeMap::MultiTypeMap(){
       m_oDataMapPtr = SmartDataMapPtr(new DataMap);
       m_oMutexPtr = SmartMutexPtr(new Mutex);
     }
-    
+
     /// Destructor (deletes all remaining data)
     MultiTypeMap::~MultiTypeMap(){
       if(m_oDataMapPtr.use_count() == 1){
@@ -50,17 +50,17 @@ namespace icl{
         m_oDataMapPtr->clear();
       }
     }
-  
-  
+
+
     std::vector<MultiTypeMap::Entry> MultiTypeMap::getEntryList() const{
       std::vector<Entry> es;
-      for(DataMap::const_iterator it = m_oDataMapPtr->begin(); 
+      for(DataMap::const_iterator it = m_oDataMapPtr->begin();
           it != m_oDataMapPtr->end(); ++it){
         es.push_back(Entry(it->first,it->second.type,it->second.len));
       }
       return es;
     }
-  
+
     void MultiTypeMap::listContents() const{
       printf("MultiTypeMap content: \n");
       int i=0;
@@ -69,12 +69,12 @@ namespace icl{
       }
       printf("----------------------\n");
     }
-  
+
     void MultiTypeMap::clear(){
       *this = MultiTypeMap();
     }
-  
-  
+
+
     const std::string &MultiTypeMap::getType(const std::string &id) const{
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
@@ -83,20 +83,20 @@ namespace icl{
       }
       return (*m_oDataMapPtr)[id].type;
     }
-  
+
     bool MultiTypeMap::isArray(const std::string &id) const{
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
         return false;
       }
-      return (*m_oDataMapPtr)[id].len != 0; 
+      return (*m_oDataMapPtr)[id].len != 0;
     }
-  
-  
+
+
     bool MultiTypeMap::contains(const std::string &id) const{
       return m_oDataMapPtr->find(id) != m_oDataMapPtr->end();
     }
-  
+
     bool MultiTypeMap::check_type_internal(const std::string &id, const std::string &typestr) const{
       if(!contains(id)){
         ERROR_LOG("id "<<  id  << " not found \n");
@@ -104,6 +104,6 @@ namespace icl{
       }
       return (*m_oDataMapPtr)[id].type == typestr;
     }
-  
+
   } // namespace utils
 }

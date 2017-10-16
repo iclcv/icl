@@ -62,7 +62,7 @@ namespace icl{
       r.maxVal = ceil(r.maxVal/f) * f;
       return r;
     }
-    
+
     std::string create_label(float r){
       return str(fabs(r) < 0.0000001 ? 0 : r); // todo rounding and stuff
     }
@@ -79,7 +79,7 @@ namespace icl{
         const float max = roundedRange.maxVal;
         const int N = 10;  // todo find something better
         const float step = (max - min)/N;
-        
+
         const float lenBase = 0.1;
         const float d = 0.1; // distance of lables to the tics
 
@@ -89,9 +89,9 @@ namespace icl{
           addVertex(Vec(r,0,0,1));
           addVertex(Vec(r,len,0,1));
           addVertex(Vec(r,0,len,1));
-          
+
           addVertex(Vec(invertLabels ? -r : r,-d,0,1));
-          
+
           addLine(4*l,4*l+1);
           addLine(4*l,4*l+2);
 
@@ -99,13 +99,13 @@ namespace icl{
                                              20,GeomColor(255,255,255,255),
                                              -1,-1,-1,-1,.1));
           addCustomPrimitive(labels.back());
-          
+
         }
         addVertex(Vec((invertLabels ? -1 : 1) * (1+2*d),0,0,1));
         labels.push_back(new TextPrimitive(m_vertices.size()-1,0,0,0,label,
                                            25,GeomColor(255,255,255,255),
                                            -1,-1,-1,-1,.13));
-        
+
         addCustomPrimitive(labels.back());
 
       }
@@ -116,12 +116,12 @@ namespace icl{
       SceneObject *rootObject;
       Range32f ranges[3];
       Axis *axes[3];
-      
+
       CoordinateFrameObject3D(PlotWidget3D *parent, SceneObject *rootObject):
         parent(parent),rootObject(rootObject){
         axes[0] = axes[1] = axes[2] = 0;
         setLockingEnabled(true);
-        
+
         addVertex(Vec(1,-1,1,1));
         addVertex(Vec(1,1,1,1));
         addVertex(Vec(-1,1,1,1));
@@ -140,7 +140,7 @@ namespace icl{
 
         updateTics();
       }
-      
+
       void updateTics(){
         const Range32f *pranges = parent->getViewPort();
         if(ranges[0] == pranges[0] &&
@@ -156,8 +156,8 @@ namespace icl{
           axes[i] = new Axis(parent,ranges[i],i==1,labels[i]);
           addChild(axes[i]);
         }
-        
-        
+
+
         axes[0]->translate(0,-1,-1);
 
         axes[1]->rotate(0,0,M_PI/2);
@@ -168,21 +168,21 @@ namespace icl{
         axes[2]->rotate(-M_PI/2,0,0);
         axes[2]->rotate(0,M_PI/2,0);
         axes[2]->translate(-1,-1,0);
-            
+
       }
-     
+
       virtual void prepareForRendering(){
-       
+
 
         //use ranges
-        
-        
+
+
         // todo obtain parent view-port (which could be dynamically computed)
         // adapt tics and tic-labels (if neccessary)
-        
+
         // perhaps, the cs-object could have 2 modes (either showing all 6 sides)
         // or only the back-sides (which could be opaque or semitransparent then)
-        
+
         // actually, what do we do with all the properties:
         // IDEA: the PlotWidget3D could be configurable and add a new
         // Special Button to itself (because it is actually also an ICLWidget)
@@ -210,7 +210,7 @@ namespace icl{
         glVertex3f(-1,1,1);
         glVertex3f(-1,-1,1);
         glEnd();
-        
+
         glBegin(GL_LINES);
         glVertex3f(-1,-1,-1); glVertex3f(-1,-1,1);
         glVertex3f(1,-1,-1); glVertex3f(1,-1,1);
@@ -225,15 +225,15 @@ namespace icl{
       Scene scene;
       Range32f givenViewport[3];
       Range32f computedViewport[3];
-      
+
       // TODO: all visible stuff is always added to the root object
       // the root object is used to set the scale-part of it's transformation
       // so that all scene objects (or more precisely the plot3D's 3D-viewport)
       // is automatically fit into the [-1,1]^3 cube, which is the 3D coordinate frame
-      
+
       SceneObject *rootObject;
       CoordinateFrameObject3D *coordinateFrame;
-      
+
       float pointsize;
       float linewidth;
       bool smoothfill;
@@ -252,7 +252,7 @@ namespace icl{
             obj->setColor(Primitive::vertex,color);
             obj->setColor(Primitive::line,color);
           }
-          
+
           if(!fill[3]){
             obj->setVisible(Primitive::triangle,false);
             obj->setVisible(Primitive::quad,false);
@@ -261,7 +261,7 @@ namespace icl{
             obj->setVisible(Primitive::triangle,true);
             obj->setVisible(Primitive::quad,true);
             obj->setVisible(Primitive::polygon,true);
-            
+
             obj->setColor(Primitive::triangle,fill);
             obj->setColor(Primitive::quad,fill);
             obj->setColor(Primitive::polygon,fill);
@@ -271,22 +271,22 @@ namespace icl{
         rootObject->addChild(obj,passOwnership);
 
         updateBounds(); // todo: only extend bounds by newly added object!!
-        
+
         LinearTransform1D tx(computedViewport[0],Range32f(-1,1));
         LinearTransform1D ty(computedViewport[1],Range32f(-1,1));
         LinearTransform1D tz(computedViewport[2],Range32f(-1,1));
-        
+
         rootObject->setTransformation(Mat(tx.m,0,0,tx.b,
                                           0,ty.m,0,ty.b,
                                           0,0,tz.m,tz.b,
                                           0,0,0,1));
         rootObject->unlock();
-        
+
         coordinateFrame->lock();
         coordinateFrame->updateTics();
         coordinateFrame->unlock();
       }
-      
+
       Data(){
         pointsize = 1;
         linewidth = 1;
@@ -294,7 +294,7 @@ namespace icl{
         color = geom_red(255);
         fill = geom_blue(255);
       }
-      
+
       template<bool X, bool Y, bool Z>
       void update_bounds(Range32f computedViewport[3], SceneObject *o){
         //        DEBUG_LOG("updating bounds for object " << (void*)o << (rootObject ? "[root]" : "[other]"));
@@ -321,17 +321,17 @@ namespace icl{
           update_bounds<X,Y,Z>(computedViewport,o->getChild(i));
         }
       }
-      
+
       void updateBounds(){
         const bool dyn[3] = {
           !givenViewport[0].getLength(),
           !givenViewport[1].getLength(),
-          !givenViewport[2].getLength() 
+          !givenViewport[2].getLength()
         };
         for(int i=0;i<3;++i){
           computedViewport[i] = dyn[i] ? Range32f::inv_limits() : givenViewport[i];
         }
-        
+
         switch( dyn[0] + dyn[1]*2 + dyn[2]*4 ){
           case 0: break; // nothing to do here!
           case 1: update_bounds<true,false,false>(computedViewport,rootObject); break;
@@ -351,7 +351,7 @@ namespace icl{
     }
 
 
-    
+
     PlotWidget3D::PlotWidget3D(QWidget *parent):ICLDrawWidget3D(parent),m_data(new Data){
       std::fill(m_data->givenViewport,m_data->givenViewport+3,Range32f(0,0));
       m_data->scene.setBounds(5);
@@ -361,18 +361,18 @@ namespace icl{
                  Vec(0,0,-1,1),
                  7, Point32f(320,240),200,200,
                  0, Camera::RenderParams(Size(640,480),
-                                         1,10000, 
+                                         1,10000,
                                          Rect(0,0,640,480),
                                          0,1));
       m_data->scene.addCamera(cam);
-      
+
       install(m_data->scene.getMouseHandler(0));
       link(m_data->scene.getGLCallback(0));
 
-      m_data->rootObject = new SceneObject;      
+      m_data->rootObject = new SceneObject;
       m_data->rootObject->setLockingEnabled(true);
       m_data->coordinateFrame = new CoordinateFrameObject3D(this,m_data->rootObject);
-      
+
       m_data->scene.addObject(m_data->coordinateFrame); // must be rendered first (adapts rootObj-transform)
       m_data->scene.addObject(m_data->rootObject);
 
@@ -392,7 +392,7 @@ namespace icl{
     const Camera &PlotWidget3D::getCamera() const{
       return m_data->scene.getCamera(0);
     }
-    
+
     void PlotWidget3D::setCamera(const Camera &cam){
       m_data->scene.getCamera(0) = cam;
     }
@@ -403,45 +403,45 @@ namespace icl{
       m_data->givenViewport[0] = xrange;
       m_data->givenViewport[1] = yrange;
       m_data->givenViewport[2] = zrange;
-      
+
       m_data->updateBounds();
-      
+
       // compute an actual view-port used, that is slightly larger
-      // or equal to the given viewport. 
+      // or equal to the given viewport.
       /** Strategy: use larger abs value of min,max A
           A = XXX * 10^k (e.g. A = 122*10^0 -> 122
                                A = 160*10^2 -> 16000
                                A = 881*10-3 -> 0.881
-          
+
           then set viewport to next higher multiple of 10
           122 -> 130
           16000 -> 16000
           0.881 -> 0.89
-          
+
           if this is only or or two away from the next multiple of 100 use this one
           122 -> 130
           16000 -> 16000
           0.881 -> 0.9
 
           use same strategy for minValue, but wrt. the quatisation of the max value
-          
+
           max = 175*10^1 = 1750 -> use 180*10^1
           min = 884*10^-2 = 8.84
-          
+
           min is transfered and rounded to upper exponent first
-          min' = 0.884 * 10^1 
-          
-          which could be interpreted as 0 or 1, but the runding of max was done 
+          min' = 0.884 * 10^1
+
+          which could be interpreted as 0 or 1, but the runding of max was done
       */
     }
-      
+
     Scene &PlotWidget3D::getScene(){
       return m_data->scene;
     }
     const Scene &PlotWidget3D::getScene() const{
       return m_data->scene;
     }
-    
+
     SceneObject *PlotWidget3D::getRootObject(){
       return m_data->rootObject;
     }
@@ -453,11 +453,11 @@ namespace icl{
     void PlotWidget3D::add(SceneObject *obj, bool passOwnerShip){
       m_data->add(obj,passOwnerShip);
     }
-    
+
     void PlotWidget3D::remove(Handle h){
       m_data->rootObject->removeChild(h);
     }
-    
+
     void PlotWidget3D::color(int r, int g, int b, int a){
       m_data->color = GeomColor(r,g,b,a);
     }
@@ -481,11 +481,11 @@ namespace icl{
     void PlotWidget3D::nofill(){
       m_data->fill[3] = 0;
     }
-    
+
     void PlotWidget3D::smoothfill(bool on){
       m_data->smoothfill = on;
     }
-    
+
     void PlotWidget3D::lock(){
       m_data->scene.lock();
     }
@@ -501,7 +501,7 @@ namespace icl{
       m_data->add(obj);
       return obj;
     }
-    
+
     namespace{
       struct scale_color_range{
         LinearTransform1D t;
@@ -528,7 +528,7 @@ namespace icl{
       obj->setPointSize(m_data->pointsize);
       m_data->add(obj,true,true);
       return obj;
-    
+
     }
 
 
@@ -544,7 +544,7 @@ namespace icl{
     }
 
 
-    
+
     PlotWidget3D::Handle PlotWidget3D::surf(const std::vector<Vec> &points, int nx, int ny){
       SceneObject *grid = new GridSceneObject(nx,ny,points,m_data->color[3],m_data->fill[3]);
       grid->setLockingEnabled(true);
@@ -571,7 +571,7 @@ namespace icl{
           points[x + nx*y] = Vec(xv,yv,fxy(xv,yv),1);
         }
       }
-      
+
       if(reuseObject){
         if(m_data->rootObject->hasChild(reuseObject)){
           reuseObject->createAutoNormals(m_data->smoothfill);
@@ -596,12 +596,12 @@ namespace icl{
       m_data->add(obj,true,true);
       return obj;
     }
-    
 
 
-    
+
+
     namespace{ // only for registering this class as a GUI component!
-      
+
       struct Plot3DGUIWidget : public GUIWidget{
         PlotWidget3D *draw;
         Plot3DGUIWidget(const GUIDefinition &def):GUIWidget(def,6,6,GUIWidget::gridLayout,Size(16,12)){
@@ -609,9 +609,9 @@ namespace icl{
           draw->setViewPort(Range32f(def.floatParam(0),def.floatParam(1)),
                             Range32f(def.floatParam(2),def.floatParam(3)),
                             Range32f(def.floatParam(4),def.floatParam(5)));
-                            
+
           addToGrid(draw);
-          
+
           if(def.handle() != ""){
             getGUI()->lockData();
             getGUI()->allocValue<PlotHandle3D>(def.handle(),PlotHandle3D(draw,this));
@@ -626,25 +626,25 @@ namespace icl{
           w = new  Plot3DGUIWidget(def);
         }catch(ICLException &ex){
           std::cout << ex.what() << std::endl
-                    << "syntax is:" 
-                    << "draw3D() (no parameters supported)" 
+                    << "syntax is:"
+                    << "draw3D() (no parameters supported)"
                     << std::endl;
           return 0;
         }
         return w;
       }
-      
+
       void assign_plot_handle_3D(const PlotHandle3D &src, PlotHandle3D &dst){
         dst = src;
       }
-      
+
       struct Plot3DGUIWidgetRegisterer{
-        Plot3DGUIWidgetRegisterer(){ 
+        Plot3DGUIWidgetRegisterer(){
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
-          
+
           qt::DataStore::register_trivial_assignment_rule<PlotHandle3D,PlotHandle3D>("PlotHandle3D","PlotHandle3D");
         }
-      } plot3DWidgetRegisterer; 
+      } plot3DWidgetRegisterer;
     }
   }
 }

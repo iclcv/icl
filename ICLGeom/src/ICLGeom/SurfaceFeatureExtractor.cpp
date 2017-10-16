@@ -31,10 +31,10 @@
 #include <ICLGeom/SurfaceFeatureExtractor.h>
 
 namespace icl{
-  namespace geom{    
-    
+  namespace geom{
+
     SurfaceFeatureExtractor::SurfaceFeature SurfaceFeatureExtractor::apply(
-                                            std::vector<Vec> &points, std::vector<Vec> &normals, int mode){   
+                                            std::vector<Vec> &points, std::vector<Vec> &normals, int mode){
       SurfaceFeatureExtractor::SurfaceFeature feature = getInitializedStruct();
       if(normals.size()!=points.size()){
         throw utils::ICLException("points size != normals size");
@@ -46,10 +46,10 @@ namespace icl{
       finish(feature, mode);
       return feature;
     }
-    
-    
+
+
     std::vector<SurfaceFeatureExtractor::SurfaceFeature> SurfaceFeatureExtractor::apply(
-                                            core::Img32s labelImage, core::DataSegment<float,4> &xyzh, 
+                                            core::Img32s labelImage, core::DataSegment<float,4> &xyzh,
                                             core::DataSegment<float,4> &normals, int mode){
   	  unsigned int w = labelImage.getSize().width;
   	  unsigned int h = labelImage.getSize().height;
@@ -67,12 +67,12 @@ namespace icl{
         }
       }
       for(unsigned int i=0; i<features.size(); i++){
-        finish(features.at(i), mode);     
+        finish(features.at(i), mode);
       }
       return features;
     }
-    
-    
+
+
     SurfaceFeatureExtractor::SurfaceFeature SurfaceFeatureExtractor::getInitializedStruct(){
       SurfaceFeatureExtractor::SurfaceFeature feature;
       feature.numPoints=0;
@@ -91,8 +91,8 @@ namespace icl{
       feature.volume=0;
       return feature;
     }
-    
-    
+
+
     void SurfaceFeatureExtractor::update(Vec &normal, Vec &point, SurfaceFeature &feature, int mode, int x, int y){
       if(mode&NORMAL_HISTOGRAM){
         int xx = round(normal.x*5.0+5.0);//-1 -> 0, 0 -> 5, 1 -> 10
@@ -120,8 +120,8 @@ namespace icl{
   	    if(y>feature.boundingBox2D.second.y) feature.boundingBox2D.second.y=y;
   	  }
   	}
-  	
-  	
+
+
   	void SurfaceFeatureExtractor::finish(SurfaceFeature &feature, int mode){
   	  feature.meanNormal/=feature.numPoints;
       feature.meanPosition/=feature.numPoints;
@@ -132,7 +132,7 @@ namespace icl{
             feature.normalHistogramChannel(x,y)/=feature.numPoints;//normalized histogram
             if(feature.normalHistogramChannel(x,y)>=0.005) numOfBinsBigger05++;
           }
-        }                 
+        }
         if(numOfBinsBigger05==0) feature.curvatureFactor = SurfaceFeatureExtractor::UNDEFINED;
         else if(numOfBinsBigger05<8) feature.curvatureFactor = SurfaceFeatureExtractor::PLANAR;
         else if(numOfBinsBigger05<20) feature.curvatureFactor = SurfaceFeatureExtractor::CURVED_1D;
@@ -144,8 +144,8 @@ namespace icl{
         feature.volume = (max[0]-min[0])*(max[1]-min[1])*(max[2]-min[2]);
       }
 	  }
-	  
-	  
+
+
 	  float SurfaceFeatureExtractor::matchNormalHistograms(core::Img32f &a, core::Img32f &b){
       float sum=0;
       core::Channel32f aC = a[0];
@@ -157,6 +157,6 @@ namespace icl{
       }
       return sum;
 	  }
-	                    
+
   }
 }

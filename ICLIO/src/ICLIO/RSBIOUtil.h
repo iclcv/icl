@@ -50,27 +50,27 @@
 namespace icl{
   namespace io{
 
-    
-    
+
+
     // Tier 2: Basic data containment slice
     template<class T>
     struct RSBIOUtilDataBase{
       virtual ~RSBIOUtilDataBase(){}
-      
+
       typedef rsb::Informer<T> Informer;
       typedef typename Informer::Ptr InformerPtr;
       typedef typename Informer::DataPtr DataPtr;
       typedef typename rsb::Scope Scope;
       typedef typename rsb::ListenerPtr ListenerPtr;
-      
+
       /// Callback type that is used for listener_callbacks
       typedef typename utils::Function<void,const T&> Callback;
-      
+
       InformerPtr m_informer;
       DataPtr m_data;
       Scope m_scope;
       ListenerPtr m_listener;
-      
+
       utils::Mutex m_mutex;
       std::map<std::string,Callback> m_callbacks;
     };
@@ -92,8 +92,8 @@ namespace icl{
     struct RSBIOUtilDataExtra<T> : public RSBIOUtilDataBase<T>{         \
       static void register_type(){}                                     \
     };
-     
-    
+
+
     REGISTER_RSBIOUtil_COMMON_TYPE(std::string,string,primitive.string);
     REGISTER_RSBIOUtil_COMMON_TYPE(int32_t,int,primitive.int);
     REGISTER_RSBIOUtil_COMMON_TYPE(uint32_t,int,primitive.int);
@@ -103,7 +103,7 @@ namespace icl{
     REGISTER_RSBIOUtil_COMMON_TYPE(double,double,primitive.double);
     REGISTER_RSBIOUtil_COMMON_TYPE(bool,bool,primitive.bool);
 
-    /*   
+    /*
         REGISTER_RSBIOUtil_COMMON_TYPE( ::rst::generic::Value,Value,rst.generic.Value);
         REGISTER_RSBIOUtil_COMMON_TYPE( ::rst::generic::Dictionary,Dictionary,rst.generic.Dictionary);
         REGISTER_RSBIOUtil_COMMON_TYPE( ::rst::generic::KeyValuePair,KeyValuePair,rst.generic.KeyValuePair);
@@ -111,15 +111,15 @@ namespace icl{
 
     /// Simple and ready to use RSB-Informer and RSB-Listener Interface
     /** This utility class will help to significantly reduce the amount
-        of boiler-plate code in 95% of all cases where RSB-communication 
-        is needed. 
-        In the current implementation, only protocol buffer types are 
+        of boiler-plate code in 95% of all cases where RSB-communication
+        is needed.
+        In the current implementation, only protocol buffer types are
         supported.
     */
     template<class T>
     class RSBIOUtil : public RSBIOUtilDataExtra<T>, public utils::Uncopyable{
       public:
-        
+
       typedef  RSBIOUtilDataExtra<T> Super;
       /// creates an instance with given mode and scope
       /** mode must be either send or receive*/
@@ -131,14 +131,14 @@ namespace icl{
             }
           } static_type_regitration;
         }
-        
+
         Super::m_scope = rsb::Scope(scope);
-        
-        rsb::Factory &factory = rsb::getFactory();        
+
+        rsb::Factory &factory = rsb::getFactory();
         if(mode == "send"){
           rsb::ParticipantConfig cfg = factory.getDefaultParticipantConfig();
           Super::m_informer = factory.createInformer<T>(Super::m_scope,cfg);
-          Super::m_data = typename Super::DataPtr(new T); 
+          Super::m_data = typename Super::DataPtr(new T);
         }else  if(mode == "receive"){
           Super::m_listener = factory.createListener(Super::m_scope);
           typedef typename rsb::DataFunctionHandler<T> FHandler;
@@ -146,7 +146,7 @@ namespace icl{
           Super::m_listener->addHandler(rsb::HandlerPtr(new FHandler(f)));
         }else{
           throw utils::ICLException("RSBIOUtil: invalid mode " + mode);
-        }      
+        }
       }
 
       void send(const T &t){
@@ -157,7 +157,7 @@ namespace icl{
       void send(typename Super::DataPtr data){
         Super::m_informer->publish(data);
       }
-      
+
       void handle(typename Super::DataPtr data){
         utils::Mutex::Locker lock(Super::m_mutex);
         for(typename std::map<std::string,typename Super::Callback>::iterator it = Super::m_callbacks.begin();
@@ -165,12 +165,12 @@ namespace icl{
           it->second(*data);
         }
       }
-      
+
       void registerListenerCallback(typename Super::Callback cb, const std::string &id="default"){
         utils::Mutex::Locker lock(Super::m_mutex);
         Super::m_callbacks[id] = cb;
       }
-      
+
       void unregisterListenerCallback(const std::string &id="default"){
         utils::Mutex::Locker lock(Super::m_mutex);
         typename std::map<std::string,typename Super::Callback>::iterator it = Super::m_callbacks.find(id);
@@ -188,12 +188,12 @@ namespace icl{
       public:
 
       typedef typename RSBIOUtilDataBase<T>::DataPtr DataPtr;
-      
+
       inline RSBSender(const std::string &scope=""){
         if(scope.length()) init(scope);
       }
       inline bool isNull() const { return !impl; }
-      
+
       inline operator bool() const { return !isNull(); }
 
       inline void init(const std::string &scope){
@@ -215,7 +215,7 @@ namespace icl{
         if (isNull()) throw utils::ICLException(fn + ": RSBListener is null");
       }
     };
-    
+
     template<class T>
     class RSBListener {
       utils::SmartPtr<RSBIOUtil<T> > impl;
@@ -223,15 +223,15 @@ namespace icl{
 
       typedef typename RSBIOUtilDataBase<T>::Callback Callback;
        typedef typename RSBIOUtilDataBase<T>::DataPtr DataPtr;
-       
+
       inline RSBListener(const std::string &scope=""){
         if(scope.length()) init(scope);
       }
-      
+
       inline bool isNull() const { return !impl; }
-      
+
       inline operator bool() const { return !isNull(); }
-      
+
       inline void init(const std::string &scope){
         impl = new RSBIOUtil<T>("receive",scope);
       }
@@ -250,8 +250,8 @@ namespace icl{
       inline void null_check(const std::string &fn) const throw (utils::ICLException) {
         if (isNull()) throw utils::ICLException(fn + ": RSBSender is null");
       }
-      
+
     };
-    
+
   }
 }

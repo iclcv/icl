@@ -38,7 +38,7 @@ using namespace icl::geom;
 
 namespace icl{
   namespace markers{
-  
+
    struct MultiCamFiducialDetector::Data{
       bool camsDeeplyCopied;
       std::vector<Camera*> cams;
@@ -47,8 +47,8 @@ namespace icl{
       std::vector<MultiCamFiducialImpl> impls;
       int numImplsUsed;
       std::vector<MultiCamFiducial> output;
-      
-  
+
+
       ~Data(){
         if(camsDeeplyCopied){
           for(unsigned int i=0;i<cams.size();++i){
@@ -60,17 +60,17 @@ namespace icl{
         }
       }
     };
-  
-    
+
+
     void MultiCamFiducialDetector::property_callback(const Configurable::Property &p){
       Any value = getPropertyValue(p.name);
       for(unsigned int i=1;i<m_data->detectors.size();++i){
         m_data->detectors[i]->setPropertyValue(p.name, value);
       }
     }
-    
+
     MultiCamFiducialDetector::MultiCamFiducialDetector():m_data(0){}
-    
+
     MultiCamFiducialDetector::MultiCamFiducialDetector(const std::string &pluginType,
                                                        const Any &markersToLoad,
                                                        const ParamList &params,
@@ -79,8 +79,8 @@ namespace icl{
                                                        bool deepCopyCams) throw (ICLException):m_data(0){
       init(pluginType,markersToLoad,params,cams,syncProperties,deepCopyCams);
     }
-    
-      
+
+
     void MultiCamFiducialDetector::init(const std::string &pluginType,
                                         const Any &markersToLoad,
                                         const ParamList &params,
@@ -88,8 +88,8 @@ namespace icl{
                                         bool syncProperties,
                                         bool deepCopyCams) throw (ICLException){
       if(m_data) delete m_data;
-      m_data = new Data;    
-      
+      m_data = new Data;
+
       m_data->camsDeeplyCopied = deepCopyCams;
       if(deepCopyCams){
         std::vector<Camera*> copiedCams(cams.size());
@@ -98,7 +98,7 @@ namespace icl{
       }else{
         m_data->cams = cams;
       }
-      
+
       for(unsigned int i=0;i<cams.size();++i){
         m_data->detectors.push_back(new FiducialDetector(pluginType,markersToLoad,params));
         m_data->detectors[i]->setCamera(*m_data->cams[i]);
@@ -109,19 +109,19 @@ namespace icl{
       if(syncProperties){
         Configurable::registerCallback(function(this,&MultiCamFiducialDetector::property_callback));
       }
-      
+
       m_data->results.resize(cams.size());
     }
-    
-    
-    const std::vector<MultiCamFiducial> &MultiCamFiducialDetector::detect(const std::vector<const ImgBase*> &images, 
+
+
+    const std::vector<MultiCamFiducial> &MultiCamFiducialDetector::detect(const std::vector<const ImgBase*> &images,
                                                                           int minCamsFound) throw (ICLException){
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
-      ICLASSERT_THROW(m_data->detectors.size() == images.size(), 
+      ICLASSERT_THROW(m_data->detectors.size() == images.size(),
                       ICLException(str(__FUNCTION__)+ ": given image count is wrong (got "
-                                   + str(images.size()) + " but expected "  
+                                   + str(images.size()) + " but expected "
                                    + str(m_data->detectors.size()) + ")" ));
-  
+
       int maxID = -1;
       for(unsigned int i=0;i<m_data->detectors.size();++i){
         std::vector<Fiducial> &r = m_data->results[i];
@@ -139,11 +139,11 @@ namespace icl{
       if((int)m_data->impls.size() < m_data->numImplsUsed){
         m_data->impls.resize(m_data->numImplsUsed);
       }
-  
+
       for(int i=0;i<m_data->numImplsUsed;++i){
         m_data->impls[i].numFound = 0;
       }
-      
+
       for(unsigned int i=0;i<m_data->results.size();++i){
         std::vector<Fiducial> &r = m_data->results[i];
         for(unsigned int j=0;j<r.size();++j){
@@ -157,41 +157,41 @@ namespace icl{
           m.cams.push_back(m_data->cams[i]);
         }
       }
-  
+
       m_data->output.clear();
       for(int i=0;i<m_data->numImplsUsed;++i){
         if(m_data->impls[i].numFound >= minCamsFound){
           m_data->output.push_back(MultiCamFiducial(&m_data->impls[i]));
         }
       }
-  
+
       return m_data->output;
      }
-      
+
     const FiducialDetector &MultiCamFiducialDetector::getFiducialDetector(int idx) const{
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       return *m_data->detectors[idx];
     }
-  
+
     FiducialDetector &MultiCamFiducialDetector::getFiducialDetector(int idx){
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       return *m_data->detectors[idx];
     }
-    
+
     void MultiCamFiducialDetector::loadMarkers(const Any &which, const ParamList &params) throw (ICLException){
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       for(int i=0;i<getNumCameras();++i){
         m_data->detectors[i]->loadMarkers(which,params);
       }
     }
-    
+
     void MultiCamFiducialDetector::unloadMarkers(const Any &which){
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       for(int i=0;i<getNumCameras();++i){
         m_data->detectors[i]->unloadMarkers(which);
-      }    
+      }
     }
-      
+
     std::string MultiCamFiducialDetector::getIntermediateImageNames() const{
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       std::ostringstream str;
@@ -204,11 +204,11 @@ namespace icl{
       }
       return str.str();
     }
-  
+
     int MultiCamFiducialDetector::getCameraIDFromIntermediteImageName(const std::string &name){
       return parse<int>(name.substr(4));
     }
-  
+
     const ImgBase *MultiCamFiducialDetector::getIntermediateImage(const std::string &name) const throw (ICLException){
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       int idx = parse<int>(name.substr(4));
@@ -218,14 +218,14 @@ namespace icl{
       }else{
         return 0;
       }
-    }  
-    
+    }
+
     int MultiCamFiducialDetector::getNumCameras() const{
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       return m_data->detectors.size();
     }
-  
-  
+
+
     REGISTER_CONFIGURABLE_DEFAULT(MultiCamFiducialDetector);
   } // namespace markers
 }

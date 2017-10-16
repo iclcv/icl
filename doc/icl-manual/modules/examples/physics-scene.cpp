@@ -55,7 +55,7 @@ void init(){
   scene.addObject(&table);
 
   gui["draw"].install(&handler);
-  
+
   //link the visualization
   gui["draw"].link(scene.getGLCallback(0));
 }

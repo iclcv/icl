@@ -41,18 +41,18 @@ using namespace icl::utils;
 
 namespace icl{
   namespace math{
-  
+
   namespace fft{
-  
+
   /// 2*PI
   static const double FFT_2_PI = 2.0*3.1415926535897932384626433832795288419716939937510;
-  
+
   /// PI
   static const double FFT_PI = 3.1415926535897932384626433832795288419716939937510;
-  
+
   /// PI/2
   static const double FFT_PI_HALF = 1.5707963267948966192313216916397644209858469968755;
-  
+
   ///1dfft computation (fallback)
   /**Computes the 1D Fast-Fourier-Transformation for given data.
      If the size of the dataarray is a power of 2, the fft is performed,
@@ -66,7 +66,7 @@ namespace icl{
    */
   template<typename T1,typename T2> ICLMath_IMP
   std::complex<T2>* fft(unsigned int n, const T1* data);
-  
+
   ///2dfft computation (fallback)
   /**Computes the 2D Fast-Fourier-Transformation for given data.
      Works even if datasize is not a power of 2.
@@ -81,7 +81,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> >&  fft2D_cpp(const DynMatrix<T1> &src,
   		DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buf);
-  
+
   ///2dfft computation
   /**Computes the 2D Fast-Fourier-Transformation for given data.
     Uses MKL or IPP if available, else fft2D_cpp (fallback).
@@ -96,7 +96,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> >& fft2D(const DynMatrix<T1> &src, DynMatrix<std::complex<T2> > &dst,
   		DynMatrix<std::complex<T2> > &buf);
-  
+
   ///1d dft computation
   /**Computes the 1D Diskrete-Fourier-Transformation for given data.
      Possible inputdatatypes are: icl8u, icl16u, icl32u, icl16s, icl32s, icl32f,
@@ -108,7 +108,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   std::complex<T2>* dft(unsigned int n, T1 *matrix);
-  
+
   ///2d dft computation
   /**Computes the 2D Diskrete-Fourier-Transformation for given data.
      Possible inputdatatypes are: icl8u, icl16u, icl32u, icl16s, icl32s, icl32f,
@@ -122,7 +122,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> >&  dft2D(DynMatrix<T1> &src,
   		DynMatrix<std::complex<T2> >& dst,DynMatrix<std::complex<T2> >&buf);
-  
+
   ///1d ifft computation
   /**Computes the 1D Inverse-Fast-Fourier-Transformation.
      Possible inputdatatypes are: icl8u, icl16u, icl32u, icl16s, icl32s, icl32f,
@@ -133,7 +133,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   std::complex<T2>* ifft_cpp(unsigned int n, const T1* matrix);
-  
+
   ///2d ifft computation (fallback)
   /**Computes the 2D Inverse-Fast-Fourier-Transformation.
      Possible inputdatatypes are: icl8u, icl16u, icl32u, icl16s, icl32s, icl32f,
@@ -146,7 +146,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> >&  ifft2D_cpp(const DynMatrix<T1>& src,
   		DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buf);
-  
+
   ///2d ifft computation
   /**Computes the 2D Inverse-Fast-Fourier-Transformation.
      Uses MKL or IPP if available, else ifft2D_cpp.
@@ -160,7 +160,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> >&   ifft2D(const DynMatrix<T1> &src, DynMatrix<std::complex<T2> > &dst,
   		DynMatrix<std::complex<T2> > &buf);
-  
+
   ///1d idft computation
   /**Computes the 1D Inverse-Diskrete-Fourier-Transformation for given data.
      @param n size of the dataarray
@@ -169,7 +169,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   std::complex<T2>* idft(unsigned int n, T1 *matrix);
-  
+
   ///2d idft computation
   /**
    * Computes the 2D Inverse-Diskrete-Fourier-Transformation for given data.
@@ -181,7 +181,7 @@ namespace icl{
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> > &idft2D(DynMatrix<T1> &src, DynMatrix<std::complex<T2> > &dst,
   		DynMatrix<std::complex<T2> > &buf);
-  
+
   ///shifts upper left corner to center.
   /**Shifts the upper left corner of the matrix into the center of it.
      @param src datamatrix to be shifted
@@ -190,7 +190,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T>& fftshift(DynMatrix<T> &src, DynMatrix<T> &dst) throw (InvalidMatrixDimensionException);
-  
+
   ///invers function to fftshift.
   /**Shifts the center of the matrix into the upper left corner .
      @param src datamatrix to be shifted
@@ -199,7 +199,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T>& ifftshift(DynMatrix<T> &src, DynMatrix<T> &dst) throw (InvalidMatrixDimensionException);
-  
+
   ///computes the powerspectrum
   /**Computes and returns the powerspectrum of a matrix with complex values.
      @param src the sourcematrix
@@ -208,7 +208,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T>& powerspectrum(const DynMatrix<std::complex<T> > &src, DynMatrix<T> &dst);
-  
+
   ///computes the logpowerspectrum
   /**Computes and returns the log of the powerspectrum of a matrix with complex values.
      @param src the sourcematrix
@@ -217,7 +217,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T>& logpowerspectrum(const DynMatrix<std::complex<T> > &src, DynMatrix<T> &dst);
-  
+
   ///creates border with given value
   /**Resizes the sourcematrix to the next power of 2, centers the original matrix and fills the border
      with the given value.
@@ -228,7 +228,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T> &makeborder(const DynMatrix<T> &src, DynMatrix<T> &dst, T borderFill);
-  
+
   ///mirrors the sourcematrix
   /**Resizes the sourcematrix to the next power of 2,
      centers the original matrix and mirrors it at its borders.
@@ -238,7 +238,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T> &mirrorOnCenter(const DynMatrix<T> &src, DynMatrix<T> &dst);
-  
+
   ///appends copies of sourcematrix beside and under it
   /**Resizes the sourcematrix to the next power of 2
      and copies the sourcematrix as far as
@@ -249,14 +249,14 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   DynMatrix<T> &continueMatrixToPowerOf2(const DynMatrix<T> &src, DynMatrix<T> &dst);
-  
-  
+
+
   ///Returns the next value greater then n to power of 2
   ICLMath_API int nextPowerOf2(int n);
-  
+
   ///Returns the prior value lower then n to power of 2
   ICLMath_API int priorPowerOf2(int n);
-  
+
   ///split complexmatrix into realmatrix and imaginarymatrix
   /**Splits a matrix with complex values into two matrices with real and imaginary
      parts as values.
@@ -266,7 +266,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   void split_complex(const DynMatrix<std::complex<T> > &src, DynMatrix<T> &real, DynMatrix<T> &img);
-  
+
   ///returns imaginary part complex matrix
   /**Computes and returns the imaginary part of a matrix with complex values.
      @param src the sourcematrix
@@ -275,7 +275,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<T2> &imagpart(const DynMatrix<std::complex<T1> > &src, DynMatrix<T2> &dst);
-  
+
   ///returns real part of complex matrix
   /**Computes and returns the real part of a matrix with complex values.
      @param src the sourcematrix
@@ -284,7 +284,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<T2> &realpart(const DynMatrix<std::complex<T1> > &src, DynMatrix<T2> &dst);
-  
+
   ///returns the magnitude of complex matrix
   /**Computes and returns the magnitude of a matrix with complex values.
      @param src the sourcematrix
@@ -293,7 +293,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<T2>& magnitude(const DynMatrix<std::complex<T1> > &src, DynMatrix<T2> &dst);
-  
+
   ///return phase of complexmatrix
   /**Computes and returns the phase of a matrix with complex values.
      @param src the sourcematrix
@@ -302,7 +302,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<T2>& phase(const DynMatrix<std::complex<T1> > &src, DynMatrix<T2> &dst);
-  
+
   ///splits complexmatrix into magnitude and phase
   /**Splits a matrix with complex values into two matrices with magnitude and phase as values.
      @param src the sourcematrix with complex values
@@ -311,7 +311,7 @@ namespace icl{
    */
   template<typename T> ICLMath_IMP
   void split_magnitude_phase(const DynMatrix<std::complex<T> > &src, DynMatrix<T> &mag, DynMatrix<T> &phase);
-  
+
   ///joins to matrices to one complex
   /**@param real matrix for realpart
      @param im matrix for imaginary part
@@ -319,7 +319,7 @@ namespace icl{
    */
   template<typename T1, typename T2> ICLMath_IMP
   DynMatrix<std::complex<T2> > &joinComplex(const DynMatrix<T1> &real, const DynMatrix<T1> &im, DynMatrix<std::complex<T2> > &dst);
-  
+
   } // namespace math
 }
 }

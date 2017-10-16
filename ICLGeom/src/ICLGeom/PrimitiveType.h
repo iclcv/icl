@@ -32,7 +32,7 @@
 
 namespace icl{
   namespace geom{
-  
+
     enum PrimitiveType{
       vertexPrimitive   = 1<<0, //<! vertex
       linePrimitive     = 1<<1, //<! line primitive (adressing two vertices -> start and end position of the line)

@@ -36,7 +36,7 @@
 
 namespace icl{
   namespace filter{
-    
+
     /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
     class ICLFilter_API MirrorOp : public BaseAffineOp, public utils::Uncopyable {
       public:
@@ -45,20 +45,20 @@ namespace icl{
         @param eAxis the axis on which the mirroring is performed
       */
       MirrorOp (core::axis eAxis);
-      
+
       /// Destructor
       virtual ~MirrorOp(){}
-      
+
       /// Applies the mirror transform to the images
       void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
-  
-      private:    
+
+      private:
       /// array of class methods used to transform depth8u and depth32f images
       void (MirrorOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
-      
+
       template<typename T>
       void mirror (const core::ImgBase *poSrc, core::ImgBase *poDst);
-      
+
       core::axis  m_eAxis;
       utils::Size  m_oSize;
       utils::Point m_oSrcOffset, m_oDstOffset;

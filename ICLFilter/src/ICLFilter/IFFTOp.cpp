@@ -39,7 +39,7 @@ using namespace icl::math::fft;
 
 namespace icl{
   namespace filter{
-  
+
     class IFFTOp::Data{
     public:
       ResultMode m_rm;

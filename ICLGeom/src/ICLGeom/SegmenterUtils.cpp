@@ -44,10 +44,10 @@
 
 namespace icl{
   namespace geom{
-    
+
     #ifdef ICL_HAVE_OPENCL
     //OpenCL kernel code
-    static char utilsKernel[] = 
+    static char utilsKernel[] =
       "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
       "__kernel void                                                                                                                  \n"
       "segmentColoring(__global int const * assignment, __global uchar * colorR, __global uchar * colorG, __global uchar * colorB)    \n"
@@ -159,9 +159,9 @@ namespace icl{
       "  }                                                                                                                            \n"
       "}                                                                                                                              \n"
     ;
-    #endif  
-    
-    
+    #endif
+
+
     struct SegmenterUtils::Data {
 	    Data(Mode mode) {
 		    clReady = false;
@@ -174,7 +174,7 @@ namespace icl{
           useCL=true;
         }else{
           useCL=false;
-        } 
+        }
 	    }
 
 	    ~Data() {
@@ -182,24 +182,24 @@ namespace icl{
 
 	    bool clReady;
 	    bool useCL;
-	    
-	    utils::Size size;	    
+
+	    utils::Size size;
 	    bool kernelSegmentColoringInitialized;
 	    bool kernelPointAssignmentInitialized;
-	    
+
 	    int stabelizeCounter;
 	    core::Img32s lastLabelImage;
-	    
+
 	    #ifdef ICL_HAVE_OPENCL
         //OpenCL data
         std::vector<unsigned char> segmentColorImageRArray;
         std::vector<unsigned char> segmentColorImageGArray;
         std::vector<unsigned char> segmentColorImageBArray;
-        
+
         std::vector<unsigned char> maskArray;
         std::vector<int> assignmentArray;
-        
-        //OpenCL    
+
+        //OpenCL
         utils::CLProgram program;
         utils::CLKernel kernelSegmentColoring;
         utils::CLKernel kernelPointAssignment;
@@ -209,18 +209,18 @@ namespace icl{
         utils::CLBuffer segmentColorImageGBuffer;
         utils::CLBuffer segmentColorImageBBuffer;
         utils::CLBuffer assignmentBuffer;
-        
+
         utils::CLBuffer neighboursBuffer;
 	      utils::CLBuffer xyzBuffer;
 	      utils::CLBuffer maskBuffer;
 	      utils::CLBuffer assignmentOutBuffer;
       #endif
     };
-    
+
 
     SegmenterUtils::SegmenterUtils(Mode mode) :
 	    m_data(new Data(mode)) {
-	    
+
 	    if(m_data->useCL==true){
 	      #ifdef ICL_HAVE_OPENCL
 	        try
@@ -246,8 +246,8 @@ namespace icl{
     SegmenterUtils::~SegmenterUtils() {
 	    delete m_data;
     }
-    
-    
+
+
     core::Img8u SegmenterUtils::createColorImage(core::Img32s &labelImage){
       core::Img8u colorImage;
       if(m_data->useCL==true && m_data->clReady==true){
@@ -257,9 +257,9 @@ namespace icl{
       }
       return colorImage;
     }
-    
-        
-    core::Img8u SegmenterUtils::createROIMask(core::DataSegment<float,4> &xyzh, core::Img32f &depthImage, 
+
+
+    core::Img8u SegmenterUtils::createROIMask(core::DataSegment<float,4> &xyzh, core::Img32f &depthImage,
                 float xMin, float xMax, float yMin, float yMax, float zMin, float zMax){
       utils::Size size = depthImage.getSize();
       core::Img8u maskImage(size,1,core::formatMatrix);
@@ -267,21 +267,21 @@ namespace icl{
       core::Channel32f depthImageC = depthImage[0];
       for(int y=0;y<size.height;++y){
         for(int x=0;x<size.width;++x){
-          int i = x+size.width*y;	 
-          if(xyzh[i][0]<xMin || xyzh[i][0]>xMax || xyzh[i][1]<yMin || xyzh[i][1]>yMax || xyzh[i][2]<zMin || xyzh[i][2]>zMax){           
+          int i = x+size.width*y;
+          if(xyzh[i][0]<xMin || xyzh[i][0]>xMax || xyzh[i][1]<yMin || xyzh[i][1]>yMax || xyzh[i][2]<zMin || xyzh[i][2]>zMax){
             maskImageC(x,y)=1;
-          }else{		
+          }else{
             maskImageC(x,y)=0;
           }
-          if(depthImageC(x,y)==2047){ 
+          if(depthImageC(x,y)==2047){
             maskImageC(x,y)=1;
           }
-        }    
+        }
       }
       return maskImage;
     }
-    
-    
+
+
     core::Img8u SegmenterUtils::createMask(core::Img32f &depthImage){
       utils::Size size = depthImage.getSize();
       core::Img8u maskImage(size,1,core::formatMatrix);
@@ -290,26 +290,26 @@ namespace icl{
       for(int y=0;y<size.height;++y){
         for(int x=0;x<size.width;++x){
           maskImageC(x,y)=0;
-          if(depthImageC(x,y)==2047){ 
+          if(depthImageC(x,y)==2047){
             maskImageC(x,y)=1;
           }
         }
       }
       return maskImage;
     }
-    
-    
+
+
     core::Img32s SegmenterUtils::stabelizeSegmentation(core::Img32s &labelImage){
       core::Img32s stableLabelImage(labelImage.getSize(),1,core::formatMatrix);
       core::Channel32s labelImageC = labelImage[0];
       core::Channel32s stableLabelImageC = stableLabelImage[0];
-     	
-     	utils::Size size = labelImage.getSize();			 
+
+     	utils::Size size = labelImage.getSize();
       if(m_data->stabelizeCounter==0){//first image
         labelImage.deepCopy(&m_data->lastLabelImage);
       }else{
         core::Channel32s lastLabelImageC = m_data->lastLabelImage[0];
-        
+
         //count number of segments of previous and current label image
         int countCur=0;
         int countLast=0;
@@ -323,16 +323,16 @@ namespace icl{
             }
           }
         }
-        
+
         if(countCur==0 || countLast==0){//no relabeling possible
             labelImage.deepCopy(&m_data->lastLabelImage);
             return labelImage;
         }
-        
+
         std::vector<int> curAss = calculateLabelReassignment(countCur, countLast, labelImageC, lastLabelImageC, size);
-				 	
+
         for(int y=0; y<size.height; y++){//reassign label
-          for(int x=0; x<size.width; x++){   
+          for(int x=0; x<size.width; x++){
             if(labelImageC(x,y)>0){
               stableLabelImageC(x,y)=curAss[labelImageC(x,y)-1];
             }else{
@@ -340,17 +340,17 @@ namespace icl{
             }
           }
         }
-				 	
-        stableLabelImage.deepCopy(&m_data->lastLabelImage);//copy image for next iteration 	
-				 	
+
+        stableLabelImage.deepCopy(&m_data->lastLabelImage);//copy image for next iteration
+
       }
       m_data->stabelizeCounter=1;
-				 
+
       return stableLabelImage;
     }
-    
-    
-    math::DynMatrix<bool> SegmenterUtils::calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
+
+
+    math::DynMatrix<bool> SegmenterUtils::calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
       math::DynMatrix<bool> adjacencyMatrix;
     	if(m_data->useCL==true && m_data->clReady==true){
@@ -360,9 +360,9 @@ namespace icl{
     	}
       return adjacencyMatrix;
     }
-    
-    
-    void SegmenterUtils::edgePointAssignment(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
+
+
+    void SegmenterUtils::edgePointAssignment(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
       math::DynMatrix<bool> adjacencyMatrix;
       if(m_data->useCL==true && m_data->clReady==true){
@@ -371,9 +371,9 @@ namespace icl{
     	  adjacencyMatrix=edgePointAssignmentAndAdjacencyMatrixCPU(xyzh, labelImage, maskImage, radius, euclideanDistance, numSurfaces, true);
     	}
     }
-    
-    
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
+
+
+    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
       math::DynMatrix<bool> adjacencyMatrix;
     	if(m_data->useCL==true && m_data->clReady==true){
@@ -383,8 +383,8 @@ namespace icl{
     	}
       return adjacencyMatrix;
     }
-        
-    
+
+
     std::vector<std::vector<int> > SegmenterUtils::extractSegments(core::Img32s &labelImage){
       int h=labelImage.getSize().height;
       int w=labelImage.getSize().width;
@@ -402,8 +402,8 @@ namespace icl{
       }
       return segments;
     }
-    
-    
+
+
     void SegmenterUtils::relabel(core::Img32s &labelImage, std::vector<std::vector<int> > &assignment, int maxOldLabel){
       std::vector<int> mapping;
       if(maxOldLabel>0){
@@ -433,10 +433,10 @@ namespace icl{
             labelImageC(x,y)=mapping[labelImageC(x,y)-1]+1;
           }
         }
-      }  
+      }
     }
-    
-    
+
+
     bool SegmenterUtils::occlusionCheck(core::Img32f &depthImage, utils::Point p1, utils::Point p2, float distanceTolerance, float outlierTolerance){
       core::Channel32f depthImageC = depthImage[0];
       bool sampleX=false;//over x or y
@@ -464,7 +464,7 @@ namespace icl{
           step=-1;
         }
       }
-      
+
       int numReject=0;
       if(sampleX){//sample x process
         for(int i=p1.x; (i-p2.x)*step<=0; i+=step){
@@ -474,12 +474,12 @@ namespace icl{
           float s1 = realValue-augmentedValue;//minus -> real closer than augmented
           if(s1-distanceTolerance>0 && depthImageC(i,newY)!=2047){//not occluding
             numReject++;
-          }     
+          }
         }
         if((float)numReject/(float)(abs(p2.x-p1.x)+1)>outlierTolerance/100.){
           return false;
         }
-      }else{//sample y process 
+      }else{//sample y process
         for(int i=p1.y; (i-p2.y)*step<=0; i+=step){
           int newX=(int)round(p1.x+(i-p1.y)*gradient);
           float realValue = depthImageC(newX,i);
@@ -493,10 +493,10 @@ namespace icl{
           return false;
         }
       }
-      return true;             
+      return true;
     }
-    
-    
+
+
     std::vector<std::vector<int> > SegmenterUtils::createLabelVectors(core::Img32s &labelImage){
       utils::Size s = labelImage.getSize();
       core::Channel32s labelImageC = labelImage[0];
@@ -512,29 +512,29 @@ namespace icl{
           }
         }
       }
-      return labelVector;     
+      return labelVector;
     }
-    
-    
+
+
     void SegmenterUtils::createColorImageCL(core::Img32s &labelImage, core::Img8u &colorImage){
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
-        if(s!=m_data->size || m_data->kernelSegmentColoringInitialized==false){//reinit	      
+        if(s!=m_data->size || m_data->kernelSegmentColoringInitialized==false){//reinit
 	        m_data->size = s;
 	        int w = s.width;
 	        int h = s.height;
- 
+
           m_data->segmentColorImageRArray.resize(w*h);
           m_data->segmentColorImageGArray.resize(w*h);
           m_data->segmentColorImageBArray.resize(w*h);
           m_data->segmentColorImageRBuffer = m_data->program.createBuffer("rw", w*h * sizeof(unsigned char));
           m_data->segmentColorImageGBuffer = m_data->program.createBuffer("rw", w*h * sizeof(unsigned char));
-          m_data->segmentColorImageBBuffer = m_data->program.createBuffer("rw", w*h * sizeof(unsigned char));      
+          m_data->segmentColorImageBBuffer = m_data->program.createBuffer("rw", w*h * sizeof(unsigned char));
           m_data->assignmentBuffer = m_data->program.createBuffer("r", w*h * sizeof(int));
-        
+
           m_data->kernelSegmentColoringInitialized=true;
         }
-        
+
 		    try {
 		      int w = m_data->size.width;
 	        int h = m_data->size.height;
@@ -560,8 +560,8 @@ namespace icl{
 		    }
       #endif
     }
-    
-        
+
+
     void SegmenterUtils::createColorImageCPU(core::Img32s &labelImage, core::Img8u &colorImage){
       utils::Size s = labelImage.getSize();
       colorImage.setSize(s);
@@ -614,19 +614,19 @@ namespace icl{
 				  }
 			  }
 		  }
-		  
+
     }
-    
-    
+
+
     std::vector<int> SegmenterUtils::calculateLabelReassignment(int countCur, int countLast, core::Channel32s &labelImageC, core::Channel32s &lastLabelImageC, utils::Size size){
       math::DynMatrix<int> assignmentMatrix(countCur,countLast,0);
       std::vector<int> lastNum(countLast,0);
-      std::vector<int> curNum(countCur,0);				 	
+      std::vector<int> curNum(countCur,0);
       std::vector<int> curAss(countCur,0);
       std::vector<float> curVal(countCur,0);
-      
+
       for(int y=0; y<size.height; y++){//count overlap points (cross-correlated)
-        for(int x=0; x<size.width; x++){            
+        for(int x=0; x<size.width; x++){
           if(labelImageC(x,y)>0 && lastLabelImageC(x,y)>0){
             assignmentMatrix(labelImageC(x,y)-1, lastLabelImageC(x,y)-1)++;//num match points
             lastNum[lastLabelImageC(x,y)-1]++;//num segment points
@@ -634,7 +634,7 @@ namespace icl{
           }
         }
       }
-      
+
       for(int i=0; i<countCur; i++){//calculate assignment score
         for(int j=0; j<countLast; j++){
           float curScore;
@@ -650,14 +650,14 @@ namespace icl{
             lastScore=0;
             compScore=0;
           }
-				 		
+
           if(curVal[i]<compScore){//assign highest score
             curVal[i]=compScore;
             curAss[i]=j+1;
           }
         }
       }
-			 	
+
       std::vector<bool> empties(countCur,true);//find unassigned ids
       for(int i=0; i<countCur; i++){
         if(curAss[i]!=0){
@@ -684,45 +684,45 @@ namespace icl{
           }
         }
       }
-      
+
       return curAss;
     }
-    
-    
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
+
+
+    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment){
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
         math::DynMatrix<bool> neighbours(numSurfaces,numSurfaces,false);
         math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,(unsigned char)0);
-        if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit	      
+        if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit
 	        m_data->size = s;
 	        int w = s.width;
 	        int h = s.height;
-          
+
           m_data->maskArray.resize(w*h);
           m_data->assignmentArray.resize(w*h);
-          
+
           m_data->assignmentBuffer = m_data->program.createBuffer("r", w*h * sizeof(int));
           m_data->assignmentOutBuffer = m_data->program.createBuffer("rw", w*h * sizeof(int));
           m_data->xyzBuffer = m_data->program.createBuffer("r", w*h * sizeof(Vec));
 		      m_data->maskBuffer = m_data->program.createBuffer("rw", w*h * sizeof(unsigned char));
-		      
+
 		      m_data->kernelPointAssignmentInitialized=true;
         }
-        
+
 		    try {
 		      int w = s.width;
 	        int h = s.height;
 
           core::Img32s labelImageOut(labelImage.getSize(),1,core::formatMatrix);
-          
+
           m_data->assignmentBuffer.write(labelImage.begin(0),w*h*sizeof(int));
           m_data->maskBuffer.write(maskImage.begin(0),w*h*sizeof(unsigned char));
           m_data->xyzBuffer.write(&xyzh[0][0],w*h*sizeof(Vec));//FixedColVector<float, 4>));
-          
+
 		      m_data->neighboursBuffer = m_data->program.createBuffer("rw", numSurfaces*numSurfaces * sizeof(unsigned char), &neighboursC[0]);
-		      
+
 		      m_data->kernelPointAssignment.setArgs(m_data->xyzBuffer,
 				      m_data->maskBuffer,
 				      m_data->assignmentBuffer,
@@ -745,7 +745,7 @@ namespace icl{
 				    m_data->assignmentOutBuffer.read(m_data->assignmentArray.data(), w*h * sizeof(int));
 				    labelImage = core::Img32s(utils::Size(w,h),1,std::vector<int*>(1,m_data->assignmentArray.data()),false);
 				    m_data->maskBuffer.read(m_data->maskArray.data(), w*h * sizeof(unsigned char));
-				    maskImage = core::Img8u(utils::Size(w,h),1,std::vector<unsigned char*>(1,m_data->maskArray.data()),false);    				        
+				    maskImage = core::Img8u(utils::Size(w,h),1,std::vector<unsigned char*>(1,m_data->maskArray.data()),false);
           }
 		      for(int i=0; i<numSurfaces; i++) {
 			      neighbours(i,i)=true;
@@ -753,26 +753,26 @@ namespace icl{
 	      } catch (utils::CLException &err) { //catch openCL errors
 		      std::cout<< "ERROR: "<< err.what()<< std::endl;
 	      }
-	      
+
 	      return neighbours;
       #else
         return math::DynMatrix<bool>();
 	    #endif
     }
-    
-        
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage, 
-                              core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment){                              
+
+
+    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+                              core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment){
       utils::Size s = labelImage.getSize();
       int w = s.width;
       int h = s.height;
       math::DynMatrix<bool> neighbours(numSurfaces, numSurfaces, false);
       core::Img32s labelImageOut(labelImage.getSize(),1,core::formatMatrix);
-      
+
       core::Channel32s labelImageC = labelImage[0];
       core::Channel32s labelImageOutC = labelImageOut[0];
       core::Channel8u maskImageC = maskImage[0];
-      
+
       for (int x=0; x<w; x++) {
 	      for(int y=0; y<h; y++) {
 		      int i=x+w*y;

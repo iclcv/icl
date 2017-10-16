@@ -38,21 +38,21 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-    
+
     UnaryOpPipe::UnaryOpPipe(){}
-    
+
     UnaryOpPipe::~UnaryOpPipe(){
       for(int i=0;i<getLength();i++){
         delete ops[i];
         delete ims[i];
       }
     }
-    
+
     void UnaryOpPipe::add(UnaryOp *op, ImgBase*im){
       ops.push_back(op);
       ims.push_back(im);
     }
-    
+
     void UnaryOpPipe::apply(const ImgBase *src, ImgBase **dst){
       int length = getLength();
       switch(length){
@@ -67,12 +67,12 @@ namespace icl{
           break;
       }
     }
-  
+
     const ImgBase *UnaryOpPipe::apply(const ImgBase *src){
       apply(src,&getLastImage());
       return getLastImage();
     }
-    
+
     int UnaryOpPipe::getLength() const {
       return (int)ops.size();
     }

@@ -35,27 +35,27 @@ using namespace icl::core;
 
 namespace icl{
   namespace cv{
-  
+
     ViewBasedTemplateMatcher::ViewBasedTemplateMatcher(float significance, mode m, bool clipBuffersToROI):
       m_fSignificance(significance),m_eMode(m),m_bClipBuffersToROI(clipBuffersToROI){}
-    
+
     void ViewBasedTemplateMatcher::setSignificance(float significance){
       m_fSignificance = significance;
     }
     void ViewBasedTemplateMatcher::setMode(mode m){
       m_eMode = m;
-      
+
     }
-    
+
     void ViewBasedTemplateMatcher::setClipBuffersToROI(bool flag){
       m_bClipBuffersToROI = flag;
     }
-    
-    const std::vector<Rect> &ViewBasedTemplateMatcher::match(const Img8u &image, 
-                                                             const Img8u &templ, 
+
+    const std::vector<Rect> &ViewBasedTemplateMatcher::match(const Img8u &image,
+                                                             const Img8u &templ,
                                                              const Img8u &imageMask,
                                                              const Img8u &templMask){
-      
+
       m_vecResults =  matchTemplate(image,
                                     imageMask.isNull() ? 0 : &imageMask,
                                     templ,
@@ -67,10 +67,10 @@ namespace icl{
                                     m_bClipBuffersToROI,
                                     &m_oRD,
                                     m_eMode == sqrtDistance ? false : true);
-      
+
       return m_vecResults;
     }
-    
-    
+
+
   } // namespace cv
 }

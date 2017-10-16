@@ -35,21 +35,21 @@ using namespace icl::math;
 
 namespace icl{
   namespace geom{
-  
+
     ICP::Result::Result():rotation(3,3),translation(1,3),error(0.1){}
-  
+
     ICP::ICP(std::vector<DynMatrix<icl64f> > &model) {
       kdt.buildTree(model);
     }
-  
+
     ICP::ICP(std::vector<DynMatrix<icl64f>* > &model) {
       kdt.buildTree(model);
     }
-  
+
     ICP::ICP(){}
-    
+
     ICP::~ICP(){}
-  
+
     const ICP::Result &ICP::apply(const std::vector<DynMatrix<icl64f>* > &pointlist){
       FixedMatrix<icl32f,4,4> mat;
       DynMatrix<icl64f> mat3(4,4);
@@ -108,7 +108,7 @@ namespace icl{
         std::cout << cerror << "   " << m_result.error << std::endl;
         /*if(std::abs(cerror-m_error)<0.01)
             break;*/
-  
+
       }while(cerror != m_result.error);
       for(unsigned int i=0;i<3;++i){
         m_result.translation[i] = mat2.at(3,i);
@@ -121,7 +121,7 @@ namespace icl{
       }
       return m_result;
     }
-  
+
     //TODO another way to compute rotation and translation
     DynMatrix<icl64f> *ICP::compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model){
       DynMatrix<icl64f> mean_data(1,3);
@@ -135,11 +135,11 @@ namespace icl{
         mean_model[i] = mean_model[i]/model.size();
       }
       for(unsigned int i=0;i<data.size();++i){
-  
+
       }
       return 0;
     }
-  
+
     double ICP::error(const std::vector<DynMatrix<icl64f>* > &dat, const std::vector<DynMatrix<icl64f>* > &mod){
       double error = 0.0;
       double sumsq = 0.0;

@@ -19,10 +19,10 @@ struct NormRangeOp : public UnaryOp{
 int main(){
   // demo image
   core::Img32f image = create("lena");
-  
+
   // median filter
   filter::MedianOp med(Size(5,5));
-  
+
   // laplace filter
   filter::ConvolutionOp lap(ConvolutionKernel::laplace5x5);
 
@@ -32,10 +32,10 @@ int main(){
   // custom operator (normalize range to [0,255])
   NormRangeOp nor;
 
-  // nested call, identical to 
+  // nested call, identical to
   // *nor.apply(lab.apply(sob.apply(med.apply(image))));
   const ImgBase &result = nor(lap(sob(med(image))));
-  
+
   // show the image
   show(result);
 }

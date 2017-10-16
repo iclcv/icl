@@ -40,9 +40,9 @@ namespace icl{
     class PCDFileGrabber : public PointCloudGrabber{
       struct Data;  // !< pimpl type
       Data *m_data; // !< pimpl pointer
-      
+
       public:
-      
+
       /// creates a new PCD file grabber instance
       /** @param filename to be grabbed PCD file name or file pattern. (e.g. files/ *.pcd)
           @param repeat specifies whether to play PCD file in an endless loop or not.
@@ -52,10 +52,10 @@ namespace icl{
           @param offset Similar to the offset variable in the file pcd_io.h.
       */
       PCDFileGrabber(const std::string &filepattern="", bool loop = true);
-      
+
       /// Destructor
       virtual ~PCDFileGrabber();
-      
+
       /// grab implementation
       virtual void grab(PointCloudObjectBase &dst);
     };

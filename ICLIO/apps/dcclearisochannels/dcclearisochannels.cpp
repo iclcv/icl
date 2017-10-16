@@ -40,11 +40,11 @@ typedef std::map<int,vector<dc1394camera_t*> > cammap;
 
 int main(int n, char **ppc){
   cammap m;
-  
+
   std::vector<DCDevice> devs = DCGrabber::getDCDeviceList();
   printf("found %d cameras \n",(unsigned int)devs.size());
-  
-  
+
+
   for(unsigned int i=0;i<devs.size();i++){
     m[devs[i].getUnit()].push_back(devs[i].getCam());
     dc1394_camera_reset(devs[i].getCam());
@@ -63,8 +63,8 @@ int main(int n, char **ppc){
   }
   printf("\n");
   printf("iso channels cleared successfully !\n");
-  
-  
+
+
   return 0;
 }
 

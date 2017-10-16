@@ -35,7 +35,7 @@ GUI gui;
 GenericGrabber grabber;
 void init(){
   gui << Image().handle("image").minSize(32,24)
-      << ( HBox().maxSize(100,3) 
+      << ( HBox().maxSize(100,3)
            << Button("no","!yes").label("enable-warping").out("warp")
            << Button("nn","lin").label("interpolation").out("interpolation")
            << Combo("depth8u,depth16s,depth32s,depth32f,depth64f").label("image depth").handle("depth")
@@ -43,7 +43,7 @@ void init(){
            << Label("---ms").label("apply time").handle("apply-time")
          );
   gui.show();
-  
+
   grabber.init(pa("-i"));
   grabber.useDesired(Size::VGA);
   grabber.useDesired(formatRGB);
@@ -56,11 +56,11 @@ void run(){
   const ImgBase *image = grabber.grab();
   if(gui["warp"]){
     op.setScaleMode(gui["lin"]?interpolateLIN:interpolateNN);
-    
+
     Time t = Time::now();
     const ImgBase *result = op.apply(image);
     gui["apply-time"] = str(t.age().toMilliSeconds())+"ms";
-    
+
     gui["image"] = result;
   }else{
     gui["image"] = image;

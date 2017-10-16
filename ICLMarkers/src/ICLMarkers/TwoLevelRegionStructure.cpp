@@ -47,7 +47,7 @@ namespace icl{
       }
       if(code[i] == '0') ++i; // root region
       const int n = code.length();
-      
+
       for(;i<n;++i){
         if(code[i] == '1'){
           children.push_back(0);
@@ -60,7 +60,7 @@ namespace icl{
       /// depends on the code (usually it should already be sorted)
       std::sort(children.begin(),children.end());
     }
-    
+
     bool TwoLevelRegionStructure::match(const ImageRegion &r) const{
       if(r.getVal() != color) return false;
       const std::vector<ImageRegion> &rs = r.getSubRegions();
@@ -76,9 +76,9 @@ namespace icl{
       }
       return true;
     }
-  
-  
-  
-  
+
+
+
+
   } // namespace markers
 }

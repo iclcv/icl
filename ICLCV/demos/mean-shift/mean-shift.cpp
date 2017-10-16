@@ -102,21 +102,21 @@ const Img32f &create_weight_image(const Img32f &image, const std::vector<double>
 }
 
 
-  
+
 void run(){
   const Img32f *image = grabber->grab()->asImg<icl32f>();
 
   m.lock();
   const Img32f &wi = create_weight_image(*image,COLOR);
- 
+
   static int &maxCycles = gui.get<int>("maxCycles");
   static float &convergence = gui.get<float>("convergence");
   static ComboHandle &kernelType = gui.get<ComboHandle>("kernel-type");
   static ComboHandle &shownImage = gui.get<ComboHandle>("vis");
   static int &bandwidth = gui.get<int>("bandwidth");
-  
+
   static MeanShiftTracker ms(MeanShiftTracker::epanechnikov, 1);
-  
+
   if(ms.getKernel() != kernelType.getSelectedIndex()||
      ms.getBandwidth() != bandwidth){
     ms.setKernel((MeanShiftTracker::kernelType)kernelType.getSelectedIndex(),bandwidth,bandwidth/2);
@@ -141,7 +141,7 @@ void run(){
   Thread::msleep(50);
 }
 
-  
+
 
 
 

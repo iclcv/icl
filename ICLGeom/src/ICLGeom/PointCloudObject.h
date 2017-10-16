@@ -35,19 +35,19 @@
 
 namespace icl{
   namespace geom{
-    
+
     /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
     /** This class replaces the former implementations
         - PointcloudSceneObject
-        - RGBDImageSceneObject 
-        
+        - RGBDImageSceneObject
+
         \section NORMALS Normals
-        
+
         The PointCloudObject can be set up to have also normals in the constructor.
-        
+
         \section TODO
         - add optional color (perhaps not possible)
-        
+
      */
     class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
       protected:
@@ -60,45 +60,45 @@ namespace icl{
       std::vector<int> m_labels;  //!< label mask (activated in constructor)
       std::vector<float> m_depth; //!< optional feature for the depth mask (Depth-feature)
       public:
-      
-      
+
+
       /// creates an empty point cloud with with optionally initialized featuers
       PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false, bool withDepth=false);
-      
+
       /// create an un-organizied point cloud with N points
       PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false, bool withDepth=false);
-      
+
       /// creates a new organized or un-organized SimplePointCloudObject instance
       /** @param width number of points per line (if unordered, number of points)
           @param height number of points per row (if unordered, height is not used)
           @param organized specifies whether there is a 2D data order or not
           @params withNormals if true, also normals will be created for each point
           */
-      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false, 
+      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false,
                        bool withColors=true, bool withLabels=false, bool withDepth=false);
-  
+
       /// returns which features are supported (only XYZ and RGBA32f)
       virtual bool supports(FeatureType t) const;
-      
+
       /// returns whether the points are 2D-ordered
       virtual bool isOrganized() const;
 
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
       virtual utils::Size getSize() const throw (utils::ICLException);
-      
+
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const;
-  
+
       /// adapts the point cloud size
       /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
       virtual void setSize(const utils::Size &size);
-  
+
       /// returns XYZ data segment
       virtual core::DataSegment<float,3> selectXYZ();
 
       /// returns XYZH data segment
       virtual core::DataSegment<float,4> selectXYZH();
-      
+
       /// returns the RGBA data segment (4-floats)
       virtual core::DataSegment<float,4> selectRGBA32f();
 
@@ -114,18 +114,18 @@ namespace icl{
       /// returns the depth data segment (single channel float, packed)
       /** Only available if the the Depth feature was explicitly enabled */
       virtual core::DataSegment<float,1> selectDepth();
-      
+
       /// important, this is again, reimplemented in order to NOT draw the stuff manually here
       virtual void customRender();
 
       /// only normals and color can be added in hindsight
       virtual bool canAddFeature(FeatureType t) const;
-      
-      /// adds normals or colors in hindsight 
+
+      /// adds normals or colors in hindsight
       /** If the given feature is already contained, calling this function has no effect.
           The function calls lock() and unlock() internally */
       virtual void addFeature(FeatureType t) throw (utils::ICLException);
-  
+
       /// deep copy function
       virtual PointCloudObject *copy() const {
         return new PointCloudObject(*this);
@@ -140,7 +140,7 @@ namespace icl{
         if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
         if(m_hasDepth) m_depth.push_back(0);
       }
-      
+
       /// adds xyz point with given color
       /** @see push_back(const Vec&) */
       void push_back(const Vec &point, const GeomColor &color){
@@ -156,17 +156,17 @@ namespace icl{
         if(m_hasNormals) m_normals.push_back(normal);
         if(m_hasDepth) m_depth.push_back(depth);
       }
-      
+
       private:
-      
-      /// hidden in this interface to avoid 
+
+      /// hidden in this interface to avoid
       using SceneObject::addVertex;
       using SceneObject::addNormal;
-  
+
     };
-  
-    
-    
+
+
+
   } // namespace geom
 }
 

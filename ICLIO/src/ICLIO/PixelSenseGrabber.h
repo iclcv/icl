@@ -45,11 +45,11 @@ namespace icl{
         the static PixelSenseGrabber::extractBlobMetaData method can be used
         */
     class PixelSenseGrabber : public Grabber{
-      struct Data;   //!< internal data structure 
+      struct Data;   //!< internal data structure
       Data *m_data;  //!< internal data pointer
 
       public:
-      
+
       /// Blob structure
       /** Please note: positions and sizes are given in screen coordinates.
           corresponding image coords can be obtained by deviding by two */
@@ -71,13 +71,13 @@ namespace icl{
         icl32u area;         //!< size in pixels (correlated to pressure?)
         icl8u  padding[32];  //!< padding bytes (unused)
       };
-      
+
       /// default grab function
       ICLIO_API virtual const core::ImgBase* acquireImage();
-      
+
       /// Create a PixelSenseGrabber with given max. fps count
       ICLIO_API PixelSenseGrabber(float maxFPS = 30);
-      
+
       /// destructor
       ICLIO_API ~PixelSenseGrabber();
 
@@ -88,11 +88,11 @@ namespace icl{
     /// overloaded ostream operator for the PixelSenseGrabber::Blob type
     /** concatenates relevant information using a comma delimiter */
     ICLIO_API std::ostream &operator<<(std::ostream &str, const PixelSenseGrabber::Blob &b);
-    
+
     /// overloaded istream operator for the PixelSenseGrabber::Blob type
     /** relevant information is assumed to be comma delimited */
     ICLIO_API std::istream &operator>>(std::istream &str, PixelSenseGrabber::Blob &b);
-      
+
   } // namespace io
 }
 

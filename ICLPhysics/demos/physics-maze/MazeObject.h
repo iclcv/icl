@@ -111,7 +111,7 @@ namespace icl{
     };
 
     //=================================================
-  
+
   class MazeObject : public physics::RigidCompoundObject{
 
     void create_wall_x(float a[2], float b[2], bool outer);
@@ -129,7 +129,7 @@ namespace icl{
     public:
     physics::RigidBoxObject* mazeGround;
     physics::RigidSphereObject* mazeBall;
-    
+
     struct TopEdge{
       utils::Point32f a,b;
     };
@@ -140,7 +140,7 @@ namespace icl{
     const core::Img32f &getTopImage() const{
       return topImage;
     }
-   
+
     MazeObject();
 
     /// loads trajectory of vicon markers from given file

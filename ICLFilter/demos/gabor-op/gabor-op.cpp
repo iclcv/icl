@@ -40,7 +40,7 @@ inline bool is_equal(const float *a, const float *b, unsigned int n){
   }
   return true;
 }
-inline vector<float> vec1(float f) { 
+inline vector<float> vec1(float f) {
   return vector<float>(1,f);
 }
 
@@ -78,19 +78,19 @@ void run(){
   float &sigma = gui.get<float>("sigma");
   int &width = gui.get<int>("width");
   int &height = gui.get<int>("height");
-  
+
   float saveParams[] = {0,0,0,0,0};
   Size saveSize = Size::null;
-  
+
   ImgBase *resultImage = 0;
-  
+
   SmartPtr<GaborOp> g;
-  
+
   while(1){
     float params[] = {lambda,theta,psi,gamma,sigma};
     Size size = Size(width,height);
-    
-    
+
+
     if(!is_equal(params,saveParams,5) || size != saveSize || !g){
       g = new GaborOp(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma));
       Img32f m = g->getKernels()[0].detached();
@@ -99,10 +99,10 @@ void run(){
     }
     saveSize = size;
     memcpy(saveParams,params,5*sizeof(float));
-    
+
     g->apply(grabber.grab(),&resultImage);
     resultImage->normalizeAllChannels(Range<icl64f>(0,255));
-    
+
     gui["image"] = resultImage;
     gui["fps"].render();
   }

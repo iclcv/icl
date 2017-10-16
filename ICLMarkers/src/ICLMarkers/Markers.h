@@ -32,23 +32,23 @@
 
 #include <ICLMarkers/FiducialDetector.h>
 
-/** 
+/**
     \defgroup PLUGINS FiducialDetector plugins
-    
-    
-    The ICLMarkers package defines general interfaces for most different types of 
+
+
+    The ICLMarkers package defines general interfaces for most different types of
     marker detection methods. The essential classes of this package are
     - icl::markers::FiducialDetector (for detection different types of markers in images)
     - icl::markers::Fiduical (a list of instances of this type is returned by the fiducial
       detection step
-    
+
     <b>Note:</b> We use the words "fiducial" and "marker" or "image marker" as
     synonyms.
-    
+
     The FiducialDetector implements a plugin-based system which can be configured
     at instantiation type in order to use a certain marker detection backend.
     Dependent on the selected backend, the detection markers (of type icl::Fiducial)
-    provide a different set of information -- some can only provide 2D information, 
+    provide a different set of information -- some can only provide 2D information,
     others do also provide 3D pose information. Also dependent on the chosen plugin
     type, markers have to be loaded in a certain way that is also generalized by
     single method FiducialDetector::loadMarkers.
@@ -60,7 +60,7 @@
     types of input image sizes and marker types are given in the \ref BENCH section
 
     \section SUPPORTED_MARKER_TYPES Supported Marker Types
-    
+
     <TABLE border=0>
     <TR>
     <TD>\image html art.png</TD>
@@ -75,9 +75,9 @@
     <TD>"icl1" marker</TD>
     </TR>
     </TABLE>
-    
+
     - "art"\n
-      for ARToolkit markers (visit the 
+      for ARToolkit markers (visit the
       <a href="http://www.hitl.washington.edu/artoolkit/">ARToolkit Webpage</a>
       for more details)
       ART Fiducials can provide the full set of information including the 3D pose
@@ -88,23 +88,23 @@
       Studierstube Tracker Homepage</a> for more details)
       BCH Fiducials can provide the full set of information including the 3D pose
       from a single marker. Usually, the detection rate is faster and more accurate
-      in comparison to artoolkit markers. 
+      in comparison to artoolkit markers.
     - "amoeba" }\n
       for The amoeba style hierarchical markers provided by the
       <a href="http://reactivision.sourceforge.net/">reactivision software</a>
       Amoeba fiducials cannot be detected in 3D. They do only provide 2D center and
-      rotation and the 2D boundary. 
+      rotation and the 2D boundary.
     - "icl1"\n
       for ICL's former 'paper' markers. These markers consist of 4 vertical sections.
       Each of these sections contains a number of dot-regions. Therefore, the marker
       detection method is comparable to other hierarchical markers such as "amoeba",
       however, the well defined marker structure allows for the systematic identification
       of every single marker region, which provides better 3D pose-estimation results.
-    
+
     \section BENCH Benchmarks
-    
+
     TODO
-    
+
     \subsection MT Multithreading
 
     We did not speed up the algorithms using multithreading techniques since usually

@@ -38,23 +38,23 @@
 
 namespace icl{
   namespace filter{
-  
-  
+
+
   /**
    This class implements the unary operator for the fast and discrete 2D fourier transformation.
     As known the fft can only be applied if the datasize is a power of 2.
     This implementation uses the fft as far as it can be applied and switches to the dft,
     so you can use it if datasize is not a power of 2 too. If MKL or IPP is available, FFTOp tries
     to use it if possible.
-  
+
     \section EXAMPLE Simple FFT-computation demo
-  
+
       <TABLE border=0><TR><TD>
       \code
       #include <ICLQuick/Common.h>
       #include <ICLFilter/FFTOp.h>
       using namespace icl;
-  
+
       GUI gui;
 
       void init(){...}
@@ -67,28 +67,28 @@ namespace icl{
       // note: icl-xv must be within your PATH
   	show(norm(cvt(dst)));
       }
-  
-  
+
+
       \endcode
-  
+
       </TD><TD>
       \image html fft.jpg
       </TD></TR></TABLE>
       Save the above sourcecode to a file, compile and link it.
       Execute it: ./appname -input pic.jpg
-  
+
   	\section RM Result modes
   	These modes configure the way the destinationimage (the result of the fft) shall
   	be returned. Different results like logpowerspectrum, real part or
   	phase and  magnitude can be obtained. (see icl::FFTOp::ResultMode)
-  
+
   	\section SM Sizeadaption modes
   	These modes configure the sourceimage before processing the fft.
   	The sourceimage can be scaled up, so that the datasize is a power of 2
   	(this is needed if you want to use the IPP acceleration or the faster
   	part of the fallback). You can also scale the image down, leave it as it is
   	or create a border and fill it with several methods. (see icl::filter::FFTOp::SizeAdaptionMode)
-  
+
   	\section IPP_MKL_ACCEL Intel Ipp/Intel MKL acceleration
   	If you own the Intel IPP or MKL library, the computation of the fft
   	can be accelarated by using it. The IPP functions assume a datasize of power of 2 (see icl::filter::FFTOp::SizeAdaptionMode).
@@ -115,14 +115,14 @@ namespace icl{
   	</TABLE>
     */
   class ICLFilter_API FFTOp : public UnaryOp{
-  
+
   private:
   	///Forwarddeklaration.
   	class Data;
-  
+
   	///Class for internal params and buffers.
   	Data *m_data;
-  
+
   	//Applies fft/dft on all channel of sourceimage.
   	/**Called by apply. Applies fft/dft and resultmode.
   	  Possible sourceparam is: Img<icl8u>, Img<icl16s>, Img<icl32s>,
@@ -130,22 +130,22 @@ namespace icl{
   	  Possible destinationparam is: Img<icl32f> and Img<icl64f>.*/
   	template<class SrcT, class DstT>
   	void apply_internal(const core::Img<SrcT> &src, core::Img<DstT> &dst,
-                            math::DynMatrix<std::complex<DstT> > &buf, 
+                            math::DynMatrix<std::complex<DstT> > &buf,
                             math::DynMatrix<std::complex<DstT> > &dstBuf);
-  
+
   	//Adapts sourceimage before fft/dft computation.
   	/**Called by apply. Adapts sourceimage to specified
   	 values(scaling, padding on so on).Possible sourceparam is: Img<icl8u>, Img<icl16s>, Img<icl32s>,
   	  Img<icl32f>, Img<icl64f>*/
   	template<class T>
   	const core::Img<T> *adapt_source(const core::Img<T> *src);
-  
+
   	//Applies an inplace fftshift  after computation of the fft (if possible).
   	/** Applies inplace fftshift on destinationimage after fftcomputation.
   	 Possible sourceparam is: Img<icl32f> and Img<icl64f>*/
   	template<typename T>
   	void apply_inplace_fftshift(math::DynMatrix<T> &m);
-  
+
   public:
   	///Modes how the sourceimage is to adapt before fftcomputation.
   	/**Several sizeadaptionmodes for sourceimageadaption*/
@@ -157,7 +157,7 @@ namespace icl{
           SCALE_UP,//!< zooms to next higher power of 2 of originsize, or origanalsize if it is power of 2
           SCALE_DOWN //!< zooms to next lower power of 2 of originsize, or origanalsize if it is power of 2
   	};
-  
+
   	///Modes how the destinationimage will be created.
   	/**Several resultmodes for destinationimage.*/
   	enum ResultMode{
@@ -170,7 +170,7 @@ namespace icl{
           PHASE_ONLY,//!< phase of fftcomputation
           TWO_CHANNEL_MAGNITUDE_PHASE//!< alternates magnitude and phase of fftcomputation
   	};
-        
+
   	///Creates a new FFTOp-object.
   	/**Constructor. Params can be changed later.
             @param rm the resultmode
@@ -179,51 +179,51 @@ namespace icl{
             @param forceDFT wether to apply dft or fft*/
   	FFTOp(ResultMode rm=LOG_POWER_SPECTRUM, SizeAdaptionMode sam=NO_SCALE,
               bool fftshift=true,bool forceDFT=false);
-  
+
   	/**Destructor*/
   	~FFTOp();
-  
+
   	///Sets the resultmode.
   	/**@param rm the resultmode to be set*/
   	void setResultMode(ResultMode rm);
-  
+
   	///Returns the resultmode as int.
   	/**@return the current resultmode.*/
   	int getResultMode();
-  
+
   	///Sets the sizeadaptionmode.
   	/**@param sam the sizeadaptionmode to be set*/
   	void setSizeAdaptionMode(SizeAdaptionMode sam);
-  
+
   	///Returns the sizeadaptionmode.
   	/**@return the current sizeadationmode*/
   	int getSizeAdaptionMode();
-  
+
   	///Returns true if the diskrete fourier transfarmation shall be used, else false.
   	/**@return true if dft should be used, false if fft should be used*/
   	bool getForceDFT();
-  
+
   	///Set wether to force the diskrete fourier transformation or to use the fast fourier transformation
   	/**@param pForceDFT*/
   	void setForceDFT(bool pForceDFT);
-  
+
   	///Set wether to fftshift the destinationimage or not
   	/**@param pFFTShift true if the destinationimage should be shifted, else false*/
   	void setFFTShift(bool pFFTShift);
-  
+
   	///Returns the current value for fftshift.
   	/**@return true if destinationimage  is to be fftshifted, else false*/
   	bool getFFTShift();
-  
+
   	///Call this method to start fftcomputation.
   	/**Applies FFTOp on src and dst.
   	  @param *src pointer to sourceimage
   	  @param **dst pointer to pointer to destinationimage*/
   	virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
-  
+
   	/// Import unaryOps apply function without destination image
   	using UnaryOp::apply;
-    };  
+    };
   } // namespace filter
 }
 

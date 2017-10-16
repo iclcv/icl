@@ -35,14 +35,14 @@
 
 namespace icl{
   namespace io{
-    
-  
+
+
     /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
     class ICLIO_API FileGrabberPluginJPEG : public FileGrabberPlugin {
       public:
       /// grab implementation
-      virtual void grab(utils::File &file, core::ImgBase **dest); 
-    };  
+      virtual void grab(utils::File &file, core::ImgBase **dest);
+    };
   } // namespace io
 }
 

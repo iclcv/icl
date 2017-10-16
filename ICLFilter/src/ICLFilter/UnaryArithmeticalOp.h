@@ -37,7 +37,7 @@
 namespace icl {
   namespace filter{
     /// Class for Arithmetic Functions  \ingroup UNARY
-    /** 
+    /**
         (nearly all functions: Img8u, Img16s, Img32f: IPP + Fallback, all other Types: Fallback only!)
         The functions AddC, SubC, MulC, DivC, AbsDiff, Sqr, Sqrt, Ln, Exp, Abs are implemented for:
         Img8u IPP+Fallback
@@ -61,49 +61,49 @@ namespace icl {
         expOp=13, /**< calculates the exponential function for each pixel*/
         absOp=14  /**< calculates the absolute value for each pixel */
       };
-      
+
       /// Constructor
       UnaryArithmeticalOp(optype t, icl64f val=0):m_eOpType(t), m_dValue(val){}
-      
+
       /// Destructor
       virtual ~UnaryArithmeticalOp(){}
-      
+
       /// performes the arithmetical operation, given in the constructor or by the setOpType method.
       /**
         @param poSrc first operand (image)
         @param ppoDst destination image, to store the result
       */
       virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
-  
+
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
-      
+
       /// sets the second operand, with the source is operated with.
       /**
-        @param value the value for the operand 
+        @param value the value for the operand
       */
       void setValue(icl64f value) { m_dValue = value; }
-  
+
       /// returns the value of the second operand
       /**
         @return  the value of the second operand
       */
       icl64f getValue() const { return m_dValue; }
-      
+
       /// changes the operator type
       /**
         @see optype
         @param t operator type
       */
       void setOpType(optype t){ m_eOpType = t;}
-      
+
       /// returns the operator type
       /**
         @see optype
         @return operator type
-      */    
+      */
       optype getOpType() const { return m_eOpType; }
-  
+
       private:
       optype m_eOpType;
       icl64f m_dValue;

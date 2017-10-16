@@ -2,10 +2,10 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLUtils/FPSLimiter.h>
 
-// again, we need some static data 
+// again, we need some static data
 GUI gui;                   // our static top-level GUI-instance
 GenericGrabber grabber;    // an image source
-UnaryCompareOp cmp(">");   // pixel comparison operator 
+UnaryCompareOp cmp(">");   // pixel comparison operator
 FPSLimiter fps(25);        // utility to limit the run-loop
 
 
@@ -33,7 +33,7 @@ void run(){
   cmp.setValue(gui["thresh"]);
 
   // This is a combined expression: the next image is acquired
-  // from the grabber and it is passed directly to the 
+  // from the grabber and it is passed directly to the
   // apply method of the UnaryCompareOp instance. The resulting
   // image is again forwarded directly to the GUI-component
   // for visualization

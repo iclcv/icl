@@ -69,11 +69,11 @@ void save(){
   static int &thresh = gui.get<int>("threshold");
   static float &gamma = gui.get<float>("gamma");
   bool ok = false;
-  
+
   QString qname = QInputDialog::getText(0,"Save Params",
                                         "Please specify output xml-file name"
                                         ,QLineEdit::Normal,"local-threshold-params.xml",&ok);
-  if(ok){  
+  if(ok){
     ConfigFile f;
     f.set("config.masksize",masksize);
     f.set("config.threshold",thresh);
@@ -117,25 +117,25 @@ void step(){
   const ImgBase *result = ltop.apply(useImage);
   time = str((Time::now()-last).toMilliSeconds())+"ms";
 
-        
+
   orig = image;
-  
+
   if(image != useImage){
     delete useImage;
   }
 
-  
+
   if(selroi[0] != Rect::null){
     orig->color(0,100,255);
     orig->fill(0,100,255,20);
     orig->rect(selroi[0]);
   }
-  
+
   orig->color(255,0,0);
   orig->nofill();
   orig->rect(selroi[1]);
   orig.render();
-    
+
   prev = result;
   fps.render();
 }
@@ -168,7 +168,7 @@ void init(){
                 )
            )
       << Show();
-  
+
   grabber.init(pa("-i"));
   if(grabber.getType() != "file"){
     grabber.useDesired<Size>(pa("-s"));
@@ -179,10 +179,10 @@ void init(){
     }
     grabber.useDesired(depth8u);
   }
-  
+
   gui.registerCallback(step,"a,b,c,d,e,next,algorithm");
   gui["orig"].install(new MouseHandler(mouse));
-  
+
   step();
 }
 
@@ -211,7 +211,7 @@ void batch_mode(){
     t.setMaskSize(masksize);
     t.setGlobalThreshold(thresh);
     t.setGammaSlope(gamma);
-  
+
     int i=0;
     while(maxSteps < 0 || maxSteps--){
       if(maxSteps > 0){
@@ -230,7 +230,7 @@ void batch_mode(){
       printf("...");
       t.apply(image,&dst);
       printf("...");
-      w.write(dst); 
+      w.write(dst);
       printf("done! \n");
       printf("writing image to %30s ... done\n",w.getFilenameGenerator().showNext().c_str());
     }
@@ -256,10 +256,10 @@ int main (int argc, char **argv) {
   pa_init(argc,argv,"[m]-input|-i(device,device-params) "
           "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
           " -nogui|-n -color -size|-s(size=VGA)");
-  
-  
+
+
   if(pa("-nogui")){
-    batch_mode();    
+    batch_mode();
   }else{
     return ICLApp(argc,argv,"",init,run).exec();
   }

@@ -35,7 +35,7 @@
 
 #include <string>
 
-namespace icl{ 
+namespace icl{
   namespace qt{
     /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
     class GUISyntaxErrorException : public utils::ICLException {

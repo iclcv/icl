@@ -34,8 +34,8 @@
 
 namespace icl{
   namespace utils{
-    
-  
+
+
     class SemaphoreImpl{
     public:
       inline SemaphoreImpl(int n):n(n){
@@ -50,7 +50,7 @@ namespace icl{
   	  #ifndef ICL_SYSTEM_WINDOWS
         sem_destroy(&s);
   	  #else
-  	  
+
   	  #endif
       }
       inline void inc(int n=1){
@@ -58,7 +58,7 @@ namespace icl{
   	    #ifndef ICL_SYSTEM_WINDOWS
           sem_post(&s);
   		#else
-  		
+
   		#endif
         }
       }
@@ -67,7 +67,7 @@ namespace icl{
           #ifndef ICL_SYSTEM_WINDOWS
   		sem_wait(&s);
   		#else
-  		
+
   		#endif
         }
       }
@@ -76,14 +76,14 @@ namespace icl{
   	  #ifndef ICL_SYSTEM_WINDOWS
         sem_getvalue(&s,&val);
   	  #else
-  	  
+
   	  #endif
         return val;
       }
       inline int getMaxValue(){
         return n;
       }
-  
+
       inline bool tryAcquire(){
   	  #ifndef ICL_SYSTEM_WINDOWS
         int ret = sem_trywait(&s);
@@ -104,17 +104,17 @@ namespace icl{
       sem_t s;
       int n;
     };
-    
+
     void SemaphoreImplDelOp::delete_func(SemaphoreImpl *impl){
       ICL_DELETE(impl);
     }
-    
-    
+
+
     Semaphore::Semaphore(int n):
       ShallowCopyable<SemaphoreImpl,SemaphoreImplDelOp>(new SemaphoreImpl(n)){
-      
+
     }
-    
+
     void Semaphore::operator++(int dummy){
       (void)dummy;
       impl->inc(1);
@@ -132,14 +132,14 @@ namespace icl{
     bool Semaphore::tryAcquire(){
       return impl->tryAcquire();
     }
-   
+
     bool Semaphore::tryRelease(){
       return impl->tryRelease();
     }
-    
+
     int Semaphore::getValue(){
       return impl->getValue();
-    } 
+    }
     int Semaphore::getMaxValue(){
       return impl->getMaxValue();
     }

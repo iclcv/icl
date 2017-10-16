@@ -44,7 +44,7 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-    
+
     static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
 
     static void addDevicesToList(std::vector<GrabberDeviceDescription> &deviceList){
@@ -133,10 +133,10 @@ namespace icl{
 
 
     };
-    
+
     SharedMemoryGrabber::SharedMemoryGrabber(const std::string &sharedMemorySegmentID) throw(ICLException):
       m_data(new Data){
-      
+
       m_data->image = 0;
       m_data->converted_image = 0;
       m_data->omitDoubledFrames = true;
@@ -169,7 +169,7 @@ namespace icl{
         throw ICLException(str(__FUNCTION__)+": unable to connect to shared memory segment \"" + sharedMemorySegmentID + "\"");
       }
     }
-    
+
     SharedMemoryGrabber::~SharedMemoryGrabber(){
       ICL_DELETE(m_data->image);
       ICL_DELETE(m_data->converted_image);
@@ -185,11 +185,11 @@ namespace icl{
       }
       return deviceList;
     }
-    
+
     static inline bool has_params(const ImgBase &i, depth d, const Size &s, format f){
       return (i.getDepth() == d) && (i.getSize() == s) && (i.getFormat() == f);
     }
-    
+
     const ImgBase* SharedMemoryGrabber::acquireImage(){
       QMutexLocker lock(&m_data->acquireMutex);
 
@@ -260,7 +260,7 @@ namespace icl{
 
     REGISTER_GRABBER(sm,utils::function(createSMGrabber), utils::function(getSMDeviceList), "sm:shared memory segment name:Qt-based shared memory source");
     REGISTER_GRABBER_BUS_RESET_FUNCTION(sm,SharedMemoryGrabber::resetBus);
-    
+
   } // namespace io
 }
 

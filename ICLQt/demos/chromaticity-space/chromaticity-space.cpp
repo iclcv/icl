@@ -41,12 +41,12 @@ GenericGrabber grabber;
 void run(){
   const Img8u &image = *grabber.grab()->asImg<icl8u>();
   static Img8u segImage(image.getSize(),1);
-    
+
   Channel8u c[3] = {image[0],image[1],image[2] };
   Channel8u s = segImage[0];
-  
+
   ChromaAndRGBClassifier classi = cg->getChromaAndRGBClassifier();
-  
+
   const int dim = image.getDim();
   for(int i=0;i<dim;++i){
     s[i] = 255 * classi(c[0][i],c[1][i],c[2][i]);
@@ -59,14 +59,14 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
-  gui << ( VBox()  
+  gui << ( VBox()
            << Image().minSize(16,12).handle("image").label("Camera Image")
            << Image().minSize(16,12).handle("segimage").label("Semented Image")
            )
       << HBox().handle("box")
       << Show();
 
-  
+
   cg = new ChromaGUI(*gui.get<BoxHandle>("box"));
 
 }

@@ -44,7 +44,7 @@
 
 namespace icl{
   namespace io{
-    
+
     /// Grabber implementation for RSB based image transfer
     class RSBGrabber : public Grabber{
         struct Data;  //!< pimpl type

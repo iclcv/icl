@@ -57,7 +57,7 @@ void init(){
   o = new CoordinateFrameSceneObject;
   o->translate(initPos[0],initPos[1],initPos[2]);
   scene.addObject(o);
-  
+
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));
 }
@@ -84,7 +84,7 @@ void run(){
     o->addVertex(curr[1].resize<1,4>(1));
     o->addVertex(curr[2].resize<1,4>(1));
     o->addVertex(curr[3].resize<1,4>(1));
-    
+
     static int step = 0; ++step;
     GeomColor col((!(step%3))*255, (!((step+1)%3))*255, (!((step+2)%3))*255,120);
     o->addTriangle(0,1,2,col);
@@ -96,16 +96,16 @@ void run(){
     o->setVisible(Primitive::vertex,false);
     scene.addObject(o);
     scene.unlock();
-    
+
     gui["draw"].render();
-    
+
     SimplexOptimizer<float,Pos>::Result r = opt.optimize(curr);
 
     curr = r.vertices;
     err = r.fx;
   }
-  
-  Thread::msleep(100);  
+
+  Thread::msleep(100);
 }
 
 

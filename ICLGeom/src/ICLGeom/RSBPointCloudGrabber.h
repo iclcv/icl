@@ -44,31 +44,31 @@
 
 namespace icl{
   namespace geom{
-  
+
     /// Grabs points clouds from RSB
     class ICLGeom_API RSBPointCloudGrabber : public PointCloudGrabber{
-      
+
       struct Data;   //!< internal data type
       Data *m_data;  //!< internal data pointer
-      
+
       public:
       /// create grabber with given scope
       /** if scope is empty, the grabber is not initialized! */
       RSBPointCloudGrabber(const std::string &scope="", const std::string &transportList="spread",
                            Camera *dCam = 0, Camera *cCam = 0);
-      
+
       /// destructor
       ~RSBPointCloudGrabber();
-      
+
       /// deferred initialization with given scope
       void init(const std::string &scope, const std::string &trasportList);
-      
+
       /// fills the given point cloud with grabbed information
       virtual void grab(PointCloudObjectBase &dst);
 
       /// returns depth camera (only if explicitly given in the creation string)
       Camera getDepthCamera() const throw (utils::ICLException);
-      
+
       /// returns color camera (only if explicitly given in the creation string)
       Camera getColorCamera() const throw (utils::ICLException);
     };

@@ -52,8 +52,8 @@ struct Obj : public SceneObject{
 
 
 void init(){
-  fid = new FiducialDetector(pa("-m").as<std::string>(), 
-                             pa("-m",1).as<std::string>(), 
+  fid = new FiducialDetector(pa("-m").as<std::string>(),
+                             pa("-m",1).as<std::string>(),
                              ParamList("size",(*pa("-m",2)) ) );
   fid->setConfigurableID("fid");
   canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
@@ -67,7 +67,7 @@ void init(){
           << FSlider(1,10,2).handle("label-size-factor").label("label size factor")
           << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")
           << Prop("fid")
-          << (HBox() 
+          << (HBox()
               << Fps().handle("fps")
               << Label("no markers found yet").label("detected markers").handle("count")
               )
@@ -82,13 +82,13 @@ void init(){
                   )
               )
           << Label("-- ms").handle("ms").label("detection time")
-          << (HBox() 
+          << (HBox()
               << Button("running","pause").out("pause")
               << CamCfg("")
               )
          )
       << Show();
-  
+
   //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
   try{
     fid->setPropertyValue("quads.minimum region size",400);
@@ -98,7 +98,7 @@ void init(){
   }catch(ICLException &e){
     WARNING_LOG("exception caught while setting initial parameters: " << e.what());
   }
-  
+
 
 
   if(pa("-c")){
@@ -136,7 +136,7 @@ void run(){
   draw = fid->getIntermediateImage(gui["vis"]);
 
   draw->linewidth(2);
-  
+
   gui["count"] = fids.size();
 
   const bool showIDs = gui["showIDs"];
@@ -147,14 +147,14 @@ void run(){
   static bool use3Dfor1stVisibleMarker = pa("-3D-for-first-visible-marker");
   float factor = gui["label-size-factor"];
   for(unsigned int i=0;i<fids.size();++i){
-    
+
     if((enable3D && fids[i].getID() == 0)
        || (enable3D && use3Dfor1stVisibleMarker && !i)){
       fids[i].getPose3D();
       fids[i].getPose3D();
       obj->setTransformation(fids[i].getPose3D());
     }
-    
+
     if(showMarkerCorners){
       draw->color(255,0,0,255);
       draw->linestrip(fids[i].getCorners2D());

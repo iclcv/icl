@@ -45,18 +45,18 @@ namespace cl{
 
 namespace icl {
   namespace utils {
-    
+
     /// Wrapper for an OpenCL Buffer
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
 	class ICLUtils_API CLBuffer : public CLMemory {
       struct Impl; //!< internal hidden implementation type
       Impl *impl;  //!< internal implemetation
-      
+
       /// private constructor (buffer can only be created by CLProgram instances)
-      CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, 
+      CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue,
                const string &accessMode, size_t size, const void *src=NULL) throw (CLBufferException);
-      
+
 	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode,
 			   size_t length, size_t byte_depth, const void *src=NULL) throw (CLBufferException);
 
@@ -71,7 +71,7 @@ namespace icl {
 
       /// default constructor (creates null instance)
       CLBuffer();
-      
+
       /// copy constructor (always performs shallow copy)
       CLBuffer(const CLBuffer& other);
 
@@ -80,26 +80,26 @@ namespace icl {
 
       /// destructor
       ~CLBuffer();
-      
-      /// copies the content of this buffer into the given buffer      
+
+      /// copies the content of this buffer into the given buffer
       void copy(CLBuffer &dst, int len, int src_offset = 0, int dst_offset = 0) throw (CLBufferException);
-      
+
       /// reads buffer from graphics memory into given destination pointer
       void read(void *dst, int len, int offset = 0, bool block = true) throw (CLBufferException);
-      
+
       /// writes source data into the graphics memory
       void write(const void *src, int len, int offset = 0, bool block = true) throw (CLBufferException);
-      
+
       /// checks whether buffer is null
       bool isNull() const {
         return !impl;
       }
-      
+
       /// checks whether buffer is not null
       operator bool() const {
         return impl;
       }
-      
+
     };
   }
 }

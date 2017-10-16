@@ -39,20 +39,20 @@ using namespace icl::core;
 
 namespace icl{
   namespace io{
-    
+
     static int ti(const std::string &t) { return parse<int>(t); }
     static std::vector<int> vec3(int a, int b, int c){
       int abc[] = {a,b,c};
       return std::vector<int>(abc,abc+3);
     }
-  
+
     void FileGrabberPluginPNM::grab(File &file, ImgBase **dest){
       ICLASSERT_RETURN(dest);
-      file.open(File::readBinary); 
-  
+      file.open(File::readBinary);
+
       string nextLine;
       bool bIsICL = file.getSuffix() == ".icl" || file.getSuffix() == ".icl.gz";
-  
+
       //////////////////////////////////////////////////////////////////////
       /// READ HEADER INFORMATION FROM THE FILE  ///////////////////////////
       //////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ namespace icl{
       oInfo.imageDepth = depth8u;
       oInfo.channelCount = 0;
       oInfo.imageCount = 1;
-  
+
       if(!bIsICL){
         string l = file.readLine();
         if(l.length() < 2 || l[0] != 'P') throw InvalidFileFormatException();
@@ -72,17 +72,17 @@ namespace icl{
         }
       }
       oInfo.channelCount = getChannelsOfFormat(oInfo.imageFormat);
-      
+
       // {{{ Read special header info
-  
-      
+
+
       do {
         nextLine = skipWhitespaces(file.readLine());
         vector<string> ts = tok(nextLine," ");
-        
+
         if(ts.size() < 3) continue;
         string sKey = ts[1];
-      
+
         if (sKey == "NumFeatures" || sKey == "NumImages") {
           oInfo.imageCount = parse<int>(ts[2]);
           if(!oInfo.imageCount) throw InvalidFileFormatException();
@@ -104,10 +104,10 @@ namespace icl{
           oInfo.imageFormat = formatMatrix;
         }
       } while (nextLine.length()==0 || nextLine[0]=='#');
-      
+
       // }}}
-  
-      // read image size 
+
+      // read image size
       vector<string> ts = tok(nextLine," ");
       if(ts.size() != 2) throw InvalidFileFormatException();
       if(bIsICL){
@@ -115,24 +115,24 @@ namespace icl{
       }else{
         oInfo.size = Size(ti(ts[0]),ti(ts[1])/oInfo.imageCount);
       }
-    
-      // the next line shows the maximal pixel value -> skip 
+
+      // the next line shows the maximal pixel value -> skip
       if(file.readLine().size() == 0) throw InvalidFileFormatException();
-  
+
       //////////////////////////////////////////////////////////////////////
       /// ADAPT THE DESTINATION IMAGE //////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
-  
+
       //printf("destination roi = %s \n",translateRect(oInfo.roi).c_str());
       //printf("destination size = %s \n",translateSize(oInfo.size).c_str());
-      
+
       ensureCompatible (dest, oInfo.imageDepth, oInfo.size,
                         oInfo.channelCount,oInfo.imageFormat, oInfo.roi);
-  
-      
+
+
       ImgBase *poImg = *dest;
       poImg->setTime(oInfo.time);
-      
+
       //////////////////////////////////////////////////////////////////////
       /// READ THE DATA ////////////////////////////////////////////////////
       //////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ namespace icl{
         ERROR_LOG ("This should not happen!");
       }
     }
-  
+
   } // namespace io
 }
 

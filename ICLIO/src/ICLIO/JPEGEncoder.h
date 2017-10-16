@@ -48,32 +48,32 @@ namespace icl{
     class ICLIO_API JPEGEncoder : public utils::Uncopyable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
-  
+
       public:
       /// constructor with given jpeg quality
       /** The quality value is always given in percet (1-100)*/
       JPEGEncoder(int quality=90);
-      
+
       /// Destructor
       ~JPEGEncoder();
-  
+
       /// sets the compression quality level
       void setQuality(int quality);
-      
+
       /// encoded data type
       struct EncodedData{
         icl8u *bytes; //!< byte pointer
         int len;      //!< number of bytes used
       };
-      
+
       /// encodes a given core::ImgBase * (only depth8u is supported natively)
       /** non-depth8u images are automatically converted before compression.
           This might lead to loss of data*/
-      const EncodedData &encode(const core::ImgBase *image);    
-      
+      const EncodedData &encode(const core::ImgBase *image);
+
       /// first encodes the jpeg in memory and then write the whole memory chunk to disc
       void writeToFile(const core::ImgBase *image, const std::string &filename);
     };
-    
+
   } // namespace io
 }

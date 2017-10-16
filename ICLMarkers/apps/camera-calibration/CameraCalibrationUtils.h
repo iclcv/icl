@@ -52,7 +52,7 @@ namespace icl{
       PossibleMarker(int cfgFileIndex,const geom::Vec &v, const geom::Vec &a, const geom::Vec &b, const geom::Vec &c, const geom::Vec &d):
         loaded(true),center(v),hasCorners(true),cfgFileIndex(cfgFileIndex),gridIdx(-1){
             corners[0] = a;
-            corners[1] = b;   
+            corners[1] = b;
             corners[2] = c;
             corners[3] = d;
         }
@@ -76,12 +76,12 @@ namespace icl{
         std::string lastFileName;
         float runningBestError;
         utils::Function<int> nFramesSource;
-        
+
         BestOfNSaver(utils::Function<int> nFramesSource);
         virtual bool event(QEvent *event);
         void init();
         void stop();
-        
+
         std::pair<int,float> next_hook(const geom::Camera &cam, float error);
       };
 
@@ -147,7 +147,7 @@ namespace icl{
         utils::Point32f imagePos;
         geom::Vec worldPos;
         bool hasCorners;
-        utils::Point32f imageCornerPositions[4];  
+        utils::Point32f imageCornerPositions[4];
         geom::Vec worldCornerPositions[4];
         int cfgFileIndex;
       };
@@ -178,14 +178,14 @@ namespace icl{
         int numFound() const;
 
         geom::Mat estimatePose(const geom::Camera &cam) const;
-        
+
         void getGridCornersAndTexture(const geom::Camera &cam,
                                       std::vector<utils::Point> &points,
                                       std::vector<core::Line32f> &lines,
                                       utils::Size32f &size,
                                       const utils::Rect &bounds) const;
       };
-      
+
 
       /// accumulates all data that is provided by a single calibration call
       /** Some data, such as camera calibration parameters are
@@ -198,7 +198,7 @@ namespace icl{
       };
 
       // this was move to the camera class
-      //      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws, 
+      //      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws,
       //                                           const std::vector<utils::Point32f> &xis);
 
       /// actually performs the camera calibration
@@ -234,12 +234,12 @@ namespace icl{
 
 
       /// saves the calibration result
-      static void save_cam_filename(geom::Camera cam, 
+      static void save_cam_filename(geom::Camera cam,
                                     const std::string &outputSizeProgArg,
                                     const std::string &filename);
 
       /// saves the calibration result (using program argument for the definition of the output filename)
-      static void save_cam_pa(const geom::Camera &cam, 
+      static void save_cam_pa(const geom::Camera &cam,
                            const std::string &outputSizeProgArg,
                            const std::string &outputFileNameProgArg);
 

@@ -58,7 +58,7 @@ void init(){
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"),0,0,0, pa("-it"), pa("-id"));
   }
   model->setFoldMapChangedCallback(fold_map_changed);
-  
+
   scene.addObject(model,false);
 
   if(pa("-shaders")){
@@ -75,12 +75,12 @@ void init(){
                          Vec(0.802291,-0.14152,-0.579915,1),
                          3, Point32f(320,240),200,200,
                          0, Camera::RenderParams(Size(640,480),
-                                                 1,10000, 
+                                                 1,10000,
                                                  Rect(0,0,640,480),
                                                  0,1)));
   scene.setBounds(1000);
-  
-  gui << Draw3D().handle("draw3D").minSize(32,24) 
+
+  gui << Draw3D().handle("draw3D").minSize(32,24)
       << (VBox().minSize(12,1).maxSize(12,99)
           << CheckBox("physics on",true).handle("physics on")
           << CheckBox("gravity on",true).handle("gravity on")
@@ -97,9 +97,9 @@ void init(){
           << Image().label("fold map").handle("fm").minSize(8,8)
          )
       << Show();
-  
+
   mouse = new PhysicsPaper3MouseHandler(model,&scene);
-  
+
   gui["draw3D"].link(scene.getGLCallback(0));
   gui["draw3D"].install(mouse);
 
@@ -123,12 +123,12 @@ void init(){
   l.setDiffuse(GeomColor(255,100,0,30));
   l.getShadowCam()->setNorm(Vec(0,0,-1,1));
 
-  
+
 
   ButtonHandle h4 = gui["vr"], reset=gui["reset"];
   reset.disable();
   h4.disable();
-  
+
 }
 
 void run(){
@@ -164,23 +164,23 @@ void run(){
   if(reset.wasTriggered()){
       scene.Scene::lock();
       scene.PhysicsWorld::lock();
-    
+
     scene.removeObject(model);
 
     delete model;
 
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"));
     model->setFoldMapChangedCallback(fold_map_changed);
-    
+
     scene.addObject(model,false);
 
     scene.PhysicsWorld::unlock();
     scene.Scene::unlock();
   }
-  
+
   model->setVisible(Primitive::line,gui["vis lines"]);
   //model->simulateSelfCollision();
-  
+
   DrawHandle3D draw = gui["draw3D"];
   draw->draw(mouse->vis());
   draw.render();
@@ -191,7 +191,7 @@ void run(){
   if(gui["physics on"]){
     scene.step(1,1);
   }
- 
+
   Thread::msleep(10);
 }
 

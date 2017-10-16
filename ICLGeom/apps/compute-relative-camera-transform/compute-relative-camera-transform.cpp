@@ -37,16 +37,16 @@ Mat compute_relative_transform(const Camera &s, const Camera &d){
   Mat ms = s.getInvCSTransformationMatrix();
   Mat md = d.getInvCSTransformationMatrix();
   //    Mat rel = d.getInvCSTransformationMatrix() * s.getCSTransformationMatrix();
-  
+
   Mat3 Rs = ms.part<0,0,3,3>();
   Mat3 Rd = md.part<0,0,3,3>();
-  
+
   Vec3 Ts = ms.part<3,0,1,3>();
   Vec3 Td = md.part<3,0,1,3>();
-  
+
   Mat3 Rrel = Rs.transp() * Rd;
   Vec3 Trel = Td - Ts;
-  
+
   Mat T = Rrel.resize<4,4>(0);
   T.col(3) = Trel.resize<1,4>(1);
 
@@ -108,11 +108,11 @@ int main(int n, char**ppc){
     say("use the intrinsic parameters of the given source camera -- here, C2s.xml");
     return 0;
   }
-  
+
   if(pa("-c")){
     Mat T = compute_relative_transform(Camera(*pa("-c",0)),
                                        Camera(*pa("-c",1)));
-    
+
     out() << T << std::endl;
   }else if(pa("-a")){
     Camera c(*pa("-a"));
@@ -123,17 +123,17 @@ int main(int n, char**ppc){
     Mat Tcur = c.getInvCSTransformationMatrix();
     Mat3 Rcur = Tcur.part<0,0,3,3>();
     Vec Pcur = Tcur.part<3,0,1,4>();
-    
+
     Mat3 Rrel = T.part<0,0,3,3>();
     Vec Prel = T.part<3,0,1,4>();
-    
+
     if(pa("-t")){
       c = Camera::create_camera_from_calibration_or_udist_file(*pa("-t"));
     }
     Mat3 Rnew = Rcur * Rrel;
     Vec Pnew = Pcur + Prel;
 
-    c.setPosition(Pnew);    
+    c.setPosition(Pnew);
     c.setRotation(Rnew.transp());
 
     Mat Tnew = compute_relative_transform(Camera(*pa("-a")),c);
@@ -144,7 +144,7 @@ int main(int n, char**ppc){
     out() << c << std::endl;
   }
 
-  
-  
+
+
 }
 

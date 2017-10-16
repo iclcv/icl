@@ -173,7 +173,7 @@ ADD_LIBRARY(ICLFilter SHARED ${SOURCES} ${HEADERS} ${KERNEL})
 TARGET_LINK_LIBRARIES(ICLFilter ICLCore)
 
 SET_TARGET_PROPERTIES(ICLFilter
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

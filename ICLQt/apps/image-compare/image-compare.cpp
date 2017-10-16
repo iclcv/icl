@@ -37,7 +37,7 @@ int main(int n, char **ppc){
           "[m]-input-2|-2|-b(device,device-params) "
           "-seclect-channel-a|-ca(int) "
           "-select-channel-b|-cb(int)");
-  
+
   GenericGrabber ga;
   GenericGrabber gb;
   ga.init(pa("-a"));
@@ -45,16 +45,16 @@ int main(int n, char **ppc){
 
   const ImgBase *a = ga.grab();
   const ImgBase *b = gb.grab();
-  
+
   if(pa("-ca")){
     a = a->selectChannel(pa("-ca"));
   }
   if(pa("-cb")){
     b = b->selectChannel(pa("-cb"));
   }
-  
+
   bool canBeCompared = true;
-  
+
 #define CHECK(X,MANDATORY)                                              \
   if(a->get##X() != b->get##X()){                                       \
     std::cout << "Images differ in " << #X << ":   A:" << a->get##X() << "    B:" << b->get##X() << std::endl; \
@@ -82,10 +82,10 @@ int main(int n, char **ppc){
 
   QApplication app(n,ppc);
   HBox gui;
-  gui << Image().handle("sub").label("A-B") 
+  gui << Image().handle("sub").label("A-B")
       << Image().handle("eq").label("A==B")
       << Show();
-  
+
   gui["sub"] = subImage;
   gui["eq"] = cmpImage;
 

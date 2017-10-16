@@ -36,7 +36,7 @@
 
 namespace icl{
   namespace cv{
-  
+
     /// Extension of the position tracker class for N-dimensional positions
     /** Here's a copy of the PositionTracker documentation, which assumes 2D-input data:
         \copydoc icl::cv::PositionTracker
@@ -48,15 +48,15 @@ namespace icl{
         firstFree, // old unused IDs are re-used
         brandNew   // each new element gets a brand new ID (untils int-range ends)
       };
-      
+
       /// Vector Type
       typedef std::vector<float> Vec;
 
       typedef utils::Function<float,const Vec&,const Vec&> DistanceFunction;
-  
+
       /// Creates an empty (null) vector tracker (isNull() returns true then)
       VectorTracker();
-      
+
       /// Creates new VectorTracker instance with given parameters
       /** @param dim data dimension (this must not changed at runtime)
           @param largeDistance to tackle element count changes, the distance matrix is padded with
@@ -68,10 +68,10 @@ namespace icl{
                             In literature this is norm is reference as normalized euclidian distance. Actually we use an
                             adapted instance of this norm:
                             \f[ d(a,b) = \sqrt[4]{ \sum\limits_{i=1}^D \left( \frac{a_i - b_i}{\sigma_i}\right)^2 } \f]
-                            As mentioned in the documentation of the PositionTracker, it's compulsory to use the 
+                            As mentioned in the documentation of the PositionTracker, it's compulsory to use the
                             root of the actual norm to avoid new entries are mixed up with old ones.
                             The norm factor vector contains the \f$\sigma_i\f$ that are used in the formula above. If norm-factor
-                            is empty or all entries are set to 1, the default euclidian norm (more precisely the square 
+                            is empty or all entries are set to 1, the default euclidian norm (more precisely the square
                             root of it) is used, which increases performance slightly. If normFactor contains zeros,
                             div-0 errors would occur, so this is checked during initialization.
           @param idMode This feature is taken from the recent PositionTracker update. It decides whether to re-use
@@ -82,40 +82,40 @@ namespace icl{
                                    between estimation and current observation is beyond that threshold, the trivial
                                    assignment is used.
           @param tryOpt enables/disables whether to test for trivial assignment. If a trivial assignment can be expected, this
-                        will increase performance significantly. If it's more likely, that trivial assignment will fail, this 
+                        will increase performance significantly. If it's more likely, that trivial assignment will fail, this
                         also reduce performance a little bit.
           @param df can be set to a custom function that is used to compute the distance value between two values
                     by default a pearson distance is used, for the normalization factors, normFactors is used
       */
       VectorTracker(int dim, float largeDistance, const std::vector<float> &normFactors=std::vector<float>(),
                     IDmode idMode=firstFree, float distanceThreshold=0, bool tryOpt=true,
-                    DistanceFunction df=DistanceFunction(), bool dfIsQualityFunction=false); 
-  
+                    DistanceFunction df=DistanceFunction(), bool dfIsQualityFunction=false);
+
       /// Deep copy constructor (all data and current state is copied deeply)
       /** New instance is absolutely independent from the source instance */
       VectorTracker(const VectorTracker &other);
-      
+
       /// assignment (all data and current state is copied deeply)
       /** New instance is absolutely independent from the source instance */
       VectorTracker &operator=(const VectorTracker &other);
-      
+
       /// Destructor
       ~VectorTracker();
-      
+
       /// next step function most efficient version
       void pushData(const std::vector<Vec> &newData);
-  
+
       /// returns runtime id of last pushed data element index
       int getID(int index, float *lastErrorOrScore=0) const;
-      
+
       /// returns whether VectorTracker instance is currently null (created with default constructor)
       bool isNull() const;
-  
+
       /// return current data dimension
       int getDim() const;
-      
+
       /// internally sets the extrapolation mask
-      /** By default, the mask contains only true-entries. All dimensions of 
+      /** By default, the mask contains only true-entries. All dimensions of
           current date, that have a true-entry in the mask are extrapolated
           using a linear model before the internal cost-matrix is created (and if
           this entry has an age of at least 2 -- so two former entries are available).
@@ -125,19 +125,19 @@ namespace icl{
 
       /// sets a custom distance function
       void setDistanceFunction(DistanceFunction df);
-      
+
       /// returns current extrapolation mask
       const std::vector<bool> &getExtrapolationMask() const;
-      
+
       private:
-      
+
       /// internal data structure (declared and used in iclVectorTracker.cpp only)
       struct Data;
-      
+
       /// internal data pointer
       Data *m_data;
     };
-    
-    
+
+
   } // namespace cv
 }

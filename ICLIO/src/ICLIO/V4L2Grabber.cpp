@@ -109,7 +109,7 @@ namespace icl{
         Impl(const std::string &deviceName, const std::string &initialFormat="", bool startGrabbing=true):
           deviceName(deviceName),isGrabbing(startGrabbing),avoidDoubleFrames(true),lastTime(Time::now()),
           image(0),imageOut(0),stoppedAlready(false){
-          
+
           // note, \b is the word boundary special character (while $ is a line end which does not work so well here)
           if(deviceName.length() == 1 && match(deviceName,"^[0-9]\\b")){
             if(File("/dev/video/"+deviceName).exists()){
@@ -800,7 +800,7 @@ namespace icl{
     }
 
     REGISTER_GRABBER(v4l,utils::function(createVlGrabber), utils::function(V4L2Grabber::getDeviceList), "v4l:/dev/videoX index or device-file:V4l2 based camera source");
-    
+
   } // namespace io
 }
 

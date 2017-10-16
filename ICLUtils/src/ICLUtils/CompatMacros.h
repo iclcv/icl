@@ -39,7 +39,7 @@
 #endif
 
 #ifdef WIN32
-  // disable warning: 'class' : multiple assignment operators specified	
+  // disable warning: 'class' : multiple assignment operators specified
 #pragma warning(disable: 4522;  disable: 4996)
   #define NOMINMAX
   #define _USE_MATH_DEFINES

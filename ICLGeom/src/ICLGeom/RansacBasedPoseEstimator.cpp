@@ -38,10 +38,10 @@
 
 namespace icl{
   namespace geom{
-    
+
     using namespace math;
     using namespace utils;
-    
+
     struct RansacBasedPoseEstimator::Data{
       // int iterations;
       //int minPoints;
@@ -54,7 +54,7 @@ namespace icl{
 
 #if 0
     static icl64f err_coplanar_verbose(const std::vector<float> &m, const std::vector<float> &p, const Camera &cam){
-      std::cout << "model: [" 
+      std::cout << "model: ["
                 << m[0] << ", "
                 << m[1] << ", "
                 << m[2] << ", "
@@ -66,13 +66,13 @@ namespace icl{
       SHOW(T);
 
       SHOW(T * Vec(p[2],p[3],0,1));
-      
+
       Point32f q = cam.project(T * Vec(p[2], p[3], 0, 1));
-      
+
       SHOW(q);
-      
+
       icl64f err = sqr(p[0] - q[0]) + sqr(p[1] - q[1]);
-      
+
       return err;
     }
 #endif
@@ -80,9 +80,9 @@ namespace icl{
     icl64f RansacBasedPoseEstimator::err_coplanar(const std::vector<float> &m, const std::vector<float> &p){
       Mat T = create_hom_4x4<float>(m[0],m[1],m[2],m[3],m[4],m[5]);
       Point32f q = m_data->camera.project(T * Vec(p[2], p[3], 0, 1));
-      
+
       icl64f err = sqr(p[0] - q[0]) + sqr(p[1] - q[1]);
-      
+
       return err;
     }
 
@@ -112,12 +112,12 @@ namespace icl{
       for(size_t i=0;i<pts.size();++i){
         curr[i] = Point32f(pts[i][0], pts[i][1]);
         templ[i] = Point32f(pts[i][2], pts[i][3]);
-        
+
         //std::cout << curr[i] << "->" << templ[i] << (i < pts.size()-1 ? ",": "]\n");
       }
 
 
-      
+
       Mat T = m_data->pe.getPose(pts.size(), templ.data(), curr.data(), m_data->camera);
       //SHOW(T);
       Vec3 e = extract_euler_angles(T);
@@ -129,23 +129,23 @@ namespace icl{
       p[4] = T(3,1);
       p[5] = T(3,2);
       /*
-      std::cout << "model: [" 
+      std::cout << "model: ["
                 << p[0] << ", "
                 << p[1] << ", "
                 << p[2] << ", "
                 << p[3] << ", "
                 << p[4] << ", "
                 << p[5] << "] " << std::endl;
-      std::cout << "(Err: " 
+      std::cout << "(Err: "
                 << mean_error(pts, p, function(this,&RansacBasedPoseEstimator::err_coplanar), m_data->camera) << ")"<< std::endl;
           */
       return p;
     }
-    
-    
-    
-    RansacBasedPoseEstimator::RansacBasedPoseEstimator(const geom::Camera &camera, 
-                                                         int iterations, 
+
+
+
+    RansacBasedPoseEstimator::RansacBasedPoseEstimator(const geom::Camera &camera,
+                                                         int iterations,
                                                          int minPoints,
                                                          float maxErr,
                                                        float minPointsForGoodModel,
@@ -157,7 +157,7 @@ namespace icl{
       addProperty("min points for good model", "range", "[0,10000000]:1",str(minPointsForGoodModel));
       addProperty("debug output","flag","",false);
       addProperty("store last consensus set","flag","",storeLastConsensusSet);
-      
+
       addChildConfigurable(&m_data->pe,"pose estimator");
 
       setPropertyValue("pose estimator.algorithm","HomographyBasedOnly");
@@ -174,42 +174,42 @@ namespace icl{
                                             "'store last consensus set' property was not set to 'true'");
       return m_data->lastConsensusSet;
     }
-    
+
 
     RansacBasedPoseEstimator::~RansacBasedPoseEstimator(){
       delete m_data;
     }
-      
+
     void RansacBasedPoseEstimator::setIterations(int iterations){
       setPropertyValue("iterations",iterations);
     }
-    
+
     void RansacBasedPoseEstimator::setMinPoints(int minPoints){
       setPropertyValue("min points",minPoints);
     }
-    
+
     void RansacBasedPoseEstimator::setMaxError(float maxError){
       setPropertyValue("max error",maxError);
     }
-    
+
     void RansacBasedPoseEstimator::setMinPointsForGoodModel(float f){
       setPropertyValue("min points for good model", f);
     }
-    
-    RansacBasedPoseEstimator::Result 
+
+    RansacBasedPoseEstimator::Result
     RansacBasedPoseEstimator::fit(const std::vector<Point32f> &templ,
                                    const std::vector<Point32f> &curr){
-      
+
       int iterations = getPropertyValue("iterations");
       int maxError = getPropertyValue("max error");
       int minPoints = getPropertyValue("min points");
       int minPointsForGoodModel = getPropertyValue("min points for good model");
       bool dbg = getPropertyValue("debug output");
-      
 
 
-      RansacFitter<> ransac(minPoints, iterations, 
-                            function(this,&RansacBasedPoseEstimator::fit_coplanar), 
+
+      RansacFitter<> ransac(minPoints, iterations,
+                            function(this,&RansacBasedPoseEstimator::fit_coplanar),
                             function(this,&RansacBasedPoseEstimator::err_coplanar),
                             maxError, minPointsForGoodModel);
       RansacFitter<>::DataSet data(curr.size(), std::vector<float>(4,0));
@@ -262,9 +262,9 @@ namespace icl{
       Result r =  { Mat::id(), false, float(-1) };
       return r;
     }
-    
-    RansacBasedPoseEstimator::Result 
-    RansacBasedPoseEstimator::fit(const std::vector<Vec> &modelPoints, 
+
+    RansacBasedPoseEstimator::Result
+    RansacBasedPoseEstimator::fit(const std::vector<Vec> &modelPoints,
                                              const std::vector<Point32f> &imagePoints){
       throw ICLException("RansacBasedPoseEstimator::fit is not yet implemented for non-planar targets");
       Result r =  { Mat::id(), false, float(-1) };

@@ -38,7 +38,7 @@ Scene scene;
 
 void reload_obj(){
   scene.removeObject(0);
-  SceneObject *o = new SceneObject(*pa("-o")); 
+  SceneObject *o = new SceneObject(*pa("-o"));
   o->setPointHitMaxDistance(0.1);
   o->setColor(Primitive::line,GeomColor(255,0,0,255));
   o->setVisible(Primitive::line,true);
@@ -49,24 +49,24 @@ unsigned int lights;
 
 void init(){
   // create graphical user interface
-  
-  gui << Draw3D().minSize(16,12).handle("draw").label("scene view") 
+
+  gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
       << ( HBox().maxSize(99,3)
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << FSlider(1,100,15).out("r").label("light radius").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!(bool)pa("-o"))
          )
       << Show();
-  
-  
+
+
   scene.setPropertyValue("shadows.use improved shading", true);
-  
+
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position
              Vec(0,0,1),   // view-direction
              Vec(1,0,0));   // up-direction
   scene.addCamera(cam);
-  
+
   // a plane to demonstrate the shadows
   SceneObject *plane = SceneObject::cuboid(4, 0, 0, 1, 30, 30);
   plane->setPointHitMaxDistance(0.1);
@@ -75,7 +75,7 @@ void init(){
   plane->setPolygonSmoothingEnabled(false);
   scene.addObject(plane, true);
   scene.addObject(random, true);
-  
+
   lights = pa("-l");
   for(unsigned int i = 0; i < lights; i++) {
     scene.getLight(i).reset();
@@ -94,9 +94,9 @@ void init(){
   }
 
   float so = pa("-so");
-  
+
   if(pa("-o")){ // either load an .obj file
-    SceneObject *o = new SceneObject(*pa("-o")); 
+    SceneObject *o = new SceneObject(*pa("-o"));
     o->setPointHitMaxDistance(0.1);
     o->scale(so,so,so);
     if(pa("-n")){
@@ -149,7 +149,7 @@ void run(){
     scene.getLight(i).getShadowCam()->setNorm(Vec(-h,-r * cos(timer * 1.f / float(i + 1)),-r * sin(timer * 1.f / float(i + 1)),1.f), true);
   }
   scene.getCamera(0).setFocalLength(gui["f"]); // update the camera's focal length
-  
+
   scene.unlock();
   gui["draw"].render();
 
@@ -163,7 +163,7 @@ int main(int n, char**ppc){
   pa_explain("-o","loads a given opengl .obj file  (if -o and -s is given, -o is used)");
   pa_explain("-s","visualizes one of the shape types (cyliner,spheroid, cuboid, cone)");
   pa_explain("-l","sets the number of lights in the scene");
-  /// create a whole application 
+  /// create a whole application
   return ICLApplication(n,ppc,"-obj|-o(.obj-filename) "
                         "-shape|-s(shape=cuboid) "
                         "-lights|-l(num=1) "

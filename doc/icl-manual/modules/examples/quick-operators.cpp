@@ -3,11 +3,11 @@
 int main(){
   // create lena test image scale by .5
   ImgQ a = scale(create("lena"),0.5);
-  
+
   // apply laplace filter
   ImgQ b = qt::filter(a,"laplace");
 
-  // create binary mask 
+  // create binary mask
   ImgQ c = thresh(b,10);
 
   // apply median filter
@@ -23,5 +23,5 @@ int main(){
   show( ( label(a,"a"), label(b,"b") ) %
         ( label(c,"c"), label(d,"d") ) %
         ( label(e,"e"), label(f,"f") ) );
-  
+
 }

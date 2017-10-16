@@ -65,9 +65,9 @@ namespace icl{
         }
       }
     };
-  
+
     typedef ICLApplication::callback callback;
-   
+
     ICLApplication *ICLApplication::s_app(0);
     std::vector<ExecThread*> ICLApplication::s_threads;
     std::vector<callback> ICLApplication::s_inits;
@@ -75,7 +75,7 @@ namespace icl{
     std::vector<callback> ICLApplication::s_finalizes;
 		std::vector<callback> ICLApplication::s_prepare_shutdowns;
 
-#if 0   
+#if 0
     static void qapplication_quit_wrapper(int){
       DEBUG_LOG("calling qapplication::quit!");
       QApplication::quit();
@@ -104,14 +104,14 @@ namespace icl{
     ;
     ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
     QApplication::quit();
-      
+
     DEBUG_LOG("ignoring signal " << signal);
     return;
 
     if(signal == "SIGHUP"){
       //std::cout << "[SIGHUP]" << std::endl;
     }else if(signal == "SIGSEGV"){
-      std::cout << "Segmentation violation detected!\n" 
+      std::cout << "Segmentation violation detected!\n"
                 << "Trying to force 'normal' shutdown ..." << std::endl;
       ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
     }else{
@@ -131,8 +131,8 @@ namespace icl{
   }
 #endif
 
-    
-  ICLApplication::ICLApplication(int n, char **ppc, 
+
+  ICLApplication::ICLApplication(int n, char **ppc,
                                  const std::string &paInitString,
                                  callback init, callback run,
                                  callback run2, callback run3,
@@ -142,23 +142,23 @@ namespace icl{
     if(paInitString != ""){
       pa_init(n,ppc,paInitString);
     }
-      
+
     /* QApplication uses argv and argc internally, both are passed via reference to
         constructor and we must make sure those references stay valid for the entire
         lifetime of the QApplication object.
-  
+
         Excerpt from the Qt documentation:
         "Warning: The data referred to by argc and argv must stay valid for the entire
         lifetime of the QApplication object. In addition, argc must be greater than
         zero and argv must contain at least one valid character string."
-  
+
         We declare both as static variables before passing them to QApplication for
-        this reason. 
+        this reason.
         */
 #if 0
     app = new QApplication(n,ppc);
 #else
-      
+
     // For some reason,  passing argv and argc to the QApplication leads
     // to a seg-fault because of reading a NULL string internally ??
     // Therefore we simply pass this static empty parameter list
@@ -173,9 +173,9 @@ namespace icl{
     }
 #endif
     sharedWidget = new QGLWidget();
-  
+
     QLocale::setDefault(QLocale::C);
-  
+
 #ifdef ICL_SYSTEM_LINUX
     /* From the Qt 4.7 documentation:
         Locale Settings:
@@ -187,26 +187,26 @@ namespace icl{
         To get around this problem, call the POSIX function
         setlocale(LC_NUMERIC,"C") right after initializing
         QApplication or QCoreApplication to reset the locale
-        that is used for number formatting to "C"-locale.    
+        that is used for number formatting to "C"-locale.
         */
     setlocale(LC_NUMERIC,"C");
 #endif
-  
+
     s_app = this;
     if(init) addInit(init);
-      
+
     if(run) s_callbacks.push_back(run);
     if(run2) s_callbacks.push_back(run2);
     if(run3) s_callbacks.push_back(run3);
     if(run4) s_callbacks.push_back(run4);
     if(run5) s_callbacks.push_back(run5);
 
-    SignalHandler::install("ICL-Application",handle_icl_app_signal, 
+    SignalHandler::install("ICL-Application",handle_icl_app_signal,
                            "SIGINT,SIGTERM,SIGSEGV,SIGHUP",100);
 
     connect(app, SIGNAL(lastWindowClosed()), this, SLOT(lastWindowClosed()));
   }
-    
+
   ICLApplication::~ICLApplication(){
     s_app = 0;
     app->processEvents();
@@ -215,7 +215,7 @@ namespace icl{
 		}
 		s_prepare_shutdowns.clear();
     for (unsigned int i = 0; i < s_threads.size(); ++i){
-      s_threads[i]->stop(); // force right virtual stop implementation to be 
+      s_threads[i]->stop(); // force right virtual stop implementation to be
       delete s_threads[i];
     }
     s_threads.clear();
@@ -223,13 +223,13 @@ namespace icl{
     s_callbacks.clear();
     delete sharedWidget;
     delete app;
-    
+
     for (unsigned int i = 0; i < s_finalizes.size(); ++i){
       s_finalizes[i]();
     }
     s_finalizes.clear();
   }
-  
+
   void ICLApplication::addThread(callback cb){
     ICLASSERT_RETURN(cb);
     s_callbacks.push_back(cb);
@@ -238,7 +238,7 @@ namespace icl{
     ICLASSERT_RETURN(cb);
     s_inits.push_back(cb);
   }
-  
+
   void ICLApplication::addFinalization(callback cb){
     ICLASSERT_RETURN(cb);
     s_finalizes.push_back(cb);
@@ -261,13 +261,13 @@ namespace icl{
     }
     return app->exec();
   }
-  
+
   namespace{
     struct AsynchronousEventWrapper : public QEvent{
       ICLApplication::AsynchronousEvent *ae;
       Mutex *mutex;
       AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae, Mutex *mutex = 0):
-        QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae),mutex(mutex){} 
+        QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae),mutex(mutex){}
       ~AsynchronousEventWrapper(){
         delete ae;
       }
@@ -281,12 +281,12 @@ namespace icl{
     if(e->mutex)e->mutex->unlock();
     return true;
   }
-    
+
   void ICLApplication::lastWindowClosed(){
     QApplication::quit(); // most likely not needed here!
   }
-    
-  void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event, 
+
+  void ICLApplication::executeInGUIThread(ICLApplication::AsynchronousEvent *event,
                                           bool blocking, bool forcePostEvent){
     if(isGUIThreadActive() && !forcePostEvent){
       event->execute();
@@ -302,7 +302,7 @@ namespace icl{
       }
     }
   }
-  
+
   ICLApplication *ICLApplication::instance(){
     return s_app;
   }

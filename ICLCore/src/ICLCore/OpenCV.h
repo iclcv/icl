@@ -37,9 +37,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/version.hpp>
 
-#if defined(CV_VERSION_EPOCH) && (CV_VERSION_EPOCH > 2) 
+#if defined(CV_VERSION_EPOCH) && (CV_VERSION_EPOCH > 2)
 #define ICL_HAVE_OPENCV_3
-#elif !defined(CV_VERSION_EPOCH) && (CV_VERSION_MAJOR > 2) 
+#elif !defined(CV_VERSION_EPOCH) && (CV_VERSION_MAJOR > 2)
 #define ICL_HAVE_OPENCV_3
 #endif
 
@@ -62,7 +62,7 @@
 #if !defined(ICL_HAVE_OPENCV_3) && (ICL_OPENCV_VERSION_MINOR > 3)
 #include "opencv2/imgproc/types_c.h"
 #include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/calib3d/calib3d.hpp" 
+#include "opencv2/calib3d/calib3d.hpp"
 #endif
 
 
@@ -73,13 +73,13 @@
 
 namespace icl{
   namespace core{
-  
+
     /// Modes that define whether to prefer the source image's or the destination image's depth
     enum DepthPreference{
       PREFERE_SRC_DEPTH, //!< prefer source depth
       PREFERE_DST_DEPTH  //!< prefer destination depth
     };
-  
+
     ///Convert OpenCV IplImage to ICLimage
     /**Converts IplImage to ICLimage. If dst is NULL, the sourceimagedepth
         will be used, else the destinationimagedepth will be used.
@@ -87,7 +87,7 @@ namespace icl{
         @param **dst pointer to pointer to destinationimage (ICLimage)
         @param e depthpreference*/
     ICLCore_API ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) throw (utils::ICLException);
-  
+
     ///Convert ICLimage to OpenCV IplImage
     /**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
         will be used, else the destinationimagedepth will be used.
@@ -95,7 +95,7 @@ namespace icl{
         @param **dst pointer to pointer to destinationimage (IplImage)
         @param e depthpreference*/
     ICLCore_API IplImage *img_to_ipl(const ImgBase *src, IplImage **dst = 0, DepthPreference e = PREFERE_SRC_DEPTH)throw (utils::ICLException);
-  
+
     ///Copy single ICLimage channel to OpenCV single channel CvMat
     /**Copy single ICLimage channel to single channel CvMat. If dst is NULL, the sourceimagedepth
         will be used, else the destinationmatrixdepth will be used.
@@ -103,7 +103,7 @@ namespace icl{
         @param **dst pointer to pointer to destinationmatrix
         @param channel channel to use*/
     ICLCore_API CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst = 0, int channel = 0) throw (utils::ICLException);
-  
+
     ///Convert single channel ICLimage to OpenCV IplImage
     /**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
         Using icl8u or icl16s the imagedata is not aligned, but OpenCV expects aligned data.
@@ -112,7 +112,7 @@ namespace icl{
         @param *src pointer to sourceimage
         @param *dst pointer to destinationimage (IplImage)*/
     ICLCore_API IplImage *img_to_ipl_shallow(ImgBase *src, IplImage *dst = 0)throw (utils::ICLException);
-  
+
     ///Convert single channel ICLimage to OpenCV CvMat
     /**Converts single channel ICLimage to a single channel CvMat. Data is shared by
         source and destination.
@@ -131,8 +131,8 @@ namespace icl{
 
     /// converts cv::Mat to ImgBase (internally the pixel data is type-converted if needed)
     ICLCore_API void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn) throw (utils::ICLException);
-    
-    
+
+
     /// Very simply wrapper about the opencv C++ matrix type cv::Mat
     struct ICLCore_API MatWrapper{
       ::cv::Mat mat;
@@ -148,42 +148,42 @@ namespace icl{
       MatWrapper &operator=(const ImgBase &image);
       void copyTo(ImgBase **dst);
       void convertTo(ImgBase &dst);
-      
+
       utils::Size getSize() const;
       int getChannels() const;
       depth getDepth() const;
-      
-      template<class T> ICLCore_API 
+
+      template<class T> ICLCore_API
       T* getInterleavedData();
-      
-      template<class T> ICLCore_API 
+
+      template<class T> ICLCore_API
       const T* getInterleavedData() const;
     };
-    
+
     /** \cond */
     /// internally used templated selector
     template<class T>
-    inline int icl_get_cv_mat_type() { 
+    inline int icl_get_cv_mat_type() {
       throw utils::ICLException("icl_get_cv_mat_type: invalid type");
-      return 0; 
+      return 0;
     }
-   
+
     /// specialization of this for ints
     template<> inline int icl_get_cv_mat_type<int>() { return CV_32SC1; }
 
     /// specialization of this for floats
     template<> inline int icl_get_cv_mat_type<float>() { return CV_32FC1; }
-    /** \endcond */    
-    
+    /** \endcond */
+
     /// Utility Delete Operator used within CvMatWrapper
-    struct CvMatDelOp : public utils::DelOpBase{ 
-      static void delete_func(CvMat *m){ 
+    struct CvMatDelOp : public utils::DelOpBase{
+      static void delete_func(CvMat *m){
         if(m) cvReleaseMat(&m);
-      } 
+      }
     };
 
-    /// Utility class that wraps around a CvMat of type CV_32FC1 
-    /** The wrapper simply handles construction, x/y- indexing and 
+    /// Utility class that wraps around a CvMat of type CV_32FC1
+    /** The wrapper simply handles construction, x/y- indexing and
         deletion of the internally used CvMat pointer in its destructor. */
     template<class T>
     class CvMatWrapper : public utils::Uncopyable{
@@ -199,7 +199,7 @@ namespace icl{
       CvMatWrapper(const utils::Size &size):
         size(size),
         m( size.getDim() > 0 ? cvCreateMat(size.height, size.width, icl_get_cv_mat_type<T>()) : 0, true){}
-      
+
       /// Constructor with given source matrix (wrappes around that)
       /** Optionally, ownership is taken!*/
       CvMatWrapper(CvMat *other, bool takeOwnerShip=false):
@@ -210,7 +210,7 @@ namespace icl{
           this->size = utils::Size(size.width,size.height);
         }
       }
-        
+
       /// returns the current wrapped CvMat pointer
       CvMat *get() { return m.get(); }
 
@@ -221,7 +221,7 @@ namespace icl{
       void operator=(const Img<T> &image){
         img_to_cvmat(&image, get(), 0);
       }
-      
+
       /// adapts the size (if necessary)
       /** If the size is adapted, the newly created instace's ownership is taken over */
       inline void setSize(const utils::Size &size){
@@ -234,7 +234,7 @@ namespace icl{
           this->m = utils::SmartPtrBase<CvMat,CvMatDelOp>();
         }
       }
-      
+
       /// returns whether a non-null pointer is wrapped
       inline bool isNull() const { return m.get() == 0; }
 
@@ -242,7 +242,7 @@ namespace icl{
       inline const utils::Size &getSize() const {
         return size;
       }
-      
+
       /// index operator
       T &operator()(int y, int x) {
         return CV_MAT_ELEM(*m,T,y,x);
@@ -252,10 +252,10 @@ namespace icl{
       const T &operator()(int y, int x) const{
         return CV_MAT_ELEM((const_cast<CvMat&>(*m)),T,y,x);
       }
-      
+
     };
 
-  
+
     /// Overloaded ostream operator for the CvMat32fWrapper
     template<class T>
     inline std::ostream &operator<<(std::ostream &str, const CvMatWrapper<T> &m){

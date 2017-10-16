@@ -132,7 +132,7 @@ namespace icl{
         /** Idea: Yes, we could rotate stuff, but that wont help either!
             CE in oktober '15:
             I hope there is no fundamental issue with the camera stuff????
-            
+
             ok, I found out that setting a light's norm does not update its up-vector
             which can of course lead to any issues!
             */
@@ -296,11 +296,11 @@ namespace icl{
       bool needLink;
 
       void performLink(ICLDrawWidget *widget){
-        
+
         typedef std::map<Scene*,std::vector<ICLDrawWidget*> > LinkMap;
         static LinkMap current_links;
         static Mutex mutex;
-        
+
         Mutex::Locker lock(mutex);
         LinkMap::iterator it = current_links.find(parent);
         if(it != current_links.end()){
@@ -810,7 +810,7 @@ namespace icl{
          o->unlock();
       }
    }
-    
+
     static void count_objs_recursive(const SceneObject *o, int &n, int &np, int &nv){
      ++n;
      np += o->getPrimitives().size();
@@ -831,7 +831,7 @@ namespace icl{
           for(size_t i=0;i<m_objects.size();++i){
           count_objs_recursive(m_objects[i].get(),nObjs,nPrim,nVert);
           }
-          
+
           ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",nObjs);
           ((Configurable*)this)->setPropertyValue("info.Primitives in the Scene",nPrim);
           ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
@@ -1720,7 +1720,7 @@ namespace icl{
       if(it == d.end()) return 0;
       const std::string &params = it->second;
       std::vector<std::string> ts = tok(params,",");
-      
+
       Scene *scene = new Scene;
       if(ts.size() == 1 || ts.size() == 2){
         //scene->addCamera(Camera());
@@ -1749,7 +1749,7 @@ namespace icl{
       ERROR_LOG("invalid parameters: " << params);
       return 0;
     }
-    
+
     REGISTER_PLUGIN(PointCloudGrabber,scene,create_scene_point_cloud_grabber,
                     "Simulation based Grabber that renders a point cloud in a virtual scene",
                     "creation-string: {shape|object-file}[:camera-file] (shape can be sphere or cube)");

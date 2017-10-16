@@ -9,9 +9,9 @@ void init(){
 }
 
 void run(){
-  // create a static reference to the  
+  // create a static reference to the
   static int &sliderValue = gui.get<int>("foo");
-  
+
   gui["bar"] = sliderValue;
 }
 

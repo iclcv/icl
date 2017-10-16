@@ -55,7 +55,7 @@ namespace icl {
 	  m_use_derivatives_info = false;
 
       setUpPreBlurOp();
-      
+
       registerCallback(function(this,&CannyOp::property_callback));
     }
 

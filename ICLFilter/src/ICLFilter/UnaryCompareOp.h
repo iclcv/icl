@@ -35,7 +35,7 @@
 
 namespace icl {
   namespace filter{
-    
+
      /// Class for comparing operations  \ingroup UNARY
      /** This class Compares each pixelvalue of an image with a constant value
          using a specified compare operation. The result is written to a
@@ -44,7 +44,7 @@ namespace icl {
      */
     class ICLFilter_API UnaryCompareOp : public UnaryOp {
       public:
-   
+
   #ifdef ICL_HAVE_IPP
       /// this enum specifiy all possible compare operations
       enum optype{
@@ -66,14 +66,14 @@ namespace icl {
         eqt   /**< "=="-relation using a given tolerance level */
       };
   #endif
-      
+
       /// translate a given relation into an optype
-      /** - UnaryCompareOp::lt -> "<" 
-          - UnaryCompareOp::gt -> ">" 
-          - UnaryCompareOp::lteq -> "<=" 
-          - UnaryCompareOp::gteq -> ">=" 
-          - UnaryCompareOp::eq -> "==" 
-          - UnaryCompareOp::eqt -> "~=" 
+      /** - UnaryCompareOp::lt -> "<"
+          - UnaryCompareOp::gt -> ">"
+          - UnaryCompareOp::lteq -> "<="
+          - UnaryCompareOp::gteq -> ">="
+          - UnaryCompareOp::eq -> "=="
+          - UnaryCompareOp::eqt -> "~="
       */
       static optype translate_op_type(const std::string &stringVersion) throw (utils::ICLException){
         if(stringVersion == "<") return UnaryCompareOp::lt;
@@ -86,7 +86,7 @@ namespace icl {
         /// satisfy the compiler :-)
         return UnaryCompareOp::lt;
       }
-      
+
       /// Creates a new UnaryCompareOp object with given optype, value and tolerance level
       /** @param ot operation type ("<","<=",...)
           @param value value to compare each pixel with
@@ -94,55 +94,55 @@ namespace icl {
       **/
       UnaryCompareOp(optype ot=gt, icl64f value=128, icl64f tolerance=0):
       m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance){ }
-  
+
       /// creates a new UnaryCompareOp instance with given parameters
-      /** The optype parameters is here given as a string 
+      /** The optype parameters is here given as a string
           @see translate_op_type(const std::string&)*/
       UnaryCompareOp(const std::string &op, icl64f value=128, icl64f tolerance=0):
       m_eOpType(translate_op_type(op)), m_dValue(value), m_dTolerance(tolerance){ }
-      
+
       /// Destructor
       virtual ~UnaryCompareOp(){}
-      
+
       /// sets the current optype
       /** @param ot new optype value */
       void setOpType(optype ot){ m_eOpType = ot; }
-  
+
       /// sets the current compare value
       /** @param value new compare value */
       void setValue(icl64f value){ m_dValue = value; }
-      
+
       /// sets the current tolerance level
       /** @param tolerance new tolerance level */
       void setTollerance(icl64f tolerance){ m_dTolerance = tolerance; }
-      
+
       /// returns the current optype
       optype getOpType() const { return m_eOpType; }
-      
+
       /// returns the current compare-value
       /** @return current value */
       icl64f getValue() const { return m_dValue; }
-  
+
       /// returns the current tolerance level
       /** @return current tolerance level */
       icl64f getTolerance() const { return m_dTolerance; }
-      
-      /// applies the operation to a source image 
-      /** @param poSrc source image 
-          @param ppoDst destination image 
+
+      /// applies the operation to a source image
+      /** @param poSrc source image
+          @param ppoDst destination image
       **/
       virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
-      
+
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       private:
-      
+
       /// internal storage of the current optype
       optype m_eOpType;
-      
+
       /// internal storage of the current value
       icl64f m_dValue;
-  
+
       /// internal storage of the current tolerance level
       icl64f m_dTolerance;
     };

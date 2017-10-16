@@ -40,23 +40,23 @@ using namespace icl::core;
 
 namespace icl{
   namespace cv{
-  
+
     struct OpenCVCamCalib::Data{
       int bWidth;
       int bHeight;
       int cornerCount;
       int successes;
       int bSize;
-  
+
       CvMat* image_points;
       CvMat* object_points;
       CvMat* point_counts;
       CvMat* intrinsic_matrix;
       CvMat* distortion_coeffs;
       CvPoint2D32f* corners;
-  
+
       CvSize imgSize;
-  
+
       Data(unsigned int boardWitdth, unsigned int boardHeigt, unsigned int boardCount):
         bWidth(boardWitdth),bHeight(boardHeigt),cornerCount(0),successes(0),bSize(bWidth*bHeight){
         image_points = cvCreateMat(boardCount*bSize, 2, CV_32FC1);

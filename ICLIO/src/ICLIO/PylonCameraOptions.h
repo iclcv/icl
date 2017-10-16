@@ -104,7 +104,7 @@ namespace icl {
 
     // here come some convenience functions for pylon namespace
     namespace pylon {
-      
+
       /// template function to get the value of an IValue-subclass
       template <typename NODE, typename RET>
       RET getNodeValue(NODE* node){
@@ -194,7 +194,7 @@ namespace icl {
       /// returns a string representation of the value of a parameter of the camera.
       ICLIO_API std::string getParameterValueString(
           Pylon::IPylonDevice* device, std::string parameter);
-      
+
     } //namespace pylon
   } // namespace io
 } //namespace icl

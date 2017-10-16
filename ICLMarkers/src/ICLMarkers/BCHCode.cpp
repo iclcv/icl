@@ -45,34 +45,34 @@ using namespace icl::core;
 
 namespace icl {
   namespace markers{
-    
+
     /** source copyright: (source code found at http://www.eccpage.com/bch3.c)
-        
+
         COPYRIGHT NOTICE: This computer program is free for non-commercial purposes.
-        You may implement this program for any non-commercial application. You may 
+        You may implement this program for any non-commercial application. You may
         also implement this program for commercial purposes, provided that you
         obtain my written permission. Any modification of this program is covered
         by this copyright.
         == Copyright (c) 1994-7,  Robert Morelos-Zaragoza. All rights reserved.  ==
-        
-        
+
+
         Our code design was also inspired by the ARToolkitPlus implementation
         that also uses Robert Morelos-Zaragoza's BCH-En/Decoder.
-        
+
         ARToolkitPlusSRC/src/extra/BCH_original.txt for details/orig. copyright notice
         Copyright of the derived and new portions of this work
         (C) 2006 Graz University of Technology
         author: Thomas Pintaric
         ARToolkitPlus can also be used under the terms of the GNU public license
     */
-  
-  
+
+
     static SmartPtr<icl8u> static_indices;
     static const char **static_bch_codes=0;
-    
+
     static void init_static_data(){
       if(static_indices) return;
-      
+
       static const char *all_codes[4096]={
         "XhqhUc","XNlua5","XxMD3K","X39ozF","XplQIr","XVq5mQ","XF9W73","X-MJvm","XdMcMW","XJ9ril","Xtqy-w","XZllrT","Xl9VQJ","XRM8ey","XBl1Zf","X7qMD+","XfRfQB","XLWweG","XvDFZ9","X1gmDg","XnWOMi","XTR7iZ","XDgY-U","X9DHrv","XbDaIP","XHgtms","XrRA7p","XXWjv0","XjgTU6","XPD+ab","XzW33C","X5RKzN","XgwvI1","XMngmo","XwGp7t","X27CvO","Xon4UM","XUwRaD","XE7I3a","X+GXz7","XcGqQh","XI7de8","XswkZH","XYnzDA","Xk79Mu","XQGUiV","XAnN-Y","X6w0rj","XeTxMS","XK2eix","XuBn-k","X0aErX","Xm26Q-","XSTPee","XCaGZz","X8BZDI","XaBsUE","XGabaL","XqTi34","XW2Bzd","Xia-In","XOBSm2","Xy2L7R","X4T2vq",
         "rhtoiz","rNiDMI","rxLur-","r3+h-e","rpiJek","rVtWQX","rF+5DS","r-LQZx","rdLlaR","rJ+yUq","rttrzn","rZic32","rl+Mm4","rRL1Id","rBi8vE","r7tV7L","rfOmma","rLZFI7","rvEwvM","r1ff7D","rnZHat","rTOYUO","rDf7z1","r9EO3o","rbEjeY","rHfAQj","rrOtDu","rXZaZV","rjfKiH","rPE3MA","rzZ+rh","r5OT-8","rgvCeU","rMopQv","rwJgDi","r24vZZ","rooXi9","rUvIMg","rE4RrB","r+J4-G","rcJzmC","rI4kIN","rsvdv6","rYoq7b","rk40ap","rQJNU0","rAoUzP","r6v93s","reUEa3","rK1nUm","ruyezr","r0dx3Q","rm1ZmK","rSUGIF","rCdPvc","r8y675","rayBif","rGdiM+","rqUbrJ","rW1s-y","rid2ew","rOyLQT","ry1SDW","r4U-Zl",
@@ -139,7 +139,7 @@ namespace icl {
         "UhKgLs","UN-vlP","UxsC80","U3jpsp","Up-RPb","UVK4h6","UFjXWN","U-sIEC","UdsdTG","UJjqdB","UtKz0g","UZ-kA9","UljUHZ","URs9pi","UB-04v","U7KNwU","UfFeHl","ULexpW","UvPE4T","U1Ynww","UnePTy","UTF6dJ","UDYZ0+","U9PGAf","UbPbP5","UHYshc","UrFBWF","UXeiEK","UjYSLQ","UPP-lr","Uze28m","U5FLs3","UgIuPL","UM5hhE","UwuoWd","U2pDE4","Uo55L2","UUIQln","UEpJ8q","U+uWsR","UcurHx","UIpcpS","UsIl4X","UY5ywk","Ukp8Te","UQuVd-","UA5M0I","U6I1Az","UezwT8","UKcfdh","UuVm0A","U00FAH","Umc7HV","USzOpu","UC0H4j","U8VYwY","UaVtLo","UG0al1","Uqzj8O","UWcAst","Ui0+PD","UOVThM","UycKW7","U4z3Ea",
         "ohNpdj","oN8CTY","oxrvAV","o3kg0u","op8IpA","oVNXHH","oFk4w8","o-rR4h","odrkl7","oJkzLa","otNqsD","oZ8d8M","olkNhO","oRr0Pt","oB89Eo","o7NUW1","ofCnhq","oLhEPR","ovQxE2","o1XeWn","onhGld","oTCZL4","oDX6sL","o9QP8E","obQipI","oHXBHz","orCswe","oXhb4-","ojXLdX","oPQ2Tk","ozh-Ax","o5CS0S","ogHDp+","oM6oHf","owxhwy","o2mu4J","oo6WdT","oUHJTw","oEmQAl","o+x50W","ocxyhm","oImlP3","osHcEQ","oY6rWr","okm1lF","oQxMLK","oA6Vs5","o6H88c","oeAFlN","oKbmLC","ouSfsb","o03w86","ombYh0","oSAHPp","oC3OEs","o8S7WP","oaSAdv","oG3jTU","oqAaAZ","oWbt0i","oi33pg","oOSKH9","oybTwG","o4A+4B"
       };
-      
+
       static_bch_codes = all_codes;
       const char *lut = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-\0";
       static_indices = new icl8u[256];
@@ -147,7 +147,7 @@ namespace icl {
         static_indices.get()[(int)*p] = (icl8u)(p-lut);
       }
     }
-  
+
     /// this class implements a (36-bit binary BCH en/decoder)
     /** the code can carry 12 bits of information and it can be
         extracted event if 4 errors occur */
@@ -164,15 +164,15 @@ namespace icl {
         BCH_MAX_SQ         = 8    // SQRT(MAX_LUT) -- (?)
       };
       int t, m, n, length, k, d;
-      FixedMatrix<int,BCH_MAX_LUT,BCH_MAX_LUT> m_elp; 
+      FixedMatrix<int,BCH_MAX_LUT,BCH_MAX_LUT> m_elp;
       FixedColVector<int,BCH_MAX_P> p;
       FixedColVector<int,BCH_MAX_LUT> alpha_to,index_of,g,m_d,m_l,m_ulu,m_s,m_root,m_loc,m_reg;
-      
+
       typedef int64_t _64bits;
-  
+
       Impl(){
         init_static_data();
-  
+
         // {{{ open
         m = BCH_DEFAULT_M;
         length = BCH_DEFAULT_LENGTH;
@@ -180,7 +180,7 @@ namespace icl {
         std::fill(p.begin(),p.begin()+m+1,0);
         p[0] = p[1] = 1;
         n = (1 << m) - 1;
-        
+
         // generate galois field GF(2**m)
           int mask = 1;
           alpha_to[m] = 0;
@@ -203,27 +203,27 @@ namespace icl {
             index_of[alpha_to[i]] = i;
           }
           index_of[0] = -1;
-          
-          gen_poly();   
-          
+
+          gen_poly();
+
           std::fill(m_elp.begin(),m_elp.end(),0);
       }
       // }}}
-      
+
       bool gen_poly(){
         // {{{ open
         int ii, jj, ll, kaux;
         int test, aux, nocycles, root, noterms, rdncy;
         int cycle[1024][21], size[1024], min[1024], zeros[1024];
-        
+
         /* Generate cycle sets modulo n, n = 2**m - 1 */
         cycle[0][0] = 0;
         size[0] = 1;
         cycle[1][0] = 1;
         size[1] = 1;
         jj = 1;			/* cycle set index */
-        
-        
+
+
         do {
           /* Generate the jj-th cycle set */
           ii = 0;
@@ -238,7 +238,7 @@ namespace icl {
           do {
             ll++;
             test = 0;
-            for (ii = 1; ((ii <= jj) && (!test)); ii++)	
+            for (ii = 1; ((ii <= jj) && (!test)); ii++)
               /* Examine previous cycle sets */
               for (kaux = 0; ((kaux < size[ii]) && (!test)); kaux++)
                 if (ll == cycle[ii][kaux])
@@ -252,7 +252,7 @@ namespace icl {
         } while (ll < (n - 1));
         nocycles = jj;		/* number of cycle sets modulo n */
         d = 2 * t + 1;
-          
+
         /* Search for roots 1, 2, ..., d-1 in cycle sets */
         kaux = 0;
         rdncy = 0;
@@ -277,13 +277,13 @@ namespace icl {
             zeros[kaux] = cycle[min[ii]][jj];
             kaux++;
           }
-          
+
         k = length - rdncy;
-          
+
         if (k<0){
           return false;
         }
-          
+
         /* Compute the generator polynomial */
         g[0] = alpha_to[zeros[1]];
         g[1] = 1;		/* g(x) = (X + zeros[1]) initially */
@@ -299,14 +299,14 @@ namespace icl {
         return true;
       }
       // }}}
-  
-      
+
+
       /// not used because, we pre-encoded the whole data-set
       void encode_bch(int *bb, const int *data){
         // {{{ open
         int    i, j;
         int    feedback;
-        
+
         for (i = 0; i < length - k; i++)
           bb[i] = 0;
         for (i = k - 1; i >= 0; i--) {
@@ -326,17 +326,17 @@ namespace icl {
         }
       }
       // }}}
-      
+
       // adapted version that works on an encoded int64_t,
       // the original version got an int[]
       int decode_bch_2(int64_t &code){
         // {{{ open
-        
+
         int i, j, u, q, t2, count = 0, syn_error = 0;
         bool too_many_errors = false;
         int64_t one = 1;
         t2 = 2 * t;
-        
+
         /* first form the syndromes */
         for (i = 1; i <= t2; i++) {
           m_s[i] = 0;
@@ -352,8 +352,8 @@ namespace icl {
           /* convert syndrome from polynomial form to index form  */
           m_s[i] = index_of[m_s[i]];
         }
-        
-        
+
+
         if (syn_error) {	/* if there are errors, try to correct them */
           /*
               * Compute the error location polynomial via the Berlekamp
@@ -362,7 +362,7 @@ namespace icl {
               * u='mu'+1 and 'mu' (the Greek letter!) is the step number
               * ranging from -1 to 2*t (see L&C),  l[u] is the degree of
               * the elp at that step, and u_l[u] is the difference between
-              * the step number and the degree of the elp. 
+              * the step number and the degree of the elp.
               */
           /* initialise table entries */
           m_d[0] = 0;			/* index form */
@@ -378,7 +378,7 @@ namespace icl {
           m_ulu[0] = -1;
           m_ulu[1] = 0;
           u = 0;
-            
+
           do {
             u++;
             if (m_d[u] == -1) {
@@ -390,7 +390,7 @@ namespace icl {
             } else
               /*
                   * search for words with greatest m_ulu[q] for
-                  * which m_d[q]!=0 
+                  * which m_d[q]!=0
                   */
               {
                 q = u - 1;
@@ -405,23 +405,23 @@ namespace icl {
                       q = j;
                   } while (j > 0);
                 }
-              
+
                 /*
                     * have now found q such that m_d[u]!=0 and
-                    * m_ulu[q] is maximum 
+                    * m_ulu[q] is maximum
                     */
                 /* store degree of new elp polynomial */
                 if (m_l[u] > m_l[q] + u - q)
                   m_l[u + 1] = m_l[u];
                 else
                   m_l[u + 1] = m_l[q] + u - q;
-              
+
                 /* form new elp(x) */
                 for (i = 0; i < t2; i++)
                   m_elp(u + 1,i) = 0;
                 for (i = 0; i <= m_l[q]; i++)
                   if (m_elp(q,i) != -1)
-                    m_elp(u + 1,i + u - q) = 
+                    m_elp(u + 1,i + u - q) =
                     alpha_to[(m_d[u] + n - m_d[q] + m_elp(q,i)) % n];
                 for (i = 0; i <= m_l[u]; i++) {
                   m_elp(u + 1,i) ^= m_elp(u,i);
@@ -429,9 +429,9 @@ namespace icl {
                 }
               }
             m_ulu[u + 1] = u - m_l[u + 1];
-          
+
             /* form (u+1)th discrepancy */
-            if (u < t2) {	
+            if (u < t2) {
               /* no discrepancy computed on last iteration */
               if (m_s[u + 1] != -1)
                 m_d[u + 1] = alpha_to[m_s[u + 1]];
@@ -439,19 +439,19 @@ namespace icl {
                 m_d[u + 1] = 0;
               for (i = 1; i <= m_l[u + 1]; i++)
                 if ((m_s[u + 1 - i] != -1) && (m_elp(u + 1,i) != 0))
-                  m_d[u + 1] ^= alpha_to[(m_s[u + 1 - i] 
+                  m_d[u + 1] ^= alpha_to[(m_s[u + 1 - i]
                                           + index_of[m_elp(u + 1,i)]) % n];
               /* put m_d[u+1] into index form */
-              m_d[u + 1] = index_of[m_d[u + 1]];	
+              m_d[u + 1] = index_of[m_d[u + 1]];
             }
           } while ((u < t2) && (m_l[u + 1] <= t));
-        
+
           u++;
           if (m_l[u] <= t) {/* Can correct errors */
             /* put elp into index form */
             for (i = 0; i <= m_l[u]; i++)
               m_elp(u,i) = index_of[m_elp(u,i)];
-          
+
             /* Chien search: find roots of the error location polynomial */
             for (i = 1; i <= m_l[u]; i++)
               m_reg[i] = m_elp(u,i);
@@ -470,7 +470,7 @@ namespace icl {
                 count++;
               }
             }
-            if (count == m_l[u])	
+            if (count == m_l[u])
               {
                 /* no. roots = degree of elp hence <= t errors */
                 for (i = 0; i < m_l[u]; i++)
@@ -486,7 +486,7 @@ namespace icl {
             else	/* elp has degree >t hence cannot solve */
               {
                 return(m_l[u]); // number of errors
-              
+
               }
           }
         }
@@ -495,32 +495,32 @@ namespace icl {
       }
       // }}}
     };
-    
+
     BCHCoder::BCHCoder():impl(new Impl){ }
-  
+
     BCHCoder::~BCHCoder(){ delete impl; }
-  
-    
+
+
     BCHCode BCHCoder::encode(int idx){
       // {{{ open
       init_static_data();
-      
+
       if(idx < 0 || idx > 4095) throw ICLException("invalid bch code ID (allowed: 0 <= index <= 4095)");
-      
+
       const char *pc = static_bch_codes[idx];
-      
+
       BCHCode c;
       for(int i=0;i<6;++i){
         int idx = static_indices.get()[(int)pc[i]];
         for(int j=0;j<6;++j){
           c[i*6+j] = idx & (1<<j);
         }
-        // next 6 bits of c are used from ?? 
+        // next 6 bits of c are used from ??
       }
       return c;
     }
     // }}}
-    
+
     DecodedBCHCode BCHCoder::decode(const BCHCode &code){
       // {{{ open
       int64_t c=0,o=1;
@@ -531,10 +531,10 @@ namespace icl {
       }
       c ^= 0x8f80b8750ll;
       int err = impl->decode_bch_2(c);// BCHCoder::getInstance()->decode_bch_2(c);
-  
+
       DecodedBCHCode ret;
       ret.origCode = code;
-      
+
       if(err > BCHCoder::Impl::BCH_DEFAULT_T){
         ret.errors = 36;
         ret.id = -1;
@@ -551,10 +551,10 @@ namespace icl {
       return ret;
     }
     // }}}
-  
-  
-  
-    
+
+
+
+
     DecodedBCHCode BCHCoder::decode(const icl8u data[36]){
       BCHCode code(0);
       for(unsigned int i=0;i<36;++i){
@@ -562,8 +562,8 @@ namespace icl {
       }
       return decode(code);
     }
-    
-    
+
+
     static BCHCode code_from_image(const Img8u &image, bool useROI) throw (ICLException){
       BCHCode code(0);
       ICLASSERT_THROW(image.getChannels(), ICLException("code_from_image(const Img8u&,bool): input image has not channels"));
@@ -579,15 +579,15 @@ namespace icl {
         for(unsigned int i=0;i<36;++i,++it){
           code[i] = *it;
         }
-      }    
+      }
       return code;
     }
-    
+
     DecodedBCHCode BCHCoder::decode(const Img8u &image, bool useROI) throw (ICLException){
       return decode(code_from_image(image,useROI));
     }
-    
-    
+
+
     BCHCode BCHCoder::rotateCode(const BCHCode &in){
       BCHCode out(0);
       for(int y=0;y<6;++y){
@@ -597,7 +597,7 @@ namespace icl {
       }
       return out;
     }
-  
+
     DecodedBCHCode2D BCHCoder::decode2D(const Img8u &image, int maxID, bool useROI) throw (ICLException){
       BCHCode last = code_from_image(image,useROI);
       DecodedBCHCode2D best = decode(last);
@@ -607,7 +607,7 @@ namespace icl {
       }
       best.rot = DecodedBCHCode2D::Rot0;
       if(!best.errors) return best;
-  
+
       for(int i=1;i<4;++i){
         last = rotateCode(last);
         DecodedBCHCode2D curr = decode(last);
@@ -620,7 +620,7 @@ namespace icl {
       }
       return best;
     }
-  
+
     std::ostream &operator<<(std::ostream &s, const DecodedBCHCode2D::Rotation &r){
       return s << (r == DecodedBCHCode2D::Rot0 ? "0 Degree" :
                    r == DecodedBCHCode2D::Rot90 ? "90 Degree" :
@@ -628,8 +628,8 @@ namespace icl {
                    r == DecodedBCHCode2D::Rot270 ? "270 Degree" :
                    "??? Degree");
     }
-  
-  
+
+
     Img8u BCHCoder::createMarkerImage(int idx, int border, const Size &resultSize){
       if(border < 0) throw ICLException("create_bch_marker_image: border must be >= 0");
       BCHCode c = encode(idx);
@@ -647,4 +647,4 @@ namespace icl {
       return im;
     }
   } // namespace markers
-} 
+}

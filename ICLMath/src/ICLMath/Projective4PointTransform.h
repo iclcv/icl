@@ -41,8 +41,8 @@ namespace icl{
 
     /// Utility class that provides functions to perspectively map 4 points of a source frame into 4 points of a destination frame
     /** In contrast to a standard bilinear interpolation, a 4-point projective transform also implements perspective
-        vanishing point effencts. The algorithm was explained well in 
-        
+        vanishing point effencts. The algorithm was explained well in
+
         http://math.stackexchange.com/questions/296794/finding-the-transform-matrix-from-4-projected-points-with-javascript
 
     */
@@ -52,7 +52,7 @@ namespace icl{
       Mat3 m_C;    //!< internally held result-transform C = B * A_inv
       utils::Point32f m_srcQuad[4], m_dstQuad[4];   //!< source and destination quadrangles
 
-      
+
       public:
 
       /// creates an empty ID-transform
@@ -78,8 +78,8 @@ namespace icl{
 
       /// intializes the Projective4PointTransform from given source and destination rectangles
       /** For simplicity, also rectangular source and destination quadrangles can be used
-          The default/null arguments Rect32f::null (for either srcRect or dstRect) are internally 
-          replaced with the current rectangles. By these means also srcRect or dstRect can also 
+          The default/null arguments Rect32f::null (for either srcRect or dstRect) are internally
+          replaced with the current rectangles. By these means also srcRect or dstRect can also
           be updated separetely */
       void init(const utils::Rect32f &srcRect, const utils::Rect32f &dstRect=utils::Rect32f::null);
 
@@ -137,7 +137,7 @@ namespace icl{
           *dst++ = mapPoint(*begin++);
         }
       }
-      
+
     };
   }
 }

@@ -36,17 +36,17 @@ namespace icl{
   namespace markers{
     using namespace utils;
     using namespace math;
-  
+
     static float sprod2(const Point32f &a, const FixedColVector<float,2> &b){
       return a.x*b.x + a.y*b.y;
     }
-  
-    MarkerGridEvaluater::Line::PCAInfo 
+
+    MarkerGridEvaluater::Line::PCAInfo
     MarkerGridEvaluater::Line::perform_pca(const std::vector<Point32f> &ps){
       PCAInfo pca;
       pca.c[0] = pca.c[1] = 0;
       pca.isNull = true;
-    
+
       int n = (int)ps.size();
       if(ps.size() <= 2){
         return pca;
@@ -67,7 +67,7 @@ namespace icl{
         C(1,0) += xy;
       }
       C *= 1./n;
-    
+
       try{
         C.eigen(pca.evecs,pca.evals);
       }catch(ICLException &){
@@ -81,7 +81,7 @@ namespace icl{
       //}
       return pca;
     }
-  
+
     MarkerGridEvaluater::Line::Line(const std::vector<Point32f> &ps, float *error){
       isNull = true;
 
@@ -104,7 +104,7 @@ namespace icl{
           pmax = ps[i];
         }
       }
-    
+
       this->a.x = pca.c.x + v0.x * max;
       this->a.y = pca.c.y + v0.y * max;
       this->b.x = pca.c.x + v0.x * min;
@@ -172,7 +172,7 @@ namespace icl{
         std::vector<Point32f> &cu = *ps.back();
         ps.push_back(new std::vector<Point32f>);
         std::vector<Point32f> &ru = *ps.back();
-      
+
         for(int x=xs,y=ys; x<=xe;++x, --y){
           const Marker &m = (*grid)(x,y), &mu = (*grid)(x,h-1-y);
           if(m.wasFound()){
@@ -190,7 +190,7 @@ namespace icl{
             ru.push_back(ip.ur);
           }
         }
-      
+
         if(++ys >= h){
           ys = h-1;
           ++xs;
@@ -222,7 +222,7 @@ namespace icl{
       for(size_t i=0;i<ps.size();++i){
         if(STORE_LINES){
           lines[i] = Line(*ps[i],&e);
-        
+
           if(lines[i]){
             error += ::sqrt(e);
             ++nValid;
@@ -231,14 +231,14 @@ namespace icl{
           }
         }else{
           Line::PCAInfo p = Line::perform_pca(*ps[i]);
-          if(p) { 
+          if(p) {
             /*if(str(p.getError()) == "nan"){
               SHOW(ps[i]->size());
               std::cout << "points:" << std::endl;
               for(int j=0;j<ps[i]->size();++j){
                 std::cout << i << " :" << (*ps[i])[j] << std::endl;
               }
-              
+
               throw 32;
                 }*/
             error += ::sqrt(p.getError());
@@ -262,10 +262,10 @@ namespace icl{
       }
       return error;
     }
-  
+
     utils::VisualizationDescription MarkerGridEvaluater::vis() const{
       VisualizationDescription vd;
-    
+
       for(size_t i=0;i<lines.size();++i){
         const Line &l = lines[i];
         if(l.isNull) continue;

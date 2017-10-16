@@ -103,13 +103,13 @@ namespace icl{
                     float initialMaxLinkDistnace=0.5);
 
       PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other);
-      
+
       virtual ~PhysicsPaper3();
-      
+
       PhysicsPaper3 *clone(PhysicsWorld *world) const;
 
-      /// takes the softbody from the given other physics paper 
-      /** The current own soft-body is deleted, the current other 
+      /// takes the softbody from the given other physics paper
+      /** The current own soft-body is deleted, the current other
           softbody is moved (by pointer) into this class. Most additional
           state variables (e.g. texture coords) are copied over aswell
           (right now the physics world and the corresponding config from
@@ -117,13 +117,13 @@ namespace icl{
       void takeSoftBodyFrom(PhysicsPaper3 *other);
 
       void saveState(const std::string &filename);
-      
+
       void restoreState(const std::string &filename);
-      
+
       void setFaceAlpha(float alpha01);
 
       float getFaceAlpha() const;
-      
+
       int getNumNodes() const;
 
       void splitAlongLine(const utils::Point32f &a, const utils::Point32f &b, const geom::Camera &currCam);
@@ -207,7 +207,7 @@ namespace icl{
 
       void serializeStructureTo(std::ostream &str);
 
-      void setLinkColors(const geom::GeomColor &originalLinks, 
+      void setLinkColors(const geom::GeomColor &originalLinks,
                          const geom::GeomColor &insertedLinks,
                          const geom::GeomColor &creaseLines,
                          const geom::GeomColor &bendingConstraints);

@@ -109,7 +109,7 @@ int main (int n, char **ppc){
     std::string imageList = "";
     std::vector<const ImgBase*> imageVec;
     std::vector<std::string> imageVecStrs;
-    
+
     Size maxSize;
     for(unsigned int i=0;i<pa_get_count();++i){
       std::string s = pa(i).as<std::string>();
@@ -135,9 +135,9 @@ int main (int n, char **ppc){
     for(size_t i=0;i<imageVecStrs.size();++i){
       t << Image().handle("image-"+str(i)).size(size/20);
     }
-    
+
     gui << t << Show();
-    
+
     for(size_t i=0;i<imageVecStrs.size();++i){
       gui["image-"+str(i)] = imageVec[i];
       ICL_DELETE(imageVec[i]);
@@ -158,9 +158,9 @@ int main (int n, char **ppc){
     }
   }
 
-  
- 
-  
+
+
+
 
   return app.exec();
 }

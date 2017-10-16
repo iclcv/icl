@@ -40,11 +40,11 @@ using namespace icl::qt;
 
 namespace icl{
   namespace geom{
-  
+
     const double SoftPosit::betaUpdate = 1.05;
-    
+
     const double SoftPosit::betaZero = 0.0004;
-  
+
 #ifdef ICL_HAVE_QT
     SoftPosit::SoftPosit():dw(0){
       ROT.setBounds(3,3);

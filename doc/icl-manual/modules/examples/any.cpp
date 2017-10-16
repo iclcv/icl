@@ -17,8 +17,8 @@ int main(){
                                               4,5,6);
 
   // show
-  std::cout << " int:" << i << " double:" << d 
-            << " size:" << s << " format:" << f 
+  std::cout << " int:" << i << " double:" << d
+            << " size:" << s << " format:" << f
             << std::endl << " matrix:" << m << std::endl;
 
   /// create data-type from Any instances (implicitly)
@@ -29,18 +29,18 @@ int main(){
   math::FixedMatrix<float,3,2> mm = m;
 
   // show
-  std::cout << " int:" << ii << " double:" << dd 
-            << " size:" << ss << " format:" << ff 
+  std::cout << " int:" << ii << " double:" << dd
+            << " size:" << ss << " format:" << ff
             << std::endl << " matrix:" << mm << std::endl;
 
-  
-  
+
+
   // explicit cross-type parsing
   int x = d.as<int>();
   utils::Point y = s.as<utils::Point>();
-  
+
   std::cout << "double as int:" << x << std::endl;
 
   std::cout << "size as point:" << y << std::endl;
-  
+
 }

@@ -44,36 +44,36 @@ namespace icl{
     template<class T>
     class PluginRegister{
       public:
-      
+
       /// data used for instance creation
       typedef std::map<std::string,std::string> Data;
-      
+
       /// creator function for instances
       typedef utils::Function<T*,const Data&> CreateFunction;
 
       /// internally used instance type:
       struct Plugin{
         std::string name;            //!< instance ID
-        std::string description;     //!< description 
+        std::string description;     //!< description
         std::string creationSyntax;  //!< syntax used for creation
         CreateFunction create;       //!< factory function
       };
-      
+
       /// returns the static instance for the specific type
       static PluginRegister<T> &instance(){
         static PluginRegister<T> inst;
         return inst;
       }
-        
+
       /// adds a new plugin
-      inline void add(const std::string &name, CreateFunction create, 
+      inline void add(const std::string &name, CreateFunction create,
                const std::string &description, const std::string &creationSyntax){
         Plugin p = { name, description, creationSyntax, create };
         plugins[name] = p;
       }
-        
+
       /// creates an instance (or throws
-      inline T *createInstance(const std::string &name, const Data &data) 
+      inline T *createInstance(const std::string &name, const Data &data)
         throw (utils::ICLException){
         typename std::map<std::string,Plugin>::iterator it = plugins.find(name);
         if(it == plugins.end()){
@@ -87,7 +87,7 @@ namespace icl{
         }
         return it->second.create(data);
       }
-        
+
       /// returns a string representation of all registered types
       inline std::string getRegisteredInstanceDescription(){
         utils::TextTable t(3,plugins.size()+1,40);
@@ -95,7 +95,7 @@ namespace icl{
         t(1,0) = "Description";
         t(2,0) = "Creation Syntax";
         int i=1;
-        for(typename std::map<std::string,Plugin>::iterator it = plugins.begin(); 
+        for(typename std::map<std::string,Plugin>::iterator it = plugins.begin();
             it != plugins.end(); ++it, ++i){
           t(0,i) = it->second.name;
           t(1,i) = it->second.description;
@@ -103,7 +103,7 @@ namespace icl{
         }
         return t.toString();
       }
-      
+
       /// returns a all registered plugins
       const std::map<std::string,Plugin> &getRegisteredPlugins() const{
         return plugins;
@@ -112,10 +112,10 @@ namespace icl{
       private:
       /// private constructor (use singelton creator function instance())
       PluginRegister(){}
-      
+
       /// internal plugin list
       std::map<std::string,Plugin> plugins;
-      
+
     };
   }
 }

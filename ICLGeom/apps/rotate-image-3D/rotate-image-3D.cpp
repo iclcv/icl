@@ -50,7 +50,7 @@ struct ImgObj : public SceneObject{
 
     addTexture(0,1,2,3,&image,pa("-s"));
 
-    
+
     setVisible(Primitive::vertex | Primitive::line,false);
     setVisible(Primitive::texture,true);
   }
@@ -90,9 +90,9 @@ void init(){
   if(pa("-o")){
     output.init(pa("-o"));
   }
- 
 
-  grabber.grab()->convert(&image);  
+
+  grabber.grab()->convert(&image);
   obj = new ImgObj;
 
   scene.addObject(obj);
@@ -111,10 +111,10 @@ void init(){
   }
 
   gui << Draw3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
-  
+
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));
-  
+
   DrawHandle3D draw = gui["draw"];
   draw->link(scene.getGLCallback(0));
 

@@ -39,19 +39,19 @@ namespace icl{
     /**
        This class implements the cutfree adjacency feature for feature-graph based segmentation.*/
     class CutfreeAdjacencyFeatureExtractor{
-  	
+
      public:
-     
+
       enum Mode {BEST, GPU, CPU};
-      
+
       /// Constructor
       /** Constructs an object of this class.
           @param mode GPU, CPU and BEST (default) */
-      CutfreeAdjacencyFeatureExtractor(Mode mode=BEST); 
-  	
+      CutfreeAdjacencyFeatureExtractor(Mode mode=BEST);
+
       /// Destructor
       ~CutfreeAdjacencyFeatureExtractor();
-  	      
+
       /// Calculates the cutfree adjacency feature matrix.
       /** @param xyzh the xyzh DataSegment from the PointCloudObject class
           @param surfaces the vector of surface id vectors
@@ -61,10 +61,10 @@ namespace icl{
           @param tolerance the RANSAC tolerance in number of points (outlier)
           @param labelImage the label image
           @return the boolean cutfree adjacency matrix */
-       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh, 
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance, 
+       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage);
-                
+
        /// Calculates the cutfree adjacency feature matrix with minimum angle constraint.
       /** @param xyzh the xyzh DataSegment from the PointCloudObject class
           @param surfaces the vector of surface id vectors
@@ -76,16 +76,16 @@ namespace icl{
           @param feature the surface feature for the surfaces
           @param minAngle the minimum angle for combination
           @return the boolean cutfree adjacency matrix */
-       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh, 
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance, 
+       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage,
                 std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle);
-  	  		            
+
      private:
-     
+
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
-                 
+
     };
   } // namespace geom
 }

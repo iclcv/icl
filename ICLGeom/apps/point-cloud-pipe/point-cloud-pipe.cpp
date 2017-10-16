@@ -55,7 +55,7 @@ void init(){
 
   gui << Draw3D().minSize(32,24).handle("scene")
       << Show();
-  
+
 
   // kinect camera
   scene.addCamera(cam);
@@ -74,7 +74,7 @@ void init(){
 
 void run(){
   grabber.grab(obj);
-  
+
 #if 0
   DEBUG_LOG ("rgba32f: " << obj.supports(PointCloudObjectBase::RGBA32f));
   DEBUG_LOG ("xyzh: " << obj.supports(PointCloudObjectBase::XYZH));

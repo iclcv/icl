@@ -28,9 +28,9 @@ namespace icl{
     void regerror(int status, regex_t *re, char *buf, int bufSize);
     int regexec(regex_t *re, const char *text, int nSubMatches,
 		regmatch_t *matches, int dummy);
-    
+
     void regfree(regex_t *re);
-    
+
   }
 }
 

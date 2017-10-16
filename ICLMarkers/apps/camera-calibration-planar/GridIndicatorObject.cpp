@@ -65,7 +65,7 @@ namespace icl{
 
         const std::vector<int> &ids = def.getMarkerIDs();
         int id = ids[x + y * def.getSize().width];
-      
+
         { /// Center text thing!
           float x = b.x, y = b.y, w = b.width, h = b.height;
           static const float bo = 0.05f, ar = 2.0f;
@@ -80,7 +80,7 @@ namespace icl{
                        geom_blue(255));
       }
     };
-    
+
     GridIndicatorObject::GridIndicatorObject(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
       setLockingEnabled(true);
       for(int y=0;y<def.getSize().height;++y){
@@ -93,7 +93,7 @@ namespace icl{
     GridIndicatorObject::GridIndicatorObject(const Size &cells, const Size32f &bounds){
       float dx = bounds.width/cells.width;
       float dy = bounds.height/cells.height;
-      
+
       for(int y=0;y<cells.height;++y){
         for(int x=0;x<cells.width;++x){
           addVertex(Vec(x*dx, y*dy, 0, 1));
@@ -110,8 +110,8 @@ namespace icl{
             addLine(idx, idx - cells.width, geom_blue());
           }
         }
-      }      
+      }
     }
   }
 }
- 
+

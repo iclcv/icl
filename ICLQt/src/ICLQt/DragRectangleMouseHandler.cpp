@@ -36,13 +36,13 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-  
+
     DragRectangleMouseHandler::DragRectangleMouseHandler(int minDim):
       m_minDim(minDim),m_edge(0,100,255,255),m_fill(0,0,0,0),m_outer(0,100,255,150),
       m_edgeWhileDrag(255,0,0,255),m_fillWhileDrag(0,0,0,0),m_outerWhileDrag(255,0,0,50){
     }
-  
-  
+
+
     void DragRectangleMouseHandler::process(const MouseEvent &e){
       Mutex::Locker l(*this);
       if(e.isRight()){
@@ -65,14 +65,14 @@ namespace icl{
         m_origin = m_curr =  Point::null;
       }
     }
-    
-    static void vis_rect(ICLDrawWidget &w, const Rect &r, int imagew, int imageh, 
-                         const Color4D & edgeColor, const Color4D &fillColor, 
+
+    static void vis_rect(ICLDrawWidget &w, const Rect &r, int imagew, int imageh,
+                         const Color4D & edgeColor, const Color4D &fillColor,
                          const Color4D & outerColor){
       w.color(edgeColor);
       w.fill(fillColor);
       w.rect(r);
-      
+
       if(outerColor[3]>0){
         w.color(0,0,0,0);
         w.fill(outerColor);
@@ -82,7 +82,7 @@ namespace icl{
         w.rect(r.x,0,r.width,r.y);
       }
     }
-    
+
     void DragRectangleMouseHandler::visualize(ICLDrawWidget &w){
       const Size s = w.getImageSize();
       const int &imagew = s.width;
@@ -96,26 +96,26 @@ namespace icl{
         vis_rect(w, r, imagew, imageh, m_edgeWhileDrag, m_fillWhileDrag, m_outerWhileDrag);
       }
     }
-  
+
     bool DragRectangleMouseHandler::hasRect() const{
       Mutex::Locker l(this);
-      return m_rect != Rect::null; 
+      return m_rect != Rect::null;
     }
     bool DragRectangleMouseHandler::hasDraggedRect() const{
       Mutex::Locker l(this);
       return m_curr != Point::null || m_origin != Point::null;
     }
-  
+
     Rect DragRectangleMouseHandler::getRect() const{
       Mutex::Locker l(this);
       return m_rect;
     }
-  
+
     Rect DragRectangleMouseHandler::getDragggedRect() const{
       Mutex::Locker l(this);
       return Rect(m_origin, Size(m_curr.x-m_origin.x,m_curr.y-m_origin.y));
     }
-  
-  
+
+
   } // namespace qt
 }

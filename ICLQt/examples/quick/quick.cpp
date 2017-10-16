@@ -33,8 +33,8 @@
 int main(int nargs, char **ppc){
 
   ImgQ image = scale(create("parrot"),0.5);
-  
+
   show(image);
-  
+
   return 0;
 }

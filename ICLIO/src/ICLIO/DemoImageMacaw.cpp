@@ -1161,7 +1161,7 @@ namespace icl{
       // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
-  
+
       File f("./.tmp_image_buffer.jpg",File::writeBinary);
 
       const int DIM = NROWS*NCOLS+NEXTRA;

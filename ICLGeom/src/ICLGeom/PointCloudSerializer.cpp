@@ -33,12 +33,12 @@
 namespace icl{
   using namespace utils;
   namespace geom{
-    
+
     void PointCloudSerializer::serialize(const PointCloudObjectBase &o, SerializationDevice &dev){
-      MandatoryInfo mi = { 0, 0, 
-                           o.isOrganized(), 
+      MandatoryInfo mi = { 0, 0,
+                           o.isOrganized(),
                            o.getTime().toMicroSeconds() };
-      
+
       if(mi.organized){
         Size s = o.getSize();
         mi.width = s.width;
@@ -48,9 +48,9 @@ namespace icl{
         mi.height = 1;
       }
       dev.initializeSerialization(mi);
-      
+
       const int dim = o.getDim();
-      
+
 #define CPY(X,D,N)                                                      \
       {                                                                 \
         icl8u *d  = dev.targetFor(#X,dim*sizeof(icl##D)*N);             \
@@ -65,7 +65,7 @@ namespace icl{
       }else if(o.supports(PointCloudObjectBase::XYZ)){
         CPY(XYZ,32f,3);
       }
-      
+
       CPY_IF(Intensity,32f,1);
       CPY_IF(Label,32s,1);
       CPY_IF(Normal,32f,4);
@@ -85,27 +85,27 @@ namespace icl{
         const std::string &key = it->first;
         const std::string &value = it->second;
         icl8u *d = dev.targetFor("meta:"+key, value.length());
-        std::copy(value.begin(),value.end(), d);        
-      }      
+        std::copy(value.begin(),value.end(), d);
+      }
     }
-    
+
     void PointCloudSerializer::deserialize(PointCloudObjectBase &o, DeserializationDevice &dev){
       MandatoryInfo mi = dev.getDeserializationInfo();
-      
+
       if(mi.organized){
         o.setSize(Size(mi.width,mi.height));
       }else{
         o.setDim(mi.width);
       }
       o.setTime(utils::Time(mi.timestamp));
-      
+
       std::vector<std::string> fs = dev.getFeatures();
       const int dim = o.getDim();
       o.clearAllMetaData();
       int nBytes = 0;
       for(size_t i=0;i<fs.size();++i){
         const std::string &f = fs[i];
-        
+
         if(f.length()>=5 && f.substr(0,5) == "meta:"){
           const icl8u *s = dev.sourceFor(f, nBytes);
           std::string m(nBytes,'\0');
@@ -140,13 +140,13 @@ namespace icl{
         CPY(BGRA,8u,4);
         CPY(BGR,8u,3);
 #undef CPY
-      }      
-      
-    }    
+      }
+
+    }
 
 
 
-    
+
     void PointCloudSerializer::DefaultSerializationDevice::initializeSerialization(const MandatoryInfo &info){
       this->info = info;
     }
@@ -155,10 +155,10 @@ namespace icl{
       data[featureName].resize(bytes);
       return data[featureName].data();
     }
-    
+
     /// returns number of bytes when all data is concatenated
     int PointCloudSerializer::DefaultSerializationDevice::getFullSerializationSize() const{
-      /* data: 
+      /* data:
          byte[sizeof(MandatoryInfo)] mandatory info
          int num entries
          block [numEnries]:
@@ -174,7 +174,7 @@ namespace icl{
 
       return n;
     }
-    
+
     static void copy_next_bytes(icl8u *&dst,const void *src, int numBytes){
       memcpy(dst, src, numBytes);
       dst += numBytes;
@@ -185,14 +185,14 @@ namespace icl{
       src += numBytes;
     }
 
-    
+
     /// data needs to be at least getFullSerializationSize bytes long
     void PointCloudSerializer::DefaultSerializationDevice::copyData(icl8u *dst){
       copy_next_bytes(dst, &info, sizeof(MandatoryInfo));
 
       icl32s n = data.size();
       copy_next_bytes(dst, &n, sizeof(n));
-      
+
       for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
           it != data.end(); ++it){
         icl32s nameLen = it->first.length();
@@ -214,11 +214,11 @@ namespace icl{
       //  std::vector<std::string> features;
 
       features.clear();
-      
+
       copy_next_bytes_src(&info, src, sizeof(MandatoryInfo));
       icl32s nFeatures = 0;
       copy_next_bytes_src(&nFeatures, src, sizeof(nFeatures));
-      
+
       for(icl32s i=0;i<nFeatures;++i){
         icl32s nameLen = 0;
         icl32s dataLen = 0;
@@ -227,9 +227,9 @@ namespace icl{
 
         std::string name(nameLen,'\0');
         copy_next_bytes_src(&name[0],src, nameLen);
-        
+
         features.push_back(name);
-        
+
         std::vector<icl8u> &dataVec = data[name];
         dataVec.resize(dataLen);
         copy_next_bytes_src(&dataVec[0],src, dataLen);

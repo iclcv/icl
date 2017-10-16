@@ -45,24 +45,24 @@ namespace icl{
       utils::Range32f rRange;
       int w;
       int h;
-  
+
       float mr;
       float br;
       float mrho;
-  
+
       float rInhib;
       float rhoInhib;
-  
+
       bool gaussianInhibition;
       bool blurHoughSpace;
       bool dilateEntries;
       bool blurredSampling;
-      
+
       core::Channel32s lut;
       core::Img32s image;
       core::Img32f inhibitImage;
     };
-  
+
     HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f &rRange, float rInhibitionRange, float rhoInhibitionRange,
                                          bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling) :m_data(new Data){
 
@@ -83,7 +83,7 @@ namespace icl{
     HoughLineDetector::~HoughLineDetector(){
       delete m_data;
     }
-    
+
     void HoughLineDetector::prepare_all(){
       prepare(getPropertyValue("delta.angle"),
               getPropertyValue("delta.radius"),
@@ -96,7 +96,7 @@ namespace icl{
               getPropertyValue("adding.blur hough space"));
     }
 
-    void HoughLineDetector::prepare(float dRho, float dR, const utils::Range32f &rRange, 
+    void HoughLineDetector::prepare(float dRho, float dR, const utils::Range32f &rRange,
                                     float rInhibitionRange, float rhoInhibitionRange,
                                     bool gaussianInhibition,
                                     bool blurHoughSpace,
@@ -110,32 +110,32 @@ namespace icl{
       m_data->blurHoughSpace = blurHoughSpace;
       m_data->dilateEntries = dilateEntries;
       m_data->blurredSampling = blurredSampling;
-      
-      
+
+
       m_data->w = ceil(2*M_PI/dRho);
       m_data->h = (rRange.maxVal-rRange.minVal)/dR;
-      
+
       m_data->image.setChannels(1);
       m_data->image.setSize(Size(m_data->w, m_data->h));
       m_data->lut = m_data->image[0];
-  
+
       m_data->mr = (m_data->h-1)/(rRange.maxVal-rRange.minVal);
       m_data->br = -rRange.minVal * m_data->mr;
-      
+
       m_data->mrho = (m_data->w-1)/(2*M_PI);
-  
+
       if(gaussianInhibition){
         /// create inhibition image
         float dx = m_data->rhoInhib/(2*M_PI) * float(m_data->w);
         float dy = m_data->rInhib/(m_data->rRange.maxVal-m_data->rRange.minVal) * float(m_data->h);
-  
+
         int w = 2*dx, h=2*dy;
         if(dx >0 && dy >0){
           m_data->inhibitImage = Img32f(Size(2*dx,2*dy),1);
           Channel32f I = m_data->inhibitImage[0];
-          
+
           Point32f c(I.getWidth()/2,I.getHeight()/2);
-          
+
           for(int x=0;x<I.getWidth();++x){
             for(int y=0;y<I.getHeight();++y){
               float r = (c-Point32f(x,y)).transform(2./w,2./h).norm();
@@ -167,7 +167,7 @@ namespace icl{
         add_intern2(x,y);
       }
     }
-    
+
     void HoughLineDetector::add_intern2(float x, float y){
       if(m_data->blurredSampling){
         for(float rho=0;rho<2*M_PI;rho+=m_data->dRho){
@@ -179,17 +179,17 @@ namespace icl{
         }
       }
     }
-  
+
     void HoughLineDetector::reset(){
       prepare_all();
       std::fill(m_data->lut.begin(),m_data->lut.end(),0);
     }
-  
+
     void HoughLineDetector::apply_inhibition(const Point &p){
       float dx = m_data->rhoInhib/(2*M_PI) * float(m_data->w);
       float dy = m_data->rInhib/(m_data->rRange.maxVal-m_data->rRange.minVal) * float(m_data->h);
-      const Rect r(p.x-dx,p.y-dy,2*dx,2*dy);  
-  
+      const Rect r(p.x-dx,p.y-dy,2*dx,2*dy);
+
       if(m_data->gaussianInhibition){
         Channel32f c0 = m_data->inhibitImage[0];
         for(int x=r.x;x<r.right();++x){
@@ -208,8 +208,8 @@ namespace icl{
         }
       }
     }
-  
-    void HoughLineDetector::blur_hough_space_if_necessary(){ 
+
+    void HoughLineDetector::blur_hough_space_if_necessary(){
       if(m_data->blurHoughSpace){
         ImgBase *image = 0;
         ConvolutionOp co( (ConvolutionKernel(ConvolutionKernel::gauss3x3)) );
@@ -221,20 +221,20 @@ namespace icl{
         m_data->lut = m_data->image[0];
       }
     }
-    
+
     std::vector<StraightLine2D> HoughLineDetector::getLines(int max, bool resetAfterwards) {
       blur_hough_space_if_necessary();
-      
+
       std::vector<StraightLine2D> ls;
       ls.reserve(max);
-      
+
       for(int i=0;i<max;++i){
         Point p(-1,-1);
         int m = m_data->image.getMax(0,&p);
         if(m == 0) return ls;
         ls.push_back(StraightLine2D(getRho(p.x),getR(p.y)));
         apply_inhibition(p);
-  
+
       }
 
       if(resetAfterwards){
@@ -242,16 +242,16 @@ namespace icl{
       }
       return ls;
     }
-  
-    
+
+
     std::vector<StraightLine2D> HoughLineDetector::getLines(int max, std::vector<float> &significances, bool resetAfterwards){
       blur_hough_space_if_necessary();
-      
+
       std::vector<StraightLine2D> ls;
       ls.reserve(max);
       significances.clear();
       significances.reserve(max);
-      
+
       int firstMax = -1;
       for(int i=0;i<max;++i){
         Point p(-1,-1);
@@ -260,9 +260,9 @@ namespace icl{
         significances.push_back(float(m)/firstMax);
         if(m == 0) return ls;
         ls.push_back(StraightLine2D(getRho(p.x),getR(p.y)));
-        
+
         apply_inhibition(p);
-  
+
       }
       if(resetAfterwards){
         reset();
@@ -272,29 +272,29 @@ namespace icl{
     }
 
 
-      
+
     /// adds a new point
-    void HoughLineDetector::add(const utils::Point &p){ 
-      add_intern(p.x,p.y); 
+    void HoughLineDetector::add(const utils::Point &p){
+      add_intern(p.x,p.y);
     }
-  
+
     /// adds new points
     void HoughLineDetector::add(const std::vector<utils::Point> &ps){
       for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
     }
-      
+
     /// adds a new point
-    void HoughLineDetector::add(const utils::Point32f &p){ 
-      add_intern(p.x,p.y); 
+    void HoughLineDetector::add(const utils::Point32f &p){
+      add_intern(p.x,p.y);
     }
-  
+
     /// adds new points
     void HoughLineDetector::add(const std::vector<utils::Point32f> &ps){
       for(unsigned int i=0;i<ps.size();++i) add(ps[i]);
     }
-  
+
     /// adds a new point
-    
+
     /// adds all non zero pixels of the given binary image
 	//void HoughLineDetector::add(const core::Img8u &binaryImage){
 	//	const Channel8u c = binaryImage[0];
@@ -304,15 +304,15 @@ namespace icl{
 //			}
 //		}
 //	}
-  
+
     /// returns current hough-table image
     const core::Img32s &HoughLineDetector::getImage() const { return m_data->image; }
-  
+
     /// returns current gaussian inhibition map
     const core::Img32f &HoughLineDetector::getInhibitionMap() const { return m_data->inhibitImage; }
-  
+
     /// internal utility function
-    float HoughLineDetector::r(float rho, float x, float y) const{ 
+    float HoughLineDetector::r(float rho, float x, float y) const{
       return x*cos(rho) + y*sin(rho);
     }
     /// internal utility function
@@ -321,7 +321,7 @@ namespace icl{
     }
     /// internal utility function
     int HoughLineDetector::getY(float r) const {
-      return round(m_data->mr * r + m_data->br); 
+      return round(m_data->mr * r + m_data->br);
     }
     /// internal utility function
     float HoughLineDetector::getRho(int x) const{
@@ -360,7 +360,7 @@ namespace icl{
       }
       return m_data->lut(x+dx,y);
     }
-    
-    
+
+
   } // namespace cv
 }

@@ -62,17 +62,17 @@ namespace icl{
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionMargin physical object was null");
       m_physicalObject->getCollisionShape()->setMargin(icl2bullet(margin));
     }
-    
+
     void PhysicsObject::setFriction(float friction){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setFriction: physical object was null");
       m_physicalObject->setFriction(friction);
     }
-    
+
     void PhysicsObject::setRollingFriction(float friction){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setRollingFriction: physical object was null");
       m_physicalObject->setRollingFriction(friction);
     }
-    
+
     void PhysicsObject::setTransformation(const geom::Mat &m)
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setTransformation: physical object was null");
@@ -80,7 +80,7 @@ namespace icl{
       getCollisionObject()->setWorldTransform(trans);
       m_stateChanged = true;
     }
-      
+
     void PhysicsObject::transform(const geom::Mat &m)
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::transform: physical object was null");
@@ -89,13 +89,13 @@ namespace icl{
       getCollisionObject()->setWorldTransform(trans);
       m_stateChanged = true;
     }
-    
+
     geom::Mat PhysicsObject::getTransformation(){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::getTransform: physical object was null");
       updateSceneObject();
       return SceneObject::getTransformation();
     }
-    
+
     void PhysicsObject::setScale(geom::Vec scale) {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setScale: physical object was null");
       getCollisionObject()->getCollisionShape()->setLocalScaling(icl2bullet_unscaled(scale));
@@ -104,11 +104,11 @@ namespace icl{
       //remove the contactpoints so the collision will be updated
       if(m_world)m_world->removeContactPoints(this);
     }
-    
+
     geom::Vec PhysicsObject::getScale() {
       return bullet2icl_unscaled(getCollisionObject()->getCollisionShape()->getLocalScaling());
     }
-    
+
     void PhysicsObject::updateSceneObject()
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::updateSceneObject: physical object was null");
@@ -128,28 +128,28 @@ namespace icl{
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setFriction: physical object was null");
       m_physicalObject->setRestitution(restitution);
     }
-    
+
     void PhysicsObject::setCollisionGroup(int group)
     {
       m_collisionGroup = group;
     }
-        
+
     int PhysicsObject::getCollisionGroup()
     {
       return m_collisionGroup;
     }
-    
+
     void PhysicsObject::setContactResponse(bool hasResponse){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionResponse: physical object was null");
       if(hasResponse)m_physicalObject->setCollisionFlags(0);
       else m_physicalObject->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
     }
-    
+
     bool PhysicsObject::hasContactResponse(){
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::hasCollisionResponse: physical object was null");
       return m_physicalObject->hasContactResponse();
     }
-    
+
     void PhysicsObject::activate(bool forceActivation)
     {
       if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::activate(): physical object was null");
@@ -175,12 +175,12 @@ namespace icl{
 			if(!getCollisionObject()) throw utils::ICLException("PhysicsObject::setCollisionFlags(): physical object was null");
 			m_physicalObject->setCollisionFlags(flags);
 		}
-    
+
     void PhysicsObject::stateChanged()
     {
       m_stateChanged = true;
     }
-    
+
     void PhysicsObject::setCurrentPhysicsWorld(PhysicsWorld *world) {
       m_world = world;
     }

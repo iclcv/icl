@@ -38,7 +38,7 @@
 namespace icl{
   namespace geom{
 
-    
+
     /// Utility class for RGBDMapping
     /** For the mapping, two Camera instances are needed. The mapping computes
         the source color image positions for a given depth (x,y,d)-depth image pixel
@@ -62,12 +62,12 @@ namespace icl{
       RGBDMapping(){}
 
       /// create RGBDMapping from given color camera, and depth camera parameters
-      RGBDMapping(const Camera &colorCam, const utils::Array2D<Vec> &depthCamRays, 
+      RGBDMapping(const Camera &colorCam, const utils::Array2D<Vec> &depthCamRays,
                   const Vec &depthCamPos):
         colorCamMatrix(colorCam.getProjectionMatrix() * colorCam.getCSTransformationMatrix()),
         depthCamRays(depthCamRays){}
-        
-      /// create RGBDMapping from given color camera, and depth camera 
+
+      /// create RGBDMapping from given color camera, and depth camera
       RGBDMapping(const Camera &colorCam, const Camera &depthCamera):
         colorCamMatrix(colorCam.getProjectionMatrix() * colorCam.getCSTransformationMatrix()),
         depthCamRays(depthCamera.getResolution()){
@@ -76,21 +76,21 @@ namespace icl{
           for(int i=0;i<rays.getDim();++i){
             depthCamRays[i] = rays[i].direction;
           }
-          
+
           depthCamPos = depthCamera.getPosition();
       }
-        
-      /// applies the mapping  
+
+      /// applies the mapping
       utils::Point apply(const utils::Point &p, float dMM) const{
         Vec pW = depthCamPos + depthCamRays(p.x,p.y) * dMM;
         return map_rgbd(colorCamMatrix,pW);
       }
 
-      /// applies the mapping  
+      /// applies the mapping
       utils::Point operator()(const utils::Point &p, float dMM) const {
         return apply(p,dMM);
       }
-      
+
       /// detaches the viewrays from other instances
       /** The internal depthCamRay-Array2D might be shallow copied.
           This method ensured that *this becomes independent */

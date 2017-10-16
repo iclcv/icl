@@ -63,7 +63,7 @@ struct Mouse1 : public MouseHandler{
   virtual void process(const MouseEvent &e){
     if(gui["rect"].as<bool>()) return;
     Point p = e.getPos();
-    
+
     if(!bounds.contains(p.x,p.y)){
       return;
     }
@@ -117,7 +117,7 @@ struct Mouse2 : public DefineRectanglesMouseHandler{
     getOptions().handleWidth = 10;
     addRect(Rect(Point::null,size).enlarged(-5));
   }
-  
+
   virtual void process(const MouseEvent &e){
     if(gui["rect"].as<bool>() && !e.isRight()){
       DefineRectanglesMouseHandler::process(e);
@@ -154,7 +154,7 @@ static GUI *batchGUI = 0;
 template<bool performCrop>
 void batch_pattern_changed(){
   BoxHandle box = (*batchGUI)["matches"];
-  
+
   QList<QWidget*> widgets = box.getScroll()->widget()->findChildren<QWidget*>();
   foreach(QWidget * widget, widgets){
     delete widget;
@@ -226,7 +226,7 @@ void init(){
                 << Label(":")
                 << Spinner(1,4096,480).handle("s2")
                 )
-           << (HBox() 
+           << (HBox()
                << Fps().handle("fps")
                << CamCfg()
                )
@@ -244,10 +244,10 @@ void init(){
   }
   mouse_2 = new Mouse2(image->getSize());
   gui["draw"].install(mouse_2);
-  
+
   DrawHandle draw = gui["draw"];
   draw->setImageInfoIndicatorEnabled(false);
-  
+
   if(!c_arg){
     gui["rect"].registerCallback(rectangular_changed);
     rectangular_changed();
@@ -263,7 +263,7 @@ void init(){
 
 void run(){
   bool c_arg = pa("-c");
-  
+
   static FPSLimiter fpsLimit(30);
   fpsLimit.wait();
 

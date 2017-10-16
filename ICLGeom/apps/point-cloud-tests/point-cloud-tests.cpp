@@ -53,7 +53,7 @@ struct RandNormal{
 std::vector<PointCloudObjectBase*> create_clouds(){
   Size size(20,10);
   std::vector<PointCloudObjectBase*> clouds(13);
-  
+
   clouds[0] = new PCLPointCloudObject<pcl::PointXYZ>(size.width,size.height);
   clouds[1] = new PCLPointCloudObject<pcl::PointXYZI>(size.width,size.height);
   clouds[2] = new PCLPointCloudObject<pcl::PointXYZL>(size.width,size.height);
@@ -72,13 +72,13 @@ std::vector<PointCloudObjectBase*> create_clouds(){
   URand ra(0,255),rb(0,1),rc(-1000,1000);
   RandPos rp;
   RandNormal rn;
- 
+
   for(int i=0;i<13;++i){
     if(clouds[i]->supports(PointCloudObjectBase::XYZH)) clouds[i]->selectXYZH().fill(rp);
     else if(clouds[i]->supports(PointCloudObjectBase::XYZ)) clouds[i]->selectXYZ().fillScalar(rc);
 
     if(clouds[i]->supports(PointCloudObjectBase::Normal)) clouds[i]->selectNormal().fill(rn);
-    
+
     if(clouds[i]->supports(PointCloudObjectBase::Label)) {
       clouds[i]->selectLabel().fillScalar(ra);
       clouds[i]->selectLabel().fill(ra); // should be equal
@@ -88,7 +88,7 @@ std::vector<PointCloudObjectBase*> create_clouds(){
       clouds[i]->selectIntensity().fillScalar(ra);
       clouds[i]->selectIntensity().fill(ra); // should be equal
     }
-    
+
     if(clouds[i]->supports(PointCloudObjectBase::BGRA)) clouds[i]->selectBGRA().fillScalar(ra);
     else if(clouds[i]->supports(PointCloudObjectBase::BGR)) clouds[i]->selectBGR().fillScalar(ra);
     else if(clouds[i]->supports(PointCloudObjectBase::RGBA32f)) clouds[i]->selectRGBA32f().fillScalar(rb);
@@ -141,7 +141,7 @@ void test_point_cloud_cross_copy(){
     }
   }
   // compare(true,true)
-    
+
 }
 
 int main(){

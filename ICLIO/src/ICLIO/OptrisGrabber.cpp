@@ -61,7 +61,7 @@ namespace icl{
 #endif
 
 
-    
+
     namespace{
       struct Buffer{
         ColorFormatDecoder decoder;
@@ -90,8 +90,8 @@ namespace icl{
         }
       };
     }
-    
-   
+
+
     void frame_callback(unsigned short* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
       Buffer &b = *reinterpret_cast<Buffer*>(arg);
       b.image.setChannels(1);
@@ -128,14 +128,14 @@ namespace icl{
         Range32f r = s.getMinMax();
 
         const Img8u *pcImage = 0;
-          
+
         pccSrc.setChannels(1);
         pccSrc.setSize(s.getSize());
         pccOutNull.setFormat(formatRGB);
         pccOutNull.setSize(s.getSize());
         pccOutNull32f.setChannels(4);
         pccOutNull32f.setSize(s.getSize());
-        
+
         if(!r.getLength()){
           if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
             pccOutNull32f.fill(0);
@@ -153,7 +153,7 @@ namespace icl{
         for(int i=0;i<d.getDim();++i){
           d[i] = (icl8u)t(cs[i]);
         }
-        
+
         pcImage =  &pcc.apply(pccSrc);
 
         if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
@@ -170,17 +170,17 @@ namespace icl{
         }
       }
 
-        
+
       std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) throw (utils::ICLException){
         buffer.mode = mode;
-        
+
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
         if(cfgs.size() > 2){
           WARNING_LOG("note: if you face problem instantiating your camera, please consider moving unused "
                       "calibration files /usr/share/libirimager/cali/Cali-*.xml to somewhere else");
         }
         int64_t serial = parse<int64_t>(serialPattern);
-        
+
         std::string fn = "/usr/share/libirimager/cali/Cali-"+str(serial)+".xml";
         File f(fn);
         if(!f.exists()){
@@ -190,14 +190,14 @@ namespace icl{
         doc.load_file(fn.c_str());
         XPathNode xn = doc.select_single_node("/CaliData/Temperature/Optics/OpticsDef/FOV");
         int fov = 72;
-          
+
         if(xn && xn.node() && xn.node().first_child()){
           fov = parse<int>(xn.node().first_child().value());
         }else{
-          throw ICLException("could not parse calibration file " + fn + 
+          throw ICLException("could not parse calibration file " + fn +
                              " missing entry /CaliData/Temperature/Optics/OpticsDef/FOV");
         }
-        
+
         std::string v4lDev;
         FileList ds("/dev/video*");
         for(int d=0;d<ds.size();++d){
@@ -207,21 +207,21 @@ namespace icl{
           }else{
             continue;
           }
-          
+
           const int framerate = (mode == VISIBLE_IMAGE) ? 32 : 120;
           static const int videoformatindex = 0;
-          
+
           bool verbose = false;
           imager = new IRImager(verbose);
 
           //          std::cout << "initializing IRImager device " << v4lDev << std::endl;
-          imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController, 
+          imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController,
                        fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
 
           if(!imager->hasBispectralTechnology() && mode == VISIBLE_IMAGE){
             throw ICLException("the device does not supoort bispectral technology, so color images cannot be aquired!");
           }
-          
+
           if((int64_t)imager->getSerial() != serial){
             DEBUG_LOG("serials do not match! trying next v4l device (if there is any)");
             v4lDev = "";
@@ -232,7 +232,7 @@ namespace icl{
           throw ICLException("could not find any v4l device for serial " + str(serial));
         }
         if(!imager->isOpen()){
-          throw ICLException("could not open device /dev/video" + str(v4lDev) + 
+          throw ICLException("could not open device /dev/video" + str(v4lDev) +
                              " with serial " + str(serial));
         }
         return v4lDev;
@@ -240,7 +240,7 @@ namespace icl{
 
       void start_capturing(){
         buffer.buf.resize(imager->getRawBufferSize());
-                  
+
         if(buffer.mode == VISIBLE_IMAGE){
           imager->setVisibleFrameCallback(visible_frame_callback);
           //imager->setFrameCallback(frame_callback);
@@ -254,12 +254,12 @@ namespace icl{
         }
         start();
       }
-      
+
       Size getSize() {
         return Size(imager->getWidth(), imager->getHeight());
       }
-        
-      
+
+
       virtual void run(){
         while(true){
           {
@@ -274,9 +274,9 @@ namespace icl{
       }
 
     };
-    
- 
-    
+
+
+
     OptrisGrabber::OptrisGrabber(const std::string &serialPattern, bool testOnly,
                                  Mode mode) throw(utils::ICLException) : m_data(new Data){
       std::string v4lDev = m_data->init(serialPattern,mode);
@@ -301,13 +301,13 @@ namespace icl{
       delete m_data;
     }
 
-    
+
     const std::vector<GrabberDeviceDescription> &OptrisGrabber::getDeviceList(std::string hint, bool rescan){
       static std::vector<GrabberDeviceDescription> all;
       if(rescan){
         all.clear();
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
-        
+
         for(int c=0;c<cfgs.size();++c){
           //std::cout << "processing cali file " << cfgs[c] << std::endl;
           MatchResult r = match(cfgs[c], "Cali-([0-9]+).xml",2);
@@ -318,10 +318,10 @@ namespace icl{
               OptrisGrabber g(s,true);
               //std::cout << "--> creation successful" << std::endl;
               all.push_back(GrabberDeviceDescription("optris",s,
-                                                     "IR-IMAGER (serial: " +s+ 
+                                                     "IR-IMAGER (serial: " +s+
                                                      " @ " + g.getPropertyValue("v4l device") +")"));
               all.push_back(GrabberDeviceDescription("optrisv",s,
-                                                     "IR-IMAGER (serial: " +s+ 
+                                                     "IR-IMAGER (serial: " +s+
                                                      " @ " + g.getPropertyValue("v4l device") +")"));
 
             }catch(std::exception &ex){ /* Combination did not work*/
@@ -335,7 +335,7 @@ namespace icl{
 
     const core::ImgBase* OptrisGrabber::acquireImage(){
       bool omitDoubledFrames = getPropertyValue("omit doubled frames");
-      
+
       Mutex::Locker lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
         while(m_data->buffer.getImage().getTime() == m_data->buffer.lastTimeAcquired){
@@ -349,7 +349,7 @@ namespace icl{
 
       const ImgBase *cvt = 0;
       if(m_data->buffer.mode == IR_IMAGE){
-        cvt = m_data->convert_output(m_data->buffer.outBuf, 
+        cvt = m_data->convert_output(m_data->buffer.outBuf,
                                      getPropertyValue("format"));
       }else{
         cvt = &m_data->buffer.visibleOutBuf;
@@ -363,8 +363,8 @@ namespace icl{
     }
 
     void OptrisGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      
-    } 
+
+    }
 
     template<OptrisGrabber::Mode M>
     static Grabber *create_optris_grabber(const std::string &param){
@@ -385,14 +385,14 @@ namespace icl{
       return devices;
     }
 
-    REGISTER_GRABBER(optris,utils::function(create_optris_grabber<OptrisGrabber::IR_IMAGE>), 
-                     utils::function(create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>), 
+    REGISTER_GRABBER(optris,utils::function(create_optris_grabber<OptrisGrabber::IR_IMAGE>),
+                     utils::function(create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>),
                      "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
 
-    REGISTER_GRABBER(optrisv,utils::function(create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>), 
+    REGISTER_GRABBER(optrisv,utils::function(create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>),
                      utils::function(create_optris_grabber_device_list<OptrisGrabber::VISIBLE_IMAGE>),
                      "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
-  
+
     //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

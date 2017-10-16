@@ -42,30 +42,30 @@ namespace icl{
   namespace io{
 
     static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
-    
+
     struct SharedMemoryPublisher::Data{
       std::string name;
       SharedMemorySegment mem;
     };
-    
+
     SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) throw (ICLException){
       m_data = new Data;
       createPublisher(memorySegmentName);
     }
-    
+
     SharedMemoryPublisher::~SharedMemoryPublisher(){
       delete m_data;
     }
-      
+
     void SharedMemoryPublisher::createPublisher(const std::string &memorySegmentName) throw (ICLException){
       m_data->name = memorySegmentName;
       m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND + memorySegmentName);
-      
+
       Img8u tmp;
       tmp.setTime();
       publish(&tmp);
     }
-    
+
     void SharedMemoryPublisher::publish(const ImgBase *image){
       if(!image) return;
       CompressedData data = compress(image, false); // why was this set to true?
@@ -78,11 +78,11 @@ namespace icl{
       }
       std::copy(data.bytes, data.bytes+data.len,(icl8u*)m_data->mem.data());
     }
-  
+
     std::string SharedMemoryPublisher::getMemorySegmentName() const throw (ICLException){
       return m_data->mem.getName();
     }
-  
+
   } // namespace io
 }
 

@@ -36,11 +36,11 @@ int main(int n, char **a){
   pa_explain("-o","output filename (should be some format, that supports alpha channel such as png)\n"
              "or, if no output is given, the image is just show");
   pa_init(n,a,"-icon-name|-i(iconname=empty) -output|-o(2) -image-file-to-c++-array|-ita(input-file-name)");
-  
+
   if(pa("-ita")){
     Img8u image = load<icl8u>(pa("-ita"));
     const int w=image.getWidth(), h = image.getHeight(), c = image.getChannels();
-    std::cout << "static icl8u data_XYZ["<<w<<"]["<<h<<"]["<<c<<"]={" << std::endl; 
+    std::cout << "static icl8u data_XYZ["<<w<<"]["<<h<<"]["<<c<<"]={" << std::endl;
     for(int y=0;y<h;++y){
       std::cout << "{";
       for(int x=0;x<w;++x){
@@ -64,7 +64,7 @@ int main(int n, char **a){
     std::cout << "}" << std::endl;
   }else{
     const Img8u &image = IconFactory::create_image(pa("-i"));
-    
+
     if(pa("-o")){
       GenericImageOutput out(pa("-o"));
       out.send(&image);

@@ -38,7 +38,7 @@ float cubep[] = {0,0,0,7};
 struct TextureCube : public SceneObject{
   TextureCube():SceneObject("cube",cubep){
     Img8u image = cvt8u(icl::qt::scale(create("lena"),300,300));
-    
+
 #if DO_NOT_USE_SHARED_TEXTURE
     addTexture(0,1,2,3,&image,0,0,0,0);
     addTexture(7,6,5,4,&image,1,1,1,1);
@@ -82,14 +82,14 @@ struct Light : public SceneObject{
 
 void init(){
   gui << Draw3D().minSize(16,12).handle("draw").label("scene view") << Show();
-  
+
   scene.addCamera(Camera(Vec(0,-10,-10),
-                         Vec(0,0.707,0.707),  
+                         Vec(0,0.707,0.707),
                          Vec(1,0,0)));
   scene.addObject(&cube);
 
   scene.getLight(0).setOn(false);
-  
+
   for(int i=0;i<3;++i){
     SceneLight &l = scene.getLight(1+i);
     l.setOn();
@@ -99,7 +99,7 @@ void init(){
     l.setAnchor(lights[i]);
     scene.addObject(lights[i]);
   }
-  
+
   float bgsphere[] = {0,0,0,40,40,100};
   SceneObject *bg = new SceneObject("sphere",bgsphere);
   bg->setColor(Primitive::quad,GeomColor(0,0,100,255));
@@ -107,7 +107,7 @@ void init(){
   bg->setPointSize(3);
   bg->setVisible(Primitive::line,false);
   scene.addObject(bg);
-  
+
   gui["draw"].install(scene.getMouseHandler(0));
   gui["draw"].link(scene.getGLCallback(0));
 }

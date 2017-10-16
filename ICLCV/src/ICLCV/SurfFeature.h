@@ -37,7 +37,7 @@
 
 namespace icl{
   namespace cv{
-    
+
     /// Generic SURF Feature type
     struct ICLCV_API SurfFeature{
       float x;               //!< feature x-position
@@ -56,7 +56,7 @@ namespace icl{
       /// visualizes this surf feature (optionally shifted by given offsets)
       utils::VisualizationDescription vis(int dx=0, int dy=0) const;
     };
-    
+
     /// typedef for two matching features
     typedef std::pair<SurfFeature,SurfFeature> SurfMatch;
 

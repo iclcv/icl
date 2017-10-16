@@ -40,7 +40,7 @@ namespace icl {
     /**
       Logical operations are only possible on integer types like Img8u, Img16s and Img32s
     */
-  
+
     class ICLFilter_API BinaryLogicalOp : public BinaryOp{
       public:
       /// this enum specifiy all possible binary logical operations
@@ -49,16 +49,16 @@ namespace icl {
         orOp,
         xorOp
       };
-      
+
       /// Constructor
       /**
         @param t defines the operaion that will be performed by apply
       */
       BinaryLogicalOp(optype t):m_eOpType(t){}
-        
+
       /// Destructor
       virtual ~BinaryLogicalOp(){}
-      
+
       /// performes the logical operation, given in the constructor or by the setOpType method.
       /**
         @param src1 first operand (image)
@@ -66,25 +66,25 @@ namespace icl {
         @param dst destination image, to store the result
       */
       virtual void apply(const core::ImgBase *src1, const core::ImgBase *src2, core::ImgBase **dst);
-  
+
       /// import apply symbol from parent class
       using BinaryOp::apply;
-  
+
       /// sets the operaion that will be performed by apply
       /**
         @param t defines the operaion that will be performed by apply
-      */   
+      */
       void setOpType(optype t){ m_eOpType = t;}
       /// returns the operaion that will be performed by apply
       /**
         @return the operaion that will be performed by apply
-      */   
+      */
       optype getOpType() const { return m_eOpType; }
-  
+
       private:
       optype m_eOpType;
     };
-    
+
   } // namespace filter
 } // namespace icl
 

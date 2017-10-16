@@ -34,7 +34,7 @@
 
 namespace icl {
   namespace physics{
-  
+
     void SliderConstraint::init() {
       switch(m_rotationAxis) {
       case 1:
@@ -70,7 +70,7 @@ namespace icl {
       m_rotationAxis(rotationAxis){
       init();
     }
-    
+
     void SliderConstraint::setAngularLimits(float lower, float upper) {
       switch(m_rotationAxis) {
       case 1:
@@ -87,7 +87,7 @@ namespace icl {
         break;
       }
     }
-    
+
     void SliderConstraint::setLinearLimits(float lower, float upper) {
       switch(m_rotationAxis) {
       case 1:

@@ -37,31 +37,31 @@
 
 namespace icl{
   namespace markers{
-    
+
     /** \cond */
     class FiducialDetector;
     /** \endcond */
-    
-    
+
+
     /// FiducialDetectorPlugin for ARToolkit like markers using binary image patches as marker IDs \ingroup PLUGINS
     /** This is just a plugin class that is used by the FiducialDetector. Please
         refer the icl::markers::FiducialDetector class documentation for more details. */
     class ICLMarkers_API FiducialDetectorPluginART : public FiducialDetectorPluginForQuads{
       struct Data;
       Data *data;
-  
+
       /// only the FiducialDetector can instantiate this class
       FiducialDetectorPluginART();
       public:
-  
-      /// This class cannot be used 
+
+      /// This class cannot be used
       friend class icl::markers::FiducialDetector;
-  
+
       /// Destructor
       ~FiducialDetectorPluginART();
-      
+
       /// loads markers ID's
-      /** @param add  
+      /** @param add
           @param which this instance of Type icl::Any can be any image filename or filename pattern
                        <b>Please note:</b> internally, all loaded patterns are stored
                        by a unique ID. The unique ID is computed from the image filename by
@@ -79,17 +79,17 @@ namespace icl{
          @param params
       */
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
-  
+
       /// Identifies the given image patch using bch decoding
       virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads,cv::ImageRegion r);
-      
+
       /// this method is reimplemented here; it returns the impl's file-basename
       std::string getName(const FiducialImpl *impl);
-  
+
       /// describes the special marker image rectificatio parameters
       virtual void getQuadRectificationParameters(utils::Size &markerSizeWithBorder,
                                                   utils::Size &markerSizeWithoutBorder);
-  
+
       /// creates marker image from given parameters (see FiducialDetector for more details)
       virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
     };

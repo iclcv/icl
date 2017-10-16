@@ -36,12 +36,12 @@
 namespace icl{
   namespace utils{
     const Rect Rect::null(0,0,0,0);
-    
+
     /// ostream operator (x,y)wxy
     std::ostream &operator<<(std::ostream &s, const Rect &r){
       return s << r.ul() << r.getSize();
     }
-    
+
     /// istream operator
     std::istream &operator>>(std::istream &s, Rect &r){
       Point offs;

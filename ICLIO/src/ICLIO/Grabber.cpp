@@ -46,7 +46,7 @@ namespace icl{
         return find(vec.begin(),vec.end(),s) != vec.end();
       }
     }
-    
+
     struct Grabber::Data{
       Size desiredSize;
       format desiredFormat;
@@ -57,12 +57,12 @@ namespace icl{
       bool undistortionEnabled;
       scalemode undistortionInterpolationMode;
       bool undistortionUseOpenCL;
-            
+
       Mutex callbackMutex;
       std::vector<Grabber::callback> callbacks;
     };
 
-    
+
 
 
     Grabber::Grabber():
@@ -127,7 +127,7 @@ namespace icl{
       }
       return s.str();
     }
-    
+
     static std::string strip_quotes(std::string s){
       if(!s.length()) return s;
       if(s[0] == '"') s = s.substr(1);
@@ -135,7 +135,7 @@ namespace icl{
       if(s[s.length()-1] == '"') return s.substr(0,s.length()-1);
       return s;
     }
-    
+
     template <class T> static std::vector<T> translate_any_string(const std::string &v){
       std::vector<string> vs = tok(v,",");
       std::vector<T> ts(vs.size());
@@ -149,8 +149,8 @@ namespace icl{
       }
       return ts;
     }
-    
-    
+
+
     string Grabber::translateDoubleVec(const vector<double> &v){
       return translate_any_vec(v);
     }
@@ -171,7 +171,7 @@ namespace icl{
       // on the aqcuired image or on the adapte image?
       // for now, we use the adapted which seem to make
       // much more sence
-      
+
       bool useWarp = !!data->warp && data->undistortionEnabled;
 
       const ImgBase *adapted = adaptGrabResult(acquired,useWarp ? 0 : ppoDst);
@@ -198,7 +198,7 @@ namespace icl{
     void Grabber::enableUndistortion(const std::string &filename){
       enableUndistortion(ImageUndistortion(filename));
     }
-    
+
     void Grabber::enableUndistortion(const ProgArg &pa){
       enableUndistortion(utils::pa(pa.getID(),0).as<std::string>());
     }
@@ -215,7 +215,7 @@ namespace icl{
     bool Grabber::isUndistortionEnabled() const{
       return data->warp;
     }
-    
+
     void Grabber::enableUndistortion(const Img32f &warpMap){
       if(!data->warp){
         data->warp = new filter::WarpOp;
@@ -223,12 +223,12 @@ namespace icl{
       data->warp->setWarpMap(warpMap);
       data->warp->setScaleMode(interpolateLIN);
     }
-    
+
     void Grabber::disableUndistortion(){
       ICL_DELETE(data->warp);
     }
-    
-    
+
+
     const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
       bool adaptDepth = desiredUsed<depth>() && (getDesired<depth>() != src->getDepth());
       bool adaptSize = desiredUsed<Size>() && (getDesired<Size>() != src->getSize());
@@ -252,7 +252,7 @@ namespace icl{
         }
       }
     }
-    
+
     /*static std::vector<std::string> filter_unstable_params(const std::vector<std::string> ps){
       std::vector<std::string> fs; fs.reserve(ps.size());
 

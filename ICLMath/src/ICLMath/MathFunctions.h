@@ -48,7 +48,7 @@ namespace icl {
         @param v2Begin first element of v2
         @return The euclidian distance |v1-v2|
     */
-    template <class ForwardIterator> 
+    template <class ForwardIterator>
     inline float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
                            ForwardIterator v2Begin) {
       float fSum = 0.0, fDiff;
@@ -58,7 +58,7 @@ namespace icl {
       }
       return ::sqrt(fSum);
     }
-    
+
     /// Calculate the euclidian distance of points a and b \ingroup MATH
     /** @param a The first point
         @param b The second point
@@ -69,10 +69,10 @@ namespace icl {
       ICLASSERT_RETURN_VAL(a.size() == b.size(), float(0));
       return euclidian (a.begin(), a.end(), b.begin());
     }
-    
+
     /// computes the mean value of a data range \ingroup MATH
-    /** @param begin start iterator 
-        @param end end iterator 
+    /** @param begin start iterator
+        @param end end iterator
         IPP-optimized for float and double */
     template <class ForwardIterator>
     inline double mean(ForwardIterator begin, ForwardIterator end){
@@ -100,9 +100,9 @@ namespace icl {
     }
 #endif
     /** \endcond */
-    
-    
-  
+
+
+
     /// Compute the variance of a given data range with given mean value \ingroup MATH
     /** @param begin start iterator
         @param end end iterator
@@ -121,9 +121,9 @@ namespace icl {
         ++begin;
         num++;
       }
-      return sum/(empiricMean&&num>1 ? num - 1 : num); 
+      return sum/(empiricMean&&num>1 ? num - 1 : num);
     }
-  
+
     /// Compute the variance of a given data range \ingroup MATH
     /** @param begin start ForwardIterator
         @param end end ForwardIterator
@@ -132,8 +132,8 @@ namespace icl {
     inline double variance(ForwardIterator begin, ForwardIterator end){
       return variance(begin,end,mean(begin,end),true);
     }
-    
-    
+
+
     /// Compute std-deviation of a data set with given mean (calls sqrt(variance(..))
     /** @param begin start iterator
         @param end end iterator
@@ -144,7 +144,7 @@ namespace icl {
     inline double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
       return ::sqrt(variance(begin,end,mean,empiricMean));
     }
-  
+
     /// Compute std-deviation of a data set
     /** @param begin start iterator
         @param end end iterator
@@ -153,8 +153,8 @@ namespace icl {
     inline double stdDeviation(ForwardIterator begin, ForwardIterator end){
       return ::sqrt(variance(begin,end));
     }
-  
-  
+
+
     /// Calculates mean and standard deviation of given data range simultanously
     /** @param begin start iterator
         @param end end iterator
@@ -167,8 +167,8 @@ namespace icl {
       md.second = stdDeviation(begin,end,md.first,true);
       return md;
     }
-  
-                                 
+
+
   } // namespace math
 } //namespace icl
 

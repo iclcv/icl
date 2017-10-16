@@ -39,6 +39,6 @@ namespace icl{
     class FFTException : public utils::ICLException{
       public:
       FFTException(const std::string &msg):utils::ICLException(msg){}
-    }; 
+    };
   }// namespace math
 }

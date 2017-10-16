@@ -58,30 +58,30 @@ GUI gui_col(int i){
                 << Label("ok").handle("err"+si).maxSize(100,2).label("error").minSize(1,2)
                 << Label("9999ms").label("dt").handle("dt"+si).size(2,3)
                 << Label("unknown").handle("syn"+si).maxSize(100,2).label("syntax").minSize(1,2)
-                ) 
+                )
            );
 }
 
 void init(){
   N = pa("-n");
 #ifdef OLD_GUI
-         gui << ( GUI("vbox") 
+         gui << ( GUI("vbox")
                   << "image[@handle=input@minsize=8x6]"
-                  << (GUI("hbox[@label=desired params@maxsize=100x4]") 
+                  << (GUI("hbox[@label=desired params@maxsize=100x4]")
                       << "combo(QVGA,!VGA,SVGA,XGA,WXGA,UXGA)[@out=_dsize@handle=dsize@label=size]"
                       << "combo(!depth8u,depth16s,depth32s,depth32f,depth64f)[@out=_ddepeth@handle=ddepth@label=size]"
                       << "combo(gray,!rgb,hls,lab,yuv)[@out=_dformat@handle=dformat@label=format]"));
 #endif
-  
-  gui << ( VBox() 
+
+  gui << ( VBox()
            << Image().handle("input").minSize(8,6)
-           << (HBox().label("desired params").maxSize(100,4) 
+           << (HBox().label("desired params").maxSize(100,4)
                << Combo("1:1,QVGA,VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("size")
                << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
                )
            );
-         
+
   for(int i=0;i<N;++i){
     gui << gui_col(i);
   }
@@ -98,7 +98,7 @@ void run(){
     g.useDesired(parse<Size>(gui["dsize"]));
   }
   g.useDesired(parse<format>(gui["dformat"]));
-  
+
   const ImgBase *image = g.grab();
   gui["input"] = image;
   std::vector<UnaryOp*> ops;
@@ -107,14 +107,14 @@ void run(){
     std::string si = str(i);
     std::string opName = gui["cb"+si].as<std::string>();
     std::string params = gui["ps"+si].as<std::string>();
-    
+
     UnaryOp *op = 0;
     gui["syn"+si] = UnaryOp::getFromStringSyntax(opName);
     try{
       op = UnaryOp::fromString(params.size() ? (opName+"("+params+")") : opName);
       op->setClipToROI(false);
       ops.push_back(op);
-      gui["err"+si] = str("ok"); 
+      gui["err"+si] = str("ok");
     }catch(const ICLException &ex){
       gui["err"+si] = str(ex.what());
     }
@@ -136,7 +136,7 @@ void run(){
 int main(int n, char **ppc){
   pa_explain("-input","image source definition like -input dc 0")
             ("-n","number of filter instances in a row (3 by default)");
-  
+
   return ICLApplication(n,ppc,"[m]-input|-i(2) -num-filters|-n(int=3)",init,run).exec();
 }
 

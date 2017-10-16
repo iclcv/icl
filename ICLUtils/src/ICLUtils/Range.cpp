@@ -32,8 +32,8 @@
 #include <ICLUtils/StringUtils.h>
 namespace icl{
   namespace utils{
-  
-    template<class T> 
+
+    template<class T>
     std::ostream &operator<<(std::ostream &s, const Range <T> &range){
       s << '[';
       icl_to_stream(s,range.minVal);
@@ -41,8 +41,8 @@ namespace icl{
       icl_to_stream(s,range.maxVal);
       return s << ']';
     }
-  
-    template<class T> 
+
+    template<class T>
     std::istream &operator>>(std::istream &s, Range <T> &range){
       char c;
       s >> c;

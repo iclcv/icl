@@ -56,7 +56,7 @@ SmartPtr<UndistortionUtil> udist;
 
 void init(){
   grabber.init(pa("-i"));
-  
+
   Size32f dummy(1,1);
   std::vector<int> ids;
   if(pa("-mi")){
@@ -72,7 +72,7 @@ void init(){
   const Size &imageSize = grabber.grab()->getSize();
   udist = new UndistortionUtil(imageSize);
   udist->setConfigurableID("udist");
-    
+
 
   FiducialDetector *fd = detector.getFiducialDetector();
   fd->setPropertyValue("max bch errors",1);
@@ -86,7 +86,7 @@ void init(){
          )
       << ( VBox().maxSize(14,99).minSize(14,1)
            << Fps(10).handle("fps").maxSize(99,2).minSize(1,2)
-           << ( HBox() 
+           << ( HBox()
                 << Label("--").label("src error").handle("error").maxSize(99,2).minSize(1,2)
                 << Label("--").label("fixed error").handle("uerror").maxSize(99,2).minSize(1,2)
                 )
@@ -130,9 +130,9 @@ void run(){
   const MarkerGrid &grid = detector.detect(image);
 
   static  FiducialDetector abc ("bch","[0-23]",ParamList("size","40x40"));
-  
+
   gui["error"] = gridEval.evalError();
-  
+
   const Img8u &useImage = *fd->getIntermediateImage(gui["vis"])->as8u();
   draw = useImage;
   if(gui["overlay"]){
@@ -144,7 +144,7 @@ void run(){
   udraw = uDistUseImage;
 
   detector.detect(&uDistUseImage);
-  
+
   gui["uerror"] = gridEval.evalError();
   if(gui["overlay"]){
     udraw->draw(grid.vis());
@@ -159,7 +159,7 @@ void run(){
     opt.add(grid);
   }
   gui["ncap"] = opt.size();
-  const float k[9] = {0,0,0,0,0, 
+  const float k[9] = {0,0,0,0,0,
                       float(useImage.getWidth())/2, float(useImage.getHeight())/2,
                       float(useImage.getWidth())/2, float(useImage.getHeight())/2 };
   gui["caperr"] = opt.computeError(k);
@@ -196,7 +196,7 @@ void run(){
       lut[1] = pseudo->begin(1);
       lut[2] = pseudo->begin(2);
     }
-    
+
     DrawHandle m = gui["map"];
     m->color(0,100,255,255);
     const Img32f &wm = udist->getWarpMap();
@@ -219,7 +219,7 @@ void run(){
         c[i] *= f;
       }
     }
-    
+
     m = displacementMap;
     static RegionDetector rd;
     const std::vector<ImageRegion> &rs = rd.detect(&displacementMap);
@@ -250,7 +250,7 @@ void run(){
   if(save.wasTriggered()){
     udist->save();
   }
-  
+
   draw.render();
   udraw.render();
 

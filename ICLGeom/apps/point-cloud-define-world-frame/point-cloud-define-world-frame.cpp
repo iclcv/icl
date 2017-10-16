@@ -75,7 +75,7 @@ Point32f mPos;
 void mouse(const MouseEvent &e){
   static MouseHandler *other = scene.getMouseHandler(0);
   other->process(e);
-  
+
   bool lOt = false;
   bool lObj = false;
   try{
@@ -92,7 +92,7 @@ void mouse(const MouseEvent &e){
     if(r){
       Mat3 C(0.0f);
       Vec3 m(0.0f);
-      
+
       const std::vector<Point> &ps = r.getPixels();
       obj.lock();
       lObj=true;
@@ -102,18 +102,18 @@ void mouse(const MouseEvent &e){
 
 
       indicatorPoints->lock();
-      
+
       indicatorPoints->getVertices().clear();
       indicatorPoints->getVertexColors().clear();
-      
-      for(size_t i=0;i<ps.size();++i){      
+
+      for(size_t i=0;i<ps.size();++i){
         m += xyz(ps[i].x,ps[i].y);
         indicatorPoints->addVertex(xyz(ps[i].x,ps[i].y).resize<1,4>(1), geom_red(100));
       }
       indicatorPoints->unlock();
       m *= 1.0/ps.size();
-      
-      for(size_t i=0;i<ps.size();++i){      
+
+      for(size_t i=0;i<ps.size();++i){
         Vec3 v = xyz(ps[i].x,ps[i].y) - m;
         C += v * v.transp();
       }
@@ -135,14 +135,14 @@ void mouse(const MouseEvent &e){
         evecs = evecs * Mat3(create_hom_4x4<float>(M_PI,0,0).part<0,0,3,3>());
       }
 
-      
+
       Mat T;
       T.part<0,0,3,3>() = evecs;
       T.part<3,0,1,3>() = v.part<0,0,1,3>();
       T.part<0,3,4,1>() = Vec(0,0,0,1).transp();
-      
-      
-      indicatorCS->lock();      
+
+
+      indicatorCS->lock();
       indicatorCS->removeTransformation();
       indicatorCS->setTransformation(T);
 
@@ -150,19 +150,19 @@ void mouse(const MouseEvent &e){
       indicatorCS->unlock();
 
       obj.unlock();
-      
-      if(e.isPressEvent() && (e.isModifierActive(ShiftModifier) 
+
+      if(e.isPressEvent() && (e.isModifierActive(ShiftModifier)
                               || e.isModifierActive(ControlModifier))){
         Mutex::Locker lock(grabberMutex);
         grabber->setCameraWorldFrame(T);
         scene.getCamera(0).setWorldFrame(T);
-        
+
         if(e.isModifierActive(ControlModifier)){
           std::string names[] = { "depth", "color" };
           int n = 1;
           try { grabber->getColorCamera(); ++n; } catch(...){}
           for(int i=0;i<n;++i){
-            std::string fn = saveFileDialog("XML-Files (*.xml)", 
+            std::string fn = saveFileDialog("XML-Files (*.xml)",
                                             "Please define adapted "
                                             +names[i]+ " camera file");
             Camera cam = i ? grabber->getColorCamera() : grabber->getDepthCamera();
@@ -200,7 +200,7 @@ void init(){
           << Image().handle("seg")
         )
       << Show();
-  
+
 
   // kinect camera
   scene.addCamera(cam);
@@ -222,7 +222,7 @@ void init(){
     }
     scene.setDrawCamerasEnabled(true);
   }
-  
+
   if(pa("-cs")){
     scene.setDrawCoordinateFrameEnabled(true);
   }
@@ -233,10 +233,10 @@ void init(){
 
   indicatorPoints = new PointsIndicator;
   scene.addObject(indicatorPoints,true);
-  
+
   oed = new geom::ObjectEdgeDetector;
   octree = new RayCastOctreeObject(-3000,6000);
-    
+
 
   closing.setClipToROI(false);
   //closing.setCheckOnly(true);
@@ -248,7 +248,7 @@ void run(){
   grabber->grab(obj);
   grabberMutex.unlock();
   octree->fill(obj);
-  
+
 
   grabberMutex.lock();
   const Img32f *di = grabber->getDepthImage();

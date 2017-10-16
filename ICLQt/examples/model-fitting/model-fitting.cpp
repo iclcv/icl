@@ -48,7 +48,7 @@ const std::vector<Point32f> gen_line_points(const std::vector<double> &line, boo
   std::vector<Point32f> pts(num,Point32f(1,1));
   URand r(-1,1);
   GRand gr(0,gui["noise"].as<float>() * 2);
-  
+
   int good = num* (noise ? gui["random"].as<float>()*0.01 : 1.0);
   for(int i=0;i<good;++i){
     pts[i] = get_line_point(line,r);
@@ -58,7 +58,7 @@ const std::vector<Point32f> gen_line_points(const std::vector<double> &line, boo
     pts[i] = Point32f((float)r,40.0*(float)r-20);
   }
   return pts;
-} 
+}
 
 const std::vector<Point32f> gen_circle_points(int num = 1000){
   std::vector<Point32f> pts(num,Point32f(1,1));
@@ -91,15 +91,15 @@ void compute(){
     plot->setPropertyValue("tics.x-distance",0.25);
     plot->setPropertyValue("tics.y-distance",10);
 
-  
+
     const float line[] = {6,0.2,5}; // ax + by + c = 0
     const std::vector<double> LINE(line,line+3);
 
     std::vector<Point32f> ptsOrig = gen_line_points(LINE,true);
-    
+
     plot->addScatterData('x',&ptsOrig[0].x,&ptsOrig[0].y, ptsOrig.size(), "input points",255,0,0, 3,false, 2,2);
-    
-    LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen); 
+
+    LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen);
 
     if(gui["ransac"]){
       RANSAC::ModelFitting fit = utils::function(ls,&LS::fit);
@@ -122,8 +122,8 @@ void compute(){
     std::vector<Point32f> ptsOrig = gen_circle_points();
     plot->addScatterData('x',&ptsOrig[0].x,&ptsOrig[0].y, ptsOrig.size(), "input points",255,0,0, 3,false, 2,2);
 
-    LeastSquareModelFitting2D ls(4,LeastSquareModelFitting2D::circle_gen); 
-    
+    LeastSquareModelFitting2D ls(4,LeastSquareModelFitting2D::circle_gen);
+
     std::vector<double> model;
     if(gui["ransac"]){
       RANSAC::ModelFitting fit = utils::function(ls,&LS::fit);
@@ -160,7 +160,7 @@ void init(){
           )
       << Show();
 
-  
+
   gui["what"].registerCallback(compute);
   gui["new"].registerCallback(compute);
   gui["ransac"].registerCallback(compute);
@@ -168,7 +168,7 @@ void init(){
   PlotHandle plot = gui["plot"];
   plot->setPropertyValue("borders.left",50);
   plot->setDataViewPort(Range32f(-1.1,1.1), Range32f(-60,20));
-  
+
   compute();
 }
 

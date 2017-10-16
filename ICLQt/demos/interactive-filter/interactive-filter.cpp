@@ -70,10 +70,10 @@ void run(){
 
   const ImgBase *grabbedImage = grabber.grab();
   draw = grabbedImage;
-  
+
   if(x>0){ // else no mouse event has been recognized yet
     Rect roi(x-101,y-101,202,202);
-    
+
     if(Rect(Point::null,grabbedImage->getSize()).contains(roi)){
       // drawing smooth dropshadow
       draw->nocolor();
@@ -83,18 +83,18 @@ void run(){
       }
       // drawing filter result for the roi image
       const ImgBase *image = grabbedImage->shallowCopy(roi);
-      ConvolutionOp conv(ConvolutionKernel(k),false); 
+      ConvolutionOp conv(ConvolutionKernel(k),false);
       ImgBase *dst = 0;
-      conv.apply(image,&dst);   
+      conv.apply(image,&dst);
       dst->normalizeAllChannels(Range<icl64f>(0,255));
       draw->image(dst,x-100,y-100,200,200);
-      
+
       if(dst) delete dst;
       draw->nofill();
       draw->color(0,0,0);
       draw->rect(x-100,y-100,200,200);
     }
-    
+
     // drawing image info
     draw->color(255,255,255);
     draw->fill(r,g,b,200);

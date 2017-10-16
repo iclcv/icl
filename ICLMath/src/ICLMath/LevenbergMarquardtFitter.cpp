@@ -52,7 +52,7 @@ namespace icl{
                      const std::string &linSolver){
       init(f,outputDim,js,tau,maxIterations,minError,lambdaMultiplier,eps1,eps2,linSolver);
     }
-    
+
     template<class Scalar>
     LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(FunctionMat f, int outputDim,
                      const std::vector<JacobianMat> &js,
@@ -87,7 +87,7 @@ namespace icl{
       this->linSolver = linSolver;
       this->useMat = false;
     }
-  
+
     template<class Scalar>
     void LevenbergMarquardtFitter<Scalar>::init(FunctionMat f,
                            int outputDim,
@@ -146,8 +146,8 @@ namespace icl{
       J.setBounds(P,D);
       H.setBounds(P,P);
       H.setBounds(P,P);
-      
-      params_new.setDim(P); 
+
+      params_new.setDim(P);
       y_est.setBounds(O,D);
       dy.setBounds(D);
 
@@ -229,7 +229,7 @@ namespace icl{
 #pragma omp parallel for if(mt)
 #endif
           for(int i=0;i<D;++i){
-            y_est_rows[i] = f(params_new,xs_rows[i]); 
+            y_est_rows[i] = f(params_new,xs_rows[i]);
           }
           Scalar e_new = error(ys, y_est);
 
@@ -322,7 +322,7 @@ namespace icl{
       H.setBounds(P,P);
       H.setBounds(P,P);
 
-      params_new.setDim(P); 
+      params_new.setDim(P);
       y_est.setBounds(O,D);
       dy.setBounds(D);
 
@@ -473,7 +473,7 @@ namespace icl{
         NumericJacobian(int o, Function f, Scalar delta):
           o(o),f(f),delta(delta){}
 
-        virtual void operator()(const Params &params, 
+        virtual void operator()(const Params &params,
                                 const Vector &x,
                                 Vector &target) const{
           Vector p = params;
@@ -506,7 +506,7 @@ namespace icl{
         NumericJacobianMat(int o, FunctionMat f, Scalar delta):
           o(o),f(f),delta(delta){}
 
-        virtual void operator()(const Params &params, 
+        virtual void operator()(const Params &params,
                                 const Matrix &x,
                                 Matrix &target) const{
           Vector p = params;
@@ -521,22 +521,22 @@ namespace icl{
         }
       };
     }
-  
-  
+
+
     template<class Scalar>
-    typename LevenbergMarquardtFitter<Scalar>::Jacobian 
+    typename LevenbergMarquardtFitter<Scalar>::Jacobian
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, Function f, float delta){
       return Jacobian(new NumericJacobian<Scalar>(o,f,delta));
     }
 
     template<class Scalar>
-    typename LevenbergMarquardtFitter<Scalar>::JacobianMat 
+    typename LevenbergMarquardtFitter<Scalar>::JacobianMat
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, FunctionMat f, float delta){
       return JacobianMat(new NumericJacobianMat<Scalar>(o,f,delta));
     }
 
     template<class Scalar>
-    std::vector<typename LevenbergMarquardtFitter<Scalar>::Jacobian> 
+    std::vector<typename LevenbergMarquardtFitter<Scalar>::Jacobian>
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobians(int n, Function f, float delta){
       std::vector<typename LevenbergMarquardtFitter<Scalar>::Jacobian> js(n);
       for(int i=0;i<n;++i){
@@ -546,7 +546,7 @@ namespace icl{
     }
 
     template<class Scalar>
-    std::vector<typename LevenbergMarquardtFitter<Scalar>::JacobianMat> 
+    std::vector<typename LevenbergMarquardtFitter<Scalar>::JacobianMat>
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobians(int n, FunctionMat f, float delta){
       std::vector<typename LevenbergMarquardtFitter<Scalar>::JacobianMat> js(n);
       for(int i=0;i<n;++i){
@@ -555,12 +555,12 @@ namespace icl{
       return js;
     }
 
-    
+
     template<class Scalar>
     void LevenbergMarquardtFitter<Scalar>::setDebugCallback(DebugCallback dbg){
       this->dbg = dbg;
     }
-    
+
     template<class Scalar>
     typename LevenbergMarquardtFitter<Scalar>::Data
     LevenbergMarquardtFitter<Scalar>::create_data(const Params &p, Function f, int xDim, int yDim, int num, Scalar minX, Scalar maxX){
@@ -579,7 +579,7 @@ namespace icl{
       std::cout << r << std::endl;
     }
 
-  
+
     template class ICLMath_API LevenbergMarquardtFitter<icl32f>;
     template class ICLMath_API LevenbergMarquardtFitter<icl64f>;
   } // namespace math

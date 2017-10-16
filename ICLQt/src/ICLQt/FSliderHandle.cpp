@@ -48,16 +48,16 @@ namespace icl{
       *m_fMax = max;
       updateMB();
     }
-  
+
     void FSliderHandle::setValue(float val){
       (**this)->setValue(f2i(val));
     }
-  
+
     void FSliderHandle::updateMB(){
       *m_fM = (*m_fMax-*m_fMin)/m_iSliderRange;
       *m_fB = *m_fMin;
     }
-    
+
     float FSliderHandle::getMin() const{
       return *m_fMin;
     }

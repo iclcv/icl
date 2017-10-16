@@ -50,11 +50,11 @@ void init(){
   edgeImage.fill(0);
 
   hld.setConfigurableID("hld");
-  
+
   gui << Draw().handle("view").minSize(32,24)
       << ( VSplit()
            << Image().handle("lut").label("hough space").minSize(16,12)
-           << ( VBox() 
+           << ( VBox()
                 << Button("load image").handle("load")
                 << Spinner(0,100,1).out("maxlines").label("max lines")
                 << Prop("hld")
@@ -73,7 +73,7 @@ void init(){
 
 void run(){
   int maxlines = gui["maxlines"];
-  
+
   static ButtonHandle load = gui["load"];
   if(load.wasTriggered()){
     try{
@@ -91,7 +91,7 @@ void run(){
   DrawHandle view = gui["view"];
   lut = hld.getImage();
   hld.reset();
-  
+
   view = edgeImage;
 
   (*view)->fill(255,255,255,0);
@@ -103,7 +103,7 @@ void run(){
     (*view)->line(a[0],a[1],b[0],b[1]);
     (*view)->text(str(sig[i]),l.o[0],l.o[1],-1,-1,8);
   }
-  
+
   view->render();
   Thread::msleep(10);
 }

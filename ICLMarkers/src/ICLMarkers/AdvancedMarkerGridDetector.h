@@ -43,15 +43,15 @@ namespace icl{
 	  class ICLMarkers_API AdvancedMarkerGridDetector : public MarkerGridDetector{
       public:
       typedef MarkerGridDetector Super;
-      
+
 	  class ICLMarkers_API AdvancedGridDefinition : public Super::GridDefinition{
         utils::Size32f markerBounds; //!< size of a single marker in mm
 
         ///  size of the whole grid
         /** The size is measured from the left-edge of the left-most marker to the
             right-edge of the right-most marker and vertically analogously  */
-        utils::Size32f gridBounds;   
-        
+        utils::Size32f gridBounds;
+
         public:
         // empty constructor
         AdvancedGridDefinition(){}
@@ -76,8 +76,8 @@ namespace icl{
         utils::Rect32f getBounds(int x, int y) const;
 
       };
-      
-      /// internal data-class the represents a more sophisticated 
+
+      /// internal data-class the represents a more sophisticated
 	  class ICLMarkers_API Marker{
         int id;      //!< marker id
         bool found;  //!< was it found
@@ -99,7 +99,7 @@ namespace icl{
 
           // internally used function that concatenates all points (without the center point)
           std::vector<utils::Point32f> corners() const;
-          
+
           /// appends the corner points to the given vector
           void appendCornersTo(std::vector<utils::Point32f> &dst) const;
 
@@ -110,7 +110,7 @@ namespace icl{
         KeyPoints imagePts;
         /// internal key-points (in grid space, initialized at construction time)
         KeyPoints gridPts;
-        
+
         public:
         /// creates an empty marker
         Marker();
@@ -134,7 +134,7 @@ namespace icl{
           return found;
         }
 
-        /// returns current image points 
+        /// returns current image points
         const KeyPoints &getImagePoints() const{
           return imagePts;
         }
@@ -152,7 +152,7 @@ namespace icl{
         /// visualizes the marker boundary and the center
         void visTo(utils::VisualizationDescription &vd) const;
 
-        /// utilty function 
+        /// utilty function
         void getImagePointsTo(utils::Point32f *dst) const;
 
         /// utility method that transforms the marker's image points ...
@@ -178,7 +178,7 @@ namespace icl{
         /// creates a grid with given grid-definition (note: 1x1 grids can cause errors)
         MarkerGrid(const AdvancedGridDefinition &def);
 
-        /// deferred initialization of a grid 
+        /// deferred initialization of a grid
         void init(const AdvancedGridDefinition &def);
 
         /// updates the image-points of all contained markers according to the given 2D-array of fiducials

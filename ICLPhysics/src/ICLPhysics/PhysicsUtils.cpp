@@ -50,7 +50,7 @@
 
 namespace icl{
   namespace physics{
-    
+
     void remove_fallen_objects(geom::Scene *scene, PhysicsWorld *world, float minZ){
       utils::Mutex::Locker lock(scene);
       for(int i=scene->getObjectCount()-1;i>=0;--i){
@@ -70,7 +70,7 @@ namespace icl{
         static utils::URand rand3(2,40);
         static utils::URand rand4(0,255);
         static utils::URand rand5(1,8);
-        
+
         RigidObject *cube = ((float)rand0) < 0.5 ?
         (RigidObject *) new RigidBoxObject(rand1,rand1,rand2, rand3,rand3,rand3,10):
         (RigidObject *) new RigidSphereObject(rand1,rand1,rand2, rand5,10);
@@ -106,7 +106,7 @@ namespace icl{
     {
       calcDistance(a, b, a->getTransformation(), b->getTransformation(), pointOnA, pointOnB, distance);
     }
-    
+
 //    template<unsigned int N>
 //    static math::FixedMatrix<float,N,N> covariance_matrix(const std::vector<math::FixedColVector<float, N> > &vs, math::FixedColVector<float, N> &mean)
 //    {
@@ -115,7 +115,7 @@ namespace icl{
 //        for(uint i = 0; i < size; ++i)
 //            mean += vs[i];
 //        mean /= size;
-//       
+//
 //        math::FixedMatrix<float, N, N> cov; //stack allocated
 //        for(uint i = 0; i < N; ++i)
 //            for(uint j = 0; j < N; ++j)
@@ -126,10 +126,10 @@ namespace icl{
 //            tmp /= (size - 1);
 //            cov(i, j) = tmp;
 //        }
-//       
+//
 //        return cov;
 //    }
-    
+
 
 //  void createObjectsFromBlobs(const std::vector< std::vector<int> > &indices, const std::vector<Vec> &vertices, std::vector<PhysicsObject*> &objects)
 //  {
@@ -139,7 +139,7 @@ namespace icl{
 //    char path[] = "./pyscripts/fit_adapter.py";
 //    char func[] = "run";
 //    embedder.init(path,func);
-//    
+//
 //    for(unsigned int i = 0; i < indices.size() - 1; i++){
 //      //fit super quadric with python
 //      std::vector<float> sqParams;
@@ -158,7 +158,7 @@ namespace icl{
 //      x9=sqParams.at(8);
 //      x10=sqParams.at(9);
 //      x11=sqParams.at(10);
-//      
+//
 //      //create transform
 //      float a1, a2, a3, e1, e2, rx, ry, rz, xx, yy, zz;
 //      a1=x1, a2=x2, a3=x3, e1=x4, e2=x5, rx=x6, ry=x7, rz=x8, xx=x9, yy=x10,zz=x11;
@@ -187,8 +187,8 @@ namespace icl{
 //      tm.at(3,1)=yy;
 //      tm.at(3,2)=zz;
 //      tm.at(3,3)=1;
-//      
-//      
+//
+//
 //      //estimate a fitting primitve based on the "roundness" of the super quadrics
 //      PhysicsObject* obj;
 //      if((e1 < 0.6) && (e2 < 0.6))
@@ -201,25 +201,25 @@ namespace icl{
 //        trans.at(0,0) = 0.0;
 //        trans.at(0,1) = 1.0;
 //        trans.at(0,2) = 0.0;
-//        
+//
 //        trans.at(1,0) = 0.0;
 //        trans.at(1,1) = 0.0;
 //        trans.at(1,2) = 1.0;
-//        
+//
 //        trans.at(2,0) = 1.0;
 //        trans.at(2,1) = 0.0;
 //        trans.at(2,2) = 0.0;
 //        obj->transform(trans);
-//        
+//
 //      }else
 //      {
 //        obj = (PhysicsObject*)new RigidSphereObject(0.0,0.0,0.0, max(max(a1,a2),a2), 20, 20, 10);
 //      }
-//      
+//
 //      obj->transform(tm);
 //      objects.push_back(obj);
 //    }
-//    
+//
 //    //create the table
 //    FixedColVector<float, 3> table_dim(1500.0,1500.0,10.0);
 //    FixedColVector<float, 3> mean;
@@ -236,7 +236,7 @@ namespace icl{
 //    cov.eigen(eigenvectors, eigenvalues);
 //    //normalized eigenvectors
 //    for(unsigned int j=0; j < 3; j++){
-//      float length = std::sqrt(eigenvectors(j,0) * eigenvectors(j,0) 
+//      float length = std::sqrt(eigenvectors(j,0) * eigenvectors(j,0)
 //                                + eigenvectors(j,1) * eigenvectors(j,1)
 //                                + eigenvectors(j,2) * eigenvectors(j,2));
 //      for(unsigned int k = 0; k < 3; k++){
@@ -249,7 +249,7 @@ namespace icl{
 //    trans(3,1) = mean[1];
 //    trans(3,2) = mean[2];
 //    trans(3,3) = 1.0;
-//    
+//
 //    PhysicsObject* obj = (PhysicsObject*)new RigidBoxObject(0.0,0.0,0.0, table_dim[0], table_dim[1], table_dim[2], 0.0);
 //    //Mat trans(eigenvectors.begin(), eigenvectors.end());
 //    obj->setTransformation(trans);

@@ -59,31 +59,31 @@ OctreeObject<icl32s,16> ot(-500,-500,-500,1000,1000,1000);
 
 
 void init(){
-  
+
   ot.setRenderPoints(true);
-  
+
   GRandClip r(0,100,Range64f(-500,500));
 
   DataSegment<float,3> ps = obj.selectXYZ();
   DataSegment<float,4> cs = obj.selectRGBA32f();
-  
+
   std::vector<FixedColVector<int,4> > nn(1000),nnres(1000);
   for(int i=0;i<obj.getDim();++i){
     ps[i] = Vec3(r,r,r);
     cs[i] = GeomColor(0,100,255,255);
-    
+
     if(i < (int)nn.size()){
       nn[i] = FixedColVector<int,4>(r,r,r);
     }
   }
-  
+
   Time t = Time::now();
   for(int i=0;i<obj.getDim();++i){
     FixedColVector<float,3> p = ps[i];
     ot.insert(FixedColVector<int,4>(p[0],p[1],p[2],1));
   }
   t.showAge("insertion time");
-  
+
   std::vector<FixedColVector<int,4> > q = ot.query(0,-500,-500,500,1000,1000);
   static PointCloudObject res(q.size(),1,false);
   ps = res.selectXYZ();
@@ -103,14 +103,14 @@ void init(){
   PCL_OT pcl_ot(16);
   t.showAge("create pcl octree");
   static boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > ptr(&pcl_pc.pcl());
-  
+
   t = Time::now();
   pcl_ot.setInputCloud(ptr);
 
   t.showAge("set input cloud to pcl tree"); // 3 times faster!
-  
 
-  
+
+
   t = Time::now();
   for(size_t i=0;i<nn.size();++i){
     nnres[i] = ot.nn(nn[i]);
@@ -142,16 +142,16 @@ void init(){
   t.showAge("pcl nn approx search");
 #endif
 
-  
-  
-  scene.addObject(&res);  
+
+
+  scene.addObject(&res);
   //scene.addObject(&obj);
   scene.addObject(&ot);
 
   scene.addCamera(Camera(Vec(0,0,1500,1)));
-  
+
   gui << Draw3D().handle("draw3D").minSize(32,24) << Show();
-  
+
   gui["draw3D"].link(scene.getGLCallback(0));
   gui["draw3D"].install(scene.getMouseHandler(0));
 }

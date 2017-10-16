@@ -32,7 +32,7 @@
 #include <ICLUtils/StringUtils.h>
 
 namespace icl{
-  
+
   using namespace utils;
 
   namespace physics{
@@ -42,20 +42,20 @@ namespace icl{
       std::map<std::string, QAction*> actions;
       std::map<std::string, QMenu*> menus;
     };
-  
-  
+
+
     PhysicsPaper3ContextMenu::PhysicsPaper3ContextMenu():m_data(new Data){
-    
+
     }
-  
+
     PhysicsPaper3ContextMenu::PhysicsPaper3ContextMenu(const std::string &commaSepEntries){
       addEntries(commaSepEntries);
     }
-  
+
     PhysicsPaper3ContextMenu::~PhysicsPaper3ContextMenu(){
       delete m_data;
     }
-    
+
     void PhysicsPaper3ContextMenu::addEntry(const std::string &entry){
       if(m_data->actions.find(entry) != m_data->actions.end()){
         throw ICLException("PhysicsPaper3ContextMenu::addEntry: given entry does already exist");
@@ -83,11 +83,11 @@ namespace icl{
         addEntry(entries[i]);
       }
     }
-  
+
     void PhysicsPaper3ContextMenu::setCallback(callback cb){
       m_data->cb = cb;
     }
-  
+
     void PhysicsPaper3ContextMenu::show(const Point &screenPos){
       QAction *a = m_data->men.exec(QPoint(screenPos.x,screenPos.y));
       if(a && m_data->cb){

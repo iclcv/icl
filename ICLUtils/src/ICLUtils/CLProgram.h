@@ -43,22 +43,22 @@
 
 namespace icl {
   namespace utils {
-    
+
     /// Main class for OpenCL based accelleration
     /** The CLProgram is the based class for ICL's OpenCL support
         framework. A Program instance can be used to create all other
         neccessary OpenCL support types. In contrast to OpenCL's C++ framework,
         ICL's framework is even settled on a higher level providing easier access
         to the relavant functionality.
-        
+
         \section NOM Nomenclature
-        
+
         A <b>CLProgram</b> is -- as presented above -- the main class
         for OpenCL acellerated implementations. It allows for selected
         a particular device, i.e. "cpu" or "gpu" devices and it
         automatically compiles the given OpenCL source code (either
         passed as string or as an input stream)
-        
+
         A <b>CLBuffer</b> is a memory segment located in the
         graphics-card's memory. Buffers are associated with a certain
         CLProgram and they can only be created by that
@@ -68,10 +68,10 @@ namespace icl {
         buffer becomes a "const" data pointer in the corresponding
         OpenCL kernel interface. And a "write only" buffer cannot be
         written but not read by the OpenCL source code (?).
-        
+
         TODO: what are the differences ? Why can i use "r" and "w" without
               producing error messages? (seems to be an OpenCL bug/feature)
-        
+
 
         A <b>CLImage2D</b> is similar to the CLBuffer but additionally offers
         interpolation functionality which can be accessed in the kernel by using the
@@ -79,18 +79,18 @@ namespace icl {
 
         A <b>CLKernel</b> is a callable OpenCL function. CLKernel instances
         are also created by a program (see \ref EX) and each kernel
-        refers to a single function in the OpenCL source code that is 
+        refers to a single function in the OpenCL source code that is
         declared as "__kernel".\n
         Before a kernel is called, its arguments are given by using the
         overloaded CLKernel::setArgs method.
-        
+
         \section EX Example (Image Convolution)
-        
+
 
         \code
         #include <ICLUtils/CLProgram.h>
         #include <ICLQt/Common.h>
-        
+
         struct Conv{
           CLProgram program;          // main class
           CLBuffer input,output,mask; // buffers for image input/output and the 3x3-convolution mask
@@ -122,7 +122,7 @@ namespace icl {
             mask = program.createBuffer("r",9*sizeof(float),m);    // create buffer for the 3x3 conv. mask
             kernel = program.createKernel("convolve");             // create the OpenCL kernel
           }
-          
+
           void apply(const Img8u &src, Img8u &dst){
             ICLASSERT_THROW(src.getSize() == size && dst.getSize() == size, ICLException("wrong size"));
             input.write(src.begin(0),src.getDim());           // write input image to graphics memory
@@ -137,10 +137,10 @@ namespace icl {
 
         GUI gui;
         GenericGrabber grabber;
-        
+
         void init(){
           grabber.init(pa("-i"));
-        
+
           gui << Image().handle("image") << Show();
           const ImgBase &image = *grabber.grab();
           const float mask[] = { 0.25, 0, -0.25,
@@ -149,14 +149,14 @@ namespace icl {
           grabber.useDesired(image.getSize());
           grabber.useDesired(depth8u);
           grabber.useDesired(formatGray);
-        
+
           conv = new Conv(mask,image.getSize());
         }
 
         void run(){
           const Img8u &image = *grabber.grab()->as8u();
           static Img8u res(image.getParams());
-        
+
           conv->apply(image,res);
           gui["image"] = res;
         }
@@ -264,7 +264,7 @@ namespace icl {
 
       /// Default constructor (creates dummy instance)
       CLProgram();
-      
+
 	  CLProgram(const CLDeviceContext &device_context, const string &sourceCode) throw(CLInitException, CLBuildException);
 
 	  CLProgram(const CLDeviceContext &device_context, ifstream &fileStream) throw(CLInitException, CLBuildException);
@@ -283,13 +283,13 @@ namespace icl {
 
       /// copy constructor (creating shallow copy)
       CLProgram(const CLProgram& other);
-      
+
       /// assignment operator (perorming shallow copy)
       CLProgram const& operator=(CLProgram const& other);
-      
+
       /// Destructor
       ~CLProgram();
-      
+
 	  /**
 	   * @brief isValid checks whether this is not a dummy but a valid initialized cl-program
 	   * @return true if the instance is a initialized with valid cl-code and device
@@ -313,7 +313,7 @@ namespace icl {
           pointer can be passed that is then automatically uploaded to the buffer exisiting
           in the graphics memory.*/
       CLBuffer createBuffer(const string &accessMode, size_t size,const void *src=0) throw(CLBufferException);
-      
+
 
       /// creates a image2D object for memory exchange with graphics card memory
       /** acessMode can either be "r", "w" or "rw", which refers to the readibility of the data
@@ -340,10 +340,10 @@ namespace icl {
       CLKernel createKernel(const string &id) throw (CLKernelException);
 
 	  CLDeviceContext getDeviceContext();
-      
+
       /// lists various properties of the selected platform
       void listSelectedPlatform();
-      
+
       /// lists various properties of the selected device
       void listSelectedDevice();
       /// lists various properties of all platforms and their devices

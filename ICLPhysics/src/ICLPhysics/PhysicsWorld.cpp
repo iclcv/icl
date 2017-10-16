@@ -60,7 +60,7 @@ using namespace std;
 
 namespace icl{
   namespace physics{
-    
+
     struct PhysicsWorld::Data{
       btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
       btBroadphaseInterface* m_broadphase;
@@ -72,11 +72,11 @@ namespace icl{
       btSoftRigidDynamicsWorld *m_dynamicsWorld;
       btOverlapFilterCallback* m_filterCallback;
       math::DynMatrix<bool>* m_collisionMatrix;
-      
+
       std::vector<PhysicsObject*> m_objects;
 
       std::vector<Constraint*> m_ownedConstraints;
-      
+
       utils::Time lastTime;
 			double timeDelta;
     };
@@ -92,7 +92,7 @@ namespace icl{
       //const float WORLD_AABB_MAX_X = icl2bullet(1000);
       //const float WORLD_AABB_MAX_Y = icl2bullet(1000);
       //const float WORLD_AABB_MAX_Z = icl2bullet(1000);
-      
+
       const float WORLD_GRAVITY_X = 0;
       const float WORLD_GRAVITY_Y = 0;
       const float WORLD_GRAVITY_Z = -9.81 / METER_TO_BULLET_UNIT;
@@ -117,7 +117,7 @@ namespace icl{
                                                      data->m_collisionConfiguration);
       data->m_dynamicsWorld->setGravity(btVector3(WORLD_GRAVITY_X,WORLD_GRAVITY_Y,WORLD_GRAVITY_Z));
       data->m_dynamicsWorld->getDispatchInfo().m_enableSPU = DISPATCHER_ENABLE_SPU;
-    
+
       data->m_worldInfo = new btSoftBodyWorldInfo;
       data->m_worldInfo->air_density = (btScalar)WORLD_AIR_DENSITY;
       data->m_worldInfo->water_density = 0;
@@ -131,7 +131,7 @@ namespace icl{
       data->m_worldInfo->m_sparsesdf.Initialize();
       //create collisionmatrix
       data->m_collisionMatrix = new math::DynMatrix<bool>(100,100,true);
-      
+
       //define collision callback using the collisionmatrix and check constraints
       struct customFilterCallback : public btOverlapFilterCallback
       {
@@ -145,7 +145,7 @@ namespace icl{
 		      //stop here if collision masks already determined that no collision is needed
 		      if(!collides)
 		        return false;
-	        
+
 		      //check collisionmatrix
 		      PhysicsObject* obj0 = static_cast<PhysicsObject*>(static_cast<btCollisionObject*>(proxy0->m_clientObject)->getUserPointer());
 		      PhysicsObject* obj1 = static_cast<PhysicsObject*>(static_cast<btCollisionObject*>(proxy1->m_clientObject)->getUserPointer());
@@ -161,7 +161,7 @@ namespace icl{
 		      return true;
 	      }
       };
-      
+
       //add the callback
       data->m_filterCallback = new customFilterCallback(data->m_collisionMatrix);
       data->m_dynamicsWorld->getPairCache()->setOverlapFilterCallback(data->m_filterCallback);
@@ -189,7 +189,7 @@ namespace icl{
       //add the callback to the world
       data->m_dynamicsWorld->setInternalTickCallback(tickCallback::callback);
 		}
-    
+
     PhysicsWorld::~PhysicsWorld() {
       //removing constraints from the world
       while(data->m_dynamicsWorld->getNumConstraints() > 0) {
@@ -205,7 +205,7 @@ namespace icl{
       delete data->m_collisionConfiguration;
       delete data->m_broadphase;
       delete data;
-      
+
     }
 
 		void PhysicsWorld::setSolver(BulletSolverType type) {
@@ -229,7 +229,7 @@ namespace icl{
 				}
 			}
 		}
-    
+
     void PhysicsWorld::addObject(PhysicsObject *obj){
       utils::Mutex::Locker lock(this);
       //check for the type of physics object and remove it in the right way
@@ -255,7 +255,7 @@ namespace icl{
       }
     }
 
-    
+
     void PhysicsWorld::removeObject(PhysicsObject *obj){
       utils::Mutex::Locker lock(this);
       //check for the type of physics object and remove it in the right way
@@ -282,12 +282,12 @@ namespace icl{
         obj->setCurrentPhysicsWorld(0);
       }
     }
-      
+
     void PhysicsWorld::setGravity(const geom::Vec &gravity){
       data->m_dynamicsWorld->setGravity(icl2bullet_scaled(gravity));
       data->m_worldInfo->m_gravity = icl2bullet_scaled(gravity);
     }
-    
+
     void PhysicsWorld::setGravityEnabled(bool on, const geom::Vec *useThisGravityIfOn){
       if(on){
         setGravity(useThisGravityIfOn ? *useThisGravityIfOn : geom::Vec(0,0,-9810));
@@ -295,16 +295,16 @@ namespace icl{
         setGravity(geom::Vec(0,0,0));
       }
     }
-    
+
     void PhysicsWorld::splitImpulseEnabled(bool enable){
       btContactSolverInfo& info = data->m_dynamicsWorld->getSolverInfo();
       info.m_splitImpulse = (int)enable;
       info.m_splitImpulsePenetrationThreshold = -0.02;
     }
-    
+
     void PhysicsWorld::step(float dtSecs, int maxSubSteps, float fixedTimeStep){
       utils::Mutex::Locker lock(this);
-        
+
       //step simulation
       if(dtSecs < 0){
         if(data->lastTime == utils::Time::null){
@@ -325,16 +325,16 @@ namespace icl{
 		double PhysicsWorld::getLastTimeDelta() {
 			return data->timeDelta;
 		}
-    
+
     bool PhysicsWorld::collideWithWorld(RigidObject* obj, bool ignoreJoints)
     {
-      
+
       struct ContactSensorCallback : public btCollisionWorld::ContactResultCallback {
-      
+
 	      btRigidBody& body;
 	      bool& ccol;
 	      bool ignore;
-	      
+
 	      ContactSensorCallback(btRigidBody& tgtBody , bool& col, bool ignoreJoints)
 		      : btCollisionWorld::ContactResultCallback(), body(tgtBody), ccol(col), ignore(ignoreJoints) { }
 
@@ -348,9 +348,9 @@ namespace icl{
 		      //return true since the mask check true and the joints are not ignored, allowing us to reach this part of the code
 		      return true;
 	      }
-	
+
 	      //Called with each contact for your own processing (e.g. test if contacts fall in within sensor parameters)
-	      virtual btScalar addSingleResult(btManifoldPoint& cp,	
+	      virtual btScalar addSingleResult(btManifoldPoint& cp,
 	        const btCollisionObjectWrapper* colObj0Wrap,int partId0,int index0,
 	        const btCollisionObjectWrapper* colObj1Wrap,int partId1,int index1)
 	      {
@@ -365,21 +365,21 @@ namespace icl{
       data->m_dynamicsWorld->contactTest(obj->getRigidBody(),callback);
       return collision;
     }
-    
+
     void PhysicsWorld::setGroupCollision(int group0, int group1, bool collides)
     {
       int col = min(group0, group1);
       int row = max(group0, group1);
       (*data->m_collisionMatrix)(col,row) = collides;
     }
-    
+
     bool PhysicsWorld::getGroupCollision(int group0, int group1)
     {
       int col = min(group0, group1);
       int row = max(group0, group1);
       return (*data->m_collisionMatrix)(col,row);
     }
-    
+
     bool PhysicsWorld::rayCast(const geom::ViewRay& ray, float rayLength, PhysicsObject*& obj, geom::Vec &normal, geom::Vec &hitPoint) {
       btVector3 from = btVector3(icl2bullet(ray.offset[0]),icl2bullet(ray.offset[1]),icl2bullet(ray.offset[2]));
       btVector3 to = from + icl2bullet(rayLength) * btVector3(ray.direction[0],ray.direction[1],ray.direction[2]);
@@ -394,20 +394,20 @@ namespace icl{
       }
       return false;
     }
-    
+
     void PhysicsWorld::addConstraint(Constraint* constraint, bool disableCollisionWithLinkedBodies, bool passOwnerShip){
       if(!constraint->getConstraint()) throw utils::ICLException("PhysicsWorld::addConstraint: constraint was null");
       data->m_dynamicsWorld->addConstraint(constraint->getConstraint(),disableCollisionWithLinkedBodies);
       if(passOwnerShip) data->m_ownedConstraints.push_back(constraint);
     }
-    
+
     void PhysicsWorld::removeConstraint(Constraint* constraint){
       if(!constraint->getConstraint()) throw utils::ICLException("PhysicsWorld::removeConstraint: constraint was null");
       data->m_dynamicsWorld->removeConstraint(constraint->getConstraint());
       vector<Constraint*>::iterator found = find(data->m_ownedConstraints.begin(),data->m_ownedConstraints.end(),constraint);
       if(found != data->m_ownedConstraints.end())delete *found;
     }
-    
+
     void PhysicsWorld::removeContactPoints(PhysicsObject *obj) {
       data->m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->
         cleanProxyFromPairs(obj->getCollisionObject()->getBroadphaseHandle(), data->m_dynamicsWorld->getDispatcher());

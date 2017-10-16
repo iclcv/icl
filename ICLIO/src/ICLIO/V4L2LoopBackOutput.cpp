@@ -43,7 +43,7 @@
 
 namespace icl{
   namespace io{
-    
+
     struct V4L2LoopBackOutput::Data{
       std::vector<icl8u> m_out;
       std::string m_device;
@@ -53,7 +53,7 @@ namespace icl{
       v4l2_capability caps;
       v4l2_format fmt;
       Data():m_handle(-1){}
-      
+
       ~Data(){
         if(m_handle > 0){
           close(m_handle);
@@ -64,13 +64,13 @@ namespace icl{
           close(m_handle);
         }
         m_device = device;
-        
+
         m_handle = open(device.c_str(), O_RDWR);
         if(m_handle < 0) throw utils::ICLException("could not open device " + device);
-        
+
         memset(&caps, 0, sizeof(caps));
         memset(&fmt, 0, sizeof(fmt));
-        
+
         int r = ioctl(m_handle, VIDIOC_QUERYCAP, &caps);
         if(r == -1) throw utils::ICLException("could not query device capabilities");
       }
@@ -84,20 +84,20 @@ namespace icl{
           fmt.fmt.pix.pixelformat =  (f == core::formatGray
                                       ? V4L2_PIX_FMT_GREY
                                       : V4L2_PIX_FMT_RGB24);
-          
+
           fmt.fmt.pix.sizeimage = fmt.fmt.pix.width * fmt.fmt.pix.height  * 3;
           fmt.fmt.pix.field = V4L2_FIELD_NONE;
           fmt.fmt.pix.bytesperline = fmt.fmt.pix.width * 3;
           fmt.fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
-          
+
           int r = ioctl(m_handle, VIDIOC_S_FMT, &fmt);
           if(r == -1) throw utils::ICLException("could set query video format");
-          
+
           v4l2_format getFmt = fmt;
-          
+
           r = ioctl(m_handle, VIDIOC_G_FMT, &getFmt);
           if(r == -1) throw utils::ICLException("could not query video format");
-          
+
           //show_fmt(getFmt);
 #define CHECK(X)                                                        \
           if(fmt.fmt.pix.X != getFmt.fmt.pix.X) {                       \
@@ -126,7 +126,7 @@ namespace icl{
 
 
         ensureDeviceSizeAndFormat(image->getSize(), f);
-        
+
 
         int r = 0;
         if(f == formatRGB){
@@ -142,7 +142,7 @@ namespace icl{
         }
       }
     };
-    
+
     V4L2LoopBackOutput::V4L2LoopBackOutput(const std::string &device) throw (utils::ICLException):
       m_data(new Data){
 
@@ -163,16 +163,16 @@ namespace icl{
         m_data->init(device);
       }
     }
-    
+
     V4L2LoopBackOutput::V4L2LoopBackOutput():
       m_data(new Data){
     }
 
-    
+
     V4L2LoopBackOutput::~V4L2LoopBackOutput(){
       delete m_data;
     }
-    
+
     void V4L2LoopBackOutput::send(const core::ImgBase *image){
       m_data->send(image);
     }

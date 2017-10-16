@@ -35,15 +35,15 @@
 #include <ICLUtils/Function.h>
 
 namespace icl{
-  
+
   struct InteractiveFoldLine : public MouseHandler{
     Point32f a,b;
     bool done;
     typedef Function<void,const Point32f&,const Point32f&> FinishCB;
     FinishCB cb;
-    
+
     InteractiveFoldLine():a(Point32f::null),b(Point32f::null),done(false){}
-    
+
     void process(const MouseEvent &e){
       if(!e.isModifierActive(ControlModifier) || e.isRight()){
         a = b = Point32f::null;
@@ -69,11 +69,11 @@ namespace icl{
       }
       w.linewidth(3);
       w.line(a,b);
-      }    
+      }
     }
   };
 
 }
 
 #endif
-  
+

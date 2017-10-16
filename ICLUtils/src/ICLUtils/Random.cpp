@@ -32,7 +32,7 @@
 
 namespace icl{
   namespace utils{
-    
+
     double gaussRandom(double mu, double sigma){
       static bool haveNextGaussian = false;
       static double nextGaussian = 0;
@@ -51,8 +51,8 @@ namespace icl{
         haveNextGaussian = true;
         return v1 * fac * sigma + mu;
       }
-    }   
-  
-    
+    }
+
+
   } // namespace utils
 }

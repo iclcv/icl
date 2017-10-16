@@ -35,43 +35,43 @@
 
 namespace icl{
   namespace qt{
-    
+
     /// Horizonal Box container component
     struct HBox : public ContainerGUIComponent{
       /// create HBox with optionally given parent
       HBox(QWidget *parent=0):ContainerGUIComponent("hbox","",parent){}
     };
-    
+
     /// Vertical Box container component
     struct VBox : public ContainerGUIComponent{
       /// create VBox with optionally given parent
       VBox(QWidget *parent=0):ContainerGUIComponent("vbox","",parent){}
     };
-      
+
     /// Horizontal scroll area
     struct HScroll : public ContainerGUIComponent{
       /// create HScroll with optionally given parent
       HScroll(QWidget *parent=0):ContainerGUIComponent("hscroll","",parent){}
     };
-      
+
     /// Vertical scroll area
     struct VScroll : public ContainerGUIComponent{
       /// create VScroll with optionally given parent
       VScroll(QWidget *parent=0):ContainerGUIComponent("vscroll","",parent){}
     };
-      
+
     /// Horizontal split-component
     struct HSplit : public ContainerGUIComponent{
       /// create HSplit with optionally given parent
       HSplit(QWidget *parent=0):ContainerGUIComponent("hsplit","",parent){}
     };
-      
+
     /// Vertical split-component
     struct VSplit : public ContainerGUIComponent{
       /// create HSplit with optionally given parent
       VSplit(QWidget *parent=0):ContainerGUIComponent("vsplit","",parent){}
     };
-      
+
     /// Tab-compnent
     struct Tab : public ContainerGUIComponent{
       /// create Tab with given list of tab-labels optionally given parent

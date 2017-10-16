@@ -59,11 +59,11 @@ libfreenect2::FrameMap *frames = 0;
 
 void init(){
   glfwInit();
-  
+
   ctx = new libfreenect2::Freenect2;
-  listener = new libfreenect2::SyncMultiFrameListener(libfreenect2::Frame::Color 
-                                                      | libfreenect2::Frame::Ir 
-                                                      | libfreenect2::Frame::Depth); 
+  listener = new libfreenect2::SyncMultiFrameListener(libfreenect2::Frame::Color
+                                                      | libfreenect2::Frame::Ir
+                                                      | libfreenect2::Frame::Depth);
   frames = new libfreenect2::FrameMap;
 
   dev = ctx->openDefaultDevice();
@@ -71,7 +71,7 @@ void init(){
   if(!dev){
     throw ICLException("no device connected or failure opening the default one!");
   }
-  
+
   dev->setColorFrameListener(listener);
   dev->setIrAndDepthFrameListener(listener);
   dev->start();
@@ -79,12 +79,12 @@ void init(){
   std::cout << "device serial: " << dev->getSerialNumber() << std::endl;
   std::cout << "device firmware: " << dev->getFirmwareVersion() << std::endl;
 
-  gui << ( VBox() 
+  gui << ( VBox()
            << Image().handle("hdepth").minSize(10,8)
            << Image().handle("hcolor").minSize(10,8)
            << Image().handle("hir").minSize(10,8)
          )
-      << ( HSplit() 
+      << ( HSplit()
            << Draw3D().handle("draw3D").minSize(40,30)
            )
       << Show();
@@ -97,8 +97,8 @@ void run(){
   libfreenect2::Frame *rgb = (*frames)[libfreenect2::Frame::Color];
   libfreenect2::Frame *ir = (*frames)[libfreenect2::Frame::Ir];
   libfreenect2::Frame *depth = (*frames)[libfreenect2::Frame::Depth];
-  
-  
+
+
   static Img8u colorImage(Size(rgb->width,rgb->height),3);
 
   if(depth){
@@ -109,17 +109,17 @@ void run(){
     throw ICLException("error detected in libfreenect2.so: please ensure to deactivate"
                        " visualization in ....h by setting debug_on to false");
   }
-  
-  Img32f irImage(Size(ir->width,ir->height),formatMatrix, 
+
+  Img32f irImage(Size(ir->width,ir->height),formatMatrix,
                  std::vector<float*>(1,(float*)ir->data));
-  
+
   interleavedToPlanar(rgb->data, &colorImage);
   colorImage.swapChannels(0,2);
-  
+
   //gui["hdepth"] = &depthImage;
   gui["hcolor"] = &colorImage;
   gui["hir"] = &irImage;
-  
+
   listener->release(*frames);
 }
 

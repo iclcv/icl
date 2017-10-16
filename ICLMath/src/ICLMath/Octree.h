@@ -44,17 +44,17 @@
 namespace icl{
 
   namespace math{
-    
+
 
     /// Generic Octree Implementation
-    /** The Octree implementation is a simple 3D-generalization of the 
+    /** The Octree implementation is a simple 3D-generalization of the
         QuadTree class template.
-        
+
         \section BENCH Benchmarks
-        
+
         Even though, we do not have any reliable results, it might be
         possible, that the octree is much faster then the pcl-octree!
-        
+
     **/
     template<class Scalar, int CAPACITY=16, int SF=1, class Pt=FixedColVector<Scalar,4>, int ALLOC_CHUNK_SIZE=1024>
     class Octree{
@@ -65,15 +65,15 @@ namespace icl{
           into x- and y-direction */
       struct AABB{
         Pt center;   //!< center point
-        Pt halfSize; //!< half dimension  
-        
+        Pt halfSize; //!< half dimension
+
         /// default constructor (does nothing)
         AABB(){}
 
         /// constructor from given center and half size
         AABB(const Pt &center, const Pt &halfSize):
           center(center),halfSize(halfSize){}
-        
+
         /// returns whether a given 2D point is contained
         bool contains(const Pt &p) const{
           return (    p[0] >= center[0] - halfSize[0]
@@ -83,30 +83,30 @@ namespace icl{
                    && p[1] <= center[1] + halfSize[1]
                    && p[2] <= center[2] + halfSize[2]);
         }
-        
+
         /// returns whether the AABB intersects with another AABB
         bool intersects(const AABB &o) const{
           return  (fabs(center[0] - o.center[0]) < (halfSize[0] + o.halfSize[0])
                    && fabs(center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1])
                    && fabs(center[2] - o.center[2]) < (halfSize[2] + o.halfSize[2]));
-                   
+
         }
       };
-      
+
       /// Internally used node structure
       /** Each node can contain up to CAPACITY elements. Further nodes
           are distributed to one of the four children */
       struct Node{
         AABB boundary;         //!< node boundary
         Pt points[CAPACITY];   //!< contained nodes
-        Pt *next;              //!< next node to fill 
+        Pt *next;              //!< next node to fill
         Node *children;        //!< pointer to four child-nodes
         Node *parent;          //!< parent node
         float radius;          //!< aabb radius (can be used for bounding sphere tests)
 
         /// empty default constructor (does nothing)
         Node(){}
-        
+
         /// constructor from given AABB-boundary
         Node(const AABB &boundary){
           this->boundary = boundary;
@@ -126,7 +126,7 @@ namespace icl{
           this->parent = parent;
           this->radius = parent->radius/2;
         }
-    
+
         /// recursive getter function that queries all nodes within a given bounding box
         /** breaks the recursion if no children are present or if the nodes
             boundary does not intersect with the given boundary. Recursively fills
@@ -141,7 +141,7 @@ namespace icl{
             }
           }
           if(!children) return;
-          
+
           for(int i=0;i<8;++i){
             children[i].query(boundary,found);
           }
@@ -168,27 +168,27 @@ namespace icl{
 
         }
       };
-      
+
       /// Inernally used block allocator
       /** The allocator allocates ALLOC_CHUNK_SIZE*4 Node instances
           at once and automatically frees all data at destruction time */
       struct Allocator{
-        
+
         /// allocated data
         std::vector<Node*> allocated;
-        
+
         /// current data
         int curr;
 
         /// allocates the first data chunk
         Allocator(){ grow(); }
-        
+
         /// allocates the next data chunk
         void grow(){
           allocated.push_back(new Node[ALLOC_CHUNK_SIZE*8]);
           curr = 0;
         }
-      
+
         /// deletes all allocated data chunks (except for the first)
         void clear(){
           for(size_t i=1;i<allocated.size();++i){
@@ -197,20 +197,20 @@ namespace icl{
           allocated.resize(1);
           curr = 0;
         }
-        
+
         /// returns the next four Node instances (allocates new data on demand)
         Node *next(){
           if(curr == ALLOC_CHUNK_SIZE) grow();
           return allocated.back()+8*curr++;
         }
-        
+
         /// frees all allocated data
         ~Allocator(){
           for(size_t i=0;i<allocated.size();++i){
             delete [] allocated[i];
           }
         }
-        
+
         /// returns all contained points
         std::vector<Pt> all() const{
           std::vector<Pt> pts;
@@ -236,13 +236,13 @@ namespace icl{
 
       /// root node pointer
       Node *root;
-      
+
       /// memory allocator for all children except for the root node
       Allocator alloc;
 
       /// internal counter for the number of contained points
       int num;
-      
+
       static inline Pt scale_up(const Pt &p){
         if(SF == 1) return p;
         Pt tmp = p;
@@ -260,7 +260,7 @@ namespace icl{
         tmp[2] /= SF;
         return tmp;
       }
-      
+
       static inline Pt scale_down_1(const Pt &p){
         Pt sdp  =  scale_down(p);
         sdp[3] = 1;
@@ -288,35 +288,35 @@ namespace icl{
         // the root node is not part of the allocator
         delete root;
       }
-  
+
       protected:
-      
+
       /// internal utility method that is used to find an approximated nearest neighbour
       const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const throw (utils::ICLException){
         // 1st find cell, that continas p
         const Node *n = root;
         while(n->children){
-          n = (n->children 
-               + (p[0] > n->boundary.center[0]) 
-               + 2 * (p[1] > n->boundary.center[1]) 
+          n = (n->children
+               + (p[0] > n->boundary.center[0])
+               + 2 * (p[1] > n->boundary.center[1])
                + 4 * (p[2] > n->boundary.center[2]));
         }
-        
+
         // this cell could be empty, in this case, the parent must contain good points
         if(n->next == n->points){
           n = n->parent;
           if(!n) throw utils::ICLException("no nn found for given point " + utils::str(p));
         }
-        
+
         double sqrMinDist = utils::sqr(currMinDist);
 
         for(const Pt *x=n->points; x < n->next; ++x){
-          Scalar dSqr = ( utils::sqr(x->operator[](0)-p[0]) 
+          Scalar dSqr = ( utils::sqr(x->operator[](0)-p[0])
                           + utils::sqr(x->operator[](1)-p[1])
                           + utils::sqr(x->operator[](2)-p[2]) );
           if(dSqr < sqrMinDist){
             sqrMinDist = dSqr;
-            currNN = x; 
+            currNN = x;
           }
         }
         currMinDist = sqrt(sqrMinDist);
@@ -327,10 +327,10 @@ namespace icl{
         return *currNN;
       }
       public:
-      
+
       /// returs the Octree's top-level bounding box
       const AABB &getRootAABB() const { return root->boundary; }
-      
+
       /// returns an approximated nearst neighbour
       /** While the real nearst neighbour must not neccessarily be
           in the cell that would theoretically contain p, The approximated
@@ -352,18 +352,18 @@ namespace icl{
       /** The implementation of this method explicitly avoids recursion by using
           a run-time stack. This leads to a 4x speed factor in comparison to
           the recursive implementaiton of this function.
-          
+
           As an extra accelleration, the method initializes it's frist nearest
           neighbor guess using the nn_approx method, which gives an approximate
           speed up of factor two to four.
-          
+
           As a 2nd accelleration heuristic, all CAPACITY nodes'
           distances are are first calculated and compared in a squared
           version, which can be computed without an expensive
           square-root operation. However, once the closest point
           within a single node is found, its real euclidian minimum
           distance is computed and stored for further bounding box checks.
-          
+
           If no neighbour could be found, an exception is thown. This should
           actually only happen when nn is called on an empty QuadTree
       */
@@ -374,9 +374,9 @@ namespace icl{
         stack.push_back(root);
         double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
-        
+
         nn_approx_internal(p,currMinDist,currNN);
-        
+
         while(stack.size()){
           const Node *n = stack.back();
           stack.pop_back();
@@ -389,12 +389,12 @@ namespace icl{
           Scalar sqrMinDist = utils::sqr(currMinDist);
 
           for(const Pt *x=n->points; x < n->next; ++x){
-            Scalar dSqr = (utils::sqr(x->operator[](0)-p[0]) + 
+            Scalar dSqr = (utils::sqr(x->operator[](0)-p[0]) +
                            utils::sqr(x->operator[](1)-p[1]) +
                            utils::sqr(x->operator[](2)-p[2]));
             if(dSqr < sqrMinDist){
               sqrMinDist = dSqr;
-              currNN = x; 
+              currNN = x;
             }
           }
           currMinDist = sqrt(sqrMinDist);
@@ -403,9 +403,9 @@ namespace icl{
       }
 
       /// inserts a node into the QuadTree
-      /** This method is also implemented in an iterative fashion for 
+      /** This method is also implemented in an iterative fashion for
           performance issues. 'insert' automatically uses the internal allocator
-          if new nodes are needed. */ 
+          if new nodes are needed. */
       template<class OtherVectorType>
       void insert(const OtherVectorType &pIn){
         ++num;
@@ -421,27 +421,27 @@ namespace icl{
             return;
           }
           if(!n->children) n->split(alloc.next());
-          n = (n->children 
-               + (p[0] > n->boundary.center[0]) 
+          n = (n->children
+               + (p[0] > n->boundary.center[0])
                + 2 * (p[1] > n->boundary.center[1])
                + 4 * (p[2] > n->boundary.center[2]));
         }
       }
-      
+
       /// utilty method to assign new data
       /** Internally, this is implemented using clear() followed
           by a for-loop based insertion of all the points.*/
       template<class ForwardIterator>
       void assign(ForwardIterator begin, ForwardIterator end){
-        clear(); 
+        clear();
         for(; begin != end; ++begin){
           insert(*begin);
         }
       }
 
-      
+
       /// returns all contained points within the given rectangle
-      std::vector<Pt> query(const Scalar &minX, const Scalar &minY, const Scalar &minZ, 
+      std::vector<Pt> query(const Scalar &minX, const Scalar &minY, const Scalar &minZ,
                             const Scalar &width, const Scalar &height, const Scalar &depth) const{
         AABB range(scale_up(Pt(minX+width/2, minY+height/2, minZ+depth/2)),
                    scale_up(Pt(width/2,height/2, depth/2)));
@@ -465,7 +465,7 @@ namespace icl{
         return d;
       }
       */
-      
+
       /// removes all contained points and nodes
       /** The allocator will free all memory except for the first CHUNK */
       void clear(){

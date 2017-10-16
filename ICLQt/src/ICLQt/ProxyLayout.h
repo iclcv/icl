@@ -44,7 +44,7 @@ namespace icl{
       public:
       /// defines how to add widges
       virtual void addWidget(GUIWidget *widget)=0;
-    };  
+    };
   } // namespace qt
 }
 

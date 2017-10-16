@@ -38,7 +38,7 @@ namespace icl{
     /** ImageMagick provides reading and writing routines for many file formats: The following
         list shows all formats currently implemented for ICL's FileWriter.
         Notify ICL's support if a common core::format, supported by ImageMagick is missing!
-        
+
         <pre>
         "png", "gif", "pdf",  "ps",  "avs", "bmp", "cgm",  "cin",   "cur",  "cut", "dcx",
         "dib", "dng", "dot",  "dpx", "emf", "epdf","epi",  "eps",   "eps2", "eps3",
@@ -50,38 +50,38 @@ namespace icl{
         "tga", "tiff","tim",  "ttf", "txt", "uil", "uyuv", "vicar", "viff", "wbmp",
         "wmf", "wpg", "xbm",  "xcf", "xpm", "xwd", "ydbcr","ycbcra","yuv"
         </pre>
-        
-  
-        Use the following linux shell command for a list of supported formats of your 
+
+
+        Use the following linux shell command for a list of supported formats of your
         ImageMagick library:
         <pre>
         > identify -list format
         </pre>
-        
+
     */
     class FileWriterPluginImageMagick : public FileWriterPlugin{
       public:
       /// creates a plugin
       ICLIO_API FileWriterPluginImageMagick();
-      
+
       /// Destructor
       ICLIO_API virtual ~FileWriterPluginImageMagick();
-      
+
       /// pure virtual writing function
       ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
-  
+
       /// InternalData storage class
       class InternalData;
-  
+
       private:
       /// Pointer to internal data storage
       InternalData *m_data;
     };
-    
+
     /** \cond */
     // this is called automatically
     ICLIO_API void icl_initialize_image_magick_context();
     /** \endcond */
-  
+
   } // namespace io
 }

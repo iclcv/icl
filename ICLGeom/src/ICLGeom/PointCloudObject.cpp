@@ -45,7 +45,7 @@ namespace icl{
       m_hasColors = withColors;
       m_hasLabels = withLabels;
       m_hasDepth = withDepth;
-      
+
       setLockingEnabled(true);
     }
 
@@ -73,7 +73,7 @@ namespace icl{
         m_depth.resize(m_dim2D.getDim(),0);
       }
     }
-  
+
     PointCloudObject::PointCloudObject(int width, int height, bool organized, bool withNormals, bool withColors, bool withLabels, bool withDepth):
       m_organized(organized){
       if(organized){
@@ -89,7 +89,7 @@ namespace icl{
       m_hasDepth = withDepth;
 
       setLockingEnabled(true);
-      
+
       if(m_hasColors){
         m_vertexColors.resize(m_dim2D.getDim(),Vec(0,0,0,1));
       }
@@ -103,7 +103,7 @@ namespace icl{
         m_depth.resize(m_dim2D.getDim(),0);
       }
     }
-    
+
     bool PointCloudObject::supports(FeatureType t) const{
       if(t == Normal && m_hasNormals) return true;
       else if(t == Label && m_hasLabels) return true;
@@ -115,14 +115,14 @@ namespace icl{
     bool PointCloudObject::canAddFeature(FeatureType t) const{
       return t == Normal || t == RGBA32f || t == Label || t == Depth;
     }
-    
+
     void PointCloudObject::addFeature(FeatureType t) throw (utils::ICLException){
       if(!canAddFeature(t)){
         PointCloudObjectBase::addFeature(t);
         return;
       }
       lock();
-      
+
       if(t == Normal && ! m_hasNormals){
         m_hasNormals = true;
         m_normals.resize(getDim());
@@ -138,44 +138,44 @@ namespace icl{
       }
       unlock();
     }
-    
-    
+
+
     bool PointCloudObject::isOrganized() const{
       return m_organized;
     }
-  
+
     Size PointCloudObject::getSize() const throw (ICLException){
       if(!isOrganized()) throw ICLException("SimplePointCloudObject:getSize(): instance is not 2D-ordered");
       return m_dim2D;
     }
-    
+
     int PointCloudObject::getDim() const{
       // we need abs here, since un-organized point clouds would have
       // a negative dim otherwise ...
       return abs(m_dim2D.getDim());
     }
-  
+
     DataSegment<float,3> PointCloudObject::selectXYZ(){
-      return DataSegment<float,3>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);  
+      return DataSegment<float,3>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);
     }
 
     DataSegment<float,4> PointCloudObject::selectXYZH(){
-      return DataSegment<float,4>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);  
+      return DataSegment<float,4>(&m_vertices[0][0],4*sizeof(float),m_vertices.size(),m_dim2D.width);
     }
 
     DataSegment<float,4> PointCloudObject::selectNormal(){
       if(m_hasNormals){
-        return DataSegment<float,4>(&m_normals[0][0],4*sizeof(float),m_normals.size(),m_dim2D.width);  
+        return DataSegment<float,4>(&m_normals[0][0],4*sizeof(float),m_normals.size(),m_dim2D.width);
       }else{
-        return error<float,4>(__FUNCTION__);        
+        return error<float,4>(__FUNCTION__);
       }
     }
 
     DataSegment<float,4> PointCloudObject::selectRGBA32f(){
       if(m_hasColors){
-        return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);  
+        return DataSegment<float,4>(&m_vertexColors[0][0],4*sizeof(float),m_vertexColors.size(),m_dim2D.width);
       }else{
-        return error<float,4>(__FUNCTION__);        
+        return error<float,4>(__FUNCTION__);
       }
     }
 
@@ -194,8 +194,8 @@ namespace icl{
         return error<float,1>(__FUNCTION__);
       }
     }
-    
-    
+
+
     void PointCloudObject::customRender() {
       if(m_useCustomRender){
         PointCloudObjectBase::customRender();
@@ -203,7 +203,7 @@ namespace icl{
         drawNormalLines();
       }
     }
-  
+
     void PointCloudObject::setSize(const Size &size){
       lock();
       //      SHOW(size);
@@ -211,7 +211,7 @@ namespace icl{
       m_dim2D = size;
       const size_t len = m_organized ? size.getDim() : size.width;
       m_vertices.resize(len,Vec(0,0,0,1));
-      
+
       if(m_hasColors){
         m_vertexColors.resize(len,Vec(0,0,0,1));
       }
@@ -226,6 +226,6 @@ namespace icl{
       }
       unlock();
     }
-  
+
   } // namespace geom
 }

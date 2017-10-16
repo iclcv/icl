@@ -42,27 +42,27 @@ float error_function(const Pos &p){
 
 void init(){
   gui << Draw().minSize(20,20).handle("draw") << Show();
-  
+
   Img32f bg(Size(1000,1000),1);
   Channel32f bgc = bg[0];
   for(int y=0;y<bg.getHeight();++y){
     for(int x=0;x<bg.getWidth();++x){
       bgc(x,y) = error_function(Pos(x,y));
-    }     
+    }
   }
   DrawHandle draw = gui["draw"];
   draw = norm(bg);
   draw->setAutoResetQueue(false);
-  
+
 }
 
 void run(){
   static SimplexOptimizer<float,Pos> opt(error_function,2,1);
   static std::vector<Pos> curr = SimplexOptimizer<float,Pos>::createDefaultSimplex(Pos(950,840));
   static float err = 10000;
-  
+
   DrawHandle draw = gui["draw"];
-  
+
   std::vector<Point32f> ps(curr.size());
   for(unsigned int i=0;i<ps.size();++i) ps[i] = Point32f(curr[i][0],curr[i][1]);
   static int step = 0;
@@ -81,7 +81,7 @@ void run(){
 
   curr = r.vertices;
   err = r.fx;
-  Thread::msleep(100);  
+  Thread::msleep(100);
 }
 
 

@@ -48,14 +48,14 @@ namespace icl {
           ransac=new PlanarRansacEstimator(PlanarRansacEstimator::CPU);
 	        segUtils=new SegmenterUtils(SegmenterUtils::CPU);
         }
-        
+
         minClusterSize = 25;
 	      RANSACeuclDistance = 5.0;
 	      RANSACpasses = 20;
 	      RANSACtolerance = 30;
 	      RANSACsubset = 2;
 	      BLOBSeuclDistance = 15;
-	      
+
 	      xMinROI = 0, xMaxROI = 0;
 	      yMinROI = 0, yMaxROI = 0;
 	      zMinROI = 0, zMaxROI = 0;
@@ -63,20 +63,20 @@ namespace icl {
 
 	    ~Data() {
 	    }
-      
+
       PlanarRansacEstimator* ransac;
       SegmenterUtils* segUtils;
-      
+
 	    float xMinROI, xMaxROI, yMinROI, yMaxROI, zMinROI, zMaxROI;
 	    std::vector<std::vector<int> > surfaces;
       std::vector<std::vector<int> > blobs;
       unsigned int minClusterSize;
-      int RANSACeuclDistance; 
-      int RANSACpasses; 
-      int RANSACtolerance; 
+      int RANSACeuclDistance;
+      int RANSACpasses;
+      int RANSACtolerance;
       int RANSACsubset;
       int BLOBSeuclDistance;
-      
+
       core::DataSegment<float,4> xyzData;
       core::Img8u normalEdgeImage;
       core::Img32f depthImage;
@@ -85,8 +85,8 @@ namespace icl {
       core::Img32s labelImage;
       core::Img32s labelImageSurface;
     };
-    
-    
+
+
     EuclideanBlobSegmenter::EuclideanBlobSegmenter(Mode mode) :
 	    m_data(new Data(mode)) {
     }
@@ -95,14 +95,14 @@ namespace icl {
     EuclideanBlobSegmenter::~EuclideanBlobSegmenter() {
 	    delete m_data;
     }
-    
 
-    Img8u EuclideanBlobSegmenter::apply(DataSegment<float, 4> xyz, const Img8u &edgeImg, 
+
+    Img8u EuclideanBlobSegmenter::apply(DataSegment<float, 4> xyz, const Img8u &edgeImg,
                                         const Img32f &depthImg, bool stabelize, bool useROI) {
 	    m_data->xyzData = xyz;
 	    m_data->normalEdgeImage = edgeImg;
 	    m_data->depthImage = depthImg;
-	
+
 	    regionGrow(useROI);
 	    blobSegmentation(useROI);
 	    return getColoredLabelImage(stabelize);
@@ -162,20 +162,20 @@ namespace icl {
 
     void EuclideanBlobSegmenter::regionGrow(bool useROI) {
       m_data->surfaces.clear();
-      
+
       //create mask
       if(useROI){
-		    m_data->maskImage=m_data->segUtils->createROIMask(m_data->xyzData, m_data->depthImage, m_data->xMinROI, 
+		    m_data->maskImage=m_data->segUtils->createROIMask(m_data->xyzData, m_data->depthImage, m_data->xMinROI,
 		            m_data->xMaxROI, m_data->yMinROI, m_data->yMaxROI, m_data->zMinROI, m_data->zMaxROI);
 		  }else{
 		    m_data->maskImage=m_data->segUtils->createMask(m_data->depthImage);
-		  } 
+		  }
 
       //region growing on edge image
       cv::RegionGrower rg;
-    
-      m_data->labelImage = rg.applyEqualThreshold(m_data->normalEdgeImage, m_data->maskImage, 255, m_data->minClusterSize);        
-      m_data->surfaces=rg.getRegions();      
+
+      m_data->labelImage = rg.applyEqualThreshold(m_data->normalEdgeImage, m_data->maskImage, 255, m_data->minClusterSize);
+      m_data->surfaces=rg.getRegions();
     }
 
 
@@ -189,39 +189,39 @@ namespace icl {
           maxSize=m_data->surfaces.at(i).size();
         }
       }
-      
-      //RANSAC with the plane (find model) 
+
+      //RANSAC with the plane (find model)
       if(maxID < 0) return;
-      
-      PlanarRansacEstimator::Result result=m_data->ransac->apply(m_data->xyzData, 
-                m_data->surfaces.at(maxID), m_data->surfaces.at(maxID), m_data->RANSACeuclDistance/2, m_data->RANSACpasses, 
+
+      PlanarRansacEstimator::Result result=m_data->ransac->apply(m_data->xyzData,
+                m_data->surfaces.at(maxID), m_data->surfaces.at(maxID), m_data->RANSACeuclDistance/2, m_data->RANSACpasses,
                 m_data->RANSACsubset, m_data->RANSACtolerance, PlanarRansacEstimator::MAX_ON);
-      
+
       //create mask
       if(useROI){
-		    m_data->maskImageBlobs=m_data->segUtils->createROIMask(m_data->xyzData, m_data->depthImage, m_data->xMinROI, 
+		    m_data->maskImageBlobs=m_data->segUtils->createROIMask(m_data->xyzData, m_data->depthImage, m_data->xMinROI,
 		            m_data->xMaxROI, m_data->yMinROI, m_data->yMaxROI, m_data->zMinROI, m_data->zMaxROI);
 		  }else{
 		    m_data->maskImageBlobs=m_data->segUtils->createMask(m_data->depthImage);
-		  } 
-      
+		  }
+
       //assign points to the surface
       m_data->labelImageSurface.setChannels(1);
-      m_data->labelImageSurface.setSize(m_data->depthImage.getSize());      
-      m_data->ransac->relabel(m_data->xyzData, m_data->maskImageBlobs, m_data->labelImage, m_data->labelImageSurface, 1, 
+      m_data->labelImageSurface.setSize(m_data->depthImage.getSize());
+      m_data->ransac->relabel(m_data->xyzData, m_data->maskImageBlobs, m_data->labelImage, m_data->labelImageSurface, 1,
                 maxID+1, m_data->RANSACeuclDistance, result);
 
-      regionGrowBlobs();    
+      regionGrowBlobs();
     }
 
 
-    void EuclideanBlobSegmenter::regionGrowBlobs() {      
+    void EuclideanBlobSegmenter::regionGrowBlobs() {
       m_data->blobs.clear();
       //region growing on blobs
-      cv::RegionGrower rg; 
+      cv::RegionGrower rg;
       const Img32s &result = rg.applyFloat4EuclideanDistance(m_data->xyzData, m_data->maskImageBlobs, m_data->BLOBSeuclDistance, m_data->minClusterSize, 2);
       utils::Size s=m_data->depthImage.getSize();
-      
+
       //relabel the label image
       for(int y=0; y<s.height; y++){
         for(int x=0; x<s.width; x++){
@@ -231,9 +231,9 @@ namespace icl {
           else{
             m_data->labelImage(x,y,0)=1;
           }
-        }     
+        }
       }
-      m_data->blobs=rg.getRegions();  
+      m_data->blobs=rg.getRegions();
     }
 
   } // namespace geom

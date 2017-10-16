@@ -107,7 +107,7 @@ namespace icl{
 
       /// Destructor
       ~CornerDetectorCSS();
-      
+
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
       virtual void setPropertyValue(const std::string &propertyName,
                                     const utils::Any &value) throw (utils::ICLException);
@@ -205,7 +205,7 @@ namespace icl{
       void fill_gauss(float *mask, float sigma, int width);
       void convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted);
       void calculate_curvatures(const float *smoothed_x, const float *smoothed_y, int length, float curvature_cutoff, float *curvatures);
-      void calculate_curvatures_bulk(int array_length, int num_boundaries, const int *lengths, 
+      void calculate_curvatures_bulk(int array_length, int num_boundaries, const int *lengths,
                                      const int *indices, const int *indices_padded, const float *smoothed_x, const float *smoothed_y, float curvature_cutoff, float *curvature);
       int findExtrema(int *extrema, int *num_extrema_out, float* k, int length);
       void removeRoundCorners(float rc_coeff, int maxima_offset, float* k, int length, int *extrema, int num_extrema, int *new_extrema, int *num_new_extrema_out);

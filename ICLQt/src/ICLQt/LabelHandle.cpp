@@ -41,7 +41,7 @@ namespace icl{
     void LabelHandle::operator=(const QString &text){
       lab()->setText(text);
       lab()->updateFromOtherThread();
-    } 
+    }
     void LabelHandle::operator=(const char *text){
       lab()->setText(QString(text));
       lab()->updateFromOtherThread();

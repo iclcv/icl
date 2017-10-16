@@ -36,16 +36,16 @@
 
 namespace icl{
   namespace filter{
-  
+
     /// Internally used Plugin class for multithreaded unary operations
     struct ICLFilter_API UnaryOpWork : public utils::MultiThreader::Work{
       /// Construktor
       UnaryOpWork(UnaryOp *op, const core::ImgBase *src, core::ImgBase *dst):
         op(op),src(src),dst(dst){}
-      
+
       /// Destructor
       virtual ~UnaryOpWork(){}
-      
+
       /// working function
       virtual void perform(){
         op->apply(src,&dst);
@@ -53,13 +53,13 @@ namespace icl{
       private:
       /// Wrapped op
       UnaryOp *op;
-      
+
       /// Wrapped src image
       const core::ImgBase *src;
-      
+
       /// Wrapped dst image
       core::ImgBase *dst;
     };
-  
+
   } // namespace filter
 }

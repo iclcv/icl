@@ -57,14 +57,14 @@ namespace icl{
       }
       return out;
     }
-    
+
     static void inplace_thresh(icl8u *p, int n, int thresh){
       for(int i=0;i<n;++i){
         p[i] = 255 * (p[i]>thresh);
       }
     }
-  
-    
+
+
     namespace{
       struct NamedImage : public Img8u{
         std::string name;
@@ -73,19 +73,19 @@ namespace icl{
         NamedImage(const Img8u &image, const std::string &name, const Size &size, int id):
           Img8u(image),name(name),size(size),id(id){}
       };
-      
+
       struct Matching{
         virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &matchDim)=0;
         virtual NamedImage *match(const Img8u &image, int *rot, float *err) = 0;
         virtual ~Matching(){}
       };
-      
+
       struct Img4{
         Img8u im[4];
         NamedImage *ni;
         Img8u &operator[](int i) { return im[i]; }
       };
-  
+
       struct MatchingBinaryHamming : public Matching{
         std::vector<Img4> is;
         Img8u dimBuf;
@@ -105,7 +105,7 @@ namespace icl{
             i4.ni = const_cast<NamedImage*>(loaded[i].get());
           }
         }
-        
+
         int get_error(const icl8u *a, const icl8u *b, int n){
           int err = 0;
           for(int i=0;i<n;++i){
@@ -113,7 +113,7 @@ namespace icl{
           }
           return err;
         }
-        
+
         virtual NamedImage *match(const Img8u &image, int *rot, float *err){
           if(!is.size()){
             ERROR_LOG("FiducialDetectorPluginART: no patterns loaded!");
@@ -149,16 +149,16 @@ namespace icl{
           return is[minIdx].ni;
         }
       };
-  
-  
+
+
       struct MatchingGray : public Matching{
         enum DistMode{
           sqrDist,
           normalizedCrossCorr
         } mode;
-        
+
         MatchingGray(DistMode mode):mode(mode){}
-        
+
         std::vector<Img4> is;
         Img8u dimBuf;
         virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &dim){
@@ -176,12 +176,12 @@ namespace icl{
             i4.ni = const_cast<NamedImage*>(loaded[i].get());
           }
         }
-        
+
         float get_error(const Channel8u &a, const Channel8u &b){
           float err = 0;
-          const int dim = a.getDim();          
+          const int dim = a.getDim();
           if(dim<2) return 0;
-          
+
           if(mode == sqrDist){
             for(int i=0;i<dim;++i){
               err += sqr(a[i]-b[i]);
@@ -211,7 +211,7 @@ namespace icl{
           }
           return err;
         }
-        
+
         virtual NamedImage *match(const Img8u &image, int *rot, float *err){
           if(!is.size()){
             ERROR_LOG("FiducialDetectorPluginART: no patterns loaded!");
@@ -246,19 +246,19 @@ namespace icl{
           *rot = minRot;
           return is[minIdx].ni;
         }
-        
-  
+
+
       };
-      
+
     }
-  
-    
+
+
     struct FiducialDetectorPluginART::Data{
       std::vector<SmartPtr<NamedImage> > loaded;
       std::string lastMatching;
       Size lastMatchingSize;
       SmartPtr<Matching> matching;
-      
+
       void updateMatching(const std::string &a,const Size &matchingSize){
         lastMatching = a;
         lastMatchingSize = matchingSize;
@@ -271,12 +271,12 @@ namespace icl{
         }else{
           throw ICLException("currently unsupported matching type: " + a);
         }
-  
+
         matching->prepare(loaded,matchingSize);
       }
     };
-    
-    
+
+
     FiducialDetectorPluginART::FiducialDetectorPluginART():data(new Data){
       addProperty("matching algorithm","menu","binary hamming,gray sqrdist,gray ncc","binary hamming",0,
                   "Algorithm for comparing the rectified marker center with\n"
@@ -293,24 +293,24 @@ namespace icl{
       addProperty("border ratio","range","[0,1]",0.4,0,
                   "Ratio of marker border pixels and marker dimension.");
     }
-    
+
     FiducialDetectorPluginART::~FiducialDetectorPluginART(){
       delete data;
     }
-    
+
     void FiducialDetectorPluginART::addOrRemoveMarkers(bool add, const Any &which, const ParamList &params){
       FileList l(which);
-  
+
       Size size = params["size"];
-  
-  
+
+
       if(add){
         for(int i=0;i<l.size();++i){
           FileGrabber g(l[i]);
           g.useDesired(formatGray);
           g.useDesired(depth8u);
-          data->loaded.push_back(new NamedImage( *g.grab()->asImg<icl8u>(), 
-                                                 File(l[i]).getBaseName(), 
+          data->loaded.push_back(new NamedImage( *g.grab()->asImg<icl8u>(),
+                                                 File(l[i]).getBaseName(),
                                                  size, data->loaded.size()));
         }
       }else{
@@ -331,18 +331,18 @@ namespace icl{
             data->loaded[i]->id = i;
           }
         }
-        
+
       }
-      
+
       std::string a = getPropertyValue("matching algorithm");
       int matchDim = getPropertyValue("matching dim");
       Size matchSize(matchDim,matchDim);
       data->updateMatching(a,matchSize);
     }
-    
-    
-    
-    FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot, 
+
+
+
+    FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot,
                                                            bool returnRejectedQuads, ImageRegion r){
       std::string a = getPropertyValue("matching algorithm");
       int matchDim = getPropertyValue("matching dim");
@@ -351,11 +351,11 @@ namespace icl{
         data->updateMatching(a,matchSize);
       }
       const float e = getPropertyValue("matching max error");
-  
+
       float err;
       NamedImage *n = data->matching->match(image, rot, &err) ;
       static Fiducial::FeatureSet supported = Fiducial::AllFeatures;
-      static Fiducial::FeatureSet computed = ( Fiducial::Center2D | 
+      static Fiducial::FeatureSet computed = ( Fiducial::Center2D |
                                                Fiducial::Rotation2D |
                                                Fiducial::Corners2D );
       if(n && err < e){
@@ -372,20 +372,20 @@ namespace icl{
         return 0;
       }
     }
-  
+
     std::string FiducialDetectorPluginART::getName(const FiducialImpl *impl){
       return data->loaded[impl->id]->name;
     }
-  
+
     void FiducialDetectorPluginART::getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                                    Size &markerSizeWithoutBorder){
       float r = getPropertyValue("border ratio");
       int d = getPropertyValue("matching dim");
       markerSizeWithBorder = Size((1+r)*d, (1+r)*d);
       markerSizeWithoutBorder = Size(d,d);
-    }  
-  
-    Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamList &params){  
+    }
+
+    Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
       FileGrabber g(whichOne);
       g.useDesired(formatGray);
       g.useDesired(depth8u);

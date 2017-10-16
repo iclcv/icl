@@ -37,11 +37,11 @@
 
 namespace icl{
   namespace core{
-  
+
     /** \cond */
     class Line;
     /** \endcond */
-    
+
     /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
     /** @see icl::Line
     */
@@ -49,46 +49,46 @@ namespace icl{
       public:
       /// Null line of length 0 with and and end point 0
       static const Line32f null;
-     
+
       /// Creates a new line from point "start" to point "end"
       /** @param start start point
-          @param end end point 
+          @param end end point
       */
-      Line32f(utils::Point32f start=utils::Point::null, 
+      Line32f(utils::Point32f start=utils::Point::null,
               utils::Point32f end=utils::Point::null):
       start(start),end(end){}
-      
+
       /// Creates a new line by given polar coordinates
       /** @param start start point of the line
-          @param angle angle of the line 
-          @param length length of the line 
+          @param angle angle of the line
+          @param length length of the line
       */
       Line32f(utils::Point32f start, float angle, float length);
-      
+
       /// Creates a line by a given integer line
       /** @param l interger line*/
       Line32f(const Line &l);
-  
+
       /// translates a line by a given vector
       /** @param p translation vector
           @return the translated line
       */
       Line32f operator+(const utils::Point32f &p) const { return Line32f(start+p,end+p); }
-      
+
       /// translates a line by a given vector (negative direction)
       /** @param p translation vector
           @return the translated line
       */
       Line32f operator-(const utils::Point32f &p) const { return Line32f(start-p,end-p); }
-      
+
       /// calculates the euclidean norm of this line
       /** @return length of the line */
       float length() const;
-  
+
       /// returns line angle [ atan2(dy,dx) ]
       float getAngle() const;
-      
-      /// returns the lines center point [ (start+end)/2 ] 
+
+      /// returns the lines center point [ (start+end)/2 ]
       utils::Point32f getCenter() const;
 
       /// return whether the line intersects with the given other line
@@ -99,41 +99,41 @@ namespace icl{
           If there is no intersection, p, dstr and dsts are not used */
       bool intersects(const core::Line32f &other, utils::Point32f *p=0,
                       float *dstr=0, float *dsts=0) const;
-      
+
       /// samples this line from start to end point regarding the given limiting rect
       /** @param limits each line point is check for being inside of this rect
                         the eases working e.g. on image planes, that have an finite
                         extend. If the limits rect has width*height == 0, the limits
                         are not regarded.
-          @return vector of line Points 
+          @return vector of line Points
       */
       std::vector<utils::Point> sample(const utils::Rect &limits=utils::Rect::null ) const;
-      
+
       /// samples this line from start to end point regarding the given limiting rect
       /** This function works essentially like the above function. In this case, the
           result is not returned, but it is stored into the given vector references.
           @param xs destination vector for x-coordinates (filled using push_back, so
-                    it is not cleared before it is filled) 
-          @param ys as xs but for the y-coordinates 
+                    it is not cleared before it is filled)
+          @param ys as xs but for the y-coordinates
           @param limits (see above)*/
       void sample(std::vector<int> &xs,std::vector<int> &ys, const utils::Rect &limits=utils::Rect::null ) const;
-  
+
       /// swaps the lines start and end point internally
       void swap() { utils::Point32f x=start; start=end; end=x; }
-      
+
       /// start point of this line
       utils::Point32f start;
-  
+
       /// end point of this line
       utils::Point32f end;
     };
-  
+
     /// ostream operator (start-x,start-y)(end-x,end-y)
     ICLCore_API std::ostream &operator<<(std::ostream &s, const Line32f &l);
-    
+
     /// istream operator
     ICLCore_API std::istream &operator>>(std::istream &s, Line32f &l);
-  
+
   } // namespace core
 }
 

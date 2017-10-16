@@ -46,7 +46,7 @@ namespace icl{
                                                                                 haveCenter(false),
                                                                                 haveOrientation(false),
                                                                                 havePose(false){}
-    
+
     void MultiCamFiducialImpl::init(int id){
       this->numFound = 0;
       this->id = id;
@@ -54,7 +54,7 @@ namespace icl{
       this->cams.clear();
       this->haveCenter = this->haveOrientation = this->havePose = false;
     }
-      
+
     const FixedColVector<float,3> &MultiCamFiducialImpl::estimateCenter3D(){
       if(haveCenter) return center;
       if(numFound == 1){
@@ -68,18 +68,18 @@ namespace icl{
       }
       haveCenter = true;
       return center;
-    }    
-      
+    }
+
     const Mat &MultiCamFiducialImpl::estimatePose3D(){
       if(havePose) return pose;
-        
+
       if(numFound == 1){
         pose = fids[0].getPose3D();
-      }else{        
+      }else{
         int n = fids[0].getKeyPoints2D().size();
         // assumtion keypoints are ordered and identical ...
-          
-        DynMatrix<float> W(n,3),O(n,3);      
+
+        DynMatrix<float> W(n,3),O(n,3);
         for(int i=0;i<n;++i){
           std::vector<Point32f> pI(numFound);
           for(int j=0;j<numFound; ++j){
@@ -87,7 +87,7 @@ namespace icl{
           }
           Vec pW = Camera::estimate_3D(cams,pI);
           std::copy(pW.begin(),pW.begin()+3,W.col_begin(i));
-            
+
           Point32f p = fids[0].getKeyPoints2D()[i].markerPos;
           O(i,0) = p.x;
           O(i,1) = p.y;
@@ -95,7 +95,7 @@ namespace icl{
         }
         try{
           pose = PoseEstimator::map(O,W);
-            
+
           /// invert y and z axis!
           for(int x=1;x<3;++x){
             for(int y=0;y<3;++y){
@@ -108,13 +108,13 @@ namespace icl{
         }
       }
       havePose = true;
-  
+
       center = FixedColVector<float,3>(pose(3,0), pose(3,1), pose(3,2));
       haveCenter = true;
-        
+
       return pose;
     }
-      
+
     const FixedColVector<float,3> &MultiCamFiducialImpl::estimateOrientation3D(){
       if(haveOrientation) return orientation;
       estimatePose3D();
@@ -122,6 +122,6 @@ namespace icl{
       haveOrientation = true;
       return orientation;
     }
-  
+
   } // namespace markers
 }

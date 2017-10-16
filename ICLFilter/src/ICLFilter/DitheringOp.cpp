@@ -34,7 +34,7 @@
 namespace icl{
   using namespace utils;
   using namespace core;
-  
+
   namespace filter{
     DitheringOp::DitheringOp (Algorithm a, int l){
       setAlgorithm(a);
@@ -45,7 +45,7 @@ namespace icl{
       int s = (int)v + x;
       v = s < 0 ? 0 : s > 255 ? 255 : s;
     }
-    
+
     void DitheringOp::apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst){
       if(!prepare(ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(),
                   poSrc->getROI(), poSrc->getTime())){
@@ -62,7 +62,7 @@ namespace icl{
 
       icl8u lut[256] = {0};
       int dl = 256/m_levels, dval=255/(m_levels-1);
-      
+
       for(int i=0;i<m_levels;++i){
         std::fill(lut+i*dl, lut+(i+1)*dl, i*dval);
       }
@@ -72,7 +72,7 @@ namespace icl{
       const int maxy = roi.y + roi.height;
       for(int c=0;c<poSrc->getChannels();++c){
         Channel8u img = (*(*ppoDst)->as8u())[c];
-        
+
         for (int y=roi.y; y<maxy; y++) {
           for (int x=roi.x; x<maxx; x++) {
             icl8u o = img(x,y);
@@ -96,7 +96,7 @@ namespace icl{
               if(xin){
                 clipped_add(img(x+1,y+1),e/16);
               }
-            }            
+            }
           }
         }
       }

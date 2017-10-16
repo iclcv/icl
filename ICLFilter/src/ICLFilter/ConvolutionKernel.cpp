@@ -61,58 +61,58 @@ namespace icl{
         }
         return true;
       }
-  
+
       int GAUSS_3x3[10] = { 16,
                             1, 2, 1,
                             2, 4, 2,
                             1, 2, 1 };
-      
+
       int GAUSS_5x5[26] = { 571,
                             2,  7,  12,  7,  2,
                             7, 31,  52, 31,  7,
                             12, 52, 127, 52, 12,
                             7, 31,  52, 31,  7,
                             2,  7,  12,  7,  2 };
-      
+
       int SOBEL_X_3x3[10] = { 1,
                               1,  0, -1,
                               2,  0, -2,
                               1,  0, -1 };
-      
+
       int SOBEL_X_5x5[26] = { 1,
-                              1,  2,  0,  -2,  -1, 
+                              1,  2,  0,  -2,  -1,
                               4,  8,  0,  -8,  -4,
                               6, 12,  0, -12,  -6,
                               4,  8,  0,  -8,  -4,
                               1,  2,  0,  -2,  -1 };
-      
-      int SOBEL_Y_3x3[10] = {  1, 
+
+      int SOBEL_Y_3x3[10] = {  1,
                                1,  2,  1,
                                0,  0,  0,
                                -1, -2, -1  };
-      
+
       int SOBEL_Y_5x5[26] = {  1,
                                1,  4,   6,  4,  1,
                                2,  8,  12,  8,  2,
                                0,  0,   0,  0,  0,
                                -2, -8, -12, -8, -4,
                                -1, -4,  -6, -4, -1 };
-      
+
       int LAPLACE_3x3[10] = { 1,
                               1, 1, 1,
                               1,-8, 1,
                               1, 1, 1} ;
-      
+
       int LAPLACE_5x5[26] = { 1,
                               -1, -3, -4, -3, -1,
                               -3,  0,  6,  0, -3,
                               -4,  6, 20,  6, -4,
                               -3,  0,  6,  0, -3,
                               -1, -3, -4, -3, -1 };
-      
+
     }
     ConvolutionKernel::ConvolutionKernel():fdata(0),idata(0),factor(0),isnull(true),owned(false),ft(custom){}
-    
+
     ConvolutionKernel::ConvolutionKernel(const ConvolutionKernel &other):
       size(other.size),fdata(0),idata(0),factor(other.factor),isnull(other.isnull),owned(other.owned),ft(other.ft){
       if(owned){
@@ -123,7 +123,7 @@ namespace icl{
         idata = other.idata;
       }
     }
-  
+
     ConvolutionKernel::ConvolutionKernel(int *data, const Size &size,int factor, bool deepCopy) throw (InvalidSizeException):
       size(size),fdata(0),idata(0),factor(factor),isnull(false),owned(deepCopy),ft(custom){
       ICLASSERT_THROW(getDim() > 0,InvalidSizeException(__FUNCTION__));
@@ -131,7 +131,7 @@ namespace icl{
         idata = deepcopy(data,getDim());
       }else{
         idata = data;
-      }    
+      }
       isnull = !idata;
     }
     ConvolutionKernel::ConvolutionKernel(float *data, const Size &size, bool deepCopy) throw (InvalidSizeException):
@@ -141,11 +141,11 @@ namespace icl{
         fdata = deepcopy(data,getDim());
       }else{
         fdata = data;
-      }    
+      }
       isnull = !fdata;
     }
-    
-    
+
+
     ConvolutionKernel::ConvolutionKernel(fixedType t, bool useFloats):
       size(t>9 ? Size(5,5) : Size(3,3)),fdata(0),isnull(false),owned(false),ft(t){
       switch(t){
@@ -165,7 +165,7 @@ namespace icl{
         toFloat();
       }
     }
-    
+
     ConvolutionKernel &ConvolutionKernel::operator=(const ConvolutionKernel &other){
       if(owned){
         ICL_DELETE(idata);
@@ -178,7 +178,7 @@ namespace icl{
       isnull = other.isnull;
       owned = other.owned;
       ft = other.ft;
-  
+
       if(owned){
         if(other.fdata)fdata = deepcopy(other.fdata,getDim());
         if(other.idata)idata = deepcopy(other.idata,getDim());
@@ -186,17 +186,17 @@ namespace icl{
         fdata = other.fdata;
         idata = other.idata;
       }
-      
+
       return *this;
     }
-      
+
     ConvolutionKernel::~ConvolutionKernel() {
       if(owned){
         ICL_DELETE(idata);
         ICL_DELETE(fdata);
       }
     }
-  
+
     void ConvolutionKernel::toFloat(){
       if(idata && !fdata){
         fdata = new float[getDim()];
@@ -210,7 +210,7 @@ namespace icl{
         factor = 1.0;
       }
     }
-  
+
     void ConvolutionKernel::toInt(bool force){
       if(fdata && !idata){
         if(force || is_convertable_to_int(fdata,getDim())){
@@ -225,17 +225,17 @@ namespace icl{
         }
       }
     }
-  
-    
+
+
     void ConvolutionKernel::detach(){
       if(!owned){
         if(idata) idata = deepcopy(idata,getDim());
         if(fdata) fdata = deepcopy(fdata,getDim());
       }
     }
-  
-    
+
+
   } // namespace filter
 }
-   
+
 

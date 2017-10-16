@@ -52,7 +52,7 @@ SET(SOURCES src/ICLMarkers/BCHCode.cpp
             src/ICLMarkers/MarkerGridDetector.cpp
             src/ICLMarkers/MarkerGridEvaluater.cpp
             src/ICLMarkers/MarkerGridPoseEstimator.cpp)
-          
+
 SET(HEADERS src/ICLMarkers/BCHCode.h
             src/ICLMarkers/Fiducial.h
 	    src/ICLMarkers/FiducialDetector.h
@@ -116,7 +116,7 @@ ADD_LIBRARY(ICLMarkers SHARED ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(ICLMarkers ICLGeom)
 
 SET_TARGET_PROPERTIES(ICLMarkers
-                      PROPERTIES 
+                      PROPERTIES
 		      VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----

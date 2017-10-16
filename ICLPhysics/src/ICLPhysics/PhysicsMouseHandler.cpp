@@ -47,15 +47,15 @@ namespace icl {
     m_selectedObject(0),
     m_constraint(0),
     m_camIndex(0){}
-    
-    PhysicsMouseHandler::PhysicsMouseHandler(const int pCameraIndex, PhysicsScene *pPhysicsScene): 
+
+    PhysicsMouseHandler::PhysicsMouseHandler(const int pCameraIndex, PhysicsScene *pPhysicsScene):
     SceneMouseHandler(pCameraIndex, pPhysicsScene),
     m_parentScene(pPhysicsScene),
     m_physicsWorld(pPhysicsScene),
     m_selectedObject(0),
     m_constraint(0),
     m_camIndex(pCameraIndex){}
-        
+
     void PhysicsMouseHandler::process(const qt::MouseEvent &pMouseEvent){
       const geom::Camera &cam = m_parentScene->getCamera(m_camIndex);
       //check if shift and left mouse is pressed for "grab-mode"
@@ -65,7 +65,7 @@ namespace icl {
           geom::ViewRay ray = cam.getViewRay(pMouseEvent.getPos());
           geom::Vec normal;
           PhysicsObject* obj;
-          
+
           if(m_physicsWorld->rayCast(ray,10000.f,obj,normal,hitpoint))
           {
             m_selectedObject = dynamic_cast<RigidObject*>(obj);
@@ -94,7 +94,7 @@ namespace icl {
           m_constraint->setPoint(pointer3d);
           m_selectedObject->activate();
         }
-        
+
       //otherwise stick to standard behaviour
       }else{
         SceneMouseHandler::process(pMouseEvent);

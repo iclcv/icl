@@ -54,7 +54,7 @@ void init(){
     if(n == ""){
       cam.setName(c);
     }
-    comboList << (i?",":"") << ( (n == "no title defined" || n == "") ? c : cam.getName()) ; 
+    comboList << (i?",":"") << ( (n == "no title defined" || n == "") ? c : cam.getName()) ;
     scene.addCamera(cam);
   }
   for(int i=0;i<pa("-o").n();++i){
@@ -70,11 +70,11 @@ void init(){
     scene.addCamera(Camera(c));
     comboList << (nCams ?  "," : "") << c;
   }
-  
+
   if(!nCams){
     pa_show_usage("no cameras were specified! (use either -i or -c)");
   }
-  
+
   scene.addCamera(scene.getCamera(nCams-1));
 
 
@@ -85,21 +85,21 @@ void init(){
            << CheckBox("background image",true).handle("grab").hideIf(!pa("-i"))
            )
       << Show();
-  
+
 
   gui["cams"].registerCallback(change_camera);
   gui["draw"].install(scene.getMouseHandler(nCams));
-                 
-  
+
+
   scene.setDrawCamerasEnabled(true);
   scene.setDrawCoordinateFrameEnabled(true);
-  
+
   gui["draw"].link(scene.getGLCallback(nCams));
 }
 
 
 void run(){
-  static DrawHandle3D draw = gui["draw"]; 
+  static DrawHandle3D draw = gui["draw"];
 
   if(grabber){
     const ImgBase *image = grabber.grab();
@@ -120,7 +120,7 @@ int main(int n, char**ppc){
   ("-o","optionally given list of .obj files, that are loaded into the scene")
   ("-c","optionally list of camera files that are loaded into the scene")
   ("-i","optionally given input camera that is used as background image");
-  
+
   return ICLApp(n,ppc,"-o(...) -input|-i(input-type,"
                 "input-specifier,camera-file) -c(...)",init,run).exec();
 }
