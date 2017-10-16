@@ -502,20 +502,8 @@ namespace icl{
     INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::math::mulc<T>)
     INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::math::divc<T>)
 
-  // TODO: Implement for Windows
-  // GCC uses its builtin variants of pow and atan which are not available
-  // for clang. Clang falls back to std::pow/atan and requires specific type
-  // signatures for these functions.
-  #ifndef ICL_SYSTEM_WINDOWS
-    #if defined(__clang__)
-      INSTANTIATE_DYN_MATRIX_MATH_OP(pow, static_cast<T(*)(T, T)>(::pow))
-      INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, static_cast<T(*)(T, T)>(::atan2))
-    #else
-      INSTANTIATE_DYN_MATRIX_MATH_OP(pow, ::pow)
-      INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, ::atan2)
-    #endif
-  #endif
-
+    INSTANTIATE_DYN_MATRIX_MATH_OP(pow, static_cast<T(*)(T, T)>(std::pow))
+    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, static_cast<T(*)(T, T)>(std::atan2))
   #undef INSTANTIATE_DYN_MATRIX_MATH_OP
 
     // others
