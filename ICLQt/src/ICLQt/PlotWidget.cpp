@@ -254,7 +254,7 @@ namespace icl{
       std::vector<Point32f> data(num + !!closedLoop);
       std::copy(ps,ps+num,data.begin());
       if(closedLoop) data.back() = *ps;
-      addAnnotations('L',&data[0].x, data.size(), m_data->state.linePen, Qt::NoBrush, m_data->label, '\0');
+      addAnnotations('L',&data[0].x, data.size(), m_data->state.linePen, Qt::NoBrush, m_data->label, "\0");
     }
     void PlotWidget::linestrip(const float *xs, const float *ys, int num, bool closedLoop, int stride){
       std::vector<Point32f> data(num + !!closedLoop);

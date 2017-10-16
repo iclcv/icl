@@ -207,7 +207,11 @@ IF(NOT WIN32)
   IF(${CONFIG_NAME} STREQUAL "ICL")
     SET(PKG_LIB "")
   ELSE()
-    SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.so.${SO_VERSION}")
+    IF(APPLE)
+      SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.${SO_VERSION}.dylib")
+    ELSE(APPLE)
+      SET(PKG_LIB "${CMAKE_INSTALL_PREFIX}/lib/lib${PKG_NAME}.so.${SO_VERSION}")
+    ENDIF(APPLE)
   ENDIF()
 
   # Prepare include paths
