@@ -53,11 +53,11 @@ namespace icl{
         md->mgr.free_in_buffer = md->bufsize;  // buffer size
         md->datasize = 0;
       }
-      int empty_output_buffer (j_compress_ptr compress){
+      boolean empty_output_buffer (j_compress_ptr compress){
         MemDst *md = (MemDst*)compress->dest;
         md->mgr.next_output_byte = md->buffer;
         md->mgr.free_in_buffer = md->bufsize;
-        return true;
+        return TRUE;
       }
       void term_destination (j_compress_ptr compress){
         MemDst *md = (MemDst*)compress->dest;
