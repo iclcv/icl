@@ -157,6 +157,6 @@ namespace icl{
       /// use pseudo colors
       bool m_usePC;
     };
-
   } // namespace qt
 }
+
