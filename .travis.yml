@@ -19,7 +19,7 @@ include: &SIMPLE
         - libjpeg-dev
   env:
     - ICL_OPTIONS=""
-          
+
 include: &EXTENDED
   <<: *SIMPLE
   addons:
@@ -51,9 +51,11 @@ include: &EXTENDED
 
 matrix:
   include:
-    - <<: *SIMPLE
-      compiler: gcc
-    - <<: *EXTENDED
-      compiler: gcc
-    - <<: *EXTENDED
-      compiler: clang
+    # - <<: *SIMPLE
+    #   compiler: gcc
+    # - <<: *EXTENDED
+    #   compiler: gcc
+    # - <<: *EXTENDED
+    #   compiler: clang
+    - os: osx
+      script: sh scripts/icl-homebrew-test
