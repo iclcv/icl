@@ -86,5 +86,6 @@ matrix:
     - <<: *OSX
       os: osx
       before_script:
-        - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --with-full --only-dependencies
+        - brew update
+        - brew install iclcv/homebrew-formulas/icl --with-full --only-dependencies
         - mkdir -p build
