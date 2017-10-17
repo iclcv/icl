@@ -1148,7 +1148,7 @@ namespace icl{
           return *this;
         }
 
-#ifndef ICL_SYSTEM_APPLE
+#ifndef __clang__
         inline icl128i32s& operator=(const icl128i32s &v) {
           v0 = v.v0;
           return *this;
@@ -1648,7 +1648,7 @@ namespace icl{
         return ret *= rv;
       }
 
-#ifndef ICL_SYSTEM_APPLE
+#ifndef __clang__
       inline icl128 operator/(const icl128 &lv, const icl128 &rv) {
         icl128 ret = lv;
         return ret /= rv;
