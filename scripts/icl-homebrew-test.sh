@@ -1,22 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 
 HOMEBREW_PREFIX=/usr/local
 
-mkdir build
+brew install iclcv/homebrew-formulas/icl --with-full --only-dependencies
+
 cd build
 
 cmake -DBUILD_APPS=On \
       -DBUILD_DEMOS=On \
       -DBUILD_EXAMPLES=On \
       -DCMAKE_INSTALL_PREFIX="${HOMEBREW_PREFIX}" \
-	-DBUILD_WITH_OPENCV=On \
-      -DBUILD_WITH_QT=On \
-      -DQT_ROOT="${HOMEBREW_PREFIX}/opt/qt5" \
-      -DBUILD_WITH_OPENGL=On \
-      -DBUILD_WITH_IMAGEMAGICK=On \
-      -DBUILD_WITH_LIBAV=On \
-      -DBUILD_WITH_LIBDC=On \
-      -DBUILD_WITH_EIGEN3=On  \
       -DBUILD_WITH_OPENCV=On \
       -DBUILD_WITH_QT=On \
       -DQT_ROOT="${HOMEBREW_PREFIX}/opt/qt5" \

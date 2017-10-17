@@ -19,7 +19,7 @@ include: &SIMPLE
         - libjpeg-dev
   env:
     - ICL_OPTIONS=""
-          
+
 include: &EXTENDED
   <<: *SIMPLE
   addons:
@@ -49,6 +49,23 @@ include: &EXTENDED
               -DBUILD_WITH_LIBDC=TRUE \
               "
 
+include: &OSX
+  env:
+    - ICL_OPTIONS="\
+          -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules \
+          -DBUILD_APPS=On \
+          -DBUILD_DEMOS=On \
+          -DBUILD_EXAMPLES=On \
+          -DBUILD_WITH_OPENCV=On \
+          -DBUILD_WITH_QT=On \
+          -DQT_ROOT=/usr/local/opt/qt5 \
+          -DBUILD_WITH_OPENGL=On \
+          -DBUILD_WITH_IMAGEMAGICK=On \
+          -DBUILD_WITH_LIBAV=On \
+          -DBUILD_WITH_LIBDC=On \
+          -DBUILD_WITH_EIGEN3=On \
+          "
+
 matrix:
   include:
     - <<: *SIMPLE
@@ -57,3 +74,11 @@ matrix:
       compiler: gcc
     - <<: *EXTENDED
       compiler: clang
+    - <<: *OSX
+      os: osx
+      before_script:
+        - brew update
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake jpeg libpng qt5 glew libav libdc1394 imagemagick@6 || echo "installing dependencies returned non-zero!"
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install opencv --with-ffmpeg || echo "OpenCV build returned non-zero"
+        - brew link --force imagemagick@6
+        - mkdir -p build

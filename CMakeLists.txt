@@ -30,7 +30,7 @@
 #*********************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2)
-SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # ---- global definitions ----
 # todo: add "-debug" postfix here and there!
