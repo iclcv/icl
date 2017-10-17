@@ -110,24 +110,30 @@ namespace icl{
     void Thread::usleep(unsigned int usec){
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(usec / 1000);
+    #elif defined(__clang__)
+      usleep(usec);
     #else
       ::usleep(usec);
     #endif
     }
 
     void Thread::msleep(unsigned int msecs){
-  #ifdef ICL_SYSTEM_WINDOWS
+    #ifdef ICL_SYSTEM_WINDOWS
       Sleep(msecs);
-  #else
+    #elif defined(__clang__)
+      usleep(msecs*1000);
+    #else
       ::usleep(msecs*1000);
-  #endif
+    #endif
     }
     void Thread::sleep(float secs){
-  #ifdef ICL_SYSTEM_WINDOWS
+    #ifdef ICL_SYSTEM_WINDOWS
       Sleep(secs*1000);
-  #else
+    #elif defined(__clang__)
+      usleep((long)secs * 1000);
+    #else
       ::usleep((long)secs * 1000000);
-  #endif
+    #endif
     }
 
     // Maybe this works

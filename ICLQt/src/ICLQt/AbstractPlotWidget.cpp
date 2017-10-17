@@ -140,9 +140,9 @@ namespace icl{
       }
 
       bool sendMouseEvents(AbstractPlotWidget *w, QMouseEvent *event, MouseEventType t){
-        const bool d[] = {event->buttons() & Qt::LeftButton,
-                          event->buttons() & Qt::MidButton,
-                          event->buttons() & Qt::RightButton };
+        const bool d[] = {static_cast<bool>(event->buttons() & Qt::LeftButton),
+                          static_cast<bool>(event->buttons() & Qt::MidButton),
+                          static_cast<bool>(event->buttons() & Qt::RightButton)};
 
         if(t == MouseMoveEvent && (d[0] || d[1] || d[2])) t = MouseDragEvent;
 

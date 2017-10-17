@@ -459,7 +459,8 @@ namespace icl{
       const std::vector<Point> &b = getBoundary(true); // thinned boundary
       if (b.size() < 2) return b.size();
 
-      static const float length[3] = {1, 1/::cos(::atan(0.5)), 1/::cos(::atan(1.))}; // length of segment types
+      // static_cast is required here due to narrowing conventions.
+      static const float length[3] = {1, static_cast<float>(1/::cos(::atan(0.5))), static_cast<float>(1/::cos(::atan(1.)))}; // length of segment types
       int grad[3] = {0}, type; // counters for segment types
       Point pre = b[b.size()-2];
       Point cur = b[b.size()-1];

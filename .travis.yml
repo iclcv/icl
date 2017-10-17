@@ -1,38 +1,43 @@
 language: cpp
-compiler: gcc
-before_script: mkdir -p build && cd build
-script:  cmake ${ICL_OPTIONS} .. && make -j 3
 sudo: false
-matrix:
-  include:
-    # works on Precise and Trusty
-    - addons:
-        apt:
-          packages:
-            - cmake
-            - libpng-dev
-            - libjpeg-dev
-      env:
-          - ICL_OPTIONS=""
-    - addons:
-        apt:
-          packages:
-            - cmake
-            - libpng-dev
-            - libjpeg-dev
-            - qtmultimedia5-dev
-            - libqt5opengl5-dev
-            - libglew-dev
-            - libopencv-dev
-            - ocl-icd-opencl-dev
-            - opencl-headers
-            - libeigen3-dev
-            - libmagick++-dev
-            - libfreenect-dev
-            - libxine2-dev
-            # - libpcl-dev -DBUILD_WITH_PCL=TRUE \ Cannot use PCL with travis atm
-      env:
-        - ICL_OPTIONS="\
+
+before_script:
+  - mkdir -p build
+script:
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=/tmp/icl ${ICL_OPTIONS} ..
+  - make -j 3
+  - make install
+
+# define some yaml variables
+include: &SIMPLE
+  addons:
+    apt:
+      packages:
+        - cmake
+        - libpng-dev
+        - libjpeg-dev
+  env:
+    - ICL_OPTIONS=""
+          
+include: &EXTENDED
+  <<: *SIMPLE
+  addons:
+    apt:
+      packages:
+        - qtmultimedia5-dev
+        - libqt5opengl5-dev
+        - libglew-dev
+        - libopencv-dev
+        - ocl-icd-opencl-dev
+        - opencl-headers
+        - libeigen3-dev
+        - libmagick++-dev
+        - libfreenect-dev
+        - libxine2-dev
+        # - libpcl-dev -DBUILD_WITH_PCL=TRUE \ Cannot use PCL with travis atm
+  env:
+    - ICL_OPTIONS="\
               -DBUILD_WITH_QT=TRUE \
               -DBUILD_WITH_OPENCV=TRUE  \
               -DBUILD_WITH_OPENCL=TRUE \
@@ -43,3 +48,12 @@ matrix:
               -DBUILD_WITH_XINE=TRUE \
               -DBUILD_WITH_LIBDC=TRUE \
               "
+
+matrix:
+  include:
+    - <<: *SIMPLE
+      compiler: gcc
+    - <<: *EXTENDED
+      compiler: gcc
+    - <<: *EXTENDED
+      compiler: clang
