@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 HOMEBREW_PREFIX=/usr/local
 
-brew install iclcv/icl --with-full --only-dependencies
+brew install iclcv/homebrew-formulas/icl --with-full --only-dependencies
 
 cd build
 

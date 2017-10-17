@@ -58,4 +58,4 @@ matrix:
     # - <<: *EXTENDED
     #   compiler: clang
     - os: osx
-      script: sh scripts/icl-homebrew-test
+      script: sh scripts/icl-homebrew-test.sh
