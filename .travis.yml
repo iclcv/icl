@@ -19,7 +19,7 @@ include: &SIMPLE
         - libjpeg-dev
   env:
     - ICL_OPTIONS=""
-          
+
 include: &EXTENDED
   <<: *SIMPLE
   addons:
@@ -49,11 +49,38 @@ include: &EXTENDED
               -DBUILD_WITH_LIBDC=TRUE \
               "
 
+include: &OSX
+  env:
+    - HOMEBREW_PREFIX="/usr/local"
+    - ICL_OPTIONS="\
+          -DBUILD_APPS=On \
+          -DBUILD_DEMOS=On \
+          -DBUILD_EXAMPLES=On \
+          -DBUILD_WITH_OPENCV=On \
+          -DBUILD_WITH_QT=On \
+          -DQT_ROOT="${HOMEBREW_PREFIX}/opt/qt5" \
+          -DBUILD_WITH_OPENGL=On \
+          -DBUILD_WITH_IMAGEMAGICK=On \
+          -DBUILD_WITH_LIBAV=On \
+          -DBUILD_WITH_LIBDC=On \
+          -DBUILD_WITH_EIGEN3=On \
+          "
+
 matrix:
   include:
-    - <<: *SIMPLE
-      compiler: gcc
-    - <<: *EXTENDED
-      compiler: gcc
-    - <<: *EXTENDED
-      compiler: clang
+    # - <<: *SIMPLE
+    #   compiler: gcc
+    # - <<: *EXTENDED
+    #   compiler: gcc
+    # - <<: *EXTENDED
+    #   compiler: clang
+    - <<: *OSX
+      os: osx
+      before_script:
+        - brew update
+        - brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "installing dependencies returned non-zero!"
+        - mkdir -p build
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - /usr/local/Cellar
