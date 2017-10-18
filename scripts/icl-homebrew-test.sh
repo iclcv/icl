@@ -18,15 +18,15 @@ cmake -DBUILD_APPS=On \
       -DBUILD_WITH_LIBAV=On \
       -DBUILD_WITH_LIBDC=On \
       -DBUILD_WITH_EIGEN3=On \
-      -DBUILD_WITH_RSB=On \
-      -DBUILD_WITH_RSC=On \
-      -DBUILD_WITH_PROTOBUF=On \
-      -DBUILD_WITH_PCL=On \
-      -DBUILD_WITH_BULLET=On \
-      -DBUILD_WITH_LIBFREENECT=On \
-      -DBUILD_WITH_LIBUSB=On \
-      -DBUILD_WITH_ZMQ=On \
-      -DBUILD_WITH_OPENNI=On \
-      ..
+      # -DBUILD_WITH_RSB=On \
+      # -DBUILD_WITH_RSC=On \
+      # -DBUILD_WITH_PROTOBUF=On \
+      # -DBUILD_WITH_PCL=On \
+      # -DBUILD_WITH_BULLET=On \
+      # -DBUILD_WITH_LIBFREENECT=On \
+      # -DBUILD_WITH_LIBUSB=On \
+      # -DBUILD_WITH_ZMQ=On \
+      # -DBUILD_WITH_OPENNI=On \
+      # ..
 sleep 5
 make -j5
