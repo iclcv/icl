@@ -78,7 +78,7 @@ matrix:
       os: osx
       before_script:
         - brew update
-        - brew install iclcv/homebrew-formulas/icl --only-dependencies
+        - brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "installing dependencies returned non-zero!"
         - mkdir -p build
       cache:
         directories:
