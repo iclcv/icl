@@ -87,5 +87,9 @@ matrix:
       os: osx
       before_script:
         - brew update
-        - brew install iclcv/homebrew-formulas/icl --with-full --only-dependencies
+        - brew install iclcv/homebrew-formulas/icl --only-dependencies
         - mkdir -p build
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - /usr/local/Cellar
