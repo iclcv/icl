@@ -78,7 +78,6 @@ matrix:
       os: osx
       before_script:
         - brew update
-        - HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake jpeg libpng qt5 glew libav libdc1394 imagemagick@6 || echo "installing dependencies returned non-zero!"
-        - HOMEBREW_NO_AUTO_UPDATE=1 brew install opencv --with-ffmpeg || echo "OpenCV build returned non-zero"
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "dependency build returned non-zero"
         - brew link --force imagemagick@6
         - mkdir -p build
