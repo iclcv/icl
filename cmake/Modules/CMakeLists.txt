@@ -10,4 +10,5 @@ INSTALL(FILES FindLibDC.cmake
               FindWinProtobuf.cmake
               FindSSE.cmake
               InstallFilesRecursive.cmake
-       DESTINATION ${CMAKE_MODULE_PATH})
+       DESTINATION ${CMAKE_MODULE_PATH}
+       COMPONENT development)

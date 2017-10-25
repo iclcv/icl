@@ -131,6 +131,7 @@ TARGET_LINK_LIBRARIES(ICLFilter ICLCore)
 
 # ---- Install specifications ----
 INSTALL(TARGETS ICLFilter
+        COMPONENT libraries
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

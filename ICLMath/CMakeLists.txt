@@ -115,6 +115,7 @@ ENDIF()
 
 # ---- Install specifications ----
 INSTALL(TARGETS ICLMath
+        COMPONENT libraries
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

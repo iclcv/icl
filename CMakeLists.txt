@@ -153,8 +153,6 @@ ELSE(MSVC)
   ENDIF()
 ENDIF(MSVC)
 
-
-
 SET(ICL_NAME                   icl)
 SET(SO_VERSION                 "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}")
 SET(INSTALL_PATH_PREFIX        "${ICL_NAME}-${SO_VERSION}")
@@ -222,6 +220,7 @@ OPTION(DISABLE_SSSE3 "Disables SSSE3 support, even if found on the current machi
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
 OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
+OPTION(BUILD_DEBS "Decide whether the Debian build system should be initalized" OFF)
 
 # ---- Dependency handling ----
 INCLUDE(ICLFindPackage)
@@ -1095,7 +1094,8 @@ ADD_SUBDIRECTORY(cmake)
 SET(PKG_CONFIG_FILE_NAME_NO_PC "ICL-${SO_VERSION}")
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/src/ICLUtils/ICLConfig.h
-        DESTINATION include/${INSTALL_PATH_PREFIX}/ICLUtils)
+        DESTINATION include/${INSTALL_PATH_PREFIX}/ICLUtils
+        COMPONENT development)
 
 IF(NOT WIN32)
   FOREACH(FILE icl-make icl-create-project icl-create-cmake-project icl-version)
@@ -1104,19 +1104,22 @@ IF(NOT WIN32)
     CONFIGURE_FILE(${SRC} ${DST} @ONLY)
     INSTALL(FILES ${DST}
             PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            DESTINATION bin/)
+            DESTINATION bin/
+            COMPONENT development)
   ENDFOREACH()
 ENDIF()
 
 FILE(COPY scripts/icl-create-video.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/scripts)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-video.sh
         PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        DESTINATION bin/)
+        DESTINATION bin/
+        COMPONENT development)
 
 CONFIGURE_FILE(scripts/icl-create-project-data/Makefile.custom.in
                ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-project-data/Makefile.custom
-        DESTINATION ${RESOURCE_DIR}/ RENAME Makefile.custom.template)
+        DESTINATION ${RESOURCE_DIR}/ RENAME Makefile.custom.template
+        COMPONENT development)
 
 FOREACH(FILE Makefile doxyfile sample-test.cpp)
   SET(SRC scripts/icl-create-project-data/${FILE})
@@ -1134,7 +1137,7 @@ FOREACH(FILE app.CMakeLists.txt CMakeLists.txt latex.clear.sh
   SET(SRC scripts/icl-create-cmake-project-data/${FILE})
   SET(DST ${CMAKE_CURRENT_BINARY_DIR}/scripts/icl-create-cmake-project-data)
   FILE(COPY ${SRC} DESTINATION ${DST})
-  INSTALL(FILES ${DST}/${FILE} DESTINATION ${RESOURCE_DIR} RENAME ${FILE}.template)
+  INSTALL(FILES ${DST}/${FILE} DESTINATION ${RESOURCE_DIR} RENAME ${FILE}.template COMPONENT development)
 ENDFOREACH()
 
 # ---- PKG-config ----
@@ -1246,3 +1249,7 @@ FOREACH(G Generic_cameras|OPENCV|QT
   ENDIF()
   MESSAGE(" ${WHAT} ${FILL} ${HAVE}")
 ENDFOREACH()
+
+IF(BUILD_DEBS)
+  ADD_SUBDIRECTORY(packaging)
+ENDIF(BUILD_DEBS)

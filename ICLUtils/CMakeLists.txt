@@ -170,6 +170,7 @@ ENDIF()
 
 # ---- Install specifications ----
 INSTALL(TARGETS ICLUtils
+        COMPONENT libraries
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
