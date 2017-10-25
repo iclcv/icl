@@ -13,6 +13,7 @@
 - [About ICL](#about-icl)
 - [Installation](#installation)
   - [Building from source (Linux)](#building-from-source)
+  - [Prebuilt packages (Ubuntu)](#prebuilt-ubuntu-packages)
   - [Homebrew (OSX)](#macos)
 
 ## <a name="about-icl"></a>About ICL
@@ -169,6 +170,25 @@ We **strongly** recommend to have at least Qt support when building ICL.
 But there is more! Please refer to the documentation of [optional features](http://www.iclcv.org/install/install-linux.html#optional-dependencies)
 for a complete list which includes Xine, Kinect 2, SwissRanger and more.
 
+#### Prebuilt Ubuntu packages
+
+Ubuntu packages can be obtained from the [Releases](https://github.com/iclcv/icl/releases) page or by using the [ICL PPA](https://launchpad.net/~iclcv/+archive/ubuntu/icl):
+
+```bash
+sudo add-apt-repository ppa:iclcv/icl
+sudo apt-get update
+sudo apt-get install icl-tools
+```
+
+The ICL built is divided into four packages:
+
+* `icl-core` - Image Component Library 
+* `icl-dev` - ICL headers and project creation tools
+* `icl-doc` - ICL sphinx manual and api documentation
+* `icl-tools` - ICL Applications 
+
+Currently, we provide packages for the Ubuntu releases `trusty` and `xenial`.
+
 ### MacOS
 
 We provide [Homebrew](https://brew.sh/index_de.html) recipes which can be used
@@ -176,7 +196,7 @@ to install ICL in three different flavours:
 
 ```
 # has to be done just once
-$ brew tap iclcv/homebrew-formulas  
+$ brew tap iclcv/homebrew-formulas
 # enables features of OpenCV, Qt, OpenGL, ImageMagick, LibAV, LibDC and LibEigen
 $ brew install icl  
 # base features plus additional functionality based on rsb, protobuf, freenect, pcl and bullet
@@ -184,3 +204,7 @@ $ brew install icl --with-extra
 # extra features plus libusb, zmq and openni support  
 brew install icl --with-full
 ```
+
+## Questions, feedback, issues or feature requests?
+
+For bug reports and other issues, please open an issue on GitHub.

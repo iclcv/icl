@@ -1,0 +1,37 @@
+Source: icl
+Section: @ICL_DEB_PACKAGE_SECTION@
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Maintainer: @ICL_DEB_PACKAGE_MAINTAINER@
+Build-Depends: @ICL_DEB_BUILD_DEPENDENCIES@, debhelper (>= 9), devscripts
+Standards-Version: 3.9.5
+Homepage: http://www.iclcv.org
+
+Package: icl-core
+Section: @ICL_DEB_PACKAGE_SECTION@
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@
+  @ICL_DEB_PACKAGE_DESCRIPTION@
+
+Package: icl-dev
+Section: @ICL_DEB_PACKAGE_SECTION@
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Architecture: any
+Depends: icl-core, ${misc:Depends}
+Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - development files
+
+Package: icl-doc
+Section: doc
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Architecture: any
+Depends: ${misc:Depends}
+Suggests: icl-core, icl-dev
+Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - sphinx documentation
+
+Package: icl-tools
+Section: @ICL_DEB_PACKAGE_SECTION@
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Architecture: any
+Depends: icl-core, ${shlibs:Depends}, ${misc:Depends}
+Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - applications and tools

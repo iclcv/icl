@@ -1,0 +1,10 @@
+usr/include/icl-10.0/*
+usr/etc/icl-10.0/*
+usr/lib/pkgconfig/*
+usr/lib/cmake/ICL/*
+usr/share/icl-10.0/cmake/Modules/*
+usr/bin/icl-make
+usr/bin/icl-create-project
+usr/bin/icl-create-cmake-project
+usr/bin/icl-version
+usr/bin/icl-create-video.sh
