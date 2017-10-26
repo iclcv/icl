@@ -34,7 +34,7 @@
 # support for not mixing up the path logic is provided for generated files
 # if they are located in CMAKE_CURRENT_BINARY dir. Otherwise
 # CMAKE_CURRENT_SOURCE_DIR is assumed as the absolute location for the files to
-# install. 
+# install.
 #
 # INSTALL_FILES_RECURSIVE(DESTINATION FILE_LIST)
 #
@@ -56,11 +56,11 @@
 MACRO(INSTALL_FILES_RECURSIVE DESTINATION FILE_LIST)
 
     FOREACH(FILE ${${FILE_LIST}})
-    
+
         #MESSAGE("Processing file ${FILE}")
         GET_FILENAME_COMPONENT(ABSOLUTE_FILE ${FILE} ABSOLUTE)
         #MESSAGE("ABSOLUTE_FILE: ${ABSOLUTE_FILE}")
-    
+
         # first, find out if this file is relative to a source or binary dir
         FILE(RELATIVE_PATH FILE_REL_TO_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src ${ABSOLUTE_FILE})
         FILE(RELATIVE_PATH FILE_REL_TO_BINARY ${CMAKE_CURRENT_BINARY_DIR} ${ABSOLUTE_FILE})
@@ -68,20 +68,20 @@ MACRO(INSTALL_FILES_RECURSIVE DESTINATION FILE_LIST)
         #MESSAGE("REL_TO_BINARY: ${FILE_REL_TO_BINARY}")
         STRING(LENGTH ${FILE_REL_TO_SOURCE} FILE_REL_TO_SOURCE_LENGTH)
         STRING(LENGTH ${FILE_REL_TO_BINARY} FILE_REL_TO_BINARY_LENGTH)
-        
+
         # chose the relative path to start from
         SET(BASE_PATH ${FILE_REL_TO_SOURCE})
         IF(${FILE_REL_TO_BINARY_LENGTH} LESS ${FILE_REL_TO_SOURCE_LENGTH})
             SET(BASE_PATH ${FILE_REL_TO_BINARY})
         ENDIF()
         #MESSAGE("BASE_PATH: ${BASE_PATH}")
-    
+
         # extract destination subdirectory
         GET_FILENAME_COMPONENT(REL_PATH ${BASE_PATH} PATH)
         #MESSAGE("REL_PATH: ${REL_PATH}")
-    
-        INSTALL(FILES ${FILE} DESTINATION ${DESTINATION}/${REL_PATH})
-        
+
+        INSTALL(FILES ${FILE} DESTINATION ${DESTINATION}/${REL_PATH} COMPONENT development)
+
     ENDFOREACH()
 
 ENDMACRO()

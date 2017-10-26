@@ -91,4 +91,5 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/ICLConfigVersion.cmake.in
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/ICLConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/ICLConfigVersion.cmake
-        DESTINATION lib/cmake/ICL)
+        DESTINATION lib/cmake/ICL
+        COMPONENT development)

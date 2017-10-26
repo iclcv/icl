@@ -127,6 +127,7 @@ ENDIF()
 
 # ---- Install specifications ----
 INSTALL(TARGETS ICLCore
+        COMPONENT libraries
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

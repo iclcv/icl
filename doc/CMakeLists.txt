@@ -52,7 +52,9 @@ IF(DOXYGEN_FOUND)
   ADD_SUBDIRECTORY(icl-api)
   MESSAGE(STATUS "adding target 'api'")
   FILE(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-api/html")
-  INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}//doc/icl-api/html" DESTINATION "share/icl-${SO_VERSION}/doc/icl-api")
+  INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}//doc/icl-api/html"
+          DESTINATION "share/icl-${SO_VERSION}/doc/icl-api"
+          COMPONENT documentation)
 ELSEIF()
   ADD_CUSTOM_TARGET(api echo "api cannot be build due to missing dependencies")
 ENDIF()
@@ -61,7 +63,9 @@ IF(SPHINX_FOUND)
   MESSAGE(STATUS "adding target 'manual'")
   ADD_CUSTOM_TARGET(manual ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual"
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html")
-	INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-manual/html" DESTINATION "share/icl-${SO_VERSION}/doc/icl-manual")
+	INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-manual/html"
+          DESTINATION "share/icl-${SO_VERSION}/doc/icl-manual"
+          COMPONENT documentation)
 ELSE()
   ADD_CUSTOM_TARGET(manual echo "tutorial cannot be build due to missing dependencies")
 ENDIF()

@@ -168,6 +168,7 @@ ENDIF()
 
 # ---- Install specifications ----
 INSTALL(TARGETS ICLCV
+        COMPONENT libraries
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
