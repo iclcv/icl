@@ -180,12 +180,12 @@ sudo apt-get update
 sudo apt-get install icl-tools
 ```
 
-The ICL built is divided into four packages:
+The ICL build is divided into four packages:
 
-* `icl-core` - Image Component Library 
+* `icl-core` - Image Component Library
 * `icl-dev` - ICL headers and project creation tools
 * `icl-doc` - ICL sphinx manual and api documentation
-* `icl-tools` - ICL Applications 
+* `icl-tools` - ICL Applications
 
 Currently, we provide packages for the Ubuntu releases `trusty` and `xenial`.
 The packages are built with [PCL](http://pointclouds.org/).
@@ -214,4 +214,4 @@ brew install icl --with-full
 
 ## Questions, feedback, issues or feature requests?
 
-For bug reports and other issues, please open an issue on GitHub.
+For bug reports and other issues, please [open an issue](https://github.com/iclcv/icl/issues) on GitHub.
