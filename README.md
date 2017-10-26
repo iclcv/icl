@@ -188,7 +188,14 @@ The ICL built is divided into four packages:
 * `icl-tools` - ICL Applications 
 
 Currently, we provide packages for the Ubuntu releases `trusty` and `xenial`.
+The packages are built with [PCL](http://pointclouds.org/).
+Users of `trusty` need to install this library before ICL packages can be installed. As described [here](http://pointclouds.org/downloads/linux.html), it is possible to get this dependency from another PPA:
 
+```bash
+sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
+sudo apt-get update
+sudo apt-get install libpcl-all
+```
 ### MacOS
 
 We provide [Homebrew](https://brew.sh/index_de.html) recipes which can be used
