@@ -1,4 +1,5 @@
 .idea
+.vs
 .obj
 cmake-build-debug
 .idea/workspace.xml

@@ -175,12 +175,12 @@ namespace icl{
 
 
     template<class T>
-    PolynomialRegression<T>::Result::Result(const PolynomialRegression<T>::Result &r){
+    PolynomialRegression<T>::Result::Result(const typename PolynomialRegression<T>::Result &r){
       *this = r;
     }
 
     template<class T>
-    typename PolynomialRegression<T>::Result &PolynomialRegression<T>::Result::operator=(const PolynomialRegression<T>::Result &r){
+    typename PolynomialRegression<T>::Result &PolynomialRegression<T>::Result::operator=(const typename PolynomialRegression<T>::Result &r){
       for(size_t i=0;i<m_attribs.size();++i){
         delete m_attribs[i];
       }
