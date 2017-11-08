@@ -25,8 +25,8 @@ SET(ICL_DEB_PACKAGE_DESCRIPTION "ICL is a novel C++ computer-vision library deve
 SET(ICL_DEB_PACKAGE_SECTION "devel")
 SET(ICL_DEB_PACKAGE_PRIORITY "optional")
 
-# Dependencies for building ICL
-SET(ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, libeigen3-dev, libopenni-dev, libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, libzmq-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, python-sphinx, python-pyparsing")
+# Dependencies for building ICL; will be parsed into debian/control
+SET(ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, libeigen3-dev, libopenni-dev, libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, libzmq-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, python-sphinx, python-pyparsing, libbullet-dev")
 
 # If IPP is specified, add it to dependencies and add version suffix
 IF(BUILD_WITH_IPP)
