@@ -233,7 +233,9 @@ namespace icl{
         }
       }else{
 #ifdef ICL_SYSTEM_WINDOWS
-		  throw ICLException("Error: file globbing is thus far not supported under windows. You can, however use a directory-name if possible");
+		  if (!File(pattern).exists()) {
+			  throw ICLException("Error: file globbing is thus far not supported under windows. You can, however use a directory-name if possible");
+		  }
 #endif
         m_data->oFileList = pattern;
         if(!m_data->oFileList.size()){
