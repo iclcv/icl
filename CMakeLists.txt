@@ -105,29 +105,22 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 IF(MSVC)
-  # Disable warnings about the use of old unsecure functions
+
+  # Disable some warnings
   SET(ICL_COMPILER_FLAGS "/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS")
+  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /wd4201 /wd4244 /wd4251 /wd4275 /wd4290 /wd4510 /wd4514 /wd4610 /wd4710 /wd4711 /wd4800 /wd4820")
+
   # Floating point model
   SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /fp:fast")
   # Enable intrinsic functions
   SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /Oi")
   # Enable function-level linking
   SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /Gy")
-  # Set the debug information format
-  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /Zi")
-  # Warning level
-  #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-  # Change exception handling
-  string(REPLACE "/EHsc" "/EHa" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   # Multi-processor compilation
-  #SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /MP")
-  # Disable some warnings
-  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /wd4201 /wd4244 /wd4251 /wd4275 /wd4290 /wd4510 /wd4514 /wd4610 /wd4710 /wd4711 /wd4800 /wd4820")
-  # Conflicts with other libraries
-  #SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:libc /NODEFAULTLIB:msvcrtd")
-  # Generate debug information
-  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /debug")
+  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /MP")
 
+  string(REPLACE "/EHsc" "/EHa" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /Zi /debug")
   SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${ICL_COMPILER_FLAGS}")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ICL_COMPILER_FLAGS}")
 
@@ -168,8 +161,10 @@ CURRENT_ARCHITECTURE(ICL_BUILD_ARCH)
 
 IF(${ICL_BUILD_ARCH} EQUAL "64_BIT_FOUND")
   ADD_ICL_DEFINITIONS(-DICL_64BIT)
+  SET(ARCH "x64")
 ELSE()
   ADD_ICL_DEFINITIONS(-DICL_32BIT)
+  SET(ARCH "x86")
 ENDIF()
 
 # --- global compiler flags ---
@@ -220,7 +215,8 @@ OPTION(DISABLE_SSSE3 "Disables SSSE3 support, even if found on the current machi
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
 OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
-OPTION(BUILD_DEBS "Decide whether the Debian build system should be initalized" OFF)
+SET(BUILD_REDIST OFF CACHE STRING "Enable redistribution workflow")
+SET_PROPERTY(CACHE BUILD_REDIST PROPERTY STRINGS OFF "DEB" "WIX")
 
 # ---- Dependency handling ----
 INCLUDE(ICLFindPackage)
@@ -555,7 +551,14 @@ IF(BUILD_WITH_QT)
   SET(QT_ROOT QT_ROOT CACHE PATH "Root directory of Qt5")
   IF(WIN32)
     FIND_PACKAGE(WindowsSDK REQUIRED)
-    set(CMAKE_LIBRARY_PATH "${WINDOWSSDK_DIRS}/Lib")
+    # Windows 10 SDK Scheme is a bit different
+    # Force file names to find the right libraries later
+    IF(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION)
+      SET(WINSDK_LIB_PATH "${WINDOWSSDK_PREFERRED_DIR}/Lib/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/um/${ARCH}")
+      SET(OPENGL_gl_LIBRARY "${WINSDK_LIB_PATH}/OpenGL32.lib" CACHE STRING "")
+      SET(OPENGL_glu_LIBRARY "${WINSDK_LIB_PATH}/GlU32.lib" CACHE STRING "")
+    ENDIF(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION)
+    SET(CMAKE_LIBRARY_PATH "${WINDOWSSDK_PREFERRED_DIR}/Lib")
     if(POLICY CMP0020)
       cmake_policy(SET CMP0020 NEW)
     endif()
@@ -575,9 +578,7 @@ IF(BUILD_WITH_QT)
   ENDIF(WIN32)
 
   FIND_PACKAGE(OpenGL REQUIRED)
-
   SET(ICL_QT_MODULES Core Gui Multimedia Widgets OpenGL)
-
   SET(ICL_ALL_QT_LIBS_FOUND TRUE)
 
   FOREACH(M ${ICL_QT_MODULES})
@@ -1251,6 +1252,6 @@ FOREACH(G Generic_cameras|OPENCV|QT
   MESSAGE(" ${WHAT} ${FILL} ${HAVE}")
 ENDFOREACH()
 
-IF(BUILD_DEBS)
+IF(NOT BUILD_REDIST STREQUAL OFF)
   ADD_SUBDIRECTORY(packaging)
-ENDIF(BUILD_DEBS)
+ENDIF(NOT BUILD_REDIST STREQUAL OFF)
