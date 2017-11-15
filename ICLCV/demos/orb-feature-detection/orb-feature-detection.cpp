@@ -28,9 +28,17 @@
 **                                                                 **
 ********************************************************************/
 
+#define ICL_NO_USING_NAMESPACES
+
 #include <ICLCore/OpenCV.h>
 #include <ICLQt/Common.h>
 #include <ICLCV/ORBFeatureDetector.h>
+
+using namespace icl::qt;
+using icl::utils::pa;
+using icl::core::Img8u;
+using icl::io::GenericGrabber;
+using icl::cv::ORBFeatureDetector;
 
 HSplit gui;
 GenericGrabber grabber;
