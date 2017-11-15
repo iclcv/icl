@@ -1,0 +1,54 @@
+shallow_clone: true
+image:
+  - Visual Studio 2017
+configuration:
+  - Release
+
+environment:
+  PTHREADS_ROOT: C:\projects\deps\pthreads
+  GLEW_ROOT: C:\projects\deps\glew
+  PTHREADS_PREBUILT: C:\projects\deps\pthreads\Pre-built.2
+  ICL_OPTIONS: "-DPTHREADS_INCLUDE_DIR=%PTHREADS_PREBUILT%\\include \
+    -DpthreadVC2_LIBRARY=%PTHREADS_PREBUILT%\\lib\\%PLATFORM%\\pthreadVC2.lib \
+    -DGLEW_ROOT=%GLEW_ROOT%\\glew-2.1.0 \
+    -DBUILD_WITH_QT=ON -DQT_ROOT=%QT_ROOT% \
+    %OPENCV% \
+    -DBUILD_DEMOS=ON -DBUILD_EXAMPLES=ON \
+    -DBUILD_APPS=ON -DBUILD_REDIST=WIX"
+  matrix:
+    - platform: x86
+      # OpenCV does not provide binary builds for x86 anylonger
+      OPENCV: ""
+      CMAKE_GENERATOR: Visual Studio 15
+      QT_ROOT: C:\Qt\5.9.1\msvc2015
+    - platform: x64
+      # We need to override the internal OpenCV_RUNTIME since vc17 isnt supported officially yet
+      OPENCV: "-DBUILD_WITH_OPENCV=ON -DOPENCV_ROOT=C:\\tools\\opencv\\build -DOpenCV_RUNTIME=vc14"
+      CMAKE_GENERATOR: Visual Studio 15 Win64
+      QT_ROOT: C:\Qt\5.9.1\msvc2017_64
+
+matrix:
+  fast_finish: true
+
+before_build:
+  - If Not Exist C:\projects\deps mkdir C:\projects\deps
+  - cd C:\projects\deps
+  - If Not Exist pthreads.zip curl ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip > pthreads.zip
+  - If Not Exist glew.zip curl -L https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip > glew.zip
+  - If Not Exist C:\tools\opencv choco install opencv
+  - 7z x pthreads.zip -o%PTHREADS_ROOT% > nul
+  - 7z x glew.zip -o%GLEW_ROOT% > nul
+
+build_script:
+  - mkdir %APPVEYOR_BUILD_FOLDER%\build
+  - cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmake .. -G "%CMAKE_GENERATOR%" %ICL_OPTIONS%
+  - cmake --build . --target package --config %CONFIGURATION%
+
+artifacts:
+  - path: build\_CPack_Packages\*\WIX\icl-*.msi
+
+cache:
+  - C:\tools\opencv -> appveyor.yml
+  - C:\projects\deps\pthreads.zip -> appveyor.yml
+  - C:\projects\deps\glew.zip -> appveyor.yml
