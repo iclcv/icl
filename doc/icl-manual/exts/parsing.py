@@ -1,13 +1,14 @@
 #import multiprocessing
 import itertools
 
-from pyparsing import Word, Literal, alphas, nums, alphanums, OneOrMore, Optional, SkipTo, ParseException, Group, ZeroOrMore, Suppress, Combine, delimitedList, quotedString, nestedExpr, ParseResults, oneOf
+from pyparsing import Word, Literal, alphas, nums, alphanums, OneOrMore, Optional, SkipTo, ParseException, Group, ZeroOrMore, Suppress, Combine, delimitedList, quotedString, nestedExpr, ParseResults, oneOf, ungroup
 
 # define punctuation - reuse of expressions helps packratting work better
 LPAR,RPAR,LBRACK,RBRACK,COMMA,EQ = map(Literal,"()[],=")
 
 #Qualifier to go in front of type in the argument list (unsigned const int foo)
 qualifier = OneOrMore(oneOf('const unsigned typename struct enum'))
+qualifier = ungroup(qualifier.addParseAction(' '.join))
 
 def turn_parseresults_to_list(s, loc, toks):
 	return ParseResults(normalise_templates(toks[0].asList()))
@@ -62,15 +63,15 @@ arglist = LPAR + delimitedList(argument)('arg_list') + Optional(COMMA + '...')('
 def normalise(symbol):
 	"""
 	Takes a c++ symbol or funtion and splits it into symbol and a normalised argument list.
-	
+
 	:Parameters:
 		symbol : string
 			A C++ symbol or function definition like ``PolyVox::Volume``, ``Volume::printAll() const``
-	
+
 	:return:
 		a tuple consisting of two strings: ``(qualified function name or symbol, normalised argument list)``
 	"""
-	
+
 	try:
 		bracket_location = symbol.index('(')
 		#Split the input string into everything before the opening bracket and everything else
@@ -79,14 +80,14 @@ def normalise(symbol):
 	except ValueError:
 		#If there's no brackets, then there's no function signature. This means the passed in symbol is just a type name
 		return symbol, ''
-	
+
 	#This is a very common signature so we'll make a special case for it. It requires no parsing anyway
 	if arglist_input_string.startswith('()'):
 		if arglist_input_string in ('()', '()=0'):
 			return function_name, arglist_input_string
 		elif arglist_input_string in ('() const ', '() const', '() const =0'):
 			return function_name, '() const'
-	
+
 	#By now we're left with something like "(blah, blah)", "(blah, blah) const" or "(blah, blah) const =0"
 	try:
 		closing_bracket_location = arglist_input_string.rindex(')')
@@ -96,7 +97,7 @@ def normalise(symbol):
 		#This shouldn't happen.
 		print ('Could not find closing bracket in %s') % arglist_input_string
 		raise
-	
+
 	try:
 		result = arglist.parseString(arglist_input_string)
 	except ParseException as error:
@@ -107,7 +108,7 @@ def normalise(symbol):
 		#Will be a list or normalised string arguments
 		#e.g. ['OBMol&', 'vector< int >&', 'OBBitVec&', 'OBBitVec&', 'int', 'int']
 		normalised_arg_list = []
-		
+
 		#Cycle through all the matched arguments
 		for arg in result.arg_list:
 			#Here is where we build up our normalised form of the argument
@@ -115,7 +116,7 @@ def normalise(symbol):
 			if arg.qualifier:
 				argument_string_list.append(''.join((arg.qualifier,' ')))
 			argument_string_list.append(arg.input_type)
-		
+
 			#Functions can have a funny combination of *, & and const between the type and the name so build up a list of theose here:
 			const_pointer_ref_list = []
 			const_pointer_ref_list.append(arg.pointer_or_reference1)
@@ -125,23 +126,23 @@ def normalise(symbol):
 			const_pointer_ref_list.append(arg.pointer_or_reference2)
 			#And combine them into a single normalised string and add them to the argument list
 			argument_string_list.extend(const_pointer_ref_list)
-		
+
 			#Finally we join our argument string and add it to our list
 			normalised_arg_list.append(''.join(argument_string_list))
-		
+
 		#If the function contains a variable number of arguments (int foo, ...) then add them on.
 		if result.var_args:
 			normalised_arg_list.append('...')
-		
+
 		#Combine all the arguments and put parentheses around it
 		normalised_arg_list_string = ''.join(['(', ', '.join(normalised_arg_list), ')'])
-		
+
 		#Add a const onto the end
 		if 'const' in arglist_suffix:
 			normalised_arg_list_string += ' const'
-		
+
 		return function_name, normalised_arg_list_string
-	
+
 	#TODO Maybe this should raise an exception?
 	return None
 
