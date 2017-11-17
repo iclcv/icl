@@ -10,6 +10,8 @@ Package: icl-core
 Section: @ICL_DEB_PACKAGE_SECTION@
 Priority: @ICL_DEB_PACKAGE_PRIORITY@
 Architecture: any
+Conflicts: icl-intel-core
+Replaces: icl-intel-core
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@
   @ICL_DEB_PACKAGE_DESCRIPTION@
@@ -18,7 +20,7 @@ Package: icl-dev
 Section: @ICL_DEB_PACKAGE_SECTION@
 Priority: @ICL_DEB_PACKAGE_PRIORITY@
 Architecture: any
-Depends: icl-core, ${misc:Depends}
+Depends: icl-core | icl-intel-core, ${misc:Depends}
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - development files
 
 Package: icl-doc
@@ -26,12 +28,12 @@ Section: doc
 Priority: @ICL_DEB_PACKAGE_PRIORITY@
 Architecture: any
 Depends: ${misc:Depends}
-Suggests: icl-core, icl-dev
+Suggests: icl-core | icl-intel-core, icl-dev
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - sphinx documentation
 
 Package: icl-tools
 Section: @ICL_DEB_PACKAGE_SECTION@
 Priority: @ICL_DEB_PACKAGE_PRIORITY@
 Architecture: any
-Depends: icl-core, ${shlibs:Depends}, ${misc:Depends}
+Depends: icl-core | icl-intel-core, ${shlibs:Depends}, ${misc:Depends}
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - applications and tools
