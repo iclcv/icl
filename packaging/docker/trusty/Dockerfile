@@ -7,19 +7,17 @@ RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/pcl
 RUN apt-get update
-RUN apt-get install -y build-essential git cmake3 libjpeg-dev libpng-dev \
-    ocl-icd-opencl-dev libeigen3-dev libopenni-dev libopencv-dev \
-    libmagick++-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev \
-    libfreenect-dev libbullet-dev \
-    libpcl-all libzmq-dev libglew-dev libusb-dev libudev-dev \
-    libavcodec-dev libavresample-dev libavdevice-dev doxygen \
-    python-sphinx python-pyparsing debhelper devscripts apt-file
+RUN apt-get upgrade -y
+
+RUN apt-get install -y build-essential git cmake python-pip dirmngr \
+                       devscripts equivs apt-file debhelper sudo
+RUN apt-get clean
 
 RUN useradd --create-home -s /bin/bash user
 RUN echo user:user | chpasswd
 RUN adduser user sudo
+RUN echo "user ALL=(ALL:ALL) NOPASSWD: /usr/bin/mk-build-deps" >> /etc/sudoers
 
 WORKDIR /home/user
 USER user
-RUN apt-file update
-#CMD ["cd workspace/icl && packaging/scripts/launchpad.sh"]
+CMD ["workspace/icl/packaging/scripts/build-ubuntu-packages.sh"]
