@@ -6,11 +6,53 @@
 
 Currently, Ubuntu source and binary packages are supported. The first are built with `dh` while the later can also be generated with `CPack`.
 
+#### Docker
+
+Currently, docker images for `trusty`, `xenial` and `artful` are provided.
+All of them use `build-ubuntu-packages.sh` which can be found in `script` and
+automate the build for binary packages or packaging and deployment for source packages.
+The steps required to do so will be describes in the following sections in case more
+information is required.
+
+*IMPORTANT* All of them expect the ICL source code in `${LOCAL_WORKSPACE}/icl`!
+Additionally, compiled binary packages will be copied to `${LOCAL_WORKSPACE}`.
+In case of source builds, there need to be two additional files in the workspace:
+
+* `${LOCAL_WORKSPACE}/packaging.key` -- the **private** keychain to sign the packages
+* `${LOCAL_WORKSPACE}/packaging_passphrase.txt` -- the passphrase of this keychain
+
+It is advices to not use a master keychain here.
+After the source package has been built it will automatically be uploaded to launchpad.
+
+Example:
+
 ```bash
-packaging/scripts/ubuntu-build.sh  # configure package files
+cd ${LOCAL_WORKSPACE}/icl/packaging/docker/trusty
+# build the docker image first
+docker build -t icl-trusty .
+# build binary packages [default]
+docker run -ti --mount type=bind,source=${LOCAL_WORKSPACE},target=/home/user/workspace icl-trusty
+# build source packages
+docker run -ti --mount type=bind,source=${LOCAL_WORKSPACE},target=/home/user/workspace -e variant=source icl-trusty
 ```
 
-`ubuntu-build.sh` has to be called to create the `debian` folder in the source root which is required for the next steps. If you plan a custom build make sure to pass `-DBUILD_REDIST=DEB` to the `cmake` call.
+The version of the source package depends on the topmost entry in `scripts/packaging/debian/changelog.in`.
+During `cmake`, required packages will be downloaded. To speed up this process in the
+next run, the docker image can be extended with the newly created software layer.
+The required container ID has been stored into `${LOCAL_WORKSPACE}/docker_container_id.log`
+
+```bash
+# add new layer
+docker commit $(cat {LOCAL_WORKSPACE}/docker_container_id.log) icl-trusty
+# run docker interactively by passing '/bin/bash' AFTER the image name
+docker run -ti --mount type=bind,source=${LOCAL_WORKSPACE},target=/home/user/workspace icl-trusty /bin/bash
+```
+
+#### Manual build
+
+In case more control is required, all steps can be done interactively.
+First, `ubuntu-build.sh` has to be called to create the `debian` folder in the source root which is required for the next steps. This will also attempt to install all need packages for
+the following build process.
 
 #### Ubuntu source packages
 
@@ -65,14 +107,6 @@ make doc package
 
 Currently, `CPack` builds have no advantages compared to `dh` builds. However,
 `CPack` also features binary installer builds for Linux, Windows and OSX.
-
-#### Docker test build environment
-
-```bash
-cd packaging/docker/trusty
-docker build -t icl .
-docker run -ti --mount type=bind,source=${LOCAL_WORKSPACE},target=/home/user/workspace icl:latest
-```
 
 ### Windows
 
