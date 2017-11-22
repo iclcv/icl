@@ -84,7 +84,7 @@ IF(OpenCV_FOUND)
   LIST(APPEND SOURCES src/ICLCore/OpenCV.cpp)
   LIST(APPEND HEADERS src/ICLCore/OpenCV.h)
   # if the error also occurs on OSX use 'MATCHES "Clang"' instead
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Related to narrowing issues https://github.com/opencv/opencv/issues/8192
     set_source_files_properties(src/ICLCore/OpenCV.cpp PROPERTIES COMPILE_FLAGS -Wno-narrowing)
   endif()

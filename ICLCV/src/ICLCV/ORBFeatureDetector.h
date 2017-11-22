@@ -43,7 +43,7 @@
 namespace icl{
   namespace cv{
 
-    class ORBFeatureDetector : public utils::Configurable{
+    class ICLCV_API ORBFeatureDetector : public utils::Configurable{
       struct Data;
       Data *m_data;
 
@@ -52,7 +52,7 @@ namespace icl{
 
       ~ORBFeatureDetector();
 
-      struct FeatureSetClass : public utils::Uncopyable{
+      struct ICLCV_API FeatureSetClass : public utils::Uncopyable{
         struct Impl;
         Impl *impl;
         FeatureSetClass();

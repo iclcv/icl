@@ -84,7 +84,7 @@ namespace icl{
         public:
 
         /// internal key-point structure
-        struct KeyPoints{
+        struct ICLMarkers_API KeyPoints{
           utils::Point32f ur;     //!< upper right point
           utils::Point32f lr;     //!< upper left point
           utils::Point32f ll;     //!< lower left point

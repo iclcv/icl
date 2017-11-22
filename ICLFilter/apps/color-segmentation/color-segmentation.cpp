@@ -414,7 +414,7 @@ void run(){
   int &z = gui.get<int>("z");
 
   static const ImgBase *inputImage = 0;
-  if(!inputImage || !gui["paused"]){
+  if(!inputImage || !gui["paused"].as<bool>()){
     inputImage = grabber.grab();
   }else{
     Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)

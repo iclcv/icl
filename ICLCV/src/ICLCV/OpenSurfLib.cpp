@@ -48,6 +48,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #ifdef ICL_HAVE_OPENCV_OLD_STYLE
 #include <opencv/highgui.h>
@@ -1443,5 +1444,3 @@ namespace icl{
   } // end of namespace cv
 
 } // end of namespace icl
-
-
