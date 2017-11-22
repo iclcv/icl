@@ -13,7 +13,7 @@
 ## Table of Contents
 - [About ICL](#about-icl)
 - [Installation](#installation)
-  - [Ubuntu packages](#ubuntu packages)
+  - [Ubuntu packages](#ubuntu-packages)
   - [Homebrew Recipes (OSX)](#homebew-recipes)
   - [Windows Installers](#windows-installers)
   - [Packaging Status](#packaging-status)
@@ -66,7 +66,7 @@ The ICL build is divided into four packages:
 * `icl-doc` - ICL sphinx manual and api documentation
 * `icl-tools` - ICL Applications
 
-Currently, we provide packages for the Ubuntu releases `trusty` and `xenial`.
+Currently, we provide packages for the Ubuntu releases `trusty`, `xenial` and `artful`.
 The packages are built with [PCL](http://pointclouds.org/).
 Users of `trusty` need to install this library before ICL packages can be installed. As described [here](http://pointclouds.org/downloads/linux.html), it is possible to get this dependency from another PPA:
 
@@ -104,7 +104,7 @@ Prebuilt packages can be obtained/installed from the following channels:
 |:--------|:--------|:-------|
 | Ubuntu  | [Launchpad][url-launchpad] | `trusty`, `xenial` |
 | OSX     | [Homebrew][url-homebrew] | |
-| Windows | MSI ([Win64][url-msi-x86]/[Win32][url-msi-x86]) | Visual Studio 2017 |
+| Windows | MSI ([Win64][url-msi-x64]/[Win32][url-msi-x86]) | Visual Studio 2017 |
 
 These distributions have been built with the following features enabled:
 
@@ -137,8 +137,9 @@ These distributions have been built with the following features enabled:
 
 [url-launchpad]: https://launchpad.net/~iclcv/+archive/ubuntu/icl/
 [url-homebrew]: https://github.com/iclcv/homebrew-formulas
-[url-msi-x86]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win64/WIX/icl-10.0.0-x64-1911.msi?job=Environment%3A%20platform%3Dx64%2C%20OPENCV%3D-DBUILD_WITH_OPENCV%3DON%20-DOPENCV_ROOT%3DC%3A%5Ctools%5Copencv%5Cbuild%20-DOpenCV_RUNTIME%3Dvc14%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%20Win64%2C%20QT_ROOT%3DC%3A%5CQt%5C5.9.1%5Cmsvc2017_64
-[url-msi-x64]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win32/WIX/icl-10.0.0-x86-1911.msi?job=Environment%3A%20platform%3Dx86%2C%20OPENCV%3D%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%2C%20QT_ROOT%3DC%3A%5CQt%5C5.9.1%5Cmsvc2015
+[url-msi-x86]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win32/WIX/icl-10.0.0-x86-1911.msi?branch=master&job=Environment%3A%20platform%3Dx86%2C%20OPENCV%3D%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2015
+[url-msi-x64]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win64/WIX/icl-10.0.0-x64-1911.msi?branch=master&job=Environment%3A%20platform%3Dx64%2C%20OPENCV%3D-DBUILD_WITH_OPENCV%3DON%20-DOPENCV_ROOT%3DC%3A%5Ctools%5Copencv%5Cbuild%20-DOpenCV_RUNTIME%3Dvc14%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%20Win64%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2017_64
+
 
 ### <a name="building-from-source-ubuntu"></a> Building from source (Ubuntu)
 To build the minimal version of ICL, the following packages are **mandatory**:
