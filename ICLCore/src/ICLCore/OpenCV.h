@@ -55,16 +55,16 @@
 #endif
 
 
-#if defined(ICL_HAVE_OPENCV_3) && (ICL_OPENCV_VERSION_MINOR > 1)
+#if defined(ICL_HAVE_OPENCV_3)
   #include "opencv2/calib3d/calib3d_c.h"
+// This will be inlcuded when at least OpenCV 2.4 is detected
+#elif ICL_OPENCV_VERSION_MINOR > 3
+  #include "opencv2/imgproc/types_c.h"
+  #include "opencv2/imgproc/imgproc_c.h"
+  #include "opencv2/calib3d/calib3d.hpp"
+#else
+  #error ICL requires at least OpenCV 2.4
 #endif
-
-#if !defined(ICL_HAVE_OPENCV_3) && (ICL_OPENCV_VERSION_MINOR > 3)
-#include "opencv2/imgproc/types_c.h"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/calib3d/calib3d.hpp"
-#endif
-
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
@@ -272,5 +272,3 @@ namespace icl{
 
   } // namespace core
 }
-
-

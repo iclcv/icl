@@ -218,6 +218,12 @@ OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
 SET(BUILD_REDIST OFF CACHE STRING "Enable redistribution workflow")
 SET_PROPERTY(CACHE BUILD_REDIST PROPERTY STRINGS OFF "DEB" "WIX")
 
+# ---- Generate package data ----
+
+IF(NOT BUILD_REDIST STREQUAL OFF)
+  ADD_SUBDIRECTORY(packaging)
+ENDIF(NOT BUILD_REDIST STREQUAL OFF)
+
 # ---- Dependency handling ----
 INCLUDE(ICLFindPackage)
 
@@ -317,12 +323,27 @@ IF(BUILD_WITH_IPP)
     SET(_IPP_LIB_SUF "ipp/lib/ia32")
   ENDIF(ICL_64BIT)
 
+  SET(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc;iomp5")
+  # check for the legacy version of IPP first
+  # IPP 9 dropped ippm. Defining this check optional to prevent error.
   ICL_FIND_PACKAGE(NAME IPP
     HEADERS "ipp.h"
-    LIBS "ippcore;ippi;ipps;ippcv;ippm;ippcc;iomp5"
-    PATHS "/opt/IPP"
+    LIBS "${IPP_REQUESTED_LIBS};ippm"
+    PATHS "/opt/intel;/opt/IPP"
     HEADER_PATH_SUFFIXES "ipp/include"
-    LIB_PATH_SUFFIXES "${_IPP_LIB_SUF}")
+    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF}
+    OPTIONAL)
+
+  # This double check is a bit annoying. Feel free to improve this section.
+  IF(NOT IPP_FOUND)
+    MESSAGE("IPP Legacy not found. Checking for recent releases.")
+    ICL_FIND_PACKAGE(NAME IPP
+      HEADERS "ipp.h"
+      LIBS ${IPP_REQUESTED_LIBS}
+      PATHS "/opt/intel;/opt/IPP"
+      HEADER_PATH_SUFFIXES "ipp/include"
+      LIB_PATH_SUFFIXES ${_IPP_LIB_SUF})
+  ENDIF(NOT IPP_FOUND)
 
   IF(IPP_FOUND)
     IF(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
@@ -348,7 +369,7 @@ IF(BUILD_WITH_MKL)
   ICL_FIND_PACKAGE(NAME MKL
                    HEADERS "mkl_types.h"
                    LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
-                   PATHS "/opt/MKL;/opt/MKL/mkl"
+                   PATHS "/opt/intel;/opt/MKL;/opt/MKL/mkl"
                    HEADER_PATH_SUFFIXES "mkl/include"
                    LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}")
 ENDIF()
@@ -1251,7 +1272,3 @@ FOREACH(G Generic_cameras|OPENCV|QT
   ENDIF()
   MESSAGE(" ${WHAT} ${FILL} ${HAVE}")
 ENDFOREACH()
-
-IF(NOT BUILD_REDIST STREQUAL OFF)
-  ADD_SUBDIRECTORY(packaging)
-ENDIF(NOT BUILD_REDIST STREQUAL OFF)

@@ -350,7 +350,7 @@ FUNCTION(ADD_ICL_DEFINITIONS)
   # iterate over list of arguments and define variable values in outer scope (for ICLConfig.h)
   foreach(var ${ARGV})
     string(REPLACE "-D" "" var "${var}")
-    if("${var}" MATCHES "=") # var_name=arg_value
+    if(${var} MATCHES "=") # var_name=arg_value
       string(REPLACE "=" ";" split "${var}")
       list(GET split 0 var_name)
       list(GET split 1 arg_value)

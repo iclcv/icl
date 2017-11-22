@@ -113,7 +113,7 @@ These distributions have been built with the following features enabled:
 | APPS        | ✓  | ✓   | ✓ |
 | DEMOS       | ✓  | ✓   | ✓ |
 | EXAMPLES    | ✓  | ✓   | ✓ |
-| IPP/MKL     | ✓! | ✗   | ✗ |
+| IPP/MKL     | ✗  | ✗   | ✗ |
 | QT          | ✓  | ✓   | ✓ |
 | OpenCV      | ✓  | ✓   | ✓ (64bit) |
 | OpenGL      | ✓  | ✓   | ✗ |
