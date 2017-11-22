@@ -1,3 +1,27 @@
+icl@PROP_SUFFIX@ (10.0.0+artful5) artful; urgency=low
+
+  * Upload artful release version
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 16:08:00 +0100
+
+icl@PROP_SUFFIX@ (10.0.0+xenial1) xenial; urgency=low
+
+  * Upload xenial release version
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 15:12:00 +0100
+
+icl@PROP_SUFFIX@ (10.0.0+trusty2) trusty; urgency=low
+
+  * Added DBUILD_WITH_BULLET_OPTIONAL=@BUILD_WITH_BULLET@ to rules.in
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 15:12:00 +0100
+
+icl@PROP_SUFFIX@ (10.0.0+trusty1) trusty; urgency=low
+
+  * Release version of 10.0.0 trusty
+
+ -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 14:17:00 +0100
+
 icl@PROP_SUFFIX@ (10.0.0+artful4) artful; urgency=low
 
   * Fix CMAKE_FLAGS for DEMOS, EXAMPLES and APPS

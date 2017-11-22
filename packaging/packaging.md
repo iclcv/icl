@@ -43,7 +43,7 @@ The required container ID has been stored into `${LOCAL_WORKSPACE}/docker_contai
 
 ```bash
 # add new layer
-docker commit $(cat {LOCAL_WORKSPACE}/docker_container_id.log) icl-trusty
+docker commit $(cat ${LOCAL_WORKSPACE}/docker_container_id.log) icl-trusty
 # run docker interactively by passing '/bin/bash' AFTER the image name
 docker run -ti --mount type=bind,source=${LOCAL_WORKSPACE},target=/home/user/workspace icl-trusty /bin/bash
 ```
@@ -120,3 +120,23 @@ The following batch script builds the msi installer for Visual Studio 2017 Win64
 ```bash
 packaging/scripts/windows-build.bat <pthreads_root>
 ```
+
+### OSX
+
+From [here](https://github.com/Homebrew/brew/blob/master/docs/Bottles.md):
+
+Bottles are produced by installing a formula with `brew install --build-bottle <formula>` and then bottling it with `brew bottle <formula>`. This outputs the bottle DSL which should be inserted into the formula file.
+
+Bottles have a DSL to be used in formulae which is contained in the `bottle do ... end` block.
+A simple (and typical) example:
+
+```ruby
+bottle do
+  sha256 "..." => :sierra
+  sha256 "..." => :el_capitan
+  sha256 "..." => :yosemite
+end
+```
+
+An ICL bottle can be created (from `HEAD` aka `master`) with `brew install --HEAD --build-bottle icl`, the output has to be added to https://github.com/iclcv/homebrew-formulas while the bottle itself is added to the related tag/release.
+The path to the bottle needs to be added to the icl formula as well as the new `root_url` ([ref](https://docs.brew.sh/Bottles.html)). This should be along the line of `https://github.com/iclcv/icl/releases/download/release-<version>`.
