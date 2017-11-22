@@ -138,5 +138,5 @@ bottle do
 end
 ```
 
-An ICL bottle can be created (from `HEAD` aka `master`) with `brew install --HEAD --build-bottle icl`, the output has to be added to https://github.com/iclcv/homebrew-formulas while the bottle itself is added to the related tag/release.
-The path to the bottle needs to be added to the icl formula as well as the new `root_url` ([ref](https://docs.brew.sh/Bottles.html)). This should be along the line of `https://github.com/iclcv/icl/releases/download/release-<version>`.
+An ICL bottle can be created with `brew install --build-bottle icl`, followed by `brew bottle icl`. The output has to be added to https://github.com/iclcv/homebrew-formulas while the bottle itself is added to the related tag/release.
+The path to the bottle needs to be added to the icl formula as well as the new `root_url` ([ref](https://docs.brew.sh/Bottles.html)). This should be along the line of `https://github.com/iclcv/icl/releases/download/<version>`.
