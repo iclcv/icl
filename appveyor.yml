@@ -5,6 +5,7 @@ configuration:
   - Release
 
 environment:
+  QT_VERSION: "5.9.2"
   PTHREADS_ROOT: C:\projects\deps\pthreads
   GLEW_ROOT: C:\projects\deps\glew
   PTHREADS_PREBUILT: C:\projects\deps\pthreads\Pre-built.2
@@ -20,12 +21,12 @@ environment:
       # OpenCV does not provide binary builds for x86 anylonger
       OPENCV: ""
       CMAKE_GENERATOR: Visual Studio 15
-      QT_ROOT: C:\Qt\5.9.1\msvc2015
+      QT_ROOT: C:\Qt\%QT_VERSION%\msvc2015
     - platform: x64
       # We need to override the internal OpenCV_RUNTIME since vc17 isnt supported officially yet
       OPENCV: "-DBUILD_WITH_OPENCV=ON -DOPENCV_ROOT=C:\\tools\\opencv\\build -DOpenCV_RUNTIME=vc14"
       CMAKE_GENERATOR: Visual Studio 15 Win64
-      QT_ROOT: C:\Qt\5.9.2\msvc2017_64
+      QT_ROOT: C:\Qt\%QT_VERSION%\msvc2017_64
 
 matrix:
   fast_finish: true
