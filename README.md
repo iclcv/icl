@@ -67,12 +67,13 @@ The ICL build is divided into four packages:
 * `icl-tools` - ICL Applications
 
 Currently, we provide packages for the Ubuntu releases `trusty`, `xenial` and `artful`.
-The packages are built with [PCL](http://pointclouds.org/).
-Users of `trusty` need to install this library before ICL packages can be installed. As described [here](http://pointclouds.org/downloads/linux.html), it is possible to get this dependency from another PPA:
+The packages are built with [PCL](http://pointclouds.org/) features enabled.
+Users of `trusty` need to add a third party PPA to their system as described [here](http://pointclouds.org/downloads/linux.html):
 
 ```bash
 sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
 sudo apt-get update
+# installing icl-core will automatically pull this dependency
 sudo apt-get install libpcl-all
 ```
 ### Homebrew Recipes
@@ -102,7 +103,7 @@ Prebuilt packages can be obtained/installed from the following channels:
 
 |   OS    | Channel | Target |
 |:--------|:--------|:-------|
-| Ubuntu  | [Launchpad][url-launchpad] | `trusty`, `xenial` |
+| Ubuntu  | [Launchpad][url-launchpad] | `trusty`, `xenial`, `artful` |
 | OSX     | [Homebrew][url-homebrew] | |
 | Windows | MSI ([Win64][url-msi-x64]/[Win32][url-msi-x86]) | Visual Studio 2017 |
 
