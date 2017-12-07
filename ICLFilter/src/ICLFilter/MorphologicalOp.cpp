@@ -291,19 +291,28 @@ namespace icl {
 
     void MorphologicalOp::deleteMorphStates(){
       if (m_bMorphState8u){
-        ippiMorphologyFree(m_pState8u);
+        //ippiMorphologyFree(m_pState8u);
+        ippsFree(m_pState8u);
+        ippsFree(m_pBuf);
         m_bMorphState8u=false;
       }
       if (m_bMorphAdvState8u){
-        ippiMorphAdvFree(m_pAdvState8u);
+        //ippiMorphAdvFree(m_pAdvState8u);
+        ippsFree(m_pAdvState8u);
+        ippsFree(m_pAdvBuf);
+
         m_bMorphAdvState8u=false;
       }
       if (m_bMorphState32f){
-        ippiMorphologyFree(m_pState32f);
+        //ippiMorphologyFree(m_pState32f);
+        ippsFree(m_pState32f);
+        ippsFree(m_pBuf);
         m_bMorphState32f=false;
       }
       if (m_bMorphAdvState32f){
-        ippiMorphAdvFree(m_pAdvState32f);
+        //ippiMorphAdvFree(m_pAdvState32f);
+        ippsFree(m_pAdvState32f);
+        ippsFree(m_pAdvBuf);
         m_bMorphAdvState32f=false;
       }
     }
@@ -311,7 +320,16 @@ namespace icl {
     void MorphologicalOp::checkMorphAdvState8u(const Size roiSize){
       if (m_bHas_changedAdv){
         deleteMorphStates();
-        ippiMorphAdvInitAlloc_8u_C1R(&m_pAdvState8u, roiSize, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor);
+        IppStatus status = ippStsNoErr;
+	      int specSize = 0, bufferSize = 0;     /*  working buffers size */
+	      status = ippiMorphAdvGetSize_8u_C1R(roiSize, m_oMaskSizeMorphOp, &specSize, &bufferSize);
+	      m_pAdvState8u = (IppiMorphAdvState*)ippsMalloc_8u(specSize);
+	      m_pAdvBuf = (Ipp8u*)ippsMalloc_8u(bufferSize);
+	      status = ippiMorphAdvInit_8u_C1R(roiSize, m_pcMask, m_oMaskSizeMorphOp, m_pAdvState8u, m_pAdvBuf);
+	      if(status!=ippStsNoErr){
+          WARNING_LOG("IPP Error");
+        }
+        //ippiMorphAdvInitAlloc_8u_C1R(&m_pAdvState8u, roiSize, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor);
         m_bMorphAdvState8u=true;
         m_bHas_changedAdv=false;
       }
@@ -320,8 +338,16 @@ namespace icl {
       void MorphologicalOp::checkMorphState8u(const Size roiSize){
       if (m_bHas_changed){
         deleteMorphStates();
-
-        ippiMorphologyInitAlloc_8u_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState8u);
+        IppStatus status = ippStsNoErr;
+	      int specSize = 0, bufferSize = 0;     /*  working buffers size */
+	      status = ippiMorphologyBorderGetSize_8u_C1R(roiSize, m_oMaskSizeMorphOp, &specSize, &bufferSize);
+	      m_pState8u = (IppiMorphState*)ippsMalloc_8u(specSize);
+	      m_pBuf = (Ipp8u*)ippsMalloc_8u(bufferSize);
+	      status = ippiMorphologyBorderInit_8u_C1R(roiSize, m_pcMask, m_oMaskSizeMorphOp, m_pState8u, m_pBuf);
+	      if(status!=ippStsNoErr){
+          WARNING_LOG("IPP Error");
+        }
+        //ippiMorphologyInitAlloc_8u_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState8u);
 
         m_bMorphState8u=true;
         m_bHas_changed=false;
@@ -330,7 +356,16 @@ namespace icl {
     void MorphologicalOp::checkMorphAdvState32f(const Size roiSize){
       if (m_bHas_changedAdv){
         deleteMorphStates();
-        ippiMorphAdvInitAlloc_32f_C1R(&m_pAdvState32f, roiSize, m_pcMask, m_oMaskSize, m_oAnchor);
+        IppStatus status = ippStsNoErr;
+	      int specSize = 0, bufferSize = 0;     /*  working buffers size */
+	      status = ippiMorphAdvGetSize_32f_C1R(roiSize, m_oMaskSizeMorphOp, &specSize, &bufferSize);
+	      m_pAdvState32f = (IppiMorphAdvState*)ippsMalloc_8u(specSize);
+	      m_pAdvBuf = (Ipp8u*)ippsMalloc_8u(bufferSize);
+	      status = ippiMorphAdvInit_32f_C1R(roiSize, m_pcMask, m_oMaskSizeMorphOp, m_pAdvState32f, m_pAdvBuf);
+	      if(status!=ippStsNoErr){
+          WARNING_LOG("IPP Error");
+        }
+        //ippiMorphAdvInitAlloc_32f_C1R(&m_pAdvState32f, roiSize, m_pcMask, m_oMaskSize, m_oAnchor);
         m_bMorphAdvState32f=true;
         m_bHas_changedAdv=false;
       }
@@ -339,8 +374,16 @@ namespace icl {
       void MorphologicalOp::checkMorphState32f(const Size roiSize){
       if (m_bHas_changed){
         deleteMorphStates();
-
-        ippiMorphologyInitAlloc_32f_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState32f);
+        IppStatus status = ippStsNoErr;
+	      int specSize = 0, bufferSize = 0;     /*  working buffers size */
+	      status = ippiMorphologyBorderGetSize_32f_C1R(roiSize, m_oMaskSizeMorphOp, &specSize, &bufferSize);
+	      m_pState32f = (IppiMorphState*)ippsMalloc_8u(specSize);
+	      m_pBuf = (Ipp8u*)ippsMalloc_8u(bufferSize);
+	      status = ippiMorphologyBorderInit_32f_C1R(roiSize, m_pcMask, m_oMaskSizeMorphOp, m_pState32f, m_pBuf);
+	      if(status!=ippStsNoErr){
+          WARNING_LOG("IPP Error");
+        }
+        //ippiMorphologyInitAlloc_32f_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState32f);
 
         m_bMorphState32f=true;
         m_bHas_changed=false;
@@ -358,44 +401,154 @@ namespace icl {
           Img8u *dst = (*ppoDst)->asImg<icl8u>();
           switch (m_eType){
             case dilate:
-              s=ippiMorphologicalCall<icl8u,ippiDilate_8u_C1R> (src,dst);
+              //s=ippiMorphologicalCall<icl8u,ippiDilateBorder_8u_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case erode:
-              s=ippiMorphologicalCall<icl8u,ippiErode_8u_C1R> (src,dst);
+              //s=ippiMorphologicalCall<icl8u,ippiErodeBorder_8u_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiErodeBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case dilate3x3:
-              s=ippiMorphologicalCall3x3<icl8u,ippiDilate3x3_8u_C1R> (src,dst);
+              //s=ippiMorphologicalCall3x3<icl8u,ippiDilateBorder_8u_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case erode3x3:
-              s=ippiMorphologicalCall3x3<icl8u,ippiErode3x3_8u_C1R> (src,dst);
+              //s=ippiMorphologicalCall3x3<icl8u,ippiErodeBorder_8u_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) { //call checkMorphState8u(Size(3,3)) first?
+                IppStatus s = ippiErodeBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case dilateBorderReplicate:
               checkMorphState8u(src->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorderReplicate_8u_C1R> (src,dst,m_pState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
+              //s=ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorder_8u_C1R> (src,dst,m_pState8u);
               break;
             case erodeBorderReplicate:
               checkMorphState8u(src->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl8u,ippiErodeBorderReplicate_8u_C1R> (src,dst,m_pState8u);
+              //s=ippiMorphologicalBorderReplicateCall<icl8u,ippiErodeBorder_8u_C1R> (src,dst,m_pState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiErodeBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState8u, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case openBorder:
               checkMorphAdvState8u(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphOpenBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              //s=ippiMorphologicalBorderCall<icl8u,ippiMorphOpenBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphOpenBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState8u, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case closeBorder:
               checkMorphAdvState8u(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphCloseBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              //s=ippiMorphologicalBorderCall<icl8u,ippiMorphCloseBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphCloseBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState8u, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case tophatBorder:
               checkMorphAdvState8u(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              //s=ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphTophatBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState8u, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case blackhatBorder:
               checkMorphAdvState8u(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              //s=ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphBlackhatBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState8u, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case gradientBorder:
               checkMorphAdvState8u(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              //s=ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R> (src,dst,m_pAdvState8u);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphGradientBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState8u, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
           }
         break;
@@ -405,44 +558,154 @@ namespace icl {
           Img32f *dst = (*ppoDst)->asImg<icl32f>();
           switch (m_eType){
             case dilate:
-              s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (src,dst);
+              //s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case erode:
-              s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (src,dst);
+              //s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiErodeBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case dilate3x3:
-              s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (src,dst);
+              //s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case erode3x3:
-              s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (src,dst);
+              //s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (src,dst);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiErodeBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case dilateBorderReplicate:
               checkMorphState32f(src->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl32f,ippiDilateBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+              //s=ippiMorphologicalBorderReplicateCall<icl32f,ippiDilateBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiDilateBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case erodeBorderReplicate:
               checkMorphState32f(src->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl32f,ippiErodeBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+              //s=ippiMorphologicalBorderReplicateCall<icl32f,ippiErodeBorderReplicate_32f_C1R> (src,dst,m_pState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiErodeBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pState32f, m_pBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case openBorder:
               checkMorphAdvState32f(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphOpenBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              //s=ippiMorphologicalBorderCall<icl32f,ippiMorphOpenBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphOpenBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState32f, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case closeBorder:
               checkMorphAdvState32f(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              //s=ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphCloseBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState32f, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case tophatBorder:
               checkMorphAdvState32f(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              //s=ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphTophatBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState32f, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case blackhatBorder:
               checkMorphAdvState32f(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              //s=ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphBlackhatBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState32f, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
             case gradientBorder:
               checkMorphAdvState32f(src->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              //s=ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R> (src,dst,m_pAdvState32f);
+              for(int c=0; c < src->getChannels(); c++) {
+                IppStatus s = ippiMorphGradientBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
+                               src->getLineStep(),
+                               dst->getROIData (c),
+                               dst->getLineStep(),
+                               dst->getROISize(),
+                               ippBorderRepl, 0,
+                               m_pAdvState32f, m_pAdvBuf);
+                if(s != ippStsNoErr) WARNING_LOG("IPP Error");
+              }
               break;
           }
           break;
@@ -457,51 +720,7 @@ namespace icl {
     }
 
 
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-    IppStatus MorphologicalOp::ippiMorphologicalCall (const Img<T> *src, Img<T> *dst) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize(), m_pcMask,m_oMaskSize, m_oAnchor
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-    IppStatus MorphologicalOp::ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize()
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-    IppStatus MorphologicalOp::ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState* state) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize(),
-                               ippBorderRepl,
-                               state
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
+/*
     template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
     IppStatus MorphologicalOp::ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState* advState) {
       for(int c=0; c < src->getChannels(); c++) {
@@ -517,7 +736,7 @@ namespace icl {
       }
       return ippStsNoErr;
     }
-
+*/
     // }}}
   #endif
 

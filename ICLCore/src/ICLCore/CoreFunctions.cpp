@@ -950,44 +950,90 @@ namespace icl{
 
   #ifdef ICL_HAVE_IPP
 
-  #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
-      template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){             \
-        ICLASSERT_RETURN(h.size() == 256);                                                                                     \
-        static icl32s levels[257];                                                                                             \
-        static bool first = true;                                                                                              \
-        if(first){                                                                                                             \
-          for(int i=0;i<257;levels[i]=i,i++);                                                                                  \
-          first = false;                                                                                                       \
-        }                                                                                                                      \
-                                                                                                                               \
-        if(roiOnly && !image.hasFullROI()){                                                                                    \
-          ippiHistogramEven_##D##_C1R(image.getROIData(c),image.getLineStep(),image.getROISize(),&h[0], levels, 257, 0,256);   \
-        }else{                                                                                                                 \
-          ippiHistogramEven_##D##_C1R(image.getData(c),image.getLineStep(),image.getSize(),&h[0], levels, 257, 0,256);         \
-        }                                                                                                                      \
+  #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                         \
+      template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){                  \
+        ICLASSERT_RETURN(h.size() == 256);                                                                                               \
+        IppStatus sts;                                                                                                                   \
+                                                                                                                                         \
+        const int nBins = 256;                                                                                                           \
+        Ipp32f lowerLevel[] = {0};                                                                                                       \
+        Ipp32f upperLevel[] = {255};                                                                                                     \
+        int nLevels[] = { nBins+1 };                                                                                                     \
+        Ipp32f pLevels[257], *ppLevels[1];                                                                                               \
+        int sizeHistObj, sizeBuffer;                                                                                                     \
+        IppiHistogramSpec* pHistObj;                                                                                                     \
+        Ipp8u* pBuffer;                                                                                                                  \
+        Ipp32u pHistVec[nBins];                                                                                                          \
+                                                                                                                                         \
+        if(roiOnly && !image.hasFullROI()){                                                                                              \
+          sts = ippiHistogramGetBufferSize(ipp##D, image.getROISize(), nLevels, 1/*nChan*/, 1/*uniform*/, &sizeHistObj, &sizeBuffer);    \
+        }else{                                                                                                                           \
+          sts = ippiHistogramGetBufferSize(ipp##D, image.getSize(), nLevels, 1/*nChan*/, 1/*uniform*/, &sizeHistObj, &sizeBuffer);       \
+        }                                                                                                                                \
+        pHistObj = (IppiHistogramSpec*)ippsMalloc_8u( sizeHistObj );                                                                     \
+        pBuffer = (Ipp8u*)ippsMalloc_8u( sizeBuffer );                                                                                   \
+        sts = ippiHistogramUniformInit( ipp##D, lowerLevel, upperLevel, nLevels, 1, pHistObj );                                          \
+                                                                                                                                         \
+        ppLevels[0] = pLevels;                                                                                                           \
+        sts = ippiHistogramGetLevels( pHistObj, ppLevels );                                                                              \
+                                                                                                                                         \
+        if(roiOnly && !image.hasFullROI()){                                                                                              \
+          sts = ippiHistogram_##D##_C1R(image.getROIData(c), image.getLineStep(), image.getROISize(), pHistVec, pHistObj, pBuffer );     \
+        }else{                                                                                                                           \
+          sts = ippiHistogram_##D##_C1R(image.getData(c), image.getLineStep(), image.getSize(), pHistVec, pHistObj, pBuffer );           \
+        }                                                                                                                                \
+        if ( sts != ippStsNoErr )   WARNING_LOG("IPP Error");                                                                            \
+        ippsFree( pHistObj );                                                                                                            \
+        ippsFree( pBuffer );                                                                                                             \
+                                                                                                                                         \
+        int* data = h.data();                                                                                                            \
+        data = (int*)pHistVec;                                                                                                           \
+                                                                                                                                         \
       }
       COMPUTE_DEFAULT_HISTO_256_TEMPLATE(8u)
       COMPUTE_DEFAULT_HISTO_256_TEMPLATE(16s)
 
 
-  #define COMPUTE_COMPLEX_HISTO_TEMPLATE(D)                                                                                    \
-      template<> void compute_complex_histo(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){                         \
-        Range<icl##D> range = image.getMinMax(c);                                                                              \
-        double l = range.getLength();                                                                                          \
-        std::vector<int> levels(h.size()+1);                                                                                        \
-        for(unsigned int i=0;i<levels.size();i++){                                                                             \
-          levels[i] = i*l/h.size() + range.minVal;                                                                             \
-        }                                                                                                                      \
-                                                                                                                               \
-        if(roiOnly && !image.hasFullROI()){                                                                                    \
-          ippiHistogramEven_##D##_C1R(image.getROIData(c),image.getLineStep(),image.getROISize(),                              \
-                                       &h[0], &levels[0], levels.size(), range.minVal, range.maxVal+1 );                       \
-        }else{                                                                                                                 \
-          ippiHistogramEven_##D##_C1R(image.getData(c),image.getLineStep(),image.getSize(),                                    \
-                                       &h[0], &levels[0], levels.size(), range.minVal, range.maxVal+1 );                       \
-        }                                                                                                                      \
+  #define COMPUTE_COMPLEX_HISTO_TEMPLATE(D)                                                                                              \
+      template<> void compute_complex_histo(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){                              \
+        Range<icl##D> range = image.getMinMax(c);                                                                                        \
+        IppStatus sts;                                                                                                                   \
+                                                                                                                                         \
+        const int nBins = h.size();                                                                                                      \
+        Ipp32f lowerLevel[] = {(float)range.minVal};                                                                                     \
+        Ipp32f upperLevel[] = {(float)range.maxVal};                                                                                     \
+        int nLevels[] = { nBins+1 };                                                                                                     \
+        Ipp32f pLevels[nBins+1], *ppLevels[1];                                                                                           \
+        int sizeHistObj, sizeBuffer;                                                                                                     \
+        IppiHistogramSpec* pHistObj;                                                                                                     \
+        Ipp8u* pBuffer;                                                                                                                  \
+        Ipp32u pHistVec[nBins];                                                                                                          \
+                                                                                                                                         \
+        if(roiOnly && !image.hasFullROI()){                                                                                              \
+          sts = ippiHistogramGetBufferSize(ipp##D, image.getROISize(), nLevels, 1/*nChan*/, 1/*uniform*/, &sizeHistObj, &sizeBuffer);    \
+        }else{                                                                                                                           \
+          sts = ippiHistogramGetBufferSize(ipp##D, image.getSize(), nLevels, 1/*nChan*/, 1/*uniform*/, &sizeHistObj, &sizeBuffer);       \
+        }                                                                                                                                \
+        pHistObj = (IppiHistogramSpec*)ippsMalloc_8u( sizeHistObj );                                                                     \
+        pBuffer = (Ipp8u*)ippsMalloc_8u( sizeBuffer );                                                                                   \
+        sts = ippiHistogramUniformInit( ipp##D, lowerLevel, upperLevel, nLevels, 1, pHistObj );                                          \
+                                                                                                                                         \
+        ppLevels[0] = pLevels;                                                                                                           \
+        sts = ippiHistogramGetLevels( pHistObj, ppLevels );                                                                              \
+                                                                                                                                         \
+        if(roiOnly && !image.hasFullROI()){                                                                                              \
+          sts = ippiHistogram_##D##_C1R(image.getROIData(c), image.getLineStep(), image.getROISize(), pHistVec, pHistObj, pBuffer );     \
+        }else{                                                                                                                           \
+          sts = ippiHistogram_##D##_C1R(image.getData(c), image.getLineStep(), image.getSize(), pHistVec, pHistObj, pBuffer );           \
+        }                                                                                                                                \
+        if ( sts != ippStsNoErr )   WARNING_LOG("IPP Error");                                                                            \
+        ippsFree( pHistObj );                                                                                                            \
+        ippsFree( pBuffer );                                                                                                             \
+                                                                                                                                         \
+        int* data = h.data();                                                                                                            \
+        data = (int*)pHistVec;                                                                                                           \
+                                                                                                                                         \
       }
-
 
       COMPUTE_COMPLEX_HISTO_TEMPLATE(8u)
       COMPUTE_COMPLEX_HISTO_TEMPLATE(16s)

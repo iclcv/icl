@@ -152,17 +152,10 @@ namespace icl {
   #ifdef ICL_HAVE_IPP
     private:
 
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-      IppStatus ippiMorphologicalCall (const core::Img<T> *src, core::Img<T> *dst);
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-      IppStatus ippiMorphologicalCall3x3 (const core::Img<T> *src, core::Img<T> *dst);
-
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-      IppStatus ippiMorphologicalBorderReplicateCall (const core::Img<T> *src, core::Img<T> *dst,IppiMorphState *state);
-
+/*
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
       IppStatus ippiMorphologicalBorderCall (const core::Img<T> *src, core::Img<T> *dst, IppiMorphAdvState *advState);
-
+*/
       typedef IppiMorphState ICLMorphState ;
       typedef IppiMorphAdvState ICLMorphAdvState;
   #else
@@ -183,6 +176,10 @@ namespace icl {
       ICLMorphState* m_pState32f;
       ICLMorphAdvState* m_pAdvState8u;
       ICLMorphAdvState* m_pAdvState32f;
+  #ifdef ICL_HAVE_IPP
+      Ipp8u *m_pAdvBuf;
+      Ipp8u *m_pBuf;
+  #endif
       bool m_bMorphState8u;
       bool m_bMorphState32f;
       bool m_bMorphAdvState8u;

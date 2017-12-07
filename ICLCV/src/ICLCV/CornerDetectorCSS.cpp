@@ -148,7 +148,20 @@ namespace icl{
       memcpy(val + radius, data, sizeof(float) * data_length);
       memcpy(val + radius + data_length, data, sizeof(float) * radius);
       float *con = new float[data_length + 2 * radius + mask_length - 1];
-      ippsConv_32f(val, data_length + 2 * radius, mask, mask_length, con);
+      //ippsConv_32f(val, data_length + 2 * radius, mask, mask_length, con);
+
+      IppStatus status=ippStsNoErr;
+      const int src1Len = data_length + 2 * radius, src2Len = mask_length;// dstLen = src1Len+src2Len-1;
+      IppEnum funCfg = (IppEnum)(ippAlgAuto);
+      int bufSize = 0;
+      Ipp8u *pBuffer;
+      status = ippsConvolveGetBufferSize(src1Len, src2Len, ipp32f, funCfg, &bufSize);
+      if(status != ippStsNoErr) WARNING_LOG("IPP Error");
+      pBuffer = ippsMalloc_8u( bufSize );
+      status = ippsConvolve_32f(val, src1Len, mask, src2Len, con, funCfg, pBuffer);
+      if(status != ippStsNoErr) WARNING_LOG("IPP Error");
+      ippsFree( pBuffer );
+
       memcpy(convoluted,con+radius * 2,data_length * sizeof(float));
       delete val;
       delete con;

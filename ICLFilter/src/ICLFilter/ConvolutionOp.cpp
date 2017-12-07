@@ -39,7 +39,15 @@ namespace icl{
   namespace filter{
     namespace{
   #ifdef ICL_HAVE_IPP
-      template<class SrcType, class DstType, typename ippfunc>
+
+  inline IppStatus borderInit_16s(const Ipp16s* pKernel, IppiSize kernelSize, int divisor, IppDataType dataType, int numChannels, IppRoundMode roundMode, IppiFilterBorderSpec* pSpec){
+    return ippiFilterBorderInit_16s(pKernel, kernelSize, divisor, dataType, numChannels, roundMode, pSpec);//devisor only in 16s
+  }
+  inline IppStatus borderInit_32f(const Ipp32f* pKernel, IppiSize kernelSize, int divisor, IppDataType dataType, int numChannels, IppRoundMode roundMode, IppiFilterBorderSpec* pSpec){
+    return ippiFilterBorderInit_32f(pKernel, kernelSize, dataType, numChannels, roundMode, pSpec);
+  }
+
+/*      template<class SrcType, class DstType, typename ippfunc>
       inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func, ConvolutionOp &op){
         func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
       }
@@ -56,7 +64,7 @@ namespace icl{
       inline void ipp_call_filter_float(const Img<ImageType> &src, Img<ImageType> &dst, const float *kernel, int channel, ConvolutionOp &op, ippfunc func){
         func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),
                 dst.getROISize(), kernel, op.getKernel().getSize(), op.getAnchor() );
-      }
+      }*/
   #endif
 
       template<class KernelType, class SrcType, class DstType>
@@ -130,80 +138,226 @@ namespace icl{
       /// define specializations of convolute-template
 
       // note: each specialization is doubled because the kernel-type template parameters is handled in the IPP
-  #define FIXED_SPEC(SD,DD,KT,IPPF)                                                                                                   \
+  #define FIXED_SPEC_M_GAUSSIAN(SD,DD,KT,IPPF,IPPT,MASK)                                                                                                   \
       template<> inline void                                                                                                          \
       convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
-        ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
+        /*ipp_call_fixed(src,dst,c,IPPF,op);*/                                                                                            \
+        IppStatus status = ippStsNoErr; \
+        Ipp32u kernelSize = MASK; \
+        Ipp32f sigma = 0.35f; \
+        Ipp8u *pBuffer = NULL; \
+        IppFilter##IPPF##Spec* pSpec = NULL; \
+        int iTmpBufSize = 0, iSpecSize = 0;  \
+        IppiBorderType borderType = ippBorderRepl; \
+        Ipp8u borderValue = 0; \
+        int numChannels = 1; \
+        status = ippiFilter##IPPF##GetBufferSize(src.getROISize(), kernelSize, ipp32f, \
+          numChannels, &iSpecSize, &iTmpBufSize); \
+        pSpec = (IppFilter##IPPF##Spec *)ippsMalloc_8u(iSpecSize); \
+        pBuffer = ippsMalloc_8u(iTmpBufSize); \
+        status = ippiFilter##IPPF##Init(src.getROISize(), kernelSize, sigma, \
+          borderType, ipp32f, numChannels, pSpec, pBuffer); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), borderValue, pSpec, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer); \
+        ippsFree(pSpec); \
       }                                                                                                                               \
       template<> inline void                                                                                                          \
       convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
-        ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
+        /*ipp_call_fixed(src,dst,c,IPPF,op);*/                                                                                            \
+        IppStatus status = ippStsNoErr; \
+        Ipp32u kernelSize = MASK; \
+        Ipp32f sigma = 0.35f; \
+        Ipp8u *pBuffer = NULL; \
+        IppFilter##IPPF##Spec* pSpec = NULL; \
+        int iTmpBufSize = 0, iSpecSize = 0;  \
+        IppiBorderType borderType = ippBorderRepl; \
+        Ipp8u borderValue = 0; \
+        int numChannels = 1; \
+        status = ippiFilter##IPPF##GetBufferSize(src.getROISize(), kernelSize, ipp32f, \
+          numChannels, &iSpecSize, &iTmpBufSize); \
+        pSpec = (IppFilter##IPPF##Spec *)ippsMalloc_8u(iSpecSize); \
+        pBuffer = ippsMalloc_8u(iTmpBufSize); \
+        status = ippiFilter##IPPF##Init(src.getROISize(), kernelSize, sigma, \
+          borderType, ipp32f, numChannels, pSpec, pBuffer); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), borderValue, pSpec, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer); \
+        ippsFree(pSpec); \
       }
-  #define FIXED_SPEC_M(SD,DD,KT,IPPF,MASK)                                                                                            \
+  #define FIXED_SPEC_SOBEL(SD,DD,KT,IPPF,IPPT)                                                                                                   \
       template<> inline void                                                                                                          \
       convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
-        ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
-      }                                                                                                                               \
+        /*ipp_call_fixed(src,dst,c,IPPF,op);*/                                                                                            \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; /*| ippBorderInMemTop | ippBorderInMemRight;*/ \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), ippMskSize3x3, ipp##SD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), ippMskSize3x3, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer); \
+      }                                                                                                                                \
       template<> inline void                                                                                                          \
       convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
-        ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
+        /*ipp_call_fixed(src,dst,c,IPPF,op);*/                                                                                            \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; /* | ippBorderInMemTop | ippBorderInMemRight;*/ \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), ippMskSize3x3, ipp##SD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), ippMskSize3x3, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer);                                                                                                                               \
       }
-  #define CONV_SPEC(KD,ID,IPPF)                                                                                                           \
+  #define FIXED_SPEC_M(SD,DD,KT,IPPF,IPPT,MASK)                                                                                                   \
+      template<> inline void                                                                                                          \
+      convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), MASK, ipp##SD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), MASK, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer); \
+      }                                                                                                                                \
+      template<> inline void                                                                                                          \
+      convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), MASK, ipp##SD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), MASK, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer);                                                                                                                               \
+      }
+  #define FIXED_SPEC_M_PRECONV(SD,DD,KT,IPPF,IPPT,MASK)                                                                                    \
+      template<> inline void                                                                                                          \
+      convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), MASK, ipp##DD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.as16s()->getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), MASK, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer); \
+      }                                                                                                                                \
+      template<> inline void                                                                                                          \
+      convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
+        Ipp8u *pBuffer; \
+        IppiBorderType borderType = ippBorderRepl; \
+        int bufferSize; \
+        IppStatus status = ippStsNoErr; \
+        ippiFilter##IPPF##BorderGetBufferSize(src.getROISize(), MASK, ipp##DD, ipp##DD, 1, &bufferSize); \
+        pBuffer = ippsMalloc_8u(bufferSize); \
+        status = ippiFilter##IPPF##Border_##IPPT(src.as16s()->getROIData(c,op.getROIOffset()) + src.getLineStep(), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), \
+          src.getROISize(), MASK, borderType, 0, pBuffer); \
+        if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+        ippsFree(pBuffer);                                                                                                                               \
+      }
+  #define CONV_SPEC(KD,ID,KDD)                                                                                                     \
       template<> inline void                                                                                                              \
       convolute<KD,icl##ID,icl##ID,ConvolutionKernel::custom>(const Img##ID &src,Img##ID &dst,const KD* kernel,ConvolutionOp& op, int c){ \
-        ipp_call_filter_##KD(src,dst,kernel,c,op,IPPF);                                                                                   \
+        IppStatus status = ippStsNoErr; \
+	      Ipp8u *pBuffer = NULL; \
+	      IppiFilterBorderSpec* pSpec = NULL; \
+	      int iTmpBufSize = 0, iSpecSize = 0; \
+	      IppiBorderType borderType = ippBorderRepl; \
+	      Ipp##ID borderValue = 0; \
+	      int numChannels = 1; \
+	      status = ippiFilterBorderGetSize(op.getKernel().getSize(), src.getROISize(), ipp##ID, ipp##KDD/*KERNELTYPE*/, numChannels, &iSpecSize, &iTmpBufSize); \
+	      pSpec = (IppiFilterBorderSpec *)ippsMalloc_8u(iSpecSize); \
+	      pBuffer = ippsMalloc_8u(iTmpBufSize); \
+        status = borderInit_##KDD((const Ipp##KDD *)kernel, op.getKernel().getSize()/*KERNELSIZE*/, 4, ipp##ID, numChannels, ippRndNear, pSpec); \
+	      status = ippiFilterBorder_##ID##_C1R(src.getROIData(c,op.getROIOffset()), src.getLineStep(), dst.getROIData(c), dst.getLineStep(), src.getROISize(), borderType, &borderValue, pSpec, pBuffer); \
+	      if(status!=ippStsNoErr){ \
+          WARNING_LOG("IPP Error"); \
+        } \
+	      ippsFree(pBuffer); \
+        ippsFree(pSpec); \
+        /*ipp_call_filter_##KD(src,dst,kernel,c,op,IPPF);*/                                                                                   \
       }
 
       // fixed sobel y filters
-      FIXED_SPEC(8u,8u,sobelY3x3,ippiFilterSobelHoriz_8u_C1R);
-
-
-      FIXED_SPEC(16s,16s,sobelY3x3,ippiFilterSobelHoriz_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelY3x3,ippiFilterSobelHoriz_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelY3x3,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelY5x5,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelY5x5,ippiFilterSobelHorizMask_32f_C1R,ippMskSize5x5);
+      //FIXED_SPEC_SOBEL(8u,16s,sobelY3x3,SobelHoriz,8u16s_C1R);//ippiFilterSobelHorizBorder_8u16s_C1R); //No 8u to 8u exist
+      FIXED_SPEC_SOBEL(16s,16s,sobelY3x3,SobelHoriz,16s_C1R);//ippiFilterSobelHorizBorder_16s_C1R);
+      FIXED_SPEC_SOBEL(32f,32f,sobelY3x3,SobelHoriz,32f_C1R);//ippiFilterSobelHorizBorder_32f_C1R);
+      FIXED_SPEC_M(8u,16s,sobelY3x3,SobelHoriz,8u16s_C1R,ippMskSize3x3);
+      FIXED_SPEC_M(8u,16s,sobelY5x5,SobelHoriz,8u16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(32f,32f,sobelY5x5,SobelHoriz,32f_C1R,ippMskSize5x5);
 
       // fixed sobel x filters
-      FIXED_SPEC(8u,8u,sobelX3x3,ippiFilterSobelVert_8u_C1R);
-      FIXED_SPEC(16s,16s,sobelX3x3,ippiFilterSobelVert_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelX3x3,ippiFilterSobelVert_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelX3x3,ippiFilterSobelVert_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelX5x5,ippiFilterSobelVert_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelX5x5,ippiFilterSobelVertMask_32f_C1R,ippMskSize5x5);
+      //FIXED_SPEC_SOBEL(8u,16s,sobelX3x3,SobelVert,8u16s_C1R);//ippiFilterSobelVertBorder_8u16s_C1R);
+      FIXED_SPEC_SOBEL(16s,16s,sobelX3x3,SobelVert,16s_C1R);//ippiFilterSobelVertBorder_16s_C1R);
+      FIXED_SPEC_SOBEL(32f,32f,sobelX3x3,SobelVert,32f_C1R);//ippiFilterSobelVertBorder_32f_C1R);
+      FIXED_SPEC_M(8u,16s,sobelX3x3,SobelVert,8u16s_C1R,ippMskSize3x3);
+      FIXED_SPEC_M(8u,16s,sobelX5x5,SobelVert,8u16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(32f,32f,sobelX5x5,SobelVert,32f_C1R,ippMskSize5x5);
 
 
       // fixed laplace filters
-      FIXED_SPEC_M(8u,8u,laplace3x3,ippiFilterLaplace_8u_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(16s,16s,laplace3x3,ippiFilterLaplace_16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(32f,32f,laplace3x3,ippiFilterLaplace_32f_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,laplace3x3,ippiFilterLaplace_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,8u,laplace5x5,ippiFilterLaplace_8u_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(16s,16s,laplace5x5,ippiFilterLaplace_16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,laplace5x5,ippiFilterLaplace_32f_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(8u,16s,laplace5x5,ippiFilterLaplace_8u16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(8u,8u,laplace3x3,Laplace,8u_C1R,ippMskSize3x3);
+      FIXED_SPEC_M(16s,16s,laplace3x3,Laplace,16s_C1R,ippMskSize3x3);//ippiFilterLaplaceBorder_16s_C1R
+      FIXED_SPEC_M(32f,32f,laplace3x3,Laplace,32f_C1R,ippMskSize3x3);
+      FIXED_SPEC_M_PRECONV(8u,16s,laplace3x3,Laplace,16s_C1R,ippMskSize3x3);//8u16s no longer exist
+      FIXED_SPEC_M(8u,8u,laplace5x5,Laplace,8u_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(16s,16s,laplace5x5,Laplace,16s_C1R,ippMskSize5x5);
+      FIXED_SPEC_M(32f,32f,laplace5x5,Laplace,32f_C1R,ippMskSize5x5);
+      FIXED_SPEC_M_PRECONV(8u,16s,laplace5x5,Laplace,16s_C1R,ippMskSize5x5);
 
 
       // fixed gaussian filters
-      FIXED_SPEC_M(8u,8u,gauss3x3,ippiFilterGauss_8u_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(16s,16s,gauss3x3,ippiFilterGauss_16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(32f,32f,gauss3x3,ippiFilterGauss_32f_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,8u,gauss5x5,ippiFilterGauss_8u_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(16s,16s,gauss5x5,ippiFilterGauss_16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,gauss5x5,ippiFilterGauss_32f_C1R,ippMskSize5x5);
+      FIXED_SPEC_M_GAUSSIAN(8u,8u,gauss3x3,Gaussian,8u_C1R,3);//ippMskSize3x3);
+      FIXED_SPEC_M_GAUSSIAN(16s,16s,gauss3x3,Gaussian,16s_C1R,3);//ippMskSize3x3);
+      FIXED_SPEC_M_GAUSSIAN(32f,32f,gauss3x3,Gaussian,32f_C1R,3);//ippMskSize3x3);
+      FIXED_SPEC_M_GAUSSIAN(8u,8u,gauss5x5,Gaussian,8u_C1R,5);//ippMskSize5x5);
+      FIXED_SPEC_M_GAUSSIAN(16s,16s,gauss5x5,Gaussian,16s_C1R,5);//ippMskSize5x5);
+      FIXED_SPEC_M_GAUSSIAN(32f,32f,gauss5x5,Gaussian,32f_C1R,5);//ippMskSize5x5);
 
 
 
-      CONV_SPEC(int,8u,ippiFilter_8u_C1R);
-      CONV_SPEC(int,16s,ippiFilter_16s_C1R);
-      CONV_SPEC(float,32f,ippiFilter_32f_C1R);
+      CONV_SPEC(int,8u,16s);
+      CONV_SPEC(int,16s,16s);
+      CONV_SPEC(float,32f,32f);
 
+      CONV_SPEC(float,8u,32f);
+      CONV_SPEC(float,16s,32f);
 
-      CONV_SPEC(float,8u,ippiFilter32f_8u_C1R);
-      CONV_SPEC(float,16s,ippiFilter32f_16s_C1R);
-
-  #undef FIXED_SPEC
+  #undef FIXED_SPEC_SOBEL
+  #undef FIXED_SPEC_M_GAUSSIAN
   #undef FIXED_SPEC_M
+  #undef FIXED_SPEC_M_PRECONV
   #undef CONV_SPEC
 
   #endif //ICL_HAVE_IPP

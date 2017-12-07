@@ -37,6 +37,7 @@
 #ifdef ICL_HAVE_MKL
   #include "mkl_types.h"
   #include "mkl_cblas.h"
+  #include "mkl_vml.h"
 #endif
 
 
@@ -832,8 +833,8 @@ namespace icl{
     }
 
 
-  #ifdef ICL_HAVE_IPP
-    template<class T, typename func>
+  #ifdef ICL_HAVE_MKL
+    /*template<class T, typename func>
     DynMatrix<T> &ipp_func_t_call(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
       IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),src1.cols(),src1.rows(),
                            src2.begin(),src2.stride1(),src2.stride2(),src2.cols(),src2.rows(),
@@ -844,7 +845,7 @@ namespace icl{
       return dst;
     }
 
-  template<class T, typename func>
+    template<class T, typename func>
     DynMatrix<T> &ipp_func_t_call_2(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f)throw (IncompatibleMatrixDimensionException){
       IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),
                            src2.begin(),src2.stride1(),src2.stride2(),
@@ -854,8 +855,7 @@ namespace icl{
         throw IncompatibleMatrixDimensionException(ippGetStatusString(status));
       }
       return dst;
-    }
-
+    }*/
 
     template<> ICLMath_API DynMatrix<float> &matrix_add_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef)
       throw (IncompatibleMatrixDimensionException){
@@ -863,19 +863,23 @@ namespace icl{
         case NONE_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_mm_32f);
+          vsAdd(src1.rows()*src1.cols(),src1.begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC1_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src2.cols(),src2.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tm_32f);
+          vsAdd(src1.rows()*src1.cols(),src1.transp().begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC2_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src2,src1,dst,ippmAdd_tm_32f);
+          vsAdd(src1.rows()*src1.cols(),src1.begin(),src2.transp().begin(),dst.begin());
+          return dst;
         case BOTH_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.rows(),src1.cols());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tt_32f);
+          vsAdd(src1.rows()*src1.cols(),src1.transp().begin(),src2.transp().begin(),dst.begin());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -886,19 +890,23 @@ namespace icl{
         case NONE_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_mm_64f);
+          vdAdd(src1.rows()*src1.cols(),src1.begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC1_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src2.cols(),src2.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tm_64f);
+          vdAdd(src1.rows()*src1.cols(),src1.transp().begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC2_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src2,src1,dst,ippmAdd_tm_64f);
+          vdAdd(src1.rows()*src1.cols(),src1.begin(),src2.transp().begin(),dst.begin());
+          return dst;
         case BOTH_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.rows(),src1.cols());
-          return ipp_func_t_call_2(src1,src2,dst,ippmAdd_tt_64f);
+          vdAdd(src1.rows()*src1.cols(),src1.transp().begin(),src2.transp().begin(),dst.begin());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -910,19 +918,23 @@ namespace icl{
         case NONE_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_mm_32f);
+          vsSub(src1.rows()*src1.cols(),src1.begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC1_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src2.cols(),src2.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_tm_32f);
+          vsSub(src1.rows()*src1.cols(),src1.transp().begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC2_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src2,src1,dst,ippmSub_tm_32f);
+          vsSub(src1.rows()*src1.cols(),src1.begin(),src2.transp().begin(),dst.begin());
+          return dst;
         case BOTH_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.rows(),src1.cols());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_tt_32f);
+          vsSub(src1.rows()*src1.cols(),src1.transp().begin(),src2.transp().begin(),dst.begin());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -933,19 +945,23 @@ namespace icl{
         case NONE_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_mm_64f);
+          vdSub(src1.rows()*src1.cols(),src1.begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC1_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src2.cols(),src2.rows());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_tm_64f);
+          vdSub(src1.rows()*src1.cols(),src1.transp().begin(),src2.begin(),dst.begin());
+          return dst;
         case SRC2_T:
           CHECK_DIM_T(src1,src2,dst);
           dst.setBounds(src1.cols(),src1.rows());
-          return ipp_func_t_call_2(src2,src1,dst,ippmSub_tm_64f);
+          vdSub(src1.rows()*src1.cols(),src1.begin(),src2.transp().begin(),dst.begin());
+          return dst;
         case BOTH_T:
           CHECK_DIM(src1,src2,dst);
           dst.setBounds(src1.rows(),src1.cols());
-          return ipp_func_t_call_2(src1,src2,dst,ippmSub_tt_64f);
+          vdSub(src1.rows()*src1.cols(),src1.transp().begin(),src2.transp().begin(),dst.begin());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -958,19 +974,27 @@ namespace icl{
         case NONE_T:
           CHECK_DIM_CR(src1,src2,dst);
           dst.setBounds(src2.cols(),src1.rows());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_mm_32f);
+          cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
+          return dst;
         case SRC1_T:
           CHECK_DIM_RR(src1,src2,dst);
           dst.setBounds(src2.cols(),src1.cols());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_tm_32f);
+          cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
+          return dst;
         case SRC2_T:
           CHECK_DIM_CC(src1,src2,dst);
           dst.setBounds(src2.rows(),src1.rows());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_mt_32f);
+          cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
+          return dst;
         case BOTH_T:
           CHECK_DIM_RC(src1,src2,dst);
           dst.setBounds(src2.rows(),src1.cols());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_tt_32f);
+          cblas_sgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -982,19 +1006,27 @@ namespace icl{
         case NONE_T:
           CHECK_DIM_CR(src1,src2,dst);
           dst.setBounds(src2.cols(),src1.rows());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_mm_64f);
+          cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
+          return dst;
         case SRC1_T:
           CHECK_DIM_RR(src1,src2,dst);
           dst.setBounds(src2.cols(),src1.cols());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_tm_64f);
+          cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
+          return dst;
         case SRC2_T:
           CHECK_DIM_CC(src1,src2,dst);
           dst.setBounds(src2.rows(),src1.rows());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_mt_64f);
+          cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
+          return dst;
         case BOTH_T:
           CHECK_DIM_RC(src1,src2,dst);
           dst.setBounds(src2.rows(),src1.cols());
-          return ipp_func_t_call(src1,src2,dst,ippmMul_tt_64f);
+          cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.cols(),
+                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
+          return dst;
         default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
       }
       return dst;
@@ -1018,7 +1050,7 @@ namespace icl{
     template ICLMath_API DynMatrix<float> &matrix_sub_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int)
       throw (IncompatibleMatrixDimensionException);
 
-  #endif // ICL_HAVE_IPP
+  #endif // ICL_HAVE_MKL
 
 
     // optimized specialization only if MKL was found

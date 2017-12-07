@@ -618,32 +618,40 @@ namespace icl{
       delete [] pvalues;
     }
 
-  #ifdef ICL_HAVE_IPP
+  #ifdef ICL_HAVE_MKL
     template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
-      const int n = a.cols();
+      //Two alternatives: (SSYTRD + SORGTR + SSTEQR) for QR or SSYEVD for DnC
+      eigenvectors=a;//copy input to eigenvectors. MKL replaces the input
+      int n = a.rows();
+      int workBufferSize = 2*n*n+6*n+1;
+      std::vector<float> workBuffer(workBufferSize,0);
+      int iworkBufferSize = 5*n+3;
+      std::vector<int> iworkBuffer(workBufferSize,0);
+      int sts=-1;
+      char jobz='V';
+      char uplo='L';
+      ssyevd(&jobz, &uplo, &n, (float*)eigenvectors.begin(), &n, eigenvalues.begin(), &workBuffer[0], &workBufferSize, &iworkBuffer[0], &iworkBufferSize, &sts);
 
-      icl32f * useBuffer = buffer ? buffer : new icl32f[n*n];
-      IppStatus sts = ippmEigenValuesVectorsSym_m_32f (a.begin(), n*sizeof(icl32f), sizeof(icl32f), useBuffer,
-                                                       eigenvectors.begin(), n*sizeof(icl32f), sizeof(icl32f),
-                                                       eigenvalues.begin(),n);
-      if(!buffer) delete [] useBuffer;
-
-      if(sts != ippStsNoErr){
-        throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
+      if(sts != 0){
+        throw ICLException(std::string("MKL-Error in ") + __FUNCTION__ + "\"" + str(sts) +"\"");
       }
     }
     template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl64f> &a, DynMatrix<icl64f> &eigenvectors, DynMatrix<icl64f> &eigenvalues, icl64f* buffer){
-      const int n = a.cols();
-      icl64f * useBuffer = buffer ? buffer : new icl64f[n*n];
-      IppStatus sts = ippmEigenValuesVectorsSym_m_64f (a.begin(), n*sizeof(icl64f), sizeof(icl64f), useBuffer,
-                                                       eigenvectors.begin(), n*sizeof(icl64f), sizeof(icl64f),
-                                                       eigenvalues.begin(),n);
-      if(!buffer) delete [] useBuffer;
+      eigenvectors=a;//
+      int n = a.rows();
+      int workBufferSize = 2*n*n+6*n+1;
+      std::vector<double> workBuffer(workBufferSize,0);
+      int iworkBufferSize = 5*n+3;
+      std::vector<int> iworkBuffer(workBufferSize,0);
+      int sts=-1;
+      char jobz='V';
+      char uplo='L';
+      dsyevd(&jobz, &uplo, &n, (double*)eigenvectors.begin(), &n, eigenvalues.begin(), &workBuffer[0], &workBufferSize, &iworkBuffer[0], &iworkBufferSize, &sts);
 
-      if(sts != ippStsNoErr){
-        throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
+      if(sts != 0){
+        throw ICLException(std::string("MKL-Error in ") + __FUNCTION__ + "\"" + str(sts) +"\"");
       }
     }
   #endif
@@ -664,45 +672,52 @@ namespace icl{
     }
 
 
-#ifdef ICL_HAVE_IPP
-  #define DYN_MATRIX_INV(T, ippFunc) \
+#ifdef ICL_HAVE_MKL
+  #define DYN_MATRIX_INV(T, mklFunc1, mklFunc2) \
     template<> ICLMath_API DynMatrix<T> DynMatrix<T>::inv() const throw (InvalidMatrixDimensionException,SingularMatrixException){ \
       if(this->cols() != this->rows()){ \
         throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices"); \
       } \
-      unsigned int wh = this->cols(); \
+      int wh = this->cols(); \
       DynMatrix<T> d(wh, wh, 0.0); \
-      std::vector<T> buffer(wh*wh + wh); \
-      IppStatus st = ippFunc(this->data(), wh*sizeof(T), sizeof(T), \
-                             buffer.data(), \
-                             d.data(), wh*sizeof(T), sizeof(T), \
-                             wh); \
-      if(st != ippStsNoErr){ \
+      d=*this; \
+      std::vector<int> ipiv(wh,0); \
+      std::vector<T> work(wh,0); \
+      int st=-1; \
+      mklFunc1( &wh, &wh, (T*)d.begin(), &wh, &ipiv[0], &st ); \
+      if(st != 0){ \
         throw SingularMatrixException("matrix is too singular"); \
       } \
+      mklFunc2( &wh, (T*)d.begin(), &wh, &ipiv[0], &work[0], &wh, &st ); \
       return d; \
     }
 
-  #define DYN_MATRIX_DET(T, ippFunc) \
+  #define DYN_MATRIX_DET(T, mklFunc) \
     template<> ICLMath_API T DynMatrix<T>::det() const throw (InvalidMatrixDimensionException){ \
       if(this->cols() != this->rows()){ \
         throw InvalidMatrixDimensionException("matrix determinant can only be calculated on square matrices"); \
       } \
-      unsigned int wh = this->cols(); \
-      std::vector<T> buffer(wh*wh+wh); \
-      T det(0); \
-      IppStatus st = ippFunc(this->data(),wh*sizeof(T),sizeof(T), \
-                             wh,buffer.data(),&det); \
-      if(st != ippStsNoErr){ \
+      int wh = this->cols(); \
+      DynMatrix<T> d(wh, wh, 0.0); \
+      d=*this; \
+      std::vector<int> ipiv(wh,0); \
+      std::vector<T> work(wh,0); \
+      int st=-1; \
+      mklFunc( &wh, &wh, (T*)d.begin(), &wh, &ipiv[0], &st ); \
+      if(st != 0){ \
         ERROR_LOG("matrix determinant could not be calculated"); \
+      } \
+      T det(0); \
+      for(int i=0; i<wh; i++){ \
+        det+=d(i,i); \
       } \
       return det; \
     }
 
-    DYN_MATRIX_INV(float, ippmInvert_m_32f);
-    DYN_MATRIX_INV(double, ippmInvert_m_64f);
-    DYN_MATRIX_DET(float, ippmDet_m_32f);
-    DYN_MATRIX_DET(double, ippmDet_m_64f);
+    DYN_MATRIX_INV(float, sgetrf, sgetri);
+    DYN_MATRIX_INV(double, dgetrf, dgetri);
+    DYN_MATRIX_DET(float, sgetrf);
+    DYN_MATRIX_DET(double, dgetrf);
 
     #undef DYN_MATRIX_INV
     #undef DYN_MATRIX_DET

@@ -46,7 +46,7 @@
 #include <cmath>
 
 #ifdef ICL_HAVE_IPP
-#include <ippm.h>
+//#include <ippm.h>
 #endif
 
 namespace icl{
@@ -1060,8 +1060,9 @@ namespace icl{
     }
     /** \endcond */
 
-  #ifdef ICL_HAVE_IPP
-  #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
+
+  #ifdef ICL_HAVE_MKL
+  #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,MKLSUFFIX) \
     template<> template<>                                                                \
     inline void                                                                          \
     FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS>::mult                                         \
@@ -1069,19 +1070,20 @@ namespace icl{
           const FixedMatrix<TYPE,RIGHT_COLS,LEFT_COLS> &m,                               \
           FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS> &dst                                    \
        ) const {                                                                         \
-      static const unsigned int ST=sizeof(TYPE);                                         \
-      ippmMul_mm_##IPPSUFFIX(data(),LEFT_COLS*ST,ST,LEFT_COLS,LEFT_ROWS,                 \
-                             m.data(),RIGHT_COLS*ST,ST,RIGHT_COLS,LEFT_COLS,             \
-                             dst.data(),RIGHT_COLS*ST,ST);                               \
+      cblas_##MKLSUFFIX##gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,                 \
+                 rows(),RIGHT_COLS,LEFT_COLS,                                            \
+                 1.0, data(), LEFT_COLS,                                                 \
+                 m.data(), RIGHT_COLS,                                                   \
+                 0.0, dst.data(), RIGHT_COLS);                                           \
     }
 
-    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,float,32f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,float,32f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,float,32f);
+    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,float,s);
+    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,float,s);
+    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,float,s);
 
-    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,double,64f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,double,64f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,double,64f);
+    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,double,d);
+    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,double,d);
+    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,double,d);
   #undef OPTIMIZED_MATRIX_MULTIPLICATION
 
 

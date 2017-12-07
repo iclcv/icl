@@ -124,19 +124,42 @@ namespace icl{
       }
       for(int i=0;i<src.getChannels();i++){
   #ifdef ICL_HAVE_IPP
+        IppStatus status=ippStsNoErr;
+        IppEnum funCfg = (IppEnum)(ippiROIValid|ippiNorm);
+        Ipp8u *pBuffer;
+        int bufSize;
         if(useCrossCorrCoeffInsteadOfSqrDistance){
-          ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
+           status = ippiCrossCorrNormGetBufferSize(src.getROISize(), templ.getROISize(), funCfg, &bufSize);
+           if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+           pBuffer = ippsMalloc_8u( bufSize );
+           status = ippiCrossCorrNorm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
+                                                    src.getROISize(), templ.getROIData(i),
+                                                    templ.getLineStep(),templ.getROISize(),
+                                                    useBuffer->getROIData(i),
+                                                    useBuffer->getLineStep(), -8, funCfg, pBuffer);
+           if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+          /*ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
                                             src.getROISize(), templ.getROIData(i),
                                             templ.getLineStep(),templ.getROISize(),
                                             useBuffer->getROIData(i),
-                                            useBuffer->getLineStep(),-8);
+                                            useBuffer->getLineStep(),-8);*/
         }else{
-          ippiSqrDistanceValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
+          status = ippiSqrDistanceNormGetBufferSize(src.getROISize(), templ.getROISize(), funCfg, &bufSize);
+          if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+          pBuffer = ippsMalloc_8u( bufSize );
+          status = ippiSqrDistanceNorm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
+                                                    src.getROISize(), templ.getROIData(i),
+                                                    templ.getLineStep(),templ.getROISize(),
+                                                    useBuffer->getROIData(i),
+                                                    useBuffer->getLineStep(), -8, funCfg, pBuffer);
+          if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+          /*ippiSqrDistanceValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
                                               src.getROISize(), templ.getROIData(i),
                                               templ.getLineStep(),templ.getROISize(),
                                               useBuffer->getROIData(i),
-                                              useBuffer->getLineStep(),-8);
+                                              useBuffer->getLineStep(),-8);*/
         }
+        ippsFree( pBuffer );
   #else
 
 

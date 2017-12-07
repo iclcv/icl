@@ -860,26 +860,53 @@ namespace icl{
 	FFT_DEBUG("using ipp fft");
 	IppiFFTSpec_R_32f *spec = 0;
 	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_R_32f(&spec,log2(src.cols()),log2(src.rows()),
-                                                  IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
-	if(status != ippStsOk){
+	//IppStatus status = ippiFFTInitAlloc_R_32f(&spec,log2(src.cols()),log2(src.rows()),
+  //                                                IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
+  int pSizeSpec;
+  int pSizeInit;
+  int pSizeBuf;
+	IppStatus status = ippiFFTGetSize_R_32f(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, &pSizeSpec, &pSizeInit, &pSizeBuf);
+	if(status != ippStsNoErr){
           std::string msg = "Error in IPP call!:";
           msg +=ippGetStatusString(status);
           throw FFTException(msg);
 	}
+
+	Ipp8u *memInit = 0;
+	Ipp8u *memBuffer = 0;
+	spec = (IppiFFTSpec_R_32f*) ippMalloc(pSizeSpec);
+	if(pSizeInit>0){
+	  memInit = (Ipp8u*) ippMalloc(pSizeInit);
+	}
+	if(pSizeBuf>0){
+	  memBuffer = (Ipp8u*) ippMalloc(pSizeBuf);
+	}
+
+	status = ippiFFTInit_R_32f(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, spec, memInit);
+
+	if(status != ippStsNoErr){
+          std::string msg = "Error in IPP call!:";
+          msg +=ippGetStatusString(status);
+          throw FFTException(msg);
+	}
+
+	if(pSizeInit>0){
+	  ippFree(memInit);
+	}
+
 	int dim = src.cols()*src.rows();
 
-	int minBufSize = 0;
-	ippiFFTGetBufSize_R_32f(spec,&minBufSize);
+	//int minBufSize = 0;
+	//ippiFFTGetBufSize_R_32f(spec,&minBufSize);
 
-	int currBufSize  = buf.cols()*buf.rows()*sizeof(icl32c)*sizeof(icl32c);
-	Ipp8u *buffer=0;
-	if(currBufSize >= minBufSize){
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}else{
-          buf.setBounds(src.cols(),src.rows());
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}
+	//int currBufSize  = buf.cols()*buf.rows()*sizeof(icl32c)*sizeof(icl32c);
+	//Ipp8u *buffer=0;
+	//if(currBufSize >= minBufSize){
+  //        buffer = reinterpret_cast<Ipp8u*>(buf.data());
+	//}else{
+  //        buf.setBounds(src.cols(),src.rows());
+  //        buffer = reinterpret_cast<Ipp8u*>(buf.data());
+	//}
 	//needed for type conversation
 	Ipp32f *srcbuf= new Ipp32f[dim];
 	for(int i=0;i<dim;++i){
@@ -888,18 +915,23 @@ namespace icl{
 	Ipp32f *dstbuf = new Ipp32f[dim];
 	int srcStep = src.cols()*sizeof(Ipp32f);
 	status = ippiFFTFwd_RToPack_32f_C1R(srcbuf, srcStep,
-                                            dstbuf, srcStep, spec,buffer);
-	if(status != ippStsOk){
+                                            dstbuf, srcStep, spec, memBuffer);
+	if(status != ippStsNoErr){
           std::string msg = "Error in IPP call!:";
           msg +=ippGetStatusString(status);
           throw FFTException(msg);
 	}
-	status = ippiFFTFree_R_32f(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
+
+	if(pSizeBuf>0){
+	  ippFree(memBuffer);
 	}
+	ippFree(spec);
+	//status = ippiFFTFree_R_32f(spec);
+	//if(status != ippStsOk){
+  //        std::string msg = "Error in IPP call!:";
+  //        msg +=ippGetStatusString(status);
+  //        throw FFTException(msg);
+  //}
 	IppiSize size;
 	size.width = src.cols();
 	size.height = src.rows();
@@ -938,39 +970,53 @@ namespace icl{
 
 	IppiFFTSpec_C_32fc *spec = 0;
 	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
-                                                   IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
-	if(status != ippStsOk){
+
+	int pSizeSpec;
+  int pSizeInit;
+  int pSizeBuf;
+	IppStatus status = ippiFFTGetSize_C_32fc(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, &pSizeSpec, &pSizeInit, &pSizeBuf);
+	if(status != ippStsNoErr){
           std::string msg = "Error in IPP call!:";
           msg +=ippGetStatusString(status);
           throw FFTException(msg);
 	}
-	int minBufSize = 0;
-	ippiFFTGetBufSize_C_32fc(spec,&minBufSize);
 
-	int currBufSize  = buf.cols()*buf.rows()*sizeof(icl32c)*sizeof(icl32c);
-	Ipp8u *buffer=0;
-	if(currBufSize >= minBufSize){
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}else{
-          buf.setBounds(src.cols(),src.rows());
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
+	Ipp8u *memInit = 0;
+	Ipp8u *memBuffer = 0;
+	spec = (IppiFFTSpec_C_32fc*) ippMalloc(pSizeSpec);
+	if(pSizeInit>0){
+	  memInit = (Ipp8u*) ippMalloc(pSizeInit);
+	}
+	if(pSizeBuf>0){
+	  memBuffer = (Ipp8u*) ippMalloc(pSizeBuf);
+	}
+
+	status = ippiFFTInit_C_32fc(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, spec, memInit);
+
+	if(status != ippStsNoErr){
+          std::string msg = "Error in IPP call!:";
+          msg +=ippGetStatusString(status);
+          throw FFTException(msg);
+	}
+
+	if(pSizeInit>0){
+	  ippFree(memInit);
 	}
 
 	int srcStep = src.cols()*sizeof(Ipp32fc);
 	status = ippiFFTFwd_CToC_32fc_C1R(reinterpret_cast<const Ipp32fc*>(src.data()), srcStep,
-                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, buffer);
-	if(status != ippStsOk){
+                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, memBuffer);
+	if(status != ippStsNoErr){
           std::string msg = "Error in IPP call!:";
           msg +=ippGetStatusString(status);
           throw FFTException(msg);
 	}
-	status = ippiFFTFree_C_32fc(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
+
+	if(pSizeBuf>0){
+	  ippFree(memBuffer);
 	}
+	ippFree(spec);
+
 	return dst;
       }
 #endif
@@ -1663,7 +1709,41 @@ namespace icl{
 	int dim = src.cols()*src.rows();
 	IppiFFTSpec_C_32fc *spec = 0;
 	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
+
+	int pSizeSpec;
+  int pSizeInit;
+  int pSizeBuf;
+	IppStatus status = ippiFFTGetSize_C_32fc(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, &pSizeSpec, &pSizeInit, &pSizeBuf);
+	if(status != ippStsNoErr){
+          std::string msg = "Error in IPP call!:";
+          msg +=ippGetStatusString(status);
+          throw FFTException(msg);
+	}
+
+	Ipp8u *memInit = 0;
+	Ipp8u *memBuffer = 0;
+	spec = (IppiFFTSpec_C_32fc*) ippMalloc(pSizeSpec);
+	if(pSizeInit>0){
+	  memInit = (Ipp8u*) ippMalloc(pSizeInit);
+	}
+	if(pSizeBuf>0){
+	  memBuffer = (Ipp8u*) ippMalloc(pSizeBuf);
+	}
+
+	status = ippiFFTInit_C_32fc(log2(src.cols()),log2(src.rows()), IPP_FFT_DIV_INV_BY_N, ippAlgHintNone, spec, memInit);
+
+	if(status != ippStsNoErr){
+          std::string msg = "Error in IPP call!:";
+          msg +=ippGetStatusString(status);
+          throw FFTException(msg);
+	}
+
+	if(pSizeInit>0){
+	  ippFree(memInit);
+	}
+
+
+/*	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
                                                    IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
 	if(status != ippStsOk){
           std::string msg = "Error in IPP call!:";
@@ -1678,7 +1758,7 @@ namespace icl{
           buf.setBounds(src.cols(),src.rows());
 	}
 	buffer = reinterpret_cast<Ipp8u*>(buf.data());
-
+*/
 	Ipp32fc *srcbuf = new Ipp32fc[dim];
 	const T *srcdata = src.data();
 	icl32c t(0,0);
@@ -1689,18 +1769,19 @@ namespace icl{
 	}
 	int srcStep = src.cols()*sizeof(Ipp32fc);
 	status = ippiFFTInv_CToC_32fc_C1R(srcbuf, srcStep,
-                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, buffer);
-	if(status != ippStsOk){
+                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, memBuffer);
+
+	if(status != ippStsNoErr){
           std::string msg = "Error in IPP call!:";
           msg +=ippGetStatusString(status);
           throw FFTException(msg);
 	}
-	status = ippiFFTFree_C_32fc(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
+
+	if(pSizeBuf>0){
+	  ippFree(memBuffer);
 	}
+	ippFree(spec);
+
 	return dst;
       }
 

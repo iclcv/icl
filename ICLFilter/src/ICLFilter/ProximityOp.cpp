@@ -102,7 +102,7 @@ namespace icl {
 
     namespace{
 
-      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
+/*      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
       inline void ippiCall(const Img<T> *src1, const Img<T> *src2, Img32f *dst){
         // {{{ open
         for (int c=src1->getChannels()-1; c >= 0; --c) {
@@ -114,7 +114,7 @@ namespace icl {
         }
       }
       // }}}
-
+*/
       template<class T, ProximityOp::optype ot, ProximityOp::applymode>
       struct ProximityOpTemplate{
         // {{{ open
@@ -152,7 +152,23 @@ namespace icl {
   #define CREATE_TEMPLATE(ICLDEPTH,ICLOT,ICLAM,IPPOT_A,IPPAM,IPPOT_B,IPPDEPTH)                           \
       template<> struct ProximityOpTemplate<icl##ICLDEPTH,ProximityOp::ICLOT,ProximityOp::ICLAM> {       \
         static void apply(const Img<icl##ICLDEPTH> *src1,const Img<icl##ICLDEPTH> *src2, Img32f *dst){   \
-          ippiCall<icl##ICLDEPTH,ippi##IPPOT_A##IPPAM##_##IPPOT_B##_##IPPDEPTH##_C1R>(src1,src2,dst);    \
+          for (int c=src1->getChannels()-1; c >= 0; --c) { \
+            IppStatus status=ippStsNoErr; \
+             IppEnum funCfg = (IppEnum)(ippiROI##IPPAM | ippi##IPPOT_B); \
+             Ipp8u *pBuffer; \
+             int bufSize=0; \
+             status = ippi##IPPOT_A##NormGetBufferSize(src1->getROISize(), src2->getROISize(), funCfg, &bufSize); \
+             if ( status != ippStsNoErr )  WARNING_LOG("IPP Error"); \
+             pBuffer = ippsMalloc_8u( bufSize ); \
+             status = ippi##IPPOT_A##Norm_##IPPDEPTH##_C1R(src1->getROIData (c), src1->getLineStep(), \
+                      src1->getROISize(), \
+                      src2->getROIData (c), src2->getLineStep(), \
+                      src2->getROISize(), \
+                      dst->getROIData (c), dst->getLineStep(), funCfg, pBuffer); \
+             if ( status != ippStsNoErr )  WARNING_LOG("IPP Error");             \
+             ippsFree( pBuffer ); \
+           } \
+          /*ippiCall<icl##ICLDEPTH,ippi##IPPOT_A##IPPAM##_##IPPOT_B##_##IPPDEPTH##_C1R>(src1,src2,dst);*/ \
         }                                                                                                \
       }
 
@@ -167,8 +183,8 @@ namespace icl {
       CREATE_TEMPLATE_ALL_AM(8u,crossCorr,CrossCorr,Norm,8u32f);
       CREATE_TEMPLATE_ALL_AM(32f,crossCorr,CrossCorr,Norm,32f);
 
-      CREATE_TEMPLATE_ALL_AM(8u,crossCorrCoeff,CrossCorr,NormLevel,8u32f);
-      CREATE_TEMPLATE_ALL_AM(32f,crossCorrCoeff,CrossCorr,NormLevel,32f);
+      CREATE_TEMPLATE_ALL_AM(8u,crossCorrCoeff,CrossCorr,NormCoefficient,8u32f);
+      CREATE_TEMPLATE_ALL_AM(32f,crossCorrCoeff,CrossCorr,NormCoefficient,32f);
 
 
   #undef CREATE_TEMPLATE
