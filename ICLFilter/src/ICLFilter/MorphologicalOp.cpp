@@ -402,6 +402,7 @@ namespace icl {
           switch (m_eType){
             case dilate:
               //s=ippiMorphologicalCall<icl8u,ippiDilateBorder_8u_C1R> (src,dst);
+              checkMorphState8u(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiDilateBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -415,6 +416,7 @@ namespace icl {
               break;
             case erode:
               //s=ippiMorphologicalCall<icl8u,ippiErodeBorder_8u_C1R> (src,dst);
+              checkMorphState8u(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiErodeBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -428,6 +430,7 @@ namespace icl {
               break;
             case dilate3x3:
               //s=ippiMorphologicalCall3x3<icl8u,ippiDilateBorder_8u_C1R> (src,dst);
+              checkMorphState8u(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiDilateBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -441,6 +444,7 @@ namespace icl {
               break;
             case erode3x3:
               //s=ippiMorphologicalCall3x3<icl8u,ippiErodeBorder_8u_C1R> (src,dst);
+              checkMorphState8u(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) { //call checkMorphState8u(Size(3,3)) first?
                 IppStatus s = ippiErodeBorder_8u_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -559,6 +563,7 @@ namespace icl {
           switch (m_eType){
             case dilate:
               //s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R> (src,dst);
+              checkMorphState32f(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiDilateBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -572,6 +577,7 @@ namespace icl {
               break;
             case erode:
               //s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R> (src,dst);
+              checkMorphState32f(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiErodeBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -585,6 +591,7 @@ namespace icl {
               break;
             case dilate3x3:
               //s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R> (src,dst);
+              checkMorphState32f(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiDilateBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
@@ -598,6 +605,7 @@ namespace icl {
               break;
             case erode3x3:
               //s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R> (src,dst);
+              checkMorphState32f(src->getROISize());
               for(int c=0; c < src->getChannels(); c++) {
                 IppStatus s = ippiErodeBorder_32f_C1R(src->getROIData (c, this->m_oROIOffset),
                                src->getLineStep(),
