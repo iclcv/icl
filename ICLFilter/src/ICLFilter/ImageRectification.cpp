@@ -375,8 +375,8 @@ namespace icl{
 
       return buffer;
     }
-
-  #ifdef ICL_HAVE_IPP
+//DOES NOT EXIST ANYMORE --> USE SSE2 Version
+/*  #ifdef ICL_HAVE_IPP
 
 
     template<class T, class IppFunc>
@@ -418,7 +418,7 @@ namespace icl{
                                                                const Rect *resultROI, const core::scalemode eScaleMode){
       return apply_image_rectificaion_ipp(validateAndSortPoints,resultROI,advanedAlgorithm,ps,src,resultSize,hom,Q,R,maxTilt,buffer,eScaleMode,ippiWarpPerspectiveBack_32f_C1R);
     }
-  #endif
+  #endif*/
 
 
   #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API ImageRectification<icl##D>;

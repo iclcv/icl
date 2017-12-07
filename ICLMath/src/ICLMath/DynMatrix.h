@@ -1188,6 +1188,7 @@ namespace icl{
       return norm;
     }
 
+/*
 #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
     template<>                                                          \
     inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
@@ -1204,7 +1205,7 @@ namespace icl{
     DYN_MATRIX_MULT_SPECIALIZE(32f)
     DYN_MATRIX_MULT_SPECIALIZE(64f)
 #undef DYN_MATRIX_MULT_SPECIALIZE
-
+*/
 
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
     template<>                                                          \
@@ -1270,6 +1271,37 @@ namespace icl{
     /** \endcond */
 
 #endif // ICL_HAVE_IPP
+
+#ifdef ICL_HAVE_MKL
+    /** \cond */
+    template<>
+    inline DynMatrix<float> &DynMatrix<float>::mult(const DynMatrix<float> &m, DynMatrix<float> &dst) const throw (IncompatibleMatrixDimensionException){
+      if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)");
+      dst.setBounds(m.cols(),rows());
+      cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                 rows(),m.cols(),cols(),
+                 1.0, data(), cols(),
+                 m.data(), m.cols(),
+                 0.0, dst.data(), dst.cols());
+      return dst;
+    }
+
+    template<>
+    inline DynMatrix<double> &DynMatrix<double>::mult(const DynMatrix<double> &m, DynMatrix<double> &dst) const throw (IncompatibleMatrixDimensionException){
+      if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)");
+      dst.setBounds(m.cols(),rows());
+      cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                 rows(),m.cols(),cols(),
+                 1.0, data(), cols(),
+                 m.data(), m.cols(),
+                 0.0, dst.data(), dst.cols());
+      return dst;
+    }
+
+    /** \endcond */
+
+#endif // ICL_HAVE_MKL
+
 
     /// vertical concatenation of matrices
     /** missing elementes are padded with 0 */

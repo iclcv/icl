@@ -919,7 +919,9 @@ namespace icl {
         }else if(maskSize == Size(5,5)){
           ippMedianFixed<icl8u,ippiFilterMedianCross_8u_C1R>(src,dst,roiOffset,5);
         }else{
-          ippMedian<icl8u,ippiFilterMedian_8u_C1R>(src,dst,maskSize,roiOffset,anchor);
+          WARNING_LOG("only 3x3 and 5x5 medianOp supported in IPP implementation");
+          //ippiFilterMedianBorder_8u_C1R implementation possible
+          //ippMedian<icl8u,ippiFilterMedian_8u_C1R>(src,dst,maskSize,roiOffset,anchor);//only 64f_C1R supported
         }
       }
 
@@ -934,7 +936,8 @@ namespace icl {
         }else if(maskSize == Size(5,5)){
           ippMedianFixed<icl16s,ippiFilterMedianCross_16s_C1R>(src,dst,roiOffset,5);
         }else{
-          ippMedian<icl16s,ippiFilterMedian_16s_C1R>(src,dst,maskSize,roiOffset,anchor);
+          WARNING_LOG("only 3x3 and 5x5 medianOp supported in IPP implementation");
+          //ippMedian<icl16s,ippiFilterMedian_16s_C1R>(src,dst,maskSize,roiOffset,anchor);//only 64f_C1R supported
         }
       }
 

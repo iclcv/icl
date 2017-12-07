@@ -1637,6 +1637,45 @@ namespace icl {
                         (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   #else
       int bufSize=0;
+
+      int specSize;
+      int initSize;
+      int nChannel=1;
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeGetSize_8u(srcSize,dstSize,ippLinear, 0, &specSize, &initSize);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeGetSize_8u(srcSize,dstSize,ippNearest, 0, &specSize, &initSize);
+      }
+      Ipp8u *pInitBuf=ippsMalloc_8u(initSize);
+      IppiResizeSpec_32f* pSpec=(IppiResizeSpec_32f*)ippsMalloc_32f(specSize);
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeLinearInit_8u(srcSize, dstSize, pSpec);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeNearestInit_8u(srcSize, dstSize, pSpec);
+      }
+      ippiResizeGetBufferSize_8u(pSpec,dstSize,nChannel,&bufSize);
+      Ipp8u* pBuffer=ippsMalloc_8u(bufSize);
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeLinear_8u_C1R(src->getData(srcC), src->getLineStep(),
+                               dst->getROIData(dstC,dstOffs),dst->getLineStep(),
+                               dstOffs, dstSize,
+                               ippBorderRepl, 0,
+                               pSpec,  pBuffer);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeNearest_8u_C1R(src->getData(srcC), src->getLineStep(),
+                               dst->getROIData(dstC,dstOffs),dst->getLineStep(),
+                               dstOffs, dstSize,
+                               pSpec,  pBuffer);
+      }
+      ippsFree(pInitBuf);
+      ippsFree(pSpec);
+      ippsFree(pBuffer);
+
+      /*
+
       IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
 
       if(s2 != ippStsNoErr){
@@ -1655,7 +1694,7 @@ namespace icl {
                                               fx,fy,tx,ty,(int)eScaleMode,buf.data());
       if(s != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s)));
-      }
+      }*/
   #endif
     }
 
@@ -1686,7 +1725,44 @@ namespace icl {
                          (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
   #else
       int bufSize=0;
-      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+
+      int specSize;
+      int initSize;
+      int nChannel=1;
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeGetSize_32f(srcSize,dstSize,ippLinear, 0, &specSize, &initSize);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeGetSize_32f(srcSize,dstSize,ippNearest, 0, &specSize, &initSize);
+      }
+      Ipp32f *pInitBuf=ippsMalloc_32f(initSize);
+      IppiResizeSpec_32f* pSpec=(IppiResizeSpec_32f*)ippsMalloc_32f(specSize);
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeLinearInit_32f(srcSize, dstSize, pSpec);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeNearestInit_32f(srcSize, dstSize, pSpec);
+      }
+      ippiResizeGetBufferSize_8u(pSpec,dstSize,nChannel,&bufSize);
+      Ipp8u* pBuffer=ippsMalloc_8u(bufSize);
+
+      if(eScaleMode==interpolateLIN){
+        ippiResizeLinear_32f_C1R(src->getData(srcC), src->getLineStep(),
+                               dst->getROIData(dstC,dstOffs),dst->getLineStep(),
+                               dstOffs, dstSize,
+                               ippBorderRepl, 0,
+                               pSpec,  pBuffer);
+      }else if(eScaleMode==interpolateNN){
+        ippiResizeNearest_32f_C1R(src->getData(srcC), src->getLineStep(),
+                               dst->getROIData(dstC,dstOffs),dst->getLineStep(),
+                               dstOffs, dstSize,
+                               pSpec,  pBuffer);
+      }
+      ippsFree(pInitBuf);
+      ippsFree(pSpec);
+      ippsFree(pBuffer);
+
+      /*IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
 
       if(s2 != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s2)));
@@ -1704,7 +1780,7 @@ namespace icl {
                                                fx,fy,tx,ty,(int)eScaleMode ,buf.data());
       if(s != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s)));
-      }
+      }*/
 
   #endif
     }

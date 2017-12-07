@@ -113,8 +113,13 @@ namespace icl{
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
       ICLASSERT_RETURN( n > 0 );
       for(int c= src->getChannels()-1 ; c >= 0 ; --c){
+        Ipp8u *pBuffer = NULL;
+        int pBufferSize;
+        ippiReduceBitsGetBufferSize(ippC1, src->getROISize(), 0, ippDitherNone, &pBufferSize);
+        pBuffer = ippsMalloc_8u(pBufferSize);
         ippiReduceBits_8u_C1R(src->getROIData(c),src->getLineStep(),dst->getROIData(c),dst->getLineStep(),
-                            src->getROISize(),0, ippDitherNone, n);
+                            src->getROISize(),0, ippDitherNone, n, pBuffer);
+        ippsFree(pBuffer);
       }
   #else
       // n = nLevels

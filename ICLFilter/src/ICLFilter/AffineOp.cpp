@@ -107,22 +107,93 @@ namespace icl{
     template<>
     void AffineOp::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
       // {{{ open
-
       for(int c=0; c < poSrc->getChannels(); c++) {
+        IppStatus status = ippStsNoErr;
+        IppiWarpSpec* pSpec = 0;
+        Ipp8u* pInitBuf = 0;
+        int specSize=0, initSize=0, bufSize=0;
+        Ipp8u* pBuffer = 0;
+        const Ipp32u numChannels = 1;//here channel for channel (faster than planar to interleaved)
+        IppiPoint dstOffset = {0,0};
+        IppiBorderType borderType = ippBorderTransp;
+        IppiWarpDirection direction = ippWarpForward;
+        IppiInterpolationType interp;
+        if(m_eInterpolate==interpolateLIN){
+          interp = ippLinear;
+        }else{
+          interp = ippNearest;
+        }
+        status = ippiWarpAffineGetSize(poSrc->getSize(),poDst->getSize(),ipp8u,m_aadT,interp,direction,borderType,&specSize,&initSize);
+        pSpec = (IppiWarpSpec*)ippsMalloc_8u(specSize);
+        pInitBuf = ippsMalloc_8u(initSize);
+        if(m_eInterpolate==interpolateLIN){
+          status = ippiWarpAffineLinearInit(poSrc->getSize(),poDst->getSize(),ipp8u,m_aadT,direction,numChannels,borderType,0,0,pSpec);
+        }else{
+          status = ippiWarpAffineNearestInit(poSrc->getSize(),poDst->getSize(),ipp8u,m_aadT,direction,numChannels,borderType,0,0,pSpec);
+        }
+        ippsFree(pInitBuf);
+        status = ippiWarpGetBufferSize(pSpec,poDst->getSize(),&bufSize);
+        pBuffer = ippsMalloc_8u(bufSize);
+        if(m_eInterpolate==interpolateLIN){
+          status = ippiWarpAffineLinear_8u_C1R(poSrc->asImg<icl8u>()->getData(c),poSrc->getLineStep(),poDst->asImg<icl8u>()->getData(c),poDst->getLineStep(),dstOffset,poDst->getSize(),pSpec,pBuffer);
+        }else{
+          status = ippiWarpAffineNearest_8u_C1R(poSrc->asImg<icl8u>()->getData(c),poSrc->getLineStep(),poDst->asImg<icl8u>()->getData(c),poDst->getLineStep(),dstOffset,poDst->getSize(),pSpec,pBuffer);
+        }
+        if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+        ippsFree(pSpec);
+        ippsFree(pBuffer);
+      }
+      /*for(int c=0; c < poSrc->getChannels(); c++) {
         ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getData (c),
                                poSrc->getSize(), poSrc->getLineStep(),
                                Rect (Point::null, poSrc->getSize()),
                                poDst->asImg<icl8u>()->getData (c),
                                poDst->getLineStep(), poDst->getROI(),
                                m_aadT, m_eInterpolate);
-      }
+      }*/
     }
     // }}}
 
     template<>
     void AffineOp::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
       // {{{ opem
-
+      for(int c=0; c < poSrc->getChannels(); c++) {
+        IppStatus status = ippStsNoErr;
+        IppiWarpSpec* pSpec = 0;
+        Ipp8u* pInitBuf = 0;
+        int specSize=0, initSize=0, bufSize=0;
+        Ipp8u* pBuffer = 0;
+        const Ipp32u numChannels = 1;//here channel for channel (faster than planar to interleaved)
+        IppiPoint dstOffset = {0,0};
+        IppiBorderType borderType = ippBorderTransp;
+        IppiWarpDirection direction = ippWarpForward;
+        IppiInterpolationType interp;
+        if(m_eInterpolate==interpolateLIN){
+          interp = ippLinear;
+        }else{
+          interp = ippNearest;
+        }
+        status = ippiWarpAffineGetSize(poSrc->getSize(),poDst->getSize(),ipp32f,m_aadT,interp,direction,borderType,&specSize,&initSize);
+        pSpec = (IppiWarpSpec*)ippsMalloc_8u(specSize);
+        pInitBuf = ippsMalloc_8u(initSize);
+        if(m_eInterpolate==interpolateLIN){
+          status = ippiWarpAffineLinearInit(poSrc->getSize(),poDst->getSize(),ipp32f,m_aadT,direction,numChannels,borderType,0,0,pSpec);
+        }else{
+          status = ippiWarpAffineNearestInit(poSrc->getSize(),poDst->getSize(),ipp32f,m_aadT,direction,numChannels,borderType,0,0,pSpec);
+        }
+        ippsFree(pInitBuf);
+        status = ippiWarpGetBufferSize(pSpec,poDst->getSize(),&bufSize);
+        pBuffer = ippsMalloc_8u(bufSize);
+        if(m_eInterpolate==interpolateLIN){
+          status = ippiWarpAffineLinear_32f_C1R(poSrc->asImg<icl32f>()->getData(c),poSrc->getLineStep(),poDst->asImg<icl32f>()->getData(c),poDst->getLineStep(),dstOffset,poDst->getSize(),pSpec,pBuffer);
+        }else{
+          status = ippiWarpAffineNearest_32f_C1R(poSrc->asImg<icl32f>()->getData(c),poSrc->getLineStep(),poDst->asImg<icl32f>()->getData(c),poDst->getLineStep(),dstOffset,poDst->getSize(),pSpec,pBuffer);
+        }
+        if ( status != ippStsNoErr )   WARNING_LOG("IPP Error");
+        ippsFree(pSpec);
+        ippsFree(pBuffer);
+      }
+      /*
       for(int c=0; c < poSrc->getChannels(); c++) {
         ippiWarpAffine_32f_C1R (poSrc->asImg<icl32f>()->getData (c),
                                 poSrc->getSize(), poSrc->getLineStep(),
@@ -130,7 +201,8 @@ namespace icl{
                                 poDst->asImg<icl32f>()->getData (c),
                                 poDst->getLineStep(), poDst->getROI(),
                                 m_aadT, m_eInterpolate);
-      }
+
+      }*/
     }
     // }}}
   #endif
