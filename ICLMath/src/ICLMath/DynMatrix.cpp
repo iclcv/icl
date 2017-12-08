@@ -621,7 +621,8 @@ namespace icl{
   #ifdef ICL_HAVE_MKL
     template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
-      //Two alternatives: (SSYTRD + SORGTR + SSTEQR) for QR or SSYEVD for DnC
+      //Two alternatives: (SSYTRD + SORGTR + SSTEQR) for QR or SSYEVD for DnC //BUT ONLY FOR SYMMETRIC MATRICES
+      //Here we need for general matrices: SGEBAL + SGEHRD + SORGHR + SHSEQR + STREVC + SGEBAK
       eigenvectors=a;//copy input to eigenvectors. MKL replaces the input
       int n = a.rows();
       int workBufferSize = 2*n*n+6*n+1;
@@ -707,9 +708,9 @@ namespace icl{
       if(st != 0){ \
         ERROR_LOG("matrix determinant could not be calculated"); \
       } \
-      T det(0); \
+      T det(1); \
       for(int i=0; i<wh; i++){ \
-        det+=d(i,i); \
+        det*=d(i,i); \
       } \
       return det; \
     }
