@@ -215,6 +215,7 @@ OPTION(DISABLE_SSSE3 "Disables SSSE3 support, even if found on the current machi
 OPTION(BUILD_EXAMPLES "Decide if examples shall be build or not" OFF)
 OPTION(BUILD_DEMOS "Decide if demos shall be build or not" OFF)
 OPTION(BUILD_APPS "Decide if applications shall be build or not" OFF)
+OPTION(BUILD_TESTS "Decide whether tests should be build" OFF)
 SET(BUILD_REDIST OFF CACHE STRING "Enable redistribution workflow")
 SET_PROPERTY(CACHE BUILD_REDIST PROPERTY STRINGS OFF "DEB" "WIX")
 
@@ -223,6 +224,12 @@ SET_PROPERTY(CACHE BUILD_REDIST PROPERTY STRINGS OFF "DEB" "WIX")
 IF(NOT BUILD_REDIST STREQUAL OFF)
   ADD_SUBDIRECTORY(packaging)
 ENDIF(NOT BUILD_REDIST STREQUAL OFF)
+
+IF(BUILD_TESTS)
+  find_package(GTEST REQUIRED)
+  enable_testing()
+  add_custom_target(tests)
+ENDIF(BUILD_TESTS)
 
 # ---- Dependency handling ----
 INCLUDE(ICLFindPackage)

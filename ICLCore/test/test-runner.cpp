@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/test/test-image.cpp                            **
+** File   : ICLCore/test/runner.cpp                                **
 ** Module : ICLCore                                                **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Alexander Neumann, Erik Weitnauer                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <gtest/gtest.h>
-
-TEST(Image, dummy){
-	// TODO: implement this
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

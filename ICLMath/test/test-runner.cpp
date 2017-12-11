@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLCore/test/runner.cpp                                **
 ** Module : ICLCore                                                **
-** Authors: Christof Elbrechter, Erik Weitnauer                    **
+** Authors: Christof Elbrechter, Alexander Neumann, Erik Weitnauer                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
