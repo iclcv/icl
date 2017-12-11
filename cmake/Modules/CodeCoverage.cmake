@@ -87,7 +87,7 @@ elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
     message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
 endif()
 
-set(COVERAGE_COMPILER_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
+set(COVERAGE_COMPILER_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage"
     CACHE INTERNAL "")
 
 set(CMAKE_CXX_FLAGS_COVERAGE
@@ -119,7 +119,7 @@ endif() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     link_libraries(gcov)
 else()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 # Defines a target for running and collection code coverage information

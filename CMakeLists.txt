@@ -232,6 +232,7 @@ IF(BUILD_TESTS)
 
   include(CodeCoverage)
   APPEND_COVERAGE_COMPILER_FLAGS()
+  set(COVERAGE_EXCLUDES '/Applications/*' '/usr/*')
   add_custom_target(coverage)
 
   # # In case we want to upload coverage to coveralls at some point
