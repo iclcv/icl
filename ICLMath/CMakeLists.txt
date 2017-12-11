@@ -131,4 +131,8 @@ CREATE_PKGCONFIG(NAME ICLMath
 
 IF(BUILD_TESTS)
   CONFIGURE_GTEST(ICLMath ${CMAKE_CURRENT_SOURCE_DIR})
+  # In case we want to upload to coveralls later
+  # FILE(GLOB TEST_FILES src/ICLMath/*.[cpp,h])
+  # message(STATUS "##*()&**()FUYIYFH ${TEST_FILES}")
+  # coveralls_setup(${TEST_FILES} OFF)
 ENDIF(BUILD_TESTS)
