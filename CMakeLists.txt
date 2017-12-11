@@ -229,6 +229,11 @@ IF(BUILD_TESTS)
   find_package(GTEST REQUIRED)
   enable_testing()
   add_custom_target(tests)
+
+  # include(CodeCoverage)
+  # add_definitions(-fprofile-arcs -ftest-coverage)
+  # SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+  # SET(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
 ENDIF(BUILD_TESTS)
 
 # ---- Dependency handling ----
