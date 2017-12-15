@@ -5,6 +5,10 @@ using icl::math::DynMatrix;
 
 #define DOUBLE_MARGIN 1e-15
 
+double m3x3r0[9] {1, 2, 3,
+                  1, 0, 1,
+                  3, 4, 7 };
+
 double m3x3r1[9] { 0.3987968 ,  0.11602292,  0.88068036,
                    0.36042386,  0.21228021,  0.52000919,
                    0.71980622,  0.79006622,  0.29349811 };
@@ -56,14 +60,34 @@ TEST(DynMatrixTest, AddIdentity) {
 }
 
 TEST(DynMatrixTest, Create3x3) {
-  DynMatrix<double> d = DynMatrix<double>(3, 3, m3x3r1);
+  DynMatrix<double> d(3, 3, m3x3r1);
+  const DynMatrix<double> i = DynMatrix<double>::id(3);
+  const DynMatrix<double> dShallowCopy(3, 3, d.data(), false);
+  const DynMatrix<double> dDeepCopy(3, 3, d.data());
+  const DynMatrix<double> dValue(3, 3, 42);
+  DynMatrix<double> dCopyTarget(1, 1, NULL, false);
+  DynMatrix<double> dCopyTarget2;
+
   EXPECT_EQ(3, d.rows());
   EXPECT_EQ(3, d.cols());
-  DynMatrix<double> i = DynMatrix<double>::id(3);
+  EXPECT_FALSE(d.isNull());
+  EXPECT_TRUE(dCopyTarget.isNull());
+
+  EXPECT_EQ(d.data(), dShallowCopy.data());
+  EXPECT_NE(d.data(), dDeepCopy.data());
+  EXPECT_EQ(dShallowCopy.at(1, 1), dShallowCopy.at(1, 1));
+  for(unsigned int i=0; i<9; ++i) ASSERT_EQ(42, dValue[i]);
+
   ASSERT_TRUE(d * i == d);
   ASSERT_TRUE(d * 2 == d + d);
   ASSERT_FALSE(d * d == d);
   ASSERT_FALSE(d + i == d);
+
+  dCopyTarget = dShallowCopy; // creates another shallow copy
+  dCopyTarget2 = dDeepCopy; // creates a deep copy and deletes old data
+  ASSERT_EQ(d.data(), dCopyTarget.data());
+  ASSERT_EQ(d.at(1,1), dCopyTarget2.at(1,1));
+  ASSERT_NE(d.data(), dCopyTarget2.data());
 }
 
 TEST(DynMatrixTest, BasicOp3x3) {
@@ -82,4 +106,21 @@ TEST(DynMatrixTest, BasicOp3x3) {
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d2[i], diff[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d4[i], mult[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d5[i], dot[i],  DOUBLE_MARGIN);
+}
+
+TEST(DynMatrixTest, ErrorCheck) {
+  const DynMatrix<double> d0 = DynMatrix<double>(3, 3, m3x3r0);
+  const DynMatrix<double> d1 = DynMatrix<double>(3, 3, m3x3r1);
+  const DynMatrix<double> d2 = DynMatrix<double>(4, 5, m4x4r1);
+
+  EXPECT_THROW(DynMatrix<double>(0, 0), icl::math::InvalidMatrixDimensionException);
+  EXPECT_THROW(d1 + d2, icl::math::IncompatibleMatrixDimensionException);
+  EXPECT_THROW(d1 - d2, icl::math::IncompatibleMatrixDimensionException);
+  EXPECT_THROW(d1 * d2, icl::math::IncompatibleMatrixDimensionException);
+  EXPECT_THROW(d1.elementwise_mult(d2), icl::math::IncompatibleMatrixDimensionException);
+  EXPECT_THROW(d1.elementwise_div(d2), icl::math::IncompatibleMatrixDimensionException);
+  EXPECT_NO_THROW(d1.at(0, 0));
+  EXPECT_THROW(d1.at(3, 3), icl::math::InvalidIndexException);
+  EXPECT_THROW(d0.inv(), icl::math::SingularMatrixException);
+  EXPECT_NO_THROW(d1.inv());
 }
