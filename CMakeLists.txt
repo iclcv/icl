@@ -226,6 +226,7 @@ IF(BUILD_TESTS)
 
   include(CodeCoverage)
   APPEND_COVERAGE_COMPILER_FLAGS()
+  add_definitions(-fno-inline)
   set(COVERAGE_EXCLUDES '/Applications/*' '/usr/*')
   add_custom_target(coverage)
 
