@@ -35,7 +35,6 @@
 #include <rsb/Factory.h>
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
-#include <rst/geometry/Primitive3DFloatSet.pb.h>
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -44,6 +43,8 @@
 #include <ICLGeom/GenericPointCloudGrabber.h>
 #include <ICLGeom/GenericPointCloudOutput.h>
 #include <ICLGeom/Primitive3DFilter.h>
+#include <ICLGeom/Primitive3DFloatSet.pb.h>
+
 
 using namespace rsb;
 using namespace rst::geometry;
