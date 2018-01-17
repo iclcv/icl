@@ -1,5 +1,3 @@
-
-
 package icl.io;
 
 message RSBImage {

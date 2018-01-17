@@ -1,0 +1,11 @@
+package icl.geom;
+
+option java_outer_classname = "Primitive3DFloatSetType";
+
+import "Primitive3DFloat.proto";
+
+message Primitive3DFloatSet {
+
+    repeated Primitive3DFloat primitives = 1;
+
+}
