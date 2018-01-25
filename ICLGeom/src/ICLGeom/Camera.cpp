@@ -686,18 +686,9 @@ namespace icl {
     }
 
     /// utility function called from all getViewRay methods
-    static ViewRay create_view_ray(const FixedMatrix<icl32f,3,4> &Qi, float x, float y, const Vec &p){
+    inline ViewRay create_view_ray(const FixedMatrix<icl32f,3,4> &Qi, float x, float y, const Vec &p){
       Vec dir = Qi*FixedColVector<icl32f,3>(x, y, 1);
-      // we keep the sign, in order to remember the actual direction of the viewray
-      // if we use -1 instead in every case, viewrays will always point more towards (0,0,0)
-      float sign = dir[3] > 0 ? -1 : 1;
-      if ((p[0]*p[0] + p[1]*p[1] + p[2]*p[2]) < 1e-12) {
-        // Special case: the camera is very close to origin. The last component of
-        // 'dir' is about zero, so homogenize could fail. We can just skip this
-        // step, because we normalize 'dir' later, anyway.
-      } else dir = p - homogenize(dir);
-      dir[3] = 0; dir.normalize(); dir *= sign; dir[3] = 1;
-      return ViewRay(p,dir);
+      return ViewRay(p, dir, true);
     }
 
     ViewRay Camera::getViewRay(const Point32f &pixel) const {
