@@ -181,7 +181,7 @@ namespace icl{
     }
 
 
-    /// homogenize a vector be normalizing 4th component to 1
+    /// homogenize a vector by normalizing 4th component to 1
     template<class T>
     inline math::FixedColVector<T,4> homogenize(const math::FixedMatrix<T,1,4> &v){
       ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];

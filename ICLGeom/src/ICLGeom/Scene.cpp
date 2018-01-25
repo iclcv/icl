@@ -123,11 +123,7 @@ namespace icl{
         int w = cam.getRenderParams().viewport.width;
         int h = cam.getRenderParams().viewport.height;
 
-        Mat T = cam.getCSTransformationMatrix().inv();
-        //if(isShadowCam){
-        //  DEBUG_LOG("index: " << index << "camera: " << cam);
-        //} ??
-  #if 1
+        Mat T = cam.getInvCSTransformationMatrix();
         // this has some severe issue in some configurations? Why?
         /** Idea: Yes, we could rotate stuff, but that wont help either!
             CE in oktober '15:
@@ -137,7 +133,7 @@ namespace icl{
             which can of course lead to any issues!
             */
         try{
-          PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
+          PlaneEquation p(T*Vec(0,0,S,1), T*Vec(0,0,1,0));
           const Point32f ps[4] = { Point32f(w-1,0), Point32f(0,0), Point32f(w-1,h-1), Point32f(0,h-1) };
           std::vector<ViewRay> vs = cam.getViewRays(std::vector<Point32f>(ps,ps+4));
 
@@ -146,27 +142,9 @@ namespace icl{
           }
 
         }catch(ICLException &e){
-          WARNING_LOG("error visualizsing camera: " << e.what());
+          WARNING_LOG("error visualizing camera: " << e.what());
         }
 
-  #else
-        // old version with same issue
-        try{
-          PlaneEquation p(T*Vec(0,0,S,1),T*Vec(0,0,1,1)-cam.getPosition());
-          SHOW(p.normal.transp());
-          SHOW(cam.getViewRay(Point32f(w-1,0)).direction.transp());
-          SHOW(cam.getViewRay(Point32f(0,0)).direction.transp());
-          SHOW(cam.getViewRay(Point32f(0,h-1)).direction.transp());
-          SHOW(cam.getViewRay(Point32f(w-1,h-1)).direction.transp());
-
-          m_vertices[3] = cam.getViewRay(Point32f(w-1,0)).getIntersection(p);
-          m_vertices[4] = cam.getViewRay(Point32f(0,0)).getIntersection(p);
-          m_vertices[5] = cam.getViewRay(Point32f(w-1,h-1)).getIntersection(p);
-          m_vertices[6] = cam.getViewRay(Point32f(0,h-1)).getIntersection(p);
-        }catch(ICLException &e){
-          WARNING_LOG("error visualizsing camera: " << e.what());
-        }
-  #endif
         std::string name = cam.getName();
 
         if(name != lastName){
@@ -174,11 +152,6 @@ namespace icl{
           delete m_primitives.back();
           m_primitives.pop_back();
           addTextTexture(7,8,10,9,name.length() ? name : str("camera"));
-          // why does update not work? does it need a permanently valid texture?
-          //          addTexture(7,8,10,9,&nameTexture);
-          // Img8u newTexture = TextPrimitive::create_texture(name.length() ? name : str("camera"),GeomColor(255,255,255,255),30);
-          //SHOW(newTexture);
-          //dynamic_cast<TexturePrimitive*>(m_primitives.back())->texture.update(&newTexture);
           unlock();
           lastName = name;
         }

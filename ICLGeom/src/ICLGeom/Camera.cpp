@@ -769,8 +769,8 @@ namespace icl {
 
     Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane) throw (ICLException) {
       float denom = sprod_3(v.direction, plane.normal);
-      if(!denom) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
-      float lambda = - sprod_3(v.offset-plane.offset,plane.normal) / denom;
+      if (fabs(denom) < 1e-6) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
+      float lambda = -sprod_3(v.offset-plane.offset,plane.normal) / denom;
       return v(lambda);
     }
 
