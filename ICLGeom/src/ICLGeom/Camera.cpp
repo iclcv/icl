@@ -132,52 +132,14 @@ namespace icl {
 
 
     FixedMatrix<icl32f,3,4> Camera::getInvQMatrix() const{
-
-      Mat T = getCSTransformationMatrix();
+      // (P*T).inv = T.inv * P.inv
+      Mat Tinv = getInvCSTransformationMatrix();
       Mat P = getProjectionMatrix();
-
-      Mat M = P*T;
-      for(int i=0;i<4;++i) M(i,i) += 1.e-8; // make inversion more stable
-
-      Mat II = M.pinv(true);
-
+      Mat II = Tinv * P.pinv(true);
       return FixedMatrix<icl32f,3,4> (II(0,0),II(1,0),II(3,0),
                                       II(0,1),II(1,1),II(3,1),
                                       II(0,2),II(1,2),II(3,2),
-                                      II(0,3),II(1,3),II(3,3) );
-
-
-#if 0
-      //(P*T).inv() -> T.inv * P.inv
-      Mat Ti ( T(0,0), T(0,1), T(0,2), -( T(0,0) * T(3,0) + T(0,1) * T(3,1) + T(0,2) * T(3,2) ),
-               T(1,0), T(1,1), T(1,2), -( T(1,0) * T(3,0) + T(1,1) * T(3,1) + T(1,2) * T(3,2) ),
-               T(2,0), T(2,1), T(2,2), -( T(2,0) * T(3,0) + T(2,1) * T(3,1) + T(2,2) * T(3,2) ),
-               0,0,0,1);
-      Mat Pi = P.pinv(true);
-
-      Mat I = Ti * Pi;
-      FixedMatrix<icl32f,3,4> newVersion(I(0,0),I(1,0),I(3,0),
-                                         I(0,1),I(1,1),I(3,1),
-                                         I(0,2),I(1,2),I(3,2),
-                                         I(0,3),I(1,3),I(3,3) );
-      //#else
-      Mat M = P*T;
-      for(int i=0;i<4;++i) M(i,i) += 1.e-8;
-
-      Mat II = M.pinv(true);
-
-      FixedMatrix<icl32f,3,4> newerVersion(II(0,0),II(1,0),II(3,0),
-                                           II(0,1),II(1,1),II(3,1),
-                                           II(0,2),II(1,2),II(3,2),
-                                           II(0,3),II(1,3),II(3,3) );
-
-      FixedMatrix<icl32f,3,4> oldVersion = FixedMatrix<icl32f,4,3>(M(0,0),M(1,0),M(2,0),M(3,0),
-                                                                   M(0,1),M(1,1),M(2,1),M(3,1),
-                                                                   M(0,3),M(1,3),M(2,3),M(3,3)).pinv(true);
-
-
-      return newerVersion;
-#endif
+                                      II(0,3),II(1,3),II(3,3));
     }
 
 
