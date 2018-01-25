@@ -125,6 +125,7 @@ namespace icl{
       m_triangleColorsFromVertices(false),
       m_quadColorsFromVertices(false),
       m_polyColorsFromVertices(false),
+      m_useCustomRender(false),
       m_pointSize(1),
       m_lineWidth(1),
       m_useSmoothShading(true),
@@ -145,8 +146,7 @@ namespace icl{
       m_fragmentShader(0),
       m_castShadows(true),
       m_receiveShadows(true),
-      m_pointHitMaxDistance(10),
-      m_useCustomRender(false)
+      m_pointHitMaxDistance(10)
     {
 
       m_visibleMask = Primitive::all;
@@ -309,6 +309,7 @@ namespace icl{
       m_triangleColorsFromVertices(false),
       m_quadColorsFromVertices(false),
       m_polyColorsFromVertices(false),
+      m_useCustomRender(false),
       m_pointSize(1),
       m_lineWidth(1),
       m_useSmoothShading(true),
@@ -329,8 +330,7 @@ namespace icl{
       m_fragmentShader(0),
       m_castShadows(true),
       m_receiveShadows(true),
-      m_pointHitMaxDistance(10),
-      m_useCustomRender(false)
+      m_pointHitMaxDistance(10)
     {
       m_visibleMask = Primitive::all;
 
@@ -637,6 +637,7 @@ namespace icl{
       m_triangleColorsFromVertices(false),
       m_quadColorsFromVertices(false),
       m_polyColorsFromVertices(false),
+      m_useCustomRender(false),
       m_pointSize(1),
       m_lineWidth(1),
       m_useSmoothShading(true),
@@ -657,8 +658,7 @@ namespace icl{
       m_fragmentShader(0),
       m_castShadows(true),
       m_receiveShadows(true),
-      m_pointHitMaxDistance(0),
-      m_useCustomRender(false)
+      m_pointHitMaxDistance(0)
     {
       File file(objFileName,File::readText);
       if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);

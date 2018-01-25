@@ -634,10 +634,6 @@ namespace icl{
         return w;
       }
 
-      void assign_plot_handle_3D(const PlotHandle3D &src, PlotHandle3D &dst){
-        dst = src;
-      }
-
       struct Plot3DGUIWidgetRegisterer{
         Plot3DGUIWidgetRegisterer(){
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
