@@ -44,6 +44,11 @@ using namespace icl::math;
 namespace icl {
   namespace geom{
 
+    static inline float sprod_3(const Vec &a, const Vec &b){
+      return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+    }
+
+
     void Camera::setRotation(const Vec &rot) {
       // see http://en.wikipedia.org/wiki/Rotation_matrix#Dimension_three
       float sin_a = sin(rot[0]); float cos_a = cos(rot[0]);
@@ -79,7 +84,9 @@ namespace icl {
       T.row(3) = Vec(0.0);
       T.col(3) = Vec(0.0);
 
-      T.col(3) = -(T*pos);
+      T(3,0) = -sprod_3(hh, pos);
+      T(3,1) = -sprod_3(uu, pos);
+      T(3,2) = -sprod_3(norm, pos);
       T(3,3) = 1;
 
       return T;
@@ -761,10 +768,6 @@ namespace icl {
 
     ViewRay Camera::getViewRay(const Vec &Xw) const{
       return ViewRay(m_pos, Xw-m_pos);
-    }
-
-    static inline float sprod_3(const Vec &a, const Vec &b){
-      return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
     }
 
     Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane) throw (ICLException) {
