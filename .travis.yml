@@ -67,7 +67,7 @@ include: &EXTENDED
           -DBUILD_WITH_BULLET_OPTIONAL=ON \
           -DBUILD_EXAMPLES=ON \
           -DBUILD_DEMOS=ON \
-          -DBUILD_APPS=ON "
+          -DBUILD_APPS=ON"
 
 include: &OSX
   env:
@@ -83,7 +83,8 @@ include: &OSX
           -DBUILD_WITH_IMAGEMAGICK=On \
           -DBUILD_WITH_LIBAV=On \
           -DBUILD_WITH_LIBDC=On \
-          -DBUILD_WITH_EIGEN3=On "
+          -DBUILD_WITH_EIGEN3=On \
+          -DBUILD_TESTS=ON"
 
 matrix:
   include:
@@ -98,4 +99,5 @@ matrix:
       before_script:
         - brew update
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "dependency build returned non-zero"
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov
         - brew link --force imagemagick@6

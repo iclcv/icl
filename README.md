@@ -265,6 +265,63 @@ We **strongly** recommend to have at least Qt support when building ICL.
 But there is more! Please refer to the documentation of [optional features](http://www.iclcv.org/install/install-linux.html#optional-dependencies)
 for a complete list which includes Xine, Kinect 2, SwissRanger and more.
 
+### Running tests and coverage
+
+To run tests, ICL needs to be configured with `-DBUILD_TESTS=ON`.
+This will create new test targets for each ICL module an automatically execute them after they have been built with `make`.
+Test build and execution can also be triggered manually.
+The individual test targets will be build with `make tests`.
+To run the tests `make test` has to be executed.
+
+```
+$ make tests # build ICL and test targets
+[ 10%] Built target ICLUtils
+[...]
+[100%] Built target tests_iclcore
+[100%] Built target tests_iclfilter
+[100%] Built target tests_iclio
+$ make test # run the tests
+Running tests...
+Test project /.../build
+      Start  1: tests_iclutils
+ 1/17 Test  #1: tests_iclutils ..........................   Passed    0.04 sec
+ [...]
+      Start 17: tests_iclmarkers
+17/17 Test #17: tests_iclmarkers ........................   Passed    0.33 sec
+
+100% tests passed, 0 tests failed out of 17
+
+Total Test time (real) =   2.01 sec
+```
+
+Tests can also be run individually:
+
+```
+$ build/ICLMath/tests_iclmath 
+[==========] Running 8 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 8 tests from DynMatrixTest
+[ RUN      ] DynMatrixTest.EmptyConstructor
+[       OK ] DynMatrixTest.EmptyConstructor (0 ms)
+[   ....   ]
+[ RUN      ] DynMatrixTest.ColumnOp
+[       OK ] DynMatrixTest.ColumnOp (0 ms)
+[----------] 8 tests from DynMatrixTest (3 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test case ran. (3 ms total)
+[  PASSED  ] 8 tests.
+```
+
+Coverage targets can be build individually or for the whole library:
+
+```
+$ make coverage_iclmath # basic pattern is coverage_<icl_module_name>
+$ make coverage # builds all coverage targets but will take some time
+```
+
+Note that coverage results may be inaccurate due to tracking obstacles related to macros and inline functions.
+
 ## Questions, feedback, issues or feature requests?
 
 For bug reports and other issues, please [open an issue](https://github.com/iclcv/icl/issues) on GitHub.

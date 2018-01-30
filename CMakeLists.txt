@@ -93,13 +93,15 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
   set(ICL_DEACTIVATED_WARNING "")
 #endif()
 
-IF(NOT CMAKE_BUILD_TYPE)
+IF(BUILD_TESTS)
+  MESSAGE(STATUS "Testing is enabled: using build type Debug")
+  SET(CMAKE_BUILD_TYPE "Debug")
+ELSEIF(NOT CMAKE_BUILD_TYPE)
   MESSAGE(STATUS "No Specific build type specified: using Release")
   SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
+ENDIF(BUILD_TESTS)
 
 IF(MSVC)
-
   # Disable some warnings
   SET(ICL_COMPILER_FLAGS "/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_WARNINGS /D_SCL_SECURE_NO_WARNINGS")
   SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /wd4201 /wd4244 /wd4251 /wd4275 /wd4290 /wd4510 /wd4514 /wd4610 /wd4710 /wd4711 /wd4800 /wd4820")
@@ -220,15 +222,60 @@ IF(NOT BUILD_REDIST STREQUAL OFF)
 ENDIF(NOT BUILD_REDIST STREQUAL OFF)
 
 IF(BUILD_TESTS)
-  find_package(GTEST REQUIRED)
+
+  # integrate local google test build as suggested in
+  # https://github.com/google/googletest/tree/master/googletest#incorporating-into-an-existing-cmake-project
+  IF(CMAKE_VERSION VERSION_LESS 3.10.0)
+    MESSAGE(FATAL_ERROR "For testing cmake version 3.10 or higher is required")
+  ENDIF(CMAKE_VERSION VERSION_LESS 3.10.0)
+
+  configure_file(${CMAKE_SOURCE_DIR}/scripts/CMakeLists.txt.in googletest-download/CMakeLists.txt)
+  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  if(result)
+    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+  endif()
+  execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+  if(result)
+    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+  endif()
+
+  # Prevent overriding the parent project's compiler/linker
+  # settings on Windows
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+  # Add googletest directly to our build. This defines
+  # the gtest and gtest_main targets.
+  add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                   ${CMAKE_BINARY_DIR}/googletest-build
+                   EXCLUDE_FROM_ALL)
+
+  # The gtest/gtest_main targets carry header search path
+  # dependencies automatically when using CMake 2.8.11 or
+  # later. Otherwise we have to add them here ourselves.
+  if (CMAKE_VERSION VERSION_LESS 2.8.11)
+    include_directories("${gtest_SOURCE_DIR}/include")
+  endif()
+
+  include(GoogleTest)
   enable_testing()
   add_custom_target(tests)
 
   include(CodeCoverage)
   APPEND_COVERAGE_COMPILER_FLAGS()
+  # --coverage -fno-inline -fno-inline-small-functions -fno-default-inline
   add_definitions(-fno-inline)
   set(COVERAGE_EXCLUDES '/Applications/*' '/usr/*')
   add_custom_target(coverage)
+
+  # run tests automatically after build
+  add_custom_target(run-test
+      ALL
+      DEPENDS tests 
+      COMMAND ${CMAKE_COMMAND} --build . --target test)
 
   # # In case we want to upload coverage to coveralls at some point
   # include(Coveralls)
