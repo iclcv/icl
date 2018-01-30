@@ -1,0 +1,23 @@
+package icl.geom;
+
+option java_outer_classname = "Primitive3DFloatType";
+
+import "rst/math/Vec3DFloat.proto";
+import "rst/geometry/Pose.proto";
+import "rst/timing/Timestamp.proto";
+
+message Primitive3DFloat {
+
+    enum PrimitiveType {
+        CUBE = 0;
+        SPHERE = 1;
+        CYLINDER = 2;
+    }
+
+    required PrimitiveType type = 1;
+    required rst.geometry.Pose pose = 2;
+    required rst.math.Vec3DFloat scale = 3;
+    required rst.timing.Timestamp timestamp = 4;
+    optional string description = 5;
+
+}

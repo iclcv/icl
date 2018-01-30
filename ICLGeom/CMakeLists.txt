@@ -164,7 +164,15 @@ ENDIF()
 IF(RSB_FOUND AND QT_FOUND)
   # note the pointcloud-grabber needs the PointCloudObjectBase, which in turn needs qt
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-    PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS src/ICLGeom/proto/RSBPointCloud.proto)
+    SET(ICL_GEOM_PROTO_DEFS src/ICLGeom/proto/RSBPointCloud.proto)
+
+    IF(RST_FOUND)
+      SET(PROTOBUF_IMPORT_DIRS ${RST_STABLE_PROTO_ROOT} ${RST_SANDBOX_PROTO_ROOT})
+      LIST(APPEND ICL_GEOM_PROTO_DEFS src/ICLGeom/proto/Primitive3DFloat.proto
+                                      src/ICLGeom/proto/Primitive3DFloatSet.proto)
+    ENDIF(RST_FOUND)
+
+    PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${ICL_GEOM_PROTO_DEFS})
     INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR})
 
     LIST (APPEND SOURCES src/ICLGeom/RSBPointCloudGrabber.cpp
