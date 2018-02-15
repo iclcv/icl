@@ -135,7 +135,7 @@ namespace icl {
       // (P*T).inv = T.inv * P.inv
       Mat Tinv = getInvCSTransformationMatrix();
       Mat P = getProjectionMatrix();
-      Mat II = Tinv * P.pinv(true);
+      Mat II = Tinv * P.pinv(true, std::numeric_limits<icl32f>::epsilon());
       return FixedMatrix<icl32f,3,4> (II(0,0),II(1,0),II(3,0),
                                       II(0,1),II(1,1),II(3,1),
                                       II(0,2),II(1,2),II(3,2),
