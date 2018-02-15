@@ -101,7 +101,7 @@ find_path(OpenCL_2HPP_INCLUDE_DIR
   IF(NOT OpenCL_2HPP_INCLUDE_DIR)
     MESSAGE(WARNING "OpenCL2 header cl2.hpp not found")
   ELSE()
-    MESSAGE(WARNING "OpenCL2 header cl2.hpp found: added definition:")
+    MESSAGE(STATUS "OpenCL2 header cl2.hpp found: added definition:")
     ADD_DEFINITIONS(-DICL_HAVE_CL2HPP)
     SET(ICL_DEFINITIONS "${ICL_DEFINITIONS} -DICL_HAVE_CL2HPP")
   ENDIF()
