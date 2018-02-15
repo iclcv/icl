@@ -93,13 +93,15 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
   set(ICL_DEACTIVATED_WARNING "")
 #endif()
 
-IF(BUILD_TESTS)
-  MESSAGE(STATUS "Testing is enabled: using build type Debug")
-  SET(CMAKE_BUILD_TYPE "Debug")
-ELSEIF(NOT CMAKE_BUILD_TYPE)
-  MESSAGE(STATUS "No Specific build type specified: using Release")
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF(BUILD_TESTS)
+IF(NOT CMAKE_BUILD_TYPE)
+  IF(BUILD_TESTS)
+    MESSAGE(STATUS "No build type specified: Using Debug for tests")
+    SET(CMAKE_BUILD_TYPE "Debug")
+  ELSE()
+    MESSAGE(STATUS "No build type specified: Using Release")
+    SET(CMAKE_BUILD_TYPE "Release")
+  ENDIF()
+ENDIF()
 
 IF(MSVC)
   # Disable some warnings
