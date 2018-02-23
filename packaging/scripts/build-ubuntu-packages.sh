@@ -2,12 +2,12 @@
 
 script_dir="$(dirname "$0")"
 source "${script_dir}/ubuntu-package-env.sh"
+ICL_OPTIONS+=" -DBUILD_REDIST=DEB"
 
 cd ${script_dir}/../..
 variant=${variant:-binary}
 echo "Build variant: $variant"
 
-#ICL_OPTIONS+=" -DBUILD_WITH_IPP=ON -DBUILD_WITH_MKL=ON "
 configure_icl
 mk-build-deps --install debian/control
 echo $HOSTNAME > ../docker_container_id.log
