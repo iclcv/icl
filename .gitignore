@@ -7,3 +7,4 @@ build
 /debian
 ICLFilter/src/ICLFilter/OpenCL/BilateralFilterOpKernel.h
 doc/icl-manual/js.rst
+.vscode

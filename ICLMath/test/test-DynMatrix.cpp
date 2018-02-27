@@ -1,3 +1,5 @@
+#define ICLMath_EXPORTS
+
 #include "gtest/gtest.h"
 #include "ICLMath/DynMatrix.h"
 

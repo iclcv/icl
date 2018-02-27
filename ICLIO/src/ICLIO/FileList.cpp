@@ -37,6 +37,10 @@
 #include <glob.h>
 #endif
 
+#ifdef ICL_SYSTEM_WINDOWS
+#include <windows.h>
+#endif
+
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
@@ -127,7 +131,21 @@ namespace icl{
         globfree(&pglob);
   #endif
   #else /* WIN32 */
-        add(sPattern);
+		WIN32_FIND_DATA FindFileData;
+		HANDLE hFind;
+
+		std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
+
+		hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
+		if (hFind == INVALID_HANDLE_VALUE) {
+			throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
+		} else {
+			add(FindFileData.cFileName);
+		}
+
+		while (FindNextFile(hFind, &FindFileData) != 0) {
+			add(FindFileData.cFileName);
+		}
   #endif /* WIN32 */
       }
 

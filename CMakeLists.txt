@@ -50,6 +50,8 @@ IF(CMAKE_VERSION VERSION_LESS 3.0.0)
   ENDIF()
 ELSE()
   cmake_policy(SET CMP0048 NEW)
+  cmake_policy(SET CMP0057 NEW)
+  cmake_policy(SET CMP0054 NEW)
   PROJECT(ICL VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 ENDIF()
 
@@ -233,17 +235,17 @@ IF(BUILD_TESTS)
 
   configure_file(${CMAKE_SOURCE_DIR}/scripts/CMakeLists.txt.in googletest-download/CMakeLists.txt)
   execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-  endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-  endif()
+     RESULT_VARIABLE result
+     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+   if(result)
+     message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+   endif()
+   execute_process(COMMAND ${CMAKE_COMMAND} --build .
+     RESULT_VARIABLE result
+     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+   if(result)
+     message(FATAL_ERROR "Build step for googletest failed: ${result}")
+   endif()
 
   # Prevent overriding the parent project's compiler/linker
   # settings on Windows
@@ -266,18 +268,18 @@ IF(BUILD_TESTS)
   enable_testing()
   add_custom_target(tests)
 
-  include(CodeCoverage)
-  APPEND_COVERAGE_COMPILER_FLAGS()
+  #include(CodeCoverage)
+  #APPEND_COVERAGE_COMPILER_FLAGS()
   # --coverage -fno-inline -fno-inline-small-functions -fno-default-inline
-  add_definitions(-fno-inline)
-  set(COVERAGE_EXCLUDES '/Applications/*' '/usr/*')
-  add_custom_target(coverage)
+  #add_definitions(-fno-inline)
+  #set(COVERAGE_EXCLUDES '/Applications/*' '/usr/*')
+  #add_custom_target(coverage)
 
   # run tests automatically after build
-  add_custom_target(run-test
-      ALL
-      DEPENDS tests 
-      COMMAND ${CMAKE_COMMAND} --build . --target test)
+  # add_custom_target(run-test
+  #     ALL
+  #     DEPENDS tests 
+  #     COMMAND ${CMAKE_COMMAND} --build . --target test)
 
   # # In case we want to upload coverage to coveralls at some point
   # include(Coveralls)
