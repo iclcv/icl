@@ -98,6 +98,7 @@ matrix:
       os: osx
       before_script:
         - brew update
+        - /usr/bin/yes | pip2 uninstall numpy  # see https://github.com/travis-ci/travis-ci/issues/6688
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov
         - brew link --force imagemagick@6
