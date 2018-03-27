@@ -98,6 +98,6 @@ matrix:
       os: osx
       before_script:
         - brew update
-        - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "dependency build returned non-zero"
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov
         - brew link --force imagemagick@6
