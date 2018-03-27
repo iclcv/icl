@@ -6,7 +6,7 @@ configuration:
   - Release
 
 environment:
-  QT_VERSION: "5.10.0"
+  QT_VERSION: "5.10.1"
   PTHREADS_ROOT: C:\projects\deps\pthreads
   GLEW_ROOT: C:\projects\deps\glew
   PTHREADS_PREBUILT: C:\projects\deps\pthreads\Pre-built.2
