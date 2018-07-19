@@ -70,17 +70,17 @@ endmacro()
 
 # This file is NOT available in Bullet 2.81 and below
 # first check without default path to prevent system wide versions to be found
-find_path(BULLET_INCLUDE_DIR NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
-  HINTS
-    ${BULLET_ROOT}/include
-    ${BULLET_ROOT}/src
-    NO_DEFAULT_PATH
-    PATH_SUFFIXES bullet
+find_path(BULLET_INCLUDE_DIR
+  NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
+  HINTS ${BULLET_ROOT}/include ${BULLET_ROOT}/src
+  NO_DEFAULT_PATH
+  PATH_SUFFIXES bullet
 )
 
 # as a fallback also include default path now; note that bullet wont be reset if it has been found already
-find_path(BULLET_INCLUDE_DIR NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
-	PATH_SUFFIX bullet
+find_path(BULLET_INCLUDE_DIR
+  NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
+  PATH_SUFFIXES bullet
 )
 
 # Find the libraries
