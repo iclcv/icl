@@ -1,63 +1,28 @@
 language: cpp
 sudo: true
-dist: xenial
+services:
+  - docker
 
-cache:
-  timeout: 1000
-  directories:
-    - $HOME/Deps/cmake/3.12.1
+before_script:
+  - docker build -t icl-${target} - < packaging/docker/${target}/Dockerfile
 
 script:
-  - ./packaging/scripts/install-cmake.sh
-  - export PATH=$HOME/Deps/cmake/$CMAKE_VERSION/bin${PATH:+:$PATH}
-  - mkdir -p build
-  - cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=/tmp/icl ${ICL_OPTIONS} ..
-  - make -j 3
-  - make test
-  - make install
+  - docker --version
+  - docker run -ti --mount type=bind,source=${TRAVIS_BUILD_DIR},target=/home/user/workspace -e variant=test -e ICL_OPTIONS="${ICL_OPTIONS}" -e HOST_USER_ID=$(id -u) -e HOST_USER_GID=$(id -g) -e CXX=$CXX -e CC=$CC icl-${target}
 
 include: &SIMPLE
   addons:
     apt:
       packages:
-        - cmake
-        - libpng-dev
-        - libjpeg-dev
+        - docker-ce
   env:
+    - target=xenial
     - ICL_OPTIONS="-DBUILD_TESTS=ON"
-    - CMAKE_VERSION="3.12.1"
 
 include: &EXTENDED
   <<: *SIMPLE
-  before_script:
-    - sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/pcl
-    - sudo apt-get -qq update
-    - sudo apt-get install -y libpcl-all
-  addons:
-    apt:
-      packages:
-        - cmake
-        - libpng-dev
-        - libjpeg-dev
-        - ocl-icd-opencl-dev
-        - libeigen3-dev
-        - libopenni-dev
-        - libopencv-dev
-        - libmagick++-dev
-        - qtbase5-dev
-        - qtmultimedia5-dev
-        - libqt5opengl5-dev
-        - libfreenect-dev
-        - libzmq-dev
-        - libglew-dev
-        - libusb-dev
-        - libavcodec-dev
-        - libavresample-dev 
-        - libavdevice-dev 
-        - libbullet-dev
   env:
-    - CMAKE_VERSION="3.12.1"
+    - target=xenial
     - ICL_OPTIONS="\
           -DBUILD_WITH_OPENCV=ON \
           -DBUILD_WITH_QT=ON \
@@ -78,7 +43,8 @@ include: &EXTENDED
           -DBUILD_EXAMPLES=ON \
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
-          -DBUILD_TESTS=ON"
+          -DBUILD_TESTS=ON \
+          -DBUILD_REDIST=DEB"
 
 include: &OSX
   env:
@@ -112,3 +78,10 @@ matrix:
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || echo "dependency build returned non-zero"
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov
         - brew link --force imagemagick@6
+      script:
+        - mkdir -p build
+        - cd build
+        - cmake -DCMAKE_INSTALL_PREFIX=/tmp/icl ${ICL_OPTIONS} ..
+        - make -j 3
+        - make test
+        - make install
