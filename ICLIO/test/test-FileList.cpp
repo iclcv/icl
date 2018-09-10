@@ -9,9 +9,9 @@ TEST(FileListTest, EmptyConstructor) {
 }
 
 TEST(FileListTest, Globbing) {
-	FileList listAll("../doc/*");
+	FileList listAll("doc/*");
 	EXPECT_EQ(6, listAll.size());
 
-	FileList listFiles("../doc/*.cmake");
+	FileList listFiles("doc/*.cmake");
 	EXPECT_EQ(2, listFiles.size());
 }

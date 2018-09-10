@@ -1,14 +1,21 @@
 language: cpp
 sudo: true
 
+cache:
+  timeout: 1000
+  directories:
+    - $HOME/Deps/cmake/3.12.1
+
 script:
+  - ./packaging/scripts/install-cmake.sh
+  - export PATH=$HOME/Deps/cmake/$CMAKE_VERSION/bin${PATH:+:$PATH}
   - mkdir -p build
   - cd build
   - cmake -DCMAKE_INSTALL_PREFIX=/tmp/icl ${ICL_OPTIONS} ..
   - make -j 3
+  - make test
   - make install
 
-# define some yaml variables
 include: &SIMPLE
   addons:
     apt:
@@ -17,7 +24,8 @@ include: &SIMPLE
         - libpng-dev
         - libjpeg-dev
   env:
-    - ICL_OPTIONS=""
+    - ICL_OPTIONS="-DBUILD_TESTS=ON"
+    - CMAKE_VERSION="3.12.1"
 
 include: &EXTENDED
   <<: *SIMPLE
@@ -48,6 +56,7 @@ include: &EXTENDED
         - libavdevice-dev 
         - libbullet-dev
   env:
+    - CMAKE_VERSION="3.12.1"
     - ICL_OPTIONS="\
           -DBUILD_WITH_OPENCV=ON \
           -DBUILD_WITH_QT=ON \
@@ -67,7 +76,8 @@ include: &EXTENDED
           -DBUILD_WITH_BULLET_OPTIONAL=ON \
           -DBUILD_EXAMPLES=ON \
           -DBUILD_DEMOS=ON \
-          -DBUILD_APPS=ON"
+          -DBUILD_APPS=ON \
+          -DBUILD_TESTS=ON"
 
 include: &OSX
   env:

@@ -16,7 +16,7 @@ environment:
     -DBUILD_WITH_QT=ON -DQT_ROOT=%QT_ROOT% \
     %OPENCV% \
     -DBUILD_DEMOS=ON -DBUILD_EXAMPLES=ON \
-    -DBUILD_APPS=ON -DBUILD_REDIST=WIX"
+    -DBUILD_APPS=ON -DBUILD_TESTS=ON -DBUILD_REDIST=WIX"
   matrix:
     - platform: x86
       # OpenCV does not provide binary builds for x86 anylonger
@@ -46,6 +46,8 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - cmake .. -G "%CMAKE_GENERATOR%" %ICL_OPTIONS%
   - cmake --build . --target package --config %CONFIGURATION%
+  # # running tests does not work because of missing DLLs during runtime
+  # - cmake --build . --target RUN_TESTS --config %CONFIGURATION%
 
 artifacts:
   - path: build\_CPack_Packages\*\WIX\icl-*.msi

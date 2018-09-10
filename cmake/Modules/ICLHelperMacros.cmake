@@ -444,14 +444,15 @@ $ENV{PATH}")
       message("TEST_PATH: ${TEST_PATH}")
       string(REPLACE "\\;" ";" TEST_PATH "${TEST_PATH}")  
       string(REPLACE ";" "\\\;" TEST_PATH "${TEST_PATH}")
-      gtest_add_tests(TARGET ${TEST_TARGET_NAME} TEST_LIST LIST_OF_TESTS)
+      gtest_add_tests(TARGET ${TEST_TARGET_NAME}
+                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                      TEST_LIST LIST_OF_TESTS)
       set_tests_properties(${LIST_OF_TESTS} PROPERTIES ENVIRONMENT ${TEST_PATH})
-    elseif(CMAKE_VERSION VERSION_LESS 3.10.0)
-      # use old style fallback as new style has policy issue under Linux
-      gtest_add_tests(${TEST_TARGET_NAME} "" AUTO)
     else()
       # use discover_tests whenever possible
-      gtest_discover_tests(${TEST_TARGET_NAME} TEST_PREFIX ${library_lower})
+      gtest_discover_tests(${TEST_TARGET_NAME}
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                           TEST_PREFIX ${library_lower})
     endif(WIN32)
     add_dependencies(tests ${TEST_TARGET_NAME})
 
