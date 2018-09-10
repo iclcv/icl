@@ -10,6 +10,7 @@ TEST(FileListTest, EmptyConstructor) {
 
 TEST(FileListTest, Globbing) {
 	FileList listAll("../ICLIO/test/files/*");
+	// listAll.show();
 	EXPECT_EQ(6, listAll.size());
 
 	FileList listFiles("../ICLIO/test/files/*.txt");

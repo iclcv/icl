@@ -132,7 +132,8 @@ namespace icl{
   #endif
   #else /* WIN32 */
 		WIN32_FIND_DATA FindFileData;
-		HANDLE hFind;
+    HANDLE hFind;
+    TCHAR filePath[MAX_PATH];
 
 		std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
 
@@ -140,11 +141,17 @@ namespace icl{
 		if (hFind == INVALID_HANDLE_VALUE) {
 			throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
 		} else {
-			add(FindFileData.cFileName);
+      if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
+        GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
+        add(filePath);
+      }
 		}
 
 		while (FindNextFile(hFind, &FindFileData) != 0) {
-			add(FindFileData.cFileName);
+      if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
+        GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
+        add(filePath);
+      }
 		}
   #endif /* WIN32 */
       }

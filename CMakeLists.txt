@@ -117,7 +117,7 @@ IF(MSVC)
   # Enable function-level linking
   SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /Gy")
   # Multi-processor compilation
-  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /MP")
+  SET(ICL_COMPILER_FLAGS "${ICL_COMPILER_FLAGS} /MP /bigobj")
 
   string(REPLACE "/EHsc" "/EHa" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /Zi /debug")
