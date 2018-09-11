@@ -429,6 +429,11 @@ function(CONFIGURE_GTEST library_name library_root)
     # on Windows, we need to make sure that all build paths for dlls are part of the
     # test paths
     if(WIN32)
+      if(ICL_64BIT)
+        set(GLEW_RELEASE "x64")
+      else(ICL_64BIT)
+        set(GLEW_RELEASE "Win32")
+      endif(ICL_64BIT)
       get_filename_component(PTHREAD_PATH ${pthreadVC2_LIBRARY} DIRECTORY)
       string(REPLACE "lib" "dll" PTHREAD_PATH "${PTHREAD_PATH}")              
       set(TEST_PATH "PATH=\
@@ -444,7 +449,7 @@ ${CMAKE_BINARY_DIR}/ICLPhysics/${CMAKE_BUILD_TYPE};\
 ${CMAKE_BINARY_DIR}/ICLUtils/${CMAKE_BUILD_TYPE};\
 ${OPENCV_ROOT}/${ARCH}/${OpenCV_RUNTIME}/bin;\
 ${QT_ROOT}/bin;\
-${GLEW_ROOT}/bin/Release/${ARCH};\
+${GLEW_ROOT}/bin/Release/${GLEW_RELEASE};\
 ${PTHREAD_PATH};\
 $ENV{PATH}")
       string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")        
