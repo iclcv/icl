@@ -138,8 +138,8 @@ These distributions have been built with the following features enabled:
 
 [url-launchpad]: https://launchpad.net/~iclcv/+archive/ubuntu/icl/
 [url-homebrew]: https://github.com/iclcv/homebrew-formulas
-[url-msi-x86]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win32/WIX/icl-10.0.1-x86-1911.msi?branch=master&job=Environment%3A%20platform%3Dx86%2C%20OPENCV%3D%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2015
-[url-msi-x64]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win64/WIX/icl-10.0.1-x64-1911.msi?branch=master&job=Environment%3A%20platform%3Dx64%2C%20OPENCV%3D-DBUILD_WITH_OPENCV%3DON%20-DOPENCV_ROOT%3DC%3A%5Ctools%5Copencv%5Cbuild%20-DOpenCV_RUNTIME%3Dvc14%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%20Win64%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2017_64
+[url-msi-x86]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win32/WIX/icl-10.0.1-x86.msi?branch=master&job=Environment%3A%20platform%3Dx86%2C%20OPENCV%3D%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2015
+[url-msi-x64]: https://ci.appveyor.com/api/projects/aleneum/icl/artifacts/build/_CPack_Packages/win64/WIX/icl-10.0.1-x64.msi?branch=master&job=Environment%3A%20platform%3Dx64%2C%20OPENCV%3D-DBUILD_WITH_OPENCV%3DON%20-DOPENCV_ROOT%3DC%3A%5Ctools%5Copencv%5Cbuild%20-DOpenCV_RUNTIME%3Dvc14%2C%20CMAKE_GENERATOR%3DVisual%20Studio%2015%20Win64%2C%20QT_ROOT%3DC%3A%5CQt%5C%25QT_VERSION%25%5Cmsvc2017_64
 
 
 ### <a name="building-from-source-ubuntu"></a> Building from source (Ubuntu)
