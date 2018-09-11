@@ -444,6 +444,7 @@ ${CMAKE_BINARY_DIR}/ICLPhysics/${CMAKE_BUILD_TYPE};\
 ${CMAKE_BINARY_DIR}/ICLUtils/${CMAKE_BUILD_TYPE};\
 ${OPENCV_ROOT}/${ARCH}/${OpenCV_RUNTIME}/bin;\
 ${QT_ROOT}/bin;\
+${GLEW_ROOT}/bin/Release/${ARCH};\
 ${PTHREAD_PATH};\
 $ENV{PATH}")
       string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")        
