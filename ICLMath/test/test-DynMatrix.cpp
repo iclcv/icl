@@ -5,11 +5,11 @@
 
 using icl::math::DynMatrix;
 
-#define DOUBLE_MARGIN 1e-15
+#define DOUBLE_MARGIN 1e-12
 
-double m3x3r0[9] {1, 2, 3,
-                  1, 0, 1,
-                  3, 4, 7 };
+double m3x3r0[9] { 1,  1, -2,
+                   1, -2,  1,
+                  -2,  1,  1};
 
 double m3x3r1[9] { 0.3987968 ,  0.11602292,  0.88068036,
                    0.36042386,  0.21228021,  0.52000919,
@@ -51,6 +51,24 @@ double m4x4r2[16] { 0.54490757,  0.32095175,  0.96347888,  0.30934882,
                     0.02317498,  0.20314625,  0.41469638,  0.73932676,
                     0.48979231,  0.34369873,  0.13328761,  0.88741035,
                     0.90179324,  0.13721667,  0.46019886,  0.93384174 };
+
+double m5x5r1[25] { 6.39, 0.13, -8.23, 5.71, -3.18,
+                    0.13, 8.37, -4.46, -6.10, 7.21,
+                    -8.23, -4.46, -9.58, -9.25, -7.42,
+                    5.71, -6.10, -9.25, 3.72, 8.54,
+                    -3.18, 7.21, -7.42, 8.54, 2.51 };
+
+double m5x5r1_eigenvec[25] { -0.41988819639341424, 0.33287202012081507, 0.7392689375414357, 0.3141809158121903, -0.26011903212941606,  
+                             -0.16305944173689826, -0.8049208383560079 , 0.3775100263338813 , -0.3931000924416705, -0.16873813967344284,     
+                              0.45238722216598304, 0.03217766919993044, -0.08743537676444527,  0.04276916645246478, -0.8859098442374522,    
+                              -0.6011735432470581, 0.3121868004547392, -0.33502461675291634,  -0.5867369992041039, -0.29090887311344577,   
+                              -0.48066796555487223,-0.3778923939796112, -0.43712833248757743, 0.6329874893137212, -0.18547588730247316};
+
+double m5x5r1_eigenval[5] { 19.842441425706724,
+                            14.245338865672679,
+                             6.722418930874335,
+                             -11.9633163320499,
+                           -17.436882890203826 };
 
 TEST(DynMatrixTest, EmptyConstructor) {
   DynMatrix<double> d;
@@ -108,6 +126,7 @@ TEST(DynMatrixTest, Create3x3) {
 }
 
 TEST(DynMatrixTest, BasicOp3x3) {
+  const DynMatrix<double> d0 = DynMatrix<double>(3, 3, m3x3r0);
   DynMatrix<double> d1(3, 3, m3x3r1);
   DynMatrix<double> d2(3, 3, m3x3r2);
   DynMatrix<double> d3(3, 3, m3x3r3);
@@ -131,9 +150,11 @@ TEST(DynMatrixTest, BasicOp3x3) {
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d2[i], diff[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d4[i], mult[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d5[i], dot[i],  DOUBLE_MARGIN);
+  EXPECT_EQ(0, d0.det());
+  ASSERT_DOUBLE_EQ(0.30533579879038636, d2.det());
 
   const DynMatrix<double> tmp = d1.elementwise_mult(d2).elementwise_div(d2);
-  EXPECT_EQ(d1, tmp);
+  for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d1[i], tmp[i],  DOUBLE_MARGIN);
 
   d1.setBounds(5, 5, true);
   EXPECT_EQ(d1.at(1,1), (d1/1).at(1,1));
@@ -195,3 +216,18 @@ TEST(DynMatrixTest, ColumnOp) {
   EXPECT_EQ(d1.col(1).begin(), col1.begin());
 }
 
+TEST(DynMatrixTest, Eigen) {
+  DynMatrix<double> d1(5, 5, m5x5r1);
+  DynMatrix<double> ref(5, 5, m5x5r1_eigenvec);
+  DynMatrix<double> eigenVec;
+  DynMatrix<double> eigenVal;
+  d1.eigen(eigenVec, eigenVal);
+  for (unsigned int i=0; i<5; ++i) {
+    ASSERT_NEAR(m5x5r1_eigenval[i], eigenVal.data()[i], DOUBLE_MARGIN);
+    DynMatrix<double> vecRef(ref.col(i));
+    DynMatrix<double> vec(eigenVec.col(i));
+    // scalar/dot product should return either 1 if vectors are equal or -1 if they point
+    // in opposite directions; DynMatrix.dot returns a 1x1 matrix in this case
+    ASSERT_NEAR(fabs(vec.dot(vecRef).data()[0]), 1, DOUBLE_MARGIN);
+  }
+}
