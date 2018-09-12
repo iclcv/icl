@@ -5,11 +5,11 @@
 
 using icl::math::DynMatrix;
 
-#define DOUBLE_MARGIN 1e-15
+#define DOUBLE_MARGIN 1e-12
 
-double m3x3r0[9] {1, 2, 3,
-                  1, 0, 1,
-                  3, 4, 7 };
+double m3x3r0[9] {1, 1, -2,
+                  1, -2, 1,
+                  -2, 1,  1};
 
 double m3x3r1[9] { 0.3987968 ,  0.11602292,  0.88068036,
                    0.36042386,  0.21228021,  0.52000919,
@@ -108,6 +108,7 @@ TEST(DynMatrixTest, Create3x3) {
 }
 
 TEST(DynMatrixTest, BasicOp3x3) {
+  const DynMatrix<double> d0 = DynMatrix<double>(3, 3, m3x3r0);
   DynMatrix<double> d1(3, 3, m3x3r1);
   DynMatrix<double> d2(3, 3, m3x3r2);
   DynMatrix<double> d3(3, 3, m3x3r3);
@@ -131,9 +132,10 @@ TEST(DynMatrixTest, BasicOp3x3) {
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d2[i], diff[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d4[i], mult[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d5[i], dot[i],  DOUBLE_MARGIN);
+  EXPECT_EQ(0, d0.det());
 
   const DynMatrix<double> tmp = d1.elementwise_mult(d2).elementwise_div(d2);
-  EXPECT_EQ(d1, tmp);
+  for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d1[i], tmp[i],  DOUBLE_MARGIN);
 
   d1.setBounds(5, 5, true);
   EXPECT_EQ(d1.at(1,1), (d1/1).at(1,1));

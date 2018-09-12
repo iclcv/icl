@@ -295,8 +295,8 @@ namespace icl{
 
       /// Elementwise matrix multiplication (without destination matrix) [IPP-Supported]
       inline DynMatrix elementwise_div(const DynMatrix &m) const throw (IncompatibleMatrixDimensionException){
-        DynMatrix dst(cols(),rows());
-        return elementwise_div(m,dst);
+        DynMatrix dst(cols(), rows());
+        return elementwise_div(m, dst);
       }
 
 
@@ -1207,6 +1207,7 @@ namespace icl{
 #undef DYN_MATRIX_MULT_SPECIALIZE
 */
 
+// ippsDiv(pDivisor, pDivident, pDestination, length)
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
     template<>                                                          \
     inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
@@ -1216,7 +1217,7 @@ namespace icl{
         throw IncompatibleMatrixDimensionException("A./B dimension mismatch"); \
       }                                                                 \
       dst.setBounds(cols(),rows());                                     \
-      ippsDiv_##IPPT(data(),m.data(),dst.data(),dim());                 \
+      ippsDiv_##IPPT(m.data(),data(),dst.data(),dim());                 \
       return dst;                                                       \
     }
 
