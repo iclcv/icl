@@ -621,7 +621,8 @@ namespace icl{
   #ifdef ICL_HAVE_MKL
     template<> ICLMath_API
     void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
-      //Two alternatives: (SSYTRD + SORGTR + SSTEQR) for QR or SSYEVD for DnC
+      //Two alternatives: (SSYTRD + SORGTR + SSTEQR) for QR or SSYEVD for DnC //BUT ONLY FOR SYMMETRIC MATRICES
+      //Here we need for general matrices: SGEBAL + SGEHRD + SORGHR + SHSEQR + STREVC + SGEBAK
       eigenvectors=a;//copy input to eigenvectors. MKL replaces the input
       int n = a.rows();
       int workBufferSize = 2*n*n+6*n+1;
@@ -631,8 +632,26 @@ namespace icl{
       int sts=-1;
       char jobz='V';
       char uplo='L';
+      //same result as without ipp/mkl usage. Ascending instead of descending order and row vs col major.
       ssyevd(&jobz, &uplo, &n, (float*)eigenvectors.begin(), &n, eigenvalues.begin(), &workBuffer[0], &workBufferSize, &iworkBuffer[0], &iworkBufferSize, &sts);
-
+      //row/col major
+      eigenvectors=eigenvectors.transp();
+      //invert sort
+      DynMatrix<icl32f> tmpvec;
+      tmpvec=eigenvectors;
+      for(int i=0; i<eigenvectors.cols(); i++){
+        for(int j=0; j<eigenvectors.rows(); j++){
+          tmpvec(i,j)=eigenvectors(eigenvectors.cols()-i-1,j);
+        }
+      }
+      eigenvectors=tmpvec;
+      DynMatrix<icl32f> tmpval;
+      tmpval=eigenvalues;
+      for(int i=0; i<eigenvalues.rows(); i++){
+        tmpval(i,0)=eigenvalues(eigenvectors.rows()-i-1,0);
+      }
+      eigenvalues=tmpval;
+      
       if(sts != 0){
         throw ICLException(std::string("MKL-Error in ") + __FUNCTION__ + "\"" + str(sts) +"\"");
       }
@@ -649,6 +668,24 @@ namespace icl{
       char jobz='V';
       char uplo='L';
       dsyevd(&jobz, &uplo, &n, (double*)eigenvectors.begin(), &n, eigenvalues.begin(), &workBuffer[0], &workBufferSize, &iworkBuffer[0], &iworkBufferSize, &sts);
+
+      //row/col major
+      eigenvectors=eigenvectors.transp();
+      //invert sort
+      DynMatrix<icl64f> tmpvec;
+      tmpvec=eigenvectors;
+      for(int i=0; i<eigenvectors.cols(); i++){
+        for(int j=0; j<eigenvectors.rows(); j++){
+          tmpvec(i,j)=eigenvectors(eigenvectors.cols()-i-1,j);
+        }
+      }
+      eigenvectors=tmpvec;
+      DynMatrix<icl64f> tmpval;
+      tmpval=eigenvalues;
+      for(int i=0; i<eigenvalues.rows(); i++){
+        tmpval(i,0)=eigenvalues(eigenvectors.rows()-i-1,0);
+      }
+      eigenvalues=tmpval;
 
       if(sts != 0){
         throw ICLException(std::string("MKL-Error in ") + __FUNCTION__ + "\"" + str(sts) +"\"");
@@ -699,7 +736,7 @@ namespace icl{
       } \
       int wh = this->cols(); \
       DynMatrix<T> d(wh, wh, 0.0); \
-      d=*this; \
+      d=(*this).transp(); \
       std::vector<int> ipiv(wh,0); \
       std::vector<T> work(wh,0); \
       int st=-1; \
@@ -707,9 +744,9 @@ namespace icl{
       if(st != 0){ \
         ERROR_LOG("matrix determinant could not be calculated"); \
       } \
-      T det(0); \
+      T det(1); \
       for(int i=0; i<wh; i++){ \
-        det+=d(i,i); \
+        det*=d(i,i); \
       } \
       return det; \
     }
