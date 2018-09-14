@@ -37,7 +37,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # Version information
 SET(ICL_VERSION_MAJOR "10" CACHE STRING "Major project version part")
-SET(ICL_VERSION_MINOR "0" CACHE STRING "Minor project version part")
+SET(ICL_VERSION_MINOR "1" CACHE STRING "Minor project version part")
 SET(ICL_VERSION_PATCH "0" CACHE STRING "Patch project version part")
 SET(PROJECT_VERSION "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PATCH}")
 

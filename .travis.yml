@@ -3,6 +3,11 @@ sudo: true
 services:
   - docker
 
+# safelist
+branches:
+  only:
+  - master
+
 before_script:
   - docker build -t icl-${target} - < packaging/docker/${target}/Dockerfile
 
@@ -46,6 +51,35 @@ include: &EXTENDED
           -DBUILD_TESTS=ON \
           -DBUILD_REDIST=DEB"
 
+include: &PROPRIETARY
+    <<: *EXTENDED
+    env:
+      - target=bionic
+      - ICL_OPTIONS="\
+          -DBUILD_WITH_OPENCV=ON \
+          -DBUILD_WITH_QT=ON \
+          -DBUILD_WITH_OPENGL=ON \
+          -DBUILD_WITH_EIGEN3=ON \
+          -DBUILD_WITH_IMAGEMAGICK=ON \
+          -DBUILD_WITH_LIBAV=ON \
+          -DBUILD_WITH_LIBDC=ON \
+          -DBUILD_WITH_LIBFREENECT=ON \
+          -DBUILD_WITH_V4L=ON \
+          -DBUILD_WITH_LIBUSB=ON \
+          -DBUILD_WITH_ZMQ=ON \
+          -DBUILD_WITH_OPENCL=ON \
+          -DBUILD_WITH_OPENNI=ON \
+          -DBUILD_WITH_PCL=ON \
+          -DBUILD_WITH_BULLET=ON \
+          -DBUILD_WITH_BULLET_OPTIONAL=ON \
+          -DBUILD_WITH_IPP=ON \
+          -DBUILD_WITH_MKL=ON \
+          -DBUILD_EXAMPLES=ON \
+          -DBUILD_DEMOS=ON \
+          -DBUILD_APPS=ON \
+          -DBUILD_TESTS=ON \
+          -DBUILD_REDIST=DEB"
+
 include: &OSX
   env:
     - ICL_OPTIONS="\
@@ -70,6 +104,8 @@ matrix:
       compiler: gcc
     - <<: *EXTENDED
       compiler: clang
+    - <<: *PROPRIETARY
+      compiler: gcc
     - <<: *OSX
       os: osx
       before_script:
