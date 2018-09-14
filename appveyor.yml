@@ -18,11 +18,11 @@ environment:
     -DBUILD_DEMOS=ON -DBUILD_EXAMPLES=ON \
     -DBUILD_APPS=ON -DBUILD_TESTS=ON -DBUILD_REDIST=WIX"
   matrix:
-    # - platform: x86
-    #   # OpenCV does not provide binary builds for x86 anylonger
-    #   OPENCV: ""
-    #   CMAKE_GENERATOR: Visual Studio 15
-    #   QT_ROOT: C:\Qt\%QT_VERSION%\msvc2015
+    - platform: x86
+      # OpenCV does not provide binary builds for x86 anylonger
+      OPENCV: ""
+      CMAKE_GENERATOR: Visual Studio 15
+      QT_ROOT: C:\Qt\%QT_VERSION%\msvc2015
     - platform: x64
       # We need to override the internal OpenCV_RUNTIME since vc17 isnt supported officially yet
       OPENCV: "-DBUILD_WITH_OPENCV=ON -DOPENCV_ROOT=C:\\tools\\opencv\\build -DOpenCV_RUNTIME=vc14"
