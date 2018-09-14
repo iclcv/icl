@@ -72,7 +72,9 @@ IF(BUILD_REDIST STREQUAL DEB)
   # Unfortunately, shlip does not work with CPACK for ICL
   # These package lists have been retrieved from the  binary packages
   # built with debuild (ppa versions)
-  IF(${LSB_RELEASE_CODENAME} STREQUAL "artful")
+  IF(${LSB_RELEASE_CODENAME} STREQUAL "bionic")
+    # pass
+  ELSEIF(${LSB_RELEASE_CODENAME} STREQUAL "artful")
     # pass
   ELSEIF(${LSB_RELEASE_CODENAME} STREQUAL "trusty")
     SET(ICL_DEB_CORE_DEPENDENCIES "libavcodec54 (>= 6:9.1-1) | libavcodec-extra-54 (>= 6:9.20), libavformat54 (>= 6:9.1-1), libavutil52 (>= 6:9.1-1), libc6 (>= 2.15), libdc1394-22, libfreenect0.2 (>= 1:0.1.2), libgcc1 (>= 1:4.1.1), libgl1-mesa-glx | libgl1, libglew1.10 (>= 1.10.0), libglu1-mesa | libglu1, libjpeg8 (>= 8c), libmagick++5 (>= 8:6.7.7.10), libopencl-1.1-1, libopencl-1.2-1, libopencv-calib3d2.4, libopencv-core2.4, libopencv-features2d2.4, libopencv-highgui2.4, libopencv-imgproc2.4, libopenni0, libpng12-0 (>= 1.2.13-4), libqt5core5a (>= 5.0.2), libqt5gui5 (>= 5.0.2) | libqt5gui5-gles (>= 5.0.2), libqt5opengl5 (>= 5.0.2) | libqt5opengl5-gles (>= 5.0.2), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 4.6), libswscale2 (>= 6:9.1-1), libusb-0.1-4 (>= 2:0.1.12), libzmq1, ocl-icd-libopencl1 (>= 1.0) | libopencl1, zlib1g (>= 1:1.1.4)")

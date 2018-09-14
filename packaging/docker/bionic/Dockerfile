@@ -1,6 +1,6 @@
-FROM ubuntu:artful
+FROM ubuntu:bionic
 
-LABEL description="Ubuntu Artful ICL Build Environment"
+LABEL description="Ubuntu Bionic ICL Build Environment"
 ARG EXTRA_PACKAGES
 
 ENV TZ=Europe/Berlin

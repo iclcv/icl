@@ -2,8 +2,7 @@
 
 # keep bullet optional since older distributions contain
 # unsupported versions
-ICL_OPTIONS="\
-  -DCMAKE_SKIP_RPATH=ON \
+ICL_OPTIONS+="\
   -DBUILD_WITH_OPENCV=ON  -DBUILD_WITH_QT=ON \
   -DBUILD_WITH_OPENGL=ON \
   -DBUILD_WITH_EIGEN3=ON \
@@ -23,7 +22,8 @@ configure_icl() {
   rm -r build
   rm -r debian
   echo "configure..."
-  mkdir build && cd build
+  mkdir build
+  cd build
   cmake ${ICL_OPTIONS} ..
   cd ..
 }
