@@ -4,6 +4,9 @@ image:
   - Visual Studio 2017
 configuration:
   - Debug
+branches:
+  only:
+    - master
 
 environment:
   QT_VERSION: "5.11.1"

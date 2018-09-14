@@ -1,64 +1,64 @@
-icl@PROP_SUFFIX@ (10.0.0+artful5) artful; urgency=low
+icl (10.0.0+artful5) artful; urgency=low
 
   * Upload artful release version
 
  -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 16:08:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+xenial1) xenial; urgency=low
+icl (10.0.0+xenial1) xenial; urgency=low
 
   * Upload xenial release version
 
  -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 15:12:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+trusty2) trusty; urgency=low
+icl (10.0.0+trusty2) trusty; urgency=low
 
   * Added DBUILD_WITH_BULLET_OPTIONAL=@BUILD_WITH_BULLET@ to rules.in
 
  -- Alexander Neumann <aleneum@gmail.com>  Tue, 22 Nov 2017 15:12:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+trusty1) trusty; urgency=low
+icl (10.0.0+trusty1) trusty; urgency=low
 
   * Release version of 10.0.0 trusty
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 14:17:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+artful4) artful; urgency=low
+icl (10.0.0+artful4) artful; urgency=low
 
   * Fix CMAKE_FLAGS for DEMOS, EXAMPLES and APPS
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 14:17:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+artful3) artful; urgency=low
+icl (10.0.0+artful3) artful; urgency=low
 
   * Replace opencl-c-headers with opencl-headers to include CL/cl.hpp
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 13:27:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+artful2) artful; urgency=low
+icl (10.0.0+artful2) artful; urgency=low
 
   * Fix define guard in OpenCV which prevented ICL to build with OpenCV 3.1
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 10:27:00 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+artful1) artful; urgency=low
+icl (10.0.0+artful1) artful; urgency=low
 
   * Apply fix for doxylink (crashed with pyparsing 2.1.10)
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 01:18:17 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+artful0) artful; urgency=low
+icl (10.0.0+artful0) artful; urgency=low
 
   * Test artful release
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 17 Nov 2017 00:10:17 +0100
 
-icl@PROP_SUFFIX@ (10.0.0+xenial0) xenial; urgency=low
+icl (10.0.0+xenial0) xenial; urgency=low
 
   * Test xenial release
 
  -- Alexander Neumann <aleneum@gmail.com>  Thu, 26 Oct 2017 10:40:17 +0200
 
-icl@PROP_SUFFIX@ (10.0.0+trusty0) trusty; urgency=low
+icl (10.0.0+trusty0) trusty; urgency=low
 
   * Initial trusty release
 
