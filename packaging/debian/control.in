@@ -20,7 +20,9 @@ Package: icl-dev
 Section: @ICL_DEB_PACKAGE_SECTION@
 Priority: @ICL_DEB_PACKAGE_PRIORITY@
 Architecture: any
-Depends: icl-core | icl-intel-core, ${misc:Depends}
+Conflicts: icl-intel-dev
+Replaces: icl-intel-dev
+Depends: icl-core ${misc:Depends}
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - development files
 
 Package: icl-doc

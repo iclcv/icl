@@ -7,10 +7,9 @@ export LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS) -Wl,--as-needed
 
 export CFLAGS+=$(CPPFLAGS)
 export CXXFLAGS+=$(CPPFLAGS)
-# export DEB_BUILD_OPTIONS+="parallel=@ICL_DEB_NUM_CORES@"
 
 %:
-	dh $@ --builddirectory=build --parallel
+	dh $@ --builddirectory=build --buildsystem=cmake --parallel
 
 override_dh_auto_build:
 	dh_auto_build -- doc # Generate Doxygen HTML documentation.

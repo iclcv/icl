@@ -15,3 +15,12 @@ Replaces: icl-core
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@
   @ICL_DEB_PACKAGE_DESCRIPTION@
+
+Package: icl-intel-dev
+Section: @ICL_DEB_PACKAGE_SECTION@
+Priority: @ICL_DEB_PACKAGE_PRIORITY@
+Architecture: any
+Conflicts: icl-dev
+Replaces: icl-dev
+Depends: icl-intel-core ${misc:Depends}
+Description: @ICL_DEB_PACKAGE_DESCRIPTION_SHORT@ - development files
