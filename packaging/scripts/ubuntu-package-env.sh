@@ -2,7 +2,7 @@
 
 # keep bullet optional since older distributions contain
 # unsupported versions
-ICL_OPTIONS="\
+ICL_OPTIONS_DEFAULT="\
   -DCMAKE_SKIP_RPATH=ON \
   -DBUILD_WITH_OPENCV=ON  -DBUILD_WITH_QT=ON \
   -DBUILD_WITH_OPENGL=ON \
@@ -16,14 +16,14 @@ ICL_OPTIONS="\
   -DBUILD_WITH_BULLET=ON -DBUILD_WITH_BULLET_OPTIONAL=ON \
   -DBUILD_WITH_OPENNI=ON -DBUILD_WITH_PCL=ON \
   -DBUILD_EXAMPLES=ON -DBUILD_DEMOS=ON -DBUILD_APPS=ON \
-  -DBUILD_REDIST=DEB "
+  -DBUILD_REDIST=DEB -DBUILD_TESTS=ON"
 
 configure_icl() {
   echo "removing old build..."
-  rm -r build
-  rm -r debian
+  rm -rf build
+  rm -rf debian
   echo "configure..."
   mkdir build && cd build
-  cmake ${ICL_OPTIONS} ..
+  cmake ${ICL_OPTIONS:-${ICL_OPTIONS_DEFAULT}} ..
   cd ..
 }
