@@ -41,6 +41,7 @@
 
 #ifdef TRY_PCL_OCTREE
 #include <ICLMath/PCLOctree.h>
+
 typedef pcl::search::Octree<pcl::PointXYZ> PCL_OT;
 //#include <pcl/octree/octree_search.h>
 //typedef pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> PCL_OT;
