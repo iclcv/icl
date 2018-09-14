@@ -50,6 +50,11 @@ macro(_FIND_BULLET_LIBRARY _var)
         ${BULLET_ROOT}/out/release8/libs
         ${BULLET_ROOT}/out/debug8/libs
      PATH_SUFFIXES lib
+     NO_DEFAULT_PATH
+  )
+  find_library(${_var}
+     NAMES ${ARGN}
+     PATH_SUFFIXES lib
   )
   mark_as_advanced(${_var})
 endmacro()
@@ -64,10 +69,17 @@ macro(_BULLET_APPEND_LIBRARIES _list _release)
 endmacro()
 
 # This file is NOT available in Bullet 2.81 and below
-find_path(BULLET_INCLUDE_DIR NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
-  HINTS
-    ${BULLET_ROOT}/include
-    ${BULLET_ROOT}/src
+# first check without default path to prevent system wide versions to be found
+find_path(BULLET_INCLUDE_DIR
+  NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
+  HINTS ${BULLET_ROOT}/include ${BULLET_ROOT}/src
+  NO_DEFAULT_PATH
+  PATH_SUFFIXES bullet
+)
+
+# as a fallback also include default path now; note that bullet wont be reset if it has been found already
+find_path(BULLET_INCLUDE_DIR
+  NAMES BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h
   PATH_SUFFIXES bullet
 )
 

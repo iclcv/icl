@@ -2,10 +2,10 @@ shallow_clone: true
 image:
   - Visual Studio 2017
 configuration:
-  - Release
+  - Debug
 
 environment:
-  QT_VERSION: "5.9.2"
+  QT_VERSION: "5.11.1"
   PTHREADS_ROOT: C:\projects\deps\pthreads
   GLEW_ROOT: C:\projects\deps\glew
   PTHREADS_PREBUILT: C:\projects\deps\pthreads\Pre-built.2
@@ -15,7 +15,7 @@ environment:
     -DBUILD_WITH_QT=ON -DQT_ROOT=%QT_ROOT% \
     %OPENCV% \
     -DBUILD_DEMOS=ON -DBUILD_EXAMPLES=ON \
-    -DBUILD_APPS=ON -DBUILD_REDIST=WIX"
+    -DBUILD_APPS=ON -DBUILD_TESTS=ON -DBUILD_REDIST=WIX"
   matrix:
     - platform: x86
       # OpenCV does not provide binary builds for x86 anylonger
@@ -45,6 +45,7 @@ build_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - cmake .. -G "%CMAKE_GENERATOR%" %ICL_OPTIONS%
   - cmake --build . --target package --config %CONFIGURATION%
+  - cmake --build . --target RUN_TESTS --config %CONFIGURATION%
 
 artifacts:
   - path: build\_CPack_Packages\*\WIX\icl-*.msi

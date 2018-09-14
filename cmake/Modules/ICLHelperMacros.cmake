@@ -417,6 +417,7 @@ function(CREATE_CL_HEADER file_in file_out kernel_source_name namespace_name)
 endfunction()
 
 function(CONFIGURE_GTEST library_name library_root)
+
   string(TOLOWER ${library_name} library_lower)
   set(TEST_TARGET_NAME tests_${library_lower})
   file(GLOB TEST_FILES "${library_root}/test/test-*.cpp")
@@ -424,15 +425,53 @@ function(CONFIGURE_GTEST library_name library_root)
     message(STATUS "${TEST_TARGET_NAME}: ${TEST_FILES}")
     add_executable(${TEST_TARGET_NAME} ${TEST_FILES})
     target_link_libraries(${TEST_TARGET_NAME} gtest_main ${library_name})
-    IF(CMAKE_VERSION VERSION_LESS 3.10.0)
-      gtest_add_tests(${TEST_TARGET_NAME} "" AUTO)
-    ELSE()
-      gtest_discover_tests(${TEST_TARGET_NAME} TEST_PREFIX ${library_lower})
-    ENDIF(CMAKE_VERSION VERSION_LESS 3.10.0)
+
+    # on Windows, we need to make sure that all build paths for dlls are part of the
+    # test paths
+    if(WIN32)
+      if(ICL_64BIT)
+        set(GLEW_RELEASE "x64")
+      else(ICL_64BIT)
+        set(GLEW_RELEASE "Win32")
+      endif(ICL_64BIT)
+      get_filename_component(PTHREAD_PATH ${pthreadVC2_LIBRARY} DIRECTORY)
+      string(REPLACE "lib" "dll" PTHREAD_PATH "${PTHREAD_PATH}")              
+      set(TEST_PATH "PATH=\
+${CMAKE_BINARY_DIR}/ICLMath/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLCore/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLFilter/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLIO/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLQt/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLCV/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLGeom/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLMarkers/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLPhysics/${CMAKE_BUILD_TYPE};\
+${CMAKE_BINARY_DIR}/ICLUtils/${CMAKE_BUILD_TYPE};\
+${OPENCV_ROOT}/${ARCH}/${OpenCV_RUNTIME}/bin;\
+${QT_ROOT}/bin;\
+${GLEW_ROOT}/bin/Release/${GLEW_RELEASE};\
+${PTHREAD_PATH};\
+$ENV{PATH}")
+      string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")        
+      string(REPLACE "\\;" ";" TEST_PATH "${TEST_PATH}")  
+      string(REPLACE ";" "\\\;" TEST_PATH "${TEST_PATH}")
+      message("TEST_PATH: ${TEST_PATH}")      
+      gtest_add_tests(TARGET ${TEST_TARGET_NAME}
+                      TEST_LIST LIST_OF_TESTS)
+      set_tests_properties(${LIST_OF_TESTS} PROPERTIES
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                           ENVIRONMENT ${TEST_PATH})
+    else()
+      # use discover_tests whenever possible
+      gtest_discover_tests(${TEST_TARGET_NAME}
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                           TEST_PREFIX ${library_lower})
+    endif(WIN32)
     add_dependencies(tests ${TEST_TARGET_NAME})
-    SETUP_TARGET_FOR_COVERAGE(NAME coverage_${library_lower}
-                              EXECUTABLE ${CMAKE_BINARY_DIR}/${library_name}/${TEST_TARGET_NAME})
-    add_dependencies(coverage coverage_${library_lower})
-    add_test(NAME ${TEST_TARGET_NAME} COMMAND ${CMAKE_BINARY_DIR}/${library_name}/${TEST_TARGET_NAME})
-  endif()
+
+    #SETUP_TARGET_FOR_COVERAGE(NAME coverage_${library_lower}
+    #                          EXECUTABLE ${CMAKE_BINARY_DIR}/${library_name}/${TEST_TARGET_NAME})
+    #add_dependencies(coverage coverage_${library_lower})
+    #add_test(NAME ${TEST_TARGET_NAME} COMMAND ${CMAKE_BINARY_DIR}/${library_name}/${TEST_TARGET_NAME})
+    endif()
 endfunction()

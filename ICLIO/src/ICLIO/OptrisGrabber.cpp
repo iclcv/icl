@@ -201,8 +201,9 @@ namespace icl{
         std::string v4lDev;
         FileList ds("/dev/video*");
         for(int d=0;d<ds.size();++d){
-          if(match(ds[d], "/dev/video([0-9]+)",2) &&
-             V4L2Grabber(ds[d]).getPropertyValue("device name") == "PI-IMAGER"){
+          std::string deviceName = V4L2Grabber(ds[d]).getPropertyValue("device name");
+          DEBUG_LOG("Devicename for " + ds[d] + ": " + deviceName);
+          if(match(ds[d], "/dev/video([0-9]+)",2) && match(deviceName, ".*PI-IMAGER.*",2)){
             v4lDev = ds[d];
           }else{
             continue;
@@ -214,7 +215,7 @@ namespace icl{
           bool verbose = false;
           imager = new IRImager(verbose);
 
-          //          std::cout << "initializing IRImager device " << v4lDev << std::endl;
+          std::cout << "initializing IRImager device " << v4lDev << std::endl;
           imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController,
                        fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
 

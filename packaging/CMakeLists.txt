@@ -65,7 +65,7 @@ IF(BUILD_REDIST STREQUAL DEB)
   SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${ICL_DEB_PACKAGE_ARCH}")
 
   # Dependencies for building ICL; will be parsed into debian/control
-  SET(ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, libzmq-dev | libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, python-sphinx, python-pyparsing, libbullet-dev")
+  SET(ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, python-sphinx, python-pyparsing, libbullet-dev")
   SET(ICL_DEB_CORE_DEPENDENCY "icl-core (= ${CPACK_PACKAGE_VERSION})")
 
   # Dependencies for using ICL
@@ -111,7 +111,10 @@ IF(BUILD_REDIST STREQUAL DEB)
 
 
 ELSEIF(BUILD_REDIST STREQUAL WIX)
-  SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${ARCH}-${MSVC_VERSION}")
+  SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${ARCH}")
+  SET(CPACK_WIX_SKIP_PROGRAM_FOLDER TRUE)
+  SET(CPACK_PACKAGE_INSTALL_DIRECTORY "tools/iclcv/${ARCH}")
+
   # This GUID has been generated in an initial run
   SET(CPACK_WIX_UPGRADE_GUID "C61CF96C-EA18-4A7A-A1F6-986E89BDCC1B")
 

@@ -205,7 +205,11 @@ namespace icl{
         }
         /* Some formats want stream headers to be separate. */
         if (oc->oformat->flags & AVFMT_GLOBALHEADER)
+        #if LIBAVCODEC_VERSION_MAJOR > 56
+            c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        #else
             c->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        #endif
     }
 
     void LibAVVideoWriter::Data::close_stream(AVFormatContext *oc, OutputStream *ost)
@@ -302,42 +306,21 @@ namespace icl{
 
         frame = get_video_frame(src,ost);
 
-        if (oc->oformat->flags & AVFMT_RAWPICTURE) {
-            /* a hack to avoid data copy with some raw video muxers */
-            AVPacket pkt;
-            av_init_packet(&pkt);
+        AVPacket pkt = { 0 };
+        av_init_packet(&pkt);
 
-            if (!frame)
-                return 1;
+        /* encode the image */
+        ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
+        if (ret < 0) throw ICLException("Error encoding a video frame");
 
-            pkt.flags        |= AV_PKT_FLAG_KEY;
-            pkt.stream_index  = ost->st->index;
-            pkt.data          = (uint8_t *)frame;
-            pkt.size          = sizeof(AVPicture);
-
-            pkt.pts = pkt.dts = frame->pts;
+        if (got_packet) {
 #if LIBAVCODEC_VERSION_MAJOR > 54
             av_packet_rescale_ts(&pkt, c->time_base, ost->st->time_base);
 #endif
+            pkt.stream_index = ost->st->index;
 
+            /* Write the compressed frame to the media file. */
             ret = av_interleaved_write_frame(oc, &pkt);
-        } else {
-            AVPacket pkt = { 0 };
-            av_init_packet(&pkt);
-
-            /* encode the image */
-            ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
-            if (ret < 0) throw ICLException("Error encoding a video frame");
-
-            if (got_packet) {
-#if LIBAVCODEC_VERSION_MAJOR > 54
-                av_packet_rescale_ts(&pkt, c->time_base, ost->st->time_base);
-#endif
-                pkt.stream_index = ost->st->index;
-
-                /* Write the compressed frame to the media file. */
-                ret = av_interleaved_write_frame(oc, &pkt);
-            }
         }
         if (ret != 0) throw ICLException("Error while writing video frame");
         return (frame || got_packet) ? 0 : 1;
