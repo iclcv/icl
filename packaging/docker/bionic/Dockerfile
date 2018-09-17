@@ -6,9 +6,9 @@ ENV USER=user USER_ID=1000 USER_GID=1000
 RUN apt-get update
 RUN apt-get upgrade -y
 
-RUN apt-get install -y build-essential git cmake python-pip dirmngr \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python-pip dirmngr \
                        devscripts equivs apt-file debhelper sudo wget \
-                       libjpeg-dev libpng-dev clang ca-certificates
+                       libjpeg-dev libpng-dev clang ca-certificates tzdata
 
 ADD https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB /root/
 RUN apt-key add /root/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
