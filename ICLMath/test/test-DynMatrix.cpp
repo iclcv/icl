@@ -7,9 +7,9 @@ using icl::math::DynMatrix;
 
 #define DOUBLE_MARGIN 1e-12
 
-double m3x3r0[9] {1, 1, -2,
-                  1, -2, 1,
-                  -2, 1,  1};
+double m3x3r0[9] { 1,  1, -2,
+                   1, -2,  1,
+                  -2,  1,  1};
 
 double m3x3r1[9] { 0.3987968 ,  0.11602292,  0.88068036,
                    0.36042386,  0.21228021,  0.52000919,
@@ -133,6 +133,7 @@ TEST(DynMatrixTest, BasicOp3x3) {
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d4[i], mult[i], DOUBLE_MARGIN);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d5[i], dot[i],  DOUBLE_MARGIN);
   EXPECT_EQ(0, d0.det());
+  ASSERT_DOUBLE_EQ(0.30533579879038636, d2.det());
 
   const DynMatrix<double> tmp = d1.elementwise_mult(d2).elementwise_div(d2);
   for(unsigned int i=0; i<9; ++i) ASSERT_NEAR(d1[i], tmp[i],  DOUBLE_MARGIN);
@@ -196,4 +197,3 @@ TEST(DynMatrixTest, ColumnOp) {
   EXPECT_EQ(m3x3r1[1], col1.matrix->data()[1]);
   EXPECT_EQ(d1.col(1).begin(), col1.begin());
 }
-
