@@ -404,13 +404,8 @@ namespace icl{
     //
     int cpoly(int degree, const xcomplex poly[], xcomplex Roots[])
     {
-  #ifdef WIN32
       xcomplex PhiDiff = xcomplex(-0.069756473, 0.99756405);
-      xcomplex PhiRand = xcomplex(1.0, -1.0) /sqrt(2.0);
-  #else
-      xcomplex PhiDiff = -0.069756473 + 0.99756405i;
-      xcomplex PhiRand = (1.0 - 1.0i) / sqrt(2.0);
-  #endif
+      xcomplex PhiRand = xcomplex(1.0, -1.0) / sqrt(2.0);
       xcomplex *P = new xcomplex[degree + 1], *H = new xcomplex[degree + 1];
       xcomplex *h = new xcomplex[degree + 1], *p = new xcomplex[degree + 1];
       xcomplex zero, s, bnd;
