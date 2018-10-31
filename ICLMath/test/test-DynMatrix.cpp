@@ -52,6 +52,25 @@ double m4x4r2[16] { 0.54490757,  0.32095175,  0.96347888,  0.30934882,
                     0.48979231,  0.34369873,  0.13328761,  0.88741035,
                     0.90179324,  0.13721667,  0.46019886,  0.93384174 };
 
+double m5x5r1[25] { 6.39, 0.13, -8.23, 5.71, -3.18,
+                    0.13, 8.37, -4.46, -6.10, 7.21,
+                    -8.23, -4.46, -9.58, -9.25, -7.42,
+                    5.71, -6.10, -9.25, 3.72, 8.54,
+                    -3.18, 7.21, -7.42, 8.54, 2.51 };
+
+double m5x5r1_eigenvec[25] { -0.419888, 0.332872, 0.739269, 0.314181, 0.260119,
+                             -0.16306, -0.804921, 0.37751, -0.3931, 0.168738,
+                             0.452387, 0.0321776, -0.0874354, 0.0427694, 0.88591,
+                             -0.601173, 0.312187, -0.335025, -0.586737, 0.290909,
+                             -0.480668, -0.377892, -0.437128, 0.632988, 0.185476 };
+
+double m5x5r1_eigenval[5] { 19.8424,
+                            14.2453,
+                            6.72242,
+                            -11.9633,
+                            -17.4369 };
+
+
 TEST(DynMatrixTest, EmptyConstructor) {
   DynMatrix<double> d;
   EXPECT_EQ(0, d.rows());
@@ -196,4 +215,13 @@ TEST(DynMatrixTest, ColumnOp) {
   col2 = d1.col(1);
   EXPECT_EQ(m3x3r1[1], col1.matrix->data()[1]);
   EXPECT_EQ(d1.col(1).begin(), col1.begin());
+}
+
+TEST(DynMatrixTest, Eigen) {
+  DynMatrix<double> d1(5, 5, m5x5r1);
+  DynMatrix<double> eigenVec;
+  DynMatrix<double> eigenVal;
+  d1.eigen(eigenVec, eigenVal);
+  for (unsigned int i=0; i<25; ++i) ASSERT_NEAR(m5x5r1_eigenvec[i], eigenVec.data()[i], DOUBLE_MARGIN);
+  for (unsigned int i=0; i<5; ++i) ASSERT_NEAR(m5x5r1_eigenval[i], eigenVal.data()[i], DOUBLE_MARGIN);
 }
