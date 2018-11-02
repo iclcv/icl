@@ -736,7 +736,7 @@ namespace icl{
       } \
       int wh = this->cols(); \
       DynMatrix<T> d(wh, wh, 0.0); \
-      d=*this; \
+      d=(*this).transp(); \
       std::vector<int> ipiv(wh,0); \
       std::vector<T> work(wh,0); \
       int st=-1; \
@@ -748,7 +748,7 @@ namespace icl{
       for(int i=0; i<wh; i++){ \
         det*=d(i,i); \
       } \
-      return -det; \
+      return det; \
     }
 
     DYN_MATRIX_INV(float, sgetrf, sgetri);
