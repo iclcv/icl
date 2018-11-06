@@ -226,8 +226,8 @@ TEST(DynMatrixTest, Eigen) {
     ASSERT_NEAR(m5x5r1_eigenval[i], eigenVal.data()[i], DOUBLE_MARGIN);
     DynMatrix<double> vecRef(ref.col(i));
     DynMatrix<double> vec(eigenVec.col(i));
-    double diffVec = vec.sqrDistanceTo(vecRef);
-    double diffInv = vec.sqrDistanceTo(vecRef * -1);
-    ASSERT_NEAR(diffVec * diffInv, 0, DOUBLE_MARGIN);
+    // scalar/dot product should return either 1 if vectors are equal or -1 if they point
+    // in opposite directions; DynMatrix.dot returns a 1x1 matrix in this case
+    ASSERT_NEAR(abs(vec.dot(vecRef).data()[0]), 1, DOUBLE_MARGIN);
   }
 }
