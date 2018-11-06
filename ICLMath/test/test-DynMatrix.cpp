@@ -228,6 +228,6 @@ TEST(DynMatrixTest, Eigen) {
     DynMatrix<double> vec(eigenVec.col(i));
     // scalar/dot product should return either 1 if vectors are equal or -1 if they point
     // in opposite directions; DynMatrix.dot returns a 1x1 matrix in this case
-    ASSERT_NEAR(abs(vec.dot(vecRef).data()[0]), 1, DOUBLE_MARGIN);
+    ASSERT_NEAR(fabs(vec.dot(vecRef).data()[0]), 1, DOUBLE_MARGIN);
   }
 }
