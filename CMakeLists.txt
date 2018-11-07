@@ -536,7 +536,8 @@ ENDIF()
 IF(BUILD_WITH_XIAPI)
  ICL_FIND_PACKAGE(NAME XIAPI
                   HEADERS "m3api/xiApi.h"
-                  LIBS "m3api")
+                  LIBS "m3api"
+                  PATHS "${XIAPI_ROOT}/opt/XIMEA;${XIAPI_ROOT}")
   IF(XIAPI_FOUND)
     ADD_ICL_DEFINITIONS(-DICL_HAVE_XIAPI)
   ENDIF()
