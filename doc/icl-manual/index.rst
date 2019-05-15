@@ -122,15 +122,13 @@ Internal
 
 .. raw:: html
   
-  <script src="js/jquery.min.js"></script>
   <script src="js/jquery.tools.min.js"></script>
   <!--script src="../_static/underscore.js"></script-->
-         <!--script src="../_static/doctools.js"></script-->
-
-
+  <!--script src="../_static/doctools.js"></script-->
+  
   <script>
 
-  $(document).ready(function() {
+  jQuery(document).ready(function() {
 
     /*
     var f = function(){

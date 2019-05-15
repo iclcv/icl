@@ -45,7 +45,7 @@ namespace icl{
         \f$ \beta \f$, LMA will find a local minumum of function parameters that minimizes
 
         \f[
-        S(\beta)​ = \sum_{o=1}^O \sum_{i=1}^m [y_i[o] - f(x_i, \ \beta)[o]​ ]​^2
+        S(\beta) = \sum_{o=1}^O \sum_{i=1}^m [y_i[o] - f(x_i, \ \beta)[o] ]^2
         \f]
 
         The complete algorithm can be found at at wikipedia

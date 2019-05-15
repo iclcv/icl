@@ -1,8 +1,6 @@
 .. raw:: html
-  <script src="../js/jquery.min.js"></script>
+  
   <script src="../js/jquery.tools.min.js"></script>
-  <!--script src="../_static/underscore.js"></script-->
-   <!--script src="../_static/doctools.js"></script-->
 
   <div id="sticky"> 
     <table class="sticky-table">
@@ -268,12 +266,7 @@
   
   fixedMenu.addEvent(window, 'onload', fixedMenu.init);
   
-  </script>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery.tools.min.js"></script>
-  <script>
-
-  $(document).ready(function() {
+  jQuery(document).ready(function() {
  
     console.log('executing java-script-based document upgrade');
 

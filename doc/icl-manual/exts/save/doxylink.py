@@ -2,7 +2,10 @@
 
 import os
 import xml.etree.ElementTree as ET
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 import re
 import itertools
 
