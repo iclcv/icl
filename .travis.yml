@@ -72,7 +72,6 @@ include: &PROPRIETARY
           -DBUILD_WITH_PCL=ON \
           -DBUILD_WITH_BULLET=ON \
           -DBUILD_WITH_BULLET_OPTIONAL=ON \
-          -DBUILD_WITH_IPP=ON \
           -DBUILD_WITH_MKL=ON \
           -DBUILD_EXAMPLES=ON \
           -DBUILD_DEMOS=ON \
