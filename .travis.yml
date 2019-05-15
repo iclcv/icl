@@ -72,12 +72,14 @@ include: &PROPRIETARY
           -DBUILD_WITH_PCL=ON \
           -DBUILD_WITH_BULLET=ON \
           -DBUILD_WITH_BULLET_OPTIONAL=ON \
-          -DBUILD_WITH_MKL=ON \
           -DBUILD_EXAMPLES=ON \
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
           -DBUILD_TESTS=ON \
           -DBUILD_REDIST=DEB"
+
+# TODO: when dev-ipp is working, add this to bionic target:
+# add -DBUILD_WITH_MKL=ON -DBUILD_WITH_IPP=ON 
 
 include: &OSX
   env:
@@ -87,6 +89,7 @@ include: &OSX
           -DBUILD_DEMOS=On \
           -DBUILD_EXAMPLES=On \
           -DBUILD_WITH_OPENCV=On \
+          -DOPENCV_ROOT='/usr/local/opt/opencv\@3/share/OpenCV/' \
           -DBUILD_WITH_QT=On \
           -DQT_ROOT=/usr/local/opt/qt5 \
           -DBUILD_WITH_OPENGL=On \
