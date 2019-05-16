@@ -92,8 +92,9 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
 #                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
-  set(ICL_DEACTIVATED_WARNING "")
+set(ICL_DEACTIVATED_WARNING "" CACHE String "")
 #endif()
+string(REPLACE ";" " " ICL_DEACTIVATED_WARNING "${ICL_DEACTIVATED_WARNING}")
 
 IF(NOT CMAKE_BUILD_TYPE)
   IF(BUILD_TESTS)

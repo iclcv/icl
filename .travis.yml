@@ -7,6 +7,7 @@ services:
 branches:
   only:
   - master
+  - dev-travis
 
 before_script:
   - docker build -t icl-${target} - < packaging/docker/${target}/Dockerfile
@@ -21,13 +22,15 @@ include: &SIMPLE
       packages:
         - docker-ce
   env:
-    - target=xenial
-    - ICL_OPTIONS="-DBUILD_TESTS=ON"
+    - target=bionic
+    - ICL_OPTIONS="\
+        -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
+        -DBUILD_TESTS=ON"
 
 include: &EXTENDED
   <<: *SIMPLE
   env:
-    - target=xenial
+    - target=bionic
     - ICL_OPTIONS="\
           -DBUILD_WITH_OPENCV=ON \
           -DBUILD_WITH_QT=ON \
@@ -49,6 +52,7 @@ include: &EXTENDED
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
           -DBUILD_TESTS=ON \
+          -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
           -DBUILD_REDIST=DEB"
 
 include: &PROPRIETARY
@@ -76,10 +80,11 @@ include: &PROPRIETARY
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
           -DBUILD_TESTS=ON \
-          -DBUILD_REDIST=DEB"
+          -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
+          -DBUILD_REDIST=DEB \
+          -DBUILD_WITH_MKL=ON \
+          -DBUILD_WITH_IPP=ON"
 
-# TODO: when dev-ipp is working, add this to bionic target:
-# add -DBUILD_WITH_MKL=ON -DBUILD_WITH_IPP=ON 
 
 include: &OSX
   env:
@@ -89,7 +94,7 @@ include: &OSX
           -DBUILD_DEMOS=On \
           -DBUILD_EXAMPLES=On \
           -DBUILD_WITH_OPENCV=On \
-          -DOPENCV_ROOT='/usr/local/opt/opencv\@3/share/OpenCV/' \
+          -DOPENCV_ROOT='/usr/local/opt/opencv@3/share/OpenCV/' \
           -DBUILD_WITH_QT=On \
           -DQT_ROOT=/usr/local/opt/qt5 \
           -DBUILD_WITH_OPENGL=On \
@@ -107,14 +112,14 @@ matrix:
       compiler: gcc
     - <<: *EXTENDED
       compiler: clang
-    - <<: *PROPRIETARY
-      compiler: gcc
+    # - <<: *PROPRIETARY  # TODO: add again when dev-ipp is finished
+    #   compiler: gcc
     - <<: *OSX
       os: osx
       before_script:
         - brew update
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || true
-        - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov glog
         - brew link --force imagemagick@6
       script:
         - mkdir -p build
