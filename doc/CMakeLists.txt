@@ -75,6 +75,14 @@ IF(SPHINX_FOUND AND DOXYGEN_FOUND)
   ADD_CUSTOM_TARGET(doc ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual"
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html"
                     DEPENDS api)
+  ADD_CUSTOM_TARGET(pages DEPENDS doc)
+
+  FILE(GLOB DOC_ICONS ${CMAKE_SOURCE_DIR}/doc/icl-api/icons/*)
+  ADD_CUSTOM_COMMAND(TARGET pages
+                     POST_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/doc/icl-manual/html ${CMAKE_BINARY_DIR}/doc/pages
+                     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/doc/pages/.nojekyll
+                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/doc/icl-api/html ${CMAKE_BINARY_DIR}/doc/pages/icl-api)
 ELSE()
   ADD_CUSTOM_TARGET(doc echo "manual cannot be build due to missing dependencies")
 ENDIF()
