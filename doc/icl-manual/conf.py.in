@@ -262,7 +262,7 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'http://docs.python.org/': None}
 
-doxylink = { 'icl' : ('../doc/icl-api/icldoxy.tag','/icl-api') }
+doxylink = { 'icl' : ('../doc/icl-api/icldoxy.tag','icl-api') }
 add_function_parentheses = False;
 
 todo_include_todos = True;

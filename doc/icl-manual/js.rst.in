@@ -85,7 +85,7 @@
       padding-right:0px;
       padding-left:1px;
       position: fixed;
-      background: transparent url(../_images/dash.png);
+      background: transparent url(../_static/images/dash.png);
       width: 33px;
       height: 193px;
       top: 99px;
@@ -403,7 +403,7 @@
 
     .tooltip {
       display:none;
-      background: transparent url(../_images/tooltip.png);
+      background: transparent url(../_static/images/tooltip.png);
       font-size:13px;
       height:80px;
       width:131px;
@@ -455,7 +455,7 @@
 
     div.body h1{
       padding-top: 7px;
-      background: transparent url(../_images/h1.png);
+      background: transparent url(../_static/images/h1.png);
       margin-top: 8px;
       border-radius: 0px;
       height: 57px;
@@ -464,18 +464,18 @@
 
     div.body h2{
       padding-top: 7px;
-      background: transparent url(../_images/h2.png);
+      background: transparent url(../_static/images/h2.png);
       height: 52px;
     }
 
     div.body h3{
-      background: transparent url(../_images/h3.png);
+      background: transparent url(../_static/images/h3.png);
     }
 
     div.body h4{
       padding-top: 5px;
       height: 42px;
-      background: transparent url(../_images/h4.png);
+      background: transparent url(../_static/images/h4.png);
       color: rgb(60,60,60);
     }
 
@@ -511,11 +511,11 @@
     }
     div.related ul{
        background: rgba(60, 60, 60, 0);
-       background-image: url(../_images/stripes3.png);
+       background-image: url(../_static/images/stripes3.png);
        background-position-x: 2px;
     }
     div.documentwrapper, div.footer {
-       background-image: url(../_images/stripes1.png);
+       background-image: url(../_static/images/stripes1.png);
     }
 
     img.logo{

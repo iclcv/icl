@@ -32,9 +32,6 @@ Image Component Library (ICL)
 .. |J| image:: icons/92px/physics.png
        :target: modules/physics.html
 
-.. |TT| image:: icons/tooltip.png
-.. |ITT| image:: icons/index-tip.png
-
 .. |ABOUT| image:: icons/92px/about.png
              :target: extras/about.html
 
@@ -53,35 +50,16 @@ Image Component Library (ICL)
 .. |LICENSE| image:: icons/92px/license.png
                 :target: extras/license.html
 
-
-.. |H1| image:: icons/h1.png
-
-.. |H2| image:: icons/h2.png
-
-.. |H3| image:: icons/h3.png
-
-.. |H4| image:: icons/h4.png
-
-.. |S1| image:: icons/stripes1.png
-
-.. |S2| image:: icons/stripes2.png
-
-.. |S3| image:: icons/stripes3.png
-
-.. |DASH| image:: icons/dash.png
-
-
 .. we force the 3 column layout here!
 
 | |A| |B| |C| |D| |E| 
 | |F| |G| |H| |I| |J|
 
-Getting Startted
+Getting Started
 ****************
 
 | |ABOUT|     |DOWNLOAD|  |INSTALL|
 | |TUTORIAL|  |HOWTOS|    |LICENSE| 
-
 
 Internal
 ********
@@ -257,7 +235,7 @@ Internal
   <style type="text/css"> 
     .tooltip.modules {
       display:none;
-      background: transparent url(_images/index-tip.png);
+      background: transparent url(_static/images/index-tip.png);
       font-size:12px;
       height:100px;
       width:160px;
@@ -317,7 +295,7 @@ Internal
 
     div.body h1{
       padding-top: 7px;
-      background: transparent url(_images/h1.png);
+      background: transparent url(_static/images/h1.png);
       margin-top: 8px;
       border-radius: 0px;
       height: 57px;
@@ -326,18 +304,18 @@ Internal
 
     div.body h2{
       padding-top: 7px;
-      background: transparent url(_images/h2.png);
+      background: transparent url(_static/images/h2.png);
       height: 52px;
     }
 
     div.body h3{
-      background: transparent url(_images/h3.png);
+      background: transparent url(_static/images/h3.png);
     }
 
     div.body h4{
       padding-top: 5px;
       height: 42px;
-      background: transparent url(_images/h4.png);
+      background: transparent url(_static/images/h4.png);
       color: rgb(60,60,60);
     }
 
@@ -373,11 +351,11 @@ Internal
     }
     div.related ul{
        background: rgba(60, 60, 60, 0);
-       background-image: url(_images/stripes3.png);
+       background-image: url(_static/images/stripes3.png);
        background-position-x: 2px;
     }
     div.documentwrapper, div.footer {
-       background-image: url(_images/stripes1.png);
+       background-image: url(_static/images/stripes1.png);
     }
 
     img.logo{
