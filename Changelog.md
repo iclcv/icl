@@ -1,11 +1,16 @@
 # Changelog
 
-## 10.1.0
+## 10.0.2
 
-* recent versions of IPP/MKL are now supported
-* changed travis CI structure to use docker images 
 * added file globbing for Windows
+* created tests for file globbing and dynmatrix
 * enabled default testing for all CI plattforms
+* updated CI targets to bionic
+* limit OpenCV support to versions < 4
+* updated libAV related code
+* updated doc and extensions to work with recent sphinx versions
+* fixed jQuery issues in documentation 
+* add clang-tidy modernizer to scripts
 
 ## 10.0.1
 

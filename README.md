@@ -4,10 +4,10 @@
   Image Component Library
 </h1>
 
-[![Version](https://img.shields.io/badge/version-10.0.1-brightgreen.svg)](https://github.com/iclcv/icl)
+[![Version](https://img.shields.io/badge/version-10.0.2-brightgreen.svg)](https://github.com/iclcv/icl)
 [![Build Travis](https://travis-ci.org/iclcv/icl.svg?branch=master)](https://travis-ci.org/iclcv/icl)
 [![Build AppVeyor](https://ci.appveyor.com/api/projects/status/github/iclcv/icl?branch=master&svg=true)](https://ci.appveyor.com/project/aleneum/icl)
-[![Commits](https://img.shields.io/github/commits-since/iclcv/icl/latest.svg)](https://github.com/iclcv/icl/compare/10.0.0...master)
+[![Commits](https://img.shields.io/github/commits-since/iclcv/icl/latest.svg)](https://github.com/iclcv/icl/compare/10.0.1...master)
 [![License](https://img.shields.io/github/license/iclcv/icl.svg)](LICENSE.LGPL)
 
 ## Table of Contents
