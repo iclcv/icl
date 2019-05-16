@@ -29,6 +29,12 @@ then
   cd build
   make -j3
   make test
+elif [ "$variant" = "pages" ]
+then
+  cd build
+  make -j3
+  make test
+  make pages
 else
-  echo "please specify a variant ('source', 'test' or 'binary')"
+  echo "please specify a variant ('source', 'test', 'pages' or 'binary')"
 fi

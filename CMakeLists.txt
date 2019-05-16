@@ -92,7 +92,7 @@ OPTION(ENABLE_OPENMP_BUILD_OPTION "Decide whether to use -fopenmp optimization f
 #                              -Wno-uninitialized
 #                              -Wno-overloaded-virtual)
 #else()
-set(ICL_DEACTIVATED_WARNING "" CACHE String "")
+set(ICL_DEACTIVATED_WARNING "" CACHE STRING "")
 #endif()
 string(REPLACE ";" " " ICL_DEACTIVATED_WARNING "${ICL_DEACTIVATED_WARNING}")
 

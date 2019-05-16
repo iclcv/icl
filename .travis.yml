@@ -8,13 +8,14 @@ branches:
   only:
   - master
   - dev-travis
+  - dev-doc
 
 before_script:
   - docker build -t icl-${target} - < packaging/docker/${target}/Dockerfile
 
 script:
   - docker --version
-  - docker run -ti --mount type=bind,source=${TRAVIS_BUILD_DIR},target=/home/user/workspace -e variant=test -e ICL_OPTIONS="${ICL_OPTIONS}" -e HOST_USER_ID=$(id -u) -e HOST_USER_GID=$(id -g) -e CXX=$CXX -e CC=$CC icl-${target}
+  - docker run -ti --mount type=bind,source=${TRAVIS_BUILD_DIR},target=/home/user/workspace -e variant=${variant} -e ICL_OPTIONS="${ICL_OPTIONS}" -e HOST_USER_ID=$(id -u) -e HOST_USER_GID=$(id -g) -e CXX=$CXX -e CC=$CC icl-${target}
 
 include: &SIMPLE
   addons:
@@ -22,7 +23,8 @@ include: &SIMPLE
       packages:
         - docker-ce
   env:
-    - target=bionic
+    - target=cosmic
+    - variant=pages
     - ICL_OPTIONS="\
         -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
         -DBUILD_TESTS=ON"
@@ -31,6 +33,7 @@ include: &EXTENDED
   <<: *SIMPLE
   env:
     - target=bionic
+    - variant=test
     - ICL_OPTIONS="\
           -DBUILD_WITH_OPENCV=ON \
           -DBUILD_WITH_QT=ON \
@@ -108,6 +111,16 @@ matrix:
   include:
     - <<: *SIMPLE
       compiler: gcc
+      deploy:
+        github_token: ${GITHUB_TOKEN}
+        provider: pages
+        skip_cleanup: true
+        keep_history: true
+        local_dir: ${TRAVIS_BUILD_DIR}/build/doc/pages
+        target_branch: master
+        repo: iclcv/iclcv.github.io
+        on:
+          tags: true
     - <<: *EXTENDED
       compiler: gcc
     - <<: *EXTENDED
