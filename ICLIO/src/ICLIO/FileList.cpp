@@ -131,28 +131,28 @@ namespace icl{
         globfree(&pglob);
   #endif
   #else /* WIN32 */
-		WIN32_FIND_DATA FindFileData;
+    WIN32_FIND_DATA FindFileData;
     HANDLE hFind;
     TCHAR filePath[MAX_PATH];
 
-		std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
+    std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
 
-		hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
-		if (hFind == INVALID_HANDLE_VALUE) {
-			throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
-		} else {
+    hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+      throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
+    } else {
       if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
         GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
         add(filePath);
       }
-		}
+    }
 
-		while (FindNextFile(hFind, &FindFileData) != 0) {
+    while (FindNextFile(hFind, &FindFileData) != 0) {
       if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
         GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
         add(filePath);
       }
-		}
+    }
   #endif /* WIN32 */
       }
 
@@ -328,9 +328,9 @@ namespace icl{
         // and replace them by [0-9] regular expressions
         ostringstream oss;
         for (unsigned int i=1; i <= nHashes; ++i) {
-  	oss << sFileName.substr(0, iSuffixPos-nHashes);
-  	for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
-  	oss << sFileName.substr(iSuffixPos) << " ";
+    oss << sFileName.substr(0, iSuffixPos-nHashes);
+    for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
+    oss << sFileName.substr(iSuffixPos) << " ";
         }
         return oss.str();
       }
