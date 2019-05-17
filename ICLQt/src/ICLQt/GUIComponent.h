@@ -116,22 +116,26 @@ namespace icl{
 
       /// sets the component handle
       const GUIComponent &handle(const std::string &handle) const{
-        m_options.handle = handle; return *this;
+        m_options.handle = handle;
+        return *this;
       }
 
       /// sets the component label
       const GUIComponent &label(const std::string &label) const{
-        m_options.label = label; return *this;
+        m_options.label = label;
+        return *this;
       }
 
       /// sets the component tooltip
       const GUIComponent &tooltip(const std::string &tooltip) const{
-        m_options.tooltip = tooltip; return *this;
+        m_options.tooltip = tooltip;
+        return *this;
       }
 
       /// sets the component initial size
       const GUIComponent &size(const utils::Size &size) const {
-        m_options.size = size; return *this;
+        m_options.size = size;
+        return *this;
       }
 
       /// sets the component initial size
@@ -141,7 +145,8 @@ namespace icl{
 
       /// sets the component minimum size constraint
       const GUIComponent &minSize(const utils::Size &minSize) const {
-        m_options.minSize = minSize; return *this;
+        m_options.minSize = minSize;
+        return *this;
       }
 
       /// sets the component minimum size constraint
@@ -151,7 +156,8 @@ namespace icl{
 
       /// sets the component maximum size constraint
       const GUIComponent &maxSize(const utils::Size &maxSize) const {
-        m_options.maxSize = maxSize; return *this;
+        m_options.maxSize = maxSize;
+        return *this;
       }
 
       /// sets the component maximum size constraint
@@ -172,58 +178,69 @@ namespace icl{
 
       */
       const GUIComponent &hideIf(bool flag) const{
-        if(flag) m_options.hide = true; return *this;
+        if(flag) m_options.hide = true;
+        return *this;
       }
 
       /// sets the component handle
       GUIComponent &handle(std::string &handle) {
-        m_options.handle = handle; return *this;
+        m_options.handle = handle;
+        return *this;
       }
 
       /// sets the component label
       GUIComponent &label(std::string &label) {
-        m_options.label = label; return *this;
+        m_options.label = label;
+        return *this;
       }
 
       /// sets the component tooltip
       GUIComponent &tooltip(std::string &tooltip) {
-        m_options.tooltip = tooltip; return *this;
+        m_options.tooltip = tooltip;
+        return *this;
       }
 
       /// sets the component initial size
       GUIComponent &size(utils::Size &size)  {
-        m_options.size = size; return *this;
+        m_options.size = size;
+        return *this;
       }
 
       /// sets the component initial size
       GUIComponent &size(int w, int h)  {
-        m_options.size = utils::Size(w,h); return *this;
+        m_options.size = utils::Size(w,h);
+        return *this;
       }
 
       /// sets the component minimum size constraint
       GUIComponent &minSize(utils::Size &minSize)  {
-        m_options.minSize = minSize; return *this;
+        m_options.minSize = minSize;
+        return *this;
       }
 
       /// sets the component minimum size constraint
       GUIComponent &minSize(int w, int h)  {
-        m_options.minSize = utils::Size(w,h); return *this;
+        m_options.minSize = utils::Size(w,h);
+        return *this;
       }
 
       /// sets the component maximum size constraint
       GUIComponent &maxSize(utils::Size &maxSize)  {
-        m_options.maxSize = maxSize; return *this;
+        m_options.maxSize = maxSize;
+        return *this;
       }
 
       /// sets the component maximum size constraint
       GUIComponent &maxSize(int w, int h)  {
-        m_options.maxSize = utils::Size(w,h); return *this;
+        m_options.maxSize = utils::Size(w,h);
+        return *this;
       }
 
       /// hides the component if the given flag is true
       /** \copydoc icl::qt::GUIComponent::hideIf(bool)const */
       GUIComponent &hideIf(bool flag)  {
-        if(flag) m_options.hide = true; return *this;
+        if(flag) m_options.hide = true;
+        return *this;
       }
 
       /// creates a string representation of the component

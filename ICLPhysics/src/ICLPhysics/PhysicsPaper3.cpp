@@ -1396,7 +1396,8 @@ namespace icl{
           if(!isFlat){
             int good = -1;
             for(int j=0;j<3;++j){
-              if(t.normals[j][3]) good = j; break;
+              if(t.normals[j][3]) good = j;
+              break;
             }
             if(good == -1) {
               t.normals[0] = t.normals[1] = t.normals[2] = compute_normal(t.nodes[0], t.nodes[1], t.nodes[2]);
