@@ -1347,8 +1347,7 @@ namespace icl{
 
         if (init) InitRandomClusters(clusters);
 
-        while (AssignToClusters());
-        {
+        while (AssignToClusters()) {
           RepositionClusters();
         }
       }
