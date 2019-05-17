@@ -138,7 +138,7 @@ namespace icl{
       PointCloudSerializer::deserialize(dst, m_data->sdev);
     }
 
-    Camera RSBPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
+    Camera RSBPointCloudGrabber::getDepthCamera() const {
       if(!m_data->depthCam){
         throw ICLException("RSBPointCloudGrabber::getDepthCamera(): the depth camera can only "
                            "be returned if explicitly given to the grabber creation string "
@@ -148,7 +148,7 @@ namespace icl{
       return *m_data->depthCam;
     }
 
-    Camera RSBPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
+    Camera RSBPointCloudGrabber::getColorCamera() const {
       if(!m_data->colorCam){
         throw ICLException("RSBPointCloudGrabber::getColorCamera(): the color camera can only "
                            "be returned if explicitly given to the grabber creation string "

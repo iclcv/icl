@@ -81,12 +81,12 @@ namespace icl {
 			/**
 			 * @brief CLDeviceContext Creates a dummy CLDeviceContext
 			 */
-			CLDeviceContext() throw(CLInitException, CLBuildException);
+			CLDeviceContext() ;
 			/**
 			 * @brief CLDeviceContext Creates a CLDeviceContext on the given device type
 			 * @param device type of device as string. Current supported device types: "gpu","cpu".
 			 */
-			CLDeviceContext(std::string const &device) throw(CLInitException, CLBuildException);
+			CLDeviceContext(std::string const &device) ;
 			/**
 			 * @brief CLDeviceContext Creates a shallow copy of the given CLDeviceContext
 			 * @param other another CLDeviceContext to copy from
@@ -116,7 +116,7 @@ namespace icl {
 			 *
 			 * Throws a CLBufferException in case of allocation problems.\n
 			 */
-			CLBuffer createBuffer(const string &accessMode, size_t size, const void *src=0) throw(CLBufferException);
+			CLBuffer createBuffer(const string &accessMode, size_t size, const void *src=0) ;
 
 			/**
 			 * @brief createBuffer createBuffer creates a buffer object for memory exchange with graphics card memory
@@ -127,7 +127,7 @@ namespace icl {
 			 * @param src Optional source pointer. If not NULL the content of this pointer will automatically be uploaded to the device.
 			 * @return
 			 */
-			CLBuffer createBuffer(const string &accessMode, size_t length, size_t byteDepth, const void *src = 0) throw(CLBufferException);
+			CLBuffer createBuffer(const string &accessMode, size_t length, size_t byteDepth, const void *src = 0) ;
 
 			/**
 			 * @brief createImage2D Creates a image2D object for memory exchange with graphics card memory
@@ -147,7 +147,7 @@ namespace icl {
 			 * In this case, the number of channels are assumed to be equal to one.\n
 			 * Throws a CLBufferException in case of allocation problems.\n
 			 */
-			CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) throw(CLBufferException);
+			CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) ;
 
 			/**
 			 * @brief createImage2D
@@ -166,7 +166,7 @@ namespace icl {
 			 *
 			 * Throws a CLBufferException in case of allocation problems.\n
 			 */
-			CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException);
+			CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) ;
 
 			/**
 			 * @brief getDeviceTypeString Returns the device type as string
@@ -204,7 +204,7 @@ namespace icl {
 			 *
 			 * Throws a CLBufferException in case of allocation problems.\n
 			 */
-			CLBuffer *createBufferHeap(const string &accessMode, size_t length, size_t byteDepth, const void *src=0) throw(CLBufferException);
+			CLBuffer *createBufferHeap(const string &accessMode, size_t length, size_t byteDepth, const void *src=0) ;
 
 			/**
 			 * @brief createImage2DHeap Creates a image2D object pointer for memory exchange with graphics card memory. The pointer has to be handles by the user
@@ -224,7 +224,7 @@ namespace icl {
 			 *
 			 * Throws a CLBufferException in case of allocation problems.\n
 			 */
-			CLImage2D *createImage2DHeap(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException);
+			CLImage2D *createImage2DHeap(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) ;
 		};
 
 	}

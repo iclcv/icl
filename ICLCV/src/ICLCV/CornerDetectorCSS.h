@@ -110,7 +110,7 @@ namespace icl{
 
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
       virtual void setPropertyValue(const std::string &propertyName,
-                                    const utils::Any &value) throw (utils::ICLException);
+                                    const utils::Any &value);
 
       /// returns Configurable property list
       virtual std::vector<std::string> getPropertyList() const;

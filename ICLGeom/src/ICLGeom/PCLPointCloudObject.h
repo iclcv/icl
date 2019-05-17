@@ -119,10 +119,10 @@ namespace icl{
       ~PCLPointCloudObject();
 
       /// grants access to the underlying pcl-point-cloud
-      pcl::PointCloud<PCLPointType> &pcl() throw (utils::ICLException);
+      pcl::PointCloud<PCLPointType> &pcl() ;
 
       /// grants access to the underlying pcl-point-cloud (const)
-      const pcl::PointCloud<PCLPointType> &pcl() const throw (utils::ICLException);
+      const pcl::PointCloud<PCLPointType> &pcl() const ;
 
       /// sets wrapped PCL point cloud (const, always deeply copied)
       void setPCL(const pcl::PointCloud<PCLPointType> &pcl);
@@ -137,7 +137,7 @@ namespace icl{
       virtual bool isOrganized() const;
 
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual utils::Size getSize() const throw (utils::ICLException);
+      virtual utils::Size getSize() const ;
 
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const;

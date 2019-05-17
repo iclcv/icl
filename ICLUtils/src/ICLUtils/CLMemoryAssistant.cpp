@@ -37,7 +37,7 @@ namespace icl {
 
 		CLMemoryAssistant::CLMemoryAssistant() {}
 
-		CLMemoryAssistant::CLMemoryAssistant(std::string const &deviceType) throw(CLInitException, CLBuildException) {
+		CLMemoryAssistant::CLMemoryAssistant(std::string const &deviceType)  {
 			m_context = CLDeviceContext(deviceType);
 		}
 
@@ -62,7 +62,7 @@ namespace icl {
 
 		CLBuffer CLMemoryAssistant::createNamedBuffer(MemKeyType const &key, const string &accessMode,
 													  const size_t length, size_t byteDepth, const void *src)
-		throw(ICLException, CLBufferException) {
+		 {
 			if (m_memory_map.find(key) != m_memory_map.end())
 				throw ICLException("CLMemoryAssistant::createNamedBuffer(): Key already in use: " + key);
 			CLBuffer *mem_ptr = 0;
@@ -81,7 +81,7 @@ namespace icl {
 		CLImage2D CLMemoryAssistant::createNamedImage2D(MemKeyType const &key, const string &accessMode,
 														const size_t width, const size_t height, const int depth,
 														const int num_channel, const void *src)
-		throw(ICLException, CLBufferException) {
+		 {
 			if (m_memory_map.find(key) != m_memory_map.end())
 				throw ICLException("CLMemoryAssistant::createNamedImage2D(): Key already in use: " + key);
 			CLImage2D *mem_ptr = 0;
@@ -97,15 +97,15 @@ namespace icl {
 			return *mem_ptr;
 		}
 
-		CLMemory *CLMemoryAssistant::operator[](MemKeyType const &key) throw(std::out_of_range) {
+		CLMemory *CLMemoryAssistant::operator[](MemKeyType const &key) {
 			return m_memory_map.at(key);
 		}
 
-		CLBuffer &CLMemoryAssistant::asBuf(MemKeyType const &key) throw(std::out_of_range, CLBufferException) {
+		CLBuffer &CLMemoryAssistant::asBuf(MemKeyType const &key) {
 			return *(m_memory_map.at(key)->asCLBuffer());
 		}
 
-		CLImage2D &CLMemoryAssistant::asImg(MemKeyType const &key) throw(std::out_of_range, CLBufferException) {
+		CLImage2D &CLMemoryAssistant::asImg(MemKeyType const &key) {
 			return *(m_memory_map.at(key)->asCLImage2D());
 		}
 

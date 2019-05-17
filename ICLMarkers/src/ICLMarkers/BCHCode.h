@@ -131,7 +131,7 @@ namespace icl{
       DecodedBCHCode decode(const icl8u data[36]);
 
       /// decodes given (correctly oriented) core::Img8u (optionally using its ROI or not)
-      DecodedBCHCode decode(const core::Img8u &image, bool useROI=true) throw (utils::ICLException);
+      DecodedBCHCode decode(const core::Img8u &image, bool useROI=true) ;
 
       /// decodes given core::Img8u (optionally using its ROI or not)
       /** Internally, this methods checks for all 4 possible image rotations and returns
@@ -149,7 +149,7 @@ namespace icl{
 
           <b>please note</b> that it's best to use the first N IDs if you want to use N markers
           */
-      DecodedBCHCode2D decode2D(const core::Img8u &image, int maxID=4095, bool useROI=true) throw (utils::ICLException);
+      DecodedBCHCode2D decode2D(const core::Img8u &image, int maxID=4095, bool useROI=true) ;
 
     };
   } // namespace markers

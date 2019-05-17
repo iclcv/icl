@@ -48,7 +48,7 @@ namespace icl{
                                                     public PointCloudSerializer::DeserializationDevice{
       protected:
 
-      void null_check(const std::string &function) throw (utils::ICLException);
+      void null_check(const std::string &function) ;
 
       RSBPointCloud *protoBufObject;
 

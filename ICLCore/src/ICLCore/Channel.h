@@ -339,7 +339,7 @@ namespace icl{
       }
 
       /// deeply copies the channel data (no roi support here)
-      void deepCopy(Channel<T> &other) const throw (utils::ICLException){
+      void deepCopy(Channel<T> &other) const {
         if(m_size != other.m_size){
           throw utils::ICLException("Channel::deepCopy: sizes differ!");
         }
@@ -348,7 +348,7 @@ namespace icl{
 
       /// deeply converts the channel data (no roi support here)
       template<class OtherT>
-      void convert(Channel<OtherT> &other) const throw(utils::ICLException){
+      void convert(Channel<OtherT> &other) const {
         if(m_size != other.m_size){
           throw utils::ICLException("Channel::convert: sizes differ!");
         }

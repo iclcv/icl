@@ -171,7 +171,7 @@ namespace icl{
       }
 
 
-      std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) throw (utils::ICLException){
+      std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) {
         buffer.mode = mode;
 
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
@@ -279,7 +279,7 @@ namespace icl{
 
 
     OptrisGrabber::OptrisGrabber(const std::string &serialPattern, bool testOnly,
-                                 Mode mode) throw(utils::ICLException) : m_data(new Data){
+                                 Mode mode) : m_data(new Data){
       std::string v4lDev = m_data->init(serialPattern,mode);
       addProperty("v4l device","info","",v4lDev);
       if(mode == IR_IMAGE){

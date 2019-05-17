@@ -237,7 +237,7 @@ void icl::io::pylon::printHelp(){
   std::cout << std::endl;
 }
 
-Pylon::CDeviceInfo icl::io::pylon::getDeviceFromArgs(std::string args) throw(utils::ICLException) {
+Pylon::CDeviceInfo icl::io::pylon::getDeviceFromArgs(std::string args) {
   if(args.find("h")!=std::string::npos){
     printHelp();
     throw ICLException("Help called");

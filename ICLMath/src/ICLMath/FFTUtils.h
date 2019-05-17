@@ -189,7 +189,7 @@ namespace icl{
      @return destinationmatrix
    */
   template<typename T> ICLMath_IMP
-  DynMatrix<T>& fftshift(DynMatrix<T> &src, DynMatrix<T> &dst) throw (InvalidMatrixDimensionException);
+  DynMatrix<T>& fftshift(DynMatrix<T> &src, DynMatrix<T> &dst) ;
 
   ///invers function to fftshift.
   /**Shifts the center of the matrix into the upper left corner .
@@ -198,7 +198,7 @@ namespace icl{
      @return destinationmatrix
    */
   template<typename T> ICLMath_IMP
-  DynMatrix<T>& ifftshift(DynMatrix<T> &src, DynMatrix<T> &dst) throw (InvalidMatrixDimensionException);
+  DynMatrix<T>& ifftshift(DynMatrix<T> &src, DynMatrix<T> &dst) ;
 
   ///computes the powerspectrum
   /**Computes and returns the powerspectrum of a matrix with complex values.

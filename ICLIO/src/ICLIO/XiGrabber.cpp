@@ -241,7 +241,7 @@ namespace icl{
 
     };
 
-    void XiGrabber::init(int deviceID) throw (utils::ICLException){
+    void XiGrabber::init(int deviceID) {
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
 
@@ -269,7 +269,7 @@ namespace icl{
       Configurable::registerCallback(utils::function(this,&XiGrabber::processPropertyChange));
     }
 
-    XiGrabber::XiGrabber(int deviceID) throw(utils::ICLException) : m_data(0){
+    XiGrabber::XiGrabber(int deviceID) : m_data(0){
       init(deviceID);
 
     }

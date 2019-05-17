@@ -158,7 +158,7 @@ namespace icl{
       AllowedArg *allowed;
       std::vector<std::string> subargs;
 
-      void checkArgCountThrow() const throw (ProgArgException){
+      void checkArgCountThrow() const {
         if(allowed->subargcount != (int)subargs.size()){
           THROW_ProgArgException("sub-argument typecheck for arg '" + arg()
                                  +"' failed (invalid subargument count. Expected "
@@ -312,7 +312,7 @@ namespace icl{
         }
       }
 
-      void parse_arg(const std::string &arg, AllowedArg *aa) throw (ProgArgException){
+      void parse_arg(const std::string &arg, AllowedArg *aa) {
         std::vector<std::string> ad = tok(arg,"=",true,'\\');
         size_t s = ad.size();
         if(s<1||s>2) THROW_ProgArgException("empty arg token or motre than one unquoted '=' found in arg '" + arg +"'");
@@ -321,7 +321,7 @@ namespace icl{
         aa->defs.push_back(s==1?std::string():ad[1]);
       }
       // ownership is passed and then managed by a smartptr instance
-      void add(AllowedArg *arg) throw (ProgArgException){
+      void add(AllowedArg *arg) {
         allowed.push_back(arg);
         for(unsigned int i=0;i<arg->names.size();++i){
           if(allowedMap.find(arg->names[i]) != allowedMap.end()){
@@ -331,7 +331,7 @@ namespace icl{
         }
       }
 
-      void add(GivenArg *g) throw (ProgArgException){
+      void add(GivenArg *g) {
         std::map<std::string,GivenArg*>::iterator it = given.find(g->arg());
         if(it != given.end()) THROW_ProgArgException("argument '" + g->arg() + "' was given at least twice");
         for(unsigned int i=0;i<g->allowed->names.size();++i){
@@ -363,7 +363,7 @@ namespace icl{
     ProgArgContext *ProgArgContext::s_context = 0;
     std::map<std::string,std::string> ProgArgContext::explanations;
 
-    void pa_init_internal(const std::string &sIn, ProgArgContext &context) throw (ProgArgException){
+    void pa_init_internal(const std::string &sIn, ProgArgContext &context) {
 
 
       std::string s = sIn;
@@ -537,7 +537,7 @@ namespace icl{
       return danglingOnly ? context.dangling.size() : context.all.size();
     }
 
-    const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException){
+    const std::string &pa_subarg_internal(const ProgArgData &pa) {
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
@@ -589,17 +589,17 @@ namespace icl{
       return dummy;
     }
 
-    int ProgArg::n() const throw (ProgArgException){
+    int ProgArg::n() const {
       GivenArg *g = ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(id);
       return g ? (int)g->subargs.size() : 0;
     }
 
-    Any ProgArg::operator[](int idx) const throw (ProgArgException){
+    Any ProgArg::operator[](int idx) const {
       return *pa(id,idx);
     }
 
 
-    bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException){
+    bool pa_defined_internal(const ProgArgData &pa) {
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;

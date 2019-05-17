@@ -89,7 +89,7 @@ namespace icl{
           imageA(x,y) = imageB(a,b);
           </code>
       */
-      inline PixelRef &operator=(const PixelRef &other)throw (utils::ICLException){
+      inline PixelRef &operator=(const PixelRef &other){
         ICLASSERT_THROW(other.m_data.size() == m_data.size(),utils::ICLException("incompatible channel count"));
         for(unsigned int i=0;i<m_data.size();++i){
           *m_data[i] = *other.m_data[i];
@@ -98,7 +98,7 @@ namespace icl{
       }
 
       /// assigns reference pixel values from vector data
-      inline PixelRef &operator=(const std::vector<T> &vec)throw (utils::ICLException){
+      inline PixelRef &operator=(const std::vector<T> &vec){
         ICLASSERT_THROW(vec.size() == m_data.size(),utils::ICLException("incompatible channel count"));
         for(unsigned int i=0;i<m_data.size();++i){
           *m_data[i] = vec[i];
@@ -116,7 +116,7 @@ namespace icl{
           </code>
       */
       template<class MT,unsigned int COLS,unsigned int ROWS>
-      inline PixelRef &operator=(const math::FixedMatrix<MT,COLS,ROWS> &mat)throw (utils::ICLException){
+      inline PixelRef &operator=(const math::FixedMatrix<MT,COLS,ROWS> &mat){
         ICLASSERT_THROW((m_data.size() == math::FixedMatrix<MT,COLS,ROWS>::DIM), utils::ICLException("channel count and matrix dim are incompatible"));
         for(unsigned int i=0;i<m_data.size();++i){
           *m_data[i] = utils::clipped_cast<MT,T>(mat[i]);
@@ -148,7 +148,7 @@ namespace icl{
       /// assigns a ranges contents to the pixel data
       /** An exception is only thrown of the given range is too short*/
       template<class ForwardIterator>
-      inline void setFromRange(ForwardIterator begin, ForwardIterator end) throw (utils::ICLException){
+      inline void setFromRange(ForwardIterator begin, ForwardIterator end) {
         for(unsigned int i=0;i<m_data.size();++i,++begin){
           if(begin == end) throw utils::ICLException("Range is longer then channel count");
           *m_data[i] = *begin;
@@ -156,13 +156,13 @@ namespace icl{
       }
 
       /// references a single element (safe)
-      T &operator[](unsigned int channel) throw (utils::ICLException){
+      T &operator[](unsigned int channel) {
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
 
       /// references a single element (const) (safe)
-      const T &operator[](unsigned int channel) const throw (utils::ICLException){
+      const T &operator[](unsigned int channel) const {
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }

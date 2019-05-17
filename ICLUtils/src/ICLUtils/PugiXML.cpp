@@ -6851,7 +6851,7 @@ namespace pugi
     PugiXMLException(const std::string &text) : std::runtime_error(text){}
   };
 
-  static inline void seek(char search, std::basic_istream<char, std::char_traits<char> >& stream, std::vector<char> &read) throw (PugiXMLException){
+  static inline void seek(char search, std::basic_istream<char, std::char_traits<char> >& stream, std::vector<char> &read) {
     char c;
     while(stream.get(c)){
       read.push_back(c);

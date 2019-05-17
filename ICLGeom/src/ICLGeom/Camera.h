@@ -174,13 +174,13 @@ namespace icl {
           @param prefix valid prefix that determines wheret to find the camera within the
                  given config file (note, that this prefix must end with '.')
           */
-      Camera(const std::string &filename, const std::string &prefix="config.")  throw (utils::ParseException);
+      Camera(const std::string &filename, const std::string &prefix="config.")  ;
       /// loads a camera from given input stream
       /** @param configDataStream stream object to read and interpret input file name of valid configuration file (in ICL's ConfigFile core::format)
           @param prefix valid prefix that determines where to find the camera within the
                  given config file (note, that this prefix must end with '.')
           */
-      Camera(std::istream &configDataStream, const std::string &prefix="config.")  throw (utils::ParseException);
+      Camera(std::istream &configDataStream, const std::string &prefix="config.")  ;
 
 
       /** @} @{ @name static creation functions */
@@ -197,28 +197,28 @@ namespace icl {
       */
       static Camera calibrate(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1,
                               bool performLMAOptimization=true)
-        throw (NotEnoughDataPointsException,math::SingularMatrixException);
+        ;
 
       /// Uses the passed world point -- image point references to estimate the projection parameters.
       /** Same as the method calibrate, but using a pseudoinvers instead of the SVD for the estimation.
           This method is less stable and less exact. */
       static Camera calibrate_pinv(std::vector<Vec> Xws, std::vector<utils::Point32f> xis, float focalLength=1,
                                    bool performLMAOptimization=true)
-        throw (NotEnoughDataPointsException,math::SingularMatrixException);
+        ;
 
       /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
       /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
       static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis,
                                         const Camera &intrinsicCamValue, const RenderParams &renderParams=RenderParams(),
                                         bool performLMAOptimization=true)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+      ;
 
       /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
       /** @see Camera::calibrate_extrinsic((std::vector<Vec>,std::vector<utils::Point32f>,float,float,float,float,float) */
       static Camera calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis,
                                         const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams=RenderParams(),
                                         bool performLMAOptimization=true)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+      ;
 
       /// performs extrinsic camera calibration using a given set of 2D-3D correspondences and the given intrinsic camera calibration data
       /** In many cases, when camera calibration is performed in a realy scene, it is quite difficult to place the calibration
@@ -322,7 +322,7 @@ namespace icl {
                                         float fx, float fy, float s, float px ,float py,
                                         const RenderParams &renderParams=RenderParams(),
                                         bool performLMAOptimization=true)
-      throw (NotEnoughDataPointsException,math::SingularMatrixException);
+      ;
 
       /// performs a non-linear LMA-based optimization to improve camera calibration results
       static Camera optimize_camera_calibration_lma(const std::vector<Vec> &Xws,
@@ -368,7 +368,7 @@ namespace icl {
       ViewRay getViewRay(const Vec &Xw) const;
 
       /// returns estimated 3D point for given pixel and plane equation
-      Vec estimate3DPosition(const utils::Point32f &pixel, const PlaneEquation &plane) const throw (utils::ICLException);
+      Vec estimate3DPosition(const utils::Point32f &pixel, const PlaneEquation &plane) const ;
       /// calculates the intersection point between this view ray and a given plane
       /** Throws an utils::ICLException in case of parallel plane and line
           A ViewRay is defined by  \f$V: \mbox{offset} + \lambda \cdot \mbox{direction} \f$
@@ -380,7 +380,7 @@ namespace icl {
           and .. obviously, we get no intersection if direction is parallel to planeNormal
       */
       static Vec getIntersection(const ViewRay &v,
-                                 const PlaneEquation &plane) throw (utils::ICLException);
+                                 const PlaneEquation &plane) ;
 
       /** @} @{ @name complex setter and getter functions */
 
@@ -576,7 +576,7 @@ namespace icl {
       */
       static Vec estimate_3D(const std::vector<Camera*> cams,
                              const std::vector<utils::Point32f> &UVs,
-                             bool removeInvalidPoints=false) throw (utils::ICLException);
+                             bool removeInvalidPoints=false) ;
 
       /// estimate world frame pose of object specified by given object points
       Mat estimatePose(const std::vector<Vec> &objectCoords,
@@ -597,7 +597,7 @@ namespace icl {
           defautl created Camera instance. The undistortion file must use the model
           "MatlabModel5Params". The given resolution is not used if the given
           file is a standard camera-calibration file */
-      static Camera create_camera_from_calibration_or_udist_file(const std::string &filename) throw (utils::ICLException);
+      static Camera create_camera_from_calibration_or_udist_file(const std::string &filename) ;
 
       protected:
       static Mat createTransformationMatrix(const Vec &norm, const Vec &up, const Vec &pos);
@@ -625,7 +625,7 @@ namespace icl {
 
       /// internally used utility function
       static void checkAndFixPoints(std::vector<Vec> &worldPoints, std::vector<utils::Point32f> &imagePoints)
-        throw (NotEnoughDataPointsException);
+        ;
       /// intenal helper function
       static void load_camera_from_stream(std::istream &is,
                                           const std::string &prefix,
@@ -636,7 +636,7 @@ namespace icl {
     ICLGeom_API std::ostream &operator<<(std::ostream &os, const Camera &cam);
 
     /// istream operator parses a camera from an XML-string
-    ICLGeom_API std::istream &operator>>(std::istream &is, Camera &cam) throw (utils::ParseException);
+    ICLGeom_API std::istream &operator>>(std::istream &is, Camera &cam) ;
 
   } // namespace geom
 } // namespace icl

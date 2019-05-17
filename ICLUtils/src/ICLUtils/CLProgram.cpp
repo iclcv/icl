@@ -53,7 +53,7 @@ namespace icl {
 		bool is_valid;
 		CLDeviceContext deviceContext;
 		cl::Program program;
-		void initProgram(const string &sourceText) throw (CLBuildException) {
+		void initProgram(const string &sourceText)  {
 			cl::Program::Sources sources(1, std::make_pair(sourceText.c_str(), 0)); //kernel source
 			program = cl::Program(deviceContext.getContext(), sources);//program (bind context and source)
 			std::vector<cl::Device> deviceList;
@@ -65,7 +65,7 @@ namespace icl {
 			}
 			is_valid = true;
 		}
-		void initDevice(const std::string device_type_str) throw (CLInitException) {
+		void initDevice(const std::string device_type_str)  {
 			try {
 				deviceContext = CLDeviceContext(device_type_str);
 			} catch (cl::Error& error) { //catch openCL errors
@@ -73,7 +73,7 @@ namespace icl {
 			}
 		}
 
-		void initDevice(CLDeviceContext const &device_context) throw (CLInitException) {
+		void initDevice(CLDeviceContext const &device_context)  {
 			try {
 				deviceContext = device_context;
 			} catch (cl::Error& error) { //catch openCL errors
@@ -82,16 +82,16 @@ namespace icl {
 		}
 
 		CLBuffer createBuffer(const string &accessMode, size_t size,
-							  const void *src = 0) throw (CLBufferException) {
+							  const void *src = 0)  {
 			return deviceContext.createBuffer(accessMode, size, src);
 		}
 
 		CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height,
-								int depth, int num_channel, const void *src=0) throw(CLBufferException){
+								int depth, int num_channel, const void *src=0) {
 			return deviceContext.createImage2D(accessMode, width, height, depth, num_channel, src);
 		}
 
-		CLKernel createKernel(const string &id) throw (CLKernelException) {
+		CLKernel createKernel(const string &id)  {
 			return CLKernel(id, program, deviceContext.getCommandQueue());
 		}
 
@@ -100,7 +100,7 @@ namespace icl {
 	// /////////////////////////////////////////////////////////////////////////////////////////////
 
 	CLProgram::CLProgram(const string deviceType, const string &sourceCode)
-	throw (CLInitException, CLBuildException) {
+	 {
 		impl = new Impl();
 		try {
 			impl->initDevice(deviceType);
@@ -112,7 +112,7 @@ namespace icl {
 	}
 
 	CLProgram::CLProgram(const string deviceType, ifstream &fileStream)
-		throw (CLInitException, CLBuildException) {
+		 {
 		impl = new Impl();
 		try {
 			impl->initDevice(deviceType);
@@ -126,7 +126,7 @@ namespace icl {
 	}
 
 	CLProgram::CLProgram(const string &sourceCode, const CLProgram &parent)
-	throw(CLInitException, CLBuildException) {
+	 {
 		impl = new Impl();
 		try {
 			impl->initDevice(parent.impl->deviceContext);
@@ -138,7 +138,7 @@ namespace icl {
 	}
 
 	CLProgram::CLProgram(ifstream &fileStream, const CLProgram &parent)
-	throw(CLInitException, CLBuildException) {
+	 {
 		impl = new Impl();
 		try {
 			impl->initDevice(parent.impl->deviceContext);
@@ -173,7 +173,7 @@ namespace icl {
 		delete impl;
 	}
 
-	CLProgram::CLProgram(const CLDeviceContext &device_context, const string &sourceCode) throw(CLInitException, CLBuildException) {
+	CLProgram::CLProgram(const CLDeviceContext &device_context, const string &sourceCode)  {
 		impl = new Impl();
 		try {
 			impl->initDevice(device_context);
@@ -184,7 +184,7 @@ namespace icl {
 		}
 	}
 
-	CLProgram::CLProgram(const CLDeviceContext &device_context, ifstream &fileStream) throw(CLInitException, CLBuildException) {
+	CLProgram::CLProgram(const CLDeviceContext &device_context, ifstream &fileStream)  {
 		impl = new Impl();
 		try {
 			impl->initDevice(device_context);
@@ -198,19 +198,19 @@ namespace icl {
 	}
 
 	CLBuffer CLProgram::createBuffer(const string &accessMode, size_t size,
-									 const void *src) throw(CLBufferException) {
+									 const void *src)  {
 		return impl->deviceContext.createBuffer(accessMode, size, src);
 	}
 
-	CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) throw(CLBufferException){
+	CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) {
 		return impl->deviceContext.createImage2D(accessMode, width, height, depth, 1, src);
 	}
 
-	CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) throw(CLBufferException){
+	CLImage2D CLProgram::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) {
 		return impl->deviceContext.createImage2D(accessMode, width, height, depth, num_channel, src);
 	}
 
-	CLKernel CLProgram::createKernel(const string &id) throw (CLKernelException) {
+	CLKernel CLProgram::createKernel(const string &id)  {
 		return impl->createKernel(id);
 	}
 

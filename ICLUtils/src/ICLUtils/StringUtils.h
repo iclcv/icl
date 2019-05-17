@@ -290,7 +290,7 @@ namespace icl{
                                 if numSubMatches is at least 1
         */
     ICLUtils_API MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0)
-      throw (InvalidRegularExpressionException);
+      ;
 
 
     /// converts a Time::value_type (long int) into a string

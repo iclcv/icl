@@ -118,7 +118,7 @@ namespace icl {
 			 * @brief asCLBuffer Casting function to cast to CLBuffer pointer (reinterpret_cast)
 			 * @return Casted pointer to CLBuffer
 			 */
-			inline CLBuffer *asCLBuffer() throw(CLBufferException) {
+			inline CLBuffer *asCLBuffer() {
 				if (m_type != Buffer)
 					throw CLBufferException("Invalid cast from CLMemory to CLBuffer pointer");
 				return reinterpret_cast<CLBuffer*>(this);
@@ -128,7 +128,7 @@ namespace icl {
 			 * @brief asCLImage2D Casting function to cast to CLImage2D pointer (reinterpret_cast)
 			 * @return Casted pointer to CLImage2D
 			 */
-			inline CLImage2D *asCLImage2D() throw(CLBufferException) {
+			inline CLImage2D *asCLImage2D() {
 				if (m_type != Image2D)
 					throw CLBufferException("Invalid cast from CLMemory to CLImage2D pointer");
 				return reinterpret_cast<CLImage2D*>(this);

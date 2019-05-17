@@ -141,10 +141,10 @@ namespace icl{
           // where *(x,y)* is a convolution at location (x,y)
           </code>
       */
-      ConvolutionKernel(int *data, const utils::Size &size,int factor=1, bool deepCopy=true) throw (utils::InvalidSizeException);
+      ConvolutionKernel(int *data, const utils::Size &size,int factor=1, bool deepCopy=true) ;
 
       /// create a float valued kernel
-      ConvolutionKernel(float *data, const utils::Size &size, bool deepCopy=true) throw (utils::InvalidSizeException);
+      ConvolutionKernel(float *data, const utils::Size &size, bool deepCopy=true) ;
 
       /// create a fixed kernel (optionally as float kernel)
       ConvolutionKernel(fixedType t, bool useFloats=false);

@@ -196,7 +196,7 @@ namespace icl{
 
     FileGrabber::FileGrabber(const std::string &pattern,
                                      bool buffer,
-                                     bool ignoreDesired) throw(FileNotFoundException)
+                                     bool ignoreDesired)
       : m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
     {
       // {{{ open

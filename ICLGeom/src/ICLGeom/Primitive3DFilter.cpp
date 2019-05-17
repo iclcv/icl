@@ -281,7 +281,7 @@ namespace icl{
 
         }
 
-        Primitive3DFilter::FilterConfig::FilterConfig(const std::string &filename) throw(utils::ParseException) {
+        Primitive3DFilter::FilterConfig::FilterConfig(const std::string &filename) {
 
             // parse XML document
             pugi::xml_document doc;

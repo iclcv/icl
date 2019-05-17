@@ -241,37 +241,37 @@ namespace icl{
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// element-wise addition  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// element-wise substraction  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// element-wise multiplication  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// element-wise division  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// element-wise power \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /** @} */
     /** @{ @name matrix distance measurement  */
@@ -282,7 +282,7 @@ namespace icl{
     */
     template<class T> ICLMath_IMP
     T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm = 2)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// computes generalized Kullback-Leibler-divergence between matrix vectors \ingroup LINALG
     /** For float and double only
@@ -290,7 +290,7 @@ namespace icl{
     */
     template<class T> ICLMath_IMP
     T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
 
     /** @} */
@@ -387,7 +387,7 @@ namespace icl{
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a, T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// computes alpha*a + gamma \ingroup LINALG
     /** For float and double only */
@@ -398,13 +398,13 @@ namespace icl{
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m)
-  	throw (IncompatibleMatrixDimensionException);
+  	;
 
     /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst)
-     	throw (IncompatibleMatrixDimensionException);
+     	;
 
      /** @} */
 
@@ -433,7 +433,7 @@ namespace icl{
     */
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    throw (IncompatibleMatrixDimensionException);
+    ;
 
     /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices) \ingroup LINALG
     /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
@@ -449,17 +449,17 @@ namespace icl{
     */
     template<class T> ICLMath_IMP
     DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    throw (IncompatibleMatrixDimensionException);
+    ;
 
     /// applies matrix addition on optionally transposed matrices \ingroup LINALG
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    throw (IncompatibleMatrixDimensionException);
+    ;
 
     /// applies matrix substraction on optionally transposed matrices \ingroup LINALG
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    throw (IncompatibleMatrixDimensionException);
+    ;
 
     /** @} */
 
@@ -471,7 +471,7 @@ namespace icl{
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
     */
     template<class T> ICLMath_IMP
-    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V) throw (utils::ICLException);
+    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V) ;
 
 
   #if 0

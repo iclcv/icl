@@ -184,7 +184,7 @@ namespace icl{
       /** Internally we use a workaround when the matrix inversion fails due to stability
           problems. If the standard matrix inversion fails, a SVD-based inversion is
           used */
-      Model fit(const std::vector<DataPoint> &points) throw (utils::ICLException){
+      Model fit(const std::vector<DataPoint> &points) {
         const int M = m_modelDim;
         const int N = (int)points.size();
 

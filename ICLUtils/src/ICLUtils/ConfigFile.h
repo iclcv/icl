@@ -217,7 +217,7 @@ namespace icl{
 
       /// internally used utitlity function
       template<class T>
-      static const std::string &get_type_name() throw (UnregisteredTypeException){
+      static const std::string &get_type_name() {
         static const std::string &rttiID = get_rtti_type_id<T>();
         if(!type_registered_by_rtti(rttiID)) throw UnregisteredTypeException(rttiID);
         static const std::string &name = getMapsInstanceRef().typeMap[rttiID];
@@ -233,13 +233,13 @@ namespace icl{
 
       /// internally used utitlity function (id must be given without prefix)
       template<class T>
-      inline bool check_type(const std::string &id) const throw (EntryNotFoundException,UnregisteredTypeException){
+      inline bool check_type(const std::string &id) const {
         return check_type_internal(id,get_rtti_type_id<T>());
       }
 
       /// internally used utitlity function
       bool check_type_internal(const std::string &id, const std::string &rttiTypeID) const
-      throw (EntryNotFoundException,UnregisteredTypeException);
+      ;
 
       /// internally used utitlity function
       static bool type_registered_by_rtti(const std::string &rttiID){
@@ -308,20 +308,20 @@ namespace icl{
       /** @param filename if filename is found and it contains a valid ConfigFile structure,
                           it is read into the ConfigFile instance. Otherwise, filename is
                           stored internally for later use if load(void) or save(void) is called. */
-      ConfigFile(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
+      ConfigFile(const std::string &filename);
 
       /// Creates a ConfigFile from given handle instance
       /** Note: Ownership is passed to this ConfigFile instance here */
-      ConfigFile(pugi::xml_document *handle) throw (UnregisteredTypeException);
+      ConfigFile(pugi::xml_document *handle);
 
       /// creates a ConfigFile instance from given istream.
       /** The constructor will only read the stream until the
           first opening tag is closed */
-      ConfigFile(std::istream &stream) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
+      ConfigFile(std::istream &stream);
 
       /// loads the ConfigFile from given filename and updates internal filename variable
       /** Warning: old data content is lost! */
-      void load(const std::string &filename) throw(FileNotFoundException,InvalidFileFormatException,UnregisteredTypeException);
+      void load(const std::string &filename);
 
       /// Writes data to disk using given filename
       void save(const std::string &filename) const;
@@ -349,14 +349,14 @@ namespace icl{
         /** This automatic cast automatically detects the destination (lvalue) type an calls the
             appropiate parse<T> function */
         template<class T>
-        operator T() const throw (InvalidTypeException,EntryNotFoundException){
+        operator T() const {
           return cf->get<T>(id);
         }
 
         /// explicit cast into given type
         /** Sometimes, the implicit automatic cast is not allowed due to ambiguities */
         template<class T>
-        T as() const throw (InvalidTypeException,EntryNotFoundException){
+        T as() const {
           return cf->get<T>(id);
         }
 
@@ -375,7 +375,7 @@ namespace icl{
             If given type T is not registered, an UnregisteredTypeException is thrown
         */
         template<class T>
-        Data &operator=(const T &t) throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
+        Data &operator=(const T &t) {
           cf->set(id,t);
           return *this;
         }
@@ -391,7 +391,7 @@ namespace icl{
 
       /// main access function to datastore entries (const)
       /** As above, but only for reading ... */
-      const Data operator[](const std::string &id) const throw (EntryNotFoundException);
+      const Data operator[](const std::string &id) const ;
 
       /// returns all data entries, that match the given regex
       /** note, the current default prefix is <b>not</b> used here */
@@ -432,7 +432,7 @@ namespace icl{
           type "double" by default:
       */
       template<class T>
-      void set(const std::string &id, const T &val) throw (UnregisteredTypeException){
+      void set(const std::string &id, const T &val) {
         set_internal(id,str(val),get_rtti_type_id<T>());
       }
 
@@ -448,7 +448,7 @@ namespace icl{
              data store -> throws an instance of UnregisteredTypeException
       */
       template<class T>
-      inline T get(const std::string &idIn) const throw (EntryNotFoundException,InvalidTypeException,UnregisteredTypeException){
+      inline T get(const std::string &idIn) const {
         if(!contains(idIn)) throw EntryNotFoundException(m_sDefaultPrefix+idIn);
         if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
         return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
@@ -458,7 +458,7 @@ namespace icl{
       /** Like the function above, except it uses a default value if given key cannot be found
       */
       template<class T>
-      inline T get(const std::string &idIn,const T &def) const throw (InvalidTypeException,UnregisteredTypeException){
+      inline T get(const std::string &idIn,const T &def) const {
         if(!contains(idIn)) return def;
         if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
         return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
@@ -475,13 +475,13 @@ namespace icl{
 
       /// applies get on the static config instances
       template<class T>
-      static inline T sget(const std::string &id) throw (EntryNotFoundException,InvalidTypeException){
+      static inline T sget(const std::string &id) {
         return getConfig().get<T>(id);
       }
 
       /// applies get on the static config instances (with default)
       template<class T>
-      static inline T sget(const std::string &id,const T &def) throw (InvalidTypeException){
+      static inline T sget(const std::string &id,const T &def) {
         return getConfig().get<T>(id,def);
       }
 
@@ -515,11 +515,11 @@ namespace icl{
       /// defined the range for given number-type-valued key
       /** This feature is used by the ConfigFileGUI to create appropriate slider
           ranges if requested */
-      void setRestriction(const std::string &id, const KeyRestriction &r) throw (EntryNotFoundException);
+      void setRestriction(const std::string &id, const KeyRestriction &r) ;
 
       /// returns predefined range for given id (or 0 if no range was defined for this key)
       /** This feature is only used by the config file GUI */
-      const KeyRestriction *getRestriction(const std::string &id) const throw (EntryNotFoundException);
+      const KeyRestriction *getRestriction(const std::string &id) const ;
 
       /// internal utility structure for contained data
       struct Entry{
@@ -573,13 +573,13 @@ namespace icl{
       void load_internal();
 
       /// internal utility function
-      Entry &get_entry_internal(const std::string &id) throw (EntryNotFoundException);
+      Entry &get_entry_internal(const std::string &id) ;
 
       /// internal utility function
-      const Entry &get_entry_internal(const std::string &id) const throw (EntryNotFoundException);
+      const Entry &get_entry_internal(const std::string &id) const ;
 
       /// internal utility function
-      void set_internal(const std::string &id, const std::string &val, const std::string &type) throw (UnregisteredTypeException);
+      void set_internal(const std::string &id, const std::string &val, const std::string &type) ;
 
       /// internally synchronized an add- or a set call
       static void add_to_doc(pugi::xml_document &h,const std::string &id,const std::string &type,
@@ -609,11 +609,11 @@ namespace icl{
 
     /** \cond */
     template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t)
-    throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
+    {
       return ConfigFile::Data::operator=(std::string(t));
     }
     template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t)
-    throw (UnregisteredTypeException,InvalidTypeException,EntryNotFoundException){
+    {
       return ConfigFile::Data::operator=(std::string(t));
     }
     /** \endcond */

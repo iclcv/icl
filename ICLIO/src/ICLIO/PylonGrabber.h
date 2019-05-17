@@ -106,7 +106,7 @@ namespace icl {
           * @param args The arguments provided to this grabber.
           * @throw ICLException when no suitable device exists.
           */
-          ICLIO_API static Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
+          ICLIO_API static Pylon::CDeviceInfo getDeviceFromArgs(std::string args);
 
         private:
           /// A mutex lock to synchronize buffer and color converter access.

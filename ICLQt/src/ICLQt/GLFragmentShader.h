@@ -51,7 +51,7 @@ namespace icl{
       public:
       GLFragmentShader(const std::string &vertexProgram,
                        const std::string &fragmentProgram,
-                       bool createOnFirstActivate=true) throw (utils::ICLException);
+                       bool createOnFirstActivate=true) ;
       ~GLFragmentShader();
 
       void setUniform(const std::string var, const float &val);

@@ -40,7 +40,7 @@ namespace icl{
                                                                                const utils::Size32f &gridBounds,
                                                                                const std::vector<int> &markerIDs,
                                                                                const std::string &markerType)
-      throw (utils::ICLException):MarkerGridDetector::GridDefinition(numCells,markerIDs, markerType){
+      {
       this->markerBounds = markerBounds;
       this->gridBounds = gridBounds;
     }
@@ -172,7 +172,7 @@ namespace icl{
 
 
     const AdvancedMarkerGridDetector::Marker &
-    AdvancedMarkerGridDetector::MarkerGrid::getMarker(int id) const throw (utils::ICLException){
+    AdvancedMarkerGridDetector::MarkerGrid::getMarker(int id) const {
       int idx = gridDef.getIndex(id);
       if(idx < 0) throw utils::ICLException("invalid marker ID");
       return (*this)[idx];

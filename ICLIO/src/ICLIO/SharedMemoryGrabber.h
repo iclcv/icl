@@ -50,12 +50,12 @@ namespace icl{
         Data *m_data;
 
         /// Connects an unconnected grabber to given shared memory segment
-        void init(const std::string &sharedMemorySegmentID) throw (utils::ICLException);
+        void init(const std::string &sharedMemorySegmentID);
 
       public:
 
         /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-        SharedMemoryGrabber(const std::string &sharedMemorySegmentID="") throw(utils::ICLException);
+        SharedMemoryGrabber(const std::string &sharedMemorySegmentID="");
 
         /// Destructor
         ~SharedMemoryGrabber();

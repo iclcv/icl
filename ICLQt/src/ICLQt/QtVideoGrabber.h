@@ -45,7 +45,7 @@ namespace icl{
       public:
 
         /// Create video grabber with given video-file name
-        QtVideoGrabber(const std::string &filename) throw (utils::FileNotFoundException,utils::InvalidFileException);
+        QtVideoGrabber(const std::string &filename) ;
 
         /// Destructor
         ~QtVideoGrabber();

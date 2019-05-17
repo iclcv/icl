@@ -46,7 +46,7 @@ namespace icl{
       return !protoBufObject;
     }
 
-    void ProtoBufSerializationDevice::null_check(const std::string &function) throw (ICLException){
+    void ProtoBufSerializationDevice::null_check(const std::string &function) {
       if(isNull()) throw ICLException(function + ": instance is null");
     }
 

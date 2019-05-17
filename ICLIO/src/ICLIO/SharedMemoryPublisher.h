@@ -48,13 +48,13 @@ namespace icl{
 
       /// Creates a new publisher instance
       /** If memorySegmentName is "", no connection is performed */
-      SharedMemoryPublisher(const std::string &memorySegmentName="") throw (utils::ICLException);
+      SharedMemoryPublisher(const std::string &memorySegmentName="") ;
 
       /// Destructor
       ~SharedMemoryPublisher();
 
       /// sets the publisher to use a new segment
-      void createPublisher(const std::string &memorySegmentName="") throw (utils::ICLException);
+      void createPublisher(const std::string &memorySegmentName="") ;
 
       /// publishs given image
       void publish(const core::ImgBase *image);
@@ -63,7 +63,7 @@ namespace icl{
       virtual void send(const core::ImgBase *image) { publish(image); }
 
       /// returns current memory segment name
-      std::string getMemorySegmentName() const throw (utils::ICLException);
+      std::string getMemorySegmentName() const ;
     };
   } // namespace io
 }

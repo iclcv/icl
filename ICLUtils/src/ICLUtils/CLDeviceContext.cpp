@@ -57,7 +57,7 @@ namespace icl {
 
 			Impl() : m_device_type_str("") {}
 
-                  void init(std::string const &device_type_str) throw(CLInitException) {
+                  void init(std::string const &device_type_str)  {
                     m_device_type_str = device_type_str;
                     cl_device_type device_type = stringToDeviceType(m_device_type_str);
                     try {
@@ -90,7 +90,7 @@ namespace icl {
 			}
 
 			void selectFirstDevice(const cl_device_type deviceType,
-                                               const std::vector<cl::Platform>& platformList) throw (CLInitException) {
+                                               const std::vector<cl::Platform>& platformList)  {
 			  for (unsigned int i = 0; i < platformList.size(); i++) { //check all platforms
                             std::vector<cl::Device> deviceList;
                             try {
@@ -174,7 +174,7 @@ namespace icl {
 
 			}
 
-			static cl_device_type stringToDeviceType(string deviceType) throw (CLInitException) {
+			static cl_device_type stringToDeviceType(string deviceType)  {
 			  if (deviceType.compare("gpu") == 0) {
 				return CL_DEVICE_TYPE_GPU;
 			  } else if (deviceType.compare("cpu") == 0) {
@@ -218,21 +218,21 @@ namespace icl {
 			}
 
 			CLBuffer createBuffer(const string &accessMode, size_t size,
-								  const void *src = 0) throw (CLBufferException) {
+								  const void *src = 0)  {
 				return CLBuffer(context, cmdQueue, accessMode, size, src);
 			}
 
 			CLBuffer createBuffer(const string &accessMode, size_t length, size_t byteDepth,
-								  const void *src = 0) throw (CLBufferException) {
+								  const void *src = 0)  {
 				return CLBuffer(context, cmdQueue, accessMode, length, byteDepth, src);
 			}
 
-			CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException){
+			CLImage2D createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src=0) {
 				return CLImage2D(context, cmdQueue, accessMode, width, height, depth, num_channel, src, supported_channel_orders);
 			}
 
 			CLBuffer *createBufferHeap(const string &accessMode, size_t length, size_t byteDepth,
-								  const void *src = 0) throw (CLBufferException) {
+								  const void *src = 0)  {
 				CLBuffer *res = 0;
 				try {
 					res = new CLBuffer(context, cmdQueue, accessMode, length, byteDepth, src);
@@ -244,7 +244,7 @@ namespace icl {
 				return res;
 			}
 
-			CLImage2D *createImage2DHeap(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src=0) throw(CLBufferException){
+			CLImage2D *createImage2DHeap(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src=0) {
 				CLImage2D *res = 0;
 				try {
 					res = new CLImage2D(context, cmdQueue, accessMode, width, height, depth, num_channel, src, supported_channel_orders);
@@ -260,12 +260,12 @@ namespace icl {
 
 		// /////////////////////////////////////////////////////////////////////////////////////////
 
-		CLDeviceContext::CLDeviceContext() throw(CLInitException, CLBuildException)
+		CLDeviceContext::CLDeviceContext() 
 			: impl(0) {
 			impl = new Impl();
 		}
 
-		CLDeviceContext::CLDeviceContext(std::string const &device) throw(CLInitException, CLBuildException)
+		CLDeviceContext::CLDeviceContext(std::string const &device) 
 			: impl(0) {
 			impl = new Impl();
 			try {
@@ -297,27 +297,27 @@ namespace icl {
 			return *this;
 		}
 
-		CLBuffer CLDeviceContext::createBuffer(const string &accessMode, size_t size, const void *src) throw(CLBufferException) {
+		CLBuffer CLDeviceContext::createBuffer(const string &accessMode, size_t size, const void *src)  {
 		  return impl->createBuffer(accessMode, size, src);
 		}
 
-		CLBuffer CLDeviceContext::createBuffer(const string &accessMode, size_t length, size_t byteDepth, const void *src) throw(CLBufferException) {
+		CLBuffer CLDeviceContext::createBuffer(const string &accessMode, size_t length, size_t byteDepth, const void *src)  {
 			return impl->createBuffer(accessMode,length,byteDepth,src);
 		}
 
-		CLImage2D CLDeviceContext::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) throw(CLBufferException){
+		CLImage2D CLDeviceContext::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, const void *src) {
 			return impl->createImage2D(accessMode, width, height, depth, 1, src);
 		}
 
-		CLImage2D CLDeviceContext::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) throw(CLBufferException){
+		CLImage2D CLDeviceContext::createImage2D(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) {
 			return impl->createImage2D(accessMode, width, height, depth, num_channel, src);
 		}
 
-		CLBuffer *CLDeviceContext::createBufferHeap(const string &accessMode, size_t length, size_t byteDepth, const void *src) throw(CLBufferException) {
+		CLBuffer *CLDeviceContext::createBufferHeap(const string &accessMode, size_t length, size_t byteDepth, const void *src)  {
 		  return impl->createBufferHeap(accessMode, length, byteDepth, src);
 		}
 
-		CLImage2D *CLDeviceContext::createImage2DHeap(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) throw(CLBufferException){
+		CLImage2D *CLDeviceContext::createImage2DHeap(const string &accessMode,  const size_t width, const size_t height, int depth, int num_channel, const void *src) {
 			return impl->createImage2DHeap(accessMode, width, height, depth, num_channel, src);
 		}
 

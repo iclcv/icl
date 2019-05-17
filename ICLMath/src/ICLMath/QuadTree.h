@@ -439,7 +439,7 @@ namespace icl{
       protected:
 
       /// internal utility method that is used to find an approximated nearest neighbour
-      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const throw (utils::ICLException){
+      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const {
         // 1st find cell, that continas p
         const Node *n = root;
         while(n->children){
@@ -481,7 +481,7 @@ namespace icl{
           can easily be 5 times as fast as the real nearest neighbor search.
           The result quality depends on the number of contained points, and
           on the QuadTree's template parameters */
-      Pt nn_approx(const Pt &p) const throw (utils::ICLException){
+      Pt nn_approx(const Pt &p) const {
         double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
         nn_approx_internal(p*SF /*Pt(SF*p[0],SF*p[1])*/,currMinDist,currNN);
@@ -507,7 +507,7 @@ namespace icl{
           If no neighbour could be found, an exception is thown. This should
           actually only happen when nn is called on an empty QuadTree
       */
-      Pt nn(const Pt &pIn) const throw (utils::ICLException){
+      Pt nn(const Pt &pIn) const {
         const Pt p = pIn*SF;//p(SF*pIn[0],SF*pIn[1]);
         std::vector<const Node*> stack;
         stack.reserve(128);
@@ -542,13 +542,13 @@ namespace icl{
       }
 
       /// convenience wrapper for the Point32f type
-      const utils::Point32f nn(const utils::Point32f &p) const throw (utils::ICLException){
+      const utils::Point32f nn(const utils::Point32f &p) const {
         Pt n = nn(Pt(p.x,p.y));
         return utils::Point32f(n[0],n[1]);
       }
 
       /// convenience wrapper for the Point32f type
-      const utils::Point nn(const utils::Point &p) const throw (utils::ICLException){
+      const utils::Point nn(const utils::Point &p) const {
         Pt n = nn(Pt(p.x,p.y));
         return utils::Point(n[0],n[1]);
       }

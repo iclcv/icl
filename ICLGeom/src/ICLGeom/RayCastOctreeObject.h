@@ -103,7 +103,7 @@ namespace icl{
       ICLGeom_API std::vector<Vec> rayCastSort(const ViewRay &ray, float maxDist = 1) const;
 
       /// casts a ray and returns the point closest to the ray-offset
-      ICLGeom_API Vec rayCastClosest(const ViewRay &ray, float maxDist = 1) const throw (utils::ICLException);
+      ICLGeom_API Vec rayCastClosest(const ViewRay &ray, float maxDist = 1) const ;
     };
 
   }

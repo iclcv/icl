@@ -143,7 +143,7 @@ namespace icl{
         stack.push_back(state);
       }
 
-      virtual void pop() throw (utils::ICLException){
+      virtual void pop() {
         ICLASSERT_THROW(stack.size(), utils::ICLException("AbstractCanvas::pop: stack is empty"));
         state = stack.back();
         stack.pop_back();
@@ -152,7 +152,7 @@ namespace icl{
       virtual void point(float x, float y);
       virtual void line(float x0, float y0, float x1, float y1);
       virtual void triangle(float x0, float y0, float x1, float y1, float x2, float y2);
-      virtual void sym(char c, float x, float y) throw (utils::ICLException);
+      virtual void sym(char c, float x, float y) ;
       virtual void linestrip(int n, const float *xs, const float *ys,
                              int xStride=1, int yStride=1, bool loop=false);
       virtual void rect(float x, float y, float w, float h);
@@ -161,7 +161,7 @@ namespace icl{
       virtual void image(const ImgBase *image, float xanchor,
                          float yanchor, float alpha,
                          scalemode sm=interpolateLIN,
-                         bool centered=false)  throw (utils::ICLException);
+                         bool centered=false)  ;
       virtual void text(const std::string &t, float x, float y, bool centered = false);
 
       virtual void linecolor(float r, float g, float b, float a=255){

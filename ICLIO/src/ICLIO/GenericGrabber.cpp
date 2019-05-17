@@ -70,7 +70,7 @@ namespace icl{
           return &inst;
         }
 
-        Grabber* createGrabber(const GrabberDeviceDescription &desc) throw (ICLException){
+        Grabber* createGrabber(const GrabberDeviceDescription &desc) {
           Mutex::Locker l(mutex);
 
           GPM::iterator it = gpm.find(desc.name());
@@ -130,7 +130,7 @@ namespace icl{
       }
     }
 
-    void GenericGrabber::init(const ProgArg &pa) throw (ICLException){
+    void GenericGrabber::init(const ProgArg &pa) {
       init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
     }
 
@@ -189,7 +189,7 @@ namespace icl{
 
     void GenericGrabber::init(const std::string &desiredAPIOrder,
                               const std::string &params,
-                              bool notifyErrors) throw(ICLException)
+                              bool notifyErrors)
     {
       // get lock and grabber information
       Mutex::Locker __lock(m_mutex);

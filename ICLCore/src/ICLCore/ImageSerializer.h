@@ -71,29 +71,29 @@ namespace icl{
       static int getHeaderSize();
 
       /// estimates the size for the image data of an serialized image
-      static int estimateImageDataSize(const ImgBase *image) throw (utils::ICLException);
+      static int estimateImageDataSize(const ImgBase *image) ;
 
       /// estimates the full size of an serialized image
-      static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) throw (utils::ICLException);
+      static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) ;
 
       /// creates an image header from given image
-      static ImageHeader createHeader(const ImgBase *image) throw (utils::ICLException);
+      static ImageHeader createHeader(const ImgBase *image) ;
 
       /// serializes an image into given destination data-points (which has to be long enough)
       static void serialize(const ImgBase *image, icl8u *dst,
                             const ImageHeader &header=ImageHeader(),
-                            bool skipMetaData=false) throw (utils::ICLException);
+                            bool skipMetaData=false) ;
 
       /// serializes an image into given vector (the vector size is adapted automatically)
       static void serialize(const ImgBase *image, std::vector<icl8u> &data,
                             const ImageHeader &header=ImageHeader(),
-                            bool skipMetaData=false) throw (utils::ICLException);
+                            bool skipMetaData=false) ;
 
       /// deserializes an image (and optionally also the meta-data) from given icl8u data block
-      static void deserialize(const icl8u *data, ImgBase **dst) throw (utils::ICLException);
+      static void deserialize(const icl8u *data, ImgBase **dst) ;
 
       /// extracts only an images TimeStamp from it's serialized form
-      static utils::Time deserializeTimeStamp(const icl8u *data) throw (utils::ICLException);
+      static utils::Time deserializeTimeStamp(const icl8u *data) ;
 
     };
   } // namespace core

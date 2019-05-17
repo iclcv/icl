@@ -57,7 +57,7 @@ namespace icl{
         xine_video_port_t   *vo_port;
         xine_audio_port_t   *ao_port;
 
-        XineHandle(const std::string &filename) throw (InvalidFileException,InvalidFileException):
+        XineHandle(const std::string &filename) :
           xine(0),stream(0),vo_port(0),ao_port(0){
           xine = xine_new();
           xine_config_load(xine,(str(xine_get_homedir())+"/.xine/config").c_str());
@@ -218,7 +218,7 @@ namespace icl{
     };
 
 
-    VideoGrabber::VideoGrabber(const std::string &filename) throw (FileNotFoundException,InvalidFileException):
+    VideoGrabber::VideoGrabber(const std::string &filename) :
       m_xine(0),m_data(0),m_params(0){
 
       if(!File(filename).exists()){

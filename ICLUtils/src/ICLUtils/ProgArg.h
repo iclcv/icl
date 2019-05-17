@@ -49,8 +49,8 @@ namespace icl{
     // internally used programm argument data type
     class ProgArgData{
     protected:
-      friend ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
-      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa);
+      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa);
       std::string id;
       int subargidx;
       bool danglingOnly;
@@ -69,10 +69,10 @@ namespace icl{
     ICLUtils_API void pa_explain_internal(const std::string &pa, const std::string &ex);
 
     // internal sub-argument access function
-    ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa) throw (ProgArgException);
+    ICLUtils_API const std::string &pa_subarg_internal(const ProgArgData &pa);
 
     // another internal helper function
-    ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+    ICLUtils_API bool pa_defined_internal(const ProgArgData &pa);
     /** \endcond */
 
     /// Programm argument utility class \ingroup PA
@@ -93,43 +93,43 @@ namespace icl{
       public:
       /** \cond */
       // undocumented friend
-      friend ICLUtils_API const ProgArg pa(const std::string &,unsigned int) throw (ProgArgException);
+      friend ICLUtils_API const ProgArg pa(const std::string &,unsigned int);
       // undocumented friend
       friend ICLUtils_API const ProgArg pa(unsigned int, bool);
       // yet another one
-      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa) throw (ProgArgException);
+      friend ICLUtils_API bool pa_defined_internal(const ProgArgData &pa);
       /** \endcond */
 
       /// returns the count of actually given sub arguments
       /** If this argument was not given, this function returns 0.*/
-      ICLUtils_API int n() const throw (ProgArgException);
+      ICLUtils_API int n() const;
 
       /// returns the given sub-argument in shape of an utils::Any
-      ICLUtils_API Any operator[](int subArgIdx) const throw (ProgArgException);
+      ICLUtils_API Any operator[](int subArgIdx) const;
 
       /// this is the main conversion function. It returns the associated sub argument as given T
       /** If T is bool, this operator returns whether the arg was given rather than
           its value */
       template<class T>
-      inline operator T() const throw (ProgArgException){
+      inline operator T() const{
         return parse<T>(pa_subarg_internal(*this));
       }
 
       /// negation operator
-      inline bool operator!() const throw (ProgArgException){
+      inline bool operator!() const{
         return !pa_defined_internal(*this);
       }
 
       /// this template function can be used to explicitly cast a program argument into a given type
       template<class T>
-      inline T as() const throw (ProgArgException){
+      inline T as() const{
         return parse<T>(pa_subarg_internal(*this));
       }
 
       /// important convenience operator for using a ProgArg instance as string
       /** <tt>*pa("-x")</tt> is the same as <tt>pa("-x").as<std::string>()</tt>.
           However, the first version is much shorter.*/
-      inline std::string operator*() const throw (ProgArgException){
+      inline std::string operator*() const{
         return pa_subarg_internal(*this);
       }
 
@@ -147,13 +147,13 @@ namespace icl{
     /** \cond */
     // explicit specialization for bool types (returns whether the arg was actually given)
     template<>
-    inline ProgArg::operator bool() const throw(utils::ProgArgException){
+    inline ProgArg::operator bool() const {
       return pa_defined_internal(*this);
     }
 
     // explicit specialization for bool types (returns whether the arg was actually given)
     template<>
-    inline bool ProgArg::as() const throw (ProgArgException){
+    inline bool ProgArg::as() const{
       return pa_defined_internal(*this);
     }
 
@@ -301,7 +301,7 @@ namespace icl{
 
         @see icl::utils::pa_init(int,char**,const std::string&,bool)*/
 
-    inline const ProgArg pa(const std::string &id, unsigned int subargidx = 0) throw (ProgArgException){
+    inline const ProgArg pa(const std::string &id, unsigned int subargidx = 0){
       if(!id.length()) THROW_ProgArgException("invalid programm argument id ''");
       return ProgArg(id,subargidx);
     }
@@ -315,14 +315,14 @@ namespace icl{
 
     /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
     template<class T>
-    inline const T pa_def(const std::string &id, unsigned int subargidx, const T &def) throw (ProgArgException){
+    inline const T pa_def(const std::string &id, unsigned int subargidx, const T &def){
       const ProgArg p = pa(id,subargidx);
       return p ? parse<T>(p) : def;
     }
 
     /// utility function that allows to use a default value, if given argument was not defined \ingroup PA
     template<class T>
-    inline const T pa_def(const std::string &id, const T &def) throw (ProgArgException){
+    inline const T pa_def(const std::string &id, const T &def){
       return pa_def(id,0,def);
     }
 

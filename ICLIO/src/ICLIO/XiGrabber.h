@@ -48,14 +48,14 @@ namespace icl{
         Data *m_data;
 
         /// internal initialization function
-        void init(int deviceID) throw (utils::ICLException);
+        void init(int deviceID);
 
         /// provide protected access for the data class
         friend class Data;
       public:
 
         /// Creates a new XiGrabber instance (please use the GenericGrabber instead)
-        XiGrabber(int deviceID) throw(utils::ICLException);
+        XiGrabber(int deviceID);
 
         /// Destructor
         ~XiGrabber();

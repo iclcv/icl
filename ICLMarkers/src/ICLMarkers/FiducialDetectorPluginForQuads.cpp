@@ -231,7 +231,7 @@ namespace icl{
     }
 
     const ImgBase *FiducialDetectorPluginForQuads::getIntermediateImage(const std::string &name)
-      const throw (ICLException){
+      const {
       if(name != "binary") return FiducialDetectorPlugin::getIntermediateImage(name);
       return &data->quadd.getLastBinaryImage();
     }

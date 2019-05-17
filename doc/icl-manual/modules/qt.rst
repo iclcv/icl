@@ -375,9 +375,9 @@ type-checked assignment. For this, the :icl:`qt::DataStore::Data`
 instance returned by the index operator provides template-based
 assignment and implicit cast operators::
   
-  template<class T> void operator=(const T &t) throw (UnassignableTypeException);
+  template<class T> void operator=(const T &t) ;
 
-  template<class T> operator T() const throw (UnassignableTypeException);
+  template<class T> operator T() const ;
   
 Internally, contained GUI entries, such as a slider value, are
 registered with an RTTI-type, which is checked whenever one of these

@@ -69,7 +69,7 @@ namespace icl{
         /// constructor with given parameters
         GridDefinition(const utils::Size &numCells,
                        const std::vector<int> &markerIDs=std::vector<int>(),
-                       const std::string &markerType="bch") throw (utils::ICLException);
+                       const std::string &markerType="bch") ;
 
         /// returns the grid x/y index for a given marker ID
         /** If the id is not contained in the grid, (-1,-1) is returned */
@@ -126,7 +126,7 @@ namespace icl{
 
 
       /// actual detection function
-      const Result &detect(const core::ImgBase *image) throw (utils::ICLException);
+      const Result &detect(const core::ImgBase *image) ;
 
       /// returns whether the instance has already been already initialized
       bool isNull() const;

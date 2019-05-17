@@ -222,11 +222,11 @@ namespace icl{
 
       /// returns contained object at given index
       /** If the index is not valid, an exception is thrown */
-      SceneObject *getObject(int index) throw (utils::ICLException);
+      SceneObject *getObject(int index) ;
 
       /// returns contained object at given index (const)
       /** If the index is not valid, an exception is thrown */
-      const SceneObject *getObject(int index) const throw (utils::ICLException);
+      const SceneObject *getObject(int index) const ;
 
       /// returns a child that is deeper in the scene graph
       /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at
@@ -234,7 +234,7 @@ namespace icl{
           objects child at index 3 is returned.
           An exception is thrown if one of the indices is wrong.
           */
-      SceneObject *getObject(const std::vector<int> recursiveIndices) throw (utils::ICLException);
+      SceneObject *getObject(const std::vector<int> recursiveIndices) ;
 
       /// returns a child that is deeper in the scene graph (const)
       /** e.g. if recursiveIndices is [1,2,3], then first, the Scene's object at
@@ -242,12 +242,12 @@ namespace icl{
           objects child at index 3 is returned.
           An exception is thrown if one of the indices is wrong.
           */
-      SceneObject *getObject(const std::vector<int> recursiveIndices) const throw (utils::ICLException);
+      SceneObject *getObject(const std::vector<int> recursiveIndices) const ;
 
       /// finds the recursive indices for a given object.
       /** If no exceptions are thrown, getObject(findPath(o)) is always o.
           throws ans exception if the given object cannot be found. */
-      std::vector<int> findPath(const SceneObject *o) const throw (utils::ICLException);
+      std::vector<int> findPath(const SceneObject *o) const ;
 
       /// deletes and removes all objects, handlers and callbacks
       /** If camerasToo is set to true, also all cameras are removed */
@@ -354,12 +354,12 @@ namespace icl{
       /** The returned reference cam be used to set lighting parameters.
           Since OpenGL does only support 8 lights, allowed indices are 0-7.
           If another index is passed, an exception is thrown. */
-      SceneLight &getLight(int index) throw (utils::ICLException);
+      SceneLight &getLight(int index) ;
 
       /// returns a const reference to a light with given index
       /** Since OpenGL does only support 8 lights, allowed indices are 0-7.
           If another index is passed, an exception is thrown. */
-      const SceneLight &getLight(int index) const throw (utils::ICLException);
+      const SceneLight &getLight(int index) const ;
 
 
       /// sets whether OpenGL's lighting is globally activated

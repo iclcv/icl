@@ -129,7 +129,7 @@ namespace icl{
 
 
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName, const utils::Any &value) throw (utils::ICLException);
+      virtual void setPropertyValue(const std::string &propertyName, const utils::Any &value) ;
 
       /// Creates a UnaryOp instance from given string definition
       /** Supported definitions have the followin syntax:
@@ -144,11 +144,11 @@ namespace icl{
           Each specific parameter list's syntax is accessible using the static getFromStringSyntax function.
 
       */
-      static UnaryOp *fromString(const std::string &definition) throw (utils::ICLException);
+      static UnaryOp *fromString(const std::string &definition) ;
 
       /// gives a string syntax description for given opSpecifier
       /** opSpecifier must be a member of the list returned by the static function listFromStringOps */
-      static std::string getFromStringSyntax(const std::string &opSpecifier) throw (utils::ICLException);
+      static std::string getFromStringSyntax(const std::string &opSpecifier) ;
 
       /// returns a list of all supported OP_SPEC values for the fromString function
       static std::vector<std::string> listFromStringOps();
@@ -156,7 +156,7 @@ namespace icl{
       /// creates, applies and releases a UnaryOp defined by given definition string
       static void applyFromString(const std::string &definition,
                                   const core::ImgBase *src,
-                                  core::ImgBase **dst) throw (utils::ICLException);
+                                  core::ImgBase **dst) ;
 
       protected:
       bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize,

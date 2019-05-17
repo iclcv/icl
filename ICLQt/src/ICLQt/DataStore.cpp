@@ -752,7 +752,7 @@ namespace icl{
     }
 
     void DataStore::Data::assign(void *src, const std::string &srcType,
-                                 void *dst, const std::string &dstType) throw (DataStore::UnassignableTypesException){
+                                 void *dst, const std::string &dstType) {
       AssignMap *am = create_singelton_assign_map();
       AssignMap::iterator it1 = am->find(srcType);
       if(it1 == am->end()){
@@ -769,7 +769,7 @@ namespace icl{
     }
 
 
-    DataStore::Data DataStore::operator[](const std::string &key) throw (KeyNotFoundException){
+    DataStore::Data DataStore::operator[](const std::string &key) {
       DataMap::iterator it = m_oDataMapPtr->find(key);
       if(it == m_oDataMapPtr->end()) throw KeyNotFoundException(key);
       return Data(&it->second);
