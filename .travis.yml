@@ -26,7 +26,6 @@ include: &SIMPLE
     - target=cosmic
     - variant=pages
     - ICL_OPTIONS="\
-        -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
         -DBUILD_TESTS=ON"
 
 include: &EXTENDED
@@ -55,7 +54,6 @@ include: &EXTENDED
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
           -DBUILD_TESTS=ON \
-          -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
           -DBUILD_REDIST=DEB"
 
 include: &PROPRIETARY
@@ -83,7 +81,6 @@ include: &PROPRIETARY
           -DBUILD_DEMOS=ON \
           -DBUILD_APPS=ON \
           -DBUILD_TESTS=ON \
-          -DICL_DEACTIVATED_WARNING=-Wno-deprecated-declarations;-Wno-deprecated-register;-Wno-deprecated \
           -DBUILD_REDIST=DEB \
           -DBUILD_WITH_MKL=ON \
           -DBUILD_WITH_IPP=ON"
