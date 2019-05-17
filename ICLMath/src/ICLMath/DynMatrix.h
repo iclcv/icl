@@ -178,7 +178,7 @@ namespace icl{
       /// resets matrix dimensions
       inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) {
         if((int)cols == m_cols && (int)rows==m_rows) return;
-        if(!(cols*rows)) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
+        if(cols*rows == 0) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         DynMatrix M(cols,rows,initializer);
         if(holdContent){
           unsigned int min_cols = iclMin(cols,(unsigned int)m_cols);
