@@ -67,7 +67,7 @@ namespace icl {
 
         /// Initialized the grabber from given prog-arg
         /** The progarg needs two sub-parameters */
-        GenericGrabber(const utils::ProgArg &pa) throw (utils::ICLException):m_poGrabber(0),m_remoteServer(0){
+        GenericGrabber(const utils::ProgArg &pa) {
           init(pa);
         }
 
@@ -75,7 +75,7 @@ namespace icl {
         /** internally this function calls the init function immediately*/
         GenericGrabber(const std::string &devicePriorityList,
                        const std::string &params,
-                       bool notifyErrors = true) throw (utils::ICLException):m_poGrabber(0),m_remoteServer(0){
+                       bool notifyErrors = true) {
           init(devicePriorityList,params,notifyErrors);
         }
 
@@ -170,10 +170,10 @@ namespace icl {
       **/
         void init(const std::string &devicePriorityList,
                   const std::string &params,
-                  bool notifyErrors = true) throw (utils::ICLException);
+                  bool notifyErrors = true) ;
 
         /// this method works just like the other init method
-        void init(const utils::ProgArg &pa) throw (utils::ICLException);
+        void init(const utils::ProgArg &pa) ;
 
         /// resets resource on given devices (e.g. firewire bus)
         static void resetBus(const std::string &deviceList="dc", bool verbose=false);

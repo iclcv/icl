@@ -75,14 +75,14 @@ namespace icl{
     ICLQt_API std::string openFileDialog(const std::string &filter = "",
                                const std::string &caption="open file",
                                const std::string &initialDirectory="_____last",
-                               void *parentWidget=0) throw (utils::ICLException);
+                               void *parentWidget=0) ;
 
     /// uses Qt to spawn a save-file dialog with given filter
     /** throws an exception if cancel was pressed. The function is thread-safe and can savely be called from a working thread */
     ICLQt_API std::string saveFileDialog(const std::string &filter = "",
                                const std::string &caption="save file",
                                const std::string &initialDirectory="_____last",
-                               void *parentWidget=0) throw (utils::ICLException);
+                               void *parentWidget=0) ;
 
     /// uses Qt to spawn a text input dialog
     /** throws an exception if cancel was pressed. The function is thread-safe and can savely be
@@ -93,7 +93,7 @@ namespace icl{
                                 const std::string &initialText="",
                                 void *parentWidget=0,
                                 core::ImgBase *visImage=0,
-                                std::vector<std::string> completionOptions=std::vector<std::string>()) throw (utils::ICLException);
+                                std::vector<std::string> completionOptions=std::vector<std::string>()) ;
 
 
     /// executes the given command as a child process and returns it output

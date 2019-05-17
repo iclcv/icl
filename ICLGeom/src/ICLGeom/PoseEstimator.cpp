@@ -141,7 +141,7 @@ namespace icl{
 
     template<class T>
     FixedMatrix<T,4,4> PoseEstimator::map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, PoseEstimator::MapMode mode)
-      throw (IncompatibleMatrixDimensionException,SingularMatrixException){
+      {
       ICLASSERT_THROW(Xs.rows() == 3 || Xs.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Xs.rows must be 3 or 4 (for homogeneous coordinates)"));
       ICLASSERT_THROW(Ys.rows() == 3 || Ys.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Ys.rows must be 3 or 4 (for homogeneous coordinates)"));
       ICLASSERT_THROW(Xs.cols() == Ys.cols(), IncompatibleMatrixDimensionException("PoseEstimator::map: Point count in Xs and Ys must be equal"));
@@ -318,7 +318,7 @@ namespace icl{
 
     }
 
-    template ICLGeom_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode) throw (IncompatibleMatrixDimensionException, SingularMatrixException);
-    template ICLGeom_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode) throw (IncompatibleMatrixDimensionException, SingularMatrixException);
+    template ICLGeom_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode) ;
+    template ICLGeom_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode) ;
   } // namespace geom
 }

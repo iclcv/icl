@@ -47,7 +47,7 @@ namespace icl{
       return buffer;
     }
 
-    static void convexity_check_and_sorting(Point32f ps[4]) throw (ICLException){
+    static void convexity_check_and_sorting(Point32f ps[4]) {
       std::vector<Point32f> hull = convexHull(std::vector<Point32f>(ps,ps+4));
       // first and last points are doubled
       if(hull.size() != 5) throw ICLException("ImageRectification<T>::apply: given points do not define a convex quadrangle");
@@ -87,7 +87,7 @@ namespace icl{
     static const Homography2D create_and_check_homography(bool validateAndSortPoints,const Point32f psin[4], const Img<T> &src,
                                                           const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                           FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
-                                                          Img<T> &buffer, bool advanedAlgorithm) throw(ICLException){
+                                                          Img<T> &buffer, bool advanedAlgorithm) {
       Point32f ps[4]={psin[0],psin[1],psin[2],psin[3]};
       // we need this check, because otherwise, we cannot check whether
       // the image boarders are intersected by checking the four corners only

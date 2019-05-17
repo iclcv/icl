@@ -79,7 +79,7 @@ namespace icl{
                                const utils::ParamList &params,
                                const std::vector<geom::Camera*> &cams,
                                bool syncProperties=true,
-                               bool deepCopyCams=false) throw (utils::ICLException);
+                               bool deepCopyCams=false) ;
 
       /// (re-)initializes the detector with given parameters
       /** @param pluginType this option directly passed to all internal 2D FiducialDetector instances
@@ -100,13 +100,13 @@ namespace icl{
                 const utils::ParamList &params,
                 const std::vector<geom::Camera*> &cams,
                 bool syncProperties=true,
-                bool deepCopyCams=false) throw (utils::ICLException);
+                bool deepCopyCams=false) ;
 
 
       /// detects fiducials in all images and returns the combined results
       /** Please note, that images[i] must correspond to cams[i] in the constructor/init method*/
       const std::vector<MultiCamFiducial> &detect(const std::vector<const core::ImgBase*> &images,
-                                                  int minCamsFound=1) throw (utils::ICLException);
+                                                  int minCamsFound=1) ;
 
       /// returns the internal number of cameras
       int getNumCameras() const;
@@ -118,7 +118,7 @@ namespace icl{
       FiducialDetector &getFiducialDetector(int idx);
 
       /// loads additional markers (passed to all 2D detectors)
-      void loadMarkers(const utils::Any &which, const utils::ParamList &params) throw (utils::ICLException);
+      void loadMarkers(const utils::Any &which, const utils::ParamList &params) ;
 
       /// unloads markers (passed to all 2D detectors)
       void unloadMarkers(const utils::Any &which);
@@ -142,7 +142,7 @@ namespace icl{
       std::string getIntermediateImageNames() const;
 
       /// returns a named intermeted image
-      const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException);
+      const core::ImgBase *getIntermediateImage(const std::string &name) const ;
 
       /// extract the current camera from the given intermediate image name
       static int getCameraIDFromIntermediteImageName(const std::string &name);

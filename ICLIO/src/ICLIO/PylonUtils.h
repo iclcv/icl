@@ -260,7 +260,7 @@ namespace icl {
       /// Prints help-information to std::cout
       ICLIO_API void printHelp();
       /// Uses args to find demanded device
-      ICLIO_API Pylon::CDeviceInfo getDeviceFromArgs(std::string args) throw(utils::ICLException);
+      ICLIO_API Pylon::CDeviceInfo getDeviceFromArgs(std::string args);
       /// Uses args to find out which BufferChannel to use.
       ICLIO_API int channelFromArgs(std::string args);
       /// Returns a list of available Pylon devices.

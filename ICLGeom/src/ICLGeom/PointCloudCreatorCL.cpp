@@ -149,7 +149,7 @@ namespace icl {
       delete[] rgbaData;
 #endif
     }
-    void PointCloudCreatorCL::setDirectionVectors(const utils::Array2D<Vec> &dirs) throw (ICLException){
+    void PointCloudCreatorCL::setDirectionVectors(const utils::Array2D<Vec> &dirs) {
       if(dirs.getSize() != this->size) throw ICLException("PointCloudCreatorCL::setDirectionVectors: size must not change");
       dirsBuffer.write(dirs.begin(), this->size.getDim()*sizeof(float)*4);
     }

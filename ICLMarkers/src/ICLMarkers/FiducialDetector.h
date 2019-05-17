@@ -98,7 +98,7 @@ namespace icl{
       FiducialDetector(const std::string &plugin="bch",
                        const utils::Any &markersToLoad=utils::Any(),
                        const utils::ParamList &params=utils::ParamList(),
-                       const geom::Camera *camera=0) throw (utils::ICLException);
+                       const geom::Camera *camera=0) ;
 
       /// Destructor
       virtual ~FiducialDetector();
@@ -114,7 +114,7 @@ namespace icl{
       void setCamera(const geom::Camera &camera);
 
       /// returns the current camera (or throws an exception if no camera is available)
-      const geom::Camera &getCamera() const throw (utils::ICLException);
+      const geom::Camera &getCamera() const ;
 
       /// loads markers according to the current plugin type
       /** - "bch":\n
@@ -143,7 +143,7 @@ namespace icl{
             add all markers. Actually if you load a marker ID x, also the inverted marker
             (that has a white root-region) with ID -x is added.
       */
-      void loadMarkers(const utils::Any &which, const utils::ParamList &params=utils::ParamList()) throw (utils::ICLException);
+      void loadMarkers(const utils::Any &which, const utils::ParamList &params=utils::ParamList()) ;
 
 
       /// unloads all already defined markers
@@ -156,7 +156,7 @@ namespace icl{
           are converted to depth8u internally. Usually, your
           plugin will use gray images as input. You can query this information
           by calling getPropertyValue("preferred image type") */
-      const std::vector<Fiducial> &detect(const core::ImgBase *image) throw (utils::ICLException);
+      const std::vector<Fiducial> &detect(const core::ImgBase *image) ;
 
       /// returns the list of supported features
       Fiducial::FeatureSet getFeatures() const;
@@ -172,7 +172,7 @@ namespace icl{
       /** If no image is associated with this name, an exception is thrown. Note,
           the image might be associated, but still be null, in particular if detect
           was not called one before */
-      const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException);
+      const core::ImgBase *getIntermediateImage(const std::string &name) const ;
 
 
       /// creates an image of a given markers

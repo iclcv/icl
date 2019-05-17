@@ -54,7 +54,7 @@ namespace icl{
         ICLIO_API SwissRangerGrabber(int serialNumber=0,
                                core::depth bufferDepth=core::depth32f,
                                int pickChannel=-1)
-        throw (utils::ICLException);
+        ;
 
         /// Destructor
         ICLIO_API ~SwissRangerGrabber();
@@ -66,7 +66,7 @@ namespace icl{
         ICLIO_API const core::ImgBase *acquireImage();
 
         /// Internally used utility function, that might be interesting elsewhere
-        ICLIO_API static float getMaxRangeMM(const std::string &modulationFreq) throw (utils::ICLException);
+        ICLIO_API static float getMaxRangeMM(const std::string &modulationFreq) ;
 
         /// adds properties to Configurable
         ICLIO_API void addProperties();

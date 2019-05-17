@@ -56,7 +56,7 @@ namespace icl {
   namespace markers {
 
     static void optimize_edges(std::vector<Point32f> &e4,
-                               const std::vector<Point> &boundary) throw (int);
+                               const std::vector<Point> &boundary) ;
 
     class QuadDetector::Data {
 
@@ -781,7 +781,7 @@ namespace icl {
     }
 
 #if 0
-    static StraightLine2D approx_line(const std::vector<Point32f> &ps) throw (int) {
+    static StraightLine2D approx_line(const std::vector<Point32f> &ps)  {
       int nPts = ps.size();
       if(nPts < 2) throw 2;
       float avgX = 0;
@@ -818,7 +818,7 @@ namespace icl {
 #endif
 
     static StraightLine2D fit_line(float x, float y, float xx, float xy, float yy)
-      throw (int) {
+       {
       float sxx = xx - x * x;
       float syy = yy - y * y;
       float sxy = xy - x * y;
@@ -837,7 +837,7 @@ namespace icl {
 
 
     void optimize_edges(std::vector<Point32f> &e4,
-                        const std::vector<Point> &boundary) throw (int) {
+                        const std::vector<Point> &boundary)  {
       int num = boundary.size();
       int i0 = (int) (std::find(boundary.begin(), boundary.end(), Point(e4[0]))
                       - boundary.begin());

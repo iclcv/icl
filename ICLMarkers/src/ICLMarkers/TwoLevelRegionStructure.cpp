@@ -38,7 +38,7 @@ using namespace icl::cv;
 
 namespace icl{
   namespace markers{
-    TwoLevelRegionStructure::TwoLevelRegionStructure(const std::string &code) throw (ICLException) : color(0), code(code){
+    TwoLevelRegionStructure::TwoLevelRegionStructure(const std::string &code) {
       if(code.size() < 3) throw ICLException("TwoLevelRegionStructure(code): error parsing code " + code + "(code too short)");
       int i=0;
       if(code[i] == 'b' || code[i] == 'w'){

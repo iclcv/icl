@@ -75,7 +75,7 @@ namespace icl {
           - UnaryCompareOp::eq -> "=="
           - UnaryCompareOp::eqt -> "~="
       */
-      static optype translate_op_type(const std::string &stringVersion) throw (utils::ICLException){
+      static optype translate_op_type(const std::string &stringVersion) {
         if(stringVersion == "<") return UnaryCompareOp::lt;
         if(stringVersion == ">") return UnaryCompareOp::gt;
         if(stringVersion == "<=") return UnaryCompareOp::lteq;

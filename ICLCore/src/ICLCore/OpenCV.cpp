@@ -92,7 +92,7 @@ namespace icl{
       return *dst;
     }
 
-    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) throw (utils::ICLException){
+    ImgBase *ipl_to_img(CvArr *src,ImgBase **dst,DepthPreference e) {
       if(!src){
         throw ICLException("Source is NULL");
       }
@@ -199,7 +199,7 @@ namespace icl{
       return dst;
     }
 
-    IplImage *img_to_ipl(const ImgBase *src, IplImage **dst,DepthPreference e) throw (ICLException){
+    IplImage *img_to_ipl(const ImgBase *src, IplImage **dst,DepthPreference e) {
       ICLASSERT_THROW(src,ICLException("Source is NULL"));
 
       if(dst && *dst && e==PREFERE_DST_DEPTH){
@@ -267,7 +267,7 @@ namespace icl{
       return dst;
     }
 
-    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) throw (ICLException){
+    CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst,int channel) {
       if(!src){
         throw ICLException("Source is NULL");
       }
@@ -332,7 +332,7 @@ namespace icl{
       return *dst;
     }
 
-    CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst) throw (ICLException){
+    CvMat *img_to_cvmat_shallow(const ImgBase *src,CvMat *dst) {
       if(!src){
         throw ICLException("Source is NULL");
       }
@@ -373,7 +373,7 @@ namespace icl{
       return dst;
     }
 
-    IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst)throw (ICLException){
+    IplImage *img_to_ipl_shallow(ImgBase *src,IplImage *dst){
       if(!src){
         throw ICLException("Source is NULL");
       }
@@ -518,7 +518,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
 
 
-    ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dstIn) throw (utils::ICLException){
+    ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dstIn) {
       ICLASSERT_THROW(src && src->getChannels() > 0 && src->getChannels() <=4, ICLException("img_to_mat: invalid source image"));
       ::cv::Mat *dst = dstIn ? dstIn : new ::cv::Mat;
       dst->create(src->getHeight(), src->getWidth(), estimate_mat_type(src->getDepth(), src->getChannels()));
@@ -533,12 +533,12 @@ ICL_INSTANTIATE_ALL_DEPTHS
       return dst;
     }
 
-    void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn) throw (utils::ICLException){
+    void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn) {
       ensureCompatible(dstIn, extract_depth(src), extract_size(src), extract_channels(src));
       mat_to_img(src, *dstIn);
     }
 
-    ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn) throw (ICLException){
+    ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn) {
       ICLASSERT_THROW(src, ICLException("mat_to_img: input is null"));
       ICLASSERT_THROW(src->isContinuous(), "mat_to_img: input image must be continoues");
 

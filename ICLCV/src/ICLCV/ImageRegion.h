@@ -217,24 +217,24 @@ namespace icl{
           -# There is no path from B (from ImageRegion to adjacent ImageRegion)
              to a border-region that does not cross A
       */
-      const std::vector<ImageRegion> &getSubRegions(bool directOnly=true) const throw (utils::ICLException);
+      const std::vector<ImageRegion> &getSubRegions(bool directOnly=true) const ;
 
       /// returns the parent regions (which might be NULL)
       /** This function is only provided if region graph information is available (see \ref GRAPH) */
-      const ImageRegion &getParentRegion() const throw (utils::ICLException);
+      const ImageRegion &getParentRegion() const ;
 
       /// returns the parent region and the parent's parent and so on
       /** If a parent is null, the list ends immediately. In particular, this list can be empty
           This function is only provided if region graph information is available (see \ref GRAPH)
       */
-      const std::vector<ImageRegion> &getParentTree() const throw (utils::ICLException);
+      const std::vector<ImageRegion> &getParentTree() const ;
 
       /// returns a list of all adjacent regions
       /** This function is only provided if region graph information is available (see \ref GRAPH) **/
-      const std::vector<ImageRegion> &getNeighbours() const throw (utils::ICLException);
+      const std::vector<ImageRegion> &getNeighbours() const ;
 
       /// returns whether this ImageRegion is adjacent to the image border
-      bool isBorderRegion() const throw (utils::ICLException);
+      bool isBorderRegion() const ;
 
       /// returns whether a given pixel position is part of the image region
       bool contains(const utils::Point &p) const;

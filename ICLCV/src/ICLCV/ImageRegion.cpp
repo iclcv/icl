@@ -666,7 +666,7 @@ namespace icl{
 
 
 
-    const std::vector<ImageRegion> &ImageRegion::getSubRegions(bool directOnly) const throw (ICLException){
+    const std::vector<ImageRegion> &ImageRegion::getSubRegions(bool directOnly) const {
       ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::getSubRegions: no region graph information available"));
       ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
       if(directOnly && complex->directSubRegions) return *complex->directSubRegions;
@@ -697,7 +697,7 @@ namespace icl{
     }
 
 
-    const ImageRegion &ImageRegion::getParentRegion() const throw (ICLException){
+    const ImageRegion &ImageRegion::getParentRegion() const {
       ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::getParentRegion: no region graph information available"));
       ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
 
@@ -718,7 +718,7 @@ namespace icl{
       collect_parent_regions_recursive(buf,p);
     }
 
-    const std::vector<ImageRegion> &ImageRegion::getParentTree() const throw (ICLException){
+    const std::vector<ImageRegion> &ImageRegion::getParentTree() const {
       ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::getParentTree: no region graph information available"));
       ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
 
@@ -730,7 +730,7 @@ namespace icl{
       return *complex->parentTree;
     }
 
-    const std::vector<ImageRegion> &ImageRegion::getNeighbours() const throw (ICLException){
+    const std::vector<ImageRegion> &ImageRegion::getNeighbours() const {
       ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::getNeighbours: no region graph information available"));
       ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
       if(complex->publicNeighbours) return *complex->publicNeighbours;
@@ -739,7 +739,7 @@ namespace icl{
       return *(complex->publicNeighbours = new std::vector<ImageRegion>(nb.begin(),nb.end()));
     }
 
-    bool ImageRegion::isBorderRegion() const throw (ICLException){
+    bool ImageRegion::isBorderRegion() const {
       ICLASSERT_THROW(m_data->graph, ICLException("ImageRegion::isBorderRegion: no region graph information available"));
       return m_data->graph->isBorder;
     }

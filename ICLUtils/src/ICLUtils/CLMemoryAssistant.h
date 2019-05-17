@@ -62,7 +62,7 @@ namespace icl {
 			 * @brief CLMemoryAssistant Creates an instance for the given device type (see CLDeviceContext for details)
 			 * @param deviceType Device to use (see CLDeviceContext for details)
 			 */
-			CLMemoryAssistant(std::string const &deviceType) throw(CLInitException, CLBuildException);
+			CLMemoryAssistant(std::string const &deviceType) ;
 
 			/// Destructor
 			~CLMemoryAssistant();
@@ -78,7 +78,7 @@ namespace icl {
 			 */
 			CLBuffer createNamedBuffer(MemKeyType const &key, const string &accessMode,
 									   const size_t length, const size_t byteDepth, const void *src=0)
-			throw(ICLException, CLBufferException);
+			;
 
 			/**
 			 * @brief createNamedImage2D creates a Image2D object (internally handled as a CLMemory-pointer)
@@ -89,28 +89,28 @@ namespace icl {
 			CLImage2D createNamedImage2D(MemKeyType const &key, const string &accessMode,
 										 const size_t width, const size_t height, const int depth,
 										 const int num_channel, const void *src=0)
-			throw(ICLException, CLBufferException);
+			;
 
 			/**
 			 * @brief operator [] Direct access operator to the internal CLMemory
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLMemory pointer
 			 */
-			CLMemory *operator[](MemKeyType const &key) throw(std::out_of_range);
+			CLMemory *operator[](MemKeyType const &key) ;
 
 			/**
 			 * @brief asBuf shortcut to access and cast the internal CLMemory instance (CLBuffer)
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLImage2D instance
 			 */
-			CLBuffer &asBuf(MemKeyType const &key) throw(std::out_of_range,CLBufferException);
+			CLBuffer &asBuf(MemKeyType const &key) ;
 
 			/**
 			 * @brief asBuf shortcut to access and cast the internal CLMemory instance (CLBuffer)
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLImage2D instance
 			 */
-			CLImage2D &asImg(MemKeyType const &key) throw(std::out_of_range,CLBufferException);
+			CLImage2D &asImg(MemKeyType const &key) ;
 
 			/**
 			 * @brief keyExist Returns true if the given key exists in this instance

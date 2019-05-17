@@ -62,7 +62,7 @@ namespace icl {
 			CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
 					const string &accessMode, const size_t width, const size_t height,
 					int depth, int num_channel, const void *src=NULL, std::map< uint32_t, std::set<uint32_t> > const
-					  &supported_formats = std::map< uint32_t, std::set<uint32_t> >()) throw (CLBufferException);
+					  &supported_formats = std::map< uint32_t, std::set<uint32_t> >()) ;
 
             /// provides access to the underlying cl-Image2D object
             cl::Image2D getImage2D();
@@ -89,13 +89,13 @@ namespace icl {
             /// reads image from graphics memory into given destination pointer
             /** region defines the accessed image area. When no region is provided
              *  the complete image is addressed(initial width, height and (0, 0) as origin */
-            void read(void *dst, const utils::Rect &region=utils::Rect::null,  bool block = true) throw (CLBufferException);
+            void read(void *dst, const utils::Rect &region=utils::Rect::null,  bool block = true) ;
 
             /// writes source data into the graphics memory
             /** region defines the accessed image area. When no region is provided
              *  the complete image is addressed(initial width, height and (0, 0) as origin */
             void write(const void *src,const utils::Rect &region=utils::Rect::null,
-                    bool block = true) throw (CLBufferException);
+                    bool block = true) ;
 
             /// checks whether image is null
             bool isNull() const {

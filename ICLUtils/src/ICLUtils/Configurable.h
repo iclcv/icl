@@ -257,7 +257,7 @@ namespace icl{
           */
       void addProperty(const std::string &name, const std::string &type,
                        const std::string &info, const Any &value=Any(),
-                       const int volatileness=0, const std::string &tooltip=std::string()) throw (ICLException);
+                       const int volatileness=0, const std::string &tooltip=std::string()) ;
 
       /// This adds another configurable as child
       /** Child configurables can be added with a given prefix. If this prefix is not "",
@@ -272,18 +272,18 @@ namespace icl{
 
       /// this CAN be used e.g. to store a property value in internal property-list
       /** Throws an exception if the given propertyName is not supported */
-      Property &prop(const std::string &propertyName) throw (ICLException);
+      Property &prop(const std::string &propertyName) ;
 
       /// this CAN be used e.g. to store a property value in internal property-list
       /** Throws an exception if the given propertyName is not supported */
-      const Property &prop(const std::string &propertyName) const throw (ICLException);
+      const Property &prop(const std::string &propertyName) const ;
 
       /// create this configurable with given ID
       /** all instantiated configurables are globally accessible by static getter functions
           If given ID is "", then this configurable is not added to the static list.
           Configurables can later be put into the static list by using setConfigurableID
           **/
-      Configurable(const std::string &ID="", bool ordered=true) throw (ICLException);
+      Configurable(const std::string &ID="", bool ordered=true) ;
 
       public:
 
@@ -300,7 +300,7 @@ namespace icl{
 
       /// sets the ID of this configurable
       /** The ID is used for accessing the configurable globally*/
-      void setConfigurableID(const std::string &ID) throw (ICLException);
+      void setConfigurableID(const std::string &ID) ;
 
       /// returns the configurables static ID
       inline const std::string &getConfigurableID() const{
@@ -343,7 +343,7 @@ namespace icl{
           You can also set a properties type from range:spinbox to range:slider
           */
       virtual void adaptProperty(const std::string &name, const std::string &newType,
-                                 const std::string &newInfo, const std::string &newToolTip) throw (ICLException);
+                                 const std::string &newInfo, const std::string &newToolTip) ;
 
 
       /// this function can be used in subclasses to create a default ID
@@ -393,7 +393,7 @@ namespace icl{
           call all registered callbacks.
           If the property is actually owned by a child-configurable,
           the function forwards to that configurable */
-      virtual void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException);
+      virtual void setPropertyValue(const std::string &propertyName, const Any &value) ;
 
       /// returns a list of All properties, that can be set using setProperty
       /** This function should usually not be used. Instead, you should call getPropertyListWithoutDeactivated
@@ -488,7 +488,7 @@ namespace icl{
 
       /// registers a configurable type
       /** @see \ref REG */
-      static void register_configurable_type(const std::string &classname, Function<Configurable*> creator) throw (ICLException);
+      static void register_configurable_type(const std::string &classname, Function<Configurable*> creator) ;
 
       /// returns a list of all registered configurable classnames
       /** @see \ref REG */
@@ -496,7 +496,7 @@ namespace icl{
 
       /// creates a configurable by given name
       /** @see \ref REG */
-      static Configurable *create_configurable(const std::string &classname) throw (ICLException);
+      static Configurable *create_configurable(const std::string &classname) ;
     };
 
     /// registration macro for configurables

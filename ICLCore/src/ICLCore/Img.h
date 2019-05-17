@@ -279,7 +279,7 @@ namespace icl {
           const math::DynMatrix<Type> &c2=math::DynMatrix<Type>(),
           const math::DynMatrix<Type> &c3=math::DynMatrix<Type>(),
           const math::DynMatrix<Type> &c4=math::DynMatrix<Type>(),
-          const math::DynMatrix<Type> &c5=math::DynMatrix<Type>()) throw (math::InvalidMatrixDimensionException);
+          const math::DynMatrix<Type> &c5=math::DynMatrix<Type>()) ;
 
 
       /// Destructor
@@ -433,20 +433,20 @@ namespace icl {
       /** @{ @name extractChannel functions */
       /* {{{ open  */
 
-      /*inline <Type> operator[](int channel) throw (InvalidMatrixDimensionException){
+      /*inline <Type> operator[](int channel) {
         return DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
       }*/
 
       /// extracts given channel as DynMatrix<Type>
       /* This function cannot be called on (0,x) or (x,0)-sized images */
       inline math::DynMatrix<Type> extractDynMatrix(int channel)
-        throw (math::InvalidMatrixDimensionException){
+        {
         return math::DynMatrix<Type>(getWidth(),getHeight(),begin(channel),false);
       }
       /// extracts given channel as DynMatrix<Type> const
       /* This function cannot be called on (0,x) or (x,0)-sized images */
       inline const math::DynMatrix<Type> extractDynMatrix(int channel) const
-        throw (math::InvalidMatrixDimensionException){
+        {
         return math::DynMatrix<Type>(getWidth(),getHeight(),const_cast<Type*>(begin(channel)),false);
       }
 

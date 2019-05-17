@@ -132,7 +132,7 @@ namespace icl{
       ICLApplication(int argc, char **argv, const std::string &paInitString="",
                      callback init=0, callback run=0,
                      callback run2=0, callback run3=0,
-                     callback run4=0, callback run5=0)throw (SecondSingeltonException);
+                     callback run4=0, callback run5=0);
 
       /// Destructor
       ~ICLApplication();

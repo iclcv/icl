@@ -44,7 +44,7 @@ namespace icl{
       /** @param file must be opened in mode readBinary or not opend
           @param dst image, which is adapted to the found image parameters
       */
-      static void decode(utils::File &file, core::ImgBase **dst) throw (utils::InvalidFileFormatException);
+      static void decode(utils::File &file, core::ImgBase **dst) ;
 
       /// Decode a data stream (E.g. used for Decoding Motion-JPEG streams in unicap's DefaultConvertEngine)
       /** @param data jpeg data stream (must be valid, otherwise unpredictable behaviour occurs
@@ -59,7 +59,7 @@ namespace icl{
       private:
       /// internal utility function, which does all the work
       static void decode_internal(utils::File *file,const unsigned char *data,
-                                  unsigned int maxDataLen, core::ImgBase **dst) throw (utils::InvalidFileFormatException);
+                                  unsigned int maxDataLen, core::ImgBase **dst) ;
     };
   } // namespace io
 }

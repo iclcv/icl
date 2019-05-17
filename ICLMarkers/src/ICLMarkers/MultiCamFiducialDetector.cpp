@@ -76,7 +76,7 @@ namespace icl{
                                                        const ParamList &params,
                                                        const std::vector<Camera*> &cams,
                                                        bool syncProperties,
-                                                       bool deepCopyCams) throw (ICLException):m_data(0){
+                                                       bool deepCopyCams) {
       init(pluginType,markersToLoad,params,cams,syncProperties,deepCopyCams);
     }
 
@@ -86,7 +86,7 @@ namespace icl{
                                         const ParamList &params,
                                         const std::vector<Camera*> &cams,
                                         bool syncProperties,
-                                        bool deepCopyCams) throw (ICLException){
+                                        bool deepCopyCams) {
       if(m_data) delete m_data;
       m_data = new Data;
 
@@ -115,7 +115,7 @@ namespace icl{
 
 
     const std::vector<MultiCamFiducial> &MultiCamFiducialDetector::detect(const std::vector<const ImgBase*> &images,
-                                                                          int minCamsFound) throw (ICLException){
+                                                                          int minCamsFound) {
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       ICLASSERT_THROW(m_data->detectors.size() == images.size(),
                       ICLException(str(__FUNCTION__)+ ": given image count is wrong (got "
@@ -178,7 +178,7 @@ namespace icl{
       return *m_data->detectors[idx];
     }
 
-    void MultiCamFiducialDetector::loadMarkers(const Any &which, const ParamList &params) throw (ICLException){
+    void MultiCamFiducialDetector::loadMarkers(const Any &which, const ParamList &params) {
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       for(int i=0;i<getNumCameras();++i){
         m_data->detectors[i]->loadMarkers(which,params);
@@ -209,7 +209,7 @@ namespace icl{
       return parse<int>(name.substr(4));
     }
 
-    const ImgBase *MultiCamFiducialDetector::getIntermediateImage(const std::string &name) const throw (ICLException){
+    const ImgBase *MultiCamFiducialDetector::getIntermediateImage(const std::string &name) const {
       ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
       int idx = parse<int>(name.substr(4));
       if(idx >= 0 && idx < getNumCameras()){

@@ -48,7 +48,7 @@ namespace icl{
       SharedMemorySegment mem;
     };
 
-    SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) throw (ICLException){
+    SharedMemoryPublisher::SharedMemoryPublisher(const std::string &memorySegmentName) {
       m_data = new Data;
       createPublisher(memorySegmentName);
     }
@@ -57,7 +57,7 @@ namespace icl{
       delete m_data;
     }
 
-    void SharedMemoryPublisher::createPublisher(const std::string &memorySegmentName) throw (ICLException){
+    void SharedMemoryPublisher::createPublisher(const std::string &memorySegmentName) {
       m_data->name = memorySegmentName;
       m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND + memorySegmentName);
 
@@ -79,7 +79,7 @@ namespace icl{
       std::copy(data.bytes, data.bytes+data.len,(icl8u*)m_data->mem.data());
     }
 
-    std::string SharedMemoryPublisher::getMemorySegmentName() const throw (ICLException){
+    std::string SharedMemoryPublisher::getMemorySegmentName() const {
       return m_data->mem.getName();
     }
 

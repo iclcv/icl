@@ -47,7 +47,7 @@ namespace icl {
       cl::CommandQueue cmdQueue;
 
       static cl_mem_flags stringToMemFlags(const string &accessMode)
-        throw (CLBufferException) {
+         {
         switch(accessMode.length()){
           case 1:
             if(accessMode[0] == 'w') return CL_MEM_WRITE_ONLY;
@@ -73,7 +73,7 @@ namespace icl {
 
       Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
            const string &accessMode, size_t size,const void *src = 0)
-        throw (CLBufferException):cmdQueue(cmdQueue) {
+         {
         cl_mem_flags memFlags = stringToMemFlags(accessMode);
         if (src) {
           memFlags = memFlags | CL_MEM_COPY_HOST_PTR;
@@ -88,7 +88,7 @@ namespace icl {
       }
 
       void copy(cl::Buffer &dst, int len, int src_offset = 0, int dst_offset = 0)
-        throw (CLBufferException) {
+         {
         try {
           cmdQueue.enqueueCopyBuffer(buffer, dst, src_offset, dst_offset, len);
         } catch (cl::Error& error) {
@@ -97,7 +97,7 @@ namespace icl {
       }
 
       void read(void *dst, int len, int offset = 0, bool block = true)
-        throw (CLBufferException) {
+         {
         cl_bool blocking;
         if (block)
           blocking = CL_TRUE;
@@ -111,7 +111,7 @@ namespace icl {
       }
 
       void write(const void *src, int len, int offset = 0, bool block = true)
-        throw (CLBufferException) {
+         {
         cl_bool blocking;
         if (block)
           blocking = CL_TRUE;
@@ -128,7 +128,7 @@ namespace icl {
 
     CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
                        const string &accessMode, size_t size,const void *src)
-	  throw (CLBufferException)
+	  
 		: CLMemory(CLMemory::Buffer) {
 		impl = new Impl(context, cmdQueue, accessMode, size, src);
 		setDimensions(size,1,1);
@@ -137,7 +137,7 @@ namespace icl {
 
 	CLBuffer::CLBuffer(cl::Context &context, cl::CommandQueue &cmdQueue,
 					   const string &accessMode, size_t length, size_t byteDepth,const void *src)
-	  throw (CLBufferException)
+	  
 		: CLMemory(CLMemory::Buffer) {
 		impl = new Impl(context, cmdQueue, accessMode, byteDepth*length, src);
 		setDimensions(length,1,1);
@@ -166,19 +166,19 @@ namespace icl {
     }
 
     void CLBuffer::copy(CLBuffer &dst, int len, int src_offset, int dst_offset)
-      throw (CLBufferException) {
+       {
       impl->copy(dst.getBuffer(), len, src_offset, dst_offset);
 
     }
 
     void CLBuffer::read(void *dst, int len, int offset, bool block)
-      throw (CLBufferException) {
+       {
       impl->read(dst, len, offset, block);
 
     }
 
     void CLBuffer::write(const void *src, int len, int offset, bool block)
-      throw (CLBufferException) {
+       {
       impl->write(src, len, offset, block);
     }
 

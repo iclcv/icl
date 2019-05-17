@@ -124,14 +124,14 @@ namespace icl{
     }
 
     template<class PCLPointType>
-    pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() throw (utils::ICLException){
+    pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() {
       if(isNull()) throw ICLException("PCLPointCloudObject::pcl(): instance is null");
       return *m_pcl;
     }
 
 
     template<class PCLPointType>
-    const pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() const throw (utils::ICLException){
+    const pcl::PointCloud<PCLPointType> & PCLPointCloudObject<PCLPointType>::pcl() const {
       return const_cast<PCLPointCloudObject<PCLPointType>*>(this)->pcl();
     }
 
@@ -168,7 +168,7 @@ namespace icl{
     }
 
     template<class PCLPointType>
-    Size  PCLPointCloudObject<PCLPointType>::getSize() const throw (utils::ICLException){
+    Size  PCLPointCloudObject<PCLPointType>::getSize() const {
       if(isNull()) throw utils::ICLException("PCLPointCloudObject:getSize(): instance is null");
       if(!isOrganized()) throw utils::ICLException("PCLPointCloud::getSize(): instance is not 2D-ordered");
       return Size(m_pcl->width, m_pcl->height);

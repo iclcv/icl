@@ -64,7 +64,7 @@ namespace icl{
         }
 
         /// sets a property value
-        void setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+        void setPropertyValue(const std::string &propertyName, const Any &value) {
           getInternalConfigurable() -> setPropertyValue(propertyName, value);
         }
 

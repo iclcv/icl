@@ -75,7 +75,7 @@ namespace icl{
     }
 
     OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName)
-    throw (FileNotFoundException) : data(new Data), mutex(Mutex::mutexTypeRecursive), updating(false){
+    {
       data->m_buffer = 0;
       data->use_video_fps = true;
       data->filename = fileName;

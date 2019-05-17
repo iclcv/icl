@@ -368,7 +368,7 @@ namespace icl{
 
     }
 
-    UnaryOp *UnaryOp::fromString(const std::string &definition) throw (ICLException){
+    UnaryOp *UnaryOp::fromString(const std::string &definition) {
       unary_op_from_string::static_init();
       //bool hasParams = true;
       if(!definition.size()) throw ICLException(str(__FUNCTION__)+": empty defintion string");
@@ -392,7 +392,7 @@ namespace icl{
       return op;
     }
 
-    std::string UnaryOp::getFromStringSyntax(const std::string &opSpecifier) throw (ICLException){
+    std::string UnaryOp::getFromStringSyntax(const std::string &opSpecifier) {
       unary_op_from_string::static_init();
       std::map<std::string,unary_op_from_string::Creator>::iterator it=unary_op_from_string::CREATORS.find(opSpecifier);
       if(it == unary_op_from_string::CREATORS.end()) throw ICLException(str(__FUNCTION__)+": no op found for given specifier ["+opSpecifier+"]");
@@ -410,7 +410,7 @@ namespace icl{
       return v;
     }
 
-    void UnaryOp::applyFromString(const std::string &definition, const ImgBase *src, ImgBase **dst) throw (ICLException){
+    void UnaryOp::applyFromString(const std::string &definition, const ImgBase *src, ImgBase **dst) {
       unary_op_from_string::static_init();
       UnaryOp *op = fromString(definition);
       if(!op) throw ICLException(str(__FUNCTION__)+": no op found for given definition string ["+definition+"]");
@@ -418,7 +418,7 @@ namespace icl{
       delete op;
     }
 
-    void UnaryOp::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+    void UnaryOp::setPropertyValue(const std::string &propertyName, const Any &value) {
       if(propertyName == "UnaryOp.clip to ROI") setClipToROI(value == "on");
       else if(propertyName == "UnaryOp.check only") setCheckOnly(value == "on");
       Configurable::setPropertyValue(propertyName,value);

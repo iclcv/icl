@@ -67,10 +67,10 @@ namespace icl{
       virtual void grab(PointCloudObjectBase &dst);
 
       /// returns depth camera (only if explicitly given in the creation string)
-      Camera getDepthCamera() const throw (utils::ICLException);
+      Camera getDepthCamera() const ;
 
       /// returns color camera (only if explicitly given in the creation string)
-      Camera getColorCamera() const throw (utils::ICLException);
+      Camera getColorCamera() const ;
     };
   } // namespace geom
 }

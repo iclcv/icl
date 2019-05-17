@@ -187,7 +187,7 @@ namespace icl {
                    const DynMatrix<Type> &c2,
                    const DynMatrix<Type> &c3,
                    const DynMatrix<Type> &c4,
-                   const DynMatrix<Type> &c5) throw (InvalidMatrixDimensionException):
+                   const DynMatrix<Type> &c5) :
       ImgBase(icl::core::getDepth<Type>(),ImgParams(Size(c1.cols(),c1.rows()),get_channel_count(c1,c2,c3,c4,c5))){
 
       if(c1.isNull()) return;

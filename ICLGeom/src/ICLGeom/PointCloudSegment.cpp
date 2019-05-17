@@ -72,7 +72,7 @@ namespace icl{
     }
 
 
-    Mat PointCloudSegment::computeEigenVectorFrame() const throw (utils::ICLException){
+    Mat PointCloudSegment::computeEigenVectorFrame() const {
       const math::Vec3 &x = eigenvectors[0];
       const math::Vec3 &y = eigenvectors[1];
 
@@ -86,7 +86,7 @@ namespace icl{
 
 
     /// returns week pointer to the i-th child (already casted to PointCloudSegment type)
-    utils::SmartPtr<PointCloudSegment>  PointCloudSegment::getSubSegment(int i) throw (utils::ICLException){
+    utils::SmartPtr<PointCloudSegment>  PointCloudSegment::getSubSegment(int i) {
       if(i<0 || i >= getChildCount()){
         throw utils::ICLException("PointCloudSegment:getSubSegment: invalid index!");
       }

@@ -49,14 +49,14 @@ namespace icl{
         ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
         ICLIO_API KinectGrabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0,
-                                const utils::Size &size=utils::Size::VGA) throw (utils::ICLException);
+                                const utils::Size &size=utils::Size::VGA) ;
 
         ICLIO_API KinectGrabber(Mode mode, const std::string &deviceIDOrSerial,
-                                const utils::Size &size=utils::Size::VGA) throw (utils::ICLException);
+                                const utils::Size &size=utils::Size::VGA) ;
 
       private:
         ICLIO_API  void init(Mode mode, const std::string &deviceIDOrSerial,
-                             const utils::Size &size) throw (utils::ICLException);
+                             const utils::Size &size) ;
       public:
 
         /// Destructor

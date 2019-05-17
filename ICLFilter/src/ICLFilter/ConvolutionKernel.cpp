@@ -124,7 +124,7 @@ namespace icl{
       }
     }
 
-    ConvolutionKernel::ConvolutionKernel(int *data, const Size &size,int factor, bool deepCopy) throw (InvalidSizeException):
+    ConvolutionKernel::ConvolutionKernel(int *data, const Size &size,int factor, bool deepCopy) :
       size(size),fdata(0),idata(0),factor(factor),isnull(false),owned(deepCopy),ft(custom){
       ICLASSERT_THROW(getDim() > 0,InvalidSizeException(__FUNCTION__));
       if(deepCopy){
@@ -134,7 +134,7 @@ namespace icl{
       }
       isnull = !idata;
     }
-    ConvolutionKernel::ConvolutionKernel(float *data, const Size &size, bool deepCopy) throw (InvalidSizeException):
+    ConvolutionKernel::ConvolutionKernel(float *data, const Size &size, bool deepCopy) :
       size(size),fdata(0),idata(0),factor(1),isnull(false),owned(deepCopy),ft(custom){
       ICLASSERT_THROW(getDim() > 0,InvalidSizeException(__FUNCTION__));
       if(deepCopy){

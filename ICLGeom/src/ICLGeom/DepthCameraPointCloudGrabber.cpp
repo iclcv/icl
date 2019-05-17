@@ -190,7 +190,7 @@ namespace icl{
     }
 
     void DepthCameraPointCloudGrabber::reinit(const std::string &description)
-      throw (utils::ICLException){
+      {
       std::vector<std::string> ts = tok(description,"@");
       std::string newDCam, newCCam;
       for(size_t i=0;i<ts.size();++i){
@@ -218,17 +218,17 @@ namespace icl{
       }
     }
 
-    Camera DepthCameraPointCloudGrabber::getDepthCamera() const throw (utils::ICLException){
+    Camera DepthCameraPointCloudGrabber::getDepthCamera() const {
       return m_data->creator.getDepthCamera();
     }
 
-    Camera DepthCameraPointCloudGrabber::getColorCamera() const throw (utils::ICLException){
+    Camera DepthCameraPointCloudGrabber::getColorCamera() const {
       return m_data->creator.getColorCamera();
     }
 
 
     void DepthCameraPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T)
-      throw (utils::ICLException){
+      {
       Camera dCam = getDepthCamera();
       Mat Tdi = dCam.getCSTransformationMatrix();
 
@@ -358,7 +358,7 @@ namespace icl{
       return *m_data->lastDepthImage;
     }
 
-    const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const throw (ICLException){
+    const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const {
       if(!m_data->lastColorImage){
         throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal color image was null (either"
                            " no color grabber is availalble, or grab(dst) was not called before)");
@@ -382,7 +382,7 @@ namespace icl{
       return m_data->creator;
     }
 
-    RGBDMapping DepthCameraPointCloudGrabber::getMapping() const throw (ICLException){
+    RGBDMapping DepthCameraPointCloudGrabber::getMapping() const {
       return getCreator().getMapping();
     }
 

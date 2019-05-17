@@ -47,7 +47,7 @@ namespace icl{
         /// returns a list of attached kinect devices
         ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
-        ICLIO_API Kinect2Grabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0) throw (utils::ICLException);
+        ICLIO_API Kinect2Grabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0) ;
 
         /// Destructor
         ICLIO_API ~Kinect2Grabber();

@@ -618,7 +618,7 @@ namespace icl{
     template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
 
 
-    void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value) throw (ICLException){
+    void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value) {
       if(propertyName == "angle-threshold") angle_thresh = parse<float>(value);
       else if(propertyName == "rc-coefficient") rc_coeff = parse<float>(value);
       else if(propertyName == "sigma") sigma = parse<float>(value);

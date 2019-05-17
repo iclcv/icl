@@ -46,7 +46,7 @@ namespace icl{
       public:
 
       /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      ICLIO_API ZmqGrabber(const std::string &host, int port=44444) throw(utils::ICLException);
+      ICLIO_API ZmqGrabber(const std::string &host, int port=44444);
 
       /// Destructor
       ICLIO_API ~ZmqGrabber();

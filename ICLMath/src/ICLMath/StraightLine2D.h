@@ -89,7 +89,7 @@ namespace icl{
 
       /// computes intersection with given other straight line
       /** if lines are parallel, an ICLException is thrown */
-      Pos intersect(const StraightLine2D &o) const throw(utils::ICLException);
+      Pos intersect(const StraightLine2D &o) const;
 
       /// returns current angle and distance
       PointPolar getAngleAndDistance() const;

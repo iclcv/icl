@@ -209,7 +209,7 @@ namespace icl{
 
     inline std::vector<int> get_random_index_subset(int containerSize,
                                                     int subsetSize)
-      throw (ICLException){
+      {
       if(subsetSize > containerSize){
         throw ICLException("get_random_index_subset: subsetsize must be <= containerSize");
       }
@@ -221,7 +221,7 @@ namespace icl{
 
     template<class T>
     inline std::vector<T> get_random_subset(const std::vector<T> &s, int subsetSize)
-      throw (ICLException){
+      {
       std::vector<int> indices = get_random_index_subset(s.size(), subsetSize);
       std::vector<T> subset(subsetSize);
       for(int i=0;i<subsetSize;++i){
@@ -233,7 +233,7 @@ namespace icl{
     template<class T>
     inline void get_random_subset(const std::vector<T> &s, int subsetSize,
                                   std::vector<T> &subset)
-      throw (ICLException){
+      {
       std::vector<int> indices = get_random_index_subset(s.size(), subsetSize);
       subset.resize(subsetSize);
       for(int i=0;i<subsetSize;++i){
@@ -244,7 +244,7 @@ namespace icl{
     template<class T>
     inline void get_random_subset(const std::vector<T> &s, int subsetSize,
                                   std::vector<T> &subset, std::vector<int> &indices)
-      throw (ICLException){
+      {
       indices = get_random_index_subset(s.size(), subsetSize);
       subset.resize(subsetSize);
       for(int i=0;i<subsetSize;++i){

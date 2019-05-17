@@ -298,7 +298,7 @@ namespace icl{
                 /** Parses the XML config.
                     @param filename the XML config file
                 */
-                FilterConfig(const std::string &filename) throw(utils::ParseException);
+                FilterConfig(const std::string &filename);
 
                 /// map primitive group id to internal groupBit
                 std::map<std::string, unsigned char> mapGroupIdToBit;

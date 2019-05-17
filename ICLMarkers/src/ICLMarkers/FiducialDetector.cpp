@@ -104,7 +104,7 @@ namespace icl{
     FiducialDetector::FiducialDetector(const std::string &plugin,
                                        const Any &markersToLoad,
                                        const ParamList &params,
-                                       const Camera *camera) throw (ICLException):
+                                       const Camera *camera) :
       data(new Data){
       data->plugin = 0;
       data->plugintype = plugin;
@@ -152,7 +152,7 @@ namespace icl{
       data->plugin->camera = data->camera.get();
     }
 
-    const Camera &FiducialDetector::getCamera() const throw (ICLException){
+    const Camera &FiducialDetector::getCamera() const {
       if(!data->camera) throw ICLException("FiducialDetector::getCamera: camera has not been set");
       return *data->camera;
     }
@@ -161,7 +161,7 @@ namespace icl{
       return data->plugintype;
     }
 
-    void  FiducialDetector::loadMarkers(const Any &which, const ParamList &params) throw (ICLException){
+    void  FiducialDetector::loadMarkers(const Any &which, const ParamList &params) {
       data->plugin->addOrRemoveMarkers(true,which,params);
     }
 
@@ -169,7 +169,7 @@ namespace icl{
       data->plugin->addOrRemoveMarkers(false,which,ParamList());
     }
 
-    const std::vector<Fiducial> &FiducialDetector::detect(const ImgBase *image) throw (ICLException){
+    const std::vector<Fiducial> &FiducialDetector::detect(const ImgBase *image) {
       ICLASSERT_THROW(image,ICLException("FiducialDetector::detect: image was 0"));
 
       data->iis.input = const_cast<ImgBase*>(image);
@@ -203,7 +203,7 @@ namespace icl{
       }
     }
 
-    const ImgBase *FiducialDetector::getIntermediateImage(const std::string &name) const throw (ICLException){
+    const ImgBase *FiducialDetector::getIntermediateImage(const std::string &name) const {
       if(name == "input") return data->iis.input;
       if(name == "pp") return data->iis.pp;
       return data->plugin->getIntermediateImage(name);

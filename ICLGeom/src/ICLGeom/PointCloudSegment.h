@@ -67,7 +67,7 @@ namespace icl{
 
       PointCloudSegment *copy() const;
 
-      Mat computeEigenVectorFrame() const throw (utils::ICLException);
+      Mat computeEigenVectorFrame() const ;
 
       /// updates the instances features
       /** parent instances update their features from their children's featuers */
@@ -84,7 +84,7 @@ namespace icl{
 
       /// returns week pointer to the i-th child (already casted to PointCloudSegment type)
       utils::SmartPtr<PointCloudSegment> getSubSegment(int i)
-        throw (utils::ICLException);
+        ;
 
       /// creates a flattened deep copy of the segment
       utils::SmartPtr<PointCloudSegment> flatten() const;

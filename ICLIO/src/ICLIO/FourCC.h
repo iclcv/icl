@@ -62,7 +62,7 @@ namespace icl{
       }
 
       /// initialization utility method
-      void init(const std::string &key) throw (utils::ICLException){
+      void init(const std::string &key) {
         if(key.length() != 4) throw utils::ICLException("FourCC::FourCC(string): invalid fourcc code " + key);
         if(key == "null") this->key = 0;
         else this->key = (((icl32u)(key[0])<<0)|((icl32u)(key[1])<<8)|((icl32u)(key[2])<<16)|((icl32u)(key[3])<<24));

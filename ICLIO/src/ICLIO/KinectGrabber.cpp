@@ -626,16 +626,16 @@ namespace icl{
     };
 
     KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, int deviceID, const Size &size)
-      throw (ICLException) {
+       {
       init(mode, str(deviceID),size);
     }
     KinectGrabber::KinectGrabber(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size)
-      throw (ICLException) {
+       {
       init(mode, idOrSerial,size);
     }
 
     void KinectGrabber::init(KinectGrabber::Mode mode, const std::string &idOrSerial, const Size &size)
-      throw (ICLException){
+      {
 
       FreenectContext::getFreenectContext().start();
       m_impl = new Impl(mode,idOrSerial,size);

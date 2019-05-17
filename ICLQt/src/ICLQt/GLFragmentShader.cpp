@@ -155,7 +155,7 @@ namespace icl{
 
     GLFragmentShader::GLFragmentShader(const std::string &vertexProgram,
                                        const std::string &fragmentProgram,
-                                       bool createOnFirstActivate) throw (ICLException):
+                                       bool createOnFirstActivate) :
       m_data(new Data){
 
         if(!vertexProgram.length() && !fragmentProgram.length()){

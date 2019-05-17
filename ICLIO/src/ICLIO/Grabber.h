@@ -354,16 +354,16 @@ namespace icl {
         void registerGrabberType(const std::string &grabberid,
                                    utils::Function<Grabber *, const std::string &> creator,
                                    utils::Function<const std::vector<GrabberDeviceDescription> &,std::string,bool> device_list)
-        throw (utils::ICLException);
+        ;
 
         void registerGrabberBusReset(const std::string &grabberid,
                                    utils::Function<void, bool> reset_function)
-        throw (utils::ICLException);
+        ;
 
         void addGrabberDescription(const std::string &grabber_description)
-        throw (utils::ICLException);
+        ;
 
-        Grabber* createGrabber(const std::string &grabberid, const std::string &param) throw (utils::ICLException);
+        Grabber* createGrabber(const std::string &grabberid, const std::string &param) ;
 
         std::vector<std::string> getRegisteredGrabbers();
 

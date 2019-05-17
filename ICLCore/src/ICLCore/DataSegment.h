@@ -174,7 +174,7 @@ int main(){
 
       /// copies the data segment to into another element-wise
       template<class OtherT>
-      inline void deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException);
+      inline void deepCopy(DataSegment<OtherT,N> dst) const ;
 
       /// returns whether the data is packed in memory (stride is sizeof(T)*N)
       inline bool isPacked() const{
@@ -298,7 +298,7 @@ int main(){
     };
 
     template<class T, int N> template<class OtherT>
-    inline void DataSegment<T,N>::deepCopy(DataSegment<OtherT,N> dst) const throw (utils::ICLException){
+    inline void DataSegment<T,N>::deepCopy(DataSegment<OtherT,N> dst) const {
       ICLASSERT_THROW(getDim() == dst.getDim(),
                       utils::ICLException("error in DataSegment::deepCopy "
                                           "(source and destination dim differ)"));
@@ -344,7 +344,7 @@ int main(){
 
       /// copies the data segment to into another element-wise
       template<class OtherT>
-      inline void deepCopy(DataSegment<OtherT,1> dst) const throw (utils::ICLException){
+      inline void deepCopy(DataSegment<OtherT,1> dst) const {
         ICLASSERT_THROW(getDim() == dst.getDim(),
                         utils::ICLException("error in DataSegment::deepCopy "
                                             "(source and destination dim differ)"));

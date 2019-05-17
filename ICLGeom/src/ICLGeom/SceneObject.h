@@ -196,7 +196,7 @@ namespace icl{
 
 
       /// creates a scene object from given .obj file
-      ICLGeom_API SceneObject(const std::string &objFileName) throw (utils::ICLException);
+      ICLGeom_API SceneObject(const std::string &objFileName) ;
 
       /// deep copy of SceneObject instance
       /** The new instance's parent is set to null, i.e. it must
@@ -660,7 +660,7 @@ namespace icl{
       /// returns the vertex, that is closest to the given point in wold coordinates
       /** If relative is true, the vertex is returned in object-coordinates, otherwise
           it is returned in world coordinates */
-      ICLGeom_API Vec getClosestVertex(const Vec &pWorld, bool relative = false) throw (utils::ICLException);
+      ICLGeom_API Vec getClosestVertex(const Vec &pWorld, bool relative = false) ;
 
       /// sets the visibility of this object
       ICLGeom_API void setVisible(bool visible, bool recursive = true);

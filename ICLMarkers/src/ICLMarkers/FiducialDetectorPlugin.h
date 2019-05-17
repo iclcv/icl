@@ -150,7 +150,7 @@ namespace icl{
           intermediate images with names "input" and "pp" must not be checked here. But in
           turn, these two names must not be used for intermediate image names in the
           plugin implementation */
-      virtual const core::ImgBase *getIntermediateImage(const std::string &name) const throw (utils::ICLException){
+      virtual const core::ImgBase *getIntermediateImage(const std::string &name) const {
         throw utils::ICLException("FiducialDetectorPlugin: no intermediate image is associated with givne name '" + name + "'");
         return 0;
       }
