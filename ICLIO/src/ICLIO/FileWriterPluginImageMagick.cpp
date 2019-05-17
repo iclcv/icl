@@ -31,6 +31,13 @@
 #include <ICLIO/FileWriterPluginImageMagick.h>
 
 #ifdef ICL_HAVE_IMAGEMAGICK
+// default value which would be set otherwise in Magic++.h as of May 2019
+#ifndef MAGICKCORE_QUANTUM_DEPTH
+#define MAGICKCORE_QUANTUM_DEPTH 16
+#endif
+#ifndef MAGICKCORE_HDRI_ENABLE
+#define MAGICKCORE_HDRI_ENABLE 0
+#endif
 #define OMP_NUM_THREADS 1
 #include <Magick++.h>
 #endif
