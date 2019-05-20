@@ -8,7 +8,7 @@ RUN apt-get upgrade -y
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python3-pip dirmngr \
                        devscripts equivs apt-file debhelper sudo wget \
-                       libjpeg-dev libpng-dev clang ca-certificates tzdata doxygen texlive-latex-base
+                       libjpeg-dev libpng-dev clang ca-certificates tzdata doxygen texlive-latex-base ghostscript
 
 RUN pip3 install Sphinx pyparsing
 
