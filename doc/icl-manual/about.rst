@@ -5,7 +5,7 @@ What is ICL
 -----------
 
 ICL is a novel C++ computer-vision library developed in the
-neuroinformatics group of the university of Bielefeld and in CITEC. It
+Neuroinformatics group of the university of Bielefeld and in CITEC. It
 unifies both, performance and user friendliness. ICL provides a large
 set of simple-to-use classes and functions to facilitate development
 of complex computer vision applications.
@@ -17,7 +17,7 @@ written in less than 15 lines of C++ code (see
 In contrast to the well known OpenCV computer vision library, ICL
 provides not only computer vision related functions and classes, but
 also a huge set of tools, that facilitate rapid development of
-interactive computer vision applications. In particular the the 
+interactive computer vision applications. In particular, the
 :ref:`GUI creation toolkit<qt.gui-creation-framework-intro>` allows
 for fast and simple visualization and augmentation of 2D and even
 3D-point-cloud images.
@@ -40,8 +40,8 @@ how to use 3rd party tools. Whenever ICL uses an external library for
 providing extra functionality, it is wrapped seamlessly in order to
 provide modern and ICL-conform interfaces.
 
-Optimal performace
-""""""""""""""""""
+Optimal performance
+"""""""""""""""""""
 
 ICL can optionally be linked against the Intel IPP-Library in order to
 enhance it's processing speed significantly. Most functions are
@@ -81,7 +81,7 @@ by medium skilled C++-programmers.
 
 
 No compulsory software dependencies
-""""""""""""""""""""""""""""""""""" 
+"""""""""""""""""""""""""""""""""""
 
 All external software dependencies are purely optional. Therefore,
 ICL's image structures and a large set of it's functions and classes
@@ -99,15 +99,5 @@ development of interactive computer vision applications. Unlike the
 OpenCV-library, we did not only concentrate on providing
 image-processing-related functions and tools. A fundamental part of
 ICL's support functions is it's GUI-creation toolkit, that allows for
-creating and layouting most complex and interactive graphical user
+creating and formatting most complex and interactive graphical user
 interfaces within only a few lines of code.
-
-
-License
--------
-
-TODO
-
-
-What's New
-----------

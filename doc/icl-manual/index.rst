@@ -4,7 +4,7 @@ Image Component Library (ICL)
 
 .. |A| image:: icons/92px/utils.png
        :target: modules/utils.html
-      
+
 .. |B| image:: icons/92px/math.png
        :target: modules/math.html
 
@@ -56,7 +56,7 @@ Image Component Library (ICL)
 | |F| |G| |H| |I| |J|
 
 Getting Started
-****************
+***************
 
 | |ABOUT|     |DOWNLOAD|  |INSTALL|
 | |TUTORIAL|  |HOWTOS|    |LICENSE| 
@@ -99,13 +99,16 @@ Internal
 
 
 .. raw:: html
-  
+
+  <a href="https://github.com/iclcv/icl">
+    <img src="_static/images/github_right.svg" style="position:absolute;top:30px;right:0;"
+    alt="Fork me on GitHub" /></a>
+
   <script src="js/jquery.tools.min.js"></script>
   <!--script src="../_static/underscore.js"></script-->
   <!--script src="../_static/doctools.js"></script-->
-  
-  <script>
 
+  <script>
   jQuery(document).ready(function() {
 
     /*

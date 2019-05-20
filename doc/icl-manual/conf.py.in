@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ICL (Image Component Library)'
-copyright = u'2006-2017, Christof Elbrechter, Michael Goetting, Robert Haschke'
+copyright = u'2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
