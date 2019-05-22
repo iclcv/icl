@@ -29,8 +29,6 @@ The ICL build is divided into four packages:
 * ``icl-doc`` - ICL sphinx manual and api documentation
 * ``icl-tools`` - ICL Applications
 
-Currently, we provide packages for the Ubuntu releases ``trusty``, 
-``xenial`` and ``artful``.
 The packages are built with `PCL <http://pointclouds.org>`_ features enabled.
 Users of ``trusty`` need to add a third party PPA to their system as described `here <http://pointclouds.org/downloads/linux.html>`_::
 

@@ -6,9 +6,9 @@ ENV USER=user USER_ID=1000 USER_GID=1000
 RUN apt-get update
 RUN apt-get upgrade -y
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python-pip dirmngr \
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python3-pip dirmngr \
                        devscripts equivs apt-file debhelper sudo wget \
-                       libjpeg-dev libpng-dev clang ca-certificates tzdata
+                       libjpeg-dev libpng-dev clang ca-certificates tzdata doxygen texlive-latex-base ghostscript
 
 # TODO: Uncomment when dev-ipp is working
 # ADD https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB /root/

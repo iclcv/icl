@@ -1,6 +1,6 @@
-FROM ubuntu:cosmic
+FROM ubuntu:disco
 
-LABEL description="Ubuntu Cosmic ICL Build Environment"
+LABEL description="Ubuntu Disco ICL Build Environment"
 ENV USER=user USER_ID=1000 USER_GID=1000
 
 RUN apt-get update

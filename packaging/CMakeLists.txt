@@ -46,7 +46,7 @@ IF(BUILD_REDIST STREQUAL DEB)
       OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-  SET(ICL_DEB_PACKAGE_MAINTAINER "Alexander Neumann <alneuman@techfak.uni-bielefeld.de>")
+  SET(ICL_DEB_PACKAGE_MAINTAINER "Alexander Neumann <aleneum@gmail.com>")
   SET(ICL_DEB_PACKAGE_DESCRIPTION_SHORT "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
   SET(ICL_DEB_PACKAGE_DESCRIPTION "ICL is a novel C++ computer-vision library developed in the neuroinformatics group of the university of Bielefeld and in CITEC. It unifies both, performance and user friendliness. ICL provides a large set of simple-to-use classes and functions to facilitate development of complex computer vision applications.")
   SET(ICL_DEB_PACKAGE_SECTION "devel")
@@ -64,26 +64,16 @@ IF(BUILD_REDIST STREQUAL DEB)
   SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${ICL_DEB_PACKAGE_ARCH}")
 
   # Dependencies for building ICL; will be parsed into debian/control
-  SET(ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, python-sphinx, python-pyparsing, libbullet-dev")
+  STRING(CONCAT ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, "
+					   "libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, "
+					   "libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, graphviz, python3-sphinx, "
+					   "python3-pyparsing, libbullet-dev, texlive-latex-base, ghostscript")
   SET(ICL_DEB_CORE_DEPENDENCY "icl-core (= ${CPACK_PACKAGE_VERSION})")
 
   # Dependencies for using ICL
   # Unfortunately, shlip does not work with CPACK for ICL
   # These package lists have been retrieved from the  binary packages
   # built with debuild (ppa versions)
-  IF(${LSB_RELEASE_CODENAME} STREQUAL "bionic")
-    # pass
-  ELSEIF(${LSB_RELEASE_CODENAME} STREQUAL "artful")
-    # pass
-  ELSEIF(${LSB_RELEASE_CODENAME} STREQUAL "trusty")
-    SET(ICL_DEB_CORE_DEPENDENCIES "libavcodec54 (>= 6:9.1-1) | libavcodec-extra-54 (>= 6:9.20), libavformat54 (>= 6:9.1-1), libavutil52 (>= 6:9.1-1), libc6 (>= 2.15), libdc1394-22, libfreenect0.2 (>= 1:0.1.2), libgcc1 (>= 1:4.1.1), libgl1-mesa-glx | libgl1, libglew1.10 (>= 1.10.0), libglu1-mesa | libglu1, libjpeg8 (>= 8c), libmagick++5 (>= 8:6.7.7.10), libopencl-1.1-1, libopencl-1.2-1, libopencv-calib3d2.4, libopencv-core2.4, libopencv-features2d2.4, libopencv-highgui2.4, libopencv-imgproc2.4, libopenni0, libpng12-0 (>= 1.2.13-4), libqt5core5a (>= 5.0.2), libqt5gui5 (>= 5.0.2) | libqt5gui5-gles (>= 5.0.2), libqt5opengl5 (>= 5.0.2) | libqt5opengl5-gles (>= 5.0.2), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 4.6), libswscale2 (>= 6:9.1-1), libusb-0.1-4 (>= 2:0.1.12), libzmq1, ocl-icd-libopencl1 (>= 1.0) | libopencl1, zlib1g (>= 1:1.1.4)")
-    SET(ICL_DEB_TOOLS_DEPENDENCIES "${ICL_DEB_CORE_DEPENDENCY} libc6 (>= 2.14), libdc1394-22, libgcc1 (>= 1:4.1.1), libgl1-mesa-glx | libgl1, libqt5core5a (>= 5.0.2), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 4.4.0)")
-  ELSEIF(${LSB_RELEASE_CODENAME} STREQUAL "xenial")
-    SET(ICL_DEB_CORE_DEPENDENCIES "libavcodec-ffmpeg56 (>= 7:2.4) | libavcodec-ffmpeg-extra56 (>= 7:2.4), libavformat-ffmpeg56 (>= 7:2.4), libavutil-ffmpeg54 (>= 7:2.4), libc6 (>= 2.15), libdc1394-22, libfreenect0.5 (>= 1:0.1.2), libgcc1 (>= 1:4.2), libgl1-mesa-glx | libgl1, libglew1.13 (>= 1.12.0), libglu1-mesa | libglu1, libjpeg8 (>= 8c), libmagick++-6.q16-5v5 (>= 8:6.8.9.9-7ubuntu5.9), libopencv-calib3d2.4v5, libopencv-core2.4v5, libopencv-features2d2.4v5, libopencv-highgui2.4v5, libopencv-imgproc2.4v5, libopenni0, libpng12-0 (>= 1.2.13-4), libqt5core5a (>= 5.5.0), libqt5gui5 (>= 5.3.0) | libqt5gui5-gles (>= 5.3.0), libqt5multimedia5 (>= 5.5.0), libqt5opengl5 (>= 5.0.2) | libqt5opengl5-gles (>= 5.0.2), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 5.2), libswscale-ffmpeg3 (>= 7:2.4), libusb-0.1-4 (>= 2:0.1.12), libzmq1, ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.1-1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1, zlib1g (>= 1:1.1.4)")
-    SET(ICL_DEB_TOOLS_DEPENDENCIES "${ICL_DEB_CORE_DEPENDENCY} libc6 (>= 2.14), libdc1394-22, libgcc1 (>= 1:3.0), libgl1-mesa-glx | libgl1, libqt5core5a (>= 5.3.0), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 5.2)")
-  ELSE()
-    MESSAGE(FATAL_ERROR "Cannot generate DEB packages for '${LSB_RELEASE_CODENAME}'")
-  ENDIF()
 
   # Merge each group into a debian package, set dependencies for core
   # and add icl-core as a dependency if necessary
