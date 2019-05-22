@@ -1,6 +1,6 @@
-FROM ubuntu:bionic
+FROM ubuntu:disco
 
-LABEL description="Ubuntu Bionic ICL Build Environment"
+LABEL description="Ubuntu Disco ICL Build Environment"
 ENV USER=user USER_ID=1000 USER_GID=1000
 
 RUN apt-get update
@@ -9,6 +9,8 @@ RUN apt-get upgrade -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python3-pip dirmngr \
                        devscripts equivs apt-file debhelper sudo wget \
                        libjpeg-dev libpng-dev clang ca-certificates tzdata doxygen texlive-latex-base ghostscript
+
+RUN pip3 install Sphinx pyparsing
 
 # TODO: Uncomment when dev-ipp is working
 # ADD https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB /root/

@@ -66,7 +66,6 @@ The ICL build is divided into four packages:
 * `icl-doc` - ICL sphinx manual and api documentation
 * `icl-tools` - ICL Applications
 
-Currently, we provide packages for the Ubuntu releases `trusty`, `xenial` and `artful`.
 The packages are built with [PCL](http://pointclouds.org/) features enabled.
 Users of `trusty` need to add a third party PPA to their system as described [here](http://pointclouds.org/downloads/linux.html):
 
@@ -103,7 +102,7 @@ Prebuilt packages can be obtained/installed from the following channels:
 
 |   OS    | Channel | Target |
 |:--------|:--------|:-------|
-| Ubuntu  | [Launchpad][url-launchpad] | `trusty`, `xenial`, `artful` |
+| Ubuntu  | [Launchpad][url-launchpad] | most recent: `disco` |
 | OSX     | [Homebrew][url-homebrew] | |
 | Windows | MSI ([Win64][url-msi-x64]/[Win32][url-msi-x86]) | Visual Studio 2017 |
 

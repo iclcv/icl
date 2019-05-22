@@ -1,3 +1,39 @@
+icl (10.0.2+disco0) disco; urgency=low
+
+  * Upload disco release version
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 21 May 2019 23:40:00 +0100
+
+icl (10.0.2+bionic3) bionic; urgency=low
+
+  * add cmake modules to fix doc builds
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 21 May 2019 23:40:00 +0100
+
+icl (10.0.2+cosmic0) cosmic; urgency=low
+
+  * Upload cosmic release version
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 21 May 2019 14:30:00 +0100
+
+icl (10.0.2+bionic2) bionic; urgency=low
+
+  * disable tests in rules
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 21 May 2019 12:40:00 +0100
+
+icl (10.0.2+bionic1) bionic; urgency=low
+
+  * Add git to dependencies
+
+ -- Alexander Neumann <aleneum@gmail.com>  Tue, 21 May 2019 12:20:00 +0100
+
+icl (10.0.2+bionic0) bionic; urgency=low
+
+  * Upload bionic release version
+
+ -- Alexander Neumann <aleneum@gmail.com>  Mon, 20 May 2019 23:50:00 +0100
+
 icl (10.0.0+artful5) artful; urgency=low
 
   * Upload artful release version
