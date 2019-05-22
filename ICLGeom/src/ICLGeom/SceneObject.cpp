@@ -539,7 +539,7 @@ namespace icl{
         addNormal(Vec(0,0,-1,1));
         addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(steps,m_normals.size()-1).data());
       }else if(type == "cylinder"){
-        // args: x,y,z, dx, dy, dz, steps
+        // args: x, y, z, dx, dy, dz, steps
         float x = *params++;
         float y = *params++;
         float z = *params++;
@@ -1041,8 +1041,8 @@ namespace icl{
       return o;
     }
 
-    SceneObject *SceneObject::addCylinder(float x, float y, float z, float rx, float ry, float h, int steps){
-      float params[] = {x,y,z,rx,ry,h,(float)steps};
+    SceneObject *SceneObject::addCylinder(float x, float y, float z, float dx, float dy, float h, int steps){
+      float params[] = {x,y,z,dx,dy,h,(float)steps};
       SceneObject *o = new SceneObject("cylinder",params);
       addChild(o);
       return o;

@@ -459,7 +459,7 @@ namespace icl{
       /// adds a cylindical child object with given parameters
       /** returns a pointer to the cylinder added. This can be used to adapt
           further properties of that object */
-      ICLGeom_API SceneObject *addCylinder(float x, float y, float z, float rx, float ry, float h, int steps);
+      ICLGeom_API SceneObject *addCylinder(float x, float y, float z, float dx, float dy, float h, int steps);
 
       /// adds a conical child object with given parameters
       /** returns a pointer to the cone added. This can be used to adapt
