@@ -9,7 +9,7 @@ What is ICL ?
 .. image:: /icons/185px/about.png
 
 ICL is a novel C++ computer-vision library developed in the
-neuroinformatics group of the university of Bielefeld and in CITEC. It
+Neuroinformatics group of the university of Bielefeld and in CITEC. It
 unifies both, performance and user friendliness. ICL provides a large
 set of simple-to-use classes and functions to facilitate development
 of complex computer vision applications.
@@ -78,7 +78,7 @@ by medium skilled C++-programmers.
 
 
 No compulsory software dependencies
-""""""""""""""""""""""""""""""""""" 
+"""""""""""""""""""""""""""""""""""
 
 All external software dependencies are purely optional. Therefore,
 ICL's image structures and a large set of it's functions and classes
@@ -96,7 +96,7 @@ development of interactive computer vision applications. Unlike the
 OpenCV-library, we did not only concentrate on providing
 image-processing-related functions and tools. A fundamental part of
 ICL's support functions is it's GUI-creation toolkit, that allows for
-creating and layouting most complex and interactive graphical user
+creating and formatting most complex and interactive graphical user
 interfaces within only a few lines of code.
 
 

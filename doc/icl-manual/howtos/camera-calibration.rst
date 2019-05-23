@@ -157,7 +157,7 @@ combination with ICL's program argument evaluation toolkit (see also
 :ref:`utils.pa` and/or :ref:`this code example<simple-example>`).
 These applications most of the time provide an input argument **-input**
 which allows two additional parameters to be passed e.g.::
-  
+
   icl-viewer -input dc800 0
 
 Here, the first *sub-argument* **dc800** selects a grabber backend,
@@ -216,18 +216,19 @@ images can be created using::
 This allows grid parameters to be specified, such as the
 grid-dimension, the size of markers and the gap between them. The results
 is an SVG image that can then be converted into pdf or printed directly using
-standard external tools such as inkscape. The calibration tool itself can 
+standard external tools such as Inkscape. The calibration tool itself can
 be run using::
- 
+
   icl-lens-undistortion-calibration -i dc800 0 -g 30x21
 
 The user-interface differs a little bit from the OpenCV-based calibration
 tool, but in general, it works very similar. Basically one should
-make the grid visible in the camera and then go to the *optimize* tab on the 
+make the grid visible in the camera and then go to the *optimize* tab on the
 right. Here, one can click *capture frame* for each to-be-captured input frame
-and then *optimize* for the actual optimization. Please note that in particular, 
-the OpenCL-based calibration mode is significantly faster -- albeit calibration 
-still takes some seconds. Here are two screenshots of the tool:
+and then *optimize* for the actual optimization.
+Please note that in particular, the OpenCL-based calibration mode is significantly
+faster -- albeit calibration still takes some seconds.
+Here are two screenshots of the tool:
 
 .. image:: images/icl-calib-screenshot-1.png
       :alt: shadow
@@ -236,7 +237,6 @@ still takes some seconds. Here are two screenshots of the tool:
 .. image:: images/icl-calib-screenshot-2.png
       :alt: shadow
       :scale: 50%
-  
 
 
 .. _howtos.calib.object:
@@ -280,14 +280,14 @@ the whole grid of markers can be described at once by:
 * displacement vector between two marker centers in x-grid-direction
   (given in object coordinates)
 * the same for the y-grid-direction
-  
+
 This allows a large set of marker to be defined at once. Markers
 defined within a grid description also have a large advantages. Due to
 the fact that they have a well defined x and y direction, the given
 size information can be used to derive the object-coordinates of each
 of the markers corners. This then allows the system to not only use
 the marker center as a known object-to-world correspondence, but also
-its four corners, resulting in a much higher key-point density. 
+its four corners, resulting in a much higher key-point density.
 
 .. note::
 
@@ -333,11 +333,11 @@ and
 
    Due to their outstanding accuracy, it is strongly recommended to
    use BCH code markers (see :ref:`markers.supported.bch`)
-  
 
-Calibration Object Examples 
-'''''''''''''''''''''''''''' 
- 
+
+Calibration Object Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In order to provide a better understanding of what is mentioned here,
 two examples are presented.
 
@@ -381,7 +381,7 @@ calibration application's GUI. If no world transforms are given an
 identity transform is automatically provided but if there are
 suggested transforms, it is usually not the worst idea to also provide
 an identity transform that then can manually be selected in the GUI.
-                                                 
+
 The last section contains the .obj file description for the object
 geometry. Even though this is purely optional, it is strongly
 recommended to use this feature, because it significantly facilitates
@@ -389,12 +389,11 @@ the manual evaluation of the current calibration results.
 
 
 **Second Example** (:download:`download xml file here<files/calib-obj-huge.xml>`)
-               
 The most important difference is the much higher manufacturing
 accuracy reached by a better design and material (PVC).
 
-* by adding *the sides* of the object, strong angle deformations  
-  are avoided                                                     
+* by adding *the sides* of the object, strong angle deformations
+  are avoided
 * an additional supporting bar at the otherwise open bottom side
   provides additional stability and shape accuracy and also works as a
   handle of the object
@@ -407,7 +406,7 @@ accuracy reached by a better design and material (PVC).
   slightly rotated onto the object, all markers are wrong into the
   same direction), but small errors can be assumed to compensate each
   other mutatively.
-                                                                                                          
+
 The structure of the corresponding description file is comparable to
 the first one, but it also demonstrates how to add single markers
 and also the side faces are more complex to describe.
@@ -428,9 +427,9 @@ grid each, where the missing marker IDs are simply not used.
   add a helper application that can provide images of an artificial
   calibration object
 
-.. note::                                                     
-   
-   the marker ID order is known to be a bit strange                
+.. note::
+
+  the marker ID order is known to be a bit strange
 
 .. _howtos.calib.application:
 
@@ -455,7 +454,7 @@ first firewire 800 device using the calibration object described in
   :ref:`howtos.calib.distortion`) the resulting parameter file (e.g. called
   **udist.xml**) would have to be passed to the fire-wire backend used by
   **icl-camera-calibration**. E.g::
-  
+
     icl-camera-calibration -i dc800 0@udist=./udist.xml -c calib-obj.xml
 
 However, for this tutorial, a single image (a png version of the one
@@ -464,12 +463,12 @@ image can also be used as input by selecting the *file grabber* image
 input backend::
 
   icl-camera-calibration -i file myImage.png -c calib-obj.xml
-  
+
 When the application starts, the resulting GUI looks like this
 
 .. image:: images/calib-1.jpg
   :alt: shadow
-  
+
 The GUI provides several features:
 
 * **visualized image** here, you can select which image of the
@@ -482,10 +481,10 @@ The GUI provides several features:
 
 * **object-alpha** allows the transparency of the object's geometry
   overlay to be adapted. For a solid object visualization, the alpha
-  value must be set to 255. 
+  value must be set to 255.
 
-  .. note:: 
-  
+  .. note::
+
     setting the alpha value to 0 allows for *looking through the
     object*, which is sometimes necessary to see a coordinate frame
     that occurs behind the virtual object. Due to the fact, that the
@@ -497,7 +496,7 @@ The GUI provides several features:
   checked. When internally solving the equations for camera
   calibration, using the corners sometimes lead to worse solutions --
   most of the time only when already enough marker centers are
-  available. In this case the system will automatically not use the 
+  available. In this case the system will automatically not use the
   corners internally
 
 * **show CS** visualized the current world coordinate frame.
@@ -517,9 +516,8 @@ The GUI provides several features:
   point in order to directly see the point's estimated 3D position,
   which should in an optimal case be identical to the known 3D
   position.
-   
 
-  .. image:: images/calib-2.jpg 
+  .. image:: images/calib-2.jpg
      :alt: shadow
 
   The image shows an example of a grid, visualized as an overlay of the
@@ -533,10 +531,10 @@ The GUI provides several features:
   that have to be manually tuned here are the ones in the
   *thresh* tab, which define the mask size and the global threshold
   for the used :icl:`filter::LocalThresholdOp` instance. By adapting these
-  parameters, it usually becomes possible to detect more markers, which 
+  parameters, it usually becomes possible to detect more markers, which
   then directly improves the calibration result.
 
-  .. note:: 
+  .. note::
 
       It is not the worst idea to optimize your calibration outcome by
       trying to find the parameter set that leads to a maximum number
@@ -548,7 +546,7 @@ The GUI provides several features:
       2. the detected markers are well distributed over at least two
          non-coplanar surfaces of the calibration object
       3. the markers of the detected object cover a large part of the
-         actual 2D image (optimally > 80%) and optimall reach into
+         actual 2D image (optimally > 80%) and optimal reach into
          the corners of the image
 
 * **more options.rel. Transf** shows an extra GUI that allows an
@@ -567,38 +565,37 @@ The GUI provides several features:
   transform selection combo box.
 
   .. note::
-  
+
      for this, the application has to be restarted
 
 * **calibration objects** Here, it becomes clear, that the application
-  can actuall handle an arbitrary number of calibration objects at
+  can actually handle an arbitrary number of calibration objects at
   once (simply pass several calibration object files at once to the
   **-c** program arguments, but ensure that the used marker sets do
-  not overlap to avoid random behaviour). When each of the calibration
+  not overlap to avoid random behavior). When each of the calibration
   objects is a set up with an appropriate (and compatible transform),
   the union of all reference points it used for calibration.
 
   .. note::
-  
+
     please ensure that the actual relative transform between different
     calibration objects use is well defined, since little relative
-    displacements will significantly decrease the calibration 
+    displacements will significantly decrease the calibration
     quality
 
   For each selected calibration object (checkbox checked, a predefined
-  object-to-world transfrorm can be defined.
+  object-to-world transform can be defined.
 
-* **error and detection status** This simply shows an average object 
+* **error and detection status** This simply shows an average object
   detection error. The error is given by the square error of references points
   (in image space) and their virtual camera projects when using the currently
   estimated camera parameters. Normalizing the error* will normalize this value
   by to the number of actually found markers -- otherwise, less detected markers
-  would result in a smaller errro.
-
+  would result in a smaller erro.
 
 
 Saving the calibration Result
-'''''''''''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once an appropriate calibration result is obtained, the resulting
 camera description can be saved using the **save** button. This will
@@ -614,15 +611,15 @@ output file is used
 
 
 How can the result be used ?
-''''''''''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The resulting XML file can be used in combination with the
 :ref:`ICLGeom<geom>` module. There are basically two main purposes for
 the :icl:`geom::Camera`: visualization and 3D-vision. As for
 visualization, the Camera class, which can be instantiated from a
-given calibration result **.xml** file, is directly linked to ICL's 
+given calibration result **.xml** file, is directly linked to ICL's
 :ref:`Scene Graph Framework<geom.scene-graph>`. The main goal here was to
-provide a very simple way to 
+provide a very simple way to
 
 * calibrate a real camera device **C**
 * obtain the calibration result
@@ -640,8 +637,6 @@ manner at it even allows for zooming and panning of the view while
 preserving the images' aspect ratio.
 
 Please also see :ref:`geom.overlay`.
-
-
 
 .. _howtos.calib.kinect:
 
@@ -672,7 +667,7 @@ exists.
 
 
 Step by step RGB-D calibration of a Kinect device
-'''''''''''''''''''''''''''''''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The mapping between the two cameras can easily be estimated by simply
 calibrating both kinect cameras separately in two calibration steps --
@@ -687,7 +682,7 @@ camera or the calibration object between the two calibration steps.
    .. image:: images/kinect-calib-color.jpg
       :alt: shadow
       :scale: 60%
-  
+
    The result is the xml-file **color.xml** which describes the
    parameters of the kinect color camera. If you are only interested
    in the mapping between color and depth camera, the actually used
@@ -709,7 +704,7 @@ camera or the calibration object between the two calibration steps.
    smaller markers can quickly become undetectable by the system::
 
      icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o depth.xml
-    
+
    .. image:: images/kinect-calib-intensity.jpg
       :alt: shadow
       :scale: 60%
@@ -717,7 +712,7 @@ camera or the calibration object between the two calibration steps.
    As one can see, smaller markers are detected much worse in the noisy
    intensity images.
 
-   .. note:: 
+   .. note::
 
       The speckle pattern can sometimes be too strong for robust
       marker detection. In this case, adapting the marker detection
@@ -729,7 +724,7 @@ camera or the calibration object between the two calibration steps.
       strongly increase the marker detection result, which, in turn,
       also improves the calibration result.
 
-  
+
 +-----------------------------------------------+----------------------------------------------------------------------------+
 | .. image:: images/kinect-pc-calibrated.jpg    | Once the two calibration files (here, **depth.xml** and **color.xml**)     |
 |   :alt: shadow                                | are available, the :icl:`geom::GenericPointCloudGrabber` that is           |
@@ -753,9 +748,9 @@ camera or the calibration object between the two calibration steps.
 |                                               |   object that *occludes* the other one                                     |
 |                                               |                                                                            |
 +-----------------------------------------------+----------------------------------------------------------------------------+
-       
+
 Calibrating Kinect with lower Resolution
-''''''''''''''''''''''''''''''''''''''''
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In many applications, the Kinect's depth images is not used in its
 maximum resolution (VGA), but only in QVGA resolution (320 by
@@ -777,7 +772,6 @@ camera calibration application provides an option to calibrate a
 camera with a higher images size and then to internally artificially
 downscale the resulting calibrated camera's resolution to a given
 one. In case of the kinect camera, this could be done with::
-  
 
   icl-camera-calibration -input kinectc 0 -c calib-obj-huge.xml -o color.xml -os QVGA
   icl-camera-calibration -input kinecti 0 -c calib-obj-huge.xml -o depth.xml -os QVGA

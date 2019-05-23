@@ -47,10 +47,10 @@ to install ICL in three different flavours::
     # has to be done just once
     $ brew tap iclcv/homebrew-formulas
     # enables features of OpenCV, Qt, OpenGL, ImageMagick, LibAV, LibDC and LibEigen
-    $ brew install icl  
+    $ brew install icl
     # base features plus additional functionality based on rsb, protobuf, freenect, pcl and bullet
     $ brew install icl --with-extra
-    # extra features plus libusb, zmq and openni support 
+    # extra features plus libusb, zmq and openni support
     brew install icl --with-full
 
 

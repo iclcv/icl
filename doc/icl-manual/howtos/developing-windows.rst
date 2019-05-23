@@ -15,7 +15,6 @@ Table of Contents
   * :ref:`howtos.dev-win.dll.class`
   * :ref:`howtos.dev-win.dll.example`
 
-
 .. _howtos.dev-win.dll:
 
 Dynamic-Link Libraries
@@ -120,7 +119,6 @@ library because only instantiations can be exported.
   // Header file
   template<class A> ICLUtils_API void func(A arg);
 
-  
   // Source file
   template<class A> void func(A arg) {
     // Some code
