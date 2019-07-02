@@ -72,7 +72,7 @@ namespace icl {
       }
 
       Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
-           const string &accessMode, size_t size,const void *src = 0)
+           const string &accessMode, size_t size,const void *src = 0):cmdQueue(cmdQueue)
          {
         cl_mem_flags memFlags = stringToMemFlags(accessMode);
         if (src) {

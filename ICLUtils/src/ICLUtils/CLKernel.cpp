@@ -45,7 +45,7 @@ namespace icl {
 	  Impl(Impl& other):cmdQueue(other.cmdQueue){
         kernel = other.kernel;
       }
-      Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id)
+      Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id):cmdQueue(cmdQueue)
          {
         try {
           kernel = cl::Kernel(program, id.c_str());
