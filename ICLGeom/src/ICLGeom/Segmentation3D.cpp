@@ -240,7 +240,7 @@ normalEdgeImage	.setSize(Size(w, h));
 		kernelAssignRANSAC = program.createKernel("assignRANSAC");
 		clReady = true;
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		std::cout<< "ERROR Segmentation: "<< err.what()<< std::endl;
 		clReady = false;
 
 	}
@@ -531,7 +531,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 				}
 			}
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			std::cout<< "ERROR Segmentation: "<< err.what()<< std::endl;
 		}
 #endif
 	} else {
@@ -688,7 +688,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 						countBelowBuffer.read(cBelowRead, RANSACpasses * sizeof(int));
 						countOnBuffer.read(cOnRead, RANSACpasses * sizeof(int));
 					} catch (CLException &err) { //catch openCL errors
-						std::cout<< "ERROR: "<< err.what() <<std::endl;
+						std::cout<< "ERROR Segmentation: "<< err.what() <<std::endl;
 					}
 					for(int i=0; i<RANSACpasses; i++) {
 						if(cAboveRead[i]<RANSACtolerance || cBelowRead[i]<RANSACtolerance) {
@@ -1303,7 +1303,7 @@ void Segmentation3D::blobSegmentation() {
 			countOnBuffer.read(cOnRead, RANSACpasses * sizeof(int));
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what() <<std::endl;
+			std::cout<< "ERROR Segmentation: "<< err.what() <<std::endl;
 		}
 #endif
 	} else {
@@ -1349,7 +1349,7 @@ void Segmentation3D::blobSegmentation() {
 			elementsBlobsBuffer.read(elementsBlobs, w*h * sizeof(bool));
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			std::cout<< "ERROR Segmentation: "<< err.what()<< std::endl;
 		}
 #endif
 	} else {
@@ -1407,7 +1407,7 @@ void Segmentation3D::colorPointcloud() {
 			segmentColorImage = Img8u(Size(w,h),3,data,false);
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what() <<std::endl;
+			std::cout<< "ERROR Segmentation: "<< err.what() <<std::endl;
 		}
 #endif
 	} else {
