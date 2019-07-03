@@ -272,7 +272,7 @@ namespace icl{
         if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
         dst.setBounds(cols(),rows());
         for(unsigned int i=0;i<dim();++i){
-  	dst[i] = m_data[i] * m[i];
+          dst[i] = m_data[i] * m[i];
         }
         return dst;
       }
@@ -288,7 +288,7 @@ namespace icl{
         if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
         dst.setBounds(cols(),rows());
         for(int i=0;i<dim();++i){
-  	dst[i] = m_data[i] / m[i];
+          dst[i] = m_data[i] / m[i];
         }
         return dst;
       }
@@ -1178,9 +1178,7 @@ namespace icl{
 
 #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
-                                                            const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
-    throw (IncompatibleMatrixDimensionException){                       \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
       if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)"); \
       dst.setBounds(m.cols(),rows());                                   \
       ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(), \
@@ -1196,9 +1194,7 @@ namespace icl{
 
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
-                                                                       const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
-    throw (IncompatibleMatrixDimensionException){                       \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
       if((m.cols() != cols()) || (m.rows() != rows())){                 \
         throw IncompatibleMatrixDimensionException("A./B dimension mismatch"); \
       }                                                                 \
@@ -1219,8 +1215,7 @@ namespace icl{
 
 #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)                               \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
-                                                            Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
       dst.setBounds(cols(),rows());                                     \
       ippsMulC_##IPPT(data(),f, dst.data(),dim());                      \
       return dst;                                                       \
