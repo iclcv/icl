@@ -325,7 +325,7 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 	}
 
 #else
-	std::cout << "no openCL parallelization available" << std::endl;
+	WARNING_LOG("no openCL parallelization available");
 	clReady = false;
 #endif
 

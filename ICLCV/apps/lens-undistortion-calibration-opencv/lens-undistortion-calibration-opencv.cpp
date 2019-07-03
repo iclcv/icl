@@ -205,11 +205,11 @@ void save_params(){
     f["udist.k5"] = p[9];
 
     f.save(filename);
+    DEBUG_LOG("parameters saved");
   }
   catch (...){
-    std::cout << "error while saving parameters" << std::endl;
+    ERROR_LOG("saving parameters");
   }
-  std::cout << "parameters saved" << std::endl;
 }
 
 

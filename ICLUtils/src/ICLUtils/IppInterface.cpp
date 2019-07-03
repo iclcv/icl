@@ -48,20 +48,20 @@ std::string current_ipp_search_path = "";
 std::string current_iomp_search_path = "";
 
 void loadLib(const char* path, const char* name, std::map<std::string, void*>& map){
-  std::cout << "try to load lib" << name << ".so ... " << std::flush;
+  DEBUG_LOG("Try to load lib" << name << ".so ... ");
   void* lib = dlopen(name, RTLD_LAZY);
   if(!lib){
-    std::cout << "could not load directly, search in path ... " << std::flush;
+    ERROR_LOG("Could not load directly, search in path ... ");
     std::stringstream libname;
     libname << path << "/" << name;
     lib = dlopen(libname.str().c_str(), RTLD_LAZY);
   }
   if(!lib){
     char* error = dlerror();
-    std::cout << "error: " << error << std::endl;
+    ERROR_LOG(error);
     throw ICLDynamicLibLoadException(error);
   } else{
-    std::cout << "done." << std::endl;
+    DEBUG_LOG("done.");
     map[name] = lib;
   }
 }
@@ -71,16 +71,16 @@ void* loadFunction(void* lib, const char* name){
   dlerror();
 
   // load function
-  std::cout << "try to load function '" << name << "' ... " << std::flush;
+  DEBUG_LOG("Try to load function '" << name << "' ... ");
   void* fn = dlsym(lib, name);
 
   // fn may be correctly null so check dlerror()
   char* error = dlerror();
   if(error){
-    std::cout << "error: " << error << std::endl;
+    ERROR_LOG(error);
     throw ICLDynamicFunctionLoadException(error);
   } else {
-    std::cout << "done." << std::endl;
+    DEBUG_LOG("done.");
   }
   return fn;
 }
