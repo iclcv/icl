@@ -76,11 +76,11 @@ namespace icl{
           GPM::iterator it = gpm.find(desc.name());
           if(it != gpm.end()){
             // increment instance counter
-            DEBUG_LOG2("return old grabber" << desc.name());
+            DEBUG_LOG("return old grabber" << desc.name());
             ++(it -> second).count;
             return (it->second).grabber;
           } else {
-            DEBUG_LOG2("create new grabber " << desc.name());
+            DEBUG_LOG("create new grabber " << desc.name());
             // init grabber
             Grabber* gPtr = GrabberRegister::getInstance() -> createGrabber(desc.type, desc.id);
             gpm[desc.name()] = GrabberInstance(gPtr,desc,1);
@@ -90,7 +90,7 @@ namespace icl{
 
         void deleteGrabber(const GrabberDeviceDescription &desc){
           Mutex::Locker l(mutex);
-          DEBUG_LOG2("called delete grabber");
+          DEBUG_LOG("called delete grabber");
           GPM::iterator it = gpm.find(desc.name());
           if(it == gpm.end()){
             ERROR_LOG("Grabber with name '" << desc.name() << "' was not existent.");
@@ -101,7 +101,7 @@ namespace icl{
             --g.count;
             // delete grabber if no more instances
             if(!g.count){
-              DEBUG_LOG2("Last instance gone. Deleting Grabber " << g.description.name());
+              DEBUG_LOG("Last instance gone. Deleting Grabber " << g.description.name());
               ICL_DELETE(g.grabber);
               gpm.erase(it -> first);
             }
@@ -237,7 +237,7 @@ namespace icl{
       for(i = 0; i < l.size(); ++i){
         std::string id = l[i];
         std::string param = pmap[l[i]].id;
-        DEBUG_LOG2("Searching for grabbers with " << id << "=" << param);
+        DEBUG_LOG("Searching for grabbers with " << id << "=" << param);
         grabbers = getDeviceList(id + "=" + param,true);
         if(grabbers.size() == 0) {
           addError(errStr, id, param, "no device found");
@@ -267,7 +267,7 @@ namespace icl{
         return;
       } else {
         m_poGrabber -> setConfigurableID(m_poDesc.name());
-        DEBUG_LOG2("set configurable name :" << m_poDesc.name());
+        DEBUG_LOG("set configurable name :" << m_poDesc.name());
         // add internal grabber as child-configurable
         m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
         m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
@@ -416,7 +416,7 @@ namespace icl{
           } else if (contains(pmap,grabber)) {
             ds  = GrabberRegister::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
           }
-          DEBUG_LOG2(grabber << " found " << ds.size() << " grabbers");
+          DEBUG_LOG(grabber << " found " << ds.size() << " grabbers");
           if(useFilter && contains(pmap,grabber) && pmap[grabber].id.length()){
             const GrabberDeviceDescription *d = find_description(ds,pmap[grabber].id);
             if(d){
@@ -438,7 +438,7 @@ namespace icl{
           }
         }
       }
-      DEBUG_LOG2("filtered list contains: " << deviceList.size());
+      DEBUG_LOG("filtered list contains: " << deviceList.size());
       return deviceList;
     }
 

@@ -176,7 +176,7 @@ std::string OpenNIMapGenerator::getMapOutputModeInfo(MapGenerator* gen){
   }
   // free allocated memory
   delete[] modes;
-  DEBUG_LOG2("supported map output modes: " << ret.str());
+  DEBUG_LOG("supported map output modes: " << ret.str());
   return ret.str();
 }
 
@@ -187,7 +187,7 @@ std::string OpenNIMapGenerator::getCurrentMapOutputMode(MapGenerator* gen){
   gen -> GetMapOutputMode(mode);
   std::ostringstream ret;
   ret << mode.nXRes << "x" << mode.nYRes << "x" << mode.nFPS << "fps";
-  DEBUG_LOG2("Map output mode: " << ret.str());
+  DEBUG_LOG("Map output mode: " << ret.str());
   return ret.str();
 }
 
@@ -234,7 +234,7 @@ OpenNIDepthGenerator::OpenNIDepthGenerator(int num)
 // Destructor frees all resouurces
 OpenNIDepthGenerator::~OpenNIDepthGenerator(){
   m_DepthGenerator -> StopGenerating();
-  DEBUG_LOG2("deleting depth gen");
+  DEBUG_LOG("deleting depth gen");
   ICL_DELETE(m_DepthGenerator);
   ICL_DELETE(m_Options);
 }
@@ -501,10 +501,10 @@ void setCurrentMapOutputmode(MapGenerator* gen, const std::string &value){
   // when supported, set to new mode.
   if(isSupportedMapOutputMode(gen, &mode)){
     //XnStatus st = gen -> SetMapOutputMode(mode);
-    //DEBUG_LOG2(xnGetStatusString(st));
+    //DEBUG_LOG(xnGetStatusString(st));
     gen -> SetMapOutputMode(mode);
   } else {
-    DEBUG_LOG2("mode " << value << " not supported.");
+    DEBUG_LOG("mode " << value << " not supported.");
   }
 }
 

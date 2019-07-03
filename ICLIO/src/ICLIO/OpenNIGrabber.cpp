@@ -74,14 +74,14 @@ void OpenNIGrabberThread::run(){
     msleep(1);
     // locking thread
     if(trylock()) {
-      DEBUG_LOG2("threadlock returned error. sleep and retry.");
+      DEBUG_LOG("threadlock returned error. sleep and retry.");
       continue;
     }
     // thread update buffers
     XnStatus rc = OpenNIContext::waitAndUpdate();
     if (rc != XN_STATUS_OK)
     {
-      DEBUG_LOG2("Read failed: " << xnGetStatusString(rc));
+      DEBUG_LOG("Read failed: " << xnGetStatusString(rc));
     } else {
       for(std::set<OpenNIGrabber*>::iterator it = m_Grabber.begin(); it != m_Grabber.end(); ++it){
         (*it) -> grabNextImage();
@@ -103,7 +103,7 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
   Mutex::Locker lock(m_Mutex);
   oniGrabberThread.stop();
 
-  DEBUG_LOG2("init " << m_Id);
+  DEBUG_LOG("init " << m_Id);
 
   // create ImageGenerator and Buffer
   m_Generator = OpenNIMapGenerator::createGenerator(m_Id);
@@ -121,7 +121,7 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
   // register to grabber thread
   oniGrabberThread.addGrabber(this);
   oniGrabberThread.start();
-  DEBUG_LOG2("init done");
+  DEBUG_LOG("init done");
 }
 
 OpenNIGrabber::~OpenNIGrabber(){
@@ -173,7 +173,7 @@ std::string OpenNIGrabber::getName(){
 
 // callback for changed configurable properties
 void OpenNIGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-  DEBUG_LOG2(prop.name << " := " << prop.value);
+  DEBUG_LOG(prop.name << " := " << prop.value);
   if (prop.name == "format"){
     setPropertyValue("map output mode", prop.value);
   }

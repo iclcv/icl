@@ -88,13 +88,13 @@ void PylonCameraOptions::processPropertyChange(const utils::Configurable::Proper
     AcquisitionInterruptor a(m_Interu, GenApi::IsWritable(node));
     GrabbingInterruptor g(m_Interu, GenApi::IsWritable(node));
     if(!GenApi::IsWritable(node)){
-      DEBUG_LOG2("The parameter '" << prop.name << "' is not writable");
+      DEBUG_LOG("The parameter '" << prop.name << "' is not writable");
       return;
     }
     try {
       node -> FromString(prop.value.c_str(), true);
     } catch (GenICam::GenericException &e) {
-      DEBUG_LOG2("catched exception: " << e.what());
+      DEBUG_LOG("catched exception: " << e.what());
     }
   }
 }

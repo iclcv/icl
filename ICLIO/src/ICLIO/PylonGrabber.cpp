@@ -95,7 +95,7 @@ void PylonGrabber::grabbingStart(){
   FUNCTION_LOG("");
   // Get the image buffer size
   const size_t imageSize = m_CameraOptions -> getNeededBufferSize();
-  DEBUG_LOG2("Buffer size: " << imageSize);
+  DEBUG_LOG("Buffer size: " << imageSize);
 
   // We won't use image buffers greater than imageSize
   setParameterValueOf<Pylon::IStreamGrabber, GenApi::IInteger, int>

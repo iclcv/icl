@@ -138,7 +138,7 @@ bool PylonAutoEnv::initPylonEnv(){
   ICLASSERT(pylon_env_inits >= 0)
   pylon_env_inits++;
   if(pylon_env_inits == 1){
-    DEBUG_LOG2("Initializing Pylon environment")
+    DEBUG_LOG("Initializing Pylon environment")
     Pylon::PylonInitialize();
 
     // print available pylon devices
@@ -147,7 +147,7 @@ bool PylonAutoEnv::initPylonEnv(){
     Pylon::CTlFactory::GetInstance().EnumerateDevices(lstDevices);
     Pylon::DeviceInfoList_t::const_iterator it;
     for (it = lstDevices.begin(); it != lstDevices.end(); ++it){
-      DEBUG_LOG2("Found pylon device: " << it -> GetFullName());
+      DEBUG_LOG("Found pylon device: " << it -> GetFullName());
     }
     return true;
   } else {
@@ -162,7 +162,7 @@ bool PylonAutoEnv::termPylonEnv(){
   ICLASSERT(pylon_env_inits > 0)
   pylon_env_inits--;
   if(pylon_env_inits == 0){
-    DEBUG_LOG2("Terminating Pylon environment")
+    DEBUG_LOG("Terminating Pylon environment")
     Pylon::PylonTerminate();
     return true;
   } else {
@@ -175,7 +175,7 @@ AcquisitionInterruptor::AcquisitionInterruptor(Interruptable* i, bool mock)
 {
   if(!mock){
     m_Interu = i;
-    DEBUG_LOG2("stop acquisition")
+    DEBUG_LOG("stop acquisition")
     m_Interu -> acquisitionStop();
   } else {
     m_Interu = NULL;
@@ -185,7 +185,7 @@ AcquisitionInterruptor::AcquisitionInterruptor(Interruptable* i, bool mock)
 // Releases the mutex lock, if acquired before. Starts acquisition.
 AcquisitionInterruptor::~AcquisitionInterruptor(){
   if(m_Interu){
-    DEBUG_LOG2("start acquisition")
+    DEBUG_LOG("start acquisition")
     m_Interu -> acquisitionStart();
   }
 }
@@ -193,7 +193,7 @@ AcquisitionInterruptor::~AcquisitionInterruptor(){
 // Frees all grabbing resources
 GrabbingInterruptor::GrabbingInterruptor(Interruptable* i, bool mock){
   if(!mock){
-    DEBUG_LOG2("stop grabbing")
+    DEBUG_LOG("stop grabbing")
     m_Interu = i;
     m_Interu -> grabbingStop();
   } else {
@@ -204,7 +204,7 @@ GrabbingInterruptor::GrabbingInterruptor(Interruptable* i, bool mock){
 // Reallocates all needed resources.
 GrabbingInterruptor::~GrabbingInterruptor(){
   if(m_Interu){
-    DEBUG_LOG2("start grab")
+    DEBUG_LOG("start grab")
     m_Interu -> grabbingStart();
   }
 }
@@ -258,7 +258,7 @@ Pylon::CDeviceInfo icl::io::pylon::getDeviceFromArgs(std::string args) {
   } else { // cam by IP
     Pylon::DeviceInfoList_t filter;
     filter.push_back(Pylon::CBaslerGigEDeviceInfo().SetIpAddress(argvec.at(0).c_str()));
-    DEBUG_LOG2("Trying to start camera from IP: " << argvec.at(0).c_str())
+    DEBUG_LOG("Trying to start camera from IP: " << argvec.at(0).c_str())
     Pylon::DeviceInfoList_t devices = getPylonDeviceList(&filter);
     if(devices.empty()){
       std::cout << "Camera not found." << argvec.at(0).c_str();
@@ -266,7 +266,7 @@ Pylon::CDeviceInfo icl::io::pylon::getDeviceFromArgs(std::string args) {
     }
     return devices.at(0);
   }
-  DEBUG_LOG2("Wrong parameters: " << args)
+  DEBUG_LOG("Wrong parameters: " << args)
   throw ICLException("PylonDevice not found");
 }
 

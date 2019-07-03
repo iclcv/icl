@@ -61,7 +61,7 @@ void PylonGrabberThread::run(){
     msleep(1);
     // locking thread
     if(trylock()) {
-      DEBUG_LOG2("threadlock returned error. sleep and retry.");
+      DEBUG_LOG("threadlock returned error. sleep and retry.");
       continue;
     }
     //thread locked grab image.
@@ -75,7 +75,7 @@ void PylonGrabberThread::grab(){
   // Wait for the grabbed image with timeout of 2 seconds
   if (!m_Grabber -> GetWaitObject().Wait(1000)){
     // Timeout
-    DEBUG_LOG2("Timeout occurred!")
+    DEBUG_LOG("Timeout occurred!")
     ++m_Timeout;
     return;
   }

@@ -424,7 +424,7 @@ namespace icl{
         FreenectContext &ctx = FreenectContext::getFreenectContext();
         std::map<int,Used*>::iterator it = devices.find(index);
         if(it == devices.end()){
-          DEBUG_LOG2("device " << index << " was not used before: creating new one. Mode " << mode);
+          DEBUG_LOG("device " << index << " was not used before: creating new one. Mode " << mode);
           used = devices[index] = new Used(ctx.deviceAssociation[index]);
           used->irShift = Used::Accurate;
           used->depthImageUnitMM = true;
@@ -457,7 +457,7 @@ namespace icl{
               throw ICLException("FreenectDevice:: unable to start video for device" + str(index));
             }
           }else{
-            DEBUG_LOG2("device " << index << " was used before");
+            DEBUG_LOG("device " << index << " was used before");
             used->numDepthUsers++;
 
             setMode(mode, used, size);
