@@ -318,7 +318,7 @@ struct ObjectEdgeDetectorGPU::Data {
 		    kernelNormalGaussSmoothing = program.createKernel("normalGaussSmoothing");
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 			clReady = false;
 		}
 
@@ -437,7 +437,7 @@ void ObjectEdgeDetectorGPU::initialize(Size size){
 		m_data->worldNormalsBuffer = m_data->program.createBuffer("rw", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 
 	m_data->isInitialized=true;
@@ -449,7 +449,7 @@ void ObjectEdgeDetectorGPU::setDepthImage(const Img32f &depthImg) {
 	try {
         m_data->rawImageBuffer.write(depthImg.begin(0),m_data->w*m_data->h*sizeof(float));
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -463,7 +463,7 @@ void ObjectEdgeDetectorGPU::applyMedianFilter() {
 
 		m_data->kernelMedianFilter.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -476,7 +476,7 @@ const Img32f &ObjectEdgeDetectorGPU::getFilteredDepthImage() {
 		m_data->filteredImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputFilteredImage.data()),false);
 	}
 	catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->filteredImage;
 }
@@ -486,7 +486,7 @@ void ObjectEdgeDetectorGPU::setFilteredDepthImage(const Img32f &filteredImg) {
     try {
       m_data->filteredImageBuffer.write(filteredImg.begin(0),m_data->w*m_data->h*sizeof(float));
 	} catch (CLException &err) { //catch openCL errors
-      std::cout<< "ERROR: "<< err.what()<< std::endl;
+      ERROR_LOG(err.what());
     }
 }
 
@@ -499,7 +499,7 @@ void ObjectEdgeDetectorGPU::applyNormalCalculation() {
 				m_data->params.normalRange);
 		m_data->kernelNormalCalculation.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 
 	if (m_data->params.useNormalAveraging && !m_data->params.useGaussSmoothing) {
@@ -518,7 +518,7 @@ void ObjectEdgeDetectorGPU::applyLinearNormalAveraging() {
 				m_data->params.normalAveragingRange);
 		m_data->kernelNormalAveraging.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -544,7 +544,7 @@ void ObjectEdgeDetectorGPU::applyGaussianNormalSmoothing() {
 				rowSize); //set parameter for kernel
 		m_data->kernelNormalGaussSmoothing.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -560,7 +560,7 @@ const DataSegment<float,4> ObjectEdgeDetectorGPU::getNormals() {
 			return m_data->normals;
 		}
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->normals;
 }
@@ -586,7 +586,7 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 		m_data->kernelWorldNormalCalculation[6] = m_data->worldNormalsBuffer;
 		m_data->kernelWorldNormalCalculation.apply(m_data->w*m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -596,7 +596,7 @@ const DataSegment<float,4> ObjectEdgeDetectorGPU::getWorldNormals() {
 				m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 		return m_data->worldNormals;
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->worldNormals;
 }
@@ -620,7 +620,7 @@ const core::Img8u &ObjectEdgeDetectorGPU::getRGBNormalImage() {
 		return m_data->normalImage;
 
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->normalImage;
 }
@@ -638,7 +638,7 @@ void ObjectEdgeDetectorGPU::setNormals(DataSegment<float,4> pNormals) {
 			m_data->normalsBuffer.write(&m_data->normals[0][0],m_data->w*m_data->h*sizeof(FixedColVector<float,4>));
 		}
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -657,7 +657,7 @@ void ObjectEdgeDetectorGPU::applyAngleImageCalculation() {
 		m_data->kernelAngleImageCalculation[5] = m_data->params.neighborhoodMode;
 		m_data->kernelAngleImageCalculation.apply(m_data->w,m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -666,7 +666,7 @@ const Img32f &ObjectEdgeDetectorGPU::getAngleImage() {
 		m_data->angleImageBuffer.read(m_data->outputAngleImage.data(), m_data->w*m_data->h * sizeof(float));
 		m_data->angleImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputAngleImage.data()),false);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->angleImage;
 }
@@ -676,7 +676,7 @@ void ObjectEdgeDetectorGPU::setAngleImage(const Img32f &angleImg) {
     try {
       m_data->angleImageBuffer.write(angleImg.begin(0),m_data->w*m_data->h*sizeof(float));
     } catch (CLException &err) { //catch openCL errors
-      std::cout<< "ERROR: "<< err.what()<< std::endl;
+      ERROR_LOG(err.what());
     }
 }
 
@@ -690,7 +690,7 @@ void ObjectEdgeDetectorGPU::applyImageBinarization() {
 
 		m_data->kernelImageBinarization.apply(m_data->w*m_data->h);
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 }
 
@@ -700,7 +700,7 @@ const Img8u &ObjectEdgeDetectorGPU::getBinarizedAngleImage() {
 		m_data->binarizedImage = Img8u(Size(m_data->w,m_data->h),1,std::vector<unsigned char*>(1,m_data->outputBinarizedImage.data()),false);
 
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 	}
 	return m_data->binarizedImage;
 }

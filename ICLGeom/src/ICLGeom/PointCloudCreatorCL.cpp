@@ -113,7 +113,7 @@ namespace icl {
         clReady=true; //and mark CL context as available
 
       } catch (CLException &err) { //catch openCL errors
-        std::cout<< "ERROR: "<< err.what()<< std::endl;
+        ERROR_LOG(err.what());
         clReady = false;
       }
 
@@ -128,7 +128,7 @@ namespace icl {
           kernelCreate = program.createKernel("create");
           kernelCreateRGB = program.createKernel("createRGB");
         } catch (CLException &err) { //catch openCL errors
-          std::cout<< "ERROR: "<< err.what()<< std::endl;
+          ERROR_LOG(err.what());
           clReady = false;
         }
       }
@@ -219,7 +219,7 @@ namespace icl {
           DataSegment<float,4>((float*)rgbaData,sizeof(FixedColVector<float, 4>),DEPTH_DIM).deepCopy(rgba); //copy pointcloud color data
         }
       } catch (CLException &err) { //catch openCL errors
-        std::cout<< "ERROR: "<< err.what()<< std::endl;
+        ERROR_LOG(err.what());
       }
 #endif
     }
@@ -259,7 +259,7 @@ namespace icl {
           DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz);//copy pointcloud data
         }
       } catch (CLException &err) { //catch openCL errors
-        std::cout<< "ERROR: "<< err.what()<< std::endl;
+        ERROR_LOG(err.what());
       }
 #endif
     }

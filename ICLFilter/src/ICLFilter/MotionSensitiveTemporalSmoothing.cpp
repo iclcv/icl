@@ -301,7 +301,7 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 		program = CLProgram("gpu", timeSmoothingKernel);
 		clReady = true;
 	} catch (CLException &err) { //catch openCL errors
-		std::cout<< "ERROR: "<< err.what()<< std::endl;
+		ERROR_LOG(err.what());
 		clReady = false;
 	}
 	if(clReady==true) { //only if CL context is available
@@ -318,7 +318,7 @@ TemporalSmoothingCL::TemporalSmoothingCL(utils::Size size, core::depth depth,
 			kernelTemporalSmoothingFloat = program.createKernel("temporalSmoothingFloat");
 			kernelTemporalSmoothingChar = program.createKernel("temporalSmoothingChar");
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 			clReady = false;
 		}
 
@@ -382,7 +382,7 @@ Img32f TemporalSmoothingCL::temporalSmoothingF(const Img32f &inputImage) {
 			outputImageBufferF.read(outputImageArrayF, w*h * sizeof(float));
 			outputImageF = Img32f(Size(w,h),1,std::vector<float*>(1,outputImageArrayF),false);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -462,7 +462,7 @@ Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
                         DEBUG_LOG(" ... done");
 			outputImageC = Img8u(Size(w,h),1,std::vector<unsigned char*>(1,outputImageArrayC),false);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
