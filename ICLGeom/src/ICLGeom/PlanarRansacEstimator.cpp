@@ -419,7 +419,7 @@ namespace icl{
             clReleaseMemObject(RANSACpointsMem);
       		}
         }catch (cl::Error err) {//catch openCL errors
-          std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<<std::endl;
+          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
         }
       #endif
     }
@@ -559,7 +559,7 @@ namespace icl{
           clReleaseMemObject(RANSACpointsMem);
 
         }catch (cl::Error err) {//catch openCL errors
-          std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<<std::endl;
+          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
         }
       #endif
     }
@@ -613,7 +613,7 @@ namespace icl{
           std::cout<<"number of devices: "<<deviceList.size()<<std::endl;
         }
       }catch (cl::Error err) {//catch openCL errors
-        std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
+        ERROR_LOG(err.what()<< "("<< err.err()<< ")");
         std::cout<<"OpenCL not ready"<<std::endl;
         m_data->clReady=false;//disable openCL on error
       }
@@ -637,7 +637,7 @@ namespace icl{
 
           m_data->queue=cl::CommandQueue(m_data->context, m_data->devices[0], 0);//create command queue
         }catch (cl::Error err) {//catch openCL errors
-          std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<< std::endl;
+          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
           m_data->clReady=false;
         }
       }
@@ -835,7 +835,7 @@ namespace icl{
           }
 
         }catch (cl::Error err) {//catch openCL errors
-          std::cout<< "ERROR: "<< err.what()<< "("<< err.err()<< ")"<<std::endl;
+          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
         }
       #endif
     }

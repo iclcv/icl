@@ -230,7 +230,7 @@ namespace icl{
 		        m_data->kernelPointAssignment = m_data->program.createKernel("calculatePointAssignment");
 		        m_data->clReady = true;
 	        } catch (utils::CLException &err) { //catch openCL errors
-		        std::cout<< "ERROR: "<< err.what()<< std::endl;
+		        ERROR_LOG(err.what());
 		        m_data->clReady = false;
 
 	        }
@@ -556,7 +556,7 @@ namespace icl{
 			    colorImage = core::Img8u(utils::Size(w,h),3,data,false);
 
 		    } catch (utils::CLException &err) { //catch openCL errors
-			    std::cout<< "ERROR: "<< err.what() <<std::endl;
+			    ERROR_LOG(err.what() );
 		    }
       #endif
     }
@@ -751,7 +751,7 @@ namespace icl{
 			      neighbours(i,i)=true;
 		      }
 	      } catch (utils::CLException &err) { //catch openCL errors
-		      std::cout<< "ERROR: "<< err.what()<< std::endl;
+		      ERROR_LOG(err.what());
 	      }
 
 	      return neighbours;

@@ -384,7 +384,7 @@ struct PointCloudNormalEstimator::Data {
 			clReady=true; //and mark CL context as available
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 			clReady = false;
 		}
 
@@ -411,7 +411,7 @@ struct PointCloudNormalEstimator::Data {
 				kernelWorldNormalCalculation = program.createKernel("worldNormalCalculation");
 				kernelNormalGaussSmoothing = program.createKernel("normalGaussSmoothing");
 			} catch (CLException &err) { //catch openCL errors
-				std::cout<< "ERROR: "<< err.what()<< std::endl;
+				ERROR_LOG(err.what());
 				clReady = false;
 			}
 		}
@@ -520,7 +520,7 @@ void PointCloudNormalEstimator::setDepthImage(const Img32f &depthImg) {
                   // depthImg.begin(0));
                   m_data->rawImageBuffer.write(depthImg.begin(0),m_data->w*m_data->h*sizeof(float));
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 	}
 #endif
@@ -537,7 +537,7 @@ void PointCloudNormalEstimator::applyMedianFilter() {
 					m_data->medianFilterSize);
 			m_data->kernelMedianFilter.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -581,7 +581,7 @@ const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
 			m_data->filteredImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputFilteredImage),false);
 		}
 		catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 	}
 #endif
@@ -597,7 +597,7 @@ void PointCloudNormalEstimator::setFilteredDepthImage(const Img32f &filteredImg)
       m_data->filteredImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float),
                                                                  filteredImg.begin(0));
 		} catch (CLException &err) { //catch openCL errors
-      std::cout<< "ERROR: "<< err.what()<< std::endl;
+      ERROR_LOG(err.what());
     }
   }
 #endif
@@ -614,7 +614,7 @@ void PointCloudNormalEstimator::applyNormalCalculation() {
 					m_data->normalRange);
 			m_data->kernelNormalCalculation.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -673,7 +673,7 @@ void PointCloudNormalEstimator::applyTemporalNormalAveraging() {
 					m_data->normalAveragingRange);
 			m_data->kernelNormalAveraging.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -773,7 +773,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 
 			m_data->kernelNormalGaussSmoothing.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -826,7 +826,7 @@ const Vec *PointCloudNormalEstimator::getNormals() {
 				return (const Vec*)m_data->normals;
 			}
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 		return (const Vec*) m_data->normals;
@@ -862,7 +862,7 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 			m_data->kernelWorldNormalCalculation[6] = m_data->worldNormalsBuffer;
 			m_data->kernelWorldNormalCalculation.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -904,7 +904,7 @@ const Vec* PointCloudNormalEstimator::getWorldNormals() {
 			m_data->worldNormals=m_data->outputWorldNormals;
 			return (const Vec*)m_data->worldNormals;
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 		return (const Vec*) m_data->worldNormals;
@@ -934,7 +934,7 @@ const core::Img8u &PointCloudNormalEstimator::getRGBNormalImage() {
 			return m_data->normalImage;
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 		return m_data->normalImage;
@@ -958,7 +958,7 @@ void PointCloudNormalEstimator::setNormals(Vec* pNormals) {
 				m_data->normalsBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(FixedColVector<float, 4>), m_data->normals);
 			}
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 	}
 #endif
@@ -981,7 +981,7 @@ void PointCloudNormalEstimator::applyAngleImageCalculation() {
 			m_data->kernelAngleImageCalculation[5] = m_data->neighborhoodMode;
 			m_data->kernelAngleImageCalculation.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -1113,7 +1113,7 @@ const Img32f &PointCloudNormalEstimator::getAngleImage() {
 			m_data->angleImageBuffer.read(m_data->outputAngleImage, m_data->w*m_data->h * sizeof(float));
 			m_data->angleImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputAngleImage),false);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 	}
 #endif
@@ -1129,7 +1129,7 @@ void PointCloudNormalEstimator::setAngleImage(const Img32f &angleImg) {
       m_data->angleImageBuffer = m_data->program.createBuffer("r", m_data->w*m_data->h * sizeof(float),
                                                               angleImg.begin(0));
     } catch (CLException &err) { //catch openCL errors
-      std::cout<< "ERROR: "<< err.what()<< std::endl;
+      ERROR_LOG(err.what());
     }
   }
 #endif
@@ -1147,7 +1147,7 @@ void PointCloudNormalEstimator::applyImageBinarization() {
 
 			m_data->kernelImageBinarization.apply(m_data->w*m_data->h);
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 #endif
 	} else {
@@ -1172,7 +1172,7 @@ const Img8u &PointCloudNormalEstimator::getBinarizedAngleImage() {
 			m_data->binarizedImage = Img8u(Size(m_data->w,m_data->h),1,std::vector<unsigned char*>(1,m_data->outputBinarizedImage),false);
 
 		} catch (CLException &err) { //catch openCL errors
-			std::cout<< "ERROR: "<< err.what()<< std::endl;
+			ERROR_LOG(err.what());
 		}
 	}
 #endif
