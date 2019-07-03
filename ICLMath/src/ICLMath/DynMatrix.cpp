@@ -722,15 +722,11 @@ namespace icl{
     template ICLMath_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
     template ICLMath_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b)
-      const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b)
-      const;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b) const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b) const;
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b)
-      const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b)
-      const;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) const;
 
     template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method, float zeroThreshold);
     template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method, double zeroThreshold);
