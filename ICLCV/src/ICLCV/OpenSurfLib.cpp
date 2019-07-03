@@ -951,9 +951,8 @@ namespace icl{
       //! Display error message and terminate program
       void error(const char *msg)
       {
-        std::cout << "\nError: " << msg;
-        getchar();
-        exit(0);
+        ERROR_LOG(msg);
+        exit(1);
       }
 
 

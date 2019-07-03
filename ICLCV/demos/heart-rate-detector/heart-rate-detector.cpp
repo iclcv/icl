@@ -91,7 +91,7 @@ void init(){
   std::string pathToCascades = pa_def("-c",string(""));
   if(pathToCascades.length() == 0)pathToCascades = string(ICL_OPENCV_INSTALL_PATH)+string("/share/opencv/lbpcascades/lbpcascade_frontalface.xml");
   if(!faceCascade.load(pathToCascades)){
-    std::cout<<("Error loading face cascade:")<<pathToCascades<<std::endl;
+    ERROR_LOG("Loading face cascade: " << pathToCascades);
     exit(1);
   };
 }
