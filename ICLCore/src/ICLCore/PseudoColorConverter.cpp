@@ -152,7 +152,7 @@ namespace icl{
     }
 
       /// creates instance with custom mode
-    PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue) {
+    PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue):m_data(new Data){
       m_data->custom(stops,maxValue);
     }
 

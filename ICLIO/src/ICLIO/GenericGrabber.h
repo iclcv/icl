@@ -67,7 +67,7 @@ namespace icl {
 
         /// Initialized the grabber from given prog-arg
         /** The progarg needs two sub-parameters */
-        GenericGrabber(const utils::ProgArg &pa) {
+        GenericGrabber(const utils::ProgArg &pa):m_poGrabber(0), m_remoteServer(0) {
           init(pa);
         }
 
@@ -75,7 +75,7 @@ namespace icl {
         /** internally this function calls the init function immediately*/
         GenericGrabber(const std::string &devicePriorityList,
                        const std::string &params,
-                       bool notifyErrors = true) {
+                       bool notifyErrors = true):m_poGrabber(0), m_remoteServer(0) {
           init(devicePriorityList,params,notifyErrors);
         }
 

@@ -39,8 +39,8 @@ namespace icl{
                                                                                const utils::Size32f &markerBounds,
                                                                                const utils::Size32f &gridBounds,
                                                                                const std::vector<int> &markerIDs,
-                                                                               const std::string &markerType)
-      {
+                                                                               const std::string &markerType):
+      MarkerGridDetector::GridDefinition(numCells,markerIDs, markerType) {
       this->markerBounds = markerBounds;
       this->gridBounds = gridBounds;
     }

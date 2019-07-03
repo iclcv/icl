@@ -76,7 +76,7 @@ namespace icl{
                                                        const ParamList &params,
                                                        const std::vector<Camera*> &cams,
                                                        bool syncProperties,
-                                                       bool deepCopyCams) {
+                                                       bool deepCopyCams):m_data(0) {
       init(pluginType,markersToLoad,params,cams,syncProperties,deepCopyCams);
     }
 

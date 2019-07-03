@@ -296,7 +296,7 @@ namespace icl{
     static int g_swissranger_instance_count = 0;
 
 
-    SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) {
+    SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel):Grabber() {
       g_swissranger_instance_count++;
 
       if(g_swissranger_instance_count == 1){
