@@ -327,7 +327,7 @@ namespace icl{
     }
 
     LibAVVideoWriter::LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
-                                       double fps, Size frame_size) :
+                                       double fps, Size frame_size):
       m_data(new Data(filename, fourcc, fps, frame_size)){
     }
 

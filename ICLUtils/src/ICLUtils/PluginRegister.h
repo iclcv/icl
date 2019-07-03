@@ -72,9 +72,8 @@ namespace icl{
         plugins[name] = p;
       }
 
-      /// creates an instance (or throws
-      inline T *createInstance(const std::string &name, const Data &data)
-        {
+      /// creates an instance (or throws)
+      inline T *createInstance(const std::string &name, const Data &data){
         typename std::map<std::string,Plugin>::iterator it = plugins.find(name);
         if(it == plugins.end()){
           std::ostringstream all;

@@ -37,7 +37,7 @@ using namespace icl::qt;
 
 namespace icl{
   namespace geom{
-    void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) {
+    void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads){
       this->nXCells = nXCells;
       this->nYCells = nYCells;
 
@@ -71,7 +71,7 @@ namespace icl{
     }
 
     GridSceneObject::GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
-                                     bool lines, bool quads) {
+                                     bool lines, bool quads){
       init(nXCells,nYCells,allGridPoints,lines,quads);
     }
 

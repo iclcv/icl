@@ -62,7 +62,7 @@ namespace icl{
 
       /// creates instance with custom mode
       /** @see setColorTable */
-      PseudoColorConverter(const std::vector<Stop> &stops, int maxValue=255) ;
+      PseudoColorConverter(const std::vector<Stop> &stops, int maxValue=255);
 
       /// sets the color table mode
       /** if mode is default, stops must be empty
@@ -77,11 +77,10 @@ namespace icl{
           all pixels are set to the given color. However, there are simpler functions that
           have the same result and are less complex (like Img<T>::clear(channelIndx,color))
       */
-      void setColorTable(ColorTable t, const std::vector<Stop> &stops=std::vector<Stop>(), int maxValue=255)
-        ;
+      void setColorTable(ColorTable t, const std::vector<Stop> &stops=std::vector<Stop>(), int maxValue=255);
 
       /// create a speudo color image from given source image
-      void apply(const ImgBase *src, ImgBase **dst) ;
+      void apply(const ImgBase *src, ImgBase **dst);
 
       /// create a speudo color image from given source image
       void apply(const Img8u &src, Img8u &dst);

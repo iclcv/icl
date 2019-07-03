@@ -241,7 +241,7 @@ namespace icl{
 
     };
 
-    void XiGrabber::init(int deviceID) {
+    void XiGrabber::init(int deviceID){
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
 

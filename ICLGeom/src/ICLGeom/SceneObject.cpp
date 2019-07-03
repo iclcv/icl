@@ -632,7 +632,7 @@ namespace icl{
       ICL_DELETE(m_fragmentShader);
     }
 
-    SceneObject::SceneObject(const std::string &objFileName) :
+    SceneObject::SceneObject(const std::string &objFileName):
       m_lineColorsFromVertices(false),
       m_triangleColorsFromVertices(false),
       m_quadColorsFromVertices(false),
@@ -1064,7 +1064,7 @@ namespace icl{
       return ts;
     }
 
-    Vec SceneObject::getClosestVertex(const Vec &pWorld, bool relative) {
+    Vec SceneObject::getClosestVertex(const Vec &pWorld, bool relative){
       std::vector<Vec> ts = getTransformedVertices();
       if(!ts.size()) throw ICLException("getClosestVertex called on an object that has not vertices");
       std::vector<float> distances(ts.size());

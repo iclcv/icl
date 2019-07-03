@@ -50,15 +50,15 @@ namespace icl{
 
     class ICLDynamicLibLoadException : ICLException {
       public:
-        ICLDynamicLibLoadException (const char* error) throw() :
+        ICLDynamicLibLoadException (const char* error) noexcept :
           ICLException (std::string("Can't load library: ") + std::string(error)) {}
-        virtual ~ICLDynamicLibLoadException() throw() {}
+        virtual ~ICLDynamicLibLoadException() noexcept {}
     };
     class ICLDynamicFunctionLoadException : ICLException {
       public:
-        ICLDynamicFunctionLoadException (const char* error) throw() :
+        ICLDynamicFunctionLoadException (const char* error) noexcept :
           ICLException (std::string("Can't load function from library: ") + std::string(error)) {}
-        virtual ~ICLDynamicFunctionLoadException() throw() {}
+        virtual ~ICLDynamicFunctionLoadException() noexcept {}
     };
 
     class IppInterface : Uncopyable{

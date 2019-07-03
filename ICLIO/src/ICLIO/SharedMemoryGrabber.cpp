@@ -161,7 +161,7 @@ namespace icl{
       Configurable::registerCallback(utils::function(this,&SharedMemoryGrabber::processPropertyChange));
     }
 
-    void SharedMemoryGrabber::init(const std::string &sharedMemorySegmentID) {
+    void SharedMemoryGrabber::init(const std::string &sharedMemorySegmentID){
       try{
         m_data->mem.reset(ICL_IMGBASE_STREAM_PREPEND+sharedMemorySegmentID, 0);
       } catch (ICLException &e){

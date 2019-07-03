@@ -211,7 +211,7 @@ namespace icl{
 
 
       protected:
-      inline void null_check(const std::string &fn) const  {
+      inline void null_check(const std::string &fn) const {
         if (isNull()) throw utils::ICLException(fn + ": RSBListener is null");
       }
     };
@@ -247,7 +247,7 @@ namespace icl{
       }
 
       protected:
-      inline void null_check(const std::string &fn) const  {
+      inline void null_check(const std::string &fn) const {
         if (isNull()) throw utils::ICLException(fn + ": RSBSender is null");
       }
 

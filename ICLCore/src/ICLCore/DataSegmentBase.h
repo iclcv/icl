@@ -212,7 +212,7 @@ namespace icl{
 
         /// deep copy assignment operator
         /** if source and destination lengths differ, an exception is thrown */
-        inline Bytes &operator=(const Bytes &other) {
+        inline Bytes &operator=(const Bytes &other){
           if(len != other.len){
             throw utils::ICLException("unable to assign DataSegmentBase::Bytes: lengths differ!");
           }

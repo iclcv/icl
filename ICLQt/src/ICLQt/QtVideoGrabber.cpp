@@ -35,7 +35,7 @@
 
 namespace icl{
   namespace qt{
-    QtVideoGrabber::QtVideoGrabber(const std::string &filename)  {
+    QtVideoGrabber::QtVideoGrabber(const std::string &filename) {
 
       if(!File(filename).exists()){
         throw FileNotFoundException(filename);

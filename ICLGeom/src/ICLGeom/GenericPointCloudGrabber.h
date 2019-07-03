@@ -71,16 +71,16 @@ namespace icl{
       /// re-initializes the current device
       /** The backend can choose to throw an exception. The syntax
           for reinitialization is defined by each backend individually */
-      void reinit(const std::string &description) ;
+      void reinit(const std::string &description);
 
       /// forwards call to current backend
-      Camera getDepthCamera() const ;
+      Camera getDepthCamera() const;
 
       /// forwards call to current backend
-      Camera getColorCamera() const ;
+      Camera getColorCamera() const;
 
       /// forwards call to current backend
-      void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) ;
+      void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T);
 
 
       /// deferred initialization from ProgArg (most common perhaps)

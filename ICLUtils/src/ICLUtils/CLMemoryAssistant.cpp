@@ -37,7 +37,7 @@ namespace icl {
 
 		CLMemoryAssistant::CLMemoryAssistant() {}
 
-		CLMemoryAssistant::CLMemoryAssistant(std::string const &deviceType)  {
+		CLMemoryAssistant::CLMemoryAssistant(std::string const &deviceType) {
 			m_context = CLDeviceContext(deviceType);
 		}
 
@@ -61,8 +61,7 @@ namespace icl {
 		}
 
 		CLBuffer CLMemoryAssistant::createNamedBuffer(MemKeyType const &key, const string &accessMode,
-													  const size_t length, size_t byteDepth, const void *src)
-		 {
+													  const size_t length, size_t byteDepth, const void *src) {
 			if (m_memory_map.find(key) != m_memory_map.end())
 				throw ICLException("CLMemoryAssistant::createNamedBuffer(): Key already in use: " + key);
 			CLBuffer *mem_ptr = 0;
@@ -80,8 +79,7 @@ namespace icl {
 
 		CLImage2D CLMemoryAssistant::createNamedImage2D(MemKeyType const &key, const string &accessMode,
 														const size_t width, const size_t height, const int depth,
-														const int num_channel, const void *src)
-		 {
+														const int num_channel, const void *src) {
 			if (m_memory_map.find(key) != m_memory_map.end())
 				throw ICLException("CLMemoryAssistant::createNamedImage2D(): Key already in use: " + key);
 			CLImage2D *mem_ptr = 0;

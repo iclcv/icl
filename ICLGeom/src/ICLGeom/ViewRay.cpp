@@ -46,7 +46,7 @@ namespace icl{
       this->offset[3]=this->direction[3]=1;
     }
 
-    Vec ViewRay::getIntersection(const PlaneEquation &plane) const {
+    Vec ViewRay::getIntersection(const PlaneEquation &plane) const{
       return Camera::getIntersection(*this,plane);
     }
 

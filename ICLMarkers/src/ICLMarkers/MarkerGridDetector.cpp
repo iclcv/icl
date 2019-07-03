@@ -44,8 +44,7 @@ namespace  icl{
 
     MarkerGridDetector::GridDefinition::GridDefinition(const utils::Size &numCells,
                                                        const std::vector<int> &markerIDs,
-                                                       const std::string &markerType)
-       :
+                                                       const std::string &markerType) :
       numCells(numCells),ids(markerIDs),markerType(markerType){
 
       int n = getDim();
@@ -137,8 +136,7 @@ namespace  icl{
       return m_data->def;
     }
 
-    const MarkerGridDetector::Result &MarkerGridDetector::detect(const core::ImgBase *image)
-      {
+    const MarkerGridDetector::Result &MarkerGridDetector::detect(const core::ImgBase *image){
       if(isNull()){
         throw utils::ICLException("MarkerGridDetector::detect: instance not yet initialized");
       }

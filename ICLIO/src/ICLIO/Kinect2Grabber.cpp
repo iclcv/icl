@@ -262,7 +262,7 @@ namespace icl{
 
     };
 
-    Kinect2Grabber::Kinect2Grabber(Kinect2Grabber::Mode mode, int deviceID)  {
+    Kinect2Grabber::Kinect2Grabber(Kinect2Grabber::Mode mode, int deviceID) {
       if(mode != DUMMY_MODE){
         LibFreenect2Context &ctx = LibFreenect2Context::instance();
         m_impl = new Impl;

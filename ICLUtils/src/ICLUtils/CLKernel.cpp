@@ -45,8 +45,7 @@ namespace icl {
 	  Impl(Impl& other):cmdQueue(other.cmdQueue){
         kernel = other.kernel;
       }
-      Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id)
-         {
+      Impl(cl::Program& program, cl::CommandQueue& cmdQueue, const string &id):cmdQueue(cmdQueue) {
         try {
           kernel = cl::Kernel(program, id.c_str());
         } catch (cl::Error& error) {
@@ -54,7 +53,7 @@ namespace icl {
         }
       }
 
-	  void finish()  {
+	  void finish() {
 		  try {
 			  cmdQueue.finish();
 		  } catch (cl::Error& error) {
@@ -63,7 +62,7 @@ namespace icl {
 	  }
 
       void apply(int gloW, int gloH = 0, int gloC = 0,
-                 int locW = 0, int locH = 0, int locC = 0) {
+                 int locW = 0, int locH = 0, int locC = 0){
         cl::NDRange globRange;
         if (gloH > 0)
           {
@@ -108,8 +107,7 @@ namespace icl {
       }
 
       template<class T>
-      void setArg(const unsigned idx, const T &value)
-         {
+      void setArg(const unsigned idx, const T &value) {
         try
           {
             kernel.setArg(idx, value);
@@ -118,8 +116,7 @@ namespace icl {
         }
       }
 
-      void setArg(const unsigned idx, const CLKernel::LocalMemory &value)
-         {
+      void setArg(const unsigned idx, const CLKernel::LocalMemory &value) {
         try
           {
             kernel.setArg(idx, value.size, NULL);
@@ -130,16 +127,16 @@ namespace icl {
 
     };
     CLKernel::CLKernel(const string &id, cl::Program & program,
-                       cl::CommandQueue& cmdQueue)  {
+                       cl::CommandQueue& cmdQueue) {
       impl = new Impl(program, cmdQueue, id);
 
     }
     void CLKernel::apply(int gloW, int gloH, int gloC,
-                         int locW, int locH, int locC) {
+                         int locW, int locH, int locC){
       impl->apply(gloW, gloH, gloC, locW, locH, locC);
     }
 
-	void CLKernel::finish()  {
+	void CLKernel::finish() {
 		impl->finish();
 	}
 
@@ -160,51 +157,51 @@ namespace icl {
       return *this;
     }
 
-    void CLKernel::setArg(const unsigned idx, const unsigned int &value) {
+    void CLKernel::setArg(const unsigned idx, const unsigned int &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const int &value) {
+    void CLKernel::setArg(const unsigned idx, const int &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const short &value) {
+    void CLKernel::setArg(const unsigned idx, const short &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const long &value) {
+    void CLKernel::setArg(const unsigned idx, const long &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const unsigned long &value) {
+    void CLKernel::setArg(const unsigned idx, const unsigned long &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const float &value) {
+    void CLKernel::setArg(const unsigned idx, const float &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const double &value) {
+    void CLKernel::setArg(const unsigned idx, const double &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const char &value) {
+    void CLKernel::setArg(const unsigned idx, const char &value){
       impl->setArg(idx, value);
     }
-    void CLKernel::setArg(const unsigned idx, const unsigned char &value) {
+    void CLKernel::setArg(const unsigned idx, const unsigned char &value){
       impl->setArg(idx, value);
     }
 
-    void CLKernel::setArg(const unsigned idx, const CLBuffer &value) {
+    void CLKernel::setArg(const unsigned idx, const CLBuffer &value){
       impl->setArg(idx, value.getBuffer());
     }
 
-    void CLKernel::setArg(const unsigned idx, const CLImage2D &value) {
+    void CLKernel::setArg(const unsigned idx, const CLImage2D &value){
       impl->setArg(idx, value.getImage2D());
     }
 
-    void CLKernel::setArg(const unsigned idx, const LocalMemory &value) {
+    void CLKernel::setArg(const unsigned idx, const LocalMemory &value){
       impl->setArg(idx, value);
     }
 
-    void CLKernel::setArg(const unsigned idx, const FixedArray<float,4> &value) {
+    void CLKernel::setArg(const unsigned idx, const FixedArray<float,4> &value){
       impl->setArg(idx, value);
     }
 
-    void CLKernel::setArg(const unsigned idx, const FixedArray<float,3> &value) {
+    void CLKernel::setArg(const unsigned idx, const FixedArray<float,3> &value){
       impl->setArg(idx, value);
     }
   }

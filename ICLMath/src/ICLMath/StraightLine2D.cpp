@@ -79,7 +79,7 @@ namespace icl{
       return ((v*fac)-p).length();
     }
 
-    StraightLine2D::Pos StraightLine2D::intersect(const StraightLine2D &other) const {
+    StraightLine2D::Pos StraightLine2D::intersect(const StraightLine2D &other) const{
       float A1,B1,C1,A2,B2,C2;
       {
         Pos a=o;

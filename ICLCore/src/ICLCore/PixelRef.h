@@ -148,7 +148,7 @@ namespace icl{
       /// assigns a ranges contents to the pixel data
       /** An exception is only thrown of the given range is too short*/
       template<class ForwardIterator>
-      inline void setFromRange(ForwardIterator begin, ForwardIterator end) {
+      inline void setFromRange(ForwardIterator begin, ForwardIterator end){
         for(unsigned int i=0;i<m_data.size();++i,++begin){
           if(begin == end) throw utils::ICLException("Range is longer then channel count");
           *m_data[i] = *begin;
@@ -156,13 +156,13 @@ namespace icl{
       }
 
       /// references a single element (safe)
-      T &operator[](unsigned int channel) {
+      T &operator[](unsigned int channel){
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }
 
       /// references a single element (const) (safe)
-      const T &operator[](unsigned int channel) const {
+      const T &operator[](unsigned int channel) const{
         ICLASSERT_THROW(channel < m_data.size(),utils::ICLException("invalid channel index"));
         return *m_data[channel];
       }

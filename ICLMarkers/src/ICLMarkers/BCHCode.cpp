@@ -564,7 +564,7 @@ namespace icl {
     }
 
 
-    static BCHCode code_from_image(const Img8u &image, bool useROI) {
+    static BCHCode code_from_image(const Img8u &image, bool useROI){
       BCHCode code(0);
       ICLASSERT_THROW(image.getChannels(), ICLException("code_from_image(const Img8u&,bool): input image has not channels"));
       if(useROI){
@@ -583,7 +583,7 @@ namespace icl {
       return code;
     }
 
-    DecodedBCHCode BCHCoder::decode(const Img8u &image, bool useROI) {
+    DecodedBCHCode BCHCoder::decode(const Img8u &image, bool useROI){
       return decode(code_from_image(image,useROI));
     }
 
@@ -598,7 +598,7 @@ namespace icl {
       return out;
     }
 
-    DecodedBCHCode2D BCHCoder::decode2D(const Img8u &image, int maxID, bool useROI) {
+    DecodedBCHCode2D BCHCoder::decode2D(const Img8u &image, int maxID, bool useROI){
       BCHCode last = code_from_image(image,useROI);
       DecodedBCHCode2D best = decode(last);
       if(best.id > maxID){

@@ -136,8 +136,7 @@ namespace icl{
                                  const std::string &paInitString,
                                  callback init, callback run,
                                  callback run2, callback run3,
-                                 callback run4, callback run5)
-    {
+                                 callback run4, callback run5){
     if(s_app) throw SecondSingeltonException("only one instance is allowed!");
     if(paInitString != ""){
       pa_init(n,ppc,paInitString);

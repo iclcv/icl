@@ -55,16 +55,16 @@ namespace icl{
       /// creates a param list from a single given string
       /** The string is a comma seperated list of key=value tokens. Both
           comma and the '='-character can be escaped using backslash */
-      inline ParamList(const std::string &commaSepKeyValueString) {
+      inline ParamList(const std::string &commaSepKeyValueString){
         init(commaSepKeyValueString);
       }
 
       /// this allows for implicit creation of a ParamList instance from a given const char *
-      inline ParamList(const char *commaSepKeyValueString) {
+      inline ParamList(const char *commaSepKeyValueString){
         init(commaSepKeyValueString);
       }
 
-      inline void init(const std::string commaSepKeyValueString) {
+      inline void init(const std::string commaSepKeyValueString){
         std::vector<std::string> ts = tok(commaSepKeyValueString,",",true,'\\');
         for(size_t i=0;i<ts.size();++i){
           std::vector<std::string> kv = tok(ts[i],"=",true,'\\');
@@ -111,7 +111,7 @@ namespace icl{
       }
 
       /// extension for the unconst operator that is provided by the std::map class
-      inline const Any &operator[](const Key &key) const {
+      inline const Any &operator[](const Key &key) const{
         const_iterator it = find(key);
         if(it == end()) throw ICLException("error in ParamList::operator[](key) with key=" + key + ": key not found!");
         return it->second;

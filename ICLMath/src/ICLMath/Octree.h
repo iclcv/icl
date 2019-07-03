@@ -292,7 +292,7 @@ namespace icl{
       protected:
 
       /// internal utility method that is used to find an approximated nearest neighbour
-      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const {
+      const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const{
         // 1st find cell, that continas p
         const Node *n = root;
         while(n->children){
@@ -341,7 +341,7 @@ namespace icl{
           can easily be 5 times as fast as the real nearest neighbor search.
           The result quality depends on the number of contained points, and
           on the QuadTree's template parameters */
-      Pt nn_approx(const Pt &p) const {
+      Pt nn_approx(const Pt &p) const{
         double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
         const Pt *currNN  = 0;
         nn_approx_internal(scale_up(p),currMinDist,currNN);
@@ -367,7 +367,7 @@ namespace icl{
           If no neighbour could be found, an exception is thown. This should
           actually only happen when nn is called on an empty QuadTree
       */
-      Pt nn(const Pt &pIn) const {
+      Pt nn(const Pt &pIn) const{
         const Pt p = scale_up(pIn);
         std::vector<const Node*> stack;
         stack.reserve(128);

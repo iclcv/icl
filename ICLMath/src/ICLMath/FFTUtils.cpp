@@ -76,7 +76,7 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
 
       template<typename T>
-      DynMatrix<T>&  fftshift(DynMatrix<T> &src,DynMatrix<T> &dst) {
+      DynMatrix<T>&  fftshift(DynMatrix<T> &src,DynMatrix<T> &dst){
 	if(src.cols() != dst.cols() || src.rows() != dst.rows())
           throw InvalidMatrixDimensionException("number of columns(rows) of sourcematrix must be equal to number of colums(rows) of destinationmatrix");
 	unsigned int cols = src.cols();
@@ -121,7 +121,7 @@ namespace icl{
 
       template<typename T>
       DynMatrix<T>&  ifftshift(DynMatrix<T> &src,
-                               DynMatrix<T> &dst) {
+                               DynMatrix<T> &dst){
 	if(src.cols() != dst.cols() || src.rows() != dst.rows())
           throw InvalidMatrixDimensionException("number of columns(rows) of sourcematrix must "
                                                 "be equal to number of colums(rows) "
@@ -856,7 +856,7 @@ namespace icl{
 #ifdef ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<T> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) {
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 	FFT_DEBUG("using ipp fft");
 	IppiFFTSpec_R_32f *spec = 0;
 	//IppHintAlgorithm hint;
@@ -916,25 +916,25 @@ namespace icl{
       }
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
 
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                   DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) {
+                                                                   DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 
 	IppiFFTSpec_C_32fc *spec = 0;
 	//IppHintAlgorithm hint;
@@ -1051,7 +1051,7 @@ namespace icl{
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_fft(
                                                                           const DynMatrix<T1> &src, DynMatrix<std::complex<T2> > &dst,
-                                                                          DynMatrix<std::complex<T2> > &buffer) {
+                                                                          DynMatrix<std::complex<T2> > &buffer){
 	FFT_DEBUG("using mkl fft2d");
 	unsigned int dimx = src.cols();
 	unsigned int dimy = src.rows();
@@ -1099,51 +1099,51 @@ namespace icl{
       }
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
 
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
                                                                               DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf) ;
+                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
 
       template<typename T1,typename T2>
       void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,T1 *src,
-                                                   std::complex<T2>*dst, std::complex<T2> *buffer, unsigned int dimx, unsigned int dimy) {
+                                                   std::complex<T2>*dst, std::complex<T2> *buffer, unsigned int dimx, unsigned int dimy){
 	FFT_DEBUG("using mkl fft2d_complex");
 
 	MKL_LONG status;
@@ -1179,11 +1179,11 @@ namespace icl{
                                                    icl32c *dst, icl32c *buffer,unsigned int dimx, unsigned int dimy);
       template
       void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,_MKL_Complex16 *src,
-                                                   std::complex<icl64f> *dst, std::complex<icl64f> *buffer,unsigned int dimx, unsigned int dimy) ;
+                                                   std::complex<icl64f> *dst, std::complex<icl64f> *buffer,unsigned int dimx, unsigned int dimy);
 
 
       DynMatrix<icl32c >& mkl_wrapper_function_result_fft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                     DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) {
+                                                                                     DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer){
 	unsigned int dimx = src.cols();
 	unsigned int dimy = src.rows();
 	_MKL_Complex8 *srcbuf = new _MKL_Complex8[dimy*dimx];
@@ -1200,7 +1200,7 @@ namespace icl{
       }
 
       DynMatrix<std::complex<icl64f> >& mkl_wrapper_function_result_fft_icl64fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) {
+                                                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer){
 	unsigned int dimx = src.cols();
 	unsigned int dimy = src.rows();
 	_MKL_Complex16 *srcbuf = new _MKL_Complex16[dimy*dimx];
@@ -1658,7 +1658,7 @@ namespace icl{
 #ifdef ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<T> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) {
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 	FFT_DEBUG("using ipp ifft fc");
 	int dim = src.cols()*src.rows();
 	IppiFFTSpec_C_32fc *spec = 0;
@@ -1706,37 +1706,37 @@ namespace icl{
 
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
       template
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
 #endif
 
 #ifdef ICL_HAVE_MKL
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<T1> &src,
-                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer) {
+                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer){
 	FFT_DEBUG("using mkl ifft2d fc");
 	int dim = src.cols()*src.rows();
 	unsigned int dimx = src.cols();
@@ -1794,35 +1794,35 @@ namespace icl{
       }
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
       template
       DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer) ;
+                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
 
       template<typename T1,typename T2>
       DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<T1> &src,
-                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer) {
+                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer){
 	FFT_DEBUG("using mkl ifft2dfc");
 	int dim = src.cols()*src.rows();
 	unsigned int dimx = src.cols();
@@ -1880,31 +1880,31 @@ namespace icl{
       }
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
       template
       DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer) ;
+                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
 #endif
 
       template<typename T1, typename T2>

@@ -69,7 +69,7 @@ inline int set_canon(int flag){
 namespace icl{
   namespace io{
 
-    static std::string translate_modulation_freq(ModulationFrq m) {
+    static std::string translate_modulation_freq(ModulationFrq m){
       switch(m){
 #define CASE(X) case MF_##X##MHz: return #X+str("MHz");
         CASE(40);CASE(30);CASE(21);CASE(20);CASE(19);CASE(60);
@@ -296,7 +296,7 @@ namespace icl{
     static int g_swissranger_instance_count = 0;
 
 
-    SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel) {
+    SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel):Grabber(){
       g_swissranger_instance_count++;
 
       if(g_swissranger_instance_count == 1){
@@ -441,7 +441,7 @@ namespace icl{
       }
     }
 
-    float SwissRangerGrabber::getMaxRangeMM(const std::string &modulationFreq) {
+    float SwissRangerGrabber::getMaxRangeMM(const std::string &modulationFreq){
       return get_max_range_mm(translate_modulation_freq(modulationFreq));
     }
 

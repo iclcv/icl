@@ -54,14 +54,14 @@ namespace icl{
       int nYCells; //!< grid height
 
       /// internal initialization method
-      void init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads) ;
+      void init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads);
 
       public:
       /// creates a GridSceneObject with a given set of vertices
       /** Note: allGridPoints must have nXCells + nYCells elements and its elements must
           be ordered in row-major order */
       GridSceneObject(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints,
-                      bool lines=true, bool quads=true) ;
+                      bool lines=true, bool quads=true);
 
       /// creates a GridSceneObject where the grid is a regular grid in 3D space
       /** the grid nodes are created automatically: node(x,y) = origin + x*dx + y*dy */

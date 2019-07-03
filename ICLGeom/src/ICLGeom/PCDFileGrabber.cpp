@@ -208,7 +208,7 @@ namespace icl{
           }
         }
 
-        const FieldDef &findDef(const std::string &name) {
+        const FieldDef &findDef(const std::string &name){
           std::map<std::string,FieldDef>::const_iterator it = m_typeLUT.find(name);
           if(it == m_typeLUT.end()){
             throw ICLException("PCDFileGrabber: feature type " + name + " not found");

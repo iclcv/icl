@@ -90,7 +90,7 @@ namespace icl{
 
       /// returns the intermediate image, that is associated with the given name
       /** @see getIntermediateImageNames for more details */
-      const core::ImgBase *getIntermediateImage(const std::string &name) const ;
+      const core::ImgBase *getIntermediateImage(const std::string &name) const;
 
       /// this method is called before the patch classification loop is started
       /** this function can be used to avoid property extraction at runtime. Usually,

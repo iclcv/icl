@@ -84,7 +84,7 @@ namespace icl{
       virtual bool isOrganized() const;
 
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual utils::Size getSize() const ;
+      virtual utils::Size getSize() const;
 
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const;
@@ -124,7 +124,7 @@ namespace icl{
       /// adds normals or colors in hindsight
       /** If the given feature is already contained, calling this function has no effect.
           The function calls lock() and unlock() internally */
-      virtual void addFeature(FeatureType t) ;
+      virtual void addFeature(FeatureType t);
 
       /// deep copy function
       virtual PointCloudObject *copy() const {

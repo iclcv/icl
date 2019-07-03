@@ -77,7 +77,7 @@ public:
 	 * @param in Image to filter.
 	 * @param out Filter result (must be of the same size and format)
 	 */
-	void apply(const core::ImgBase *in, core::ImgBase **out) throw();
+	void apply(const core::ImgBase *in, core::ImgBase **out) noexcept;
 
 	/// Sets the kernel radius
 	void setRadius(int radius) { this->radius = radius; }

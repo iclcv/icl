@@ -323,7 +323,7 @@ namespace icl{
       return m_data->bounds;
     }
 
-    void AdjustGridMouseHandler::setGrid(size_t idx, const utils::Point psIn[4]) {
+    void AdjustGridMouseHandler::setGrid(size_t idx, const utils::Point psIn[4]){
       if(idx >= m_data->grids.size()){
         throw ICLException("AdjustGridMouseHandler: setGrid invalid index");
       }
@@ -358,7 +358,7 @@ namespace icl{
       }
     }
 
-    std::vector<Point> AdjustGridMouseHandler::getGrid(size_t idx) const {
+    std::vector<Point> AdjustGridMouseHandler::getGrid(size_t idx) const{
       Mutex::Locker lock(this);
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::getGrid() was called before it was initialized!");

@@ -120,7 +120,7 @@ namespace icl{
       };
 
       /// main function to obtain an objects pose from given image points and camera
-      const Result &findPose(const std::vector<utils::Point32f> &imagePoints, const Camera &cam) ;
+      const Result &findPose(const std::vector<utils::Point32f> &imagePoints, const Camera &cam);
 
       /// utility wrapper if no whole camera is available
       /** Please note, that the focal lenghts have to be combined with a cameras
@@ -143,7 +143,7 @@ namespace icl{
       */
       const Result &findPose(const std::vector<utils::Point32f> &imagePoints,
                              const utils::Point &principlePointOffset,
-                             float focalLengthX, float focalLengthY) ;
+                             float focalLengthX, float focalLengthY);
     };
 
   } // namespace geom

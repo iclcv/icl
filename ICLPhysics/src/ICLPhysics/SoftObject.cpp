@@ -183,7 +183,7 @@ namespace physics{
 
   }
 
-  SoftObject::SoftObject(const std::string &objFileName, PhysicsWorld *world) {
+  SoftObject::SoftObject(const std::string &objFileName, PhysicsWorld *world){
     File file(objFileName,File::readText);
     if(!file.exists()) throw ICLException("Error in SceneObject(objFilename): unable to open file " + objFileName);
 

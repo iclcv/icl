@@ -71,29 +71,29 @@ namespace icl{
       static int getHeaderSize();
 
       /// estimates the size for the image data of an serialized image
-      static int estimateImageDataSize(const ImgBase *image) ;
+      static int estimateImageDataSize(const ImgBase *image);
 
       /// estimates the full size of an serialized image
-      static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false) ;
+      static int estimateSerializedSize(const ImgBase *image, bool skipMetaData=false);
 
       /// creates an image header from given image
-      static ImageHeader createHeader(const ImgBase *image) ;
+      static ImageHeader createHeader(const ImgBase *image);
 
       /// serializes an image into given destination data-points (which has to be long enough)
       static void serialize(const ImgBase *image, icl8u *dst,
                             const ImageHeader &header=ImageHeader(),
-                            bool skipMetaData=false) ;
+                            bool skipMetaData=false);
 
       /// serializes an image into given vector (the vector size is adapted automatically)
       static void serialize(const ImgBase *image, std::vector<icl8u> &data,
                             const ImageHeader &header=ImageHeader(),
-                            bool skipMetaData=false) ;
+                            bool skipMetaData=false);
 
       /// deserializes an image (and optionally also the meta-data) from given icl8u data block
-      static void deserialize(const icl8u *data, ImgBase **dst) ;
+      static void deserialize(const icl8u *data, ImgBase **dst);
 
       /// extracts only an images TimeStamp from it's serialized form
-      static utils::Time deserializeTimeStamp(const icl8u *data) ;
+      static utils::Time deserializeTimeStamp(const icl8u *data);
 
     };
   } // namespace core

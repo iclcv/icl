@@ -362,7 +362,7 @@ namespace icl{
       return m_metaData;
     }
 
-    const std::string & PointCloudObjectBase::getMetaData(const std::string &key) const {
+    const std::string & PointCloudObjectBase::getMetaData(const std::string &key) const{
       std::map<std::string,std::string>::const_iterator it = m_metaData.find(key);
       if(it == m_metaData.end()) throw ICLException("PointCloudObjectBase::getMetaData(key): no meta data with given key ("
                                                      + key + ") was associated with this point cloud");
@@ -497,7 +497,7 @@ namespace icl{
 
     } // end of anonymous namespace
 
-    void PointCloudObjectBase::setColorsFromImage(const ImgBase &image) {
+    void PointCloudObjectBase::setColorsFromImage(const ImgBase &image){
       ICLASSERT_THROW(image.getSize() == getSize(),
                       ICLException("PointCloudObjectBase::setColorsFromImage: "
                                    "image size and point cloud size differ!"));
@@ -568,7 +568,7 @@ namespace icl{
       }
     }
 
-    void PointCloudObjectBase::extractColorsToImage(core::ImgBase &image, bool withAlpha) const {
+    void PointCloudObjectBase::extractColorsToImage(core::ImgBase &image, bool withAlpha) const{
       image.setSize(getSize());
       if(withAlpha){
         if(!supports(PointCloudObjectBase::BGRA) && !supports(PointCloudObjectBase::RGBA32f)){

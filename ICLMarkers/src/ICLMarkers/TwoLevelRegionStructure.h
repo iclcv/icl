@@ -91,7 +91,7 @@ namespace icl{
           the children counts are sorted for easier comparison with an actual
           region structure whose root-region is passed to the virtual match method.
       */
-      TwoLevelRegionStructure(const std::string &code) ;
+      TwoLevelRegionStructure(const std::string &code);
 
       /// match implementation
       virtual bool match(const cv::ImageRegion &r) const;

@@ -106,7 +106,7 @@ namespace icl{
       const Camera &getDepthCamera() const;
 
       /// returns the current camera camera (if this was not given, an exception is thrown)
-      const Camera &getColorCamera() const ;
+      const Camera &getColorCamera() const;
 
       /// sets new cameras (reinitializes data structures internally)
       /** This functions is relatively complex, so it should be performed only
@@ -137,7 +137,7 @@ namespace icl{
       /** Only if both- depth and camera camera parameters are available.
           Please note, that the returned shallowly copies the internal
           depth camera viewray array */
-      RGBDMapping getMapping() const ;
+      RGBDMapping getMapping() const;
 
       /// sets up internal heuristical fixes applied to the used depth camera parameters
       /** @param focalLengthMultiplier is used as multiplicative adaption to the orginal depth camera's

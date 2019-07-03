@@ -143,13 +143,13 @@ namespace icl{
       }
     };
 
-    V4L2LoopBackOutput::V4L2LoopBackOutput(const std::string &device) :
+    V4L2LoopBackOutput::V4L2LoopBackOutput(const std::string &device):
       m_data(new Data){
 
       init(device);
     }
 
-    void V4L2LoopBackOutput::init(const std::string &device) {
+    void V4L2LoopBackOutput::init(const std::string &device){
       if(device.length() == 1 || device.length() == 2){
         int id = utils::parse<int>(device);
         if(id >= 0 && id <= 99){

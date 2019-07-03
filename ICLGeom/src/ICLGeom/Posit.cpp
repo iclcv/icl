@@ -169,7 +169,7 @@ namespace icl{
       return sqrt(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
     }
 
-    const Posit::Result &Posit::findPose(const std::vector<Point32f> &imagePoints, const Camera &cam) {
+    const Posit::Result &Posit::findPose(const std::vector<Point32f> &imagePoints, const Camera &cam){
       Point32f pp = cam.getPrincipalPointOffset();
       float fx = cam.getFocalLength()*cam.getSamplingResolutionX();
       float fy = cam.getFocalLength()*cam.getSamplingResolutionY();
@@ -177,7 +177,7 @@ namespace icl{
     }
 
     const Posit::Result &Posit::findPose(const std::vector<Point32f> &imagePoints, const Point &pp,
-                                         float fx, float fy) {
+                                         float fx, float fy){
       BENCHMARK_THIS_FUNCTION;
 
       const int N = data->N;

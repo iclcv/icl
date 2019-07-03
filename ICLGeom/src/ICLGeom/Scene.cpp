@@ -1286,7 +1286,7 @@ namespace icl{
       return r ? r : 1;
     }
 
-    SceneLight &Scene::getLight(int index) {
+    SceneLight &Scene::getLight(int index){
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
         m_lights[index] = SmartPtr<SceneLight>(new SceneLight(this,index));
@@ -1295,7 +1295,7 @@ namespace icl{
       return *m_lights[index];
     }
 
-    const SceneLight &Scene::getLight(int index) const {
+    const SceneLight &Scene::getLight(int index) const{
       return const_cast<Scene*>(this)->getLight(index);
     }
 
@@ -1330,12 +1330,12 @@ namespace icl{
     }
 
 
-    SceneObject *Scene::getObject(int index) {
+    SceneObject *Scene::getObject(int index){
       if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");
       return m_objects[index].get();
     }
 
-    const SceneObject *Scene::getObject(int index) const {
+    const SceneObject *Scene::getObject(int index) const{
       return const_cast<Scene*>(this)->getObject(index);
     }
 
@@ -1344,7 +1344,7 @@ namespace icl{
       else return find_object_recursive(o->getChild(indices[idx]),idx+1,indices);
     }
 
-    SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) {
+    SceneObject *Scene::getObject(const std::vector<int> recursiveIndices){
       if(!recursiveIndices.size()) throw ICLException("Scene::getObject: recursiveIndices's size was 0");
       if(recursiveIndices.size() == 1) return getObject(recursiveIndices.front());
       SceneObject *found = 0;
@@ -1356,7 +1356,7 @@ namespace icl{
       return found;
     }
 
-    SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) const {
+    SceneObject *Scene::getObject(const std::vector<int> recursiveIndices) const{
       return const_cast<Scene*>(this)->getObject(recursiveIndices);
     }
 
@@ -1370,7 +1370,7 @@ namespace icl{
       return false;
     }
 
-    std::vector<int> Scene::findPath(const SceneObject *o) const {
+    std::vector<int> Scene::findPath(const SceneObject *o) const{
       std::vector<int> path;
       for(unsigned int i=0;i<m_objects.size();++i){
         path.push_back(i);

@@ -72,7 +72,7 @@ namespace icl{
 
       void setStoreLastConsensusSet(bool);
 
-      std::vector<utils::Point32f> getLastConsensusSet() ;
+      std::vector<utils::Point32f> getLastConsensusSet();
 
       /// fit from planar target
       Result fit(const std::vector<utils::Point32f> &modelPoints,

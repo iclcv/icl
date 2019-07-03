@@ -91,7 +91,7 @@ namespace icl{
       inline DynMatrix():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
 
       /// Create a dyn matrix with given dimensions (and optional initialValue)
-      inline DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0)  :
+      inline DynMatrix(unsigned int cols,unsigned int rows,const  T &initValue=0) :
       m_rows(rows),m_cols(cols),m_ownData(true){
         if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         m_data = new T[cols*rows];
@@ -101,7 +101,7 @@ namespace icl{
       /// Create a matrix with given data
       /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
           will not be released in the destructor*/
-      inline DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true)  :
+      inline DynMatrix(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) :
         m_rows(rows),m_cols(cols),m_ownData(deepCopy){
         if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         if(deepCopy){
@@ -113,7 +113,7 @@ namespace icl{
       }
 
       /// Create a matrix with given data (const version: deepCopy only)
-      inline DynMatrix(unsigned int cols,unsigned int rows,const T *data)  :
+      inline DynMatrix(unsigned int cols,unsigned int rows,const T *data) :
         m_rows(rows),m_cols(cols),m_ownData(true){
         if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         m_data = new T[dim()];
@@ -137,11 +137,11 @@ namespace icl{
           Each row of the CSV file becomes a matrix row. The column delimiter is ','
           Rows, that begin with '#' or with ' ' or that have no length are ignored
       */
-      static DynMatrix<T> loadCSV(const std::string &filename) ;
+      static DynMatrix<T> loadCSV(const std::string &filename);
 
       /// writes the current matrix to a csv file
       /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
-      void saveCSV(const std::string &filename) ;
+      void saveCSV(const std::string &filename);
 
       /// returns with this matrix has a valid data pointer
       inline bool isNull() const { return !m_data; }
@@ -176,7 +176,7 @@ namespace icl{
       }
 
       /// resets matrix dimensions
-      inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0) {
+      inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0){
         if((int)cols == m_cols && (int)rows==m_rows) return;
         if(cols*rows == 0) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         DynMatrix M(cols,rows,initializer);
@@ -256,7 +256,7 @@ namespace icl{
       }
 
       /// Matrix multiplication (in source destination fashion) [IPP-Supported]
-      inline DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const {
+      inline DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const{
         if( cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
         dst.setBounds(m.cols(),rows());
         for(unsigned int c=0;c<dst.cols();++c){
@@ -268,33 +268,33 @@ namespace icl{
       }
 
       /// Elementwise matrix multiplication (in source destination fashion) [IPP-Supported]
-      inline DynMatrix &elementwise_mult(const DynMatrix &m, DynMatrix &dst) const {
+      inline DynMatrix &elementwise_mult(const DynMatrix &m, DynMatrix &dst) const{
         if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
         dst.setBounds(cols(),rows());
         for(unsigned int i=0;i<dim();++i){
-  	dst[i] = m_data[i] * m[i];
+          dst[i] = m_data[i] * m[i];
         }
         return dst;
       }
 
       /// Elementwise matrix multiplication (without destination matrix) [IPP-Supported]
-      inline DynMatrix elementwise_mult(const DynMatrix &m) const {
+      inline DynMatrix elementwise_mult(const DynMatrix &m) const{
         DynMatrix dst(cols(),rows());
         return elementwise_mult(m,dst);
       }
 
       /// Elementwise division (in source destination fashion) [IPP-Supported]
-      inline DynMatrix &elementwise_div(const DynMatrix &m, DynMatrix &dst) const {
+      inline DynMatrix &elementwise_div(const DynMatrix &m, DynMatrix &dst) const{
         if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
         dst.setBounds(cols(),rows());
         for(int i=0;i<dim();++i){
-  	dst[i] = m_data[i] / m[i];
+          dst[i] = m_data[i] / m[i];
         }
         return dst;
       }
 
       /// Elementwise matrix multiplication (without destination matrix) [IPP-Supported]
-      inline DynMatrix elementwise_div(const DynMatrix &m) const {
+      inline DynMatrix elementwise_div(const DynMatrix &m) const{
         DynMatrix dst(cols(),rows());
         return elementwise_div(m,dst);
       }
@@ -303,23 +303,23 @@ namespace icl{
 
 
       /// Essential matrix multiplication [IPP-Supported]
-      inline DynMatrix operator*(const DynMatrix &m) const {
+      inline DynMatrix operator*(const DynMatrix &m) const{
         DynMatrix d(m.cols(),rows());
         return mult(m,d);
       }
 
       /// inplace matrix multiplication applying this = this*m [IPP-Supported]
-      inline DynMatrix &operator*=(const DynMatrix &m) {
+      inline DynMatrix &operator*=(const DynMatrix &m){
         return *this=((*this)*m);
       }
 
       /// inplace matrix devision (calling this/m.inv()) [IPP-Supported]
-      inline DynMatrix operator/(const DynMatrix &m) const {
+      inline DynMatrix operator/(const DynMatrix &m) const{
         return this->operator*(m.inv());
       }
 
       /// inplace matrix devision (calling this/m.inv()) (inplace)
-      inline DynMatrix &operator/=(const DynMatrix &m) const {
+      inline DynMatrix &operator/=(const DynMatrix &m) const{
         return *this = this->operator*(m.inv());
       }
 
@@ -350,7 +350,7 @@ namespace icl{
       }
 
       /// Matrix addition
-      inline DynMatrix operator+(const DynMatrix &m) const {
+      inline DynMatrix operator+(const DynMatrix &m) const{
         if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
         DynMatrix d(cols(),rows());
         std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
@@ -358,7 +358,7 @@ namespace icl{
       }
 
       /// Matrix substraction
-      inline DynMatrix operator-(const DynMatrix &m) const {
+      inline DynMatrix operator-(const DynMatrix &m) const{
         if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
         DynMatrix d(cols(),rows());
         std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
@@ -366,14 +366,14 @@ namespace icl{
       }
 
       /// Matrix addition (inplace)
-      inline DynMatrix &operator+=(const DynMatrix &m) {
+      inline DynMatrix &operator+=(const DynMatrix &m){
         if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
         std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
         return *this;
       }
 
       /// Matrix substraction (inplace)
-      inline DynMatrix &operator-=(const DynMatrix &m) {
+      inline DynMatrix &operator-=(const DynMatrix &m){
         if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
         std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
         return *this;
@@ -396,13 +396,13 @@ namespace icl{
       }
 
       /// element access with index check
-      inline T &at(unsigned int col,unsigned int row) {
+      inline T &at(unsigned int col,unsigned int row){
         if(col>=cols() || row >= rows()) throw InvalidIndexException("row or col index too large");
         return m_data[col+cols()*row];
       }
 
       /// element access with index check (const)
-      inline const T &at(unsigned int col,unsigned int row) const {
+      inline const T &at(unsigned int col,unsigned int row) const{
         return const_cast<DynMatrix*>(this)->at(col,row);
       }
 
@@ -443,13 +443,13 @@ namespace icl{
       /** \endcond */
 
       /// returns the squared distance of the inner data vectors (linearly interpreted) (IPP accelerated)
-      inline T sqrDistanceTo(const DynMatrix &other) const {
+      inline T sqrDistanceTo(const DynMatrix &other) const{
         ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
         return std::inner_product(begin(),end(),other.begin(),T(0), std::plus<T>(), diff_power_two);
       }
 
       /// returns the distance of the inner data vectors (linearly interpreted) (IPP accelerated)
-      inline T distanceTo(const DynMatrix &other) const {
+      inline T distanceTo(const DynMatrix &other) const{
         ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
         return ::sqrt( distanceTo(other) );
       }
@@ -829,12 +829,10 @@ namespace icl{
       }
 
       /// applies QR-decomposition using stabilized Gram-Schmidt orthonormalization (only for icl32f and icl64f)
-      void decompose_QR(DynMatrix &Q, DynMatrix &R) const
-        ;
+      void decompose_QR(DynMatrix &Q, DynMatrix &R) const;
 
       /// applies RQ-decomposition (by exploiting implemnetation of QR-decomposition) (only for icl32f, and icl64f)
-      void decompose_RQ(DynMatrix &R, DynMatrix &Q) const
-        ;
+      void decompose_RQ(DynMatrix &R, DynMatrix &Q) const;
 
       /// applies LU-decomposition (without using partial pivoting) (only for icl32f and icl64f)
       /** Even though, implementation also works for non-sqared matrices, it's not recommended to
@@ -899,7 +897,7 @@ namespace icl{
 
 
       /// invert the matrix (only for icl32f and icl64f)
-      DynMatrix inv() const ;
+      DynMatrix inv() const;
 
       /// Extracts the matrix's eigenvalues and eigenvectors
       /** This function only works on squared symmetric matrices.
@@ -915,7 +913,7 @@ namespace icl{
           @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
                              to the ith column of eigenvectors
       */
-      void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const ;
+      void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const;
 
       /// Computes Singular Value Decomposition of a matrix - decomposes A into USV'
       /** Internaly, this function will always use double values. Other types are converted internally.
@@ -925,7 +923,7 @@ namespace icl{
           @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
           @see icl::svd_dyn
       */
-      void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const ;
+      void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
 
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
       /** Internally, this functions can use either a QR-decomposition based approach, or it can use
@@ -952,8 +950,7 @@ namespace icl{
           return V * S * U.transp();
           </code>
       */
-      DynMatrix pinv(bool useSVD = false, T zeroThreshold = T(1E-16)) const
-        ;
+      DynMatrix pinv(bool useSVD = false, T zeroThreshold = T(1E-16)) const;
 
       /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
       /**
@@ -962,18 +959,16 @@ namespace icl{
       * @param zeroThreshold singular values below threshold are set to zero
       * @return pseudo inverse
       */
-      DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const
-        ;
+      DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const;
 
   #ifdef ICL_HAVE_MKL
       typedef void(*GESDD)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
       typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
-      DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
-        ;
+      DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const;
   #endif
 
       /// matrix determinant (only for icl32f and icl64f)
-      T det() const ;
+      T det() const;
 
       /// matrix transposed
       inline DynMatrix transp() const{
@@ -1007,7 +1002,7 @@ namespace icl{
           into a column vector matrix.
 
       */
-      inline void reshape(int newCols, int newRows) {
+      inline void reshape(int newCols, int newRows){
         if((cols() * rows()) != (newCols * newRows)){
           throw InvalidMatrixDimensionException("DynMatrix<T>::reshape: source dimension and destination dimension differs!");
         }
@@ -1026,7 +1021,7 @@ namespace icl{
       /** A.dot(B) is equivalent to A.transp() * B
           TODO: optimize implementation (current implementation _is_ A.transp() * B)
       */
-      DynMatrix<T> dot(const DynMatrix<T> &M) const {
+      DynMatrix<T> dot(const DynMatrix<T> &M) const{
         return this->transp() * M;
       }
 
@@ -1150,7 +1145,7 @@ namespace icl{
 #ifdef ICL_HAVE_IPP
     /** \cond */
     template<>
-    inline float DynMatrix<float>::sqrDistanceTo(const DynMatrix<float> &other) const {
+    inline float DynMatrix<float>::sqrDistanceTo(const DynMatrix<float> &other) const{
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
       float norm = 0 ;
       ippsNormDiff_L2_32f(begin(), other.begin(), dim(), &norm);
@@ -1158,7 +1153,7 @@ namespace icl{
     }
 
     template<>
-    inline double DynMatrix<double>::sqrDistanceTo(const DynMatrix<double> &other) const {
+    inline double DynMatrix<double>::sqrDistanceTo(const DynMatrix<double> &other) const{
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
       double norm = 0 ;
       ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
@@ -1166,7 +1161,7 @@ namespace icl{
     }
 
     template<>
-    inline float DynMatrix<float>::distanceTo(const DynMatrix<float> &other) const {
+    inline float DynMatrix<float>::distanceTo(const DynMatrix<float> &other) const{
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
       float norm = 0 ;
       ippsNormDiff_L2_32f(begin(), other.begin(), dim(), &norm);
@@ -1174,7 +1169,7 @@ namespace icl{
     }
 
     template<>
-    inline double DynMatrix<double>::distanceTo(const DynMatrix<double> &other) const {
+    inline double DynMatrix<double>::distanceTo(const DynMatrix<double> &other) const{
       ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
       double norm = 0 ;
       ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
@@ -1183,9 +1178,7 @@ namespace icl{
 
 #define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
-                                                            const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
-    {                       \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
       if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)"); \
       dst.setBounds(m.cols(),rows());                                   \
       ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(), \
@@ -1201,9 +1194,7 @@ namespace icl{
 
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div( \
-                                                                       const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const \
-    {                       \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
       if((m.cols() != cols()) || (m.rows() != rows())){                 \
         throw IncompatibleMatrixDimensionException("A./B dimension mismatch"); \
       }                                                                 \
@@ -1224,8 +1215,7 @@ namespace icl{
 
 #define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)                               \
     template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(            \
-                                                            Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
+    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
       dst.setBounds(cols(),rows());                                     \
       ippsMulC_##IPPT(data(),f, dst.data(),dim());                      \
       return dst;                                                       \

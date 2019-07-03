@@ -114,13 +114,13 @@ namespace icl{
 
       /// internally used utility method that throws verbose exceptions
       template<class T, int N>
-      core::DataSegment<T,N> &error(const std::string &fname) {
+      core::DataSegment<T,N> &error(const std::string &fname){
         throw utils::ICLException("static feature "+fname+" is not supported by this PointCloudObjectBase instance");
         static core::DataSegment<T,N> dummy; return dummy;
       }
 
       /// internally used utility method that throws verbose exceptions
-      core::DataSegmentBase &error_dyn(const std::string &featureName) {
+      core::DataSegmentBase &error_dyn(const std::string &featureName){
         throw utils::ICLException("dynamic feature "+featureName+" is not supported by this PointCloudObjectBase instance");
         static core::DataSegmentBase dummy; return dummy;
       }
@@ -199,7 +199,7 @@ namespace icl{
           avoid this, call canAddFeature before using this function.
           Implementations of this function are supposed ignore this call
           in cases where the feature is actually already supported */
-      virtual void addFeature(FeatureType t) {
+      virtual void addFeature(FeatureType t){
         throw utils::ICLException("unable to add given feature to point cloud");
       }
 
@@ -207,7 +207,7 @@ namespace icl{
       virtual bool isOrganized() const = 0;
 
       /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual utils::Size getSize() const  = 0;
+      virtual utils::Size getSize() const = 0;
 
       /// return the linearily ordered number of point in the point cloud
       virtual int getDim() const = 0;
@@ -301,11 +301,11 @@ namespace icl{
 
       /// tints the point cloud pixel from the given image data
       /** The image size must be equal to the point cloud size*/
-      void setColorsFromImage(const core::ImgBase &image) ;
+      void setColorsFromImage(const core::ImgBase &image);
 
       /// extracts the color information and stores it into the given image
       /** The image size and color format is adapted if necessary */
-      void extractColorsToImage(core::ImgBase &image, bool withAlpha=false) const ;
+      void extractColorsToImage(core::ImgBase &image, bool withAlpha=false) const;
 
       /// sets the color that is used to render points if color information is available
       void setDefaultVertexColor(const GeomColor &color);
@@ -360,7 +360,7 @@ namespace icl{
       const std::map<std::string,std::string> &getMetaData() const;
 
       /// returns the meta data associated with a given key
-      const std::string &getMetaData(const std::string &key) const ;
+      const std::string &getMetaData(const std::string &key) const;
 
       /// returns whether meta data to the given key is associated
       bool hasMetaData(const std::string &key) const;

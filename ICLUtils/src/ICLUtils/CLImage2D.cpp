@@ -51,8 +51,7 @@ namespace icl {
 			cl::CommandQueue cmdQueue;
 			std::map< uint32_t,set<uint32_t> > supported_channel_orders;
 
-            static cl_mem_flags stringToMemFlags(const string &accessMode)
-             {
+            static cl_mem_flags stringToMemFlags(const string &accessMode) {
                 switch(accessMode.length()) {
                     case 1:
                     if(accessMode[0] == 'w') return CL_MEM_WRITE_ONLY;
@@ -105,7 +104,7 @@ namespace icl {
             Impl(cl::Context &context, cl::CommandQueue &cmdQueue,
                     const string &accessMode, const size_t width, const size_t height,
 					int depth, int num_channel, const void *src = 0, const std::map<uint32_t, std::set<uint32_t> >
-					&supported_formats = std::map< uint32_t,std::set<uint32_t> >()) 
+					&supported_formats = std::map< uint32_t,std::set<uint32_t> >())
 				:cmdQueue(cmdQueue), supported_channel_orders(supported_formats) {
 
                 cl_mem_flags memFlags = stringToMemFlags(accessMode);
@@ -161,8 +160,7 @@ namespace icl {
                 clRegion[2] = 1;
             }
 
-            void read(void *dst, const utils::Rect &region=utils::Rect::null, bool block = true)
-             {
+            void read(void *dst, const utils::Rect &region=utils::Rect::null, bool block = true) {
                 cl_bool blocking;
                 if (block)
                 blocking = CL_TRUE;
@@ -179,8 +177,7 @@ namespace icl {
             }
 
             void write(void *src, const utils::Rect &region=utils::Rect::null,
-                    bool block = true)
-             {
+                    bool block = true) {
                 cl_bool blocking;
                 if (block)
                 blocking = CL_TRUE;
@@ -213,7 +210,6 @@ namespace icl {
 				const string &accessMode, const size_t width, const size_t height,
 				int depth, int num_channel, const void *src,
 				const std::map<uint32_t, std::set<uint32_t> > &supported_formats)
-		
 			: CLMemory(CLMemory::Image2D) {
             impl = new Impl(context, cmdQueue, accessMode, width, height,
 					depth, num_channel, src, supported_formats);
@@ -246,15 +242,13 @@ namespace icl {
             delete impl;
         }
 
-        void CLImage2D::read(void *dst, const utils::Rect &region, bool block)
-         {
+        void CLImage2D::read(void *dst, const utils::Rect &region, bool block) {
             impl->read(dst, region, block);
 
         }
 
         void CLImage2D::write(const void *src, const utils::Rect &region,
-                bool block)
-         {
+                bool block) {
             impl->write((void *)src, region, block);
         }
 

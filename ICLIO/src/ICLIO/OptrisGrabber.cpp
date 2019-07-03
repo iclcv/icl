@@ -171,7 +171,7 @@ namespace icl{
       }
 
 
-      std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode) {
+      std::string  init(const std::string &serialPattern, OptrisGrabber::Mode mode){
         buffer.mode = mode;
 
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
