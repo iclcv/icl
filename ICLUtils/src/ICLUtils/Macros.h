@@ -39,64 +39,56 @@
 namespace icl {
   namespace utils{
 
-  /* {{{ Debug Level */
+  /** Logging is enabled/disabled at compile time via corresponding macro definitions and a LOG_LEVEL.
+      We distinguish the following levels:
+      0: ERROR, TODO
+      1: WARNING
+      2: INFO
+      3: DEBUG
+   */
+  #ifndef LOG_LEVEL
+  #define LOG_LEVEL 2
+  #endif
 
-  //---- The following DebugMessage can be activated by defining DEBUGLEVEL_{0..5}
+  // master macro
+  #define __LOG__(OUT,X) { std::OUT<< "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << X << std::endl; }
 
-  // do not comment out debug level 0
-  #define DEBUGLEVEL_1
-
-  //---- Debug Level 0 ----
-  #if (defined(DEBUGLEVEL_0) ||defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG0(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  // define log macros based on LOG_LEVEL
+  #if LOG_LEVEL >= 0
+  #define __LOG0(X) __LOG__(cerr,X)
   #else
-  #define DEBUG_LOG0(x)
-  #endif // DEBUGLEVEL 0
+  #define __LOG0(X)
+  #endif
 
-  #define DEBUG_LOG(x) DEBUG_LOG0(x)
-
-  //---- Debug Level 1 ----
-  #if (defined(DEBUGLEVEL_1) || defined(DEBUGLEVEL_2) || defined (DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG1(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  #if LOG_LEVEL >= 1
+  #define __LOG1(X) __LOG__(cerr,X)
   #else
-  #define DEBUG_LOG1(x)
-  #endif // DEBUGLEVEL 1
-
-  //---- Debug Level 2 ----
-  #if (defined(DEBUGLEVEL_2) || defined(DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG2(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  #define __LOG1(X)
+  #endif
+  
+  #if LOG_LEVEL >= 2
+  #define __LOG2(X) __LOG__(cout,X)
   #else
-  #define DEBUG_LOG2(x)
-  #endif // DEBUGLEVEL 2
-
-  //---- Debug Level 3 ----
-  #if (defined(DEBUGLEVEL_3) || defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG3(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  #define __LOG2(X)
+  #endif
+  
+  #if LOG_LEVEL >= 3
+  #define __LOG3(X) __LOG__(cout,X)
   #else
-  #define DEBUG_LOG3(x)
-  #endif // DEBUGLEVEL 3
-
-  //---- Debug Level 4 ----
-  #if (defined(DEBUGLEVEL_4) || defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG4(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  #define __LOG3(X)
+  #endif
+  
+  #if LOG_LEVEL >= 4
+  #define __LOG4(X) __LOG__(cout,X)
   #else
-  #define DEBUG_LOG4(x)
-  #endif // DEBUGLEVEL 4
-
-  //---- Debug Level 5 ----
-  #if (defined(DEBUGLEVEL_5))
-  #define DEBUG_LOG5(x) \
-  { std::cerr << "[" __FILE__ ":" << __FUNCTION__ << ",line: " << __LINE__ << "] " << x << std::endl; }
+  #define __LOG4(X)
+  #endif
+  
+  #if LOG_LEVEL >= 5
+  #define __LOG5(X) __LOG__(cout,X)
   #else
-  #define DEBUG_LOG5(x)
-  #endif // DEBUGLEVEL 5
-
-  /* }}} */
+  #define __LOG5(X)
+  #endif
 
   /// Extended show command. Shows name and value of streamed variables on std::cout (with trailing file,function and line info)
   #define SHOWX(X) \
@@ -108,28 +100,31 @@ namespace icl {
 
 
   /** critical log messages, that may cause application failure*/
-  #define ERROR_LOG(x) DEBUG_LOG0("ERROR: " << x);
+  #define ERROR_LOG(x) __LOG0("ERROR: " << x);
 
     /** also critical log messages things that must still be done */
-  #define TODO_LOG(x) DEBUG_LOG0("TODO: " << x);
+  #define TODO_LOG(x) __LOG0("TODO: " << x);
 
-  /** uncritical log messages, that may cause calculation errors*/
-  #define WARNING_LOG(x) DEBUG_LOG1("WARNING: " << x);
+  /** uncritical log messages, that may cause calculation errors */
+  #define WARNING_LOG(x) __LOG1("WARNING: " << x);
 
-  /** uncritical log messages, for global information*/
-  #define INFO_LOG(x) DEBUG_LOG1("INFO: " << x);
+  /** uncritical log messages, for global information */
+  #define INFO_LOG(x) __LOG2("INFO: " << x);
 
-  /** notification of function calls*/
-  #define FUNCTION_LOG(x) DEBUG_LOG2("FUNCTION: " << x);
+  /** debugging messages */
+  #define DEBUG_LOG(x) __LOG3(x)
 
-  /** notification of code sections*/
-  #define SECTION_LOG(x) DEBUG_LOG3("SECTION: " << x);
+  /** notification of function calls */
+  #define FUNCTION_LOG(x) __LOG3("FUNCTION: " << x);
 
-  /** notification of code subsections*/
-  #define SUBSECTION_LOG(x) DEBUG_LOG4("SUBSECTION: " << x);
+  /** notification of code sections */
+  #define SECTION_LOG(x) __LOG4("SECTION: " << x);
 
-  /** log messages in long loops like pixel ops*/
-  #define LOOP_LOG(x) DEBUG_LOG5("LOOP: " << x);
+  /** notification of code subsections */
+  #define SUBSECTION_LOG(x) __LOG4("SUBSECTION: " << x);
+
+  /** log messages in long loops like pixel ops */
+  #define LOOP_LOG(x) __LOG5("LOOP: " << x);
 
   /** generate an assertion error if condition evaluates false */
   #define ICLASSERT(X)                        \

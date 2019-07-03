@@ -68,7 +68,7 @@ void PylonColorConverter::resetConversion(
 
   //locking mutex
   Mutex::Locker l(m_Mutex);
-  DEBUG_LOG2("w=" << width << " h=" << height << " t=" << pixel_type
+  DEBUG_LOG("w=" << width << " h=" << height << " t=" << pixel_type
                     << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   #ifdef SPEED_TEST
     type_name = pixel_type_name;
