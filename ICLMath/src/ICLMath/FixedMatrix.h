@@ -1105,15 +1105,13 @@ namespace icl{
 
   #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
     template<>                                                            \
-    inline FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const             \
-    throw (InvalidMatrixDimensionException,SingularMatrixException){      \
+    inline FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const {           \
       FixedMatrix<T,D,D> r;                                               \
       icl_util_get_fixed_##D##x##D##_matrix_inv<T>(begin(),r.begin());    \
       return r;                                                           \
     }                                                                     \
     template<>                                                            \
-    inline T FixedMatrix<T,D,D>::det() const                              \
-    throw(InvalidMatrixDimensionException){                               \
+    inline T FixedMatrix<T,D,D>::det() const {                            \
       return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
     }
 

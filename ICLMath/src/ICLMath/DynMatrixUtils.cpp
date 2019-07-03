@@ -286,19 +286,19 @@ namespace icl{
   #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                                         \
     template<class T>                                                                                                                     \
     DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst)                                            \
-      throw (IncompatibleMatrixDimensionException){                                                                                       \
+    {                                                                                       \
       ERROR_LOG("not implemented for this type!");                                                                                        \
       return dst;                                                                                                                         \
     }                                                                                                                                     \
     template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst)     \
-      throw (IncompatibleMatrixDimensionException){                                                                                       \
+    {                                                                                       \
       CHECK_DIM(a,b,dst);                                                                                                                 \
       dst.setBounds(a.cols(), a.rows());                                                                                                  \
       ipps##func##_32f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
       return dst;                                                                                                                         \
     }                                                                                                                                     \
     template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &a, const DynMatrix<double> &b, DynMatrix<double> &dst) \
-      throw (IncompatibleMatrixDimensionException){                                                                                       \
+    {                                                                                       \
       CHECK_DIM(a,b,dst);                                                                                                                 \
       dst.setBounds(a.cols(), a.rows());                                                                                                  \
       ipps##func##_64f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
@@ -486,16 +486,14 @@ namespace icl{
   #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
     template<class T>                                                     \
     DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
-      throw (IncompatibleMatrixDimensionException){                       \
+    {                       \
       CHECK_DIM(a,b,dst);                                                 \
       dst.setBounds(a.cols(),a.rows());                                   \
       std::transform(a.begin(),a.end(),b.begin(),dst.begin(),func);       \
       return dst;                                                         \
     }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&)     \
-       throw (IncompatibleMatrixDimensionException);                                                                \
-    template ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&) \
-       throw (IncompatibleMatrixDimensionException);
+    template ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&);    \
+    template ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&);
 
     INSTANTIATE_DYN_MATRIX_MATH_OP(add,icl::math::addc<T>)
     INSTANTIATE_DYN_MATRIX_MATH_OP(sub,icl::math::subc<T>)
