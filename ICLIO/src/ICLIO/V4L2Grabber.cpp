@@ -161,10 +161,10 @@ namespace icl{
           return stream.str();
         }
 
-        void errno_exception(const std::string &text) {
+        void errno_exception(const std::string &text){
           throw ICLException(text +" (deviceName: " + deviceName + " errno: "+ str(errno) +", " + strerror(errno) + ")");
         }
-        void normal_exception(const std::string &text) {
+        void normal_exception(const std::string &text){
           throw ICLException(text +" (deviceName: " + deviceName + ")");
         }
 
@@ -583,7 +583,7 @@ namespace icl{
         typedef std::map<std::string,SupportedPropertyPtr> PMap;
         PMap supportedProperties;
 
-        SupportedPropertyPtr findProperty(const std::string &name)  {
+        SupportedPropertyPtr findProperty(const std::string &name){
           PMap::const_iterator it = supportedProperties.find(name);
           //if(it == supportedProperties.end()) throw ICLException("V4L2Grabber: unknown property '" + name + "'");
           if(it == supportedProperties.end()) return SupportedPropertyPtr();

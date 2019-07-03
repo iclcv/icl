@@ -177,21 +177,21 @@ namespace icl{
       struct EntryNotFoundException : public ICLException{
         EntryNotFoundException(const std::string &entryName):
         ICLException("Entry " + entryName+" could not be found!"){}
-        virtual ~EntryNotFoundException() throw(){}
+        virtual ~EntryNotFoundException() noexcept{}
       };
 
       /// Internal exception type, thrown if an entry type missmatch occurs
       struct InvalidTypeException : public ICLException{
         InvalidTypeException(const std::string &entryName, const std::string &typeName):
         ICLException("Invalid type " + typeName + " (entry " + entryName + ")"){};
-        virtual ~InvalidTypeException() throw() {}
+        virtual ~InvalidTypeException() noexcept {}
       };
 
       /// thrown if unregistered types are used
       struct UnregisteredTypeException : public ICLException{
         UnregisteredTypeException(const std::string &rttiID):
         ICLException("type with RTTI ID " + rttiID + " is not registered"){}
-        ~UnregisteredTypeException() throw(){}
+        ~UnregisteredTypeException() noexcept{}
       };
 
       private:
@@ -217,7 +217,7 @@ namespace icl{
 
       /// internally used utitlity function
       template<class T>
-      static const std::string &get_type_name() {
+      static const std::string &get_type_name(){
         static const std::string &rttiID = get_rtti_type_id<T>();
         if(!type_registered_by_rtti(rttiID)) throw UnregisteredTypeException(rttiID);
         static const std::string &name = getMapsInstanceRef().typeMap[rttiID];
@@ -233,13 +233,12 @@ namespace icl{
 
       /// internally used utitlity function (id must be given without prefix)
       template<class T>
-      inline bool check_type(const std::string &id) const {
+      inline bool check_type(const std::string &id) const{
         return check_type_internal(id,get_rtti_type_id<T>());
       }
 
       /// internally used utitlity function
-      bool check_type_internal(const std::string &id, const std::string &rttiTypeID) const
-      ;
+      bool check_type_internal(const std::string &id, const std::string &rttiTypeID) const;
 
       /// internally used utitlity function
       static bool type_registered_by_rtti(const std::string &rttiID){
@@ -349,14 +348,14 @@ namespace icl{
         /** This automatic cast automatically detects the destination (lvalue) type an calls the
             appropiate parse<T> function */
         template<class T>
-        operator T() const {
+        operator T() const{
           return cf->get<T>(id);
         }
 
         /// explicit cast into given type
         /** Sometimes, the implicit automatic cast is not allowed due to ambiguities */
         template<class T>
-        T as() const {
+        T as() const{
           return cf->get<T>(id);
         }
 
@@ -375,7 +374,7 @@ namespace icl{
             If given type T is not registered, an UnregisteredTypeException is thrown
         */
         template<class T>
-        Data &operator=(const T &t) {
+        Data &operator=(const T &t){
           cf->set(id,t);
           return *this;
         }
@@ -391,7 +390,7 @@ namespace icl{
 
       /// main access function to datastore entries (const)
       /** As above, but only for reading ... */
-      const Data operator[](const std::string &id) const ;
+      const Data operator[](const std::string &id) const;
 
       /// returns all data entries, that match the given regex
       /** note, the current default prefix is <b>not</b> used here */
@@ -432,7 +431,7 @@ namespace icl{
           type "double" by default:
       */
       template<class T>
-      void set(const std::string &id, const T &val) {
+      void set(const std::string &id, const T &val){
         set_internal(id,str(val),get_rtti_type_id<T>());
       }
 
@@ -448,7 +447,7 @@ namespace icl{
              data store -> throws an instance of UnregisteredTypeException
       */
       template<class T>
-      inline T get(const std::string &idIn) const {
+      inline T get(const std::string &idIn) const{
         if(!contains(idIn)) throw EntryNotFoundException(m_sDefaultPrefix+idIn);
         if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
         return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
@@ -458,7 +457,7 @@ namespace icl{
       /** Like the function above, except it uses a default value if given key cannot be found
       */
       template<class T>
-      inline T get(const std::string &idIn,const T &def) const {
+      inline T get(const std::string &idIn,const T &def) const{
         if(!contains(idIn)) return def;
         if(!check_type<T>(idIn)) throw InvalidTypeException(m_sDefaultPrefix+idIn,get_type_name<T>());
         return parse<T>(m_entries.find(m_sDefaultPrefix+idIn)->second.value);
@@ -475,13 +474,13 @@ namespace icl{
 
       /// applies get on the static config instances
       template<class T>
-      static inline T sget(const std::string &id) {
+      static inline T sget(const std::string &id){
         return getConfig().get<T>(id);
       }
 
       /// applies get on the static config instances (with default)
       template<class T>
-      static inline T sget(const std::string &id,const T &def) {
+      static inline T sget(const std::string &id,const T &def){
         return getConfig().get<T>(id,def);
       }
 
@@ -515,11 +514,11 @@ namespace icl{
       /// defined the range for given number-type-valued key
       /** This feature is used by the ConfigFileGUI to create appropriate slider
           ranges if requested */
-      void setRestriction(const std::string &id, const KeyRestriction &r) ;
+      void setRestriction(const std::string &id, const KeyRestriction &r);
 
       /// returns predefined range for given id (or 0 if no range was defined for this key)
       /** This feature is only used by the config file GUI */
-      const KeyRestriction *getRestriction(const std::string &id) const ;
+      const KeyRestriction *getRestriction(const std::string &id) const;
 
       /// internal utility structure for contained data
       struct Entry{
@@ -573,13 +572,13 @@ namespace icl{
       void load_internal();
 
       /// internal utility function
-      Entry &get_entry_internal(const std::string &id) ;
+      Entry &get_entry_internal(const std::string &id);
 
       /// internal utility function
-      const Entry &get_entry_internal(const std::string &id) const ;
+      const Entry &get_entry_internal(const std::string &id) const;
 
       /// internal utility function
-      void set_internal(const std::string &id, const std::string &val, const std::string &type) ;
+      void set_internal(const std::string &id, const std::string &val, const std::string &type);
 
       /// internally synchronized an add- or a set call
       static void add_to_doc(pugi::xml_document &h,const std::string &id,const std::string &type,
@@ -608,12 +607,10 @@ namespace icl{
     ICLUtils_API std::ostream &operator<<(std::ostream &s, const ConfigFile &cf);
 
     /** \cond */
-    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t)
-    {
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(char * const &t){
       return ConfigFile::Data::operator=(std::string(t));
     }
-    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t)
-    {
+    template<> inline ConfigFile::Data &ConfigFile::Data::operator=(const char * const &t){
       return ConfigFile::Data::operator=(std::string(t));
     }
     /** \endcond */

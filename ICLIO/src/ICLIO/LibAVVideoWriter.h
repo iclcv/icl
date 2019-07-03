@@ -64,7 +64,7 @@ namespace icl{
         @param frame_size size of the frames to be written out
             **/
     LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
-                          double fps, utils::Size frame_size) ;
+                          double fps, utils::Size frame_size);
 
 
   	/// Destructor

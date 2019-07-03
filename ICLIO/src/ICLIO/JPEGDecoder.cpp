@@ -96,12 +96,12 @@ namespace icl{
       decode_internal(0,data,maxDataLen,dest);
     }
 
-    void JPEGDecoder::decode(File &file, ImgBase **dest) {
+    void JPEGDecoder::decode(File &file, ImgBase **dest){
       decode_internal(&file,0,0,dest);
       return;
     }
 
-    void JPEGDecoder::decode_internal(File *file, const unsigned char *data, unsigned int maxDataLen, ImgBase **dest) {
+    void JPEGDecoder::decode_internal(File *file, const unsigned char *data, unsigned int maxDataLen, ImgBase **dest){
       ICLASSERT_RETURN(!(file&&data));
       ICLASSERT_RETURN(!(!file&&!data));
       ICLASSERT_RETURN(dest);

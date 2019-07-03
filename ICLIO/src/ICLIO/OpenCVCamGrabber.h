@@ -82,7 +82,7 @@ namespace icl{
           - 700 Direct Show Video Input
           (e.g. device ID 301 selects the 2nd firewire device)
        */
-        OpenCVCamGrabber(int dev=0) ;
+        OpenCVCamGrabber(int dev=0);
 
         /// Destructor
         ~OpenCVCamGrabber();

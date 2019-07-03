@@ -58,7 +58,7 @@ namespace icl{
 
       /// calculates line-plane intersection
       /** @see static Camera::getIntersection function */
-      Vec getIntersection(const PlaneEquation &plane) const ;
+      Vec getIntersection(const PlaneEquation &plane) const;
 
       /// ray-triangle intersection results
       enum TriangleIntersection{

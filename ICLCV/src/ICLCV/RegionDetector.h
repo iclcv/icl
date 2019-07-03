@@ -222,7 +222,7 @@ namespace icl{
       private:
 
       /// Internally used utility function that extracts the input images ROI if necessary
-      void useImage(const core::ImgBase *image) ;
+      void useImage(const core::ImgBase *image);
 
       /// creates region-parts
       /** see \ref RA */

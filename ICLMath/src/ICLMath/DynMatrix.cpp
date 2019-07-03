@@ -82,7 +82,7 @@ namespace icl{
 
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::inv() const {
+    DynMatrix<T> DynMatrix<T>::inv() const{
       double detVal = det();
       if(!detVal) throw SingularMatrixException("Determinant was 0 -> (matrix is singular to machine precision)");
       detVal = 1.0/detVal;
@@ -102,9 +102,9 @@ namespace icl{
     }
 
     template<class T>
-    T DynMatrix<T>::det() const {
+    T DynMatrix<T>::det() const{
       unsigned int order = cols();
-      if(order != rows()) throw(InvalidMatrixDimensionException("Determinant can only be calculated on squared matrices"));
+      if(order != rows()) throw InvalidMatrixDimensionException("Determinant can only be calculated on squared matrices");
 
       switch(order){
         case 0: throw(InvalidMatrixDimensionException("Matrix order must be > 0"));
@@ -145,8 +145,7 @@ namespace icl{
     }
 
     template<class T>
-    void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const
-           {
+    void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const {
       DynMatrix<T> A = *this; // Working copy
       DynMatrix<T> a(1,rows()), q(1,rows());
 
@@ -176,8 +175,7 @@ namespace icl{
     }
 
     template<class T>
-    void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const
-           {
+    void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const {
      // first reverse the rows of A and transpose it
       DynMatrix<T> A_(rows(),cols());
       for (unsigned int i = 0; i<rows(); i++){
@@ -272,7 +270,7 @@ namespace icl{
     }
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::solve_upper_triangular(const DynMatrix &b) const {
+    DynMatrix<T> DynMatrix<T>::solve_upper_triangular(const DynMatrix &b) const{
       const DynMatrix &M = *this;
       ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_upper_triangular only works for squared matrices"));
       int m = M.cols();
@@ -286,7 +284,7 @@ namespace icl{
     }
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::solve_lower_triangular(const DynMatrix &b) const {
+    DynMatrix<T> DynMatrix<T>::solve_lower_triangular(const DynMatrix &b) const{
       const DynMatrix &M = *this;
       ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_lower_triangular: only works for squared matrices"));
       int m = M.cols();
@@ -300,7 +298,7 @@ namespace icl{
     }
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold) {
+    DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold){
       ICLASSERT_THROW(rows() == b.rows(), InvalidMatrixDimensionException("DynMatrix::solve (Mx=b -> x=M^(-1)b needs M.rows == b.rows)"));
       if(method == "lu"){
         DynMatrix<T> L,U;
@@ -320,8 +318,7 @@ namespace icl{
 
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const
-      {
+    DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const{
       if(useSVD){
         DynMatrix<T> U,s,V;
         try{
@@ -349,15 +346,13 @@ namespace icl{
 
     // fallback
     template<class T>
-    DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const
-      {
+    DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const{
       return pinv( true, zeroThreshold );
     }
 
   #ifdef ICL_HAVE_MKL
     template<class T>
-      DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const
-      {
+      DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const{
 
       // create a copy of source matrix, because GESDD is destroying the input matrix
       DynMatrix<T> matrixCopy( *this );
@@ -424,13 +419,11 @@ namespace icl{
     }
 
     template<>
-    ICLMath_API DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const
-      {
+    ICLMath_API DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const{
       return big_matrix_pinv(zeroThreshold,sgesdd,cblas_sgemm);
     }
     template<>
-    ICLMath_API DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const
-      {
+    ICLMath_API DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const{
       return big_matrix_pinv(zeroThreshold,dgesdd,cblas_dgemm);
     }
   #endif
@@ -648,7 +641,7 @@ namespace icl{
   #endif
 
     template<class T>
-    void DynMatrix<T>::eigen(DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues) const {
+    void DynMatrix<T>::eigen(DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues) const{
       ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("find eigenvectors: input matrix a is not a square-matrix"));
       const int n = cols();
       eigenvalues.setBounds(1,n);
@@ -658,14 +651,14 @@ namespace icl{
     }
 
     template<class T>
-    void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const {
+    void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const{
       svd_dyn<T>(*this,V,s,U);
     }
 
 
 #ifdef ICL_HAVE_IPP
   #define DYN_MATRIX_INV(T, ippFunc) \
-    template<> ICLMath_API DynMatrix<T> DynMatrix<T>::inv() const { \
+    template<> ICLMath_API DynMatrix<T> DynMatrix<T>::inv() const{ \
       if(this->cols() != this->rows()){ \
         throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices"); \
       } \
@@ -683,7 +676,7 @@ namespace icl{
     }
 
   #define DYN_MATRIX_DET(T, ippFunc) \
-    template<> ICLMath_API T DynMatrix<T>::det() const { \
+    template<> ICLMath_API T DynMatrix<T>::det() const{ \
       if(this->cols() != this->rows()){ \
         throw InvalidMatrixDimensionException("matrix determinant can only be calculated on square matrices"); \
       } \
@@ -706,47 +699,45 @@ namespace icl{
     #undef DYN_MATRIX_INV
     #undef DYN_MATRIX_DET
 #else
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const ;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const ;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const;
 
-    template ICLMath_API float DynMatrix<float>::det()const ;
-    template ICLMath_API double DynMatrix<double>::det()const ;
+    template ICLMath_API float DynMatrix<float>::det()const;
+    template ICLMath_API double DynMatrix<double>::det()const;
 #endif
 
 
-    template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const ;
-    template ICLMath_API void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&, DynMatrix<double>&) const ;
+    template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const;
+    template ICLMath_API void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&, DynMatrix<double>&) const;
 
-    template ICLMath_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const ;
-    template ICLMath_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const ;
+    template ICLMath_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const;
+    template ICLMath_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const;
 
-    template ICLMath_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const
-      ;
-    template ICLMath_API void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const
-      ;
+    template ICLMath_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const;
+    template ICLMath_API void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const;
 
-    template ICLMath_API void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const
-      ;
-    template ICLMath_API void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const
-      ;
+    template ICLMath_API void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const;
+    template ICLMath_API void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const;
 
     template ICLMath_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
     template ICLMath_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b) const;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b)
+      const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b)
+      const;
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) const;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b)
+      const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b)
+      const;
 
     template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method, float zeroThreshold);
     template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method, double zeroThreshold);
 
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(bool, float) const
-      ;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(bool, double) const
-      ;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(bool, float) const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(bool, double) const;
 
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
@@ -801,7 +792,7 @@ namespace icl{
   #undef X
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::loadCSV(const std::string &filename) {
+    DynMatrix<T> DynMatrix<T>::loadCSV(const std::string &filename){
       std::ifstream s(filename.c_str());
       if(!s.good()) throw ICLException("DynMatrix::loadCSV: invalid filename ' "+ filename +'\'');
 
@@ -829,7 +820,7 @@ namespace icl{
     /// writes the current matrix to a csv file
     /** supported types T are all icl8u, icl16s, icl32s, icl32f, icl64f */
     template<class T>
-    void DynMatrix<T>::saveCSV(const std::string &filename) {
+    void DynMatrix<T>::saveCSV(const std::string &filename){
       std::ofstream s(filename.c_str());
       if(!s.good()) throw ICLException("DynMatrix::saveCSV:");
       for(unsigned int y=0;y<rows();++y){
@@ -842,8 +833,8 @@ namespace icl{
 
 
   #define ICL_INSTANTIATE_DEPTH(D)                                        \
-    template ICLMath_API DynMatrix<icl##D> DynMatrix<icl##D>::loadCSV(const std::string &filename) ; \
-    template ICLMath_API void DynMatrix<icl##D>::saveCSV(const std::string&) ;
+    template ICLMath_API DynMatrix<icl##D> DynMatrix<icl##D>::loadCSV(const std::string &filename); \
+    template ICLMath_API void DynMatrix<icl##D>::saveCSV(const std::string&);
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace math

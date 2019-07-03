@@ -299,12 +299,12 @@ namespace icl{
           Only allowed form square matrices B
           @param m denominator for division expression
       */
-      FixedMatrix operator/(const FixedMatrix &m) const {
+      FixedMatrix operator/(const FixedMatrix &m) const{
         return this->operator*(m.inv());
       }
 
       /// Matrix devision (inplace)
-      FixedMatrix &operator/=(const FixedMatrix &m) {
+      FixedMatrix &operator/=(const FixedMatrix &m){
                  return *this = this->operator*(m.inv());
       }
 
@@ -407,13 +407,13 @@ namespace icl{
       }
 
       /// Element access index save (with exception if index is invalid)
-      T &at(unsigned int col,unsigned int row) {
+      T &at(unsigned int col,unsigned int row){
         if(col>=cols() || row >= rows()) throw InvalidIndexException("row or col index too large");
         return begin()[col+cols()*row];
       }
 
       /// Element access index save (with exception if index is invalid) (const)
-      const T &at(unsigned int col,unsigned int row) const {
+      const T &at(unsigned int col,unsigned int row) const{
         return const_cast<FixedMatrix*>(this)->at(col,row);
       }
 
@@ -712,7 +712,7 @@ namespace icl{
           <b>Note:</b> Inv will not compute a pseudo inverse matrix. Include iclFixedMatrixUtils.h
           instead and use the non-member template function pinv() instead for pseudo-inverse calculation
       */
-      FixedMatrix inv() const {
+      FixedMatrix inv() const{
         return FixedMatrix(dyn().inv().data());
       }
 
@@ -720,7 +720,7 @@ namespace icl{
       /** This function internally uses an instance of DynMatrix<T>
           Additionally implemented (in closed form) for float and double for 2x2 3x3 and 4x4 matrices
       */
-      T det() const {
+      T det() const{
         return dyn().det();
       }
 
@@ -868,7 +868,7 @@ namespace icl{
 
 
       /// returns a vector of the diagonal elements (only for squared matrices)
-      FixedMatrix<T,1,ROWS> diag() const {
+      FixedMatrix<T,1,ROWS> diag() const{
         if(ROWS != COLS) throw InvalidMatrixDimensionException("trace is only possible for sqaure matrices");
         FixedMatrix<T,1,ROWS> t;
         for(unsigned int i=0;i<ROWS;++i){
@@ -1106,14 +1106,14 @@ namespace icl{
   #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
     template<>                                                            \
     inline FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const             \
-    {      \
+    throw (InvalidMatrixDimensionException,SingularMatrixException){      \
       FixedMatrix<T,D,D> r;                                               \
       icl_util_get_fixed_##D##x##D##_matrix_inv<T>(begin(),r.begin());    \
       return r;                                                           \
     }                                                                     \
     template<>                                                            \
     inline T FixedMatrix<T,D,D>::det() const                              \
-    {                               \
+    throw(InvalidMatrixDimensionException){                               \
       return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
     }
 

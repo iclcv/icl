@@ -172,7 +172,7 @@ namespace icl{
     }
 
 
-    void RegionDetector::useImage(const ImgBase *image) {
+    void RegionDetector::useImage(const ImgBase *image){
       ICLASSERT_THROW(image->getDepth() != depth32f && image->getDepth() != depth64f,
                       ICLException("RegionDetector::prepareImage: depth32f and depth64f are not supported"));
       m_data->roi = image->getROI();

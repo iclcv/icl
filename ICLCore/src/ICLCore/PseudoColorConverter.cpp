@@ -120,7 +120,7 @@ namespace icl{
         }
       }
 
-      void custom(const std::vector<Stop> &stopsIn, int maxValue) {
+      void custom(const std::vector<Stop> &stopsIn, int maxValue){
         maxVal = maxValue;
         if(!stopsIn.size()) throw ICLException("PseudoColorConverter: no stops found");
         mode = PseudoColorConverter::Custom;
@@ -152,12 +152,12 @@ namespace icl{
     }
 
       /// creates instance with custom mode
-    PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue) {
+    PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue):m_data(new Data){
       m_data->custom(stops,maxValue);
     }
 
       /// sets the mode
-    void PseudoColorConverter::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue) {
+    void PseudoColorConverter::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue){
       if(t == Custom){
         m_data->custom(stops,maxValue);
       }else{
@@ -166,7 +166,7 @@ namespace icl{
     }
 
       /// create a speudo color image from given source image
-    void PseudoColorConverter::apply(const ImgBase *src, ImgBase **dst) {
+    void PseudoColorConverter::apply(const ImgBase *src, ImgBase **dst){
       ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": src image was NULL"));
       ICLASSERT_THROW(dst,ICLException(str(__FUNCTION__)+": destination image was NULL"));
       ICLASSERT_THROW(src->getChannels() == 1, ICLException(str(__FUNCTION__)+": source image has more than one channel"));

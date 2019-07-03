@@ -91,7 +91,7 @@ namespace icl{
       m_data->handleSize = 8;
     }
 
-    void DefineQuadrangleMouseHandler::setQuadrangle(const utils::Point ps[4]) {
+    void DefineQuadrangleMouseHandler::setQuadrangle(const utils::Point ps[4]){
       Rect r(Point::null,Size(m_data->bounds.width+1,m_data->bounds.height+1));
 
       for(int i=0;i<4;++i){

@@ -62,7 +62,7 @@ namespace icl {
 			 * @brief CLMemoryAssistant Creates an instance for the given device type (see CLDeviceContext for details)
 			 * @param deviceType Device to use (see CLDeviceContext for details)
 			 */
-			CLMemoryAssistant(std::string const &deviceType) ;
+			CLMemoryAssistant(std::string const &deviceType);
 
 			/// Destructor
 			~CLMemoryAssistant();
@@ -77,8 +77,7 @@ namespace icl {
 			 * Please see CLDeviceContext::createBuffer() for more details
 			 */
 			CLBuffer createNamedBuffer(MemKeyType const &key, const string &accessMode,
-									   const size_t length, const size_t byteDepth, const void *src=0)
-			;
+									   const size_t length, const size_t byteDepth, const void *src=0);
 
 			/**
 			 * @brief createNamedImage2D creates a Image2D object (internally handled as a CLMemory-pointer)
@@ -88,29 +87,28 @@ namespace icl {
 			 */
 			CLImage2D createNamedImage2D(MemKeyType const &key, const string &accessMode,
 										 const size_t width, const size_t height, const int depth,
-										 const int num_channel, const void *src=0)
-			;
+										 const int num_channel, const void *src=0);
 
 			/**
 			 * @brief operator [] Direct access operator to the internal CLMemory
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLMemory pointer
 			 */
-			CLMemory *operator[](MemKeyType const &key) ;
+			CLMemory *operator[](MemKeyType const &key);
 
 			/**
 			 * @brief asBuf shortcut to access and cast the internal CLMemory instance (CLBuffer)
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLImage2D instance
 			 */
-			CLBuffer &asBuf(MemKeyType const &key) ;
+			CLBuffer &asBuf(MemKeyType const &key);
 
 			/**
 			 * @brief asBuf shortcut to access and cast the internal CLMemory instance (CLBuffer)
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return CLImage2D instance
 			 */
-			CLImage2D &asImg(MemKeyType const &key) ;
+			CLImage2D &asImg(MemKeyType const &key);
 
 			/**
 			 * @brief keyExist Returns true if the given key exists in this instance

@@ -289,8 +289,7 @@ namespace icl{
                                 the whole pattern match is submatches[0] in the resulting MatchResult
                                 if numSubMatches is at least 1
         */
-    ICLUtils_API MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0)
-      ;
+    ICLUtils_API MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0);
 
 
     /// converts a Time::value_type (long int) into a string

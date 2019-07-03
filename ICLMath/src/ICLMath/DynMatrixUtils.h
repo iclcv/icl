@@ -240,38 +240,32 @@ namespace icl{
     /// element-wise atan2 function atan2(y,x) \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_arctan2(const DynMatrix<T> &my, const DynMatrix<T> &mx, DynMatrix<T> &dst);
 
     /// element-wise addition  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_add(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
     /// element-wise substraction  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_sub(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
     /// element-wise multiplication  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_mul(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
     /// element-wise division  [IPP-optimized] \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_div(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
     /// element-wise power \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_pow(const DynMatrix<T> &m1, const DynMatrix<T> &m2, DynMatrix<T> &dst);
 
     /** @} */
     /** @{ @name matrix distance measurement  */
@@ -281,16 +275,14 @@ namespace icl{
         \f[ D = \left(\sum\limits_{i,j} (A_{ij}-B_{ij})^n\right)^{\frac{1}{n}} \f]
     */
     template<class T> ICLMath_IMP
-    T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm = 2)
-  	;
+    T matrix_distance(const DynMatrix<T> &m1, const DynMatrix<T> &m2, T norm = 2);
 
     /// computes generalized Kullback-Leibler-divergence between matrix vectors \ingroup LINALG
     /** For float and double only
         \f[ \mbox{div} = \sum\limits_{i,j} A_{ij} \cdot \log{\frac{A_{ij}}{B_{ij}}} - A_{ij} + B_{ij} \f]
     */
     template<class T> ICLMath_IMP
-    T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2)
-  	;
+    T matrix_divergence(const DynMatrix<T> &m1, const DynMatrix<T> &m2);
 
 
     /** @} */
@@ -386,8 +378,7 @@ namespace icl{
     /// computes alpha*a + beta*b + gamma \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a, T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst)
-  	;
+    DynMatrix<T> &matrix_muladd(const DynMatrix<T> &a, T alpha, const DynMatrix<T> &b, T beta, T gamma, DynMatrix<T> &dst);
 
     /// computes alpha*a + gamma \ingroup LINALG
     /** For float and double only */
@@ -397,14 +388,12 @@ namespace icl{
     /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) (inplace) \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m)
-  	;
+    DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, DynMatrix<T> &m);
 
     /// applies masking operation (m(i,j) is set to 0 if mask(i,j) is 0) \ingroup LINALG
     /** For float and double only */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst)
-     	;
+    DynMatrix<T> &matrix_mask(const DynMatrix<unsigned char> &mask, const DynMatrix<T> &m, DynMatrix<T> &dst);
 
      /** @} */
 
@@ -432,8 +421,7 @@ namespace icl{
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    ;
+    DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
 
     /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices) \ingroup LINALG
     /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
@@ -448,18 +436,15 @@ namespace icl{
         @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
     */
     template<class T> ICLMath_IMP
-    DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    ;
+    DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
 
     /// applies matrix addition on optionally transposed matrices \ingroup LINALG
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    ;
+    DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
 
     /// applies matrix substraction on optionally transposed matrices \ingroup LINALG
     template<class T> ICLMath_IMP
-    DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef)
-    ;
+    DynMatrix<T> &matrix_sub_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
 
     /** @} */
 
@@ -471,7 +456,7 @@ namespace icl{
         @param V is filled column-wise with the eigenvectors of A'A (in V, V is stored not V')
     */
     template<class T> ICLMath_IMP
-    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V) ;
+    void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V);
 
 
   #if 0

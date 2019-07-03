@@ -48,7 +48,7 @@ namespace icl{
       return prefix+str(i.value++);
     }
 
-     Configurable::Property &Configurable::prop(const std::string &propertyName) {
+     Configurable::Property &Configurable::prop(const std::string &propertyName){
       std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
       if(it == m_properties.end()){
         throw ICLException("Property " + str(propertyName) + " is not supported");
@@ -83,7 +83,7 @@ namespace icl{
       throw ICLException("removeChildConfigurable: is not yet implemented");
     }
 
-    const Configurable::Property &Configurable::prop(const std::string &propertyName) const {
+    const Configurable::Property &Configurable::prop(const std::string &propertyName) const{
       return const_cast<Configurable*>(this)->prop(propertyName);
     }
 
@@ -107,7 +107,7 @@ namespace icl{
 
     void Configurable::addProperty(const std::string &name, const std::string &type,
                                    const std::string &info, const Any &value,
-                                   int volatileness, const std::string &tooltip) {
+                                   int volatileness, const std::string &tooltip){
       try{
         prop(name);
         throw ICLException("Unable to add property " + name + " because it is already used");
@@ -130,7 +130,7 @@ namespace icl{
       }
     }
 
-    Configurable::Configurable(const std::string &ID, bool ordered) 
+    Configurable::Configurable(const std::string &ID, bool ordered)
       : m_isOrdered(ordered), m_elderConfigurable(NULL), m_ID(ID){
       if(ID.length()){
         if(get(ID)) throw ICLException(str("Configurable(")+ID+"): given ID is already used");
@@ -168,7 +168,7 @@ namespace icl{
     }
 
 
-    void Configurable::setConfigurableID(const std::string &ID) {
+    void Configurable::setConfigurableID(const std::string &ID){
       if(m_ID.length()){
         std::map<std::string,Configurable*>::iterator it = m_instances.find(m_ID);
         if(it == m_instances.end()){
@@ -227,7 +227,7 @@ namespace icl{
       return find(l.begin(),l.end(),propertyName) != l.end();
     }
 
-    void Configurable::setPropertyValue(const std::string &propertyName, const Any &value) {
+    void Configurable::setPropertyValue(const std::string &propertyName, const Any &value){
       Property &p = prop(propertyName);
       if(p.configurable != this){
         p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
@@ -408,7 +408,7 @@ namespace icl{
     }
 
     void Configurable::adaptProperty(const std::string &name,const std::string &newType,
-                                     const std::string &newInfo, const std::string &newToolTip) {
+                                     const std::string &newInfo, const std::string &newToolTip){
       Property &p = prop(name);
       if(p.configurable != this){
         p.configurable->adaptProperty(name.substr(p.childPrefix.length()),newType,newInfo, newToolTip);
@@ -427,7 +427,7 @@ namespace icl{
     }
 
     void Configurable::register_configurable_type(const std::string &classname,
-                                                  Function<Configurable*> creator) {
+                                                  Function<Configurable*> creator){
       CRM &crm = get_configurable_registration_map();
       CRM::iterator it = crm.find(classname);
       if(it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");
@@ -443,7 +443,7 @@ namespace icl{
       return all;
     }
 
-    Configurable *Configurable::create_configurable(const std::string &classname) {
+    Configurable *Configurable::create_configurable(const std::string &classname){
       CRM &crm = get_configurable_registration_map();
       CRM::iterator it = crm.find(classname);
       if(it == crm.end()) throw ICLException("unable to create configurable " + classname + ": name not registered");

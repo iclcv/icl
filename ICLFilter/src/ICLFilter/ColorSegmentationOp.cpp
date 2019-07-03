@@ -335,7 +335,7 @@ namespace icl{
       }
     }
 
-    ColorSegmentationOp::ColorSegmentationOp(icl8u c0shift, icl8u c1shift, icl8u c2shift, format fmt)  :
+    ColorSegmentationOp::ColorSegmentationOp(icl8u c0shift, icl8u c1shift, icl8u c2shift, format fmt):
       m_segFormat(fmt),m_lut(new LUT3D(0,0,0)){
       ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3,ICLException("Construktor ColorSegmentationOp: format must be a 3-channel format"));
       setSegmentationShifts(c0shift,c1shift,c2shift);
@@ -418,7 +418,7 @@ namespace icl{
       return m_segPreview;
     }
 
-    void ColorSegmentationOp::setSegmentationFormat(format fmt) {
+    void ColorSegmentationOp::setSegmentationFormat(format fmt){
       ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3, ICLException("ColorSegmentationOp::setSegmentationFormat: Segmentation format must have 3 channels"));
       m_segFormat = fmt;
     }
@@ -456,7 +456,7 @@ namespace icl{
       }
     }
 
-    void ColorSegmentationOp::lutEntry(format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value) {
+    void ColorSegmentationOp::lutEntry(format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value){
       if(fmt == m_segFormat) lutEntry(a,b,c,rA,rB,rC,value);
       ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3, ICLException("ColorSegmentationOp::lutEntry format must have 3 channels"));
       Img8u src(Size(1,1),fmt),dst(Size(1,1),m_segFormat);

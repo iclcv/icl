@@ -49,10 +49,10 @@ namespace icl{
       SceneMultiCamCapturer(geom::Scene &scene, const std::vector<geom::Camera> &cams=std::vector<geom::Camera>());
 
       SceneMultiCamCapturer(geom::Scene &scene, int num, int* camIndices,
-                            const std::string &progArgName="-o") ;
+                            const std::string &progArgName="-o");
 
       void init(geom::Scene &scene, int num, int* camIndices,
-                const std::string &progArgName="-o") ;
+                const std::string &progArgName="-o");
 
       void capture();
     };

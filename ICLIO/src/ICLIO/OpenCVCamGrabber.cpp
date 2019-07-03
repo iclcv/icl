@@ -36,7 +36,7 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
-    OpenCVCamGrabber::OpenCVCamGrabber(int dev)  {
+    OpenCVCamGrabber::OpenCVCamGrabber(int dev) :device(dev),m_buffer(0){
       cvc = cvCaptureFromCAM(dev);
       if(!cvc){
         throw ICLException("unable to create OpenCVCamGrabberImpl with device index "

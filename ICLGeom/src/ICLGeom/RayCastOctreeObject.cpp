@@ -134,7 +134,7 @@ namespace icl{
     }
 
     /// casts a ray and returns the point closest to the ray-offset
-    Vec RayCastOctreeObject::rayCastClosest(const ViewRay &ray, float maxDist) const {
+    Vec RayCastOctreeObject::rayCastClosest(const ViewRay &ray, float maxDist) const{
       std::vector<Vec> rays = rayCast(ray,maxDist);
       if(!rays.size()) throw ICLException("RayCastOctreeObject::rayCastClosest:"
                                             " no point found in radius" );

@@ -77,12 +77,12 @@ namespace icl{
     }
 
     SceneMultiCamCapturer::SceneMultiCamCapturer(Scene &scene, int num, int* camIndices,
-                                                 const std::string &progArgName) {
+                                                 const std::string &progArgName){
       init(scene,num, camIndices,progArgName);
     }
 
     void SceneMultiCamCapturer::init(Scene &scene, int num, int* camIndices,
-                                     const std::string &progArgName) {
+                                     const std::string &progArgName){
       this->scene = &scene;
       this->camIndices.assign(camIndices,camIndices+num);
 

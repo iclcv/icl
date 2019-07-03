@@ -64,28 +64,28 @@ namespace icl{
       delete m_data;
     }
 
-    void GenericPointCloudGrabber::reinit(const std::string &description) {
+    void GenericPointCloudGrabber::reinit(const std::string &description){
       if(isNull()){
         throw ICLException("cannot re-initialize GenericPointCloudGrabber: instance null!");
       }
       m_data->impl->reinit(description);
     }
 
-    Camera GenericPointCloudGrabber::getDepthCamera() const {
+    Camera GenericPointCloudGrabber::getDepthCamera() const{
       if(isNull()){
         throw ICLException("GenericPointCloudGrabber::getDepthCamera(): called on null instance");
       }
       return m_data->impl->getDepthCamera();
     }
 
-    Camera GenericPointCloudGrabber::getColorCamera() const {
+    Camera GenericPointCloudGrabber::getColorCamera() const{
       if(isNull()){
         throw ICLException("GenericPointCloudGrabber::getColorCamera(): called on null instance");
       }
       return m_data->impl->getColorCamera();
     }
 
-    void GenericPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) {
+    void GenericPointCloudGrabber::setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T){
       if(isNull()){
         throw ICLException("GenericPointCloudGrabber::setCameraWorldFrame(): called on null instance");
       }

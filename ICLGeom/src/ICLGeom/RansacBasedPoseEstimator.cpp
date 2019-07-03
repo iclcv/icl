@@ -168,7 +168,7 @@ namespace icl{
       setPropertyValue("store last consensus set",on);
     }
 
-    std::vector<utils::Point32f>  RansacBasedPoseEstimator::getLastConsensusSet() {
+    std::vector<utils::Point32f>  RansacBasedPoseEstimator::getLastConsensusSet(){
       bool hasSet = getPropertyValue("store last consensus set");
       if(!hasSet) throw utils::ICLException("RansacBasedPoseEstimator::getLastConsensusSet() even though "
                                             "'store last consensus set' property was not set to 'true'");

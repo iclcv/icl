@@ -61,7 +61,7 @@ namespace icl{
                                const utils::Size32f &markerBounds,
                                const utils::Size32f &gridBounds,
                                const std::vector<int> &markerIDs=std::vector<int>(),
-                               const std::string &markerType="bch") ;
+                               const std::string &markerType="bch");
 
         /// returns internal marker-bounds value
         const utils::Size32f &getMarkerBounds() const {
@@ -190,7 +190,7 @@ namespace icl{
         }
 
         /// returns the marker for the given ID
-        const Marker &getMarker(int id) const ;
+        const Marker &getMarker(int id) const;
 
         /// visualizes the whole grid (i.e. each marker)
         utils::VisualizationDescription vis() const;

@@ -42,7 +42,7 @@ namespace icl{
   namespace io{
 
     OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
-                                         double fps, Size frame_size, int frame_color) {
+                                         double fps, Size frame_size, int frame_color){
       if(File(filename).exists()){
         throw ICLException("file already exists");
       }

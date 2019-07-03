@@ -265,21 +265,21 @@ namespace icl {
       /// Default constructor (creates dummy instance)
       CLProgram();
 
-	  CLProgram(const CLDeviceContext &device_context, const string &sourceCode) ;
+	  CLProgram(const CLDeviceContext &device_context, const string &sourceCode);
 
-	  CLProgram(const CLDeviceContext &device_context, ifstream &fileStream) ;
+	  CLProgram(const CLDeviceContext &device_context, ifstream &fileStream);
 
       /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code
-	  CLProgram(const string deviceType, const string &sourceCode) ;
+	  CLProgram(const string deviceType, const string &sourceCode);
 
       /// create CLProgram with given device type (either "gpu" or "cpu") and souce-code file
-	  CLProgram(const string deviceType, ifstream &fileStream) ;
+	  CLProgram(const string deviceType, ifstream &fileStream);
 
 	  /// create CLProgram with given cl-program parent and souce-code
-	  CLProgram(const string &sourceCode, const CLProgram &parent) ;
+	  CLProgram(const string &sourceCode, const CLProgram &parent);
 
 	  /// create CLProgram with given cl-program parent and souce-code file
-	  CLProgram(ifstream &fileStream, const CLProgram &parent) ;
+	  CLProgram(ifstream &fileStream, const CLProgram &parent);
 
       /// copy constructor (creating shallow copy)
       CLProgram(const CLProgram& other);
@@ -312,7 +312,7 @@ namespace icl {
           Each buffer has a fixed size (given in bytes). Optionally an initial source
           pointer can be passed that is then automatically uploaded to the buffer exisiting
           in the graphics memory.*/
-      CLBuffer createBuffer(const string &accessMode, size_t size,const void *src=0) ;
+      CLBuffer createBuffer(const string &accessMode, size_t size,const void *src=0);
 
 
       /// creates a image2D object for memory exchange with graphics card memory
@@ -329,15 +329,15 @@ namespace icl {
             depth32f = 3, < 32Bit floating point values \n
             depth64f = 4, < 64Bit floating point values \n
           */
-      CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0) ;
+      CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, const void *src=0);
 
-	  CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0) ;
+	  CLImage2D createImage2D(const string &accessMode, const size_t width, const size_t height, int depth, int num_channel, const void *src=0);
 
       /// extract a kernel from the program
       /** Kernels in the CLProgram's source code have to be qualified with the
           __kernel qualifier. The kernel (aka function) name in the OpenCL source code
           is used as id. */
-      CLKernel createKernel(const string &id) ;
+      CLKernel createKernel(const string &id);
 
 	  CLDeviceContext getDeviceContext();
 

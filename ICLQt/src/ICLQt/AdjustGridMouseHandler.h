@@ -87,13 +87,13 @@ namespace icl{
                                              const std::vector<utils::Point32f> &ps) const;
 
       /// returns the current quadrangle
-      std::vector<utils::Point> getGrid(size_t idx) const ;
+      std::vector<utils::Point> getGrid(size_t idx) const;
 
       /// sets the current quadrangle
       /** If the given quadrangle is not completely covered by the
           image rect, or the convexOnly flag is activated and the
           given quadrangle is not convex, an exception is thrown*/
-      void setGrid(size_t idx, const utils::Point ps[4]) ;
+      void setGrid(size_t idx, const utils::Point ps[4]);
 
       /// returns whether this mousehandler has been initialized yet
       inline bool isNull() const { return !m_data; }

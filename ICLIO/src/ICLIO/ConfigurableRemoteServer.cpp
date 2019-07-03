@@ -60,7 +60,7 @@ namespace icl{
         remoteServer = factory.createRemoteServer(serverScope);
       }
 
-      virtual void setPropertyValue(const std::string &propertyName, const Any &value) {
+      virtual void setPropertyValue(const std::string &propertyName, const Any &value){
         remoteServer->call<void>("setPropertyValue",pack(propertyName+"="+value));
       }
       virtual std::vector<std::string> getPropertyList() const{

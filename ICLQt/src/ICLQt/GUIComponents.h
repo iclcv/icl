@@ -294,7 +294,7 @@ namespace icl{
       Prop(const std::string &configurableID):GUIComponent("prop",configurableID){}
 
       /// create configurable component from given configurable (pointer)
-      Prop(const utils::Configurable *cfg)  : GUIComponent("prop","@pointer@:"+utils::Any::ptr(cfg)){
+      Prop(const utils::Configurable *cfg) : GUIComponent("prop","@pointer@:"+utils::Any::ptr(cfg)){
         ICLASSERT_THROW(cfg, utils::ICLException("GUIComponent Prop(NULL-Pointer) cannot be created!"));
       }
 

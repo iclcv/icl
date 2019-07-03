@@ -61,7 +61,7 @@ namespace icl{
       draw_line_internal(c,a);
     }
 
-    void AbstractCanvas::sym(char c, float x, float y) {
+    void AbstractCanvas::sym(char c, float x, float y){
       const float s = state.symsize;
       switch(c){
         case 'x':
@@ -136,7 +136,7 @@ namespace icl{
     }
 
     void AbstractCanvas::image(const ImgBase *image, float xanchor, float yanchor, float alpha,
-                               scalemode sm, bool centered) {
+                               scalemode sm, bool centered){
       ICLASSERT_THROW(image,ICLException("AbstractCanvas::image: input image is null"));
 
       if(centered){

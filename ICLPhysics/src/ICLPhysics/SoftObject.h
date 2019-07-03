@@ -60,7 +60,7 @@ namespace physics{
 
     public:
     /// constructor that uses an obj-file to create a softbody
-    SoftObject(const std::string &objFileName, PhysicsWorld *world) ;
+    SoftObject(const std::string &objFileName, PhysicsWorld *world);
     /// returns internal physical object as softBody
     /** Soft bodys are simple soft-body physical objects */
     virtual btSoftBody *getSoftBody();

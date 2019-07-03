@@ -66,7 +66,7 @@ namespace icl{
 
         /// Constructor creates a new OpenCVVideoGrabber instance
         /** @param fileName name of file to use */
-        OpenCVVideoGrabber(const std::string &fileName) ;
+        OpenCVVideoGrabber(const std::string &fileName);
 
         /// Destructor
         ~OpenCVVideoGrabber();

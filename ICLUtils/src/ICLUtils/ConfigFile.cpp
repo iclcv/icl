@@ -271,7 +271,7 @@ namespace icl{
       }
     }
 
-    void ConfigFile::load(const std::string &filename) {
+    void ConfigFile::load(const std::string &filename){
       // {{{ open
 
       m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
@@ -303,7 +303,7 @@ namespace icl{
 
     // }}}
 
-    ConfigFile::ConfigFile(std::istream &stream) {
+    ConfigFile::ConfigFile(std::istream &stream){
 
       XMLDocument *doc = new XMLDocument;
       doc->loadNext(stream);
@@ -311,7 +311,7 @@ namespace icl{
     }
 
 
-    void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r) {
+    void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r){
       // {{{ open
       get_entry_internal(m_sDefaultPrefix+id).restr = SmartPtr<KeyRestriction>(new KeyRestriction(r));
 
@@ -320,7 +320,7 @@ namespace icl{
 
     // }}}
 
-    const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const {
+    const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const{
       // {{{ open
       return get_entry_internal(m_sDefaultPrefix+id).restr.get();
     }
@@ -335,7 +335,7 @@ namespace icl{
 
     // }}}
 
-    ConfigFile::ConfigFile(XMLDocument *handle) :
+    ConfigFile::ConfigFile(XMLDocument *handle):
       m_doc(handle){
       load_internal();
     }
@@ -371,7 +371,7 @@ namespace icl{
       *this = ConfigFile();
     }
 
-    bool ConfigFile::check_type_internal(const std::string &id, const std::string &rttiTypeID) const {
+    bool ConfigFile::check_type_internal(const std::string &id, const std::string &rttiTypeID) const{
       const Entry &e = get_entry_internal(m_sDefaultPrefix+id);
       return e.rttiType == rttiTypeID;
       /*
@@ -382,19 +382,18 @@ namespace icl{
       */
     }
 
-    ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) {
+    ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id){
       std::map<std::string,Entry>::iterator it = m_entries.find(id);
       if(it == m_entries.end()) throw EntryNotFoundException(id);
       else return it->second;
     }
-    const ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) const {
+    const ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) const{
       return const_cast<ConfigFile*>(this)->get_entry_internal(id);
     }
 
 
 
-    void ConfigFile::set_internal(const std::string &idIn, const std::string &val, const std::string &type)
-      {
+    void ConfigFile::set_internal(const std::string &idIn, const std::string &val, const std::string &type){
       Maps &maps = getMapsInstanceRef();
       std::map<std::string,std::string>::iterator it = maps.typeMap.find(type);
       if(it == maps.typeMap.end()) throw UnregisteredTypeException(type);
@@ -441,7 +440,7 @@ namespace icl{
       return Data(id,*this);
     }
 
-    const ConfigFile::Data ConfigFile::operator[](const std::string &id) const {
+    const ConfigFile::Data ConfigFile::operator[](const std::string &id) const{
       if(!contains(id)){
         throw EntryNotFoundException(m_sDefaultPrefix+id);
       }

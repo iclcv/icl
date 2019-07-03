@@ -77,10 +77,10 @@ namespace icl{
       /// creates V4L2LoopBackImageOutput from given device string
       /** The device string can either be the full device-name, such as /dev/video1 or
           just an integer that specifies the device id (1 for /dev/video1 etc.) */
-      V4L2LoopBackOutput(const std::string &device) ;
+      V4L2LoopBackOutput(const std::string &device);
 
       /// initializes a the deivce
-      void init(const std::string &deviceString) ;
+      void init(const std::string &deviceString);
 
       /// actual publishing function
       virtual void send(const core::ImgBase *image);

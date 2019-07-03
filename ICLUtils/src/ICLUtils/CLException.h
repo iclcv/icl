@@ -47,28 +47,28 @@ namespace icl {
 				sstr << message << " clErrorCode " << errorCode << endl;
 				return sstr.str();
 			}
-			CLException(const std::string &msg) throw() : ICLException(msg) {}
+			CLException(const std::string &msg) noexcept : ICLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during initialization
     class CLInitException: public CLException {
 		public:
-			CLInitException(const std::string &msg) throw() : CLException(msg) {}
+			CLInitException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during kernel compiling
     class CLBuildException: public CLException {
 		public:
-			CLBuildException(const std::string &msg) throw() : CLException(msg) {}
+			CLBuildException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception associated with buffers
     class CLBufferException: public CLException {
 		public:
-			CLBufferException(const std::string &msg) throw() : CLException(msg) {}
+			CLBufferException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 
 		/// Class for an OpenCL Exception associated with kernels
     class CLKernelException: public CLException {
 		public:
-			CLKernelException(const std::string &msg) throw() : CLException(msg) {}
+			CLKernelException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 
 	}

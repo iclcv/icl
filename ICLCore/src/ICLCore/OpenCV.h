@@ -86,7 +86,7 @@ namespace icl{
         @param *src pointer to sourceimage (IplImage)
         @param **dst pointer to pointer to destinationimage (ICLimage)
         @param e depthpreference*/
-    ICLCore_API ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH) ;
+    ICLCore_API ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH);
 
     ///Convert ICLimage to OpenCV IplImage
     /**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
@@ -102,7 +102,7 @@ namespace icl{
         @param *src pointer to sourceimage
         @param **dst pointer to pointer to destinationmatrix
         @param channel channel to use*/
-    ICLCore_API CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst = 0, int channel = 0) ;
+    ICLCore_API CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst = 0, int channel = 0);
 
     ///Convert single channel ICLimage to OpenCV IplImage
     /**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
@@ -119,18 +119,18 @@ namespace icl{
         Be careful when releasig (data)pointers.
         @param *src pointer to sourceimage
         @param *dst pointer to destinationmatrix (IplImage)*/
-    ICLCore_API CvMat *img_to_cvmat_shallow(const ImgBase *src, CvMat *dst = 0) ;
+    ICLCore_API CvMat *img_to_cvmat_shallow(const ImgBase *src, CvMat *dst = 0);
 
     /// converts icl image into opencv's C++ image type cv::Mat (data is deeply copied)
     /** If a destimation Mat is given, it will be set up to resemble the input images
         parameters exactly. Therefore, the data is always copied and never converted */
-    ICLCore_API ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dst=0) ;
+    ICLCore_API ::cv::Mat *img_to_mat(const ImgBase *src, ::cv::Mat *dst=0);
 
     /// converts cv::Mat to ImgBase (internally the pixel data is type-converted if needed)
-    ICLCore_API ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn=0) ;
+    ICLCore_API ImgBase *mat_to_img(const ::cv::Mat *src, ImgBase *dstIn=0);
 
     /// converts cv::Mat to ImgBase (internally the pixel data is type-converted if needed)
-    ICLCore_API void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn) ;
+    ICLCore_API void mat_to_img(const ::cv::Mat *src, ImgBase **dstIn);
 
 
     /// Very simply wrapper about the opencv C++ matrix type cv::Mat

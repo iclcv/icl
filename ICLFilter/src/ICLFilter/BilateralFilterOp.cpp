@@ -575,7 +575,7 @@ void BilateralFilterOp::init(Mode mode, Method method) {
 BilateralFilterOp::~BilateralFilterOp() {
 }
 
-void BilateralFilterOp::apply(const core::ImgBase *in, core::ImgBase **out) throw() {
+void BilateralFilterOp::apply(const core::ImgBase *in, core::ImgBase **out) noexcept {
 	if (_method == GAUSS)
 		impl->applyGauss(in,out,radius,sigma_s,sigma_r,use_lab);
 	else if (_method == KUWAHARA)

@@ -131,7 +131,7 @@ namespace icl{
           @param c2shift number of least significant bits that are removed from channel2
           @param fmt internally used segmentation format (needs to have 3 channels)
           */
-      ColorSegmentationOp(icl8u c0shift=2, icl8u c1shift=2, icl8u c2shift=2,core::format fmt=core::formatYUV) ;
+      ColorSegmentationOp(icl8u c0shift=2, icl8u c1shift=2, icl8u c2shift=2,core::format fmt=core::formatYUV);
 
       /// Destructor
       ~ColorSegmentationOp();
@@ -152,7 +152,7 @@ namespace icl{
       void setSegmentationShifts(icl8u c0shift, icl8u c1shift, icl8u c2shift);
 
       /// sets the internally used segmentation format
-      void setSegmentationFormat(core::format fmt) ;
+      void setSegmentationFormat(core::format fmt);
 
       /// returns the pointer to the 3 internally used segmentation shifts
       const icl8u *getSegmentationShifts() const { return m_bitShifts; }
@@ -170,7 +170,7 @@ namespace icl{
       void lutEntry(icl8u a, icl8u b, icl8u c, icl8u rA, icl8u rB, icl8u rC, icl8u value);
 
       /// given a,b and c in format fmt, this function fills the LUT within a sub-volume with given radii
-      void lutEntry(core::format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value) ;
+      void lutEntry(core::format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value);
 
       /// loads the segmentation LUT only (no other parameters)
       void load(const std::string &filename);

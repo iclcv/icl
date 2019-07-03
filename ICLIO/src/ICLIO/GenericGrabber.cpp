@@ -70,7 +70,7 @@ namespace icl{
           return &inst;
         }
 
-        Grabber* createGrabber(const GrabberDeviceDescription &desc) {
+        Grabber* createGrabber(const GrabberDeviceDescription &desc){
           Mutex::Locker l(mutex);
 
           GPM::iterator it = gpm.find(desc.name());
@@ -130,7 +130,7 @@ namespace icl{
       }
     }
 
-    void GenericGrabber::init(const ProgArg &pa) {
+    void GenericGrabber::init(const ProgArg &pa){
       init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
     }
 

@@ -73,15 +73,13 @@ namespace icl{
           - row-cout 3 or 4 (if it is 4, the last row is not used at all)
           - at least one column (however you'll need 3 columns for 6D mapping */
       template<class T> ICLGeom_API
-      static math::FixedMatrix<T,4,4> map(const math::DynMatrix<T> &Xs, const math::DynMatrix<T> &Ys, MapMode mode=RigidBody)
-      ;
+      static math::FixedMatrix<T,4,4> map(const math::DynMatrix<T> &Xs, const math::DynMatrix<T> &Ys, MapMode mode=RigidBody);
 
       /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
       /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
       template<class T, unsigned int NUM_POINTS>
       static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,3> &Xs,
-                                          const math::FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody)
-        {
+                                          const math::FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody){
         return map(Xs.dyn(),Ys.dyn(), mode);
       }
 
@@ -89,14 +87,12 @@ namespace icl{
       /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
       template<class T, unsigned int NUM_POINTS>
       static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,4> &Xs,
-                                    const math::FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody)
-        {
+                                    const math::FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody){
         return map(Xs.dyn(),Ys.dyn(), mode);
       }
 
       /// Convenience function that passes std::vector<Vec> data as DynMatrix<T> to other map function
-      static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody)
-      {
+      static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody){
         ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("PoseEstimator::map: need same number of input- and output-points"));
         math::DynMatrix<double> XsD(Xs.size(),3),YsD(Ys.size(),3);
         for(unsigned int i=0;i<Xs.size();++i){

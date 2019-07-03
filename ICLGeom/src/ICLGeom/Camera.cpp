@@ -317,16 +317,14 @@ namespace icl {
 
     Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis,
                                        const Camera &intrinsicCamValue, const RenderParams &renderParams,
-                                       bool performLMAbasedOptimiziation)
-       {
+                                       bool performLMAbasedOptimiziation) {
       return calibrate_extrinsic(Xws, xis, intrinsicCamValue.getProjectionMatrix(), renderParams, performLMAbasedOptimiziation);
     }
 
 
     Camera Camera::calibrate_extrinsic(const std::vector<Vec> &Xws, const std::vector<utils::Point32f> &xis,
                                        const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams,
-                                       bool performLMAbasedOptimiziation)
-       {
+                                       bool performLMAbasedOptimiziation) {
       const Mat &k = camIntrinsicProjectionMatrix;
       return calibrate_extrinsic(Xws, xis, k(0,0), k(1,1), k(1,0), k(2,0), k(2,1), renderParams, performLMAbasedOptimiziation);
     }
@@ -338,8 +336,7 @@ namespace icl {
 
     Camera Camera::calibrate_extrinsic(std::vector<Vec> Xws, std::vector<utils::Point32f> xis,
                                        float fx, float fy, float s, float px ,float py,
-                                       const RenderParams &renderParams, bool performLMAbasedOptimiziation)
-     {
+                                       const RenderParams &renderParams, bool performLMAbasedOptimiziation) {
       checkAndFixPoints(Xws,xis);
 
       int n = (int)Xws.size();
@@ -474,8 +471,7 @@ namespace icl {
     Camera Camera::calibrate_pinv(std::vector<Vec> Xws,
                                   std::vector<Point32f> xis,
                                   float focalLength,
-                                  bool performLMAbasedOptimiziation)
-       {
+                                  bool performLMAbasedOptimiziation) {
       // TODO: normalize points
       checkAndFixPoints(Xws,xis);
 
@@ -512,8 +508,7 @@ namespace icl {
     Camera Camera::calibrate(std::vector<Vec> Xws,
                              std::vector<Point32f> xis,
                              float focalLength,
-                             bool performLMAbasedOptimiziation)
-       {
+                             bool performLMAbasedOptimiziation) {
 
       //  #ifndef ICL_HAVE_MKL
       // 	return calibrate_pinv(Xws,xis,focalLength);
@@ -554,7 +549,7 @@ namespace icl {
       }
     }
 
-    void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis)  {
+    void Camera::checkAndFixPoints(std::vector<Vec> &Xws, std::vector<Point32f> &xis) {
       if(Xws.size() > xis.size()){
         ERROR_LOG("got more world points than image points (erasing additional world points)");
         Xws.resize(xis.size());
@@ -670,18 +665,18 @@ namespace icl {
     }
 
     /// istream operator parses a camera from an XML-string
-    std::istream &operator>>(std::istream &is, Camera &cam)  {
+    std::istream &operator>>(std::istream &is, Camera &cam) {
       cam = Camera(is,"config.");
       return is;
     }
 
-    Camera::Camera(const std::string &filename, const std::string &prefix) {
+    Camera::Camera(const std::string &filename, const std::string &prefix){
       if(!File(filename).exists()) throw ParseException("Camera(filename) given file '" + filename + "' does not exist!");
       std::ifstream is(filename.c_str());
       load_camera_from_stream(is,prefix,*this);
     }
 
-    Camera::Camera(std::istream &is, const std::string &prefix) {
+    Camera::Camera(std::istream &is, const std::string &prefix){
       load_camera_from_stream(is,prefix,*this);
     }
 
@@ -723,14 +718,14 @@ namespace icl {
       return ViewRay(m_pos, Xw-m_pos);
     }
 
-    Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane)  {
+    Vec Camera::getIntersection(const ViewRay &v, const PlaneEquation &plane) {
       float denom = sprod_3(v.direction, plane.normal);
       if (fabs(denom) < 1e-6) throw ICLException("no intersection -> plane normal is perdendicular to view-ray direction");
       float lambda = -sprod_3(v.offset-plane.offset,plane.normal) / denom;
       return v(lambda);
     }
 
-    Vec Camera::estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const  {
+    Vec Camera::estimate3DPosition(const Point32f &pixel, const PlaneEquation &plane) const {
       return getIntersection(getViewRay(pixel),plane);
     }
 
@@ -746,7 +741,7 @@ namespace icl {
     */
 
     static Vec estimate_3D_internal(const std::vector<Camera*> cams,
-                                    const std::vector<Point32f> &ps) {
+                                    const std::vector<Point32f> &ps){
       // {{{ open
       int K = (int)cams.size();
       ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
@@ -788,7 +783,7 @@ namespace icl {
 
     Vec Camera::estimate_3D(const std::vector<Camera*> cams,
                             const std::vector<Point32f> &UVs,
-                            bool removeInvalidPoints) {
+                            bool removeInvalidPoints){
       // {{{ open
       ICLASSERT_THROW(cams.size() == UVs.size(),ICLException("Camera::estimate_3D: given camera count and point count differs"));
       if(removeInvalidPoints){
@@ -911,7 +906,7 @@ namespace icl {
       setPrincipalPointOffset(newPrincipalPointOffset);
     }
 
-    Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename) {
+    Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename){
       SmartPtr<io::ImageUndistortion> udist;
       try{
         udist = new io::ImageUndistortion(filename);

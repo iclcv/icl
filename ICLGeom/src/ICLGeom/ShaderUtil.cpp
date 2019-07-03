@@ -50,7 +50,7 @@ namespace icl{
       m_shadowBias(shadowBias),
       renderingShadow(false){}
 
-    const Camera &ShaderUtil::getCurrentCamera() const {
+    const Camera &ShaderUtil::getCurrentCamera() const{
       if(!m_camera) throw utils::ICLException("shader util has no camera!");
       return *m_camera;
     }

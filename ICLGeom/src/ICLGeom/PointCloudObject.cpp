@@ -116,7 +116,7 @@ namespace icl{
       return t == Normal || t == RGBA32f || t == Label || t == Depth;
     }
 
-    void PointCloudObject::addFeature(FeatureType t) {
+    void PointCloudObject::addFeature(FeatureType t){
       if(!canAddFeature(t)){
         PointCloudObjectBase::addFeature(t);
         return;
@@ -144,7 +144,7 @@ namespace icl{
       return m_organized;
     }
 
-    Size PointCloudObject::getSize() const {
+    Size PointCloudObject::getSize() const{
       if(!isOrganized()) throw ICLException("SimplePointCloudObject:getSize(): instance is not 2D-ordered");
       return m_dim2D;
     }

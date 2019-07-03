@@ -284,7 +284,7 @@ namespace icl{
     }
 
     std::string openFileDialog(const std::string &filter,const std::string &caption,
-                               const std::string &initialDirectory, void *parentWidget) {
+                               const std::string &initialDirectory, void *parentWidget){
       static std::string lastDirectory = ".";
       IOContext c = { filter, caption, (initialDirectory=="_____last"?lastDirectory:initialDirectory), parentWidget, std::string(), false };
       ICLApp::instance()->executeInGUIThread<IOContext&>(do_open, c,true);
@@ -304,7 +304,7 @@ namespace icl{
           }
           */
     std::string saveFileDialog(const std::string &filter,const std::string &caption,
-                               const std::string &initialDirectory,void *parentWidget) {
+                               const std::string &initialDirectory,void *parentWidget){
       static std::string lastDirectory = ".";
       IOContext c = { filter, caption, (initialDirectory=="_____last"?lastDirectory:initialDirectory), parentWidget, std::string(), false };
       ICLApp::instance()->executeInGUIThread<IOContext&>(do_save, c,true);
@@ -326,7 +326,7 @@ namespace icl{
     std::string textInputDialog(const std::string &caption, const std::string &message,
                                 const std::string &initialText, void *parentWidget,
                                 core::ImgBase *visImage,
-                                std::vector<std::string> completionOptions) {
+                                std::vector<std::string> completionOptions){
       TextIOContext c = { caption, message, initialText, parentWidget, std::string(), false, visImage, completionOptions };
 
       ICLApp::instance()->executeInGUIThread<TextIOContext&>(do_gettext, c, true);

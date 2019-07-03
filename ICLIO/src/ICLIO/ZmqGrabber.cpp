@@ -80,7 +80,7 @@ namespace icl{
     };
 
 
-    ZmqGrabber::ZmqGrabber(const std::string &host, int port) :m_data(0){
+    ZmqGrabber::ZmqGrabber(const std::string &host, int port):m_data(0){
       m_data = new Data(host,port);
     }
 

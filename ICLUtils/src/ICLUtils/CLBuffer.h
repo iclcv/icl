@@ -55,10 +55,10 @@ namespace icl {
 
       /// private constructor (buffer can only be created by CLProgram instances)
       CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue,
-               const string &accessMode, size_t size, const void *src=NULL) ;
+               const string &accessMode, size_t size, const void *src=NULL);
 
 	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode,
-			   size_t length, size_t byte_depth, const void *src=NULL) ;
+			   size_t length, size_t byte_depth, const void *src=NULL);
 
       /// provides access to the underlying cl-buffer
       cl::Buffer &getBuffer();
@@ -82,13 +82,13 @@ namespace icl {
       ~CLBuffer();
 
       /// copies the content of this buffer into the given buffer
-      void copy(CLBuffer &dst, int len, int src_offset = 0, int dst_offset = 0) ;
+      void copy(CLBuffer &dst, int len, int src_offset = 0, int dst_offset = 0);
 
       /// reads buffer from graphics memory into given destination pointer
-      void read(void *dst, int len, int offset = 0, bool block = true) ;
+      void read(void *dst, int len, int offset = 0, bool block = true);
 
       /// writes source data into the graphics memory
-      void write(const void *src, int len, int offset = 0, bool block = true) ;
+      void write(const void *src, int len, int offset = 0, bool block = true);
 
       /// checks whether buffer is null
       bool isNull() const {

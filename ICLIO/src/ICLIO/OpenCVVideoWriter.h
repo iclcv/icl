@@ -75,7 +75,7 @@ namespace icl{
   	    @param frame_color currently only supported on windows 0 for greyscale else color
             **/
   	OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
-                          double fps, utils::Size frame_size, int frame_color=1) ;
+                          double fps, utils::Size frame_size, int frame_color=1);
 
   	/// Destructor
   	~OpenCVVideoWriter();

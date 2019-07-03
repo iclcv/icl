@@ -81,7 +81,7 @@ namespace icl{
       /** If the given quadrangle is not completely covered by the
           image rect, or the convexOnly flag is activated and the
           given quadrangle is not convex, an exception is thrown*/
-      void setQuadrangle(const utils::Point ps[4]) ;
+      void setQuadrangle(const utils::Point ps[4]);
 
       /// returns whether this mousehandler has been initialized yet
       inline bool isNull() const { return !m_data; }

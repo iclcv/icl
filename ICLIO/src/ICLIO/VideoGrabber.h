@@ -65,7 +65,7 @@ namespace icl{
       public:
 
         /// Create video grabber with given video-file name
-        VideoGrabber(const std::string &fileName) ;
+        VideoGrabber(const std::string &fileName);
 
         /// Destructor
         ~VideoGrabber();

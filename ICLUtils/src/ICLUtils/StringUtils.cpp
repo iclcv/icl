@@ -217,8 +217,7 @@ namespace icl{
     }
 
 
-    MatchResult match(const std::string &text, const std::string &regexIn, int num)
-      {
+    MatchResult match(const std::string &text, const std::string &regexIn, int num){
       string regexSave = regexIn;
   //#ifndef ICL_SYSTEM_WINDOWS // TODOW
       char *regex = const_cast<char*>(regexSave.c_str());

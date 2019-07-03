@@ -59,7 +59,7 @@ namespace icl{
 
       /// updates the internally used direction vectors
       /** the underlying chip size must not change, otherwise, and exception is thrown */
-      ICLGeom_API void setDirectionVectors(const utils::Array2D<Vec> &dirs) ;
+      ICLGeom_API void setDirectionVectors(const utils::Array2D<Vec> &dirs);
 
       ///Creates a uncolored pointcloud (called from PointCloudCreator)
       ICLGeom_API void create(bool NEEDS_RAW_TO_MM_MAPPING,const core::Img32f *depthValues,

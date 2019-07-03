@@ -93,7 +93,7 @@ namespace icl{
       /// returns the last grabbed color image
       /** Throws an exception if no color camera or not valid color camera device
           type and ID were passed. */
-      const core::Img8u &getLastColorImage() const ;
+      const core::Img8u &getLastColorImage() const;
 
       /// creates the defautl VGA core::depth camera
       static const Camera &get_default_depth_cam();
@@ -126,12 +126,12 @@ namespace icl{
 
       /// returns the internal RGBDMapping
       /** only if both color- and depth camera is available */
-      RGBDMapping getMapping() const ;
+      RGBDMapping getMapping() const;
 
       /// reinitisize the backend (here, only new camera parameters can be given)
       /** The syntax is @dcam=depth-cam-filename@ccam=color-cam-filename.
           It is also possible to pass only one of the @ tokens. */
-      void reinit(const std::string &description) ;
+      void reinit(const std::string &description);
 
       /// returns the last grabbed point cloud's underlying depth image
       virtual const core::Img32f *getDepthImage() const;
@@ -140,18 +140,18 @@ namespace icl{
       virtual const core::Img8u *getColorImage() const;
 
       /// returns current depth camera
-      virtual Camera getDepthCamera() const ;
+      virtual Camera getDepthCamera() const;
 
       /// returns current color camera
       /** If no color camera was given, an exception is thrown */
-      virtual Camera getColorCamera() const ;
+      virtual Camera getColorCamera() const;
 
       /// sets up the cameras world frame
       /** Internally, this will set the depth camera's world frame to T.
           If a color camera is given, it will be also moved so that the
           relative transform between the depth camera and the color camera
           remains the same. Otherwise, the RGBD-mapping would become broken */
-      virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T) ;
+      virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T);
 
     };
   } // namespace geom

@@ -74,8 +74,7 @@ namespace icl{
       return data->m_buffer;
     }
 
-    OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName)
-    {
+    OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName) : data(new Data), mutex(Mutex::mutexTypeRecursive), updating(false){
       data->m_buffer = 0;
       data->use_video_fps = true;
       data->filename = fileName;

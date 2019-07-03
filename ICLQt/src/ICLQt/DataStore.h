@@ -70,7 +70,7 @@ namespace icl{
 
         /// This is the mighty and magic conversion function
         ICLQt_API static void assign(void *src, const std::string &srcType, void *dst,
-                           const std::string &dstType) ;
+                           const std::string &dstType);
 
         public:
 
@@ -90,7 +90,7 @@ namespace icl{
         /// Trys to assign an instance of T to this Data-Element
         /** This will only work, if the data types are assignable */
         template<class T>
-        inline void operator=(const T &t) {
+        inline void operator=(const T &t){
           assign(const_cast<void*>(reinterpret_cast<const void*>(&t)),
                  get_type_name<T>(),data->data,data->type);
         }
@@ -99,7 +99,7 @@ namespace icl{
         /** this will only work, if the data element is convertable to the
             desired type. Otherwise an exception is thrown*/
         template<class T>
-        inline T as() const {
+        inline T as() const{
           T t;
           assign(data->data,data->type,&t,get_type_name<T>());
           return t;
@@ -107,7 +107,7 @@ namespace icl{
 
         /// implicit conversion into l-value type (little dangerous)
         template<class T>
-        operator T() const {
+        operator T() const{
           return as<T>();
         }
 
@@ -116,12 +116,12 @@ namespace icl{
 
 
         /** Currently supported for Data-types ImageHandle, DrawHandle, FPSHandle and PlotHandle */
-        void render() {
+        void render(){
           *this = Event("render");
         }
 
         /// links DrawWidget3D and GLCallback
-        void link(void *data) {
+        void link(void *data){
           *this = Event("link", data);
         }
 
@@ -200,7 +200,7 @@ namespace icl{
           x["sl"] = Range32s(3,9);   // sets slider's Range ...
           \endcode
       */
-      Data operator[](const std::string &key) ;
+      Data operator[](const std::string &key);
 
 
       /// convenience function that allows collecting data from different source entries

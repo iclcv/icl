@@ -490,7 +490,7 @@ namespace icl{
       return *m_data->depthCamera;
     }
 
-    const Camera &PointCloudCreator::getColorCamera() const {
+    const Camera &PointCloudCreator::getColorCamera() const{
       if(!hasColorCamera()) throw ICLException("PointCloudCreator::getColorCamera(): no color camera available");
       return *m_data->colorCamera;
     }
@@ -608,7 +608,7 @@ namespace icl{
 #endif
     }
 
-    RGBDMapping PointCloudCreator::getMapping() const {
+    RGBDMapping PointCloudCreator::getMapping() const{
       if(!m_data->colorCamera) throw ICLException("PointCloudCreator::getMapping(): no color camera data available");
       return RGBDMapping(*m_data->colorCamera, m_data->viewRayDirections, m_data->viewRayOffset);
     }
