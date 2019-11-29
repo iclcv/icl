@@ -61,24 +61,22 @@ namespace icl{
         FOURCC = ICL_FOURCCC(fourcc[0],fourcc[1],fourcc[2],fourcc[3]);
       }
 
-      writer = cvCreateVideoWriter(filename.c_str(), FOURCC, fps,
+      writer.reset(new cv::VideoWriter(filename.c_str(), FOURCC, fps,
                                    cvSize(frame_size.width,frame_size.height)
-                                   , frame_color);
+                                   , frame_color));
 
     }
 
     OpenCVVideoWriter::~OpenCVVideoWriter(){
-      cvReleaseVideoWriter(&writer);
     }
 
     void OpenCVVideoWriter::write(const ImgBase *image){
       ICLASSERT_RETURN(image);
       ICLASSERT_RETURN(image->getDim());
       ICLASSERT_RETURN(image->getChannels());
-      IplImage *im = 0;
-      im = core::img_to_ipl(image,&im);
-      cvWriteFrame(writer,im );
-      cvReleaseImage(&im);
+      cv::Mat* im = 0;
+      im = core::img_to_mat(image,im);
+      writer->write(*im );
     }
 
     OpenCVVideoWriter &OpenCVVideoWriter::operator<<(const ImgBase *image){
