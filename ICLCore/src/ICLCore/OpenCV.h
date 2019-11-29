@@ -32,39 +32,9 @@
 
 #include <opencv/cxcore.h>
 
-#ifndef ICL_HAVE_OPENCV_OLD_STYLE
-
 #include <opencv2/core/core.hpp>
-#include <opencv2/core/version.hpp>
-
-#if defined(CV_VERSION_EPOCH) && (CV_VERSION_EPOCH > 2)
-#define ICL_HAVE_OPENCV_3
-#elif !defined(CV_VERSION_EPOCH) && (CV_VERSION_MAJOR > 2)
-#define ICL_HAVE_OPENCV_3
-#endif
-
-#endif
-
-// crazy stuff !!
-#ifdef ICL_HAVE_OPENCV_3
-#define ICL_OPENCV_VERSION_MAJOR CV_VERSION_MAJOR
-#define ICL_OPENCV_VERSION_MINOR CV_VERSION_MINOR
-#else
-#define ICL_OPENCV_VERSION_MAJOR CV_VERSION_EPOCH
-#define ICL_OPENCV_VERSION_MINOR CV_VERSION_MAJOR
-#endif
-
-
-#if defined(ICL_HAVE_OPENCV_3)
-  #include "opencv2/calib3d/calib3d_c.h"
-// This will be inlcuded when at least OpenCV 2.4 is detected
-#elif ICL_OPENCV_VERSION_MINOR > 3
-  #include "opencv2/imgproc/types_c.h"
-  #include "opencv2/imgproc/imgproc_c.h"
-  #include "opencv2/calib3d/calib3d.hpp"
-#else
-  #error ICL requires at least OpenCV 2.4
-#endif
+#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
@@ -80,22 +50,6 @@ namespace icl{
       PREFERE_DST_DEPTH  //!< prefer destination depth
     };
 
-    ///Convert OpenCV IplImage to ICLimage
-    /**Converts IplImage to ICLimage. If dst is NULL, the sourceimagedepth
-        will be used, else the destinationimagedepth will be used.
-        @param *src pointer to sourceimage (IplImage)
-        @param **dst pointer to pointer to destinationimage (ICLimage)
-        @param e depthpreference*/
-    ICLCore_API ImgBase *ipl_to_img(CvArr *src,ImgBase **dst=0,DepthPreference e=PREFERE_SRC_DEPTH);
-
-    ///Convert ICLimage to OpenCV IplImage
-    /**Converts ICLimage to IplImage. If dst is NULL, the sourceimagedepth
-        will be used, else the destinationimagedepth will be used.
-        @param *src pointer to sourceimage
-        @param **dst pointer to pointer to destinationimage (IplImage)
-        @param e depthpreference*/
-    ICLCore_API IplImage *img_to_ipl(const ImgBase *src, IplImage **dst = 0, DepthPreference e = PREFERE_SRC_DEPTH);
-
     ///Copy single ICLimage channel to OpenCV single channel CvMat
     /**Copy single ICLimage channel to single channel CvMat. If dst is NULL, the sourceimagedepth
         will be used, else the destinationmatrixdepth will be used.
@@ -103,15 +57,6 @@ namespace icl{
         @param **dst pointer to pointer to destinationmatrix
         @param channel channel to use*/
     ICLCore_API CvMat* img_to_cvmat(const ImgBase *src, CvMat *dst = 0, int channel = 0);
-
-    ///Convert single channel ICLimage to OpenCV IplImage
-    /**Converts single channel ICLimage to IplImage. Data is shared by source and destination.
-        Using icl8u or icl16s the imagedata is not aligned, but OpenCV expects aligned data.
-        In this case be careful using further OpenCV functions.
-        Be careful when releasig (data)pointers.
-        @param *src pointer to sourceimage
-        @param *dst pointer to destinationimage (IplImage)*/
-    ICLCore_API IplImage *img_to_ipl_shallow(ImgBase *src, IplImage *dst = 0);
 
     ///Convert single channel ICLimage to OpenCV CvMat
     /**Converts single channel ICLimage to a single channel CvMat. Data is shared by
