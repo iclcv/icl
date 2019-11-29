@@ -30,14 +30,14 @@
 
 #pragma once
 
+#include <memory>
+
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
 
 #include <string>
-
-#include <opencv2/videoio/videoio_c.h>
-
+#include <opencv2/videoio.hpp>
 
 namespace icl{
   namespace io{
@@ -45,7 +45,7 @@ namespace icl{
     class ICLIO_API OpenCVVideoWriter :public ImageOutput{
       private:
       ///OpenCV VideoWriter struct
-  	CvVideoWriter *writer;
+  	  std::unique_ptr<cv::VideoWriter> writer;
       public:
 
   	/// Creates a new videowriter with given filename

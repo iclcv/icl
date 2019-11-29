@@ -37,8 +37,9 @@ namespace icl{
   namespace io{
 
     OpenCVCamGrabber::OpenCVCamGrabber(int dev) :device(dev),m_buffer(0){
-      cvc = cvCaptureFromCAM(dev);
-      if(!cvc){
+      cvc.reset(new cv::VideoCapture());
+      cvc->open(dev);
+      if(!cvc->isOpened()){
         throw ICLException("unable to create OpenCVCamGrabberImpl with device index "
                            + str(dev) + ": invalid device ID");
       }
@@ -46,30 +47,31 @@ namespace icl{
                   "640x480,800x480,800x600,960x540,960x640,1024x768,1152x864,1200x800"
                   ",1280x720,1280x800,1440x900,1280x960,1280x1024,1600x900,1400x1050,"
                   "1600x1050,1600x1200",
-                  str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH))+"x"
-                  +str(cvGetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT)), 0, "");
+                  str(cvc->get(cv::CAP_PROP_FRAME_WIDTH))+"x"
+                  +str(cvc->get(cv::CAP_PROP_FRAME_HEIGHT)), 0, "");
       addProperty("brightness", "range", "[0,100]:1",
-                  cvGetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS), 0, "");
+                  cvc->get(cv::CAP_PROP_BRIGHTNESS), 0, "");
       addProperty("contrast", "range", "[0,100]:1",
-                  cvGetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST), 0, "");
+                  cvc->get(cv::CAP_PROP_CONTRAST), 0, "");
       addProperty("saturation", "range", "[0,100]:1",
-                  cvGetCaptureProperty(cvc,CV_CAP_PROP_SATURATION), 0, "");
+                  cvc->get(cv::CAP_PROP_SATURATION), 0, "");
       addProperty("hue", "range", "[0,100]:1",
-                  cvGetCaptureProperty(cvc,CV_CAP_PROP_HUE), 0, "");
+                  cvc->get(cv::CAP_PROP_HUE), 0, "");
       addProperty("format", "menu", "RGB", "RGB", 0, "");
       Configurable::registerCallback(
             utils::function(this,&OpenCVCamGrabber::processPropertyChange));
     }
 
     OpenCVCamGrabber::~OpenCVCamGrabber(){
-      cvReleaseCapture(&cvc);
       ICL_DELETE(m_buffer);
     }
 
     const ImgBase *OpenCVCamGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL( !(cvc==0), 0);
+      cv::Mat frame;
+      cvc->read(frame);
       Mutex::Locker lock(m_mutex);
-      core::ipl_to_img(cvQueryFrame(cvc),&m_buffer);
+      core::mat_to_img(&frame,&m_buffer);
       return m_buffer;
     }
 
@@ -77,11 +79,11 @@ namespace icl{
     void OpenCVCamGrabber::processPropertyChange(const utils::Configurable::Property &prop){
       Mutex::Locker lock(m_mutex);
       if(prop.name == "size"){
-        cvReleaseCapture(&cvc);
-        cvc = cvCaptureFromCAM(device);
+        cvc.reset(new cv::VideoCapture());
+        cvc->open(device);
         Size s(prop.value);
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_WIDTH,double(s.width));
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_FRAME_HEIGHT,double(s.height));
+        cvc->set(cv::CAP_PROP_FRAME_WIDTH,double(s.width));
+        cvc->set(cv::CAP_PROP_FRAME_HEIGHT,double(s.height));
 
         /* TODO: acatually, the resulting image sizes are not used ??
             m_bIgnoreDesiredParams = false;
@@ -89,13 +91,13 @@ namespace icl{
             setDesiredSize(s);
         */
       }else if(prop.name == "brightness"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_BRIGHTNESS,parse<double>(prop.value)*0.01);
+        cvc->set(cv::CAP_PROP_BRIGHTNESS,parse<double>(prop.value)*0.01);
       }else if(prop.name == "contrast"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_CONTRAST,parse<double>(prop.value)*0.01);
+        cvc->set(cv::CAP_PROP_CONTRAST,parse<double>(prop.value)*0.01);
       }else if(prop.name == "saturation"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_SATURATION,parse<double>(prop.value)*0.01);
+        cvc->set(cv::CAP_PROP_SATURATION,parse<double>(prop.value)*0.01);
       }else if(prop.name == "hue"){
-        cvSetCaptureProperty(cvc,CV_CAP_PROP_HUE,parse<double>(prop.value)*0.01);
+        cvc->set(cv::CAP_PROP_HUE,parse<double>(prop.value)*0.01);
       }
     }
 

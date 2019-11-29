@@ -30,13 +30,15 @@
 ********************************************************************/
 
 #pragma once
+#include <memory>
+
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
 
-#include <opencv2/videoio/videoio_c.h>
+#include <opencv2/videoio.hpp>
 
 namespace icl{
   namespace io{
@@ -45,7 +47,7 @@ namespace icl{
     class ICLIO_API OpenCVCamGrabber : public Grabber{
       private:
         /// Wrapped Device struct
-        CvCapture *cvc;
+        std::unique_ptr<cv::VideoCapture> cvc;
         ///number of device
         int device;
         ///
