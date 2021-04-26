@@ -36,7 +36,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Mutex.h>
 
-#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/videoio/videoio_c.h>
 
 namespace icl{
   namespace io{

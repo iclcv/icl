@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/OpenCVVideoGrabber.h>
+#include <opencv2/videoio/videoio_c.h>
 
 using namespace icl::utils;
 using namespace icl::core;

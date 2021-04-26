@@ -36,8 +36,6 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
 
-#include <opencv2/highgui/highgui_c.h>
-
 #include <string>
 #include <ICLUtils/File.h>
 #include <ICLUtils/Mutex.h>
