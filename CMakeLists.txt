@@ -279,7 +279,7 @@ IF(BUILD_TESTS)
   # run tests automatically after build
   # add_custom_target(run-test
   #     ALL
-  #     DEPENDS tests 
+  #     DEPENDS tests
   #     COMMAND ${CMAKE_COMMAND} --build . --target test)
 
   # # In case we want to upload coverage to coveralls at some point
@@ -488,7 +488,6 @@ IF(BUILD_WITH_OPENCV)
     SET(OpenCV_DIR ${OPENCV_ROOT})
     message(STATUS "opencv root: ${OPENCV_ROOT}")
   ENDIF()
-  SET(OpenCV_OLD_LIBS_NOT_FOUND "TRUE")
   SET(OPENCV_FEATURES_2D_FOUND "FALSE")
   FIND_PACKAGE(OpenCV REQUIRED)
   IF(OPENCV_FOUND)
@@ -506,19 +505,14 @@ IF(BUILD_WITH_OPENCV)
 
     ADD_ICL_DEFINITIONS(-DICL_OPENCV_INSTALL_PATH="${OpenCV_INSTALL_PATH}")
 
-    IF(${OpenCV_OLD_LIBS_NOT_FOUND} STREQUAL "FALSE")
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_OLD_STYLE)
+    # we need at least opencv 2.4 for the ORB-feature interface we want to use
+    IF(((NOT OPENCV_MAJOR_VERSION LESS 2) AND (NOT OPENCV_MINOR_VERSION LESS 4))
+        OR (OPENCV_MAJOR_VERSION GREATER 2))
+      MESSAGE(STATUS "OpenCV >= 2.4.x detected, adding ORB feature detector")
+      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_FEATURES_2D)
+      SET(OPENCV_FEATURES_2D_FOUND "TRUE")
     ELSE()
-      ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_NEW_STYLE)
-      # we need at least opencv 2.4 for the ORB-feature interface we want to use
-      IF(((NOT OPENCV_VERSION_MAJOR LESS 2) AND (NOT OPENCV_VERSION_MINOR LESS 4))
-          OR (OPENCV_VERSION_MAJOR GREATER 2))
-        MESSAGE(STATUS "OpenCV >= 2.4.x detected, adding ORB feature detector")
-        ADD_ICL_DEFINITIONS(-DICL_HAVE_OPENCV_FEATURES_2D)
-        SET(OPENCV_FEATURES_2D_FOUND "TRUE")
-      ELSE()
-        MESSAGE(STATUS "OpenCV < 2.4.x detected, ommitting ORB feature detector")
-      ENDIF()
+      MESSAGE(STATUS "OpenCV < 2.4.x detected, ommitting ORB feature detector")
     ENDIF()
   ENDIF()
   IF(OpenCV_DIR)

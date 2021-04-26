@@ -35,13 +35,8 @@
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Exception.h>
-#ifdef ICL_HAVE_OPENCV
-#ifdef ICL_HAVE_OPENCV_OLD_STYLE
-#include <opencv/highgui.h>
-#else
+
 #include <opencv2/highgui/highgui_c.h>
-#endif
-#endif
 
 #include <string>
 #include <ICLUtils/File.h>

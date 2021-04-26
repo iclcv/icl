@@ -50,11 +50,8 @@
 #include <fstream>
 #include <time.h>
 
-#ifdef ICL_HAVE_OPENCV_OLD_STYLE
-#include <opencv/highgui.h>
-#else
+#include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/highgui/highgui_c.h>
-#endif
 
 
 namespace icl{

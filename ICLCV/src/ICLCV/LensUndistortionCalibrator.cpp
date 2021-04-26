@@ -31,9 +31,7 @@
 #include <ICLCV/LensUndistortionCalibrator.h>
 #include <ICLCore/OpenCV.h>
 #include <ICLUtils/StringUtils.h>
-
-#include <opencv/cv.h>
-
+#include <opencv2/calib3d/calib3d_c.h>
 
 namespace icl{
 

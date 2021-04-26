@@ -30,41 +30,16 @@
 
 #pragma once
 
-#include <opencv/cxcore.h>
-
-#ifndef ICL_HAVE_OPENCV_OLD_STYLE
-
-#include <opencv2/core/core.hpp>
 #include <opencv2/core/version.hpp>
 
-#if defined(CV_VERSION_EPOCH) && (CV_VERSION_EPOCH > 2)
-#define ICL_HAVE_OPENCV_3
-#elif !defined(CV_VERSION_EPOCH) && (CV_VERSION_MAJOR > 2)
-#define ICL_HAVE_OPENCV_3
-#endif
-
-#endif
-
-// crazy stuff !!
-#ifdef ICL_HAVE_OPENCV_3
-#define ICL_OPENCV_VERSION_MAJOR CV_VERSION_MAJOR
-#define ICL_OPENCV_VERSION_MINOR CV_VERSION_MINOR
-#else
-#define ICL_OPENCV_VERSION_MAJOR CV_VERSION_EPOCH
-#define ICL_OPENCV_VERSION_MINOR CV_VERSION_MAJOR
-#endif
-
-
-#if defined(ICL_HAVE_OPENCV_3)
-  #include "opencv2/calib3d/calib3d_c.h"
-// This will be inlcuded when at least OpenCV 2.4 is detected
-#elif ICL_OPENCV_VERSION_MINOR > 3
-  #include "opencv2/imgproc/types_c.h"
-  #include "opencv2/imgproc/imgproc_c.h"
-  #include "opencv2/calib3d/calib3d.hpp"
+#if CV_MAJOR_VERSION >= 3
+#elif CV_MAJOR_VERSION == 2 && CV_MINOR_VERSION >= 4
 #else
   #error ICL requires at least OpenCV 2.4
 #endif
+
+#include <opencv2/core/core_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>

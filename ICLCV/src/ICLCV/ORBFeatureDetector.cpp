@@ -96,7 +96,7 @@ namespace icl{
           params = p;
 
           // todo is this the point in development where this was adapted?
-#ifdef ICL_HAVE_OPENCV_3
+#if CV_MAJOR_VERSION >= 3
           int edgeThreshold = 31;
           int fastThreshold = 20;
           orbp = ocv::ORB::create(p.maxFeatures, p.pyScale, p.pyLevels, edgeThreshold, p.pyLevel0, p.WTA_K,
@@ -243,7 +243,7 @@ namespace icl{
       Time tOrb = Time::now();
 
       FeatureSetClass *ret = new FeatureSetClass;
-#ifdef ICL_HAVE_OPENCV_3
+#if CV_MAJOR_VERSION >= 3
       m_data->orbp->detectAndCompute(m_data->inputBuffer.mat,
                                      ocv::noArray(),
                                      ret->impl->keyPoints,

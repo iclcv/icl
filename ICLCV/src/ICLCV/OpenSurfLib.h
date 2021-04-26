@@ -47,8 +47,6 @@
 
 #include <vector>
 #include <ICLCore/OpenCV.h>
-//#include <opencv/cv.h>
-
 #include <ICLCV/SurfFeature.h>
 
 namespace icl{

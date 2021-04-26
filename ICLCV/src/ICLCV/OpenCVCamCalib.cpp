@@ -28,11 +28,7 @@
 **                                                                 **
 ********************************************************************/
 #include <ICLCV/OpenCVCamCalib.h>
-
-#ifdef ICL_HAVE_OPENCV
-#include <opencv/cv.h>
-#endif
-
+#include <opencv2/calib3d/calib3d_c.h>
 
 using namespace icl::utils;
 using namespace icl::math;
