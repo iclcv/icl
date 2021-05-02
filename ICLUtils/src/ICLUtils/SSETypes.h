@@ -965,10 +965,6 @@ namespace icl{
           v0 = _mm_packus_epi16(_mm_packs_epi32(v.v0, v.v1), _mm_packs_epi32(v.v2, v.v3));
         }
 
-        inline operator Icl128i () const {
-          return *this;
-        }
-
         inline icl128i8u& operator=(const icl128i8u &v) {
           v0 = v.v0;
           return *this;
@@ -1049,10 +1045,6 @@ namespace icl{
 
         inline icl128i16s(const Icl256i &v) {
           v0 = _mm_packs_epi32(v.v0, v.v1);
-        }
-
-        inline operator Icl128i () const {
-          return *this;
         }
 
         inline icl128i16s& operator=(const icl128i16s &v) {
@@ -1142,10 +1134,6 @@ namespace icl{
           //__m128 vMax = _mm_set1_ps(2147483520.f);
           //v0 = _mm_cvtps_epi32(_mm_min_ps(_mm_max_ps(v.v0, vMin), vMax));
           v0 = _mm_cvtps_epi32(v.v0);
-        }
-
-        inline operator Icl128i () const {
-          return *this;
         }
 
 #ifndef __clang__
@@ -1238,10 +1226,6 @@ namespace icl{
         inline icl256i16s(const Icl512i &v) {
           v0 = _mm_packs_epi32(v.v0, v.v1);
           v1 = _mm_packs_epi32(v.v2, v.v3);
-        }
-
-        inline operator Icl256i () const {
-          return *this;
         }
 
         inline icl256i16s& operator=(const icl256i16s &v) {
