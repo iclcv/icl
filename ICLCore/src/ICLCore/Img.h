@@ -296,16 +296,6 @@ namespace icl {
       /** @{ @name operators */
       /* {{{ open */
 
-      /// implicit cast to it's own reference (?)
-      operator Img<Type>&(){
-        return *this;
-      }
-
-      /// implicit cast to it's own reference (?) (const)
-      operator const Img<Type>&() const {
-        return *this;
-      }
-
       /// Assign operator (flat copy of channels) WARNING: Violates const concept
       /** Both images will share their channel data.
           Use deepCopy() to obtain a copy of an image which is not attached to the
@@ -1937,4 +1927,3 @@ namespace icl {
 } //namespace icl
 
 #undef CHECK_VALUES
-

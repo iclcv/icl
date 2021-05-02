@@ -30,7 +30,7 @@ environment:
       # We need to override the internal OpenCV_RUNTIME since vc17 isnt supported officially yet
       OPENCV: "-DBUILD_WITH_OPENCV=ON -DOPENCV_ROOT=C:\\tools\\opencv\\build -DOpenCV_RUNTIME=vc14"
       CMAKE_GENERATOR: Visual Studio 15 Win64
-      QT_ROOT: C:\Qt\5.12.2\msvc2017_64
+      QT_ROOT: C:\Qt\5.12.6\msvc2017_64
 
 matrix:
   fast_finish: true

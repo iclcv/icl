@@ -309,8 +309,6 @@ namespace icl{
 
       /// checks wheter the implemnetation is not null
       operator bool() const { return impl; }
-
-      operator Function<R,A,B,C> () const { return (*(const Function<R,A,B,C>*)(this)); }
     };
 
     /** \cond */
@@ -325,8 +323,6 @@ namespace icl{
       icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl;
       R operator()(A a, B b) const { return (*impl)(a,b); }
       operator bool() const { return impl; }
-
-      operator Function<R,A,B> () const { return (*(const Function<R,A,B>*)(this)); }
     };
 
     template<class R, class A>
@@ -340,8 +336,6 @@ namespace icl{
       icl::utils::SmartPtr<FunctionImpl<R,A> >impl;
 	  R operator()(A a) const { return (*impl)(a); }
       operator bool() const { return impl; }
-
-      operator Function<R,A> () const { return (*(const Function<R,A>*)(this)); }
     };
     template<class R>
     struct Function<R, NO_ARG>{
@@ -356,8 +350,6 @@ namespace icl{
 	  R operator()() const { return (*impl)(); }
 
       operator bool() const { return impl; }
-
-      operator Function<R> () const { return (*(const Function<R>*)(this)); }
     };
     /** \endcond */
 
@@ -628,4 +620,3 @@ namespace icl{
     }
   } // namespace utils
 }
-
