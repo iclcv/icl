@@ -84,7 +84,8 @@ IF(SPHINX_FOUND AND DOXYGEN_FOUND)
                      COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/doc/pages/.nojekyll
                      COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/doc/icl-api/html ${CMAKE_BINARY_DIR}/doc/pages/icl-api)
 ELSE()
-  ADD_CUSTOM_TARGET(doc echo "manual cannot be build due to missing dependencies")
+  MESSAGE(WARNING "docs cannot be build due to missing dependencies")
+  ADD_CUSTOM_TARGET(doc echo "docs cannot be build due to missing dependencies")
 ENDIF()
 
 

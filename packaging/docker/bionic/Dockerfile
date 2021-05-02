@@ -8,7 +8,8 @@ RUN apt-get upgrade -y
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git cmake python3-pip dirmngr \
                        devscripts equivs apt-file debhelper sudo wget \
-                       libjpeg-dev libpng-dev clang ca-certificates tzdata doxygen texlive-latex-base ghostscript
+                       libjpeg-dev libpng-dev clang ca-certificates tzdata \
+                       doxygen python3-sphinx python3-sphinx-rtd-theme python3-pyparsing texlive-latex-base ghostscript
 
 # TODO: Uncomment when dev-ipp is working
 # ADD https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB /root/

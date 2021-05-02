@@ -23,7 +23,7 @@ include: &SIMPLE
       packages:
         - docker-ce
   env:
-    - target=cosmic
+    - target=bionic
     - variant=pages
     - ICL_OPTIONS="\
         -DBUILD_TESTS=ON"
