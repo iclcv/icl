@@ -60,14 +60,9 @@ namespace icl{
         if(File(filename).exists()){
           throw ICLException("file already exists");
         }
-        av_register_all();
-        if(fourcc.length()) fmt = av_guess_format(fourcc.c_str(), filename.c_str(), 0);
-        else fmt = av_guess_format(0, filename.c_str(), 0);
-        if(!fmt) throw ICLException("Unkown format");
-        oc = avformat_alloc_context();
+        avformat_alloc_output_context2(&oc, nullptr, fourcc.empty() ? nullptr : fourcc.c_str(), filename.c_str());
         if (!oc) throw ICLException("Memory error");
-        oc->oformat = fmt;
-        snprintf(oc->filename, sizeof(oc->filename), "%s", filename.c_str());
+        AVOutputFormat *fmt = oc->oformat;
         add_video_stream(&video_st, oc, fmt->video_codec);
         open_video(oc, &video_st);
         av_dump_format(oc, 0, filename.c_str(), 1);
@@ -76,17 +71,19 @@ namespace icl{
                 throw ICLException("Could not open file");
             }
         }
-        avformat_write_header(oc, 0);
+        if (avformat_write_header(oc, nullptr) < 0)
+          throw ICLException("Error writing video stream header");
       }
 
       ~Data(){
         av_write_trailer(oc);
         close_stream(oc, &video_st);
-        if (!(fmt->flags & AVFMT_NOFILE))avio_close(oc->pb);
+        if (!(oc->oformat->flags & AVFMT_NOFILE))avio_close(oc->pb);
         avformat_free_context(oc);
       }
       struct OutputStream {
         AVStream *st;
+        AVCodecContext *enc;
         int64_t next_pts;
         AVFrame *frame;
         AVFrame *tmp_frame;
@@ -97,7 +94,6 @@ namespace icl{
 
       OutputStream video_st;
       std::string filename;
-      AVOutputFormat *fmt;
       AVFormatContext *oc;
       double fps;
       utils::Size frame_size;
@@ -145,9 +141,7 @@ namespace icl{
 
     void LibAVVideoWriter::Data::open_video(AVFormatContext *oc, OutputStream *ost)
     {
-        AVCodecContext *c;
-
-        c = ost->st->codec;
+        AVCodecContext *c = ost->enc;
 
         /* open the codec */
         if (avcodec_open2(c, 0, 0) < 0) throw ICLException("could not open codec");
@@ -173,10 +167,12 @@ namespace icl{
         codec = avcodec_find_encoder(codec_id);
         if (!codec) throw ICLException("codec not found");
 
-        ost->st = avformat_new_stream(oc, codec);
+        ost->st = avformat_new_stream(oc, nullptr);
         if (!ost->st) throw ICLException("could not allocate stream");
 
-        c = ost->st->codec;
+        c = avcodec_alloc_context3(codec);
+        if (!c) throw ICLException("could not allocate encoding context");
+        ost->enc = c;
 
         /* Put sample parameters. */
         //c->bit_rate = 400000;
@@ -216,7 +212,7 @@ namespace icl{
     {
 
 
-        avcodec_close(ost->st->codec);
+        avcodec_close(ost->enc);
 
 #if LIBAVCODEC_VERSION_MAJOR > 54
 
@@ -267,7 +263,7 @@ namespace icl{
 
     AVFrame *LibAVVideoWriter::Data::get_video_frame(const ImgBase *src, OutputStream *ost)
     {
-        AVCodecContext *c = ost->st->codec;
+        AVCodecContext *c = ost->enc;
         int sw = src->getSize().width;
         int sh = src->getSize().height;
         //check if format or size of the input and output do not match
@@ -302,7 +298,7 @@ namespace icl{
         AVFrame *frame;
         int got_packet = 0;
 
-        c = ost->st->codec;
+        c = ost->enc;
 
         frame = get_video_frame(src,ost);
 
