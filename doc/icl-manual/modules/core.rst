@@ -458,8 +458,7 @@ OpenCV Image Conversion Functions
 """""""""""""""""""""""""""""""""
 
 The ICLCore module also provides a set of compatibility functions for
-converting ICL images into OpenCVs **IplImage** and **CvMat** types
-and vice versa.
+converting ICL images into OpenCV's **cv::Mat** type and vice versa.
 
 * :icl:`core::ipl_to_img` 
 * :icl:`core::img_to_ipl`

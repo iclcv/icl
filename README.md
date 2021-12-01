@@ -206,7 +206,7 @@ The well known Qt Library is used for ICL’s rapid GUI creation toolkit. Actual
 
 #### OpenCV (**recommended**)
 
-We use OpenCV mainly in order to provide a compatibility interface that converts OpenCV’s common image data types IplImage and CvMat into ICL’s images types and vice versa.
+We use OpenCV mainly in order to provide a compatibility interface that converts OpenCV’s common image data type cv::Mat into ICL’s images types and vice versa.
 
 * flag: `-DBUILD_WITH_OPENCV=TRUE`
 * dependencies: `libopencv-dev`
