@@ -306,11 +306,7 @@ namespace icl{
       }
       else if(p.name == "fullscreen"){
         if(isFullScreen()){
-#ifdef ICL_SYSTEM_WINDOWS
-          setWindowState((Qt::WindowState)((icl32s)windowState() & !(icl32s)Qt::WindowFullScreen));
-#else
-          setWindowState(windowState() & !Qt::WindowFullScreen);
-#endif
+          setWindowState(windowState() & ~Qt::WindowFullScreen);
           setParent(data->parentBeforeFullScreen);
           if(data->parentBeforeFullScreen && data->parentBeforeFullScreen->layout()){
             data->parentBeforeFullScreen->layout()->addWidget(this);

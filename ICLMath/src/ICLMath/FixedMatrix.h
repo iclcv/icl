@@ -61,9 +61,7 @@ namespace icl{
           std::copy(srcBegin,srcEnd,dstBegin);
         }else{
           while(srcBegin != srcEnd){
-            //          *dstBegin++ = *srcBegin++;
-            *dstBegin =
-            *srcBegin;
+            *dstBegin = *srcBegin;
 
             dstBegin++;
             srcBegin++;
@@ -1140,4 +1138,3 @@ namespace icl{
 
   } // namespace math
 }
-

@@ -129,7 +129,7 @@ namespace icl{
             core::DataSegment<float,3> xyz;
             if(pcObj.supports(PointCloudObjectBase::XYZH)) {
                 xyzh = pcObj.selectXYZH();
-            } else if(PointCloudObjectBase::XYZ) {
+            } else if(pcObj.supports(PointCloudObjectBase::XYZ)) {
                 xyz = pcObj.selectXYZ();
             } else {
                 DEBUG_LOG("Filter error: Point cloud has no XYZ or XYZH data.");
@@ -521,7 +521,7 @@ namespace icl{
                     }
                 }
             } else if(pcObj.supports(PointCloudObjectBase::BGRA32s)) {
-                icl32s actionColor = ((unsigned char)b) || (((unsigned char)g) << 8) || (((unsigned char)r) << 16) || (((unsigned char)a) << 24);
+                icl32s actionColor = ((unsigned char)b) | (((unsigned char)g) << 8) | (((unsigned char)r) << 16) | (((unsigned char)a) << 24);
                 core::DataSegment<icl32s,1> colorSegment = pcObj.selectBGRA32s();
                 for(int i = 0; i < pcObj.getDim(); ++i) {
                     if(actionMap[i]) {

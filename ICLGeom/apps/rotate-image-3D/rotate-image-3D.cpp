@@ -57,7 +57,7 @@ struct ImgObj : public SceneObject{
 } *obj = 0;
 
 void mouse(const MouseEvent &e){
-  if(!&e || e.isLeft() || e.isRight() || e.isMiddle() || e.isWheelEvent()){
+  if(e.isLeft() || e.isRight() || e.isMiddle() || e.isWheelEvent()){
     if(pa("-o")){
       output.send(&scene.render(0));
     }

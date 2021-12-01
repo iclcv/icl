@@ -85,8 +85,7 @@ namespace icl {
 
 			bool checkSupportedImageFormat(cl_channel_order order, cl_channel_type type) {
 				  if (supported_channel_orders.count(order)) {
-					  std::set<cl_channel_type> &types = supported_channel_orders[order];
-					  return (bool)types.count(type);
+					  return supported_channel_orders[order].count(type);
 				  }
 				  return false;
 			}
