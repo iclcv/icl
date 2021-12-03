@@ -33,7 +33,7 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Color.h>
 
-#include <opencv2/calib3d/calib3d_c.h>
+#include <opencv2/calib3d.hpp>
 
 namespace icl{
 
@@ -44,7 +44,7 @@ namespace icl{
 
     struct CheckerboardDetector::Data{
       CheckerboardDetector::Checkerboard cb;
-      IplImage *ipl;
+      ::cv::Mat *mat;
       Img8u grayBuf;
       Img8u buf8u;
       ImgBase *buf;
@@ -79,7 +79,7 @@ namespace icl{
     void CheckerboardDetector::init(const Size &size){
       if(!m_data){
         m_data = new Data;
-        m_data->ipl = 0;
+        m_data->mat = 0;
       }
       m_data->cb.size = size;
     }
@@ -117,14 +117,13 @@ namespace icl{
 
         useImage = &m_data->grayBuf;
       }
-      img_to_ipl(useImage, &m_data->ipl);
-      std::vector<CvPoint2D32f> corners(m_data->cb.size.getDim());
 
-      CvSize s = {m_data->cb.size.width, m_data->cb.size.height };
+      img_to_mat(useImage, m_data->mat);
+      std::vector<::cv::Point2f> corners;
 
-      int n = corners.size();
-      m_data->cb.found = cvFindChessboardCorners(m_data->ipl, s, corners.data(), &n,
-                                                  CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+      ::cv::Size s = {m_data->cb.size.width, m_data->cb.size.height };
+      m_data->cb.found = ::cv::findChessboardCorners(*m_data->mat, s, corners,
+                                                     ::cv::CALIB_CB_ADAPTIVE_THRESH | ::cv::CALIB_CB_FILTER_QUADS);
 
       bool optSubPix = getPropertyValue("subpixel opt.enabled");
       int radius = getPropertyValue("subpixel opt.radius");
@@ -135,9 +134,9 @@ namespace icl{
       float minErr = getPropertyValue("subpixel opt.min error");
 
       if(m_data->cb.found && optSubPix){
-        cvFindCornerSubPix(m_data->ipl, corners.data(), corners.size(), cvSize(radius,radius),
-                           cvSize(innerR, innerR),
-                           cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, maxIter, minErr));
+        ::cv::cornerSubPix(*m_data->mat, corners, ::cv::Size(radius,radius),
+                           ::cv::Size(innerR, innerR),
+                           ::cv::TermCriteria(::cv::TermCriteria::COUNT | ::cv::TermCriteria::EPS, maxIter, minErr));
       }
 
       if(m_data->cb.found){

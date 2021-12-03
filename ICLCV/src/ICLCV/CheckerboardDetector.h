@@ -74,7 +74,7 @@ namespace icl{
 
       /// Internally used and returned result structure
       struct Checkerboard{
-        bool found;        //!< waes it found (i.e. all of the corners)
+        bool found;        //!< was it found (i.e. all of the corners)
         utils::Size size;  //!< used size (see init)
         std::vector<utils::Point32f> corners; //!< found corners
         ICLCV_API utils::VisualizationDescription visualize() const;

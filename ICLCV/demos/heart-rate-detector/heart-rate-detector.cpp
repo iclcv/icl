@@ -60,7 +60,7 @@ Rect detectFace(Img8u *image)
 {
   ::cv::Mat *frame = img_to_mat(image);
   cv::Mat frame_gray(*frame);
-  cv::cvtColor( frame_gray, frame_gray, CV_RGB2GRAY );
+  cv::cvtColor( frame_gray, frame_gray, cv::COLOR_RGB2GRAY );
   cv::equalizeHist( frame_gray, frame_gray );
   std::vector<cv::Rect> faces;
   faceCascade.detectMultiScale(frame_gray, faces);
