@@ -41,6 +41,7 @@
 #include <map>
 
 using namespace std;
+
 namespace icl {
 	namespace utils {
 
@@ -99,7 +100,7 @@ namespace icl {
 
 	// /////////////////////////////////////////////////////////////////////////////////////////////
 
-	CLProgram::CLProgram(const string deviceType, const string &sourceCode) {
+	CLProgram::CLProgram(const string &deviceType, const string &sourceCode) {
 		impl = new Impl();
 		try {
 			impl->initDevice(deviceType);
@@ -110,7 +111,7 @@ namespace icl {
 		}
 	}
 
-	CLProgram::CLProgram(const string deviceType, ifstream &fileStream) {
+	CLProgram::CLProgram(const string &deviceType, ifstream &fileStream) {
 		impl = new Impl();
 		try {
 			impl->initDevice(deviceType);

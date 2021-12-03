@@ -40,8 +40,8 @@ inline bool is_equal(const float *a, const float *b, unsigned int n){
   }
   return true;
 }
-inline vector<float> vec1(float f) {
-  return vector<float>(1,f);
+inline std::vector<float> vec1(float f) {
+  return std::vector<float>(1,f);
 }
 
 void init(){

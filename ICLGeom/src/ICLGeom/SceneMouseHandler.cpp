@@ -37,6 +37,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Scene.h>
 
+using namespace icl::utils;
 using namespace icl::qt;
 
 namespace icl{
@@ -405,4 +406,3 @@ namespace icl{
 #endif
   } // namespace geom
 }
-

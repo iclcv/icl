@@ -40,6 +40,13 @@
 #include <ICLCore/PseudoColorConverter.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::filter;
+using namespace icl::geom;
+using namespace icl::io;
+using namespace icl::qt;
+
 HSplit gui;
 GenericGrabber grabDepth, grabColor;
 int KINECT_CAM=0,VIEW_CAM=1;
@@ -88,7 +95,7 @@ void init(){
   Size size = pa("-size");
 
   if(pa("-d")){//get depth cam
-    string depthcamname = pa("-d").as<std::string>();
+    std::string depthcamname = pa("-d").as<std::string>();
     depthCam = Camera(depthcamname);
   }else{//default depth cam
     depthCam = Camera();
@@ -97,7 +104,7 @@ void init(){
   depthCam.setName("Kinect Depth Camera");
 
   if(pa("-c")){//get color cam
-    string colorcamname = pa("-c").as<std::string>();
+    std::string colorcamname = pa("-c").as<std::string>();
     colorCam = Camera(colorcamname);
   }
   colorCam.setName("Kinect Color Camera");

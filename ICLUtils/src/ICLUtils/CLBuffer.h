@@ -55,9 +55,9 @@ namespace icl {
 
       /// private constructor (buffer can only be created by CLProgram instances)
       CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue,
-               const string &accessMode, size_t size, const void *src=NULL);
+               const std::string &accessMode, size_t size, const void *src=NULL);
 
-	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const string &accessMode,
+	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const std::string &accessMode,
 			   size_t length, size_t byte_depth, const void *src=NULL);
 
       /// provides access to the underlying cl-buffer

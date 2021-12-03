@@ -41,6 +41,8 @@
 #include <set>
 #include <map>
 
+using namespace std;
+
 namespace icl {
     namespace utils {
 
@@ -49,7 +51,7 @@ namespace icl {
             size_t height;
             cl::Image2D image2D;
 			cl::CommandQueue cmdQueue;
-			std::map< uint32_t,set<uint32_t> > supported_channel_orders;
+			std::map< uint32_t, set<uint32_t> > supported_channel_orders;
 
             static cl_mem_flags stringToMemFlags(const string &accessMode) {
                 switch(accessMode.length()) {

@@ -43,10 +43,17 @@
 
 #include <fstream>
 
+using namespace icl;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::filter;
+using namespace icl::geom;
+using namespace icl::cv;
+using namespace icl::qt;
+
 HSplit gui;
 Scene scene;
-
-
 
 PointCloudObject obj;
 Mutex grabberMutex;
@@ -275,4 +282,3 @@ int main(int n, char **ppc){
                 "-tune -visualize-cameras|-vc(...) "
                 "-show-world-frame|-cs",init,run).exec();
 }
-

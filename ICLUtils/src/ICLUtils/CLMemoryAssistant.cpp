@@ -29,6 +29,7 @@
  ********************************************************************/
 
 #include <ICLUtils/CLMemoryAssistant.h>
+using namespace std;
 
 #ifdef ICL_HAVE_OPENCL
 

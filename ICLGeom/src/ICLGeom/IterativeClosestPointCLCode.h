@@ -33,7 +33,6 @@
 #include <ICLMath/HomogeneousMath.h>
 namespace icl{
   namespace geom{
-    using namespace math;
     void subVec4(const char * a, const char *b, char *c) {
       struct Vec4{
         float x;
@@ -692,4 +691,3 @@ namespace icl{
           );
   } // namespace geom
 }
-

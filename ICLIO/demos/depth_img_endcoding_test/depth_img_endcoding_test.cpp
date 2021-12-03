@@ -1,9 +1,12 @@
-
-
 #include <ICLQt/Common.h>
 #include <ICLIO/ImageCompressor.h>
 #include <ICLIO/Kinect11BitCompressor.h>
 #include <ICLUtils/StackTimer.h>
+
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::io;
+using namespace icl::qt;
 
 GUI gui;
 GenericGrabber grabber;

@@ -42,6 +42,8 @@
 #include <set>
 #include <map>
 
+using namespace std;
+
 namespace icl {
 	namespace utils {
 
@@ -53,7 +55,7 @@ namespace icl {
 			cl::Context context;
 			cl::Device device;
 			cl::CommandQueue cmdQueue;
-			std::map< cl_channel_order,set<cl_channel_type> > supported_channel_orders;
+			std::map< cl_channel_order, set<cl_channel_type> > supported_channel_orders;
 
 			Impl() : m_device_type_str("") {}
 

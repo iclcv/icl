@@ -90,7 +90,7 @@ void init(){
       << Show();
 
   if(pa("-cam")){
-    string camname = pa("-cam").as<std::string>();
+    std::string camname = pa("-cam").as<std::string>();
     cam=Camera(camname);
     cam.setName("Depth Camera");
   }
@@ -165,7 +165,7 @@ void run(){
   }
   end = Time::now();
   std::cout<<"Size: "<<size<<" ,Runtime: ";
-  std::cout <<(end-start).toMicroSeconds() <<" ms" << endl;
+  std::cout <<(end-start).toMicroSeconds() <<" ms" << std::endl;
 
   WARNING_LOG("Hello");
   gui["depth"] = depthImage;

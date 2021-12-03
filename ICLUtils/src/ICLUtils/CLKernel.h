@@ -74,7 +74,7 @@ namespace icl {
       Impl *impl;  //!< internally used data
 
       /// private constructor (CLKernel instances can only be created by CLPrograms)
-      CLKernel(const string &id, cl::Program & program,
+      CLKernel(const std::string &id, cl::Program & program,
                cl::CommandQueue& cmdQueue);
 
       public:

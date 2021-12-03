@@ -109,7 +109,7 @@ void run(){
   Time t = Time::now();
   conv.apply(roiedImage,&dstImage);
   applyTime = (Time::now()-t).toStringFormated("%Ss %#ms %-us");
-  ostringstream sstr; sstr << *dstImage;
+  std::ostringstream sstr; sstr << *dstImage;
 
   src = roiedImage;
   src->color(255,0,0,255);

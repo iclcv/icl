@@ -37,8 +37,6 @@
 #include <string.h>
 #include <complex>
 
-using namespace icl::utils;
-
 namespace icl{
   namespace math{
 

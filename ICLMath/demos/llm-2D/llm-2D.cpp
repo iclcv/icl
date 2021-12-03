@@ -59,7 +59,7 @@ void initI(){
 }
 static void initLLM(){
   llm = LLM(2,3);
-  llm.init(*nKernels, vector<Range<icl32f> >(2,Range<icl32f>(MINX,MAXX)),std::vector<float>(2,*initialSigma));
+  llm.init(*nKernels, std::vector<Range<icl32f> >(2,Range<icl32f>(MINX,MAXX)),std::vector<float>(2,*initialSigma));
   llm.setSoftMaxEnabled(*softMaxEnabled);
 }
 static void trainLLM(){

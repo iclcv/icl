@@ -46,6 +46,7 @@
 
 
 using namespace icl::core;
+using namespace icl::utils;
 using namespace icl::io;
 using namespace icl::qt;
 
@@ -88,8 +89,9 @@ void init(){
 
   grabber.init(pa("-i"));
   detector = new icl::cv::HeartrateDetector(pa("-maxfps"), pa("-historydepth"));
-  std::string pathToCascades = pa_def("-c",string(""));
-  if(pathToCascades.length() == 0)pathToCascades = string(ICL_OPENCV_INSTALL_PATH)+string("/share/opencv/lbpcascades/lbpcascade_frontalface.xml");
+  std::string pathToCascades = pa_def("-c", std::string(""));
+  if(pathToCascades.length() == 0)
+    pathToCascades = std::string(ICL_OPENCV_INSTALL_PATH) + "/share/opencv/lbpcascades/lbpcascade_frontalface.xml";
   if(!faceCascade.load(pathToCascades)){
     ERROR_LOG("Loading face cascade: " << pathToCascades);
     exit(1);

@@ -75,12 +75,12 @@ int main (int n, char **ppc){
       image = w.grab();
       if(pa("-delete")){
         if(imageName.length()){
-          int errorCode = system((string(ICL_SYSTEMCALL_RM) + imageName).c_str());
+          int errorCode = system((std::string(ICL_SYSTEMCALL_RM) + imageName).c_str());
           if ( errorCode != 0 )
             WARNING_LOG( "Error code of system call unequal 0!" );
         }
       }
-    }catch(ICLException e){
+    }catch(const ICLException& e){
       static ImgQ o = ones(320,240,1)*100;
       fontsize(15);
       text(o, 90,90,"image not found!");

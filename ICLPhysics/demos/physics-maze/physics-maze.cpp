@@ -29,7 +29,7 @@ void init(){
 }
 
 double fun(double val) {
-  return max(min(1.,val*5),-1.);
+  return std::max(std::min(1.,val*5),-1.);
 }
 
 utils::Time start = utils::Time::now();

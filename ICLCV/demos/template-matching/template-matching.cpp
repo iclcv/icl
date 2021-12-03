@@ -33,6 +33,10 @@
 #include <ICLCV/RegionDetector.h>
 #include <ICLCV/ViewBasedTemplateMatcher.h>
 
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::qt;
+
 Size imageSize(640,480);
 
 HBox gui;
@@ -202,4 +206,3 @@ void run(){
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
-

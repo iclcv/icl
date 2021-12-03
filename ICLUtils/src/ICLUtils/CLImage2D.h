@@ -60,7 +60,7 @@ namespace icl {
 
             /// private constructor (image can only be created by CLProgram instances)
 			CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
-					const string &accessMode, const size_t width, const size_t height,
+					const std::string &accessMode, const size_t width, const size_t height,
 					int depth, int num_channel, const void *src=NULL, std::map< uint32_t, std::set<uint32_t> > const
 					  &supported_formats = std::map< uint32_t, std::set<uint32_t> >());
 

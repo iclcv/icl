@@ -52,7 +52,7 @@ namespace icl{
 
     class ICLQt_API ICLVideoSurface : public QAbstractVideoSurface
     {
-      Mutex lock;
+      utils::Mutex lock;
       bool newImage;
       core::Img8u img0;
       core::Img8u img1;
@@ -80,7 +80,7 @@ namespace icl{
 
       bool present(const QVideoFrame &frame);
 
-      const Img8u* getImage();
+      const core::Img8u* getImage();
     private:
       void init();
     };

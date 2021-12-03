@@ -68,7 +68,7 @@ void init(){
 
 
 
-  llm.init(10, vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
+  llm.init(10, std::vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
 
 }
 void run(){
@@ -95,7 +95,7 @@ void run(){
   }
   if(reset.wasTriggered()){
     llm = LLM(1,1);
-    llm.init(gui["kernel-count"], vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
+    llm.init(gui["kernel-count"], std::vector<Range<icl32f> >(1,Range<icl32f>(MINX,MAXX)),std::vector<float>(1,5));
   }
 
   draw->rel();

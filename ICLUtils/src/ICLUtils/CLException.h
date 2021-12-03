@@ -36,15 +36,14 @@
 #include <sstream>
 #include <iostream>
 
-using namespace std;
 namespace icl {
 	namespace utils {
 	    /// Base class for an OpenCL Exception
     class CLException: public ICLException {
 		public:
-			static string getMessage(const int errorCode, const string message){
+			static std::string getMessage(const int errorCode, const std::string& message){
 				std::stringstream sstr;
-				sstr << message << " clErrorCode " << errorCode << endl;
+				sstr << message << " clErrorCode " << errorCode << "\n";
 				return sstr.str();
 			}
 			CLException(const std::string &msg) noexcept : ICLException(msg) {}
@@ -75,4 +74,3 @@ namespace icl {
 
 }
 #endif
-

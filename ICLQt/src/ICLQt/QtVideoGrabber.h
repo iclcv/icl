@@ -41,7 +41,7 @@
 
 namespace icl{
   namespace qt{
-    class ICLQt_API QtVideoGrabber: public Grabber{
+    class ICLQt_API QtVideoGrabber: public icl::io::Grabber{
       public:
 
         /// Create video grabber with given video-file name

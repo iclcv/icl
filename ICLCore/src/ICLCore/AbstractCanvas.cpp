@@ -31,10 +31,10 @@
 #include <ICLCore/AbstractCanvas.h>
 #include <ICLUtils/StringUtils.h>
 
+using namespace icl::utils;
+
 namespace icl{
   namespace core{
-
-
 
     void AbstractCanvas::point(float x, float y){
       if(state.pointsize == 1){

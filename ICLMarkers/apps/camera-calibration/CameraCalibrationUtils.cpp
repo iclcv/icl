@@ -312,7 +312,7 @@ namespace icl{
         SHOW(e.what());
       }catch(int){}
 
-      int systemResult = system(string(ICL_SYSTEMCALL_RM).append(tmpFilename.c_str()).c_str());
+      int systemResult = system((std::string(ICL_SYSTEMCALL_RM) + tmpFilename).c_str());
       (void)systemResult;
 
       enum Mode{

@@ -33,6 +33,9 @@
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
 
+using namespace icl::utils;
+using namespace icl::io;
+
 namespace icl{
   namespace qt{
     QtVideoGrabber::QtVideoGrabber(const std::string &filename) {

@@ -1,5 +1,3 @@
-
-
 #include <ICLQt/Common.h>
 
 #include <ICLIO/GenericGrabber.h>
@@ -12,7 +10,11 @@
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLGeom/Scene.h>
 
-// /////////////////////////////////////////////////////////////////////////////////////////////////
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::geom;
+using namespace icl::io;
+using namespace icl::qt;
 
 // GUI
 GUI gui;

@@ -40,12 +40,7 @@
 
 namespace icl{
 
-  using namespace math;
-  using namespace utils;
-
   namespace core{
-
-
 
     class ICLCore_API AbstractCanvas : public utils::Uncopyable{
       public:
@@ -62,7 +57,7 @@ namespace icl{
           return ((x >= minx) && (x<= maxx)
                   && (y >= miny) && (y <= maxy));
         }
-        bool in(const Point32f &p) const{
+        bool in(const utils::Point32f &p) const{
           return in(p.x,p.y);
         }
       };
@@ -90,13 +85,13 @@ namespace icl{
       std::vector<State> stack;
 
       inline utils::Point32f transform(float x, float y) const{
-        return Point32f(state.T(0,0)*x + state.T(1,0)*y + state.T(2,0),
-                        state.T(0,1)*x + state.T(1,1)*y + state.T(2,1));
+        return utils::Point32f(state.T(0,0)*x + state.T(1,0)*y + state.T(2,0),
+                               state.T(0,1)*x + state.T(1,1)*y + state.T(2,1));
       }
       inline bool clip(float x, float y) const{
         return state.clip.in(x,y);
       }
-      inline bool clip(const Point32f &p) const{
+      inline bool clip(const utils::Point32f &p) const{
         return state.clip.in(p);
       }
 
@@ -133,10 +128,10 @@ namespace icl{
       }
 
 
-      virtual Rect32f getClipRect(){
-        return Rect32f(state.clip.minx, state.clip.miny,
-                       state.clip.maxx-state.clip.minx,
-                       state.clip.maxy-state.clip.miny);
+      virtual utils::Rect32f getClipRect(){
+        return utils::Rect32f(state.clip.minx, state.clip.miny,
+                              state.clip.maxx-state.clip.minx,
+                              state.clip.maxy-state.clip.miny);
       }
 
       virtual void push(){

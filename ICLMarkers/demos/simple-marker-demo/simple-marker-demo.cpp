@@ -52,7 +52,7 @@ void init() {
   grabber.init(pa("-input"));
 }
 
-void drawRegion(ICLDrawWidget *w, const vector<Point>& boundary) {
+void drawRegion(ICLDrawWidget *w, const std::vector<Point>& boundary) {
   w->linestrip(boundary, true);
 }
 
@@ -61,7 +61,7 @@ void drawCorners(ICLDrawWidget *w,
   w->points(corners);
   if (drawIndices) {
     for (unsigned i = 0; i < corners.size(); i++) {
-      stringstream ss; //create a stringstream
+      std::stringstream ss; //create a stringstream
       ss << i; //add number to the stream
       w->text(ss.str(), corners[i].x, corners[i].y);
     }
@@ -71,7 +71,7 @@ void drawCorners(ICLDrawWidget *w,
 
 void drawQuad(ICLDrawWidget *w, const TiltedQuad &quad) {
   w->color(0, 0, 255);
-  vector<utils::Point32f> points(quad.data(), quad.data() + 4);
+  std::vector<utils::Point32f> points(quad.data(), quad.data() + 4);
   w->linestrip(points, true);
 }
 
@@ -120,7 +120,7 @@ void run() {
   wHeurstics->color(0, 0, 0);
   wHeurstics->pointsize(3.0);
   for (unsigned int i = 0; i < regions.size(); ++i) {
-    const vector<Point> &boundary = regions[i].getBoundary();
+    const std::vector<Point> &boundary = regions[i].getBoundary();
     drawRegion(wRegions, boundary);
     drawCorners(wHeurstics, quadd.getAllCorners()[i], false);
   }

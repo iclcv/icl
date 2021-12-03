@@ -33,7 +33,6 @@
 #include <ICLPhysics/RigidBoxObject.h>
 
 namespace icl{
-  using namespace physics;
 
  struct DefaultGroundObject : public RigidBoxObject{
     DefaultGroundObject():RigidBoxObject(0,0,-100,1000,1000,70,0){
@@ -51,7 +50,6 @@ namespace icl{
       //((QuadPrimitive*)getPrimitives()[12])->tesselationResolution = 50;
     }
   };
-
 
 }
 

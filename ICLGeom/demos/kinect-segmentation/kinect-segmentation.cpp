@@ -187,7 +187,7 @@ void init(){
       << Show();
 
   if(pa("-d")){//get depth cam config
-    string depthcamname = pa("-d").as<std::string>();
+    std::string depthcamname = pa("-d").as<std::string>();
     depthCam = Camera(depthcamname);
   }
   else{//default depth cam config
@@ -197,7 +197,7 @@ void init(){
   depthCam.setName("Kinect Depth Camera");
 
   if(pa("-c")){//get color cam config
-    string colorcamname = pa("-c").as<std::string>();
+    std::string colorcamname = pa("-c").as<std::string>();
     colorCam = Camera(colorcamname);
   }
   colorCam.setName("Kinect Color Camera");

@@ -84,11 +84,8 @@ void update(){
   startT = Time::now();
   smoothing->apply(src, &dst);
   endT = Time::now();
-  if(smoothing->isCLActive()){
-    std::cout <<"OpenCL :"<< (endT-startT).toMilliSeconds() <<" ms" << endl;
-  }else{
-    std::cout << "CPU :" << (endT - startT).toMilliSeconds() << " ms" << endl;
-  }
+  std::cout << (smoothing->isCLActive() ? "OpenCL: " : "CPU: ");
+  std::cout << (endT-startT).toMilliSeconds() << " ms" << std::endl;
   imageOut = dst;
   image = src;
 }

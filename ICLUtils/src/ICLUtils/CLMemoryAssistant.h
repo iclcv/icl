@@ -76,7 +76,7 @@ namespace icl {
 			 *
 			 * Please see CLDeviceContext::createBuffer() for more details
 			 */
-			CLBuffer createNamedBuffer(MemKeyType const &key, const string &accessMode,
+			CLBuffer createNamedBuffer(MemKeyType const &key, const std::string &accessMode,
 									   const size_t length, const size_t byteDepth, const void *src=0);
 
 			/**
@@ -85,7 +85,7 @@ namespace icl {
 			 *
 			 * Please see CLDeviceContext::createImage2D() for more details
 			 */
-			CLImage2D createNamedImage2D(MemKeyType const &key, const string &accessMode,
+			CLImage2D createNamedImage2D(MemKeyType const &key, const std::string &accessMode,
 										 const size_t width, const size_t height, const int depth,
 										 const int num_channel, const void *src=0);
 

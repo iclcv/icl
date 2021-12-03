@@ -32,6 +32,10 @@
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
 
 #include <QtCore/QMutexLocker>
+
+using namespace icl::core;
+using namespace icl::utils;
+
 namespace icl{
   namespace qt{
     ICLVideoSurface::ICLVideoSurface() :

@@ -91,7 +91,6 @@
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
 #endif
-using namespace icl::utils;
 
 namespace icl{
 
@@ -127,19 +126,19 @@ namespace icl{
 
         private:
 
-        CLProgram program;
-        CLKernel createDescrtptorsKernel;
-        CLKernel getOrientationStep1Kernel;
-        CLKernel getOrientationStep2Kernel;
-        CLKernel hessian_detKernel;
-        CLKernel scanKernel;
-        CLKernel scan4Kernel;
-        CLKernel scanImageKernel;
-        CLKernel transposeKernel;
-        CLKernel transposeImageKernel;
-        CLKernel nearestNeighborKernel;
-        CLKernel non_max_supressionKernel;
-        CLKernel normalizeDescriptorsKernel;
+        icl::utils::CLProgram program;
+        icl::utils::CLKernel createDescrtptorsKernel;
+        icl::utils::CLKernel getOrientationStep1Kernel;
+        icl::utils::CLKernel getOrientationStep2Kernel;
+        icl::utils::CLKernel hessian_detKernel;
+        icl::utils::CLKernel scanKernel;
+        icl::utils::CLKernel scan4Kernel;
+        icl::utils::CLKernel scanImageKernel;
+        icl::utils::CLKernel transposeKernel;
+        icl::utils::CLKernel transposeImageKernel;
+        icl::utils::CLKernel nearestNeighborKernel;
+        icl::utils::CLKernel non_max_supressionKernel;
+        icl::utils::CLKernel normalizeDescriptorsKernel;
         /// Compute the integral image
         void computeIntegralImage(const icl::core::Img32f &source);
 

@@ -35,6 +35,11 @@
 #include <ICLQt/Quick.h>
 #include <ICLGeom/GeomDefs.h>
 
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::cv;
+
 namespace icl {
 namespace geom {
 

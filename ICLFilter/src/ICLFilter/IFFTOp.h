@@ -107,7 +107,7 @@ namespace icl{
           @param ifftshift undo fftshift before the isfftcomputation or not
           @param forceIDFT wether to apply idft or ifft*/
       IFFTOp(ResultMode rm=REAL_ONLY, SizeAdaptionMode sam=NO_SCALE,
-             utils::Rect roi=Rect(0,0,0,0),bool join=true,
+             utils::Rect roi=icl::utils::Rect(0,0,0,0),bool join=true,
              bool ifftshift=true, bool forceIDFT=false);
 
       /**Destructor*/
@@ -127,7 +127,7 @@ namespace icl{
 
       ///Returns the current roi
       /**@return roi the current roi*/
-      Rect getRoi();
+      icl::utils::Rect getRoi();
 
       ///Sets the resultmode.
       /*@param rm the resultmode to be set*/
@@ -164,4 +164,3 @@ namespace icl{
     };
   } // namespace filter
 }
-

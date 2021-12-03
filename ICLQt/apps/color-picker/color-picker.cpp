@@ -52,8 +52,7 @@ struct XC{
   float &operator[](int i){return c[i]; }
 };
 
-vector<XC> colorbuffer;
-
+std::vector<XC> colorbuffer;
 
 
 void mouse(const MouseEvent &event){

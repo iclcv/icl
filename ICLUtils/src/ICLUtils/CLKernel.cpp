@@ -34,6 +34,7 @@
 #define __CL_ENABLE_EXCEPTIONS
 
 #include <ICLUtils/CLIncludes.h>
+using namespace std;
 
 namespace icl {
   namespace utils {

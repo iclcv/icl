@@ -40,7 +40,7 @@
 
 namespace icl{
   namespace qt{
-    class ICLQt_API QtCameraGrabber: public Grabber{
+    class ICLQt_API QtCameraGrabber: public icl::io::Grabber{
       public:
 
         /// Create Camera grabber with given Camera-file name

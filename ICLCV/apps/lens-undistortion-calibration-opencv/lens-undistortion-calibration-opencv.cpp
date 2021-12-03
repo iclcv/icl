@@ -440,7 +440,7 @@ void handleCheckerboardDetection(const ImgBase *img, DrawHandle &draw, bool &cap
 }
 
 void init(){
-  string dStr;
+  std::string dStr;
   int maxMarkers = 5;
   grabber.init(pa("-i"));
   if(pa("-s")){
@@ -450,7 +450,7 @@ void init(){
   udist.init(image->getSize());
 
   if(pa("-cb")){
-    dStr = string("checker board detection");
+    dStr = "checker board detection";
     grabber.useDesired(depth8u);
     checker.init(pa("-cb").as<Size>());
     Size s = pa("-cb").as<Size>();
@@ -458,7 +458,7 @@ void init(){
     calib.init(image->getSize(), LensUndistortionCalibrator::GridDefinition(s, Size(r.width / s.width, r.height / s.height)));
     checker.setConfigurableID("detectionProps");
   }else if (pa("-m")) {
-    dStr = string("quad detection");
+    dStr = "quad detection";
 
     std::vector<int> ids = FiducialDetectorPlugin::parse_list_str(pa("-m", 1).as<std::string>());
     Size gridCells = pa("-g");

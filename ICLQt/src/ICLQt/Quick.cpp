@@ -83,8 +83,7 @@
 
 #include <QtWidgets/QCompleter>
 
-
-
+using namespace std;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;

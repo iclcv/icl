@@ -754,12 +754,11 @@ Surf::Surf(int initialPoints, int i_height, int i_width, int octaves,
 		int intervals, int sample_step, float threshold) :
 		m_data(new Data) {
 
-	stringstream ss;
-	ss << utilityKernels << endl << createDescriptors_kernel << endl
-			<< getOrientation_kernels << endl << hessianDet_kernel << endl
-			<< integralImage_kernels << endl << nearestNeighbor_kernel << endl
-			<< nonMaxSuppression_kernel << endl << normalizeDescriptors_kernel
-			<< endl;
+	std::stringstream ss;
+	ss << utilityKernels << "\n" << createDescriptors_kernel << "\n"
+			<< getOrientation_kernels << "\n" << hessianDet_kernel << "\n"
+			<< integralImage_kernels << "\n" << nearestNeighbor_kernel << "\n"
+			<< nonMaxSuppression_kernel << "\n" << normalizeDescriptors_kernel << "\n";
 	program = CLProgram("gpu", ss.str());
 	createKernels();
 

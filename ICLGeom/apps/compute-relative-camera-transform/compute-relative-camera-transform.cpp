@@ -33,6 +33,10 @@
 #include <ICLGeom/Camera.h>
 #include <fstream>
 
+using namespace icl::math;
+using namespace icl::geom;
+using namespace icl::utils;
+
 Mat compute_relative_transform(const Camera &s, const Camera &d){
   Mat ms = s.getInvCSTransformationMatrix();
   Mat md = d.getInvCSTransformationMatrix();
@@ -147,4 +151,3 @@ int main(int n, char**ppc){
 
 
 }
-

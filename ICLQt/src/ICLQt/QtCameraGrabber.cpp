@@ -37,6 +37,9 @@
 #include <QtMultimedia/QCameraExposure>
 #include <QtMultimedia/QCameraImageProcessing>
 
+using namespace icl::utils;
+using namespace icl::io;
+
 namespace icl{
   namespace qt{
     QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn) :cam(0),surface(0){

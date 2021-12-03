@@ -37,7 +37,7 @@ GenericGrabber grabber;
 int x,y;
 int r,g,b;
 ConvolutionKernel::fixedType k;
-string sKernel;
+std::string sKernel;
 
 
 void mouse(const MouseEvent &event){

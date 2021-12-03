@@ -62,9 +62,6 @@ using namespace icl::markers;
 using namespace icl::physics;
 #endif
 
-/// just used by default
-using namespace std;
-
 /// all ICLQuick functions are placed here
 namespace icl{
   namespace qt{
@@ -417,7 +414,7 @@ namespace icl{
         @see show
         @see ICLIO/TestImages
     **/
-    ICLQt_API void showSetup(const string &showCommand = "xv %s", const string &rmCommand = "rm -rf %s", int msecBeforeDelete = 500);
+    ICLQt_API void showSetup(const std::string &showCommand = "xv %s", const std::string &rmCommand = "rm -rf %s", int msecBeforeDelete = 500);
 
     /// print the images parameters to std::out
     /** @param image image to print to std::out **/
@@ -787,13 +784,13 @@ namespace icl{
     /** @param image destination image
         @param pts vector of points
     **/
-    ICLQt_API void pix(ImgQ &image, const vector<utils::Point> &pts);
+    ICLQt_API void pix(ImgQ &image, const std::vector<utils::Point> &pts);
 
     /// draws a set of point sets into an image
     /** @param image destination image
         @param pts vector of vector of points to draw
     **/
-    ICLQt_API void pix(ImgQ &image, const vector<vector<utils::Point> > &pts);
+    ICLQt_API void pix(ImgQ &image, const std::vector<std::vector<utils::Point> > &pts);
 
     /// renders a filled circle into an image
     /** This function renders a filled circle into a 3 or 1 channel image (only with fill color!)
@@ -813,7 +810,7 @@ namespace icl{
         @param y ypos of the lower left corner of the text
         @param text text to render
     **/
-    ICLQt_API void text(ImgQ &image, int x, int y, const string &text);
+    ICLQt_API void text(ImgQ &image, int x, int y, const std::string &text);
 
      /// renders a text into an image (only available with Qt-Support)
     /** This functin renders a text into an 3 or 1 channel image
@@ -822,20 +819,20 @@ namespace icl{
         @param p pos of the lower left corner of the text
         @param sText text to render
     **/
-    inline void text(ImgQ &image, const utils::Point &p,const string &sText){ text(image,p.x,p.y,sText); }
+    inline void text(ImgQ &image, const utils::Point &p,const std::string &sText){ text(image,p.x,p.y,sText); }
 
     /// labels an image in the upper left corner (only available with Qt-Support)
     /** @param image image to label
         @param text text label
         @return labeled source image (= given image)
      **/
-    ICLQt_API ImgQ label(const ImgQ &image, const string &text);
+    ICLQt_API ImgQ label(const ImgQ &image, const std::string &text);
 
     /// sets up the current font  (only available with Qt-Support)
     /** @param size new font size 12 by default
         @param family font family string "Arial" by default
     **/
-    ICLQt_API void font(int size, const string &family = "Arial");
+    ICLQt_API void font(int size, const std::string &family = "Arial");
 
     /// sets up current fontsize (only available with Qt-Support)
     /** @param size new font size (default is 12) **/
@@ -856,4 +853,3 @@ namespace icl{
 
   } // namespace qt
 }
-

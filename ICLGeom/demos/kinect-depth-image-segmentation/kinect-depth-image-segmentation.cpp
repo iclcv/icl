@@ -34,6 +34,14 @@
 #include <ICLGeom/Scene.h>
 #include <ICLQt/Common.h>
 
+using namespace icl;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::math;
+using namespace icl::geom;
+using namespace icl::io;
+using namespace icl::qt;
+
 HSplit gui;
 
 GenericGrabber grabDepth, grabColor;
@@ -71,7 +79,7 @@ void init(){
   Size size = pa("-size");
 
   if(pa("-d")){//get depth cam
-    string depthcamname = pa("-d").as<std::string>();
+    std::string depthcamname = pa("-d").as<std::string>();
     depthCam = Camera(depthcamname);
   }else{//default depth cam
     depthCam = Camera();
