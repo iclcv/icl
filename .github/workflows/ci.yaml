@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  linux_mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-latest, macos-latest]
+
+        include: # add specific configs
+          # suppress cmake warnings
+          - os: ubuntu-18.04
+            cmake.args: -Wno-dev
+
+          # build docs
+          - os: ubuntu-latest
+            docs: true
+
+          # build with clang
+          - os: ubuntu-latest
+            clang: true
+
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+    name: ${{ matrix.os }}${{ matrix.clang && ' • clang' || '' }}${{ matrix.docs && ' • docs' || ''}}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: ccache
+      if: runner.os == 'Linux'
+      uses: pat-s/always-upload-cache@v2.1.5
+      with:
+        path: ${{ env.CCACHE_DIR }}
+        key: ${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+        restore-keys: >
+          ${{ env.CACHE_PREFIX }}-${{ github.sha }}
+          ${{ env.CACHE_PREFIX }}
+      env:
+        CACHE_PREFIX: ccache-${{ matrix.os }}${{ matrix.clang && '-clang' || '' }}
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        DEBIAN_FRONTEND=noninteractive \
+        sudo apt-get install -y \
+          build-essential git cmake ccache python3-pip dirmngr \
+          devscripts equivs apt-file debhelper sudo wget \
+          libjpeg-dev libpng-dev ${{ matrix.compiler }} ca-certificates tzdata \
+          doxygen graphviz python3-sphinx python3-sphinx-rtd-theme python3-pyparsing texlive-latex-base ghostscript
+        # configure linux-specific build options
+        echo ICL_OPTIONS="-DBUILD_REDIST=DEB" >> $GITHUB_ENV
+
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew update
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install iclcv/homebrew-formulas/icl --only-dependencies || true
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install lcov glog
+        # configure osx-specific build options
+        echo ICL_OPTIONS=" \
+          -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules \
+          -DOPENCV_ROOT=/usr/local/opt/opencv@3/share/OpenCV \
+          -DQT_ROOT=/usr/local/opt/qt5 \
+          " >> $GITHUB_ENV
+
+    - name: Configure cmake
+      env:
+        CC: ${{ matrix.clang && 'clang' || 'cc' }}
+        CXX: ${{ matrix.clang && 'clang++' || 'c++' }}
+      run: >
+        cmake -S . -B build
+        -DCMAKE_INSTALL_PREFIX=/tmp/icl
+        -DBUILD_EXAMPLES=ON
+        -DBUILD_DEMOS=ON
+        -DBUILD_APPS=ON
+        -DBUILD_TESTS=ON
+        -DBUILD_WITH_OPENCV=ON
+        -DBUILD_WITH_QT=ON
+        -DBUILD_WITH_OPENGL=ON
+        -DBUILD_WITH_EIGEN3=ON
+        -DBUILD_WITH_IMAGEMAGICK=ON
+        -DBUILD_WITH_LIBAV=ON
+        -DBUILD_WITH_LIBDC=ON
+        -DBUILD_WITH_LIBFREENECT=ON
+        -DBUILD_WITH_V4L=ON
+        -DBUILD_WITH_LIBUSB=ON
+        -DBUILD_WITH_ZMQ=ON
+        -DBUILD_WITH_OPENCL=ON
+        -DBUILD_WITH_OPENNI=ON
+        -DBUILD_WITH_PCL=ON
+        -DBUILD_WITH_BULLET=ON
+        $ICL_OPTIONS
+        ${{ matrix.cmake.args }}
+
+    - name: Build
+      run: cmake --build build -j3
+
+    - name: Test
+      run: cmake --build build --target test
+
+    - name: Install
+      run: cmake --build build --target install
+
+    - name: Build docs
+      if: matrix.docs
+      run: cmake --build build --target pages
+
+    - name: Deploy docs (from master only)
+      if: matrix.docs && github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        personal_token: ${{ secrets.GITHUB_TOKEN }}''
+        publish_dir: build/doc/pages
