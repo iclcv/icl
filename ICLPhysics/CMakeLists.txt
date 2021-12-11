@@ -99,44 +99,30 @@ SET(HEADERS src/ICLPhysics/Object2PointConstraint.h
 
 # ---- Library build instructions ----
 IF(WIN32)
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${ICL_SOURCE_DIR}/3rdparty/zlib
-                           ${ICL_SOURCE_DIR}/3rdparty/libpng
-                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src
-                           ${ICL_SOURCE_DIR}/ICLMath/src
-                           ${ICL_SOURCE_DIR}/ICLCore/src
-                           ${ICL_SOURCE_DIR}/ICLFilter/src
-                           ${ICL_SOURCE_DIR}/ICLIO/src
-                           ${ICL_SOURCE_DIR}/ICLQt/src
-                           ${ICL_SOURCE_DIR}/ICLCV/src
-                           ${ICL_SOURCE_DIR}/ICLGeom/src
-                           ${ICL_SOURCE_DIR}/ICLMarkers/src
-						   "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
-ELSE()
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src
-                           ${ICL_SOURCE_DIR}/ICLMath/src
-                           ${ICL_SOURCE_DIR}/ICLCore/src
-                           ${ICL_SOURCE_DIR}/ICLFilter/src
-                           ${ICL_SOURCE_DIR}/ICLIO/src
-                           ${ICL_SOURCE_DIR}/ICLQt/src
-                           ${ICL_SOURCE_DIR}/ICLCV/src
-                           ${ICL_SOURCE_DIR}/ICLGeom/src
-                           ${ICL_SOURCE_DIR}/ICLMarkers/src
-						   "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
+  SET(EXTRA_WIN_INCLUDES "${ICL_SOURCE_DIR}/3rdparty/zlib"
+                         "${ICL_SOURCE_DIR}/3rdparty/libpng"
+                         "${ICL_SOURCE_DIR}/3rdparty/libjpeg")
 ENDIF()
+INCLUDE_DIRECTORIES(BEFORE src
+                    ${EXTRA_WIN_INCLUDES}
+                    ${CMAKE_BINARY_DIR}/src
+                    ${ICL_SOURCE_DIR}/ICLUtils/src
+                    ${ICL_SOURCE_DIR}/ICLMath/src
+                    ${ICL_SOURCE_DIR}/ICLCore/src
+                    ${ICL_SOURCE_DIR}/ICLFilter/src
+                    ${ICL_SOURCE_DIR}/ICLIO/src
+                    ${ICL_SOURCE_DIR}/ICLQt/src
+                    ${ICL_SOURCE_DIR}/ICLCV/src
+                    ${ICL_SOURCE_DIR}/ICLGeom/src
+                    ${ICL_SOURCE_DIR}/ICLMarkers/src
+                    "${BULLET_ROOT_DIR}/${BULLET_INCLUDE_DIRS}")
 
 ADD_LIBRARY(ICLPhysics SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLPhysics ICLMarkers ${ICLPhysics_3RDPARTY_LIBRARIES})
 
-SET_TARGET_PROPERTIES(ICLPhysics
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLPhysics PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 IF(BUILD_DEMOS)

@@ -48,7 +48,7 @@ IF(BUILD_REDIST STREQUAL DEB)
 
   SET(ICL_DEB_PACKAGE_MAINTAINER "Alexander Neumann <aleneum@gmail.com>")
   SET(ICL_DEB_PACKAGE_DESCRIPTION_SHORT "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
-  SET(ICL_DEB_PACKAGE_DESCRIPTION "ICL is a novel C++ computer-vision library developed in the neuroinformatics group of the university of Bielefeld and in CITEC. It unifies both, performance and user friendliness. ICL provides a large set of simple-to-use classes and functions to facilitate development of complex computer vision applications.")
+  SET(ICL_DEB_PACKAGE_DESCRIPTION "ICL is a novel C++ computer-vision library developed in the NeuroInformatics group at CITEC/Bielefeld University, Germany. It unifies both, performance and user friendliness. ICL provides a large set of simple-to-use classes and functions to facilitate development of complex computer vision applications.")
   SET(ICL_DEB_PACKAGE_SECTION "devel")
   SET(ICL_DEB_PACKAGE_PRIORITY "optional")
 
@@ -65,9 +65,9 @@ IF(BUILD_REDIST STREQUAL DEB)
 
   # Dependencies for building ICL; will be parsed into debian/control
   STRING(CONCAT ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, "
-					   "libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, "
-					   "libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, graphviz, python3-sphinx, "
-					   "python3-pyparsing, libbullet-dev, texlive-latex-base, ghostscript")
+         "libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, "
+         "libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, graphviz, python3-sphinx, "
+         "python3-pyparsing, libbullet-dev, texlive-latex-base, ghostscript")
   SET(ICL_DEB_CORE_DEPENDENCY "icl-core (= ${CPACK_PACKAGE_VERSION})")
 
   # Dependencies for using ICL
@@ -85,7 +85,7 @@ IF(BUILD_REDIST STREQUAL DEB)
 
   # --- Preparing Debian folder for source packge built
   FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/debian
-  	   DESTINATION ${PROJECT_SOURCE_DIR}
+       DESTINATION ${PROJECT_SOURCE_DIR}
        PATTERN "*.in" EXCLUDE)
 
   CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/debian/control.in

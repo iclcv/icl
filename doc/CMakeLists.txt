@@ -36,11 +36,11 @@ SET(REPLACE_DESTINATION "doc/icl-api/" CACHE INTERNAL "")
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/doc/icl-manual/js.rst.in
                "${CMAKE_SOURCE_DIR}/doc/icl-manual/js.rst"
-	       @ONLY)
+               @ONLY)
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/doc/icl-manual/conf.py.in
                "${CMAKE_BINARY_DIR}/doc/icl-manual/conf.py"
-	       @ONLY)
+               @ONLY)
 
 FILE(COPY "${CMAKE_SOURCE_DIR}/doc/icl-manual/js.rst" DESTINATION "${CMAKE_BINARY_DIR}/doc/icl-manual/")
 FILE(COPY "${CMAKE_SOURCE_DIR}/doc/icl-manual/logo.png" DESTINATION "${CMAKE_BINARY_DIR}/doc/icl-manual/")
@@ -63,7 +63,7 @@ IF(SPHINX_FOUND)
   MESSAGE(STATUS "adding target 'manual'")
   ADD_CUSTOM_TARGET(manual ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/doc/icl-manual"
                     ${CMAKE_SOURCE_DIR}/doc/icl-manual "${CMAKE_BINARY_DIR}/doc/icl-manual/html")
-	INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-manual/html"
+  INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/doc/icl-manual/html"
           DESTINATION "share/icl-${SO_VERSION}/doc/icl-manual"
           COMPONENT documentation)
 ELSE()

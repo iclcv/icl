@@ -53,7 +53,7 @@ IF(SPHINX_FOUND AND DOXYGEN_FOUND)
   MESSAGE(STATUS "adding target 'doc'")
   ADD_CUSTOM_TARGET(doc ${SPHINXBUILD_EXECUTABLE} -b html -c "${CMAKE_BINARY_DIR}/manual"
                     ${CMAKE_SOURCE_DIR}/manual "${CMAKE_BINARY_DIR}/manual/html"
-		    DEPENDS api)
+                    DEPENDS api)
 ELSE()
   ADD_CUSTOM_TARGET(manual echo "manual cannot be build due to missing dependencies")
 ENDIF()

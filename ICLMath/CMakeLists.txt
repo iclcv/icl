@@ -82,27 +82,21 @@ SET(HEADERS src/ICLMath/DynMatrix.h
             src/ICLMath/Projective4PointTransform.h)
 
 IF(WIN32)
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${ICL_SOURCE_DIR}/3rdparty/zlib
-                           ${ICL_SOURCE_DIR}/3rdparty/libpng
-                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src)
-ELSE()
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src)
+  SET(EXTRA_WIN_INCLUDES ${ICL_SOURCE_DIR}/3rdparty/zlib
+                         ${ICL_SOURCE_DIR}/3rdparty/libpng
+                         ${ICL_SOURCE_DIR}/3rdparty/libjpeg)
 ENDIF()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${EXTRA_WIN_INCLUDES}
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src)
 
 ADD_LIBRARY(ICLMath SHARED ${SOURCES} ${HEADERS})
 
 # ---- Linker commands ----
-TARGET_LINK_LIBRARIES(ICLMath ICLUtils
-                              ${ICLMath_3RDPARTY_LIBRARIES})
+TARGET_LINK_LIBRARIES(ICLMath ICLUtils ${ICLMath_3RDPARTY_LIBRARIES})
 
-SET_TARGET_PROPERTIES(ICLMath
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLMath PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples ----
 IF(BUILD_EXAMPLES)

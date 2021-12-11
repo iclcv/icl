@@ -30,22 +30,22 @@
 
 SET(SOURCES src/ICLMarkers/BCHCode.cpp
             src/ICLMarkers/Fiducial.cpp
-	    src/ICLMarkers/FiducialDetector.cpp
-	    src/ICLMarkers/FiducialDetectorPlugin.cpp
-	    src/ICLMarkers/FiducialDetectorPluginART.cpp
-	    src/ICLMarkers/FiducialDetectorPluginAmoeba.cpp
-	    src/ICLMarkers/FiducialDetectorPluginBCH.cpp
-	    src/ICLMarkers/FiducialDetectorPluginForQuads.cpp
-	    src/ICLMarkers/FiducialDetectorPluginHierarchical.cpp
-	    src/ICLMarkers/FiducialDetectorPluginICL1.cpp
-	    src/ICLMarkers/FiducialImpl.cpp
-	    src/ICLMarkers/MarkerCodeICL1.cpp
-	    src/ICLMarkers/MarkerMetricsICL1.cpp
-	    src/ICLMarkers/MultiCamFiducial.cpp
-	    src/ICLMarkers/MultiCamFiducialDetector.cpp
-	    src/ICLMarkers/MultiCamFiducialImpl.cpp
-	    src/ICLMarkers/QuadDetector.cpp
-	    src/ICLMarkers/TwoLevelRegionStructure.cpp
+            src/ICLMarkers/FiducialDetector.cpp
+            src/ICLMarkers/FiducialDetectorPlugin.cpp
+            src/ICLMarkers/FiducialDetectorPluginART.cpp
+            src/ICLMarkers/FiducialDetectorPluginAmoeba.cpp
+            src/ICLMarkers/FiducialDetectorPluginBCH.cpp
+            src/ICLMarkers/FiducialDetectorPluginForQuads.cpp
+            src/ICLMarkers/FiducialDetectorPluginHierarchical.cpp
+            src/ICLMarkers/FiducialDetectorPluginICL1.cpp
+            src/ICLMarkers/FiducialImpl.cpp
+            src/ICLMarkers/MarkerCodeICL1.cpp
+            src/ICLMarkers/MarkerMetricsICL1.cpp
+            src/ICLMarkers/MultiCamFiducial.cpp
+            src/ICLMarkers/MultiCamFiducialDetector.cpp
+            src/ICLMarkers/MultiCamFiducialImpl.cpp
+            src/ICLMarkers/QuadDetector.cpp
+            src/ICLMarkers/TwoLevelRegionStructure.cpp
             src/ICLMarkers/AdvancedMarkerGridDetector.cpp
             src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.cpp
             src/ICLMarkers/InverseUndistortionProcessor.cpp
@@ -55,25 +55,25 @@ SET(SOURCES src/ICLMarkers/BCHCode.cpp
 
 SET(HEADERS src/ICLMarkers/BCHCode.h
             src/ICLMarkers/Fiducial.h
-	    src/ICLMarkers/FiducialDetector.h
-	    src/ICLMarkers/FiducialDetectorPlugin.h
-	    src/ICLMarkers/FiducialDetectorPluginART.h
-	    src/ICLMarkers/FiducialDetectorPluginAmoeba.h
-	    src/ICLMarkers/FiducialDetectorPluginBCH.h
-	    src/ICLMarkers/FiducialDetectorPluginForQuads.h
-	    src/ICLMarkers/FiducialDetectorPluginHierarchical.h
-	    src/ICLMarkers/FiducialDetectorPluginICL1.h
-	    src/ICLMarkers/FiducialImpl.h
-	    src/ICLMarkers/MarkerCodeICL1.h
-	    src/ICLMarkers/MarkerMetricsICL1.h
-	    src/ICLMarkers/Markers.h
-	    src/ICLMarkers/MultiCamFiducial.h
-	    src/ICLMarkers/MultiCamFiducialDetector.h
-	    src/ICLMarkers/MultiCamFiducialImpl.h
-	    src/ICLMarkers/QuadDetector.h
-	    src/ICLMarkers/RegionStructure.h
-	    src/ICLMarkers/TiltedQuad.h
-	    src/ICLMarkers/TwoLevelRegionStructure.h
+            src/ICLMarkers/FiducialDetector.h
+            src/ICLMarkers/FiducialDetectorPlugin.h
+            src/ICLMarkers/FiducialDetectorPluginART.h
+            src/ICLMarkers/FiducialDetectorPluginAmoeba.h
+            src/ICLMarkers/FiducialDetectorPluginBCH.h
+            src/ICLMarkers/FiducialDetectorPluginForQuads.h
+            src/ICLMarkers/FiducialDetectorPluginHierarchical.h
+            src/ICLMarkers/FiducialDetectorPluginICL1.h
+            src/ICLMarkers/FiducialImpl.h
+            src/ICLMarkers/MarkerCodeICL1.h
+            src/ICLMarkers/MarkerMetricsICL1.h
+            src/ICLMarkers/Markers.h
+            src/ICLMarkers/MultiCamFiducial.h
+            src/ICLMarkers/MultiCamFiducialDetector.h
+            src/ICLMarkers/MultiCamFiducialImpl.h
+            src/ICLMarkers/QuadDetector.h
+            src/ICLMarkers/RegionStructure.h
+            src/ICLMarkers/TiltedQuad.h
+            src/ICLMarkers/TwoLevelRegionStructure.h
             src/ICLMarkers/InverseUndistortionProcessor.h
             src/ICLMarkers/AdvancedMarkerGridDetector.h
             src/ICLMarkers/MarkerGridBasedUndistortionOptimizer.h
@@ -84,40 +84,28 @@ SET(HEADERS src/ICLMarkers/BCHCode.h
 
 # ---- Library build instructions ----
 IF(WIN32)
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${ICL_SOURCE_DIR}/3rdparty/zlib
-                           ${ICL_SOURCE_DIR}/3rdparty/libpng
-                           ${ICL_SOURCE_DIR}/3rdparty/libjpeg
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src
-                           ${ICL_SOURCE_DIR}/ICLMath/src
-                           ${ICL_SOURCE_DIR}/ICLCore/src
-                           ${ICL_SOURCE_DIR}/ICLFilter/src
-                           ${ICL_SOURCE_DIR}/ICLIO/src
-                           ${ICL_SOURCE_DIR}/ICLQt/src
-                           ${ICL_SOURCE_DIR}/ICLCV/src
-                           ${ICL_SOURCE_DIR}/ICLGeom/src)
-ELSE()
-INCLUDE_DIRECTORIES(BEFORE src
-                           ${CMAKE_BINARY_DIR}/src
-                           ${ICL_SOURCE_DIR}/ICLUtils/src
-                           ${ICL_SOURCE_DIR}/ICLMath/src
-                           ${ICL_SOURCE_DIR}/ICLCore/src
-                           ${ICL_SOURCE_DIR}/ICLFilter/src
-                           ${ICL_SOURCE_DIR}/ICLIO/src
-                           ${ICL_SOURCE_DIR}/ICLQt/src
-                           ${ICL_SOURCE_DIR}/ICLCV/src
-                           ${ICL_SOURCE_DIR}/ICLGeom/src)
+  SET(EXTRA_WIN_INCLUDES ${ICL_SOURCE_DIR}/3rdparty/zlib
+                         ${ICL_SOURCE_DIR}/3rdparty/libpng
+                         ${ICL_SOURCE_DIR}/3rdparty/libjpeg)
 ENDIF()
+INCLUDE_DIRECTORIES(BEFORE src
+                           ${EXTRA_WIN_INCLUDES}
+                           ${CMAKE_BINARY_DIR}/src
+                           ${ICL_SOURCE_DIR}/ICLUtils/src
+                           ${ICL_SOURCE_DIR}/ICLMath/src
+                           ${ICL_SOURCE_DIR}/ICLCore/src
+                           ${ICL_SOURCE_DIR}/ICLFilter/src
+                           ${ICL_SOURCE_DIR}/ICLIO/src
+                           ${ICL_SOURCE_DIR}/ICLQt/src
+                           ${ICL_SOURCE_DIR}/ICLCV/src
+                           ${ICL_SOURCE_DIR}/ICLGeom/src)
 
 ADD_LIBRARY(ICLMarkers SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
 TARGET_LINK_LIBRARIES(ICLMarkers ICLGeom)
 
-SET_TARGET_PROPERTIES(ICLMarkers
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLMarkers PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 IF(BUILD_DEMOS)

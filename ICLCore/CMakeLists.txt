@@ -30,55 +30,55 @@
 
 SET(SOURCES src/ICLCore/BayerConverter.cpp
             src/ICLCore/CCFunctions.cpp
-	    src/ICLCore/CCLUT.cpp
-	    src/ICLCore/Color.cpp
-	    src/ICLCore/Converter.cpp
-	    src/ICLCore/CoreFunctions.cpp
-	    src/ICLCore/FixedConverter.cpp
-	    src/ICLCore/ImageRenderer.cpp
-	    src/ICLCore/ImageSerializer.cpp
-	    src/ICLCore/ImgBase.cpp
-	    src/ICLCore/ImgBorder.cpp
-	    src/ICLCore/ImgBuffer.cpp
-	    src/ICLCore/Img.cpp
-	    src/ICLCore/ImgParams.cpp
-	    src/ICLCore/Line32f.cpp
-	    src/ICLCore/Line.cpp
-	    src/ICLCore/LineSampler.cpp
-	    src/ICLCore/ConvexHull.cpp
-	    src/ICLCore/AbstractCanvas.cpp
-	    src/ICLCore/PseudoColorConverter.cpp)
+            src/ICLCore/CCLUT.cpp
+            src/ICLCore/Color.cpp
+            src/ICLCore/Converter.cpp
+            src/ICLCore/CoreFunctions.cpp
+            src/ICLCore/FixedConverter.cpp
+            src/ICLCore/ImageRenderer.cpp
+            src/ICLCore/ImageSerializer.cpp
+            src/ICLCore/ImgBase.cpp
+            src/ICLCore/ImgBorder.cpp
+            src/ICLCore/ImgBuffer.cpp
+            src/ICLCore/Img.cpp
+            src/ICLCore/ImgParams.cpp
+            src/ICLCore/Line32f.cpp
+            src/ICLCore/Line.cpp
+            src/ICLCore/LineSampler.cpp
+            src/ICLCore/ConvexHull.cpp
+            src/ICLCore/AbstractCanvas.cpp
+            src/ICLCore/PseudoColorConverter.cpp)
 
 SET(HEADERS src/ICLCore/BayerConverter.h
             src/ICLCore/CCFunctions.h
-	    src/ICLCore/CCLUT.h
-	    src/ICLCore/Channel.h
-	    src/ICLCore/ChromaAndRGBClassifier.h
-	    src/ICLCore/ChromaClassifier.h
-	    src/ICLCore/Color.h
-	    src/ICLCore/Converter.h
-	    src/ICLCore/CoreFunctions.h
-	    src/ICLCore/Core.h
-	    src/ICLCore/FixedConverter.h
-	    src/ICLCore/ImageRenderer.h
-	    src/ICLCore/ImageSerializer.h
-	    src/ICLCore/ImgBase.h
-	    src/ICLCore/ImgBorder.h
-	    src/ICLCore/ImgBuffer.h
-	    src/ICLCore/Img.h
-	    src/ICLCore/ImgIterator.h
-	    src/ICLCore/ImgParams.h
-	    src/ICLCore/Line32f.h
-	    src/ICLCore/Line.h
-	    src/ICLCore/LineSampler.h
-	    src/ICLCore/Parable.h
-	    src/ICLCore/PixelRef.h
-	    src/ICLCore/ConvexHull.h
-	    src/ICLCore/AbstractCanvas.h
-	    src/ICLCore/PseudoColorConverter.h
-	    src/ICLCore/Types.h
-	    src/ICLCore/DataSegment.h
-	    src/ICLCore/DataSegmentBase.h)
+            src/ICLCore/CCLUT.h
+            src/ICLCore/Channel.h
+            src/ICLCore/ChromaAndRGBClassifier.h
+            src/ICLCore/ChromaClassifier.h
+            src/ICLCore/Color.h
+            src/ICLCore/Converter.h
+            src/ICLCore/CoreFunctions.h
+            src/ICLCore/Core.h
+            src/ICLCore/FixedConverter.h
+            src/ICLCore/ImageRenderer.h
+            src/ICLCore/ImageSerializer.h
+            src/ICLCore/ImgBase.h
+            src/ICLCore/ImgBorder.h
+            src/ICLCore/ImgBuffer.h
+            src/ICLCore/Img.h
+            src/ICLCore/ImgIterator.h
+            src/ICLCore/ImgParams.h
+            src/ICLCore/Line32f.h
+            src/ICLCore/Line.h
+            src/ICLCore/LineSampler.h
+            src/ICLCore/Parable.h
+            src/ICLCore/PixelRef.h
+            src/ICLCore/ConvexHull.h
+            src/ICLCore/AbstractCanvas.h
+            src/ICLCore/PseudoColorConverter.h
+            src/ICLCore/Types.h
+            src/ICLCore/DataSegment.h
+            src/ICLCore/DataSegmentBase.h)
 
 IF(OpenCV_FOUND)
   LIST(APPEND SOURCES src/ICLCore/OpenCV.cpp)
@@ -109,12 +109,9 @@ ENDIF()
 ADD_LIBRARY(ICLCore SHARED ${SOURCES} ${HEADERS})
 
 # ---- 3rd party library handling ----
-TARGET_LINK_LIBRARIES(ICLCore ICLMath
-                              ${ICLCore_3RDPARTY_LIBRARIES})
+TARGET_LINK_LIBRARIES(ICLCore ICLMath ${ICLCore_3RDPARTY_LIBRARIES})
 
-SET_TARGET_PROPERTIES(ICLCore
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLCore PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples ----
 IF(BUILD_EXAMPLES)

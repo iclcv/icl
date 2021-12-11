@@ -155,10 +155,10 @@ ENDIF()
 IF(OPENCL_FOUND AND QT_FOUND)
     LIST (APPEND SOURCES src/ICLGeom/PointCloudCreatorCL.cpp
                          src/ICLGeom/IterativeClosestPoint.cpp
-	                 src/ICLGeom/IterativeClosestPointCLCode.cl)
+                         src/ICLGeom/IterativeClosestPointCLCode.cl)
     LIST (APPEND HEADERS src/ICLGeom/PointCloudCreatorCL.h
                          src/ICLGeom/IterativeClosestPoint.h
-	                 src/ICLGeom/IterativeClosestPointCLCode.h)
+                         src/ICLGeom/IterativeClosestPointCLCode.h)
 ENDIF()
 
 IF(RSB_FOUND AND QT_FOUND)
@@ -224,9 +224,7 @@ ELSE()
                         ${ICLGeom_3RDPARTY_LIBRARIES})
 ENDIF()
 
-SET_TARGET_PROPERTIES(ICLGeom
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLGeom PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 IF(BUILD_DEMOS)

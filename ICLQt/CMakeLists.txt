@@ -30,57 +30,57 @@
 
 SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
             src/ICLQt/Application.cpp
-	    src/ICLQt/BorderHandle.cpp
-	    src/ICLQt/ButtonGroupHandle.cpp
-	    src/ICLQt/ButtonHandle.cpp
-	    src/ICLQt/CamCfgWidget.cpp
-	    src/ICLQt/CheckBoxHandle.cpp
-	    src/ICLQt/ChromaClassifierIO.cpp
-	    src/ICLQt/ChromaGUI.cpp
-	    src/ICLQt/ColorLabel.cpp
-	    src/ICLQt/ComboHandle.cpp
-	    src/ICLQt/CompabilityLabel.cpp
-	    src/ICLQt/DataStore.cpp
-	    src/ICLQt/DefineRectanglesMouseHandler.cpp
-	    src/ICLQt/DefineQuadrangleMouseHandler.cpp
-	    src/ICLQt/DoubleSlider.cpp
-	    src/ICLQt/Dragger.cpp
-	    src/ICLQt/DragRectangleMouseHandler.cpp
-	    src/ICLQt/DrawHandle.cpp
-	    src/ICLQt/DrawHandle3D.cpp
-	    src/ICLQt/DrawWidget.cpp
-	    src/ICLQt/DrawWidget3D.cpp
-	    src/ICLQt/FloatHandle.cpp
-	    src/ICLQt/FSliderHandle.cpp
-	    src/ICLQt/GLPaintEngine.cpp
+            src/ICLQt/BorderHandle.cpp
+            src/ICLQt/ButtonGroupHandle.cpp
+            src/ICLQt/ButtonHandle.cpp
+            src/ICLQt/CamCfgWidget.cpp
+            src/ICLQt/CheckBoxHandle.cpp
+            src/ICLQt/ChromaClassifierIO.cpp
+            src/ICLQt/ChromaGUI.cpp
+            src/ICLQt/ColorLabel.cpp
+            src/ICLQt/ComboHandle.cpp
+            src/ICLQt/CompabilityLabel.cpp
+            src/ICLQt/DataStore.cpp
+            src/ICLQt/DefineRectanglesMouseHandler.cpp
+            src/ICLQt/DefineQuadrangleMouseHandler.cpp
+            src/ICLQt/DoubleSlider.cpp
+            src/ICLQt/Dragger.cpp
+            src/ICLQt/DragRectangleMouseHandler.cpp
+            src/ICLQt/DrawHandle.cpp
+            src/ICLQt/DrawHandle3D.cpp
+            src/ICLQt/DrawWidget.cpp
+            src/ICLQt/DrawWidget3D.cpp
+            src/ICLQt/FloatHandle.cpp
+            src/ICLQt/FSliderHandle.cpp
+            src/ICLQt/GLPaintEngine.cpp
             src/ICLQt/GLImg.cpp
-	    src/ICLQt/GLFragmentShader.cpp
-	    src/ICLQt/GUI.cpp
-	    src/ICLQt/DynamicGUI.cpp
-	    src/ICLQt/GUIDefinition.cpp
-	    src/ICLQt/GUIWidget.cpp
-	    src/ICLQt/HistogrammWidget.cpp
-	    src/ICLQt/IconFactory.cpp
-	    src/ICLQt/ImageHandle.cpp
-	    src/ICLQt/ImgParamWidget.cpp
-	    src/ICLQt/IntHandle.cpp
-	    src/ICLQt/LabelHandle.cpp
-	    src/ICLQt/LowLevelPlotWidget.cpp
-	    src/ICLQt/MouseEvent.cpp
-	    src/ICLQt/MouseHandler.cpp
-	    src/ICLQt/MultiDrawHandle.cpp
-	    src/ICLQt/PlotHandle.cpp
-	    src/ICLQt/PlotWidget.cpp
-	    src/ICLQt/QImageConverter.cpp
-	    src/ICLQt/Quick.cpp
-	    src/ICLQt/SliderHandle.cpp
-	    src/ICLQt/SpinnerHandle.cpp
-	    src/ICLQt/StateHandle.cpp
-	    src/ICLQt/StringHandle.cpp
-	    src/ICLQt/StringSignalButton.cpp
-	    src/ICLQt/ThreadedUpdatableSlider.cpp
-	    src/ICLQt/ThreadedUpdatableTextView.cpp
-	    src/ICLQt/ToggleButton.cpp
+            src/ICLQt/GLFragmentShader.cpp
+            src/ICLQt/GUI.cpp
+            src/ICLQt/DynamicGUI.cpp
+            src/ICLQt/GUIDefinition.cpp
+            src/ICLQt/GUIWidget.cpp
+            src/ICLQt/HistogrammWidget.cpp
+            src/ICLQt/IconFactory.cpp
+            src/ICLQt/ImageHandle.cpp
+            src/ICLQt/ImgParamWidget.cpp
+            src/ICLQt/IntHandle.cpp
+            src/ICLQt/LabelHandle.cpp
+            src/ICLQt/LowLevelPlotWidget.cpp
+            src/ICLQt/MouseEvent.cpp
+            src/ICLQt/MouseHandler.cpp
+            src/ICLQt/MultiDrawHandle.cpp
+            src/ICLQt/PlotHandle.cpp
+            src/ICLQt/PlotWidget.cpp
+            src/ICLQt/QImageConverter.cpp
+            src/ICLQt/Quick.cpp
+            src/ICLQt/SliderHandle.cpp
+            src/ICLQt/SpinnerHandle.cpp
+            src/ICLQt/StateHandle.cpp
+            src/ICLQt/StringHandle.cpp
+            src/ICLQt/StringSignalButton.cpp
+            src/ICLQt/ThreadedUpdatableSlider.cpp
+            src/ICLQt/ThreadedUpdatableTextView.cpp
+            src/ICLQt/ToggleButton.cpp
             src/ICLQt/Widget.cpp
             src/ICLQt/ICLVideoSurface.cpp
             src/ICLQt/QtVideoGrabber.cpp
@@ -88,77 +88,77 @@ SET(SOURCES src/ICLQt/AbstractPlotWidget.cpp
             src/ICLQt/AdjustGridMouseHandler.cpp)
 
 SET(HEADERS src/ICLQt/AbstractPlotWidget.h
-	    src/ICLQt/BorderBox.h
-	    src/ICLQt/BorderHandle.h
-	    src/ICLQt/BoxHandle.h
-	    src/ICLQt/ButtonGroupHandle.h
-	    src/ICLQt/ButtonHandle.h
-	    src/ICLQt/CamCfgWidget.h
-	    src/ICLQt/CheckBoxHandle.h
-	    src/ICLQt/ChromaClassifierIO.h
-	    src/ICLQt/ColorHandle.h
-	    src/ICLQt/ColorLabel.h
-	    src/ICLQt/ComboHandle.h
-	    src/ICLQt/Common.h
-	    src/ICLQt/CompabilityLabel.h
-	    src/ICLQt/ContainerGUIComponent.h
-	    src/ICLQt/ContainerGUIComponents.h
-	    src/ICLQt/ContainerHandle.h
-	    src/ICLQt/DataStore.h
-	    src/ICLQt/DefineRectanglesMouseHandler.h
-	    src/ICLQt/DefineQuadrangleMouseHandler.h
-	    src/ICLQt/DispHandle.h
-	    src/ICLQt/Dragger.h
-	    src/ICLQt/DragRectangleMouseHandler.h
-	    src/ICLQt/DrawHandle3D.h
-	    src/ICLQt/DrawHandle.h
-	    src/ICLQt/DrawWidget3D.h
-	    src/ICLQt/DrawWidget.h
-	    src/ICLQt/FloatHandle.h
-	    src/ICLQt/FPSHandle.h
-	    src/ICLQt/FSliderHandle.h
-	    src/ICLQt/GLFragmentShader.h
-	    src/ICLQt/GLImg.h
-	    src/ICLQt/GLPaintEngine.h
-	    src/ICLQt/GUIComponent.h
-	    src/ICLQt/GUIComponents.h
-	    src/ICLQt/GUIComponentWithOutput.h
-	    src/ICLQt/GUIDefinition.h
-	    src/ICLQt/GUI.h
-	    src/ICLQt/DynamicGUI.h
-	    src/ICLQt/GUIHandleBase.h
-	    src/ICLQt/GUIHandle.h
-	    src/ICLQt/GUISyntaxErrorException.h
-	    src/ICLQt/HistogrammWidget.h
-	    src/ICLQt/IconFactory.h
-	    src/ICLQt/ImageHandle.h
-	    src/ICLQt/ImageStatistics.h
-	    src/ICLQt/IntHandle.h
-	    src/ICLQt/LabelHandle.h
-	    src/ICLQt/LowLevelPlotWidget.h
-	    src/ICLQt/MouseEvent.h
-	    src/ICLQt/PaintEngine.h
-	    src/ICLQt/PlotHandle.h
-	    src/ICLQt/PlotWidget.h
-	    src/ICLQt/ProxyLayout.h
-	    src/ICLQt/QImageConverter.h
-	    src/ICLQt/Qt.h
-	    src/ICLQt/Quick.h
-	    src/ICLQt/SliderHandle.h
-	    src/ICLQt/SliderUpdateEvent.h
-	    src/ICLQt/SpinnerHandle.h
-	    src/ICLQt/SplitterHandle.h
-	    src/ICLQt/StateHandle.h
-	    src/ICLQt/StringHandle.h
-	    src/ICLQt/TabHandle.h
-	    src/ICLQt/ThreadedUpdatableTextView.h
-	    src/ICLQt/ThreadedUpdatableWidget.h
-	    src/ICLQt/WidgetCaptureMode.h
-	    src/ICLQt/GLPaintEngine.h
+            src/ICLQt/BorderBox.h
+            src/ICLQt/BorderHandle.h
+            src/ICLQt/BoxHandle.h
+            src/ICLQt/ButtonGroupHandle.h
+            src/ICLQt/ButtonHandle.h
+            src/ICLQt/CamCfgWidget.h
+            src/ICLQt/CheckBoxHandle.h
+            src/ICLQt/ChromaClassifierIO.h
+            src/ICLQt/ColorHandle.h
+            src/ICLQt/ColorLabel.h
+            src/ICLQt/ComboHandle.h
+            src/ICLQt/Common.h
+            src/ICLQt/CompabilityLabel.h
+            src/ICLQt/ContainerGUIComponent.h
+            src/ICLQt/ContainerGUIComponents.h
+            src/ICLQt/ContainerHandle.h
+            src/ICLQt/DataStore.h
+            src/ICLQt/DefineRectanglesMouseHandler.h
+            src/ICLQt/DefineQuadrangleMouseHandler.h
+            src/ICLQt/DispHandle.h
+            src/ICLQt/Dragger.h
+            src/ICLQt/DragRectangleMouseHandler.h
+            src/ICLQt/DrawHandle3D.h
+            src/ICLQt/DrawHandle.h
+            src/ICLQt/DrawWidget3D.h
+            src/ICLQt/DrawWidget.h
+            src/ICLQt/FloatHandle.h
+            src/ICLQt/FPSHandle.h
+            src/ICLQt/FSliderHandle.h
+            src/ICLQt/GLFragmentShader.h
             src/ICLQt/GLImg.h
-	    src/ICLQt/DrawWidget3D.h
-	    src/ICLQt/DrawHandle3D.h
-	    src/ICLQt/GLFragmentShader.h
+            src/ICLQt/GLPaintEngine.h
+            src/ICLQt/GUIComponent.h
+            src/ICLQt/GUIComponents.h
+            src/ICLQt/GUIComponentWithOutput.h
+            src/ICLQt/GUIDefinition.h
+            src/ICLQt/GUI.h
+            src/ICLQt/DynamicGUI.h
+            src/ICLQt/GUIHandleBase.h
+            src/ICLQt/GUIHandle.h
+            src/ICLQt/GUISyntaxErrorException.h
+            src/ICLQt/HistogrammWidget.h
+            src/ICLQt/IconFactory.h
+            src/ICLQt/ImageHandle.h
+            src/ICLQt/ImageStatistics.h
+            src/ICLQt/IntHandle.h
+            src/ICLQt/LabelHandle.h
+            src/ICLQt/LowLevelPlotWidget.h
+            src/ICLQt/MouseEvent.h
+            src/ICLQt/PaintEngine.h
+            src/ICLQt/PlotHandle.h
+            src/ICLQt/PlotWidget.h
+            src/ICLQt/ProxyLayout.h
+            src/ICLQt/QImageConverter.h
+            src/ICLQt/Qt.h
+            src/ICLQt/Quick.h
+            src/ICLQt/SliderHandle.h
+            src/ICLQt/SliderUpdateEvent.h
+            src/ICLQt/SpinnerHandle.h
+            src/ICLQt/SplitterHandle.h
+            src/ICLQt/StateHandle.h
+            src/ICLQt/StringHandle.h
+            src/ICLQt/TabHandle.h
+            src/ICLQt/ThreadedUpdatableTextView.h
+            src/ICLQt/ThreadedUpdatableWidget.h
+            src/ICLQt/WidgetCaptureMode.h
+            src/ICLQt/GLPaintEngine.h
+            src/ICLQt/GLImg.h
+            src/ICLQt/DrawWidget3D.h
+            src/ICLQt/DrawHandle3D.h
+            src/ICLQt/GLFragmentShader.h
             src/ICLQt/Quick.h
             src/ICLQt/ICLVideoSurface.h
             src/ICLQt/QtVideoGrabber.h
@@ -174,13 +174,13 @@ SET(ICL_MOC_HEADERS src/ICLQt/Widget.h
                     src/ICLQt/MouseHandler.h
                     src/ICLQt/DoubleSlider.h
                     src/ICLQt/ImgParamWidget.h
-	            src/ICLQt/StringSignalButton.h
-	            src/ICLQt/GUIWidget.h
-	            src/ICLQt/ChromaGUI.h
-	            src/ICLQt/ThreadedUpdatableSlider.h
-	            src/ICLQt/MultiDrawHandle.h
-	            src/ICLQt/ToggleButton.h
-		    src/ICLQt/Application.h)
+                    src/ICLQt/StringSignalButton.h
+                    src/ICLQt/GUIWidget.h
+                    src/ICLQt/ChromaGUI.h
+                    src/ICLQt/ThreadedUpdatableSlider.h
+                    src/ICLQt/MultiDrawHandle.h
+                    src/ICLQt/ToggleButton.h
+                    src/ICLQt/Application.h)
 
 # ---- Library build instructions ----
 IF(WIN32)
@@ -213,12 +213,9 @@ ENDIF()
 ADD_LIBRARY(ICLQt SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
 
 # ---- 3rd party library handling ----
-TARGET_LINK_LIBRARIES(ICLQt ICLCV
-                            ${ICLQt_3RDPARTY_LIBRARIES})
+TARGET_LINK_LIBRARIES(ICLQt ICLCV ${ICLQt_3RDPARTY_LIBRARIES})
 
-SET_TARGET_PROPERTIES(ICLQt
-                      PROPERTIES
-		      VERSION ${SO_VERSION})
+SET_TARGET_PROPERTIES(ICLQt PROPERTIES VERSION ${SO_VERSION})
 
 # ---- Build examples/ demos/ apps ----
 IF(BUILD_EXAMPLES)

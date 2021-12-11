@@ -408,8 +408,7 @@ function(CONFIGURE_GTEST library_name library_root)
     add_executable(${TEST_TARGET_NAME} ${TEST_FILES})
     target_link_libraries(${TEST_TARGET_NAME} gtest_main ${library_name})
 
-    # on Windows, we need to make sure that all build paths for dlls are part of the
-    # test paths
+    # On Windows, we need to make sure that all build paths for dlls are part of the test paths
     if(WIN32)
       if(ICL_64BIT)
         set(GLEW_RELEASE "x64")
@@ -417,7 +416,7 @@ function(CONFIGURE_GTEST library_name library_root)
         set(GLEW_RELEASE "Win32")
       endif(ICL_64BIT)
       get_filename_component(PTHREAD_PATH ${pthreadVC2_LIBRARY} DIRECTORY)
-      string(REPLACE "lib" "dll" PTHREAD_PATH "${PTHREAD_PATH}")              
+      string(REPLACE "lib" "dll" PTHREAD_PATH "${PTHREAD_PATH}")
       set(TEST_PATH "PATH=\
 ${CMAKE_BINARY_DIR}/ICLMath/${CMAKE_BUILD_TYPE};\
 ${CMAKE_BINARY_DIR}/ICLCore/${CMAKE_BUILD_TYPE};\
@@ -434,10 +433,10 @@ ${QT_ROOT}/bin;\
 ${GLEW_ROOT}/bin/Release/${GLEW_RELEASE};\
 ${PTHREAD_PATH};\
 $ENV{PATH}")
-      string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")        
-      string(REPLACE "\\;" ";" TEST_PATH "${TEST_PATH}")  
+      string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")
+      string(REPLACE "\\;" ";" TEST_PATH "${TEST_PATH}")
       string(REPLACE ";" "\\\;" TEST_PATH "${TEST_PATH}")
-      message("TEST_PATH: ${TEST_PATH}")      
+      message("TEST_PATH: ${TEST_PATH}")
       gtest_add_tests(TARGET ${TEST_TARGET_NAME}
                       TEST_LIST LIST_OF_TESTS)
       set_tests_properties(${LIST_OF_TESTS} PROPERTIES

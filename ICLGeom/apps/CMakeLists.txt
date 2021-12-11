@@ -10,7 +10,7 @@ IF(QT_FOUND)
   ADD_SUBDIRECTORY(point-cloud-viewer)
   ADD_SUBDIRECTORY(simple-point-cloud-viewer)
   ADD_SUBDIRECTORY(point-cloud-pipe)
-	ADD_SUBDIRECTORY(point-cloud-creator)
+  ADD_SUBDIRECTORY(point-cloud-creator)
   ADD_SUBDIRECTORY(fix-kinect-calibration)
 ENDIF()
 
