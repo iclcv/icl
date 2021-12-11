@@ -119,3 +119,99 @@ jobs:
       with:
         personal_token: ${{ secrets.GITHUB_TOKEN }}''
         publish_dir: build/doc/pages
+
+
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: # Take care to use matching versions!
+          - msvc: 2019
+            arch: 32
+          - msvc: 2019
+            qt: 5.15.2
+            cv: 3.4.16
+            package: true
+
+    name: MSVC ${{ matrix.msvc }} • ${{ matrix.arch || '64' }}bit${{ matrix.qt && ' • Qt '}}${{ matrix.qt }}${{ matrix.cv && ' • OpenCV '}}${{ matrix.cv }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Prepare MSVC
+      uses: ilammy/msvc-dev-cmd@v1.9.0
+      with:
+        toolset: ${{ matrix.msvc == '2019' && '' || (matrix.msvc == '2015' && '14.0') || '' }}
+        arch: win${{ matrix.arch || '64' }}
+
+    - name: Install Qt
+      if: matrix.qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: ${{ matrix.qt }}
+        arch: win${{ matrix.arch || '64' }}_msvc${{ matrix.msvc }}_${{ matrix.arch || '64' }}
+
+    - name: Define $DEPS folder
+      run: |
+        $DEPS = "$env:RUNNER_WORKSPACE\deps"
+        mkdir $DEPS
+        # Set $DEPS as environment variable for next steps too
+        echo "DEPS=$DEPS" >> $env:GITHUB_ENV
+
+    - name: Install pthreads
+      run: |
+        $base = "$env:DEPS\pthreads"
+        Invoke-WebRequest http://ftp.gwdg.de/pub/linux/sources.redhat.com/pthreads-win32/pthreads-w32-2-9-1-release.zip -OutFile "$base.zip"
+        7z x "$base.zip" -o"$base"
+
+        $base = "$base\Pre-built.2"
+        echo "-DPTHREADS_INCLUDE_DIR=$base\include" >> "$env:DEPS\opts"
+        echo "-DpthreadVC2_LIBRARY=$base\lib\x${{ matrix.arch == '32' && '86' || '64' }}\pthreadVC2.lib" >> "$env:DEPS\opts"
+
+    - name: Install GLEW
+      run: |
+        $base = "$env:DEPS\glew"
+        Invoke-WebRequest -UserAgent Wget https://downloads.sourceforge.net/project/glew/glew/2.2.0/glew-2.2.0-win32.zip -OutFile "$base.zip"
+        7z x "$base.zip" -o"$base"
+
+        echo "-DGLEW_ROOT=$base\glew-2.2.0" >> "$env:DEPS\opts"
+
+    - name: Install OpenCV
+      if: matrix.cv && matrix.arch != '32'  # OpenCV doesn't ship a 32bit version anymore
+      run: |
+        choco install opencv --version ${{ matrix.cv }}
+
+        echo "-DBUILD_WITH_OPENCV=ON" >> "$env:DEPS\opts"
+        echo "-DOPENCV_ROOT=C:\tools\opencv\build" >> "$env:DEPS\opts"
+
+    - name: Show extra cmake options
+      run: cat "$env:DEPS\opts"
+
+    - name: Configure cmake
+      run: >
+        cmake -S . -B build -G "NMake Makefiles"
+        -DBUILD_EXAMPLES=ON
+        -DBUILD_DEMOS=ON
+        -DBUILD_APPS=ON
+        -DBUILD_TESTS=ON
+        -DBUILD_REDIST=WIX
+        -DBUILD_WITH_QT=${{ matrix.qt && 'ON' || 'OFF' }}
+        (Get-Content "$env:DEPS\opts")
+
+    - name: Build
+      run: cmake --build build -j3
+
+    - name: Test
+      run: cmake --build build --target test
+
+    - name: Package
+      if: matrix.package
+      run: cmake --build build --target package
+
+    - name: Upload *.msi
+      if: matrix.package
+      uses: actions/upload-artifact@v2
+      with:
+        name: msi-installer-win${{ matrix.arch || '64' }}${{ matrix.qt && '-Qt'}}${{ matrix.qt }}${{ matrix.cv && '-OpenCV'}}${{ matrix.cv }}
+        path: build\_CPack_Packages\*\WIX\icl-*.msi
