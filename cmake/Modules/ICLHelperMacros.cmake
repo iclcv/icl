@@ -417,31 +417,36 @@ function(CONFIGURE_GTEST library_name library_root)
       endif(ICL_64BIT)
       get_filename_component(PTHREAD_PATH ${pthreadVC2_LIBRARY} DIRECTORY)
       string(REPLACE "lib" "dll" PTHREAD_PATH "${PTHREAD_PATH}")
-      set(TEST_PATH "PATH=\
-${CMAKE_BINARY_DIR}/ICLMath/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLCore/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLFilter/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLIO/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLQt/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLCV/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLGeom/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLMarkers/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLPhysics/${CMAKE_BUILD_TYPE};\
-${CMAKE_BINARY_DIR}/ICLUtils/${CMAKE_BUILD_TYPE};\
-${OPENCV_ROOT}/${ARCH}/${OpenCV_RUNTIME}/bin;\
-${QT_ROOT}/bin;\
-${GLEW_ROOT}/bin/Release/${GLEW_RELEASE};\
-${PTHREAD_PATH};\
-$ENV{PATH}")
-      string(REPLACE "/" "\\" TEST_PATH "${TEST_PATH}")
-      string(REPLACE "\\;" ";" TEST_PATH "${TEST_PATH}")
-      string(REPLACE ";" "\\\;" TEST_PATH "${TEST_PATH}")
-      message("TEST_PATH: ${TEST_PATH}")
+      set(TEST_PATH "${CMAKE_BINARY_DIR}/ICLMath/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLCore/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLFilter/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLIO/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLQt/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLCV/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLGeom/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLMarkers/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLPhysics/${CMAKE_BUILD_TYPE}"
+                    "${CMAKE_BINARY_DIR}/ICLUtils/${CMAKE_BUILD_TYPE}"
+                    "${GLEW_ROOT}/bin/Release/${GLEW_RELEASE}"
+                    "${PTHREAD_PATH}"
+                    $ENV{PATH})
+      if(OPENCV_ROOT)
+        list(APPEND TEST_PATH "${OPENCV_ROOT}/${ARCH}/${OpenCV_RUNTIME}/bin")
+      endif()
+      if(QT_ROOT)
+        list(APPEND TEST_PATH "${QT_ROOT}/bin")
+      endif()
+      file(TO_NATIVE_PATH "${TEST_PATH}" TEST_PATH)
+      if(NOT TEST_PATH_SHOWN)
+        set(TEST_PATH_SHOWN ON CACHE INTERNAL "")
+        string(REPLACE ";" "\n" TEST_PATH_FORMATTED "${TEST_PATH}")
+        message("PATH used for test executables: \n${TEST_PATH_FORMATTED}")
+      endif()
       gtest_add_tests(TARGET ${TEST_TARGET_NAME}
                       TEST_LIST LIST_OF_TESTS)
       set_tests_properties(${LIST_OF_TESTS} PROPERTIES
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                           ENVIRONMENT ${TEST_PATH})
+                           ENVIRONMENT "PATH=${TEST_PATH}")
     else()
       # use discover_tests whenever possible
       gtest_discover_tests(${TEST_TARGET_NAME}
