@@ -522,7 +522,7 @@ namespace icl{
           }
         }
       }
-      ~FreenectDevice(){
+      ~FreenectDevice() noexcept (false) {
         if(mode != KinectGrabber::GRAB_DEPTH_IMAGE){
           used->numColorUsers--;
           if(!used->numColorUsers){
@@ -888,4 +888,3 @@ namespace icl{
 
   } // namespace io
 } // namespace icl
-

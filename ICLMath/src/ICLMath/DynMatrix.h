@@ -287,7 +287,7 @@ namespace icl{
       inline DynMatrix &elementwise_div(const DynMatrix &m, DynMatrix &dst) const{
         if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
         dst.setBounds(cols(),rows());
-        for(int i=0;i<dim();++i){
+        for(unsigned int i=0;i<dim();++i){
           dst[i] = m_data[i] / m[i];
         }
         return dst;

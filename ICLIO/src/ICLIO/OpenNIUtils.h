@@ -407,6 +407,7 @@ namespace icl {
       /// abstract super-class of all Image generators
       class OpenNIMapGenerator : public ReadWriteBufferHandler<core::ImgBase> {
         public:
+          virtual ~OpenNIMapGenerator() = default;
 
           /// an enum listing all supported data generators
           enum Generators {
@@ -549,4 +550,3 @@ namespace icl {
 
   } // namespace io
 } // namespace icl
-
