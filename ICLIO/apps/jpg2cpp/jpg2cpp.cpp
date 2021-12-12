@@ -164,5 +164,3 @@ int main(int n, char **ppc){
          "}\n\n",imageName.c_str(),imageName.c_str());
 
 }
-
-

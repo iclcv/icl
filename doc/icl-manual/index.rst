@@ -52,14 +52,14 @@ Image Component Library (ICL)
 
 .. we force the 3 column layout here!
 
-| |A| |B| |C| |D| |E| 
+| |A| |B| |C| |D| |E|
 | |F| |G| |H| |I| |J|
 
 Getting Started
 ***************
 
 | |ABOUT|     |DOWNLOAD|  |INSTALL|
-| |TUTORIAL|  |HOWTOS|    |LICENSE| 
+| |TUTORIAL|  |HOWTOS|    |LICENSE|
 
 Internal
 ********
@@ -74,13 +74,13 @@ Internal
    extras/install
    extras/license
    howtos
-   modules 
-   about 
+   modules
+   about
    tutorial
 
 .. toctree::
    :hidden:
-      
+
    js.rst
    modules/utils.rst
    modules/math.rst
@@ -129,7 +129,7 @@ Internal
        }
        return '<div id="'+id+'" class="tooltip extras"></div>'
     }
-  
+
     var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ];
     for(var i=0;i<5;++i){
       var e = $('.reference.external[href="extras/'+extras[i]+'.html"]');
@@ -203,10 +203,10 @@ Internal
        return '<div id="'+id+'"class="tooltip modules">'+text+'</div>';
     });
     /*var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ]; */
-    
+
     /*$('.reference.external[href^="modules"]').tooltip({ */
-    $('.reference.external').tooltip({ 
-      position: "top center", 
+    $('.reference.external').tooltip({
+      position: "top center",
       opacity: 1,
       effect: 'fade',
       predelay: 300,
@@ -235,7 +235,7 @@ Internal
 
   });
   </script>
-  <style type="text/css"> 
+  <style type="text/css">
     .tooltip.modules {
       display:none;
       background: transparent url(_static/images/index-tip.png);
@@ -248,7 +248,7 @@ Internal
       line-height: 20px;
       color: rgb(70,70,70);
     }
-    
+
     .tooltip.extras {
       display:none;
       background: rgba(0,100,255,0.2);

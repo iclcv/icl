@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME canny-op
            SOURCES canny-op.cpp
            LIBRARIES ICLMarkers)
-

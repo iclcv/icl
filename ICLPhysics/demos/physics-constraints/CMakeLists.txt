@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME phyisics-constraints
            SOURCES phyisics-constraints.cpp
            LIBRARIES ICLPhysics)
-

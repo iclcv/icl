@@ -102,4 +102,3 @@ namespace icl{
     typedef pugi::xpath_node_set XPathNodeSet;
   } // namespace utils
 }
-

@@ -5,7 +5,7 @@ function usage {
     exit -1
 }
 
-if [ "$#" != "2" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then 
+if [ "$#" != "2" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
     usage ;
 fi
 
@@ -19,7 +19,7 @@ case $BUILD_DIR in
 esac
 
 
-if [ ! -e $FULL_CFG ] ; then 
+if [ ! -e $FULL_CFG ] ; then
     echo "unable to find given config file $FULL_CFG" ;
     usage ;
 fi

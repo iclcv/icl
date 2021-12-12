@@ -26,7 +26,7 @@ accuracy.
 The calibration prodecure produces a camera description xml file,
 which is used to instantiatiate the :icl:`geom::Camera` class. The
 camera class is used for ICL's 3D computer vision tools located in the
-:icl:`icl::geom` package. 
+:icl:`icl::geom` package.
 
 The calibration toolbox implicitly includes calibration of multi
 camera environments. To this end, each camera can simply be calibrated
@@ -36,7 +36,7 @@ camera) can basically also be seen as a stereo camera system, ICL
 implicitly supports RGB-D calibration allowing to compute the mapping
 between Kinects color and depth image.
 
-.. note:: 
+.. note::
 
   Usually Kinects depth-camera is calibrated by
   exploiting the fact that Kinect also allows to grab the camera's
@@ -73,7 +73,7 @@ lens-undistortion parameters:
 * *icl-lens-undistortion-calibration-opencv*
 
 While *icl-lens-undistortion-calibration-opencv* internally employs
-OpenCV's calibration method, *icl-lens-undistortion-calibration* is 
+OpenCV's calibration method, *icl-lens-undistortion-calibration* is
 implemented without OpenCV.
 
 In contrast to OpenCV's built-in calibration application,
@@ -115,7 +115,7 @@ be used.
 
 In order to initiate the tool, just run it with an approriate parameter
 set, e.g.::
-  
+
   icl-lens-undistortion-calibration-opencv -i dc800 0 -g 7x5
 
 This uses the first fire-wire 800 device, a 7 by 5 checkerboard and a set
@@ -126,10 +126,10 @@ Here is a screenshot of the application running:
       :scale: 50%
 
 Once enough calibration frames were collected. The calibration can be
-triggered. The collection of calibration frames can be triggered manually 
+triggered. The collection of calibration frames can be triggered manually
 or an automatic mode can be activated. Here, the system would store every input
 frame that has more than a minimum displacement (adjustable using the a slider)
-all other already captured frames. OpenCV internally computes two sets of 
+all other already captured frames. OpenCV internally computes two sets of
 calibration prameters:
 
 1. Parameters describing the projective camera geometry (focal length
@@ -184,20 +184,20 @@ disadvantage, that input calibration frames can only be used if the
 whole checker-board is visible. This, however, leads to the fact that
 it is very difficult to provide calibration frames that also cover the
 border regions of the images well. In order to make this step more
-convenient, a marker-based grid can be used as well. Here, also a 
+convenient, a marker-based grid can be used as well. Here, also a
 sub-set of marker-grid can be used for calibration. By calling::
 
   icl-lens-undistortion-calibration-opencv -i dc800 0 -m bch '[0-629]' 8x8 -g 30x21
 
 The OpenCV-based camera calibration tool uses a 30x21 bch marker grid
 as input. Here is a screenshot
-  
+
 .. image:: images/icl-lens-undistortion-calibration-opencv-screenshot-2.png
       :alt: shadow
       :scale: 50%
 
-As one can see, only a part of the marker-grid is visible and still the 
-calibration can be performed very well. 
+As one can see, only a part of the marker-grid is visible and still the
+calibration can be performed very well.
 
 
 
@@ -327,7 +327,7 @@ estimated/calibrated camera parameters as an image overlay in real-time.
    Please note that the accuracy of the description/measurement of the marker layout
    is directly linked to the accuracy of the calibration result.
 
-and 
+and
 
 .. note::
 
@@ -606,7 +606,7 @@ output file is used
 
 .. note::
 
-  When using **-o filename**, the system will not ask before overwriting 
+  When using **-o filename**, the system will not ask before overwriting
   files.
 
 
@@ -628,7 +628,7 @@ provide a very simple way to
 * add the virtual camera to the virtual scene
 * add virtual objects
 * render the virtual scene on top of an image stream acquired from **C**
- 
+
 In this case, virtual and real objects should perfectly overlap if
 they are located at the same position (the real object in the real
 world, and the virtual object in the virtual world). ICL's
@@ -761,7 +761,7 @@ than QVGA. Due to the method that is used to computed Kinect's depth
 image, many sources argue that Kinect internally does not support more
 than QVGA resolution and the VGA image is basically and intelligently
 up-scaled version of this. Only by reducing the resolution to QVGA, many
-point cloud processing applications obtain real-time capabilities. 
+point cloud processing applications obtain real-time capabilities.
 
 However, using ICL's calibration pipeline sketched above for Kinect
 with QVGA resolution usually leads to difficulties when calibrating

@@ -99,5 +99,3 @@ namespace icl{
 
   } // namespace qt
 }
-
-

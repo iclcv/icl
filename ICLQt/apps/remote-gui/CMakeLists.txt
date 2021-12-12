@@ -5,5 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME remote-gui
           SOURCES remote-gui.cpp
           LIBRARIES ICLQt)
-
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME depth-camera-simulator
           SOURCES depth-camera-simulator.cpp
           LIBRARIES ICLMarkers)
-

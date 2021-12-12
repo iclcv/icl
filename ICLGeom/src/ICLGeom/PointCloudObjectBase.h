@@ -385,4 +385,3 @@ namespace icl{
     ICLGeom_API std::ostream &operator<<(std::ostream &s, const PointCloudObjectBase::FeatureType t);
   } // namespace geom
 }
-

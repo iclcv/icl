@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME kinect-pointcloud
            SOURCES kinect-pointcloud.cpp
            LIBRARIES ICLMarkers)
-

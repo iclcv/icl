@@ -14,7 +14,7 @@ your environment variables to easily compile and run your example code.
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
 |    :language: c++                          |    :scale: 60%                   |
 |    :linenos:                               |    :alt: shadow                  |
-+--------------------------------------------+----------------------------------+   
++--------------------------------------------+----------------------------------+
 
 In order to make this demo work, you have to apply the following steps (linux/mac):
 
@@ -36,7 +36,7 @@ In order to make this demo work, you have to apply the following steps (linux/ma
 * simply save the example above as example.cpp in your current
   directory and type **icl-make example**
 * this should invoke c++ with all necessary compiler and linker flags
-* once your demo application is built, you can run it by typing 
+* once your demo application is built, you can run it by typing
   **./example**
 
 The example code contains actually two nested function calls: The
@@ -48,7 +48,7 @@ rapid prototyping and therefore it will automatically use all
 ICL-namespaces and the **std**-namespace
 
 * :icl:`qt::create` creates a demo image that is specified by
-  the given string value. 
+  the given string value.
 * :icl:`qt::show` is a very special function. It saves the given
   image to a temporary file, and starts the application **icl-xv** in
   order to display this image. **icl-xv** can be set up to delete the
@@ -58,5 +58,3 @@ ICL-namespaces and the **std**-namespace
   implement GUI- and event handling itself. (Note: it is also possible
   to set up the show function to use a custom image-viewer
   application, see :icl:`showSetup`).
-
-

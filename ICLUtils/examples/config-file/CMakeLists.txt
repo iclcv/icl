@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_EXAMPLE(NAME config-file
               SOURCES config-file.cpp
               LIBRARIES ICLUtils)
-

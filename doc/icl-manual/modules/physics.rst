@@ -15,7 +15,7 @@ soft and rigid body dynamics and collisions as well as constraints and motor
 types. Its seamless integration with ICLGeom's rendering API allows for super fast
 rapid prototyping.
 
-.. image:: images/collision.png 
+.. image:: images/collision.png
  :scale: 30%
 
 Table of Contents
@@ -39,7 +39,7 @@ functions to test rays as well as objects for collision with the objects within 
 PhysicsWorld.
 :icl:`PhysicsObject` and :icl:`Constraint` can be added and behave just
 like :icl:`SceneObjects`. The simulation can be stepped through my simply calling
-the step function. For further information on how to fine-tune the step 
+the step function. For further information on how to fine-tune the step
 parameters visit http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World.
 
 .. _physics.rigidobject:
@@ -48,13 +48,13 @@ parameters visit http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 The :icl:`physics::RigidObject` class is one of the two basic types of objects in
-the physics scene. The subclasses like :icl:`RigidBoxObject` or 
+the physics scene. The subclasses like :icl:`RigidBoxObject` or
 :icl:`RigidCylinderObject` allow for quick scene building with primitive shapes.
 For more complex shapes :icl:`RigidConvexHullObject` can be used to create a
 :icl:`RigidObject` from a vector of points. The :icl:`RigidCompoundObject`
 allows to create concave objects by combining other :icl:`RigidObjects`.
 :icl:`RigidObject` have  parameters like weight, friction, or
-restitution which allows for modeling different behaviour when objects 
+restitution which allows for modeling different behaviour when objects
 collide.
 
 Here is an example for a simple scene with some objects:
@@ -70,16 +70,16 @@ Here is an example for a simple scene with some objects:
 
 The :icl:`SoftObject` is the wrapper class for the bullet softbodies. Softbodies
 enable simulation of pliable bodies like cloth and rubber at a greater cost of
-performance. 
+performance.
 
 .. _physics.constraint:
 
 :icl:`Constraints`
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-:icl:`Constraints` allow the simulation of behaviour like hinges, ball sockets 
-or rails. These constraints are all implemented based on the 
-:icl:`SixDofConstraint` which allows for generic constraints. The 
+:icl:`Constraints` allow the simulation of behaviour like hinges, ball sockets
+or rails. These constraints are all implemented based on the
+:icl:`SixDofConstraint` which allows for generic constraints. The
 constraint works by describing 2 transformations matrices which represnt a positoins and orientation (in bullet these are called frames) relativ to two objects. When all six degrees of freedem(3 translation and 3 rotation degrees) are locked the constraint will try move these frames on top of each other. By unlocking
 certain degrees free traversal along that degree can be allowed.
 

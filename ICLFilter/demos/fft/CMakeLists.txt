@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME fft
            SOURCES fft.cpp
            LIBRARIES ICLMarkers)
-

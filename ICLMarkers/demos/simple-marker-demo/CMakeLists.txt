@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME simple-marker-demo
            SOURCES simple-marker-demo.cpp
            LIBRARIES ICLMarkers)
-

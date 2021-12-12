@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME quad-tree
            SOURCES quad-tree.cpp
            LIBRARIES ICLMarkers)
-

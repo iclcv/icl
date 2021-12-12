@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME swiss-ranger
            SOURCES swiss-ranger.cpp
            LIBRARIES ICLMarkers)
-

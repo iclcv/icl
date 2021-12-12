@@ -67,5 +67,3 @@ namespace icl{
 
   } // namespace qt
 }
-
-

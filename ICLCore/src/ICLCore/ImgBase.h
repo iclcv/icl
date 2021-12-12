@@ -905,4 +905,3 @@ namespace icl {
     ICLCore_API std::ostream &operator<<(std::ostream &s, const ImgBase &image);
   } // namespace core
 }
-

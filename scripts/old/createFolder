@@ -12,15 +12,15 @@ if [ -d $1 ] ; then
 fi
 
 LIST=`echo "make install packages ICLCore ICLFilter"`
-for T in $LIST ; do 
+for T in $LIST ; do
     echo "testing $T" ;
-    if [ ! -d $T ] ; then  
+    if [ ! -d $T ] ; then
         echo "error: the current folder ('$PWD') seems not to be"
         echo "       the ICL base directory (missing directory: $T"
-        exit 1 ; 
+        exit 1 ;
     fi ;
 done
-    
+
 
 # Create folder root dir
 echo "Creating folder $1:                     "
@@ -67,11 +67,3 @@ echo "done"
 echo -n "Creating packageVar packages/$1...   "
 sed "s|PACKAGE_NAME|$1|g" make/makeVar.packages > packages/$1
 echo "done"
-
-
-
-
-
-
-
-

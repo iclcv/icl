@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME polynomial-regression
            SOURCES polynomial-regression.cpp
            LIBRARIES ICLMarkers)
-

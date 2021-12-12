@@ -93,4 +93,3 @@ int main(int n, char**ppc){
   ERROR_LOG("this demo has a bug!");
   return ICLApplication(n,ppc,"",init,run).exec();
 }
-

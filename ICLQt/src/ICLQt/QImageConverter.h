@@ -159,4 +159,3 @@ namespace icl{
     };
   } // namespace qt
 }
-

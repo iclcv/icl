@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME animated-grid
            SOURCES animated-grid.cpp
            LIBRARIES ICLMarkers)
-

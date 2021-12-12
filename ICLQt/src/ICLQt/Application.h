@@ -243,4 +243,3 @@ namespace icl{
     typedef ICLApplication ICLApp;
   } // namespace qt
 }
-

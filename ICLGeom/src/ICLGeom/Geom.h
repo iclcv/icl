@@ -125,7 +125,3 @@ int main(int n, char**ppc){
     \image html simple-vis.png "simple visualization demo"
     </td></tr></table>
 */
-
-
-
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME fix-kinect-calibration
           SOURCES fix-kinect-calibration.cpp
           LIBRARIES ICLMarkers)
-

@@ -7,7 +7,7 @@ PROG=cmake
 for T in "$@" ; do
     if [ "$T" = "--ccmake" ] ; then
         PROG=ccmake ;
-    elif [ "$T" = "--debug" ] ; then 
+    elif [ "$T" = "--debug" ] ; then
         VERSION=debug ;
         VERSION_POSTFIX=-debug ;
         DEBUG_VALUE=TRUE ;

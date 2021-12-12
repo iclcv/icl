@@ -8,5 +8,3 @@ IF(QT_FOUND)
     ADD_SUBDIRECTORY(octree)
   ENDIF()
 ENDIF()
-
-

@@ -24,5 +24,3 @@ int main(){
   h.print("passed text");
   return 0;
 }
-
-

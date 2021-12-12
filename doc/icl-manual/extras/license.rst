@@ -23,4 +23,3 @@ Excellence Cluster EXC 277 Cognitive Interaction Technology.
 The Excellence Cluster EXC 277 is a grant of the Deutsche
 Forschungsgemeinschaft (DFG) in the context of the German
 Excellence Initiative.
-

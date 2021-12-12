@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME dcdeviceinfo
           SOURCES dcdeviceinfo.cpp
           LIBRARIES ICLMarkers)
-

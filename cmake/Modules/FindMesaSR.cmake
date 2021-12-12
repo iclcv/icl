@@ -51,15 +51,15 @@ LIST(APPEND _MESASR_LIBRARIES mesasr)
 
 # Try each search configuration
 FOREACH(_PATH ${_MESASR_SEARCHES})
-  FIND_PATH(MESASR_INCLUDE_DIR 
-            NAMES libMesaSR.h        
+  FIND_PATH(MESASR_INCLUDE_DIR
+            NAMES libMesaSR.h
 	    PATHS ${${_PATH}}
-	    PATH_SUFFIXES "/include" 	  
+	    PATH_SUFFIXES "/include"
 	    DOC "The path to MESA Imaging library"
 	    NO_DEFAULT_PATH)
-  
+
     FOREACH(_lib ${_MESASR_LIBRARIES})
-      FIND_LIBRARY(${_lib}_LIBRARY  
+      FIND_LIBRARY(${_lib}_LIBRARY
                NAMES ${_lib}
 	       PATHS ${${_PATH}}
 	       PATH_SUFFIXES lib
@@ -67,9 +67,9 @@ FOREACH(_PATH ${_MESASR_SEARCHES})
     ENDFOREACH()
 ENDFOREACH()
 
-# Handle the QUIETLY and REQUIRED arguments and set MESASR_FOUND to TRUE if 
+# Handle the QUIETLY and REQUIRED arguments and set MESASR_FOUND to TRUE if
 # all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MESASR REQUIRED_VARS 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(MESASR REQUIRED_VARS
 				  mesasr_LIBRARY
 				  MESASR_INCLUDE_DIR)
 

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME canvas
            SOURCES canvas.cpp
            LIBRARIES ICLMarkers)
-

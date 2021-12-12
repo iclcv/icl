@@ -19,10 +19,10 @@ make clean > /dev/null
 echo "done"
 
 echo "replacing pattern *.h recursively"
-find -P $DIR -name "*.h" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;      
+find -P $DIR -name "*.h" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;
 
 echo "replacing pattern *.h recursively"
-find -P $DIR -name "*.cpp" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;      
+find -P $DIR -name "*.cpp" -exec sed -i "s|$SRC_NAME|$DST_NAME|g" {} \; -exec echo "replacing in {}" \;
 
 
 CLASS_H=`find -P $DIR -name "$SRC_NAME.h"`
@@ -44,4 +44,3 @@ if [ $CLASS_CPP ] ; then
 fi
 
 echo -e "done!  call \n\t make depend && make all && svn commit\n\t now."
-

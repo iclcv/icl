@@ -94,5 +94,3 @@ namespace icl{
 
   } // namespace geom
 }
-
-

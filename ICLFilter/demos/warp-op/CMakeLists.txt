@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME warp-op
            SOURCES warp-op.cpp
            LIBRARIES ICLMarkers)
-

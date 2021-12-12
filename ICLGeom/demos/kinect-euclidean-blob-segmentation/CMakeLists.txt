@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME kinect-euclidean-blob-segmentation
            SOURCES kinect-euclidean-blob-segmentation.cpp
            LIBRARIES ICLGeom)
-

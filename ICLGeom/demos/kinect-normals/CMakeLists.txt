@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME kinect-normals
            SOURCES kinect-normals.cpp
            LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME camera-config
           SOURCES camera-config.cpp
           LIBRARIES ICLMarkers)
-

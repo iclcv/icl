@@ -103,4 +103,3 @@ namespace icl {
   typedef std::complex<icl64f> icl64c;
 
 }
-

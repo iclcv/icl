@@ -148,4 +148,3 @@ int main(int n, char**ppc){
   return ICLApplication(n,ppc,"-obj|-o(.obj-filename) -shape|-s(shape=cuboid) "
                         "-create-auto-normals|-n -create-display-list|-dl",init,run).exec();
 }
-

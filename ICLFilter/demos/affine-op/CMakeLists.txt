@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME affine-op
            SOURCES affine-op.cpp
            LIBRARIES ICLMarkers)
-

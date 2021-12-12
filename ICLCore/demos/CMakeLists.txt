@@ -3,5 +3,3 @@ IF(QT_FOUND)
   ADD_SUBDIRECTORY(pseudo-color)
   ADD_SUBDIRECTORY(canvas)
 ENDIF()
-
-

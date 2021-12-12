@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME physics-scene
            SOURCES physics-scene.cpp
            LIBRARIES ICLPhysics)
-

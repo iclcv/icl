@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME jpg2cpp
           SOURCES jpg2cpp.cpp
           LIBRARIES ICLMarkers)
-

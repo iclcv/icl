@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME rsb-point-cloud-io
            SOURCES rsb-point-cloud-io.cpp
            LIBRARIES ICLMarkers)
-

@@ -36,7 +36,7 @@ Table of Contents
 
 Basic Types
 """""""""""
- 
+
 ICL's basic data types are defined in
 **ICLUtils/BasicTypes.h**. Unlike all other classes, types and
 functions, the basic types are defined directly in the :icl:`icl`
@@ -44,7 +44,7 @@ functions, the basic types are defined directly in the :icl:`icl`
 types have an *icl*-prefix, an integer-value that describes the number
 of bits used, and a suffix
 
-* **u** for unsigned integers 
+* **u** for unsigned integers
 * **s** for signed integers
 * **f** for floating point numbers
 * **c** for complex floating point numbers
@@ -83,30 +83,30 @@ Support Types
   A simple 2D point class with **int** (**float** for :icl:`Point32f`)
   elements **x** and **y**. Other than this, points behave like
   built-in types. They are serialized as and de-serialized from "(x,y)"
-  
-  .. note:: 
+
+  .. note::
     in case of Intel IPP Support, :icl:`Point` is derived from it's
     IPP-counter-part **IppiPoint**
-  
+
 :icl:`Size` and :icl:`Size32f`
 
   Like the :icl:`Point` classes, but with members **width** and **height**.
   Serialized and de-serialized from "WxH".
 
-  .. note:: 
+  .. note::
     in case of Intel IPP Support, :icl:`Size` is derived from it's
     IPP-counter-part **IppiSize**
 
- 
+
 :icl:`Rect` and :icl:`Rect32f`
- 
+
   Defines a rectangle by given **x**, **y**, **width** and **height**.
   Serialization: "(x,y)WxH"
-  
-  .. note:: 
+
+  .. note::
     in case of Intel IPP Support, :icl:`Rect` is derived from it's
     IPP-counter-part **IppiRect**
-  
+
 :icl:`Range` and :icl:`SteppingRange`
 
   A template class for ranges, described by **minVal** and **maxVal**.
@@ -114,7 +114,7 @@ Support Types
   member variable of the same type
 
 :icl:`Uncopyable` and :icl:`Lockable`
-  
+
   Two straight-forward to use interfaces. :icl:`Uncopyable` just declares
   copy constructor and assignment operators in a private scope to
   avoid copying instances of classes that are derived from it. The
@@ -124,11 +124,11 @@ Support Types
   :icl:`Mutex::Locker`.
 
 :icl:`VisualizationDescription`
- 
+
   Utility class for describing visualizations in a state-machine manner.
   With this tool, classes can e.g. provide a visualization of something,
   that can then be rendered generically
-  
+
 
 .. _utils.pa:
 
@@ -149,8 +149,8 @@ applications. It provides
 * an automatically supported set of common default program
   arguments, such as **-version** or **-help**
 
-* a concise method :icl:`pa` that can be use to query whether 
-  a specific program argument has been given and what it's sub 
+* a concise method :icl:`pa` that can be use to query whether
+  a specific program argument has been given and what it's sub
   arguments where
 
 The usage of the program argument evaluation toolkit is explain
@@ -167,7 +167,7 @@ parameters/properties that shall be changed at runtime. The
 Configurable-subclasses can define properties that can be accessed by
 string identifiers. Each property has a type, a type-dependend
 description of possible values, a current value and a so called
-volatileness. Further details and examples are given in the 
+volatileness. Further details and examples are given in the
 tutorial :ref:`tut.configurable`.
 
 .. _utils.smart-ptr:
@@ -187,7 +187,7 @@ used.
 Time and Timer Support
 """"""""""""""""""""""
 
-:icl:`utils::Time` 
+:icl:`utils::Time`
 
   Here, the main utility class is :icl:`Time`, which was
   originally copied from **libiceutils**. The :icl:`Time` class provides
@@ -201,12 +201,12 @@ Time and Timer Support
 
   This class can be used to estimate the average frames-per-second
   count of a running application::
-  
+
     void runction(){
       static icl::utils::FPSEstimator fps(10); // averages over 10 iterations
       std::cout << fps.getFPSString() << std::endl;
     }
-  
+
 :icl:`FPSLimiter`
 
   The limiter inherits the :icl:`FPSEstimator` class. It's
@@ -240,7 +240,7 @@ Exceptions Types
   **ICLUtils/Exception.h** header or within one of the other ICL
   modules. ICL's exception hierarchy is rather flat; most of the time
   either :icl:`ICLException` or a direct child-class instance is thrown.
-  
+
 
 .. _utils.threading:
 
@@ -248,7 +248,7 @@ Exceptions Types
 Multi-Threading Tools
 """""""""""""""""""""
 
-Here, the two fundamental classes are :icl:`Thread` and 
+Here, the two fundamental classes are :icl:`Thread` and
 :icl:`Mutex` which are basically simple wrappers of the
 corresponding PThread-types. Most of the time, threading must not be
 implemented explicitly. Instead the :icl:`ICLApplication`
@@ -285,7 +285,7 @@ String Manipulation
 
     template<class T>
     T parse(const std::string &text);
-  
+
   where :icl:`str` converts a type instance into a string, and :icl:`parse`
   converts a string into a type instance. Internally, these functions
   make use of the in- and output stream-operators (**<<** and **>>**).
@@ -304,7 +304,7 @@ String Manipulation
   functions. An :icl:`Any` instance can be created from every type that
   is supported by the :icl:`str`-template (see above). And it can be
   converted to any type that is supported by the :icl:`parse`-template
-  
+
   .. literalinclude:: examples/any.cpp
     :language: c++
     :linenos:
@@ -316,7 +316,7 @@ String Manipulation
   It can either use a set of single allowed **char**-delimiters, or
   a delimiting **std::string**. Furthermore, an escape-character can
   be defined for also being able to use the delimiting characters.
-  
+
   The opposite of :icl:`tok` is :icl:`cat`, which concatenate the elements
   of an **std::vector<std::string>**. Optionally a delimiter can be
   inserted between the elements here.
@@ -329,7 +329,7 @@ String Manipulation
 
 .. _utils.function:
 
-The Generic Function Class 
+The Generic Function Class
 """""""""""""""""""""""""""
 
 The :icl:`Function` class and it's heavily overloaded creator
@@ -398,15 +398,15 @@ classes are:
 * :icl:`utils::CLProgram`, functioning as the main-class
   and as a factory for instances of the other support classes
 
-* :icl:`utils::CLKernel`, referencing a callable OpenCL function 
+* :icl:`utils::CLKernel`, referencing a callable OpenCL function
   usually called kernel. Kernels can be filled with arguments and
   be called.
 
-* :icl:`utils::CLBuffer`, buffers are used to exchange memory with 
+* :icl:`utils::CLBuffer`, buffers are used to exchange memory with
   graphics card memory (i.e. uploading and downloading memory blocks
   from and to the graphics card memory)
 
-An example for a simple 3x3 image convolution can be found in the 
+An example for a simple 3x3 image convolution can be found in the
 :icl:`utils::CLProgram` API documentation-
 
 .. _utils.others:
@@ -428,7 +428,7 @@ Others
 
   A generic, but difficult to use utility class for the creation of shallow-
   copyable classes
-  
+
 :icl:`SignalHandler`
 
   C++-based wrapper of the C-functions around *sigaction* for process signal
@@ -442,11 +442,11 @@ Support Macros
 """"""""""""""
 
 **DEBUG_LOG(MESSAGE-STREAM)**
-  
+
   Can be used to show standard debug messages, that automatically
   include the source file, line and function name. Internally a
   C++-stream is used so that debug messages can easily be composed::
-    
+
     DEBUG_LOG("loop " << i );
 
 **WARNING_LOG** and **ERROR_LOG**
@@ -455,13 +455,13 @@ Support Macros
   identically like **DEBUG_LOG**
 
 **ICLASSERT(assertion)**
-  
+
   Standard assertion wrapper that shows the code position of the
   failure. For convenience also **ASSERT_RETURN(assertion)**,
   **ASSERT_THROW(assertion,exception)** and
   **ASSERT_RETURN_VAL(assertion,return-value)** are provided.
 
-**ICL_UNLIKELY(unlikely-test)** 
+**ICL_UNLIKELY(unlikely-test)**
 
   Is a wrapper of gcc's **__builtin_expect**::
 
@@ -469,35 +469,33 @@ Support Macros
        break;
     }
 
-**ICL_DEPRECATED** 
+**ICL_DEPRECATED**
 
   Can be used to add a deprecated status to functions and classes::
 
     void ICL_DEPRECATED foo(){ .. }
     class ICL_DEPRECATED Bar { ...};
-    
+
 :icl:`sqr`
 
   Is a generic power-of-two template, that is sometimes very useful.
-  
+
   .. note::
-     
+
     **utils::sqr** is a function rather than a macro and therefore
     is lies within the **icl::utils**-namespace
-     
-     
-  
+
+
+
 
 **iclMin** and **iclMax**
-  
+
   Are generic replacements of the sometimes missing **std::min** and
   **std::max** function templates. Usually, **iclMin** and **iclMax**
   are just macros that forward their arguments to the std-functions
-       
-  
+
+
 **ICL_DELETE(pointer)**
 
   Deletes only non-null pointers and sets them to 0 after deletion. For
   arrays, **ICL_DELETE_ARRAY(pointer)** has to be used.
-
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME phyisics-car
            SOURCES phyisics-car.cpp
            LIBRARIES ICLPhysics)
-

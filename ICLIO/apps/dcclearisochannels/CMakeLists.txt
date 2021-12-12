@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME dcclearisochannels
           SOURCES dcclearisochannels.cpp
           LIBRARIES ICLMarkers)
-

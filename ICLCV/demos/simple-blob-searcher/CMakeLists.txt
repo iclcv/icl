@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME simple-blob-searcher
            SOURCES simple-blob-searcher.cpp
            LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME template-matching
            SOURCES template-matching.cpp
            LIBRARIES ICLMarkers)
-

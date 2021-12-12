@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME temporal-smoothing
            SOURCES temporal-smoothing.cpp
            LIBRARIES ICLMarkers)
-

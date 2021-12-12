@@ -69,4 +69,3 @@ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-point-cloud-input|-pci(2)",
                 init,run).exec();
 }
-

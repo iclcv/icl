@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME orb-feature-detection
            SOURCES orb-feature-detection.cpp
            LIBRARIES ICLMarkers)
-

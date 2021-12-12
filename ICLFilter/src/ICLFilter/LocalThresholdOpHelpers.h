@@ -202,5 +202,3 @@ namespace icl{
   INST_FAST_LT(SRC,32s,64f,WITH_GAMMA);           \
   INST_FAST_LT(SRC,32f,64f,WITH_GAMMA);           \
   INST_FAST_LT(SRC,64f,64f,WITH_GAMMA);
-
-

@@ -117,4 +117,3 @@ namespace icl{
     ICLGeom_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
   } // namespace geom
 }
-

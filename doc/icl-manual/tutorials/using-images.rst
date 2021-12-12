@@ -28,6 +28,6 @@ them.
 
 
 .. note::
- 
+
    the image is still in RGB colorspace. The value domain of
    each channel is restricted to {0,255}.

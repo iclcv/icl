@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME local-thresh
           SOURCES local-thresh.cpp
           LIBRARIES ICLMarkers)
-

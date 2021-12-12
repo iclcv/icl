@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME region-inspector
           SOURCES region-inspector.cpp
           LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_EXAMPLE(NAME progarg
               SOURCES progarg.cpp
               LIBRARIES ICLUtils)
-

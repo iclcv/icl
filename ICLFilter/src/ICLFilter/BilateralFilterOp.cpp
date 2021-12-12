@@ -590,4 +590,3 @@ core::Img32f const &BilateralFilterOp::getSumImg() {
 
 } // namespace filter
 } // namespace icl
-

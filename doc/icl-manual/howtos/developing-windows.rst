@@ -170,7 +170,7 @@ contain the dllexport attribute.
     void func(A arg);
   }
 
-  
+
   // Source file
   template<class A> void func(A arg) {
     // Some code

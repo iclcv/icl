@@ -584,4 +584,3 @@ namespace icl{
     template class ICLMath_API LevenbergMarquardtFitter<icl64f>;
   } // namespace math
 }
-

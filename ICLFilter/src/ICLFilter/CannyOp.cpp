@@ -479,4 +479,3 @@ namespace icl {
 
   } // namespace filter
 }
-

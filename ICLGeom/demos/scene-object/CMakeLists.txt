@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME scene-object
            SOURCES scene-object.cpp
            LIBRARIES ICLMarkers)
-

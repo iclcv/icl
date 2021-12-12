@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME camera
            SOURCES camera.cpp
            LIBRARIES ICLMarkers)
-

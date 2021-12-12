@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME image-compare
           SOURCES image-compare.cpp
           LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME gabor-op
            SOURCES gabor-op.cpp
            LIBRARIES ICLMarkers)
-

@@ -9,7 +9,7 @@
 * limit OpenCV support to versions < 4
 * updated libAV related code
 * updated doc and extensions to work with recent sphinx versions
-* fixed jQuery issues in documentation 
+* fixed jQuery issues in documentation
 * add clang-tidy modernizer to scripts
 
 ## 10.0.1

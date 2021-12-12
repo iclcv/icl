@@ -124,4 +124,3 @@ int main(int n, char**ppc){
   return ICLApp(n,ppc,"-o(...) -input|-i(input-type,"
                 "input-specifier,camera-file) -c(...)",init,run).exec();
 }
-

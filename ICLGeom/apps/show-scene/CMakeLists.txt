@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME show-scene
           SOURCES show-scene.cpp
           LIBRARIES ICLMarkers)
-

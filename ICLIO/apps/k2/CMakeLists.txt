@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME k2
           SOURCES k2.cpp
           LIBRARIES ICLQt)
-

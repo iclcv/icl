@@ -510,4 +510,3 @@ namespace icl{
     REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }
-

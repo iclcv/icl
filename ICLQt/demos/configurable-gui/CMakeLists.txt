@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME configurable-gui
            SOURCES configurable-gui.cpp
            LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME colorspace
            SOURCES colorspace.cpp
            LIBRARIES ICLMarkers)
-

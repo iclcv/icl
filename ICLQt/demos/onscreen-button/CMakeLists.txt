@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME onscreen-button
            SOURCES onscreen-button.cpp
            LIBRARIES ICLMarkers)
-

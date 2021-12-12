@@ -100,5 +100,3 @@ namespace icl{
     }
   } // namespace qt
 }
-
-

@@ -52,25 +52,25 @@ SET (_LIB_SEARCH_PATH_SUFFIXES "/lib")
 
 # Try each search configuration
 FOREACH(_PATH ${_OPENNI_SEARCHES})
-  FIND_PATH(OPENNI_INCLUDE_DIR 
+  FIND_PATH(OPENNI_INCLUDE_DIR
             NAMES XnOpenNI.h
 	    PATHS ${${_PATH}}
-	    PATH_SUFFIXES "include/ni" 	  
+	    PATH_SUFFIXES "include/ni"
 	    DOC "The path to OPENNI header files"
 	    NO_DEFAULT_PATH)
-  
+
     FOREACH(_lib ${_OPENNI_LIBRARIES})
-      FIND_LIBRARY(${_lib}_LIBRARY  
+      FIND_LIBRARY(${_lib}_LIBRARY
                NAMES ${_lib}
 	       PATHS ${${_PATH}}
 	       PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
 	       NO_DEFAULT_PATH)
     ENDFOREACH()
 ENDFOREACH()
-	   
-# Handle the QUIETLY and REQUIRED arguments and set OPENNI_FOUND to TRUE if 
+
+# Handle the QUIETLY and REQUIRED arguments and set OPENNI_FOUND to TRUE if
 # all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENNI REQUIRED_VARS 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(OPENNI REQUIRED_VARS
 				  OpenNI_LIBRARY
 				  OPENNI_INCLUDE_DIR)
 

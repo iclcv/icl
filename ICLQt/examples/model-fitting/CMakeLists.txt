@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_EXAMPLE(NAME model-fitting
               SOURCES model-fitting.cpp
               LIBRARIES ICLQt)
-

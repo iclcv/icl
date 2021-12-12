@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME define-rects
            SOURCES define-rects.cpp
            LIBRARIES ICLMarkers)
-

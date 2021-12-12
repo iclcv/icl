@@ -218,4 +218,3 @@ int main(int n, char **ppc){
                 "-view-camera|-c(filename) -tune -visualize-cameras|-vc(...) "
                 "-show-world-frame|-cs -pointing|-p",init,run,run_octree).exec();
 }
-

@@ -43,16 +43,16 @@ IF(WIN32)
     SET(PYLON_GENICAM_ROOT "$ENV{PYLON_GENICAM_ROOT}" CACHE PATH "Root directory of GenICam")
   ENDIF()
   SET(GENICAM_VER $ENV{PYLON_GENICAM_VERSION})
-  
+
   # TODO: use _GenICamVersion.h for GenICam
   SET(PYLON_SUFFIX _MD_VC100)
-  
+
   SET(_PYLON_SEARCHES ${PYLON_ROOT})
   LIST(APPEND _PYLON_SEARCHES ${PYLON_GENICAM_ROOT})
   SET(_PYLON_HEADERS PylonBase.h)
   LIST(APPEND _PYLON_HEADERS GenICamVersion.h)
   SET(_PYLON_LIBRARIES PylonBase${PYLON_SUFFIX})
-  LIST(APPEND _PYLON_LIBRARIES 
+  LIST(APPEND _PYLON_LIBRARIES
               PylonUtility${PYLON_SUFFIX}
               PylonGigE${PYLON_SUFFIX}_TL
               PylonBootstrapper
@@ -73,11 +73,11 @@ ELSE(WIN32)
 
   LIST(APPEND _PYLON_SEARCHES ${_PYLON_SEARCH_NORMAL})
   LIST(APPEND _PYLON_HEADERS PylonBase.h GenICamVersion.h)
-  LIST(APPEND _PYLON_LIBRARIES 
-              pylonbase 
-              pylonutility 
-              pylongigesupp 
-              GenApi_gcc40_v2_1 
+  LIST(APPEND _PYLON_LIBRARIES
+              pylonbase
+              pylonutility
+              pylongigesupp
+              GenApi_gcc40_v2_1
               GCBase_gcc40_v2_1
               xerces-c
               MathParser_gcc40_v2_1
@@ -87,7 +87,7 @@ ENDIF(WIN32)
 
 
 # Set search path suffix
-LIST(APPEND _HEADER_SEARCH_PATH_SUFFIXES "/include/pylon" 
+LIST(APPEND _HEADER_SEARCH_PATH_SUFFIXES "/include/pylon"
             "/genicam/library/CPP/include"
             "/library/CPP/include"
 )
@@ -109,7 +109,7 @@ ENDIF()
 FOREACH(_PATH ${_PYLON_SEARCHES})
 
   FOREACH(_header ${_PYLON_HEADERS})
-    FIND_PATH(${_header}_PYLON_INCLUDE_DIR 
+    FIND_PATH(${_header}_PYLON_INCLUDE_DIR
               NAMES ${_header}
               PATHS ${_PATH}
               PATH_SUFFIXES ${_HEADER_SEARCH_PATH_SUFFIXES}
@@ -118,7 +118,7 @@ FOREACH(_PATH ${_PYLON_SEARCHES})
   ENDFOREACH()
 
   FOREACH(_lib ${_PYLON_LIBRARIES})
-    FIND_LIBRARY(${_lib}_LIBRARY  
+    FIND_LIBRARY(${_lib}_LIBRARY
                  NAMES ${_lib}
                  PATHS ${_PATH}
                  PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
@@ -126,10 +126,10 @@ FOREACH(_PATH ${_PYLON_SEARCHES})
     ENDFOREACH()
 ENDFOREACH()
 
-# Handle the QUIETLY and REQUIRED arguments and set PYLON_FOUND to TRUE if 
+# Handle the QUIETLY and REQUIRED arguments and set PYLON_FOUND to TRUE if
 # all listed variables are TRUE
 IF(WIN32)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS 
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS
                                     PylonBase${PYLON_SUFFIX}_LIBRARY
                                     PylonUtility${PYLON_SUFFIX}_LIBRARY
                                     PylonGigE${PYLON_SUFFIX}_TL_LIBRARY
@@ -142,7 +142,7 @@ IF(WIN32)
                                     PylonBase.h_PYLON_INCLUDE_DIR
                                     GenICamVersion.h_PYLON_INCLUDE_DIR)
 ELSE(WIN32)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS 
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYLON REQUIRED_VARS
                                     pylonbase_LIBRARY
                                     pylonutility_LIBRARY
                                     GenApi_gcc40_v2_1_LIBRARY
@@ -169,7 +169,7 @@ IF(PYLON_FOUND)
   ENDFOREACH()
 
   SET(PYLON_INCLUDE_DIRS ${_PYLON_HEADERS_LIST})
-  
+
   LIST(REMOVE_DUPLICATES _PYLON_LIBRARIES_LIST)
   SET(PYLON_LIBRARIES ${_PYLON_LIBRARIES_LIST})
 ENDIF()

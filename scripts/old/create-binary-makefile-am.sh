@@ -57,7 +57,7 @@ APPLICATION_PREFIX=`echo $APPLICATION_PREFIX2 | sed "s|-|_|g"`
 if [ -f $M ] ; then
     mv $M $M.bak
 fi
- 
+
 cat $0 | grep "##!1" | grep -v "grep" | sed "s|##!1||g" > $M
 echo -n "bin_PROGRAMS=" >> $M
 FILES=`ls examples/*.cpp | sed "s|.cpp||g" | sed "s|examples\/||g"`
@@ -101,4 +101,3 @@ if [ "$FLAG_S" = "GIVEN" ] ; then
     cat $M
     echo "-------8<-------------------------------------------------"
 fi
-

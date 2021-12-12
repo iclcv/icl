@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME chromaticity-space
            SOURCES chromaticity-space.cpp
            LIBRARIES ICLMarkers)
-

@@ -98,4 +98,3 @@ int main(int n, char **ppc){
                 "-point-cloud-output|-pco(point-cloud-destination,descrition) "
                 "-view-camera|-c(filename)",init,run).exec();
 }
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_EXAMPLE(NAME regex-find
               SOURCES regex-find.cpp
               LIBRARIES ICLUtils)
-

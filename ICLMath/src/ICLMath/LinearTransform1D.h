@@ -59,4 +59,3 @@ namespace icl{
 
   } // namespace math
 }
-

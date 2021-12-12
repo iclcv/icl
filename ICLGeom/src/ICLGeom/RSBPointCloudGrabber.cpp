@@ -206,4 +206,3 @@ namespace icl{
                     "creation-string: [comma-sep-transport-list:]rsb-scope[,depth-cam-file[,color-cam-file]]");
   } // namespace geom
 }
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME video-player
           SOURCES video-player.cpp
           LIBRARIES ICLMarkers)
-

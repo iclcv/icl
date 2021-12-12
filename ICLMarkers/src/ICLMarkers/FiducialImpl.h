@@ -162,5 +162,3 @@ namespace icl{
 
   } // namespace markers
 }
-
-

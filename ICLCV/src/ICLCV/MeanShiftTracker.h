@@ -176,4 +176,3 @@ namespace icl {
     };
   } // namespace cv
 }
-

@@ -208,5 +208,3 @@ int main(int n, char **a){
                 "-textures|-t(2) -initial-stiffness|-it(float=-1) "
                 "-initial-link-distance|-id(float=0.5)",init,run).exec();
 }
-
-

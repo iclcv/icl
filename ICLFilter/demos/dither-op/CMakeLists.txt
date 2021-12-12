@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME dither-op
            SOURCES dither-op.cpp
            LIBRARIES ICLMarkers)
-

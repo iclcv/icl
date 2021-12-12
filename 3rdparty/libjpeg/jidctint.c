@@ -841,7 +841,7 @@ jpeg_idct_4x4 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
 
     tmp0 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]);
     tmp2 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]);
-    
+
     tmp10 = (tmp0 + tmp2) << PASS1_BITS;
     tmp12 = (tmp0 - tmp2) << PASS1_BITS;
 
@@ -3841,7 +3841,7 @@ jpeg_idct_6x3 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     wsptr[6*2] = (int) RIGHT_SHIFT(tmp10 - tmp0, CONST_BITS-PASS1_BITS);
     wsptr[6*1] = (int) RIGHT_SHIFT(tmp2, CONST_BITS-PASS1_BITS);
   }
-  
+
   /* Pass 2: process 3 rows from work array, store into output array.
    * 6-point IDCT kernel, cK represents sqrt(2) * cos(K*pi/12).
    */
@@ -5158,7 +5158,7 @@ jpeg_idct_1x2 (j_decompress_ptr cinfo, jpeg_component_info * compptr,
   quantptr = (ISLOW_MULT_TYPE *) compptr->dct_table;
 
   /* Even part */
-    
+
   tmp0 = DEQUANTIZE(coef_block[DCTSIZE*0], quantptr[DCTSIZE*0]);
   /* Add fudge factor here for final descale. */
   tmp0 += ONE << 2;

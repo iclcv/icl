@@ -194,5 +194,3 @@ int main(int n, char **ppc){
                 "-marker-type|-m(type=bch,whichToLoad=[0-4095],size=30x30) -3D "
                 "-3D-for-first-visible-marker",init,run).exec();
 }
-
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME superquadric
            SOURCES superquadric.cpp
            LIBRARIES ICLMarkers)
-

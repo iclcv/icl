@@ -11,7 +11,7 @@ TEXT=\
 
 FILES="`find . -iname '*.h'`"
 
-for FILE in $FILES ; do 
+for FILE in $FILES ; do
 #for FILE in test.h ; do
     echo "processing file $FILE" ;
     sed -i "s/Neuroinformatics, CITEC                 \*\*/CITEC, University of Bielefeld          **/g" $FILE ;
@@ -20,8 +20,4 @@ for FILE in $FILES ; do
     sed -i "s/\*\*                Website: www.iclcv.org                           \*\*/**          http:\/\/opensource.cit-ec.de\/projects\/icl               **/g" $FILE ;
     sed -i "s/\*\* http:\/\/www.gnu.org\/copyleft\/gpl.html.                           \*\*/** http:\/\/www.gnu.org\/copyleft\/gpl.html.                           **\n$TEXT/g" $FILE ;
 #    sed -i "s///g" $FILE ;
-done 
-    
-
-
-
+done

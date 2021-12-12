@@ -132,4 +132,3 @@ namespace icl {
      };
   } // namespace filter
 } // namespace icl
-

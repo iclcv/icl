@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME llm-2D
            SOURCES llm-2D.cpp
            LIBRARIES ICLMarkers)
-

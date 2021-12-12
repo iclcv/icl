@@ -15,18 +15,18 @@ At the end of this chapter the example code will be explained.
 | .. literalinclude:: examples/hello-icl.cpp | .. figure:: images/hello-icl.png |
 |    :language: c++                          |    :scale: 60%                   |
 |    :linenos:                               |    :alt: shadow                  |
-+--------------------------------------------+----------------------------------+   
++--------------------------------------------+----------------------------------+
 
 Build example
 *************
-  
+
 In order to create a project, you have to apply the following steps:
 
 * inside of Visual Studio go to the menu selection **File->New->Project...**
 * choose the type **Win32 Console Application** and a name for the project
 * after clicking on the **Next** button in the Win32 Application Wizard mark
   the project as empty and you can finish this configuration
-  
+
 Now you need a source file, which should be compiled. By using a right click
 on the project in **Solution Explorer** select **Add->New Item...**
 to add a file to your project. Choose the type **C++ File** and a name
@@ -81,7 +81,7 @@ will be used to run the application.
 
 Code explanation
 ****************
-  
+
 The example code contains actually two nested function calls: The
 inner :icl:`create` function and the outer :icl:`show`
 function. Actually, you will find these functions in the namespace
@@ -91,7 +91,7 @@ rapid prototyping and therefore it will automatically use all
 ICL-namespaces and the **std**-namespace
 
 * :icl:`qt::create` creates a demo image that is specified by
-  the given string value. 
+  the given string value.
 * :icl:`qt::show` is a very special function. It saves the given
   image to a temporary file, and starts the application **icl-xv** in
   order to display this image. **icl-xv** can be set up to delete the
@@ -101,5 +101,3 @@ ICL-namespaces and the **std**-namespace
   implement GUI- and event handling itself. (Note: it is also possible
   to set up the show function to use a custom image-viewer
   application, see :icl:`showSetup`).
-
-

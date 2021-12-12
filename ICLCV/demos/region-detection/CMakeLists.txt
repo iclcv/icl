@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME region-detection
            SOURCES region-detection.cpp
            LIBRARIES ICLMarkers)
-

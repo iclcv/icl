@@ -51,14 +51,14 @@ IF(RSB_ROOT AND NOT RSC_ROOT)
 ENDIF()
 
 FILE(GLOB RSB_INCLUDES "${RSB_ROOT}/include/rsb*")
-FIND_PATH(RSB_INCLUDE_DIR 
+FIND_PATH(RSB_INCLUDE_DIR
   NAMES rsb/Factory.h rsb/Handler.h rsb/converter/Repository.h rsb/converter/ProtocolBufferConverter.h
   PATHS ${RSB_ROOT}/include ${RSB_INCLUDES}
   DOC "The path to RSB header files"
   NO_DEFAULT_PATH)
 
 FILE(GLOB RSC_INCLUDES "${RSB_ROOT}/include/rsc*")
-FIND_PATH(RSC_INCLUDE_DIR 
+FIND_PATH(RSC_INCLUDE_DIR
   NAMES rsc/logging/Logger.h
   PATHS ${RSC_ROOT}/include ${RSC_INCLUDES}
   DOC "The path to RSC header files"
@@ -73,7 +73,7 @@ IF(RSC_INCLUDE_DIR)
 ENDIF()
 
 # old library layout
-FIND_LIBRARY(RSB_LIBRARY  
+FIND_LIBRARY(RSB_LIBRARY
   NAMES rsbcore
   PATHS ${RSB_ROOT}
   PATH_SUFFIXES lib
@@ -92,7 +92,7 @@ ELSE()
 
   IF(RSB_LIBRARY)
     # new library layout, we need to link against libspread as well
-    FIND_LIBRARY(SPREAD_LIBRARY  
+    FIND_LIBRARY(SPREAD_LIBRARY
       NAMES libspread spread
       PATHS ${RSB_ROOT}/../spread /usr ${RSB_ROOT}
       PATH_SUFFIXES lib bin
@@ -105,10 +105,10 @@ ELSE()
         MESSAGE(FATAL_ERROR "Not Found: libspread.so in ${RSB_ROOT}/lib and /usr/lib (the new rsb-library layout that uses librsb.so needs explicit linkage against libspread.so)")
       ENDIF(WIN32)
     ENDIF()
-    
+
     IF(WIN32)
       # Windows needs some boost include files and libraries
-      FIND_PATH(BOOST_INCLUDE_DIR 
+      FIND_PATH(BOOST_INCLUDE_DIR
         NAMES boost/shared_ptr.hpp
         PATHS ${RSB_ROOT}/../boost/include/boost-1_54 /usr
         DOC "The path to boost header files"
@@ -117,14 +117,14 @@ ELSE()
       IF(BOOST_INCLUDE_DIR)
         MESSAGE(STATUS "Found boost include dir: ${BOOST_INCLUDE_DIR}")
       ENDIF()
-      
+
       FOREACH(L filesystem regex chrono date_time system thread)
         FIND_LIBRARY(BOOST_${L}_LIBRARY
           NAMES "libboost_${L}-vc100-mt-gd-1_54" "libboost_${L}-vc110-mt-gd-1_54"
           PATHS ${RSB_ROOT}/../boost /usr
           PATH_SUFFIXES lib
           NO_DEFAULT_PATH)
-        
+
         IF(NOT ${BOOST_${L}_LIBRARY} STREQUAL "BOOST_${L}_LIBRARY-NOTFOUND")
           LIST(APPEND BOOST_LIBRARIES ${BOOST_${L}_LIBRARY})
         ELSE()
@@ -135,7 +135,7 @@ ELSE()
   ENDIF(RSB_LIBRARY)
 ENDIF()
 
-FIND_LIBRARY(RSC_LIBRARY  
+FIND_LIBRARY(RSC_LIBRARY
   NAMES rsc rsc0.9 rsc0.10 rsc0.11 rsc0.12
   PATHS ${RSC_ROOT} ${RSB_ROOT}
   PATH_SUFFIXES lib
@@ -148,14 +148,14 @@ ENDIF()
 
 # define mandatory arguments
 IF(WIN32)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS
                                   RSB_LIBRARIES
                                   BOOST_LIBRARIES
                                   RSB_INCLUDE_DIR
                                   RSC_INCLUDE_DIR
                                   BOOST_INCLUDE_DIR)
 ELSE(WIN32)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS 
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(RSB REQUIRED_VARS
                                     RSB_LIBRARIES
                                     RSB_INCLUDE_DIR
                                     RSC_INCLUDE_DIR)

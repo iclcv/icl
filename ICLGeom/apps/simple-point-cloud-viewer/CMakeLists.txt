@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME simple-point-cloud-viewer
           SOURCES simple-point-cloud-viewer.cpp
           LIBRARIES ICLMarkers)
-

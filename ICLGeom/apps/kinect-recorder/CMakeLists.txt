@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME kinect-recorder
           SOURCES kinect-recorder.cpp
           LIBRARIES ICLMarkers)
-

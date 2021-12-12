@@ -95,7 +95,7 @@ REL_INC_INSTALL_PREFIX=$(patsubst ${INSTALL_PREFIX}/%,%,${INC_INSTALL_PREFIX})
 
 ECHO_TEST_RESULT=$(shell echo -e test > .testfile && cat .testfile && rm .testfile)
 
-ifeq  "${ECHO_TEST_RESULT}" "test" 
+ifeq  "${ECHO_TEST_RESULT}" "test"
 ECHO=@echo -e
 ECHO_NO_AT=echo -e
 else
@@ -114,7 +114,7 @@ LDFLAGS_PC:=${LDFLAGS} -L${LIB_INSTALL_PREFIX} -l${LIB} -Wl,-rpath=${LIB_INSTALL
 CXXFLAGS_PC:=$(filter-out -Isrc -Iapp -fPIC -Wall,${CXXFLAGS})
 
 ifeq "${FOUND_EXPLICIT_INCLUDE_DIR}" "src/${PROJECT_NAME}"
-INC_INSTALL_PREFIX_PC=${INC_INSTALL_PREFIX}	
+INC_INSTALL_PREFIX_PC=${INC_INSTALL_PREFIX}
 REL_INC_INSTALL_PREFIX_PC=include/${PROJECT_NAME}
 else
 INC_INSTALL_PREFIX_PC=${INSTALL_PREFIX}/include
@@ -127,7 +127,7 @@ ifneq "${PC_DEPS}" ""
 PKG_CONFIG_PATH:=${INSTALL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}
 CXXFLAGS:=${CXXFLAGS} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-I ${PC_DEPS})
 CXXCPP:=${CXXCPP} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --cflags-only-other ${PC_DEPS})
-#LDFLAGS:=$(shell pkg-config --libs-only-L ${PC_DEPS}) ${LDFLAGS} 
+#LDFLAGS:=$(shell pkg-config --libs-only-L ${PC_DEPS}) ${LDFLAGS}
 LDFLAGS:=${LDFLAGS} $(patsubst -L%,${WL_RP}%,$(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --libs-only-L ${PC_DEPS}))
 LDFLAGS:=${LDFLAGS} $(shell PKG_CONFIG_PATH=${PKG_CONFIG_PATH} pkg-config --libs ${PC_DEPS})
 endif
@@ -156,7 +156,7 @@ endif
 ifeq "${SHOW_PROGRESS}" "TRUE"
 
 ifndef PROGRESS
-# works for up to 400 targets 
+# works for up to 400 targets
 twenty := x x x x x x x x x x x x x x x x x x x x
 MAX := $(foreach x,$(twenty),$(twenty))
 
@@ -165,7 +165,7 @@ T := $(shell $(MAKE) NO_RECURSION=TRUE -nrRf $(firstword $(MAKEFILE_LIST)) $(MAK
             PROGRESS="@echo COUNTTHIS > /dev/null" | grep -c "echo COUNTTHIS > /dev/null")
 
 # N is the number of pending targets in base 1, well in fact, base x :-)
-N := $(wordlist 1,$T,$(MAX)) 
+N := $(wordlist 1,$T,$(MAX))
 
 # auto-decrementing counter that returns the number of pending targets in base 10
 counter = $(words $N)$(eval N := $(wordlist 2,$(words $N),$N))
@@ -276,7 +276,7 @@ clean: custom-clean-hook
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} moc files
 	${AT}rm -rf ${MOC_SOURCES}
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} apps
-	${AT}rm -rf ${APPS} 
+	${AT}rm -rf ${APPS}
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} ${LIB_FILE}
 	${AT}rm -rf lib/${LIB_FILE}
 	${ECHO} ${PROGRESS} ${FBLA}${BYEL}[delete]${DEF} ${PC}
@@ -350,7 +350,7 @@ installlink: all ${PC} uninstall create-install-dirs custom-install-hook
 	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${LIB_FILE}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/${LIB_FILE}
 	${AT}ln -s ${PWD}/lib/${LIB_FILE} ${LIB_INSTALL_PREFIX}
-	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${PC} 
+	${ECHO} ${PROGRESS} ${BBLU}[link]${DEF} ${PC}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}ln -s ${PWD}/${PC} ${LIB_INSTALL_PREFIX}/pkgconfig/
 	${AT}if [ -d doc/documentation ] ; then \
@@ -402,7 +402,7 @@ install: all ${PC} create-install-dirs custom-install-hook ${APPS_INSTALLED}
 	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${LIB_FILE}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/${LIB_FILE}
 	${AT}install -D -p -m 664 ${PWD}/lib/${LIB_FILE} ${LIB_INSTALL_PREFIX}
-	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${PC} 
+	${ECHO} ${PROGRESS} ${BYEL}[install]${DEF} ${PC}
 	${AT}rm -rf ${LIB_INSTALL_PREFIX}/pkgconfig/${PC}
 	${AT}install -D -p -m 664 ${PWD}/${PC} ${LIB_INSTALL_PREFIX}/pkgconfig/
 	${AT}if [ -d doc/documentation ] ; then \

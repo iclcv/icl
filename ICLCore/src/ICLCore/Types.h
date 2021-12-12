@@ -109,4 +109,3 @@ namespace icl {
     };
   } // namespace core
 }
-

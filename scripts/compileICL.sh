@@ -5,7 +5,7 @@ if [ "$1" = "new" ] ; then
     rm -rf ${B} ;
     mkdir ${B} ;
 fi
-    
+
 cd ${B}
 
 cmake -DBUILD_WITH_IPP=TRUE -DIPP_ROOT=/vol/nivision/share/IPP/7.07 \

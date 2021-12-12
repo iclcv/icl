@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME viewer
           SOURCES viewer.cpp
           LIBRARIES ICLMarkers)
-

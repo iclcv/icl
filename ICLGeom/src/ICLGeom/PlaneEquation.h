@@ -54,4 +54,3 @@ namespace icl{
     ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
   } // namespace geom
 }
-

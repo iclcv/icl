@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME interactive-filter
            SOURCES interactive-filter.cpp
            LIBRARIES ICLMarkers)
-

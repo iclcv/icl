@@ -65,5 +65,3 @@ int main(int n, char **ppc){
   std::cout << "fitted result was " << r.model.transp() << std::endl;
   std::cout << "fitting error was " << r.error << std::endl;
 }
-
-

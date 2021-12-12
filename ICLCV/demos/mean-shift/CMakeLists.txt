@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME mean-shift
            SOURCES mean-shift.cpp
            LIBRARIES ICLMarkers)
-

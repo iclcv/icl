@@ -164,7 +164,3 @@ int main(int n, char **args){
                 "-manually-trigger-start-and-stop|-man"
                 ,init,run).exec();
 }
-
-
-
-

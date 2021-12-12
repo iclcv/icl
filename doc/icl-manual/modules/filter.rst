@@ -1,5 +1,5 @@
 .. include:: ../js.rst
- 
+
 .. _filter:
 
 ###############################
@@ -25,12 +25,12 @@ Table of Contents
 ^^^^^^^^^^^^^^^^^
 
 * :ref:`filter.what`
-   
+
   * :ref:`filter.cliptoroi`
   * :ref:`filter.checkonly`
 
 * :ref:`filter.unary`
- 
+
   * :ref:`filter.affine`
   * :ref:`filter.neighbor`
   * :ref:`filter.inplace`
@@ -75,7 +75,7 @@ Each :icl:`UnaryOp` instance can be set up with this boolean flag. If
 the size of the source images ROI -- or, in case of
 :ref:`neighborhood operations<filter.neighbor>` even slightly smaller.
 If *clip to ROI* is  deactivated, the result image will become
-as large as the source image, but only its ROI pixels will be set. 
+as large as the source image, but only its ROI pixels will be set.
 (see :icl:`UnaryOp::setClipToROI` and :icl:`UnaryOp::getClipToROI`)
 
 
@@ -99,7 +99,7 @@ As discussed in :ref:`filter.what`, unary operators have use a single
 input and a single output image for their operation. The
 :icl:`filter::UnaryOp` class interface required the purely virtual
 method::
-  
+
   void apply(const core::ImgBase *source, ImgBase **destination)
 
 to be implemented. The method must applied the operation on the given
@@ -147,21 +147,21 @@ example for a custom filter.
 Affine and Warp Operators
 """""""""""""""""""""""""
 
-In this section, we grouped unary operators, that *move* pixels in general. In 
+In this section, we grouped unary operators, that *move* pixels in general. In
 particular, the list contains so called *affine operators* that use an affine
 3x3 matrix to estimate how pixels are to be moved.
 
-:icl:`filter::BaseAffineOp` 
+:icl:`filter::BaseAffineOp`
 
   Base class interface
 
 :icl:`filter::AffineOp`
-  
+
   General affine operator. Here, several affine operation can be concatenated
-  resulting, due to the associative property of the operations, in a single 
+  resulting, due to the associative property of the operations, in a single
   3x3 matrix that is then applied. By these means, e.g. rotations around a certain
   anchor positions can be realized.
-  
+
 
 :icl:`filter::MirrorOp`
 
@@ -192,7 +192,7 @@ particular, the list contains so called *affine operators* that use an affine
   used for image undistortion.
 
   .. todo::
-     
+
      As soon as the image undistortion environment is reimplemented, we need
      to link this here
 
@@ -218,16 +218,16 @@ smaller or the border pixels will not be processed.
   methods.
 
 :icl:`filter::ConvolutionOp`
-  
+
   The :icl:`ConvolutionOp` implements general image convolution. The
   image is convolved with a so called :icl:`filter::ConvolutionKernel`,
   which is represented by an extra class. The Kernel can either be
   a common predefined one or an arbitrarily custom one. The predefined
   kernels, such as e.g. a *sobel X* kernel are internally hard-coded and
-  therefore much faster. 
-  
+  therefore much faster.
+
   .. note::
-     
+
      The IPP library provides a very high performace optimization here
 
 
@@ -244,15 +244,15 @@ smaller or the border pixels will not be processed.
   faster.
 
   .. note::
-     
+
      The IPP library provides a very high performace optimization here
-  
+
 
 :icl:`filter::WienerOp`
 
   The wiener image operator is defined as optimal de-noise filter.
   It is only provided in case of having Intel IPP support.
-  
+
 
 :icl:`filter::GaborOp`
 
@@ -284,15 +284,15 @@ is not feasible for each operation. So far, we implemented this feature
 for the following operators.
 
 **icl::filter::InplaceOp**
- 
+
   General interface class. The :icl:`InplaceOp::apply` method gets an un**const**
   :icl:`core::ImgBase`\ *****::
 
     void apply(core::ImageBase *srcDst);
-  
+
 
 :icl:`filter::InplaceArithmeticalOp`
- 
+
   Aritmetical operations, such like each pixel plus 5 or divide each
   by 2.
 
@@ -319,7 +319,7 @@ however only supported for :icl:`core::Img8u` images.
   **std::vector<icl8u>** as LUT.
 
 :icl:`filter::LUTOp3Channel<T>`
- 
+
   This operator creates a 24bit LUT-index by combining a 3-channel
   image's pixels. It also allows for using less the 8bit per channel
   (by no regarding the lesser significant bits) in order become
@@ -366,7 +366,7 @@ to one of the other section.
 
 
 :icl:`filter::ChamferOp`
-  
+
   *Chamfering* is used for approximating the creation of *Euclidean
   Distance Maps (EDMs)*. Here, an image is originally filled with
   black, *containing only a small percentage of white initial
@@ -374,7 +374,7 @@ to one of the other section.
   to the nearest white pixel.  The process is used in a model matching
   process called *ChamferMatching*, which is also implemented by
   this class.
-  
+
 
 :icl:`filter::FFTOp`
 
@@ -386,14 +386,14 @@ to one of the other section.
   Inverse Fast Fourier Transform operator
 
 :icl:`filter::IntegralImgOp`
-  
+
   Integral images, originally introduced by Viola and Jones define
-  the numerical 2D integral of the image function. The integral 
+  the numerical 2D integral of the image function. The integral
   image value at location (x,y) is defined by the sum of pixel values
   upper left of (x,y) in the source image.
   The integral image can be used to compute *Haar-Like-Features*, but
   also for efficient real-time local thresholding.
-  
+
 :icl:`filter::LocalThresholdOp`
 
   This local threshold operator implements three different local threshold
@@ -406,13 +406,13 @@ to one of the other section.
   For each of these operations, a global threshold is used that is
   adapted for each pixel by looking at the average gray value in the
   pixel neighborhood.
-    
+
 
 :icl:`filter::ThresholdOp`
 
   This operator is the origin for a strong misconception: When we usually
   talk about image thresholding we think of an operation like::
-    
+
     if(source(x,y) > 128)){
        destination(x,y) = 255;
     }else{
@@ -424,10 +424,10 @@ to one of the other section.
   value range to a given interval
 
 :icl:`filter::UnaryArithmeticalOp`
-   
+
   Here, basic aritmetical operations with constant values are
   implemented
-  
+
 :icl:`filter::UnaryCompareOp`
 
   Actually, this is the operation, we most of the time think of, when
@@ -435,7 +435,7 @@ to one of the other section.
   :icl:`Img8u`-image.
 
 :icl:`filter::UnaryLogicalOp`
-  
+
   Here, pixel-wise logical operations are provided for the integer
   image types :icl:`Img8u` and :icl:`Img32s`. (:icl:`Img16s` is
   provided using conversion to :icl:`Img32f`).
@@ -455,13 +455,13 @@ to one of the other section.
   interface, but it somehow works similar to the :icl:`UnaryOp`. The
   :icl:`GradientImage` can be used to determine an image gradient
   image
-  
+
   * intensity
   * angle
   * x- and y-component
 
   Internally, sobel filters are used
-  
+
 
 
 
@@ -491,7 +491,7 @@ Binary Operators
   addition of two image.
 
 :icl:`filter::BinaryCompareOp`
-  
+
   Pixel-wise logical comparison of two image, always resulting in a
   :icl:`Img8u`-binary image
 
@@ -506,11 +506,11 @@ Binary Operators
   referred to as the source image, while the second operand is
   referred to as the pattern image.  Internally, the pattern image
   is centered at every pixel location for a local comparison.
-  
+
   The class provides three *apply modes* that determines how to
   deal with overlap of the pattern and the source image borders,
   and also three different distance measurement metrics:
-  
+
   * square distance
   * cross correlation
   * normalized cross correlation
@@ -528,9 +528,9 @@ In this final section, the remaining tools are listed
 :icl:`filter::ConvolutionKernel`
 
   Utility class for the :icl:`ConvolutionOp`
-  
+
 :icl:`filter::OpROIHandler`
- 
+
   Utility class for implementing the :icl:`UnaryOp` featuers
   :ref:`filter.cliptoroi` and :ref:`filter.checkonly`.
 
@@ -539,11 +539,11 @@ In this final section, the remaining tools are listed
 
   Splits image horizontally into a set of shared-copies
   for mutli threading (not well supported)
- 
+
 :icl:`filter::UnaryOpWork`
 
   Utility class for the deprecated :icl:`UnaryOp::applyMT`-function
-  
+
 :icl:`filter::ImageRectification`
 
   Utility class to rectify images. Given a convex quardrangle, the

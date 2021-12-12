@@ -7,7 +7,7 @@ echo "VERSION is $V"
 echo "PREFIX is $P"
 echo ""
 echo "adding write permissions for group nivision using:"
-echo "> chmod -R g+w $P" 
+echo "> chmod -R g+w $P"
 echo ""
 echo "please press enter if you want to succeed!"
 

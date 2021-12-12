@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME scene-graph
            SOURCES scene-graph.cpp
            LIBRARIES ICLMarkers)
-

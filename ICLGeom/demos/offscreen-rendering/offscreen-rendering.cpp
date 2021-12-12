@@ -122,5 +122,3 @@ int main(int n, char**ppc){
   /// create a whole application
   return ICLApplication(n,ppc,"",init,run).exec();
 }
-
-

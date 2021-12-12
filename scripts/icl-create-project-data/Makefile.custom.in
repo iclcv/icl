@@ -22,7 +22,7 @@ PACKAGE_DESCRIPTION=ICLProject ${PROJECT_NAME}
 PC_DEPS=@PKG_CONFIG_FILE_NAME_NO_PC@
 
 # Qt specific header files, that need a moc call
-# without src/-prefix e.g. 
+# without src/-prefix e.g.
 # MOC_HEADERS=myA.h myB.h myC.h
 
 # optionally define C++-Compiler flags
@@ -36,13 +36,13 @@ LDFLAGS=-Wl,-rpath=${INSTALL_PREFIX}/lib -Wl,-rpath=@CMAKE_INSTALL_PREFIX@/lib
 # extra files to install #########################
 ##################################################
 
-# these extra files are also installed to 
+# these extra files are also installed to
 # ${INSTALL_PREFIX}/bin/${PROJECT_NAME}
 # e.g. useful scripts. In most cases, this is simpler
 # than implementing the custom-install-hook rule
 # EXTRA_INSTALL_TO_BIN=
 
-# these extra resource files are installted to 
+# these extra resource files are installted to
 # ${INSTALL_PREFIX}/etc/${PROJECT_NAME}
 # e.g. configuration files
 # EXTRA_INSTALL_TO_ETC=

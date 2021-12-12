@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME offscreen-rendering
            SOURCES offscreen-rendering.cpp
            LIBRARIES ICLMarkers)
-

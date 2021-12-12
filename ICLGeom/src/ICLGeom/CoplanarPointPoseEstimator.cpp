@@ -984,4 +984,3 @@ namespace icl{
     REGISTER_CONFIGURABLE_DEFAULT(CoplanarPointPoseEstimator);
   } // namespace geom
 }
-

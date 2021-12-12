@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME hough-line
            SOURCES hough-line.cpp
            LIBRARIES ICLMarkers)
-

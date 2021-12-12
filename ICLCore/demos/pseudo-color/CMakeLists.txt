@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME pseudo-color
            SOURCES pseudo-color.cpp
            LIBRARIES ICLMarkers)
-

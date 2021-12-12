@@ -56,25 +56,25 @@ ENDIF()
 
 # Try each search configuration
 FOREACH(_PATH ${_LIBDC_SEARCHES})
-  FIND_PATH(LIBDC_INCLUDE_DIR 
-            NAMES dc1394.h        
+  FIND_PATH(LIBDC_INCLUDE_DIR
+            NAMES dc1394.h
             PATHS ${${_PATH}}
-            PATH_SUFFIXES "include/dc1394" 	  
+            PATH_SUFFIXES "include/dc1394"
             DOC "The path to LIBDC header files"
             NO_DEFAULT_PATH)
-  
+
     FOREACH(_lib ${_LIBDC_LIBRARIES})
-      FIND_LIBRARY(${_lib}_LIBRARY  
+      FIND_LIBRARY(${_lib}_LIBRARY
                NAMES ${_lib}
                PATHS ${${_PATH}}
                PATH_SUFFIXES ${_LIB_SEARCH_PATH_SUFFIXES}
                NO_DEFAULT_PATH)
     ENDFOREACH()
 ENDFOREACH()
-	   
-# Handle the QUIETLY and REQUIRED arguments and set LIBDC_FOUND to TRUE if 
+
+# Handle the QUIETLY and REQUIRED arguments and set LIBDC_FOUND to TRUE if
 # all listed variables are TRUE
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBDC REQUIRED_VARS 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBDC REQUIRED_VARS
                                   dc1394_LIBRARY
                                   LIBDC_INCLUDE_DIR)
 

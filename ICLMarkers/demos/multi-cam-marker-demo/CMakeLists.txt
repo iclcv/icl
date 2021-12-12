@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME multi-cam-marker-demo
            SOURCES multi-cam-marker-demo.cpp
            LIBRARIES ICLMarkers)
-

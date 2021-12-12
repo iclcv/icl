@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME multi-viewer
            SOURCES multi-viewer.cpp
            LIBRARIES ICLMarkers)
-

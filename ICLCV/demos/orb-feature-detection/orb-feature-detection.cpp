@@ -71,5 +71,3 @@ void run(){
 int main(int n, char **args){
    return ICLApp(n,args,"-input|-i(2)",init,run).exec();
 }
-
-

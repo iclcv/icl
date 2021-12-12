@@ -12,7 +12,7 @@ Modules
    modules/filter
    modules/io
    modules/qt
-   modules/cv 
+   modules/cv
    modules/geom
    modules/markers
    modules/physics

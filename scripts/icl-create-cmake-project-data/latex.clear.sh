@@ -15,4 +15,3 @@ rm -f plots/*.aux
 rm -f sections/*~
 rm -f plots/*~
 rm -f mylib.bib
-

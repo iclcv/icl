@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME heart-rate-detector
           SOURCES heart-rate-detector.cpp
           LIBRARIES ICLMarkers)
-

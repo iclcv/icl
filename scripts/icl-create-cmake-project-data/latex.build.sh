@@ -9,4 +9,3 @@ bibtex $source.aux
 pdflatex $options $source.tex
 pdflatex $options $source.tex
 pdflatex $options $source.tex
-

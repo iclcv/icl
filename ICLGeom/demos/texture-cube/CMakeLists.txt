@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME texture-cube
            SOURCES texture-cube.cpp
            LIBRARIES ICLMarkers)
-

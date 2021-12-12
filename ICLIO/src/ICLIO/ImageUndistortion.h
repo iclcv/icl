@@ -84,4 +84,3 @@ namespace icl{
     ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
   } // namespace io
 }
-

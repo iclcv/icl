@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME create-button-icon
           SOURCES create-button-icon.cpp
           LIBRARIES ICLMarkers)
-

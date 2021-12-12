@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME generic-texture-coords
            SOURCES generic-texture-coords.cpp
            LIBRARIES ICLMarkers)
-

@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME color-picker
           SOURCES color-picker.cpp
           LIBRARIES ICLMarkers)
-

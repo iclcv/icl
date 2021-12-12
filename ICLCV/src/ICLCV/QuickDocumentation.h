@@ -176,6 +176,3 @@ int main(int n, char **ppc){
     \image html quick-example-2.png "Arithmetical operations for creation of difference images"
     </td></tr></table>
  **/
-
-
-

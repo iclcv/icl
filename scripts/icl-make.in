@@ -39,4 +39,4 @@ if [ "$2" = "-v" ] || [ "$2" = "--v" ] || [ "$2" = "-verbose" ] || [ "$2" = "--v
    echo "g++ $CXXFLAGS -o $1 $SRC $LDFLAGS" ;
 fi
 
-g++ $CXXFLAGS -o $1 $SRC $LDFLAGS 
+g++ $CXXFLAGS -o $1 $SRC $LDFLAGS

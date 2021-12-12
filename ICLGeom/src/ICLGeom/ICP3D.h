@@ -164,4 +164,3 @@ namespace icl {
 		}; // class ICP3D
 	} // namespace geom
 } // namespace icl
-

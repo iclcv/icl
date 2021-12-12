@@ -57,4 +57,3 @@ install(TARGETS "${PROJECT_NAME}-${APP}"
        )
 
 endforeach(APP)
-

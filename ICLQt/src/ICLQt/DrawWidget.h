@@ -491,4 +491,3 @@ int main(int n, char **ppc){
     };
   } // namespace qt
 }
-

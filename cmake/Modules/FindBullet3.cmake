@@ -1,6 +1,6 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
-# 
+#
 # REMARK: This version has been adapted for finding Bullet3 (Bullet >= 2.82)
 #
 #.rst:

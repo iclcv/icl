@@ -263,4 +263,3 @@ int main(int n, char **ppc){
                   "-back-face|-bf(file=etc/back-face.ppm.gz) -add-clutter-on-start|-a "
                   "-paper-dim(W=15,H=21)",init,run).exec();
 }
-

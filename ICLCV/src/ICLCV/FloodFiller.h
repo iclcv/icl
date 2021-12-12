@@ -239,5 +239,3 @@ namespace icl{
 
   } // namespace cv
 }
-
-

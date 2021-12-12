@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME plot-widget-3D
            SOURCES plot-widget-3D.cpp
            LIBRARIES ICLMarkers)
-

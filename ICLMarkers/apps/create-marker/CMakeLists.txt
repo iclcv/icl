@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME create-marker
           SOURCES create-marker.cpp
           LIBRARIES ICLMarkers)
-

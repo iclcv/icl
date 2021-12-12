@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_APP(NAME gui-assignment-info
           SOURCES gui-assignment-info.cpp
           LIBRARIES ICLMarkers)
-

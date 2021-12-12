@@ -4,4 +4,3 @@ IF(QT_FOUND)
   ADD_SUBDIRECTORY(local-thresh)
   ADD_SUBDIRECTORY(rectify-image)
 ENDIF()
-

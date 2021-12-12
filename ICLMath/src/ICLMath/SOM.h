@@ -189,5 +189,3 @@ namespace icl{
 
   } // namespace math
 }
-
-

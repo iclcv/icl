@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME k-means
            SOURCES k-means.cpp
            LIBRARIES ICLMarkers)
-

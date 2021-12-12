@@ -7,4 +7,3 @@ BUILD_APP(NAME camera-calibration-planar
                   PlanarCalibrationTools.cpp
                   GridIndicatorObject.cpp
           LIBRARIES ICLMarkers)
-

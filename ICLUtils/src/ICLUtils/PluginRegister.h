@@ -126,4 +126,3 @@ namespace icl{
       r.add(#NAME,CREATE_FUNCTION,DESCRIPTION,SYNTAX);                  \
     }                                                                   \
   } static_##TYPE##_PluginRegistration__##NAME;
-

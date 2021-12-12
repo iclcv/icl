@@ -58,10 +58,10 @@ The **GUI** Creation Framework
 * :ref:`qt.special-components`
 * :ref:`qt.image-vis-framework`
 
-  * :ref:`qt.glimg`            
-  * :ref:`qt.iclwidget`      
-  * :ref:`qt.icldrawwidget`  
-  * :ref:`qt.icldrawwidget3d` 
+  * :ref:`qt.glimg`
+  * :ref:`qt.iclwidget`
+  * :ref:`qt.icldrawwidget`
+  * :ref:`qt.icldrawwidget3d`
 
 * :ref:`qt.mouse-handlers`
 
@@ -109,7 +109,7 @@ Introduction
   * solves all GUI-thread -- working-thread synchronization issues for you
   * provides implicit and standardized layout handling
   * always provides access to the wrapper Qt-components
-  
+
 
 During the implementation of computer vision applications, the
 programmer does usually not want to spend many resources for the
@@ -123,7 +123,7 @@ produce a high processor usage, is the decoupling of the GUI and the
 working loop, which is usually implemented by using at least two
 threads: a GUI thread, and one or more working threads.
 
-Of course, this can be implemented using the powerful Qt-framework, 
+Of course, this can be implemented using the powerful Qt-framework,
 however, there are many issues, that have to be solved manually
 
 * The GUI-thread (Qt-event loop) and the working thread must be
@@ -137,7 +137,7 @@ however, there are many issues, that have to be solved manually
   this can be a difficult and time consuming task
 
 
-  
+
 .. _qt.gui-first-steps:
 
 First Steps
@@ -157,11 +157,11 @@ framework also endows non-Qt-experts with the ability to create and
 layout a slider using a single line of code.
 
 
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 | .. literalinclude:: examples/qt-slider.cpp   | .. image:: images/qt-slider.png   |
 |    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 
 
 .. _qt.gui-creation-framework-iclapp:
@@ -196,7 +196,7 @@ GUI-component. Each component provides one or more constructors the
 get component-related parameters, such as the minimum, maximum and
 initial value of a slider. Additionally, a set of general options can
 be added::
-  
+
   gui << Slider(0,100,255).handle("slider").label(threshold).maxSize(100,2);
 
 **handle(string)**
@@ -207,7 +207,7 @@ be added::
 **label(string)**
 
   defines a component label, which is used to create a labeled border
-  around the GUI component. 
+  around the GUI component.
 
 **tooltip(string)**
 
@@ -227,7 +227,7 @@ be added::
 **size(xCells,yCells)**
 
   defines the initial size of the component
-  
+
 **out(string)**
 
   this feature only provides for some of the components (see
@@ -270,13 +270,13 @@ left and a vertically layouted container containing the controls on
 the right. The *control panel* can then again be layouted using
 nested sub-containers:
 
-+---------------------------------------------------+----------------------------------------+  
++---------------------------------------------------+----------------------------------------+
 | .. literalinclude:: examples/qt-hierarchical.cpp  | .. image:: images/qt-hierarchical.png  |
 |    :linenos:                                      |    :scale: 50%                         |
 |    :language: c++                                 |    :alt: shadow                        |
 |                                                   |                                        |
 |                                                   | started with **appname -input create   |
-|                                                   | mandril**                              |  
+|                                                   | mandril**                              |
 +---------------------------------------------------+----------------------------------------+
 
 
@@ -308,7 +308,7 @@ and the actual application code can be reached. This class can wrapped
 around an existing gui. It then analyses the wrapped GUI and provides
 setter and getter RSB-based network interfaces for each of the GUI
 components. By these means, ICL's GUI-creation framework can more easily be
-used in a decoupled fashion. 
+used in a decoupled fashion.
 
 The ICL-application **icl-remote-gui** bundles this functionality by being able
 to load a GUI-xml-file and then to automatically create the corresponding
@@ -335,12 +335,12 @@ index operator :icl:`GUI::operator[](const std::string &key)`, where
 given by the **.handle("handle-name")** method in the GUI-definition
 expression.
 
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 | .. literalinclude:: examples/qt-access.cpp   | .. image:: images/qt-access.png   |
 |    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
 |    :emphasize-lines: 9,10,17,20              |                                   |
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 
 .. _qt.gui-creation-framework-handles:
 
@@ -374,11 +374,11 @@ The index operator uses a smart utility class of type
 type-checked assignment. For this, the :icl:`qt::DataStore::Data`
 instance returned by the index operator provides template-based
 assignment and implicit cast operators::
-  
+
   template<class T> void operator=(const T &t);
 
   template<class T> operator T() const;
-  
+
 Internally, contained GUI entries, such as a slider value, are
 registered with an RTTI-type, which is checked whenever one of these
 operators is used. For each pair of *assignable* types, an
@@ -386,7 +386,7 @@ operators is used. For each pair of *assignable* types, an
 the application **icl-gui-assignment-info** is provided, which is able
 to list all supported assignment-rules, each defined by a source
 (*rvalue*) and destination (*lvalue*) type, e.g.::
-  
+
    icl-gui-assignment-info -s int
 
 lists all assignment rules, that have an **int**-typed lvalue. The
@@ -398,24 +398,24 @@ Here are some typical examples:
    :language: c++
    :linenos:
 
-  
+
 .. note::
-   
+
    In a few cases, C++ cannot automatically infer the desired lvalue
    type of an assignment expression. For these cases the explicit
    template-based **as<T>** (:icl:`DataStore::Data::as`) method is provided::
-     
+
      gui << Slider(0,100,50).handle("test") << Show();
-     
+
      int i = gui["test"]; // works
      int j = 0;
      j = gui["test"]; // error: ambiguous assignment
      j = gui["test"].as<int>(); // works
-  
 
-  
 
-  
+
+
+
 
 .. _qt.gui-index-operator-benchmark:
 
@@ -446,7 +446,7 @@ consumption used for the index operator in common applications.
   ========================  ======  ========  ========  ========
   Number of Components:       10       30        50       100
   ========================  ======  ========  ========  ========
-  Times for 1000 accesses   0.30ms   0.32ms    0.35ms    0.37ms 
+  Times for 1000 accesses   0.30ms   0.32ms    0.35ms    0.37ms
   ========================  ======  ========  ========  ========
 
 **Evaluation**
@@ -469,15 +469,15 @@ changed. *Immediately* means that the callback is executed **in the
 GUI-thread**. This is particularly necessary when the callback needs
 to do Qt-GUI stuff, such as showing a dialog. There are two types of
 possible callbacks, simple ones of type::
-  
-  utils::Function<void,void> 
-  
+
+  utils::Function<void,void>
+
   e.g. void myCallback(){...}
 
 , or so called *complex* ones ::
-  
+
   utils::Function<void,const std::string&>
-  
+
   e.g. void myComplexCallback(const std::string &)
 
 Simple callbacks are just executed, however, if registered to more
@@ -495,11 +495,11 @@ trigger is always the most trivial action, such as *moving a slider* or
 *clicking a button*.
 
 
-+------------------------------------------------+-------------------------------------+  
++------------------------------------------------+-------------------------------------+
 | .. literalinclude:: examples/qt-callbacks.cpp  | .. image:: images/qt-callbacks.png  |
 |    :linenos:                                   |      :alt: shadow                   |
 |    :language: c++                              |                                     |
-+------------------------------------------------+-------------------------------------+  
++------------------------------------------------+-------------------------------------+
 
 
 .. _qt.component-table:
@@ -595,8 +595,8 @@ Other GUI Components
 | :icl:`qt::Show`     | Finalizes the GUI definition and *creates* and shows the GUI [#f2]_ |
 +---------------------+---------------------------------------------------------------------+
 
-.. [#f2] 
-   
+.. [#f2]
+
    The actual GUI does not exist, before either :icl:`qt::Create` or
    :icl:`qt::Show` was streamed into it (alternatively the top level
    GUI's :icl:`GUI::create` and :icl:`GUI::show` methods can be
@@ -631,7 +631,7 @@ Container GUI Components
 +---------------------+-----------------------------------+------------------------------------------------------------+
 
 .. note::
-   
+
    All container components can be filled successively with an
    arbitrary number of components. This is also true for the :icl:`Tab`
    component, however the tab-labels are given to the
@@ -708,7 +708,7 @@ explained here.
   The :icl:`Fps` component is rather simple. Once embedded into a GUI,
   it must be manually updated once in every cycle of the working
   thread::
-    
+
     void init(){
       gui << Fps().handle("fps") << Show();
     }
@@ -719,9 +719,9 @@ explained here.
 :icl:`qt::Image`, :icl:`qt::Draw` and :icl:`qt::Draw3D`
 
   These are the main classes for image visualization and annotation. The wrapped
-  QWidget-classes are explained in :ref:`qt.image-vis-framework`. Their usage 
+  QWidget-classes are explained in :ref:`qt.image-vis-framework`. Their usage
   is demonstrated in several tutorials (see :ref:`tut`)
-  
+
 
 
 .. _qt.image-vis-framework:
@@ -730,7 +730,7 @@ The Image Visualization and Annotation Framework
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Issues to be solved by the framework**
-   
+
   * How can images be visualized at all?
   * How can this be done efficiently?
   * How can different image *depths* be handled (and how can this be
@@ -833,7 +833,7 @@ The Image Visualization and Annotation Framework
   the **render**-method must be called later manually when the image
   annotation is finished. Image visualization is part of several
   tutorial chapters (see :ref:`tut.mouse-and-vis`)
-  
+
 
 
 .. _qt.icldrawwidget3d:
@@ -852,7 +852,7 @@ The Image Visualization and Annotation Framework
   GUI Thread, while still being able to render 2D annotations.
 
   .. note::
-     
+
      It is highly recommended to use the :icl:`geom::Scene` class to
      create 3D rendering overlays (**add link here**). The scene class
      can easily provide an appropriate OpenGL callback function for
@@ -908,11 +908,11 @@ also automatically use all icl-namespaces and also the std::namespace,
 which is why it should never be included by other header files.
 Here is an example for a simple *difference image*-application:
 
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 | .. literalinclude:: examples/qt-quick.cpp    | .. image:: images/qt-quick.png    |
 |    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 
 .. _qt.quick.affinity:
 
@@ -922,13 +922,13 @@ Affinity to **ImgQ**
 Many of the global functions are implemented twice, as template and as
 normal function for the :icl:`ImgQ` (aka :icl:`core::Img32f`)-type
 e.g.::
-  
-  load("myimage"); 
+
+  load("myimage");
 
 returns an :icl:`qt::ImgQ`, while::
 
   load<icl8u>("myimage");
-  
+
 returns the image as :icl:`core::Img8u`.
 
 
@@ -974,7 +974,7 @@ Image Creation Tools
   creates test image, that is hard-coded within the ICLIO-library.
   Supported test images are "lena", "cameraman", "mandril", "parrot",
   and a few others.
-   
+
 :icl:`qt::grab`
 
   just grabs an image using an internal grabber handling
@@ -984,22 +984,22 @@ Image Creation Tools
 Image Filtering and Conversion Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:icl:`qt::filter` 
+:icl:`qt::filter`
 
   applies one of a set of predefined image filters
 
 :icl:`qt::scale`
 
   scales an image by either a factor or to a target size
-  
+
 :icl:`qt::levels`
-  
+
   re-quantifies an images value domain to a given number of levels
- 
-:icl:`qt::copy` 
+
+:icl:`qt::copy`
 
   performs a deep copy of an image::
-    
+
     ImgQ a = zeros(100,100,1);
     ImgQ b = copy(a);
 
@@ -1008,9 +1008,9 @@ Image Filtering and Conversion Functions
   flips an image
 
 :icl:`qt::cvt`
-  
+
   converts images of any type to :icl:`ImgQ`
-  
+
 :icl:`qt::cvt8u`, :icl:`qt::cvt16s`, ...
 
   convert images to target depth
@@ -1027,17 +1027,17 @@ Image Filtering and Conversion Functions
 :icl:`qt::channel`
 
   extract a single channel from an image
-  
+
 :icl:`qt::thresh`
 
-  applies a threshold operation 
+  applies a threshold operation
 
 :icl:`qt::label`
 
   adds a simple text-label to the top left corner of an image.
 
   .. note::
-     
+
      This function does not create a new image, but it works on the
      given image (of which a shallow copy is also returned)
 
@@ -1060,12 +1060,12 @@ The **Quick**-header also provides simple to use C++ operators for the
 :icl:`qt::ImgQ` (aka :icl:`core::Img32f`) class. The binary operators
 **+**, **-**, ***** and **/** are defined for pixel-wise operations on
 two images and pixel-wise operations with a scalar:
-  
-+--------------------------------------------------+---------------------------------------+  
+
++--------------------------------------------------+---------------------------------------+
 | .. literalinclude:: examples/quick-operators.cpp | .. image:: images/quick-operators.png |
 |    :linenos:                                     |    :scale: 60%                        |
 |    :language: c++                                |    :alt: shadow                       |
-+--------------------------------------------------+---------------------------------------+  
++--------------------------------------------------+---------------------------------------+
 
 The same is true for the logical operators **&&** and **||**, which
 perform a pixel-wise logical combination of two images.
@@ -1092,16 +1092,16 @@ As it could be seen in the example above, also the three operators
 mention that we strongly adapted the expected default behavior of
 these operators:
 
-**The ,-Operator** 
+**The ,-Operator**
 
   is used to concatenate image horizontally. If the image heights are
   not equal, the smaller image is just made higher (without scaling the
   contents)
-  
+
 **The %-Operator**
 
   performs a vertical image concatenation
-  
+
 **The |-Operator**
 
   stacks the channels of two images.
@@ -1129,4 +1129,3 @@ used to define a given number of rectangles on top of an image. These
 can then be accessed and used for further processing steps. The
 :icl:`qt::DefineQuadrangleMouseHandler` is provided to define a single
 arbitrary quadrangle in an image.
-

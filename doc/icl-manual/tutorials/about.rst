@@ -22,7 +22,7 @@ ICL's Modules
 """""""""""""
 
 The ICL library is subdivided into a set of modules. Each module
-comes up with classes and functions for a more or less specific 
+comes up with classes and functions for a more or less specific
 topic. The modules are organized in a dependency stack, i.e., every
 module in the following list depends on all modules above it.
 
@@ -33,7 +33,7 @@ extra tooltip, that show the ICL module it can be found in.
 .. note::
 
   Have a try at these examples:
-  
+
   :icl:`icl8u`, :icl:`FixedMatrix`, :icl:`Img`, :icl:`UnaryOp`,
   :icl:`GenericGrabber`, :icl:`GUI`, :icl:`ImageRegion`, :icl:`Scene`,
   :icl:`Fiducial`

@@ -84,10 +84,10 @@ to install ICL in three different flavours:
 # has to be done just once
 $ brew tap iclcv/homebrew-formulas
 # enables features of OpenCV, Qt, OpenGL, ImageMagick, LibAV, LibDC and LibEigen
-$ brew install icl  
+$ brew install icl
 # base features plus additional functionality based on rsb, protobuf, freenect, pcl and bullet
 $ brew install icl --with-extra
-# extra features plus libusb, zmq and openni support  
+# extra features plus libusb, zmq and openni support
 brew install icl --with-full
 ```
 
@@ -296,7 +296,7 @@ Total Test time (real) =   2.01 sec
 Tests can also be run individually:
 
 ```
-$ build/ICLMath/tests_iclmath 
+$ build/ICLMath/tests_iclmath
 [==========] Running 8 tests from 1 test case.
 [----------] Global test environment set-up.
 [----------] 8 tests from DynMatrixTest

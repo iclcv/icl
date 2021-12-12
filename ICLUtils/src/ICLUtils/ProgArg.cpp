@@ -620,5 +620,3 @@ namespace icl{
     }
   } // namespace utils
 }
-
-

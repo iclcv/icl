@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_EXAMPLE(NAME quick
               SOURCES quick.cpp
               LIBRARIES ICLQt)
-

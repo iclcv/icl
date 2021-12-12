@@ -35,7 +35,7 @@ if [ "$1" = "--update" ] ; then
     if [ -e "application" ] ; then
         echo svn mv application app
     fi
-    
+
     if [ ! -e test ] ; then
         echo "mkdir test"
         echo "cp ${RESOURCE_DIR}/sample-test.cpp.template ./${PROJECT}/test/sample-test.cpp"

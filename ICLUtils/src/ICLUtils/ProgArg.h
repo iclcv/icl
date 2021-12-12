@@ -484,4 +484,3 @@ namespace icl{
     ICLUtils_API std::string pa_get_help_text();
   } // namespace utils
 }
-

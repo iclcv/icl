@@ -779,6 +779,3 @@ namespace icl{
     REGISTER_CONFIGURABLE(LowLevelPlotWidget, return create_LowLevelPlotWidget());
   } // namespace qt
 }
-
-
-

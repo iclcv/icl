@@ -195,5 +195,3 @@ namespace icl{
 
   } // namespace filter
 }
-
-

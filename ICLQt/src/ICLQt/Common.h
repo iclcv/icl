@@ -43,5 +43,3 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLCore/Color.h>
-
-

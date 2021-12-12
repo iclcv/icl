@@ -110,4 +110,3 @@ int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-depth-cam|-d(device-type,device-ID,calib-filename) "
                 "-color-cam|-c(device-type,device-ID,calib-filename) -disable-open-cl|-no-cl ",init,run).exec();
 }
-

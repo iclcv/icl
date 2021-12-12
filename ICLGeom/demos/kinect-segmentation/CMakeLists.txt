@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME kinect-segmentation
            SOURCES kinect-segmentation.cpp
            LIBRARIES ICLMarkers)
-

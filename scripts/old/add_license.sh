@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# this script is used to add and to remove the ICL-license text from all files, 
+# this script is used to add and to remove the ICL-license text from all files,
 # IMPORTANT:
 # In case of removing the license text in order to change it before re-adding
 # the new text, always remove the text before changing it. The remove step is
-# a little simple: is simply counts the lines of the current license text and 
+# a little simple: is simply counts the lines of the current license text and
 # removes that much preceding lines from each file. If you already changed the
 # current license text, and the new version has more or less lines, you corrupt
 # all files without being able to fix it afterwards with this script
@@ -105,7 +105,7 @@ for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt 
             RH=`cat $CONTRIB_FILE | grep $FILE | grep rhaschke`
             AJ=`cat $CONTRIB_FILE | grep $FILE | grep ajustus`
             FR=`cat $CONTRIB_FILE | grep $FILE | grep freinhar`
-            
+
             AUTHOR_COUNT=0
             unset AUTHORS
             unset AUTHORS_A
@@ -155,7 +155,7 @@ for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt 
                 fi
                 AUTHOR_COUNT=`echo $AUTHOR_COUNT+1 | bc -l`
             fi
-            
+
             if [ "$AUTHOR_COUNT" > "6" ] ; then
                 AUTHORS_B=`echo $AUTHORS | cut -d ' ' -f '7-'`
                 AUTHORS_A=`echo $AUTHORS | cut -d ' ' -f '1-6'`
@@ -191,7 +191,7 @@ for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt 
                 AUTHORS_B_SPACE="$AUTHORS_B_SPACE " ;
             done
 
-          
+
 
             cat $0 | grep -e '^#LICENSE_TEXT' | \
                 sed 's|#LICENSE_TEXT||g' | \
@@ -228,16 +228,16 @@ for MODULE in ICLAlgorithms ICLBlob ICLCC ICLCore ICLFilter ICLGeom ICLIO ICLQt 
 
                 if [ "$LINES" = "" ] ; then
                     LINES=`cat ./.license_text.txt | wc -l` ;
-                    echo "using default: $LINES lines" 
+                    echo "using default: $LINES lines"
                     # we need +1 for the tail command
                     LINES=`echo "$LINES+1" | bc -l` ;
                 else
-                    echo "using input: $LINES lines" 
+                    echo "using input: $LINES lines"
                     LINES=`echo "$LINES+1" | bc -l` ;
                 fi
             fi
-            
-            
+
+
             if [ "$DOIT" = "TRUE" ] ; then
                 echo "  removing license from $FILE"
                 ENSURE=`cat $FILE | grep 'GNU General Public License Usage'`

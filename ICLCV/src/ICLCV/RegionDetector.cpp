@@ -418,4 +418,3 @@ namespace icl{
     REGISTER_CONFIGURABLE_DEFAULT(RegionDetector)
   } // namespace cv
 }
-

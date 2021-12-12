@@ -65,25 +65,25 @@ namespace icl {
   #else
   #define __LOG1(X)
   #endif
-  
+
   #if LOG_LEVEL >= 2
   #define __LOG2(X) __LOG__(cout,X)
   #else
   #define __LOG2(X)
   #endif
-  
+
   #if LOG_LEVEL >= 3
   #define __LOG3(X) __LOG__(cout,X)
   #else
   #define __LOG3(X)
   #endif
-  
+
   #if LOG_LEVEL >= 4
   #define __LOG4(X) __LOG__(cout,X)
   #else
   #define __LOG4(X)
   #endif
-  
+
   #if LOG_LEVEL >= 5
   #define __LOG5(X) __LOG__(cout,X)
   #else

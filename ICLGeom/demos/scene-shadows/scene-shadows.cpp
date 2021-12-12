@@ -173,4 +173,3 @@ int main(int n, char**ppc){
                         "-render-lines -render-points "
                         "-max-fps|-fps(fps=25)",init,run).exec();
 }
-

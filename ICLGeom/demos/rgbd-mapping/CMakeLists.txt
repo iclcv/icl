@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME rgbd-mapping
            SOURCES rgbd-mapping.cpp
            LIBRARIES ICLMarkers)
-

@@ -218,5 +218,3 @@ namespace icl{
     };
   } // namespace math
 }
-
-

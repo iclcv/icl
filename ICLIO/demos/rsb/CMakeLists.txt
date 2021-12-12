@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME rsb
            SOURCES rsb.cpp
            LIBRARIES ICLMarkers)
-

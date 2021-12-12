@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME vector-tracker
            SOURCES vector-tracker.cpp
            LIBRARIES ICLMarkers)
-

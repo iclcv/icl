@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME simplex-3D
            SOURCES simplex-3D.cpp
            LIBRARIES ICLMarkers)
-

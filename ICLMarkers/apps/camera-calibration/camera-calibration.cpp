@@ -626,4 +626,3 @@ int main(int n, char **ppc){
                 "-crop-and-rescale|-cr(crop_x_pix,crop_y_pix,new_width,new_height) "
                 ,init,run).exec();
 }
-

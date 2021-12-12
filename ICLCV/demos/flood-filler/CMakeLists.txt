@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME flood-filler
            SOURCES flood-filler.cpp
            LIBRARIES ICLMarkers)
-

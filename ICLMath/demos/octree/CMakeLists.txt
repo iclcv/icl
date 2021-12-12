@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME octree
            SOURCES octree.cpp
            LIBRARIES ICLMarkers)
-

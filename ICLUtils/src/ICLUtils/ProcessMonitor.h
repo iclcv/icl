@@ -116,5 +116,3 @@ namespace icl{
     ICLUtils_API std::ostream &operator<<(std::ostream &s, const ProcessMonitor::Info &info);
   } // namespace utils
 }
-
-

@@ -173,5 +173,3 @@ namespace icl{
 
   } // namespace qt
 } // namespace icl
-
-

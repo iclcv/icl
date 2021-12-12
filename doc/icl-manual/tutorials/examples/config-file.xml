@@ -1,14 +1,14 @@
-<config> 
-  <section id="general"> 
+<config>
+  <section id="general">
     <data id="a vector" type="Vec">1 2 3 0</data>
-    <section id="params"> 
-      <data type="int" id="threshold">7</data> 
-      <data type="double" id="value">6.450000</data> 
-      <data type="string" id="filename">./notHallo.txt</data> 
-    </section> 
-  </section> 
-  <section id="special"> 
-    <data type="char" id="hint">a</data> 
-    <data type="char" id="no-hint">b</data> 
-  </section> 
+    <section id="params">
+      <data type="int" id="threshold">7</data>
+      <data type="double" id="value">6.450000</data>
+      <data type="string" id="filename">./notHallo.txt</data>
+    </section>
+  </section>
+  <section id="special">
+    <data type="char" id="hint">a</data>
+    <data type="char" id="no-hint">b</data>
+  </section>
 </config>

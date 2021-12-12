@@ -13,7 +13,7 @@ message RSBPointCloud {
       required string compression  = 2;
       required bytes data          = 3;
     }
-      
+
     repeated Field fields               = 5;
 
     message MetaDataEntry{

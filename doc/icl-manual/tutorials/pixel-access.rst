@@ -16,8 +16,8 @@ review the pixel access technique from the previous example:
 .. literalinclude:: examples/pixel-access-1.cpp
    :language: c++
    :linenos:
-            
-        
+
+
 The resulting source code is very intuitive, but not optimal in terms
 of performance. In order to understand why the
 **(x,y,channel)**-operator can never be optimal in terms of

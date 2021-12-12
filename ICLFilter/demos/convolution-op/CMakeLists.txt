@@ -5,4 +5,3 @@ INCLUDE(ICLHelperMacros)
 BUILD_DEMO(NAME convolution-op
            SOURCES convolution-op.cpp
            LIBRARIES ICLMarkers)
-

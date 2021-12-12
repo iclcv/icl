@@ -650,7 +650,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_SOURCE_DIR@/ICLUtils/src/ICLUtils @CMAKE_SOURCE_DIR@/ICLMath/src/ICLMath @CMAKE_SOURCE_DIR@/ICLCore/src/ICLCore @CMAKE_SOURCE_DIR@/ICLFilter/src/ICLFilter @CMAKE_SOURCE_DIR@/ICLIO/src/ICLIO @CMAKE_SOURCE_DIR@/ICLQt/src/ICLQt @CMAKE_SOURCE_DIR@/ICLCV/src/ICLCV @CMAKE_SOURCE_DIR@/ICLGeom/src/ICLGeom @CMAKE_SOURCE_DIR@/ICLMarkers/src/ICLMarkers @CMAKE_SOURCE_DIR@/ICLPhysics/src/ICLPhysics
 
-#INPUT                  = @CMAKE_SOURCE_DIR@/ICLUtils/src/ICLUtils 
+#INPUT                  = @CMAKE_SOURCE_DIR@/ICLUtils/src/ICLUtils
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
