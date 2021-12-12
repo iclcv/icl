@@ -29,7 +29,7 @@
 #**                                                                 **
 #*********************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 # ---- global definitions ----
@@ -45,9 +45,6 @@ SET(PROJECT_VERSION "${ICL_VERSION_MAJOR}.${ICL_VERSION_MINOR}.${ICL_VERSION_PAT
 # set to NEW to allow PROJECT() to handle version and language information
 IF(CMAKE_VERSION VERSION_LESS 3.0.0)
   PROJECT(ICL)
-  IF(CMAKE_VERSION VERSION_LESS 2.8.12)
-    SET(ICL_FILE_NAME_COMPONENT_DIR DIRECTORY)
-  ENDIF()
 ELSE()
   cmake_policy(SET CMP0048 NEW)
   cmake_policy(SET CMP0057 NEW)
@@ -75,7 +72,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 IF(MSVC)
-  set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE)
+  set(CMAKE_CONFIGURATION_TYPES Debug Release)
 ENDIF(MSVC)
 
 IF(NOT WIN32)
@@ -656,6 +653,9 @@ IF(BUILD_WITH_QT)
       LIBS "GLEW")
   ENDIF(WIN32)
 
+  if(POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW) # Prefer GLVND
+  endif()
   FIND_PACKAGE(OpenGL REQUIRED)
   SET(ICL_QT_MODULES Core Gui Multimedia Widgets OpenGL)
   SET(ICL_ALL_QT_LIBS_FOUND TRUE)
@@ -734,11 +734,7 @@ IF(BUILD_WITH_QT)
     #   get_target_property(ICLQt5WidgetsLib Qt5::Widgets IMPORTED_SONAME_RELEASE)
     #   get_target_property(ICLQt5OpenGLLib Qt5::OpenGL IMPORTED_SONAME_RELEASE)
     #   get_target_property(_QT5CORE_LOCATION Qt5::Core LOCATION)
-    #   IF(CMAKE_VERSION VERSION_LESS 2.8.12)
-    #     get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} PATH)
-    #   ELSE()
-    #     get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
-    #   ENDIF()
+    #   get_filename_component(_QT5CORE_ABSOLUTE ${_QT5CORE_LOCATION} DIRECTORY)
     #   MESSAGE(STATUS "ICLQt5CoreLib : ${ICLQt5CoreLib}")
     #   MESSAGE(STATUS "ICLQt5GuiLib : ${ICLQt5CoreLib}")
     #   MESSAGE(STATUS "ICLQt5MultimediaLib : ${ICLQt5MultimediaLib}")
