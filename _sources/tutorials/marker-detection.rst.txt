@@ -4,7 +4,7 @@ Fiducial Marker Detection
 =========================
 
 In this demo application, we will try to detect markers in real-time
-in an input image stream. 
+in an input image stream.
 
 .. image:: images/marker-detection.png
    :scale: 80%

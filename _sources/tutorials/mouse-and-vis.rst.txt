@@ -53,11 +53,11 @@ initial reference color and binarization threshold.
 Since we want to use mouse interaction, we create a very simple mouse
 handler function. **MouseEvent::isLeft()** returns true for left
 press- and drag-events. The **MouseEvent**-type provides information
-that is related to the visualized image. It's **getPos()** method 
-returns the image pixel position pointed at rather than widget or 
+that is related to the visualized image. It's **getPos()** method
+returns the image pixel position pointed at rather than widget or
 screen coordinates even if the image is scaled or zoomed. **getColor**
 returns the color of the pixel the mouse points to, which is here
-passed as new reference color to the **ColorDistanceOp**. 
+passed as new reference color to the **ColorDistanceOp**.
 
 .. literalinclude:: examples/mouse-and-vis-2.cpp
    :language: c++
@@ -93,7 +93,7 @@ set. The **DrawHandle** can now be used as a drawing state-machine,
 where we can set a color and then draw primitives. All rendering
 commands are given in image coordinates. The rendering system will
 internally compute all necessary transformations to align the image
-and the overlay. 
+and the overlay.
 
 .. literalinclude:: examples/mouse-and-vis-2.cpp
    :language: c++
@@ -110,12 +110,3 @@ internally and requests redrawing from the GUI thread.
 .. literalinclude:: examples/mouse-and-vis-2.cpp
    :language: c++
    :lines: 31-37
-
-
-
-
-
-
-
-
-

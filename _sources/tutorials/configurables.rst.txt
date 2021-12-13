@@ -6,7 +6,7 @@
 The Configurable Interface
 ##########################
 
-The :icl:`Configurable` interface defines a dynamic mechanism for 
+The :icl:`Configurable` interface defines a dynamic mechanism for
 property handling. Each configurable instance can be set up to provide
 a set of properties each distinguished by a type, and a definition of
 possible values. E.g. a *range*-typed property ...
@@ -30,5 +30,5 @@ property control widget (**TODO:** add configurables tutorial).
 
 
 .. todo::
-   
+
    Write configurable tutorial

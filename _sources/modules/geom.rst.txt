@@ -74,11 +74,11 @@ model. It is parameterized by following sets of parameters.
 
   * position
   * view vector
-  * up vector [#f1]_ 
-   
+  * up vector [#f1]_
+
 * intrinsic parameters
-  
-  * focal length [#f2]_ 
+
+  * focal length [#f2]_
   * horizonal and vertical pixel density of the camera chip [pix/mm]
   * horizonal and vertical offset of the camera principal point
   * the skew
@@ -86,21 +86,21 @@ model. It is parameterized by following sets of parameters.
 * rendering parameters
 
   * chip size [pix]
-  * far clipping distance [mm] 
+  * far clipping distance [mm]
   * viewport size (usually equals chip size) [pix]
   * minimum and maximum z-value (for the depth-buffer resolution)
 
 Please refer to the API documentation of the :icl:`Camera` class for
 more details of the camera's projection model.
 
-.. [#f1] 
-   
+.. [#f1]
+
    The *up*-vector points downwards for compatibility with
 
 .. [#f2]
 
    The focal lenght and the pixel densities are internally multiplied,
-   but we provide two sets of parameters for clarity 
+   but we provide two sets of parameters for clarity
 
 
 .. todo:: add further camera class features such as estimate_3D and Co.
@@ -112,7 +112,7 @@ Camera Calibration
 
 Camera calibration is a important prerequisite for many computer
 vision applications. In contrast to most other libraries, we
-explicitly distinguish between 
+explicitly distinguish between
 
 * parameter estimation for image undistortion
 * finding intrinsic and extrinsic parameters of our idealized camera model
@@ -124,8 +124,8 @@ possible. Image undistortion is assumed to be performed pixel-wise on
 acquired images. For this, ICL's main image source interface
 :icl:`io::GenericGrabber` provides methods to enable automatic image
 undistortion. If this is done, the grabber instance will automatically
-return undistorted images. By these means, image undistortion is completely 
-decoupled from the linear/project geometry camera model. 
+return undistorted images. By these means, image undistortion is completely
+decoupled from the linear/project geometry camera model.
 
 Since camera calibration is a very important topic for many
 applications, we dedicated a whole *camera calibration How-To* to
@@ -150,11 +150,11 @@ All synchronization issues are already solved internally, in
 particular the whole scene is only rendered in the application's
 GUI-thread, which is necessary due to OpenGL's lack of thread-safety.
 
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 | .. literalinclude:: examples/scene-graph.cpp | .. image:: images/scene-graph.png |
 |    :linenos:                                 |      :alt: shadow                 |
 |    :language: c++                            |                                   |
-+----------------------------------------------+-----------------------------------+  
++----------------------------------------------+-----------------------------------+
 
 Additionally, the :icl:`Scene` class provides a simple OpenGL-based
 off-screen rendering method :icl:`Scene::render`, that can be used to
@@ -177,7 +177,7 @@ uses of ICL's :icl:`Scene` class:
 **icl-sceen-graph-demo**
 
   Draws a very simple solar system in order to demonstrate the use
-  of an object tree as scene graph. Off-screen rendering is also 
+  of an object tree as scene graph. Off-screen rendering is also
   demonstrated here.
 
 **icl-animated-grid-demo**
@@ -234,10 +234,10 @@ view ray. An exact intersection position is also provided.
 
    *heavily* means that e.g. vertices or primitives are added or removed.
 
-.. [#f4] 
+.. [#f4]
 
    `see http://en.wikipedia.org/wiki/Wavefront_.obj_file`
-   
+
 .. _geom.overlay:
 
 Using the SceneGraph to Render an Image Overlay
@@ -249,7 +249,7 @@ render a virtual scene as an image overlay (on top of a real
 image). This can be achieved by the following steps:
 
 * Given a real camera device, the camera is calibrated, resulting in an
-  xml-description file of extrinsic and intrinsic camera parameters (e.g. 
+  xml-description file of extrinsic and intrinsic camera parameters (e.g.
   called **myCalib.xml**).
 * If the camera shows significant lens distortion, it is recommended to
   also find appropriate lens distortion compensation parameters (see
@@ -275,8 +275,8 @@ For an example, please refer to this tutorial: :ref:`tut.scene-overlay`
 Point Cloud Processing
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: 
-   
+.. note::
+
    This part of ICL is still under development, however, we think
    that our basic interface will stay as it is. We plan to add more
    features for point cloud IO and processing soon
@@ -320,7 +320,7 @@ point cloud instance into it. The whole data handling is left to the
 caller scope.
 
 .. note::
-   
+
    We also plan to create a :icl:`io::GenericGrabber`-like interface
    for point clouds soon
 
@@ -336,7 +336,7 @@ common :icl:`io::GenericGrabber` instances for acquiring depth- and
 optionally also corresponding color-images. The image sources can be
 any supported :icl:`io::GenericGrabber`-backend. Therefore, the
 :icl:`DepthCameraPointCloudGrabber` can already be used to acquire
-point clouds from 
+point clouds from
 
 * Kinect using the libfreenect backend
 * Kinect and other PrimeSence base defines using the OpenNI backend
@@ -345,6 +345,6 @@ point clouds from
 * Shared-memory streams
 
 .. note::
-   
+
    A .pcd-file point cloud grabber is already implemented, but still needs
    to be included

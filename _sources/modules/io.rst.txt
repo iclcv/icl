@@ -128,18 +128,18 @@ properties can be set from command line. For this, a list of
 * list all possible properties and their allowed values and ranges::
 
     icl-viewer -input dc 0@info
-  
+
 * instantiate a grabber and directly load a property configuration
   file (note: these files can be created interactively with the
   camera-configuration tool **icl-camera-config** or by reading a devices
   properties using e.g. **icl-camera-param-io -d dc 0 -o my-file.xml**)::
-  
+
     icl-viewer -input dc 0@load=my-file.xml
 
 * set several options at once::
-  
+
     icl-viewer -input kinectc '0@LED=green@format=IR Image (10Bit)'
-  
+
 * enable image undistortion according to undistortion parameters
   stored in an appropriate xml file::
 
@@ -147,15 +147,15 @@ properties can be set from command line. For this, a list of
 
 * create a remote server for the camera properties so that an external application
   that receives the images can also adapt the grabber properties (only with RSB-Support)::
-  
-    icl-pipe -i v4l 0@remote-server=/foo/bar/cfg -o rsb /foo/bar 
+
+    icl-pipe -i v4l 0@remote-server=/foo/bar/cfg -o rsb /foo/bar
 
   The opposite receiving part then can instantiate a remote client::
 
     icl-viewer -i rsb /foo/bar@remote-client=/foo/bar/cfg
 
   .. note::
-     
+
     *appropriate* means that the xml-file was created by either serializing
     an :icl:`io::ImageUndistortion` structure to a file, or by using ICL's tool for
     the estimation of lens distortion compensation parameters: **icl-opencv-calib**.
@@ -177,7 +177,7 @@ that here streams images from the first v4l device through an rsb-informer.
 Now an actuall application, that receives (and processes) the images, such as::
 
   icl-viewer -i rsb /foo/bar
- 
+
 would only be able to adapt the here locally used RSB-grabber's
 properties, which basically only allow to adjust image compression
 parameters. This mechanism is internally realized by a property
@@ -187,7 +187,7 @@ icl-pipe process. Though this channel, the :icl:`io::GenericGrabber`
 that is created in the icl-viewer process can tell the
 :icl:`io::GenericImageOutput` of the icl-pipe-process how and how much
 the images should be compressed. The actuall video-4-linux camera
-properties, however, are only visible in the icl-pipe process. 
+properties, however, are only visible in the icl-pipe process.
 
 ICL's :icl:`io::GenericGrabber` provides a generic method to forward the
 actual device properties also to the client (icl-viewer) side. To this end,
@@ -195,7 +195,7 @@ the sending process must be explicitly told to create an RSB-remote-server
 for its grabbers properties::
 
   icl-pipe -i v4l 0 -o rsb /foo/bar@remote-server=/baz
- 
+
 Now, client processes, such as icl-viewer, can access these properties
 (if needed) by instantiating a remote-client::
 
@@ -225,15 +225,15 @@ dependencies are not part of automatically created list.
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 | index |   ID    |                parameter                 |                        description                        |     library dependency        |
 +=======+=========+==========================================+===========================================================+===============================+
-|   0   | kinectd |                device ID                 |                kinect depth camera source                 |         libfreenect           | 
+|   0   | kinectd |                device ID                 |                kinect depth camera source                 |         libfreenect           |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
-|   1   | kinectc |                device ID                 |                kinect color camera source                 |         libfreenect           | 
+|   1   | kinectc |                device ID                 |                kinect color camera source                 |         libfreenect           |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
-|   2   | kinecti |                devide ID                 |                  kinect IR camera source                  |         libfreenect           | 
+|   2   | kinecti |                devide ID                 |                  kinect IR camera source                  |         libfreenect           |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 |   3   |   v4l   |     /dev/videoX index or device-file     |                 V4l2 based camera source                  | videodev-headers or libv4l    |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
-|   4   |   dc    |          camera ID or unique ID          |       IEEE-1394a based camera source (FireWire 400)       |         libdc1394             | 
+|   4   |   dc    |          camera ID or unique ID          |       IEEE-1394a based camera source (FireWire 400)       |         libdc1394             |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
 |   5   |  dc800  |          camera ID or unique ID          |       IEEE-1394b based camera source (FireWire 800)       |         libdc1394             |
 +-------+---------+------------------------------------------+-----------------------------------------------------------+-------------------------------+
@@ -282,7 +282,7 @@ icl-specific image features such as the region of interest.
     which supports all image properties, including image meta-data.  The
     **jicl** format is uses jpeg-compression internally, while **bicl**
     stored the image data in a binary manner, but uncompressed
-    
+
   * **rle1**, **rle4**, **rle6**, and **rle8** is also an icl-specific
     format that is in particular well suited for binary images. The
     formats use run length encoding, where for each format, a certain
@@ -302,7 +302,7 @@ icl-specific image features such as the region of interest.
     for homogeneous binary image regions. The **rle**-type also
     support loading and saving of all other image properties,
     including meta-data.
-  
+
 
 **Image Files that need External Libraries**
 
@@ -310,7 +310,7 @@ icl-specific image features such as the region of interest.
     version is supported, which simply writes the files with zlib.
     Even though, this is rather slow, it can sometimes provide good
     loss-less image compression
-  
+
   * **jpeg** is supported if ICL has libjpeg or image-magick support, or
 
   * **png** is supported if ICL has png or image-magick support
@@ -318,7 +318,7 @@ icl-specific image features such as the region of interest.
   * if image-magick is supported, also all file-types are supported,
     that can be tacked by image magick. A list of file types supported
     by image magick can be obtained from command line using::
-      
+
       identify -list format
 
 
@@ -356,10 +356,10 @@ stream the grabbed images *somewhere else*. Here are some examples:
   trailing zeros, just add more or less hashes #)::
 
     icl-pipe -input dc 0 -o file images/image-####.ppm
-    
+
 * grab images and pipe them to a shared memory segment which can
   directly be accessed by other ICL applications::
-  
+
     icl-pipe -input dc 0 -o sm my-segment
 
 * now, the images can be read online from the shared memory::
@@ -370,7 +370,7 @@ stream the grabbed images *somewhere else*. Here are some examples:
   codec, VGA-resolution and playback speed of 24 frames per second
   (note, not all combinations of codecs, resolutions and sizes are
   possible, actually, most are not :-)::
-     
+
     icl-pipe -input dc 0 -o video my-video.avi,DIVX,VGA,24
 
 
@@ -381,19 +381,19 @@ stream the grabbed images *somewhere else*. Here are some examples:
 * grab images from a robotics service bus scope /foo/bar (using
   spread-based multicast connection)::
 
-    icl-camviewer -input rsb /foo/bar 
+    icl-camviewer -input rsb /foo/bar
 
 * grab images from a robotics service bus scope /foo/bar
   (using socket connection)::
-  
+
     icl-camviewer -input rsb socket:/foo/bar
-  
+
 * grab video file and use a robotics service bus informer to
   publish the image via spread and socket simultaneously::
 
     icl-pipe -input cvvideo myfile.avi -o rsb spread,socket:/foo/bar
 
-    
+
 .. _io.output-backends:
 
 
@@ -414,13 +414,13 @@ library dependency:
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
 | nr |  id   |     parameters              |          explanation           |      library dependency        |
 +====+=======+=============================+================================+================================+
-| 0  | video |   video filename            | OpenCV based video file writer |          OpenCV >= 2.3         | 
+| 0  | video |   video filename            | OpenCV based video file writer |          OpenCV >= 2.3         |
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
-| 1  |  sm   |  shared memory segment ID   | Qt based shared memory writer  |             Qt                 | 
+| 1  |  sm   |  shared memory segment ID   | Qt based shared memory writer  |             Qt                 |
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
-| 2  |  rsb  | [transports=spread]:scope   |     Network output stream      |      librsbcore, librsc        | 
+| 2  |  rsb  | [transports=spread]:scope   |     Network output stream      |      librsbcore, librsc        |
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
-| 3  | file  |   file pattern in tics ''   |          File Writer           | optionally, libjpeg, ...       | 
+| 3  | file  |   file pattern in tics ''   |          File Writer           | optionally, libjpeg, ...       |
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
 | 4  |  v4l  |  device name or id          | V4L2 looback device writer     |  videodev-headers or libv4l    |
 +----+-------+-----------------------------+--------------------------------+--------------------------------+
@@ -445,7 +445,7 @@ are supported
    are all the same simple row-major byte gray scale images
 
 **YUYV**, **Y444**, **YU12**
-   
+
    YUV sub-formats
 
 **MJPE**
@@ -510,21 +510,20 @@ Other Classes
   as "images/\*.png". Once instantiated, the file list provides
   lexicographically ordered random access to the matching
   files. Usually, this must not be used manually, as it is automatically
-  used if the :icl:`GenericGrabber` is instantiated with a "file" 
-  *backend  selector*. 
-  
+  used if the :icl:`GenericGrabber` is instantiated with a "file"
+  *backend  selector*.
+
 :icl:`FilenameGenerator`
-  
+
   The :icl:`FilenameGenerator` allows for creating incremental file-names
   such as "image-001.png", "image-002.png", etc. For this, a given
   pattern string must contain a connected set of hashes
-  (e.g. "image-###.png"). The more hashes are used, the more trailing 
+  (e.g. "image-###.png"). The more hashes are used, the more trailing
   zeros are inserted
-  
+
 :icl:`ImageCompressor`
-  
+
   The image compressor is used to create the binary ICL image formats
-  **bicl**, **jicl** and also the **rleX**-formats. Actually its 
+  **bicl**, **jicl** and also the **rleX**-formats. Actually its
   image serialization is also used for shared-memory- and rsb-based
   network communication
-

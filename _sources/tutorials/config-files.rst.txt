@@ -54,7 +54,7 @@ This will parse the whole config-file and create an efficient STL-map
 based lookup for all it's entries.
 
 .. note::
-   
+
    Internally, we use the 3rd party library pugi-XML as XML parser,
    which is included as a source file and directly linked into the
    ICLUtils library
@@ -67,7 +67,7 @@ written to an xml-file (here named "config2.xml" using::
 Adding Entries to the XML File
 ******************************
 
-Lets start with an empty file and add all the entries of the 
+Lets start with an empty file and add all the entries of the
 example above.
 
 .. literalinclude:: examples/config-file.cpp
@@ -77,34 +77,34 @@ example above.
 As we can see, this is at least as transparent as writing the XML-file
 manually. Sections are addressed by the '.'-delimited string list where
 the last token always defines the actual data-entry's *id*. The example
-also shows, that sections are automatically added on demand during the 
+also shows, that sections are automatically added on demand during the
 C++-based creation process. Furthermore, we demonstrate the automatic
 type inference mechanism, that derives the data-tag's type entry from
-the source type. Types that are not registered cannot be added to 
+the source type. Types that are not registered cannot be added to
 :icl:`ConfigFile` instances::
 
   struct MyType {};
   ConfigFile f;
   f["config.x"] = MyType(); // error type is not registered!
-  
+
 
 The Prefix
 """"""""""
 During the data insertion, we might have to use an identical prefix
 several times leading to many long lines in your C++-code. This can
-be bypassed by setting up the :icl:`ConfigFile` instance with a 
-temporary path prefix. 
+be bypassed by setting up the :icl:`ConfigFile` instance with a
+temporary path prefix.
 
 .. literalinclude:: examples/config-file-2.cpp
    :language: c++
    :linenos:
 
 .. note::
- 
+
   The prefix is just treated as an **std::string** variable, that
   is automatically prepended to the :icl::`ConfigFile`'s index
   operator's argument. Therefore, the prefix must actually end with
-  a '.'-character so that the following relative paths make sense 
+  a '.'-character so that the following relative paths make sense
   then.
 
 
@@ -128,7 +128,7 @@ if the assignment seems trivial::
 If a behavior like this is required, one can either first use a
 correct assignment::
 
-   double tmp = cfg["config.general.params.value"]; 
+   double tmp = cfg["config.general.params.value"];
    float value2 = tmp;
 
 Or use the :icl:`ConfigFile::Data::as` method, that implements
@@ -141,9 +141,9 @@ type::
 Static Type Registration
 ************************
 
-The :icl:`ConfigFile` class can also be set up to accept custom 
+The :icl:`ConfigFile` class can also be set up to accept custom
 types. For this, C++'s ostream- and istream-operators must fist
-be overloaded for the desired type. The new type can then be 
+be overloaded for the desired type. The new type can then be
 registered using the :icl:`ConfigFile::register_type` template,
 which gets a template-based type and a string-based type-ID. Here is
 an example:

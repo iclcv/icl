@@ -43,7 +43,7 @@ Mandatory Dependencies
 
 * **pthreads** (for general threading support)
 * **zlib** (for reading and writing zipped files, ending .gz)
-* **libjpeg** (for reading and writing jpeg images, 
+* **libjpeg** (for reading and writing jpeg images,
   lossy but high compression, fast)
 * **libpng** (for reading and writing png images,
   loss-less compression, but rather slow in comparison to jpeg)
@@ -142,7 +142,7 @@ installation sources.
   The :icl:`filter::ProximityOp` filters are not available without Intel
   IPP yet (but we plan to add fallback implementations soon).
 
-  
+
 .. _install.win.dependencies.optional.mkl:
 
 Intel Math Kernel Library (Intel MKL)
@@ -182,9 +182,9 @@ part of ICL.
 * **Supported Versions:** >= 2.1
 * **License Type:** BSD-License
 * **Download at:** http://sourceforge.net/projects/opencvlibrary/files
-* **Dependent library features:** 
-  
-  * Data type conversions 
+* **Dependent library features:**
+
+  * Data type conversions
   * C++-based surf feature detection
   * OpenCV-based camera grabber backend
   * OpenCV-based video grabber backend
@@ -205,7 +205,7 @@ company (http://www.mesa-imaging.ch) The library is closed source.
 * **License Type:** Proprietary
 * **Download at:** http://www.mesa-imaging.ch/drivers.php
 * **Dependent library features:** SwissRanger camera grabber backend
-  
+
 
 .. _install.win.dependencies.optional.imagemagick:
 
@@ -230,7 +230,7 @@ libdc1394
 ~~~~~~~~~
 
 The dc1394 (digital firewire camera) library allows to grab image from
-firewire cameras and to set camera parameters. 
+firewire cameras and to set camera parameters.
 
 * **Supported Versions:** >= 2.1.2
 * **License Type:** open source
@@ -244,7 +244,7 @@ OpenKinect Kinect Driver Library (libfreenect)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The libfreenect provides a lightweight interface for grabbing images
-from Microsoft Kinect cameras. The library allows to grab color, depth and 
+from Microsoft Kinect cameras. The library allows to grab color, depth and
 IR-images and to set some internal camera properties.
 
 * **Supported Versions:** >= 0.0.1
@@ -283,7 +283,7 @@ wrangler library Glew and it needs OpenGL headers to be installed.
 * **Supported Versions:** 5
 * **License Type:** open source
 * **Download at:** http://qt.digia.com/
-* **Dependent library features:** 
+* **Dependent library features:**
 
   * GUI-framework and all dependent applications
   * Shared memory based image-I/O backends
@@ -314,9 +314,9 @@ for point cloud processing units located in the ICLGeom module.
 * **Supported Versions:** >= 1.1 (1.2 soon)
 * **License Type:** open source
 * **Download at:** http://www.khronos.org/registry/cl
-* **Dependent library features:** 
+* **Dependent library features:**
 
-  * significantly faster point cloud creation and RGBD-mapping 
+  * significantly faster point cloud creation and RGBD-mapping
     (:icl:`geom::PointCloudCreator`, :icl:`geom::DepthCameraBasedPointCloudGrabber`)
   * significantly faster point cloud normal estimation and segmentation
     (:icl:`geom::PointCloudNormalEstimator`)
@@ -350,7 +350,7 @@ ICL can seamlessly interface to PCL algorithms using this class.
 * **Supported Versions:** >= 1.6
 * **License Type:** open source
 * **Download at:** http://pointclouds.org/downloads/
-* **Dependent library features:** 
+* **Dependent library features:**
 
   * :icl:`geom::PCLPointCloudObject` class.
   * :icl:`geom::PCDFileGrabber` class
@@ -361,7 +361,7 @@ ICL can seamlessly interface to PCL algorithms using this class.
    our PCD-File Grabber uses libpcl-io, which in turn depends on
    openni.
 
-   
+
 .. _install.win.dependencies.optional.rsb:
 
 Robotics Service Bus (RSB)
@@ -457,7 +457,7 @@ directories where an application can search for missing libraries.
 
 
 .. _install.win.binary:
-   
+
 Installaion using Binary Packages
 """""""""""""""""""""""""""""""""
 

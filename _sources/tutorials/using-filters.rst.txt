@@ -4,5 +4,5 @@ How to use Image Filters
 ========================
 
 .. todo::
-   
+
    Implement image filter tutorial

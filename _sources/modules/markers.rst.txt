@@ -13,7 +13,7 @@ Fiducial Marker Detection
 The ICLMarkers package provides a general interfaces for most
 different types of fiducial marker detection methods. The essential
 classes of this package are :icl:`markers::FiducialDetector` and
-:icl:`markers::Fiducial`.  
+:icl:`markers::Fiducial`.
 
 The :icl:`FiducialDetector` implements a plugin-based system that can
 be configured at instantiation time in order to use a certain marker
@@ -29,7 +29,7 @@ Table of Contents
 ^^^^^^^^^^^^^^^^^
 
 * :ref:`markers.supported`
- 
+
   * :ref:`markers.supported.art`
   * :ref:`markers.supported.bch`
   * :ref:`markers.supported.amoeba`
@@ -68,7 +68,7 @@ One of the first freely available marker detection library is the
 for augmented reality applications. However the whole framework is
 usually difficult to combine with other image processing libraries. In
 particular its default version does not support to pass external image
-data. 
+data.
 
 The marker detection is based on finding quadrangular black image
 regions, whose corners a detected. The marker center is then simply
@@ -177,7 +177,7 @@ An Easy Example
 .. literalinclude:: examples/markers.cpp
    :linenos:
    :language: c++
-   :emphasize-lines: 9,23           
+   :emphasize-lines: 9,23
 
 
 .. _markers.creating-markers:
@@ -272,9 +272,3 @@ reaches a maximum theoretical framerate of 63Hz at this image size
    BCH 1010x1010, 36, (100x100 each) 12.7ms  (icl1 10.3ms) (art 25 ms)
    BCH 1010x1010, 16, (100x100 each) 8.5ms  (icl1 7.1ms) (art 14ms)
    BCH 1010x1010, 4, (100x100 each) 6.5ms   (icl1 5.1ms) (art 10ms)
-
-
-
-
-
- 

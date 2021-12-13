@@ -48,7 +48,7 @@ Mandatory Dependencies
 
 * **libpthread** (for general threading support)
 * **libz** (for reading and writing zipped files, ending .gz)
-* **libjpeg** (for reading and writing jpeg images, 
+* **libjpeg** (for reading and writing jpeg images,
   lossy but high compression, fast)
 * **libpng** (for reading and writing png images,
   loss-less compression, but rather slow in comparison to jpeg)
@@ -57,7 +57,7 @@ In case of compiling ICL manually from source, the *-dev* packages
 that include C/C++-headers are needed. The corresponding Ubuntu
 packages can be installed via::
 
-  sudo apt-get install libjpeg-dev libpng-dev libz-dev 
+  sudo apt-get install libjpeg-dev libpng-dev libz-dev
 
 The libpthread-dev library comes with the C/C++ compiler
 
@@ -102,7 +102,7 @@ In addition, the libxine-dev package is now named libxine2-dev
 
 
 
-  
+
 .. _install.dependencies.optional:
 
 Optional Dependencies
@@ -211,9 +211,9 @@ part of ICL.
 * **Supported Versions:** >= 2.1
 * **License Type:** BSD-License
 * **Download at:** http://sourceforge.net/projects/opencvlibrary/files
-* **Dependent library features:** 
-  
-  * Data type conversions 
+* **Dependent library features:**
+
+  * Data type conversions
   * C++-based surf feature detection
   * OpenCV-based camera grabber backend
   * OpenCV-based video grabber backend
@@ -222,8 +222,8 @@ part of ICL.
 
 * **Ubuntu packages:**
 
-  * **<  precise:** libcv-dev, libhighgui-dev, libcvaux-dev 
-  * **>= precise:** libopencv-dev 
+  * **<  precise:** libcv-dev, libhighgui-dev, libcvaux-dev
+  * **>= precise:** libopencv-dev
 
 
 .. _install.dependencies.optional.libmesasr:
@@ -242,7 +242,7 @@ company (http://www.mesa-imaging.ch) The library is closed source.
 * **Download at:** http://www.mesa-imaging.ch/drivers.php
 * **Dependent library features:** SwissRanger camera grabber backend
 * **Ubuntu packages:** not available
-  
+
 
 .. _install.dependencies.optional.imagemagick:
 
@@ -270,7 +270,7 @@ libdc1394
 ~~~~~~~~~
 
 The dc1394 (digital firewire camera) library allows to grab image from
-firewire cameras and to set camera parameters. 
+firewire cameras and to set camera parameters.
 
 * **Supported Versions:** >= 2.1.2
 * **License Type:** open source
@@ -287,7 +287,7 @@ libfreenect
 **OpenKinect Kinect Driver Library (libfreenect)**
 
 The libfreenect provides a lightweight interface for grabbing images
-from Microsoft Kinect cameras. The library allows to grab color, depth and 
+from Microsoft Kinect cameras. The library allows to grab color, depth and
 IR-images and to set some internal camera properties.
 
 * **Supported Versions:** >= 0.0.1
@@ -306,9 +306,9 @@ libfreenect2
 **OpenKinect Kinect Driver Library Version 2 for Kinect 2 (libfreenect2)**
 
 libfreenect2 provides a lightweight interface for grabbing images
-from Microsoft Kinect2 cameras. The library allows to grab color, depth and 
+from Microsoft Kinect2 cameras. The library allows to grab color, depth and
 IR-images. There is no Ubuntu package for the library yet. Thefore, the driver
-libraries must be installed manually. Please note that the support for 
+libraries must be installed manually. Please note that the support for
 Kinect2 using libfreenect2 is in its early beta-phase by now.
 
 In order to get a compiled and installed version of libfreenect2, the
@@ -327,7 +327,7 @@ that are mandatory for the build::
 Create the source/install directory::
 
   export DIR=/opt/share/libfreenect2
-  mkdir $DIR 
+  mkdir $DIR
   cd $DIR
 
 Get the sources via git clone::
@@ -337,11 +337,11 @@ Get the sources via git clone::
 
 Download and install additional but patched dependencies, such as libusb::
 
-  ./install_ubuntu.sh 
+  ./install_ubuntu.sh
 
 Download and bulid libturbojpeg (for latest libturbojpeg)
 (Please note that the version that comes with the system, which is installed
-in /usr/lib/something does not help you here, as you need a share-object that 
+in /usr/lib/something does not help you here, as you need a share-object that
 is compliled with -fPIC. So once again: download and install version 1.4::
 
   wget http://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-1.4.0.tar.gz
@@ -356,11 +356,11 @@ empty::
 Build the protonect example *thing*::
 
   cd $DIR/examples/protonect
-  
-Edit CMakeLists.txt (replace turbojpeg in line 102 by 
+
+Edit CMakeLists.txt (replace turbojpeg in line 102 by
 $DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so)::
 
-  sed -i "s|turbojpeg|$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so|" CMakeLists.txt 
+  sed -i "s|turbojpeg|$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so|" CMakeLists.txt
 
 Patch the opengl_depth_packet_processor in ./src (set variable do_debug in line 322 to false)::
 
@@ -372,7 +372,7 @@ following fixes and install the following libraries **only if it does not
 work without!**::
 
   sudo apt-get install libopencv-core-dev libopencv-photo-dev libopencv-contrib-dev libopencv-highgui-dev
- 
+
 **On ubuntu trusty only** now patch the CMakeLists.txt by assuming opencv is installed::
 
   sed -i 's|FIND_PACKAGE(OpenCV REQUIRED)|#FIND_PACKAGE(OpenCV REQUIRED)|g' CMakeLists.txt
@@ -396,9 +396,9 @@ Kinect2 as non-super-user. Add udef rules: as root, create file
 
 **Important** After adding and saving the file, you'll have to re-attach your Kinect2 device::
 
-  $DIR/examples/protonect/bin/Protonect 
+  $DIR/examples/protonect/bin/Protonect
 
-Should now display the Kinect2 images. If not, try to disconnect/connect once again and check for 
+Should now display the Kinect2 images. If not, try to disconnect/connect once again and check for
 kernel-messages using "dmesg" command. In your ICL-configuration cmake command add::
 
   -DBUILD_WITH_LIBFREENECT2=TRUE -DLIBFREENECT2_ROOT=$DIR
@@ -442,14 +442,14 @@ wrangler library libglew-dev (on some systems libglew-1.6-dev) and it needs Open
 * **Supported Versions:** 5
 * **License Type:** open source
 * **Download at:** http://qt.digia.com/
-* **Dependent library features:** 
+* **Dependent library features:**
 
   * GUI-framework and all dependent applications
   * Shared memory based image-I/O backends
 
 * **Ubuntu packages:**
 
-  * **< TRUSTY**   libqt5-dev 
+  * **< TRUSTY**   libqt5-dev
   * **>= TRUSTY**  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools
   * In each case: libglew-dev (or libglew-1.6-dev), + opengl headers and libs provided by the graphics driver
 
@@ -486,9 +486,9 @@ for point cloud processing units located in the ICLGeom module.
 * **Supported Versions:** >= 1.1 (1.2 soon)
 * **License Type:** open source
 * **Download at:** http://www.khronos.org/registry/cl
-* **Dependent library features:** 
+* **Dependent library features:**
 
-  * significantly faster point cloud creation and RGBD-mapping 
+  * significantly faster point cloud creation and RGBD-mapping
     (:icl:`geom::PointCloudCreator`, :icl:`geom::DepthCameraBasedPointCloudGrabber`)
   * significantly faster point cloud normal estimation and segmentation
     (:icl:`geom::PointCloudNormalEstimator`)
@@ -506,15 +506,15 @@ Sphinx/Doxygen
 In order to build ICL's API reference, doxygen needs to be installed. Since
 also generation of inheritance graphs is activated, also 'dot' is needed.
 On Ubuntu, you can install these dependencies using::
-  
+
   sudo apt-get install doxygen graphviz
 
 This will generate the target 'api' in the build directory.
 
 In additionn to the API reference, the sphinx-based manual can be build. To this
-end, you'll need to have the API dependencies plus the sphinx-build tool, which can 
+end, you'll need to have the API dependencies plus the sphinx-build tool, which can
 be installed on Ubuntu systems using::
-  
+
   sudo apt-get install python-sphinx python-setuptools
   sudo easy_install pyparsing
 
@@ -561,7 +561,7 @@ ICL can seamlessly interface to PCL algorithms using this class.
 * **Supported Versions:** >= 1.6
 * **License Type:** open source
 * **Download at:** http://pointclouds.org/downloads/
-* **Dependent library features:** 
+* **Dependent library features:**
 
   * :icl:`geom::PCLPointCloudObject` class.
   * :icl:`geom::PCDFileGrabber` class
@@ -569,7 +569,7 @@ ICL can seamlessly interface to PCL algorithms using this class.
 * **Ubuntu packages:**  no in standard in older ubuntu versions (such as in 14.04 trusty)
   * In Ubuntu 14.04 trusty
      * add ppa-sources from https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages::
-  
+
          sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
          sudo apt-get update
          sudo apt-get install libpcl-all-dev
@@ -585,7 +585,7 @@ ICL can seamlessly interface to PCL algorithms using this class.
    our PCD-File Grabber uses libpcl-io, which in turn depends on
    openni.
 
-   
+
 .. _install.dependencies.optional.rsb:
 
 RSB/RST
@@ -614,7 +614,7 @@ Bullet3
 
 For the ICLPhysics Module (:icl:`icl::physics`), the Bullet physics library is needed. The
 ICL-package is implemented as a shallow wrapper around the Bullet physics engine.
-ICL provides a seamless integration of physics simulation info ICL's 
+ICL provides a seamless integration of physics simulation info ICL's
 3D-Visualization framework (provided by the ICLGeom module). We are not aware of any
 well established sourced for pre-compiled libraries for the Bullet physics engine. Thefore,
 bullet must be build from the git-sources::
@@ -623,7 +623,7 @@ bullet must be build from the git-sources::
   cd /tmp
   git clone http://github.com/bulletphysics/bullet3 bullet3-git
   cd bullet3-git
-  mkdir build 
+  mkdir build
   cd build
   # note: please adapt the installation prefix to your needs
   cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX=/tmp/bullet3 ..
@@ -658,7 +658,7 @@ so either install it to a system default path or specify libusb-1 root using cma
 
   -DBUILD_WITH_LIBUSB=TRUE -DLIB_USB_ROOT=/path/to/lib/usb
 
-Please note, that the XiAPI dependency will also build if -DBUILD_WITH_LIBUSB is not given to 
+Please note, that the XiAPI dependency will also build if -DBUILD_WITH_LIBUSB is not given to
 cmake but libusb is found in a system default directory.
 
 
@@ -711,7 +711,7 @@ uvcvideo kernel module, which is mandatory::
   sudo bash -c 'echo "options uvcvideo nodrop=1" > /etc/modprobe.d/uvcvideo.conf'
   This makes the option permanent for the UVC driver. Temporary activation can be achieved with:
 
-  sudo rmmod uvcvideo; sudo modprobe uvcvideo nodrop=1 
+  sudo rmmod uvcvideo; sudo modprobe uvcvideo nodrop=1
 
   Alternatively, the parameter can be modified via sysfs during runtime:
   sudo bash - c 'echo -n 1 > /sys/module/uvcvideo/parameters/nodrop'
@@ -728,22 +728,22 @@ stored at the default location in the file-system::
 
   /usr/share/libirimager/cali/
 
-In order to use a camera with some serial number X (the serial number is 
+In order to use a camera with some serial number X (the serial number is
 printed onto the device housing, in our case 15060002), the corresponding
 calibration files need to be copied from the CD shipped with the camera to
 that folder::
 
   > ls /usr/share/libirimager/cali/
-  
-  Cali-15060002-72-0-250.dat    
-  Cali-15060002-72-M20-100.dat  
-  Kennlinie-15060002-72-0-250.prn    
+
+  Cali-15060002-72-0-250.dat
+  Cali-15060002-72-M20-100.dat
+  Kennlinie-15060002-72-0-250.prn
   Kennlinie-15060002-72-M20-100.prn
-  Cali-15060002-72-150-900.dat  
-  Cali-15060002.xml		    
+  Cali-15060002-72-150-900.dat
+  Cali-15060002.xml
   Kennlinie-15060002-72-150-900.prn
- 
-In addition to installing the debian archive (and perhaps rebooting), 
+
+In addition to installing the debian archive (and perhaps rebooting),
 ICL's other optional dependencies libudev and v4l2 are needed.
 
 * **Supported Versions:**  1.0.11 (July, 2015)
@@ -768,7 +768,7 @@ installed conveniently using a package manager.
 * **License Type:** OpenSource
 * **Download at:** ??
 * **Dependent library features:** Video 4 Linux based camera backend
-* **Ubuntu packages:** libv4l-dev 
+* **Ubuntu packages:** libv4l-dev
 
 
 .. _install.source:
@@ -776,7 +776,7 @@ installed conveniently using a package manager.
 Installation from Source
 """"""""""""""""""""""""
 
-ICL uses CMake as build system. After checking out the sources, 
+ICL uses CMake as build system. After checking out the sources,
 it is recommended to used an extra build folder in order keep the
 source tree clear of any build artefacts::
 
@@ -796,14 +796,14 @@ command. Each dependency **XXX** can manually be activated by adding a
 dependencies are deactivated. If dependencies are not to be found in
 the system's default directories (e.g. not in /usr or in /) its root
 directory can be specified by also adding a command line token
-**-DXXX_ROOT=/foo/bar**. Please note that adding a root only does not 
+**-DXXX_ROOT=/foo/bar**. Please note that adding a root only does not
 activate the dependency. Some dependencies, such as OpenCV or PCL,
 also provide an own FindXXX.cmake file, which is usually located in
 **SOMEWHERE/share/XXX**. If this is to be used, a token
 **-DXXX_DIR=SOMEWHERE/share/XXX** has to be passed instead of the
-**-DXXX_ROOT** one.  A list of supported dependencies can be obtained 
+**-DXXX_ROOT** one.  A list of supported dependencies can be obtained
 by calling::
-   
+
   cmake .. > /dev/null && cmake -L ..  | grep BUILD_WITH
 
 from the build folder, which will configure ICL without any
@@ -824,11 +824,11 @@ optimizations using **-O0** and enables full debugging symbols
 
 Further optimizations can be manually enabled. these can be listed by
 using::
-  
+
   cmake .. > /dev/null && cmake -L ..  | grep ENABLE_
 
 Right now, this is::
-  
+
   -DENABLE_FASTMATH_BUILD_OPTION=ON|OFF
   -DENABLE_NATIVE_BUILD_OPTION=ON|OFF
   -DENABLE_OPENMP_BUILD_OPTION=ON|OFF
@@ -839,7 +839,7 @@ Lastly one can define, whether applications, examples and demos are
 also compiled and installed. Here the options::
 
   -DBUILD_EXAMPLES=ON|OFF
-  -DBUILD_APPS=ON|OFF 
+  -DBUILD_APPS=ON|OFF
   -DBUILD_DEMOS=ON|OFF
 
 have to be used. A demo bash-script that enables some dependencies
@@ -871,7 +871,7 @@ and defines some variables can be found
 
 
 .. _install.binary:
-   
+
 Installation using Binary Packages
 """"""""""""""""""""""""""""""""""
 

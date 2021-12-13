@@ -84,6 +84,6 @@ The run method basically stayed the same as in the prior example.
 
 .. rubric:: Footnotes
 
-.. [#f1] 
+.. [#f1]
    Actually, even though we commonly describe the shown operations as
    *thresholding*, it should be named *pixel-wise comparison*

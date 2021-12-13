@@ -18,7 +18,7 @@ usually triggers some kind of event. However, we can not simply
 register a callback to the buttons *click* event, since the callback
 would then be executed in the GUI thread, leaving the user all the
 extra work for explicit synchronization with the application's working
-thread. 
+thread.
 
 Actually, in some special situations, a callback registration is
 exactly what we want, in particular, if e.g. a button-click affects
@@ -52,7 +52,7 @@ mechanism for this.
 +------------------------------------------------+----------------------------------------+
 |                                                | **main GUI**                           |
 |                                                |                                        |
-| .. literalinclude:: examples/gui-buttons.cpp   |   .. image:: images/gui-buttons-1.png  | 
+| .. literalinclude:: examples/gui-buttons.cpp   |   .. image:: images/gui-buttons-1.png  |
 |   :language: c++                               |        :alt: shadow                    |
 |   :linenos:                                    |                                        |
 |                                                | **extra GUI**                          |
@@ -132,7 +132,7 @@ Now, the actual image processing loop is implemented. The next
 image is acquired form the :icl:`GenericGrabber` instance. Before
 the morphological operator is applied to the input image, we check
 whether the *next filter* button has been pressed since the last
-loop cycle. 
+loop cycle.
 
 .. literalinclude:: examples/gui-buttons.cpp
    :language: c++
@@ -148,26 +148,26 @@ and the result image can be visualized.
 
 Only if the **input**-GUI is visible, the source image is visualized
 as well. This is not completely necessary, but leads to a cheap
-optimization in case of the **input**-GUI is not visible, because the 
+optimization in case of the **input**-GUI is not visible, because the
 image data must not be transferred to the GUI-thread in this case.
 
 .. literalinclude:: examples/gui-buttons.cpp
    :language: c++
    :lines: 41-43
 
-Finally, we check the **save**-button. If this was triggered, the 
+Finally, we check the **save**-button. If this was triggered, the
 current result image is saved.
 
 .. literalinclude:: examples/gui-buttons.cpp
    :language: c++
    :lines: 45-47
 
-.. note:: 
+.. note::
 
    It is very important to know, that we cannot make use of a Qt-Dialog
-   here to ask the user for a desired file-name. If a GUI-based dialog is 
+   here to ask the user for a desired file-name. If a GUI-based dialog is
    to be used, this step has to be transferred to the GUI-thread by using
-   a GUI callback for this button as well. 
+   a GUI callback for this button as well.
 
 
 GUI-Dialogs
@@ -230,12 +230,3 @@ possibly save have-adapted images.
 .. literalinclude:: examples/gui-buttons-2.cpp
   :language: c++
   :lines: 48-50
-
-
-
-
-
-
-
-
-

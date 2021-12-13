@@ -46,8 +46,8 @@ interface for handling 2D matrices with a *templated* element type.
 index or 2D-function operator) and also the ability to shallowly
 wrapping around existing data-pointers.
 
-.. note:: 
- 
+.. note::
+
   It is very important that all ICL-Matrix classes use image-like
   2D indexing, which is exactly the opposite of the common math-style
   indexing, which would mean **Matrix(row,column)** i.e. (y,x).
@@ -56,7 +56,7 @@ wrapping around existing data-pointers.
 In addition to the standard mathematical operators, such as +,-,*=,
 \... we support a large set of higher level functions:
 
-* QR and RQ decomposition (:icl:`DynMatrix::decompose_QR` and :icl:`DynMatrix::decompose_RQ`) 
+* QR and RQ decomposition (:icl:`DynMatrix::decompose_QR` and :icl:`DynMatrix::decompose_RQ`)
 * LU decomposition (:icl:`DynMatrix::decompose_LU`)
 * matrix inverse (:icl:`DynMatrix::inv`)
 * matrix pseudo-inverse (:icl:`DynMatrix::pinv`)
@@ -76,7 +76,7 @@ In addition to the standard mathematical operators, such as +,-,*=,
 :icl:`DynRowVector`
 
   due to the row-major data layout of the :icl:`DynMatrix` class, the
-  :icl:`DynRowVector` was realized by a simple type-def, to 
+  :icl:`DynRowVector` was realized by a simple type-def, to
   :icl:`DynMatrix` instances, that shallowly wraps the matrix's row
   data pointer
 
@@ -133,11 +133,11 @@ The FFT package provides a huge set of 1D and 2D functions for Fast
 Fourier Transformation and several support functions for vectors and
 matrices with real and even complex data types. Internally, the
 FFT-framework uses Intel IPP and the Intel MKL if available for a
-significant speed up. All FFT support functions and classes are 
+significant speed up. All FFT support functions and classes are
 in the inner namespace :icl:`math::fft`.
 
-.. note:: 
-   
+.. note::
+
    For image-FFT, a less general, but easier to use FFT-Filter is
    provided in the ICLFilter module: :icl:`FFTOp`
 
@@ -157,7 +157,7 @@ set. Here is an example
 
 .. literalinclude:: examples/ransac.cpp
   :language: c++
-  :linenos: 
+  :linenos:
 
 
 .. _math.som:
@@ -198,7 +198,7 @@ initial position in the search space.
 Stochastic Optimizer
 """"""""""""""""""""
 
-The :icl:`StochasticOptimizer` is a rather old implementation for 
+The :icl:`StochasticOptimizer` is a rather old implementation for
 stochastic search processes. It defines a virtual class interface, that
 can be implemented for specific optimization tasks.
 
@@ -243,7 +243,7 @@ extremly fast interface for inserting points, nearest-neighbor search
 and aproximate nearest-neighbor search. In benchmarks, the octree was
 magnitudes faster then a comparable pcl-octree implementation. However,
 we buy this speedup by the loss of the ability to check whether a newly
-added point is already contained in the octree. 
+added point is already contained in the octree.
 
 The classes are implemented as a template for **float** and **double**
 point types and it uses an extra template parameter **CAPACITY** that
@@ -253,7 +253,3 @@ tree. It basically provides optimized functions for
 * point insertion
 * nearest neighbor search
 * querying a rectangular sub-region
-
-
-
-

@@ -30,7 +30,7 @@
     <data id="marker-ids" type="string">[24,35]</data>
     <data id="marker-size" type="string">50x50</data>
   </section>
-  
+
   <section id="grid-3">
     <data id="dim" type="string">4x3</data>
     <data id="offset" type="string">254,0,-249.3</data>
@@ -139,14 +139,14 @@
    </section>
 
 
-   
+
    <data id="obj-file" type="string">
 v 0 0 0
 v 0 0 -300
-v 430 0 -300 
+v 430 0 -300
 v 430 0 0
 
-v 0 430 -300 
+v 0 430 -300
 v 0 430 0
 
 vn 0 -1 0

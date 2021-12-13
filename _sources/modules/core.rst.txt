@@ -16,7 +16,7 @@ template parameter *T* defines the pixel data type.
 Table of Contents
 ^^^^^^^^^^^^^^^^^
 * :ref:`core.image`
-  
+
   * :ref:`core.image.types`
   * :ref:`core.image.pixel-access`
   * :ref:`core.image.shallow-copy`
@@ -26,7 +26,7 @@ Table of Contents
   * :ref:`core.image.format`
   * :ref:`core.image.convert`
   * :ref:`core.image.const`
-    
+
 * :ref:`core.global-functions`
 * :ref:`core.types`
 * :ref:`core.color`
@@ -55,7 +55,7 @@ The Image Classes
 |                                                                         |                                    |
 | .. note::                                                               |                                    |
 |                                                                         |                                    |
-|   All provided setter functions for these parameters work in a lazy     |                                    | 
+|   All provided setter functions for these parameters work in a lazy     |                                    |
 |   fashion. I.e. they will only actually do something if necessary       |                                    |
 |                                                                         |                                    |
 |                                                                         |                                    |
@@ -133,8 +133,8 @@ Here is a minimal example:
 .. literalinclude:: examples/imgbase.cpp
   :language: c++
   :linenos:
-  
-  
+
+
 .. _core.image.pixel-access:
 
 Pixel Access
@@ -161,7 +161,7 @@ pointers:
   :language: c++
   :linenos:
 
-   
+
 .. _core.image.data-origin:
 
 Data Origin
@@ -236,7 +236,7 @@ most commonly known color space is probably the RGB color space. If an
 
 As soon as the channel count of the image is altered, it's format will
 automatically be set to :icl:`core::formatMatrix`, which is used for
-unspecified color formats. 
+unspecified color formats.
 
 
 .. _core.image.convert:
@@ -244,8 +244,8 @@ unspecified color formats.
 Deep Copies and Depth Conversion
 """"""""""""""""""""""""""""""""
 
-Deep Copies 
- 
+Deep Copies
+
   Images cannot only be copied shallowly, but also in a *deep copy*
   manner. In particular, if the source- and destination-image's depth
   is not identical, the data types have to be converted *deeply*
@@ -270,12 +270,12 @@ Deep Copies
   parameters.
 
   .. note::
-     
+
      There are dedicated methods :icl:`ImgBase::deepCopyROI` that
      provide ROI support for deeply copying images. These will always
      use both, the source and the destination image ROI.
 
-  
+
 
 Depth Conversion
 
@@ -290,7 +290,7 @@ Depth Conversion
 .. _core.image.const:
 
 Const-Concept
-""""""""""""" 
+"""""""""""""
 
 ICL images use the const concept of C++ to ensure the pixel data of
 const images (of type **const** :icl:`ImgBase` or more precisely
@@ -326,17 +326,17 @@ Image Processing related Types
 
   Color format type (see :ref:`core.color`)
 
-:icl:`core::scalemode` 
+:icl:`core::scalemode`
 
   Scaling and sampling interpolation mode. Supported values
-  are 
-  
+  are
+
   * :icl:`core::interpolateNN` for nearest neighbor interpolation
   * :icl:`core::interpolateLIN` for linear interpolation
   * :icl:`core::interpolateRA` for region average interpolation, which
     provides much better results in case of downscaling images (Only
     supported with Intel IPP)
-    
+
   .. todo::
 
     consider implementing super-sampling (RA) for or even lanczos for scaled copy roi
@@ -351,13 +351,13 @@ Image Processing related Types
 
 **Line Sampling**
 
-  For efficient line sampling into an image grid using the *Bresenham* algorithm, 
+  For efficient line sampling into an image grid using the *Bresenham* algorithm,
   the :icl:`LineSampler` class is provided. The simpler-to-use utility classes
   :icl:`core::Line`, :icl:`core::Line32f` use the LineSampler, but provide
   a slighly worse run-time due to memory allocation overhead.
 
 **Color Typedefs**
-  
+
   Even though not used for color conversion, the ICLCore package
   provides some default type-names for different color types. All of
   these typedefs have special :icl:`math::FixedMatrix` as origin
@@ -396,15 +396,15 @@ Image Class Support Functions
 
 :icl:`core::planarToInterleaved`
 
-  Just the other way around: this function can be used to transform the planar 
+  Just the other way around: this function can be used to transform the planar
   ICL image data into an externally needed interleaved data layout
 
 :icl:`core::imgNew`
 
-  This function is provided in many different versions. It can be used as 
-  factory functions for creating correct :icl:`core::Img`-instances from given 
+  This function is provided in many different versions. It can be used as
+  factory functions for creating correct :icl:`core::Img`-instances from given
   :icl:`core::depth` values
-  
+
 .. _core.global.image.ensureCompatible:
 
 :icl:`core::ensureCompatible`
@@ -424,7 +424,7 @@ Image Class Support Functions
   :icl:`ImgBase`\ ******-interaface. This is also discussed more in detail
   in the tutorial chapter :ref:`tut.imgbase-ptrptrs`.
 
-.. _core.global.image.bpp:  
+.. _core.global.image.bpp:
 
 :icl:`core::bpp`
 
@@ -442,7 +442,7 @@ Image Class Support Functions
   .. literalinclude:: examples/imgbase-ptrptr.cpp
     :language: c++
     :linenos:
-  
+
 
 .. _core.global.convex-hull:
 
@@ -460,7 +460,7 @@ OpenCV Image Conversion Functions
 The ICLCore module also provides a set of compatibility functions for
 converting ICL images into OpenCV's **cv::Mat** type and vice versa.
 
-* :icl:`core::ipl_to_img` 
+* :icl:`core::ipl_to_img`
 * :icl:`core::img_to_ipl`
 * :icl:`core::img_to_cvmat`
 * :icl:`core::img_to_ipl_shallow` (for shallow copies)
@@ -491,13 +491,13 @@ Image Statistic Functions
 :icl:`core::variance`
 
   computes the variance for one or all given channels of an image
-  
+
 :icl:`core::stdDeviation`
 
   computes the standard deviation for one or all given channels of an
   image. Here, two versions, one with given mean-values and one that
   uses an empiric mean are provided.
-  
+
 :icl:`core::meanAndStdDev`
 
   computes mean and standard deviation at once
@@ -552,7 +552,7 @@ image's ROI has the same size as the destination image's ROI. If the
 test fails, an error occurs and the function returns immediately.
 
 .. note::
-   
+
    Internally all functions are optimized for running without ROI
    support (in this case, the images data arrays are 1D). Thus, the
    ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower
@@ -624,7 +624,7 @@ format for conversion from one to another format:
 * X -> RGB
 * RGB -> Y
 
-Another bridge color space (XYZ) is not considered here, because it 
+Another bridge color space (XYZ) is not considered here, because it
 usually not used in digital image processing. For ICL's color conversion
 functions we can say:
 
@@ -654,27 +654,27 @@ converting rgb to yuv and back::
         R = Y + 1.140*V
         G = Y - 0.394*U - 0.581*V
         B = Y + 2.032*U
-        
+
 The formulas are adapted for using ranges [0,255]::
 
-        Y = (0.299*R + 0.587*G + 0.114*B);  
+        Y = (0.299*R + 0.587*G + 0.114*B);
         U = 0.56433408*(B-Y) + 127.5;
         V = 0.71326676*(R-Y) + 127.5;
         R = Y +               290.7   * v2;
         G = Y - 100.47 * u2 - 148.155 * v2;   with: u2 = 0.0034196078*U - 0.436;
         B = Y + 518.16 * u2;                   and  v2 = 0.0048235294*V - 0.615;
-        
+
 To avoid expensive floating point operations, the conversions can be
 optimized by creating a so called fixed point approximation of the
 above code::
 
-        Y = ( 1254097*R + 2462056*G + 478151*B ) >> 22;  
+        Y = ( 1254097*R + 2462056*G + 478151*B ) >> 22;
         U = ( 2366989*(B-Y) + 534773760        ) >> 22;
         V = ( 2991658*(R-Y) + 534773760        ) >> 22;
         R = Y +  ( ( 290 * V2 ) >> 22 );
-        G = Y -  ( ( 100  * U2 + 148 * V2) >> 22 ); with: U2 = 14343*U - 1828717; 
-        B = Y +  ( ( 518 * U2 ) >> 22 );             and  V2 = 20231*v - 2579497; 
-        
+        G = Y -  ( ( 100  * U2 + 148 * V2) >> 22 ); with: U2 = 14343*U - 1828717;
+        B = Y +  ( ( 518 * U2 ) >> 22 );             and  V2 = 20231*v - 2579497;
+
 This approximation produces errors less 3/255, and runs up to 20%
 faster. A further optimization can be implemented using lookup tables.
 
@@ -688,12 +688,12 @@ IPP Compatibility
   manual::
 
         rgb-to-yuv:
-        y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;  
+        y = ( 1254097*r + 2462056*g + 478151*b ) >> 22;
         u = (2063598*(b-y) >> 22) + 128;
         v = (3678405*(r-y) >> 22) + 128;
         if(v<0) v=0;
         else if(v > 255) v = 255;
-        
+
         yuv-to-rgb:
         icl32s u2 = u-128;
         icl32s v2 = v-128;
@@ -701,9 +701,9 @@ IPP Compatibility
         r = (y2 + 4781506 * v2 ) >> 22;
         g = (y2 - 1652556 * u2 - 2436891 *v2 ) >> 22;
         b = (y2 + 8522826 * u2 ) >> 22;
-        
+
   .. note::
-     
+
      Due to the clipping process of 'v' in **rgb_to_yuv**, this method
      cannot restore an original rgb value completetly. Since we lost
      some information in v, the resulting r and g values are differ as
@@ -761,7 +761,7 @@ RGB format::
           h = (r == m ? 3.0 + g2 : 5.0 - r2)
         if(h == 255) h = 0
           (H,L,S) = (h*255/6,l*255,s*255)
-        
+
 An optimization, that allows conversion directly with (r,g,b) values
 in range [0,255] is not yet implemented::
 
@@ -789,7 +789,7 @@ in range [0,255] is not yet implemented::
           case 5: r = v;    g = m;    b = mid2; break;
         }
         (R,G,B) = (r,g,b)*255;
-        
+
 An additional optimization can be implemented using lookup tables
 
 
@@ -821,7 +821,7 @@ LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB::
         X = m[0][0] * R + m[0][1] * G + m[0][2] * B;
         Y = m[1][0] * R + m[1][1] * G + m[1][2] * B;
         Z = m[2][0] * R + m[2][1] * G + m[2][2] * B;
-     
+
         XYZToRGB
         static icl32f m[3][3] = {{ 3.2405, -1.5372,-0.4985},
                                  {-0.9693,  1.8760, 0.0416},
@@ -829,7 +829,7 @@ LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB::
         R = m[0][0] * x + m[0][1] * y + m[0][2] * z;
         G = m[1][0] * x + m[1][1] * y + m[1][2] * z;
         B = m[2][0] * x + m[2][1] * y + m[2][2] * z;
-     
+
         XYZToLAB
         wX = 95.0456;
         wY = 100.0;
@@ -840,11 +840,11 @@ LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB::
         ZZn = Z / wZ;
         L = (YYn > 0.008856) ? ((116 * pow (YYn, _13))-16) : (903.3 * YYn);
         fX = (XXn > 0.008856) ? pow (XXn, _13) : 7.787 * XXn + (16 / 116);
-        fY = (YYn > 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116); 
+        fY = (YYn > 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116);
         fZ = (ZZn > 0.008856) ? pow (ZZn, _13) : 7.787 * ZZn + (16 / 116);
         a = 500.0 * (fX - fY);
         b = 200.0 * (fY - fZ);
-      
+
         LABToXYZ
         d = 6.0/29.0;
         n = 16.0/116.0;
@@ -858,7 +858,7 @@ LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB::
         X = (fx>d) ?  wX*pow(fx,3) : (fx-n)*f*wX;
         Y = (fy>d) ?  wY*pow(fy,3) : (fy-n)*f*wY;
         Z = (fz>d) ?  wZ*pow(fz,3) : (fz-n)*f*wZ;
-        
+
 .. _core.color.gray:
 
 Gray Scale Conversion
@@ -902,62 +902,62 @@ Benchmarks
 Reference System: Core 2 Duo 2.4GHz,  32Bit Ubuntu 12.04, 4GB RAM, IPP active
 Images VGA (640x480) varying source and destination depths
 
-:icl:`Img8u` --> :icl:`Img8u` 
+:icl:`Img8u` --> :icl:`Img8u`
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
+  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray |
   +==============+===========+===========+===========+==============+===========+============+
-  |  formatRGB   |  0.14ms   |   1.3ms   |  0.71ms   |    2.42ms    |  6.73ms   |   0.61ms   | 
+  |  formatRGB   |  0.14ms   |   1.3ms   |  0.71ms   |    2.42ms    |  6.73ms   |   0.61ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatHLS   |  2.01ms   |  0.27ms   |   2.4ms   |    4.4ms     |  11.46ms  |   0.11ms   | 
+  |  formatHLS   |  2.01ms   |  0.27ms   |   2.4ms   |    4.4ms     |  11.46ms  |   0.11ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatYUV   |  0.74ms   |  2.03ms   |  0.26ms   |    3.44ms    |  7.71ms   |   0.11ms   | 
+  |  formatYUV   |  0.74ms   |  2.03ms   |  0.26ms   |    3.44ms    |  7.71ms   |   0.11ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | formatChroma |    --     |    --     |    --     |    0.24ms    |    --     |     --     | 
+  | formatChroma |    --     |    --     |    --     |    0.24ms    |    --     |     --     |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatLAB   |  3.46ms   |  5.72ms   |  5.28ms   |    6.37ms    |  0.26ms   |   0.11ms   | 
+  |  formatLAB   |  3.46ms   |  5.72ms   |  5.28ms   |    6.37ms    |  0.26ms   |   0.11ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatGray  |  0.31ms   |  0.19ms   |  0.25ms   |      --      |  0.26ms   |   0.11ms   | 
+  |  formatGray  |  0.31ms   |  0.19ms   |  0.25ms   |      --      |  0.26ms   |   0.11ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
 
 
 :icl:`Img32f` --> :icl:`Img32f`
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
+  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray |
   +==============+===========+===========+===========+==============+===========+============+
-  |  formatRGB   |  1.27ms   |  26.1ms   |  6.63ms   |    5.9ms     |  154.8ms  |   0.4ms    | 
+  |  formatRGB   |  1.27ms   |  26.1ms   |  6.63ms   |    5.9ms     |  154.8ms  |   0.4ms    |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatHLS   |  19.98ms  |  1.31ms   |  29.11ms  |   28.54ms    | 174.24ms  |   0.16ms   | 
+  |  formatHLS   |  19.98ms  |  1.31ms   |  29.11ms  |   28.54ms    | 174.24ms  |   0.16ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatYUV   |  7.83ms   |  34.48ms  |   1.5ms   |   16.28ms    |  162.7ms  |   0.17ms   | 
+  |  formatYUV   |  7.83ms   |  34.48ms  |   1.5ms   |   16.28ms    |  162.7ms  |   0.17ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | formatChroma |    --     |    --     |    --     |    0.46ms    |    --     |     --     | 
+  | formatChroma |    --     |    --     |    --     |    0.46ms    |    --     |     --     |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatLAB   |  48.99ms  |  70.14ms  |  58.62ms  |   54.98ms    |  1.28ms   |   0.16ms   | 
+  |  formatLAB   |  48.99ms  |  70.14ms  |  58.62ms  |   54.98ms    |  1.28ms   |   0.16ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatGray  |  0.57ms   |   0.8ms   |  0.58ms   |      --      |  0.63ms   |   0.14ms   | 
+  |  formatGray  |  0.57ms   |   0.8ms   |  0.58ms   |      --      |  0.63ms   |   0.14ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  
+
 
 :icl:`Img8u` --> :icl:`Img32f`
 
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray | 
+  | src \\ dst   | formatRGB | formatHLS | formatYUV | formatChroma | formatLAB | formatGray |
   +==============+===========+===========+===========+==============+===========+============+
-  |  formatRGB   |  0.47ms   |  28.15ms  |  5.03ms   |    4.81ms    | 158.56ms  |   1.69ms   | 
+  |  formatRGB   |  0.47ms   |  28.15ms  |  5.03ms   |    4.81ms    | 158.56ms  |   1.69ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatHLS   |  23.18ms  |  0.48ms   |  7.27ms   |    8.77ms    | 163.06ms  |   0.12ms   | 
+  |  formatHLS   |  23.18ms  |  0.48ms   |  7.27ms   |    8.77ms    | 163.06ms  |   0.12ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatYUV   |  5.88ms   |  27.56ms  |  0.47ms   |    5.68ms    | 157.35ms  |   0.12ms   | 
+  |  formatYUV   |  5.88ms   |  27.56ms  |  0.47ms   |    5.68ms    | 157.35ms  |   0.12ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  | formatChroma |    --     |    --     |    --     |    0.28ms    |    --     |     --     | 
+  | formatChroma |    --     |    --     |    --     |    0.28ms    |    --     |     --     |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatLAB   |  48.93ms  |  30.2ms   |  10.66ms  |   10.04ms    |  0.45ms   |   0.14ms   | 
+  |  formatLAB   |  48.93ms  |  30.2ms   |  10.66ms  |   10.04ms    |  0.45ms   |   0.14ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  |  formatGray  |  1.59ms   |  1.58ms   |  1.62ms   |      --      |  1.65ms   |   0.12ms   | 
+  |  formatGray  |  1.59ms   |  1.58ms   |  1.62ms   |      --      |  1.65ms   |   0.12ms   |
   +--------------+-----------+-----------+-----------+--------------+-----------+------------+
-  
+
 
 .. _core.other:
 

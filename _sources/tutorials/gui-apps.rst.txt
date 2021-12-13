@@ -12,7 +12,7 @@ GUI-applications. In this section we will develop a simple viewer
 application that grabs images from arbitrary image sources and
 displays the image.
 
-For a more general overview about the GUI framework, we recommend to 
+For a more general overview about the GUI framework, we recommend to
 also study :ref:`qt`.
 
 .. _simple-example:
@@ -21,10 +21,10 @@ Simple Example
 """"""""""""""
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
-   :linenos:                              
+   :language: c++
+   :linenos:
 
-.. note:: 
+.. note::
    a documented version of this source code can be found :ref:`below<documented-gui-app>`
 
 A basic ICL GUI-application can be structured into three major
@@ -35,7 +35,7 @@ functions: **main**, **init** and **run**
 
 This function simply creates an instance of type
 **ICLApplication** (or short ICLApp). The ICLApp instance always
-gets the following arguments: 
+gets the following arguments:
 
 * the program argument count the program
 
@@ -71,14 +71,14 @@ particular the **GUI** can be initialized. Program arguments can
 also be used here.
 
 **run**
-""""""" 
+"""""""
 This function is called in a loop in the applications working
-thread. Normally **run** has the steps 
+thread. Normally **run** has the steps
 
 1. image acquisition
 2. image processing
 3. restult visualization
-         
+
 In the examples the images are visualized without any processing
 
 
@@ -94,7 +94,7 @@ sub-namespaces :icl:`icl::utils`, :icl:`icl::math`, etc. as well as
 the **std**-namespace
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 1-5
    :emphasize-lines: 1
 
@@ -104,7 +104,7 @@ global GUI instance, the use of a global variable is justifiable and
 natural here.
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 1-5
    :emphasize-lines: 3
 
@@ -114,7 +114,7 @@ Here, we use an instance of type :icl:`GenericGrabber`,
 which can be configured simply using program arguments
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 1-5
    :emphasize-lines: 4
 
@@ -123,7 +123,7 @@ We use the init function for initialization of the
 grabber and the GUI instance
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 6-9
    :emphasize-lines: 1
 
@@ -134,7 +134,7 @@ function. :icl:`pa` gets one of the program argument's
 name aliases and optionally also the sub-argument index.
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 6-9
    :emphasize-lines: 2
 
@@ -143,13 +143,13 @@ visualization. To this ends, we use ICL's powerful
 Qt-based GUI creation framework. Here, GUI components
 can conveniently streamed into each other to create
 complex GUIs, but also for simple GUI as necessary
-in this example, it is convenient to use. 
+in this example, it is convenient to use.
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 6-9
    :emphasize-lines: 3
-       
+
 
 The run function contains our processing loop which is
 acutually very simple in this case. It just grabs a new
@@ -157,7 +157,7 @@ image and visualizes it with our image visualization GUI
 component.
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 10-12
    :emphasize-lines: 1
 
@@ -165,7 +165,7 @@ Here, we pass the next grabbed image from the grabber instance
 directly to the visualization component
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 10-12
    :emphasize-lines: 2
 
@@ -176,7 +176,7 @@ only a single argument is allowed, that gets two sub-arguments. The
 "[m]"-prefix makes the argument mandatory
 
 .. literalinclude:: examples/gui-apps-1.cpp
-   :language: c++                         
+   :language: c++
    :lines: 13-15
 
 Compiling and Running
@@ -195,7 +195,7 @@ able to work with arbitrary image sources. Here are some further
 examples:
 
 
-**-input create parrot** 
+**-input create parrot**
   uses a static *hard-coded* test image showing
   a parrot as input. Each time, the **GenericGrabber**'s grab-function is
   called, the same image is returned.
@@ -208,27 +208,27 @@ examples:
    pattern is expanded internally, so you have to set it into tics (')
    to avoid that the pattern is already expanded by your bash
 
-**-input v4l 0** 
+**-input v4l 0**
   This will use the first *Video4Linux2*-based camera (usually used
   for webcams and builtin cameras) that is available [#f1]_
 
-**-input dc 0** 
+**-input dc 0**
   This will use the first firewire-camera that is connected to your PC
-  as input [#f2]_ 
+  as input [#f2]_
 
-**-input video myvideo.avi** 
+**-input video myvideo.avi**
   This will grab images frame by frame from the given video file [#f3]_
 
-.. note:: 
+.. note::
    A complete list of supported device-types and their device
    selection parameters is given in the **GenericGrabber** reference
-   (**TODO:** a link would be better here!). 
+   (**TODO:** a link would be better here!).
 
 .. rubric:: Footnotes
 
 .. [#f1] needs ICL built with v4l2 support
 .. [#f2] needs ICL built with libdc support
-.. [#f3] 
+.. [#f3]
 
    needs ICL built with opencv support, and the video codec must
    be compatible

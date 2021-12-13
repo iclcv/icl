@@ -37,7 +37,7 @@ Table of Contents
 
   * :ref:`cv.mean-shift`
   * :ref:`cv.template-matching`
-    
+
     * :ref:`cv.matching`
     * :ref:`cv.tracking`
 
@@ -108,10 +108,10 @@ Curvature Scale Space Corner Detection
 """"""""""""""""""""""""""""""""""""""
 
 The set of features provided by the :icl:`cv::ImageRegion` class
-consists of very simple features, such as the regions center of 
+consists of very simple features, such as the regions center of
 gravity or its bounding box, up to highly complex features, such
 as local PCA information and curvature scale space based boundary
-approximation by polygons (see also :icl:`cv::CornerDetectorCSS`). 
+approximation by polygons (see also :icl:`cv::CornerDetectorCSS`).
 
 
 
@@ -121,7 +121,7 @@ SURF Feature Detection
 ^^^^^^^^^^^^^^^^^^^^^^
 
 ICL provides two wrappers for external SURF-feature detection
-libraries. 
+libraries.
 
 1. A *libopensurf* wrapper (:icl:`cv::OpenSurfDetector`)
 2. An *OpenCV* SURF feature detection wrapper
@@ -192,7 +192,7 @@ is lost, which can also be described by using a search window that has
 image size.
 
 In situations, where several objects, each described by a feature
-vector, are to be tracked, we face an assignment problem: 
+vector, are to be tracked, we face an assignment problem:
 
 * Which object instance in the current time step belongs to which
   object in the previous time step
@@ -207,7 +207,7 @@ restricted to 2D feature vectors. In both cases, the tracking problem
 is reformulated as a linear assignment problem, that can be solved
 optimally, w.r.t. a cost matrix derived from a given feature distance
 metrics by the *Hungarian Method*. If the available object-count
-differs from one frame to another, the internal cost-matrix is 
+differs from one frame to another, the internal cost-matrix is
 smartly extended in order to identify new objects and objects that
 were lost.
 
@@ -256,12 +256,12 @@ optimal match of the pattern. As distance metrics usually
 (normalized) cross-correlation is used.
 
 .. note::
-   
+
    Since the template matching and tracking bases on normalized
    cross-correlation, for which right now, not C++-fallback
    implementation is available, the whole template tracking
    framework is only available in case of having Intel IPP support
-   
+
 .. todo::
 
    Provide Fallback-Implementation for Cross-Correlation
@@ -296,7 +296,7 @@ pattern image is pre-rotated from 0 to 360 degree using an adaptable
 step size. In each tracking step, the searched pattern is matched
 within search window for each available rotation within a given
 rotation-search window size. A coarse to fine search is present in
-the method and constructor interfaced, but not implemented yet. 
+the method and constructor interfaced, but not implemented yet.
 
 A demo application will be provided soon.
 
@@ -304,4 +304,3 @@ A demo application will be provided soon.
 
    implement a demo application for the :icl:`cv::TemplateTracker`
    developed with Eckard
-

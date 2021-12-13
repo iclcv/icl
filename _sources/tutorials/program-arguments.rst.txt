@@ -37,7 +37,7 @@ application **my-convert** could expect an input image file name, an
 output image file name and an argument **-size** that always gets an
 extra sub-argument which defines the target image size. A valid call
 to the program would then be something like::
- 
+
   my-convert -size 320x240 image.png image.jpg
 
 In this case, we classify the set of all given program arguments as
@@ -45,7 +45,7 @@ follows:
 
 * **-size** as a *defined* argument (expecting one sub-argument)
 * **320x240** as a *sub*-argument
-* **image.png** and **image.jpg** as *dangling* arguments 
+* **image.png** and **image.jpg** as *dangling* arguments
 
 All program arguments are either *defined*, expecting 1,n or an
 arbitrary number of sub-arguments, *dandling* or *sub-arguments* of
@@ -53,7 +53,7 @@ defined ones. Furthermore, arguments can be mandatory or optional.
 
 
 .. note::
-   
+
    The support for dangling arguments must be enabled explicitly by
    adding a boolean flag to the call to the program argument
    initialization function :icl:`pa_init`. Since it turned out that
@@ -119,7 +119,7 @@ and last of type int::
 
 two sub-arguments first of type int with default value "4" and second
 of type **Size** with default argument "VGA"::
- 
+
   "(int=4,Size=VGA)"
 
 
@@ -137,8 +137,8 @@ Types
 """""
 
 **Question:**
-  
-   What types are allowed/supported? 
+
+   What types are allowed/supported?
 
 **Answer:**
 
@@ -197,7 +197,7 @@ accesses all program arguments, so calling::
 
   ./example
 
-fails, giving the error message in line 10 that sub-argument 0 of the 
+fails, giving the error message in line 10 that sub-argument 0 of the
 defined argument "-input" was tried to access, but is was neither given
 nor defined by a default argument. In real-life examples, those defined
 arguments should be declared mandatory.
@@ -226,7 +226,7 @@ purposes. **-help** gives a formatted *usage* output, in this case::
                 information
 
 **-version** provides current version and license information. If
-an application has some special license, the license text can be 
+an application has some special license, the license text can be
 set using the :icl:`pa_set_license` function.
 Optionally the usage information can be explained using an extra help
 text that can be set using the :icl:`pa_set_help_text` function.
@@ -266,30 +266,29 @@ With::
 
    ./example-2 --help
 
-Shows the following usage output::   
-  
+Shows the following usage output::
+
   usage:
   	pa2 [ARGS]
-  
+
   	This is an example program that has no function
   	but it demonstrates how to add some program
   	argument and program description
-  
+
   -size|-s      {optional}
                 (Size=VGA)
                 image size use for something
-  
+
   -index        {optional}
                 (int)
                 some index used for something else
-  
+
   -input|-i     {optional}
                 (*,*)
                 input definition, the first first arg defines
                 the input grabber backend, second arg selects
                 a certain device from this backend
-  
+
   -help         shows this help text
   -version      shows version and copyright
                 information
-  
