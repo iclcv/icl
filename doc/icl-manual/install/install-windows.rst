@@ -170,9 +170,9 @@ Open Computer Vision Library (OpenCV)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We use OpenCV mainly in order to provide a compatibility interface
-that converts OpenCV's common image data types **IplImage** and
-**CvMat** into ICL's images type :icl:`core::ImgBase` and vice versa.
-the header :icl:`OpenCV.h` in the ICLCore module provides efficient and simple
+that converts OpenCV's common image data type **cv::Mat** into ICL's image type
+:icl:`core::ImgBase` and vice versa.
+The header :icl:`OpenCV.h` in the ICLCore module provides efficient and simple
 to use converter methods. These are only available if the OpenCV
 dependency is met. In addition, OpenCV is currently needed for the
 LibOpenSurf (http://www.chrisevansdev.com/computer-vision-opensurf.html)

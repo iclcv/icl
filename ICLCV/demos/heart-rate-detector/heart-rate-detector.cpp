@@ -38,9 +38,9 @@
 #include <ICLMath/FFTUtils.h>
 #include <ICLCore/OpenCV.h>
 
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/objdetect.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
 
 #include <ICLCV/HeartrateDetector.h>
 
@@ -61,7 +61,7 @@ Rect detectFace(Img8u *image)
 {
   ::cv::Mat *frame = img_to_mat(image);
   cv::Mat frame_gray(*frame);
-  cv::cvtColor( frame_gray, frame_gray, CV_RGB2GRAY );
+  cv::cvtColor( frame_gray, frame_gray, cv::COLOR_RGB2GRAY );
   cv::equalizeHist( frame_gray, frame_gray );
   std::vector<cv::Rect> faces;
   faceCascade.detectMultiScale(frame_gray, faces);
@@ -168,5 +168,3 @@ int main(int n, char **ppc){
                       init,run).exec();
   delete detector;
 }
-
-

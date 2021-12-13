@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include <opencv2/core/version.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 
 #if CV_MAJOR_VERSION >= 3
 #elif CV_MAJOR_VERSION == 2 && CV_MINOR_VERSION >= 4
@@ -38,8 +39,6 @@
   #error ICL requires at least OpenCV 2.4
 #endif
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #if CV_MAJOR_VERSION < 4
 #include <opencv2/core/core_c.h>

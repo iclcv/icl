@@ -96,7 +96,9 @@ IF(BUILD_REDIST STREQUAL DEB)
                  ${PROJECT_SOURCE_DIR}/debian/changelog @ONLY)
   CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/LICENSE.LGPL
                  ${PROJECT_SOURCE_DIR}/debian/copyright COPYONLY)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E echo "##[group]Install build dependencies")
   execute_process(COMMAND sudo mk-build-deps --install -t "apt-get --no-install-recommends -y" ${PROJECT_SOURCE_DIR}/debian/control)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E echo "##[endgroup]")
 
 
 ELSEIF(BUILD_REDIST STREQUAL WIX)
