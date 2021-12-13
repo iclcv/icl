@@ -1,0 +1,839 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Visualization and Mouse Interaction &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The Configurable Interface" href="configurables.html" />
+    <link rel="prev" title="Interactive GUI Applications" href="interactive-gui-apps.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="configurables.html" title="The Configurable Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="interactive-gui-apps.html" title="Interactive GUI Applications"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="visualization-and-mouse-interaction">
+<span id="tut-mouse-and-vis"></span><h1>Visualization and Mouse Interaction<a class="headerlink" href="#visualization-and-mouse-interaction" title="Permalink to this headline">¶</a></h1>
+<p>In this part we will learn how synchronize GUI interaction,
+visualization and image processing. Let’s risk a more complex task:</p>
+<p>We implement an application that allows for picking a reference color
+using mouse input. The reference color is then used to create a
+binarized color distance map, that is used as input for blob
+detection. Finally, result regions are highlighted graphically.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="53%" />
+<col width="47%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLCV/RegionDetector.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLFilter/ColorDistanceOp.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+<span class="n">RegionDetector</span> <span class="nf">rd</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mf">1E9</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+<span class="n">ColorDistanceOp</span> <span class="nf">cd</span><span class="p">(</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">,</span><span class="mi">240</span><span class="p">),</span><span class="mi">100</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">mouse</span><span class="p">(</span><span class="k">const</span> <span class="n">MouseEvent</span> <span class="o">&amp;</span><span class="n">e</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">isLeft</span><span class="p">())</span> <span class="n">cd</span><span class="p">.</span><span class="n">setReferenceColor</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">getColor</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-i&quot;</span><span class="p">));</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Draw</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">30</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;t&quot;</span><span class="p">).</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">].</span><span class="n">install</span><span class="p">(</span><span class="n">mouse</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="n">cd</span><span class="p">.</span><span class="n">setThreshold</span><span class="p">(</span><span class="n">gui</span><span class="p">[</span><span class="s">&quot;t&quot;</span><span class="p">]);</span>
+  <span class="n">DrawHandle</span> <span class="n">draw</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">];</span>
+  <span class="k">const</span> <span class="n">ImgBase</span> <span class="o">*</span><span class="n">I</span> <span class="o">=</span> <span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">();</span>
+
+  <span class="n">draw</span> <span class="o">=</span> <span class="n">I</span><span class="p">;</span>
+  <span class="n">draw</span><span class="o">-&gt;</span><span class="n">color</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">ImageRegion</span><span class="o">&gt;</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">rd</span><span class="p">.</span><span class="n">detect</span><span class="p">(</span><span class="n">cd</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="n">I</span><span class="p">));</span>
+
+  <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">rs</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">linestrip</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getBoundary</span><span class="p">());</span>
+  <span class="p">}</span>
+
+  <span class="n">draw</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span><span class="kt">char</span> <span class="o">**</span><span class="n">v</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="s">&quot;-input|-i(2)&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first" src="../_images/mouse-and-vis.png" />
+<p class="last">The left mouse button can be used to
+define a reference color. The slider
+defines the color threshold</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="step-by-step">
+<h2>Step by Step<a class="headerlink" href="#step-by-step" title="Permalink to this headline">¶</a></h2>
+<p>Again, let’s go through the source code in step by step manner. As
+usual, we the necessary headers are included.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLCV/RegionDetector.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLFilter/ColorDistanceOp.h&gt;</span><span class="cp"></span>
+</pre></div>
+</div>
+<p>Declaration of global application data. This time we need an instance
+of type <strong>RegionDetector</strong> that initialized with parameters for to be
+detected image regions. The first 2 parameters define the minimum and
+the maximum number of pixels, the other 2 parameters define value
+range for detected regions. Since we search for <em>white</em> regions in the
+intermediate binary image, the range contains the value 255 only.</p>
+<p>In addition, we instantiate a <strong>ColorDistanceOp</strong>, which gets an
+initial reference color and binarization threshold.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+<span class="n">RegionDetector</span> <span class="nf">rd</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mf">1E9</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+<span class="n">ColorDistanceOp</span> <span class="nf">cd</span><span class="p">(</span><span class="n">Color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">,</span><span class="mi">240</span><span class="p">),</span><span class="mi">100</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Since we want to use mouse interaction, we create a very simple mouse
+handler function. <strong>MouseEvent::isLeft()</strong> returns true for left
+press- and drag-events. The <strong>MouseEvent</strong>-type provides information
+that is related to the visualized image. It’s <strong>getPos()</strong> method
+returns the image pixel position pointed at rather than widget or
+screen coordinates even if the image is scaled or zoomed. <strong>getColor</strong>
+returns the color of the pixel the mouse points to, which is here
+passed as new reference color to the <strong>ColorDistanceOp</strong>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">mouse</span><span class="p">(</span><span class="k">const</span> <span class="n">MouseEvent</span> <span class="o">&amp;</span><span class="n">e</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">isLeft</span><span class="p">())</span> <span class="n">cd</span><span class="p">.</span><span class="n">setReferenceColor</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">getColor</span><span class="p">());</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The initialization method has not changed much in comparison to the
+former example. Again, we initialize our <strong>GenericGrabber</strong> instance,
+and we create our <strong>GUI</strong>. Once the GUI is created, we can easily
+install mouse-handlers to <strong>Image()</strong>, <strong>Draw()</strong> and <strong>Draw3D()</strong>
+components for image visualization. We used a <strong>Draw()</strong> component
+here, that provides the ability for rendering overlayed image
+annotations.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-i&quot;</span><span class="p">));</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Draw</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">30</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;t&quot;</span><span class="p">).</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">].</span><span class="n">install</span><span class="p">(</span><span class="n">mouse</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <strong>run</strong>-method is now more complex then before. However, the
+desired task can still be implemented without <em>processing pixels</em>
+manually. First, the current threshold is passed from the GUI slider
+to the color distance operator.</p>
+<p>Since, we need to use the <strong>Draw()</strong> component of the GUI several
+times, we extract it. Each component has an associated handle class
+whose name is <strong>ComponentNameHandle</strong>.</p>
+<p>The current image will also be needed twice: for visualization and for
+the processing. Therefore, we also <em>remember</em> this temporarily.</p>
+<p>Now, with <strong>draw = I</strong>, the background image for the visualization is
+set. The <strong>DrawHandle</strong> can now be used as a drawing state-machine,
+where we can set a color and then draw primitives. All rendering
+commands are given in image coordinates. The rendering system will
+internally compute all necessary transformations to align the image
+and the overlay.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="n">cd</span><span class="p">.</span><span class="n">setThreshold</span><span class="p">(</span><span class="n">gui</span><span class="p">[</span><span class="s">&quot;t&quot;</span><span class="p">]);</span>
+  <span class="n">DrawHandle</span> <span class="n">draw</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">];</span>
+  <span class="k">const</span> <span class="n">ImgBase</span> <span class="o">*</span><span class="n">I</span> <span class="o">=</span> <span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">();</span>
+
+  <span class="n">draw</span> <span class="o">=</span> <span class="n">I</span><span class="p">;</span>
+  <span class="n">draw</span><span class="o">-&gt;</span><span class="n">color</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Then, we basically nest all our image processing operators in a single
+line. The output of the <strong>ColorDistanceOp</strong> is passed to the
+<strong>RegionDetector</strong> which returns a set of detected image regions
+whose boundaries are then visualized with the <strong>Draw()</strong> component.
+Finally the <strong>draw-&gt;render()</strong> call swaps the rendering buffers
+internally and requests redrawing from the GUI thread.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">ImageRegion</span><span class="o">&gt;</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">rd</span><span class="p">.</span><span class="n">detect</span><span class="p">(</span><span class="n">cd</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="n">I</span><span class="p">));</span>
+
+  <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">rs</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">linestrip</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getBoundary</span><span class="p">());</span>
+  <span class="p">}</span>
+
+  <span class="n">draw</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Visualization and Mouse Interaction</a><ul>
+<li><a class="reference internal" href="#step-by-step">Step by Step</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="interactive-gui-apps.html"
+                        title="previous chapter">Interactive GUI Applications</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configurables.html"
+                        title="next chapter">The Configurable Interface</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="configurables.html" title="The Configurable Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="interactive-gui-apps.html" title="Interactive GUI Applications"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

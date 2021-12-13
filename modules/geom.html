@@ -1,0 +1,1027 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3D Vision and Visualization &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Fiducial Marker Detection" href="markers.html" />
+    <link rel="prev" title="Computer Vision Algorithms" href="cv.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="markers.html" title="Fiducial Marker Detection"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cv.html" title="Computer Vision Algorithms"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="d-vision-and-visualization">
+<span id="geom"></span><h1>3D Vision and Visualization<a class="headerlink" href="#d-vision-and-visualization" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/geom1.png" src="../_images/geom1.png" />
+<p>The ICLGeom module provides algorithms for 3D computer-vision, point
+cloud processing and 3D visualization. Its components are tightly
+integrated and optimized for simplicity and usability. <em>Simplicity</em>
+means, that no 3rd party libraries except for OpenGL for the
+visualization are needed. The 3D vision framework’s main class is
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">geom::Camera</a>, which represents a idealized pinhole camera
+defined by extrinsic and intrinsic parameters. The camera is not only
+used for 3D vision and camera calibration, but also for visualization
+tasks. For this, the ICLGeom package provides a lightweight scene
+graph implementation that basically consists of the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">geom::Scene</a>
+class and a hierarchical <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">geom::SceneObject</a> class. The scene’s
+rendering callback can simply be linked to a
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a> GUI component, which solves the issued
+for rendering pixel-accurate 3D overlay on top real camera images.</p>
+<p>In addition we also provide the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">PointCloudObjectBase</a> class,
+which defines a generic interface for point cloud representations.
+Even though also a very basic fallback point cloud type
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObject.html">PointCloudObject</a> is provided, we strongly recommend to use the
+<a class="reference external" href="http://www.pointclouds.org">Point Cloud Library (PCL)</a> for point cloud processing. For a
+seamless integration with the Point Cloud Library, ICL provides the
+adapter class template <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">PCLPointCloudObject</a>, which is compatible
+to our <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">PointCloudObjectBase</a> interface while providing direct
+access to the actual PCL point cloud type. By these means, PCL point
+cloud instances can easily be visualized as part of a <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a>.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#geom-camera"><span class="std std-ref">The Camera class</span></a></li>
+<li><a class="reference internal" href="#geom-camera-calibration"><span class="std std-ref">Camera Calibration</span></a></li>
+<li><a class="reference internal" href="#geom-scene-graph"><span class="std std-ref">The Scene Graph</span></a><ul>
+<li><a class="reference internal" href="#geom-scene-object"><span class="std std-ref">The SceneObject Class</span></a></li>
+<li><a class="reference internal" href="#geom-overlay"><span class="std std-ref">Using the SceneGraph to Render an Image Overlay</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geom-point-cloud-processing"><span class="std std-ref">Point Cloud Processing</span></a><ul>
+<li><a class="reference internal" href="#geom-point-cloud-grabber"><span class="std std-ref">The PointCloudGrabber Interface</span></a></li>
+<li><a class="reference internal" href="#geom-depth-cam-point-cloud-grabber"><span class="std std-ref">The DepthCameraPointCloudGrabber Class</span></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="the-camera-class">
+<span id="geom-camera"></span><h2>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> class<a class="headerlink" href="#the-camera-class" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> class is the central part of the ICLGeom module. It
+defines a connection between camera calibration and 3D visualization.
+The fundamental camera calibration function <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html#a3b44c0c2bfdbdb962a8b6c191b58291e">Camera::calibrate</a>
+estimates optimal camera parameters for a given set of 2D-3D point
+correspondances and returns a <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> instance. The identical
+camera class is also used by the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a> class for visualization.
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> instances can easily be saved and loaded from XML files.</p>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> is completly compatible to the OpenGL camera
+model. It is parameterized by following sets of parameters.</p>
+<ul class="simple">
+<li>extrinsic parameters<ul>
+<li>position</li>
+<li>view vector</li>
+<li>up vector <a class="footnote-reference" href="#f1" id="id1">[1]</a></li>
+</ul>
+</li>
+<li>intrinsic parameters<ul>
+<li>focal length <a class="footnote-reference" href="#f2" id="id2">[2]</a></li>
+<li>horizonal and vertical pixel density of the camera chip [pix/mm]</li>
+<li>horizonal and vertical offset of the camera principal point</li>
+<li>the skew</li>
+</ul>
+</li>
+<li>rendering parameters<ul>
+<li>chip size [pix]</li>
+<li>far clipping distance [mm]</li>
+<li>viewport size (usually equals chip size) [pix]</li>
+<li>minimum and maximum z-value (for the depth-buffer resolution)</li>
+</ul>
+</li>
+</ul>
+<p>Please refer to the API documentation of the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> class for
+more details of the camera’s projection model.</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>The <em>up</em>-vector points downwards for compatibility with</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>The focal lenght and the pixel densities are internally multiplied,
+but we provide two sets of parameters for clarity</td></tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add further camera class features such as estimate_3D and Co.</p>
+</div>
+</div>
+<div class="section" id="camera-calibration">
+<span id="geom-camera-calibration"></span><h2>Camera Calibration<a class="headerlink" href="#camera-calibration" title="Permalink to this headline">¶</a></h2>
+<p>Camera calibration is a important prerequisite for many computer
+vision applications. In contrast to most other libraries, we
+explicitly distinguish between</p>
+<ul class="simple">
+<li>parameter estimation for image undistortion</li>
+<li>finding intrinsic and extrinsic parameters of our idealized camera model</li>
+</ul>
+<p>Even though, there are methods for joint estimation of both, image
+undistortion and camera parameters, we decided to provide separate
+tools for these tasks in order to keep things as simple as
+possible. Image undistortion is assumed to be performed pixel-wise on
+acquired images. For this, ICL’s main image source interface
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> provides methods to enable automatic image
+undistortion. If this is done, the grabber instance will automatically
+return undistorted images. By these means, image undistortion is completely
+decoupled from the linear/project geometry camera model.</p>
+<p>Since camera calibration is a very important topic for many
+applications, we dedicated a whole <em>camera calibration How-To</em> to
+this. Please see <a class="reference internal" href="../howtos/camera-calibration.html#howto-camcalib"><span class="std std-ref">Camera Calibration</span></a></p>
+</div>
+<div class="section" id="the-scene-graph">
+<span id="geom-scene-graph"></span><h2>The Scene Graph<a class="headerlink" href="#the-scene-graph" title="Permalink to this headline">¶</a></h2>
+<p>ICL provides a simple <em>light-weight</em> scene graph implementation, that
+can be used for 3D visualization. A <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a> instance is simply
+filled with <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">Camera</a> and <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> instances. For each
+contained camera, it can provide an OpenGL callback function that
+simply renders the whole scene from the camera’s point of view. The
+callback function can easily be <em>linked</em> to an
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a> display component that can render the scene
+on top of an image background. For user interactions such as
+mouse-based scene navigation, another callback mechanism is provided.
+All synchronization issues are already solved internally, in
+particular the whole scene is only rendered in the application’s
+GUI-thread, which is necessary due to OpenGL’s lack of thread-safety.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="43%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLGeom/Geom.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">Scene</span> <span class="n">scene</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="c1">// create graphical user interface</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Draw3D</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;draw&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+  <span class="c1">// create camera and add to scene instance</span>
+  <span class="n">Camera</span> <span class="n">cam</span><span class="p">(</span><span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">),</span> <span class="c1">// position</span>
+             <span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>   <span class="c1">// view-direction</span>
+             <span class="n">Vec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span>  <span class="c1">// up-direction</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addCamera</span><span class="p">(</span><span class="n">cam</span><span class="p">);</span>
+
+  <span class="c1">// add an object to the scene</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addObject</span><span class="p">(</span><span class="n">SceneObject</span><span class="o">::</span><span class="n">cuboid</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">));</span>
+
+  <span class="c1">// use mouse events for camera movement</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">].</span><span class="n">install</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">getMouseHandler</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+
+  <span class="c1">// link the visualization</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">].</span><span class="n">link</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">getGLCallback</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/scene-graph.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a> class provides a simple OpenGL-based
+off-screen rendering method <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html#a38a7d111deb63e78c916ac168df245e9">Scene::render</a>, that can be used to
+simply render a whole scene into an image. It also allows for
+extracting the scene’s depth buffer, which can be used for simulating
+depth-cameras. The are several demo applications, that demonstrate the
+uses of ICL’s <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a> class:</p>
+<p><strong>icl-offscreen-rendering-demo</strong></p>
+<blockquote>
+<div>Combines off-screen rendering with textures. ICL images can easily
+be used as textures. In this demo, a simple cube that can be rotated
+by mouse is rendered twice, first into a normal OpenGL-context
+(<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a>) and second, off-screen rendering-based,
+into an <a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">core::Img8u</a>. The resulting image is then used for the
+cube’s face textures. The resulting application reveals a beautiful
+recursive visualization</div></blockquote>
+<p><strong>icl-sceen-graph-demo</strong></p>
+<blockquote>
+<div>Draws a very simple solar system in order to demonstrate the use
+of an object tree as scene graph. Off-screen rendering is also
+demonstrated here.</div></blockquote>
+<p><strong>icl-animated-grid-demo</strong></p>
+<blockquote>
+<div>Demonstates the use of the texture-grid primitive (see
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html#a9521430fb5dc83d8ca976e96697fc4f9">SceneObject::addTextureGrid</a>), that can be used to spread a
+texture along a deformable 2D grid in 3D space. It also demonstrates
+the use of the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLFragmentShader.html">qt::GLFragmentShader</a> that can easily be attached
+to <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> instances.</div></blockquote>
+<div class="section" id="the-sceneobject-class">
+<span id="geom-scene-object"></span><h3>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> Class<a class="headerlink" href="#the-sceneobject-class" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> defines an interface for visual elements in the
+scene. For the creation of visual content, it can either be filled
+with vertices, normals, and visual primitives such as lines, triangles
+and textures, or it’ <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html#a0b8288d1a0e828daac5890fb2f3fe1cf">SceneObject::customRender</a> method can be
+overwritten in order to execute OpenGL-code directly. This code is
+then automatically rendered by the parent scene, synchronously to the
+application’s GUI thread. Only if a scene object is heavily <a class="footnote-reference" href="#f3" id="id3">[3]</a>
+adapted by the application’s working thread, its <em>locking</em> property
+needs to activated and it must be locked explicitly during the adaption:</p>
+<p>Each <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> instance has a transformation matrix, that
+defines it relative position, orientation, scale and shear relative to
+the parent object. Each scene objects is able to carry a list of
+child-objects, which represents the actual <em>scene
+graph</em>. <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> instances that are directly added to the
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a> are <em>top-level</em> objects and have a <em>null</em>-parent.</p>
+<p>The default <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> representation mirrors the basic idea
+of the Wavefront .obj file format <a class="footnote-reference" href="#f4" id="id4">[4]</a>. It contains a list of
+vertices and normals, that are reference by a set of different
+<em>primitives</em> (represented by the <a class="reference external" href="../icl-api/structicl_1_1geom_1_1Primitive.html">Primitive</a> class). A simple
+line-primitive is defined by two vertex indices that reference the
+line’s start and end vertex in the object’s vertex list. More complex
+primitives, such as triangles, polygons or even textures have more
+parameters, but most of them directly reference the object’s vertices
+and normals. The <a class="reference external" href="../icl-api/structicl_1_1geom_1_1Primitive.html">Primitive</a> interface can also be customly
+implemented. In the primitives render method <a class="reference external" href="../icl-api/structicl_1_1geom_1_1Primitive.html#a16fdf6a6702daac5e5902541e1ed73d3">Primitive::render</a>,
+all parent object data is available.</p>
+<p>Additionally, the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SceneObject.html">SceneObject</a> class provides a huge set of
+utility methods and factory functions for easy creation default
+objects, such as cubes or spheres. For objects, also a ray-casting
+method is provided. The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a>’s <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html#afc39986dc533d904c4b4487908366954">Scene::findObject</a> method
+yields a list of objects at a given mouse-position or along a given
+view ray. An exact intersection position is also provided.</p>
+<table class="docutils footnote" frame="void" id="f3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><em>heavily</em> means that e.g. vertices or primitives are added or removed.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td><cite>see http://en.wikipedia.org/wiki/Wavefront_.obj_file</cite></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="using-the-scenegraph-to-render-an-image-overlay">
+<span id="geom-overlay"></span><h3>Using the SceneGraph to Render an Image Overlay<a class="headerlink" href="#using-the-scenegraph-to-render-an-image-overlay" title="Permalink to this headline">¶</a></h3>
+<p>Together with ICL’s camera calibration capabilities (see
+<a class="reference internal" href="../howtos/camera-calibration.html#howto-camcalib"><span class="std std-ref">Camera Calibration</span></a>), it is possible to use the scene graph to
+render a virtual scene as an image overlay (on top of a real
+image). This can be achieved by the following steps:</p>
+<ul class="simple">
+<li>Given a real camera device, the camera is calibrated, resulting in an
+xml-description file of extrinsic and intrinsic camera parameters (e.g.
+called <strong>myCalib.xml</strong>).</li>
+<li>If the camera shows significant lens distortion, it is recommended to
+also find appropriate lens distortion compensation parameters (see
+<a class="reference internal" href="../howtos/camera-calibration.html#howtos-calib-distortion"><span class="std std-ref">Image Undistortion (Lens distortion correction)</span></a>), also resulting in an xml-file (e.g.
+called <strong>udist.xml</strong>)</li>
+<li>In the program, create a <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">geom::Scene</a> instance</li>
+<li>Add virtual objects to the Scene</li>
+<li>A add a <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">geom::Camera</a> instance to the scene</li>
+<li>Create an image display component that can also render 3D stuff
+(<span>qt:Draw3D</span>)</li>
+<li>Link the visualization callback of the scene to the GUI component</li>
+<li>Grab background images and also pass them to the GUI component</li>
+</ul>
+<p>In this case, ICL’s rendering pipeline will ensure, that virtual and
+real objects align perfectly even when adapting the GUI component’s
+geometry or when zooming.</p>
+<p>For an example, please refer to this tutorial: <a class="reference internal" href="../tutorials/scene-overlay-and-3D-marker-detection.html#tut-scene-overlay"><span class="std std-ref">3D Marker-Detection and Rendering 3D Scene Overlays</span></a></p>
+</div>
+</div>
+<div class="section" id="point-cloud-processing">
+<span id="geom-point-cloud-processing"></span><h2>Point Cloud Processing<a class="headerlink" href="#point-cloud-processing" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This part of ICL is still under development, however, we think
+that our basic interface will stay as it is. We plan to add more
+features for point cloud IO and processing soon</p>
+</div>
+<p>Since the availability of the Microsoft Kinect Camera, 3D point-cloud
+processing has become a very popular subject in computer vision. ICL
+defines only a very simple an general point cloud interface
+(<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">PointCloudObjectBase</a>). In addition, two alternative point
+cloud types are provided, that implement this interface:</p>
+<ol class="arabic simple">
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObject.html">geom::PointCloudObject</a></li>
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">geom::PCLPointCloudObject</a></li>
+</ol>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObject.html">PointCloudObject</a> is just fallback implementation, that does
+only support very simple point cloud types providing XYZ and RGBA
+data.  We strongly recommend to use the <a class="reference external" href="http://www.pointclouds.org">Point Cloud Library (PCL)</a>
+for any point cloud processing. New point cloud processing algorithms
+should also be based on PCL’s point cloud type, or they can be
+implemented by working on the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">PointCloudObjectBase</a> interface.
+The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">PCLPointCloudObject</a> shallowly wraps a PCL point cloud
+instance, working as adapter between ICL’s scene and visualization
+engine and PCL’s point cloud processing algorithms</p>
+<div class="section" id="the-pointcloudgrabber-interface">
+<span id="geom-point-cloud-grabber"></span><h3>The <a class="reference external" href="../icl-api/structicl_1_1geom_1_1PointCloudGrabber.html">PointCloudGrabber</a> Interface<a class="headerlink" href="#the-pointcloudgrabber-interface" title="Permalink to this headline">¶</a></h3>
+<p>Just like the <a class="reference external" href="../icl-api/classicl_1_1io_1_1Grabber.html">io::Grabber</a> interface for common image
+acquisition, we provide a very simple point cloud acquisition
+interface <a class="reference external" href="../icl-api/structicl_1_1geom_1_1PointCloudGrabber.html">geom::PointCloudGrabber</a>. In contrast to the
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1Grabber.html">Grabber</a>, this interface is hold as simple as possible, by
+defining just a single pure virtual image acquisition method
+<a class="reference external" href="../icl-api/structicl_1_1geom_1_1PointCloudGrabber.html#adad53316e6f7f025dcaa10a0f3d5dbee">PointCloudGrabber::grab</a>. The idea of this method differs
+significantly from the <a class="reference external" href="../icl-api/classicl_1_1io_1_1Grabber.html#aab7011c7eeb33b34a070cdc694eb5652">io::Grabber::grab</a> method, by not providing
+any return value. <a class="reference external" href="../icl-api/structicl_1_1geom_1_1PointCloudGrabber.html#adad53316e6f7f025dcaa10a0f3d5dbee">PointCloudGrabber::grab</a> simply acquires new
+point cloud data using its back-end implementation and then transforms
+all acquired features that are also available in the given destination
+point cloud instance into it. The whole data handling is left to the
+caller scope.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We also plan to create a <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a>-like interface
+for point clouds soon</p>
+</div>
+</div>
+<div class="section" id="the-depthcamerapointcloudgrabber-class">
+<span id="geom-depth-cam-point-cloud-grabber"></span><h3>The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1DepthCameraPointCloudGrabber.html">DepthCameraPointCloudGrabber</a> Class<a class="headerlink" href="#the-depthcamerapointcloudgrabber-class" title="Permalink to this headline">¶</a></h3>
+<p>So far, only a single implementation of the <a class="reference external" href="../icl-api/structicl_1_1geom_1_1PointCloudGrabber.html">PointCloudGrabber</a>
+interface is available. The <a class="reference external" href="../icl-api/classicl_1_1geom_1_1DepthCameraPointCloudGrabber.html">DepthCameraPointCloudGrabber</a> uses
+common <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> instances for acquiring depth- and
+optionally also corresponding color-images. The image sources can be
+any supported <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a>-backend. Therefore, the
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1DepthCameraPointCloudGrabber.html">DepthCameraPointCloudGrabber</a> can already be used to acquire
+point clouds from</p>
+<ul class="simple">
+<li>Kinect using the libfreenect backend</li>
+<li>Kinect and other PrimeSence base defines using the OpenNI backend</li>
+<li>depth and color image files</li>
+<li>RSB-based network streams</li>
+<li>Shared-memory streams</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A .pcd-file point cloud grabber is already implemented, but still needs
+to be included</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3D Vision and Visualization</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#the-camera-class">The Camera class</a></li>
+<li><a class="reference internal" href="#camera-calibration">Camera Calibration</a></li>
+<li><a class="reference internal" href="#the-scene-graph">The Scene Graph</a><ul>
+<li><a class="reference internal" href="#the-sceneobject-class">The SceneObject Class</a></li>
+<li><a class="reference internal" href="#using-the-scenegraph-to-render-an-image-overlay">Using the SceneGraph to Render an Image Overlay</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#point-cloud-processing">Point Cloud Processing</a><ul>
+<li><a class="reference internal" href="#the-pointcloudgrabber-interface">The PointCloudGrabber Interface</a></li>
+<li><a class="reference internal" href="#the-depthcamerapointcloudgrabber-class">The DepthCameraPointCloudGrabber Class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cv.html"
+                        title="previous chapter">Computer Vision Algorithms</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="markers.html"
+                        title="next chapter">Fiducial Marker Detection</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="markers.html" title="Fiducial Marker Detection"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cv.html" title="Computer Vision Algorithms"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>About ICL &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="3D Physics Simulation" href="modules/physics.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules/physics.html" title="3D Physics Simulation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ICL Manual</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="about-icl">
+<h1>About ICL<a class="headerlink" href="#about-icl" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-icl">
+<h2>What is ICL<a class="headerlink" href="#what-is-icl" title="Permalink to this headline">¶</a></h2>
+<p>ICL is a novel C++ computer-vision library developed in the
+Neuroinformatics group of the university of Bielefeld and in CITEC. It
+unifies both, performance and user friendliness. ICL provides a large
+set of simple-to-use classes and functions to facilitate development
+of complex computer vision applications.</p>
+<p>A simple application for image acquisition and visualization can be
+written in less than 15 lines of C++ code (see
+<a class="reference internal" href="tutorials/gui-apps.html#simple-example"><span class="std std-ref">example</span></a>).</p>
+<p>In contrast to the well known OpenCV computer vision library, ICL
+provides not only computer vision related functions and classes, but
+also a huge set of tools, that facilitate rapid development of
+interactive computer vision applications. In particular, the
+<a class="reference internal" href="modules/qt.html#qt-gui-creation-framework-intro"><span class="std std-ref">GUI creation toolkit</span></a> allows
+for fast and simple visualization and augmentation of 2D and even
+3D-point-cloud images.</p>
+<p>During the design and development process, the following main goals
+took center stage:</p>
+</div>
+<div class="section" id="design-principles">
+<h2>Design Principles<a class="headerlink" href="#design-principles" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="rich-set-of-support-functions">
+<h3>Rich set of Support Functions<a class="headerlink" href="#rich-set-of-support-functions" title="Permalink to this headline">¶</a></h3>
+<p>ICL is a full featured software framework for developing interactive
+computer vision applications. In contrast to other libraries, ICL
+provides a huge and well chosen set of support and utility functions
+and classes. These allow for implementing your algorithms and
+applications directly in ICL, i.e. usually, there is no need to learn
+how to use 3rd party tools. Whenever ICL uses an external library for
+providing extra functionality, it is wrapped seamlessly in order to
+provide modern and ICL-conform interfaces.</p>
+</div>
+<div class="section" id="optimal-performance">
+<h3>Optimal performance<a class="headerlink" href="#optimal-performance" title="Permalink to this headline">¶</a></h3>
+<p>ICL can optionally be linked against the Intel IPP-Library in order to
+enhance it’s processing speed significantly. Most functions are
+implemented as Intel IPP wrappers internally but we also provide
+fallback implementations for data-types that are not supported by
+Intel IPP or for the case where Intel IPP is not available. ICL images
+can be used as shallow wrappers around existing data structures and
+their raw-data can be accessed directly. By these means, image
+processing applications can be implemented without any overhead for
+data-conversion or copying.</p>
+</div>
+<div class="section" id="powerful-generic-interfaces">
+<h3>Powerful Generic Interfaces<a class="headerlink" href="#powerful-generic-interfaces" title="Permalink to this headline">¶</a></h3>
+<p>ICL provides a set of very powerful generic interfaces for
+image-filters, image-grabbers and image-outputs. E.g. the
+GenericGrabber-class can be used to acquire image from most different
+image sources, such as image-files and videos, all common camera
+types, but also from network streams. In combination with ICL’s
+program argument evaluation framework, you can very easily develop
+applications that are able to grab images from all supported image
+sources.</p>
+</div>
+<div class="section" id="simple-and-easy-to-use-c-interface">
+<h3>Simple and easy-to-use C++-interface<a class="headerlink" href="#simple-and-easy-to-use-c-interface" title="Permalink to this headline">¶</a></h3>
+<p>Object-orientated programming (OOP) in C++ provides both, high
+performance due to processor-close programming, as well as a high
+abstraction level, due to the inherent features of object
+orientation. In particular, inheritance, data/function encapsulation,
+as well as function- and class-templating are used for ICL’s
+implementation. However, ICL does only use complex template structures
+where it is absolutely necessary, which will particularly appreciated
+by medium skilled C++-programmers.</p>
+</div>
+<div class="section" id="no-compulsory-software-dependencies">
+<h3>No compulsory software dependencies<a class="headerlink" href="#no-compulsory-software-dependencies" title="Permalink to this headline">¶</a></h3>
+<p>All external software dependencies are purely optional. Therefore,
+ICL’s image structures and a large set of it’s functions and classes
+can be used without having to install a large set of 3rd-party
+libraries. By these means, you can develop your image processing
+algorithms with a slim version of ICL and link your code against a
+full featured ICL afterwards, i.e., to use a certain camera type.</p>
+</div>
+<div class="section" id="powerful-gui-integration">
+<h3>Powerful GUI integration<a class="headerlink" href="#powerful-gui-integration" title="Permalink to this headline">¶</a></h3>
+<p>Creating graphical user interfaces is a fundamental part of the
+development of interactive computer vision applications. Unlike the
+OpenCV-library, we did not only concentrate on providing
+image-processing-related functions and tools. A fundamental part of
+ICL’s support functions is it’s GUI-creation toolkit, that allows for
+creating and formatting most complex and interactive graphical user
+interfaces within only a few lines of code.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">About ICL</a><ul>
+<li><a class="reference internal" href="#what-is-icl">What is ICL</a></li>
+<li><a class="reference internal" href="#design-principles">Design Principles</a><ul>
+<li><a class="reference internal" href="#rich-set-of-support-functions">Rich set of Support Functions</a></li>
+<li><a class="reference internal" href="#optimal-performance">Optimal performance</a></li>
+<li><a class="reference internal" href="#powerful-generic-interfaces">Powerful Generic Interfaces</a></li>
+<li><a class="reference internal" href="#simple-and-easy-to-use-c-interface">Simple and easy-to-use C++-interface</a></li>
+<li><a class="reference internal" href="#no-compulsory-software-dependencies">No compulsory software dependencies</a></li>
+<li><a class="reference internal" href="#powerful-gui-integration">Powerful GUI integration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules/physics.html"
+                        title="previous chapter">3D Physics Simulation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Tutorial</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules/physics.html" title="3D Physics Simulation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ICL Manual</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

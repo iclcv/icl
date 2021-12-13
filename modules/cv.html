@@ -1,0 +1,900 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Computer Vision Algorithms &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3D Vision and Visualization" href="geom.html" />
+    <link rel="prev" title="GUI Creation and Visualization Framework" href="qt.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="geom.html" title="3D Vision and Visualization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qt.html" title="GUI Creation and Visualization Framework"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="computer-vision-algorithms">
+<span id="cv"></span><h1>Computer Vision Algorithms<a class="headerlink" href="#computer-vision-algorithms" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/cv1.png" src="../_images/cv1.png" />
+<p>The ICLCV package contains classes and function that realize general
+computer vision algorithms, that are not assignable to one of the
+other packages. In general, these algorithms extract higher level
+information from images or they create new image representations,
+better suited for further processing steps. By definition, the ICLCV
+package does not include 3D computer vision algorithms, which are
+located in the <a class="reference internal" href="geom.html#geom"><span class="std std-ref">ICLGeom</span></a> package.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#cv-cca"><span class="std std-ref">Connected Component Analysis</span></a><ul>
+<li><a class="reference internal" href="#cv-region-inspector"><span class="std std-ref">The icl-region-inspector Application</span></a></li>
+<li><a class="reference internal" href="#cv-image-region"><span class="std std-ref">The cv::ImageRegion class</span></a></li>
+<li><a class="reference internal" href="#cv-css"><span class="std std-ref">Curvature Scale Space Corner Detection</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cv-surf"><span class="std std-ref">SURF Feature Detection</span></a></li>
+<li><a class="reference internal" href="#cv-simple-blob"><span class="std std-ref">Simple Blob Searcher</span></a></li>
+<li><a class="reference internal" href="#cv-flood-filling"><span class="std std-ref">Flood Filling</span></a></li>
+<li><a class="reference internal" href="#cv-hough"><span class="std std-ref">Hough Line Detection</span></a></li>
+<li><a class="reference internal" href="#cv-vector-tracker"><span class="std std-ref">The Vector Tracker</span></a><ul>
+<li><a class="reference internal" href="#cv-hungarian"><span class="std std-ref">The Hungarian Algorithm</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cv-mean-shift"><span class="std std-ref">Mean Shift Tracking</span></a></li>
+<li><a class="reference internal" href="#cv-template-matching"><span class="std std-ref">Template Matching and Tracking</span></a><ul>
+<li><a class="reference internal" href="#cv-matching"><span class="std std-ref">Simple Matching</span></a></li>
+<li><a class="reference internal" href="#cv-tracking"><span class="std std-ref">Tracking</span></a></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="connected-component-analysis">
+<span id="cv-cca"></span><h2>Connected Component Analysis<a class="headerlink" href="#connected-component-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Connected component analysis (CCA) or <em>image region detection</em> is one
+of the most common modules in computer vision. Given a single channel
+image, it finds connected sets of image pixels that share a common
+gray value.  Usually, the CCA-result is a <em>region label map</em>, that
+contains the region-ID of each pixel. Even though this result
+representation is very common, ICL’s CCA implementation
+(<a class="reference external" href="../icl-api/classicl_1_1cv_1_1RegionDetector.html">cv::RegionDetector</a>) does not even support it. Instead, we
+provides a much more efficient, compact and more intuitive to use
+representation, which is mirrored by the <a class="reference external" href="../icl-api/structicl_1_1cv_1_1ImageRegion.html">cv::ImageRegion</a> class.
+Additionally, our internal algorithm works <em>incredibly fast</em>. On a
+common computer, medium fragmented images can usually be processed
+faster than any camera device can provide data and we did not even
+make use of SIMD-instructions or multi-threading. This is possible due
+to initially transforming the image using an efficient
+run-length-encoder, whose output is used for all further processing
+steps. In addition to the region detection also a region adjacency and
+containment graph can be created if necessary. This feature needs to
+be activated explicitly in the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1RegionDetector.html">RegionDetector</a>’s constructor as
+it slightly slows down the processing speed. If the region-graph was
+created, each <a class="reference external" href="../icl-api/structicl_1_1cv_1_1ImageRegion.html">ImageRegion</a> can also be asked for it’s adjacent
+regions, it’s child regions and it’s parent region.  More details to
+the algorithm are given in the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1RegionDetector.html">cv::RegionDetector</a>’s
+documentation. An step by step tutorial can be found in
+<a class="reference internal" href="../tutorials/region-detection.html#tut-regiondetector"><span class="std std-ref">Fast Connected Component Analysis with the cv::RegionDetector</span></a>.</p>
+<div class="section" id="the-icl-region-inspector-application">
+<span id="cv-region-inspector"></span><h3>The <strong>icl-region-inspector</strong> Application<a class="headerlink" href="#the-icl-region-inspector-application" title="Permalink to this headline">¶</a></h3>
+<p>The application <strong>icl-region-inspector</strong> is a very powerful tool for
+the demonstration of ICL’s region detection framework. It provides an
+interactive GUI-interface for the selection of computed and visualized
+region features.</p>
+<img alt="shadow" src="../_images/region-inspector.png" />
+</div>
+<div class="section" id="the-cv-imageregion-class">
+<span id="cv-image-region"></span><h3>The <strong>cv::ImageRegion</strong> class<a class="headerlink" href="#the-cv-imageregion-class" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1cv_1_1RegionDetector.html">RegionDetector</a>’s output is a single
+<strong>std::vector&lt;cv::ImageRegion&gt;</strong>, containing all image regions that
+match the given region-size and region-gray-value constraints. The
+<strong>ImageRegion</strong> is implemented as a <em>proxy</em> for the internally managed
+and hidden <a class="reference external" href="../icl-api/structicl_1_1cv_1_1ImageRegionData.html">cv::ImageRegionData</a> structure. Therefore,
+<strong>ImageRegion</strong> instances can <em>cheaply</em> be copied. For each instance,
+the wrapped data structure contains an internal representation of the
+image region.  Additionally, it contains internal buffers for each
+supported feature, which are computed in a <em>lazy</em> manner. Only
+features that are requested are actually computed, and automatically
+memorized for future requests.</p>
+</div>
+<div class="section" id="curvature-scale-space-corner-detection">
+<span id="cv-css"></span><h3>Curvature Scale Space Corner Detection<a class="headerlink" href="#curvature-scale-space-corner-detection" title="Permalink to this headline">¶</a></h3>
+<p>The set of features provided by the <a class="reference external" href="../icl-api/structicl_1_1cv_1_1ImageRegion.html">cv::ImageRegion</a> class
+consists of very simple features, such as the regions center of
+gravity or its bounding box, up to highly complex features, such
+as local PCA information and curvature scale space based boundary
+approximation by polygons (see also <a class="reference external" href="../icl-api/classicl_1_1cv_1_1CornerDetectorCSS.html">cv::CornerDetectorCSS</a>).</p>
+</div>
+</div>
+<div class="section" id="surf-feature-detection">
+<span id="cv-surf"></span><h2>SURF Feature Detection<a class="headerlink" href="#surf-feature-detection" title="Permalink to this headline">¶</a></h2>
+<p>ICL provides two wrappers for external SURF-feature detection
+libraries.</p>
+<ol class="arabic simple">
+<li>A <em>libopensurf</em> wrapper (<span>cv::OpenSurfDetector</span>)</li>
+<li>An <em>OpenCV</em> SURF feature detection wrapper
+(<span>cv::OpenCVSurfDetector</span>)</li>
+</ol>
+<p>In addition, we provide a generic wrapper called
+<span>cv::GenericSurfDetector</span>, which provides a generic SURF-Feature
+detection and matching interface. The demo application
+<strong>icl-surf-detector-demo</strong> demonstrates how to use this class.</p>
+</div>
+<div class="section" id="simple-blob-searcher">
+<span id="cv-simple-blob"></span><h2>Simple Blob Searcher<a class="headerlink" href="#simple-blob-searcher" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1cv_1_1SimpleBlobSearcher.html">cv::SimpleBlobSearcher</a> is a <em>simple-to-use</em> tool for color
+blob detection. Internally, it searches blobs within a given size
+range in a binarized color-distance map, computed for a set of given
+reference colors.</p>
+</div>
+<div class="section" id="flood-filling">
+<span id="cv-flood-filling"></span><h2>Flood Filling<a class="headerlink" href="#flood-filling" title="Permalink to this headline">¶</a></h2>
+<p>Due to the high performance implementation of the
+<a class="reference external" href="../icl-api/classicl_1_1cv_1_1RegionDetector.html">RegionDetector</a>, flood filling is only seldomly used at
+all. However, since it is a very general algorithm, ICL provides a
+generic template based implementation, <a class="reference external" href="../icl-api/classicl_1_1cv_1_1FloodFiller.html">cv::FloodFiller</a>, that
+has a set of common <em>read-to-use</em> methods, but also a very general
+<em>templated</em> one. A demo application <strong>icl-flood-filler-demo</strong> is
+also provided.</p>
+<div class="section" id="hough-line-detection">
+<span id="cv-hough"></span><h3>Hough Line Detection<a class="headerlink" href="#hough-line-detection" title="Permalink to this headline">¶</a></h3>
+<p>The Hough line detection algorithm is also a very common basic
+computer vision tool. It transfers edge pixels into 2D lookup-table,
+<em>the hough line space</em>, whose axes define possible image straigh line
+parameters (angle and distance to the image origin). Here, each
+original image pixel becomes a wave-shaped line. Finding lines is then
+a simple maximum search in the <em>hough table</em>. For more details, refer
+to the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1HoughLineDetector.html">cv::HoughLineDetector</a> documentation or take a look at
+the interactive demo application <strong>icl-hough-line-demo</strong>.</p>
+</div>
+</div>
+<div class="section" id="the-vector-tracker">
+<span id="cv-vector-tracker"></span><h2>The Vector Tracker<a class="headerlink" href="#the-vector-tracker" title="Permalink to this headline">¶</a></h2>
+<p>Tracking <em>things</em> in images is complex task, that is usually closely
+connected to a detection framework. In gernaral, tracking allows for
+narrowing the search window for the detection if we assume a maximum
+speed of the object moving in the image space.  However most of the
+time, also a fallback is needed for the case that the tracked object
+is lost, which can also be described by using a search window that has
+image size.</p>
+<p>In situations, where several objects, each described by a feature
+vector, are to be tracked, we face an assignment problem:</p>
+<ul class="simple">
+<li>Which object instance in the current time step belongs to which
+object in the previous time step</li>
+<li>How can we particularly solve the problem if a new object enters
+<em>the scene</em></li>
+<li>How can we particularly solve the problem if a new object leaves
+<em>the scene</em></li>
+</ul>
+<p>These issues are tackled by the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1VectorTracker.html">cv::VectorTracker</a> that is a
+generalization of the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1PositionTracker.html">cv::PositionTracker</a> class, which is
+restricted to 2D feature vectors. In both cases, the tracking problem
+is reformulated as a linear assignment problem, that can be solved
+optimally, w.r.t. a cost matrix derived from a given feature distance
+metrics by the <em>Hungarian Method</em>. If the available object-count
+differs from one frame to another, the internal cost-matrix is
+smartly extended in order to identify new objects and objects that
+were lost.</p>
+<div class="section" id="the-hungarian-algorithm">
+<span id="cv-hungarian"></span><h3>The Hungarian Algorithm<a class="headerlink" href="#the-hungarian-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>The <em>Hungarian Method</em> is implemented by the
+<a class="reference external" href="../icl-api/classicl_1_1cv_1_1HungarianAlgorithm.html">cv::HungarianAlgorithm</a> class template. Usually this is used in
+the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1VectorTracker.html">VectorTracker</a> only.</p>
+</div>
+</div>
+<div class="section" id="mean-shift-tracking">
+<span id="cv-mean-shift"></span><h2>Mean Shift Tracking<a class="headerlink" href="#mean-shift-tracking" title="Permalink to this headline">¶</a></h2>
+<p>Mean-Shift based tracking is also a very common standard technique in
+computer vision. A kernel, initially centered at the last frame’s
+position estimate, is locally combined with the image pixels resulting
+in a position update for the kernel. This procedure is iterated a few
+time until convergence is reached. For the algorithm, a single channel
+image is used that has high pixel values where the object is. Usually
+an inverted color distance map is used here. There are several
+extensions that suggest certain choices of kernels, or feature
+images. Other extension generalize the mean shift algorithm for an
+automatic adaption of the kernel size (<em>mean shift through scale
+space</em>). By now, only the standard method is supported. A demo
+application called <strong>icl-mean-shift-demo</strong> is provided as well.</p>
+</div>
+<div class="section" id="template-matching-and-tracking">
+<span id="cv-template-matching"></span><h2>Template Matching and Tracking<a class="headerlink" href="#template-matching-and-tracking" title="Permalink to this headline">¶</a></h2>
+<p>Template matching is a basic image processing technique, where a
+usually small pattern image is searched in a larger image. For the
+matching the pattern is compared with the image once centered at each
+image pixel. The maximum of the resulting distance image defines the
+optimal match of the pattern. As distance metrics usually
+(normalized) cross-correlation is used.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since the template matching and tracking bases on normalized
+cross-correlation, for which right now, not C++-fallback
+implementation is available, the whole template tracking
+framework is only available in case of having Intel IPP support</p>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Provide Fallback-Implementation for Cross-Correlation</p>
+</div>
+<div class="section" id="simple-matching">
+<span id="cv-matching"></span><h3>Simple Matching<a class="headerlink" href="#simple-matching" title="Permalink to this headline">¶</a></h3>
+<p>The header <strong>ICLCV/CV.h</strong> provides the <a class="reference external" href="../icl-api/namespaceicl_1_1cv.html#a717e9be016912c5393961c27b1fac3ad">cv::matchTemplate</a>
+functions that can simply be used. An object oriented interface is
+provided with the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1ViewBasedTemplateMatcher.html">cv::ViewBasedTemplateMatcher</a> class.  The
+corresponding demo application is named <strong>icl-template-matching-demo</strong></p>
+</div>
+<div class="section" id="tracking">
+<span id="cv-tracking"></span><h3>Tracking<a class="headerlink" href="#tracking" title="Permalink to this headline">¶</a></h3>
+<p>Since usually, naive <em>matching</em> is too slow and not robust enough in
+particular not in presence of more than marginal object rotations, a
+tracking framework is of great use. ICL provides with simple yet
+powerful implementation: the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1TemplateTracker.html">cv::TemplateTracker</a>. This class uses
+a set of heuristics to</p>
+<ol class="arabic simple">
+<li>use the existing detection technique for implementing tracking</li>
+<li>provide rotation invariance</li>
+</ol>
+<p>Tracking is realized by using a locally centered search window of a
+custom definable size. For providing rotation invariance, the searched
+pattern image is pre-rotated from 0 to 360 degree using an adaptable
+step size. In each tracking step, the searched pattern is matched
+within search window for each available rotation within a given
+rotation-search window size. A coarse to fine search is present in
+the method and constructor interfaced, but not implemented yet.</p>
+<p>A demo application will be provided soon.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">implement a demo application for the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1TemplateTracker.html">cv::TemplateTracker</a>
+developed with Eckard</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Computer Vision Algorithms</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#connected-component-analysis">Connected Component Analysis</a><ul>
+<li><a class="reference internal" href="#the-icl-region-inspector-application">The <strong>icl-region-inspector</strong> Application</a></li>
+<li><a class="reference internal" href="#the-cv-imageregion-class">The <strong>cv::ImageRegion</strong> class</a></li>
+<li><a class="reference internal" href="#curvature-scale-space-corner-detection">Curvature Scale Space Corner Detection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#surf-feature-detection">SURF Feature Detection</a></li>
+<li><a class="reference internal" href="#simple-blob-searcher">Simple Blob Searcher</a></li>
+<li><a class="reference internal" href="#flood-filling">Flood Filling</a><ul>
+<li><a class="reference internal" href="#hough-line-detection">Hough Line Detection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-vector-tracker">The Vector Tracker</a><ul>
+<li><a class="reference internal" href="#the-hungarian-algorithm">The Hungarian Algorithm</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mean-shift-tracking">Mean Shift Tracking</a></li>
+<li><a class="reference internal" href="#template-matching-and-tracking">Template Matching and Tracking</a><ul>
+<li><a class="reference internal" href="#simple-matching">Simple Matching</a></li>
+<li><a class="reference internal" href="#tracking">Tracking</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="qt.html"
+                        title="previous chapter">GUI Creation and Visualization Framework</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geom.html"
+                        title="next chapter">3D Vision and Visualization</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="geom.html" title="3D Vision and Visualization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qt.html" title="GUI Creation and Visualization Framework"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

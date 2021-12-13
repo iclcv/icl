@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg3031"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="dash.svg">
+  <defs
+     id="defs3033">
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3814"
+       id="linearGradient3820"
+       x1="97.5"
+       y1="440.85553"
+       x2="97.5"
+       y2="445.15881"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="linearGradient3814">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3816" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3818" />
+    </linearGradient>
+    <linearGradient
+       gradientTransform="translate(-8.4235484e-7,4.9068668e-6)"
+       y2="445.15881"
+       x2="97.5"
+       y1="440.85553"
+       x1="97.5"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3054"
+       xlink:href="#linearGradient3814"
+       inkscape:collect="always" />
+    <linearGradient
+       id="linearGradient3788">
+      <stop
+         style="stop-color:#1471ff;stop-opacity:1;"
+         offset="0"
+         id="stop3790" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="1"
+         id="stop3792" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3934">
+      <stop
+         style="stop-color:#7ebdff;stop-opacity:1;"
+         offset="0"
+         id="stop3936" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="1"
+         id="stop3938" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3814-3">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3816-7" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3818-6" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3814-3"
+       id="linearGradient3147"
+       gradientUnits="userSpaceOnUse"
+       x1="97.5"
+       y1="440.85553"
+       x2="97.5"
+       y2="445.15881" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3788"
+       id="linearGradient3150"
+       gradientUnits="userSpaceOnUse"
+       x1="-1694.5814"
+       y1="446.72525"
+       x2="-1692.6368"
+       y2="442.12906" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3788"
+       id="linearGradient3155"
+       x1="302.62167"
+       y1="571.96167"
+       x2="410.34921"
+       y2="718.72101"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-9.3167423e-6,3.2290024e-6)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3934"
+       id="linearGradient3935"
+       x1="294.64285"
+       y1="584.46039"
+       x2="320.26788"
+       y2="589.14795"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       inkscape:collect="always"
+       id="filter4002"
+       x="-0.41326217"
+       width="1.8265243"
+       y="-0.058446784"
+       height="1.1168936">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="2.5236087"
+         id="feGaussianBlur4004" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="315.25953"
+     inkscape:cy="451.36513"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1231"
+     inkscape:window-height="776"
+     inkscape:window-x="49"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3036">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:0.22633745;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.34999998999999998;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;filter:url(#filter4002)"
+       id="rect3956"
+       width="14.655735"
+       height="103.62693"
+       x="295.42413"
+       y="532.35352"
+       rx="3.3035715"
+       ry="3.2706437"
+       inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/dash.png"
+       inkscape:export-xdpi="163.21727"
+       inkscape:export-ydpi="163.21727"
+       transform="matrix(1,0,0,1.0100677,0,-5.3595605)" />
+    <rect
+       style="color:#000000;fill:url(#linearGradient3054);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.24999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3812"
+       width="817.00714"
+       height="2.5320868"
+       x="37.210716"
+       y="536.81042"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/celbrech/Desktop/test9.png"
+       inkscape:export-xdpi="268.61462"
+       inkscape:export-ydpi="268.61462" />
+    <rect
+       inkscape:export-ydpi="163.21727"
+       inkscape:export-xdpi="163.21727"
+       inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/dash.png"
+       ry="3.3035715"
+       rx="3.3035715"
+       y="532.35352"
+       x="296.31702"
+       height="103.62693"
+       width="14.655735"
+       id="rect3027"
+       style="color:#000000;fill:url(#linearGradient3155);fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient3935);stroke-width:0.34999999999999998;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;stroke-miterlimit:4;stroke-dasharray:none" />
+    <path
+       inkscape:export-ydpi="268.61462"
+       inkscape:export-xdpi="268.61462"
+       inkscape:export-filename="/home/celbrech/Desktop/test8.png"
+       inkscape:connector-curvature="0"
+       id="path3029"
+       d="m -46.2096,612.44476 6.8613,0 0,4.72665 z"
+       style="fill:url(#linearGradient3150);fill-opacity:1;stroke:none" />
+    <rect
+       style="color:#000000;fill:url(#linearGradient3147);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.24999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3031"
+       width="816.97589"
+       height="2.5317962"
+       x="-39.337692"
+       y="612.44434"
+       rx="0"
+       ry="0"
+       inkscape:export-filename="/home/celbrech/Desktop/test8.png"
+       inkscape:export-xdpi="268.61462"
+       inkscape:export-ydpi="268.61462" />
+    <rect
+       ry="2.5"
+       rx="2.5"
+       y="532.94257"
+       x="296.83035"
+       height="102.32143"
+       width="13.303571"
+       id="rect3927"
+       style="color:#000000;fill:none;stroke:#003380;stroke-width:0.29999998000000000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:1.19999992999999994, 1.19999992999999994;stroke-dashoffset:1.16999992999999991;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/dash.png"
+       inkscape:export-xdpi="163.21727"
+       inkscape:export-ydpi="163.21727" />
+    <rect
+       style="color:#000000;fill:none;stroke:#00aad4;stroke-width:0.29999998;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:0;stroke-opacity:1;stroke-dasharray:1.19999993,1.19999993;stroke-dashoffset:1.16999993;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3157"
+       width="13.303571"
+       height="102.32143"
+       x="296.96429"
+       y="533.07648"
+       rx="2.5"
+       ry="2.5"
+       inkscape:export-filename="/home/celbrech/projects/ICL/manual/icons/dash.png"
+       inkscape:export-xdpi="163.21727"
+       inkscape:export-ydpi="163.21727" />
+  </g>
+</svg>

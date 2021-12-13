@@ -1,0 +1,1069 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Evaluating Program Arguments &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="XML-based Configuration Files" href="config-files.html" />
+    <link rel="prev" title="Buttons: Callbacks vs. wasTriggered()" href="gui-buttons.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="config-files.html" title="XML-based Configuration Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gui-buttons.html" title="Buttons: Callbacks vs. wasTriggered()"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="evaluating-program-arguments">
+<span id="progarg-tutorial"></span><h1>Evaluating Program Arguments<a class="headerlink" href="#evaluating-program-arguments" title="Permalink to this headline">¶</a></h1>
+<p>ICL’s <a class="reference internal" href="../modules/utils.html#utils"><span class="std std-ref">ICLUtils</span></a> package contains the <em>program argument
+evaluation framework</em>, providing the following functionalities:</p>
+<ul class="simple">
+<li>a simple and intuitive string-based description of allowed program
+arguments</li>
+<li>an easy to use way to describe program arguments</li>
+<li>a efficient parser for program arguments, that provides
+human-readable error messages</li>
+<li>an automatically supported set of common default program arguments,
+such as <strong>-version</strong> or <strong>-help</strong></li>
+<li>a concise method <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ac1c1a1e771ecc0681b8f277040cc2c99">pa</a> that can be use to query whether a
+specific program argument has been given and what it’s sub arguments
+where</li>
+</ul>
+<div class="section" id="program-arguments-and-sub-arguments">
+<h2>Program Arguments and Sub-Arguments<a class="headerlink" href="#program-arguments-and-sub-arguments" title="Permalink to this headline">¶</a></h2>
+<p>In general, we distinguish between the term <em>program argument</em>, <em>sub
+argument</em> and <em>dangling arguments</em>. E.g. an image type conversion
+application <strong>my-convert</strong> could expect an input image file name, an
+output image file name and an argument <strong>-size</strong> that always gets an
+extra sub-argument which defines the target image size. A valid call
+to the program would then be something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my</span><span class="o">-</span><span class="n">convert</span> <span class="o">-</span><span class="n">size</span> <span class="mi">320</span><span class="n">x240</span> <span class="n">image</span><span class="o">.</span><span class="n">png</span> <span class="n">image</span><span class="o">.</span><span class="n">jpg</span>
+</pre></div>
+</div>
+<p>In this case, we classify the set of all given program arguments as
+follows:</p>
+<ul class="simple">
+<li><strong>-size</strong> as a <em>defined</em> argument (expecting one sub-argument)</li>
+<li><strong>320x240</strong> as a <em>sub</em>-argument</li>
+<li><strong>image.png</strong> and <strong>image.jpg</strong> as <em>dangling</em> arguments</li>
+</ul>
+<p>All program arguments are either <em>defined</em>, expecting 1,n or an
+arbitrary number of sub-arguments, <em>dandling</em> or <em>sub-arguments</em> of
+defined ones. Furthermore, arguments can be mandatory or optional.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The support for dangling arguments must be enabled explicitly by
+adding a boolean flag to the call to the program argument
+initialization function <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ade3aca94cda923d51cae6dbc51384d52">pa_init</a>. Since it turned out that
+usually applications have no <em>dangling</em> arguments, this feature is
+deactivated by default in order to avoid that erroneously given
+program arguments are not detected because they are interpreted as
+dangling arguments.</p>
+</div>
+</div>
+<div class="section" id="defining-allowed-program-arguments">
+<h2>Defining allowed program arguments<a class="headerlink" href="#defining-allowed-program-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Program arguments are defined by using the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ade3aca94cda923d51cae6dbc51384d52">pa_init</a>
+function. Usually, this function must not be called explicitly because
+it is called indirectly by the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLApplication.html">ICLApplication</a> (or short:
+<a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a88710c0c58ee1df2517ef4b57894d05d">ICLApp</a>) constructor. Actually the parameters are simply passed
+to <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ade3aca94cda923d51cae6dbc51384d52">pa_init</a> if an <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a88710c0c58ee1df2517ef4b57894d05d">ICLApp</a> is used.</p>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ade3aca94cda923d51cae6dbc51384d52">pa_init</a> always receives the main function’s program argument and
+count and a single definition string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="n">definition</span> <span class="n">string</span><span class="p">);</span>
+  <span class="o">..</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The definition string consists of space separated tokens of single
+argument definitions. If real space characters are needed, they must
+be escaped using a trailing backslash character (please note, that one
+has to use a double backslash within a c++-string to create a
+backslash character). Each single argument definition token consists
+of a pipe-symbol separated list of argument name alternatives,
+followed by an optional parameter list in round braces, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s2">&quot;-input|-i(filename) -size(outputsize)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Each <em>defined</em> argument may have 0, n, or an arbitrary number of
+sub-arguments. If the argument has no arguments – in this case the
+empty brace can also be left out – it becomes a <em>flag</em>, that is
+internally represented by a boolean value that defines whether it was
+given (then the value is <strong>true</strong>) or not (the value is <strong>false</strong>).
+An arbitrary sub-argument count can be achieved by using the intuitive
+string “…” as parameter list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s2">&quot;-enable-preprocessing|-pp -input|-i(...) -output(filename)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In general, each parameter-list is a comma separated list of tokens that
+can be a type name, a type name followed by “=” and a default value or
+an integer token, or the special token “…”.  Here are some examples:</p>
+<p>two integer sub-arguments:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;(int,int)&quot;</span>
+</pre></div>
+</div>
+<p>five sub-arguments with unspecified types:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;(5)&quot;</span>
+</pre></div>
+</div>
+<p>four sub-arguments, first of type float, second and third of any type
+and last of type int:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;(float,2,int)&quot;</span>
+</pre></div>
+</div>
+<p>two sub-arguments first of type int with default value “4” and second
+of type <strong>Size</strong> with default argument “VGA”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;(int=4,Size=VGA)&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ol class="last arabic simple">
+<li>in case of using just a number of sub-arguments, no default value
+can be given</li>
+<li>It is either possible to provide default values for all arguments
+or for non of them. So far there is no C++-like mechanism for this.</li>
+</ol>
+</div>
+<div class="section" id="types">
+<h3>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h3>
+<p><strong>Question:</strong></p>
+<blockquote>
+<div>What types are allowed/supported?</div></blockquote>
+<p><strong>Answer:</strong></p>
+<blockquote>
+<div>All types!</div></blockquote>
+<p>Actually, this sounds more advanced than it actually is. Internally,
+all sub-arguments are managed as strings. The sub-argument is intended
+as a type-hint for the program user, and it is used for the generation
+the program usage output, that is created automatically, if the
+program is called with a <strong>-help</strong> argument, or if the given set of
+program arguments int not compatible with the defined set. Therefore,
+we strongly recommend to use explicit type names such as “filename” or
+“format-string” rather than just an integer parameter count.</p>
+</div>
+<div class="section" id="mandatory-arguments">
+<h3>Mandatory Arguments<a class="headerlink" href="#mandatory-arguments" title="Permalink to this headline">¶</a></h3>
+<p>Some of your program arguments might be mandatory for you application.
+If, e.g., no image source is defined, your application cannot work
+properly. If you access program arguments or sub-arguments, that have
+no default value and are not given, an exception is thrown. Since in
+this case, the retrieved error message could be difficult to analyze,
+certain arguments can be set up to be mandatory. This is done by
+adding an “[m]”-token (for <em>mandatory</em>) in front of the program argument
+definition token:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s2">&quot;-size(Size=VGA) -pp [m]-input|-i(2)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Here, the application will not start unless the “-input” argument is
+given with 2 sub-argument. Those arguments that have default values,
+cannot be set to mandatory because the default value would never be
+used in this case. And logically, also flags – arguments without
+sub-arguments – cannot be set to mandatory.</p>
+</div>
+</div>
+<div class="section" id="accessing-program-arguments">
+<h2>Accessing Program Arguments<a class="headerlink" href="#accessing-program-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Given program arguments can be retrieved using the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ac1c1a1e771ecc0681b8f277040cc2c99">pa</a> function
+that returns an instance of <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ProgArg.html">ProgArg</a>, however <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ProgArg.html">ProgArg</a>
+instances is most of the time not used explicitly. Instead, the
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1ProgArg.html">ProgArg</a> type provides many useful operators that allows for
+using it in a very convenient manner.  The following source code shows
+some usage examples:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="kt">bool</span> <span class="n">allowDanglingArgs</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;-size|-s(Size=VGA) -index(int) -input|-i(2) -files(...)&quot;</span><span class="p">,</span>
+          <span class="n">allowDanglingArgs</span><span class="p">);</span>
+
+  <span class="c1">// extract the first sub-argument of argument</span>
+  <span class="c1">// &#39;-index&#39; and convert it into an int value</span>
+  <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">pa</span><span class="p">(</span><span class="s">&quot;-index&quot;</span><span class="p">);</span>
+
+  <span class="c1">// extract the first sub-argument of argument &#39;-size&#39;</span>
+  <span class="c1">// alternative names can be used as synonyms</span>
+  <span class="n">Size</span> <span class="n">s</span> <span class="o">=</span> <span class="n">pa</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">);</span>
+
+  <span class="c1">// extract the 2nd sub-argument of argument &#39;-input&#39;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">text</span> <span class="o">=</span> <span class="n">pa</span><span class="p">(</span><span class="s">&quot;-input&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// check if argument -size was actually given</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-size&quot;</span><span class="p">)){</span>
+
+    <span class="c1">// extract the sub-argument as a special type</span>
+    <span class="c1">// (for the string to type logic, C++&#39;s</span>
+    <span class="c1">// istream-operator is used!!)</span>
+    <span class="n">Size</span> <span class="n">size</span> <span class="o">=</span> <span class="n">pa</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// read a list of files from the arbitrary sub-argument</span>
+  <span class="c1">// here, we explicitly instantiate a ProgArg</span>
+  <span class="n">ProgArg</span> <span class="n">a</span> <span class="o">=</span> <span class="n">pa</span><span class="p">(</span><span class="s">&quot;-files&quot;</span><span class="p">);</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">a</span><span class="p">.</span><span class="n">n</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;file &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">// list all given arguments and sub-arguments</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;all arguments &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">pa_get_count</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">pa</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="nb">false</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">// in case of having dangling arguments allowed in</span>
+  <span class="c1">// pa_init-call: list all dangling arguments</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;all dangling arguments &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">pa_get_count</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">pa</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">// using ProgArg instances as std::strings is sometimes</span>
+  <span class="c1">// a bit complicated since the conversion to an</span>
+  <span class="c1">// std::string is sometimes ambiguous</span>
+  <span class="k">struct</span> <span class="n">Test</span><span class="p">{</span>
+    <span class="n">Test</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">){}</span>
+    <span class="n">Test</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">){}</span>
+  <span class="p">};</span>
+
+  <span class="c1">// Test t(pa(&quot;-x&quot;)); // ambiguous -&gt; int | std::string</span>
+
+  <span class="c1">// Test t((std::string)pa(&quot;-x&quot;)); // also ambiguous</span>
+  <span class="c1">// due to different available std::string constructors</span>
+
+  <span class="n">Test</span> <span class="n">t</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-size&quot;</span><span class="p">).</span><span class="n">as</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">());</span> <span class="c1">// works, but long code</span>
+
+  <span class="n">Test</span> <span class="n">t2</span><span class="p">(</span><span class="o">*</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">));</span> <span class="c1">// much shorter, but only for using</span>
+  <span class="c1">// a program argument as std::string</span>
+
+  <span class="c1">// Note:: *pa(&quot;-s&quot;) will always return the argument as string</span>
+
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="calling-programs-with-given-arguments">
+<h2>Calling Programs with given Arguments<a class="headerlink" href="#calling-programs-with-given-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Let’s call the resulting program <strong>example</strong>. Obviously, the program
+accesses all program arguments, so calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">example</span>
+</pre></div>
+</div>
+<p>fails, giving the error message in line 10 that sub-argument 0 of the
+defined argument “-input” was tried to access, but is was neither given
+nor defined by a default argument. In real-life examples, those defined
+arguments should be declared mandatory.</p>
+<p>First of all, let us try to get a list of the allowed program
+arguments.  The framework always provides the program arguments
+<strong>-help</strong> and <strong>-version</strong>. In turn, these cannot be used for own
+purposes. <strong>-help</strong> gives a formatted <em>usage</em> output, in this case:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span>
+      <span class="n">example</span> <span class="p">[</span><span class="n">ARGS</span><span class="p">]</span>
+<span class="o">-</span><span class="n">size</span><span class="o">|-</span><span class="n">s</span>      <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="n">Size</span><span class="o">=</span><span class="n">VGA</span><span class="p">)</span>
+
+<span class="o">-</span><span class="n">index</span>        <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+<span class="o">-</span><span class="nb">input</span><span class="o">|-</span><span class="n">i</span>     <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+
+<span class="o">-</span><span class="n">files</span>        <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">[</span><span class="n">arbitrary</span> <span class="n">subargument</span> <span class="n">count</span> <span class="n">possible</span><span class="p">]</span>
+
+<span class="o">-</span><span class="n">help</span>         <span class="n">shows</span> <span class="n">this</span> <span class="n">help</span> <span class="n">text</span>
+<span class="o">-</span><span class="n">version</span>      <span class="n">shows</span> <span class="n">version</span> <span class="ow">and</span> <span class="n">copyright</span>
+              <span class="n">information</span>
+</pre></div>
+</div>
+<p><strong>-version</strong> provides current version and license information. If
+an application has some special license, the license text can be
+set using the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#acfdab0a33af75906c566f5319254989d">pa_set_license</a> function.
+Optionally the usage information can be explained using an extra help
+text that can be set using the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#abd26fa1dc3b675e9ce15fbd4b146ef2a">pa_set_help_text</a> function.
+A valid (and quite complex) program call could look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">example</span> <span class="n">a</span> <span class="n">b</span> <span class="n">c</span> <span class="o">-</span><span class="n">size</span> <span class="n">SVGA</span> <span class="n">d</span> <span class="n">e</span> <span class="o">-</span><span class="n">index</span> <span class="mi">7</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc</span> <span class="mi">0</span> <span class="o">-</span><span class="n">files</span> <span class="o">*.</span><span class="n">cpp</span>
+</pre></div>
+</div>
+<p>Here, the tokens “a”, “b”, “c”, “d” and “e” are dangling arguments,
+because they are neither defined nor associated with sub-arguments to
+other defined ones. The defined argument “-size” uses “SVGA” as
+sub-argument, “-index” uses “7” as sub-argument and “-i” gets two
+sub-arguments “dc” and “0”. Finally “-files” gets a list of
+sub-arguments expanded by the shell (if there are any .cpp-files in
+the current directory).</p>
+</div>
+<div class="section" id="adding-more-descriptions">
+<h2>Adding more Descriptions<a class="headerlink" href="#adding-more-descriptions" title="Permalink to this headline">¶</a></h2>
+<p>In some cases, some or all given program arguments need an extra
+description. This can be given using the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#aa46ed3e5fd9ea82a1a91f9c6a43690dd">pa_explain</a> function.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is very important that <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#aa46ed3e5fd9ea82a1a91f9c6a43690dd">pa_explain</a> is called <strong>before</strong>
+<a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ade3aca94cda923d51cae6dbc51384d52">pa_init</a> is invoked. Later calls to  <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#aa46ed3e5fd9ea82a1a91f9c6a43690dd">pa_explain</a> have
+no effect.</p>
+</div>
+<p>Calling the program</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="n">pa_set_help_text</span><span class="p">(</span><span class="s">&quot;This is an example program that has no function</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;but it demonstrates how to add some program</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;argument and program description&quot;</span><span class="p">);</span>
+  <span class="n">pa_explain</span><span class="p">(</span><span class="s">&quot;-s&quot;</span><span class="p">,</span><span class="s">&quot;image size use for something&quot;</span><span class="p">);</span>
+  <span class="n">pa_explain</span><span class="p">(</span><span class="s">&quot;-index&quot;</span><span class="p">,</span><span class="s">&quot;some index used for something else&quot;</span><span class="p">);</span>
+  <span class="n">pa_explain</span><span class="p">(</span><span class="s">&quot;-input&quot;</span><span class="p">,</span><span class="s">&quot;input definition, the first first arg defines</span><span class="se">\n</span><span class="s">&quot;</span>
+                      <span class="s">&quot;the input grabber backend, second arg selects</span><span class="se">\n</span><span class="s">&quot;</span>
+                      <span class="s">&quot;a certain device from this backend&quot;</span><span class="p">);</span>
+
+  <span class="n">pa_init</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;-size|-s(Size=VGA) -index(int) -input|-i(2)&quot;</span><span class="p">);</span>
+
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>With:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">example</span><span class="o">-</span><span class="mi">2</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<p>Shows the following usage output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span>
+      <span class="n">pa2</span> <span class="p">[</span><span class="n">ARGS</span><span class="p">]</span>
+
+      <span class="n">This</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">example</span> <span class="n">program</span> <span class="n">that</span> <span class="n">has</span> <span class="n">no</span> <span class="n">function</span>
+      <span class="n">but</span> <span class="n">it</span> <span class="n">demonstrates</span> <span class="n">how</span> <span class="n">to</span> <span class="n">add</span> <span class="n">some</span> <span class="n">program</span>
+      <span class="n">argument</span> <span class="ow">and</span> <span class="n">program</span> <span class="n">description</span>
+
+<span class="o">-</span><span class="n">size</span><span class="o">|-</span><span class="n">s</span>      <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="n">Size</span><span class="o">=</span><span class="n">VGA</span><span class="p">)</span>
+              <span class="n">image</span> <span class="n">size</span> <span class="n">use</span> <span class="k">for</span> <span class="n">something</span>
+
+<span class="o">-</span><span class="n">index</span>        <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+              <span class="n">some</span> <span class="n">index</span> <span class="n">used</span> <span class="k">for</span> <span class="n">something</span> <span class="k">else</span>
+
+<span class="o">-</span><span class="nb">input</span><span class="o">|-</span><span class="n">i</span>     <span class="p">{</span><span class="n">optional</span><span class="p">}</span>
+              <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+              <span class="nb">input</span> <span class="n">definition</span><span class="p">,</span> <span class="n">the</span> <span class="n">first</span> <span class="n">first</span> <span class="n">arg</span> <span class="n">defines</span>
+              <span class="n">the</span> <span class="nb">input</span> <span class="n">grabber</span> <span class="n">backend</span><span class="p">,</span> <span class="n">second</span> <span class="n">arg</span> <span class="n">selects</span>
+              <span class="n">a</span> <span class="n">certain</span> <span class="n">device</span> <span class="kn">from</span> <span class="nn">this</span> <span class="n">backend</span>
+
+<span class="o">-</span><span class="n">help</span>         <span class="n">shows</span> <span class="n">this</span> <span class="n">help</span> <span class="n">text</span>
+<span class="o">-</span><span class="n">version</span>      <span class="n">shows</span> <span class="n">version</span> <span class="ow">and</span> <span class="n">copyright</span>
+              <span class="n">information</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Evaluating Program Arguments</a><ul>
+<li><a class="reference internal" href="#program-arguments-and-sub-arguments">Program Arguments and Sub-Arguments</a></li>
+<li><a class="reference internal" href="#defining-allowed-program-arguments">Defining allowed program arguments</a><ul>
+<li><a class="reference internal" href="#types">Types</a></li>
+<li><a class="reference internal" href="#mandatory-arguments">Mandatory Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#accessing-program-arguments">Accessing Program Arguments</a></li>
+<li><a class="reference internal" href="#calling-programs-with-given-arguments">Calling Programs with given Arguments</a></li>
+<li><a class="reference internal" href="#adding-more-descriptions">Adding more Descriptions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gui-buttons.html"
+                        title="previous chapter">Buttons: Callbacks vs. wasTriggered()</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="config-files.html"
+                        title="next chapter">XML-based Configuration Files</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="config-files.html" title="XML-based Configuration Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="gui-buttons.html" title="Buttons: Callbacks vs. wasTriggered()"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

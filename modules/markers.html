@@ -1,0 +1,974 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Fiducial Marker Detection &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3D Physics Simulation" href="physics.html" />
+    <link rel="prev" title="3D Vision and Visualization" href="geom.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="physics.html" title="3D Physics Simulation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="geom.html" title="3D Vision and Visualization"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="fiducial-marker-detection">
+<span id="markers"></span><h1>Fiducial Marker Detection<a class="headerlink" href="#fiducial-marker-detection" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/markers1.png" src="../_images/markers1.png" />
+<p>The ICLMarkers package provides a general interfaces for most
+different types of fiducial marker detection methods. The essential
+classes of this package are <a class="reference external" href="../icl-api/classicl_1_1markers_1_1FiducialDetector.html">markers::FiducialDetector</a> and
+<a class="reference external" href="../icl-api/classicl_1_1markers_1_1Fiducial.html">markers::Fiducial</a>.</p>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1markers_1_1FiducialDetector.html">FiducialDetector</a> implements a plugin-based system that can
+be configured at instantiation time in order to use a certain marker
+detection backend. Dependent on the selected backend, the detected
+markers (of type <a class="reference external" href="../icl-api/classicl_1_1markers_1_1Fiducial.html">Fiducial</a>) provide a different set of
+information – some can only provide 2D information, others do also
+provide 3D pose information. Also dependent on the chosen plugin type,
+markers have to be loaded in a certain way that is also generalized by
+the single method <a class="reference external" href="../icl-api/classicl_1_1markers_1_1FiducialDetector.html#a86596343461e50619d0390696837477c">FiducialDetector::loadMarkers</a>.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#markers-supported"><span class="std std-ref">Supported Marker Types</span></a><ul>
+<li><a class="reference internal" href="#markers-supported-art"><span class="std std-ref">ARToolkit Markers (“art”)</span></a></li>
+<li><a class="reference internal" href="#markers-supported-bch"><span class="std std-ref">BCH Markers (“bch”)</span></a></li>
+<li><a class="reference internal" href="#markers-supported-amoeba"><span class="std std-ref">Hierarchical (“Amoeba”) Markers</span></a></li>
+<li><a class="reference internal" href="#markers-supported-icl1"><span class="std std-ref">Special Markers of Type (“icl1”)</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#markers-example"><span class="std std-ref">An Easy Example</span></a></li>
+<li><a class="reference internal" href="#markers-creating-markers"><span class="std std-ref">Creating Marker Images</span></a></li>
+<li><a class="reference internal" href="#markers-benchmarks"><span class="std std-ref">Benchmarks</span></a></li>
+</ul>
+</div>
+<div class="section" id="supported-marker-types">
+<span id="markers-supported"></span><h2>Supported Marker Types<a class="headerlink" href="#supported-marker-types" title="Permalink to this headline">¶</a></h2>
+<p>The marker detection frameworks supports tracking of a set of common
+fiducial marker types. Due to the generic marker detection interface
+<a class="reference external" href="../icl-api/structicl_1_1markers_1_1FiducialDetectorPlugin.html">FiducialDetectorPlugin</a> we are able to add further marker
+detection backends in the future.</p>
+<div class="section" id="artoolkit-markers-art">
+<span id="markers-supported-art"></span><h3>ARToolkit Markers (“art”)<a class="headerlink" href="#artoolkit-markers-art" title="Permalink to this headline">¶</a></h3>
+<a class="reference internal image-reference" href="../_images/art-marker.jpg"><img alt="shadow" src="../_images/art-marker.jpg" style="width: 111.15px; height: 111.15px;" /></a>
+<p>One of the first freely available marker detection library is the
+<a class="reference external" href="http://www.hitl.washington.edu/artoolkit">ARToolKit</a>. The original framework was mainly developed as toolkit
+for augmented reality applications. However the whole framework is
+usually difficult to combine with other image processing libraries. In
+particular its default version does not support to pass external image
+data.</p>
+<p>The marker detection is based on finding quadrangular black image
+regions, whose corners a detected. The marker center is then simply
+rectified and matched against a set of loaded marker center images
+using normalized cross-correlation of other distance
+metrics. Basically arbitrary gray-scale images can be used as possible
+marker centers, however, the matching of the central pattern is
+usually very slow and not very robust.</p>
+</div>
+<div class="section" id="bch-markers-bch">
+<span id="markers-supported-bch"></span><h3>BCH Markers (“bch”)<a class="headerlink" href="#bch-markers-bch" title="Permalink to this headline">¶</a></h3>
+<a class="reference internal image-reference" href="../_images/bch-marker.png"><img alt="shadow" src="../_images/bch-marker.png" style="width: 105.0px; height: 105.0px;" /></a>
+<p>These fiducial markers are probably the best available so far. The
+idea of using a self-error-correcting 2D binary BCH-coded pattern for
+encoding marker IDs was originally introduced with the unluckily no
+longer available <strong>ARTag</strong> library. A later fork of the ARToolkit
+library called ARToolkit+, now known as <a class="reference external" href="http://studierstube.icg.tugraz.at/handheld_ar/stbtracker.php">Studierstube Tracker</a>
+implemented the same algorithm again, however ARToolkit+ was in our
+opinion still difficult to use and to integrate with, not only due to
+a remaining internal dependency to the ARToolkit library.</p>
+<p>Our implementation of the BCH-code marker detection plugin uses the
+same pre-processing as the ARToolkit plugin for the detection of
+quadrangular black image regions. However, in contrast to the
+ARToolKit plugin, the extraction of the marker’s ID is completely
+different. Here, the marker’s center is rectified, and binarized into
+a 6 by 6 binary pattern, that is reinterpreted as BCH binary code and
+matched against all registered BCH patterns in four rotations. In this
+step, the BCH-coding module can automatically correct up to 3 bit
+errors while the false positive ratio remains extremely low.</p>
+<p>BCH marker detection is very fast and accurate with very low false
+positive rate. Usually, this is the best choice.</p>
+</div>
+</div>
+<div class="section" id="hierarchical-amoeba-markers">
+<span id="markers-supported-amoeba"></span><h2>Hierarchical (“Amoeba”) Markers<a class="headerlink" href="#hierarchical-amoeba-markers" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="../_images/amoeba-marker.png"><img alt="shadow" src="../_images/amoeba-marker.png" style="width: 115.8px; height: 117.0px;" /></a>
+<p>The amoeba style hierarchical markers provided by the <a class="reference external" href="http://reactivision.sourceforge.net/">reactivision</a>
+software. Amoeba fiducial markers cannot be detected in 3D. They do
+only provide 2D center and rotation and the 2D boundary. However,
+their detection is very fast and robust, as long as each marker region
+is not smaller than a pixel. Actually, the original “amoeba” markers
+must not be used with other marker detection libraries. However, since
+the actual marker detection and ID encoding is just performed on the
+basis of the markers hierarchical region structure (in the example
+image, a black region, surrounding a white region containing 4 black
+regions with no sub-regions, 2 black regions with one sub-region, one
+black region with two sub-regions and one black regions with six sub
+regions). Whenever the detection system detects such a region
+structure in the binarized image’s region graph, it will be detected
+and identified as this marker. For the original “amoeba”-markers, a
+genetic algorithm was used to minimize the marker size while
+preserving a given optimal region-width. The region structure is
+implemented and explained with the <a class="reference external" href="../icl-api/structicl_1_1markers_1_1TwoLevelRegionStructure.html">TwoLevelRegionStructure</a>
+class.</p>
+</div>
+<div class="section" id="special-markers-of-type-icl1">
+<span id="markers-supported-icl1"></span><h2>Special Markers of Type (“icl1”)<a class="headerlink" href="#special-markers-of-type-icl1" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="../_images/icl1-marker.png"><img alt="shadow" src="../_images/icl1-marker.png" style="width: 105.0px; height: 105.0px;" /></a>
+<p>Originally these markers were developed for tracking the deformation
+of a sheet of paper in real time <a class="footnote-reference" href="#f1" id="id1">[1]</a> The markers consist of 4
+vertical sections. Each of these sections contains a number of
+<em>dot-regions</em>. Therefore, the marker detection method is comparable to
+other hierarchical markers such as “amoeba”, however, the well defined
+marker structure allows for the systematic identification of every
+single marker region, which provides better 3D pose-estimation
+results.</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><a class="reference external" href="http://pub.uni-bielefeld.de/publication/2281366">http://pub.uni-bielefeld.de/publication/2281366</a></td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="an-easy-example">
+<span id="markers-example"></span><h2>An Easy Example<a class="headerlink" href="#an-easy-example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLMarkers/FiducialDetector.h&gt;</span><span class="cp"></span>
+
+<span class="n">HSplit</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+
+<span class="c1">// the global detector class</span>
+<span class="c1">// here, using the first 100 &quot;bch&quot;-markers</span>
+<span class="hll"><span class="n">FiducialDetector</span> <span class="nf">fid</span><span class="p">(</span><span class="s">&quot;bch&quot;</span><span class="p">,</span><span class="s">&quot;[0-100]&quot;</span><span class="p">,</span><span class="s">&quot;size=30x30&quot;</span><span class="p">);</span>
+</span>
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">fid</span><span class="p">.</span><span class="n">setConfigurableID</span><span class="p">(</span><span class="s">&quot;fid&quot;</span><span class="p">);</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Draw</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;draw&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Prop</span><span class="p">(</span><span class="s">&quot;fid&quot;</span><span class="p">).</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">99</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-input&quot;</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="k">static</span> <span class="n">DrawHandle</span> <span class="n">draw</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">];</span>
+  <span class="k">const</span> <span class="n">core</span><span class="o">::</span><span class="n">ImgBase</span> <span class="o">*</span><span class="n">image</span> <span class="o">=</span> <span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">();</span>
+
+<span class="hll">  <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Fiducial</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">fids</span> <span class="o">=</span> <span class="n">fid</span><span class="p">.</span><span class="n">detect</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+</span>
+  <span class="n">draw</span> <span class="o">=</span> <span class="n">image</span><span class="p">;</span>
+
+  <span class="n">draw</span><span class="o">-&gt;</span><span class="n">linewidth</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">fids</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">utils</span><span class="o">::</span><span class="n">Point32f</span> <span class="n">c</span> <span class="o">=</span> <span class="n">fids</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getCenter2D</span><span class="p">();</span>
+    <span class="kt">float</span> <span class="n">rot</span> <span class="o">=</span> <span class="n">fids</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getRotation2D</span><span class="p">();</span>
+
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">text</span><span class="p">(</span><span class="n">fids</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getName</span><span class="p">(),</span><span class="n">c</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="n">c</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="mi">10</span><span class="p">);</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">color</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">line</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="n">utils</span><span class="o">::</span><span class="n">Point32f</span><span class="p">(</span> <span class="n">cos</span><span class="p">(</span><span class="n">rot</span><span class="p">),</span> <span class="n">sin</span><span class="p">(</span><span class="n">rot</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span> <span class="p">);</span>
+
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">color</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+    <span class="n">draw</span><span class="o">-&gt;</span><span class="n">linestrip</span><span class="p">(</span><span class="n">fids</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">getCorners2D</span><span class="p">());</span>
+  <span class="p">}</span>
+  <span class="n">draw</span><span class="p">.</span><span class="n">render</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s">&quot;[m]-input|-i(2)&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="creating-marker-images">
+<span id="markers-creating-markers"></span><h2>Creating Marker Images<a class="headerlink" href="#creating-marker-images" title="Permalink to this headline">¶</a></h2>
+<p>We also provide an easy to use application that allows for the
+creation of marker images. <strong>icl-create-marker</strong> is able to create
+marker images for “bch”, “art” and “icl1” markers. The original
+“amoeba” markers are not free and cannot be published as part of the
+library. For “bch” markers, the <em>icl-create-marker*</em> application ca be
+set up to use a certain <em>border width</em>, which is given in units of the
+6 by 6 bch pattern in the center of the marker. The default value of 2
+mean, that the whole marker consists of 10 by 10 cells, where the
+outer two cells are the marker border and the inner 6 by 6 cells carry
+the markers bch binary pattern. Even though for certain cases or a
+given set of markers, this can be adapted, we strongly recommend to
+use the default setting which provides the best compromise between
+detectability and marker size. While for “bch” type markers, a given
+integer id (in range [0,4095]) is sufficient, for “art” markers, a
+center image must be provided (as a file-name). Here, the markers
+border width is given as a real valued <em>border ratio</em> which defines
+the ratio between border and center image pixels. For the detection is
+is very important that the used <a class="reference external" href="../icl-api/classicl_1_1markers_1_1FiducialDetector.html">FiducialDetector</a> instance is
+set up with the correct values for <em>border ratio</em> (and <em>border width</em>
+in case of using “bch” markers). Creating a set of 10 bch markers
+could e.g. be realized via command line in the <strong>bash</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>for (( i=0 ; $i&lt;10 ; i++ )) ; do icl-create-marker -i bch $i -o bch$i.png ; done
+</pre></div>
+</div>
+</div>
+<div class="section" id="benchmarks">
+<span id="markers-benchmarks"></span><h2>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h2>
+<p>The benchmarks were applied on 1000x1000 images of type
+<a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">core::Img8u</a> showing regular grid or markers. Between the
+markers, a single pixel line of white pixels was added, so the actual
+image size was exactly 1020x1020 (in case of 50x50 pixel marker size)
+and 1010x1010 (in case of 100x100 pixel marker size) pixels. The
+benchmark system was a Core 2 Duo 2.4GHz, 4GB RAM, Ubuntu 12.04
+32bit. For BCH Markers, we used different marker sizes of 50x50 and
+100x100 pixels. For all other marker types, only 100x100 pixel markers
+were used. The hierarchical methods (“icl1” and “amoeba”) should be
+independent from the marker size, because their identification
+algorithms runs on the image’s region graph rather than on its
+pixels. We did not run tests on the “amoeba”-style markers, because
+these mare are difficult to generate and their detection speed should
+be very similar to the “icl1”-type markers. For the ARToolKit
+markers, an unrealistic count of 100 reference markers (much more that
+it could realistically distinguish) were loaded, and it is worth mention
+that the “art” marker detector did usually not find and identify all
+marker correctly.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="19%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Markers/Plugin</th>
+<th class="head">“bch”</th>
+<th class="head">“icl1”</th>
+<th class="head">“art”</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>400 (50x50 px)</td>
+<td>50ms</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>144 (50x50 px)</td>
+<td>22ms</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>64 (50x50 px)</td>
+<td>13ms</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>16 (50x50 px)</td>
+<td>7ms</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>100 (100x100 px)</td>
+<td>23ms</td>
+<td>20ms</td>
+<td>56ms</td>
+</tr>
+<tr class="row-odd"><td>36 (100x100 px)</td>
+<td>13ms</td>
+<td>10ms</td>
+<td>25ms</td>
+</tr>
+<tr class="row-even"><td>16 (100x100 px)</td>
+<td>8ms</td>
+<td>7ms</td>
+<td>14ms</td>
+</tr>
+<tr class="row-odd"><td>4 (100x100 px)</td>
+<td>6ms</td>
+<td>5ms</td>
+<td>10ms</td>
+</tr>
+</tbody>
+</table>
+<p>The results demonstrate the outstanding performance of the detection
+system. With a realistically visible 64 of size 50x50 pixels, the
+theoretical framerate is about 76Hz. A single Fire-Wire 800 bus
+reaches a maximum theoretical framerate of 63Hz at this image size
+(1020x1020).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The whole detection system runs single-threaded and is mainly
+limited by the connected component analysis of the binarized image.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fiducial Marker Detection</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#supported-marker-types">Supported Marker Types</a><ul>
+<li><a class="reference internal" href="#artoolkit-markers-art">ARToolkit Markers (“art”)</a></li>
+<li><a class="reference internal" href="#bch-markers-bch">BCH Markers (“bch”)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hierarchical-amoeba-markers">Hierarchical (“Amoeba”) Markers</a></li>
+<li><a class="reference internal" href="#special-markers-of-type-icl1">Special Markers of Type (“icl1”)</a></li>
+<li><a class="reference internal" href="#an-easy-example">An Easy Example</a></li>
+<li><a class="reference internal" href="#creating-marker-images">Creating Marker Images</a></li>
+<li><a class="reference internal" href="#benchmarks">Benchmarks</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="geom.html"
+                        title="previous chapter">3D Vision and Visualization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="physics.html"
+                        title="next chapter">3D Physics Simulation</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="physics.html" title="3D Physics Simulation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="geom.html" title="3D Vision and Visualization"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

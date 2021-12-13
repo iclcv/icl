@@ -1,0 +1,2369 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>GUI Creation and Visualization Framework &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Computer Vision Algorithms" href="cv.html" />
+    <link rel="prev" title="Image In- and Output" href="io.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cv.html" title="Computer Vision Algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Image In- and Output"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="gui-creation-and-visualization-framework">
+<span id="qt"></span><h1>GUI Creation and Visualization Framework<a class="headerlink" href="#gui-creation-and-visualization-framework" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/qt1.png" src="../_images/qt1.png" />
+<p>As it’s core, this package provides a wrapper API for the development
+of Qt-based GUI applications. The main class of this package is the
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html">qt::GUI</a>, which is a general container component. In addition to
+wrapper components for all common <em>Qt-Widgets</em>, such as sliders,
+buttons and check-boxes, we provide a set of highly optimized image
+and data visualization <em>Widgets</em>. We will here give a complete but
+concise overview of ICL’s GUI creation framework. Step by step
+examples are given in the tutorial chapters (<a class="reference internal" href="../tutorials/gui-apps.html#tut-gui"><span class="std std-ref">GUI-Applications</span></a> and
+<a class="reference internal" href="../tutorials/interactive-gui-apps.html#tut-interactive-gui-apps"><span class="std std-ref">Interactive GUI Applications</span></a>)</p>
+<p>In additions, the <strong>ICLQt</strong> modules provides <a class="reference internal" href="#qt-quick"><span class="std std-ref">The Quick Framework</span></a>
+for rapid prototyping.</p>
+<div class="section" id="the-gui-creation-framework">
+<span id="qt-gui-creation-framework"></span><h2>The <strong>GUI</strong> Creation Framework<a class="headerlink" href="#the-gui-creation-framework" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#qt-gui-creation-framework-intro"><span class="std std-ref">Introduction</span></a></li>
+<li><a class="reference internal" href="#qt-gui-first-steps"><span class="std std-ref">First Steps</span></a><ul>
+<li><a class="reference internal" href="#qt-gui-creation-framework-simple-slider"><span class="std std-ref">A Simple Slider</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-iclapp"><span class="std std-ref">The ICLApplication class</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-defexpr"><span class="std std-ref">GUI Definition Expressions</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-hierarchical"><span class="std std-ref">Complex Hierarchical GUIs</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-dynamic"><span class="std std-ref">Dynamic XML-based GUI Description</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-remote"><span class="std std-ref">RSB-based Remote GUIs</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-accessinggui"><span class="std std-ref">Accessing the GUI from the Working Thread</span></a><ul>
+<li><a class="reference internal" href="#qt-gui-creation-framework-handles"><span class="std std-ref">Handles vs Outputs</span></a></li>
+<li><a class="reference internal" href="#qt-gui-creation-framework-index"><span class="std std-ref">The GUI’s Index Operator</span></a></li>
+<li><a class="reference internal" href="#qt-gui-index-operator-benchmark"><span class="std std-ref">Performance of the GUI-Index Operator</span></a></li>
+<li><a class="reference internal" href="#qt-callbacks"><span class="std std-ref">Callback Registration</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qt-component-table"><span class="std std-ref">Overview of all GUI Components</span></a><ul>
+<li><a class="reference internal" href="#qt-common-controls"><span class="std std-ref">Common Controls</span></a></li>
+<li><a class="reference internal" href="#qt-image-and-vis"><span class="std std-ref">Image and Data Visualization Components</span></a></li>
+<li><a class="reference internal" href="#qt-complex-components"><span class="std std-ref">Complex GUI Components</span></a></li>
+<li><a class="reference internal" href="#qt-other-components"><span class="std std-ref">Other GUI Components</span></a></li>
+<li><a class="reference internal" href="#qt-container-components"><span class="std std-ref">Container GUI Components</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qt-special-components"><span class="std std-ref">Special GUI components</span></a></li>
+<li><a class="reference internal" href="#qt-image-vis-framework"><span class="std std-ref">The Image Visualization and Annotation Framework</span></a><ul>
+<li><a class="reference internal" href="#qt-glimg"><span class="std std-ref">qt::GLImg</span></a></li>
+<li><a class="reference internal" href="#qt-iclwidget"><span class="std std-ref">qt::ICLWidget</span></a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget"><span class="std std-ref">qt::ICLDrawWidget</span></a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget3d"><span class="std std-ref">qt::ICLDrawWidget3D</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qt-mouse-handlers"><span class="std std-ref">The MouseHandler Interface</span></a></li>
+</ul>
+<p>There are most different approaches for the creation of graphical user
+interfaces – short GUI’s. ICL follows the idea of the Qt-library,
+that uses a object oriented class tree whose nodes describe
+GUI-interfaces and classes. Actually, ICL’s GUI creation framework is
+a shallow wrapper around the Qt library, that always preserves
+accessibility to its internally used Qt <em>Widgets</em>.</p>
+<p>We basically distinguish between two different types of GUI
+components: <em>normal components</em>, represented by the
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUIComponent.html">qt::GUIComponent</a> class interface and <em>container components</em>,
+represented by the <a class="reference external" href="../icl-api/structicl_1_1qt_1_1ContainerGUIComponent.html">qt::ContainerGUIComponent</a> class
+interface. Each container type provides a special layout for its
+contained components, which can either be normal- or other container
+components. By these means it allows for creating very complex and
+hierarchical GUI layouts.</p>
+<div class="section" id="introduction">
+<span id="qt-gui-creation-framework-intro"></span><h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p><strong>A fundamental question could be:</strong></p>
+<blockquote>
+<div><em>“Why would one want to use a Qt-Wrapper rather than to use the well
+known and user friendly Qt-library directly?”</em></div></blockquote>
+<p><strong>The answer is:</strong></p>
+<blockquote>
+<div><em>“Because ICL’s GUI creation framework allows for creating very
+complex GUIs with very little code, so that you can completely
+concentrate on the implementation of your computer vision stuff”</em></div></blockquote>
+<p><strong>Here is a list of the advantages of ICL’s GUI creation framework:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>very concise yet intuitive syntax (allows for writing <em>beautiful</em> code)</li>
+<li>the most common features of all common GUI components are directly supported</li>
+<li>for non-Qt experts: much simpler to learn and to use</li>
+<li>neither Qt-<em>signals</em> and <em>-slots</em> nor the Qt-meta compiler (moc) is needed any more</li>
+<li>solves all GUI-thread – working-thread synchronization issues for you</li>
+<li>provides implicit and standardized layout handling</li>
+<li>always provides access to the wrapper Qt-components</li>
+</ul>
+</div></blockquote>
+<p>During the implementation of computer vision applications, the
+programmer does usually not want to spend many resources for the
+implementation of the GUI-based interactive features of it, calling
+for a powerful, yet easy to use GUI creation toolbox. In particular
+image visualization, but also common GUI components, such as sliders,
+buttons and check-boxes, should be creatable in a simple manner and
+their current states have to be accessible in an easy way. Another
+important factor for computer-vision applications, that in general
+produce a high processor usage, is the decoupling of the GUI and the
+working loop, which is usually implemented by using at least two
+threads: a GUI thread, and one or more working threads.</p>
+<p>Of course, this can be implemented using the powerful Qt-framework,
+however, there are many issues, that have to be solved manually</p>
+<ul class="simple">
+<li>The GUI-thread (Qt-event loop) and the working thread must be
+synchronized</li>
+<li>User interactions must be handled using Qt’s signal and slot
+connections (here sometimes also the Qt-meta compiler needs to
+be used)</li>
+<li>Complex GUIs require complex layouts to be created, and whoever
+tried to rearrange certain Qt-components within complex GUI by
+adapting layouts and size-constraints and -policies knows, that
+this can be a difficult and time consuming task</li>
+</ul>
+</div>
+<div class="section" id="first-steps">
+<span id="qt-gui-first-steps"></span><h3>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h3>
+<p>Let’s get a first glance at how things are connected. A more detail
+impression can be obtained by working though the <a class="reference internal" href="../tutorial.html#tut"><span class="std std-ref">tutorial</span></a>.</p>
+<div class="section" id="a-simple-slider">
+<span id="qt-gui-creation-framework-simple-slider"></span><h4>A Simple Slider<a class="headerlink" href="#a-simple-slider" title="Permalink to this headline">¶</a></h4>
+<p>A Qt-expert might thing <em>“So what?”</em>, because he can create a slider
+with layout in 1 minute with only 5 lines of code. ICL’s GUI creation
+framework also endows non-Qt-experts with the ability to create and
+layout a slider using a single line of code.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="43%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="c1">// top level GUI</span>
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="c1">// create the GUI by streaming components</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">qt</span><span class="o">::</span><span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;a slider&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">qt</span><span class="o">::</span><span class="n">Show</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">qt</span><span class="o">::</span><span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/qt-slider.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="the-iclapplication-class">
+<span id="qt-gui-creation-framework-iclapp"></span><h4>The <strong>ICLApplication</strong> class<a class="headerlink" href="#the-iclapplication-class" title="Permalink to this headline">¶</a></h4>
+<p>As we will seen in the following examples, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLApplication.html">ICLApplication</a>
+(typedef’d to <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a88710c0c58ee1df2517ef4b57894d05d">ICLApp</a>), is a very central component of interactive
+ICL applications. Usually, it is instantiated with a given
+initialization and working-thread function pointer. The latter one is
+not used and therefore left out in the example above. Its
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLApplication.html#a117474bd97aa1702e0884d8d37372752">ICLApplication::exec</a>-method performs the following steps:</p>
+<ol class="arabic simple">
+<li>instantiating a <em>singelton</em> <strong>QApplication</strong> instance</li>
+<li>parsing optionally given program arguments (see <a class="reference internal" href="utils.html#utils-pa"><span class="std std-ref">Program Argument Evaluation</span></a>)</li>
+<li>calling the initialization method in the applications main thread</li>
+<li>creating a working thread for each given <em>run-function-pointer</em></li>
+<li>start the thread, which loops this function</li>
+<li>entering the Qt event loop</li>
+</ol>
+</div>
+<div class="section" id="gui-definition-expressions">
+<span id="qt-gui-creation-framework-defexpr"></span><h4><strong>GUI</strong> Definition Expressions<a class="headerlink" href="#gui-definition-expressions" title="Permalink to this headline">¶</a></h4>
+<p>An expression that defines a GUI usually consists of several
+stream-operator-based statements, each defining a single
+GUI-component. Each component provides one or more constructors the
+get component-related parameters, such as the minimum, maximum and
+initial value of a slider. Additionally, a set of general options can
+be added:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s2">&quot;slider&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>handle(string)</strong></p>
+<blockquote>
+<div>defines the component’s ID, which can later be used to access the GUI
+component to either read-out its current value, or to adapt its state</div></blockquote>
+<p><strong>label(string)</strong></p>
+<blockquote>
+<div>defines a component label, which is used to create a labeled border
+around the GUI component.</div></blockquote>
+<p><strong>tooltip(string)</strong></p>
+<blockquote>
+<div>adds a component tooltip (this feature is not supported for container
+components</div></blockquote>
+<p><strong>minSize(xCells,yCells)</strong></p>
+<blockquote>
+<div>defines the minimum size of the component, given in units of 20 pixels</div></blockquote>
+<p><strong>maxSize(xCells,yCells)</strong></p>
+<blockquote>
+<div>defines the minimum size of the component, given in units of 20
+pixels. In combination with <strong>minSize</strong>, complex size-constraints
+can be created</div></blockquote>
+<p><strong>size(xCells,yCells)</strong></p>
+<blockquote>
+<div>defines the initial size of the component</div></blockquote>
+<p><strong>out(string)</strong></p>
+<blockquote>
+<div>this feature only provides for some of the components (see
+<a class="reference internal" href="#qt-component-table"><span class="std std-ref">Overview of all GUI Components</span></a>). It makes the component also register a
+single <strong>int</strong> or <strong>float</strong> variable, liked to the component value,
+which can be extracted by reference. Usually, declaring a <strong>handle</strong>
+is more recommended.</div></blockquote>
+<p><strong>hideIf(bool)</strong></p>
+<blockquote>
+<div>this is a very special options, that can be used to conditionally
+create GUI-components. If the boolean parameter is true, the
+component gets a dummy-status and is not translated into an actual
+Qt component at all</div></blockquote>
+<p><strong>margin(int)</strong></p>
+<blockquote>
+<div>This is only supported for container components and defines
+the layout’s outer margin</div></blockquote>
+<p><strong>spacing(int)</strong></p>
+<blockquote>
+<div>This is only supported for container components and defines
+the layout’s component spacing</div></blockquote>
+</div>
+<div class="section" id="complex-hierarchical-guis">
+<span id="qt-gui-creation-framework-hierarchical"></span><h4>Complex Hierarchical <strong>GUI</strong>s<a class="headerlink" href="#complex-hierarchical-guis" title="Permalink to this headline">¶</a></h4>
+<p>Using a single GUI container component does usually lead to
+ill-layouted GUIs. In order to avoid this, ICL’s GUI creation
+framework allows for nesting hierarchical GUI creation expressions,
+leading to advanced GUI layouts. A very common layout for simple
+interactive image processing applications is to have a main image view
+plus a simple vertical list of controls, which is usually at the right
+hand side of the main window. In this case we recommend to use e.g. a
+horizontal splitting component that contains the image view on the
+left and a vertically layouted container containing the controls on
+the right. The <em>control panel</em> can then again be layouted using
+nested sub-containers:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="56%" />
+<col width="44%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="c1">// top-level component is a &quot;horizontal split&quot;</span>
+<span class="n">HSplit</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-i&quot;</span><span class="p">));</span>
+
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Image</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="p">(</span> <span class="n">VBox</span><span class="p">().</span><span class="n">minSize</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">26</span><span class="p">).</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+           <span class="o">&lt;&lt;</span> <span class="p">(</span> <span class="n">VBox</span><span class="p">().</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;thresholds&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;red&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;green&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;g&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+           <span class="o">&lt;&lt;</span> <span class="p">(</span> <span class="n">HBox</span><span class="p">()</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Button</span><span class="p">(</span><span class="s">&quot;save&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Button</span><span class="p">(</span><span class="s">&quot;load&quot;</span><span class="p">)</span>
+              <span class="p">)</span>
+           <span class="o">&lt;&lt;</span> <span class="n">Combo</span><span class="p">(</span><span class="s">&quot;input,output&quot;</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;visualization&quot;</span><span class="p">)</span>
+           <span class="o">&lt;&lt;</span> <span class="p">(</span> <span class="n">VBox</span><span class="p">().</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;options&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;preprocessing&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;open mp&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">CheckBox</span><span class="p">(</span><span class="s">&quot;fast approx.&quot;</span><span class="p">)</span>
+                <span class="o">&lt;&lt;</span> <span class="n">Spinner</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">).</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;num threads&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+           <span class="o">&lt;&lt;</span> <span class="n">CamCfg</span><span class="p">()</span>
+           <span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">();</span>
+
+  <span class="c1">// image processing stuff ...</span>
+
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="s">&quot;-input|-i(2)&quot;</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><a class="first reference internal image-reference" href="../_images/qt-hierarchical.png"><img alt="shadow" src="../_images/qt-hierarchical.png" style="width: 365.0px; height: 276.5px;" /></a>
+<p class="last">started with <strong>appname -input create
+mandril</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="dynamic-xml-based-gui-description">
+<span id="qt-gui-creation-framework-dynamic"></span><h4>Dynamic XML-based GUI Description<a class="headerlink" href="#dynamic-xml-based-gui-description" title="Permalink to this headline">¶</a></h4>
+<p>In order to separate the GUI layout from the actual implementation,
+the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1DynamicGUI.html">DynamicGUI</a> class can be used. This class enables the
+programmer to define the GUI layout in a separate XML-file that is
+then parsed by the application at runtime. The advantage of this
+approach is that the adaption of GUI parameters or the adding of new
+GUI components as well as re-arrangement of the GUI components no
+longer requires to re-compile the application. In contrast to this,
+the GUI definition syntax is no longer parsed and evaluated by the
+compiler, which means that the development cycle is not neccessarily
+shortened.</p>
+</div>
+<div class="section" id="rsb-based-remote-guis">
+<span id="qt-gui-creation-framework-remote"></span><h4>RSB-based Remote GUIs<a class="headerlink" href="#rsb-based-remote-guis" title="Permalink to this headline">¶</a></h4>
+<p>With the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1RSBRemoteGUI.html">qt::RSBRemoteGUI</a>, an additional separation of the GUI
+and the actual application code can be reached. This class can wrapped
+around an existing gui. It then analyses the wrapped GUI and provides
+setter and getter RSB-based network interfaces for each of the GUI
+components. By these means, ICL’s GUI-creation framework can more easily be
+used in a decoupled fashion.</p>
+<p>The ICL-application <strong>icl-remote-gui</strong> bundles this functionality by being able
+to load a GUI-xml-file and then to automatically create the corresponding
+RSB-interfaces for it</p>
+</div>
+</div>
+<div class="section" id="accessing-the-gui-from-the-working-thread">
+<span id="qt-gui-creation-framework-accessinggui"></span><h3>Accessing the GUI from the Working Thread<a class="headerlink" href="#accessing-the-gui-from-the-working-thread" title="Permalink to this headline">¶</a></h3>
+<p>As soon as our application needs a working loop, e.g. for image
+processing, a <strong>run</strong> method can be passed to the <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a88710c0c58ee1df2517ef4b57894d05d">ICLApp</a>
+constructor as well. The top-level GUI component – usually
+represented by a global <strong>GUI</strong> instance – provides thread-safe
+access to all contained component states. Please note, that <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html">GUI</a>
+instances must be created by either streaming the special
+<a class="reference external" href="../icl-api/structicl_1_1qt_1_1Show.html">qt::Show</a> or <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Create.html">qt::Create</a> component into it or by calling
+its <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#a21a399276476bb34af8b06c4904a0d8d">GUI::create</a> or <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#af90a603f8a1b7c11533d7ef0134eb875">GUI::show</a> method. Before this is
+done, only a hierarchical description of the GUI exists, but not
+underlying Qt-components. GUI components can be access using the GUI’s
+index operator <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#a1e2a238c9dd73d090083dfb5f7c2fa63">GUI::operator[](const std::string &amp;key)</a>, where
+<strong>key</strong> refers to a component’s <em>handle</em> or <em>output</em> ID, which is
+given by the <strong>.handle(“handle-name”)</strong> method in the GUI-definition
+expression.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="43%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLFilter/UnaryCompareOp.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+<span class="n">UnaryCompareOp</span> <span class="nf">cmp</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+<span class="hll">  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Image</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+</span><span class="hll">      <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">127</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;thresh&quot;</span><span class="p">)</span>
+</span>         <span class="p">.</span><span class="n">label</span><span class="p">(</span><span class="s">&quot;threshold&quot;</span><span class="p">).</span><span class="n">maxSize</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-i&quot;</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+<span class="hll">  <span class="c1">// extract current slider value</span>
+</span>  <span class="n">cmp</span><span class="p">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">gui</span><span class="p">[</span><span class="s">&quot;thresh&quot;</span><span class="p">]);</span>
+
+<span class="hll">  <span class="c1">// set displayed image</span>
+</span>  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmp</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">());</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;-input|-i(2)&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/qt-access.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="handles-vs-outputs">
+<span id="qt-gui-creation-framework-handles"></span><h4>Handles vs Outputs<a class="headerlink" href="#handles-vs-outputs" title="Permalink to this headline">¶</a></h4>
+<p>For a some of the components (see <a class="reference internal" href="#qt-component-table"><span class="std std-ref">Overview of all GUI Components</span></a>) also an
+<em>output</em> is provided. E.g. a slider component can be set up with an
+output ID, which can then later be used for extracting an
+<em>int</em>-reference, which is directly linked to the
+slider-value. Accessing this <em>int</em>-reference is usually a little bit
+faster than using the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html">GUI</a>’s index operator, which has to perform a
+map-lookup internally. Actually, a
+<a class="reference internal" href="#qt-gui-index-operator-benchmark"><span class="std std-ref">benchmark</span></a> showed, that the
+performance loss is completely negligible for 99.9% of all
+applications developed. Therefore, we strongly recommend to use the
+<strong>GUI</strong>’s index operator for accessing GUI-components.</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+<span class="hll">  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">).</span><span class="n">out</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+</span>      <span class="o">&lt;&lt;</span> <span class="n">Label</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="c1">// create a static reference to the</span>
+<span class="hll">  <span class="k">static</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">sliderValue</span> <span class="o">=</span> <span class="n">gui</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">);</span>
+</span>
+<span class="hll">  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;bar&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sliderValue</span><span class="p">;</span>
+</span><span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="the-gui-s-index-operator">
+<span id="qt-gui-creation-framework-index"></span><h4>The <strong>GUI</strong>’s Index Operator<a class="headerlink" href="#the-gui-s-index-operator" title="Permalink to this headline">¶</a></h4>
+<p>The index operator uses a smart utility class of type
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1DataStore_1_1Data.html">qt::DataStore::Data</a>, which allows for direct and internally
+type-checked assignment. For this, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1DataStore_1_1Data.html">qt::DataStore::Data</a>
+instance returned by the index operator provides template-based
+assignment and implicit cast operators:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span> <span class="n">void</span> <span class="n">operator</span><span class="o">=</span><span class="p">(</span><span class="n">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">);</span>
+
+<span class="n">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span> <span class="n">operator</span> <span class="n">T</span><span class="p">()</span> <span class="n">const</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Internally, contained GUI entries, such as a slider value, are
+registered with an RTTI-type, which is checked whenever one of these
+operators is used. For each pair of <em>assignable</em> types, an
+<em>assign</em>-method is registered internally. For transparency reasons,
+the application <strong>icl-gui-assignment-info</strong> is provided, which is able
+to list all supported assignment-rules, each defined by a source
+(<em>rvalue</em>) and destination (<em>lvalue</em>) type, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">gui</span><span class="o">-</span><span class="n">assignment</span><span class="o">-</span><span class="n">info</span> <span class="o">-</span><span class="n">s</span> <span class="nb">int</span>
+</pre></div>
+</div>
+<p>lists all assignment rules, that have an <strong>int</strong>-typed lvalue. The
+source instance can be either part of the GUI, such as a slider-value
+or an external integer variable that is assigned to an GUI component.
+Here are some typical examples:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;mySlider&quot;</span><span class="p">).</span><span class="n">out</span><span class="p">(</span><span class="s">&quot;mySliderVal&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Label</span><span class="p">(</span><span class="s">&quot;something&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;myLabel&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Combo</span><span class="p">(</span><span class="s">&quot;entry1,entry2,entry3&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;myCombo&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="c1">// extract slider value from handle</span>
+  <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;mySlider&quot;</span><span class="p">];</span>
+
+  <span class="c1">// same works for the value</span>
+  <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;mySliderVal&quot;</span><span class="p">];</span>
+
+  <span class="c1">// set slider value (actually moves the slider)</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;mySlider&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+
+  <span class="c1">// no error, but the slider is not moved</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;mySliderVal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+
+  <span class="c1">// set slider range</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;mySlider&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Range32s</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">);</span>
+
+  <span class="c1">// set label text (must be a string)</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myLabel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="s">&quot;a new text&quot;</span><span class="p">);</span>
+
+  <span class="c1">// get label text (usually not used)</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">t</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myLabel&quot;</span><span class="p">];</span>
+
+  <span class="c1">// get selected combobox entry</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">c</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myCombo&quot;</span><span class="p">];</span>
+
+  <span class="c1">// get selected combobox index</span>
+  <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myCombo&quot;</span><span class="p">];</span>
+
+  <span class="c1">// set selected combobox entry (must be string)</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myCombo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str</span><span class="p">(</span><span class="s">&quot;entry1&quot;</span><span class="p">);</span>
+
+  <span class="c1">// set selected combobox index</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;myCombo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+
+  <span class="n">Thread</span><span class="o">::</span><span class="n">msleep</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">args</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In a few cases, C++ cannot automatically infer the desired lvalue
+type of an assignment expression. For these cases the explicit
+template-based <strong>as&lt;T&gt;</strong> (<a class="reference external" href="../icl-api/classicl_1_1qt_1_1DataStore_1_1Data.html#a8f753223e3fe1fd044f58a002da5ad36">DataStore::Data::as</a>) method is provided:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+<span class="nb">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">];</span> <span class="o">//</span> <span class="n">works</span>
+<span class="nb">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">j</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">];</span> <span class="o">//</span> <span class="n">error</span><span class="p">:</span> <span class="n">ambiguous</span> <span class="n">assignment</span>
+<span class="n">j</span> <span class="o">=</span> <span class="n">gui</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">]</span><span class="o">.</span><span class="k">as</span><span class="o">&lt;</span><span class="nb">int</span><span class="o">&gt;</span><span class="p">();</span> <span class="o">//</span> <span class="n">works</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="performance-of-the-gui-index-operator">
+<span id="qt-gui-index-operator-benchmark"></span><h4>Performance of the GUI-Index Operator<a class="headerlink" href="#performance-of-the-gui-index-operator" title="Permalink to this headline">¶</a></h4>
+<p>As mentioned above, the GUI index operator needs to perform a
+map-lookup in order to locate the value of an actual component. The
+following benchmark however proofs the negligibility of the time
+consumption used for the index operator in common applications.</p>
+<p><strong>System</strong></p>
+<blockquote>
+<div>2,4 GHz Intel Core2Duo, 4 GB Ram, Ubuntu 12.04 32 bit</div></blockquote>
+<p><strong>Setup</strong></p>
+<blockquote>
+<div>We used a complex GUI containing 10, 30, 50 and even 100
+GUI-components, which is usually much more then one would expect in
+a real-world example. The GUIs internal map contains twice as may
+entries, one for each component handle and one for the corresponding
+output. We also used extraordinary long output-names, build from
+random strings of length 30. For measurement accuracy, we took the
+time for 1000 uses of the index operator</div></blockquote>
+<p><strong>Results</strong></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="44%" />
+<col width="11%" />
+<col width="15%" />
+<col width="15%" />
+<col width="15%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Number of Components:</th>
+<th class="head">10</th>
+<th class="head">30</th>
+<th class="head">50</th>
+<th class="head">100</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Times for 1000 accesses</td>
+<td>0.30ms</td>
+<td>0.32ms</td>
+<td>0.35ms</td>
+<td>0.37ms</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><strong>Evaluation</strong></p>
+<blockquote>
+<div>As one can easily see, the used <strong>std::map</strong> is very fast. The
+performed benchmark also demonstrates the logarithmic search
+behavior of the map. In real-world applications, the time
+consumption all uses of the <strong>GUI</strong>’s index operator in total will
+never take more than a 10th of a millisecond – usually even
+magnitudes less.</div></blockquote>
+</div>
+<div class="section" id="callback-registration">
+<span id="qt-callbacks"></span><h4>Callback Registration<a class="headerlink" href="#callback-registration" title="Permalink to this headline">¶</a></h4>
+<p>Most GUI components support the ability to register callbacks to them
+that are executed immediately when the component state is
+changed. <em>Immediately</em> means that the callback is executed <strong>in the
+GUI-thread</strong>. This is particularly necessary when the callback needs
+to do Qt-GUI stuff, such as showing a dialog. There are two types of
+possible callbacks, simple ones of type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="p">::</span><span class="n">Function</span><span class="o">&lt;</span><span class="n">void</span><span class="p">,</span><span class="n">void</span><span class="o">&gt;</span>
+
+<span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">void</span> <span class="n">myCallback</span><span class="p">(){</span><span class="o">...</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>, or so called <em>complex</em> ones</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">utils</span><span class="p">::</span><span class="n">Function</span><span class="o">&lt;</span><span class="n">void</span><span class="p">,</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">string</span><span class="o">&amp;&gt;</span>
+
+<span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">void</span> <span class="n">myComplexCallback</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Simple callbacks are just executed, however, if registered to more
+than one component, it is not possible to identify the source of the
+component. The complex callback type has a single <strong>std::string</strong>
+argument, that is filled with the source component’s handle-name.</p>
+<p>Due to the fact that callbacks are executed in the applications
+GUI-thread, the results must be explicitly synchronized with the
+working thread. Therefore, callbacks should only be used
+<em>economically</em>. Callbacks can be registered directly to the
+return-type of the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html">GUI</a>’s index operator. The callbacks are always
+executed <em>after</em> the component state has been changed, the callback
+trigger is always the most trivial action, such as <em>moving a slider</em> or
+<em>clicking a button</em>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="56%" />
+<col width="44%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="c1">// main GUI</span>
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+
+<span class="c1">// process monitor GUI</span>
+<span class="n">GUI</span> <span class="n">ps</span><span class="p">;</span>
+
+<span class="c1">// complex callback</span>
+<span class="kt">void</span> <span class="nf">complex_cb</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">handle</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">handle</span> <span class="o">==</span> <span class="s">&quot;clickme&quot;</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;&#39;click me&#39; clicked&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span><span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">handle</span> <span class="o">==</span> <span class="s">&quot;moveme&quot;</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;slider value: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">gui</span><span class="p">[</span><span class="s">&quot;moveme&quot;</span><span class="p">].</span><span class="n">as</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="c1">// only create it</span>
+  <span class="n">ps</span> <span class="o">&lt;&lt;</span> <span class="n">Ps</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">Create</span><span class="p">();</span>
+
+  <span class="c1">// create some nice components</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Button</span><span class="p">(</span><span class="s">&quot;click me&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;clickme&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">20</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;moveme&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Button</span><span class="p">(</span><span class="s">&quot;exit&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;exit&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Button</span><span class="p">(</span><span class="s">&quot;show ps&quot;</span><span class="p">).</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;show ps&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+
+  <span class="c1">// register callbacks (on the specific handles)</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;exit&quot;</span><span class="p">].</span><span class="n">registerCallback</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">terminate</span><span class="p">);</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;clickme&quot;</span><span class="p">].</span><span class="n">registerCallback</span><span class="p">(</span><span class="n">complex_cb</span><span class="p">);</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;moveme&quot;</span><span class="p">].</span><span class="n">registerCallback</span><span class="p">(</span><span class="n">complex_cb</span><span class="p">);</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;show ps&quot;</span><span class="p">].</span><span class="n">registerCallback</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span><span class="o">&amp;</span><span class="n">GUI</span><span class="o">::</span><span class="n">switchVisibility</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApplication</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/qt-callbacks.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="overview-of-all-gui-components">
+<span id="qt-component-table"></span><h3>Overview of all GUI Components<a class="headerlink" href="#overview-of-all-gui-components" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="common-controls">
+<span id="qt-common-controls"></span><h4>Common Controls<a class="headerlink" href="#common-controls" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="23%" />
+<col width="16%" />
+<col width="23%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Corresonding Handle Type</th>
+<th class="head">Wrapped Qt-Component</th>
+<th class="head">Description</th>
+<th class="head">Output</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Combo.html">qt::Combo</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ComboHandle.html">qt::ComboHandle</a></td>
+<td>QComboBox</td>
+<td>combo box</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Label.html">qt::Label</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1LabelHandle.html">qt::LabelHandle</a></td>
+<td>QLabel</td>
+<td>text label</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1String.html">qt::String</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1StringHandle.html">qt::StringHandle</a></td>
+<td>QTextInput</td>
+<td>input field for text</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Float.html">qt::Float</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1FloatHandle.html">qt::FloatHandle</a></td>
+<td>QTextInput</td>
+<td>input field for floats</td>
+<td>current value, <strong>float</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Int.html">qt::Int</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1IntHandle.html">qt::IntHandle</a></td>
+<td>QTextInput</td>
+<td>input field for integers</td>
+<td>current value, <strong>int</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Button.html">qt::Button</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ButtonHandle.html">qt::ButtonHandle</a></td>
+<td>QPushButton</td>
+<td>push- or toggle button</td>
+<td>toggled state, <strong>bool</strong> <a class="footnote-reference" href="#f1" id="id1">[1]</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1ButtonGroup.html">qt::ButtonGroup</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ButtonGroupHandle.html">qt::ButtonGroupHandle</a></td>
+<td>QButtonGroup</td>
+<td>list of exclusive radio buttons</td>
+<td>current selcted intex, <strong>int</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1CheckBox.html">qt::CheckBox</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1CheckBoxHandle.html">qt::CheckBoxHandle</a></td>
+<td>QCheckBox</td>
+<td>check box</td>
+<td>check state, <strong>bool</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Slider.html">qt::Slider</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1SliderHandle.html">qt::SliderHandle</a></td>
+<td>QSlider</td>
+<td>simple integer-valued slider</td>
+<td>current value, <strong>int</strong></td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1FSlider.html">qt::FSlider</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1FSliderHandle.html">qt::FSliderHandle</a></td>
+<td>QSlider (<em>adapted</em>)</td>
+<td>float valued slider</td>
+<td>current value, <strong>float</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Spinner.html">qt::Spinner</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1SpinnerHandle.html">qt::SpinnerHandle</a></td>
+<td>QSpinBox</td>
+<td>a spin box component</td>
+<td>current vlaue, <strong>int</strong></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>only for in case of toogle buttons</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="image-and-data-visualization-components">
+<span id="qt-image-and-vis"></span><h4>Image and Data Visualization Components<a class="headerlink" href="#image-and-data-visualization-components" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="22%" />
+<col width="18%" />
+<col width="24%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Corresonding Handle Type</th>
+<th class="head">Wrapped Qt-Component</th>
+<th class="head">Description</th>
+<th class="head">Output</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Image.html">qt::Image</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ImageHandle.html">qt::ImageHandle</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a></td>
+<td>ICL’s image display</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Draw.html">qt::Draw</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1DrawHandle.html">qt::DrawHandle</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget.html">qt::ICLDrawWidget</a></td>
+<td>Image display for image annotation</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Draw3D.html">qt::Draw3D</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1DrawHandle3D.html">qt::DrawHandle3D</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a></td>
+<td>Image display with 3D overlay</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Plot.html">qt::Plot</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1PlotHandle.html">qt::PlotHandle</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1PlotWidget.html">qt::PlotWidget</a></td>
+<td>2D scatter and function plotting</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="complex-gui-components">
+<span id="qt-complex-components"></span><h4>Complex GUI Components<a class="headerlink" href="#complex-gui-components" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="21%" />
+<col width="16%" />
+<col width="24%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Corresonding Handle Type</th>
+<th class="head">Wrapped Qt-Component</th>
+<th class="head">Description</th>
+<th class="head">Output</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1CamCfg.html">qt::CamCfg</a></td>
+<td>–</td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1CamCfgWidget.html">qt::CamCfgWidget</a></td>
+<td>Button to access camera properties</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1ColorSelect.html">qt::ColorSelect</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ColorHandle.html">qt::ColorHandle</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ColorLabel.html">qt::ColorLabel</a></td>
+<td>RGB or RGBA color selection</td>
+<td>current color, <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a17c38f75570be9610e9b54001e2e3a4e">core::Color4D</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Disp.html">qt::Disp</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1DispHandle.html">qt::DispHandle</a></td>
+<td><a class="reference external" href="../icl-api/group__HANDLES.html#ga43da0653fa4014c85179d93c03570f94">qt::LabelMatrix</a></td>
+<td>2D array of float labels</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Fps.html">qt::Fps</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1FPSHandle.html">qt::FPSHandle</a></td>
+<td>QLabel (<em>adapted</em>)</td>
+<td>shows the application’s FPS count</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Prop.html">qt::Prop</a></td>
+<td>–</td>
+<td>only internally used</td>
+<td>GUI for <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Configurable.html">utils::Configurable</a>s</td>
+<td>–</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Ps.html">qt::Ps</a></td>
+<td>–</td>
+<td>only internally used</td>
+<td>shows process information</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="other-gui-components">
+<span id="qt-other-components"></span><h4>Other GUI Components<a class="headerlink" href="#other-gui-components" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Dummy.html">qt::Dummy</a></td>
+<td>Non visible dummy instance (not created)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Create.html">qt::Create</a></td>
+<td>Finalizes the GUI definition and actually <em>creates</em> the GUI <a class="footnote-reference" href="#f2" id="id2">[2]</a></td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Show.html">qt::Show</a></td>
+<td>Finalizes the GUI definition and <em>creates</em> and shows the GUI <a class="footnote-reference" href="#f2" id="id3">[2]</a></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id2">1</a>, <a class="fn-backref" href="#id3">2</a>)</em> The actual GUI does not exist, before either <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Create.html">qt::Create</a> or
+<a class="reference external" href="../icl-api/structicl_1_1qt_1_1Show.html">qt::Show</a> was streamed into it (alternatively the top level
+GUI’s <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#a21a399276476bb34af8b06c4904a0d8d">GUI::create</a> and <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#af90a603f8a1b7c11533d7ef0134eb875">GUI::show</a> methods can be
+used). After this, the GUI is created, its definition phase is
+ended and the stream operators <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GUI.html#a3dd55043e9fe183eaa5412f47dc5cfaf">GUI::operator&lt;&lt;</a> wont work anymore. Please
+note, that <em>create</em> means, that the GUI is created only, while
+<em>show</em> means, that the GUI is created and shown. Additional calls
+to <strong>create</strong> will not do anything, a <em>created</em> GUI instance can be
+shown using <strong>show</strong>.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="container-gui-components">
+<span id="qt-container-components"></span><h4>Container GUI Components<a class="headerlink" href="#container-gui-components" title="Permalink to this headline">¶</a></h4>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="30%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Corresponding Handle Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1HBox.html">qt::HBox</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>horizontally alligned box layout</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1VBox.html">qt::VBox</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>vertically alligned box layout</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1HSplit.html">qt::HSplit</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>horizonatal splitting component</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1VSplit.html">qt::VSplit</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>vertical splitting component</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1HScroll.html">qt::HScroll</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>like a HBox, but within a scrollable area</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1VScroll.html">qt::VScroll</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1BoxHandle.html">qt::BoxHandle</a></td>
+<td>like a VBox, but within a scrollable area</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Tab.html">qt::Tab</a></td>
+<td><a class="reference external" href="../icl-api/classicl_1_1qt_1_1TabHandle.html">qt::TabHandle</a></td>
+<td><em>tab’ed</em> widget</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All container components can be filled successively with an
+arbitrary number of components. This is also true for the <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Tab.html">Tab</a>
+component, however the tab-labels are given to the
+<a class="reference external" href="../icl-api/structicl_1_1qt_1_1Tab.html">Tab</a>-constructor. Therefore if more components are streamed into
+a <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Tab.html">Tab</a> container, dummy labels are created</p>
+</div>
+</div>
+</div>
+<div class="section" id="special-gui-components">
+<span id="qt-special-components"></span><h3>Special GUI components<a class="headerlink" href="#special-gui-components" title="Permalink to this headline">¶</a></h3>
+<p>Most GUI-components are now sufficiently described. However, some of
+the components require some extra knowledge in order to use them
+correctly and efficiently. These special components are listed and
+explained here.</p>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Int.html">qt::Int</a>, <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Float.html">qt::Float</a> and <a class="reference external" href="../icl-api/structicl_1_1qt_1_1String.html">qt::String</a></p>
+<blockquote>
+<div>These components are translated into simple text-input fields. The
+different possible input types are implemented using special
+<em>Qt-validators</em>. The components will only allow for writing
+<em>validated</em> text. <strong>The input must always be confirmed by pressing
+enter</strong> before, the last valid entry is returned</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Button.html">qt::Button</a></p>
+<blockquote>
+<div>The button has two special properties, that need to be
+explained. First, if it’s constructor gets two string parameters,
+the created button becomes a toggle-button, that has two states,
+indicated by the two button texts. Only in case of creating a
+toggle-button, an <strong>bool</strong> typed output can be created.  The other
+special property is, how we recommend to process button
+clicks. Here, it is suggested to extract a <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ButtonHandle.html">ButtonHandle</a>
+instance and to use it’s <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ButtonHandle.html#a7a80707edccbd35929654fa28311d99d">ButtonHandle::wasTriggered</a> method
+directly in the working thread, which returns whether the button has
+been clicked between the last call to
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ButtonHandle.html#a7a80707edccbd35929654fa28311d99d">ButtonHandle::wasTriggered</a> and now. An example is given in
+the tutorial chapter <a class="reference internal" href="../tutorials/gui-buttons.html#tut-buttons"><span class="std std-ref">Buttons: Callbacks vs. wasTriggered()</span></a></div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1CamCfg.html">qt::CamCfg</a></p>
+<blockquote>
+<div>This camera property configuration component is also very
+special. It can either be instantiated with a given input device
+filter, such as e.g. “dc” and “0”, which will allow for configuring
+the first dc camera device only or it can be instantiated without
+any parameters. If no parameters are given, it will automatically
+query a list of currently instantiated <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a>
+instances (see <a class="reference internal" href="io.html#io-generic-grabber"><span class="std std-ref">The Generic Grabber</span></a>) and prepare the property
+widget for these instances. However, this does only work if the
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> was initialized (using its <strong>init</strong>-method)
+<em>before</em> the GUI is actually created.</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Ps.html">qt::Ps</a></p>
+<blockquote>
+<div>The <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Ps.html">Ps</a> component creates a small info widget, that visualizes
+current process information. Right now, we use QProgressBars here,
+but we plan to use a real plot that shows the processor and memory
+usage history. In addition, the component shows the applications
+thread count. The additional processor usage consumed by the widget
+itself is usually less than 1%.</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Prop.html">qt::Prop</a></p>
+<blockquote>
+<div>The <strong>Prop</strong> component also provides a very powerful addition to the
+whole GUI framework. It is tightly integrated with the
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1Configurable.html">utils::Configurable</a> -interface (see <a class="reference internal" href="utils.html#utils-configurable"><span class="std std-ref">The Configurable interface</span></a>
+and the <a class="reference internal" href="../tutorials/configurables.html#tut-configurable"><span class="std std-ref">tutorial</span></a>). The GUI component will
+read out the properties of a <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Configurable.html">utils::Configurable</a> instance
+and then create a complex widget for the real-time adjustment
+of these properties</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Fps.html">qt::Fps</a></p>
+<blockquote>
+<div><p>The <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Fps.html">Fps</a> component is rather simple. Once embedded into a GUI,
+it must be manually updated once in every cycle of the working
+thread:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">init</span><span class="p">(){</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Fps</span><span class="p">()</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s2">&quot;fps&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="n">void</span> <span class="n">run</span><span class="p">(){</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s2">&quot;fps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">render</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1qt_1_1Image.html">qt::Image</a>, <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Draw.html">qt::Draw</a> and <a class="reference external" href="../icl-api/structicl_1_1qt_1_1Draw3D.html">qt::Draw3D</a></p>
+<blockquote>
+<div>These are the main classes for image visualization and annotation. The wrapped
+QWidget-classes are explained in <a class="reference internal" href="#qt-image-vis-framework"><span class="std std-ref">The Image Visualization and Annotation Framework</span></a>. Their usage
+is demonstrated in several tutorials (see <a class="reference internal" href="../tutorial.html#tut"><span class="std std-ref">Tutorial</span></a>)</div></blockquote>
+</div>
+<div class="section" id="the-image-visualization-and-annotation-framework">
+<span id="qt-image-vis-framework"></span><h3>The Image Visualization and Annotation Framework<a class="headerlink" href="#the-image-visualization-and-annotation-framework" title="Permalink to this headline">¶</a></h3>
+<p><strong>Issues to be solved by the framework</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>How can images be visualized at all?</li>
+<li>How can this be done efficiently?</li>
+<li>How can different image <em>depths</em> be handled (and how can this be
+done efficiently)?</li>
+<li>How must images be scaled and moved to fit optimally into a given
+widget?</li>
+<li>How can image processing and image visualization be decoupled to
+avoid that the GUI gets stuck if the processing loop needs a lot
+of time for each cycle?</li>
+<li>How can different threads for processing and visualisation be
+synchronized?</li>
+<li>How can the user change image visualization parameters (e.g,
+brightness or contrast adjustment)?</li>
+<li>How can images be annotated in online applications (here again,
+one has to face synchronization issues)?</li>
+<li>How can the image annotation be abstracted from visualization
+features (e.g., current zoom)?</li>
+<li>How can 3D objects be drawn into a scene so that it matches it’s
+real-world counter part?</li>
+<li>Can 3D overlay be implemented using OpenGL?</li>
+</ul>
+</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="44%" />
+<col width="56%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first"><strong>ICL’s image visualization and
+annotation framework
+essentially consists of these
+four classes:</strong></p>
+<ul class="last simple">
+<li><a class="reference internal" href="#qt-glimg"><span class="std std-ref">qt::GLImg</span></a></li>
+<li><a class="reference internal" href="#qt-iclwidget"><span class="std std-ref">qt::ICLWidget</span></a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget"><span class="std std-ref">qt::ICLDrawWidget</span></a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget3d"><span class="std std-ref">qt::ICLDrawWidget3D</span></a></li>
+</ul>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/qt-drawing-layers.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="qt-glimg">
+<span id="id4"></span><h4><a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLImg.html">qt::GLImg</a><a class="headerlink" href="#qt-glimg" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div>At the lowest layer, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLImg.html">qt::GLImg</a> provides an interfaces for
+converting <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">core::ImgBase</a> instances into an OpenGL texture (if
+the image is larger than OpenGL’s maximum texture sizes, it has to
+be split into several texture) that can be drawn arbitrarily into an
+OpenGL scene. Internally, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLImg.html">qt::GLImg</a> class is used for
+supporting different image depths. Here, OpenGL’s pixel-transfer
+parameters are used for hardware accelerated brightness and contrast
+adjustment. Furthermore, fitting images into the widget viewport can
+simply be performed by the graphics hardware. The <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLImg.html">GLImg</a> can also
+be used as efficient video texture. In order to reduce the use of
+graphics memory bandwidth, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1GLImg.html">qt::GLImg</a> class uses a
+<em>dirty-flag</em> to determine whether an image texture actually needs to
+be updated.</div></blockquote>
+</div>
+<div class="section" id="qt-iclwidget">
+<span id="id5"></span><h4><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a><a class="headerlink" href="#qt-iclwidget" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>The next layer is implemented by the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> class, which
+inherits Qt’s QGLWidget class for the creation of an embedded OpenGL
+context and viewport. The <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> provides a software
+interface for setting different visualisation parameters as well as
+an embedded user interface for GUI-based adaption of these
+parameters. Furthermore, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> provides the simple
+to use method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setImage</span><span class="p">(</span><span class="n">core</span><span class="p">::</span><span class="n">ImgBase</span><span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which simply lets it visualize a new image immediately. Internally,
+the image is buffered into a mutex-protected interleaved
+intermediate format, which can more easily be transferred to the
+graphics buffer. Therefore <strong>setImage</strong> can simply be called from
+the application’s working thread without any explicit
+synchronization. Once an new image is given, the
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> will automatically post a <em>Qt-update-event</em> by
+calling the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html#acfb961b335cc31e9beb0b945001bf0af">ICLWidget::render</a> method. By these means, the
+internally used OpenGL context is actually re-rendered
+asynchronously in the application’s GUI thread.</p>
+</div></blockquote>
+</div>
+<div class="section" id="qt-icldrawwidget">
+<span id="id6"></span><h4><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget.html">qt::ICLDrawWidget</a><a class="headerlink" href="#qt-icldrawwidget" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div>For image annotation, such as rendering box- or symbol-overlay for
+the visualization of current image processing results, the
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget.html">qt::ICLDrawWidget</a> is provided. It works like a <em>drawing
+state-machine</em> that automatically synchronized image annotation
+commands with Qt’s event loop. Internally, this is achieved by using
+two thread-safe <em>draw-command-queues</em>. One of these queues can be
+filled with new draw commands, while the other queue belongs to the
+GUI thread and is rendered. Every time, the parent
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> classe’s <strong>render</strong>-method is called, the
+queues are swapped, and the queue that is now being filled with new
+commands is automatically cleared. At this point, the
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget.html">qt::ICLDrawWidget</a> adapts the behavior of the parent
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLWidget.html">qt::ICLWidget</a> class, by not automatically calling <strong>render</strong>
+when a new background image is given. Since usually setting the
+background image is followed by posting a set of <em>draw-commands</em>,
+the <strong>render</strong>-method must be called later manually when the image
+annotation is finished. Image visualization is part of several
+tutorial chapters (see <a class="reference internal" href="../tutorials/mouse-and-vis.html#tut-mouse-and-vis"><span class="std std-ref">Visualization and Mouse Interaction</span></a>)</div></blockquote>
+</div>
+<div class="section" id="qt-icldrawwidget3d">
+<span id="id7"></span><h4><a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a><a class="headerlink" href="#qt-icldrawwidget3d" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>At the last level, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a>, which again
+extends the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget.html">qt::ICLDrawWidget</a> class, provides an interfaces
+for rendering 3D scenes on top of an image. The
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a> provides a <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html#aa33750ee3b90237c95723a0e65f0c40d">ICLDrawWidget3D::link</a>
+method, which links a simple OpenGL callback function to it. Each
+time, the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLDrawWidget3D.html">qt::ICLDrawWidget3D</a> is rendered, it will also
+execute the linked OpenGL callback function, synchronously to the
+GUI Thread, while still being able to render 2D annotations.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is highly recommended to use the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">geom::Scene</a> class to
+create 3D rendering overlays (<strong>add link here</strong>). The scene class
+can easily provide an appropriate OpenGL callback function for
+it’s contained cameras.</p>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add references and link to the ICLGeom package and the
+Scene class</p>
+</div>
+</div></blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="the-quick-framework">
+<span id="qt-quick"></span><h2>The <strong>Quick</strong> Framework<a class="headerlink" href="#the-quick-framework" title="Permalink to this headline">¶</a></h2>
+<p>In contrast to the other modules, the <strong>Quick</strong> framework focuses
+mainly the programmer’s convenience rather than on efficiency. It is
+meant to be used for rapid prototyping or for test applications.
+However, also in real-time applications some parts are usually not
+strongly restricted to real-time constraints, in particular where user
+interactions are processed. Most functions do what is usually
+completely forbidden in real-time applications: <em>they return newly
+created results images</em>. This of course usually leads to performance
+issues due to run-time memory allocation. However this is not the case
+for the <strong>Quick</strong> framework functions that use an internal memory
+manager, which reuses no-longer needed temporary images. Even though,
+image are returned by instance, due to the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">core::Img</a>’s <em>shallow
+copy</em>-property, no deep copies are performed.</p>
+<p><strong>Overview</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="#qt-quick-affinity"><span class="std std-ref">Affinity to ImgQ</span></a></li>
+<li><a class="reference internal" href="#qt-quick-show"><span class="std std-ref">The Very Special Function show</span></a></li>
+<li><a class="reference internal" href="#qt-quick-image-creation"><span class="std std-ref">Image Creation Tools</span></a></li>
+<li><a class="reference internal" href="#qt-quick-filtering"><span class="std std-ref">Image Filtering and Conversion Functions</span></a></li>
+<li><a class="reference internal" href="#qt-quick-operators-1"><span class="std std-ref">Arithmetical and Logical Operators</span></a></li>
+<li><a class="reference internal" href="#qt-quick-math"><span class="std std-ref">Math Functions</span></a></li>
+<li><a class="reference internal" href="#qt-quick-operators-2"><span class="std std-ref">Image Concatenation Operators</span></a></li>
+</ul>
+</div></blockquote>
+<p>The framework is basically available directly by including the
+<strong>ICLQt/Quick.h</strong> header, which is automatically included by the
+<em>commonly</em> used header <strong>ICLQt/Common.h</strong>. This header contains a huge
+set of global functions that simplify some things significantly –
+however sometimes a little bit less efficient. Most of these functions
+are right now implemented for the <a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">core::Img32f</a> type only. The
+Quick-header uses a typedef to <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">qt::ImgQ</a> to underline the fact that
+we are working with this framework. Furthermore, the Quick header does
+also automatically use all icl-namespaces and also the std::namespace,
+which is why it should never be included by other header files.
+Here is an example for a simple <em>difference image</em>-application:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="57%" />
+<col width="43%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">GenericGrabber</span> <span class="n">grabber</span><span class="p">;</span>
+<span class="n">ImgQ</span> <span class="n">last</span><span class="p">;</span>  <span class="c1">// last image</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">grabber</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">pa</span><span class="p">(</span><span class="s">&quot;-i&quot;</span><span class="p">));</span>
+
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Image</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">127</span><span class="p">).</span><span class="n">out</span><span class="p">(</span><span class="s">&quot;thresh&quot;</span><span class="p">)</span>
+      <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">(){</span>
+  <span class="c1">// use cvt to create an Img32 (aka ImgQ)</span>
+  <span class="n">ImgQ</span> <span class="n">curr</span> <span class="o">=</span> <span class="n">cvt</span><span class="p">(</span><span class="n">grabber</span><span class="p">.</span><span class="n">grab</span><span class="p">());</span>
+
+  <span class="c1">// nested use of operators</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">thresh</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">last</span><span class="o">-</span><span class="n">curr</span><span class="p">),</span><span class="n">gui</span><span class="p">[</span><span class="s">&quot;thresh&quot;</span><span class="p">]);</span>
+
+  <span class="n">last</span> <span class="o">=</span> <span class="n">curr</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApplication</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s">&quot;-input|-i(2)&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/qt-quick.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="affinity-to-imgq">
+<span id="qt-quick-affinity"></span><h3>Affinity to <strong>ImgQ</strong><a class="headerlink" href="#affinity-to-imgq" title="Permalink to this headline">¶</a></h3>
+<p>Many of the global functions are implemented twice, as template and as
+normal function for the <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">ImgQ</a> (aka <a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">core::Img32f</a>)-type
+e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;myimage&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>returns an <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">qt::ImgQ</a>, while:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load</span><span class="o">&lt;</span><span class="n">icl8u</span><span class="o">&gt;</span><span class="p">(</span><span class="s2">&quot;myimage&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>returns the image as <a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">core::Img8u</a>.</p>
+</div>
+<div class="section" id="the-very-special-function-show">
+<span id="qt-quick-show"></span><h3>The Very Special Function <strong>show</strong><a class="headerlink" href="#the-very-special-function-show" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a6d5888c806c5f70d6ab41384717d772b">qt::show</a></p>
+<blockquote>
+<div>shows an image using an external viewer application. In order to
+avoid complex GUI handling and thread synchronization issues, the
+<a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a6d5888c806c5f70d6ab41384717d772b">qt::show</a> function simply writes the given image to a
+temporary image file, that is then opened using the <strong>icl-xv</strong>
+application. <strong>icl-xv</strong> is called with the <strong>-d</strong> flag, which lets
+<strong>show</strong> delete the temporary image immediately when loaded. This
+does of course only work if <strong>icl-xv</strong> can be found in the users
+<strong>PATH</strong> variable. Alternatively the function <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a237169545c56205d02ddcc44b7746ebf">qt::showSetup</a>
+can be used to define a custom image viewer command</div></blockquote>
+</div>
+<div class="section" id="image-creation-tools">
+<span id="qt-quick-image-creation"></span><h3>Image Creation Tools<a class="headerlink" href="#image-creation-tools" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#ac00cd584728f4886075676f864093412">qt::zeros</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a0a9c7515b894b84a597d235636fb82ae">qt::ones</a></p>
+<blockquote>
+<div>create images in <em>matlab</em>-manner. <strong>zeros(100,100,3)</strong> creates an
+empty 3-channel image of size 100x100. <strong>ones</strong> behaves equally, but
+sets all pixel values to 1</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#ac3eb6694bdeea5563a33531ed2e378eb">qt::load</a></p>
+<blockquote>
+<div>just loads an image from a file, which is usually much easier than
+using an <a class="reference external" href="../icl-api/classicl_1_1io_1_1Grabber.html">io::Grabber</a> for this. However, please note that the
+<strong>load</strong> function does not preserve the image depth, which is
+<a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaa318053c024418e71be0457ee9658de1d">core::depth32f</a> by default, or must be explicitly given using
+<strong>load&lt;target-pixel-type&gt;(“filename”)</strong>.</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a0535967935289099b53e7035df6d33c8">qt::create</a></p>
+<blockquote>
+<div>creates test image, that is hard-coded within the ICLIO-library.
+Supported test images are “lena”, “cameraman”, “mandril”, “parrot”,
+and a few others.</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#ae6f8a151c13670f2479930b0c5eb8ead">qt::grab</a></p>
+<blockquote>
+<div>just grabs an image using an internal grabber handling</div></blockquote>
+</div>
+<div class="section" id="image-filtering-and-conversion-functions">
+<span id="qt-quick-filtering"></span><h3>Image Filtering and Conversion Functions<a class="headerlink" href="#image-filtering-and-conversion-functions" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a27c98e50a37015b0b0f3f4eafe4df8ae">qt::filter</a></p>
+<blockquote>
+<div>applies one of a set of predefined image filters</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a8182ffa9c84fbdcfa8dfb200070083e4">qt::scale</a></p>
+<blockquote>
+<div>scales an image by either a factor or to a target size</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a7dbd3c43aae2f7fe85a5d6727db0cf1c">qt::levels</a></p>
+<blockquote>
+<div>re-quantifies an images value domain to a given number of levels</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a4e0e63265eeb8ff75b4a10a1843ae886">qt::copy</a></p>
+<blockquote>
+<div><p>performs a deep copy of an image:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ImgQ</span> <span class="n">a</span> <span class="o">=</span> <span class="n">zeros</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="n">ImgQ</span> <span class="n">b</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a8857436e9a39a5ba65f4cd247219e47d">qt::flipx</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a3657c6250d6536ceee96b132b98e9f98">qt::flipy</a></p>
+<blockquote>
+<div>flips an image</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a4b7ec064d50f72a77db212bdbebbf1fb">qt::cvt</a></p>
+<blockquote>
+<div>converts images of any type to <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">ImgQ</a></div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#ae4447d773481fe81db02375e7b0855fe">qt::cvt8u</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a4216ea26d08a36faec79ca47e0258540">qt::cvt16s</a>, …</p>
+<blockquote>
+<div>convert images to target depth</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#aff8b8fddda2b07f742d7347887c1c058">qt::blur</a></p>
+<blockquote>
+<div>blurs an image by given mask radius using a separatale Gaussian
+filter</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a8c04cadebff5514cce42c7a71afa9913">qt::rgb</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#adcdf5cf6899983f8d4086fa48e91fdba">qt::hls</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a088f3d4b4c773bf040a5190e7d00c5a8">qt::gray</a>, …</p>
+<blockquote>
+<div>converts a given image to target format</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a0bce9b6d9810273a687c42bd9b8d66b5">qt::channel</a></p>
+<blockquote>
+<div>extract a single channel from an image</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#ac7e6647a7dc498114846bf40af0dc6f8">qt::thresh</a></p>
+<blockquote>
+<div>applies a threshold operation</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a31d3c214ccafd7fe6ec2958d0845f250">qt::label</a></p>
+<blockquote>
+<div><p>adds a simple text-label to the top left corner of an image.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This function does not create a new image, but it works on the
+given image (of which a shallow copy is also returned)</p>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a9e2c497c9cc2b77c7b113e4d3bfedce8">qt::roi</a></p>
+<blockquote>
+<div><p>allows for copying/extracting an image ROI:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ImgQ</span> <span class="n">a</span> <span class="o">=</span> <span class="n">ones</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">5</span><span class="p">);</span>
+<span class="n">a</span><span class="o">.</span><span class="n">setROI</span><span class="p">(</span><span class="n">Rect</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">));</span>
+<span class="n">ImgQ</span> <span class="n">b</span> <span class="o">=</span> <span class="n">roi</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+<span class="n">roi</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="arithmetical-and-logical-operators">
+<span id="qt-quick-operators-1"></span><h3>Arithmetical and Logical Operators<a class="headerlink" href="#arithmetical-and-logical-operators" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>Quick</strong>-header also provides simple to use C++ operators for the
+<a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">qt::ImgQ</a> (aka <a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">core::Img32f</a>) class. The binary operators
+<strong>+</strong>, <strong>-</strong>, <strong>*</strong> and <strong>/</strong> are defined for pixel-wise operations on
+two images and pixel-wise operations with a scalar:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="56%" />
+<col width="44%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><div class="first last highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Quick.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="c1">// create lena test image scale by .5</span>
+  <span class="n">ImgQ</span> <span class="n">a</span> <span class="o">=</span> <span class="n">scale</span><span class="p">(</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;lena&quot;</span><span class="p">),</span><span class="mf">0.5</span><span class="p">);</span>
+
+  <span class="c1">// apply laplace filter</span>
+  <span class="n">ImgQ</span> <span class="n">b</span> <span class="o">=</span> <span class="n">qt</span><span class="o">::</span><span class="n">filter</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="s">&quot;laplace&quot;</span><span class="p">);</span>
+
+  <span class="c1">// create binary mask</span>
+  <span class="n">ImgQ</span> <span class="n">c</span> <span class="o">=</span> <span class="n">thresh</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="mi">10</span><span class="p">);</span>
+
+  <span class="c1">// apply median filter</span>
+  <span class="n">ImgQ</span> <span class="n">d</span> <span class="o">=</span> <span class="n">qt</span><span class="o">::</span><span class="n">filter</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="s">&quot;median&quot;</span><span class="p">);</span>
+
+  <span class="c1">// blur and norm to range [0,255]</span>
+  <span class="n">ImgQ</span> <span class="n">e</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">blur</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="mi">3</span><span class="p">));</span>
+
+  <span class="c1">// multiply with original image</span>
+  <span class="n">ImgQ</span> <span class="n">f</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">e</span><span class="o">/</span><span class="mi">255</span><span class="p">;</span>
+
+  <span class="c1">// show result</span>
+  <span class="n">show</span><span class="p">(</span> <span class="p">(</span> <span class="n">label</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="s">&quot;a&quot;</span><span class="p">),</span> <span class="n">label</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="s">&quot;b&quot;</span><span class="p">)</span> <span class="p">)</span> <span class="o">%</span>
+        <span class="p">(</span> <span class="n">label</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="s">&quot;c&quot;</span><span class="p">),</span> <span class="n">label</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="s">&quot;d&quot;</span><span class="p">)</span> <span class="p">)</span> <span class="o">%</span>
+        <span class="p">(</span> <span class="n">label</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="s">&quot;e&quot;</span><span class="p">),</span> <span class="n">label</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="s">&quot;f&quot;</span><span class="p">)</span> <span class="p">)</span> <span class="p">);</span>
+
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</td>
+<td><a class="first last reference internal image-reference" href="../_images/quick-operators.png"><img alt="shadow" src="../_images/quick-operators.png" style="width: 306.0px; height: 459.59999999999997px;" /></a>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The same is true for the logical operators <strong>&amp;&amp;</strong> and <strong>||</strong>, which
+perform a pixel-wise logical combination of two images.</p>
+</div>
+<div class="section" id="math-functions">
+<span id="qt-quick-math"></span><h3>Math Functions<a class="headerlink" href="#math-functions" title="Permalink to this headline">¶</a></h3>
+<p>In addition to the mathematical operators, also some mathematical
+standard functions are overloaded for the <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a1159e2c52a8cbbad9814a3269ea3156c">qt::ImgQ</a> type:
+<a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a89443c886f06349c32c8adcbfd4a871a">qt::sqr</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#acc5aaafda1f2dd992405725b46832e0c">qt::sqrt</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#af966f8d634de4ffa67d976d1245cd49c">qt::exp</a>, <a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a72a6cac1357e41d55780844b0242af26">qt::ln</a>, and
+<a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a291f81bb37c221edb426e01f88ac0db3">qt::abs</a> are performed pixel-wise.</p>
+</div>
+<div class="section" id="image-concatenation-operators">
+<span id="qt-quick-operators-2"></span><h3>Image Concatenation Operators<a class="headerlink" href="#image-concatenation-operators" title="Permalink to this headline">¶</a></h3>
+<p>As it could be seen in the example above, also the three operators
+<strong>,</strong>, <strong>%</strong> and <strong>|</strong> are implemented. However, it is important to
+mention that we strongly adapted the expected default behavior of
+these operators:</p>
+<p><strong>The ,-Operator</strong></p>
+<blockquote>
+<div>is used to concatenate image horizontally. If the image heights are
+not equal, the smaller image is just made higher (without scaling the
+contents)</div></blockquote>
+<p><strong>The %-Operator</strong></p>
+<blockquote>
+<div>performs a vertical image concatenation</div></blockquote>
+<p><strong>The |-Operator</strong></p>
+<blockquote>
+<div>stacks the channels of two images.</div></blockquote>
+</div>
+<div class="section" id="the-mousehandler-interface">
+<span id="qt-mouse-handlers"></span><h3>The MouseHandler Interface<a class="headerlink" href="#the-mousehandler-interface" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1qt_1_1MouseHandler.html">qt::MouseHandler</a> interface is provided for mouse-based
+interaction with- or on top of images. The <a class="reference external" href="../icl-api/classicl_1_1qt_1_1MouseHandler.html">qt::MouseHandler</a> ‘s
+single interface function</p>
+<blockquote>
+<div><span>qt::MouseHandler::process(const qt::MouseEvent &amp;)</span></div></blockquote>
+<p>can be implemented to get custom mouse handling behavior.  The
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1MouseEvent.html">qt::MouseEvent</a> class does always provide information about the
+current image position and pixel color, the mouse is currently at.
+(Detailed information on this can be found in the tutorial chapter
+<a class="reference internal" href="../tutorials/mouse-and-vis.html#tut-mouse-and-vis"><span class="std std-ref">Visualization and Mouse Interaction</span></a>.</p>
+<p>There are some special predefined MouseHandler implementations for
+common purposes. The <a class="reference external" href="../icl-api/classicl_1_1qt_1_1DefineRectanglesMouseHandler.html">qt::DefineRectanglesMouseHandler</a> can be
+used to define a given number of rectangles on top of an image. These
+can then be accessed and used for further processing steps. The
+<a class="reference external" href="../icl-api/classicl_1_1qt_1_1DefineQuadrangleMouseHandler.html">qt::DefineQuadrangleMouseHandler</a> is provided to define a single
+arbitrary quadrangle in an image.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">GUI Creation and Visualization Framework</a><ul>
+<li><a class="reference internal" href="#the-gui-creation-framework">The <strong>GUI</strong> Creation Framework</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#first-steps">First Steps</a><ul>
+<li><a class="reference internal" href="#a-simple-slider">A Simple Slider</a></li>
+<li><a class="reference internal" href="#the-iclapplication-class">The <strong>ICLApplication</strong> class</a></li>
+<li><a class="reference internal" href="#gui-definition-expressions"><strong>GUI</strong> Definition Expressions</a></li>
+<li><a class="reference internal" href="#complex-hierarchical-guis">Complex Hierarchical <strong>GUI</strong>s</a></li>
+<li><a class="reference internal" href="#dynamic-xml-based-gui-description">Dynamic XML-based GUI Description</a></li>
+<li><a class="reference internal" href="#rsb-based-remote-guis">RSB-based Remote GUIs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#accessing-the-gui-from-the-working-thread">Accessing the GUI from the Working Thread</a><ul>
+<li><a class="reference internal" href="#handles-vs-outputs">Handles vs Outputs</a></li>
+<li><a class="reference internal" href="#the-gui-s-index-operator">The <strong>GUI</strong>’s Index Operator</a></li>
+<li><a class="reference internal" href="#performance-of-the-gui-index-operator">Performance of the GUI-Index Operator</a></li>
+<li><a class="reference internal" href="#callback-registration">Callback Registration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#overview-of-all-gui-components">Overview of all GUI Components</a><ul>
+<li><a class="reference internal" href="#common-controls">Common Controls</a></li>
+<li><a class="reference internal" href="#image-and-data-visualization-components">Image and Data Visualization Components</a></li>
+<li><a class="reference internal" href="#complex-gui-components">Complex GUI Components</a></li>
+<li><a class="reference internal" href="#other-gui-components">Other GUI Components</a></li>
+<li><a class="reference internal" href="#container-gui-components">Container GUI Components</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#special-gui-components">Special GUI components</a></li>
+<li><a class="reference internal" href="#the-image-visualization-and-annotation-framework">The Image Visualization and Annotation Framework</a><ul>
+<li><a class="reference internal" href="#qt-glimg">qt::GLImg</a></li>
+<li><a class="reference internal" href="#qt-iclwidget">qt::ICLWidget</a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget">qt::ICLDrawWidget</a></li>
+<li><a class="reference internal" href="#qt-icldrawwidget3d">qt::ICLDrawWidget3D</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-quick-framework">The <strong>Quick</strong> Framework</a><ul>
+<li><a class="reference internal" href="#affinity-to-imgq">Affinity to <strong>ImgQ</strong></a></li>
+<li><a class="reference internal" href="#the-very-special-function-show">The Very Special Function <strong>show</strong></a></li>
+<li><a class="reference internal" href="#image-creation-tools">Image Creation Tools</a></li>
+<li><a class="reference internal" href="#image-filtering-and-conversion-functions">Image Filtering and Conversion Functions</a></li>
+<li><a class="reference internal" href="#arithmetical-and-logical-operators">Arithmetical and Logical Operators</a></li>
+<li><a class="reference internal" href="#math-functions">Math Functions</a></li>
+<li><a class="reference internal" href="#image-concatenation-operators">Image Concatenation Operators</a></li>
+<li><a class="reference internal" href="#the-mousehandler-interface">The MouseHandler Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">Image In- and Output</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cv.html"
+                        title="next chapter">Computer Vision Algorithms</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cv.html" title="Computer Vision Algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="Image In- and Output"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

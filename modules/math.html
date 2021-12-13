@@ -1,0 +1,976 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Linear Algebra and Machine Learning &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Basic Types for Image Processing" href="core.html" />
+    <link rel="prev" title="General Support Types and Functions" href="utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="core.html" title="Basic Types for Image Processing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="General Support Types and Functions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="linear-algebra-and-machine-learning">
+<span id="math"></span><h1>Linear Algebra and Machine Learning<a class="headerlink" href="#linear-algebra-and-machine-learning" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/math1.png" src="../_images/math1.png" />
+<p>The Math module provides support classes for linear algebra as well as
+some basic machine learning tools. Like the Utils module, Math is
+independent from the Core module and therefore not directly correlated
+to computer vision only.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#math-dyn"><span class="std std-ref">The DynMatrix class</span></a></li>
+<li><a class="reference internal" href="#math-fixed"><span class="std std-ref">The FixedMatrix class</span></a></li>
+<li><a class="reference internal" href="#math-lma"><span class="std std-ref">Levenberg Marquard Optimizer</span></a></li>
+<li><a class="reference internal" href="#math-fft"><span class="std std-ref">Fast Fourier Transform (FFT)</span></a></li>
+<li><a class="reference internal" href="#math-ransac"><span class="std std-ref">Generic RANSAC Optimization</span></a></li>
+<li><a class="reference internal" href="#math-som"><span class="std std-ref">Generic Self Organizing (SOM)</span></a></li>
+<li><a class="reference internal" href="#math-llm"><span class="std std-ref">Local Linear Maps Network (LLM)</span></a></li>
+<li><a class="reference internal" href="#math-simplex"><span class="std std-ref">Simplex Optimizer</span></a></li>
+<li><a class="reference internal" href="#math-stochastic"><span class="std std-ref">Stochastic Optimizer</span></a></li>
+<li><a class="reference internal" href="#math-vq"><span class="std std-ref">Vector Quantisation</span></a></li>
+<li><a class="reference internal" href="#math-model"><span class="std std-ref">Least-Square based Model Fitting</span></a></li>
+<li><a class="reference internal" href="#math-polyreg"><span class="std std-ref">Generic Polynomial Regression</span></a></li>
+<li><a class="reference internal" href="#math-trees"><span class="std std-ref">QuadTree and Octree classes</span></a></li>
+</ul>
+</div>
+<div class="section" id="the-dynmatrix-class">
+<span id="math-dyn"></span><h2>The <strong>DynMatrix</strong> class<a class="headerlink" href="#the-dynmatrix-class" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html">DynMatrix</a> template is one of ICL’ fundamental utlity
+classes for linear algebra. It provides an intuitive object-based
+interface for handling 2D matrices with a <em>templated</em> element type.
+<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html">DynMatrix</a> instances provide 1D and 2D element access (using the
+index or 2D-function operator) and also the ability to shallowly
+wrapping around existing data-pointers.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is very important that all ICL-Matrix classes use image-like
+2D indexing, which is exactly the opposite of the common math-style
+indexing, which would mean <strong>Matrix(row,column)</strong> i.e. (y,x).
+In ICL, matrix 2D indices are (x,y), i.e. <strong>Matrix(column,row)</strong></p>
+</div>
+<p>In addition to the standard mathematical operators, such as +,-,*=,
+… we support a large set of higher level functions:</p>
+<ul class="simple">
+<li>QR and RQ decomposition (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#ad4a98b1ca4c7b1293bf6c80ffff7ae3e">DynMatrix::decompose_QR</a> and <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a94605e7c335033e0ce5aa4bd4b3db106">DynMatrix::decompose_RQ</a>)</li>
+<li>LU decomposition (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#ab8dfa0494c5ef760be4a2efc6defa307">DynMatrix::decompose_LU</a>)</li>
+<li>matrix inverse (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a8411b9f5ee93f2a239cf860b2e9a4a16">DynMatrix::inv</a>)</li>
+<li>matrix pseudo-inverse (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a4551b37598970f5ebd64f9a0d4843ff6">DynMatrix::pinv</a>)</li>
+<li>eigenvalue decomposition (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a2f52db1d603c036c1c6e82b290fe38a2">DynMatrix::eigen</a>)</li>
+<li>singular value decomposition (SVD) (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a925d12155ba95dcdeef1fa63834b4326">DynMatrix::svd</a>)</li>
+<li>linear equation solving (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a2f15be51279fd30075923615167fd45b">DynMatrix::solve</a>)<ul>
+<li>LU decomposition  based</li>
+<li>SVD based</li>
+<li>matrix inverse based</li>
+<li>QR decomposition  based</li>
+</ul>
+</li>
+<li>matrix trace (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a299d7a07df7e8c36068a319dfaf35a45">DynMatrix::trace</a>)</li>
+<li>matrix condition (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#abda8bb07191dda612b7ee5d802313bfc">DynMatrix::cond</a>)</li>
+<li>matrix determinant (<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#a46dd25df17bfeee9450e469e8ff4b6ef">DynMatrix::det</a>)</li>
+</ul>
+<p><a class="reference external" href="../icl-api/structicl_1_1math_1_1DynRowVector.html">DynRowVector</a></p>
+<blockquote>
+<div>due to the row-major data layout of the <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html">DynMatrix</a> class, the
+<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynRowVector.html">DynRowVector</a> was realized by a simple type-def, to
+<a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html">DynMatrix</a> instances, that shallowly wraps the matrix’s row
+data pointer</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1math_1_1DynColVector.html">DynColVector</a></p>
+<blockquote>
+<div>extends the <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html">DynMatrix</a> class by restricting instances to one column</div></blockquote>
+</div>
+<div class="section" id="the-fixedmatrix-class">
+<span id="math-fixed"></span><h2>The <strong>FixedMatrix</strong> class<a class="headerlink" href="#the-fixedmatrix-class" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1FixedMatrix.html">FixedMatrix</a> template shows the same
+behavior as the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1SoftPosit.html#a8aae68ce37660706cb7bd4cf1e925350">DynMatrix</a> template, except for the fact, that
+it uses a fixed data-array instead of a dynamic on. By these means,
+<a class="reference external" href="../icl-api/classicl_1_1math_1_1FixedMatrix.html">FixedMatrix</a> instances can be created on the stack without the need
+for allocating dynamic data from the heap. Even though C++ allows for
+implementing abstract matrix classes that use template parameters to
+switch between static and dynamic data handling (as e.g. done in the
+Eigen matrix library), we decided to keep things simpler for the user
+by providing two separate matrix classes.</p>
+<p>Again, also vector classes are derived from this matrix class.
+<a class="reference external" href="../icl-api/structicl_1_1math_1_1FixedColVector.html">FixedColVector</a> and <a class="reference external" href="../icl-api/structicl_1_1math_1_1FixedRowVector.html">FixedRowVector</a> are defined in
+<strong>ICLUtils/FixedVector.h</strong></p>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1FixedMatrix.html">FixedMatrix</a> class is used for <em>typedefs</em> in several other
+packages. I.e.:</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a75d400b4a0049c9cfcfa508ee28ee8a5">core::Color</a> is a <em>typedef</em> to <strong>FixedColVector&lt;icl8u,3&gt;</strong></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1geom.html#ab8f416d7756906e2a9a6d5de99ff1d93">geom::Vec</a> is a <em>typedef</em> to <strong>FixedColVector&lt;float,4&gt;</strong></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1geom.html#a7a4723060997bc57a5bc07bafc89d248">geom::Mat</a> is a <em>typedef</em> to <strong>FixedMatrix&lt;float,4,4&gt;</strong></li>
+</ul>
+</div>
+<div class="section" id="levenberg-marquard-optimizer">
+<span id="math-lma"></span><h2>Levenberg Marquard Optimizer<a class="headerlink" href="#levenberg-marquard-optimizer" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1LevenbergMarquardtFitter.html">LevenbergMarquardtFitter</a> is a generic implementation
+of the Levenberg Marquardt algorithm for non-linear parameter fitting.
+The implementation can either use an analytic Jacobian or can be told
+to derive a numerical Jacobinan automatically. The class documentation
+provides several useful examples for different kinds of target
+functions.</p>
+</div>
+<div class="section" id="fast-fourier-transform-fft">
+<span id="math-fft"></span><h2>Fast Fourier Transform (FFT)<a class="headerlink" href="#fast-fourier-transform-fft" title="Permalink to this headline">¶</a></h2>
+<p>The FFT package provides a huge set of 1D and 2D functions for Fast
+Fourier Transformation and several support functions for vectors and
+matrices with real and even complex data types. Internally, the
+FFT-framework uses Intel IPP and the Intel MKL if available for a
+significant speed up. All FFT support functions and classes are
+in the inner namespace <a class="reference external" href="../icl-api/namespaceicl_1_1math_1_1fft.html">math::fft</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For image-FFT, a less general, but easier to use FFT-Filter is
+provided in the ICLFilter module: <a class="reference external" href="../icl-api/classicl_1_1filter_1_1FFTOp.html">FFTOp</a></p>
+</div>
+</div>
+<div class="section" id="generic-ransac-optimization">
+<span id="math-ransac"></span><h2>Generic RANSAC Optimization<a class="headerlink" href="#generic-ransac-optimization" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1RansacFitter.html">RansacFitter</a> can be used for RANSAC based function
+fitting and optimization. It is implemented with template parameters
+for the vector-types for sample points and for the model parameter
+set. Here is an example</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/ProgArg.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/StringUtils.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Random.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Point32f.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;ICLMath/FixedVector.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLMath/RansacFitter.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="o">::</span><span class="n">utils</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="o">::</span><span class="n">math</span><span class="p">;</span>
+
+<span class="c1">// the line model (y=mx+b) is defined by two values</span>
+<span class="k">typedef</span> <span class="n">FixedColVector</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span> <span class="n">Line</span><span class="p">;</span>
+
+<span class="c1">// the fitting is done using standard least squares approach</span>
+<span class="n">Line</span> <span class="nf">fit_line</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point32f</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">pts</span><span class="p">){</span>
+  <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">pts</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+  <span class="n">DynMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">xs</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">ys</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">xs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">xs</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span><span class="p">;</span>
+    <span class="n">ys</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">y</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">DynMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">fit</span> <span class="o">=</span> <span class="n">ys</span> <span class="o">*</span> <span class="n">xs</span><span class="p">.</span><span class="n">pinv</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">Line</span><span class="p">(</span><span class="n">fit</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">fit</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="c1">// distance function for single points (y-distance here)</span>
+<span class="kt">double</span> <span class="nf">line_dist</span><span class="p">(</span><span class="k">const</span> <span class="n">Line</span> <span class="o">&amp;</span><span class="n">line</span><span class="p">,</span> <span class="k">const</span> <span class="n">Point32f</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">sqr</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">p</span><span class="p">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// the original line</span>
+<span class="k">static</span> <span class="k">const</span> <span class="n">Line</span> <span class="nf">THE_LINE</span><span class="p">(</span><span class="mf">1.23456</span><span class="p">,</span> <span class="mf">7.89</span><span class="p">);</span>
+
+<span class="c1">// create test data:</span>
+<span class="c1">// 50% noisy point on the line</span>
+<span class="c1">// 50% random outliers</span>
+<span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point32f</span><span class="o">&gt;</span> <span class="n">get_line_points</span><span class="p">(){</span>
+  <span class="n">Line</span> <span class="n">l</span> <span class="o">=</span> <span class="n">THE_LINE</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point32f</span><span class="o">&gt;</span> <span class="n">pts</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+  <span class="n">URand</span> <span class="nf">r</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
+  <span class="n">GRand</span> <span class="nf">gr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="p">;</span>
+    <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">y</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span> <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span> <span class="o">+</span> <span class="n">gr</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">pts</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">50</span><span class="p">]</span> <span class="o">=</span> <span class="n">Point32f</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">r</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">pts</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="n">randomSeed</span><span class="p">();</span>
+
+  <span class="c1">// create the fitter</span>
+  <span class="n">RansacFitter</span><span class="o">&lt;</span><span class="n">Point32f</span><span class="p">,</span><span class="n">Line</span><span class="o">&gt;</span> <span class="n">fitLine</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="n">fit_line</span><span class="p">,</span><span class="n">line_dist</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">30</span><span class="p">);</span>
+
+  <span class="c1">// fit ...</span>
+  <span class="n">RansacFitter</span><span class="o">&lt;</span><span class="n">Point32f</span><span class="p">,</span><span class="n">Line</span><span class="o">&gt;::</span><span class="n">Result</span> <span class="n">r</span> <span class="o">=</span> <span class="n">fitLine</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">get_line_points</span><span class="p">());</span>
+
+  <span class="c1">// show results</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;original line was &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">THE_LINE</span><span class="p">.</span><span class="n">transp</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;fitted result was &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">r</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">transp</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;fitting error was &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">r</span><span class="p">.</span><span class="n">error</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="generic-self-organizing-som">
+<span id="math-som"></span><h2>Generic Self Organizing (SOM)<a class="headerlink" href="#generic-self-organizing-som" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>math::SOM</strong> and it’s derived class <strong>math::SOM2D</strong> are generic
+self organizing map implementations. An algorithm overview is given
+in <a class="reference external" href="http://en.wikipedia.org/wiki/Self-organizing_map">http://en.wikipedia.org/wiki/Self-organizing_map</a></p>
+</div>
+<div class="section" id="local-linear-maps-network-llm">
+<span id="math-llm"></span><h2>Local Linear Maps Network (LLM)<a class="headerlink" href="#local-linear-maps-network-llm" title="Permalink to this headline">¶</a></h2>
+<p>The Local Linear Map algorithm can be used for general regression
+tasks.  ICL provides two sample applications that use the icl::<cite>LLM</cite>
+network for 1D to 1D and from 2D to 3D regression tasks.</p>
+</div>
+<div class="section" id="simplex-optimizer">
+<span id="math-simplex"></span><h2>Simplex Optimizer<a class="headerlink" href="#simplex-optimizer" title="Permalink to this headline">¶</a></h2>
+<p>The Simplex (Downhill) algorithm is a very concise, yet powerful
+search algorithm, that can be used to minimize arbitrary well shaped
+functions. Our implementation, the <a class="reference external" href="../icl-api/classicl_1_1math_1_1SimplexOptimizer.html">SimplexOptimizer</a> is
+implemented as a generic template that abstracts from the used scalar
+and vector types. Except for some optimization parameters, it can be
+instantiated by just passing an arbitrary error-function and an
+initial position in the search space.</p>
+</div>
+<div class="section" id="stochastic-optimizer">
+<span id="math-stochastic"></span><h2>Stochastic Optimizer<a class="headerlink" href="#stochastic-optimizer" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1StochasticOptimizer.html">StochasticOptimizer</a> is a rather old implementation for
+stochastic search processes. It defines a virtual class interface, that
+can be implemented for specific optimization tasks.</p>
+</div>
+<div class="section" id="vector-quantisation">
+<span id="math-vq"></span><h2>Vector Quantisation<a class="headerlink" href="#vector-quantisation" title="Permalink to this headline">¶</a></h2>
+<p>This algorithm is implemented by the <a class="reference external" href="../icl-api/classicl_1_1math_1_1KMeans.html">KMeans</a> class template.
+The class is implemented as a generic template, and can therefore
+be used for different Scalar and Vector types.</p>
+</div>
+<div class="section" id="least-square-based-model-fitting">
+<span id="math-model"></span><h2>Least-Square based Model Fitting<a class="headerlink" href="#least-square-based-model-fitting" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1LeastSquareModelFitting.html">LeastSquareModelFitting</a> is a
+generic implementation of the direct-least-square fitting approach
+presented in the paper <em>Direct Least Square Fitting of Ellipses</em> by
+<em>Andrew W. Fitzgibbon et. al.</em>.</p>
+</div>
+<div class="section" id="generic-polynomial-regression">
+<span id="math-polyreg"></span><h2>Generic Polynomial Regression<a class="headerlink" href="#generic-polynomial-regression" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1PolynomialRegression.html">PolynomialRegression</a> is a
+generic template-based implementation for a polynomial regression
+network. It provides a string-based interface to define regression
+parameters.</p>
+</div>
+<div class="section" id="quadtree-and-octree-classes">
+<span id="math-trees"></span><h2>QuadTree and Octree classes<a class="headerlink" href="#quadtree-and-octree-classes" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1math_1_1QuadTree.html">QuadTree</a> and the <a class="reference external" href="../icl-api/classicl_1_1math_1_1Octree.html">Octree</a> class templates provides an
+extremly fast interface for inserting points, nearest-neighbor search
+and aproximate nearest-neighbor search. In benchmarks, the octree was
+magnitudes faster then a comparable pcl-octree implementation. However,
+we buy this speedup by the loss of the ability to check whether a newly
+added point is already contained in the octree.</p>
+<p>The classes are implemented as a template for <strong>float</strong> and <strong>double</strong>
+point types and it uses an extra template parameter <strong>CAPACITY</strong> that
+defines the number of points, that can be stored in each node of the
+tree. It basically provides optimized functions for</p>
+<ul class="simple">
+<li>point insertion</li>
+<li>nearest neighbor search</li>
+<li>querying a rectangular sub-region</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Linear Algebra and Machine Learning</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#the-dynmatrix-class">The <strong>DynMatrix</strong> class</a></li>
+<li><a class="reference internal" href="#the-fixedmatrix-class">The <strong>FixedMatrix</strong> class</a></li>
+<li><a class="reference internal" href="#levenberg-marquard-optimizer">Levenberg Marquard Optimizer</a></li>
+<li><a class="reference internal" href="#fast-fourier-transform-fft">Fast Fourier Transform (FFT)</a></li>
+<li><a class="reference internal" href="#generic-ransac-optimization">Generic RANSAC Optimization</a></li>
+<li><a class="reference internal" href="#generic-self-organizing-som">Generic Self Organizing (SOM)</a></li>
+<li><a class="reference internal" href="#local-linear-maps-network-llm">Local Linear Maps Network (LLM)</a></li>
+<li><a class="reference internal" href="#simplex-optimizer">Simplex Optimizer</a></li>
+<li><a class="reference internal" href="#stochastic-optimizer">Stochastic Optimizer</a></li>
+<li><a class="reference internal" href="#vector-quantisation">Vector Quantisation</a></li>
+<li><a class="reference internal" href="#least-square-based-model-fitting">Least-Square based Model Fitting</a></li>
+<li><a class="reference internal" href="#generic-polynomial-regression">Generic Polynomial Regression</a></li>
+<li><a class="reference internal" href="#quadtree-and-octree-classes">QuadTree and Octree classes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="utils.html"
+                        title="previous chapter">General Support Types and Functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="core.html"
+                        title="next chapter">Basic Types for Image Processing</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="core.html" title="Basic Types for Image Processing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="General Support Types and Functions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

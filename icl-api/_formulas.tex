@@ -1,0 +1,660 @@
+\documentclass{article}
+\usepackage{ifthen}
+\usepackage{epsfig}
+\usepackage[utf8]{inputenc}
+\usepackage{newunicodechar}
+  \newunicodechar{⁻}{${}^{-}$}% Superscript minus
+  \newunicodechar{²}{${}^{2}$}% Superscript two
+  \newunicodechar{³}{${}^{3}$}% Superscript three
+
+\pagestyle{empty}
+\begin{document}
+$x \in {2,3,4}$
+\pagebreak
+
+$y \in {1,2,3,4}$
+\pagebreak
+
+\[ D = \left(\sum\limits_{i,j} (A_{ij}-B_{ij})^n\right)^{\frac{1}{n}} \]
+\pagebreak
+
+\[ \mbox{div} = \sum\limits_{i,j} A_{ij} \cdot \log{\frac{A_{ij}}{B_{ij}}} - A_{ij} + B_{ij} \]
+\pagebreak
+
+$H$
+\pagebreak
+
+$a_i$
+\pagebreak
+
+$b_i$
+\pagebreak
+
+$ \{a_i\} \;\;i \in [0,n[ $
+\pagebreak
+
+$ \{b_i\} \;\;i \in [0,n[ $
+\pagebreak
+
+\[ H a_i = b_i \;\;\; \forall i \in [0,n[ \]
+\pagebreak
+
+\[ H A = B \]
+\pagebreak
+
+\[ H (a_0 a_1 a_2 ... a_{n-1}) = (b_0 b_1 b_2 ... b_{n-1}) \]
+\pagebreak
+
+\[ H = B A^{-1} \]
+\pagebreak
+
+\[ H ( a_x a_y 1 )^T = (b_x b_y 1)^T \]
+\pagebreak
+
+\[ \frac{X a}{L a} = b_x \;\;\;\;\;and\;\;\;\;\;\; \frac{Y a}{L a} = b_y \]
+\pagebreak
+
+\[ \Leftrightarrow \frac{X a}{b_x} = La \;\;\;\;\;and\;\;\;\;\;\; \frac{Y a}{b_y} = La \]
+\pagebreak
+
+\[ \Leftrightarrow \frac{X a}{b_x} - La = 0 \;\;\;\;\;and\;\;\;\;\;\; \frac{Y a}{b_y} - La = 0 \]
+\pagebreak
+
+\[ \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y - 1 = 0 \;\;\;\;\;and\;\;\;\;\;\; \frac{Y a}{b_y} - L_x a_x - L_y a_y - 1 = 0 \]
+\pagebreak
+
+\[ \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y = 1 \;\;\;\;\;and\;\;\;\;\;\; \frac{Y a}{b_y} - L_x a_x - L_y a_y = 1 \]
+\pagebreak
+
+$ b_x $
+\pagebreak
+
+$ b_y $
+\pagebreak
+
+\[ \Leftrightarrow X a - L_x b_x a_x - L_y a_y b_x = b_x \;\;\;\;\;and\;\;\;\;\;\; Y a - L_x a_x b_y - L_y a_y b_y = b_y \]
+\pagebreak
+
+$ M h = r $
+\pagebreak
+
+$ h = (X^T Y^T L_x L_y)^T $
+\pagebreak
+
+$(a_i,b_i)$
+\pagebreak
+
+\[ M=\left(\begin{array}{cccccccc} a_x & a_y & 1 & 0 & 0 & 0 & -a_x b_x & -a_y b_x \\ 0 & 0 & 0 & a_x & a_y & 1 & -a_x b_y & -a_y b_y \\ ... \end{array}\right) \]
+\pagebreak
+
+\[ r = ( b_x b_y ... )^T \]
+\pagebreak
+
+\[ h = M^{-1} r \]
+\pagebreak
+
+$ f : R^N \rightarrow R^O $
+\pagebreak
+
+$ \beta_0 $
+\pagebreak
+
+$ \{(x_i,y_i)\}$
+\pagebreak
+
+$ f $
+\pagebreak
+
+$ \beta $
+\pagebreak
+
+\[ S(\beta) = \sum_{o=1}^O \sum_{i=1}^m [y_i[o] - f(x_i, \ \beta)[o] ]^2 \]
+\pagebreak
+
+\[ f(x) = \beta_1 + \beta_2 x + \beta_3 x^2 + beta_4 x^3 \]
+\pagebreak
+
+$ \partial f_o / \partial \beta_i$
+\pagebreak
+
+$ x_i $
+\pagebreak
+
+$ J_{oi} $
+\pagebreak
+
+\[ f(x) = a + b*x + c*x^2 + d*x^3 \]
+\pagebreak
+
+\[ ( 1, x, x^2, x^3 ) \]
+\pagebreak
+
+$ \beta = (a,b,c,d,e,f) $
+\pagebreak
+
+\[ f(x,y,z;\beta) = xyab + yzd^2c - zxfeb + (a + b + c + d)^2; \]
+\pagebreak
+
+\[ \frac{\partial f}{\partial a} = xyb + 2 (a + b + c + d) \]
+\pagebreak
+
+\[ \frac{\partial f}{\partial b} = xya - zxfe + 2 (a + b + c + d); \]
+\pagebreak
+
+\[ \frac{\partial f}{\partial c} = yzd^2 + 2 (a + b + c + d)\]
+\pagebreak
+
+\[ \frac{\partial f}{\partial d} = 2dyzc + 2 (a + b + c + d)\]
+\pagebreak
+
+\[ \frac{\partial f}{\partial e} = -zxfb \]
+\pagebreak
+
+\[ \frac{\partial f}{\partial f} = zxeb \]
+\pagebreak
+
+\[ \vec{y}^{net}(x) = \sum\limits_{i=1}^N ( \vec{w}_i^{out}+A_i ( \vec{x}-\vec{w}_i^{in} ) ) \cdot g_i(\vec{x}) \]
+\pagebreak
+
+$g_i(\vec{x})$
+\pagebreak
+
+$ ( \vec{w}_i^{out}+A_i ( \vec{x}-\vec{w}_i^{in} ) ) $
+\pagebreak
+
+$\vec{w}_i^{in}$
+\pagebreak
+
+$\vec{w}_i^{out}$
+\pagebreak
+
+$A_i$
+\pagebreak
+
+\[ g_i(\vec{x}) = \frac{\exp(-\frac{\|\vec{x}-\vec{w}_i^{in}\|^2}{2\sigma_i^2})} {\sum\limits_{j=1}^N \exp(-\frac{\|\vec{x}-\vec{w}_j^{in}\|^2}{2\sigma_j^2})} \]
+\pagebreak
+
+\[ \Delta \vec{w}_i^{in} = \epsilon_{in} \cdot ( \vec{x} - \vec{w}_i^{in} ) \cdot g_i(\vec{x}) \]
+\pagebreak
+
+\[ \Delta \sigma^2 = \epsilon_{\sigma} \cdot ( \vec{x} - \vec{w}_i^{in} )^2 - \sigma^2 \cdot g_i(\vec{x}) \]
+\pagebreak
+
+$(\vec{x}^{\alpha},\vec{y}^{\alpha})$
+\pagebreak
+
+\[ \Delta \vec{w}_i^{out} = \epsilon_{out} \cdot g_i(\vec{x}^{\alpha}) \cdot (\vec{y}^{\alpha} - \vec{y}^{net}(\vec{x}^{\alpha}) ) + A_i \Delta \vec{w}_i^{in} \]
+\pagebreak
+
+\[ \Delta A_i = \epsilon_A \cdot g_i(\vec{x}^{\alpha}) \cdot (\vec{y}^{\alpha} - \vec{y}^{net}(\vec{x}^{\alpha}) ) \cdot \frac{(\vec{x}^{\alpha} - \vec{w}_i^{in} )^{\tau}}{\|\vec{x}^{\alpha} - \vec{w}_i^{in}\|^2} \]
+\pagebreak
+
+\[ f_X(x_1, \dots, x_N) = \frac {1} {(2\pi)^{N/2}|\Sigma|^{1/2}} \exp \left( -\frac{1}{2} ( x - \mu)^\top \Sigma^{-1} (x - \mu) \right) \]
+\pagebreak
+
+$W=\{n_1,...,n_N\}$
+\pagebreak
+
+$s$
+\pagebreak
+
+$n_i$
+\pagebreak
+
+$n_i.p$
+\pagebreak
+
+$D$
+\pagebreak
+
+$n_i.g$
+\pagebreak
+
+$K$
+\pagebreak
+
+$\epsilon$
+\pagebreak
+
+$x$
+\pagebreak
+
+\[ \forall r \in \{1,...,n\} \\ \Delta n_r.p = \epsilon \cdot h(n_r.g,h_s.g) \cdot (x-n_r.p) \]
+\pagebreak
+
+$h$
+\pagebreak
+
+\[ h(a,b) = e^{-\frac{(a-b)^2}{s\sigma^2}} \]
+\pagebreak
+
+$\{40,40\}$
+\pagebreak
+
+$[-1,1]^{dataDim}$
+\pagebreak
+
+$\{(-1,1),(-1,1),...\}$
+\pagebreak
+
+$h(a,b)$
+\pagebreak
+
+\[ L(x) = \vec{o} + x\vec{v} \]
+\pagebreak
+
+\[ f(x) = ax^2 + bx + c \]
+\pagebreak
+
+$ O(number\,of\,white\,pixels^2)$
+\pagebreak
+
+$A=\{a_1,...,a_n\}$
+\pagebreak
+
+$B=\{b_1,...,b_m\}$
+\pagebreak
+
+\[ H(A,B) := max ( h(A,B), b(B,A) ) \]
+\pagebreak
+
+\[ h(A,B) := \max\limits_{a_i \in A} \min\limits_{b_j \in B} || a - b || \]
+\pagebreak
+
+$ || . || $
+\pagebreak
+
+$H(A,B)$
+\pagebreak
+
+$I(x,y)$
+\pagebreak
+
+$h(A,B) := \max\limits_{a_i \in A} \min\limits_{b_j \in B} || a - b || $
+\pagebreak
+
+$h(A,B) := < \min\limits_{b_j \in B} || a - b || >_{a_i \in A} $
+\pagebreak
+
+\[ g(x,y;\lambda,\theta,\psi,\sigma,\gamma)=\exp(-\frac{x'^2+\gamma^2y'^2}{2\sigma^2})\cos(2\pi\frac{x'}{\lambda}+\psi) \]
+\pagebreak
+
+\[ x' = x \cos\theta + y \sin\theta\, \]
+\pagebreak
+
+\[ y' = -x \sin\theta + y \cos\theta\, \]
+\pagebreak
+
+$\lambda$
+\pagebreak
+
+$\theta$
+\pagebreak
+
+$\psi$
+\pagebreak
+
+$\gamma$
+\pagebreak
+
+$\theta=0$
+\pagebreak
+
+$\frac{\pi}{2}$
+\pagebreak
+
+$\sigma$
+\pagebreak
+
+$\lambda=5$
+\pagebreak
+
+$\psi=0$
+\pagebreak
+
+$\gamma=1$
+\pagebreak
+
+$\theta=1$
+\pagebreak
+
+$\sigma=100$
+\pagebreak
+
+$\theta=2$
+\pagebreak
+
+$\sigma=200$
+\pagebreak
+
+$ I=\sqrt(gx^2+gy^2) $
+\pagebreak
+
+$ I=atan2(gy,gx) $
+\pagebreak
+
+\[ A(i,j) = \sum\limits_{x=0}^i \sum\limits_{y=0}^j a(i,j) \]
+\pagebreak
+
+\[ A(i,j) = a(i,j)+A(i-1,j)+A(i,j-1)-A(i-1,j-1) \]
+\pagebreak
+
+\[ A(i,j) = \sum\limits_{x=0}^{i-1} \sum\limits_{y=0}^{j-1} a(i,j) \]
+\pagebreak
+
+\[X = D - A - B + C\]
+\pagebreak
+
+\[P = (A.x-C.x) * (B.y-C.y) \]
+\pagebreak
+
+$X/P$
+\pagebreak
+
+$p=(px,py)$
+\pagebreak
+
+$\mu_p$
+\pagebreak
+
+$p$
+\pagebreak
+
+$r$
+\pagebreak
+
+$\mu_r{p}$
+\pagebreak
+
+$g$
+\pagebreak
+
+$ d(x,y) = 255 * (i(x,y) > (M+g) ) $
+\pagebreak
+
+$range := maxVal - minVal$
+\pagebreak
+
+\[ LUTIDX_{naiv}(x,y) = x-minVal + range \cdot (y-minVal) \]
+\pagebreak
+
+\[ lut -= (range+1)*minVal; \]
+\pagebreak
+
+\[ LUTIDX_{optimized}(x,y) = x + range\cdot y \]
+\pagebreak
+
+\[ f:R^3~\rightarrow~R \]
+\pagebreak
+
+$2^{24} \mbox{bytes} = 16.8\mbox{MB}$
+\pagebreak
+
+$2^{21} \mbox{bytes} = 2.1\mbox{MB}$
+\pagebreak
+
+$2^{18} \mbox{bytes}=262\mbox{kB}$
+\pagebreak
+
+\[ D(x,y,c) = S(x,y,c)*w(c) \]
+\pagebreak
+
+$S$
+\pagebreak
+
+$w$
+\pagebreak
+
+$C$
+\pagebreak
+
+\[ D(x,y,0) = \sum\limits_{c=0}^C S(x,y,c)*w(c) \]
+\pagebreak
+
+\[ R(x,y,c) = \mu_m(x,y,c) + \frac{\sigma_m^2(x,y,c)-\nu^2}{\sigma^2} * (S(x,y,c) - \mu_m(x,y,c)) \]
+\pagebreak
+
+$R(x,y,c)$
+\pagebreak
+
+$\mu_m(x,y,c)$
+\pagebreak
+
+$\sigma^2_m(x,y,c)$
+\pagebreak
+
+$\sigma^2 $
+\pagebreak
+
+$S(x,y,c)$
+\pagebreak
+
+$P_1(x)$
+\pagebreak
+
+$P_2(x)$
+\pagebreak
+
+\[ BinaryMap(x,y) = \bigvee\limits_{channels\;\; c} ProximityMap(x,y,c) > significance*255 \]
+\pagebreak
+
+\[ l: \vec{o}+\lambda \vec{d} \]
+\pagebreak
+
+$\alpha $
+\pagebreak
+
+\[ x \cos(\alpha) + y \sin(\alpha) - r = 0 \]
+\pagebreak
+
+$ (\cos(\alpha), \sin(\alpha) )^{\tau} $
+\pagebreak
+
+\[ \vec{o} = r * ( \cos(\alpha) \sin(\alpha) )^{\tau} \]
+\pagebreak
+
+\[ \vec{d} = ( -\sin(\alpha) \cos(\alpha) ]^{\tau} \]
+\pagebreak
+
+\[ g_1: \vec{o}_1+ \lambda_1 * \vec{d}_1 \]
+\pagebreak
+
+$\alpha$
+\pagebreak
+
+\[ g_2: \vec{o}_2+ \lambda_2 * \vec{d}_2 \]
+\pagebreak
+
+$\beta$
+\pagebreak
+
+\[ g1 = g2 \]
+\pagebreak
+
+\[ \lambda_1\cdot -\sin(\alpha) + \lambda_2 \cdot \sin(\beta) = s\cos(\beta) - r\cos(\alpha) \]
+\pagebreak
+
+\[ \lambda_1\cdot \cos(\alpha) + \lambda_2 \cdot -\cos(\beta) = s\sin(\beta) - r\sin(\alpha) \]
+\pagebreak
+
+\[ Mx = b \]
+\pagebreak
+
+\[ M = \left( \begin{array}{cc} -\sin(\alpha) & \sin(\beta) \\ \cos(\alpha) & -\cos(\beta) \\ \end{array} \right) \]
+\pagebreak
+
+\[ B = \left( \begin{array}{c} s\cos(\beta) - r\cos(\alpha) \\ s\sin(\beta) - r\sin(\alpha) \\ \end{array} \right) \]
+\pagebreak
+
+\[ x = (\lambda_1, \lambda_2)^{\tau} \]
+\pagebreak
+
+$ Mx=b $
+\pagebreak
+
+$x=M^{-1}b$
+\pagebreak
+
+$M$
+\pagebreak
+
+$r = x\cdot cos(rho) + y\cdot sin(rho)$
+\pagebreak
+
+$N$
+\pagebreak
+
+$w_i$
+\pagebreak
+
+$t_j$
+\pagebreak
+
+$d_{ij}$
+\pagebreak
+
+$D=\{d_{ij}\}$
+\pagebreak
+
+\[P_n = \frac{\sum_{A_h}k(A_h-P_o)w(A_h)P_o}{\sum_{A_h} | k(A_h-P_o) w(A_h)|} \]
+\pagebreak
+
+$P_n $
+\pagebreak
+
+$P_o $
+\pagebreak
+
+$k() $
+\pagebreak
+
+$w() $
+\pagebreak
+
+$A_h $
+\pagebreak
+
+$A$
+\pagebreak
+
+$n^2$
+\pagebreak
+
+$n^3$
+\pagebreak
+
+\[\{R_i | i \in \{1,N\} \}\]
+\pagebreak
+
+\[R_i=(\mbox{RC}_i,\mbox{T}_i,\mbox{S}_i,\mbox{RD}_i, \mbox{BUF}_i)\]
+\pagebreak
+
+$I$
+\pagebreak
+
+$\mbox{BUF}_i$
+\pagebreak
+
+$ \mbox{BUF}_i \leftarrow 255 * ( |I(x,y)-\mbox{RC}_i| < T_i )$
+\pagebreak
+
+$i = i .. N$
+\pagebreak
+
+$\mbox{Regions}_i \leftarrow \mbox{RD}_i.detect(\mbox{BUF}_i)$
+\pagebreak
+
+$r_j \in \mbox{Regions}_i$
+\pagebreak
+
+$r_j$
+\pagebreak
+
+$RC_i$
+\pagebreak
+
+\[ d(a,b) = \sqrt{ \sum\limits_{i=1}^D \left( \frac{a_i - b_i}{\sigma_i}\right)^2 } \]
+\pagebreak
+
+\[ d(a,b) = \sqrt[4]{ \sum\limits_{i=1}^D \left( \frac{a_i - b_i}{\sigma_i}\right)^2 } \]
+\pagebreak
+
+$\sigma_i$
+\pagebreak
+
+\[ P = \left(\begin{array}{cccc} fm_x & s & p_x & 0 \\ 0 & f m_y & p_y & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 \end{array}\right) \]
+\pagebreak
+
+\[ C = \left(\begin{array}{cc} h^T & -h^T p \\ u^T & -u^T p \\ n^T & -n^T p \\ (0,0,0) & 1 \\ \end{array}\right) \]
+\pagebreak
+
+\[ p_s' = homogenize(P C p_w) \]
+\pagebreak
+
+\[ u = \frac{fm_x C_1 x + s C_2 x + p_x C_3 x}{C_3 x} \]
+\pagebreak
+
+\[ v = \frac{fm_y C_2 x + p_y C_3 x}{C_3 x} \]
+\pagebreak
+
+\[ fm_x C_1 x + s C_2 x + (p_x - u) C_3 x = 0 \]
+\pagebreak
+
+\[ fm_y C_2 x + (p_y - v) C_3 x = 0 \]
+\pagebreak
+
+\[ P = \left(\begin{array}{cccccccccccc} fm_x x & fm_x y & fm_z x & fm_x & s x & s y & s z & s & d_u x & d_u y & d_u z & d_u \\ 0 & 0 & 0 & 0 & fm_y x & fm_y y & fm_y x & fm_y & d_v x & d_v y & d_v z & d_v \\ ... \end{array}\right) ( C_1 C_2 C_3 )^T \]
+\pagebreak
+
+$V: \mbox{offset} + \lambda \cdot \mbox{direction} $
+\pagebreak
+
+$ P: < (X - \mbox{planeOffset}), \mbox{planeNormal}> = 0 $
+\pagebreak
+
+$<(\mbox{offset} + \lambda \cdot \mbox{direction}) - \mbox{planeOffset},planeNormal> = 0$
+\pagebreak
+
+\[ \lambda = - \frac{<\mbox{offset}-\mbox{planeOffset},\mbox{planeNormal}>}{<\mbox{direction},\mbox{planeNormal}>} \]
+\pagebreak
+
+\[ V: \mbox{offset} + \lambda \cdot \mbox{direction} \]
+\pagebreak
+
+$n_0 \leq n_1 \leq n2 \leq n_3 $
+\pagebreak
+
+$ n_0 < n_3 $
+\pagebreak
+
+\[ id(n_1,n_2,n_3,n_4) = (+1 or -1)(n_1 + 6 n_2 + 36 n_3 + 216 n_4) \]
+\pagebreak
+
+\[ compute\_ni(id) = \]
+\pagebreak
+
+\[ id = abs(id) \]
+\pagebreak
+
+\[ n_4 = min(5,id/216) \]
+\pagebreak
+
+\[ id -= n_4*216 \]
+\pagebreak
+
+\[ n_3 = min(5,id/36) \]
+\pagebreak
+
+\[ id -= n_3*36; \]
+\pagebreak
+
+\[ n_2 = min(5,id/6) \]
+\pagebreak
+
+\[ id -= n_2*6 \]
+\pagebreak
+
+\[ n_1 = id; \]
+\pagebreak
+
+\end{document}

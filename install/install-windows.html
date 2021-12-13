@@ -1,0 +1,1057 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Installation Instructions for Windows &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ICL’s License Terms" href="../extras/license.html" />
+    <link rel="prev" title="Installation Instructions for Linux" href="install-linux.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../extras/license.html" title="ICL’s License Terms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install-linux.html" title="Installation Instructions for Linux"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/install.html" accesskey="U">Installation Instructions</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="installation-instructions-for-windows">
+<span id="install-windows"></span><h1>Installation Instructions for Windows<a class="headerlink" href="#installation-instructions-for-windows" title="Permalink to this headline">¶</a></h1>
+<p>ICL can be downloaded as source code via SVN or as binary package (soon).
+Please refer to the <a class="reference internal" href="../extras/download.html#download"><span class="std std-ref">download instructions</span></a> for details.
+ICL uses standard CMake as its build system (for more details on CMake visit
+<a class="reference external" href="http://www.cmake.org/">http://www.cmake.org/</a>).
+ICL comes with only very few installation dependencies. We decided
+to make a small set of dependencies compulsory in order to limit
+the set of possible combinations.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#install-win-dependencies"><span class="std std-ref">External Dependencies</span></a><ul>
+<li><a class="reference internal" href="#install-win-dependencies-mandatory"><span class="std std-ref">Mandatory Dependencies</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-doc"><span class="std std-ref">Dependencies for the Documentation</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional"><span class="std std-ref">Optional Dependencies</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-win-source"><span class="std std-ref">Installation from Source</span></a></li>
+<li><a class="reference internal" href="#install-win-binary"><span class="std std-ref">Installaion using Binary Packages</span></a></li>
+</ul>
+</div>
+<div class="section" id="external-dependencies">
+<span id="install-win-dependencies"></span><h2>External Dependencies<a class="headerlink" href="#external-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Most external dependencies are kept purely optional. There are only few
+mandatory dependencies and most are delivered by the ICL.</p>
+</div>
+<div class="section" id="mandatory-dependencies">
+<span id="install-win-dependencies-mandatory"></span><h2>Mandatory Dependencies<a class="headerlink" href="#mandatory-dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>pthreads</strong> (for general threading support)</li>
+<li><strong>zlib</strong> (for reading and writing zipped files, ending .gz)</li>
+<li><strong>libjpeg</strong> (for reading and writing jpeg images,
+lossy but high compression, fast)</li>
+<li><strong>libpng</strong> (for reading and writing png images,
+loss-less compression, but rather slow in comparison to jpeg)</li>
+</ul>
+<p>In Windows you only need to get libpthread. All other mandatory libraries are
+provided by the ICL. libpthread can be downloaded on the following website:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.sourceware.org/pthreads-win32/">https://www.sourceware.org/pthreads-win32/</a></li>
+</ul>
+</div>
+<div class="section" id="dependencies-for-the-documentation">
+<span id="install-win-dependencies-doc"></span><h2>Dependencies for the Documentation<a class="headerlink" href="#dependencies-for-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>In order to create the documentation of ICL and this manual you need to
+install some tools:</p>
+<ul class="simple">
+<li><strong>Python 2.7.x</strong></li>
+<li><strong>pyparsing</strong></li>
+<li><strong>Sphinx</strong></li>
+<li><strong>Doxygen</strong></li>
+</ul>
+<p>You can get Python on the following website:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://python.org/download/">http://python.org/download/</a></li>
+</ul>
+<p>After installing Python it is recommended to add the Python and Python/Scripts
+directory to the environment variable <strong>PATH</strong>. For an easy installation of
+<strong>pyparsing</strong> and <strong>Sphinx</strong> download setuptools here:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py">https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py</a></li>
+</ul>
+<p>Using the command prompt browse to the directory with the previously
+downloaded file and run the following commands to install <strong>setuptools</strong>,
+<strong>pyparsing</strong> and <strong>Sphinx</strong>:</p>
+<p>python ez_setup.py
+easy_install pyparsing
+easy_install sphinx</p>
+<p>Now you only need <strong>Doxygen</strong> which can be found here:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://www.stack.nl/~dimitri/doxygen/download.html">http://www.stack.nl/~dimitri/doxygen/download.html</a></li>
+</ul>
+</div>
+<div class="section" id="optional-dependencies">
+<span id="install-win-dependencies-optional"></span><h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>In general each optional dependency adds some extra functionality to ICL. In
+some of the cases, also a slower but native fallback implementation is
+provided. In the following, the external dependencies are listed and their
+benefits are explained.</p>
+<div class="section" id="overview">
+<h3>Overview:<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="#install-win-dependencies-optional-ipp"><span class="std std-ref">Intel Integrated Performance Primitives (Intel IPP)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-mkl"><span class="std std-ref">Intel Math Kernel Library (Intel MKL)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-opencv"><span class="std std-ref">Open Computer Vision Library (OpenCV)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-libmesasr"><span class="std std-ref">SwissRanger Driver Library (libMesaSR)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-imagemagick"><span class="std std-ref">Image Magick (libmagick++)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-libdc"><span class="std std-ref">libdc1394</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-libfreenect"><span class="std std-ref">OpenKinect Kinect Driver Library (libfreenect)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-xine"><span class="std std-ref">Xine (libxine)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-qt"><span class="std std-ref">Qt Library (libQt5)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-pylon"><span class="std std-ref">Basler Pylon Drivers</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-openni"><span class="std std-ref">OpenNI / Nite</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-opencl"><span class="std std-ref">Open Computing Language (OpenCL)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-pcl"><span class="std std-ref">Point Cloud Library (PCL)</span></a></li>
+<li><a class="reference internal" href="#install-win-dependencies-optional-rsb"><span class="std std-ref">Robotics Service Bus (RSB)</span></a></li>
+</ul>
+<div class="section" id="intel-integrated-performance-primitives-intel-ipp">
+<span id="install-win-dependencies-optional-ipp"></span><h4>Intel Integrated Performance Primitives (Intel IPP)<a class="headerlink" href="#intel-integrated-performance-primitives-intel-ipp" title="Permalink to this headline">¶</a></h4>
+<p>The Intel IPP is a proprietary library that provides a very large set
+of highly optimized functions for different domains, such as linear
+algebra and in particular computer-vision and image
+processing. <strong>Important:</strong> Since Intel IPP is proprietary software,
+Intel IPP linkage must be established by manually compiling ICL from
+source. However, we plan to replace the static linkage against Intel
+IPP with a run-time linking approach that would also work for binary
+installation sources.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong></li>
+<li><strong>License Type:</strong> Proprietary, but free to try and for private use
+(research is not private)</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://software.intel.com/en-us/intel-ipp/">http://software.intel.com/en-us/intel-ipp/</a></li>
+<li><strong>Dependent library features:</strong> Most low-level image processing
+functions such as scaling, converting and linear filters are
+internally replaced by highly efficient Intel IPP function calls.
+The <a class="reference external" href="../icl-api/classicl_1_1filter_1_1ProximityOp.html">filter::ProximityOp</a> filters are not available without Intel
+IPP yet (but we plan to add fallback implementations soon).</li>
+</ul>
+</div>
+<div class="section" id="intel-math-kernel-library-intel-mkl">
+<span id="install-win-dependencies-optional-mkl"></span><h4>Intel Math Kernel Library (Intel MKL)<a class="headerlink" href="#intel-math-kernel-library-intel-mkl" title="Permalink to this headline">¶</a></h4>
+<p>The Intel Math Kernel Library dependency is quite similar to the Intel
+IPP dependency. However, Intel MKL is only used for a much smaller set
+of linear algebra functions. Global mathematical utility functions
+such as <a class="reference external" href="../icl-api/group__LINALG.html#ga18a342431f4e9c2a260c5ac34373d514">math::big_matrix_mult_t</a> or <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#ae9fdf2d2f1bb39d2018d3d29062101a6">DynMatrix::big_matrix_pinv</a>
+significantly accelerated if Intel MKL is available. However, in
+contrast to the Intel IPP dependency, all MKL-accelerated functions
+have an equivalent C++ fallback implementation.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 10.3</li>
+<li><strong>License Type:</strong> Proprietary, but free to try and for private use
+(research is not private)</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://software.intel.com/en-us/intel-mkl/">http://software.intel.com/en-us/intel-mkl/</a></li>
+<li><strong>Dependent library features:</strong> Accelerated functions for big
+matrices, most of them located in <a class="reference external" href="../icl-api/DynMatrixUtils_8h.html">DynMatrixUtils.h</a></li>
+</ul>
+</div>
+<div class="section" id="open-computer-vision-library-opencv">
+<span id="install-win-dependencies-optional-opencv"></span><h4>Open Computer Vision Library (OpenCV)<a class="headerlink" href="#open-computer-vision-library-opencv" title="Permalink to this headline">¶</a></h4>
+<p>We use OpenCV mainly in order to provide a compatibility interface
+that converts OpenCV’s common image data type <strong>cv::Mat</strong> into ICL’s image type
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">core::ImgBase</a> and vice versa.
+The header <a class="reference external" href="../icl-api/OpenCV_8h.html">OpenCV.h</a> in the ICLCore module provides efficient and simple
+to use converter methods. These are only available if the OpenCV
+dependency is met. In addition, OpenCV is currently needed for the
+LibOpenSurf (<a class="reference external" href="http://www.chrisevansdev.com/computer-vision-opensurf.html">http://www.chrisevansdev.com/computer-vision-opensurf.html</a>)
+based backend of the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1SurfFeatureDetector.html">cv::SurfFeatureDetector</a> which is directly
+part of ICL.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.1</li>
+<li><strong>License Type:</strong> BSD-License</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://sourceforge.net/projects/opencvlibrary/files">http://sourceforge.net/projects/opencvlibrary/files</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>Data type conversions</li>
+<li>C++-based surf feature detection</li>
+<li>OpenCV-based camera grabber backend</li>
+<li>OpenCV-based video grabber backend</li>
+<li>Video-writer backend</li>
+<li>intrinsic camera calibration tool</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="swissranger-driver-library-libmesasr">
+<span id="install-win-dependencies-optional-libmesasr"></span><h4>SwissRanger Driver Library (libMesaSR)<a class="headerlink" href="#swissranger-driver-library-libmesasr" title="Permalink to this headline">¶</a></h4>
+<p>LibMesaSR is a proprietary library that allows to grab images from
+SwissRanger 3D time-of-flight cameras provided by the Mesa Imaging
+company (<a class="reference external" href="http://www.mesa-imaging.ch">http://www.mesa-imaging.ch</a>) The library is closed source.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.0.14</li>
+<li><strong>License Type:</strong> Proprietary</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.mesa-imaging.ch/drivers.php">http://www.mesa-imaging.ch/drivers.php</a></li>
+<li><strong>Dependent library features:</strong> SwissRanger camera grabber backend</li>
+</ul>
+</div>
+<div class="section" id="image-magick-libmagick">
+<span id="install-win-dependencies-optional-imagemagick"></span><h4>Image Magick (libmagick++)<a class="headerlink" href="#image-magick-libmagick" title="Permalink to this headline">¶</a></h4>
+<p>ImageMagick is used to provide a large set of support image types. Most
+types are supported in both reading and writing. Without ImageMagick, only
+a few image data types are supported: .ppm, .pnm and .pgm as well as ICL’s
+internal image format .bicl are natively supported, .png and .jpg are
+supported explicitly by other external dependencies.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.0.14</li>
+<li><strong>License Type:</strong> Proprietary</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.imagemagick.org/script/index.php">http://www.imagemagick.org/script/index.php</a></li>
+<li><strong>Dependent library features:</strong> huge set of image reading and writing backends</li>
+</ul>
+</div>
+<div class="section" id="libdc1394">
+<span id="install-win-dependencies-optional-libdc"></span><h4>libdc1394<a class="headerlink" href="#libdc1394" title="Permalink to this headline">¶</a></h4>
+<p>The dc1394 (digital firewire camera) library allows to grab image from
+firewire cameras and to set camera parameters.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.1.2</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://damien.douxchamps.net/ieee1394/libdc1394/">http://damien.douxchamps.net/ieee1394/libdc1394/</a></li>
+<li><strong>Dependent library features:</strong> firewire camera grabber backend</li>
+</ul>
+</div>
+<div class="section" id="openkinect-kinect-driver-library-libfreenect">
+<span id="install-win-dependencies-optional-libfreenect"></span><h4>OpenKinect Kinect Driver Library (libfreenect)<a class="headerlink" href="#openkinect-kinect-driver-library-libfreenect" title="Permalink to this headline">¶</a></h4>
+<p>The libfreenect provides a lightweight interface for grabbing images
+from Microsoft Kinect cameras. The library allows to grab color, depth and
+IR-images and to set some internal camera properties.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 0.0.1</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="https://github.com/OpenKinect/libfreenect">https://github.com/OpenKinect/libfreenect</a></li>
+<li><strong>Dependent library features:</strong> libfreenect-based access to Kinect cameras
+(Please note, that we also provide an alternative using OpenNI)</li>
+</ul>
+</div>
+<div class="section" id="xine-libxine">
+<span id="install-win-dependencies-optional-xine"></span><h4>Xine (libxine)<a class="headerlink" href="#xine-libxine" title="Permalink to this headline">¶</a></h4>
+<p>The xine library provides a very intuitive yet powerful interface for
+grabbing video in a frame-by-frame manner.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.1.17</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.xine-project.org/home">http://www.xine-project.org/home</a></li>
+<li><strong>Dependent library features:</strong> xine-based video grabber backend
+(Please note, that we also provide an alternative using OpenCV)</li>
+</ul>
+</div>
+<div class="section" id="qt-library-libqt5">
+<span id="install-win-dependencies-optional-qt"></span><h4>Qt Library (libQt5)<a class="headerlink" href="#qt-library-libqt5" title="Permalink to this headline">¶</a></h4>
+<p>The well known Qt Library is used for ICL’s rapid GUI creation toolkit.
+Actually Qt is also a prerequisite for most ICL applications and for
+the whole ICLQt module. We strongly recommend to have at least Qt support
+when building ICL. The Qt package right now also used the OpenGL extension
+wrangler library Glew and it needs OpenGL headers to be installed.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> 5</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://qt.digia.com/">http://qt.digia.com/</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>GUI-framework and all dependent applications</li>
+<li>Shared memory based image-I/O backends</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="basler-pylon-drivers">
+<span id="install-win-dependencies-optional-pylon"></span><h4>Basler Pylon Drivers<a class="headerlink" href="#basler-pylon-drivers" title="Permalink to this headline">¶</a></h4>
+<p>The closed source basler pylon drivers (including the Genicam libraries) are
+used for accessing Gigabit-Ethernet (GIG-E) cameras.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.3.3</li>
+<li><strong>License Type:</strong> closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.baslerweb.com/Downloads-Software-43868.html">http://www.baslerweb.com/Downloads-Software-43868.html</a></li>
+<li><strong>Dependent library features:</strong> Pylon grabber backend for GIG-E Cameras</li>
+</ul>
+</div>
+<div class="section" id="open-computing-language-opencl">
+<span id="install-win-dependencies-optional-opencl"></span><h4>Open Computing Language (OpenCL)<a class="headerlink" href="#open-computing-language-opencl" title="Permalink to this headline">¶</a></h4>
+<p>OpenCL is used to significantly speed up a set of processing units using
+the computing units of graphics cards or other OpenCL platforms. We mainly use it
+for point cloud processing units located in the ICLGeom module.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.1 (1.2 soon)</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.khronos.org/registry/cl">http://www.khronos.org/registry/cl</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>significantly faster point cloud creation and RGBD-mapping
+(<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudCreator.html">geom::PointCloudCreator</a>, <span>geom::DepthCameraBasedPointCloudGrabber</span>)</li>
+<li>significantly faster point cloud normal estimation and segmentation
+(<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudNormalEstimator.html">geom::PointCloudNormalEstimator</a>)</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="openni-nite">
+<span id="install-win-dependencies-optional-openni"></span><h4>OpenNI / Nite<a class="headerlink" href="#openni-nite" title="Permalink to this headline">¶</a></h4>
+<p>Right now, we only use OpenNI as an alternative backend to grab images
+from Kinect and other PrimeSense 3D cameras</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.x</li>
+<li><strong>License Type:</strong> OpenNI: open source, Nite: closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.openni.org/">http://www.openni.org/</a></li>
+<li><strong>Dependent library features:</strong> OpenNI-based grabber backend for depth, IR- and color images</li>
+</ul>
+</div>
+<div class="section" id="point-cloud-library-pcl">
+<span id="install-win-dependencies-optional-pcl"></span><h4>Point Cloud Library (PCL)<a class="headerlink" href="#point-cloud-library-pcl" title="Permalink to this headline">¶</a></h4>
+<p>PCL has become some kind of a quasi-standard for point cloud
+processing. ICL’s ICLGeom module provides the generic
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">geom::PointCloudObjectBase</a> interface that is implemented by the
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">geom::PCLPointCloudObject</a> class. In case of having PCL support,
+ICL can seamlessly interface to PCL algorithms using this class.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.6</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://pointclouds.org/downloads/">http://pointclouds.org/downloads/</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">geom::PCLPointCloudObject</a> class.</li>
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCDFileGrabber.html">geom::PCDFileGrabber</a> class</li>
+</ul>
+</li>
+</ul>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">There is an unsolved dependency between PCL and OpenNI, since
+our PCD-File Grabber uses libpcl-io, which in turn depends on
+openni.</p>
+</div>
+</div>
+<div class="section" id="robotics-service-bus-rsb">
+<span id="install-win-dependencies-optional-rsb"></span><h4>Robotics Service Bus (RSB)<a class="headerlink" href="#robotics-service-bus-rsb" title="Permalink to this headline">¶</a></h4>
+<p>The robotics service bus is a new and versatile library for
+interprocess communications. ICL uses it as backends for the
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> and the <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericImageOutput.html">io::GenericImageOutput</a> to
+exchange image data between different processes and PCs.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 0.7</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://docs.cor-lab.de//rsb-manual/0.10/html/index.html">http://docs.cor-lab.de//rsb-manual/0.10/html/index.html</a></li>
+<li><strong>Dependent library features:</strong> rsb-based image I/O backends</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation-from-source">
+<span id="install-win-source"></span><h3>Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<p>Before you can install the ICL you need to get some tools:</p>
+<ul class="simple">
+<li><strong>Subversion:</strong> <a class="reference external" href="http://subversion.apache.org/packages.html">http://subversion.apache.org/packages.html</a></li>
+<li><strong>Visual Studio:</strong> <a class="reference external" href="http://www.visualstudio.com/downloads/download-visual-studio-vs">http://www.visualstudio.com/downloads/download-visual-studio-vs</a></li>
+<li><strong>CMake:</strong> <a class="reference external" href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</a></li>
+</ul>
+<p>Then you can open your command window and check out the source files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">svn</span> <span class="n">co</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">opensource</span><span class="o">.</span><span class="n">cit</span><span class="o">-</span><span class="n">ec</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">svn</span><span class="o">/</span><span class="n">icl</span><span class="o">/</span><span class="n">trunk</span> <span class="n">ICL</span>
+</pre></div>
+</div>
+<p>In CMake you have to choose the directory with the ICL files and the build
+destination. By clicking on the Configure button you have to specify the
+generator. In our case it is Visual Studio. In addition you have the choice
+between a 32 bit and 64 bit compiler. By confirming the selection you get a
+list with the configuration options for the project.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you use external libraries of a specific Visual Studio version, you
+have to choose the same compiler or you may experience wrong behaviour
+while using the ICL.</p>
+</div>
+<p>Every time you change one of the options you have to update the settings by
+clicking on the Configure button again. In case of an error CMake will show it
+in its output window. A red message means that the progression cannot go
+further.</p>
+<img alt="../_images/notfound.png" src="../_images/notfound.png" />
+<p>Now you have to configure at least the path to the Pthreads folder, if it
+is not detected automatically. This can be done by choosing the root directory
+with the library and the include files by setting the variable
+<strong>PTHREADS_ROOT</strong>. Another way is to select the Pthreads library
+<strong>PTHREADS_pthreadVC2_LIBRARY</strong> and the include directory
+<strong>PTHREADS_INCLUDE_DIR</strong> directly.</p>
+<img alt="../_images/pthreads_dir.png" src="../_images/pthreads_dir.png" />
+<p>Every other option in the list is optional. By adding more libraries you have
+to do the same as with Pthreads after updating the configuration. At the end
+you have to use the Generate Button in order to create the project files.</p>
+<p>In the build folder you will find the file <strong>ICL.sln</strong> you can use to open
+the project with Visual Studio. If you start the project you should select the
+configuration type first. In addition you have the choice to create <strong>Debug</strong>
+or <strong>Release</strong> binaries.</p>
+<img alt="../_images/release.png" src="../_images/release.png" />
+<p>In order to compile the binaries you have to build the project <strong>ALL_BUILD</strong>.
+If you want to create the documentation and the manual you have to build the
+projects <strong>doc</strong> and <strong>manual</strong> explicitly.</p>
+<p>You can use the project <strong>INSTALL</strong> to copy all generated files, which are
+needed for your own projects, into the installation directory. This folder
+is selected during the CMake configuration.</p>
+<p>At this point it is recommended to add an environment variable with the ICL
+installation folder and the directory with the created Dynamic-link Libraries
+(DLL’s) to your system path. For an easy access to the ICL installation
+folder add the environment variable <strong>ICL_DIR</strong> with the directory of the ICL.
+This can be done with the following line in the command prompt:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setx</span> <span class="o">-</span><span class="n">m</span> <span class="n">ICL_DIR</span> <span class="n">INSTALL_DIR</span>
+</pre></div>
+</div>
+<p>Here <strong>INSTALL_DIR</strong> is the path to the folder containing the installed files.</p>
+<p>Applications which are using the ICL need an access to the ICL libraries. The
+nasty way is to put the DLL’s and the application executable in the same
+folder. By adding the directory of the DLL’s to the system variable <strong>PATH</strong>
+you will avoid the previously mentioned solution. This variable defines
+directories where an application can search for missing libraries.</p>
+</div>
+<div class="section" id="installaion-using-binary-packages">
+<span id="install-win-binary"></span><h3>Installaion using Binary Packages<a class="headerlink" href="#installaion-using-binary-packages" title="Permalink to this headline">¶</a></h3>
+<p>Binary packages are not yet supported, but we plan to support this as
+soon as possible.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation Instructions for Windows</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#external-dependencies">External Dependencies</a></li>
+<li><a class="reference internal" href="#mandatory-dependencies">Mandatory Dependencies</a></li>
+<li><a class="reference internal" href="#dependencies-for-the-documentation">Dependencies for the Documentation</a></li>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a><ul>
+<li><a class="reference internal" href="#overview">Overview:</a><ul>
+<li><a class="reference internal" href="#intel-integrated-performance-primitives-intel-ipp">Intel Integrated Performance Primitives (Intel IPP)</a></li>
+<li><a class="reference internal" href="#intel-math-kernel-library-intel-mkl">Intel Math Kernel Library (Intel MKL)</a></li>
+<li><a class="reference internal" href="#open-computer-vision-library-opencv">Open Computer Vision Library (OpenCV)</a></li>
+<li><a class="reference internal" href="#swissranger-driver-library-libmesasr">SwissRanger Driver Library (libMesaSR)</a></li>
+<li><a class="reference internal" href="#image-magick-libmagick">Image Magick (libmagick++)</a></li>
+<li><a class="reference internal" href="#libdc1394">libdc1394</a></li>
+<li><a class="reference internal" href="#openkinect-kinect-driver-library-libfreenect">OpenKinect Kinect Driver Library (libfreenect)</a></li>
+<li><a class="reference internal" href="#xine-libxine">Xine (libxine)</a></li>
+<li><a class="reference internal" href="#qt-library-libqt5">Qt Library (libQt5)</a></li>
+<li><a class="reference internal" href="#basler-pylon-drivers">Basler Pylon Drivers</a></li>
+<li><a class="reference internal" href="#open-computing-language-opencl">Open Computing Language (OpenCL)</a></li>
+<li><a class="reference internal" href="#openni-nite">OpenNI / Nite</a></li>
+<li><a class="reference internal" href="#point-cloud-library-pcl">Point Cloud Library (PCL)</a></li>
+<li><a class="reference internal" href="#robotics-service-bus-rsb">Robotics Service Bus (RSB)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-from-source">Installation from Source</a></li>
+<li><a class="reference internal" href="#installaion-using-binary-packages">Installaion using Binary Packages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install-linux.html"
+                        title="previous chapter">Installation Instructions for Linux</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../extras/license.html"
+                        title="next chapter">ICL’s License Terms</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../extras/license.html" title="ICL’s License Terms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install-linux.html" title="Installation Instructions for Linux"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/install.html" >Installation Instructions</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

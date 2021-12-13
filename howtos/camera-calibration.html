@@ -1,0 +1,1410 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Camera Calibration &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Porting ICL 7 to ICL 8" href="porting-7to8.html" />
+    <link rel="prev" title="Generic Grabber Backends" href="generic-grabber-backends.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="porting-7to8.html" title="Porting ICL 7 to ICL 8"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generic-grabber-backends.html" title="Generic Grabber Backends"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/howtos.html" accesskey="U">The ICL HowTo Collection</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="camera-calibration">
+<span id="howto-camcalib"></span><h1>Camera Calibration<a class="headerlink" href="#camera-calibration" title="Permalink to this headline">¶</a></h1>
+<p>ICL provides a very intuitive tool for camera calibration. While
+common tools, such as OpenCV’s camera calibration tool or the Matlab
+camera calibration tool-box, use a checker-board, that has to be
+presented in many different orientation to the camera, ICL performs
+camera calibration in a <em>one shot</em> manner. By using a 3D calibration
+object and by assuming lens-distortion correction to be performed
+independently (see below), accurate camera calibration can actually be
+performed in real-time. Given a well described and accurately built
+calibration object, camera calibration is performed in less then one
+minute.</p>
+<p>In order to bypass detection issues, ICL’s camera calibration tool
+makes use of ICL’s built-in fiducial marker detection toolbox. The
+calibration object needs to be augmented with a set of fiducial
+markers that can be detected with a high reliability and high
+accuracy.</p>
+<p>The calibration prodecure produces a camera description xml file,
+which is used to instantiatiate the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">geom::Camera</a> class. The
+camera class is used for ICL’s 3D computer vision tools located in the
+<a class="reference external" href="../icl-api/namespaceicl_1_1geom.html">icl::geom</a> package.</p>
+<p>The calibration toolbox implicitly includes calibration of multi
+camera environments. To this end, each camera can simply be calibrated
+seperately, each resulting in a portable and human readable xml
+description file. Since Kinect (consisting of a depth and color
+camera) can basically also be seen as a stereo camera system, ICL
+implicitly supports RGB-D calibration allowing to compute the mapping
+between Kinects color and depth image.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Usually Kinects depth-camera is calibrated by
+exploiting the fact that Kinect also allows to grab the camera’s
+intensity (IR) image. In contrast to the depth image, the intensity
+images also allows fiducial markers to be detected just like in
+common gray-scale or color images.</p>
+</div>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#howtos-calib-distortion"><span class="std std-ref">Image Undistortion (Lens distortion correction)</span></a></li>
+<li><a class="reference internal" href="#howtos-calib-object"><span class="std std-ref">The Calibration Object and its XML-based description</span></a></li>
+<li><a class="reference internal" href="#howtos-calib-application"><span class="std std-ref">ICL’s camera calibration application</span></a></li>
+<li><a class="reference internal" href="#howtos-calib-kinect"><span class="std std-ref">Calibrating Kinect and Kinect-Like Devices</span></a></li>
+</ul>
+</div>
+<div class="section" id="image-undistortion-lens-distortion-correction">
+<span id="howtos-calib-distortion"></span><h2>Image Undistortion (Lens distortion correction)<a class="headerlink" href="#image-undistortion-lens-distortion-correction" title="Permalink to this headline">¶</a></h2>
+<p>ICL explicitly distinguishes between <em>camera calibration</em> and
+<em>correction of lens distortion</em>. While camera calibration only builds
+on projective geometry, lens distortion can only be modeled in a
+non-linear manner leading to several issues in former processing
+steps. Therefore, ICL explicitly assumes lens distortion to be
+corrected <strong>before</strong> camera calibration is approached.</p>
+<p>The ICLCV module provides two different tools for the estimation of
+lens-undistortion parameters:</p>
+<ul class="simple">
+<li><em>icl-lens-undistortion-calibration (please do not use this!)</em></li>
+<li><em>icl-lens-undistortion-calibration-opencv</em></li>
+</ul>
+<p>While <em>icl-lens-undistortion-calibration-opencv</em> internally employs
+OpenCV’s calibration method, <em>icl-lens-undistortion-calibration</em> is
+implemented without OpenCV.</p>
+<p>In contrast to OpenCV’s built-in calibration application,
+<em>icl-lens-undistortion-calibration-opencv</em> comes up with a set of
+additional convenience features, such as automatic acquisition of
+calibration frames and an option to replace the checkerboard-input
+image by a fiducial-marker-based input grid.</p>
+<p><em>We initially had the impression that the OpenCV-based calibration
+tool in some cases has a tendency to yield very bad results so we put
+some effort into a standalone application. However, it later turned
+out that the OpenCV tool actually works very well. The unsatisfying
+results that we obtained were mainly caused by the misconception of
+the to-be-used calibration pattern. When performing a google search
+on “opencv calibration”, one could come to the conclusion that a small
+8 by 6 checkerboard pattern is most commonly used and therefore also
+optimally suited. We, however, came to the conclusion that a much more
+detailed pattern leads to much better results.</em></p>
+<div class="section" id="opencv-based-lens-undistortion">
+<h3>OpenCV-based Lens Undistortion<a class="headerlink" href="#opencv-based-lens-undistortion" title="Permalink to this headline">¶</a></h3>
+<p>The ICL application <strong>icl-lens-undistortion-calibration-opencv</strong>,
+located in the <a class="reference internal" href="../modules/cv.html#cv"><span class="std std-ref">Computer Vision Algorithms</span></a> module provides the necessary functionality
+to obtain appropriate parameters for lens distortion correction. For
+the tool a common checkerboard image is needed. In order to obtain
+optimal calibration results, the image of the checkerboard must be
+printed out and attached to a very planar surface. Alternatively, the
+images could also be displayed on another computer screen, so that it
+is visible by the camera. The tool also allows a marker-grid image to
+be used.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The checkerboard dimensions, that need to be given to the program
+refer to the amount of inner checkerboard edges, so usually one less
+then the intuitive number of x and y cells.</p>
+</div>
+<p>In order to initiate the tool, just run it with an approriate parameter
+set, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">lens</span><span class="o">-</span><span class="n">undistortion</span><span class="o">-</span><span class="n">calibration</span><span class="o">-</span><span class="n">opencv</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc800</span> <span class="mi">0</span> <span class="o">-</span><span class="n">g</span> <span class="mi">7</span><span class="n">x5</span>
+</pre></div>
+</div>
+<p>This uses the first fire-wire 800 device, a 7 by 5 checkerboard and a set
+Here is a screenshot of the application running:</p>
+<a class="reference internal image-reference" href="../_images/icl-lens-undistortion-calibration-opencv-screenshot.png"><img alt="shadow" src="../_images/icl-lens-undistortion-calibration-opencv-screenshot.png" style="width: 499.0px; height: 321.0px;" /></a>
+<p>Once enough calibration frames were collected. The calibration can be
+triggered. The collection of calibration frames can be triggered manually
+or an automatic mode can be activated. Here, the system would store every input
+frame that has more than a minimum displacement (adjustable using the a slider)
+all other already captured frames. OpenCV internally computes two sets of
+calibration prameters:</p>
+<ol class="arabic simple">
+<li>Parameters describing the projective camera geometry (focal length
+in x and y direction, and principal point offset of the camera, and
+skew – which is always 0 here).</li>
+<li>Parameters describing the compensation of lens distortion. Here, we use
+the standard model described by 5 scalar parameters k1, …, k5</li>
+</ol>
+<p>It turned out, that the estimation of the projective geometry
+parameters is more accurate when using a 3D calibration object, which
+is why these parameters are estimated and also saved, but not used in
+the further steps of the processing pipeline. Pressing the <em>save</em>
+button pops up a file dialog, which allows the destination
+xml file to be selected. The resulting file looks like this one:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="nt">&lt;config&gt;</span>
+	<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;model&quot;</span> <span class="na">type=</span><span class="s">&quot;string&quot;</span><span class="nt">&gt;</span>MatlabModel5Params<span class="nt">&lt;/data&gt;</span>
+	<span class="nt">&lt;section</span> <span class="na">id=</span><span class="s">&quot;size&quot;</span><span class="nt">&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;width&quot;</span> <span class="na">type=</span><span class="s">&quot;int&quot;</span><span class="nt">&gt;</span>1280<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;height&quot;</span> <span class="na">type=</span><span class="s">&quot;int&quot;</span><span class="nt">&gt;</span>960<span class="nt">&lt;/data&gt;</span>
+	<span class="nt">&lt;/section&gt;</span>
+	<span class="nt">&lt;section</span> <span class="na">id=</span><span class="s">&quot;intrin&quot;</span><span class="nt">&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;fx&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>983.148<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;fy&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>983.148<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;ix&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>637.959<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;iy&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>492.924<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;skew&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>0<span class="nt">&lt;/data&gt;</span>
+	<span class="nt">&lt;/section&gt;</span>
+	<span class="nt">&lt;section</span> <span class="na">id=</span><span class="s">&quot;udist&quot;</span><span class="nt">&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;k1&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>-0.0603882<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;k2&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>0.166041<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;k3&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>-0.00242741<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;k4&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>0.000178947<span class="nt">&lt;/data&gt;</span>
+		<span class="nt">&lt;data</span> <span class="na">id=</span><span class="s">&quot;k5&quot;</span> <span class="na">type=</span><span class="s">&quot;double&quot;</span><span class="nt">&gt;</span>-0.145061<span class="nt">&lt;/data&gt;</span>
+	<span class="nt">&lt;/section&gt;</span>
+<span class="nt">&lt;/config&gt;</span>
+</pre></div>
+</div>
+<p>Once an undistortion parameter file is available (e.g. called
+<strong>udist.xml</strong>), it can be passed to all ICL-applications that use the
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> (see also <a class="reference internal" href="../modules/io.html#io-generic-grabber"><span class="std std-ref">The Generic Grabber</span></a>) for
+images acquistion. Usually ICL applications use the generic grabber in
+combination with ICL’s program argument evaluation toolkit (see also
+<a class="reference internal" href="../modules/utils.html#utils-pa"><span class="std std-ref">Program Argument Evaluation</span></a> and/or <a class="reference internal" href="../tutorials/gui-apps.html#simple-example"><span class="std std-ref">this code example</span></a>).
+These applications most of the time provide an input argument <strong>-input</strong>
+which allows two additional parameters to be passed e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">viewer</span> <span class="o">-</span><span class="nb">input</span> <span class="n">dc800</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Here, the first <em>sub-argument</em> <strong>dc800</strong> selects a grabber backend,
+which is fire-wire-800 in the given example, and the second
+sub-argument selects a device from that backend (here, the 1st one
+found – at index 0). As explained <a class="reference internal" href="../modules/io.html#io-generic-grabber"><span class="std std-ref">here</span></a>, the second
+sub-argument can be augmented with additional parameters of shape
+<strong>&#64;name=value</strong> that are then passed to the underlying grabber
+implementation. As a generic feature, all backends support the
+parameter <strong>&#64;udist=udist-xml-file</strong>, so using the created file
+<strong>udist.xml</strong> with our <strong>icl-viewer</strong> application would work like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">viewer</span> <span class="o">-</span><span class="nb">input</span> <span class="n">dc800</span> <span class="mi">0</span><span class="nd">@udist</span><span class="o">=./</span><span class="n">udist</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>When using a camera with significant lens distortion, it is strongly
+recommended to acquire undistortion parameters <strong>before</strong> approaching
+the actual camera calibration step, since this assumes undistorted
+images to be used as input.</p>
+<p><strong>Marker-based Detection</strong></p>
+<p>The checkerboard-input of the camera calibration tool has the severe
+disadvantage, that input calibration frames can only be used if the
+whole checker-board is visible. This, however, leads to the fact that
+it is very difficult to provide calibration frames that also cover the
+border regions of the images well. In order to make this step more
+convenient, a marker-based grid can be used as well. Here, also a
+sub-set of marker-grid can be used for calibration. By calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">lens</span><span class="o">-</span><span class="n">undistortion</span><span class="o">-</span><span class="n">calibration</span><span class="o">-</span><span class="n">opencv</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc800</span> <span class="mi">0</span> <span class="o">-</span><span class="n">m</span> <span class="n">bch</span> <span class="s1">&#39;[0-629]&#39;</span> <span class="mi">8</span><span class="n">x8</span> <span class="o">-</span><span class="n">g</span> <span class="mi">30</span><span class="n">x21</span>
+</pre></div>
+</div>
+<p>The OpenCV-based camera calibration tool uses a 30x21 bch marker grid
+as input. Here is a screenshot</p>
+<a class="reference internal image-reference" href="../_images/icl-lens-undistortion-calibration-opencv-screenshot-2.png"><img alt="shadow" src="../_images/icl-lens-undistortion-calibration-opencv-screenshot-2.png" style="width: 499.0px; height: 391.5px;" /></a>
+<p>As one can see, only a part of the marker-grid is visible and still the
+calibration can be performed very well.</p>
+</div>
+<div class="section" id="icl-s-native-lens-undistortion-calibration-tool">
+<h3>ICL’s native Lens Undistortion Calibration Tool<a class="headerlink" href="#icl-s-native-lens-undistortion-calibration-tool" title="Permalink to this headline">¶</a></h3>
+<p><strong>Please note, the work on this calibration tool was suspended. Please</strong>
+<strong>Use icl-lens-undistortion-calibration-opencv instead</strong></p>
+<p>ICL’s camera calibration tool works quite similar to the OpenCV-based
+tool, but it can only use marker-grid input. Appropriate marker-grid
+images can be created using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">create</span><span class="o">-</span><span class="n">marker</span><span class="o">-</span><span class="n">grid</span><span class="o">-</span><span class="n">svg</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>This allows grid parameters to be specified, such as the
+grid-dimension, the size of markers and the gap between them. The results
+is an SVG image that can then be converted into pdf or printed directly using
+standard external tools such as Inkscape. The calibration tool itself can
+be run using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">lens</span><span class="o">-</span><span class="n">undistortion</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc800</span> <span class="mi">0</span> <span class="o">-</span><span class="n">g</span> <span class="mi">30</span><span class="n">x21</span>
+</pre></div>
+</div>
+<p>The user-interface differs a little bit from the OpenCV-based calibration
+tool, but in general, it works very similar. Basically one should
+make the grid visible in the camera and then go to the <em>optimize</em> tab on the
+right. Here, one can click <em>capture frame</em> for each to-be-captured input frame
+and then <em>optimize</em> for the actual optimization.
+Please note that in particular, the OpenCL-based calibration mode is significantly
+faster – albeit calibration still takes some seconds.
+Here are two screenshots of the tool:</p>
+<a class="reference internal image-reference" href="../_images/icl-calib-screenshot-1.png"><img alt="shadow" src="../_images/icl-calib-screenshot-1.png" style="width: 462.0px; height: 339.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/icl-calib-screenshot-2.png"><img alt="shadow" src="../_images/icl-calib-screenshot-2.png" style="width: 462.0px; height: 339.0px;" /></a>
+</div>
+</div>
+<div class="section" id="the-calibration-object-and-its-xml-based-description">
+<span id="howtos-calib-object"></span><h2>The Calibration Object and its XML-based description<a class="headerlink" href="#the-calibration-object-and-its-xml-based-description" title="Permalink to this headline">¶</a></h2>
+<p>Before the actual camera calibration can be performed, a calibration
+object needs to be constructed. The calibration object is then
+augmented with fiducial markers that can be be detected robustly with
+ICL’s marker detection toolbox. It is very important to mention that
+the calibration object needs to be a real 3D shape, e.g. the fiducial
+markers must not be located on a coplanar surface only. It is
+recommended to construct <em>something like a wooden angle with a 90
+degree corner</em>, but all shapes, with known surface geometry are
+possible. Once the Object is built, fiducial marker can be attached to
+the object. Each fiducial marker will provide a image-to-world point
+correspondence, needed for the calibration step, so the more markers
+are used, the better the calibration result that can be obtained. As a
+minimum 8 markers are needed, however, it needs to be taken into
+account, that if only 8 markers are attached to the calibration
+object, all markers must be detected. If more markers are used, the
+calibration process will be faster and more accurate. Each marker that
+is attached to the object later needs to be described geometrically
+w.r.t. an arbitrary, but (for all markers) fixed calibration object
+coordinate frame. For each 2D marker the following properties need to
+be defined:</p>
+<ul class="simple">
+<li>marker size in mm</li>
+<li>marker offset to the object frame</li>
+<li>the fiducial marker type and ID</li>
+</ul>
+<p>In order to facilitate the definition of a calibration object with
+many markers, it is also possible to arrange sub-sets of the markers
+in a regular 2D grid aligned coplanar in the object space. In this case,
+the whole grid of markers can be described at once by:</p>
+<ul class="simple">
+<li>marker size is mm</li>
+<li>grid dimensions W x H</li>
+<li>offset of the upper left marker’s center in object coordinates</li>
+<li>displacement vector between two marker centers in x-grid-direction
+(given in object coordinates)</li>
+<li>the same for the y-grid-direction</li>
+</ul>
+<p>This allows a large set of marker to be defined at once. Markers
+defined within a grid description also have a large advantages. Due to
+the fact that they have a well defined x and y direction, the given
+size information can be used to derive the object-coordinates of each
+of the markers corners. This then allows the system to not only use
+the marker center as a known object-to-world correspondence, but also
+its four corners, resulting in a much higher key-point density.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Also single markers can be defined as a 1 by 1 grid. In this case,
+only the normal direction of the given x and y displacement vectors
+are used to derive the object coordinates of the marker corners. By
+these means, the marker corners can also be used for markers that are
+not part of a larger grid</p>
+</div>
+<p>A single calibration object can consist of several grid definitions
+and also several single marker definitions, that are then all used for
+calibration.</p>
+<p>In addition to the definition of markers attached to the calibration
+object, a set of suggested object-to-world transforms can be
+provided. Each suggested world transform can then later be selected
+from a combo-box at run-time. For the typical triangularly shaped
+calibration objects these suggestions usually provide an initial
+rotation of the object so that it can be put standing upwards into the
+scene. But also an offset between the object and the desired
+world-frame can be defined here. Alternatively, the object-to-world
+transform can also be defined interactively at run-time, but it is
+recommended to do this only if the desired object-to-world transform
+is not available. The GUI allows for printing the manually defined
+object-to-world transform, so that it can be copy-and-pasted into the
+calibration object file in case the calibration needs to be performed
+again at a later point in time.</p>
+<p>Last but not least, the calibration object definition file can contain
+data that defines the geometry of the calibration object in .obj file
+format. This is then read by the calibration application, which allows
+to directly render the calibration object geometry using the
+estimated/calibrated camera parameters as an image overlay in real-time.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please note that the accuracy of the description/measurement of the marker layout
+is directly linked to the accuracy of the calibration result.</p>
+</div>
+<p>and</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to their outstanding accuracy, it is strongly recommended to
+use BCH code markers (see <a class="reference internal" href="../modules/markers.html#markers-supported-bch"><span class="std std-ref">BCH Markers (“bch”)</span></a>)</p>
+</div>
+<div class="section" id="calibration-object-examples">
+<h3>Calibration Object Examples<a class="headerlink" href="#calibration-object-examples" title="Permalink to this headline">¶</a></h3>
+<p>In order to provide a better understanding of what is mentioned here,
+two examples are presented.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="first last reference internal image-reference" href="../_images/calib-obj-large.jpg"><img alt="shadow" src="../_images/calib-obj-large.jpg" style="width: 640.0px; height: 480.0px;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="../_images/calib-obj-huge.jpg"><img alt="shadow" src="../_images/calib-obj-huge.jpg" style="width: 640.0px; height: 480.0px;" /></a>
+</td>
+</tr>
+<tr class="row-even"><td>Our first calibration object. The
+object consists of two planks of wood
+attached to each other in a 90 deg
+angle. The faces are 300 by 430 mm
+(<em>banana for scale</em>)</td>
+<td>Second calibration object example.
+The object was professionally designed
+using CAD software and optimized with
+respect to several regards in
+comparison to our first design.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>First Example</strong> (<a class="reference download internal" download="" href="../_downloads/9eb0ed04f046b0f9df95d33042157469/calib-obj-large.xml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">xml</span> <span class="pre">file</span> <span class="pre">here</span></code></a>)</p>
+<p>The calibration object description file uses ICLs config-file class
+(see <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ConfigFile.html">ConfigFile</a> and <a class="reference internal" href="../tutorials/config-files.html#config-file-tutorial"><span class="std std-ref">XML-based Configuration Files</span></a>), which uses a
+special xml- based format. Due to its very regular shape, the object’s
+markers can well be described by 8 grids of markers – two for each
+face (The invisible back-faces are covered with markers as well).  The
+reason why each face is not represented by a single grid is that the
+markers were printed on A4 self-sticking labels that we were not
+able to 100%ly align into a single regular grid of markers.</p>
+<p>In the first sections, the marker layout is
+presented. It is important to mention that the grids need to be
+successively enumerated (<strong>grid-0</strong>, <strong>grid-1</strong>, …). The marker IDs
+can either be a continuous range [start,end] or a list of marker IDs
+{a,b,c, …}. The IDs are assumed to be distributed in row-major order
+(row by row, from left to right) to the grid.</p>
+<p>The following sections then define a set of suggested object- to-world
+transforms. Each again successively enumerated. Each transform is also
+given a unique name, that will later become a combo-box entry in the
+calibration application’s GUI. If no world transforms are given an
+identity transform is automatically provided but if there are
+suggested transforms, it is usually not the worst idea to also provide
+an identity transform that then can manually be selected in the GUI.</p>
+<p>The last section contains the .obj file description for the object
+geometry. Even though this is purely optional, it is strongly
+recommended to use this feature, because it significantly facilitates
+the manual evaluation of the current calibration results.</p>
+<p><strong>Second Example</strong> (<a class="reference download internal" download="" href="../_downloads/234ac0bedf255dbdcbf2e5d08f36a08d/calib-obj-huge.xml"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">xml</span> <span class="pre">file</span> <span class="pre">here</span></code></a>)
+The most important difference is the much higher manufacturing
+accuracy reached by a better design and material (PVC).</p>
+<ul class="simple">
+<li>by adding <em>the sides</em> of the object, strong angle deformations
+are avoided</li>
+<li>an additional supporting bar at the otherwise open bottom side
+provides additional stability and shape accuracy and also works as a
+handle of the object</li>
+<li>the <em>fields</em> where the markers are attached are predefined by using
+high precision <em>flutes</em> added with a CNC milling cutter</li>
+<li>each marker is still attached manually, but not as part of a single
+A4 sheet of self-sticking paper. Instead, each marker was added
+separately. By these means, small errors in manually attaching the
+markers do not lead to <em>general drift</em> (when sticking a whole grid
+slightly rotated onto the object, all markers are wrong into the
+same direction), but small errors can be assumed to compensate each
+other mutatively.</li>
+</ul>
+<p>The structure of the corresponding description file is comparable to
+the first one, but it also demonstrates how to add single markers
+and also the side faces are more complex to describe.</p>
+<p>Since single markers do not provide a direction, they only provide a
+single point 2D/3D point correspondence to the calibration
+procedure. By defining the markers as a 1 by 1 marker grid, also a
+direction can be given allowing to also use the 4 marker corners as
+point correspondences.</p>
+<p>While the square top faces result in large regular grids, the front
+and back-face definition required a little hack. Rather than defining
+the faces by many single markers, they were defined by a 5 by 5 marker
+grid each, where the missing marker IDs are simply not used.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add a helper application that can provide images of an artificial
+calibration object</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the marker ID order is known to be a bit strange</p>
+</div>
+</div>
+</div>
+<div class="section" id="icl-s-camera-calibration-application">
+<span id="howtos-calib-application"></span><h2>ICL’s camera calibration application<a class="headerlink" href="#icl-s-camera-calibration-application" title="Permalink to this headline">¶</a></h2>
+<p>Once a calibration object is available, it can be used for fast camera
+calibration. The application we need for this is called
+<strong>icl-camera-calibration</strong>. The application knows several input
+arguments that will be presented in the following. A standard way to start
+the application would look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc800</span> <span class="mi">0</span> <span class="o">-</span><span class="n">c</span> <span class="o">./</span><span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>This would start the calibration application acquiring images from the
+first firewire 800 device using the calibration object described in
+<strong>./calib-obj.xml</strong>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In case of the need for a prior lens undistortion (see
+<a class="reference internal" href="#howtos-calib-distortion"><span class="std std-ref">Image Undistortion (Lens distortion correction)</span></a>) the resulting parameter file (e.g. called
+<strong>udist.xml</strong>) would have to be passed to the fire-wire backend used by
+<strong>icl-camera-calibration</strong>. E.g:</p>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="n">i</span> <span class="n">dc800</span> <span class="mi">0</span><span class="nd">@udist</span><span class="o">=./</span><span class="n">udist</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+</div>
+<p>However, for this tutorial, a single image (a png version of the one
+shown above) of our more sophisticated calibration object is used. An
+image can also be used as input by selecting the <em>file grabber</em> image
+input backend:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="n">i</span> <span class="n">file</span> <span class="n">myImage</span><span class="o">.</span><span class="n">png</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>When the application starts, the resulting GUI looks like this</p>
+<img alt="shadow" src="../_images/calib-1.jpg" />
+<p>The GUI provides several features:</p>
+<ul>
+<li><p class="first"><strong>visualized image</strong> here, you can select which image of the
+processing pipeline you want to see in the left images display
+component. Possible options are <em>input</em>, which shows the real input
+image, <em>pp</em>, which shows an intermediate image after the
+preprocessing step (usually gray) and <em>binary</em> which shows a binary
+version of the input image. The binary image is actually used
+internally for fiducial marker detection.</p>
+</li>
+<li><p class="first"><strong>object-alpha</strong> allows the transparency of the object’s geometry
+overlay to be adapted. For a solid object visualization, the alpha
+value must be set to 255.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">setting the alpha value to 0 allows for <em>looking through the
+object</em>, which is sometimes necessary to see a coordinate frame
+that occurs behind the virtual object. Due to the fact, that the
+used OpenGL does not support real transparency handling even a
+partly transparent object would not allow to see through it</p>
+</div>
+</li>
+<li><p class="first"><strong>use corners</strong> defines whether to use marker corners or only marker
+centers. Actually, it is strongly recommended to always leave this
+checked. When internally solving the equations for camera
+calibration, using the corners sometimes lead to worse solutions –
+most of the time only when already enough marker centers are
+available. In this case the system will automatically not use the
+corners internally</p>
+</li>
+<li><p class="first"><strong>show CS</strong> visualized the current world coordinate frame.
+If the object-to-world transform is <em>identity</em> this will be equal
+to the local calibration object coordinate frame</p>
+</li>
+<li><p class="first"><strong>more options.plane</strong> here, an artificial plane visualized as a 2D
+grid) can be added to the rendered scene overlay. An extra dialog
+that pops up allows the plane normal, the size and the color of the
+plane to be adapted. Once a plane is added, the mouse can be used to
+point at that plane in order to visualize the estimated 3D
+coordinate of the intersection between the plane and the view-ray
+estimated from the current camera calibration result and the mouse
+pointer. This feature becomes very handy when trying to estimate the
+real quality of the calibration result. You can e.g. measure a real
+distance or a known key point in the world and then point at that
+point in order to directly see the point’s estimated 3D position,
+which should in an optimal case be identical to the known 3D
+position.</p>
+<img alt="shadow" src="../_images/calib-2.jpg" />
+<p>The image shows an example of a grid, visualized as an overlay of the
+<em>pp</em> image.</p>
+</li>
+<li><p class="first"><strong>more options.markers</strong> This is actually the most complex and
+sometimes also important set of properties that can be adjusted. The
+extra GUI that pops up allows for setting all properties necessary
+for the marker detection. Usually, these parameters are adapted
+after switching the the <em>binary</em> image. The most common parameters
+that have to be manually tuned here are the ones in the
+<em>thresh</em> tab, which define the mask size and the global threshold
+for the used <a class="reference external" href="../icl-api/classicl_1_1filter_1_1LocalThresholdOp.html">filter::LocalThresholdOp</a> instance. By adapting these
+parameters, it usually becomes possible to detect more markers, which
+then directly improves the calibration result.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>It is not the worst idea to optimize your calibration outcome by
+trying to find the parameter set that leads to a maximum number
+of detected markers. In contrast, tuning the parameters in order to
+make the <strong>error</strong> become as small as possible does not really make
+sense. For the calibration result, it is very important that</p>
+<ol class="last arabic simple">
+<li>as many markers as possible are detected</li>
+<li>the detected markers are well distributed over at least two
+non-coplanar surfaces of the calibration object</li>
+<li>the markers of the detected object cover a large part of the
+actual 2D image (optimally &gt; 80%) and optimal reach into
+the corners of the image</li>
+</ol>
+</div>
+</li>
+<li><p class="first"><strong>more options.rel. Transf</strong> shows an extra GUI that allows an
+additional object-to-world transform to be adapted. This is also the
+tool of your choice to add object-to-world transforms to the object
+description file. You can either start with an already defined
+transform (by selecting this in the combo-box below) or you can
+start with the identity transform. If we call this <strong>T1</strong>, the
+relative transform <strong>TR</strong> will also be pre-multiplied to get the
+actually used transform (<strong>TR T1</strong>) that defines the
+world-coordinates of the object’s reference points. Once an
+appropriate transform is defined, the pop-up GUI allows for printing
+the current transforms (both, <strong>TR</strong> and <strong>TR T1</strong>), which can then
+be copy-and-pasted into the object description file and once it is
+endowed with an appropriate name, it can be selected in the
+transform selection combo box.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">for this, the application has to be restarted</p>
+</div>
+</li>
+<li><p class="first"><strong>calibration objects</strong> Here, it becomes clear, that the application
+can actually handle an arbitrary number of calibration objects at
+once (simply pass several calibration object files at once to the
+<strong>-c</strong> program arguments, but ensure that the used marker sets do
+not overlap to avoid random behavior). When each of the calibration
+objects is a set up with an appropriate (and compatible transform),
+the union of all reference points it used for calibration.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">please ensure that the actual relative transform between different
+calibration objects use is well defined, since little relative
+displacements will significantly decrease the calibration
+quality</p>
+</div>
+<p>For each selected calibration object (checkbox checked, a predefined
+object-to-world transform can be defined.</p>
+</li>
+<li><p class="first"><strong>error and detection status</strong> This simply shows an average object
+detection error. The error is given by the square error of references points
+(in image space) and their virtual camera projects when using the currently
+estimated camera parameters. Normalizing the error* will normalize this value
+by to the number of actually found markers – otherwise, less detected markers
+would result in a smaller erro.</p>
+</li>
+</ul>
+<div class="section" id="saving-the-calibration-result">
+<h3>Saving the calibration Result<a class="headerlink" href="#saving-the-calibration-result" title="Permalink to this headline">¶</a></h3>
+<p>Once an appropriate calibration result is obtained, the resulting
+camera description can be saved using the <strong>save</strong> button. This will
+raise a file-dialog for selecting an output <strong>.xml</strong> file. When
+starting <strong>icl-camera-calibration</strong> with the program argument <strong>-o
+/tmp/myCalib.xml</strong>, the file dialog is suppressed and the passed
+output file is used</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using <strong>-o filename</strong>, the system will not ask before overwriting
+files.</p>
+</div>
+</div>
+<div class="section" id="how-can-the-result-be-used">
+<h3>How can the result be used ?<a class="headerlink" href="#how-can-the-result-be-used" title="Permalink to this headline">¶</a></h3>
+<p>The resulting XML file can be used in combination with the
+<a class="reference internal" href="../modules/geom.html#geom"><span class="std std-ref">ICLGeom</span></a> module. There are basically two main purposes for
+the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Camera.html">geom::Camera</a>: visualization and 3D-vision. As for
+visualization, the Camera class, which can be instantiated from a
+given calibration result <strong>.xml</strong> file, is directly linked to ICL’s
+<a class="reference internal" href="../modules/geom.html#geom-scene-graph"><span class="std std-ref">Scene Graph Framework</span></a>. The main goal here was to
+provide a very simple way to</p>
+<ul class="simple">
+<li>calibrate a real camera device <strong>C</strong></li>
+<li>obtain the calibration result</li>
+<li>use the calibration result as a <em>virtual camera</em></li>
+<li>create a <em>virtual scene</em></li>
+<li>add the virtual camera to the virtual scene</li>
+<li>add virtual objects</li>
+<li>render the virtual scene on top of an image stream acquired from <strong>C</strong></li>
+</ul>
+<p>In this case, virtual and real objects should perfectly overlap if
+they are located at the same position (the real object in the real
+world, and the virtual object in the virtual world). ICL’s
+visualization framework provides exactly this in a very intuitive
+manner at it even allows for zooming and panning of the view while
+preserving the images’ aspect ratio.</p>
+<p>Please also see <a class="reference internal" href="../modules/geom.html#geom-overlay"><span class="std std-ref">Using the SceneGraph to Render an Image Overlay</span></a>.</p>
+</div>
+</div>
+<div class="section" id="calibrating-kinect-and-kinect-like-devices">
+<span id="howtos-calib-kinect"></span><h2>Calibrating Kinect and Kinect-Like Devices<a class="headerlink" href="#calibrating-kinect-and-kinect-like-devices" title="Permalink to this headline">¶</a></h2>
+<p>When using the Microsoft Kinect Camera, or other comparable devices,
+that consist of a depth and a color camera, an important feature is
+RGB-D calibration, which means to calibrate the used Color and Depth
+camera. The actual issue is the determination of the parameters, that
+provide the pixel-location of a given depth image pixel in the
+corresponding color image. Since the cameras’ view axes are not
+identical, a small non-static offset between the the two image spaces
+exists.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><img alt="shadow" class="first last" src="../_images/kinect-pc-uncalibrated.jpg" />
+</td>
+<td><p class="first">PointCloud visualization extracted from
+an uncalibrated kinect device. If you have
+a kinect attached to your computer, you can
+generate such a visualization e.g. with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">point</span><span class="o">-</span><span class="n">cloud</span><span class="o">-</span><span class="n">viewer</span> <span class="o">-</span><span class="n">pci</span> <span class="n">dcam</span> <span class="n">kinectd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">DEFAULT</span><span class="p">,</span><span class="n">kinectc</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">DEFAULT</span>
+</pre></div>
+</div>
+<p class="last">As one can see, the color mapping is not correct. This becomes
+very obvious for the part with the human hand.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="step-by-step-rgb-d-calibration-of-a-kinect-device">
+<h3>Step by step RGB-D calibration of a Kinect device<a class="headerlink" href="#step-by-step-rgb-d-calibration-of-a-kinect-device" title="Permalink to this headline">¶</a></h3>
+<p>The mapping between the two cameras can easily be estimated by simply
+calibrating both kinect cameras separately in two calibration steps –
+one for each camera. For this is is very <strong>important</strong> to not move the
+camera or the calibration object between the two calibration steps.</p>
+<ol class="arabic">
+<li><p class="first">Calibrate the color camera (using the calibration object
+description file, which is here located in the current directory):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="nb">input</span> <span class="n">kinectc</span> <span class="mi">0</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">-</span><span class="n">huge</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">o</span> <span class="n">color</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/kinect-calib-color.jpg"><img alt="shadow" src="../_images/kinect-calib-color.jpg" style="width: 555.6px; height: 352.8px;" /></a>
+<p>The result is the xml-file <strong>color.xml</strong> which describes the
+parameters of the kinect color camera. If you are only interested
+in the mapping between color and depth camera, the actually used
+<em>object-to-world</em> transform is completely irrelevant, but is must
+of course be identical in the two calibration steps</p>
+</li>
+<li><p class="first">Calibrate the depth camera. This step is actually a bit more
+tricky, since the markers on the calibration object can not be
+detected in the depth image. However, since it is known, that the
+depth image is computed on the basis of the <em>IR-intensity image</em>,
+which can also be accessed from the kinect camera, this is still
+possible. The only drawback, when calibrating on the basis of the
+intensity image, is that the actively emitted <em>IR speckle pattern</em>
+makes marker detection more difficult and potentially less
+accurate. While this effect becomes negligible in case of using a
+large calibration object with large markers (Due to the minimal
+viewing distance of kinect of about 70cm, smaller objects with
+smaller markers cannot simply be placed closer to the camera),
+smaller markers can quickly become undetectable by the system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="nb">input</span> <span class="n">kinecti</span> <span class="mi">0</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">-</span><span class="n">huge</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">o</span> <span class="n">depth</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/kinect-calib-intensity.jpg"><img alt="shadow" src="../_images/kinect-calib-intensity.jpg" style="width: 555.6px; height: 352.8px;" /></a>
+<p>As one can see, smaller markers are detected much worse in the noisy
+intensity images.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The speckle pattern can sometimes be too strong for robust
+marker detection. In this case, adapting the marker detection
+parameters can lead to acceptable results. In addition, we found
+out, that temporarily covering the Kinect’s IR-speckle pattern
+emitter with one or even two layers of transparent plastic foil
+(e.g. from a transparent bag or a clear plastic folder) diffuses
+the emitted speckle pattern significantly. This can help to
+strongly increase the marker detection result, which, in turn,
+also improves the calibration result.</p>
+</div>
+</li>
+</ol>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="62%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><img alt="shadow" class="first last" src="../_images/kinect-pc-calibrated.jpg" />
+</td>
+<td><p class="first">Once the two calibration files (here, <strong>depth.xml</strong> and <strong>color.xml</strong>)
+are available, the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1GenericPointCloudGrabber.html">geom::GenericPointCloudGrabber</a> that is
+recommended to be used for point cloud input can be set up to use the
+calibration result.  As an example, we can again use the
+<strong>icl-point-cloud-viewer</strong> application, which was already used before to
+visualize the erroneous RGB-D calibration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">point</span><span class="o">-</span><span class="n">cloud</span><span class="o">-</span><span class="n">viewer</span> <span class="o">-</span><span class="n">pci</span> <span class="n">dcam</span> <span class="n">kinectd</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">depth</span><span class="o">.</span><span class="n">xml</span><span class="p">,</span><span class="n">kinectc</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>As one can see, the color and the depth images are now impressingly well
+alligned.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please keep in mind, that perfect aligment/mapping from color to depth
+image is not always possible. In case of having more than one <em>object
+layer</em>, the coloring of the back layers/background cannot be 100%
+perfect, since the color of object parts that are visible by the depth
+camera, but occluded in the color camera image will be taken from the
+object that <em>occludes</em> the other one</p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="calibrating-kinect-with-lower-resolution">
+<h3>Calibrating Kinect with lower Resolution<a class="headerlink" href="#calibrating-kinect-with-lower-resolution" title="Permalink to this headline">¶</a></h3>
+<p>In many applications, the Kinect’s depth images is not used in its
+maximum resolution (VGA), but only in QVGA resolution (320 by
+240). This is due to the fact, that the additional amount of pixels (4
+times as many) when using full VGA resolution does not scale well to
+the additional amount of information obtained when using VGA rather
+than QVGA. Due to the method that is used to computed Kinect’s depth
+image, many sources argue that Kinect internally does not support more
+than QVGA resolution and the VGA image is basically and intelligently
+up-scaled version of this. Only by reducing the resolution to QVGA, many
+point cloud processing applications obtain real-time capabilities.</p>
+<p>However, using ICL’s calibration pipeline sketched above for Kinect
+with QVGA resolution usually leads to difficulties when calibrating
+the depth camera from the QVGA-intensity images. Here, often the
+visible speckle pattern becomes too strong leading to an impossible or
+very inaccurate calibration. In order to avoid these issues, the
+camera calibration application provides an option to calibrate a
+camera with a higher images size and then to internally artificially
+downscale the resulting calibrated camera’s resolution to a given
+one. In case of the kinect camera, this could be done with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="nb">input</span> <span class="n">kinectc</span> <span class="mi">0</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">-</span><span class="n">huge</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">o</span> <span class="n">color</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">os</span> <span class="n">QVGA</span>
+<span class="n">icl</span><span class="o">-</span><span class="n">camera</span><span class="o">-</span><span class="n">calibration</span> <span class="o">-</span><span class="nb">input</span> <span class="n">kinecti</span> <span class="mi">0</span> <span class="o">-</span><span class="n">c</span> <span class="n">calib</span><span class="o">-</span><span class="n">obj</span><span class="o">-</span><span class="n">huge</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">o</span> <span class="n">depth</span><span class="o">.</span><span class="n">xml</span> <span class="o">-</span><span class="n">os</span> <span class="n">QVGA</span>
+</pre></div>
+</div>
+<p>The given output-size (arg <strong>-os</strong>) is then used for the resulting camera
+parameter <strong>.xml</strong> file. This feature can of course also be used for normal cameras.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This only leads to useful results, if the used camera images the
+one of larger resolution that is used for calibration and the one
+with the smaller target resolution are actually down-scaled
+versions of each other. If a camera (e.g. the Point Grey Flea2G)
+uses only a part of the full image when the image size is adapted,
+the calibration does not work with the <strong>-os</strong> argument.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Camera Calibration</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#image-undistortion-lens-distortion-correction">Image Undistortion (Lens distortion correction)</a><ul>
+<li><a class="reference internal" href="#opencv-based-lens-undistortion">OpenCV-based Lens Undistortion</a></li>
+<li><a class="reference internal" href="#icl-s-native-lens-undistortion-calibration-tool">ICL’s native Lens Undistortion Calibration Tool</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-calibration-object-and-its-xml-based-description">The Calibration Object and its XML-based description</a><ul>
+<li><a class="reference internal" href="#calibration-object-examples">Calibration Object Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#icl-s-camera-calibration-application">ICL’s camera calibration application</a><ul>
+<li><a class="reference internal" href="#saving-the-calibration-result">Saving the calibration Result</a></li>
+<li><a class="reference internal" href="#how-can-the-result-be-used">How can the result be used ?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#calibrating-kinect-and-kinect-like-devices">Calibrating Kinect and Kinect-Like Devices</a><ul>
+<li><a class="reference internal" href="#step-by-step-rgb-d-calibration-of-a-kinect-device">Step by step RGB-D calibration of a Kinect device</a></li>
+<li><a class="reference internal" href="#calibrating-kinect-with-lower-resolution">Calibrating Kinect with lower Resolution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generic-grabber-backends.html"
+                        title="previous chapter">Generic Grabber Backends</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="porting-7to8.html"
+                        title="next chapter">Porting ICL 7 to ICL 8</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="porting-7to8.html" title="Porting ICL 7 to ICL 8"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generic-grabber-backends.html" title="Generic Grabber Backends"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/howtos.html" >The ICL HowTo Collection</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

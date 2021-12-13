@@ -1,0 +1,1015 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Accessing Pixel Data &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GUI-Applications" href="gui-apps.html" />
+    <link rel="prev" title="Using the Image Class" href="using-images.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="gui-apps.html" title="GUI-Applications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="using-images.html" title="Using the Image Class"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" accesskey="U">Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="accessing-pixel-data">
+<span id="tut-pixel-access"></span><h1>Accessing Pixel Data<a class="headerlink" href="#accessing-pixel-data" title="Permalink to this headline">¶</a></h1>
+<p>Even though, ICL provides a huge set of predefined filters and image
+operators, it is sometimes necessary to implement custom image
+processing algorithms. For this, it is usually necessary to know how
+to access an images pixels. Therefore, this chapter of the
+tutorial introduces different techniques to do so. First, let us
+review the pixel access technique from the previous example:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">Img8u</span> <span class="n">image</span> <span class="o">=</span> <span class="n">cvt8u</span><span class="p">(</span><span class="n">scale</span><span class="p">(</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;lena&quot;</span><span class="p">),</span><span class="mi">640</span><span class="p">,</span><span class="mi">480</span><span class="p">));</span>
+
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">c</span><span class="o">&lt;</span><span class="n">image</span><span class="p">.</span><span class="n">getChannels</span><span class="p">();</span><span class="o">++</span><span class="n">c</span><span class="p">){</span>
+     <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">x</span><span class="o">&lt;</span><span class="n">image</span><span class="p">.</span><span class="n">getWidth</span><span class="p">();</span><span class="o">++</span><span class="n">x</span><span class="p">){</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">y</span><span class="o">&lt;</span><span class="n">image</span><span class="p">.</span><span class="n">getHeight</span><span class="p">();</span><span class="o">++</span><span class="n">y</span><span class="p">){</span>
+           <span class="n">image</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">*</span> <span class="p">(</span><span class="n">image</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">c</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">128</span><span class="p">);</span>
+        <span class="p">}</span>
+     <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">show</span><span class="p">(</span><span class="n">cvt</span><span class="p">(</span><span class="n">image</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>The resulting source code is very intuitive, but not optimal in terms
+of performance. In order to understand why the
+<strong>(x,y,channel)</strong>-operator can never be optimal in terms of
+performance, you’ll have to learn more about how the image data is
+managed internally:</p>
+<p>ICL’s image data types always use a <em>planar</em> data layout. Interleaved
+data layout is not supported, but efficient conversion functions
+called <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#aaa54783542b1dce3b93863ce5a16c1c5">interleavedToPlanar</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a99c7da9666e191badf146e0d610e3d1b">planarToInterleaved</a> are
+provided in the header <a class="reference external" href="../icl-api/CCFunctions_8h.html">ICLCore/CCFunctions.h</a>. Each
+ICL image instance of type <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> manages a vector of channel data
+pointers. Each of these point to a single memory chuck that contains
+all pixel values row-by-row (row-major-order) for the whole image
+channel. Therefore, the <strong>(x,y,channel)</strong>-operator always needs to
+address the referenced channel-data-pointer first, before it is able
+to compute the particular offset within channel data chunk (using
+<strong>x+y*width</strong>). In short, the <strong>(x,y,channel)</strong>-operator is easy to
+use, but rather slow.</p>
+<div class="section" id="other-pixel-access-techniques">
+<h2>Other Pixel Access Techniques<a class="headerlink" href="#other-pixel-access-techniques" title="Permalink to this headline">¶</a></h2>
+<p>In the following, the different provided techniques for pixel data
+access are listed and compared in terms of convenience and
+performance.  In general, it is not possible to pick the best method
+for everything. In particular it heavily depends on whether optimal
+performance is mandatory or negligible where it is used.</p>
+<div class="section" id="operator-x-y">
+<h3>Operator-(x,y)<a class="headerlink" href="#operator-x-y" title="Permalink to this headline">¶</a></h3>
+<p>This operator returns a utility structure, which <em>references a whole</em>
+pixel i.e., all image channels at once. Due to its high overhead for
+creating the pixel-reference data type (of type <a class="reference external" href="../icl-api/classicl_1_1core_1_1PixelRef.html">PixelRef</a>), this
+technique should only be used in sections of your code that are not
+time-critical at all. But here, it is a very convenient feature</p>
+</div>
+<div class="section" id="iterator-based-access">
+<h3>Iterator-based Access<a class="headerlink" href="#iterator-based-access" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>-classes provide STL-like iterator-based access to the
+channel data pointers using the methods <span>Img::begin(channel)</span> and
+<span>Img::end(channel)</span>. This technique allows for using STL algorithms
+in a convenient way. Setting a whole channel to a given value can be
+applied e.g. using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="p">::</span><span class="n">fill</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">image</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="mi">255</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Most of the time this is even faster than writing an own for loop, because most
+STL-algorithms are optimized using loop-unrolling.</p>
+</div>
+<div class="section" id="iterator-based-access-of-roi-pixels">
+<h3>Iterator-based Access of ROI Pixels<a class="headerlink" href="#iterator-based-access-of-roi-pixels" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> class is endowed with a so called Region of Interest or
+short <strong>ROI</strong>. The ROI defines a rectangular image-mask that is
+enabled for processing. Nearly all ICL functions and utility classes
+(and even the internally used Intel IPP functions) apply their
+functionality on the image ROI only. The ROI-iterators run
+successively line by line through the image ROI pixels only. Here, the
+access functions are named <span>Img::beginROI(channel)</span> and
+<span>Img::endROI(channel)</span>.</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">Img32f</span> <span class="n">image</span><span class="p">(</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+  <span class="c1">// mask out the outer 10 pixels of the image</span>
+  <span class="n">image</span><span class="p">.</span><span class="n">setROI</span><span class="p">(</span><span class="n">Rect</span><span class="p">(</span><span class="n">Point</span><span class="o">::</span><span class="n">null</span><span class="p">,</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">).</span><span class="n">enlarged</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">));</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">fill</span><span class="p">(</span><span class="n">image</span><span class="p">.</span><span class="n">beginROI</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="n">image</span><span class="p">.</span><span class="n">endROI</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="mi">255</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="image-channel-based-access">
+<h3>Image Channel-based access<a class="headerlink" href="#image-channel-based-access" title="Permalink to this headline">¶</a></h3>
+<p>The major part of the computational overhead of the
+<strong>(x,y,channel)</strong>-operator is a result of the dynamic channel pointer
+look-up. If you know in advance how many channels your image has (most
+of the time 1 or 3), you can apply this step beforehand by extracting
+an instance of type <a class="reference external" href="../icl-api/classicl_1_1core_1_1Channel.html">Channel</a> (where the template parameter <em>T</em> is
+you pixel type) from your image using the index operator.</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">Img32f</span> <span class="n">redChess</span><span class="p">(</span><span class="n">Size</span><span class="o">::</span><span class="n">QVGA</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span>
+  <span class="n">Channel32f</span> <span class="n">c</span> <span class="o">=</span> <span class="n">redChess</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">x</span><span class="o">&lt;</span><span class="n">c</span><span class="p">.</span><span class="n">getWidth</span><span class="p">();</span><span class="o">++</span><span class="n">x</span><span class="p">){</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">y</span><span class="o">&lt;</span><span class="n">c</span><span class="p">.</span><span class="n">getHeight</span><span class="p">();</span><span class="o">++</span><span class="n">y</span><span class="p">){</span>
+      <span class="n">c</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is more than twice as fast than using the
+<strong>(x,y,channel)</strong>-operator directly.</p>
+</div>
+</div>
+<div class="section" id="linear-channel-data-access">
+<h3>Linear Channel Data Access<a class="headerlink" href="#linear-channel-data-access" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1Channel.html">Channel</a>-template can also be used for linear data
+access. In cases, where the <strong>(x,y)</strong> coordinate is not necessary for
+a certain operation, the image data can be processed in a single loop
+through all image lines. To this ends, the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Channel.html">Channel</a> lass also
+implements the index-operator <a class="reference external" href="../icl-api/classicl_1_1core_1_1Channel.html#a59b65b10cb4bc4d357fb8f321c517a6a">Channel::operator[](int
+idx)</a>. Using the Channel instead of accessing the channel data pointer
+directly has no speed advantages, but sometimes it increases the
+readability of your code.</p>
+</div>
+<div class="section" id="low-level-data-access">
+<h3>Low Level Data Access<a class="headerlink" href="#low-level-data-access" title="Permalink to this headline">¶</a></h3>
+<p>One of our design principles was to always provide low level data
+access if this can help to increase performance or to provide additional
+but non common features. Therefore, the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> class template was designed
+so that</p>
+<ol class="arabic simple">
+<li>it defines a high-level abstraction layer that encapsulates the internal
+data handling so that the uses does not have to care about it</li>
+<li>it always provides well-defined access to it’s internal image
+data. I.e., <span>Img::begin(channel)</span> and <span>Img::end(channel)</span>
+actually return the internal channel data pointers directly</li>
+<li>if the user wants or needs to perform the data-handling manually,
+an <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> instance can also be wrapped around existing
+data-pointers shallowly. I.e., it can reference existing data
+without the need to copy it pixel-by-pixel into it’s own data
+structures</li>
+</ol>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+
+  <span class="c1">// create an 8u image of the mandril test image</span>
+  <span class="n">Img8u</span> <span class="n">image</span> <span class="o">=</span> <span class="n">create</span><span class="o">&lt;</span><span class="n">icl8u</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;mandril&quot;</span><span class="p">);</span>
+
+  <span class="c1">// the image has core::formatRGB, i.e. 3 channels</span>
+  <span class="c1">// these can be extracted using begin</span>
+  <span class="k">const</span> <span class="n">icl8u</span> <span class="o">*</span><span class="n">r</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="k">const</span> <span class="n">icl8u</span> <span class="o">*</span><span class="n">g</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">const</span> <span class="n">icl8u</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+
+  <span class="c1">// lets find out, where the red-channel value</span>
+  <span class="c1">// is higher than the green- and blue-channel value</span>
+  <span class="c1">// here, we don&#39;t need (x,y)-access, so our loop</span>
+  <span class="c1">// iterates linearily over all pixels</span>
+
+  <span class="c1">// result image (same size, one channel)</span>
+  <span class="n">Img8u</span> <span class="n">result</span><span class="p">(</span><span class="n">image</span><span class="p">.</span><span class="n">getSize</span><span class="p">(),</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// number of pixels</span>
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">getDim</span><span class="p">();</span>
+  <span class="n">icl8u</span> <span class="o">*</span><span class="n">res</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">dim</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">g</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">])){</span>
+      <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+      <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// btw. nice optimization</span>
+    <span class="c1">// res[i] = 255 * ((r[i] &gt; g[i]) &amp;&amp; (r[i] &gt; b[i]));</span>
+  <span class="p">}</span>
+
+  <span class="c1">// show results</span>
+  <span class="n">show</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+  <span class="n">show</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first"><strong>source image</strong></p>
+<img alt="shadow" class="last" src="../_images/pixel-access-4-a.png" />
+</td>
+<td><p class="first"><strong>result image</strong></p>
+<img alt="shadow" class="last" src="../_images/pixel-access-4-b.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="functional-data-access">
+<h3>Functional Data Access<a class="headerlink" href="#functional-data-access" title="Permalink to this headline">¶</a></h3>
+<p>The C++-STL provides the powerful <strong>algorithm</strong> header that contains
+simple but highly optimized algorithms. Algorithms can also be
+higher-order functions i.e., functions that get <em>templated</em>
+function-parameters. E.g. the <strong>std::for_each</strong> function gets a data
+range and a function or function-object (a so called functor) that has
+to be applied on each element of the given range. We also implemented
+these functional data access patterns for the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> class. The functions</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a6ae2c82990ee22f5afffacb55ec6e154">Img::forEach</a></li>
+<li><a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a41f940015b91291e7335c79cdaac4860">Img::transform</a></li>
+<li><a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a25474639a3e70b65f22f1bac48eaad89">Img::combine</a></li>
+<li><a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a772c0b531c86e05b5c4799c01c6b0c2b">Img::reduce_channels</a></li>
+</ul>
+<p>copy their STL-counter part’s behavior for the image data including
+ROI support. Since C++ automatically uses <strong>inline</strong> templating here
+in order to avoid expensive function-calls for each image pixel, this
+is not only elegant, but usually also leads to fast solutions. Here is
+an example for a thresholding operation using the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a6ae2c82990ee22f5afffacb55ec6e154">Img::forEach</a>
+function</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+
+<span class="kt">void</span> <span class="nf">thresh_func</span><span class="p">(</span><span class="n">icl8u</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">){</span>
+  <span class="n">t</span> <span class="o">=</span> <span class="mi">255</span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="o">&gt;</span><span class="mi">128</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">Img8u</span> <span class="n">image</span> <span class="o">=</span> <span class="n">create</span><span class="o">&lt;</span><span class="n">icl8u</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;lena&quot;</span><span class="p">);</span>
+  <span class="n">image</span><span class="p">.</span><span class="n">forEach</span><span class="p">(</span><span class="n">thresh_func</span><span class="p">);</span>
+
+  <span class="c1">// with C++-11 standad supported, we can use</span>
+  <span class="c1">// an inline lambda expression</span>
+  <span class="n">image</span><span class="p">.</span><span class="n">forEach</span><span class="p">(</span> <span class="p">[](</span><span class="n">icl8u</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">){</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span><span class="o">&gt;</span><span class="mi">127</span><span class="p">);</span> <span class="p">}</span>  <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// using closures, this could also be parameterized</span>
+<span class="kt">void</span> <span class="nf">thresh</span><span class="p">(</span><span class="n">Img8u</span> <span class="o">&amp;</span><span class="n">image</span><span class="p">,</span> <span class="n">icl8u</span> <span class="n">t</span><span class="p">){</span>
+  <span class="c1">// copy t into the lambda scope (by value)</span>
+  <span class="n">image</span><span class="p">.</span><span class="n">forEach</span> <span class="p">(</span>  <span class="p">[</span><span class="n">t</span><span class="p">](</span><span class="n">icl8u</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">){</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span><span class="o">&gt;</span><span class="n">t</span><span class="p">);</span> <span class="p">}</span> <span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">reduce_channels_example</span><span class="p">(){</span>
+  <span class="n">Img8u</span> <span class="n">rgb</span> <span class="o">=</span> <span class="n">create</span><span class="o">&lt;</span><span class="n">icl8u</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;lena&quot;</span><span class="p">)</span>
+  <span class="n">Img8u</span> <span class="n">gray</span> <span class="p">(</span><span class="n">rgb</span><span class="p">.</span><span class="n">getSize</span><span class="p">(),</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// ok, for simplicity, lets use a C++-lambda</span>
+  <span class="c1">// expression again. Please note, that</span>
+  <span class="c1">// auto can be used for implicit type-binding</span>
+  <span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="p">[](</span><span class="k">const</span> <span class="n">icl8u</span> <span class="n">src</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">icl8u</span> <span class="n">dst</span><span class="p">[</span><span class="mi">1</span><span class="p">]){</span>
+    <span class="n">dst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">src</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">src</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span><span class="p">;</span>
+  <span class="p">};</span>
+
+  <span class="n">rgb</span><span class="p">.</span><span class="n">reduce_channels</span><span class="o">&lt;</span><span class="n">icl8u</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="k">decltype</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span><span class="n">gray</span><span class="p">,</span> <span class="n">f</span> <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>Perhaps, the for-loop based alternative provides better readable code, but
+once we would also add efficient ROI-handling, it would become much more
+code.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Accessing Pixel Data</a><ul>
+<li><a class="reference internal" href="#other-pixel-access-techniques">Other Pixel Access Techniques</a><ul>
+<li><a class="reference internal" href="#operator-x-y">Operator-(x,y)</a></li>
+<li><a class="reference internal" href="#iterator-based-access">Iterator-based Access</a></li>
+<li><a class="reference internal" href="#iterator-based-access-of-roi-pixels">Iterator-based Access of ROI Pixels</a></li>
+<li><a class="reference internal" href="#image-channel-based-access">Image Channel-based access</a></li>
+<li><a class="reference internal" href="#linear-channel-data-access">Linear Channel Data Access</a></li>
+<li><a class="reference internal" href="#low-level-data-access">Low Level Data Access</a></li>
+<li><a class="reference internal" href="#functional-data-access">Functional Data Access</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="using-images.html"
+                        title="previous chapter">Using the Image Class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gui-apps.html"
+                        title="next chapter">GUI-Applications</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="gui-apps.html" title="GUI-Applications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="using-images.html" title="Using the Image Class"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/tutorial.html" >Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

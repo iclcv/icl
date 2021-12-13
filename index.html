@@ -1,0 +1,399 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Image Component Library (ICL) &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="What is ICL ?" href="extras/about.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="extras/about.html" title="What is ICL ?"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ICL Manual</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="image-component-library-icl">
+<h1>Image Component Library (ICL)<a class="headerlink" href="#image-component-library-icl" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><a class="reference external" href="modules/utils.html"><img alt="A" src="_images/utils.png" /></a> <a class="reference external" href="modules/math.html"><img alt="B" src="_images/math.png" /></a> <a class="reference external" href="modules/core.html"><img alt="C" src="_images/core.png" /></a> <a class="reference external" href="modules/filter.html"><img alt="D" src="_images/filter.png" /></a> <a class="reference external" href="modules/io.html"><img alt="E" src="_images/io.png" /></a></div>
+<div class="line"><a class="reference external" href="modules/cv.html"><img alt="F" src="_images/cv.png" /></a> <a class="reference external" href="modules/qt.html"><img alt="G" src="_images/qt.png" /></a> <a class="reference external" href="modules/geom.html"><img alt="H" src="_images/geom.png" /></a> <a class="reference external" href="modules/markers.html"><img alt="I" src="_images/markers.png" /></a> <a class="reference external" href="modules/physics.html"><img alt="J" src="_images/physics.png" /></a></div>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><a class="reference external" href="extras/about.html"><img alt="ABOUT" src="_images/about1.png" /></a>     <a class="reference external" href="extras/download.html"><img alt="DOWNLOAD" src="_images/download.png" /></a>  <a class="reference external" href="extras/install.html"><img alt="INSTALL" src="_images/install1.png" /></a></div>
+<div class="line"><a class="reference external" href="extras/tutorial.html"><img alt="TUTORIAL" src="_images/tutorial1.png" /></a>  <a class="reference external" href="extras/howtos.html"><img alt="HOWTOS" src="_images/howtos1.png" /></a>    <a class="reference external" href="extras/license.html"><img alt="LICENSE" src="_images/license1.png" /></a></div>
+</div>
+</div>
+<div class="section" id="internal">
+<h2>Internal<a class="headerlink" href="#internal" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="extras/todolist.html">Todo List</a></li>
+</ul>
+</div>
+<a href="https://github.com/iclcv/icl">
+  <img src="_static/images/github_right.svg" style="position:absolute;top:30px;right:0;"
+  alt="Fork me on GitHub" /></a>
+
+<script src="js/jquery.tools.min.js"></script>
+<!--script src="../_static/underscore.js"></script-->
+<!--script src="../_static/doctools.js"></script-->
+
+<script>
+jQuery(document).ready(function() {
+
+  /*
+  var f = function(){
+
+     var href = this.href;
+     var id = "";
+     if(href.match('\.*about.html$')){
+        id='extras-about';
+     }else if(href.match('.*download\.html$')){
+        id='extras-download';
+     }else if(href.match('.*install\.html$')){
+        id='extras-install';
+     }else if(href.match('.*tutorial\.html$')){
+        id='extras-tutorial';
+     }else if(href.match('.*howtos\.html$')){
+        id='extras-howtos';
+     }
+     return '<div id="'+id+'" class="tooltip extras"></div>'
+  }
+
+  var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ];
+  for(var i=0;i<5;++i){
+    var e = $('.reference.external[href="extras/'+extras[i]+'.html"]');
+    e.after(f);
+    e.tooltip({
+      position: "top center",
+      opacity: 0.95,
+      effect: 'fade',
+      predelay: 1,
+      delay: 10,
+      fadeInSpeed: 300,
+      offset: [5,-5]
+    });
+  }
+  */
+
+  /*$('.reference.external[href^="modules"]').after(function() { */
+  $('.reference.external').after(function() {
+     var href = this.href;
+     var id = "";
+     var text = "not defined yet";
+     if(href.match('.*modules/utils.*')){
+       id = "module-utils";
+       text = "the <b>utils</b> module provides basic data type definitions as well as general support types and functions";
+     }else if(href.match('.*modules/math.*')){
+       id = "module-math";
+       text = "the <b>math</b> module provides fixed- and dynamic sized matrix classes and several machine learning tools";
+     }else if(href.match('.*modules/core.*')){
+       id = "module-core";
+       text = "the <b>core</b> module provides the basic image classes <b>ImgBase</b> and <b>Img</b>, basic types and functions";
+     }else if(href.match('.*modules/filter.*')){
+       id = "module-filter";
+       text = "the <b>filter</b> module provides a huge set of unary- and binary image filters for low level image processing";
+     }else if(href.match('.*modules/qt.*')){
+       id = "module-qt";
+       text = "the <b>qt</b> module provides a powerfull GUI creation framework including high-speed visualization tools";
+     }else if(href.match('.*modules/cv.*')){
+       id = "module-cv";
+       text = "the <b>cv</b> module provides a huge set of medium level classes and functions for computer vision";
+     }else if(href.match('.*modules/geom.*')){
+       id = "module-geom";
+       text = "the <b>geom</b> module provides 3D-vision and point-cloud processig tools including 3D-visualization";
+     }else if(href.match('.*modules/physics.*')){
+       id = "module-phyiscs";
+       text = "the <b>physics</b> module provides a powerful integration of the bullet engine featuring soft and rigid body physics";
+     }else if(href.match('.*modules/markers.*')){
+       id = "module-markers";
+       text = "the <b>markers</b> module provides a generic fiducial marker detection frameworks for common marker types";
+     }else if(href.match('.*modules/io.*')){
+       id = "module-io";
+       text = "the <b>io</b> module provides an image acquisition  and output framework for most differnt in- and output types";
+     }else if(href.match('.*extras/about.*')){
+       id = "extra-about";
+       text = "ICL is a <b>C++ computer vision library</b>. Read more about our basic ideas and design principles";
+     }else if(href.match('.*extras/download.*')){
+       id = "extra-download";
+       text = "Find out, where to download ICL. We provide source and binary download packages as well as a svn location";
+     }else if(href.match('.*extras/install.*')){
+       id = "extra-install";
+       text = "Learn more about compiling and installing ICL from source and from downloaded binary packages";
+     }else if(href.match('.*extras/tutorial.*')){
+       id = "extra-tutorial";
+       text = "Learn how to use ICL using a huge set of tutorials for the development of computer vision applications";
+     }else if(href.match('.*extras/howtos.*')){
+       id = "extra-howtos";
+       text = "Find step by step instructions for a set of technical issues such as how to install certain camera types";
+     }else if(href.match('.*extras/license.*')){
+       id = "extra-license";
+       text = "ICL is provided under the terms of the <b>GNU Lesser General Public License Version 3 (LGPL 3)</b>.";
+     }
+     return '<div id="'+id+'"class="tooltip modules">'+text+'</div>';
+  });
+  /*var extras = [ 'about', 'download', 'install', 'tutorial', 'howtos' ]; */
+
+  /*$('.reference.external[href^="modules"]').tooltip({ */
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 1,
+    effect: 'fade',
+    predelay: 300,
+    delay: 10,
+    fadeInSpeed: 1000,
+    offset: [36,10]
+  });
+
+  $('#module-utils').bind('click',function(e){ location = 'modules/utils.html';  });
+  $('#module-math').bind('click',function(e){ location = 'modules/math.html';  });
+  $('#module-core').bind('click',function(e){ location = 'modules/core.html';  });
+  $('#module-filter').bind('click',function(e){ location = 'modules/filter.html';  });
+  $('#module-io').bind('click',function(e){ location = 'modules/io.html';  });
+  $('#module-qt').bind('click',function(e){ location = 'modules/qt.html';  });
+  $('#module-cv').bind('click',function(e){ location = 'modules/cv.html';  });
+  $('#module-geom').bind('click',function(e){ location = 'modules/geom.html';  });
+  $('#module-markers').bind('click',function(e){ location = 'modules/markers.html';  });
+  $('#module-physics').bind('click',function(e){ location = 'modules/physics.html';  });
+
+  $('#extra-about').bind('click',function(e){ location = 'extras/about.html';  });
+  $('#extra-download').bind('click',function(e){ location = 'extras/download.html';  });
+  $('#extra-install').bind('click',function(e){ location = 'extras/install.html';  });
+  $('#extra-tutorial').bind('click',function(e){ location = 'extras/tutorial.html';  });
+  $('#extra-howtos').bind('click',function(e){ location = 'extras/howtos.html';  });
+  $('#extra-license').bind('click',function(e){ location = 'extras/license.html';  });
+
+});
+</script>
+<style type="text/css">
+  .tooltip.modules {
+    display:none;
+    background: transparent url(_static/images/index-tip.png);
+    font-size:12px;
+    height:100px;
+    width:160px;
+    padding: 10px;
+    padding-right:30px;
+    padding-left:100px;
+    line-height: 20px;
+    color: rgb(70,70,70);
+  }
+
+  .tooltip.extras {
+    display:none;
+    background: rgba(0,100,255,0.2);
+    font-size:13px;
+    height:88px;
+    width:99px;
+    padding:1px;
+    color: #555;
+    line-height: 20px;
+    border-radius: 17px;
+  }
+
+  div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+  div.body h2{
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+  div.body h3{
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+  </style></div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Image Component Library (ICL)</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#internal">Internal</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="extras/about.html"
+                        title="next chapter">What is ICL ?</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="extras/about.html" title="What is ICL ?"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ICL Manual</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

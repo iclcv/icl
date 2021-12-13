@@ -1,0 +1,269 @@
+<config>
+  <!-- front face -->
+  <section id="grid-0">
+    <data id="dim" type="string">5x5</data>
+    <data id="offset" type="string">50,50,0</data>
+    <data id="x-direction" type="string">0,100,0</data>
+    <data id="y-direction" type="string">100,0,0</data>>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">{574,573,575,576,577,
+                                         578,580,579,581,582,
+                                         583,585,584,586,687,
+                                         588,589,590,591,592,
+                                         593,594,595,596,597}</data>
+    <data id="marker-size" type="string">80.5x80.5</data>
+  </section>
+
+  <!-- back face -->
+  <section id="grid-1">
+    <data id="dim" type="string">5x5</data>
+    <data id="offset" type="string">50,50,-400</data>
+    <data id="x-direction" type="string">100,0,0</data>>
+    <data id="y-direction" type="string">0,100,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">{548,550,549,551,552,
+                                         553,554,556,555,557,
+                                         558,559,560,561,562,
+                                         563,564,565,566,567,
+                                         568,569,570,571,572}</data>
+    <data id="marker-size" type="string">80.5x80.5</data>
+  </section>
+
+  <!-- rigth roof -->
+  <section id="grid-2">
+    <data id="dim" type="string">4x6</data>
+    <data id="offset" type="string">0,50,-50</data>
+    <data id="x-direction" type="string">0,0,-100</data>
+    <data id="y-direction" type="string">0,100,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">{500,502,501,503,
+                                         504,505,506,508,
+                                         507,509,510,511,
+                                         512,514,513,515,
+                                         516,517,518,520,
+                                         519,521,522,523}</data>
+    <data id="marker-size" type="string">80x80</data>
+  </section>
+  
+  <!-- left roof -->
+  <section id="grid-3">
+    <data id="dim" type="string">4x6</data>
+    <data id="offset" type="string">50,0,-350</data>
+    <data id="x-direction" type="string">0,0,100</data>
+    <data id="y-direction" type="string">100,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">{524,526,525,527,
+                                         528,529,530,532,
+                                         531,533,534,535,
+                                         536,538,537,539,
+                                         540,541,542,544,
+                                         543,545,546,547}</data>
+    <data id="marker-size" type="string">80x80</data>
+  </section>
+
+  <!-- front single small markers (described as grid in order to 
+    use corners aswell) -->
+  <section id="grid-4">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">523,23,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[598,598]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-5">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">423,123,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[599,599]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-6">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">323,223,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[600,600]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-7">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">223,323,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[601,601]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-8">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">123,423,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[602,602]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-9">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">23,523,0</data>
+    <data id="x-direction" type="string">0,1,0</data>
+    <data id="y-direction" type="string">1,0,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[603,603]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+
+  <!-- back single small markers (described as grid in 
+    order to use corners aswell) -->
+  <section id="grid-10">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">23,523,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[604,604]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-11">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">123,423,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[605,605]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-12">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">223,323,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[606,606]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-13">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">323,223,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[607,607]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-14">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">423,123,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[608,608]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+  <section id="grid-15">
+    <data id="dim" type="string">1x1</data>
+    <data id="offset" type="string">523,23,-400</data>
+    <data id="x-direction" type="string">1,0,0</data>
+    <data id="y-direction" type="string">0,1,0</data>
+    <data id="marker-type" type="string">bch</data>
+    <data id="marker-ids" type="string">[609,609]</data>
+    <data id="marker-size" type="string">44x44</data>
+  </section>
+
+   <!-- section id="marker-0">
+      <data id="marker-type" type="string">amoeba|bch</data>
+      <data id="pos" type="string">x,y,z</data>
+      <data id="marker-id" type="int">id</data>
+   </section -->
+
+   <section id="world-transform-0" type="string">
+     <data id="name" type="string">lab default</data>
+     <data id="transform" type="string">
+       | -0.707107 0.707107 -8.74228e-08 0 |
+       | 7.02494e-08 -5.33851e-08 -1 266 |
+       | -0.707107 -0.707107 -1.19249e-08 431.34 |
+       | 0 0 0 1 |
+     </data>
+   </section>
+
+   <section id="world-transform-1" type="string">
+     <data id="name" type="string">Lab lying pointing towards backside</data>
+     <data id="transform" type="string">
+       | -0.707107 0.707107 0 0 |
+       | -0.707107 -0.707107 0 697.34 |
+       | 0 0 1 400 |
+       | 0 0 0 1 |
+     </data>
+   </section>
+
+   <section id="world-transform-2" type="string">
+     <data id="name" type="string">identity</data>
+     <data id="transform" type="string">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</data>
+   </section>
+
+   <section id="world-transform-3" type="string">
+     <data id="name" type="string">default upwards</data>
+     <data id="transform" type="string">
+| -0.707107 0.707107 -8.74228e-08 0 |
+| 7.02494e-08 -5.33851e-08 -1 0 |
+| -0.707107 -0.707107 -1.19249e-08 431.34 |
+| 0 0 0 1 |
+     </data>
+   </section>
+   
+   <data id="obj-file" type="string">
+v 0 0 0
+v 600 0 0
+v 600 0 -400
+v 0 0 -400
+v 0 600 0
+v 0 600 -400
+
+v 600 10 0
+v 600 10 -400
+v 10 600 0
+v 10 600 -400
+
+vn 1 0 0
+vn 0 1 0
+vn 0 0 1
+vn -1 0 0
+vn 0 -1 0
+vn 0 0 -1
+
+
+f 1//5 4//5 3//5 2//5 
+f 4//4 1//4 5//4 6//4 
+
+f 2//3 1//3 5//3
+f 2//3 5//3 9//3 7//3 
+
+f 4//6 6//6 3//6
+f 6//6 10//6 3//6 8//6 
+
+f 2//1 7//1 3//1 8//1 
+f 6//2 5//2 10//2 9//2 
+
+l 1 4
+l 1 2
+l 2 3
+l 3 4
+ 
+l 4 6
+l 6 5
+l 1 5
+
+l 5 9
+l 2 7
+l 3 8
+l 6 10
+
+l 7 9
+l 8 10
+   </data>
+</config>

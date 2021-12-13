@@ -1,0 +1,879 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3D Physics Simulation &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="About ICL" href="../about.html" />
+    <link rel="prev" title="Fiducial Marker Detection" href="markers.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../about.html" title="About ICL"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="markers.html" title="Fiducial Marker Detection"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="d-physics-simulation">
+<span id="physics"></span><h1>3D Physics Simulation<a class="headerlink" href="#d-physics-simulation" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/physics1.png" src="../_images/physics1.png" />
+<p>The ICLPhysics package provides a powerful wrapper layer around the
+most common aspects of the versatile Bullet Physics engine
+(<a class="reference external" href="http://bulletphysics.org">http://bulletphysics.org</a>). The implemented wrapper layout features
+soft and rigid body dynamics and collisions as well as constraints and motor
+types. Its seamless integration with ICLGeom’s rendering API allows for super fast
+rapid prototyping.</p>
+<a class="reference internal image-reference" href="../_images/collision.png"><img alt="../_images/collision.png" src="../_images/collision.png" style="width: 186.6px; height: 149.7px;" /></a>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#physics-physicsscene"><span class="std std-ref">PhysicsScene</span></a></li>
+<li><a class="reference internal" href="#physics-rigidobject"><span class="std std-ref">RigidObject</span></a></li>
+<li><a class="reference internal" href="#physics-softobject"><span class="std std-ref">SoftObject</span></a></li>
+<li><a class="reference internal" href="#physics-constraint"><span class="std std-ref">Constraints</span></a></li>
+<li><a class="reference internal" href="#physics-dimensions"><span class="std std-ref">Dimensions</span></a></li>
+</ul>
+</div>
+<div class="section" id="physicsscene">
+<span id="physics-physicsscene"></span><h2><a class="reference external" href="../icl-api/classicl_1_1physics_1_1PhysicsScene.html">PhysicsScene</a><a class="headerlink" href="#physicsscene" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1physics_1_1PhysicsScene.html">PhysicsScene</a> extends the <a class="reference external" href="../icl-api/classicl_1_1physics_1_1PhysicsWorld.html">PhysicsWorld</a> and the <a class="reference external" href="../icl-api/classicl_1_1geom_1_1Scene.html">Scene</a>.
+It provides global settings like gravity and collision groups, as well as utility
+functions to test rays as well as objects for collision with the objects within the
+PhysicsWorld.
+<a class="reference external" href="../icl-api/classicl_1_1physics_1_1PhysicsObject.html">PhysicsObject</a> and <a class="reference external" href="../icl-api/classicl_1_1physics_1_1Constraint.html">Constraint</a> can be added and behave just
+like <span>SceneObjects</span>. The simulation can be stepped through my simply calling
+the step function. For further information on how to fine-tune the step
+parameters visit <a class="reference external" href="http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World">http://bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World</a>.</p>
+</div>
+<div class="section" id="rigidobject">
+<span id="physics-rigidobject"></span><h2><a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidObject.html">RigidObject</a><a class="headerlink" href="#rigidobject" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidObject.html">physics::RigidObject</a> class is one of the two basic types of objects in
+the physics scene. The subclasses like <a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidBoxObject.html">RigidBoxObject</a> or
+<a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidCylinderObject.html">RigidCylinderObject</a> allow for quick scene building with primitive shapes.
+For more complex shapes <a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidConvexHullObject.html">RigidConvexHullObject</a> can be used to create a
+<a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidObject.html">RigidObject</a> from a vector of points. The <a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidCompoundObject.html">RigidCompoundObject</a>
+allows to create concave objects by combining other <span>RigidObjects</span>.
+<a class="reference external" href="../icl-api/classicl_1_1physics_1_1RigidObject.html">RigidObject</a> have  parameters like weight, friction, or
+restitution which allows for modeling different behaviour when objects
+collide.</p>
+<p>Here is an example for a simple scene with some objects:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLGeom/Geom.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLQt/Common.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/FPSLimiter.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;ICLPhysics/PhysicsScene.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLPhysics/RigidBoxObject.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLPhysics/RigidCylinderObject.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLPhysics/RigidSphereObject.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLPhysics/PhysicsMouseHandler.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">geom</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">physics</span><span class="p">;</span>
+
+<span class="n">GUI</span> <span class="n">gui</span><span class="p">;</span>
+<span class="n">FPSLimiter</span> <span class="nf">fps</span><span class="p">(</span><span class="mi">60</span><span class="p">);</span>
+<span class="n">Camera</span> <span class="nf">cam</span><span class="p">(</span><span class="n">Vec</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">Vec</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">));</span>
+
+<span class="c1">//defining the position, dimensions and weight of the objects in the scene</span>
+<span class="n">RigidBoxObject</span> <span class="nf">box</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">);</span>
+<span class="n">RigidCylinderObject</span> <span class="nf">cylinder</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="mf">700.0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span> <span class="p">,</span> <span class="mf">0.1</span><span class="p">);</span>
+<span class="n">RigidSphereObject</span> <span class="nf">sphere</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mf">0.1</span><span class="p">);</span>
+<span class="c1">//a weight of zero makes objects static</span>
+<span class="n">RigidBoxObject</span> <span class="nf">table</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mf">200.0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">PhysicsScene</span> <span class="n">scene</span><span class="p">;</span>
+
+<span class="n">PhysicsMouseHandler</span> <span class="nf">handler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">&amp;</span><span class="n">scene</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">init</span><span class="p">(){</span>
+  <span class="n">gui</span> <span class="o">&lt;&lt;</span> <span class="n">Draw3D</span><span class="p">().</span><span class="n">handle</span><span class="p">(</span><span class="s">&quot;draw&quot;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">Show</span><span class="p">();</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addCamera</span><span class="p">(</span><span class="n">cam</span><span class="p">);</span>
+
+  <span class="n">table</span><span class="p">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">Primitive</span><span class="o">::</span><span class="n">all</span><span class="p">,</span><span class="n">geom_red</span><span class="p">());</span>
+
+  <span class="c1">//restition defines how bouncy an object is</span>
+  <span class="n">cylinder</span><span class="p">.</span><span class="n">setRestitution</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">sphere</span><span class="p">.</span><span class="n">setRestitution</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">box</span><span class="p">.</span><span class="n">setRestitution</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">table</span><span class="p">.</span><span class="n">setRestitution</span><span class="p">(</span><span class="mf">0.9f</span><span class="p">);</span>
+
+  <span class="c1">//friction describes the damping behaviour when two objects slide against each other</span>
+  <span class="n">box</span><span class="p">.</span><span class="n">setFriction</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">cylinder</span><span class="p">.</span><span class="n">setFriction</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">sphere</span><span class="p">.</span><span class="n">setFriction</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+  <span class="n">table</span><span class="p">.</span><span class="n">setFriction</span><span class="p">(</span><span class="mf">0.5f</span><span class="p">);</span>
+
+  <span class="c1">//rolling frction describes the angular damping behaviour when one object rolls over another</span>
+  <span class="n">cylinder</span><span class="p">.</span><span class="n">setRollingFriction</span><span class="p">(</span><span class="mf">0.2f</span><span class="p">);</span>
+  <span class="n">sphere</span><span class="p">.</span><span class="n">setRollingFriction</span><span class="p">(</span><span class="mf">0.1f</span><span class="p">);</span>
+  <span class="n">table</span><span class="p">.</span><span class="n">setRollingFriction</span><span class="p">(</span><span class="mf">0.2f</span><span class="p">);</span>
+  <span class="n">box</span><span class="p">.</span><span class="n">setRollingFriction</span><span class="p">(</span><span class="mf">0.1f</span><span class="p">);</span>
+
+  <span class="n">scene</span><span class="p">.</span><span class="n">addObject</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cylinder</span><span class="p">);</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addObject</span><span class="p">(</span><span class="o">&amp;</span><span class="n">sphere</span><span class="p">);</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addObject</span><span class="p">(</span><span class="o">&amp;</span><span class="n">box</span><span class="p">);</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">addObject</span><span class="p">(</span><span class="o">&amp;</span><span class="n">table</span><span class="p">);</span>
+
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">].</span><span class="n">install</span><span class="p">(</span><span class="o">&amp;</span><span class="n">handler</span><span class="p">);</span>
+
+  <span class="c1">//link the visualization</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">].</span><span class="n">link</span><span class="p">(</span><span class="n">scene</span><span class="p">.</span><span class="n">getGLCallback</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">run</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">scene</span><span class="p">.</span><span class="n">step</span><span class="p">();</span>
+  <span class="n">gui</span><span class="p">[</span><span class="s">&quot;draw&quot;</span><span class="p">].</span><span class="n">render</span><span class="p">();</span>
+  <span class="n">fps</span><span class="p">.</span><span class="n">wait</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span><span class="n">ppc</span><span class="p">){</span>
+  <span class="k">return</span> <span class="n">ICLApplication</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">ppc</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">run</span><span class="p">).</span><span class="n">exec</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="softobject">
+<span id="physics-softobject"></span><h2><a class="reference external" href="../icl-api/classicl_1_1physics_1_1SoftObject.html">SoftObject</a><a class="headerlink" href="#softobject" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1physics_1_1SoftObject.html">SoftObject</a> is the wrapper class for the bullet softbodies. Softbodies
+enable simulation of pliable bodies like cloth and rubber at a greater cost of
+performance.</p>
+</div>
+<div class="section" id="constraints">
+<span id="physics-constraint"></span><h2><span>Constraints</span><a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h2>
+<p><span>Constraints</span> allow the simulation of behaviour like hinges, ball sockets
+or rails. These constraints are all implemented based on the
+<span>SixDofConstraint</span> which allows for generic constraints. The
+constraint works by describing 2 transformations matrices which represnt a positoins and orientation (in bullet these are called frames) relativ to two objects. When all six degrees of freedem(3 translation and 3 rotation degrees) are locked the constraint will try move these frames on top of each other. By unlocking
+certain degrees free traversal along that degree can be allowed.</p>
+<p>The following code will create an axis with the length of 2 units between the objects A and B, where both objects can turn at most rotate 180° away from each other:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">SixDofConstraint</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SixDOFConstraint</span><span class="p">(</span><span class="n">objectA</span><span class="p">,</span><span class="n">objectB</span><span class="p">,</span>
+                                           <span class="n">Mat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+                                           <span class="n">Mat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span>
+                                               <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">));</span>
+<span class="n">c</span><span class="o">-&gt;</span><span class="n">setAngularLowerLimit</span><span class="p">(</span><span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span>
+<span class="n">c</span><span class="o">-&gt;</span><span class="n">setAngularUpperLimit</span><span class="p">(</span><span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">M_PI</span><span class="p">));</span>
+</pre></div>
+</td></tr></table></div>
+<p>For more instructions on how constraints work check out the physics-constraint and the physics-car demo or visit <a class="reference external" href="http://bulletphysics.org/mediawiki-1.5.8/index.php/Constraints">http://bulletphysics.org/mediawiki-1.5.8/index.php/Constraints</a>.</p>
+</div>
+<div class="section" id="dimensions">
+<span id="physics-dimensions"></span><h2><span>Dimensions</span><a class="headerlink" href="#dimensions" title="Permalink to this headline">¶</a></h2>
+<p>When constructing scenes it is always important to keep an eye on proportions. The physics work best when objects have a size of about 1.
+This is where the two global variables ICL_UNIT_TO_METER and METER_TO_BULLET_UNIT come into play. The default unit in ICL is the millimeter therefore ICL_UNIT_TO_METER is 0.001. When working with objects that are about 10 cm in size METER_TO_BULLET_UNIT should be set to 0.1. Since objects in the ICL usually are about this big 0.1 is the default value. One of the limitations of the bullet physics engine is the interaction between very small/light and big/heavy objects. In
+these cases rounding errors can result in unexpected behaviour.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3D Physics Simulation</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#physicsscene">PhysicsScene</a></li>
+<li><a class="reference internal" href="#rigidobject">RigidObject</a></li>
+<li><a class="reference internal" href="#softobject">SoftObject</a></li>
+<li><a class="reference internal" href="#constraints"><span>Constraints</span></a></li>
+<li><a class="reference internal" href="#dimensions"><span>Dimensions</span></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="markers.html"
+                        title="previous chapter">Fiducial Marker Detection</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../about.html"
+                        title="next chapter">About ICL</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../about.html" title="About ICL"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="markers.html" title="Fiducial Marker Detection"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

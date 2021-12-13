@@ -1,0 +1,1512 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Installation Instructions for Linux &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation Instructions for Windows" href="install-windows.html" />
+    <link rel="prev" title="Installation Instructions" href="../extras/install.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install-windows.html" title="Installation Instructions for Windows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../extras/install.html" title="Installation Instructions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/install.html" accesskey="U">Installation Instructions</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="installation-instructions-for-linux">
+<span id="install-linux"></span><h1>Installation Instructions for Linux<a class="headerlink" href="#installation-instructions-for-linux" title="Permalink to this headline">¶</a></h1>
+<p>ICL can be downloaded as source code via SVN or as binary debian
+packages (soon). Please refer to the <a class="reference internal" href="../extras/download.html#download"><span class="std std-ref">download
+instructions</span></a> for details. ICL uses standard CMake as its
+build system (for more details on CMake visit <a class="reference external" href="http://www.cmake.org/">http://www.cmake.org/</a>).
+ICL comes with only very few installation dependencies. We decided
+to make a small set of dependencies compulsory in order to limit
+the set of possible combinations.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#install-dependencies"><span class="std std-ref">External Dependencies</span></a><ul>
+<li><a class="reference internal" href="#install-dependencies-mandatory"><span class="std std-ref">Mandatory Dependencies</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-quick-trusty"><span class="std std-ref">Quick installation guide for Ubuntu Trusty (and maybe later)</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional"><span class="std std-ref">Optional Dependencies</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-source"><span class="std std-ref">Installation from Source</span></a></li>
+<li><a class="reference internal" href="#install-binary"><span class="std std-ref">Installation using Binary Packages</span></a></li>
+<li><a class="reference internal" href="#install-special"><span class="std std-ref">Special Installation Tutorials</span></a></li>
+</ul>
+</div>
+<div class="section" id="external-dependencies">
+<span id="install-dependencies"></span><h2>External Dependencies<a class="headerlink" href="#external-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Most external dependencies are kept purely optional. The few mandatory
+dependencies are very general libraries already installed on most
+systems. For the debian-package based install, dependencies are
+automatically installed recursively by the package manager. However,
+the debian package-based installation does only include dependencies
+that are available as standard debian packages.</p>
+</div>
+<div class="section" id="mandatory-dependencies">
+<span id="install-dependencies-mandatory"></span><h2>Mandatory Dependencies<a class="headerlink" href="#mandatory-dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>libpthread</strong> (for general threading support)</li>
+<li><strong>libz</strong> (for reading and writing zipped files, ending .gz)</li>
+<li><strong>libjpeg</strong> (for reading and writing jpeg images,
+lossy but high compression, fast)</li>
+<li><strong>libpng</strong> (for reading and writing png images,
+loss-less compression, but rather slow in comparison to jpeg)</li>
+</ul>
+<p>In case of compiling ICL manually from source, the <em>-dev</em> packages
+that include C/C++-headers are needed. The corresponding Ubuntu
+packages can be installed via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">dev</span> <span class="n">libpng</span><span class="o">-</span><span class="n">dev</span> <span class="n">libz</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>The libpthread-dev library comes with the C/C++ compiler</p>
+</div>
+<div class="section" id="quick-installation-guide-for-ubuntu-trusty-and-maybe-later">
+<span id="install-dependencies-quick-trusty"></span><h2>Quick installation guide for Ubuntu Trusty (and maybe later)<a class="headerlink" href="#quick-installation-guide-for-ubuntu-trusty-and-maybe-later" title="Permalink to this headline">¶</a></h2>
+<p>Install the following packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">cmake</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">dev</span> <span class="n">libpng12</span><span class="o">-</span><span class="n">dev</span> <span class="n">libopencv</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">libeigen3</span><span class="o">-</span><span class="n">dev</span> <span class="n">libmagick</span><span class="o">++-</span><span class="n">dev</span> <span class="n">libglew</span><span class="o">-</span><span class="mf">1.6</span><span class="o">-</span><span class="n">dev</span> <span class="n">libpcl</span><span class="o">-</span><span class="mf">1.7</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">libfreenect</span><span class="o">-</span><span class="n">dev</span> <span class="n">libprotobuf</span><span class="o">-</span><span class="n">dev</span> <span class="n">protobuf</span><span class="o">-</span><span class="n">compiler</span> <span class="n">doxygen</span> <span class="n">graphviz</span>
+<span class="n">python</span><span class="o">-</span><span class="n">sphinx</span> <span class="n">python</span><span class="o">-</span><span class="n">pyparsing</span> <span class="n">libqt5opengl5</span><span class="o">-</span><span class="n">dev</span> <span class="n">libqt5svg5</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">libqt5webkit5</span><span class="o">-</span><span class="n">dev</span> <span class="n">qtbase5</span><span class="o">-</span><span class="n">dev</span> <span class="n">qtbase5</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="n">tools</span> <span class="n">libavcodec</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">libavformat</span><span class="o">-</span><span class="n">dev</span> <span class="n">libavutil</span><span class="o">-</span><span class="n">dev</span> <span class="n">libavresample</span><span class="o">-</span><span class="n">dev</span> <span class="n">libswscale</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">libavdevice</span><span class="o">-</span><span class="n">dev</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">libopencl1</span><span class="o">-</span><span class="mi">304</span> <span class="n">libxine</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>The last package provides <em>libOpenCL.so</em> for nvidia graphics-cards and
+for driver version 304. Please adapt this to your used driver version
+or graphics card vendor. For nvidia cards, you can find out the
+currently used version calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span> <span class="o">|</span> <span class="n">grep</span> <span class="s1">&#39;Driver Version&#39;</span>
+</pre></div>
+</div>
+<p>For libpcl-1.7-all-dev, you’ll need an extra ppa to be available:</p>
+<blockquote>
+<div>sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl</div></blockquote>
+</div>
+<div class="section" id="for-ubuntu-vivid-15-04">
+<h2>For Ubuntu Vivid (15.04)<a class="headerlink" href="#for-ubuntu-vivid-15-04" title="Permalink to this headline">¶</a></h2>
+<p>Adapt the trusty installation by using lib-glew-dev.</p>
+<p>Here, libpcl-1.7 is back in the distribution, so replace libpcl-1.7-all-dev by
+libpcl-1.7-dev</p>
+<p>In addition, the libxine-dev package is now named libxine2-dev</p>
+</div>
+<div class="section" id="optional-dependencies">
+<span id="install-dependencies-optional"></span><h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>In general each optional dependency adds some extra functionality to
+ICL. In some of the cases, also a slower but native fallback
+implementation is provided. In the following, the external
+dependencies are listed and their benefits are explained.</p>
+<div class="section" id="overview">
+<h3>Overview:<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="#install-dependencies-optional-ipp"><span class="std std-ref">Intel IPP</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-mkl"><span class="std std-ref">Intel MKL</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-opencv"><span class="std std-ref">OpenCV</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-libmesasr"><span class="std std-ref">libMesaSR</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-imagemagick"><span class="std std-ref">libmagick++</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-libdc"><span class="std std-ref">libdc1394</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-libfreenect"><span class="std std-ref">libfreenect</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-libfreenect2"><span class="std std-ref">libfreenect2</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-xine"><span class="std std-ref">libxine</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-qt"><span class="std std-ref">Qt5</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-pylon"><span class="std std-ref">Basler Pylon</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-openni"><span class="std std-ref">OpenNI</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-opencl"><span class="std std-ref">OpenCL</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-pcl"><span class="std std-ref">PCL</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-rsb"><span class="std std-ref">RSB/RST</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-bullet"><span class="std std-ref">Bullet3</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-libav"><span class="std std-ref">LibAV</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-xiapi"><span class="std std-ref">Ximea XiAPI</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-v4l2"><span class="std std-ref">V4L2</span></a></li>
+<li><a class="reference internal" href="#install-dependencies-optional-optris"><span class="std std-ref">Optris</span></a></li>
+</ul>
+<div class="section" id="intel-ipp">
+<span id="install-dependencies-optional-ipp"></span><h4>Intel IPP<a class="headerlink" href="#intel-ipp" title="Permalink to this headline">¶</a></h4>
+<p><strong>Intel Integrated Performance Primitives (Intel IPP)</strong></p>
+<p>The Intel IPP is a proprietary library that provides a very large set
+of highly optimized functions for different domains, such as linear
+algebra and in particular computer-vision and image
+processing. <strong>Important:</strong> Since Intel IPP is proprietary software,
+Intel IPP linkage must be established by manually compiling ICL from
+source. However, we plan to replace the static linkage against Intel
+IPP with a run-time linking approach that would also work for binary
+installation sources.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 6.1 (Newer Linux Versions require Version
+&gt;= 7.06)</li>
+<li><strong>License Type:</strong> Proprietary, but free to try and for private use
+(research is not private)</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://software.intel.com/en-us/intel-ipp/">http://software.intel.com/en-us/intel-ipp/</a></li>
+<li><strong>Dependent library features:</strong> Most low-level image processing
+functions such as scaling, converting and linear filters are
+internally replaced by highly efficient Intel IPP function calls.
+The <a class="reference external" href="../icl-api/classicl_1_1filter_1_1ProximityOp.html">filter::ProximityOp</a> filters are not available without Intel
+IPP yet (but we plan to add fallback implementations soon).</li>
+<li><strong>Ubuntu packages:</strong> not available</li>
+</ul>
+</div>
+<div class="section" id="intel-mkl">
+<span id="install-dependencies-optional-mkl"></span><h4>Intel MKL<a class="headerlink" href="#intel-mkl" title="Permalink to this headline">¶</a></h4>
+<p><strong>Intel Math Kernel Library (Intel MKL)</strong></p>
+<p>The Intel Math Kernel Library dependency is quite similar to the Intel
+IPP dependency. However, Intel MKL is only used for a much smaller set
+of linear algebra functions. Global mathematical utility functions
+such as <a class="reference external" href="../icl-api/group__LINALG.html#ga18a342431f4e9c2a260c5ac34373d514">math::big_matrix_mult_t</a> or <a class="reference external" href="../icl-api/structicl_1_1math_1_1DynMatrix.html#ae9fdf2d2f1bb39d2018d3d29062101a6">DynMatrix::big_matrix_pinv</a>
+significantly accelerated if Intel MKL is available. However, in
+contrast to the Intel IPP dependency, all MKL-accelerated functions
+have an equivalent C++ fallback implementation.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 10.3</li>
+<li><strong>License Type:</strong> Proprietary, but free to try and for private use
+(research is not private)</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://software.intel.com/en-us/intel-mkl/">http://software.intel.com/en-us/intel-mkl/</a></li>
+<li><strong>Dependent library features:</strong> Accelerated functions for big
+matrices, most of them located in <a class="reference external" href="../icl-api/DynMatrixUtils_8h.html">DynMatrixUtils.h</a></li>
+<li><strong>Ubuntu packages:</strong> not available</li>
+</ul>
+</div>
+<div class="section" id="opencv">
+<span id="install-dependencies-optional-opencv"></span><h4>OpenCV<a class="headerlink" href="#opencv" title="Permalink to this headline">¶</a></h4>
+<p><strong>Open Computer Vision Library (OpenCV)</strong></p>
+<p>We use OpenCV mainly in order to provide a compatibility interface
+that converts OpenCV’s common image data type <strong>cv::Mat</strong> into ICL’s image
+type <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">core::ImgBase</a> and vice versa.
+The header <a class="reference external" href="../icl-api/OpenCV_8h.html">OpenCV.h</a> in the ICLCore module provides efficient and simple
+to use converter methods. These are only available if the OpenCV
+dependency is met. In addition, OpenCV is currently needed for the
+LibOpenSurf (<a class="reference external" href="http://www.chrisevansdev.com/computer-vision-opensurf.html">http://www.chrisevansdev.com/computer-vision-opensurf.html</a>)
+based backend of the <a class="reference external" href="../icl-api/classicl_1_1cv_1_1SurfFeatureDetector.html">cv::SurfFeatureDetector</a> which is directly
+part of ICL.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.1</li>
+<li><strong>License Type:</strong> BSD-License</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://sourceforge.net/projects/opencvlibrary/files">http://sourceforge.net/projects/opencvlibrary/files</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>Data type conversions</li>
+<li>C++-based surf feature detection</li>
+<li>OpenCV-based camera grabber backend</li>
+<li>OpenCV-based video grabber backend</li>
+<li>Video-writer backend</li>
+<li>intrinsic camera calibration tool</li>
+</ul>
+</li>
+<li><strong>Ubuntu packages:</strong><ul>
+<li><strong>&lt;  precise:</strong> libcv-dev, libhighgui-dev, libcvaux-dev</li>
+<li><strong>&gt;= precise:</strong> libopencv-dev</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="libmesasr">
+<span id="install-dependencies-optional-libmesasr"></span><h4>libMesaSR<a class="headerlink" href="#libmesasr" title="Permalink to this headline">¶</a></h4>
+<p><strong>SwissRanger Driver Library (libMesaSR)</strong></p>
+<p>LibMesaSR is a proprietary library that allows to grab images from
+SwissRanger 3D time-of-flight cameras provided by the Mesa Imaging
+company (<a class="reference external" href="http://www.mesa-imaging.ch">http://www.mesa-imaging.ch</a>) The library is closed source.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.0.14</li>
+<li><strong>License Type:</strong> Proprietary</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.mesa-imaging.ch/drivers.php">http://www.mesa-imaging.ch/drivers.php</a></li>
+<li><strong>Dependent library features:</strong> SwissRanger camera grabber backend</li>
+<li><strong>Ubuntu packages:</strong> not available</li>
+</ul>
+</div>
+<div class="section" id="libmagick">
+<span id="install-dependencies-optional-imagemagick"></span><h4>libmagick++<a class="headerlink" href="#libmagick" title="Permalink to this headline">¶</a></h4>
+<p><strong>Image Magick (libmagick++)</strong></p>
+<p>ImageMagick is used to provide a large set of support image types. Most
+types are supported in both reading and writing. Without ImageMagick, only
+a few image data types are supported: .ppm, .pnm and .pgm as well as ICL’s
+internal image format .bicl are natively supported, .png and .jpg are
+supported explicitly by other external dependencies.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.0.14</li>
+<li><strong>License Type:</strong> Proprietary</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.imagemagick.org/script/index.php">http://www.imagemagick.org/script/index.php</a></li>
+<li><strong>Dependent library features:</strong> huge set of image reading and writing backends</li>
+<li><strong>Ubuntu packages:</strong> libmagick++-dev</li>
+</ul>
+</div>
+<div class="section" id="libdc1394">
+<span id="install-dependencies-optional-libdc"></span><h4>libdc1394<a class="headerlink" href="#libdc1394" title="Permalink to this headline">¶</a></h4>
+<p>The dc1394 (digital firewire camera) library allows to grab image from
+firewire cameras and to set camera parameters.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.1.2</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://damien.douxchamps.net/ieee1394/libdc1394/">http://damien.douxchamps.net/ieee1394/libdc1394/</a></li>
+<li><strong>Dependent library features:</strong> firewire camera grabber backend</li>
+<li><strong>Ubuntu packages:</strong> libdc1394-22-dev</li>
+</ul>
+</div>
+<div class="section" id="libfreenect">
+<span id="install-dependencies-optional-libfreenect"></span><h4>libfreenect<a class="headerlink" href="#libfreenect" title="Permalink to this headline">¶</a></h4>
+<p><strong>OpenKinect Kinect Driver Library (libfreenect)</strong></p>
+<p>The libfreenect provides a lightweight interface for grabbing images
+from Microsoft Kinect cameras. The library allows to grab color, depth and
+IR-images and to set some internal camera properties.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 0.0.1</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="https://github.com/OpenKinect/libfreenect">https://github.com/OpenKinect/libfreenect</a></li>
+<li><strong>Dependent library features:</strong> libfreenect-based access to Kinect cameras
+(Please note, that we also provide an alternative using OpenNI)</li>
+<li><strong>Ubuntu packages:</strong>  libfreenect-dev</li>
+</ul>
+</div>
+<div class="section" id="libfreenect2">
+<span id="install-dependencies-optional-libfreenect2"></span><h4>libfreenect2<a class="headerlink" href="#libfreenect2" title="Permalink to this headline">¶</a></h4>
+<p><strong>OpenKinect Kinect Driver Library Version 2 for Kinect 2 (libfreenect2)</strong></p>
+<p>libfreenect2 provides a lightweight interface for grabbing images
+from Microsoft Kinect2 cameras. The library allows to grab color, depth and
+IR-images. There is no Ubuntu package for the library yet. Thefore, the driver
+libraries must be installed manually. Please note that the support for
+Kinect2 using libfreenect2 is in its early beta-phase by now.</p>
+<p>In order to get a compiled and installed version of libfreenect2, the
+most recent git-version is used. As the currently available Version
+does not come up with a working installation routine, this how-to only explains
+how to build the libraries and how to link with ICL against the build-tree.
+Thus, it is strongly recommended to already perform the initial git checkout
+in the actual installation directory. For the example, we assume the
+the directory to be /opt/share/libfreenect2</p>
+<p>However, before we start, we’ll install a couple of new ubuntu packages
+that are mandatory for the build:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span>  <span class="n">libudev</span><span class="o">-</span><span class="n">dev</span> <span class="n">autoconf</span> <span class="n">nasm</span>
+</pre></div>
+</div>
+<p>Create the source/install directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export DIR=/opt/share/libfreenect2
+mkdir $DIR
+cd $DIR
+</pre></div>
+</div>
+<p>Get the sources via git clone:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">OpenKinect</span><span class="o">/</span><span class="n">libfreenect2</span><span class="o">/</span> <span class="o">.</span>
+<span class="n">cd</span> <span class="o">./</span><span class="n">depends</span>
+</pre></div>
+</div>
+<p>Download and install additional but patched dependencies, such as libusb:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">install_ubuntu</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>Download and bulid libturbojpeg (for latest libturbojpeg)
+(Please note that the version that comes with the system, which is installed
+in /usr/lib/something does not help you here, as you need a share-object that
+is compliled with -fPIC. So once again: download and install version 1.4:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">downloads</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">libjpeg</span><span class="o">-</span><span class="n">turbo</span><span class="o">/</span><span class="n">libjpeg</span><span class="o">-</span><span class="n">turbo</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">0.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">tar</span> <span class="n">xf</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">turbo</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">0.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">libjpeg</span><span class="o">-</span><span class="n">turbo</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">0</span>
+</pre></div>
+</div>
+<p>Build libturbojpeg. If you encounter crazy issues regarding assembler
+translation issues, please ensure that your GREP_OPTIONS variable is
+empty:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autoreconf</span> <span class="o">-</span><span class="n">fiv</span> <span class="o">&amp;&amp;</span> <span class="o">./</span><span class="n">configure</span> <span class="o">&amp;&amp;</span> <span class="n">make</span> <span class="o">-</span><span class="n">j3</span>
+</pre></div>
+</div>
+<p>Build the protonect example <em>thing</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd $DIR/examples/protonect
+</pre></div>
+</div>
+<p>Edit CMakeLists.txt (replace turbojpeg in line 102 by
+$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;s|turbojpeg|$DIR/depends/libjpeg-turbo-1.4.0/.libs/libturbojpeg.so|&quot;</span> <span class="n">CMakeLists</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Patch the opengl_depth_packet_processor in ./src (set variable do_debug in line 322 to false):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s1">&#39;s|static const bool do_debug = true;|static const bool do_debug = false;|g&#39;</span> <span class="n">src</span><span class="o">/</span><span class="n">opengl_depth_packet_processor</span><span class="o">.</span><span class="n">cpp</span>
+</pre></div>
+</div>
+<p><strong>On ubuntu trusty only</strong> there seems to be an issue with the opencv
+dev-files. In order to get the build running smoothly, apply the
+following fixes and install the following libraries <strong>only if it does not
+work without!</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libopencv</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="n">dev</span> <span class="n">libopencv</span><span class="o">-</span><span class="n">photo</span><span class="o">-</span><span class="n">dev</span> <span class="n">libopencv</span><span class="o">-</span><span class="n">contrib</span><span class="o">-</span><span class="n">dev</span> <span class="n">libopencv</span><span class="o">-</span><span class="n">highgui</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p><strong>On ubuntu trusty only</strong> now patch the CMakeLists.txt by assuming opencv is installed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s1">&#39;s|FIND_PACKAGE(OpenCV REQUIRED)|#FIND_PACKAGE(OpenCV REQUIRED)|g&#39;</span> <span class="n">CMakeLists</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s1">&#39;s|$</span><span class="si">{OpenCV_LIBS}</span><span class="s1">|opencv_photo opencv_core opencv_contrib opencv_highgui|g&#39;</span> <span class="n">CMakeLists</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>Configure using cmake and build (you’ll need libopencv-core-dev,
+libopencv-photo-dev, libopencv-highgui-dev and libopencv-contrib-dev anyway):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">.</span> <span class="o">&amp;&amp;</span> <span class="n">make</span>
+</pre></div>
+</div>
+<p>Ingore strage cmake errors regarding INTERFACE_LINK_LIBRARIES AND
+LINK_INTERFACE_LIBRARIES (if occuring). In order to be able to use
+Kinect2 as non-super-user. Add udef rules: as root, create file
+/etc/udev/rules.d/90-kinect2.rules with content:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ATTR{product}==&quot;Kinect2&quot;</span>
+<span class="n">SUBSYSTEM</span><span class="o">==</span><span class="s2">&quot;usb&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idVendor</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;045e&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idProduct</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;02c4&quot;</span><span class="p">,</span> <span class="n">MODE</span><span class="o">=</span><span class="s2">&quot;0666&quot;</span>
+<span class="n">SUBSYSTEM</span><span class="o">==</span><span class="s2">&quot;usb&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idVendor</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;045e&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idProduct</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;02d8&quot;</span><span class="p">,</span> <span class="n">MODE</span><span class="o">=</span><span class="s2">&quot;0666&quot;</span>
+<span class="n">SUBSYSTEM</span><span class="o">==</span><span class="s2">&quot;usb&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idVendor</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;045e&quot;</span><span class="p">,</span> <span class="n">ATTR</span><span class="p">{</span><span class="n">idProduct</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;02d9&quot;</span><span class="p">,</span> <span class="n">MODE</span><span class="o">=</span><span class="s2">&quot;0666&quot;</span>
+</pre></div>
+</div>
+<p><strong>Important</strong> After adding and saving the file, you’ll have to re-attach your Kinect2 device:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$DIR/examples/protonect/bin/Protonect
+</pre></div>
+</div>
+<p>Should now display the Kinect2 images. If not, try to disconnect/connect once again and check for
+kernel-messages using “dmesg” command. In your ICL-configuration cmake command add:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-DBUILD_WITH_LIBFREENECT2=TRUE -DLIBFREENECT2_ROOT=$DIR
+</pre></div>
+</div>
+<p>Where $DIR should of course be replaced with the particular build-dir, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DBUILD_WITH_LIBFREENECT2</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DLIBFREENECT2_ROOT</span><span class="o">=/</span><span class="n">vol</span><span class="o">/</span><span class="n">nivision</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">libfreenect2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="libxine">
+<span id="install-dependencies-optional-xine"></span><h4>libxine<a class="headerlink" href="#libxine" title="Permalink to this headline">¶</a></h4>
+<p><strong>Xine (libxine)</strong></p>
+<p>The xine library provides a very intuitive yet powerful interface for
+grabbing video in a frame-by-frame manner.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.1.17</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.xine-project.org/home">http://www.xine-project.org/home</a></li>
+<li><strong>Dependent library features:</strong> xine-based video grabber backend
+(Please note, that we also provide an alternative using OpenCV)</li>
+<li><strong>Ubuntu packages:</strong>  libxine-dev</li>
+</ul>
+</div>
+<div class="section" id="qt5">
+<span id="install-dependencies-optional-qt"></span><h4>Qt5<a class="headerlink" href="#qt5" title="Permalink to this headline">¶</a></h4>
+<p><strong>Qt Library (libQt5)</strong></p>
+<p>The well known Qt Library is used for ICL’s rapid GUI creation toolkit.
+Actually Qt is also a prerequisite for most ICL applications and for
+the whole ICLQt module. We strongly recommend to have at least Qt support
+when building ICL. The Qt package right now also used the OpenGL extension
+wrangler library libglew-dev (on some systems libglew-1.6-dev) and it needs OpenGL headers to be installed.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> 5</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://qt.digia.com/">http://qt.digia.com/</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>GUI-framework and all dependent applications</li>
+<li>Shared memory based image-I/O backends</li>
+</ul>
+</li>
+<li><strong>Ubuntu packages:</strong><ul>
+<li><strong>&lt; TRUSTY</strong>   libqt5-dev</li>
+<li><strong>&gt;= TRUSTY</strong>  libqt5opengl5-dev libqt5svg5-dev libqt5webkit5-dev qtbase5-dev qtbase5-dev-tools</li>
+<li>In each case: libglew-dev (or libglew-1.6-dev), + opengl headers and libs provided by the graphics driver</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="basler-pylon">
+<span id="install-dependencies-optional-pylon"></span><h4>Basler Pylon<a class="headerlink" href="#basler-pylon" title="Permalink to this headline">¶</a></h4>
+<p><strong>Basler Pylon Drivers</strong></p>
+<p>The closed source basler pylon drivers (including the Genicam libraries) are
+used for accessing Gigabit-Ethernet (GIG-E) cameras.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 2.3.3</li>
+<li><strong>License Type:</strong> closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.baslerweb.com/Downloads-Software-43868.html">http://www.baslerweb.com/Downloads-Software-43868.html</a></li>
+<li><strong>Dependent library features:</strong> Pylon grabber backend for GIG-E Cameras</li>
+<li><strong>Ubuntu packages:</strong>  not available</li>
+</ul>
+<p>(see also <a class="reference internal" href="#install-special-pylon"><span class="std std-ref">Installing and Using Basler Pylon Drivers</span></a>)</p>
+</div>
+<div class="section" id="opencl">
+<span id="install-dependencies-optional-opencl"></span><h4>OpenCL<a class="headerlink" href="#opencl" title="Permalink to this headline">¶</a></h4>
+<p><strong>Open Computing Language (OpenCL)</strong></p>
+<p>OpenCL is used to significantly speed up a set of processing units using
+the computing units of graphics cards or other OpenCL platforms. We mainly use it
+for point cloud processing units located in the ICLGeom module.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.1 (1.2 soon)</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.khronos.org/registry/cl">http://www.khronos.org/registry/cl</a></li>
+<li><strong>Dependent library features:</strong><ul>
+<li>significantly faster point cloud creation and RGBD-mapping
+(<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudCreator.html">geom::PointCloudCreator</a>, <span>geom::DepthCameraBasedPointCloudGrabber</span>)</li>
+<li>significantly faster point cloud normal estimation and segmentation
+(<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudNormalEstimator.html">geom::PointCloudNormalEstimator</a>)</li>
+</ul>
+</li>
+<li><strong>Ubuntu packages:</strong>  opencl-headers (the library must be shipped with the graphics driver)</li>
+</ul>
+</div>
+<div class="section" id="sphinx-doxygen">
+<span id="install-dependencies-optional-sphinx"></span><h4>Sphinx/Doxygen<a class="headerlink" href="#sphinx-doxygen" title="Permalink to this headline">¶</a></h4>
+<p><strong>Sphinx/Doxygen for generating the API documentation and the Manual</strong></p>
+<p>In order to build ICL’s API reference, doxygen needs to be installed. Since
+also generation of inheritance graphs is activated, also ‘dot’ is needed.
+On Ubuntu, you can install these dependencies using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">doxygen</span> <span class="n">graphviz</span>
+</pre></div>
+</div>
+<p>This will generate the target ‘api’ in the build directory.</p>
+<p>In additionn to the API reference, the sphinx-based manual can be build. To this
+end, you’ll need to have the API dependencies plus the sphinx-build tool, which can
+be installed on Ubuntu systems using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">sphinx</span> <span class="n">python</span><span class="o">-</span><span class="n">setuptools</span>
+<span class="n">sudo</span> <span class="n">easy_install</span> <span class="n">pyparsing</span>
+</pre></div>
+</div>
+<p>After this, configuring ICL will also create a ‘manual’ target which generates
+the ICL manual in html-form. Both, manual and api can be triggered by typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">doc</span>
+</pre></div>
+</div>
+<p>from the build directory</p>
+</div>
+<div class="section" id="openni">
+<span id="install-dependencies-optional-openni"></span><h4>OpenNI<a class="headerlink" href="#openni" title="Permalink to this headline">¶</a></h4>
+<p><strong>OpenNI / Nite</strong></p>
+<p>Right now, we only use OpenNI as an alternative backend to grab images
+from Kinect and other PrimeSense 3D cameras</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong> &gt;= 1.x</li>
+<li><strong>License Type:</strong> OpenNI: opensource, Nite: closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.openni.org/">http://www.openni.org/</a></li>
+<li><strong>Dependent library features:</strong> OpenNI-based grabber backend for depth, IR- and color images</li>
+<li><strong>Ubuntu packages:</strong>  TODO</li>
+</ul>
+<p>(see also <a class="reference internal" href="#install-special-openni"><span class="std std-ref">Installing OpenNI / Nite</span></a>)</p>
+</div>
+<div class="section" id="pcl">
+<span id="install-dependencies-optional-pcl"></span><h4>PCL<a class="headerlink" href="#pcl" title="Permalink to this headline">¶</a></h4>
+<p><strong>Point Cloud Library (PCL)</strong></p>
+<p>PCL has become some kind of a quasi-standard for point cloud
+processing.  ICL’s ICLGeom module provides the generic
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PointCloudObjectBase.html">geom::PointCloudObjectBase</a> interface that is implemented by the
+<a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">geom::PCLPointCloudObject</a> class. In case of having PCL support,
+ICL can seamlessly interface to PCL algorithms using this class.</p>
+<ul>
+<li><p class="first"><strong>Supported Versions:</strong> &gt;= 1.6</p>
+</li>
+<li><p class="first"><strong>License Type:</strong> open source</p>
+</li>
+<li><p class="first"><strong>Download at:</strong> <a class="reference external" href="http://pointclouds.org/downloads/">http://pointclouds.org/downloads/</a></p>
+</li>
+<li><p class="first"><strong>Dependent library features:</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCLPointCloudObject.html">geom::PCLPointCloudObject</a> class.</li>
+<li><a class="reference external" href="../icl-api/classicl_1_1geom_1_1PCDFileGrabber.html">geom::PCDFileGrabber</a> class</li>
+</ul>
+</li>
+<li><p class="first"><strong>Ubuntu packages:</strong>  no in standard in older ubuntu versions (such as in 14.04 trusty)
+* In Ubuntu 14.04 trusty</p>
+<blockquote>
+<div><ul>
+<li><p class="first">add ppa-sources from <a class="reference external" href="https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages">https://launchpad.net/~v-launchpad-jochen-sprickerhof-de/+ppa-packages</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="n">ppa</span><span class="p">:</span><span class="n">v</span><span class="o">-</span><span class="n">launchpad</span><span class="o">-</span><span class="n">jochen</span><span class="o">-</span><span class="n">sprickerhof</span><span class="o">-</span><span class="n">de</span><span class="o">/</span><span class="n">pcl</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libpcl</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">dev</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">libpcl-all-dev</p>
+</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>In newer Ubuntu versions (tested on 15.04 vivid)</dt>
+<dd><ul class="first last">
+<li>pcl is directly available</li>
+<li>simply install the package <strong>libpcl-dev</strong></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">There is an unsolved dependency between PCL and OpenNI, since
+our PCD-File Grabber uses libpcl-io, which in turn depends on
+openni.</p>
+</div>
+</div>
+<div class="section" id="rsb-rst">
+<span id="install-dependencies-optional-rsb"></span><h4>RSB/RST<a class="headerlink" href="#rsb-rst" title="Permalink to this headline">¶</a></h4>
+<p><strong>Robotics Service Bus (RSB)</strong></p>
+<p>The robotics service bus is a new and versatile library for
+interprocess communications.  ICL uses it as backends for the
+<a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> and the <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericImageOutput.html">io::GenericImageOutput</a> to
+exchange image data between different processes and PCs.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong>  0.7</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://docs.cor-lab.de//rsb-manual/0.7/html/index.html">http://docs.cor-lab.de//rsb-manual/0.7/html/index.html</a></li>
+<li><strong>Dependent library features:</strong> rsb-based image I/O backends</li>
+<li><strong>Ubuntu packages:</strong>  no in standard, but on the same server as
+the ICL debian packages sources soon</li>
+</ul>
+</div>
+<div class="section" id="bullet3">
+<span id="install-dependencies-optional-bullet"></span><h4>Bullet3<a class="headerlink" href="#bullet3" title="Permalink to this headline">¶</a></h4>
+<p><strong>The Bullte Physics Engine (Bullet)</strong></p>
+<p>For the ICLPhysics Module (<a class="reference external" href="../icl-api/namespaceicl_1_1physics.html">icl::physics</a>), the Bullet physics library is needed. The
+ICL-package is implemented as a shallow wrapper around the Bullet physics engine.
+ICL provides a seamless integration of physics simulation info ICL’s
+3D-Visualization framework (provided by the ICLGeom module). We are not aware of any
+well established sourced for pre-compiled libraries for the Bullet physics engine. Thefore,
+bullet must be build from the git-sources:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">git</span>
+<span class="n">cd</span> <span class="o">/</span><span class="n">tmp</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">bulletphysics</span><span class="o">/</span><span class="n">bullet3</span> <span class="n">bullet3</span><span class="o">-</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">bullet3</span><span class="o">-</span><span class="n">git</span>
+<span class="n">mkdir</span> <span class="n">build</span>
+<span class="n">cd</span> <span class="n">build</span>
+<span class="c1"># note: please adapt the installation prefix to your needs</span>
+<span class="n">cmake</span> <span class="o">-</span><span class="n">DBUILD_SHARED_LIBS</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DCMAKE_INSTALL_PREFIX</span><span class="o">=/</span><span class="n">tmp</span><span class="o">/</span><span class="n">bullet3</span> <span class="o">..</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">j6</span> <span class="o">&amp;&amp;</span> <span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="libav">
+<span id="install-dependencies-optional-libav"></span><h4>LibAV<a class="headerlink" href="#libav" title="Permalink to this headline">¶</a></h4>
+<p><strong>Video Encoding/Decoding based on LibAV</strong></p>
+<p>As it turned out that our OpenCV-based <a class="reference external" href="../icl-api/classicl_1_1io_1_1GenericGrabber.html">io::GenericGrabber</a> and <span>io:GenericImageOutput</span> backend does not support all codes as expected, a pure libav-based backend is provided as well.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong>  mixed</li>
+<li><strong>License Type:</strong> open source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="https://libav.org">https://libav.org</a></li>
+<li><strong>Dependent library features:</strong> libav-based video grabbing/writing</li>
+<li><strong>Ubuntu packages:</strong>  libavcodec-dev libavformat-dev libavutil-dev libavresample-dev libswscale-dev libavdevice-dev</li>
+</ul>
+</div>
+<div class="section" id="ximea-xiapi">
+<span id="install-dependencies-optional-xiapi"></span><h4>Ximea XiAPI<a class="headerlink" href="#ximea-xiapi" title="Permalink to this headline">¶</a></h4>
+<p><strong>Grabber Backend for Ximea Cameras based on libXIMEA</strong></p>
+<p>In order to provide camera support for Ximea Cameras, the xiAPI library from
+Ximea’s Website must be installed. In addition, the dev-package of libusb-1 is needed
+so either install it to a system default path or specify libusb-1 root using cmake defines:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DBUILD_WITH_LIBUSB</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DLIB_USB_ROOT</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">usb</span>
+</pre></div>
+</div>
+<p>Please note, that the XiAPI dependency will also build if -DBUILD_WITH_LIBUSB is not given to
+cmake but libusb is found in a system default directory.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong>  recent (June, 2015)</li>
+<li><strong>License Type:</strong> free but closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.ximea.com/support/wiki/apis/XIMEA_Linux_Software_Package">http://www.ximea.com/support/wiki/apis/XIMEA_Linux_Software_Package</a></li>
+<li><strong>Dependent library features:</strong> XiAPI-based camera support</li>
+<li><strong>Ubuntu packages:</strong>  libusb-1.0-0-dev (only for libusb-1-dev)</li>
+</ul>
+<p>Detailed installation instructions (copied form the above mentioned website):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">ximea</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">downloads</span><span class="o">/</span><span class="n">recent</span><span class="o">/</span><span class="n">XIMEA_Linux_SP</span><span class="o">.</span><span class="n">tgz</span>
+<span class="n">tar</span> <span class="n">xzf</span> <span class="n">XIMEA_Linux_SP</span><span class="o">.</span><span class="n">tgz</span>
+<span class="n">cd</span> <span class="n">package</span>
+<span class="n">sudo</span> <span class="o">./</span><span class="n">install</span>
+</pre></div>
+</div>
+<p>This will install the latest version of the library to /opt/XIMEA</p>
+</div>
+<div class="section" id="optris">
+<span id="install-dependencies-optional-optris"></span><h4>Optris<a class="headerlink" href="#optris" title="Permalink to this headline">¶</a></h4>
+<p><strong>Grabber Backend for Optris’ IR Camera acquisition library libirimager</strong></p>
+<p>In order to provide camera support for Optris’ IR cameras, such as the
+TIM 160 from MicroEpsilon, the libirimager library must be
+installed. In contrast to what is suggested by MicroEpsilon, we
+recommend to use Optris’ version of the <strong>libirimager</strong> library directly
+rather than MicroEpsilons adapted (and apparently outdated version).</p>
+<p><strong>please note:</strong></p>
+<p>The driver development was updated, so please check the following page</p>
+<p><a class="reference external" href="http://evocortex.com/libirimager/html/index.html">http://evocortex.com/libirimager/html/index.html</a></p>
+<p>In particular, this describes how to set the nodrop option of the
+uvcvideo kernel module, which is mandatory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Before</span> <span class="n">installation</span><span class="p">,</span> <span class="n">a</span> <span class="n">basic</span> <span class="n">test</span> <span class="n">should</span> <span class="n">be</span> <span class="n">performed</span> <span class="ow">in</span> <span class="n">order</span> <span class="n">to</span>
+<span class="n">verify</span> <span class="n">that</span> <span class="n">the</span> <span class="n">PI</span> <span class="n">imager</span> <span class="n">series</span> <span class="n">can</span> <span class="n">be</span> <span class="n">run</span> <span class="n">on</span> <span class="n">the</span> <span class="n">desired</span>
+<span class="n">system</span><span class="o">.</span> <span class="n">For</span> <span class="n">some</span> <span class="n">devices</span> <span class="n">passing</span> <span class="n">the</span> <span class="n">nodrop</span> <span class="n">option</span> <span class="n">to</span> <span class="n">the</span> <span class="n">UVC</span> <span class="n">kernel</span>
+<span class="n">module</span> <span class="ow">is</span> <span class="n">mandatory</span><span class="o">.</span> <span class="n">The</span> <span class="n">need</span> <span class="k">for</span> <span class="n">this</span> <span class="n">can</span> <span class="n">be</span> <span class="n">checked</span> <span class="k">with</span> <span class="n">a</span>
+<span class="n">standard</span> <span class="n">application</span> <span class="n">like</span> <span class="n">guvcview</span><span class="o">.</span> <span class="n">If</span> <span class="n">the</span> <span class="n">camera</span><span class="s1">&#39;s raw data (a</span>
+<span class="n">green</span> <span class="n">noisy</span> <span class="n">image</span><span class="p">)</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">displayed</span> <span class="n">at</span> <span class="n">a</span> <span class="n">high</span> <span class="n">framerate</span> <span class="n">the</span>
+<span class="n">nodrop</span> <span class="n">option</span> <span class="n">needs</span> <span class="n">to</span> <span class="n">be</span> <span class="n">activated</span><span class="o">.</span> <span class="n">The</span> <span class="n">nodrop</span> <span class="n">option</span> <span class="n">can</span> <span class="n">be</span> <span class="n">passed</span>
+<span class="n">at</span> <span class="n">system</span> <span class="n">startup</span> <span class="n">by</span> <span class="n">creating</span> <span class="n">the</span> <span class="n">following</span> <span class="n">file</span>
+
+<span class="n">sudo</span> <span class="n">bash</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;echo &quot;options uvcvideo nodrop=1&quot; &gt; /etc/modprobe.d/uvcvideo.conf&#39;</span>
+<span class="n">This</span> <span class="n">makes</span> <span class="n">the</span> <span class="n">option</span> <span class="n">permanent</span> <span class="k">for</span> <span class="n">the</span> <span class="n">UVC</span> <span class="n">driver</span><span class="o">.</span> <span class="n">Temporary</span> <span class="n">activation</span> <span class="n">can</span> <span class="n">be</span> <span class="n">achieved</span> <span class="k">with</span><span class="p">:</span>
+
+<span class="n">sudo</span> <span class="n">rmmod</span> <span class="n">uvcvideo</span><span class="p">;</span> <span class="n">sudo</span> <span class="n">modprobe</span> <span class="n">uvcvideo</span> <span class="n">nodrop</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="n">Alternatively</span><span class="p">,</span> <span class="n">the</span> <span class="n">parameter</span> <span class="n">can</span> <span class="n">be</span> <span class="n">modified</span> <span class="n">via</span> <span class="n">sysfs</span> <span class="n">during</span> <span class="n">runtime</span><span class="p">:</span>
+<span class="n">sudo</span> <span class="n">bash</span> <span class="o">-</span> <span class="n">c</span> <span class="s1">&#39;echo -n 1 &gt; /sys/module/uvcvideo/parameters/nodrop&#39;</span>
+</pre></div>
+</div>
+<p>A basic instruction to installation process is given at
+<a class="reference external" href="http://www.optris.de/optris-pi-linux-bibliothek">http://www.optris.de/optris-pi-linux-bibliothek</a> . Here, debian
+packages can be obtained. Please note that you’ll need administrator
+privileges for the default debian-package-based
+installation. Workarounds that try to extract the received
+.deb-archive would as well have to deal with setting up udev-device
+permission and so on.
+In addition, ICL’s optris-plugin assumes camera calibration files to be
+stored at the default location in the file-system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">libirimager</span><span class="o">/</span><span class="n">cali</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>In order to use a camera with some serial number X (the serial number is
+printed onto the device housing, in our case 15060002), the corresponding
+calibration files need to be copied from the CD shipped with the camera to
+that folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">ls</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">libirimager</span><span class="o">/</span><span class="n">cali</span><span class="o">/</span>
+
+<span class="n">Cali</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="mf">250.</span><span class="n">dat</span>
+<span class="n">Cali</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="n">M20</span><span class="o">-</span><span class="mf">100.</span><span class="n">dat</span>
+<span class="n">Kennlinie</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="mf">250.</span><span class="n">prn</span>
+<span class="n">Kennlinie</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="n">M20</span><span class="o">-</span><span class="mf">100.</span><span class="n">prn</span>
+<span class="n">Cali</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="mi">150</span><span class="o">-</span><span class="mf">900.</span><span class="n">dat</span>
+<span class="n">Cali</span><span class="o">-</span><span class="mf">15060002.</span><span class="n">xml</span>
+<span class="n">Kennlinie</span><span class="o">-</span><span class="mi">15060002</span><span class="o">-</span><span class="mi">72</span><span class="o">-</span><span class="mi">150</span><span class="o">-</span><span class="mf">900.</span><span class="n">prn</span>
+</pre></div>
+</div>
+<p>In addition to installing the debian archive (and perhaps rebooting),
+ICL’s other optional dependencies libudev and v4l2 are needed.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong>  1.0.11 (July, 2015)</li>
+<li><strong>License Type:</strong> free but closed source</li>
+<li><strong>Download at:</strong> <a class="reference external" href="http://www.optris.de/optris-pi-linux-bibliothek">http://www.optris.de/optris-pi-linux-bibliothek</a></li>
+<li><strong>Dependent library features:</strong> Optris-based camera support</li>
+<li><strong>Ubuntu packages:</strong> libirimager-1.0.11-amd64.deb libudev libv4l-dev (identical to the v4l2 dependency)</li>
+</ul>
+</div>
+<div class="section" id="v4l2">
+<span id="install-dependencies-optional-v4l2"></span><h4>V4L2<a class="headerlink" href="#v4l2" title="Permalink to this headline">¶</a></h4>
+<p><strong>Grabber Backend for Video 4 Linux 2-based cameras</strong></p>
+<p>For most usb-based cameras/Webcams on linux, V4L2 can be used. While
+v4l2 used to be a part of the kernel-Headers in older linux version,
+nowerdays, it is shipped as an additional library that can usually be
+installed conveniently using a package manager.</p>
+<ul class="simple">
+<li><strong>Supported Versions:</strong>  1.0.1-1 (July, 2015)</li>
+<li><strong>License Type:</strong> OpenSource</li>
+<li><strong>Download at:</strong> ??</li>
+<li><strong>Dependent library features:</strong> Video 4 Linux based camera backend</li>
+<li><strong>Ubuntu packages:</strong> libv4l-dev</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation-from-source">
+<span id="install-source"></span><h3>Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<p>ICL uses CMake as build system. After checking out the sources,
+it is recommended to used an extra build folder in order keep the
+source tree clear of any build artefacts:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">svn</span> <span class="n">co</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">opensource</span><span class="o">.</span><span class="n">cit</span><span class="o">-</span><span class="n">ec</span><span class="o">.</span><span class="n">de</span><span class="o">/</span><span class="n">svn</span><span class="o">/</span><span class="n">icl</span><span class="o">/</span><span class="n">trunk</span> <span class="n">ICL</span>
+<span class="n">cd</span> <span class="n">ICL</span>
+<span class="n">mkdir</span> <span class="n">build</span>
+<span class="n">cd</span> <span class="n">build</span>
+</pre></div>
+</div>
+<p>Now you can either use cmake’s Qt-gui to configure and to generate the
+build-system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span><span class="o">-</span><span class="n">gui</span> <span class="o">..</span>
+</pre></div>
+</div>
+<p>Or you can configure your ICL-build from command line using the cmake
+command. Each dependency <strong>XXX</strong> can manually be activated by adding a
+<strong>-DBUILD_WITH_XXX=TRUE</strong> command line option; by default, all
+dependencies are deactivated. If dependencies are not to be found in
+the system’s default directories (e.g. not in /usr or in /) its root
+directory can be specified by also adding a command line token
+<strong>-DXXX_ROOT=/foo/bar</strong>. Please note that adding a root only does not
+activate the dependency. Some dependencies, such as OpenCV or PCL,
+also provide an own FindXXX.cmake file, which is usually located in
+<strong>SOMEWHERE/share/XXX</strong>. If this is to be used, a token
+<strong>-DXXX_DIR=SOMEWHERE/share/XXX</strong> has to be passed instead of the
+<strong>-DXXX_ROOT</strong> one.  A list of supported dependencies can be obtained
+by calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">..</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="o">&amp;&amp;</span> <span class="n">cmake</span> <span class="o">-</span><span class="n">L</span> <span class="o">..</span>  <span class="o">|</span> <span class="n">grep</span> <span class="n">BUILD_WITH</span>
+</pre></div>
+</div>
+<p>from the build folder, which will configure ICL without any
+dependencies before getting a list of the dependencies. The
+dependency-less configuration is automatically overwritten by later
+cmake-calls.</p>
+<p>In addition to the definition of dependencies and their root folder,
+further options are interesting, in particular, the installation
+prefix, which is set in cmake default manner by adding a
+<strong>-DCMAKE_INSTALL_PREFIX=SOMEWHERE</strong> token to the command line
+options. The build-type (release of debug) can be specified by adding
+<strong>-DCMAKE_BUILD_TYPE=Release|Debug</strong>, where by default, release is
+used. A release build will automatically set the optimization level to
+<strong>-O3</strong> and logically switch off debugging symbols. Debug switches off
+optimizations using <strong>-O0</strong> and enables full debugging symbols
+<strong>-g3</strong>.</p>
+<p>Further optimizations can be manually enabled. these can be listed by
+using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">..</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="o">&amp;&amp;</span> <span class="n">cmake</span> <span class="o">-</span><span class="n">L</span> <span class="o">..</span>  <span class="o">|</span> <span class="n">grep</span> <span class="n">ENABLE_</span>
+</pre></div>
+</div>
+<p>Right now, this is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DENABLE_FASTMATH_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+<span class="o">-</span><span class="n">DENABLE_NATIVE_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+<span class="o">-</span><span class="n">DENABLE_OPENMP_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+<span class="o">-</span><span class="n">DENABLE_SSEFPMATH_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+</pre></div>
+</div>
+<p>Lastly one can define, whether applications, examples and demos are
+also compiled and installed. Here the options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">DBUILD_EXAMPLES</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+<span class="o">-</span><span class="n">DBUILD_APPS</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+<span class="o">-</span><span class="n">DBUILD_DEMOS</span><span class="o">=</span><span class="n">ON</span><span class="o">|</span><span class="n">OFF</span>
+</pre></div>
+</div>
+<p>have to be used. A demo bash-script that enables some dependencies
+and defines some variables can be found
+<em>SOURCE_ROOT/scripts/compileICL.sh</em>. Here is an example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">DBUILD_WITH_IPP</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DIPP_ROOT</span><span class="o">=/</span><span class="n">vol</span><span class="o">/</span><span class="n">nivision</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">IPP</span><span class="o">/</span><span class="mf">7.06</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_MKL</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DMKL_ROOT</span><span class="o">=/</span><span class="n">vol</span><span class="o">/</span><span class="n">nivision</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">MKL</span><span class="o">/</span><span class="mf">10.3</span><span class="o">.</span><span class="mi">11</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_EIGEN3</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_V4L</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_XINE</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_LIBFREENECT</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_QT</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_LIBDC</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_OPENCL</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_OPENCV</span><span class="o">=</span><span class="n">TRUE</span> <span class="o">-</span><span class="n">DOpenCV_DIR</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">OpenCV</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_IMAGEMAGICK</span><span class="o">=</span><span class="n">TRUE</span> \
+    <span class="o">-</span><span class="n">DBUILD_WITH_PCL</span><span class="o">=</span><span class="n">FALSE</span> <span class="o">-</span><span class="n">DPCL_DIR</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">pcl</span><span class="o">-</span><span class="mf">1.6</span> \
+    <span class="o">-</span><span class="n">DBUILD_EXAMPLES</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DBUILD_DEMOS</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DBUILD_APPS</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DCMAKE_INSTALL_PREFIX</span><span class="o">=/</span><span class="n">vol</span><span class="o">/</span><span class="n">nivision</span><span class="o">/</span> \
+    <span class="o">-</span><span class="n">DCMAKE_BUILD_TYPE</span><span class="o">=</span><span class="n">Release</span> \
+    <span class="o">-</span><span class="n">DENABLE_OPENMP_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DENABLE_NATIVE_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DENABLE_SSEFPMATH_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">-</span><span class="n">DENABLE_FASTMATH_BUILD_OPTION</span><span class="o">=</span><span class="n">ON</span> \
+    <span class="o">..</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installation-using-binary-packages">
+<span id="install-binary"></span><h3>Installation using Binary Packages<a class="headerlink" href="#installation-using-binary-packages" title="Permalink to this headline">¶</a></h3>
+<p>Binary packages are not yet supported, but we plan to support this as
+soon as possible.</p>
+</div>
+<div class="section" id="special-installation-tutorials">
+<span id="install-special"></span><h3>Special Installation Tutorials<a class="headerlink" href="#special-installation-tutorials" title="Permalink to this headline">¶</a></h3>
+<p>Since some special dependencies are more difficult to get running, we will
+here share our experiences with you.</p>
+<div class="section" id="installing-and-using-basler-pylon-drivers">
+<span id="install-special-pylon"></span><h4>Installing and Using Basler Pylon Drivers<a class="headerlink" href="#installing-and-using-basler-pylon-drivers" title="Permalink to this headline">¶</a></h4>
+<p>Download binary packages e.g.</p>
+<ul class="simple">
+<li>32bit: <a class="reference external" href="http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-32.tar.gz">http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-32.tar.gz</a></li>
+<li>64bit: <a class="reference external" href="http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-64.tar.gz">http://www.baslerweb.com/7/0/9/9/pylon-2.3.3-1337-64.tar.gz</a></li>
+</ul>
+<p>For developing and running applications with pylon two environment variables must be exported:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PYLON_ROOT=/your-desired-install-directory
+export GENICAM_ROOT_V2_1=${PYLON_ROOT}/genicam
+</pre></div>
+</div>
+<p>To extract and install pylon type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>tar -xzf pylon-2.3.3-1337-32.tar.gz # ...-62-tar-gz for 64-bit version
+cd pylon-2.3.3-1337-bininst/
+
+mkdir $(PYLON_ROOT) # if not already existing
+tar -C $(PYLON_ROOT) -xzf pylon-bininst-32.tar.gz # ...-62-tar-gz for 64-bit version
+</pre></div>
+</div>
+<p>Because of the way Pylon is using shared libraries it may be, that
+some libraries form the Pylon distribution can not be found at
+runtime, although the corresponding path is provided in the
+rpath-list. In this case it is necessary to add the following library
+search path.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PYLON_ROOT}/lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PYLON_ROOT}/genicam/bin/Linux32_i86
+</pre></div>
+</div>
+<p>or for 64-bit version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=${PYLON_ROOT}/lib64
+</pre></div>
+</div>
+<p><strong>Further suggestions:</strong></p>
+<p>To check whether pylon can establish a connection to a camera the
+IpConfigurator can be used.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=${PATH}:${PYLON_ROOT}/bin
+IpConfigurator
+</pre></div>
+</div>
+<p>When the IpConfigurator does not find the camera, Pylon and
+accordingly ICL will neither. In that case the camera is most likely
+not in the same ip-address block. Unfortunately it is not possible to
+change the cameras ip-settings without the IpConfigurator. There are
+two known workarounds in this case. Setting the ip-address of the
+computer to the same address block as the camera or using the Windows
+version of the IpConfigurator - which does not seem to have this
+problem - to change the cameras ip settings once to the correct block.</p>
+</div>
+<div class="section" id="installing-openni-nite">
+<span id="install-special-openni"></span><h4>Installing OpenNI / Nite<a class="headerlink" href="#installing-openni-nite" title="Permalink to this headline">¶</a></h4>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">write how to install use OpenNI and Nite</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation Instructions for Linux</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#external-dependencies">External Dependencies</a></li>
+<li><a class="reference internal" href="#mandatory-dependencies">Mandatory Dependencies</a></li>
+<li><a class="reference internal" href="#quick-installation-guide-for-ubuntu-trusty-and-maybe-later">Quick installation guide for Ubuntu Trusty (and maybe later)</a></li>
+<li><a class="reference internal" href="#for-ubuntu-vivid-15-04">For Ubuntu Vivid (15.04)</a></li>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a><ul>
+<li><a class="reference internal" href="#overview">Overview:</a><ul>
+<li><a class="reference internal" href="#intel-ipp">Intel IPP</a></li>
+<li><a class="reference internal" href="#intel-mkl">Intel MKL</a></li>
+<li><a class="reference internal" href="#opencv">OpenCV</a></li>
+<li><a class="reference internal" href="#libmesasr">libMesaSR</a></li>
+<li><a class="reference internal" href="#libmagick">libmagick++</a></li>
+<li><a class="reference internal" href="#libdc1394">libdc1394</a></li>
+<li><a class="reference internal" href="#libfreenect">libfreenect</a></li>
+<li><a class="reference internal" href="#libfreenect2">libfreenect2</a></li>
+<li><a class="reference internal" href="#libxine">libxine</a></li>
+<li><a class="reference internal" href="#qt5">Qt5</a></li>
+<li><a class="reference internal" href="#basler-pylon">Basler Pylon</a></li>
+<li><a class="reference internal" href="#opencl">OpenCL</a></li>
+<li><a class="reference internal" href="#sphinx-doxygen">Sphinx/Doxygen</a></li>
+<li><a class="reference internal" href="#openni">OpenNI</a></li>
+<li><a class="reference internal" href="#pcl">PCL</a></li>
+<li><a class="reference internal" href="#rsb-rst">RSB/RST</a></li>
+<li><a class="reference internal" href="#bullet3">Bullet3</a></li>
+<li><a class="reference internal" href="#libav">LibAV</a></li>
+<li><a class="reference internal" href="#ximea-xiapi">Ximea XiAPI</a></li>
+<li><a class="reference internal" href="#optris">Optris</a></li>
+<li><a class="reference internal" href="#v4l2">V4L2</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-from-source">Installation from Source</a></li>
+<li><a class="reference internal" href="#installation-using-binary-packages">Installation using Binary Packages</a></li>
+<li><a class="reference internal" href="#special-installation-tutorials">Special Installation Tutorials</a><ul>
+<li><a class="reference internal" href="#installing-and-using-basler-pylon-drivers">Installing and Using Basler Pylon Drivers</a></li>
+<li><a class="reference internal" href="#installing-openni-nite">Installing OpenNI / Nite</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../extras/install.html"
+                        title="previous chapter">Installation Instructions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install-windows.html"
+                        title="next chapter">Installation Instructions for Windows</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install-windows.html" title="Installation Instructions for Windows"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../extras/install.html" title="Installation Instructions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../extras/install.html" >Installation Instructions</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

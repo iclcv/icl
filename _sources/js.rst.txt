@@ -1,0 +1,533 @@
+.. raw:: html
+  
+  <script src="../js/jquery.tools.min.js"></script>
+
+  <div id="sticky"> 
+    <table class="sticky-table">
+    <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+    <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+    <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+    </tr>
+    </table>
+  </div>
+  <style type="text/css">
+    .sticky-table{
+       float: right;
+    }
+
+    a.sticky-link{
+       color: inherit;
+       font-size: 12px;
+    }
+
+    a.sticky-link:hover{
+       text-decoration: none;
+       color: inherit;
+    }
+
+    
+    .sticky-entry{
+       width: 12px;
+       height: 12px;
+       float: right;
+       border-left: 1px solid rgb(200,200,200);
+       border-top: 1px solid rgb(200,200,200);
+       border-right: 1px solid rgb(100,100,100);
+       border-bottom: 1px solid rgb(100,100,100);
+
+       border-radius: 4px;
+       box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+       border: 1px solid blue;
+       background-color: transparent; /* white; */
+       color: transparent;
+    }
+    .sticky-entry:hover{
+       width: 40px;
+       color: rgb(100,100,100);
+       background-color: white;
+       padding-left: 2px;
+       box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+    }
+    .sticky-entry:active{
+       box-shadow: 0px 0px 0px transparent;
+       border-left: 1px solid rgb(70,70,70);
+       border-top: 1px solid rgb(70,70,70);
+       border-right: 1px solid white;
+       border-bottom: 1px solid white;
+    }
+
+    #sticky-1{ border: 1px solid rgb(255,0,255); } 
+    #sticky-2{ border: 1px solid rgb(255,0,0); } 
+    #sticky-3{ border: 1px solid rgb(255,128,0); } 
+    #sticky-4{ border: 1px solid rgb(255,255,0); } 
+    #sticky-5{ border: 1px solid rgb(168,255,0); } 
+    #sticky-6{ border: 1px solid rgb(0,200,255); } 
+    #sticky-7{ border: 1px solid rgb(0,255,0); } 
+    #sticky-8{ border: 1px solid rgb(0,50,255); } 
+    #sticky-9{ border: 1px solid rgb(0,0,255); } 
+    #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+    #sticky{
+      line-height: 8px;
+      margin-left:auto;
+      position:absolute;
+      right:0px;
+      top:100px;
+      padding:2px;
+      padding-right:0px;
+      padding-left:1px;
+      position: fixed;
+      background: transparent url(../_static/images/dash.png);
+      width: 33px;
+      height: 193px;
+      top: 99px;
+      padding-top: 12px;
+    }
+
+  </style>
+  
+  <script type="text/javascript">
+
+  $('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+  $('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+  $('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+  $('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+  $('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+  $('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+  $('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+  $('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+  $('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+  $('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+  /* Script by: www.jtricks.com
+   * Version: 20071127
+   * Latest version:
+   * www.jtricks.com/javascript/navigation/fixed_menu.html
+   */
+  fixedMenuId = 'sticky';
+  
+  var fixedMenu = {
+      hasInner: typeof(window.innerWidth) == 'number',
+      hasElement: document.documentElement != null
+         && document.documentElement.clientWidth,
+  
+      menu: document.getElementById
+          ? document.getElementById(fixedMenuId)
+          : document.all
+            ? document.all[fixedMenuId]
+            : document.layers[fixedMenuId]
+  };
+  
+  fixedMenu.computeShifts = function(){
+      fixedMenu.shiftX = fixedMenu.hasInner
+          ? pageXOffset
+          : fixedMenu.hasElement
+            ? document.documentElement.scrollLeft
+            : document.body.scrollLeft;
+      if (fixedMenu.targetLeft > 0){
+          fixedMenu.shiftX += fixedMenu.targetLeft;
+      }else{
+          fixedMenu.shiftX += 
+              (fixedMenu.hasElement
+                ? document.documentElement.clientWidth
+                : fixedMenu.hasInner
+                  ? window.innerWidth - 20
+                  : document.body.clientWidth)
+              - fixedMenu.targetRight
+              - fixedMenu.menu.offsetWidth;
+      }
+  
+      fixedMenu.shiftY = fixedMenu.hasInner
+          ? pageYOffset
+          : fixedMenu.hasElement
+            ? document.documentElement.scrollTop
+            : document.body.scrollTop;
+      if (fixedMenu.targetTop > 0){
+          fixedMenu.shiftY += fixedMenu.targetTop;
+      }else{
+          fixedMenu.shiftY += 
+              (fixedMenu.hasElement
+              ? document.documentElement.clientHeight
+              : fixedMenu.hasInner
+                ? window.innerHeight - 20
+                : document.body.clientHeight)
+              - fixedMenu.targetBottom
+              - fixedMenu.menu.offsetHeight;
+      }
+  };
+  
+  fixedMenu.moveMenu = function(){
+      fixedMenu.computeShifts();
+  
+      if (fixedMenu.currentX != fixedMenu.shiftX
+          || fixedMenu.currentY != fixedMenu.shiftY){
+          fixedMenu.currentX = fixedMenu.shiftX;
+          fixedMenu.currentY = fixedMenu.shiftY;
+  
+          if (document.layers){
+              fixedMenu.menu.left = fixedMenu.currentX;
+              fixedMenu.menu.top = fixedMenu.currentY;
+          }else{
+              fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+              fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+          }
+      }
+  
+      fixedMenu.menu.style.right = '';
+      fixedMenu.menu.style.bottom = '';
+  };
+  
+  fixedMenu.floatMenu = function(){
+      fixedMenu.moveMenu();
+      setTimeout('fixedMenu.floatMenu()', 20);
+  };
+  
+  // addEvent designed by Aaron Moore
+  fixedMenu.addEvent = function(element, listener, handler){
+      if(typeof element[listener] != 'function' || 
+         typeof element[listener + '_num'] == 'undefined'){
+          element[listener + '_num'] = 0;
+          if (typeof element[listener] == 'function'){
+              element[listener + 0] = element[listener];
+              element[listener + '_num']++;
+          }
+          element[listener] = function(e){
+              var r = true;
+              e = (e) ? e : window.event;
+              for(var i = 0; i < element[listener + '_num']; i++)
+                  if(element[listener + i](e) === false)
+                      r = false;
+              return r;
+          }
+      }
+  
+      //if handler is not already stored, assign it
+      for(var i = 0; i < element[listener + '_num']; i++)
+          if(element[listener + i] == handler)
+              return;
+      element[listener + element[listener + '_num']] = handler;
+      element[listener + '_num']++;
+  };
+  
+  fixedMenu.supportsFixed = function(){
+      var testDiv = document.createElement("div");
+      testDiv.id = "testingPositionFixed";
+      testDiv.style.position = "fixed";
+      testDiv.style.top = "0px";
+      testDiv.style.right = "0px";
+      document.body.appendChild(testDiv);
+      var offset = 1;
+      if (typeof testDiv.offsetTop == "number"
+          && testDiv.offsetTop != null 
+          && testDiv.offsetTop != "undefined")
+      {
+          offset = parseInt(testDiv.offsetTop);
+      }
+      if (offset == 0)
+      {
+          return true;
+      }
+  
+      return false;
+  };
+  
+  fixedMenu.init = function(){
+      if (fixedMenu.supportsFixed())
+          fixedMenu.menu.style.position = "fixed";
+      else
+      {
+          var ob = 
+              document.layers 
+              ? fixedMenu.menu 
+              : fixedMenu.menu.style;
+  
+          fixedMenu.targetLeft = parseInt(ob.left);
+          fixedMenu.targetTop = parseInt(ob.top);
+          fixedMenu.targetRight = parseInt(ob.right);
+          fixedMenu.targetBottom = parseInt(ob.bottom);
+  
+          if (document.layers)
+          {
+              menu.left = 0;
+              menu.top = 0;
+          }
+          fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+          fixedMenu.floatMenu();
+      }
+  };
+  
+  fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+  
+  jQuery(document).ready(function() {
+ 
+    console.log('executing java-script-based document upgrade');
+
+    $('.reference.external').after(function() {
+      
+      this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+      var href = this.href;
+      var text = this.text;
+
+      var package = 'unknown';
+      var type = 'other';
+
+      if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+         var m = this.text.match('ICL(\[^/\]*)/.*');
+         if( m ){
+            package = m[1].toLowerCase();
+            type = "header";
+         }
+      }else if(this.text.match('.*\.h$')){
+         package  = 'unknown';
+         type = "header";
+      }
+
+
+      var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+      var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                       ['LINALG'],
+                       ['TYPES', 'GENERAL', 'IMAGE'],
+                       ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                       ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                       ['COMMON', 'HANDLES', 'UNCOMMON'],
+                       ['G_RD'],
+                       [],
+                       ['PLUGINS']
+                     ];
+
+      if(package == 'unknown'){
+        for(var i=0;i<10;++i){
+          if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+            package = packages[i];
+            // could be a function or a namespace
+            if(this.text.match('.*'+packages[i]+'$')){
+               type = 'namespace';
+            }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+               type = 'global type';
+            }else{
+               type = 'global function';
+            }
+            break;
+          }
+          if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+            package = packages[i]; 
+            break;
+          }
+        }
+      }
+      if(package == 'unknown'){
+        var res = href.match('.*group__(\[^.\]*).*')
+        if( res ){
+           var groupName = res[1];
+           for(var i=0;i<9;++i){
+              if(groupLUT[i].indexOf(groupName) != -1){
+                  package = packages[i];
+                  break;
+              }
+           }
+           var res2 = this.text.match('.*::(\[^:\]*)$');
+           var t = "???";
+           if(res2){
+              t = res2[1];
+           }else{
+              t = this.text;
+           }
+           if(t[0] > 'A' && t[0] < 'Z'){
+              type = "grouped type";
+           }else{
+              if(groupName == "TYPES"){
+                type = "core type";
+              }else if(groupName == "BASIC__TYPES"){
+                type = "basic type";
+              }else{
+                type = "grouped func.";
+              }
+           }
+         }
+      }
+      
+      if(href.match('.*classicl.*')){
+         if(href.match('.*#\[0-9a-f\]*')){
+           type = 'class: method';
+         }else{
+           type = 'class';
+         }
+      }else if(href.match('.*structicl.*')){
+         if(href.match('.*#\[0-9a-f\]*')){
+           type = 'struct: method';
+         }else{
+           type = 'struct';
+         }
+      }
+      if(package == "unknown" && href.match('.*namespaceicl.*')){
+        // very special treatment
+        return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+              +'modules.</div>';
+    
+      }else if(package != "unknown"){
+        return '<div class="tooltip">' 
+           + '<a href="../modules/'+package+'.html">'
+           + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+           + '</a>'
+           + '<br/>' + 'Type:   <b>' + type + '</b>' 
+           + '</div>';
+      }else{
+        return '<div class="tooltip">' 
+           + 'Unable to locate package'
+           + '<br/>' + 'Type:   <b>' + type + '</b>' 
+           + '</div>';
+      }
+
+      //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+    });
+
+    $('.reference.external').tooltip({
+      position: "top center", 
+      opacity: 0.95, 
+      effect: 'fade',
+      offset: [7,33]
+    });
+
+  });
+  </script>
+  <style type="text/css">
+
+    .tooltip {
+      display:none;
+      background: transparent url(../_static/images/tooltip.png);
+      font-size:13px;
+      height:80px;
+      width:131px;
+      padding:10px;
+      color: #555;
+      line-height: 20px;
+    }
+    a.reference.external {
+      color: rgb(20,60,100);
+      padding: 2px;
+      padding-left: 6px;
+      padding-right: 5px;
+    }
+    a.reference.external:hover {
+      color: rgb(20,60,100);
+      border: 1px solid rgba(0,0,0,0.3);
+      border-radius: 5px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      padding: 2px;
+      padding-left: 5px;
+      padding-right: 4px;
+      text-decoration: none;
+    }
+
+   div.body{
+      border-top-left-radius: 15px;
+      border-bottom-left-radius: 15px;
+      border: 1px solid rgb(110,110,110);
+      box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+    }
+
+    div.body h1{
+      border-top-left-radius: 15px;
+      box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+    }
+
+
+    div.body h1, div.body h2, div.body h3, div.body h4{
+      margin-bottom: -8px;
+      background-repeat: no-repeat;
+      margin-left: -41px;
+      box-shadow: none;
+      border: none;
+      opacity: 1;
+      color: rgb(230,230,230);
+      height: 44px;
+      padding-top: 4px;
+    }
+
+    div.body h1{
+      padding-top: 7px;
+      background: transparent url(../_static/images/h1.png);
+      margin-top: 8px;
+      border-radius: 0px;
+      height: 57px;
+      padding-top: 3px;
+    }
+
+    div.body h2{
+      padding-top: 7px;
+      background: transparent url(../_static/images/h2.png);
+      height: 52px;
+    }
+
+    div.body h3{
+      background: transparent url(../_static/images/h3.png);
+    }
+
+    div.body h4{
+      padding-top: 5px;
+      height: 42px;
+      background: transparent url(../_static/images/h4.png);
+      color: rgb(60,60,60);
+    }
+
+    div.sphinxsidebar{
+      font-size: 80%;
+    }
+
+    table.docutils td, table.docutils th{
+      border: 0px;
+    }
+    th {
+       background-color: #0F67A1;
+       color: rgb(220,220,220);
+    }
+
+    img[alt="shadow"]{
+       box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+    }
+
+    a.headerlink {
+       color: rgb(230,230,230);
+    }
+    a.headerlink:hover{
+       color: white;
+       background: transparent;
+    }
+
+    h4:hover > a.headerlink {
+       color: rgb(60,60,60);
+    }
+    h4 > a.headerlink {
+       color: rgb(90,90,90);
+    }
+    div.related ul{
+       background: rgba(60, 60, 60, 0);
+       background-image: url(../_static/images/stripes3.png);
+       background-position-x: 2px;
+    }
+    div.documentwrapper, div.footer {
+       background-image: url(../_static/images/stripes1.png);
+    }
+
+    img.logo{
+       background-color: white;
+       border-radius: 8px;
+       border: 1px solid #A0A0A0;
+       box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+       padding: 8px;
+    }
+    
+    div.sphinxsidebar #searchbox input[type="text"] {
+       width: 160px;
+    }
+
+  </style>

@@ -1,0 +1,1899 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Basic Types for Image Processing &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Unary- and Binary Image Filters" href="filter.html" />
+    <link rel="prev" title="Linear Algebra and Machine Learning" href="math.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="filter.html" title="Unary- and Binary Image Filters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="math.html" title="Linear Algebra and Machine Learning"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="basic-types-for-image-processing">
+<span id="core"></span><h1>Basic Types for Image Processing<a class="headerlink" href="#basic-types-for-image-processing" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/core1.png" src="../_images/core1.png" />
+<p>The Core modules provides basic types, classes and functions for image
+processing. In particular it introduces ICL’s image classes
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> and the derived templates <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>, where its
+template parameter <em>T</em> defines the pixel data type.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#core-image"><span class="std std-ref">The Image Classes</span></a><ul>
+<li><a class="reference internal" href="#core-image-types"><span class="std std-ref">Supported Image Types</span></a></li>
+<li><a class="reference internal" href="#core-image-pixel-access"><span class="std std-ref">Pixel Access</span></a></li>
+<li><a class="reference internal" href="#core-image-shallow-copy"><span class="std std-ref">Shallow Copy Concept</span></a></li>
+<li><a class="reference internal" href="#core-image-data-origin"><span class="std std-ref">Data Origin</span></a></li>
+<li><a class="reference internal" href="#core-image-channel-concept"><span class="std std-ref">Channel-Concept</span></a></li>
+<li><a class="reference internal" href="#core-image-roi"><span class="std std-ref">Regions of Interest (ROI)</span></a></li>
+<li><a class="reference internal" href="#core-image-format"><span class="std std-ref">Formats and Ranges</span></a></li>
+<li><a class="reference internal" href="#core-image-convert"><span class="std std-ref">Deep Copies and Depth Conversion</span></a></li>
+<li><a class="reference internal" href="#core-image-const"><span class="std std-ref">Const-Concept</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#core-global-functions"><span class="std std-ref">Global Functions</span></a></li>
+<li><a class="reference internal" href="#core-types"><span class="std std-ref">Image Processing related Types</span></a></li>
+<li><a class="reference internal" href="#core-color"><span class="std std-ref">Color Formats and Color Conversion</span></a></li>
+<li><a class="reference internal" href="#core-other"><span class="std std-ref">Rastarized Rendering into Images</span></a></li>
+</ul>
+</div>
+<div class="section" id="the-image-classes">
+<span id="core-image"></span><h2>The Image Classes<a class="headerlink" href="#the-image-classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="67%" />
+<col width="33%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first">For the implementation of the image classes, we combined inheritance
+and class-templates: The <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> class defines an abstract
+interface, that manages all image information except for the actual
+image pixel data. It works as generic interface for
+the several versions of the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>-template and provides access to</p>
+<ul class="simple">
+<li>image size (in pixels, as <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Size.html">utils::Size</a>)</li>
+<li>channel count (as <strong>int</strong>)</li>
+<li>run-time-identifiable data type of pixels (as <a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a>)</li>
+<li>color format (as <a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a>)</li>
+<li>raw image data access</li>
+<li>region of interest (as <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Rect.html">Rect</a>)</li>
+<li>a time stamp (as <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html">Time</a>)</li>
+<li>a single meta data string (as <strong>std::string</strong>)</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All provided setter functions for these parameters work in a lazy
+fashion. I.e. they will only actually do something if necessary</p>
+</div>
+<p>The derived class <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> adds a <strong>std::vector</strong> of typed
+data-pointers – one for each image channel. These channel data
+pointers use reference counting to allow for copying images shallowly.</p>
+<p>We provide extra tutorial chapters for the image classes:</p>
+<ul class="last simple">
+<li><a class="reference internal" href="../tutorials/using-images.html#tut-using-images"><span class="std std-ref">Using the Image Class</span></a></li>
+<li><a class="reference internal" href="../tutorials/pixel-access.html#tut-pixel-access"><span class="std std-ref">Accessing Pixel Data</span></a></li>
+<li><a class="reference internal" href="../tutorials/using-imgbase.html#tut-using-imgbase"><span class="std std-ref">Using The ImgBase class</span></a></li>
+</ul>
+</td>
+<td><img alt="shadow" class="first last" src="../_images/image-sketch.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="supported-image-types">
+<span id="core-image-types"></span><h3>Supported Image Types<a class="headerlink" href="#supported-image-types" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> template class is <strong>not</strong> implemented in a completely
+<strong>inline</strong> fashion, which significantly improves the build-times for
+ICL and for other libraries, that depend on it. Furthermore, we
+preferred to provide a smaller set of possible image classes that is
+completely supported by our algorithms, rather than an infinite
+set. We chose to support images for pixel types</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a03c5fb8fe5763e6a400b4651b0eec2d7">icl8u</a> (usually <strong>unsigned char</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a79af5b84ad2c6e4acf44ae0530d89269">icl16s</a> (usually <strong>short</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a42327266b9cc89a04bb7cf0ff1b1b0b2">icl32s</a> (usually <strong>int</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a9d5e66277c0b9e4cee1d9e0f51768f49">icl32f</a> (<strong>float</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#ab21f404160d56751f53c4b12618acb26">icl64f</a> (<strong>double</strong>)</li>
+</ul>
+<p>defined in <strong>ICLUtils/BasicTypes.h</strong>, directly in the
+<a class="reference external" href="../icl-api/namespaceicl.html">icl</a>-namespace (see also <a class="reference internal" href="utils.html#utils-basic-types"><span class="std std-ref">Basic Types</span></a>)</p>
+<p>Each of these data types has it’s own advantages and
+disadvantages. The greatest disadvantage of the integer types, is
+their bounded range (e.g. 0-255 for icl8u), which has the effect, that
+all information has to be scaled to this range. Furthermore, all image
+processing functions must take care that no range-overflow occurs
+during calculation. The limited range may also cause loss of
+information – particularly in complex systems. However integer types
+can often be processed significantly faster, and the use of 8 or 16
+bit integers leads to less memory usage in comparison to floats</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A nice rule of thumb is: If processing speed matters, use <strong>icl8u</strong>
+pixels whenever it’s possible and avoid Img64f because double
+processing is much slower on (still common) 32 bit machines (as long
+as you do not really need double precision)</p>
+</div>
+<p>For the supported types convenience <strong>typedef</strong>s are
+supported. Whenever one gets an <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> instance, it’s
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#af40972db3dca1dd6228030e5d15a9dab">ImgBase::getDepth</a>-method can be used to query it’s actual
+run-time type in oder to perform a type-safe down-cast. The
+<a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a> enumeration provides alternatives for each of the
+supported image types.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="31%" />
+<col width="35%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Full Type</th>
+<th class="head">typedef</th>
+<th class="head"><strong>depth</strong>-value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>core::Img&lt;icl8u&gt;</strong></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">core::Img8u</a></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaabf13298b91874fafb68eedffe1a5f3de">core::depth8u</a></td>
+</tr>
+<tr class="row-odd"><td><strong>core::Img&lt;icl16s&gt;</strong></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#ga7ddf03d82e78b48a4c8a477f093eb769">core::Img16s</a></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaa87c24cd544d0e236c278725a65be3e5a">core::depth16s</a></td>
+</tr>
+<tr class="row-even"><td><strong>core::Img&lt;icl32s&gt;</strong></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#ga3f31ac233fa143556955add6015184f5">core::Img32s</a></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaaf560890070519a4c44512122ed605827">core::depth32s</a></td>
+</tr>
+<tr class="row-odd"><td><strong>core::Img&lt;icl32f&gt;</strong></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">core::Img32f</a></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaa318053c024418e71be0457ee9658de1d">core::depth32f</a></td>
+</tr>
+<tr class="row-even"><td><strong>core::Img&lt;icl64f&gt;</strong></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gac67db4a74d00ca1073fc308a11ae1777">core::Img64f</a></td>
+<td><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaab77509582aeeed38bf30959d653bab39">core::depth64f</a></td>
+</tr>
+</tbody>
+</table>
+<p>Here is a minimal example:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLCore/Img.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="p">;</span>
+
+<span class="c1">// dummy example function with generic ImgBase interface</span>
+<span class="kt">void</span> <span class="nf">process_image</span><span class="p">(</span><span class="k">const</span> <span class="n">core</span><span class="o">::</span><span class="n">ImgBase</span> <span class="o">&amp;</span><span class="n">image</span><span class="p">){</span>
+  <span class="k">switch</span><span class="p">(</span><span class="n">image</span><span class="p">.</span><span class="n">getDepth</span><span class="p">()){</span>
+    <span class="k">case</span> <span class="n">core</span><span class="o">::</span><span class="nl">depth8u</span><span class="p">:{</span>
+      <span class="k">const</span> <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="o">&amp;</span><span class="n">casted</span> <span class="o">=</span> <span class="o">*</span><span class="n">image</span><span class="p">.</span><span class="n">as8u</span><span class="p">();</span>
+      <span class="c1">// process 8u image</span>
+      <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">case</span> <span class="n">core</span><span class="o">::</span><span class="nl">depth32f</span><span class="p">:{</span>
+      <span class="k">const</span> <span class="n">core</span><span class="o">::</span><span class="n">Img32f</span> <span class="o">&amp;</span><span class="n">casted</span> <span class="o">=</span> <span class="o">*</span><span class="n">image</span><span class="p">.</span><span class="n">as32f</span><span class="p">();</span>
+      <span class="c1">// process float image</span>
+      <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">default</span><span class="o">:</span>
+      <span class="k">throw</span> <span class="n">utils</span><span class="o">::</span><span class="n">ICLException</span><span class="p">(</span><span class="s">&quot;unsupported depth!&quot;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span>  <span class="n">a</span><span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">),</span><span class="n">core</span><span class="o">::</span><span class="n">formatRGB</span><span class="p">);</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img32f</span> <span class="n">b</span><span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">,</span><span class="n">core</span><span class="o">::</span><span class="n">formatGray</span><span class="p">);</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img16s</span>  <span class="n">c</span><span class="p">;</span>
+
+  <span class="n">process_image</span><span class="p">(</span><span class="n">a</span><span class="p">);</span> <span class="c1">// works</span>
+  <span class="n">process_image</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="c1">// works</span>
+  <span class="n">process_image</span><span class="p">(</span><span class="n">c</span><span class="p">);</span> <span class="c1">// exception is thrown</span>
+
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="pixel-access">
+<span id="core-image-pixel-access"></span><h3>Pixel Access<a class="headerlink" href="#pixel-access" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> class provides only raw-data access (in shape of a
+<strong>void*</strong>); for type-safe pixel access, an <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a>-instance
+must be casted into it’s actual <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>-type. The different
+techniques for pixel-access are also discussed in the
+<a class="reference internal" href="../tutorials/pixel-access.html#tut-pixel-access"><span class="std std-ref">tutorial</span></a></p>
+</div>
+<div class="section" id="shallow-copy-concept">
+<span id="core-image-shallow-copy"></span><h3>Shallow Copy Concept<a class="headerlink" href="#shallow-copy-concept" title="Permalink to this headline">¶</a></h3>
+<p>It is very important to know that <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> and
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>-instances are copied shallowly. This means that, whenever
+an image is copied using either a the copy constructor or the
+assignment operator, the two images will share their image data
+pointers:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLCore/Img.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Random.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="c1">// original image</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="n">a</span><span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// shallowly copied instance</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+
+  <span class="c1">// initialize c with deep copy of a</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">.</span><span class="n">detached</span><span class="p">();</span>
+
+  <span class="c1">// fills b&#39;s pixel with random numbers</span>
+  <span class="c1">// note: a is also affected, but not c</span>
+  <span class="n">b</span><span class="p">.</span><span class="n">fill</span><span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">URand</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">));</span>
+
+  <span class="c1">// make b independent from a</span>
+  <span class="n">b</span><span class="p">.</span><span class="n">detach</span><span class="p">();</span>
+
+  <span class="c1">// clears only b, a remains filled randomly</span>
+  <span class="n">b</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+  <span class="c1">// another shallow copy</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+
+  <span class="c1">// scaling d entails having to resize the</span>
+  <span class="c1">// internal data pointers; d becomes</span>
+  <span class="c1">// independent from a, a is not scaled</span>
+  <span class="n">d</span><span class="p">.</span><span class="n">scale</span><span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="data-origin">
+<span id="core-image-data-origin"></span><h3>Data Origin<a class="headerlink" href="#data-origin" title="Permalink to this headline">¶</a></h3>
+<p>Just like most of the common image formats, we also defined the upper
+left image corner as data origin. Actually, many image operations,
+such as filtering or thresholding, do not even use this information at
+all. However, as soon as it comes to image visualization and
+annotation, the definition of the origin is crucial.</p>
+</div>
+<div class="section" id="channel-concept">
+<span id="core-image-channel-concept"></span><h3>Channel-Concept<a class="headerlink" href="#channel-concept" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> class manages images as a stack of image slices –
+channels. Channels can be shared by multiple <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> instances,
+which is especially important for fast shallow images copies (see also
+<a class="reference internal" href="#core-image-shallow-copy"><span class="std std-ref">Shallow Copy Concept</span></a>). Actually, it is possible to freely
+compose images from channels of different images. The composed image
+then shares it’s channel data with the original images, such that
+modifications will effect all images equally. In order to get an
+independent image a <em>deep-copy</em> as well as the
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#ad5a04cd146de11aed371b76984f80dba">ImgBase::detach</a>-method are provided. The latter replaces the
+<em>shared</em> image channel(s) with new independent ones. Shared channel
+data are stored using the boost-like shared pointer class
+<a class="reference external" href="../icl-api/structicl_1_1utils_1_1SmartArray.html">utils::SmartArray</a>, which uses reference counting for
+autonomous garbage collection.</p>
+</div>
+<div class="section" id="regions-of-interest-roi">
+<span id="core-image-roi"></span><h3>Regions of Interest (ROI)<a class="headerlink" href="#regions-of-interest-roi" title="Permalink to this headline">¶</a></h3>
+<p>Each image can be set up with a rectangular region of interest (short
+<strong>ROI</strong>). Most support this feature, i.e. they process only the pixels
+within the ROI. If a function does not support ROI handling, it’s
+documentation will announce this.  Providing ROI support for custom
+algorithms, can be achieved in different ways. In general, we
+distinguish between <em>native</em> and <em>non-native</em> ROI support.  If
+algorithms extract an images ROI before the actual processing takes
+place, we name this <em>non-native</em> support. Usually, this is slightly
+slower, then actually implementing an algorithms, that works directly
+on an image ROI. However, there are several pixel accessing techniques
+that provide implicit ROI handling (see
+<a class="reference internal" href="../tutorials/pixel-access.html#tut-pixel-access"><span class="std std-ref">tutorial</span></a>).</p>
+</div>
+<div class="section" id="formats-and-ranges">
+<span id="core-image-format"></span><h3>Formats and Ranges<a class="headerlink" href="#formats-and-ranges" title="Permalink to this headline">¶</a></h3>
+<p>An <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> instance provides information about the (color) format
+(in shape of an <a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a> value), that is associated with
+the image data represented by the images channels. The word <em>color</em>
+was embraced as not all available formats imply color-information. The
+most commonly known color space is probably the RGB color space. If an
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> image has the <a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a> <a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a14b76eca3cc1e9ac323ba2308a15f49e">core::formatRGB</a></p>
+<ul class="simple">
+<li>the image has exactly 3 channels</li>
+<li>the first channel contains RED-Data in range [0,255]</li>
+<li>the second channel contains GREEN-Data in range [0,255]</li>
+<li>the third channel contains BLUE-Data in range [0,255]</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The range of all possible color format components is always
+assumed to be in range [0,255].</p>
+</div>
+<p>As soon as the channel count of the image is altered, it’s format will
+automatically be set to <a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a9f11c5f4c5d0e8ddc461f3f9a7d24721">core::formatMatrix</a>, which is used for
+unspecified color formats.</p>
+</div>
+<div class="section" id="deep-copies-and-depth-conversion">
+<span id="core-image-convert"></span><h3>Deep Copies and Depth Conversion<a class="headerlink" href="#deep-copies-and-depth-conversion" title="Permalink to this headline">¶</a></h3>
+<p>Deep Copies</p>
+<blockquote>
+<div><p>Images cannot only be copied shallowly, but also in a <em>deep copy</em>
+manner. In particular, if the source- and destination-image’s depth
+is not identical, the data types have to be converted <em>deeply</em>
+(i.e. pixel by pixel). Even though, the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a4129ac9e0f9c554e274505919ef5536c">Img::detached</a> method
+can be used for copying an image <em>deeply</em>, we strongly recommend to
+use image’s <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#a25f01d5cc78250612fa7acb372931a1b">ImgBase::deepCopy</a> methods, since in contrast to
+the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a4129ac9e0f9c554e274505919ef5536c">Img::detached</a> no temporary object needs to be created
+here. Actually there are two different versions of <strong>deepCopy</strong>:</p>
+<ul class="simple">
+<li><strong>ImgBase::deepCopy(ImgBase **dst)</strong> (see <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#a25f01d5cc78250612fa7acb372931a1b">ImgBase::deepCopy</a>)</li>
+<li><strong>Img&lt;T&gt;::deepCopy(Img&lt;T&gt; *dst)</strong> (see <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html#a93d412faa3854d765ff2ee18b3478bbd">Img::deepCopy</a>)</li>
+</ul>
+<p>The <strong>ImgBase</strong>-method uses a pointer-pointer to be able to adapt
+the destination images <strong>depth</strong> if necessary (see also
+<a class="reference internal" href="#core-global-image-ensurecompatible"><span class="std std-ref">core::ensureCompatible</span></a>,
+<a class="reference internal" href="#core-global-image-bpp"><span class="std std-ref">core::bpp</span></a> and
+<a class="reference internal" href="../tutorials/imgbase-ptrptrs.html#tut-imgbase-ptrptrs"><span class="std std-ref">About the Use of ImgBase**s</span></a>). For the <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a>-version, the
+destination image depth is restricted to the source depth by the
+function interface, which is why a <em>normal</em> pointer-interface is
+sufficient here. Both deep copy functions will always ensure,
+that the source and the destination image are equal in all it’s
+parameters.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There are dedicated methods <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#a38e706629576244de5000ba017a5f478">ImgBase::deepCopyROI</a> that
+provide ROI support for deeply copying images. These will always
+use both, the source and the destination image ROI.</p>
+</div>
+</div></blockquote>
+<p>Depth Conversion</p>
+<blockquote>
+<div>Converting an images <a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">depth</a> is even simpler to understand than
+the deep-copy procedure, because there is just one version of
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html#a5e1015e8202e0edf43c91d62f9f79436">core::ImgBase::convert</a>. This method, will keep the destination
+image’s format, but adapt all other image parameters, such as size
+channel count and color format to the source image before converting
+the image pixels element-wise</div></blockquote>
+</div>
+<div class="section" id="const-concept">
+<span id="core-image-const"></span><h3>Const-Concept<a class="headerlink" href="#const-concept" title="Permalink to this headline">¶</a></h3>
+<p>ICL images use the const concept of C++ to ensure the pixel data of
+const images (of type <strong>const</strong> <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> or more precisely
+<strong>const</strong> <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> can not be altered/can only be accessed for
+reading. Unfortunately this leads to a conflict with our
+<em>shallow-copy</em> concept in the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">func</span><span class="p">(</span><span class="n">const</span> <span class="n">Img8u</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">){</span>
+  <span class="n">Img8u</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+  <span class="n">b</span><span class="o">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The originally <strong>const</strong> image <strong>a</strong> is shallowly copied to <strong>b</strong>, and
+clearing <strong>b</strong> does also clear <strong>a</strong>. Even though this could lead to
+really unexpected results, we decided to stick to this behavior since
+a fix would either entail to disable the <em>shallow copy on default</em>
+property, or deeply- and shallowly copied images would have to be
+represented by wrapper-classes, which would make the whole library
+much more difficult to understand.</p>
+</div>
+</div>
+<div class="section" id="image-processing-related-types">
+<span id="core-types"></span><h2>Image Processing related Types<a class="headerlink" href="#image-processing-related-types" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a></p>
+<blockquote>
+<div>Run-time type for different image pixel types (see <a class="reference internal" href="#core-image-types"><span class="std std-ref">Supported Image Types</span></a>)</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a></p>
+<blockquote>
+<div>Color format type (see <a class="reference internal" href="#core-color"><span class="std std-ref">Color Formats and Color Conversion</span></a>)</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#ga9b56af8fa13ba9780f05cb3d3cb0b1d0">core::scalemode</a></p>
+<blockquote>
+<div><p>Scaling and sampling interpolation mode. Supported values
+are</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga9b56af8fa13ba9780f05cb3d3cb0b1d0a1bebbede16cd56d13118bcef188243ac">core::interpolateNN</a> for nearest neighbor interpolation</li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga9b56af8fa13ba9780f05cb3d3cb0b1d0a19429813b18fda3505a3f3d4f4abf60d">core::interpolateLIN</a> for linear interpolation</li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga9b56af8fa13ba9780f05cb3d3cb0b1d0aed40b19856a83f0a72cbdb55c4cdb5ab">core::interpolateRA</a> for region average interpolation, which
+provides much better results in case of downscaling images (Only
+supported with Intel IPP)</li>
+</ul>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">consider implementing super-sampling (RA) for or even lanczos for scaled copy roi
+Note: we are already working on this</p>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#ga3f4cf5ea5da57318ad28638b79fc3714">core::axis</a></p>
+<blockquote>
+<div>Either <a class="reference external" href="../icl-api/group__TYPES.html#gga3f4cf5ea5da57318ad28638b79fc3714a72215adc147043a9a40c1145011b130f">core::axisHorz</a>, <a class="reference external" href="../icl-api/group__TYPES.html#gga3f4cf5ea5da57318ad28638b79fc3714a8334e18482a405886596a84d58b24b7a">core::axisVert</a> or
+<a class="reference external" href="../icl-api/group__TYPES.html#gga3f4cf5ea5da57318ad28638b79fc3714a5d9187a311bf2bff2004d8ffff264892">core::axisBoth</a>. This defines image axes for mirroring and
+other operations.</div></blockquote>
+<p><strong>Line Sampling</strong></p>
+<blockquote>
+<div>For efficient line sampling into an image grid using the <em>Bresenham</em> algorithm,
+the <a class="reference external" href="../icl-api/classicl_1_1core_1_1LineSampler.html">LineSampler</a> class is provided. The simpler-to-use utility classes
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1Line.html">core::Line</a>, <a class="reference external" href="../icl-api/classicl_1_1core_1_1Line32f.html">core::Line32f</a> use the LineSampler, but provide
+a slighly worse run-time due to memory allocation overhead.</div></blockquote>
+<p><strong>Color Typedefs</strong></p>
+<blockquote>
+<div><p>Even though not used for color conversion, the ICLCore package
+provides some default type-names for different color types. All of
+these typedefs have special <a class="reference external" href="../icl-api/classicl_1_1math_1_1FixedMatrix.html">math::FixedMatrix</a> as origin</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a75d400b4a0049c9cfcfa508ee28ee8a5">core::Color</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a17c38f75570be9610e9b54001e2e3a4e">core::Color4D</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a5e3463f5d9cc7e801e25d456eddae634">core::Color32f</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ac319969b5fd0cbd3a226655b3ab1f187">core::Color4D32f</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ac428d8616ba04149de63594528dd14fd">core::RGB</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a00cf27cd5ffe5182313504324ff5b02f">core::RGBA</a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="global-functions">
+<span id="core-global-functions"></span><h2>Global Functions<a class="headerlink" href="#global-functions" title="Permalink to this headline">¶</a></h2>
+<p>The core package provides a set of global support functions, that can
+be split into functions for</p>
+<ul class="simple">
+<li><a class="reference internal" href="#core-color"><span class="std std-ref">Color Formats and Color Conversion</span></a></li>
+<li><a class="reference internal" href="#core-global-image"><span class="std std-ref">Image Class Support Functions</span></a></li>
+<li><a class="reference internal" href="#core-global-opencv"><span class="std std-ref">OpenCV Image Conversion Functions</span></a></li>
+<li><a class="reference internal" href="#core-global-statistic"><span class="std std-ref">Image Statistic Functions</span></a></li>
+<li><a class="reference internal" href="#core-global-convex-hull"><span class="std std-ref">2D Convex Hull Functions</span></a></li>
+</ul>
+<div class="section" id="image-class-support-functions">
+<span id="core-global-image"></span><h3>Image Class Support Functions<a class="headerlink" href="#image-class-support-functions" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#aaa54783542b1dce3b93863ce5a16c1c5">core::interleavedToPlanar</a></p>
+<blockquote>
+<div>Can be use to efficiently transform externally acquire interleaved pixel data
+into an ICL image. This function works very fast, in particular in case of
+having Intel IPP support.</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a99c7da9666e191badf146e0d610e3d1b">core::planarToInterleaved</a></p>
+<blockquote>
+<div>Just the other way around: this function can be used to transform the planar
+ICL image data into an externally needed interleaved data layout</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__IMAGE.html#ga00a4ca4fd769f2fe4f0466235948a6cc">core::imgNew</a></p>
+<blockquote>
+<div>This function is provided in many different versions. It can be used as
+factory functions for creating correct <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">core::Img</a>-instances from given
+<a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a> values</div></blockquote>
+<p id="core-global-image-ensurecompatible"><a class="reference external" href="../icl-api/group__IMAGE.html#ga8e1c2a9513b3034fc6fca1d34d42d05e">core::ensureCompatible</a></p>
+<blockquote>
+<div>This set of functions are even more complex then the <a class="reference external" href="../icl-api/group__IMAGE.html#ga00a4ca4fd769f2fe4f0466235948a6cc">imgNew</a>
+function. A specific issue of ICL image class structure is, that we
+use an <em>is-a</em> relation between the interface class
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">core::ImgBase</a> and the actual image instances
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">core::Img</a>. Whenever we face a situation, where we already
+have an existing <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a>-instance (that obviously has a fixed
+<a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a>), but we need an <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a> instance of a
+different depth, we have to do the following. Our only options is to
+allocate a new <a class="reference external" href="../icl-api/classicl_1_1core_1_1Img.html">Img</a> where T is the desired type, and to
+replace the old instance with the new one (e.g. the old-one has to
+be deleted). In order to tell the caller-scope that an image was
+actually re-allocated, functions need to provide an
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a><strong>**</strong>-interaface. This is also discussed more in detail
+in the tutorial chapter <a class="reference internal" href="../tutorials/imgbase-ptrptrs.html#tut-imgbase-ptrptrs"><span class="std std-ref">About the Use of ImgBase**s</span></a>.</div></blockquote>
+<p id="core-global-image-bpp"><a class="reference external" href="../icl-api/group__IMAGE.html#ga05bef8dfe9aaafedf642c6da1d372523">core::bpp</a></p>
+<blockquote>
+<div><p>This global function is strongly correlated to the <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a><strong>**</strong>-issue stated with the explanation of
+<a class="reference external" href="../icl-api/group__IMAGE.html#ga8e1c2a9513b3034fc6fca1d34d42d05e">core::ensureCompatible</a>. Many ICL operators, in particular all
+filters in the <strong>ICLFilter</strong> package, provide an <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a><strong>**</strong>-interface to allow filters to even adapt the
+<a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a> of given destination images. In a few situation,
+we know however the correct depth however in advance. Here, the
+<a class="reference external" href="../icl-api/group__IMAGE.html#ga05bef8dfe9aaafedf642c6da1d372523">bpp</a>-function (which is abbreviation for
+<a class="reference external" href="../icl-api/classicl_1_1core_1_1ImgBase.html">ImgBase</a>-pointer-pointer can be used, to avoid having to
+allocate a temporary object</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLCore/Img.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLFilter/UnaryCompareOp.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">Img8u</span> <span class="n">src</span> <span class="p">(</span><span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">dst</span><span class="p">;</span>
+
+  <span class="n">filter</span><span class="o">::</span><span class="n">UnaryCompareOp</span> <span class="n">cmp</span><span class="p">(</span><span class="s">&quot;&gt;&quot;</span><span class="p">,</span><span class="mi">128</span><span class="p">);</span>
+
+  <span class="c1">// needs ImgBase** (but this does not work)</span>
+  <span class="c1">// due to C++-issues</span>
+  <span class="c1">// cmp.apply(&amp;src,&amp;&amp;dst);</span>
+
+  <span class="c1">// long version (but ugly)</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">ImgBase</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">dst</span><span class="p">;</span>
+  <span class="n">cmp</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="o">&amp;</span><span class="n">src</span><span class="p">,</span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">);</span>
+
+  <span class="c1">// bpp-version</span>
+  <span class="n">cmp</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="o">&amp;</span><span class="n">src</span><span class="p">,</span><span class="n">core</span><span class="o">::</span><span class="n">bpp</span><span class="p">(</span><span class="n">dst</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+</div>
+<div class="section" id="d-convex-hull-functions">
+<span id="core-global-convex-hull"></span><h3>2D Convex Hull Functions<a class="headerlink" href="#d-convex-hull-functions" title="Permalink to this headline">¶</a></h3>
+<p>The header file <a class="reference external" href="../icl-api/ConvexHull_8h.html">ConvexHull.h</a> provides two easy to use functions
+<a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a8193f7ffa6d41f8e43a033ce958c3e98">core::convexHull</a> that compute the convex hull of a given set of
+either <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point32f.html">Point32f</a> or <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point.html">Point</a> instances</p>
+</div>
+<div class="section" id="opencv-image-conversion-functions">
+<span id="core-global-opencv"></span><h3>OpenCV Image Conversion Functions<a class="headerlink" href="#opencv-image-conversion-functions" title="Permalink to this headline">¶</a></h3>
+<p>The ICLCore module also provides a set of compatibility functions for
+converting ICL images into OpenCV’s <strong>cv::Mat</strong> type and vice versa.</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ad33d722c94cdb961d9956d8d198b99d5">core::ipl_to_img</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ace954463381a6820ddef49fed87ea8ea">core::img_to_ipl</a></li>
+<li><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#aca81629d04600362891438cef19a0d01">core::img_to_cvmat</a></li>
+<li><span>core::img_to_ipl_shallow</span> (for shallow copies)</li>
+<li><span>core::img_to_cvmat_shallow</span> (for shallow copies)</li>
+</ul>
+</div>
+<div class="section" id="image-statistic-functions">
+<span id="core-global-statistic"></span><h3>Image Statistic Functions<a class="headerlink" href="#image-statistic-functions" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#aab6c6e7db0d1f6bb3aa89a2fb3da47fe">core::hist</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#acb5cae8c8f53258616b942c6c4c17daf">core::channelHisto</a></p>
+<blockquote>
+<div>creates an image histogram with a user defined number of bins for a
+single or all channels of an image. Please note that ICL’s default
+image displaying GUI component is also able to show the histogram of
+the currently shown image</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a67fb15f1b2e6cee8954e7e161f2544cb">core::mean</a></p>
+<blockquote>
+<div>computes the mean value for one or all given channels of an image</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a909cc5e4d9a60ebb088bc32c33a9e7cb">core::variance</a></p>
+<blockquote>
+<div>computes the variance for one or all given channels of an image</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#af27888d536d14a8a9183e73a025150b5">core::stdDeviation</a></p>
+<blockquote>
+<div>computes the standard deviation for one or all given channels of an
+image. Here, two versions, one with given mean-values and one that
+uses an empiric mean are provided.</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a4220b02ba3562123fcbff7aea3fdb251">core::meanAndStdDev</a></p>
+<blockquote>
+<div>computes mean and standard deviation at once</div></blockquote>
+</div>
+</div>
+<div class="section" id="color-formats-and-color-conversion">
+<span id="core-color"></span><h2>Color Formats and Color Conversion<a class="headerlink" href="#color-formats-and-color-conversion" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Table of Contents<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="#core-color-lut"><span class="std std-ref">Creating LUT-Acceleration</span></a></li>
+<li><a class="reference internal" href="#core-color-ranges"><span class="std std-ref">Color Ranges</span></a></li>
+<li><a class="reference internal" href="#core-color-video-formats"><span class="std std-ref">Special Video Coding Color Formats</span></a></li>
+<li><a class="reference internal" href="#core-color-rgb"><span class="std std-ref">sRGB (Most Common and Default)</span></a></li>
+<li><a class="reference internal" href="#core-color-yuv"><span class="std std-ref">YUV Space Color Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-hls"><span class="std std-ref">HLS Color Space Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-lab"><span class="std std-ref">Lab Color Space Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-gray"><span class="std std-ref">Gray Scale Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-rg"><span class="std std-ref">r-g-Chromaticity Color Space Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-matrix"><span class="std std-ref">formatMatrix Conversion</span></a></li>
+<li><a class="reference internal" href="#core-color-benchmark"><span class="std std-ref">Benchmarks</span></a></li>
+</ul>
+<p>By now, ICL supports 7 different color formats. For each of these
+formats, an <a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a> value is provided.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="44%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">core::format</a></th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a14b76eca3cc1e9ac323ba2308a15f49e">core::formatRGB</a></td>
+<td>sRGB color format</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a45de0178789ceb9db5d158f3d5955eb7">core::formatHLS</a></td>
+<td>Hue Lightness Intensity</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a398c95411a439c0e83c9387be01af57d">core::formatYUV</a></td>
+<td>Luminance Y and Chrominance U/V</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410ac84260e8b33ef045b23e6e1f515c94d4">core::formatChroma</a></td>
+<td>R/G-Chromaticity space</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a0e6336dac6c47d315c4e31d7044d6ad5">core::formatLAB</a></td>
+<td>CIE-L*a*b* space</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a2dcd1637518ac3d59d8636469c6b9e90">core::formatGray</a></td>
+<td>simple gray scale</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="../icl-api/group__TYPES.html#gga7cc417c2bd265954eaa29e4a17977410a9f11c5f4c5d0e8ddc461f3f9a7d24721">core::formatMatrix</a></td>
+<td>unspecified color format</td>
+</tr>
+</tbody>
+</table>
+<p>The main function for color format conversion is <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ab4d4dd2cfdee101f82869c674659686e">core::cc</a>.
+<a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ab4d4dd2cfdee101f82869c674659686e">core::cc</a> uses the source and the destination <a class="reference external" href="../icl-api/group__TYPES.html#ga7cc417c2bd265954eaa29e4a17977410">format</a> to pick
+the desired format conversion function internally.  If the
+<strong>roiOnly</strong>-flag given to <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ab4d4dd2cfdee101f82869c674659686e">core::cc</a> function is set to true, the source
+image’s ROI is converted into the destination image’s ROI. In this
+case, the destination image is not adapted to the source
+image. Instead, a single test is performed to ensure, that the source
+image’s ROI has the same size as the destination image’s ROI. If the
+test fails, an error occurs and the function returns immediately.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Internally all functions are optimized for running without ROI
+support (in this case, the images data arrays are 1D). Thus, the
+ROI-Support mode (roiOnly = true) runs approx. 20% (2%-50%) slower
+depended on the specific source and destination format.</p>
+</div>
+<p>The <a class="reference external" href="../icl-api/namespaceicl_1_1core.html#ab4d4dd2cfdee101f82869c674659686e">core::cc</a> function uses Intel IPP to speed up the conversion
+performance for the conversions</p>
+<ul class="simple">
+<li>RGB -&gt; YUV</li>
+<li>YUV -&gt; RGB</li>
+<li>RGB -&gt; HLS</li>
+<li>HLS -&gt; RGB</li>
+</ul>
+</div>
+<div class="section" id="creating-lut-acceleration">
+<span id="core-color-lut"></span><h3>Creating LUT-Acceleration<a class="headerlink" href="#creating-lut-acceleration" title="Permalink to this headline">¶</a></h3>
+<p>All color conversion methods can be statically performed using a
+global lookup table for the color conversion. This is done by calling
+<a class="reference external" href="../icl-api/namespaceicl_1_1core.html#a991fd7e0142c41a2709193813480207a">core::createLUT</a> with the to-be-accelerated source and destination
+format. <strong>We do not recommend to use this features because it usually makes
+the color conversion significantly slower</strong></p>
+</div>
+<div class="section" id="color-ranges">
+<span id="core-color-ranges"></span><h3>Color Ranges<a class="headerlink" href="#color-ranges" title="Permalink to this headline">¶</a></h3>
+<p>As a default, all ICL color spaces are represented in the full range
+of [0,255] in all depths. By these means, we get the advantage of being able
+to treat all color images in the same way. The disadvantage is, that
+already existing color conversion routines needed to be adapted to scale
+each color component to that range automatically.</p>
+</div>
+<div class="section" id="special-video-coding-color-formats">
+<span id="core-color-video-formats"></span><h3>Special Video Coding Color Formats<a class="headerlink" href="#special-video-coding-color-formats" title="Permalink to this headline">¶</a></h3>
+<p>In video coding, usually certain YUV sub-formats are used, that use
+different horizontal and vertical resolutions for the Y and the U/V
+channels. Even though these format provide an objectively loss-less
+reduction of the image data size, they are, due to the more complex
+data layout, not appropriate for digital image processing.  For a very
+few of these YUV sub-formats, ICL provides efficient conversion
+routines, however these must usually not be used manually because the
+image acquisition framework provides implicitly converted ICL-images
+directly. A more general tool for video-color format conversion is
+provided by the <a class="reference external" href="../icl-api/classicl_1_1io_1_1ColorFormatDecoder.html">io::ColorFormatDecoder</a> (see
+<a class="reference internal" href="io.html#io-color-format-decoder"><span class="std std-ref">The ColorFormatDecoder</span></a>)</p>
+</div>
+<div class="section" id="srgb-most-common-and-default">
+<span id="core-color-rgb"></span><h3>sRGB (Most Common and Default)<a class="headerlink" href="#srgb-most-common-and-default" title="Permalink to this headline">¶</a></h3>
+<p>Obviously, the RGB Color Model (or its absolute Version sRGB -&gt;
+standard RGB) is the most commonly known color space. Even though many
+computer vision approaches use other color spaces, such as HLS or LAB,
+the sRGB color space defines a an <em>anchor</em> for most other color
+conversion functions. So in most cases, the sRGB format defines a bridge
+format for conversion from one to another format:</p>
+<ul class="simple">
+<li>X -&gt; Y</li>
+<li>X -&gt; RGB</li>
+<li>RGB -&gt; Y</li>
+</ul>
+<p>Another bridge color space (XYZ) is not considered here, because it
+usually not used in digital image processing. For ICL’s color conversion
+functions we can say:</p>
+<ul class="simple">
+<li>Converting from or to RGB is fast</li>
+<li>other conversion may be much slower.</li>
+<li>In particular the L*a*b* space is supported only very slowly</li>
+</ul>
+</div>
+<div class="section" id="yuv-space-color-conversion">
+<span id="core-color-yuv"></span><h3>YUV Space Color Conversion<a class="headerlink" href="#yuv-space-color-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The literature for the YUV color model conversion is a bit confusing
+and far away from a kind of pseudocode, that can easily be converted
+to <em>fast</em> C++ code. The YUV Color model divides an incoming RGB signal
+into its luminance component (Y) and two chrominance components (U and
+V). The common YUV-color holds Y in the range [0,1], u in range
+[-0.436,0.436] and v in range [-0.615,0,615]. Hence ICL’s color
+conversion functions are adapted to scale the resulting values to the
+range [0,255] in all channels. Outgoing from the basic equation for
+converting rgb to yuv and back:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Y</span> <span class="o">=</span> <span class="mf">0.299</span><span class="o">*</span><span class="n">R</span> <span class="o">+</span> <span class="mf">0.587</span><span class="o">*</span><span class="n">G</span> <span class="o">+</span> <span class="mf">0.114</span><span class="o">*</span><span class="n">B</span>
+<span class="n">U</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.147</span><span class="o">*</span><span class="n">R</span> <span class="o">-</span> <span class="mf">0.289</span><span class="o">*</span><span class="n">G</span> <span class="o">+</span> <span class="mf">0.436</span><span class="o">*</span><span class="n">B</span> <span class="o">=</span> <span class="mf">0.492</span><span class="o">*</span><span class="p">(</span><span class="n">B</span><span class="o">-</span> <span class="n">Y</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="mf">0.615</span><span class="o">*</span><span class="n">R</span> <span class="o">-</span> <span class="mf">0.515</span><span class="o">*</span><span class="n">G</span> <span class="o">-</span> <span class="mf">0.100</span><span class="o">*</span><span class="n">B</span> <span class="o">=</span> <span class="mf">0.877</span><span class="o">*</span><span class="p">(</span><span class="n">R</span><span class="o">-</span> <span class="n">Y</span><span class="p">)</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span> <span class="mf">1.140</span><span class="o">*</span><span class="n">V</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="mf">0.394</span><span class="o">*</span><span class="n">U</span> <span class="o">-</span> <span class="mf">0.581</span><span class="o">*</span><span class="n">V</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span> <span class="mf">2.032</span><span class="o">*</span><span class="n">U</span>
+</pre></div>
+</div>
+<p>The formulas are adapted for using ranges [0,255]:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Y</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.299</span><span class="o">*</span><span class="n">R</span> <span class="o">+</span> <span class="mf">0.587</span><span class="o">*</span><span class="n">G</span> <span class="o">+</span> <span class="mf">0.114</span><span class="o">*</span><span class="n">B</span><span class="p">);</span>
+<span class="n">U</span> <span class="o">=</span> <span class="mf">0.56433408</span><span class="o">*</span><span class="p">(</span><span class="n">B</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="o">+</span> <span class="mf">127.5</span><span class="p">;</span>
+<span class="n">V</span> <span class="o">=</span> <span class="mf">0.71326676</span><span class="o">*</span><span class="p">(</span><span class="n">R</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="o">+</span> <span class="mf">127.5</span><span class="p">;</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span>               <span class="mf">290.7</span>   <span class="o">*</span> <span class="n">v2</span><span class="p">;</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="mf">100.47</span> <span class="o">*</span> <span class="n">u2</span> <span class="o">-</span> <span class="mf">148.155</span> <span class="o">*</span> <span class="n">v2</span><span class="p">;</span>   <span class="k">with</span><span class="p">:</span> <span class="n">u2</span> <span class="o">=</span> <span class="mf">0.0034196078</span><span class="o">*</span><span class="n">U</span> <span class="o">-</span> <span class="mf">0.436</span><span class="p">;</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span> <span class="mf">518.16</span> <span class="o">*</span> <span class="n">u2</span><span class="p">;</span>                   <span class="ow">and</span>  <span class="n">v2</span> <span class="o">=</span> <span class="mf">0.0048235294</span><span class="o">*</span><span class="n">V</span> <span class="o">-</span> <span class="mf">0.615</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>To avoid expensive floating point operations, the conversions can be
+optimized by creating a so called fixed point approximation of the
+above code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Y</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">1254097</span><span class="o">*</span><span class="n">R</span> <span class="o">+</span> <span class="mi">2462056</span><span class="o">*</span><span class="n">G</span> <span class="o">+</span> <span class="mi">478151</span><span class="o">*</span><span class="n">B</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">U</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">2366989</span><span class="o">*</span><span class="p">(</span><span class="n">B</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="o">+</span> <span class="mi">534773760</span>        <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">V</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">2991658</span><span class="o">*</span><span class="p">(</span><span class="n">R</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="o">+</span> <span class="mi">534773760</span>        <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span>  <span class="p">(</span> <span class="p">(</span> <span class="mi">290</span> <span class="o">*</span> <span class="n">V2</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span> <span class="p">);</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span>  <span class="p">(</span> <span class="p">(</span> <span class="mi">100</span>  <span class="o">*</span> <span class="n">U2</span> <span class="o">+</span> <span class="mi">148</span> <span class="o">*</span> <span class="n">V2</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span> <span class="p">);</span> <span class="k">with</span><span class="p">:</span> <span class="n">U2</span> <span class="o">=</span> <span class="mi">14343</span><span class="o">*</span><span class="n">U</span> <span class="o">-</span> <span class="mi">1828717</span><span class="p">;</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">+</span>  <span class="p">(</span> <span class="p">(</span> <span class="mi">518</span> <span class="o">*</span> <span class="n">U2</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span> <span class="p">);</span>             <span class="ow">and</span>  <span class="n">V2</span> <span class="o">=</span> <span class="mi">20231</span><span class="o">*</span><span class="n">v</span> <span class="o">-</span> <span class="mi">2579497</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This approximation produces errors less 3/255, and runs up to 20%
+faster. A further optimization can be implemented using lookup tables.</p>
+<p>IPP Compatibility</p>
+<blockquote>
+<div><p>In order to achieve compatibility with the yuv color conversion
+provided by intel IPP (which is used if IPP is available), also
+ICL’s color conversion methods were slightly adapted. We again used
+fixed point approximations for the algorithms described in the IPP
+manual:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rgb</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">yuv</span><span class="p">:</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">1254097</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="mi">2462056</span><span class="o">*</span><span class="n">g</span> <span class="o">+</span> <span class="mi">478151</span><span class="o">*</span><span class="n">b</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2063598</span><span class="o">*</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">y</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">)</span> <span class="o">+</span> <span class="mi">128</span><span class="p">;</span>
+<span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3678405</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">y</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">)</span> <span class="o">+</span> <span class="mi">128</span><span class="p">;</span>
+<span class="k">if</span><span class="p">(</span><span class="n">v</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span> <span class="n">v</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">)</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+
+<span class="n">yuv</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">rgb</span><span class="p">:</span>
+<span class="n">icl32s</span> <span class="n">u2</span> <span class="o">=</span> <span class="n">u</span><span class="o">-</span><span class="mi">128</span><span class="p">;</span>
+<span class="n">icl32s</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">v</span><span class="o">-</span><span class="mi">128</span><span class="p">;</span>
+<span class="n">icl32s</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span><span class="o">&lt;&lt;</span><span class="mi">22</span><span class="p">;</span>
+<span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">+</span> <span class="mi">4781506</span> <span class="o">*</span> <span class="n">v2</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="mi">1652556</span> <span class="o">*</span> <span class="n">u2</span> <span class="o">-</span> <span class="mi">2436891</span> <span class="o">*</span><span class="n">v2</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">+</span> <span class="mi">8522826</span> <span class="o">*</span> <span class="n">u2</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">22</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to the clipping process of ‘v’ in <strong>rgb_to_yuv</strong>, this method
+cannot restore an original rgb value completetly. Since we lost
+some information in v, the resulting r and g values are differ as
+follows: r-r’ in [-32,35], and g-g’ in [-17,18], However, this is
+usually only an issue when exchanging image between ICL
+applications that used Intel IPP and others that did not.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="hls-color-space-conversion">
+<span id="core-color-hls"></span><h3>HLS Color Space Conversion<a class="headerlink" href="#hls-color-space-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The HLS color space, also known as the HSI color space with different
+channel order describes colors in more independent components. The Hue
+component can be understood as an angle and is as well as all other color
+information scaled to the range [0,254]. The value H=255 is identical
+to H=0 (red). Independent from the color’s <em>hue</em>, it’s <em>lightness</em> is
+defined by the second component. Basic colors as red (r=255,g=0,b=0)
+have a lightness of 127; lighter colors have a higher L value; darker
+colors have a lower one. The last component is the <em>saturation</em> of the
+color. The color model can be drawn as a double (hex)cone . Note that
+the HLS color spaces resolution is higher in it’s center (L near
+127). The following formulas describe the conversion from and to the
+RGB format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(H,L,S) RGBToHLS(R,G,B)
+(r,g,b) = (R,G,B)/255;
+m = min(r,g,b)
+v = max(r,g,b)
+l = (m+v)/2
+if(l &lt;= 0){
+  (H,L,S) = (0,0,0)
+  return
+}
+vm = v-m
+if ( vm &gt; 0 ) {
+  if(l&lt;=0.5){
+    s=vm/(v+m)
+  }else{
+    s=vm/(2.0-v-m)
+  }
+}else{
+  (H,L,S)=(0,l*255,0)
+  return
+}
+r2 = (v - r) / vm
+g2 = (v - g) / vm
+b2 = (v - b) / vm
+if (r == v)
+  h = (g == m ? 5.0 + b2 : 1.0 - g2)
+else if (g == v)
+  h = (b == m ? 1.0 + r2 : 3.0 - b2)
+else
+  h = (r == m ? 3.0 + g2 : 5.0 - r2)
+if(h == 255) h = 0
+  (H,L,S) = (h*255/6,l*255,s*255)
+</pre></div>
+</div>
+<p>An optimization, that allows conversion directly with (r,g,b) values
+in range [0,255] is not yet implemented:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(R,G,B) HLSToRGB(H,L,S)
+(h,l,s) = (H,L,S)/255;
+v = (l &lt;= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl)
+if (v &lt;= 0 ) {
+  R = G = B = 0;
+  return;
+}
+m = l + l - v;
+sv = (v - m ) / v;
+h *= 6.0;
+int sextant = (int)h;
+fract = h - sextant;
+vsf = v * sv * fract;
+mid1 = m + vsf;
+mid2 = v - vsf;
+switch (sextant) {
+  case 0: r = v;    g = mid1; b = m;    break;
+  case 1: r = mid2; g = v;    b = m;    break;
+  case 2: r = m;    g = v;    b = mid1; break;
+  case 3: r = m;    g = mid2; b = v;    break;
+  case 4: r = mid1; g = m;    b = v;    break;
+  case 5: r = v;    g = m;    b = mid2; break;
+}
+(R,G,B) = (r,g,b)*255;
+</pre></div>
+</div>
+<p>An additional optimization can be implemented using lookup tables</p>
+</div>
+<div class="section" id="lab-color-space-conversion">
+<span id="core-color-lab"></span><h3>Lab Color Space Conversion<a class="headerlink" href="#lab-color-space-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The LAB color space (strictly CIE L*a*b*), was designed to describe
+the complete range of colors, that can be seen by the human eye. It
+must not be mixed up with the “Hunter Lab” color space, that is sure
+related to the CIE L*a*b*, but in detail much different: “The three
+parameters in the model represent the lightness of the color (L*, L*=0
+yields black and L*=100 indicates white), its position between magenta
+and green (a*, negative values indicate green while positive values
+indicate magenta) and its position between yellow and blue (b*,
+negative values indicate blue and positive values indicate
+yellow) […] CIE 1976 L*a*b* is based directly on the CIE
+1931 XYZ color space as an attempt to linearize the perceptibility of
+color differences, using the color difference metric described by the
+MacAdam ellipse”(wikipedia). So an euclidian (linear) color difference
+metric can be used here. The following code show the formulas
+LabToXYZ, XYZToLab, RGBToXYZ and XYZToRGB:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RGBToXYZ
+static icl32f m[3][3] = {{ 0.412453, 0.35758 , 0.180423},
+                         { 0.212671, 0.71516 , 0.072169},
+                         { 0.019334, 0.119193, 0.950227}};
+X = m[0][0] * R + m[0][1] * G + m[0][2] * B;
+Y = m[1][0] * R + m[1][1] * G + m[1][2] * B;
+Z = m[2][0] * R + m[2][1] * G + m[2][2] * B;
+
+XYZToRGB
+static icl32f m[3][3] = {{ 3.2405, -1.5372,-0.4985},
+                         {-0.9693,  1.8760, 0.0416},
+                         { 0.0556, -0.2040, 1.0573}};
+R = m[0][0] * x + m[0][1] * y + m[0][2] * z;
+G = m[1][0] * x + m[1][1] * y + m[1][2] * z;
+B = m[2][0] * x + m[2][1] * y + m[2][2] * z;
+
+XYZToLAB
+wX = 95.0456;
+wY = 100.0;
+wZ = 108.8754;
+_13 = 1.0/3.0;
+XXn = X / wX;
+YYn = Y / wY;
+ZZn = Z / wZ;
+L = (YYn &gt; 0.008856) ? ((116 * pow (YYn, _13))-16) : (903.3 * YYn);
+fX = (XXn &gt; 0.008856) ? pow (XXn, _13) : 7.787 * XXn + (16 / 116);
+fY = (YYn &gt; 0.008856) ? pow (YYn, _13) : 7.787 * YYn + (16 / 116);
+fZ = (ZZn &gt; 0.008856) ? pow (ZZn, _13) : 7.787 * ZZn + (16 / 116);
+a = 500.0 * (fX - fY);
+b = 200.0 * (fY - fZ);
+
+LABToXYZ
+d = 6.0/29.0;
+n = 16.0/116.0;
+f = 3*d*d;
+wX = 95.0456;
+wY = 100.0;
+wZ = 108.8754;
+fy = (l+16)/116;
+fx = fy+a/500;
+fz = fy-b/200;
+X = (fx&gt;d) ?  wX*pow(fx,3) : (fx-n)*f*wX;
+Y = (fy&gt;d) ?  wY*pow(fy,3) : (fy-n)*f*wY;
+Z = (fz&gt;d) ?  wZ*pow(fz,3) : (fz-n)*f*wZ;
+</pre></div>
+</div>
+</div>
+<div class="section" id="gray-scale-conversion">
+<span id="core-color-gray"></span><h3>Gray Scale Conversion<a class="headerlink" href="#gray-scale-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The gray scale conversion is optimized for speed.  Although, L of Lab
+is not equal to the Y of YUV, color formats, that have an
+brightness-like component are converted to gray scale by simply
+picking this channel. RGB is converted to gray by the simple channel
+mean (r+g+b)/3.</p>
+</div>
+<div class="section" id="r-g-chromaticity-color-space-conversion">
+<span id="core-color-rg"></span><h3>r-g-Chromaticity Color Space Conversion<a class="headerlink" href="#r-g-chromaticity-color-space-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The chromaticity space r,g,b divides the R,G,B components by the city
+block norm of the according color r=R/(R+G+B), g=G/(R+G+B), b=
+B/(R+G+B). By these means, the b-component becomes redundant, and can
+be left out, which leads to the r-g-chromaticity space. Conversions
+from the r-g-Chromaticity space to other formats are not possible, as
+r-g-pixels to not carry enough information for this.</p>
+</div>
+<div class="section" id="formatmatrix-conversion">
+<span id="core-color-matrix"></span><h3>formatMatrix Conversion<a class="headerlink" href="#formatmatrix-conversion" title="Permalink to this headline">¶</a></h3>
+<p>As the matrix image format offers no color information, matrix image
+data is just copied from the source image channels to the destination
+image channels. If the source image has more channels, the remaining
+channels are left unregarded. If otherwise the destination image has
+more channels, this channels are left unchanged</p>
+</div>
+<div class="section" id="benchmarks">
+<span id="core-color-benchmark"></span><h3>Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this headline">¶</a></h3>
+<p>Reference System: Core 2 Duo 2.4GHz,  32Bit Ubuntu 12.04, 4GB RAM, IPP active
+Images VGA (640x480) varying source and destination depths</p>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">Img8u</a> –&gt; <a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">Img8u</a></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="17%" />
+<col width="13%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">src \ dst</th>
+<th class="head">formatRGB</th>
+<th class="head">formatHLS</th>
+<th class="head">formatYUV</th>
+<th class="head">formatChroma</th>
+<th class="head">formatLAB</th>
+<th class="head">formatGray</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>formatRGB</td>
+<td>0.14ms</td>
+<td>1.3ms</td>
+<td>0.71ms</td>
+<td>2.42ms</td>
+<td>6.73ms</td>
+<td>0.61ms</td>
+</tr>
+<tr class="row-odd"><td>formatHLS</td>
+<td>2.01ms</td>
+<td>0.27ms</td>
+<td>2.4ms</td>
+<td>4.4ms</td>
+<td>11.46ms</td>
+<td>0.11ms</td>
+</tr>
+<tr class="row-even"><td>formatYUV</td>
+<td>0.74ms</td>
+<td>2.03ms</td>
+<td>0.26ms</td>
+<td>3.44ms</td>
+<td>7.71ms</td>
+<td>0.11ms</td>
+</tr>
+<tr class="row-odd"><td>formatChroma</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>0.24ms</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td>formatLAB</td>
+<td>3.46ms</td>
+<td>5.72ms</td>
+<td>5.28ms</td>
+<td>6.37ms</td>
+<td>0.26ms</td>
+<td>0.11ms</td>
+</tr>
+<tr class="row-odd"><td>formatGray</td>
+<td>0.31ms</td>
+<td>0.19ms</td>
+<td>0.25ms</td>
+<td>–</td>
+<td>0.26ms</td>
+<td>0.11ms</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">Img32f</a> –&gt; <a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">Img32f</a></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="17%" />
+<col width="13%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">src \ dst</th>
+<th class="head">formatRGB</th>
+<th class="head">formatHLS</th>
+<th class="head">formatYUV</th>
+<th class="head">formatChroma</th>
+<th class="head">formatLAB</th>
+<th class="head">formatGray</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>formatRGB</td>
+<td>1.27ms</td>
+<td>26.1ms</td>
+<td>6.63ms</td>
+<td>5.9ms</td>
+<td>154.8ms</td>
+<td>0.4ms</td>
+</tr>
+<tr class="row-odd"><td>formatHLS</td>
+<td>19.98ms</td>
+<td>1.31ms</td>
+<td>29.11ms</td>
+<td>28.54ms</td>
+<td>174.24ms</td>
+<td>0.16ms</td>
+</tr>
+<tr class="row-even"><td>formatYUV</td>
+<td>7.83ms</td>
+<td>34.48ms</td>
+<td>1.5ms</td>
+<td>16.28ms</td>
+<td>162.7ms</td>
+<td>0.17ms</td>
+</tr>
+<tr class="row-odd"><td>formatChroma</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>0.46ms</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td>formatLAB</td>
+<td>48.99ms</td>
+<td>70.14ms</td>
+<td>58.62ms</td>
+<td>54.98ms</td>
+<td>1.28ms</td>
+<td>0.16ms</td>
+</tr>
+<tr class="row-odd"><td>formatGray</td>
+<td>0.57ms</td>
+<td>0.8ms</td>
+<td>0.58ms</td>
+<td>–</td>
+<td>0.63ms</td>
+<td>0.14ms</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/group__TYPES.html#gab9ebfd5e35116d194189c8f233607414">Img8u</a> –&gt; <a class="reference external" href="../icl-api/group__TYPES.html#ga6441bd8fa2cbf25adb6dec760390d8ed">Img32f</a></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="17%" />
+<col width="13%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">src \ dst</th>
+<th class="head">formatRGB</th>
+<th class="head">formatHLS</th>
+<th class="head">formatYUV</th>
+<th class="head">formatChroma</th>
+<th class="head">formatLAB</th>
+<th class="head">formatGray</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>formatRGB</td>
+<td>0.47ms</td>
+<td>28.15ms</td>
+<td>5.03ms</td>
+<td>4.81ms</td>
+<td>158.56ms</td>
+<td>1.69ms</td>
+</tr>
+<tr class="row-odd"><td>formatHLS</td>
+<td>23.18ms</td>
+<td>0.48ms</td>
+<td>7.27ms</td>
+<td>8.77ms</td>
+<td>163.06ms</td>
+<td>0.12ms</td>
+</tr>
+<tr class="row-even"><td>formatYUV</td>
+<td>5.88ms</td>
+<td>27.56ms</td>
+<td>0.47ms</td>
+<td>5.68ms</td>
+<td>157.35ms</td>
+<td>0.12ms</td>
+</tr>
+<tr class="row-odd"><td>formatChroma</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>0.28ms</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr class="row-even"><td>formatLAB</td>
+<td>48.93ms</td>
+<td>30.2ms</td>
+<td>10.66ms</td>
+<td>10.04ms</td>
+<td>0.45ms</td>
+<td>0.14ms</td>
+</tr>
+<tr class="row-odd"><td>formatGray</td>
+<td>1.59ms</td>
+<td>1.58ms</td>
+<td>1.62ms</td>
+<td>–</td>
+<td>1.65ms</td>
+<td>0.12ms</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="rastarized-rendering-into-images">
+<span id="core-other"></span><h2>Rastarized Rendering into Images<a class="headerlink" href="#rastarized-rendering-into-images" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1core_1_1ImageRenderer.html">ImageRenderer</a> will be designed in order to render graphical
+primitives into images. It will replace the global functions for
+primitive rendering that are right now still placed in the
+<strong>Qt/Common.h</strong> module. We also plan to create a more general interface
+for <em>image overlayed visualization</em>.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">write this, once it’s implemented and tested</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic Types for Image Processing</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#the-image-classes">The Image Classes</a><ul>
+<li><a class="reference internal" href="#supported-image-types">Supported Image Types</a></li>
+<li><a class="reference internal" href="#pixel-access">Pixel Access</a></li>
+<li><a class="reference internal" href="#shallow-copy-concept">Shallow Copy Concept</a></li>
+<li><a class="reference internal" href="#data-origin">Data Origin</a></li>
+<li><a class="reference internal" href="#channel-concept">Channel-Concept</a></li>
+<li><a class="reference internal" href="#regions-of-interest-roi">Regions of Interest (ROI)</a></li>
+<li><a class="reference internal" href="#formats-and-ranges">Formats and Ranges</a></li>
+<li><a class="reference internal" href="#deep-copies-and-depth-conversion">Deep Copies and Depth Conversion</a></li>
+<li><a class="reference internal" href="#const-concept">Const-Concept</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#image-processing-related-types">Image Processing related Types</a></li>
+<li><a class="reference internal" href="#global-functions">Global Functions</a><ul>
+<li><a class="reference internal" href="#image-class-support-functions">Image Class Support Functions</a></li>
+<li><a class="reference internal" href="#d-convex-hull-functions">2D Convex Hull Functions</a></li>
+<li><a class="reference internal" href="#opencv-image-conversion-functions">OpenCV Image Conversion Functions</a></li>
+<li><a class="reference internal" href="#image-statistic-functions">Image Statistic Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#color-formats-and-color-conversion">Color Formats and Color Conversion</a><ul>
+<li><a class="reference internal" href="#id1">Table of Contents</a></li>
+<li><a class="reference internal" href="#creating-lut-acceleration">Creating LUT-Acceleration</a></li>
+<li><a class="reference internal" href="#color-ranges">Color Ranges</a></li>
+<li><a class="reference internal" href="#special-video-coding-color-formats">Special Video Coding Color Formats</a></li>
+<li><a class="reference internal" href="#srgb-most-common-and-default">sRGB (Most Common and Default)</a></li>
+<li><a class="reference internal" href="#yuv-space-color-conversion">YUV Space Color Conversion</a></li>
+<li><a class="reference internal" href="#hls-color-space-conversion">HLS Color Space Conversion</a></li>
+<li><a class="reference internal" href="#lab-color-space-conversion">Lab Color Space Conversion</a></li>
+<li><a class="reference internal" href="#gray-scale-conversion">Gray Scale Conversion</a></li>
+<li><a class="reference internal" href="#r-g-chromaticity-color-space-conversion">r-g-Chromaticity Color Space Conversion</a></li>
+<li><a class="reference internal" href="#formatmatrix-conversion">formatMatrix Conversion</a></li>
+<li><a class="reference internal" href="#benchmarks">Benchmarks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rastarized-rendering-into-images">Rastarized Rendering into Images</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="math.html"
+                        title="previous chapter">Linear Algebra and Machine Learning</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter.html"
+                        title="next chapter">Unary- and Binary Image Filters</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="filter.html" title="Unary- and Binary Image Filters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="math.html" title="Linear Algebra and Machine Learning"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

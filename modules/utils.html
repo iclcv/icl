@@ -1,0 +1,1438 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>General Support Types and Functions &#8212; ICL Manual</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Linear Algebra and Machine Learning" href="math.html" />
+    <link rel="prev" title="Modules" href="../modules.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="math.html" title="Linear Algebra and Machine Learning"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../modules.html" title="Modules"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" accesskey="U">Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <script src="../js/jquery.tools.min.js"></script>
+
+<div id="sticky">
+  <table class="sticky-table">
+  <tr><td><div class="sticky-entry "id="sticky-1"/><a class="sticky-link" href="../modules/utils.html">utils</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-2"/><a class="sticky-link" href="../modules/math.html">math</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-3"/><a class="sticky-link" href="../modules/core.html">core</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-4"/><a class="sticky-link" href="../modules/filter.html">filter</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-5"/><a class="sticky-link"href="../modules/io.html">io</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-6"/><a class="sticky-link"href="../modules/qt.html">qt</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-7"/><a class="sticky-link"href="../modules/cv.html">cv</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-8"/><a class="sticky-link"href="../modules/geom.html">geom</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-9"/><a class="sticky-link"href="../modules/markers.html">marker</a></td></tr>
+  <tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../modules/physics.html">physics</a></td></tr>
+  <!--tr><td><div class="sticky-entry "id="sticky-10"/><a class="sticky-link"href="../extras/tutorial.html">tutorial</a></td></tr-->
+  </tr>
+  </table>
+</div>
+<style type="text/css">
+  .sticky-table{
+     float: right;
+  }
+
+  a.sticky-link{
+     color: inherit;
+     font-size: 12px;
+  }
+
+  a.sticky-link:hover{
+     text-decoration: none;
+     color: inherit;
+  }
+
+
+  .sticky-entry{
+     width: 12px;
+     height: 12px;
+     float: right;
+     border-left: 1px solid rgb(200,200,200);
+     border-top: 1px solid rgb(200,200,200);
+     border-right: 1px solid rgb(100,100,100);
+     border-bottom: 1px solid rgb(100,100,100);
+
+     border-radius: 4px;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+     border: 1px solid blue;
+     background-color: transparent; /* white; */
+     color: transparent;
+  }
+  .sticky-entry:hover{
+     width: 40px;
+     color: rgb(100,100,100);
+     background-color: white;
+     padding-left: 2px;
+     box-shadow: 5px 5px 10px rgba(0,0,0,0.6);
+  }
+  .sticky-entry:active{
+     box-shadow: 0px 0px 0px transparent;
+     border-left: 1px solid rgb(70,70,70);
+     border-top: 1px solid rgb(70,70,70);
+     border-right: 1px solid white;
+     border-bottom: 1px solid white;
+  }
+
+  #sticky-1{ border: 1px solid rgb(255,0,255); }
+  #sticky-2{ border: 1px solid rgb(255,0,0); }
+  #sticky-3{ border: 1px solid rgb(255,128,0); }
+  #sticky-4{ border: 1px solid rgb(255,255,0); }
+  #sticky-5{ border: 1px solid rgb(168,255,0); }
+  #sticky-6{ border: 1px solid rgb(0,200,255); }
+  #sticky-7{ border: 1px solid rgb(0,255,0); }
+  #sticky-8{ border: 1px solid rgb(0,50,255); }
+  #sticky-9{ border: 1px solid rgb(0,0,255); }
+  #sticky-10{ border: 1px solid rgb(128,0,255); }
+
+  #sticky{
+    line-height: 8px;
+    margin-left:auto;
+    position:absolute;
+    right:0px;
+    top:100px;
+    padding:2px;
+    padding-right:0px;
+    padding-left:1px;
+    position: fixed;
+    background: transparent url(../_static/images/dash.png);
+    width: 33px;
+    height: 193px;
+    top: 99px;
+    padding-top: 12px;
+  }
+
+</style>
+
+<script type="text/javascript">
+
+$('#sticky-1').bind('click',function(e){ location = '../modules/utils.html';  });
+$('#sticky-2').bind('click',function(e){ location = '../modules/math.html';  });
+$('#sticky-3').bind('click',function(e){ location = '../modules/core.html';  });
+$('#sticky-4').bind('click',function(e){ location = '../modules/filter.html';  });
+$('#sticky-5').bind('click',function(e){ location = '../modules/io.html';  });
+$('#sticky-6').bind('click',function(e){ location = '../modules/cv.html';  });
+$('#sticky-7').bind('click',function(e){ location = '../modules/qt.html';  });
+$('#sticky-8').bind('click',function(e){ location = '../modules/geom.html';  });
+$('#sticky-9').bind('click',function(e){ location = '../modules/markers.html';  });
+$('#sticky-10').bind('click',function(e){ location = '../modules/physics.html.html';  });
+
+/* Script by: www.jtricks.com
+ * Version: 20071127
+ * Latest version:
+ * www.jtricks.com/javascript/navigation/fixed_menu.html
+ */
+fixedMenuId = 'sticky';
+
+var fixedMenu = {
+    hasInner: typeof(window.innerWidth) == 'number',
+    hasElement: document.documentElement != null
+       && document.documentElement.clientWidth,
+
+    menu: document.getElementById
+        ? document.getElementById(fixedMenuId)
+        : document.all
+          ? document.all[fixedMenuId]
+          : document.layers[fixedMenuId]
+};
+
+fixedMenu.computeShifts = function(){
+    fixedMenu.shiftX = fixedMenu.hasInner
+        ? pageXOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollLeft
+          : document.body.scrollLeft;
+    if (fixedMenu.targetLeft > 0){
+        fixedMenu.shiftX += fixedMenu.targetLeft;
+    }else{
+        fixedMenu.shiftX +=
+            (fixedMenu.hasElement
+              ? document.documentElement.clientWidth
+              : fixedMenu.hasInner
+                ? window.innerWidth - 20
+                : document.body.clientWidth)
+            - fixedMenu.targetRight
+            - fixedMenu.menu.offsetWidth;
+    }
+
+    fixedMenu.shiftY = fixedMenu.hasInner
+        ? pageYOffset
+        : fixedMenu.hasElement
+          ? document.documentElement.scrollTop
+          : document.body.scrollTop;
+    if (fixedMenu.targetTop > 0){
+        fixedMenu.shiftY += fixedMenu.targetTop;
+    }else{
+        fixedMenu.shiftY +=
+            (fixedMenu.hasElement
+            ? document.documentElement.clientHeight
+            : fixedMenu.hasInner
+              ? window.innerHeight - 20
+              : document.body.clientHeight)
+            - fixedMenu.targetBottom
+            - fixedMenu.menu.offsetHeight;
+    }
+};
+
+fixedMenu.moveMenu = function(){
+    fixedMenu.computeShifts();
+
+    if (fixedMenu.currentX != fixedMenu.shiftX
+        || fixedMenu.currentY != fixedMenu.shiftY){
+        fixedMenu.currentX = fixedMenu.shiftX;
+        fixedMenu.currentY = fixedMenu.shiftY;
+
+        if (document.layers){
+            fixedMenu.menu.left = fixedMenu.currentX;
+            fixedMenu.menu.top = fixedMenu.currentY;
+        }else{
+            fixedMenu.menu.style.left = fixedMenu.currentX + 'px';
+            fixedMenu.menu.style.top = fixedMenu.currentY + 'px';
+        }
+    }
+
+    fixedMenu.menu.style.right = '';
+    fixedMenu.menu.style.bottom = '';
+};
+
+fixedMenu.floatMenu = function(){
+    fixedMenu.moveMenu();
+    setTimeout('fixedMenu.floatMenu()', 20);
+};
+
+// addEvent designed by Aaron Moore
+fixedMenu.addEvent = function(element, listener, handler){
+    if(typeof element[listener] != 'function' ||
+       typeof element[listener + '_num'] == 'undefined'){
+        element[listener + '_num'] = 0;
+        if (typeof element[listener] == 'function'){
+            element[listener + 0] = element[listener];
+            element[listener + '_num']++;
+        }
+        element[listener] = function(e){
+            var r = true;
+            e = (e) ? e : window.event;
+            for(var i = 0; i < element[listener + '_num']; i++)
+                if(element[listener + i](e) === false)
+                    r = false;
+            return r;
+        }
+    }
+
+    //if handler is not already stored, assign it
+    for(var i = 0; i < element[listener + '_num']; i++)
+        if(element[listener + i] == handler)
+            return;
+    element[listener + element[listener + '_num']] = handler;
+    element[listener + '_num']++;
+};
+
+fixedMenu.supportsFixed = function(){
+    var testDiv = document.createElement("div");
+    testDiv.id = "testingPositionFixed";
+    testDiv.style.position = "fixed";
+    testDiv.style.top = "0px";
+    testDiv.style.right = "0px";
+    document.body.appendChild(testDiv);
+    var offset = 1;
+    if (typeof testDiv.offsetTop == "number"
+        && testDiv.offsetTop != null
+        && testDiv.offsetTop != "undefined")
+    {
+        offset = parseInt(testDiv.offsetTop);
+    }
+    if (offset == 0)
+    {
+        return true;
+    }
+
+    return false;
+};
+
+fixedMenu.init = function(){
+    if (fixedMenu.supportsFixed())
+        fixedMenu.menu.style.position = "fixed";
+    else
+    {
+        var ob =
+            document.layers
+            ? fixedMenu.menu
+            : fixedMenu.menu.style;
+
+        fixedMenu.targetLeft = parseInt(ob.left);
+        fixedMenu.targetTop = parseInt(ob.top);
+        fixedMenu.targetRight = parseInt(ob.right);
+        fixedMenu.targetBottom = parseInt(ob.bottom);
+
+        if (document.layers)
+        {
+            menu.left = 0;
+            menu.top = 0;
+        }
+        fixedMenu.addEvent(window, 'onscroll', fixedMenu.moveMenu);
+        fixedMenu.floatMenu();
+    }
+};
+
+fixedMenu.addEvent(window, 'onload', fixedMenu.init);
+
+jQuery(document).ready(function() {
+
+  console.log('executing java-script-based document upgrade');
+
+  $('.reference.external').after(function() {
+
+    this.href = this.href.replace('doc/icl-manual/doc/icl-api/','doc/icl-api/');
+
+    var href = this.href;
+    var text = this.text;
+
+    var package = 'unknown';
+    var type = 'other';
+
+    if( this.text.match('^ICL.*\.h$') ){ // we have a header file
+       var m = this.text.match('ICL(\[^/\]*)/.*');
+       if( m ){
+          package = m[1].toLowerCase();
+          type = "header";
+       }
+    }else if(this.text.match('.*\.h$')){
+       package  = 'unknown';
+       type = "header";
+    }
+
+
+    var packages = [ 'utils', 'math', 'core', 'filter', 'io', 'qt', 'cv', 'geom', 'markers', 'physics' ];
+    var groupLUT = [ ['TIME', 'EXCEPT', 'THREAD', 'RANDOM', 'UTILS' , 'PA', 'XML', 'STRUTILS', 'FUNCTION', 'BASIC__TYPES'],
+                     ['LINALG'],
+                     ['TYPES', 'GENERAL', 'IMAGE'],
+                     ['UNARY', 'BINARY', 'AFFINE', 'NBH', 'INPLACE' ],
+                     ['DC_G', 'UTILS_G', 'FILEIO_G', 'MOVIE_FILE_G', 'V4L_G', 'GIGE_G'],
+                     ['COMMON', 'HANDLES', 'UNCOMMON'],
+                     ['G_RD'],
+                     [],
+                     ['PLUGINS']
+                   ];
+
+    if(package == 'unknown'){
+      for(var i=0;i<10;++i){
+        if( href.match('.*/namespaceicl_1_1'+packages[i]+'\.html') ){
+          package = packages[i];
+          // could be a function or a namespace
+          if(this.text.match('.*'+packages[i]+'$')){
+             type = 'namespace';
+          }else if(this.text[0] > 'A' && this.text[0] < 'Z'){
+             type = 'global type';
+          }else{
+             type = 'global function';
+          }
+          break;
+        }
+        if( href.match('.*icl_1_1'+packages[i]+'.*') ){
+          package = packages[i];
+          break;
+        }
+      }
+    }
+    if(package == 'unknown'){
+      var res = href.match('.*group__(\[^.\]*).*')
+      if( res ){
+         var groupName = res[1];
+         for(var i=0;i<9;++i){
+            if(groupLUT[i].indexOf(groupName) != -1){
+                package = packages[i];
+                break;
+            }
+         }
+         var res2 = this.text.match('.*::(\[^:\]*)$');
+         var t = "???";
+         if(res2){
+            t = res2[1];
+         }else{
+            t = this.text;
+         }
+         if(t[0] > 'A' && t[0] < 'Z'){
+            type = "grouped type";
+         }else{
+            if(groupName == "TYPES"){
+              type = "core type";
+            }else if(groupName == "BASIC__TYPES"){
+              type = "basic type";
+            }else{
+              type = "grouped func.";
+            }
+         }
+       }
+    }
+
+    if(href.match('.*classicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'class: method';
+       }else{
+         type = 'class';
+       }
+    }else if(href.match('.*structicl.*')){
+       if(href.match('.*#\[0-9a-f\]*')){
+         type = 'struct: method';
+       }else{
+         type = 'struct';
+       }
+    }
+    if(package == "unknown" && href.match('.*namespaceicl.*')){
+      // very special treatment
+      return '<div class="tooltip">the <b>icl</b> namespace is used for all '
+            +'modules.</div>';
+
+    }else if(package != "unknown"){
+      return '<div class="tooltip">'
+         + '<a href="../modules/'+package+'.html">'
+         + '<img title="manual: '+package+' module" width="110px" src="../_images/'+package+'1.png"></img>'
+         + '</a>'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }else{
+      return '<div class="tooltip">'
+         + 'Unable to locate package'
+         + '<br/>' + 'Type:   <b>' + type + '</b>'
+         + '</div>';
+    }
+
+    //return '<div class="tooltip">' + 'TEST TEST TEST' + '</div>';
+  });
+
+  $('.reference.external').tooltip({
+    position: "top center",
+    opacity: 0.95,
+    effect: 'fade',
+    offset: [7,33]
+  });
+
+});
+</script>
+<style type="text/css">
+
+  .tooltip {
+    display:none;
+    background: transparent url(../_static/images/tooltip.png);
+    font-size:13px;
+    height:80px;
+    width:131px;
+    padding:10px;
+    color: #555;
+    line-height: 20px;
+  }
+  a.reference.external {
+    color: rgb(20,60,100);
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 5px;
+  }
+  a.reference.external:hover {
+    color: rgb(20,60,100);
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 5px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 4px;
+    text-decoration: none;
+  }
+
+ div.body{
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border: 1px solid rgb(110,110,110);
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.7);
+  }
+
+  div.body h1{
+    border-top-left-radius: 15px;
+    box-shadow: 0px 2px 0px rgba(0,0,0,0.4);
+  }
+
+
+  div.body h1, div.body h2, div.body h3, div.body h4{
+    margin-bottom: -8px;
+    background-repeat: no-repeat;
+    margin-left: -41px;
+    box-shadow: none;
+    border: none;
+    opacity: 1;
+    color: rgb(230,230,230);
+    height: 44px;
+    padding-top: 4px;
+  }
+
+  div.body h1{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h1.png);
+    margin-top: 8px;
+    border-radius: 0px;
+    height: 57px;
+    padding-top: 3px;
+  }
+
+  div.body h2{
+    padding-top: 7px;
+    background: transparent url(../_static/images/h2.png);
+    height: 52px;
+  }
+
+  div.body h3{
+    background: transparent url(../_static/images/h3.png);
+  }
+
+  div.body h4{
+    padding-top: 5px;
+    height: 42px;
+    background: transparent url(../_static/images/h4.png);
+    color: rgb(60,60,60);
+  }
+
+  div.sphinxsidebar{
+    font-size: 80%;
+  }
+
+  table.docutils td, table.docutils th{
+    border: 0px;
+  }
+  th {
+     background-color: #0F67A1;
+     color: rgb(220,220,220);
+  }
+
+  img[alt="shadow"]{
+     box-shadow: 5px 5px 12px rgba(0,0,0,0.3);
+  }
+
+  a.headerlink {
+     color: rgb(230,230,230);
+  }
+  a.headerlink:hover{
+     color: white;
+     background: transparent;
+  }
+
+  h4:hover > a.headerlink {
+     color: rgb(60,60,60);
+  }
+  h4 > a.headerlink {
+     color: rgb(90,90,90);
+  }
+  div.related ul{
+     background: rgba(60, 60, 60, 0);
+     background-image: url(../_static/images/stripes3.png);
+     background-position-x: 2px;
+  }
+  div.documentwrapper, div.footer {
+     background-image: url(../_static/images/stripes1.png);
+  }
+
+  img.logo{
+     background-color: white;
+     border-radius: 8px;
+     border: 1px solid #A0A0A0;
+     box-shadow: 5px 5px 20px rgba(0,0,0,0.4);
+     padding: 8px;
+  }
+
+  div.sphinxsidebar #searchbox input[type="text"] {
+     width: 160px;
+  }
+
+</style><div class="section" id="general-support-types-and-functions">
+<span id="utils"></span><h1>General Support Types and Functions<a class="headerlink" href="#general-support-types-and-functions" title="Permalink to this headline">¶</a></h1>
+<img alt="../_images/utils1.png" src="../_images/utils1.png" />
+<p>The Utils package contains a set of C++ support functions and
+classes. Due to the library dependency order, these classes have no
+internal dependencies. In particular, the utils package does not
+contain classes or functions that are related to image processing.</p>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="#utils-basic-types"><span class="std std-ref">Basic Types</span></a></li>
+<li><a class="reference internal" href="#utils-support-types"><span class="std std-ref">Support Types</span></a></li>
+<li><a class="reference internal" href="#utils-pa"><span class="std std-ref">Program Argument Evaluation</span></a></li>
+<li><a class="reference internal" href="#utils-configurable"><span class="std std-ref">The Configurable interface</span></a></li>
+<li><a class="reference internal" href="#utils-smart-ptr"><span class="std std-ref">Smart-Pointer and Smart-Array</span></a></li>
+<li><a class="reference internal" href="#utils-time"><span class="std std-ref">Time and Timer Support</span></a></li>
+<li><a class="reference internal" href="#utils-exceptions"><span class="std std-ref">Exceptions Types</span></a></li>
+<li><a class="reference internal" href="#utils-threading"><span class="std std-ref">Multi-Threading Tools</span></a></li>
+<li><a class="reference internal" href="#utils-xml"><span class="std std-ref">XML-based Configuration Files</span></a></li>
+<li><a class="reference internal" href="#utils-string"><span class="std std-ref">String Manipulation</span></a></li>
+<li><a class="reference internal" href="#utils-function"><span class="std std-ref">The Generic Function Class</span></a></li>
+<li><a class="reference internal" href="#utils-random"><span class="std std-ref">Random Number Generation</span></a></li>
+<li><a class="reference internal" href="#utils-opencl"><span class="std std-ref">OpenCL Support Framework</span></a></li>
+<li><a class="reference internal" href="#utils-macros"><span class="std std-ref">Support Macros</span></a></li>
+<li><a class="reference internal" href="#utils-others"><span class="std std-ref">Others</span></a></li>
+</ul>
+</div>
+<div class="section" id="basic-types">
+<span id="utils-basic-types"></span><h2>Basic Types<a class="headerlink" href="#basic-types" title="Permalink to this headline">¶</a></h2>
+<p>ICL’s basic data types are defined in
+<strong>ICLUtils/BasicTypes.h</strong>. Unlike all other classes, types and
+functions, the basic types are defined directly in the <a class="reference external" href="../icl-api/namespaceicl.html">icl</a>
+-namespace. The type syntax is copied from the Intel IPP library: All
+types have an <em>icl</em>-prefix, an integer-value that describes the number
+of bits used, and a suffix</p>
+<ul class="simple">
+<li><strong>u</strong> for unsigned integers</li>
+<li><strong>s</strong> for signed integers</li>
+<li><strong>f</strong> for floating point numbers</li>
+<li><strong>c</strong> for complex floating point numbers</li>
+</ul>
+<p>The most common types are</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a03c5fb8fe5763e6a400b4651b0eec2d7">icl8u</a> for 8 bit unsigned integers (commonly known as <strong>unsigned
+char</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a79af5b84ad2c6e4acf44ae0530d89269">icl16s</a> for 16 bit signed integers (commonly known as <strong>short</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a42327266b9cc89a04bb7cf0ff1b1b0b2">icl32s</a> for 32 bit signed integers (usually <strong>int</strong>)</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#a9d5e66277c0b9e4cee1d9e0f51768f49">icl32f</a> for floats</li>
+<li><a class="reference external" href="../icl-api/namespaceicl.html#ab21f404160d56751f53c4b12618acb26">icl64f</a> for doubles</li>
+</ul>
+<p>ICL’s <a class="reference internal" href="core.html#core-image"><span class="std std-ref">image classes</span></a> (provided by the
+<a class="reference internal" href="core.html#core"><span class="std std-ref">ICLCore</span></a> module) are implemented for these common types
+<strong>Note:</strong> Please ensure not to mix up the basic data types with the
+alternatives for the enumeration <a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a> which are</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaabf13298b91874fafb68eedffe1a5f3de">depth8u</a></li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaa87c24cd544d0e236c278725a65be3e5a">depth16s</a></li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaaf560890070519a4c44512122ed605827">depth32s</a></li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaa318053c024418e71be0457ee9658de1d">depth32f</a></li>
+<li><a class="reference external" href="../icl-api/group__TYPES.html#gga53af74cee38afb59cc3738a1042a1ceaab77509582aeeed38bf30959d653bab39">depth64f</a></li>
+</ul>
+<p>The <a class="reference external" href="../icl-api/group__TYPES.html#ga53af74cee38afb59cc3738a1042a1cea">core::depth</a> value is used for run-time type-inference</p>
+</div>
+<div class="section" id="support-types">
+<span id="utils-support-types"></span><h2>Support Types<a class="headerlink" href="#support-types" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point.html">Point</a> and <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point32f.html">Point32f</a></p>
+<blockquote>
+<div><p>A simple 2D point class with <strong>int</strong> (<strong>float</strong> for <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point32f.html">Point32f</a>)
+elements <strong>x</strong> and <strong>y</strong>. Other than this, points behave like
+built-in types. They are serialized as and de-serialized from “(x,y)”</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">in case of Intel IPP Support, <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point.html">Point</a> is derived from it’s
+IPP-counter-part <strong>IppiPoint</strong></p>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Size.html">Size</a> and <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Size32f.html">Size32f</a></p>
+<blockquote>
+<div><p>Like the <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Point.html">Point</a> classes, but with members <strong>width</strong> and <strong>height</strong>.
+Serialized and de-serialized from “WxH”.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">in case of Intel IPP Support, <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Size.html">Size</a> is derived from it’s
+IPP-counter-part <strong>IppiSize</strong></p>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Rect.html">Rect</a> and <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Rect32f.html">Rect32f</a></p>
+<blockquote>
+<div><p>Defines a rectangle by given <strong>x</strong>, <strong>y</strong>, <strong>width</strong> and <strong>height</strong>.
+Serialization: “(x,y)WxH”</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">in case of Intel IPP Support, <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Rect.html">Rect</a> is derived from it’s
+IPP-counter-part <strong>IppiRect</strong></p>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/structicl_1_1utils_1_1Range.html">Range</a> and <a class="reference external" href="../icl-api/structicl_1_1utils_1_1SteppingRange.html">SteppingRange</a></p>
+<blockquote>
+<div>A template class for ranges, described by <strong>minVal</strong> and <strong>maxVal</strong>.
+<a class="reference external" href="../icl-api/structicl_1_1utils_1_1SteppingRange.html">SteppingRange</a> extends the <a class="reference external" href="../icl-api/structicl_1_1utils_1_1Range.html">Range</a> template by a <strong>stepping</strong>
+member variable of the same type</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Uncopyable.html">Uncopyable</a> and <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Lockable.html">Lockable</a></p>
+<blockquote>
+<div>Two straight-forward to use interfaces. <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Uncopyable.html">Uncopyable</a> just declares
+copy constructor and assignment operators in a private scope to
+avoid copying instances of classes that are derived from it. The
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1Lockable.html">Lockable</a> interfaces contains a <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Mutex.html">Mutex</a> and provides a
+<strong>lock</strong> and <strong>unlock</strong> method. <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Mutex.html">Mutex</a> and
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1Lockable.html">Lockable</a> instances can be <em>scope-locked</em> using an instance of
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1Mutex_1_1Locker.html">Mutex::Locker</a>.</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1VisualizationDescription.html">VisualizationDescription</a></p>
+<blockquote>
+<div>Utility class for describing visualizations in a state-machine manner.
+With this tool, classes can e.g. provide a visualization of something,
+that can then be rendered generically</div></blockquote>
+</div>
+<div class="section" id="program-argument-evaluation">
+<span id="utils-pa"></span><h2>Program Argument Evaluation<a class="headerlink" href="#program-argument-evaluation" title="Permalink to this headline">¶</a></h2>
+<p>The program argument evaluation toolkit is used in most ICL-based
+applications. It provides</p>
+<ul class="simple">
+<li>a simple and intuitive string-based description of allowed program
+arguments</li>
+<li>an easy to use way to describe program arguments</li>
+<li>a efficient parser for program arguments, that provides
+human-readable error messages</li>
+<li>an automatically supported set of common default program
+arguments, such as <strong>-version</strong> or <strong>-help</strong></li>
+<li>a concise method <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ac1c1a1e771ecc0681b8f277040cc2c99">pa</a> that can be use to query whether
+a specific program argument has been given and what it’s sub
+arguments where</li>
+</ul>
+<p>The usage of the program argument evaluation toolkit is explain
+in an extra chapter of the tutorial (see <a class="reference internal" href="../tutorials/program-arguments.html#progarg-tutorial"><span class="std std-ref">Evaluating Program Arguments</span></a>)</p>
+</div>
+<div class="section" id="the-configurable-interface">
+<span id="utils-configurable"></span><h2>The <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Configurable.html">Configurable</a> interface<a class="headerlink" href="#the-configurable-interface" title="Permalink to this headline">¶</a></h2>
+<p>The Configurable-interface can be used to define a classes
+parameters/properties that shall be changed at runtime. The
+Configurable-subclasses can define properties that can be accessed by
+string identifiers. Each property has a type, a type-dependend
+description of possible values, a current value and a so called
+volatileness. Further details and examples are given in the
+tutorial <a class="reference internal" href="../tutorials/configurables.html#tut-configurable"><span class="std std-ref">The Configurable Interface</span></a>.</p>
+</div>
+<div class="section" id="smart-pointer-and-smart-array">
+<span id="utils-smart-ptr"></span><h2>Smart-Pointer and Smart-Array<a class="headerlink" href="#smart-pointer-and-smart-array" title="Permalink to this headline">¶</a></h2>
+<p>ICL provides a very simple, yet powerful reference counting
+smart-pointer implementation <a class="reference external" href="../icl-api/structicl_1_1utils_1_1SmartPtr.html">SmartPtr</a> that basically
+behaves like the <strong>boost::shared_ptr</strong>. For array-pointers (where the
+data was created using <strong>new []</strong>), the <a class="reference external" href="../icl-api/structicl_1_1utils_1_1SmartArray.html">SmartArray</a> can be
+used.</p>
+</div>
+<div class="section" id="time-and-timer-support">
+<span id="utils-time"></span><h2>Time and Timer Support<a class="headerlink" href="#time-and-timer-support" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html">utils::Time</a></p>
+<blockquote>
+<div>Here, the main utility class is <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html">Time</a>, which was
+originally copied from <strong>libiceutils</strong>. The <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html">Time</a> class provides
+microsecond resolutions internally represented as an
+icl64s. <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html#a7a8c4c9f59e0edaa2bbced0e3d92f28b">Time::now()</a> returns the current system time. <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Time.html">Time</a>
+instances can easily be added, subtracted and compared. In contrast
+to e.g. the boost-libraries, the time class represents absolute
+times and time intervalls at once.</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1FPSEstimator.html">FPSEstimator</a></p>
+<blockquote>
+<div><p>This class can be used to estimate the average frames-per-second
+count of a running application:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">runction</span><span class="p">(){</span>
+  <span class="n">static</span> <span class="n">icl</span><span class="p">::</span><span class="n">utils</span><span class="p">::</span><span class="n">FPSEstimator</span> <span class="n">fps</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span> <span class="o">//</span> <span class="n">averages</span> <span class="n">over</span> <span class="mi">10</span> <span class="n">iterations</span>
+  <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fps</span><span class="o">.</span><span class="n">getFPSString</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="p">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1FPSLimiter.html">FPSLimiter</a></p>
+<blockquote>
+<div>The limiter inherits the <a class="reference external" href="../icl-api/classicl_1_1utils_1_1FPSEstimator.html">FPSEstimator</a> class. It’s
+<span>FPSLimiter::wait()</span> method will
+wait long enough to ensure, the desired FPS-limit is not overshot.</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1StackTimer.html">StackTimer</a></p>
+<blockquote>
+<div><p>The <a class="reference external" href="../icl-api/classicl_1_1utils_1_1StackTimer.html">StackTimer</a> is a very special tool, that can be used for
+coarse profiling. The header <strong>ICLUtils/StackTimer.h</strong> provides the
+<em>magic</em>-macros <strong>BENCHMARK_THIS_FUNCTION</strong> and
+BENCHMARK_THIS_SCOPE(STRING):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">foo</span><span class="p">(){</span>
+  <span class="n">BENCHMARK_THIS_FUNCTION</span><span class="p">;</span>
+  <span class="o">//</span> <span class="n">some</span> <span class="n">other</span> <span class="n">stuff</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Now, you’ll get an evaluation of the run-time of your function when
+your program exits normally.</p>
+</div></blockquote>
+</div>
+<div class="section" id="exceptions-types">
+<span id="utils-exceptions"></span><h2>Exceptions Types<a class="headerlink" href="#exceptions-types" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>ICL’s basic exception type is <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ICLException.html">ICLException</a> that
+inherits <strong>std::runtime_error</strong>. In addition, there are several
+other exception types either implemented in the
+<strong>ICLUtils/Exception.h</strong> header or within one of the other ICL
+modules. ICL’s exception hierarchy is rather flat; most of the time
+either <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ICLException.html">ICLException</a> or a direct child-class instance is thrown.</div></blockquote>
+</div>
+<div class="section" id="multi-threading-tools">
+<span id="utils-threading"></span><h2>Multi-Threading Tools<a class="headerlink" href="#multi-threading-tools" title="Permalink to this headline">¶</a></h2>
+<p>Here, the two fundamental classes are <a class="reference external" href="../icl-api/classicl_1_1utils_1_1Thread.html">Thread</a> and
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1Mutex.html">Mutex</a> which are basically simple wrappers of the
+corresponding PThread-types. Most of the time, threading must not be
+implemented explicitly. Instead the <a class="reference external" href="../icl-api/classicl_1_1qt_1_1ICLApplication.html">ICLApplication</a>
+can be used for multi-threaded (interactive) applications.</p>
+</div>
+<div class="section" id="xml-based-configuration-files">
+<span id="utils-xml"></span><h2>XML-based Configuration Files<a class="headerlink" href="#xml-based-configuration-files" title="Permalink to this headline">¶</a></h2>
+<p>We included the Pugi-XML parsing framework into the ICL source
+tree. Even though, this can be uses for XML file parsing and creation,
+ICL provides a much simpler tool for XML-based configuration files,
+the <a class="reference external" href="../icl-api/classicl_1_1utils_1_1ConfigFile.html">ConfigFile</a> class. This is documented in an extra chapter
+of the tutorial (see <a class="reference internal" href="../tutorials/config-files.html#config-file-tutorial"><span class="std std-ref">XML-based Configuration Files</span></a>)</p>
+</div>
+<div class="section" id="string-manipulation">
+<span id="utils-string"></span><h2>String Manipulation<a class="headerlink" href="#string-manipulation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2d5b026efe9b2f895c42bd124a2d3786">str</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2df21a9e3eaa5f045c2e3cc06bb79524">parse</a></p>
+<blockquote>
+<div><p>Since C++’s support for string manipulation is a bit weak, ICL
+supports a set of support functions for intuitive and easy-to use
+string manipulation. Most important are the two function templates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span>
+<span class="n">std</span><span class="p">::</span><span class="n">string</span> <span class="nb">str</span><span class="p">(</span><span class="n">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">instance</span><span class="p">);</span>
+
+<span class="n">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span>
+<span class="n">T</span> <span class="n">parse</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">text</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>where <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2d5b026efe9b2f895c42bd124a2d3786">str</a> converts a type instance into a string, and <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2df21a9e3eaa5f045c2e3cc06bb79524">parse</a>
+converts a string into a type instance. Internally, these functions
+make use of the in- and output stream-operators (<strong>&lt;&lt;</strong> and <strong>&gt;&gt;</strong>).
+Therefore, <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2d5b026efe9b2f895c42bd124a2d3786">str</a> is automatically supported for each type that
+supports the <strong>std::ostream</strong>-operator and <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2df21a9e3eaa5f045c2e3cc06bb79524">parse</a> for each type
+that supports the <strong>std::istream</strong>-operator. For most of the common
+ICL-types, this is true.</p>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1Array2D.html">Array2D</a></p>
+<p><a class="reference external" href="../icl-api/structicl_1_1utils_1_1Any.html">Any</a></p>
+<blockquote>
+<div><p><a class="reference external" href="../icl-api/structicl_1_1utils_1_1Any.html">Any</a> is a utility class that defines a string-serialized
+object. <a class="reference external" href="../icl-api/structicl_1_1utils_1_1Any.html">Any</a> is derived from the <strong>std::string</strong>, and extends
+it’s functionality by easy to use serialization and de-serialization
+functions. An <a class="reference external" href="../icl-api/structicl_1_1utils_1_1Any.html">Any</a> instance can be created from every type that
+is supported by the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2d5b026efe9b2f895c42bd124a2d3786">str</a>-template (see above). And it can be
+converted to any type that is supported by the <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a2df21a9e3eaa5f045c2e3cc06bb79524">parse</a>-template</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Any.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;ICLMath/FixedMatrix.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Size.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLCore/Types.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;ICLCore/CoreFunctions.h&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="c1">/// create Any instance from data types (implicitly)</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Any</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Any</span> <span class="n">d</span> <span class="o">=</span> <span class="n">M_PI</span><span class="p">;</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Any</span> <span class="n">s</span> <span class="o">=</span> <span class="n">utils</span><span class="o">::</span><span class="n">Size</span><span class="o">::</span><span class="n">VGA</span><span class="p">;</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Any</span> <span class="n">f</span> <span class="o">=</span> <span class="n">core</span><span class="o">::</span><span class="n">formatRGB</span><span class="p">;</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Any</span> <span class="n">m</span> <span class="o">=</span> <span class="n">math</span><span class="o">::</span><span class="n">FixedMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span>
+                                              <span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">);</span>
+
+  <span class="c1">// show</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; int:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; double:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span>
+            <span class="o">&lt;&lt;</span> <span class="s">&quot; size:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">s</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; format:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">f</span>
+            <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; matrix:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">m</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">/// create data-type from Any instances (implicitly)</span>
+  <span class="kt">int</span> <span class="n">ii</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="p">;</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Size</span> <span class="n">ss</span> <span class="o">=</span> <span class="n">s</span><span class="p">;</span>
+  <span class="n">core</span><span class="o">::</span><span class="n">format</span> <span class="n">ff</span> <span class="o">=</span> <span class="n">f</span><span class="p">;</span>
+  <span class="n">math</span><span class="o">::</span><span class="n">FixedMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span> <span class="n">mm</span> <span class="o">=</span> <span class="n">m</span><span class="p">;</span>
+
+  <span class="c1">// show</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; int:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">ii</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; double:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">dd</span>
+            <span class="o">&lt;&lt;</span> <span class="s">&quot; size:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; format:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">ff</span>
+            <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; matrix:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">mm</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+
+
+  <span class="c1">// explicit cross-type parsing</span>
+  <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">Point</span> <span class="n">y</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">utils</span><span class="o">::</span><span class="n">Point</span><span class="o">&gt;</span><span class="p">();</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;double as int:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;size as point:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">y</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ad441f647a7e4f47e6789d5f5a382dceb">tok</a> and <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#acc1429a32f96ec90c4569b243d7a2020">cat</a></p>
+<blockquote>
+<div><p>The two support functions are used for tokenization and concatination
+of string. <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ad441f647a7e4f47e6789d5f5a382dceb">tok</a> can tokenize strings an std::vector&lt;string&gt; tokens.
+It can either use a set of single allowed <strong>char</strong>-delimiters, or
+a delimiting <strong>std::string</strong>. Furthermore, an escape-character can
+be defined for also being able to use the delimiting characters.</p>
+<p>The opposite of <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#ad441f647a7e4f47e6789d5f5a382dceb">tok</a> is <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#acc1429a32f96ec90c4569b243d7a2020">cat</a>, which concatenate the elements
+of an <strong>std::vector&lt;std::string&gt;</strong>. Optionally a delimiter can be
+inserted between the elements here.</p>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#aac982322467e18245362b025410d8654">match</a></p>
+<blockquote>
+<div>Is a regular expression matching function. It also supports accessing
+sub-matches.</div></blockquote>
+</div>
+<div class="section" id="the-generic-function-class">
+<span id="utils-function"></span><h2>The Generic Function Class<a class="headerlink" href="#the-generic-function-class" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/structicl_1_1utils_1_1Function.html">Function</a> class and it’s heavily overloaded creator
+function <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a0f166bfffc5737cd30db1ae4eed4f48e">function</a>, is a simplification of the well known
+<strong>boost::function</strong> type.  The <a class="reference external" href="../icl-api/structicl_1_1utils_1_1Function.html">Function</a> defines a generic
+interface for</p>
+<ul class="simple">
+<li>global functions</li>
+<li>static functions (in classes, that are basically global)</li>
+<li>member functions</li>
+<li>functors</li>
+</ul>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Function.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
+
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="o">::</span><span class="n">utils</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">global_foo</span><span class="p">(){</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;void global_foo()&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">int</span> <span class="nf">global_foo2</span><span class="p">(){</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;int global_foo() returning 5&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">return</span> <span class="mi">5</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">global_add</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">Foo</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Foo.add(&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;,&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;) = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="k">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Foo(&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;,&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;) = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">static</span> <span class="kt">void</span> <span class="n">show_int</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="c1">/// simple parameterless global function</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span> <span class="n">gfoo</span><span class="p">(</span><span class="n">global_foo</span><span class="p">);</span>
+  <span class="n">gfoo</span><span class="p">();</span>
+
+  <span class="c1">/// global function that returns an int</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">gfoo2</span><span class="p">(</span><span class="n">global_foo2</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">gfoo2</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">/// Implicit cast from function with return value to function without return value</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">gfoo3</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">global_foo2</span><span class="p">);</span>
+  <span class="n">gfoo3</span><span class="p">();</span>
+
+  <span class="c1">/// Global function with parameters</span>
+  <span class="c1">/// identical to function(global_add)(4,5)</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">gadd</span><span class="p">(</span><span class="n">global_add</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;global_add(4,5)=&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">gadd</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">/// create an std::vector</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">;</span>
+
+  <span class="c1">/// void-Member function with one parameter</span>
+  <span class="c1">/// preserve type-correctness (argument is not int, but const int&amp;)</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">,</span><span class="k">const</span> <span class="kt">int</span><span class="o">&amp;&gt;</span> <span class="n">vpush</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">push_back</span><span class="p">);</span>
+  <span class="n">vpush</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>  <span class="n">vpush</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>  <span class="n">vpush</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+  <span class="c1">/// access elements with this function</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">vat</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">at</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;elem 0: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">vat</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;elem 1: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">vat</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;elem 2: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">vat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+  <span class="c1">/// create an instance of the foo class</span>
+  <span class="n">Foo</span> <span class="n">f</span><span class="p">;</span>
+
+  <span class="c1">/// creating a list of functions of same type</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">list</span><span class="p">;</span>
+  <span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="o">&amp;</span><span class="n">Foo</span><span class="o">::</span><span class="n">add</span><span class="p">));</span> <span class="c1">// member function</span>
+  <span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">SelectFunctor</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">()));</span> <span class="c1">// a functor</span>
+  <span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">global_add</span><span class="p">);</span>  <span class="c1">// a global function</span>
+
+  <span class="c1">/// Finally, we are also able to implement the FunctionImpl-interface</span>
+  <span class="c1">/// here, we have to implement the corresponding constructor</span>
+  <span class="c1">/// (which must const!!!)</span>
+  <span class="k">struct</span> <span class="nl">Impl</span> <span class="p">:</span> <span class="n">FunctionImpl</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">{</span>
+    <span class="k">virtual</span> <span class="kt">int</span> <span class="k">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="k">const</span><span class="p">{</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;custom impl:operator()(a,b) = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+      <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+  <span class="c1">// list.push_back(function(new Impl));</span>
+  <span class="c1">// would also be possible, but implicit cast is possible</span>
+  <span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="k">new</span> <span class="n">Impl</span><span class="p">);</span>
+
+  <span class="c1">/// clear the vector of ints also by using a Function-instance:</span>
+  <span class="n">function</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">clear</span><span class="p">)();</span>
+
+  <span class="c1">/// create a function that wraps the index operator</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&amp;</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">vidxop</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="k">operator</span><span class="p">[]);</span>
+
+  <span class="c1">/// push the results of the function in the vector</span>
+  <span class="k">for</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">list</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">vpush</span><span class="p">(</span><span class="n">list</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="c1">/// create a function for the vector size</span>
+  <span class="n">Function</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">vsize</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">size</span><span class="p">);</span>
+
+  <span class="c1">/// show the result of the vector-size function</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">vsize</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+
+  <span class="k">for</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">vsize</span><span class="p">();</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;v[&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;] = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">vidxop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="c1">/// or use a function and std::for_each to print the results</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">for_each</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="n">function</span><span class="p">(</span><span class="n">Foo</span><span class="o">::</span><span class="n">show_int</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="random-number-generation">
+<span id="utils-random"></span><h2>Random Number Generation<a class="headerlink" href="#random-number-generation" title="Permalink to this headline">¶</a></h2>
+<p>Even though, creation of random numbers is supported sufficiently in
+C++, ICL provides some extra functions and classes here. In particular
+creation of Gaussian distributed random numbers usually requires some
+extra work. In addition to the normal random number generation
+functions <a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a720d47364065e33e3c8c6806bf101492">random(min,max)</a> and
+<a class="reference external" href="../icl-api/namespaceicl_1_1utils.html#a9cd5c572f28873aaaddd13692c099465">gaussRandom(mean,variance)</a>, few special <em>classes</em>
+are provided, that can be created with the random number generation
+properties, and that will draw a new random number, <em>whenever they are
+assigned to something</em>.</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ICLUtils/Random.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">icl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+  <span class="c1">// intialize with current system time</span>
+  <span class="n">utils</span><span class="o">::</span><span class="n">randomSeed</span><span class="p">();</span>
+
+  <span class="c1">// uniformly distributed random number between 0 and 1</span>
+  <span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="n">utils</span><span class="o">::</span><span class="n">random</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// Gaussian random number with mean 0 and variance 1</span>
+  <span class="kt">float</span> <span class="n">g</span> <span class="o">=</span> <span class="n">utils</span><span class="o">::</span><span class="n">gaussRandom</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="c1">// buffer</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">ns</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+
+  <span class="c1">// fill each element with a random number</span>
+  <span class="c1">// here uniformly distributed in [10,20]</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">fill</span><span class="p">(</span><span class="n">ns</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">ns</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">utils</span><span class="o">::</span><span class="n">URand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">));</span>
+
+  <span class="c1">// or with gaussian random numbers</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">fill</span><span class="p">(</span><span class="n">ns</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">ns</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">utils</span><span class="o">::</span><span class="n">GRand</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">));</span>
+
+  <span class="c1">// create random indices (int values between 0 and given max)</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">is</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">fill</span><span class="p">(</span><span class="n">is</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">is</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="n">utils</span><span class="o">::</span><span class="n">URandI</span><span class="p">(</span><span class="mi">99</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="the-file-class">
+<span id="utils-file"></span><h2>The <strong>File</strong> class<a class="headerlink" href="#the-file-class" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="../icl-api/classicl_1_1utils_1_1File.html">File</a> class is a simple, yet powerful wrapper of a
+default C-Style <strong>FILE</strong>-pointer. In case of zlib-support, it provides
+built-in abilities for <em>gzipped</em> file I/O. I.e. as soon as a file-ending
+“.gz” is detected, the file will be written and read using zlib-functions.</p>
+<p>In addition to this it supports</p>
+<ul class="simple">
+<li>buffered reading</li>
+<li>decomposition of file names into <em>directory</em>, <em>basename</em> and <em>suffix</em></li>
+<li>several reading and writing functions</li>
+<li><span>File::exists()</span></li>
+</ul>
+</div>
+<div class="section" id="opencl-support-framework">
+<span id="utils-opencl"></span><h2>OpenCL Support Framework<a class="headerlink" href="#opencl-support-framework" title="Permalink to this headline">¶</a></h2>
+<p>ICL’s OpenCL support framework is intendet to provide an even easier
+access to OpenCL based acceleration. The framework is even settled on
+a higher level then OpenCL’s C++ front-end allowing to create and
+embed OpenCL code with only a few lines of support code. Relevant
+classes are:</p>
+<ul class="simple">
+<li><a class="reference external" href="../icl-api/classicl_1_1utils_1_1CLProgram.html">utils::CLProgram</a>, functioning as the main-class
+and as a factory for instances of the other support classes</li>
+<li><a class="reference external" href="../icl-api/classicl_1_1utils_1_1CLKernel.html">utils::CLKernel</a>, referencing a callable OpenCL function
+usually called kernel. Kernels can be filled with arguments and
+be called.</li>
+<li><a class="reference external" href="../icl-api/classicl_1_1utils_1_1CLBuffer.html">utils::CLBuffer</a>, buffers are used to exchange memory with
+graphics card memory (i.e. uploading and downloading memory blocks
+from and to the graphics card memory)</li>
+</ul>
+<p>An example for a simple 3x3 image convolution can be found in the
+<a class="reference external" href="../icl-api/classicl_1_1utils_1_1CLProgram.html">utils::CLProgram</a> API documentation-</p>
+</div>
+<div class="section" id="others">
+<span id="utils-others"></span><h2>Others<a class="headerlink" href="#others" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1MultiTypeMap.html">MultiTypeMap</a></p>
+<blockquote>
+<div>Abstract map implementation, that can hold entries of different types</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1ProcessMonitor.html">ProcessMonitor</a></p>
+<blockquote>
+<div>Grants process information at run-time such as the current memory consumption,
+the application’s thread-count or the average processor usage of the system
+and the current process.</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1ShallowCopyable.html">ShallowCopyable</a></p>
+<blockquote>
+<div>A generic, but difficult to use utility class for the creation of shallow-
+copyable classes</div></blockquote>
+<p><a class="reference external" href="../icl-api/classicl_1_1utils_1_1SignalHandler.html">SignalHandler</a></p>
+<blockquote>
+<div>C++-based wrapper of the C-functions around <em>sigaction</em> for process signal
+handling</div></blockquote>
+</div>
+<div class="section" id="support-macros">
+<span id="utils-macros"></span><h2>Support Macros<a class="headerlink" href="#support-macros" title="Permalink to this headline">¶</a></h2>
+<p><strong>DEBUG_LOG(MESSAGE-STREAM)</strong></p>
+<blockquote>
+<div><p>Can be used to show standard debug messages, that automatically
+include the source file, line and function name. Internally a
+C++-stream is used so that debug messages can easily be composed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DEBUG_LOG</span><span class="p">(</span><span class="s2">&quot;loop &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>WARNING_LOG</strong> and <strong>ERROR_LOG</strong></p>
+<blockquote>
+<div>Can be used to show warning and critical log messages. They work
+identically like <strong>DEBUG_LOG</strong></div></blockquote>
+<p><strong>ICLASSERT(assertion)</strong></p>
+<blockquote>
+<div>Standard assertion wrapper that shows the code position of the
+failure. For convenience also <strong>ASSERT_RETURN(assertion)</strong>,
+<strong>ASSERT_THROW(assertion,exception)</strong> and
+<strong>ASSERT_RETURN_VAL(assertion,return-value)</strong> are provided.</div></blockquote>
+<p><strong>ICL_UNLIKELY(unlikely-test)</strong></p>
+<blockquote>
+<div><p>Is a wrapper of gcc’s <strong>__builtin_expect</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">ICL_UNLIKELY</span><span class="p">(</span><span class="n">error</span><span class="p">)){</span>
+   <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>ICL_DEPRECATED</strong></p>
+<blockquote>
+<div><p>Can be used to add a deprecated status to functions and classes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">ICL_DEPRECATED</span> <span class="n">foo</span><span class="p">(){</span> <span class="o">..</span> <span class="p">}</span>
+<span class="k">class</span> <span class="nc">ICL_DEPRECATED</span> <span class="n">Bar</span> <span class="p">{</span> <span class="o">...</span><span class="p">};</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><a class="reference external" href="../icl-api/namespaceicl_1_1qt.html#a89443c886f06349c32c8adcbfd4a871a">sqr</a></p>
+<blockquote>
+<div><p>Is a generic power-of-two template, that is sometimes very useful.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>utils::sqr</strong> is a function rather than a macro and therefore
+is lies within the <strong>icl::utils</strong>-namespace</p>
+</div>
+</div></blockquote>
+<p><strong>iclMin</strong> and <strong>iclMax</strong></p>
+<blockquote>
+<div>Are generic replacements of the sometimes missing <strong>std::min</strong> and
+<strong>std::max</strong> function templates. Usually, <strong>iclMin</strong> and <strong>iclMax</strong>
+are just macros that forward their arguments to the std-functions</div></blockquote>
+<p><strong>ICL_DELETE(pointer)</strong></p>
+<blockquote>
+<div>Deletes only non-null pointers and sets them to 0 after deletion. For
+arrays, <strong>ICL_DELETE_ARRAY(pointer)</strong> has to be used.</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">General Support Types and Functions</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#basic-types">Basic Types</a></li>
+<li><a class="reference internal" href="#support-types">Support Types</a></li>
+<li><a class="reference internal" href="#program-argument-evaluation">Program Argument Evaluation</a></li>
+<li><a class="reference internal" href="#the-configurable-interface">The Configurable interface</a></li>
+<li><a class="reference internal" href="#smart-pointer-and-smart-array">Smart-Pointer and Smart-Array</a></li>
+<li><a class="reference internal" href="#time-and-timer-support">Time and Timer Support</a></li>
+<li><a class="reference internal" href="#exceptions-types">Exceptions Types</a></li>
+<li><a class="reference internal" href="#multi-threading-tools">Multi-Threading Tools</a></li>
+<li><a class="reference internal" href="#xml-based-configuration-files">XML-based Configuration Files</a></li>
+<li><a class="reference internal" href="#string-manipulation">String Manipulation</a></li>
+<li><a class="reference internal" href="#the-generic-function-class">The Generic Function Class</a></li>
+<li><a class="reference internal" href="#random-number-generation">Random Number Generation</a></li>
+<li><a class="reference internal" href="#the-file-class">The <strong>File</strong> class</a></li>
+<li><a class="reference internal" href="#opencl-support-framework">OpenCL Support Framework</a></li>
+<li><a class="reference internal" href="#others">Others</a></li>
+<li><a class="reference internal" href="#support-macros">Support Macros</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../modules.html"
+                        title="previous chapter">Modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="math.html"
+                        title="next chapter">Linear Algebra and Machine Learning</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="math.html" title="Linear Algebra and Machine Learning"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../modules.html" title="Modules"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ICL Manual</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../modules.html" >Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2006-2019, Christof Elbrechter, Michael Götting, Robert Haschke, Alexander Neumann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>
