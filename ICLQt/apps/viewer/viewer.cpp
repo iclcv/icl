@@ -59,7 +59,7 @@ void init(){
 
 int main(int n, char**ppc){
   pa_explain
-  ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm\ngrabber parameter -list 0 lists all available grabbers")
+  ("-input","define input grabber parameters\ne.g. -dc 0 or -file *.ppm\ngrabber parameters \"list 0\" will list all available grabbers")
   ("-size","desired image size of grabber");
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) "
 		"-dist|-d(fn) "
