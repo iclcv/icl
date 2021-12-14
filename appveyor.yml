@@ -7,7 +7,7 @@ configuration:
 branches:
   only:
     - master
-    - dev-appveyor
+    - wip
 
 environment:
   PTHREADS_ROOT: C:\projects\deps\pthreads
@@ -45,6 +45,7 @@ before_build:
   - 7z x glew.zip -o%GLEW_ROOT% > nul
 
 build_script:
+  - cmake --version
   - mkdir %APPVEYOR_BUILD_FOLDER%\build
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - cmake .. -G "%CMAKE_GENERATOR%" %ICL_OPTIONS%

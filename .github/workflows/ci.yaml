@@ -186,7 +186,9 @@ jobs:
         echo "-DOPENCV_ROOT=C:\tools\opencv\build" >> "$env:DEPS\opts"
 
     - name: Show extra cmake options
-      run: cat "$env:DEPS\opts"
+      run: |
+        cat "$env:DEPS\opts"
+        cmake --version
 
     - name: Configure cmake
       run: >
