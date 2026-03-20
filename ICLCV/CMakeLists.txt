@@ -46,15 +46,14 @@ if(NOT OPENCL_FOUND)
                            ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLCV/CLSurfLibKernels.h)
 endif()
 
-# ICLCV needs ICLQt/src for HeartrateDetector when Qt is available
-set(_DEPS ICLIO)
-if(QT_FOUND)
-  list(APPEND _DEPS ICLQt)
-endif()
-
 icl_add_module(ICLCV
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}
-  ICL_DEPS ${_DEPS}
+  ICL_DEPS ICLIO
   PKGCONFIG_DEPS ICLIO-${SO_VERSION}
   HAS_DEMOS HAS_APPS)
+
+# HeartrateDetector needs ICLQt headers but we can't link against ICLQt (circular dep)
+if(QT_FOUND)
+  target_include_directories(ICLCV PRIVATE ${ICL_SOURCE_DIR}/ICLQt/src)
+endif()
