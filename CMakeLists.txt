@@ -38,6 +38,10 @@ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# Put all binaries and libraries in a single output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
 # ---- Build type ----
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   if(BUILD_TESTS)
@@ -587,7 +591,8 @@ endif()
 macro(_icl_add_deferred_dirs PROPERTY_NAME)
   get_property(_dirs GLOBAL PROPERTY ${PROPERTY_NAME})
   foreach(_dir ${_dirs})
-    add_subdirectory(${_dir} ${CMAKE_BINARY_DIR}/${PROPERTY_NAME}/${_dir})
+    file(RELATIVE_PATH _reldir ${CMAKE_SOURCE_DIR} ${_dir})
+    add_subdirectory(${_dir} ${CMAKE_BINARY_DIR}/${_reldir})
   endforeach()
 endmacro()
 
