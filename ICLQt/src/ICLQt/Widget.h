@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 #include <ICLCore/Types.h>
 #include <ICLQt/ImageStatistics.h>
 #include <ICLQt/MouseHandler.h>
@@ -63,7 +63,7 @@ namespace icl{
 
 
     */
-    class ICLQt_API ICLWidget : public QGLWidget{
+    class ICLQt_API ICLWidget : public QOpenGLWidget{
       Q_OBJECT
       public:
       /// just used internally

@@ -1812,7 +1812,7 @@ namespace icl{
         m_plot->setDataViewPort(Range32f(minX,maxX), Range32f(minY,maxY));
 
         if(useGL){
-          QGLWidget *gl = new QGLWidget(def.parentWidget());
+          QOpenGLWidget *gl = new QOpenGLWidget(def.parentWidget());
           QLayout *layout = new QVBoxLayout(gl);
           layout->setSpacing(0);
           layout->setContentsMargins(0,0,0,0);

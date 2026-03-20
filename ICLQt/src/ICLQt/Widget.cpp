@@ -33,7 +33,7 @@
 
 #include <ICLCore/Img.h>
 #include <QtCore/QTimer>
-#include <QtWidgets/QDesktopWidget>
+#include <QScreen>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -594,7 +594,7 @@ namespace icl{
           }
           if(screen >= 0){ // from the internet, it seems to be not quite clear whether to call this before
                            // or after showFullScreen
-            QRect geom = QApplication::desktop()->screenGeometry(screen);
+            QRect geom = QApplication::screens().value(screen, QApplication::primaryScreen())->geometry();
             parent->move(QPoint(geom.x(), geom.y()));
             parent->resize(geom.width(), geom.height());
           }
@@ -602,7 +602,7 @@ namespace icl{
           parent->show();
 
           if(screen >= 0){
-            QRect geom = QApplication::desktop()->screenGeometry(screen);
+            QRect geom = QApplication::screens().value(screen, QApplication::primaryScreen())->geometry();
             parent->move(QPoint(geom.x(), geom.y()));
             parent->resize(geom.width(), geom.height());
           }
@@ -1507,7 +1507,7 @@ namespace icl{
     // ------------ ICLWidget ------------------------------
 
 
-    ICLWidget::ICLWidget(QWidget *parent) : QGLWidget(parent,ICLApplication::instance()->sharedWidget),
+    ICLWidget::ICLWidget(QWidget *parent) : QOpenGLWidget(parent),
       m_data(new ICLWidget::Data(this)){
 
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -2069,7 +2069,7 @@ namespace icl{
 
     void ICLWidget::paintEvent(QPaintEvent *e){
       if(QApplication::activeModalWidget()) return;
-      QGLWidget::paintEvent(e);
+      QOpenGLWidget::paintEvent(e);
     }
 
 
@@ -2154,12 +2154,12 @@ namespace icl{
       setFocus();
 
       if(m_data->embeddedZoomMode){
-        m_data->embeddedZoomRect = new Rect32f(e->x(),e->y(),0.1,0.1);
+        m_data->embeddedZoomRect = new Rect32f(e->position().x(),e->position().y(),0.1,0.1);
         update();
         return;
       }
 
-      if(m_data->event(e->x(),e->y(),OSDGLButton::Press)){
+      if(m_data->event(e->position().x(),e->position().y(),OSDGLButton::Press)){
         update();
         return;
       }
@@ -2208,7 +2208,7 @@ namespace icl{
         }
       }
 
-      if(m_data->event(e->x(),e->y(),OSDGLButton::Release)){
+      if(m_data->event(e->position().x(),e->position().y(),OSDGLButton::Release)){
         update();
         return;
       }
@@ -2226,20 +2226,20 @@ namespace icl{
 
     void ICLWidget::mouseMoveEvent(QMouseEvent *e){
       if(m_data->embeddedZoomMode && m_data->embeddedZoomRect){
-        m_data->embeddedZoomRect->width = e->x()-m_data->embeddedZoomRect->x;
-        m_data->embeddedZoomRect->height = e->y()-m_data->embeddedZoomRect->y;
+        m_data->embeddedZoomRect->width = e->position().x()-m_data->embeddedZoomRect->x;
+        m_data->embeddedZoomRect->height = e->position().y()-m_data->embeddedZoomRect->y;
         *m_data->embeddedZoomRect = m_data->embeddedZoomRect->normalized();
         update();
         return;
       }
 
 
-      if(m_data->event(e->x(),e->y(),OSDGLButton::Move)){
+      if(m_data->event(e->position().x(),e->position().y(),OSDGLButton::Move)){
         update();
         return;
       }
-      m_data->mouseX = e->x();
-      m_data->mouseY = e->y();
+      m_data->mouseX = e->position().x();
+      m_data->mouseY = e->position().y();
 
       if(m_data->downMask[0] || m_data->downMask[1] || m_data->downMask[2]){
         emit mouseEvent(createMouseEvent(MouseDragEvent));
@@ -2311,11 +2311,7 @@ namespace icl{
     void ICLWidget::wheelEvent(QWheelEvent *e){
       // possibly adding a wheel base zooming if a certain keyboard modifier is pressed
 
-      if(e->orientation() == Qt::Horizontal){
-        m_data->wheelDelta = Point(e->delta(),0);
-      }else{
-        m_data->wheelDelta = Point(0,e->delta());
-      }
+      m_data->wheelDelta = Point(e->angleDelta().x(), e->angleDelta().y());
 
       emit mouseEvent(createMouseEvent(MouseWheelEvent));
 
@@ -2328,7 +2324,7 @@ namespace icl{
 
       static const float zoominfac = 0.9;
       static const float zoomoutfac = 1.5;
-      float steps = e->delta()/120.0; // delta is wheelangle in 1/8 degree !
+      float steps = e->angleDelta().y()/120.0; // delta is wheelangle in 1/8 degree !
       float zoom = (steps>0) ? pow(zoominfac,steps) : pow(zoomoutfac,-steps);
       Rect ir = getImageRect(true);
       Size is = getImageSize(true);
@@ -2348,8 +2344,8 @@ namespace icl{
         zr = fixRectAR(zr,this);
       }
       // Compute current relative image position
-      float boxX = e->x() - ir.x;
-      float boxY = e->y() - ir.y;
+      float boxX = e->position().x() - ir.x;
+      float boxY = e->position().y() - ir.y;
       int imageX = (int) rint((boxX*(is.width))/ir.width);
       int imageY = (int) rint((boxY*(is.height))/ir.height);
       float relImageX = float(imageX)/is.width;
@@ -2393,7 +2389,7 @@ namespace icl{
 
 
     void ICLWidget::setVisible(bool visible){
-      QGLWidget::setVisible(visible);
+      QOpenGLWidget::setVisible(visible);
       // xxx m_data->showMenuButton->setVisible(false);
       // xxx m_data->embedMenuButton->setVisible(false);
       m_data->imageInfoIndicator->hide();
@@ -2677,7 +2673,7 @@ namespace icl{
         update();
         return true;
       }else{
-        return QGLWidget::event(event);
+        return QOpenGLWidget::event(event);
       }
     }
 

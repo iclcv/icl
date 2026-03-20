@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/GLPaintEngine.h>
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 #include <ICLCore/Img.h>
 #include <QFontMetrics>
 #include <QPainter>
@@ -66,7 +66,7 @@ namespace icl{
       // inline float drawToWin(float x, float w) { return (w/2) * x + (w/2); }
     }
 
-    GLPaintEngine::GLPaintEngine(QGLWidget *widget):
+    GLPaintEngine::GLPaintEngine(QOpenGLWidget *widget):
       // {{{ open
       m_widget(widget),m_bciauto(false), m_font(QFont("Arial",30)),
       m_incompDepthBuf(0){

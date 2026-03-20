@@ -35,7 +35,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/PaintEngine.h>
 #include <QFont>
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 
 namespace icl{
   namespace qt{
@@ -56,7 +56,7 @@ namespace icl{
     class ICLQt_API GLPaintEngine : public PaintEngine{
       public:
 
-      GLPaintEngine(QGLWidget *widget);
+      GLPaintEngine(QOpenGLWidget *widget);
       virtual ~GLPaintEngine();
 
       virtual void color(float r, float g, float b, float a=255);
@@ -113,7 +113,7 @@ namespace icl{
       void setPackAlignment(core::depth d, int linewidth);
       void setupPixelTransfer(core::depth d, float brightness, float contrast, float intensity);
 
-      QGLWidget *m_widget;
+      QOpenGLWidget *m_widget;
 
       float m_linewidth;
       float m_pointsize;

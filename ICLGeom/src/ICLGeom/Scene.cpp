@@ -49,8 +49,9 @@
 #include <ICLQt/IconFactory.h>
 #include <ICLQt/Application.h>
 #include <ICLGeom/ShaderUtil.h>
-#include <QtOpenGL/QGLPixelBuffer>
-#include <QtOpenGL/QGLContext>
+#include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
+#include <QOffscreenSurface>
 #include <ICLCore/CCFunctions.h>
 #endif
 
@@ -1466,16 +1467,25 @@ namespace icl{
 
 #ifdef ICL_HAVE_QT
     struct Scene::PBuffer{
-      QGLPixelBuffer m_buffer;
+      QOpenGLContext m_context;
+      QOffscreenSurface m_surface;
+      SmartPtr<QOpenGLFramebufferObject> m_fbo;
       QImageConverter conv;
       SmartPtr<GLImg> background;
-      PBuffer(Size s):m_buffer(s.width,s.height, QGLFormat::defaultFormat(), ICLApplication::instance()->sharedWidget){}
+      PBuffer(Size s){
+        m_surface.setFormat(QSurfaceFormat::defaultFormat());
+        m_surface.create();
+        m_context.setShareContext(QOpenGLContext::globalShareContext());
+        m_context.create();
+        m_context.makeCurrent(&m_surface);
+        m_fbo = new QOpenGLFramebufferObject(s.width, s.height, QOpenGLFramebufferObject::CombinedDepthStencil);
+      }
       void update(const Camera &cam) {
         depthCorr.update(cam);
       }
 
       const Img8u &getImage() {
-        QImage img = m_buffer.toImage();
+        QImage img = m_fbo->toImage();
         conv.setQImage(&img);
         return *conv.getImgBase()->as8u();
       }
@@ -1615,7 +1625,8 @@ namespace icl{
           if(!fastRendering){
             pbuffer->update(cam);
           }
-          pbuffer->m_buffer.makeCurrent();
+          pbuffer->m_context.makeCurrent(&pbuffer->m_surface);
+          pbuffer->m_fbo->bind();
           GeomColor c = scene->getBackgroundColor();
           glClearColor(c[0] / 255., c[1] / 255., c[2] / 255., 1);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1676,7 +1687,8 @@ namespace icl{
               }
             }
           }
-          pbuffer->m_buffer.doneCurrent();
+          pbuffer->m_fbo->release();
+          pbuffer->m_context.doneCurrent();
           scene->unlock();
         }
       };

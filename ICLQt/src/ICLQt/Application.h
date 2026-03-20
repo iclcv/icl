@@ -37,7 +37,7 @@
 #include <vector>
 
 #include <QApplication>
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 
 namespace icl{
 
@@ -105,7 +105,7 @@ namespace icl{
 
       public:
       QApplication *app;
-      QGLWidget *sharedWidget;
+      QOpenGLWidget *sharedWidget;
 
       /// just type definition for convenience a void valued function with no args)
       typedef void (*callback)(void);

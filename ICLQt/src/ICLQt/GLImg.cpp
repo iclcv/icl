@@ -48,7 +48,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
-#include <QtOpenGL/QGLContext>
+#include <QOpenGLContext>
 #endif
 
 #define UPLOAD_TEXTURE_UNIT (GL_TEXTURE0+20)

@@ -171,7 +171,7 @@ namespace icl{
       app = new QApplication(static_n, static_ppc);
     }
 #endif
-    sharedWidget = new QGLWidget();
+    sharedWidget = new QOpenGLWidget();
 
     QLocale::setDefault(QLocale::C);
 

@@ -118,7 +118,7 @@
     contrast adjustment. Furthermore, fitting images into the widget viewport can simply be performed
     by the graphics hardware. The GLImg can also be used as efficient video texture.
 
-    The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QGLWidget class for
+    The next layer is implemented by the icl::ICLWidget class, which inherits Qt's QOpenGLWidget class for
     creation of an embedded OpenGL context and viewport. The ICLWidget provides a software interface for
     setting different visualisation parameters (explained in the icl::ICLWidget documentation)  as well as
     an embedded user interface for interactive adaption of these parameters. Furthermore, the ICLWidgets

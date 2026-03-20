@@ -204,11 +204,7 @@ INCLUDE_DIRECTORIES(BEFORE src
                            ${ICL_SOURCE_DIR}/ICLIO/src)
  ENDIF()
 
-IF(Qt5Widgets_FOUND)
-  QT5_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
-ELSE()
-  QT4_WRAP_CPP(MOC_FILES ${ICL_MOC_HEADERS})
-ENDIF()
+qt_wrap_cpp(MOC_FILES ${ICL_MOC_HEADERS})
 
 ADD_LIBRARY(ICLQt SHARED ${SOURCES} ${HEADERS} ${MOC_FILES})
 
@@ -236,26 +232,6 @@ INSTALL(TARGETS ICLQt
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
-
-#get_target_property(ICLQt5CoreLibAbs Qt5::Core IMPORTED_LOCATION_RELEASE)
-#get_target_property(ICLQt5GuiLibAbs Qt5::Gui IMPORTED_LOCATION_RELEASE)
-#get_target_property(ICLQt5WidgetsLibAbs Qt5::Widgets IMPORTED_LOCATION_RELEASE)
-#get_target_property(ICLQt5OpenGLLibAbs Qt5::OpenGL IMPORTED_LOCATION_RELEASE)
-
-
-#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
-
-# temporary test here
-#SET(Qt5_LIBRARIES_X "${ICLQt5CoreLibAbs} ${ICLQt5OpenGLLibAbs} ${ICLQtWidgetsLibAbs} ${ICLQt5GuiLibAbs}")
-#MESSAGE(STATUS "qt5libs: ${Qt5_LIBRARIES_X}")
-
-#MESSAGE(STATUS "libs: ${ICLQt5CoreLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5GuiLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5OpenGLLibAbs}")
-#MESSAGE(STATUS "libs: ${ICLQt5WidgetsLibAbs}")
 
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" HEADERS )
 INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" ICL_MOC_HEADERS )

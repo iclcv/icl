@@ -132,7 +132,7 @@ namespace icl{
         void wheelEvent(QWheelEvent* event) {
           setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
           double scaleFactor = 1.15;
-          if(event->delta() > 0) {
+          if(event->angleDelta().y() > 0) {
             // Zoom in
             scale(scaleFactor, scaleFactor);
           } else {

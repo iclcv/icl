@@ -31,7 +31,7 @@
 #include <ICLQt/GLFragmentShader.h>
 
 #include <ICLUtils/CompatMacros.h>
-#include <QtOpenGL/QGLContext>
+#include <QOpenGLContext>
 #include <ICLUtils/Macros.h>
 
 #include <map>
@@ -186,7 +186,7 @@ namespace icl{
 
 
     void GLFragmentShader::setUniform(const std::string var, const float &val){
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
@@ -200,7 +200,7 @@ namespace icl{
     }
 
     void GLFragmentShader::setUniform(const std::string var, const math::FixedMatrix<float,4,4> &val){
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
@@ -214,7 +214,7 @@ namespace icl{
     }
 
     void GLFragmentShader::setUniform(const std::string var, const std::vector<math::FixedMatrix<float,4,4> > &val){
-      const QGLContext *ctx = QGLContext::currentContext();
+      const QOpenGLContext *ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
@@ -234,7 +234,7 @@ namespace icl{
     }
 
     void GLFragmentShader::setUniform(const std::string var, const math::FixedColVector<float,4> &val){
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
@@ -248,7 +248,7 @@ namespace icl{
     }
 
     void GLFragmentShader::setUniform(const std::string var, const int &val){
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
@@ -263,7 +263,7 @@ namespace icl{
 
     void GLFragmentShader::activate(){
       create();
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to activate shader program where no GL-Context was active");
       }
@@ -273,7 +273,7 @@ namespace icl{
     }
 
     void GLFragmentShader::deactivate(){
-      const QGLContext* ctx = QGLContext::currentContext();
+      const QOpenGLContext* ctx = QOpenGLContext::currentContext();
       if(!ctx){
         throw ICLException("tried to deactivate shader program where no GL-Context was active");
       }
