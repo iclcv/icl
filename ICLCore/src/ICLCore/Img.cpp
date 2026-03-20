@@ -1328,8 +1328,7 @@ namespace icl {
       // find first non-zero element
       typename std::vector<const ImgType*>::const_iterator
       first = std::find_if (vec.begin(), vec.end(),
-                            std::bind2nd(std::not_equal_to<const ImgType*>(),
-                                         reinterpret_cast<const ImgType*>(0))),
+                            [](const ImgType *p){ return p != nullptr; }),
       end   = vec.end();
       // check for empty vector
       if (first == vec.end()) return 0;
@@ -1384,8 +1383,7 @@ namespace icl {
       // find first non-zero element
       std::vector<const ImgBase*>::const_iterator
       first = std::find_if (vec.begin(), vec.end(),
-                            std::bind2nd(std::not_equal_to<const ImgBase*>(),
-                                         reinterpret_cast<const icl::core::ImgBase*>(0)));
+                            [](const ImgBase *p){ return p != nullptr; });
       // check for empty vector
       if (first == vec.end()) {
         // remove all channels from *ppoDst

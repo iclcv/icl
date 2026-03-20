@@ -61,7 +61,7 @@ namespace icl{
 
     struct SharedMemoryGrabber::Data{
 
-        Data():acquireMutex(QMutex::Recursive){}
+        Data(){}
 
         SharedMemorySegment mem;
         ImgBase *image;
@@ -105,7 +105,7 @@ namespace icl{
           }
         }
 
-        QMutex acquireMutex;
+        QRecursiveMutex acquireMutex;
         bool callbacksEnabled;
 
         struct CallbackCaller : public QThread{

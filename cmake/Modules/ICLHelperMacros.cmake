@@ -57,13 +57,16 @@ function(icl_add_module MODULE_NAME)
   set(multiValueArgs SOURCES HEADERS ICL_DEPS 3RDPARTY_LIBS PKGCONFIG_DEPS MOC_HEADERS EXTRA_SOURCES)
   cmake_parse_arguments(MOD "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  # Include directories: own src, generated headers, all ICL dependency src dirs
+  # Include directories: own src, generated headers, and all ICL module src dirs
+  # that have been added so far (transitive deps are needed since headers include
+  # across the module chain, e.g. ICLCore headers include ICLUtils headers)
   set(_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_BINARY_DIR}/src)
-  foreach(_DEP ${MOD_ICL_DEPS})
-    list(APPEND _INCLUDE_DIRS ${ICL_SOURCE_DIR}/${_DEP}/src)
-  endforeach()
+    ${CMAKE_BINARY_DIR}/src
+    ${ICL_MODULE_INCLUDE_DIRS})
+  # Register this module's src dir for downstream modules
+  set(ICL_MODULE_INCLUDE_DIRS ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/src
+    CACHE INTERNAL "Accumulated ICL module include directories")
   if(WIN32)
     list(APPEND _INCLUDE_DIRS
       ${ICL_SOURCE_DIR}/3rdparty/zlib

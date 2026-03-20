@@ -86,10 +86,10 @@ namespace icl{
       };
       std::vector<Annotation*> annotations;
 
-      QMutex mutex;
+      QRecursiveMutex mutex;
       QWidget *parentBeforeFullScreen;
 
-      Data():mutex(QMutex::Recursive),parentBeforeFullScreen(0){
+      Data():parentBeforeFullScreen(0){
         mousePos = QPoint(-1,-1);
         track_mouse = true;
         bgFuncUpdateRequested = false;
@@ -141,7 +141,7 @@ namespace icl{
 
       bool sendMouseEvents(AbstractPlotWidget *w, QMouseEvent *event, MouseEventType t){
         const bool d[] = {static_cast<bool>(event->buttons() & Qt::LeftButton),
-                          static_cast<bool>(event->buttons() & Qt::MidButton),
+                          static_cast<bool>(event->buttons() & Qt::MiddleButton),
                           static_cast<bool>(event->buttons() & Qt::RightButton)};
 
         if(t == MouseMoveEvent && (d[0] || d[1] || d[2])) t = MouseDragEvent;
@@ -972,7 +972,7 @@ namespace icl{
           data->menu.getRootWidget()->move(event->globalX(), event->globalY());
           data->menu.show();
           break;
-        case Qt::MidButton: break;
+        case Qt::MiddleButton: break;
         default: break;
       }
     }

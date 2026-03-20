@@ -62,7 +62,7 @@ namespace icl{
 
     void RunLengthEncoder::resetLineSegments(){
       for(int y=0;y<m_imageROI.height;++y){
-        std::for_each(begin(y),end(y),std::mem_fun_ref(&WorkingLineSegment::reset));
+        std::for_each(begin(y),end(y),[](WorkingLineSegment &s){ s.reset(); });
       }
     }
 

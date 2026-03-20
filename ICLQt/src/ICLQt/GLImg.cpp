@@ -325,11 +325,11 @@ namespace icl{
       format imageFormat;
       Time timeStamp;
       mutable ImageStatistics stats;
-      mutable QMutex textureBufferMutex;
+      mutable QRecursiveMutex textureBufferMutex;
 
       bool isImageNull;
 
-      Data():textureBufferMutex(QMutex::Recursive){
+      Data(){
       }
 
       ~Data(){

@@ -235,13 +235,13 @@ namespace icl{
       /// Multiply elements with scalar (in source destination fashion)
       inline DynMatrix &mult(T f, DynMatrix &dst) const{
         dst.setBounds(cols(),rows());
-        std::transform(begin(),end(),dst.begin(),std::bind2nd(std::multiplies<T>(),f));
+        std::transform(begin(),end(),dst.begin(),[f](const T &v){ return v * f; });
         return dst;
       }
 
       /// Multiply elements with scalar (inplace)
       inline DynMatrix &operator*=(T f){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::multiplies<T>(),f));
+        std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
         return *this;
       }
 
@@ -326,26 +326,26 @@ namespace icl{
       /// adds a scalar to each element
       inline DynMatrix operator+(const T &t) const{
         DynMatrix d(cols(),rows());
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
+        std::transform(begin(),end(),d.begin(),[t](const T &v){ return v + t; });
         return d;
       }
 
       /// substacts a scalar from each element
       inline DynMatrix operator-(const T &t) const{
         DynMatrix d(cols(),rows());
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
+        std::transform(begin(),end(),d.begin(),[t](const T &v){ return v - t; });
         return d;
       }
 
       /// adds a scalar to each element (inplace)
       inline DynMatrix &operator+=(const T &t){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::plus<T>(),t));
+        std::transform(begin(),end(),begin(),[t](const T &v){ return v + t; });
         return *this;
       }
 
       /// substacts a scalar from each element (inplace)
       inline DynMatrix &operator-=(const T &t){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::minus<T>(),t));
+        std::transform(begin(),end(),begin(),[t](const T &v){ return v - t; });
         return *this;
       }
 
@@ -726,12 +726,12 @@ namespace icl{
 
         /// operator *= for scalars
         inline DynMatrixColumn &operator*=(const T&val){
-          std::for_each(begin(),end(),std::bind2nd(std::multiplies<T>(),val));
+          std::for_each(begin(),end(),[val](T &v){ v *= val; });
           return *this;
         }
         /// operator /= for scalars
         inline DynMatrixColumn &operator/=(const T&val){
-          std::for_each(begin(),end(),std::bind2nd(std::divides<T>(),val));
+          std::for_each(begin(),end(),[val](T &v){ v /= val; });
           return *this;
         }
 

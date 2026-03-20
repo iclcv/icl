@@ -200,7 +200,7 @@ namespace icl{
     void ConvolutionKernel::toFloat(){
       if(idata && !fdata){
         fdata = new float[getDim()];
-        std::transform(idata,idata+getDim(),fdata,std::bind2nd(std::divides<float>(),factor));
+        std::transform(idata,idata+getDim(),fdata,[this](float v){ return v / factor; });
         if(owned){
           ICL_DELETE(idata);
         }else{

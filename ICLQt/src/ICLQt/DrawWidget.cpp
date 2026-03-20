@@ -842,7 +842,7 @@ namespace icl{
     ICLDrawWidget::ICLDrawWidget(QWidget *poParent):
 
 
-      ICLWidget(poParent),m_oCommandMutex(QMutex::Recursive){
+      ICLWidget(poParent){
       m_poState = new State();
       m_poState->aa = false;
       m_poState->rel = false;

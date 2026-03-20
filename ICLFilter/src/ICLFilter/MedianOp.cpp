@@ -611,7 +611,7 @@ namespace icl {
     #undef MINMAX
   #endif
 
-#ifdef ICL_HAVE_SSE2
+      // Generic (non-optimized) median for arbitrary mask sizes
       template<class T>
       void apply_median_all(const Img<T> *src, Img<T> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
         // {{{ open
@@ -635,6 +635,7 @@ namespace icl {
         }
       }
 
+#ifdef ICL_HAVE_SSE2
       template<>
       void apply_median_all(const Img<icl8u> *src, Img<icl8u> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
         // {{{ open

@@ -461,10 +461,10 @@ namespace icl{
     public:
       Data(ICLWidget *parent):
         parent(parent),channelSelBuf(0),
-        qimageConv(0),qimage(0),mutex(QMutex::Recursive),fm(fmHoldAR),fmSave(fmHoldAR),
+        qimageConv(0),qimage(0),fm(fmHoldAR),fmSave(fmHoldAR),
         rm(rmOff),bciUpdateAuto(0),channelUpdateAuto(0),
         mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
-        outputCap(0),menuOn(true),menuMutex(QMutex::Recursive),menuptr(0),zoomAdjuster(0),
+        outputCap(0),menuOn(true),menuptr(0),zoomAdjuster(0),
         qic(0),menuEnabled(true),infoTab(0),histoWidget(0),
         imageInfoIndicatorEnabled(true),infoTabVisible(false),
         selectedTabIndex(0),embeddedZoomMode(false),
@@ -499,7 +499,7 @@ namespace icl{
       GLImg image;
       QImageConverter *qimageConv;
       QImage *qimage;
-      QMutex mutex;
+      QRecursiveMutex mutex;
       fitmode fm;
       fitmode fmSave;
       rangemode rm;
@@ -514,7 +514,7 @@ namespace icl{
       ICLWidget::OutputBufferCapturer *outputCap;
       bool menuOn;
 
-      QMutex menuMutex;
+      QRecursiveMutex menuMutex;
       GUI menu;
       QWidget *menuptr;
       Rect32f zoomRect;

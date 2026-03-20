@@ -53,7 +53,7 @@ namespace icl{
       m_dStepping = 0;
 
       connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(receiveValueChanged(int)));
-      m_poLayout->setMargin(1);
+      m_poLayout->setContentsMargins(1,1,1,1);
       setLayout(m_poLayout);
       setMinimumWidth(300);
 

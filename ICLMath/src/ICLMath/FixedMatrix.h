@@ -309,39 +309,39 @@ namespace icl{
       /// Multiply all elements by a scalar
       FixedMatrix operator*(T f) const{
         FixedMatrix d;
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::multiplies<T>(),f));
+        std::transform(begin(),end(),d.begin(),[f](const T &v){ return v * f; });
         return d;
       }
 
-      /// moved outside the class  Multiply all elements by a scalar (inplace)
+      /// Multiply all elements by a scalar (inplace)
       FixedMatrix &operator*=(T f){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::multiplies<T>(),f));
+        std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
         return *this;
       }
 
       /// Divide all elements by a scalar
       FixedMatrix operator/(T f) const{
         FixedMatrix d;
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::divides<T>(),f));
+        std::transform(begin(),end(),d.begin(),[f](const T &v){ return v / f; });
         return d;
       }
 
       /// Divide all elements by a scalar
       FixedMatrix &operator/=(T f){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::divides<T>(),f));
+        std::transform(begin(),end(),begin(),[f](const T &v){ return v / f; });
         return *this;
       }
 
       /// Add a scalar to each element
       FixedMatrix operator+(const T &t) const{
         FixedMatrix d;
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::plus<T>(),t));
+        std::transform(begin(),end(),d.begin(),[t](const T &v){ return v + t; });
         return d;
       }
 
       /// Add a scalar to each element (inplace)
       FixedMatrix &operator+=(const T &t){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::plus<T>(),t));
+        std::transform(begin(),end(),begin(),[t](const T &v){ return v + t; });
         return *this;
       }
 
@@ -349,13 +349,13 @@ namespace icl{
       /// Substract a scalar from each element
       FixedMatrix operator-(const T &t) const{
         FixedMatrix d;
-        std::transform(begin(),end(),d.begin(),std::bind2nd(std::minus<T>(),t));
+        std::transform(begin(),end(),d.begin(),[t](const T &v){ return v - t; });
         return d;
       }
 
       /// Substract a scalar from each element (inplace)
       FixedMatrix &operator-=(const T &t){
-        std::transform(begin(),end(),begin(),std::bind2nd(std::minus<T>(),t));
+        std::transform(begin(),end(),begin(),[t](const T &v){ return v - t; });
         return *this;
       }
 

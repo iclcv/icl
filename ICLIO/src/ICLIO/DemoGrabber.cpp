@@ -117,7 +117,7 @@ namespace icl{
 
     template<class T>
     void erode_buffer(Img<T> &t){
-      t.transform(std::bind2nd(std::multiplies<float>(),0.99),t);
+      t.transform([](float v){ return v * 0.99f; },t);
     }
 
     const ImgBase* DemoGrabber::acquireImage(){

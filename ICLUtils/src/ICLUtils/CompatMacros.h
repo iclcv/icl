@@ -184,8 +184,8 @@
 #ifdef ICL_HAVE_OPENGL
   #ifdef ICL_SYSTEM_APPLE
     #include <GL/glew.h>
-    #include <gl.h>
-    #include <glu.h>
+    #include <OpenGL/gl.h>
+    #include <OpenGL/glu.h>
   #elif ICL_SYSTEM_WINDOWS
     #include <Windows.h>
     #include <GL/glew.h>

@@ -38,7 +38,7 @@ extern "C"
 #include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
 #include <libavformat/avformat.h>
-#include <libavresample/avresample.h>
+#include <libswresample/swresample.h>
 #include <libswscale/swscale.h>
 #include <libavcodec/version.h>
 }

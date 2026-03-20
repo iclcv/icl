@@ -313,7 +313,7 @@ namespace icl{
 
     /** \cond */
     template<class R, class A, class B>
-    struct Function<R, A, B, NO_ARG> : public std::binary_function<A, B, R>{
+    struct Function<R, A, B, NO_ARG>{
       Function(){}
       Function(FunctionImpl<R,A,B> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A,B> >impl):impl(impl){}
@@ -326,7 +326,7 @@ namespace icl{
     };
 
     template<class R, class A>
-    struct Function<R, A, NO_ARG> : public std::unary_function<A, R>{
+    struct Function<R, A, NO_ARG>{
       Function(){}
       Function(FunctionImpl<R,A> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R,A> >impl):impl(impl){}

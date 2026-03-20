@@ -484,7 +484,7 @@ int main(int n, char **ppc){
       State *m_poState;
 
       /// utils::Mutex for a thread save event queue
-      QMutex m_oCommandMutex;
+      QRecursiveMutex m_oCommandMutex;
 
       /// internal flag
       bool m_autoResetQueue;

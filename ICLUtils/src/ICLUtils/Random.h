@@ -37,6 +37,8 @@
 #include <ICLUtils/ClippedCast.h>
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
+#include <random>
 #include <vector>
 
 #ifdef WIN32
@@ -214,7 +216,8 @@ namespace icl{
       }
       std::vector<int> s(containerSize);
       for(int i=0;i<containerSize;++i) s[i] = i;
-      std::random_shuffle(s.begin(), s.end());
+      static thread_local std::mt19937 rng(std::random_device{}());
+      std::shuffle(s.begin(), s.end(), rng);
       return std::vector<int>(s.begin(), s.begin()+subsetSize);
     }
 

@@ -72,7 +72,7 @@ namespace icl{
       bool loadParamsScope;
 
 
-      Data(bool complex):complex(complex),mutex(QMutex::Recursive),fps(5),fpsLimiter(10,10){
+      Data(bool complex):complex(complex),fps(5),fpsLimiter(10,10){
         scanScope = false;
         settingUpDevice = false;
         grabbing = false;
@@ -83,7 +83,7 @@ namespace icl{
 
       QScrollArea *scroll;
       GUI propGUI; // contains the dataStore ...
-      QMutex mutex;
+      QRecursiveMutex mutex;
 
       FPSEstimator fps;
       FPSLimiter fpsLimiter;
