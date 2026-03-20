@@ -1018,7 +1018,7 @@ namespace icl{
         update();
       }
     }
-    void AbstractPlotWidget::enterEvent(QEvent *event){
+    void AbstractPlotWidget::enterEvent(QEnterEvent *event){
 
     }
     void AbstractPlotWidget::leaveEvent(QEvent *event){

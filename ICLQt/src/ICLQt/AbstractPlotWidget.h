@@ -302,7 +302,7 @@ namespace icl{
       virtual void mouseReleaseEvent(QMouseEvent *event);
 
       /// internally used
-      virtual void enterEvent(QEvent *event);
+      virtual void enterEvent(QEnterEvent *event);
 
       /// internally used
       virtual void leaveEvent(QEvent *event);

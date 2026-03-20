@@ -1955,16 +1955,13 @@ namespace icl{
 
     void ICLWidget::initializeGL(){
       glClearColor (0.0, 0.0, 0.0, 0.0);
-      //    glShadeModel(GL_FLAT);
       glEnable(GL_TEXTURE_2D);
-      //glDisable(GL_DEPTH_TEST);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
       glEnable(GL_BLEND);
 
-      glOrtho(0, width(), height(), 0, -999999, 999999);
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
+      glOrtho(0, width(), height(), 0, -999999, 999999);
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
     }
@@ -1975,14 +1972,20 @@ namespace icl{
       LOCK_SECTION;
       makeCurrent();
       glViewport(0, 0, (GLint)w, (GLint)h);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glOrtho(0, w, h, 0, -999999, 999999);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
     }
 
 
 
     void ICLWidget::paintGL(){
-      //    m_data->mutex.lock();
       glewInit();
       LOCK_SECTION;
+
       if(! m_data->bcSrc ){
         glClearColor(m_data->backgroundColor[0],m_data->backgroundColor[1],
                      m_data->backgroundColor[2],1);
@@ -2257,7 +2260,7 @@ namespace icl{
 
 
 
-    void ICLWidget::enterEvent(QEvent*){
+    void ICLWidget::enterEvent(QEnterEvent*){
       if(m_data->menuEnabled){
         if(m_data->event(-1,-1,OSDGLButton::Enter)){
           update();
@@ -2375,7 +2378,9 @@ namespace icl{
 
 
     void ICLWidget::resizeEvent(QResizeEvent *e){
-      resizeGL(e->size().width(),e->size().height());
+      // Don't call resizeGL manually — QOpenGLWidget calls it automatically
+      // with the GL context properly set up.
+      QOpenGLWidget::resizeEvent(e);
       if(m_data->menuptr && m_data->menuptr->parent() == this){
         m_data->adaptMenuSize(size());
       }
