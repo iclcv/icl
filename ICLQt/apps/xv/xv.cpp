@@ -32,19 +32,17 @@
 #include <iterator>
 #include <ICLIO/FileGrabber.h>
 #include <ICLQt/Common.h>
-#include <QDesktopWidget>
-
-//#include <QScreen>
+#include <QScreen>
 
 GUI gui;
 
-Size compute_image_size(const std::vector<const ImgBase*> &is, QDesktopWidget *desktop){
+Size compute_image_size(const std::vector<const ImgBase*> &is, QScreen *screen){
   Size s;
   for(unsigned int i=0;i<is.size();++i){
     s.width = iclMax(s.width,is[i]->getWidth());
     s.height = iclMax(s.height,is[i]->getHeight());
   }
-  QRect r = desktop->availableGeometry();
+  QRect r = screen->availableGeometry();
 
   return Size(iclMin(s.width,r.width()-20),iclMin(s.height,r.height()-20));
 }
@@ -90,7 +88,7 @@ int main (int n, char **ppc){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
     }
 
-    Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::desktop());
+    Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::primaryScreen());
     gui << Draw().handle("draw").size(size/20);
     gui.show();
 
@@ -121,7 +119,7 @@ int main (int n, char **ppc){
         maxSize.height = iclMax(image->getHeight(),maxSize.height);
         imageVec.push_back(image->deepCopy());
 
-        std::replace_if(s.begin(),s.end(),std::bind2nd(std::equal_to<char>(),','),'-');
+        std::replace(s.begin(),s.end(),',','-');
         imageList += (imageList.length() ? ",": "") +s;
         imageVecStrs.push_back(s);
       }catch(const ICLException &ex){
@@ -129,7 +127,7 @@ int main (int n, char **ppc){
         std::cout << "(skipping!)" << std::endl;
       }
     }
-    Size size = compute_image_size(imageVec,QApplication::desktop());
+    Size size = compute_image_size(imageVec,QApplication::primaryScreen());
     Tab t(imageList);
 
     for(size_t i=0;i<imageVecStrs.size();++i){

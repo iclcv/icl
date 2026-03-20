@@ -91,15 +91,15 @@ function(icl_add_module MODULE_NAME)
 
   set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${SO_VERSION})
 
-  # Subdirectories
-  if(MOD_HAS_EXAMPLES AND BUILD_EXAMPLES)
-    add_subdirectory(examples)
+  # Register subdirectories for deferred processing (after all modules are built)
+  if(MOD_HAS_EXAMPLES)
+    set_property(GLOBAL APPEND PROPERTY ICL_EXAMPLE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/examples")
   endif()
-  if(MOD_HAS_DEMOS AND BUILD_DEMOS)
-    add_subdirectory(demos)
+  if(MOD_HAS_DEMOS)
+    set_property(GLOBAL APPEND PROPERTY ICL_DEMO_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/demos")
   endif()
-  if(MOD_HAS_APPS AND BUILD_APPS)
-    add_subdirectory(apps)
+  if(MOD_HAS_APPS)
+    set_property(GLOBAL APPEND PROPERTY ICL_APP_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/apps")
   endif()
 
   # Install
@@ -134,6 +134,7 @@ FUNCTION(BUILD_EXAMPLE)
 
   SET(BINARY "${EXAMPLE_NAME}-example")
   ADD_EXECUTABLE(${BINARY} ${EXAMPLE_SOURCES})
+  target_include_directories(${BINARY} PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
   TARGET_LINK_LIBRARIES(${BINARY} ${EXAMPLE_LIBRARIES})
   INSTALL(TARGETS ${BINARY}
           COMPONENT examples
@@ -152,20 +153,9 @@ FUNCTION(BUILD_DEMO)
   get_filename_component(SOURCE_ABSOLUTE ${FIRST_SOURCE} ABSOLUTE)
   get_filename_component(SOURCE_FOLDER ${SOURCE_ABSOLUTE} PATH)
 
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ICLUtils/src
-                      ${CMAKE_SOURCE_DIR}/ICLMath/src
-                      ${CMAKE_SOURCE_DIR}/ICLCore/src
-                      ${CMAKE_SOURCE_DIR}/ICLFilter/src
-                      ${CMAKE_SOURCE_DIR}/ICLIO/src
-                      ${CMAKE_SOURCE_DIR}/ICLQt/src
-                      ${CMAKE_SOURCE_DIR}/ICLCV/src
-                      ${CMAKE_SOURCE_DIR}/ICLGeom/src
-                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src
-                      ${CMAKE_SOURCE_DIR}/ICLPhysics/src
-                      ${SOURCE_FOLDER})
-
   SET(BINARY "${DEMO_NAME}-demo")
   ADD_EXECUTABLE(${BINARY} ${DEMO_SOURCES})
+  target_include_directories(${BINARY} PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src ${SOURCE_FOLDER})
   TARGET_LINK_LIBRARIES(${BINARY} ${DEMO_LIBRARIES})
   INSTALL(TARGETS ${BINARY}
           COMPONENT demos
@@ -180,19 +170,9 @@ FUNCTION(BUILD_APP)
   SET(multiValueArgs SOURCES LIBRARIES)
   CMAKE_PARSE_ARGUMENTS(APP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ICLUtils/src
-                      ${CMAKE_SOURCE_DIR}/ICLMath/src
-                      ${CMAKE_SOURCE_DIR}/ICLCore/src
-                      ${CMAKE_SOURCE_DIR}/ICLFilter/src
-                      ${CMAKE_SOURCE_DIR}/ICLIO/src
-                      ${CMAKE_SOURCE_DIR}/ICLQt/src
-                      ${CMAKE_SOURCE_DIR}/ICLCV/src
-                      ${CMAKE_SOURCE_DIR}/ICLGeom/src
-                      ${CMAKE_SOURCE_DIR}/ICLMarkers/src
-                      ${CMAKE_SOURCE_DIR}/ICLPhysics/src)
-
   SET(BINARY "icl-${APP_NAME}")
   ADD_EXECUTABLE(${BINARY} ${APP_SOURCES})
+  target_include_directories(${BINARY} PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
   TARGET_LINK_LIBRARIES(${BINARY} ${APP_LIBRARIES})
   INSTALL(TARGETS ${BINARY}
           COMPONENT applications

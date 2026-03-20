@@ -583,6 +583,24 @@ if(BULLET_FOUND AND QT_FOUND)
   add_subdirectory(ICLPhysics)
 endif()
 
+# ---- Build examples, demos, and apps (after all modules, so all include dirs are available) ----
+macro(_icl_add_deferred_dirs PROPERTY_NAME)
+  get_property(_dirs GLOBAL PROPERTY ${PROPERTY_NAME})
+  foreach(_dir ${_dirs})
+    add_subdirectory(${_dir} ${CMAKE_BINARY_DIR}/${PROPERTY_NAME}/${_dir})
+  endforeach()
+endmacro()
+
+if(BUILD_EXAMPLES)
+  _icl_add_deferred_dirs(ICL_EXAMPLE_DIRS)
+endif()
+if(BUILD_DEMOS)
+  _icl_add_deferred_dirs(ICL_DEMO_DIRS)
+endif()
+if(BUILD_APPS)
+  _icl_add_deferred_dirs(ICL_APP_DIRS)
+endif()
+
 add_subdirectory(doc)
 add_subdirectory(cmake)
 
