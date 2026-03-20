@@ -52,7 +52,7 @@ namespace icl{
           QFlags<Qt::MouseButton> bs = m->buttons();
           if(m && (bs & Qt::LeftButton ||
                    bs & Qt::RightButton ||
-                   bs & Qt::MidButton)){
+                   bs & Qt::MiddleButton)){
             int val = QStyle::sliderValueFromPosition(m_parent->minimum(),
                                                       m_parent->maximum(),
                                                       m->x(),

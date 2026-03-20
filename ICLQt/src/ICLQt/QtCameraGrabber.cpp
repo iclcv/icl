@@ -30,7 +30,7 @@
 
 #include <ICLQt/QtCameraGrabber.h>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtGlobal>
 #include <QtMultimedia/QCameraInfo>
 #include <ICLUtils/StringUtils.h>

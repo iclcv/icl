@@ -372,7 +372,7 @@ namespace icl{
         }else if(t == "info"){
           std::string handle = "#i#"+p.full;
           ostr << '\1' << handle;
-          gui << Label(conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << Label(conf->getPropertyValue(p.full).as<std::string>()).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
 
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
@@ -797,7 +797,7 @@ namespace icl{
         m_poScroll->widget()->setLayout(new QBoxLayout(d,m_poScroll));
         m_poScroll->widget()->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding));
 
-        m_poScroll->widget()->layout()->setMargin(def.margin());
+        m_poScroll->widget()->layout()->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
         m_poScroll->widget()->layout()->setSpacing(def.spacing());
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -1004,7 +1004,7 @@ namespace icl{
         //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
         m_poGroupBox->setStyle(QStyleFactory::create("fusion"));
         m_poLayout = new QVBoxLayout;
-        m_poLayout->setMargin(def.margin());
+        m_poLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
         m_poLayout->setSpacing(def.spacing());
         m_poGroupBox->setLayout(m_poLayout);
         addToGrid(m_poGroupBox);

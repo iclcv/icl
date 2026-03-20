@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/ICLVideoSurface.h>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #include <QtCore/QMutexLocker>
 

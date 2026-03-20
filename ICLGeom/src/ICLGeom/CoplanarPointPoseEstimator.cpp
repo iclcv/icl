@@ -34,6 +34,8 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLMath/Homography2D.h>
 #include <ICLUtils/Random.h>
+#include <algorithm>
+#include <random>
 #include <ICLUtils/ProgArg.h>
 #include <ICLMath/SimplexOptimizer.h>
 #include <ICLMath/PolynomialSolver.h>
@@ -770,7 +772,8 @@ namespace icl{
         //DEBUG_LOG("staring RANSAC interation");
 
         for(int i=0;i<nIter; ++i){
-          std::random_shuffle(r.begin(), r.end());
+          static thread_local std::mt19937 rng(std::random_device{}());
+          std::shuffle(r.begin(), r.end(), rng);
           std::vector<Point32f> mpts(N), ipts(N), nipts(N);
           for(int j=0;j<N;++j){
             const int idx = r[j];

@@ -32,7 +32,7 @@
 
 #include <QtCore>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #include <QtMultimedia/QMediaPlayer>
 #include <QFileInfo>

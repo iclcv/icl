@@ -31,7 +31,7 @@
 
 #include <ICLQt/QtVideoGrabber.h>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 using namespace icl::utils;
 using namespace icl::io;

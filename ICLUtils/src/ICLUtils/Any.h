@@ -33,6 +33,8 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/StringUtils.h>
 #include <cstring>
+#include <type_traits>
+#include <sstream>
 
 namespace icl{
   namespace utils{

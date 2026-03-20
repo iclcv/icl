@@ -109,11 +109,11 @@ namespace icl{
           break;
       }
       if(m_poGridLayout){
-        m_poGridLayout->setMargin(def.margin());
+        m_poGridLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
         m_poGridLayout->setSpacing(def.spacing());
         setLayout(m_poGridLayout);
       }else if(m_poOtherLayout){
-        m_poOtherLayout->setMargin(def.margin());
+        m_poOtherLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
         m_poOtherLayout->setSpacing(def.spacing());
         setLayout(m_poOtherLayout);
       }

@@ -644,7 +644,7 @@ namespace icl{
         if(embedTimer.isActive()) return;
 
         if(parentBeforeFullScreen){
-          QList<EmptyWidget*> cs = parentBeforeFullScreen->findChildren<EmptyWidget*>("empty");
+          QList<QWidget*> cs = parentBeforeFullScreen->findChildren<QWidget*>("empty");
           if(cs.size() && cs[0]){
             cs[0]->setParent(0);
             delete cs[0];
@@ -1073,7 +1073,7 @@ namespace icl{
         static bool _ = false;
         switch(b){
           case Qt::LeftButton: return downMask[0];
-          case Qt::MidButton: return downMask[1];
+          case Qt::MiddleButton: return downMask[1];
           case Qt::RightButton: return downMask[2];
           default: return _;
         }
@@ -1920,7 +1920,7 @@ namespace icl{
       if(!m_data->qic){
         m_data->qic = new QImageConverter;
       }
-      QImage qim = grabFrameBuffer();
+      QImage qim = grabFramebuffer();
       m_data->qic->setQImage(&qim);
       return *m_data->qic->getImg<icl8u>();
     }

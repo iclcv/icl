@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <type_traits>
 #include <iostream>
 
 namespace icl{
@@ -177,14 +178,24 @@ namespace icl{
 
 
 
+    /// type trait: can T be extracted from an istream?
+    template<class T, class = void>
+    struct is_stream_extractable : std::false_type {};
+    template<class T>
+    struct is_stream_extractable<T, std::void_t<decltype(std::declval<std::istream&>() >> std::declval<T&>())>> : std::true_type {};
+
     /// parses a string into template parameter (defined for iclXX and std::string) \ingroup STRUTILS
     /** @see to8u to16s to32s to32f to64f (*/
     template<class T>
     inline T parse(const std::string &s){
-      std::istringstream str(s);
-      T t;
-      str >> t;
-      return t;
+      if constexpr (is_stream_extractable<T>::value) {
+        std::istringstream str(s);
+        T t;
+        str >> t;
+        return t;
+      } else {
+        throw ICLException("parse<T>: type is not stream-extractable");
+      }
     }
 
     template<>
