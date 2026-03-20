@@ -28,7 +28,98 @@
 #**                                                                 **
 #*********************************************************************
 
-INCLUDE(CMakeParseArguments)
+include(CMakeParseArguments)
+
+#*********************************************************************
+# ---- ICL_ADD_MODULE ----
+# Unified function for adding an ICL module. Handles:
+#   - include directories (module src + dependencies + generated headers)
+#   - library creation and linking
+#   - installation (library + headers)
+#   - pkg-config generation
+#   - test configuration
+#   - examples/demos/apps subdirectories
+#
+# Usage:
+#   icl_add_module(ICLFoo
+#     SOURCES src/ICLFoo/Bar.cpp ...
+#     HEADERS src/ICLFoo/Bar.h ...
+#     ICL_DEPS ICLUtils ICLMath          # ICL module dependencies
+#     3RDPARTY_LIBS ${Foo_LIBRARIES}     # 3rd party libraries
+#     PKGCONFIG_DEPS ICLUtils-${SO_VERSION}  # pkg-config dependency names
+#     MOC_HEADERS src/ICLFoo/Widget.h    # Qt MOC headers (optional)
+#     HAS_EXAMPLES HAS_DEMOS HAS_APPS   # which subdirectories exist
+#   )
+#*********************************************************************
+function(icl_add_module MODULE_NAME)
+  set(options HAS_EXAMPLES HAS_DEMOS HAS_APPS)
+  set(oneValueArgs "")
+  set(multiValueArgs SOURCES HEADERS ICL_DEPS 3RDPARTY_LIBS PKGCONFIG_DEPS MOC_HEADERS EXTRA_SOURCES)
+  cmake_parse_arguments(MOD "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  # Include directories: own src, generated headers, all ICL dependency src dirs
+  set(_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_BINARY_DIR}/src)
+  foreach(_DEP ${MOD_ICL_DEPS})
+    list(APPEND _INCLUDE_DIRS ${ICL_SOURCE_DIR}/${_DEP}/src)
+  endforeach()
+  if(WIN32)
+    list(APPEND _INCLUDE_DIRS
+      ${ICL_SOURCE_DIR}/3rdparty/zlib
+      ${ICL_SOURCE_DIR}/3rdparty/libpng
+      ${ICL_SOURCE_DIR}/3rdparty/libjpeg)
+  endif()
+
+  # Qt MOC processing
+  set(_MOC_FILES "")
+  if(MOD_MOC_HEADERS)
+    qt_wrap_cpp(_MOC_FILES ${MOD_MOC_HEADERS})
+  endif()
+
+  # Create library
+  add_library(${MODULE_NAME} SHARED
+    ${MOD_SOURCES} ${MOD_HEADERS} ${MOD_EXTRA_SOURCES} ${_MOC_FILES})
+
+  target_include_directories(${MODULE_NAME} BEFORE PRIVATE ${_INCLUDE_DIRS})
+
+  target_link_libraries(${MODULE_NAME}
+    ${MOD_ICL_DEPS} ${MOD_3RDPARTY_LIBS})
+
+  set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${SO_VERSION})
+
+  # Subdirectories
+  if(MOD_HAS_EXAMPLES AND BUILD_EXAMPLES)
+    add_subdirectory(examples)
+  endif()
+  if(MOD_HAS_DEMOS AND BUILD_DEMOS)
+    add_subdirectory(demos)
+  endif()
+  if(MOD_HAS_APPS AND BUILD_APPS)
+    add_subdirectory(apps)
+  endif()
+
+  # Install
+  install(TARGETS ${MODULE_NAME}
+    COMPONENT libraries
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
+  INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" MOD_HEADERS)
+  if(MOD_MOC_HEADERS)
+    INSTALL_FILES_RECURSIVE("include/${INSTALL_PATH_PREFIX}" MOD_MOC_HEADERS)
+  endif()
+
+  # Pkg-config
+  CREATE_PKGCONFIG(NAME ${MODULE_NAME}
+    LIBRARY_DEPS ${MOD_3RDPARTY_LIBS}
+    PKGCONFIG_DEPS ${MOD_PKGCONFIG_DEPS})
+
+  # Tests
+  if(BUILD_TESTS)
+    CONFIGURE_GTEST(${MODULE_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+endfunction()
 
 #*********************************************************************
 # ---- BUILD_EXAMPLE ----
