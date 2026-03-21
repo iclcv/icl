@@ -35,9 +35,9 @@ namespace icl {
 		//------------------------------------------------------------------------------------------
 
 		template<typename T, unsigned int COLS, unsigned int ROWS>
-		inline Eigen::Map<Eigen::Matrix<T,ROWS,COLS,Eigen::RowMajor>,Eigen::Aligned,Eigen::Stride<0,0> >
+		inline Eigen::Map<Eigen::Matrix<T,ROWS,COLS,Eigen::RowMajor>,Eigen::Aligned16,Eigen::Stride<0,0> >
 		iclToEigenRowMajorShallow(icl::math::FixedMatrix<T,COLS,ROWS> &ICL) {
-			Eigen::Map<Eigen::Matrix<T,ROWS,COLS,Eigen::RowMajor>,Eigen::Aligned,Eigen::Stride<0,0> > result(ICL.data());
+			Eigen::Map<Eigen::Matrix<T,ROWS,COLS,Eigen::RowMajor>,Eigen::Aligned16,Eigen::Stride<0,0> > result(ICL.data());
 			return result;
 		}
 
@@ -71,9 +71,9 @@ namespace icl {
 		//------------------------------------------------------------------------------------------
 
 		template<typename T>
-		inline Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned >
+		inline Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned16 >
 		iclToEigenDynRowMajorShallow(icl::math::DynMatrix<T> &ICL) {
-			Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned> result(ICL.data(),ICL.rows(),ICL.cols());
+			Eigen::Map<Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned16> result(ICL.data(),ICL.rows(),ICL.cols());
 			return result;
 		}
 
@@ -103,7 +103,7 @@ namespace icl {
 		#define ICL_INSTANCIATE_ICL_TO_EIGEN_SHALLOW(Type,Size,TypeSuffix)																	\
 		typedef Eigen::Map<Eigen::Matrix<Type,Size,Size,Eigen::ColMajor>,Eigen::Unaligned,Eigen::Stride<1,Size> >							\
 			ICLEigenMapColMajor##Size##TypeSuffix;																							\
-		typedef Eigen::Map<Eigen::Matrix<Type,Size,Size,Eigen::RowMajor>,Eigen::Aligned,Eigen::Stride<0,0> >								\
+		typedef Eigen::Map<Eigen::Matrix<Type,Size,Size,Eigen::RowMajor>,Eigen::Aligned16,Eigen::Stride<0,0> >								\
 			ICLEigenMapRowMajor##Size##TypeSuffix;																							\
 		template ICLEigenMapRowMajor##Size##TypeSuffix iclToEigenRowMajorShallow<Type,Size,Size>(icl::math::FixedMatrix<Type,Size,Size> &);	\
 		template ICLEigenMapColMajor##Size##TypeSuffix iclToEigenColMajorShallow<Type,Size,Size>(icl::math::FixedMatrix<Type,Size,Size> &);
@@ -111,7 +111,7 @@ namespace icl {
 		#define ICL_INSTANCIATE_ICL_TO_EIGEN_SHALLOW_DYN(Type,TypeSuffix)																						\
 		typedef Eigen::Map<Eigen::Matrix<Type,Eigen::Dynamic,Eigen::Dynamic,Eigen::ColMajor>,Eigen::Unaligned,Eigen::Stride<Eigen::Dynamic,Eigen::Dynamic> >	\
 			ICLEigenMapColMajorDyn##TypeSuffix;																											\
-		typedef Eigen::Map<Eigen::Matrix<Type,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned>													\
+		typedef Eigen::Map<Eigen::Matrix<Type,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>,Eigen::Aligned16>													\
 			ICLEigenMapRowMajorDyn##TypeSuffix;																											\
 		template ICLEigenMapColMajorDyn##TypeSuffix iclToEigenDynColMajorShallow(icl::math::DynMatrix<Type> &ICL);										\
 		template ICLEigenMapRowMajorDyn##TypeSuffix iclToEigenDynRowMajorShallow(icl::math::DynMatrix<Type> &ICL);

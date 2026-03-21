@@ -219,7 +219,7 @@ namespace icl{
   #define C4(A,B,C,D) C1(A);C1(B);C1(C);C1(D)
         C4(0,1,2,3);C4(4,5,6,7);C4(8,9,10,11);C4(12,13,14,15);
   #undef C1
-  #undef C2
+  #undef C4
       }
 
       /// Range based constructor for STL compatiblitiy
