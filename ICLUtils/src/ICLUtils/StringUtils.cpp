@@ -265,11 +265,7 @@ namespace icl{
 
     string time2str(Time::value_type x){
       char acBuf[30];
-#if __WORDSIZE == 64
-      snprintf(acBuf, sizeof(acBuf), "%ld",x);
-#else
-      snprintf(acBuf, sizeof(acBuf), "%lld",x);
-#endif
+      snprintf(acBuf, sizeof(acBuf), "%lld",(long long)x);
       return acBuf;
     }
     string i2str(int i){

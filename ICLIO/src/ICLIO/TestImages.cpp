@@ -610,10 +610,10 @@ namespace icl{
       }
 
       char showCommandStr[500];
-      sprintf(showCommandStr,showCommand.c_str(),name.c_str());
+      snprintf(showCommandStr,sizeof(showCommandStr),showCommand.c_str(),name.c_str());
 
       char rmCommandStr[500];
-      sprintf(rmCommandStr,rmCommand.c_str(),name.c_str());
+      snprintf(rmCommandStr,sizeof(rmCommandStr),rmCommand.c_str(),name.c_str());
 
       int errorCode = system((string(showCommandStr)+" &").c_str());
       if ( errorCode != 0 )

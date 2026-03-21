@@ -32,6 +32,11 @@
 #include <semaphore.h>
 #include <ICLUtils/Macros.h>
 
+#ifdef ICL_SYSTEM_APPLE
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 namespace icl{
   namespace utils{
 
@@ -145,3 +150,7 @@ namespace icl{
     }
   } // namespace utils
 }
+
+#ifdef ICL_SYSTEM_APPLE
+#pragma clang diagnostic pop
+#endif

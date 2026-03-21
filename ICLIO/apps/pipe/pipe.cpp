@@ -188,12 +188,12 @@ const ImgBase *grab_image(){
 
           ICLASSERT_THROW(r->width <= img->getWidth(),
                           ICLException("clipping rect width is larger then image width (image width is "
-                                       + str(img->getWidth() + " but clip rect width was set to "
-                                             + str(r->width))));
+                                       + str(img->getWidth()) + " but clip rect width was set to "
+                                             + str(r->width)));
           ICLASSERT_THROW(r->height <= img->getHeight(),
                           ICLException("clipping rect height is larger then image height (image height is "
-                                       + str(img->getHeight() + " but clip rect height was set to "
-                                             + str(r->height))));
+                                       + str(img->getHeight()) + " but clip rect height was set to "
+                                             + str(r->height)));
 
           ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
           ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));

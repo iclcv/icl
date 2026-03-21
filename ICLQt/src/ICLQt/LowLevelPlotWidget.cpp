@@ -163,7 +163,7 @@ namespace icl{
       p.resetTransform();
       p.setClipping(true);
       p.setClipRect(QRect(QPoint(state.b_left, state.b_top), QPoint(width()-state.b_right-2, height()-state.b_bottom-2)));
-      bool result = drawSeriesData(p,state)  | drawScatterData(p,state) | drawBarPlotData(p,state);
+      bool result = drawSeriesData(p,state)  || drawScatterData(p,state) || drawBarPlotData(p,state);
       p.setClipping(false);
 
       return result;

@@ -111,7 +111,7 @@ namespace icl{
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(usec / 1000);
     #elif defined(__clang__)
-      usleep(usec);
+      ::usleep(usec);
     #else
       ::usleep(usec);
     #endif
@@ -121,7 +121,7 @@ namespace icl{
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(msecs);
     #elif defined(__clang__)
-      usleep(msecs*1000);
+      ::usleep(msecs*1000);
     #else
       ::usleep(msecs*1000);
     #endif
@@ -130,7 +130,7 @@ namespace icl{
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(secs*1000);
     #elif defined(__clang__)
-      usleep((long)secs * 1000);
+      ::usleep((unsigned int)(secs * 1000000));
     #else
       ::usleep((long)secs * 1000000);
     #endif

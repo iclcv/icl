@@ -149,7 +149,7 @@ namespace icl{
 
 
 
-      virtual void complexCustomRender(icl::geom::ShaderUtil* util);
+      virtual void complexCustomRender(icl::geom::ShaderUtil* util) override;
 
 
       SceneObject *approximateSurface(int nx=100, int ny=150) const;

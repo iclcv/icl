@@ -99,9 +99,9 @@ void run(){
     draw->color(255,255,255);
     draw->fill(r,g,b,200);
     char ac[100];
-    sprintf(ac,"color(%d,%d,%d)",r,g,b);
+    snprintf(ac,sizeof(ac),"color(%d,%d,%d)",r,g,b);
     draw->text(ac,x-90,y+120,-1,-1,8);
-    sprintf(ac,"pos(%d,%d)",x,y);
+    snprintf(ac,sizeof(ac),"pos(%d,%d)",x,y);
     draw->text(ac,x-90,y+110,-1,-1,8);
     draw->text(sKernel,x-90,y+100,-1,-1,8);
     draw->text("(click!)",x+60,y+120,-1,-1,8);

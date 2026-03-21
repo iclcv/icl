@@ -499,7 +499,7 @@ namespace icl{
             error += pow(tmp(0, 0), 2) + pow(tmp(0, 1), 2) + pow(tmp(0, 2), 2);
         }
 
-        delete VV;
+        delete[] VV;
       }
 
       struct MinSol {
@@ -608,7 +608,7 @@ namespace icl{
           sol.ts.push_back(t_new);
         }
 
-        delete VV;
+        delete[] VV;
       }
 
     void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints,

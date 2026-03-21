@@ -71,7 +71,7 @@ namespace icl{
 
     std::string FPSEstimator::getFPSString(const std::string &fmt, int bufferSize) const{
       char *buf = new char[bufferSize];
-      sprintf(buf,fmt.c_str(),getFPSVal());
+      snprintf(buf,bufferSize,fmt.c_str(),getFPSVal());
       std::string s(buf);
       delete [] buf;
       return s;

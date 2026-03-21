@@ -29,7 +29,7 @@
  ********************************************************************/
 
 #include <ICLUtils/CLMemoryAssistant.h>
-using namespace std;
+#include <string>
 
 #ifdef ICL_HAVE_OPENCL
 
@@ -61,7 +61,7 @@ namespace icl {
 			}
 		}
 
-		CLBuffer CLMemoryAssistant::createNamedBuffer(MemKeyType const &key, const string &accessMode,
+		CLBuffer CLMemoryAssistant::createNamedBuffer(MemKeyType const &key, const std::string &accessMode,
 													  const size_t length, size_t byteDepth, const void *src) {
 			if (m_memory_map.find(key) != m_memory_map.end())
 				throw ICLException("CLMemoryAssistant::createNamedBuffer(): Key already in use: " + key);
@@ -78,7 +78,7 @@ namespace icl {
 			return *mem_ptr;
 		}
 
-		CLImage2D CLMemoryAssistant::createNamedImage2D(MemKeyType const &key, const string &accessMode,
+		CLImage2D CLMemoryAssistant::createNamedImage2D(MemKeyType const &key, const std::string &accessMode,
 														const size_t width, const size_t height, const int depth,
 														const int num_channel, const void *src) {
 			if (m_memory_map.find(key) != m_memory_map.end())
