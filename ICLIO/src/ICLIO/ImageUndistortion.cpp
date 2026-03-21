@@ -192,7 +192,7 @@ namespace icl{
 
     std::istream &operator>>(std::istream &is, ImageUndistortion &dest){
       utils::XMLDocument *doc = new utils::XMLDocument;
-      doc->loadNext(is);
+      doc->load(is);
       ConfigFile f(doc);
       f.setPrefix("config.");
       std::vector<double> params;

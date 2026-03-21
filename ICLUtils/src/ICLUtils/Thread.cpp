@@ -29,10 +29,9 @@
 ********************************************************************/
 
 #include <ICLUtils/Thread.h>
-//#include <stdio.h>
 #include <ICLUtils/Macros.h>
-//#include <sched.h>
 #include <pthread.h>
+#include <unistd.h>
 #ifndef ICL_SYSTEM_APPLE
 #ifdef ICL_SYSTEM_WINDOWS
   #include <Windows.h>

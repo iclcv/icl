@@ -296,9 +296,9 @@ namespace icl{
 
       m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
 
-      m_doc->load("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                  "<config>\n"
-                  "</config>\n");
+      m_doc->load_string("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+                         "<config>\n"
+                         "</config>\n");
     }
 
     // }}}
@@ -306,7 +306,7 @@ namespace icl{
     ConfigFile::ConfigFile(std::istream &stream){
 
       XMLDocument *doc = new XMLDocument;
-      doc->loadNext(stream);
+      doc->load(stream);
       *this = ConfigFile(doc);
     }
 

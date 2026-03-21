@@ -569,7 +569,7 @@ namespace icl {
                                            Camera &cam){
       cam = Camera(); // load default values
       utils::XMLDocument *doc = new utils::XMLDocument;
-      doc->loadNext(is);
+      doc->load(is);
 
       ConfigFile f(doc);
       f.setPrefix(prefix);
