@@ -65,7 +65,7 @@ IF(BUILD_REDIST STREQUAL DEB)
 
   # Dependencies for building ICL; will be parsed into debian/control
   STRING(CONCAT ICL_DEB_BUILD_DEPENDENCIES "cmake3 | cmake, libjpeg-dev, libpng-dev, ocl-icd-opencl-dev, opencl-headers, libeigen3-dev, libopenni-dev, "
-         "libopencv-dev, libmagick++-dev, qtbase5-dev, qtmultimedia5-dev, libqt5opengl5-dev, libfreenect-dev, libpcl-all | libpcl-dev, "
+         "libopencv-dev, libmagick++-dev, qt6-base-dev, qt6-multimedia-dev, libgl-dev, libfreenect-dev, libpcl-all | libpcl-dev, "
          "libzmq3-dev, libglew-dev, libusb-dev, libavcodec-dev, libavresample-dev, libavdevice-dev, doxygen, graphviz, python3-sphinx, "
          "python3-pyparsing, libbullet-dev, texlive-latex-base, ghostscript")
   SET(ICL_DEB_CORE_DEPENDENCY "icl-core (= ${CPACK_PACKAGE_VERSION})")

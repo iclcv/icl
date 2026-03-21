@@ -102,7 +102,7 @@ namespace icl{
         get_ptrs_3(lut,l1,l2,l3);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -126,7 +126,7 @@ namespace icl{
         get_ptrs_2(lut,l1,l2);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -147,7 +147,7 @@ namespace icl{
         get_ptrs_3(src,s1,s2,s3);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = C2*clipped_cast<S,icl8u>(s1[i]) + C1*clipped_cast<S,icl8u>(s2[i]) + clipped_cast<S,icl8u>(s3[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -169,7 +169,7 @@ namespace icl{
         get_ptrs_3(lut,l1,l2,l3);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
         idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
         d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -193,7 +193,7 @@ namespace icl{
         get_ptrs_2(lut,l1,l2);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -214,7 +214,7 @@ namespace icl{
         get_ptrs_2(src,s1,s2);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = C1*clipped_cast<S,icl8u>(s1[i]) + clipped_cast<S,icl8u>(s2[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -235,7 +235,7 @@ namespace icl{
         get_ptrs_3(lut,l1,l2,l3);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = clipped_cast<S,icl8u>(s1[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);
@@ -258,7 +258,7 @@ namespace icl{
         get_ptrs_2(lut,l1,l2);
 
         const int DIM = src.getDim();
-        register int idx(0);
+        int idx(0);
         for(int i=0;i<DIM;i++){
           idx = clipped_cast<S,icl8u>(s1[i]);
           d1[i] = clipped_cast<icl8u,D>(l1[idx]);

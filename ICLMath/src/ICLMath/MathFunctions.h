@@ -112,8 +112,8 @@ namespace icl {
     template <class ForwardIterator>
     inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
       if(begin == end) return 0;
-      register double sum = 0;
-      register double d = 0;
+      double sum = 0;
+      double d = 0;
       int num = 0;
       while(begin != end){
         d = *begin - mean;

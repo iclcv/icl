@@ -112,7 +112,7 @@ namespace icl{
       const icl8u *data[3] = {image.begin(0),image.begin(1),image.begin(2)};
 
       for(int i=0;i<dim;++i){
-        register const icl8u &r=data[0][i], &g=data[1][i], &b=data[2][i];
+        const icl8u &r=data[0][i], &g=data[1][i], &b=data[2][i];
         for(int j=0;j<N;++j){
           int x = square(r-m_data->colors[j][0])+square(g-m_data->colors[j][1])+square(b-m_data->colors[j][2]);
           dst[j][i] = 255*( x < square(m_data->thresholds[j]));

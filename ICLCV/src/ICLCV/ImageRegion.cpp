@@ -160,10 +160,10 @@ namespace icl{
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->boundingBox) return *simple->boundingBox;
 
-      register int minX = std::numeric_limits<int>::max();
-      register int minY = minX;
-      register int maxX = std::numeric_limits<int>::min();
-      register int maxY = maxX;
+      int minX = std::numeric_limits<int>::max();
+      int minY = minX;
+      int maxX = std::numeric_limits<int>::min();
+      int maxY = maxX;
 
       for(std::vector<LineSegment>::const_iterator it = m_data->segments.begin(); it != m_data->segments.end();++it){
         int x = it->x, y=it->y, xend=it->xend;
@@ -198,13 +198,13 @@ namespace icl{
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->pcainfo) return *simple->pcainfo;
 
-      register int x,end,len;
-      register double y;
+      int x,end,len;
+      double y;
 
-      register double avgX = getCOG().x;
-      register double avgY = getCOG().y;
-      register double avgXX(0),avgXY(0),avgYY(0);
-      register int nPts = getSize();
+      double avgX = getCOG().x;
+      double avgY = getCOG().y;
+      double avgXX(0),avgXY(0),avgYY(0);
+      int nPts = getSize();
 
       const std::vector<LineSegment> &segs = m_data->segments;
       for(unsigned int i=0;i<segs.size();++i){
@@ -333,11 +333,11 @@ namespace icl{
     void ImageRegion::calculateBoundaryIntern(const Img<T> &image) const {
       // {{{ open
       const Rect &imageROI = image.getROI();
-      register int xMin = imageROI.x;
-      register int xMax = imageROI.right()-1;
-      register int yMin = imageROI.y;
-      register int yMax = imageROI.bottom()-1;
-      register int w = image.getWidth();
+      int xMin = imageROI.x;
+      int xMax = imageROI.right()-1;
+      int yMin = imageROI.y;
+      int yMax = imageROI.bottom()-1;
+      int w = image.getWidth();
 
       std::vector<Point> &boundary = *m_data->simple->boundary;
 
@@ -376,26 +376,26 @@ namespace icl{
       //
 
       //                        0  1  2  3  4  5  6  7
-      register int dirs[] =   {-w, 1, w,-1,-w, 1, w,-1 };
+      int dirs[] =   {-w, 1, w,-1,-w, 1, w,-1 };
       //                        3  0  1  2  3  0  1  2
 
       static  int xdirs[] = {  0, 1, 0,-1, 0, 1, 0,-1 };
       static int ydirs[] = { -1, 0, 1, 0,-1, 0, 1, 0 };
       static int jumps[] = {  3, 0, 1, 2, 3, 0, 1, 2 };
 
-      register int dirIdx=0;
+      int dirIdx=0;
 
-      const register T *pStart = data+xStart+yStart*w;
-      const register T *p = pStart;
-      register int x=xStart;
-      register int y=yStart;
+      const T *pStart = data+xStart+yStart*w;
+      const T *p = pStart;
+      int x=xStart;
+      int y=yStart;
 
-      const register T *cp(0);
-      register int cx(0), cy(0);
-      register bool posValid(false);
+      const T *cp(0);
+      int cx(0), cy(0);
+      bool posValid(false);
 
-      const register T *pBreak(0);
-      register int dirIdxBreak(0);
+      const T *pBreak(0);
+      int dirIdxBreak(0);
 
         /// seach 2nd pixel -> criterion for end loop
       boundary.push_back(Point(x,y));

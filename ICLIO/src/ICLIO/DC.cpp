@@ -436,8 +436,8 @@ namespace icl{
         }
 
         void convert_YUV411_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
-          register int i = (width*height) + ( (width*height) >> 1 )-1;
-          register int j = (width*height)-1;
+          int i = (width*height) + ( (width*height) >> 1 )-1;
+          int j = (width*height)-1;
 
           while (i >= 0) {
             dest[j--] = (uint8_t) src[i--];
@@ -449,8 +449,8 @@ namespace icl{
           }
         }
         void convert_YUV422_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height,uint32_t byte_order){
-          register int i = ((width*height) << 1)-1;
-          register int j = (width*height)-1;
+          int i = ((width*height) << 1)-1;
+          int j = (width*height)-1;
           switch(byte_order){
             case DC1394_BYTE_ORDER_UYVY:
               while (i >= 0) {
@@ -469,8 +469,8 @@ namespace icl{
           }
         }
         void convert_YUV444_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){
-          register int i = (width*height) + ( (width*height) << 1 ) -1;
-          register int j = (width*height)-1;
+          int i = (width*height) + ( (width*height) << 1 ) -1;
+          int j = (width*height)-1;
 
           while (i >= 0) {
             i--; dest[j--] = src[i--]; i--;

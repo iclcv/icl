@@ -80,14 +80,14 @@ namespace icl{
       template<class KernelType, class SrcType, class DstType>
       void generic_cpp_convolution_3x3(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
 
-        register const SrcType *s = src.getROIData(c,op.getROIOffset());
-        register DstType *d = dst.getROIData(c);
-        register int factor = op.getKernel().getFactor();
+        const SrcType *s = src.getROIData(c,op.getROIOffset());
+        DstType *d = dst.getROIData(c);
+        int factor = op.getKernel().getFactor();
 
-        register const int xEnd = dst.getROISize().width;
-        register const int yEnd = dst.getROISize().height;
-        register const KernelType m[9] = {k[0],k[1],k[2],k[3],k[4],k[5],k[6],k[7],k[8]};
-        register const int dy = src.getWidth();
+        const int xEnd = dst.getROISize().width;
+        const int yEnd = dst.getROISize().height;
+        const KernelType m[9] = {k[0],k[1],k[2],k[3],k[4],k[5],k[6],k[7],k[8]};
+        const int dy = src.getWidth();
 
         if(factor != 1){
           for(int y=0;y<yEnd;++y){

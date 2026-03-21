@@ -386,7 +386,7 @@ namespace icl{
         // {{{ open
 
         Channel32s chan = (*chamferImage)[0];
-        register int x,y;
+        int x,y;
         Rect imageRect = Rect(Point::null,chamferImage->getSize());
         for(unsigned int i=0;i<model.size();++i){
           x = model[i].x;

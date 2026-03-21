@@ -803,15 +803,15 @@ namespace icl {
 
       static const int aiDstStep[] = {1,-1,-1};
       int      iLineWarpS, iLineWarpD;
-      register const Type *e=0, *eLine=0; /* end pointer, line end pointer */
-      register Type *s=0, *d=0; /* source pointer, destination pointer */
+      const Type *e=0, *eLine=0; /* end pointer, line end pointer */
+      Type *s=0, *d=0; /* source pointer, destination pointer */
 
       if (!getMirrorPointers (eAxis, true,
                               getData(iChannel), oOffset, getWidth(),
                               getData(iChannel), oOffset, getWidth(), oSize,
                               s, d, e, eLine, iLineWarpS, iLineWarpD)) return;
 
-      register int dir = aiDstStep[eAxis];
+      int dir = aiDstStep[eAxis];
       do {
         std::swap (*s, *d);
         ++s; d += dir;
@@ -1736,8 +1736,8 @@ namespace icl {
 
       static const int aiDstStep[] = {1,-1,-1};
       int      iLineWarpS, iLineWarpD;
-      register const T *s=0, *e=0, *eLine=0; /* source pointer, end pointer, line end pointer */
-      register T *d=0; /* destination pointer */
+      const T *s=0, *e=0, *eLine=0; /* source pointer, end pointer, line end pointer */
+      T *d=0; /* destination pointer */
 
       if (!getMirrorPointers (eAxis, false,
                               src->getData(srcC), srcOffs, src->getWidth(),
@@ -1753,7 +1753,7 @@ namespace icl {
         return;
       }
 
-      register int dir = aiDstStep[eAxis];
+      int dir = aiDstStep[eAxis];
       do {
         *d = *s;
         ++s; d += dir;

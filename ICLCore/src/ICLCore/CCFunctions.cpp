@@ -637,7 +637,7 @@ namespace icl{
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
-        register icl32f reg_h, reg_l, reg_s;
+        icl32f reg_h, reg_l, reg_s;
         if(roiOnly){
           const ImgIterator<S> itR = src->beginROI(0);
           const ImgIterator<S> itG = src->beginROI(1);
@@ -684,7 +684,7 @@ namespace icl{
           ImgIterator<D> itCr = dst->beginROI(0);
           ImgIterator<D> itCg = dst->beginROI(1);
           const ImgIterator<S> itEnd = src->endROI(0);
-          register S sum;
+          S sum;
           for(; itR!= itEnd; ++itR,++itG,++itB,++itCr,++itCg){
             sum = *itR + *itG + *itB;
             sum += !sum; //avoid division by zero
@@ -694,7 +694,7 @@ namespace icl{
         } else {
           GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
           GET_2_CHANNEL_POINTERS_NODIM(D,dst,cromaR,cromaG);
-          register S sum;
+          S sum;
           for(int i=0;i<dim;++i){
             sum = r[i]+g[i]+b[i];
             sum+=!sum; //avoid division by zero
@@ -718,7 +718,7 @@ namespace icl{
           ImgIterator<D> itU = dst->beginROI(1);
           ImgIterator<D> itV = dst->beginROI(2);
           const ImgIterator<D> itEnd = dst->endROI(0);
-          register icl32s reg_y, reg_u, reg_v;
+          icl32s reg_y, reg_u, reg_v;
           for(;itY!= itEnd;++itR,++itG,++itB,++itY, ++itU, ++itV){
             cc_util_rgb_to_yuv_inline(clipped_cast<S,icl32s>(*itR),
                                       clipped_cast<S,icl32s>(*itG),
@@ -731,7 +731,7 @@ namespace icl{
         }else{
           GET_3_CHANNEL_POINTERS_DIM(const S,src,r,g,b,dim);
           GET_3_CHANNEL_POINTERS_NODIM(D,dst,y,u,v);
-          register icl32s reg_y, reg_u, reg_v;
+          icl32s reg_y, reg_u, reg_v;
           for(int i=0;i<dim;++i){
             cc_util_rgb_to_yuv_inline(clipped_cast<S,icl32s>(r[i]),
                                       clipped_cast<S,icl32s>(g[i]),
@@ -749,7 +749,7 @@ namespace icl{
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatLAB>{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
-        register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
+        icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
 
         if(roiOnly){
           const ImgIterator<S> itR = src->beginROI(0);
@@ -934,7 +934,7 @@ namespace icl{
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
-        register icl32f reg_r(0), reg_g(0), reg_b(0);
+        icl32f reg_r(0), reg_g(0), reg_b(0);
         if(roiOnly){
           const ImgIterator<S> itH = src->beginROI(0);
           const ImgIterator<S> itL = src->beginROI(1);
@@ -976,8 +976,8 @@ namespace icl{
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
-        register icl32f reg_r(0), reg_g(0), reg_b(0);
-        register icl32s reg_y(0), reg_u(0), reg_v(0);
+        icl32f reg_r(0), reg_g(0), reg_b(0);
+        icl32s reg_y(0), reg_u(0), reg_v(0);
         if(roiOnly){
           const ImgIterator<S> itH = src->beginROI(0);
           const ImgIterator<S> itL = src->beginROI(1);
@@ -1036,7 +1036,7 @@ namespace icl{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
-        register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+        icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
         if(roiOnly){
           const ImgIterator<S> itL = src->beginROI(0);
           const ImgIterator<S> itA = src->beginROI(1);
@@ -1095,7 +1095,7 @@ namespace icl{
       // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
-        register icl32s reg_r, reg_g, reg_b;
+        icl32s reg_r, reg_g, reg_b;
         if(roiOnly){
           const ImgIterator<S> itY = src->beginROI(0);
           const ImgIterator<S> itU = src->beginROI(1);
@@ -1655,7 +1655,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subRGBtoHLS(const S *r, const S *g, const S *b, D *h, D *l, D *s) {
-      register icl32f reg_h, reg_l, reg_s;
+      icl32f reg_h, reg_l, reg_s;
       cc_util_rgb_to_hls(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
@@ -1667,7 +1667,7 @@ namespace icl{
 
     template<class S>
     inline void subRGBtoHLS(const S *r, const S *g, const S *b, icl8u *h, icl8u *l, icl8u *s) {
-      register icl32f reg_h, reg_l, reg_s;
+      icl32f reg_h, reg_l, reg_s;
       cc_util_rgb_to_hls_inline(clipped_cast<S,icl32f>(*r),
                                 clipped_cast<S,icl32f>(*g),
                                 clipped_cast<S,icl32f>(*b),
@@ -1821,7 +1821,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subRGBtoYUV(const S *r, const S *g, const S *b, D *y, D *u, D *v) {
-      register icl32f reg_y, reg_u, reg_v;
+      icl32f reg_y, reg_u, reg_v;
       cc_util_rgb_to_yuv(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
@@ -1833,7 +1833,7 @@ namespace icl{
 
     template<class S>
     inline void subRGBtoYUV(const S *r, const S *g, const S *b, icl8u *y, icl8u *u, icl8u *v) {
-      register icl32f reg_y, reg_u, reg_v;
+      icl32f reg_y, reg_u, reg_v;
       cc_util_rgb_to_yuv(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
@@ -1957,7 +1957,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subRGBtoLab(const S *r, const S *g, const S *b, D *L, D *A, D *B) {
-      register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
+      icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
       cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
@@ -1970,7 +1970,7 @@ namespace icl{
 
     template<class S>
     inline void subRGBtoLab(const S *r, const S *g, const S *b, icl8u *L, icl8u *A, icl8u *B) {
-      register icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
+      icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
       cc_util_rgb_to_xyz_inline(clipped_cast<S,icl32f>(*r),
                          clipped_cast<S,icl32f>(*g),
                          clipped_cast<S,icl32f>(*b),
@@ -2087,7 +2087,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subRGBtoChroma(const S *r, const S *g, const S *b, D *cr, D *cg) {
-          register icl32f sum = *r+*g+*b;
+          icl32f sum = *r+*g+*b;
           sum+=!sum; //avoid division by zero
           *cr=clipped_cast<icl32f,D>((*r*255)/sum + 0.5f);
           *cg=clipped_cast<icl32f,D>((*g*255)/sum + 0.5f);
@@ -2148,7 +2148,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subHLStoRGB(const S *h, const S *l, const S *s, D *r, D *g, D *b) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0);
+      icl32f reg_r(0), reg_g(0), reg_b(0);
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2160,7 +2160,7 @@ namespace icl{
 
     template<class S>
     inline void subHLStoRGB(const S *h, const S *l, const S *s, icl8u *r, icl8u *g, icl8u *b) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0);
+      icl32f reg_r(0), reg_g(0), reg_b(0);
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2308,8 +2308,8 @@ namespace icl{
 
     template<class S, class D>
     inline void subHLStoYUV(const S *h, const S *l, const S *s, D *y, D *u, D *v) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0);
-      register icl32f reg_y, reg_u, reg_v;
+      icl32f reg_r(0), reg_g(0), reg_b(0);
+      icl32f reg_y, reg_u, reg_v;
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2323,8 +2323,8 @@ namespace icl{
 
     template<class S>
     inline void subHLStoYUV(const S *h, const S *l, const S *s, icl8u *y, icl8u *u, icl8u *v) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0);
-      register icl32f reg_y, reg_u, reg_v;
+      icl32f reg_r(0), reg_g(0), reg_b(0);
+      icl32f reg_y, reg_u, reg_v;
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2594,7 +2594,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subHLStoLab(const S *h, const S *l, const S *s, D *L, D *a, D *b) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0), reg_X, reg_Y, reg_Z;
+      icl32f reg_r(0), reg_g(0), reg_b(0), reg_X, reg_Y, reg_Z;
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2609,7 +2609,7 @@ namespace icl{
 
     template<class S>
     inline void subHLStoLab(const S *h, const S *l, const S *s, icl8u *L, icl8u *a, icl8u *b) {
-      register icl32f reg_r(0), reg_g(0), reg_b(0), reg_X, reg_Y, reg_Z;
+      icl32f reg_r(0), reg_g(0), reg_b(0), reg_X, reg_Y, reg_Z;
       cc_util_hls_to_rgb_inline(clipped_cast<S,icl32f>(*h),
                                 clipped_cast<S,icl32f>(*l),
                                 clipped_cast<S,icl32f>(*s),
@@ -2818,7 +2818,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subYUVtoRGB(const S *y, const S *u, const S *v, D *r, D *g, D *b) {
-      register icl32f reg_r, reg_g, reg_b;
+      icl32f reg_r, reg_g, reg_b;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -2830,7 +2830,7 @@ namespace icl{
 
     template<class S>
     inline void subYUVtoRGB(const S *y, const S *u, const S *v, icl8u *r, icl8u *g, icl8u *b) {
-      register icl32f reg_r, reg_g, reg_b;
+      icl32f reg_r, reg_g, reg_b;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -2930,7 +2930,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subYUVtoHLS(const S *y, const S *u, const S *v, D *h, D *l, D *s) {
-      register icl32f reg_r, reg_g, reg_b, reg_h, reg_l, reg_s;
+      icl32f reg_r, reg_g, reg_b, reg_h, reg_l, reg_s;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -2943,7 +2943,7 @@ namespace icl{
 
     template<class S>
     inline void subYUVtoHLS(const S *y, const S *u, const S *v, icl8u *h, icl8u *l, icl8u *s) {
-      register icl32f reg_r, reg_g, reg_b, reg_h, reg_l, reg_s;
+      icl32f reg_r, reg_g, reg_b, reg_h, reg_l, reg_s;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -3127,7 +3127,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subYUVtoLab(const S *y, const S *u, const S *v, D *l, D *a, D *b) {
-      register icl32f reg_r, reg_g, reg_b, reg_X, reg_Y, reg_Z;
+      icl32f reg_r, reg_g, reg_b, reg_X, reg_Y, reg_Z;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -3142,7 +3142,7 @@ namespace icl{
 
     template<class S>
     inline void subYUVtoLab(const S *y, const S *u, const S *v, icl8u *l, icl8u *a, icl8u *b) {
-      register icl32f reg_r, reg_g, reg_b, reg_X, reg_Y, reg_Z;
+      icl32f reg_r, reg_g, reg_b, reg_X, reg_Y, reg_Z;
       cc_util_yuv_to_rgb(clipped_cast<S,icl32f>(*y),
                          clipped_cast<S,icl32f>(*u),
                          clipped_cast<S,icl32f>(*v),
@@ -3290,7 +3290,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subLabtoRGB(const S *L, const S *A, const S *B, D *r, D *g, D *b) {
-        register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+        icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
         cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                            clipped_cast<S,icl32f>(*A),
                            clipped_cast<S,icl32f>(*B),
@@ -3303,7 +3303,7 @@ namespace icl{
 
     template<class S>
     inline void subLabtoRGB(const S *L, const S *A, const S *B, icl8u *r, icl8u *g, icl8u *b) {
-        register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+        icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
         cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                            clipped_cast<S,icl32f>(*A),
                            clipped_cast<S,icl32f>(*B),
@@ -3411,7 +3411,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subLabtoHLS(const S *L, const S *A, const S *B, D *h, D *l, D *s) {
-      register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+      icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                          clipped_cast<S,icl32f>(*A),
                          clipped_cast<S,icl32f>(*B),
@@ -3426,7 +3426,7 @@ namespace icl{
 
     template<class S>
     inline void subLabtoHLS(const S *L, const S *A, const S *B, icl8u *h, icl8u *l, icl8u *s) {
-      register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+      icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                          clipped_cast<S,icl32f>(*A),
                          clipped_cast<S,icl32f>(*B),
@@ -3630,7 +3630,7 @@ namespace icl{
 
     template<class S, class D>
     inline void subLabtoYUV(const S *L, const S *A, const S *B, D *y, D *u, D *v) {
-      register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+      icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                          clipped_cast<S,icl32f>(*A),
                          clipped_cast<S,icl32f>(*B),
@@ -3645,7 +3645,7 @@ namespace icl{
 
     template<class S>
     inline void subLabtoYUV(const S *L, const S *A, const S *B, icl8u *y, icl8u *u, icl8u *v) {
-      register icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
+      icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
       cc_util_lab_to_xyz(clipped_cast<S,icl32f>(*L),
                          clipped_cast<S,icl32f>(*A),
                          clipped_cast<S,icl32f>(*B),
@@ -5342,11 +5342,11 @@ namespace icl{
       const icl8u *ptU = ptY+iW*iH;
       const icl8u *ptV = ptU+(iW*iH)/4;
 
-      register int r,g,b,y,u,v;
+      int r,g,b,y,u,v;
 
-      register int Xflag=0;
-      register int Yflag=1;
-      register int w2 = iW/2;
+      int Xflag=0;
+      int Yflag=1;
+      int w2 = iW/2;
 
       // converting the image (ptY,ptU,ptV)----->(pucR,pucG,pucB)
       for(int yy=iH-1; yy >=0 ; yy--){

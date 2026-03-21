@@ -103,7 +103,7 @@ void init(){
   t = Time::now();
   PCL_OT pcl_ot(16);
   t.showAge("create pcl octree");
-  static boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > ptr(&pcl_pc.pcl());
+  auto ptr = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(pcl_pc.pcl());
 
   t = Time::now();
   pcl_ot.setInputCloud(ptr);

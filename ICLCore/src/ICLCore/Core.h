@@ -103,13 +103,13 @@
     - <b>ICLFilter</b> provides classes for most common image filters like linear filters and morphological operators.
     - <b>ICLQuick</b> provides almost 100 functions and functors for rapid prototyping (no longer exists)
     - <b>ICLGeom</b> contains classes for 3D-modelling and camera calibration.
-    - <b>ICLQt*</b> contains a Qt-4 based GUI-API that facilitates creation of simple and complex GUI
+    - <b>ICLQt*</b> contains a Qt-based GUI-API that facilitates creation of simple and complex GUI
       applications significantly. And of course a powerful image visualisation widget called ICLWidget is provided.
     - <b>ICLMarkers</b> contains a generic Fiducial Marker detection framework
     - <b>ICLMath</b> contains high level classes like a hough-transformation-based line detector or generic self organizing map (SOM) implementation.
     - <b>ICLOpenCV*</b> offers functions for shallow and deep copies from ICL-images types into OpenCV's images types and v.v.
 
-    (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt4 and OpenCV.
+    (*) The packages ICLQt and ICLOpenCV depend compulsorily on the corresponding external software dependencies Qt6 and OpenCV.
     Consequently these packages are not available if these dependencies are missing.
 
     </TD><TD>

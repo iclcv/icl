@@ -497,7 +497,7 @@ namespace icl {
       int iHeight = poBayerImg->getHeight();
       const icl8u *bayer = poBayerImg->getData(0);
       icl8u *pucRGBInterImg = m_buffer.data();
-      register int i3, j3, base;
+      int i3, j3, base;
       int i, j, dh, dv, tmp;
       int iWidth3 = iWidth*3;
 

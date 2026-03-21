@@ -178,7 +178,7 @@ namespace icl{
     QLocale::setDefault(QLocale::C);
 
 #ifdef ICL_SYSTEM_LINUX
-    /* From the Qt 4.7 documentation:
+    /* From the Qt documentation (originally Qt 4.7, still applicable):
         Locale Settings:
         On Unix/Linux Qt is configured to use the system
         locale settings by default. This can cause a conflict
