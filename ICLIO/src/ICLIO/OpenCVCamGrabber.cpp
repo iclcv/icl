@@ -70,6 +70,8 @@ namespace icl{
       ICLASSERT_RETURN_VAL( !(cvc==0), 0);
       cv::Mat frame;
       cvc->read(frame);
+      // OpenCV captures in BGR; convert to RGB for ICL
+      cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
       Mutex::Locker lock(m_mutex);
       core::mat_to_img(&frame,&m_buffer);
       return m_buffer;
