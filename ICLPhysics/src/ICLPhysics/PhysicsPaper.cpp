@@ -107,7 +107,7 @@ namespace physics{
               int sizeBefore = s->m_links.size();
               s->appendLink(IDX(x,y),IDX(tx,ty), m, true);
               if(s->m_links.size() == sizeBefore) continue; // link did already exist
-              s->m_links[s->m_links.size()-1].m_bbending=1;
+              s->m_links[s->m_links.size()-1].m_bbending=true;
 
               constraints.push_back(BendingConstraint(&s->m_links[s->m_links.size()-1],
                                                       Point(x,y),Point(tx,ty)));

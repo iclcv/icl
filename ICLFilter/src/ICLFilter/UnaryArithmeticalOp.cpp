@@ -64,6 +64,9 @@ namespace icl {
       template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::absOp>{
         static inline T apply(const T t){ return AbsFunc<T>::f(t); }
       };
+      template<> struct PixelFuncNoVal<icl8u,UnaryArithmeticalOp::absOp>{
+        static inline icl8u apply(const icl8u t){ return t; }
+      };
 
       template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncNoVal{
         // {{{ open

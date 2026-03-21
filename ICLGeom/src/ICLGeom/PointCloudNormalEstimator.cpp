@@ -46,7 +46,7 @@ using namespace core;
 namespace geom {
 
 //OpenCL kernel code
-static char normalEstimationKernel[] =
+[[maybe_unused]] static char normalEstimationKernel[] =
 		"__kernel void                                                                                                              \n"
 				"medianFilter(__global float const * in, __global float * out, int const w, int const h, int const medianFilterSize)        \n"
 				"{                                                                                                                          \n"

@@ -60,7 +60,7 @@ namespace icl{
         return FixedColVector<float,4>(x,y,z,1);
       }
       template<class T>
-      bool test_type(const std::string &type, int size){
+      [[maybe_unused]] bool test_type(const std::string &type, int size){
         return false;
       }
       template<>

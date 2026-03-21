@@ -71,9 +71,9 @@ Scene scene;
 struct LUT3DSceneObject : public SceneObject {
   int w,h,t,dx,dy,dz,dim;
   std::vector<int> rs,gs,bs;
-  Mutex mtex;
-  virtual void lock(){ mtex.lock(); }
-  virtual void unlock(){ mtex.unlock(); }
+  mutable Mutex mtex;
+  void lock() const override { mtex.lock(); }
+  void unlock() const override { mtex.unlock(); }
 
   LUT3DSceneObject(){
 

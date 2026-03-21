@@ -59,7 +59,7 @@ namespace icl{
   namespace geom{
     typedef DynMatrix<float> DMat;
 
-    static inline void assign_row(float* p, float a, float b, float c, float d,
+    [[maybe_unused]] static inline void assign_row(float* p, float a, float b, float c, float d,
                                   float e, float f, float g, float h, float i){
       p[0] = a; p[1] = b; p[2] = c; p[3] = d; p[4] = e;
       p[5] = f; p[6] = g; p[7] = h; p[8] = i;

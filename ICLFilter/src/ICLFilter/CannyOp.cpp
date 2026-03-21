@@ -106,11 +106,9 @@ namespace icl {
           Size s(2*r+1,2*r+1);
           Img32s k(s,1);
           Channel32s kc = k[0];
-          int sum = 0;
           for(int y=-r;y<=r;++y){
             for(int x=-r;x<=r;++x){
               kc(x+r,y+r) = 10000/(2*M_PI*r) * exp (float(x*x+y*y)/float(2*r*r));
-              sum += kc(x+r,y+r);
             }
           }
           m_preBlurOp = new ConvolutionOp(ConvolutionKernel(k.begin(0),s,10000));

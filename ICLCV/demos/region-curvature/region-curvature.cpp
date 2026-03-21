@@ -160,7 +160,6 @@ void run(){
         for (uint i = 0; i < hists.size(); ++i) {
             CurvatureExtractor::FloatHist &hist = hists[i];
             const ImageRegion &region = regions[i];
-            int max_size = 0;
             for (uint k = 1; k < indices_all[i].size()-1; ++k) {
                 int index = indices_all[i][k];
                 if (hist[k-1] < hist[k] && hist[k] > hist[k+1]) {
@@ -170,7 +169,6 @@ void run(){
                         sstream << hist[k];
                         draw->text(sstream.str(),p,10);
                         draw->circle(p,3);
-                        ++max_size;
                     }
                 }
             }

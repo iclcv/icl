@@ -39,11 +39,11 @@ HBox gui;
 Scene scene;
 
 struct OSRCube : public SceneObject{
-  Mutex mutex;
+  mutable Mutex mutex;
   Img8u image;
 
-  virtual void lock(){ mutex.lock(); }
-  virtual void unlock(){ mutex.unlock(); }
+  void lock() const override { mutex.lock(); }
+  void unlock() const override { mutex.unlock(); }
 
   OSRCube():SceneObject("cube",Vec(0,0,0,3).data()){
     image = Img8u(Size(300,300),formatRGB);

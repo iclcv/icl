@@ -93,6 +93,9 @@ namespace icl{
       */
       TwoLevelRegionStructure(const std::string &code);
 
+      /// virtual destructor
+      virtual ~TwoLevelRegionStructure() = default;
+
       /// match implementation
       virtual bool match(const cv::ImageRegion &r) const;
 

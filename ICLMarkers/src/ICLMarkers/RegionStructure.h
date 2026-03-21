@@ -47,6 +47,7 @@ namespace icl{
         how a single image region is matched agains a given structure
         instance */
     struct RegionStructure{
+      virtual ~RegionStructure() = default;
       /// answers the question whether a given region matches a region structure
       /** Usually, this method is called for every region in an image. Therefore,
           a particular match-implementation should try to reject a match as fast

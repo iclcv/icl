@@ -186,7 +186,7 @@ namespace icl{
       return deviceList;
     }
 
-    static inline bool has_params(const ImgBase &i, depth d, const Size &s, format f){
+    [[maybe_unused]] static inline bool has_params(const ImgBase &i, depth d, const Size &s, format f){
       return (i.getDepth() == d) && (i.getSize() == s) && (i.getFormat() == f);
     }
 

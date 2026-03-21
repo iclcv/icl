@@ -74,11 +74,11 @@ Vec estimate_3D_pos(const Point32f &p, float val, const Camera &cam){
 
 struct ImageObj : public SceneObject{
   Size size;
-  Mutex mutex;
+  mutable Mutex mutex;
   Img8u image;
 
-  virtual void lock(){ mutex.lock(); }
-  virtual void unlock(){ mutex.unlock(); }
+  void lock() const override { mutex.lock(); }
+  void unlock() const override { mutex.unlock(); }
 
   inline int idx(int x, int y){
     return x+y*size.width;

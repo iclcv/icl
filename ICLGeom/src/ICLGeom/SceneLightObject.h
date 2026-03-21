@@ -44,7 +44,7 @@ namespace icl{
       class ThreadPart;
 
       /// parent scene
-      Scene *m_scene;
+      //Scene *m_scene;
 
       /// corresponding light ID
       int m_lightID;

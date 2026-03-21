@@ -198,13 +198,13 @@ namespace physics{
     //typedef FixedColVector<float,3> F3;
     //typedef FixedColVector<int,3> I3;
 
-    int nSkippedVT = 0;
+    //int nSkippedVT = 0;
     //int nSkippedVN = 0;
-    int nSkippedO = 0;
-    int nSkippedG = 0;
-    int nSkippedS = 0;
-    int nSkippedMTLLIB = 0;
-    int nSkippedUSEMTL = 0;
+    //int nSkippedO = 0;
+    //int nSkippedG = 0;
+    //int nSkippedS = 0;
+    //int nSkippedMTLLIB = 0;
+    //int nSkippedUSEMTL = 0;
 
     int lineNr=0;
 
@@ -220,7 +220,7 @@ namespace physics{
             m_vertexColors.push_back(GeomColor(200,200,200,255));
             break;
           case 't': // texture coordinates u,v,[w] (w is optional) (this is skipped)
-            ++nSkippedVT;
+            //++nSkippedVT;
             break;
           case 'n': // normal for vertex x,y,z (might not be unit!)
             //m_normals.push_back(parse<F3>(line.substr(2)).resize<1,4>(1));
@@ -318,21 +318,21 @@ namespace physics{
         continue;
       }
       else if(line[0] == 's') {
-        ++nSkippedS;
+        //++nSkippedS;
         continue;
       }else if(line[0] == 'o'){
-        ++nSkippedO;
+        //++nSkippedO;
         continue;
       }else if(line[0] == 'g'){
-        ++nSkippedG;
+        //++nSkippedG;
         continue;
       }else if(!line.find("#")) {
         continue; // comment
       }else if(!line.find("usemtl")) {
-        ++nSkippedUSEMTL;
+        //++nSkippedUSEMTL;
         continue; // todo try to load material description
       }else if(!line.find("mtllib")){
-        ++nSkippedMTLLIB;
+        //++nSkippedMTLLIB;
         continue;
       }else{
         ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unknown format]" );

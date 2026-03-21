@@ -87,7 +87,7 @@ namespace icl{
     }
 
     inline float static winToDraw(float x, float w) { return (2/w) * x -1; }
-    inline float static drawToWin(float x, float w) { return (w/2) * x + (w/2); }
+    [[maybe_unused]] inline float static drawToWin(float x, float w) { return (w/2) * x + (w/2); }
 
     struct TextureElement{
       TextureElement(const Point &offset, const Size &size, int pixelSize, const Size &imageSize):

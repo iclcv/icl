@@ -123,7 +123,8 @@ namespace icl{
     }
 
     SceneLightObject::SceneLightObject(Scene *scene, int lightID):
-      m_scene(scene),m_lightID(lightID), m_hasText(false){
+      m_lightID(lightID), m_hasText(false){
+      (void)scene;
       const float size = 1;
 
       SceneObject *thread = new ThreadPart;

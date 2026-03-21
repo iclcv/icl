@@ -55,7 +55,7 @@ namespace icl{
                    bs & Qt::MiddleButton)){
             int val = QStyle::sliderValueFromPosition(m_parent->minimum(),
                                                       m_parent->maximum(),
-                                                      m->x(),
+                                                      m->position().x(),
                                                       m_parent->width());
             val = (val/m_parent->m_stepping)*m_parent->m_stepping;
             m_parent->setValue(val);

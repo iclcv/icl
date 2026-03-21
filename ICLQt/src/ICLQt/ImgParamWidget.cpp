@@ -89,7 +89,7 @@ namespace icl{
         // {{{ open
         if(size == Size(-1,-1)) return "-grabber-";
         static char buf[100];
-        sprintf(buf,"%dx%d",size.width,size.height);
+        snprintf(buf,sizeof(buf),"%dx%d",size.width,size.height);
         return buf;
       }
 

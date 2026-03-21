@@ -662,7 +662,6 @@ namespace icl{
       std::vector<int> closeIndices;
       std::vector<float> distances;
 
-      float sumDist = 0;
       btSoftBody *s = getSoftBody();
       if(dst) dst->clear();
 
@@ -673,7 +672,6 @@ namespace icl{
         if(d < 3*radius){
           closeIndices.push_back(i);
           distances.push_back(d);
-          sumDist += d;
         }
       }
 

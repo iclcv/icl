@@ -418,8 +418,8 @@ namespace icl{
 
     namespace{
       template<class T> T create_opaque_color() { return 255; }
-      template<> float create_opaque_color<float>() { return 1.0f; }
-      template<> double create_opaque_color<double>() { return 1.0; }
+      template<> [[maybe_unused]] float create_opaque_color<float>() { return 1.0f; }
+      template<> [[maybe_unused]] double create_opaque_color<double>() { return 1.0; }
 
 
       template<class S, class D>

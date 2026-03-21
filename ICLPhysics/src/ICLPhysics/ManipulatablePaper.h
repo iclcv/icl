@@ -87,7 +87,7 @@ namespace physics{
     utils::SmartPtr<qt::MouseHandler> mouse;
     std::vector<LineAnnotation*> lines;
     DraggedPositionIndicator *draggedPositionIndicator;
-    friend class ManipulatablePaperMouseHandler;
+    friend struct ManipulatablePaperMouseHandler;
     bool showAllConstraints;
 
     public:

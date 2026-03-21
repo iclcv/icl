@@ -45,6 +45,7 @@ namespace icl{
     struct SimpleContourImpl : public ContourImpl{
       const Point *begin_point;
       const Point *end_point;
+      virtual ~SimpleContourImpl() = default;
       SimpleContourImpl(){}
       SimpleContourImpl(const Point *b, const Point *e):
         begin_point(b),end_point(e){}
@@ -108,6 +109,7 @@ namespace icl{
     };
 
     struct ComplexContourImpl : public ContourImpl, public std::vector<utils::Point> {
+      virtual ~ComplexContourImpl() = default;
       int id;             //!< contour ID
       int is_hole;        //!< is it a hole
       int parent;         //!< parent ID

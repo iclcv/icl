@@ -40,6 +40,7 @@ namespace icl{
   namespace cv{
 
     struct ContourImpl{
+      virtual ~ContourImpl() = default;
       virtual bool hasHierarchy() const = 0;
       virtual int getID() const = 0;
       virtual bool isHole() const = 0;

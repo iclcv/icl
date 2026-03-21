@@ -42,7 +42,7 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     namespace {
-      inline bool inList(const string &s, const std::vector<string> &vec){
+      [[maybe_unused]] inline bool inList(const string &s, const std::vector<string> &vec){
         return find(vec.begin(),vec.end(),s) != vec.end();
       }
     }

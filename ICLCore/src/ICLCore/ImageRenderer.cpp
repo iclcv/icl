@@ -84,8 +84,8 @@ namespace icl{
       if(x1 == x2) { vline(color,dst,x1,y1,y2); return; }
       if(y1 == y2) { hline(color,dst,y1,x1,x2); return; }
 
-      const int rgb[] = { color[0], color[1], color[2] }, alpha = color[3], beta = 255 - alpha;
-      const int rgb_premultiplied[] = { rgb[0]*alpha, rgb[1]*alpha, rgb[2]*alpha };
+      const int rgb[] = { color[0], color[1], color[2] }, alpha = color[3]; (void)alpha;
+      (void)rgb;
       /*
       SampledLine l(x1,y1,x2,y2,0,0,dst->getWidth(),dst->getHeight());
 

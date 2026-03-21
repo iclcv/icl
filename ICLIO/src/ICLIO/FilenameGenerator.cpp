@@ -95,7 +95,7 @@ namespace icl{
         char *namebuf = new char[prefix.length()+postfix.length()+30];
         for (int i=ostart;i<=oend;++i){
           for (int j=istart;j<=iend;++j){
-            sprintf(namebuf,"%s%d__%d%s",prefix.c_str(),i,j,postfix.c_str());
+            snprintf(namebuf,prefix.length()+postfix.length()+30,"%s%d__%d%s",prefix.c_str(),i,j,postfix.c_str());
             m_vecFileNames.push_back(namebuf);
             m_iFilesLeft++;
           }

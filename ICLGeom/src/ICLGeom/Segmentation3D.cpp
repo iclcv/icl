@@ -746,7 +746,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 
 						int countAbove = 0;
 						int countBelow = 0;
-						int countOn = 0;
+						int countOn = 0; (void)countOn;
 						for (unsigned int p = 0; p < cluster.at(b).size();
 								p++) {
 							float s1 = (xyzData[cluster.at(b).at(p)][0] * n01[0]

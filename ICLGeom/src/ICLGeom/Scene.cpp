@@ -78,7 +78,7 @@ namespace icl{
       float S;
       bool haveName;
       bool isShadowCam;
-      Mutex mutex;
+      mutable Mutex mutex;
       std::string lastName;
       Img8u nameTexture;
       CameraObject(Scene *parent, int cameraIndex, const float camSize, bool isShadowCam = false):
@@ -121,7 +121,7 @@ namespace icl{
         origVertices = m_vertices;
       }
 
-      virtual void prepareForRendering() {
+      void prepareForRendering() override {
         const Camera &cam = isShadowCam? *scene->getLight(index).getShadowCam() : scene->getCamera(index);
         int w = cam.getRenderParams().viewport.width;
         int h = cam.getRenderParams().viewport.height;
@@ -176,8 +176,8 @@ namespace icl{
         }
       }
 
-      virtual void lock(){ mutex.lock(); }
-      virtual void unlock(){ mutex.unlock(); }
+      void lock() const override { mutex.lock(); }
+      void unlock() const override { mutex.unlock(); }
 
     };
 
@@ -787,7 +787,7 @@ namespace icl{
       }
    }
 
-    static void count_objs_recursive(const SceneObject *o, int &n, int &np, int &nv){
+    [[maybe_unused]] static void count_objs_recursive(const SceneObject *o, int &n, int &np, int &nv){
      ++n;
      np += o->getPrimitives().size();
      nv += o->getVertices().size();

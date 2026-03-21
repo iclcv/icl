@@ -146,7 +146,7 @@ namespace icl{
 
         if(t == MouseMoveEvent && (d[0] || d[1] || d[2])) t = MouseDragEvent;
 
-        const Point widgetPos(event->x(), event->y());
+        const Point widgetPos(event->position().x(), event->position().y());
         const Point32f renderPos = w->winToDraw(widgetPos);
         const MouseEvent e(widgetPos, renderPos, renderPos,
                            Point32f(0,0),d,std::vector<double>(),Point(),t,0);
@@ -969,7 +969,7 @@ namespace icl{
             setConfigurableID(origID);
             data->menu.getRootWidget()->setWindowFlags(Qt::Popup);
           }
-          data->menu.getRootWidget()->move(event->globalX(), event->globalY());
+          data->menu.getRootWidget()->move(event->globalPosition().x(), event->globalPosition().y());
           data->menu.show();
           break;
         case Qt::MiddleButton: break;

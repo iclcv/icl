@@ -131,18 +131,15 @@ namespace icl{
           case 1:{
             const icl8u *imageDataEnd = imageData+imageSize.getDim();
             icl8u currVal = !!*imageData;
-            int allLen = 0;
             while(imageData < imageDataEnd){
               const icl8u *other = find_first_not_binarized(imageData,imageDataEnd,currVal);
               size_t len = (size_t)(other-imageData);
               while(len >= 128){
                 *compressedData++ = 0xff >> int(!currVal);
                 len -= 128;
-                allLen += 128;
               }
               if(len){
                 *compressedData++ = (len-1) | (currVal << 7);
-                allLen += len;
               }
               currVal = !currVal;
               imageData = other;

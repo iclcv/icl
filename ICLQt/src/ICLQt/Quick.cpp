@@ -947,7 +947,7 @@ namespace icl{
 #ifdef ICL_SYSTEM_WINDOWS
   //#pragma WARNING("unable to visualize ROI in show!")
 #else
-  #warning "unable to visualize ROI in show!"
+  // TODO: unable to visualize ROI in show!
 #endif
         //      rect(Ti,Ti.getROI());
         restoreColorAndFill();
@@ -1831,7 +1831,7 @@ namespace icl{
 #ifdef ICL_SYSTEM_WINDOWS
   //#pragma WARNING("qt::polygon is still buggy")
 #else
-  #warning "qt::polygon is still buggy"
+  // TODO: qt::polygon is still buggy
 #endif
       float c[4],f[4];
       colorinfo(c,f);

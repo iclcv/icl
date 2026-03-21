@@ -805,7 +805,7 @@ namespace icl{
           QMessageBox::critical(0,"error",("Unable to create image output device: (" + initError + ")").c_str());
           return false;
         }
-        deviceType = deviceType;
+        deviceType = device;
         deviceInfo = params;
 
         recording = true;

@@ -121,7 +121,6 @@ void init(){
   draw->install(scene.getMouseHandler(0));
   if(pa("-s")){
     draw->install(new MouseHandler(mouse));
-    mouse( *(MouseEvent*)0 );
   }
 }
 
