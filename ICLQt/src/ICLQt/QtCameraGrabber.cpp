@@ -17,6 +17,8 @@
 #include <QtMultimedia/QMediaDevices>
 #include <QtMultimedia/QCameraDevice>
 #include <ICLUtils/StringUtils.h>
+#include <QCoreApplication>
+#include <QPermission>
 
 using namespace icl::utils;
 using namespace icl::io;
@@ -26,6 +28,23 @@ namespace icl{
     QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn)
       : cam(0), captureSession(0), surface(0)
     {
+      // Qt6 on macOS: check camera permission
+      // Note: Qt6's permission plugin requires .app bundles on macOS.
+      // For CLI tools, the terminal app must have camera access granted
+      // in System Settings > Privacy & Security > Camera.
+      QCameraPermission cameraPermission;
+      auto permStatus = qApp->checkPermission(cameraPermission);
+      if(permStatus == Qt::PermissionStatus::Denied){
+        throw ICLException("Camera permission denied. Grant camera access to your terminal app "
+                           "in System Settings > Privacy & Security > Camera. "
+                           "Alternatively, use the OpenCV backend: -i cvcam 0");
+      }
+      if(permStatus == Qt::PermissionStatus::Undetermined){
+        // For CLI tools, try to request but it may not show a dialog
+        qApp->requestPermission(cameraPermission, [](const QPermission &){});
+        QCoreApplication::processEvents();
+      }
+
       surface = new ICLVideoSurface;
 
       std::vector<std::string> deviceTokens = tok(deviceIn,"|||",false);
