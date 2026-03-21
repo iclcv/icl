@@ -816,8 +816,10 @@ namespace icl{
       ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
 
       Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
-      //    Size currentImageSize = widget ? widget->getImageSize(true) : Size::null;
       Size widgetSize = widget ? widget->getSize() : Size::null;
+
+      // QOpenGLWidget on Retina: glViewport needs physical pixels
+      const float dpr = widget ? widget->devicePixelRatioF() : 1.0f;
 
       Camera cam = m_cameras[camIndex];
       if(widget){
@@ -968,15 +970,16 @@ namespace icl{
 
       if(widget){
         if (widget->getFitMode() == ICLWidget::fmZoom) {
-          // transforms y in case of having zoom activated
           float dy = (currentImageRect.height-widgetSize.height);
-          glViewport(currentImageRect.x,-dy-currentImageRect.y,currentImageRect.width,currentImageRect.height);
+          glViewport(currentImageRect.x*dpr, (-dy-currentImageRect.y)*dpr,
+                     currentImageRect.width*dpr, currentImageRect.height*dpr);
         } else {
-          glViewport(currentImageRect.x,currentImageRect.y,currentImageRect.width,currentImageRect.height);
+          glViewport(currentImageRect.x*dpr, currentImageRect.y*dpr,
+                     currentImageRect.width*dpr, currentImageRect.height*dpr);
         }
       }else{
         const Size &s = cam.getRenderParams().chipSize;
-        glViewport(0,0,s.width,s.height);
+        glViewport(0, 0, s.width*dpr, s.height*dpr);
       }
 
       glEnable(GL_DEPTH_TEST);
