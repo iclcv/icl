@@ -42,8 +42,11 @@ namespace icl{
     /** TODO: Add Documentation
         What about a fixed 3D-Version that uses 3D-Fixed Matrix data?
     */
-    class ICLGeom_API ICP : public utils::Uncopyable{
+    class ICLGeom_API ICP {
       public:
+      ICP(const ICP&) = delete;
+      ICP& operator=(const ICP&) = delete;
+
       /// Simple result structure
       struct ICLGeom_API Result{
         Result();

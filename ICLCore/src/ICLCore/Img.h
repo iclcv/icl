@@ -496,7 +496,7 @@ namespace icl {
                                      const std::vector<int> &channelIndices,
                                      format fmt,
                                      utils::Time time = utils::Time::null,
-                                     ImgBase **ppoDst = NULL);
+                                     ImgBase **ppoDst = nullptr);
 
         /** Create a shallow copy of an image with given (const version)
             @see the above function
@@ -525,7 +525,7 @@ namespace icl {
             @param poDst destination image (exploited as possible)
             @return shallow copie with given format of NULL if an error occured
         **/
-        Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = NULL){
+        Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = nullptr){
            ImgBase *poDstBase = poDst;
            return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
         }
@@ -551,7 +551,7 @@ namespace icl {
                        is used.
             @return shallow copy of this image
         **/
-        Img<Type>* shallowCopy(const utils::Rect &roi,Img<Type>* poDst = NULL){
+        Img<Type>* shallowCopy(const utils::Rect &roi,Img<Type>* poDst = nullptr){
           ImgBase *poDstBase = poDst;
           return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
         }
@@ -1380,16 +1380,16 @@ namespace icl {
       /* {{{ open */
 
       /// iterator type (just a data pointer)
-      typedef Type* iterator;
+      using iterator = Type*;
 
       /// const iterator type (just a const pointer)
-      typedef const Type* const_iterator;
+      using const_iterator = const Type*;
 
       /// type definition for ROI iterator
-      typedef ImgIterator<Type> roi_iterator;
+      using roi_iterator = ImgIterator<Type>;
 
       /// type definition for a const ROI iterator
-      typedef const ImgIterator<Type> const_roi_iterator;
+      using const_roi_iterator = const ImgIterator<Type>;
       // old    typedef constConstImgIterator<Type> const_iterator;
 
 

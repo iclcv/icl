@@ -151,8 +151,11 @@ namespace icl {
 
     **/
     template<class T>
-    class ICLFilter_API LUTOp3Channel : public UnaryOp, public utils::Uncopyable {
+    class ICLFilter_API LUTOp3Channel : public UnaryOp {
       public:
+      LUTOp3Channel(const LUTOp3Channel&) = delete;
+      LUTOp3Channel& operator=(const LUTOp3Channel&) = delete;
+
 
       /// Internal plugin class for the LUTOp3Channel
       /** The Plugin class can be reimplemented to create custom LUTOp3Channel

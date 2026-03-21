@@ -143,8 +143,11 @@ namespace icl{
 
     };
 
-    class ICLFilter_API MotionSensitiveTemporalSmoothing : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API MotionSensitiveTemporalSmoothing : public UnaryOp{
       public:
+      MotionSensitiveTemporalSmoothing(const MotionSensitiveTemporalSmoothing&) = delete;
+      MotionSensitiveTemporalSmoothing& operator=(const MotionSensitiveTemporalSmoothing&) = delete;
+
 
       /// creates a new MotionSensitiveTemporalSmoothing filter with given parameters
       /** @param iNullValue the value with no image information (e.g. Kinect data) -1=no nullValues

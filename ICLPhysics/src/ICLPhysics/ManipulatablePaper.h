@@ -79,7 +79,7 @@ namespace physics{
 
 
     std::vector<SceneObject *> nodes;
-    typedef std::map<std::string,VertexAttractor*> AttractorMap;
+    using AttractorMap = std::map<std::string,VertexAttractor*>;
     AttractorMap attractors;
     PhysicsWorld *world;
     geom::Scene *scene;

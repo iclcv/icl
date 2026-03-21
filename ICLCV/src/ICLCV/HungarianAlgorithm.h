@@ -56,7 +56,7 @@ namespace icl{
     template<class real>
     class ICLCV_API HungarianAlgorithm {
       /// Internal used cost matrix type
-      typedef utils::Array2D<real> mat;
+      using mat = utils::Array2D<real>;
       public:
 
       /// calculate best assignment given cost matrix m

@@ -44,11 +44,14 @@ namespace icl{
         that is 20 px smaller than the given max-size rectangle.
         */
     class ICLQt_API DefineQuadrangleMouseHandler : public qt::MouseHandler,
-          public utils::Uncopyable, public utils::Lockable{
+          public utils::Lockable{
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
 
       public:
+      DefineQuadrangleMouseHandler(const DefineQuadrangleMouseHandler&) = delete;
+      DefineQuadrangleMouseHandler& operator=(const DefineQuadrangleMouseHandler&) = delete;
+
 
       /// empty constructor (creates a null handler)
       DefineQuadrangleMouseHandler();

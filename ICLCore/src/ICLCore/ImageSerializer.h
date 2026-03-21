@@ -65,7 +65,7 @@ namespace icl{
     struct ICLCore_API ImageSerializer{
 
       /// Internally used type for image headers
-      typedef std::vector<icl8u> ImageHeader;
+      using ImageHeader = std::vector<icl8u>;
 
       /// returns the size of an image header (in Bytes)
       static int getHeaderSize();

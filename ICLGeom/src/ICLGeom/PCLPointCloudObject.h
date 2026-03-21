@@ -65,7 +65,7 @@ namespace icl{
       bool m_ownPCL;                        //!< ownership flag
 
       /// internally used typedef
-      typedef PCLPointType Entry;
+      using Entry = PCLPointType;
 
       /// this is actually specialized for the different types
       /** Please note, offset needs to return -1 for non-supported feature types */

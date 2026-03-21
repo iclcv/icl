@@ -70,8 +70,11 @@ namespace icl{
           - for all \f$r_j \in \mbox{Regions}_i\f$
             - OUTPUT_DATA.add(SimpleBlobSearcher::Blob(\f$r_j\f$, \f$RC_i\f$, i)
     */
-    class ICLCV_API SimpleBlobSearcher : public utils::Uncopyable{
+    class ICLCV_API SimpleBlobSearcher {
       public:
+      SimpleBlobSearcher(const SimpleBlobSearcher&) = delete;
+      SimpleBlobSearcher& operator=(const SimpleBlobSearcher&) = delete;
+
 
       /// Internal blob-result type
         struct ICLCV_API Blob{

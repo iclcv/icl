@@ -40,9 +40,12 @@ namespace icl {
 		/**
 		 * @brief The ICP3D class is a special ICP-case for homogeneous 3D-vectors
 		 */
-		class ICLGeom_API ICP3D : public utils::Uncopyable {
+		class ICLGeom_API ICP3D {
 
 		public:
+			ICP3D(const ICP3D&) = delete;
+			ICP3D& operator=(const ICP3D&) = delete;
+
 
 			/**
 			 * @brief The Result struct contains results of an ICP-loop
@@ -57,7 +60,7 @@ namespace icl {
 				uint32_t iterations;
 			};
 
-			typedef icl::math::FixedColVector<icl32f,4> ICP3DVec;
+			using ICP3DVec = icl::math::FixedColVector<icl32f,4>;
 
 			/**
 			 * @brief ICP3D Standard constructor

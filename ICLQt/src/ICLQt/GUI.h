@@ -70,7 +70,7 @@ namespace icl{
 
       public:
       /// registered widget type creator function
-      typedef utils::Function<GUIWidget*,const GUIDefinition&> CreatorFunction;
+      using CreatorFunction = utils::Function<GUIWidget*,const GUIDefinition&>;
 
       /// registers a new widget type
       /** The registered widget can then be added using a corresponding extension
@@ -168,13 +168,13 @@ namespace icl{
 
       /// simple callback, that can be registered at GUI components
       /** Simple callback methods don't get any information about the source */
-      typedef utils::Function<void> Callback;
+      using Callback = utils::Function<void>;
 
       /// complex callback type that can be registered at GUI components
       /** Complex callback methods get the GUI components handle name as
           parameters. By these means, single callbacks can be registered
           to several components and still be able to handle events differently */
-      typedef utils::Function<void, const std::string&> ComplexCallback;
+      using ComplexCallback = utils::Function<void, const std::string&>;
 
 
       /// registers a callback function on each component

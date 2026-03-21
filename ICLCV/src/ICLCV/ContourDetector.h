@@ -109,7 +109,7 @@ namespace icl{
         performance.
 
     **/
-    class ICLCV_API ContourDetector : public utils::Uncopyable{
+    class ICLCV_API ContourDetector {
 
       /// internal data type
       struct Data;
@@ -118,6 +118,9 @@ namespace icl{
       Data *m_data;
 
       public:
+      ContourDetector(const ContourDetector&) = delete;
+      ContourDetector& operator=(const ContourDetector&) = delete;
+
 
       /// contour tracing algorithm used
       enum Algorithm{

@@ -322,9 +322,9 @@ unsigned int roundUp(unsigned int value, unsigned int multiple) {
 
 // Wrapper for malloc
 void* alloc(size_t size) {
-	void* ptr = NULL;
+	void* ptr = nullptr;
 	ptr = malloc(size);
-	if (ptr == NULL) {
+	if (ptr == nullptr) {
 		perror("malloc");
 		exit(-1);
 	}

@@ -41,7 +41,7 @@ namespace icl {
     class PhysicsWorld;
 
     /// This class combines an physical object and it's graphical representation in ICL
-    class ICLPhysics_API PhysicsObject : public geom::SceneObject, public utils::Uncopyable{
+    class ICLPhysics_API PhysicsObject : public geom::SceneObject{
       ///physicsworld this object has been added to
       PhysicsWorld *m_world;
       /// internal physical object
@@ -57,6 +57,9 @@ namespace icl {
 			std::string m_id;
 
       public:
+      PhysicsObject(const PhysicsObject&) = delete;
+      PhysicsObject& operator=(const PhysicsObject&) = delete;
+
       /// Default constructor (initializint m_physicalObject with 0)
 			PhysicsObject():m_world(0), m_physicalObject(0),m_collisionGroup(0), m_stateChanged(true), m_id("") {
         setLockingEnabled(true);

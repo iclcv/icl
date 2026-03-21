@@ -204,7 +204,7 @@ namespace icl{
 
       if(m_data->mem.isEmpty()){
         m_data->mem.unlock();
-        return NULL;
+        return nullptr;
       }
 
       m_data->compressor.uncompress((const icl8u*)m_data->mem.constData(), m_data->mem.getSize(), &m_data->image);
@@ -213,7 +213,7 @@ namespace icl{
         setPropertyValue("size", m_data->image->getSize());
       }
 
-      return (m_data->image->getDim()) ? m_data->image : NULL;
+      return (m_data->image->getDim()) ? m_data->image : nullptr;
     }
 
     void SharedMemoryGrabber::resetBus(bool verbose){

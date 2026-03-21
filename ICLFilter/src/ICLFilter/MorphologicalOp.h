@@ -84,8 +84,11 @@ namespace icl {
         <b>left: binary image results, right: gray image results</b>
         \image html  morphologic_operator_results.png
     */
-    class ICLFilter_API MorphologicalOp : public NeighborhoodOp, public utils::Uncopyable {
+    class ICLFilter_API MorphologicalOp : public NeighborhoodOp {
     public:
+    MorphologicalOp(const MorphologicalOp&) = delete;
+    MorphologicalOp& operator=(const MorphologicalOp&) = delete;
+
 
     /// this enum specifiy all possible morphological operations
     enum optype {
@@ -163,11 +166,11 @@ namespace icl {
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
       IppStatus ippiMorphologicalBorderCall (const core::Img<T> *src, core::Img<T> *dst, IppiMorphAdvState *advState);
 
-      typedef IppiMorphState ICLMorphState ;
-      typedef IppiMorphAdvState ICLMorphAdvState;
+      using ICLMorphState = IppiMorphState;
+      using ICLMorphAdvState = IppiMorphAdvState;
   #else
-      typedef void ICLMorphState;
-      typedef void ICLMorphAdvState;
+      using ICLMorphState = void;
+      using ICLMorphAdvState = void;
       core::ImgBase *m_openingAndClosingBuffer;
       core::ImgBase *m_gradientBorderBuffer_1;
       core::ImgBase *m_gradientBorderBuffer_2;

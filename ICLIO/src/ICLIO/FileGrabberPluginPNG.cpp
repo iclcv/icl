@@ -58,7 +58,7 @@ namespace icl{
         return;
       }
 
-      png_structp reader = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+      png_structp reader = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
       if(!reader){
         ERROR_LOG("unable to create png-read struct for file " << file.getName());
         return;
@@ -112,7 +112,7 @@ namespace icl{
         ERROR_LOG("unable to release png reader structure " << file.getName());
         return;
       }
-      png_destroy_read_struct(&reader,&info,NULL);
+      png_destroy_read_struct(&reader,&info,nullptr);
 
       depth destDepth = bits==16?depth32s:depth8u;
 

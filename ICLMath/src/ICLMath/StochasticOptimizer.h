@@ -63,7 +63,7 @@ namespace icl{
     class ICLMath_IMP StochasticOptimizer {
       public:
       /// Result structure
-      typedef StochasticOptimizerResult<T> Result;
+      using Result = StochasticOptimizerResult<T>;
 
       /// create a stochastic optimizer with given data dimension
       StochasticOptimizer(int dataDim);

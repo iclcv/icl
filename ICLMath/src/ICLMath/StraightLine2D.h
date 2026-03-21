@@ -47,10 +47,10 @@ namespace icl{
     */
     struct ICLMath_API StraightLine2D{
       /// internal typedef
-      typedef FixedColVector<float,2> PointPolar;
+      using PointPolar = FixedColVector<float,2>;
 
       /// internal typedef for 2D points
-      typedef FixedColVector<float,2> Pos;
+      using Pos = FixedColVector<float,2>;
 
       /// creates a straight line from given angle and distance to origin
       StraightLine2D(float angle, float distance);

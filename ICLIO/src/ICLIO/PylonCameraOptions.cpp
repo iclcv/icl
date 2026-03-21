@@ -179,7 +179,7 @@ std::string PylonCameraOptions::getType(const std::string &name){
 
 // creates an info string for integer-nodes when possible
 std::string intInfo(GenApi::INode* node){
-  GenApi::IInteger* inode = NULL;
+  GenApi::IInteger* inode = nullptr;
   if((inode = dynamic_cast<GenApi::IInteger*>(node))) {
     std::ostringstream ret;
     ret << "[" << inode -> GetMin() << "," << inode -> GetMax()

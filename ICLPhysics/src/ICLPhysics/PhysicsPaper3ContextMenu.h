@@ -37,12 +37,15 @@
 namespace icl{
   namespace physics{
 
-    class PhysicsPaper3ContextMenu : public utils::Uncopyable{
+    class PhysicsPaper3ContextMenu {
       struct Data;
       Data *m_data;
 
       public:
-      typedef utils::Function<void,const std::string&> callback;
+      PhysicsPaper3ContextMenu(const PhysicsPaper3ContextMenu&) = delete;
+      PhysicsPaper3ContextMenu& operator=(const PhysicsPaper3ContextMenu&) = delete;
+
+      using callback = utils::Function<void,const std::string&>;
 
       PhysicsPaper3ContextMenu();
 

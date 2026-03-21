@@ -44,7 +44,7 @@ namespace icl{
 
     /** The ShaderUtil is an easy to use wrapper for activating the
         correct shader for the primitive that is to be rendered.*/
-    class ICLGeom_API ShaderUtil : public utils::Uncopyable{
+    class ICLGeom_API ShaderUtil {
       const Camera *m_camera;
       icl::qt::GLFragmentShader** m_shaders;
       icl::qt::GLFragmentShader* activeShader;
@@ -52,6 +52,9 @@ namespace icl{
       float m_shadowBias;
       bool renderingShadow;
       public:
+      ShaderUtil(const ShaderUtil&) = delete;
+      ShaderUtil& operator=(const ShaderUtil&) = delete;
+
       ///Enum representing the different shader types
       enum ShaderType{SHADOW, SHADOW_TEXTURE, NO_SHADOW, NO_SHADOW_TEXTURE, COUNT};
       ShaderUtil(const Camera *camera, icl::qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow, float shadowBias);

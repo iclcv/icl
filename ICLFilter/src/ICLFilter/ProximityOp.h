@@ -111,8 +111,11 @@ namespace icl {
 
 
     */
-    class ProximityOp : public BinaryOp, public utils::Uncopyable, public utils::Configurable{
+    class ProximityOp : public BinaryOp, public utils::Configurable{
       public:
+      ProximityOp(const ProximityOp&) = delete;
+      ProximityOp& operator=(const ProximityOp&) = delete;
+
 
       /// enum to specify the current apply mode of a ProximityOp
       /** @see ProximityOp */

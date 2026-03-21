@@ -82,11 +82,14 @@ namespace icl{
         images using an io::RSBImageOutput (we strongly recommend to
         use the io::GenericImageSender instead) allows for setting
     */
-    class RSBRemoteGUI : public utils::Uncopyable{
+    class RSBRemoteGUI {
       struct Data;   //!< internal data class
       Data *m_data;  //!< internal data pointer
 
       public:
+      RSBRemoteGUI(const RSBRemoteGUI&) = delete;
+      RSBRemoteGUI& operator=(const RSBRemoteGUI&) = delete;
+
       /// Constructor that wraps around an exisiting GUI instance
       /** The existing GUI instance must have been 'created' before.
           An empty rsbBaseScope can only be used in the null-construction case, i.e.

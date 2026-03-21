@@ -242,16 +242,16 @@ namespace icl{
       }
 
       /// typedef for a normal iterator (just a pointer)
-      typedef T* iterator;
+      using iterator = T*;
 
       /// const iterator type (just a const pointer)
-      typedef const T* const_iterator;
+      using const_iterator = const T*;
 
       /// type definition for ROI iterator
-      typedef ImgIterator<T> roi_iterator;
+      using roi_iterator = ImgIterator<T>;
 
       /// type definition for a const ROI iterator
-      typedef const ImgIterator<T> const_roi_iterator;
+      using const_roi_iterator = const ImgIterator<T>;
 
       /// returns the image iterator (equal to getData(channel))
       iterator begin(){

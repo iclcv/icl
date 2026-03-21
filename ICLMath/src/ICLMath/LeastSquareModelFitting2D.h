@@ -42,7 +42,7 @@ namespace icl{
         some special desing matrix creation methods are provided */
     class LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
       /// super type
-      typedef LeastSquareModelFitting<double, utils::Point32f> Super;
+      using Super = LeastSquareModelFitting<double, utils::Point32f>;
       public:
       /// Default constructor for creating dummy instances
       LeastSquareModelFitting2D(){}

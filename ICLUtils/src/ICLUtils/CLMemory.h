@@ -50,7 +50,7 @@ namespace icl {
 		public:
 
 			/// smart pointer to this class type
-			typedef SmartPtr<CLMemory> Ptr;
+			using Ptr = SmartPtr<CLMemory>;
 
 			/// Memorys type available
 			enum MemoryType {

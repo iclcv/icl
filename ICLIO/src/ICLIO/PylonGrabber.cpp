@@ -40,7 +40,7 @@ using namespace icl::io::pylon;
 // Constructor of PylonGrabberImpl
 PylonGrabber::PylonGrabber(
     const Pylon::CDeviceInfo &dev, const std::string args)
-  : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(NULL)
+  : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(nullptr)
 {
   FUNCTION_LOG("args: " << args);
   utils::Mutex::Locker l(m_ImgMutex);
@@ -182,7 +182,7 @@ void PylonGrabber::cameraDefaultSettings(){
 }
 
 const core::ImgBase* PylonGrabber::acquireImage(){
-  core::ImgBase* ret = NULL;
+  core::ImgBase* ret = nullptr;
   int counter = 0;
   while(1){
     // lock image lock so buffers are safe till release.
@@ -194,7 +194,7 @@ const core::ImgBase* PylonGrabber::acquireImage(){
     {
       // old frame release and sleep
       m_ImgMutex.unlock();
-      ret = NULL;
+      ret = nullptr;
       ++counter;
       utils::Thread::msleep(1);
     } else {

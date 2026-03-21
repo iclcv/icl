@@ -40,7 +40,9 @@ using namespace icl::utils;
 
 namespace icl{
   namespace qt{
-    struct ExecThread : public Uncopyable, public Thread{
+    struct ExecThread : public Thread{
+      ExecThread(const ExecThread&) = delete;
+      ExecThread& operator=(const ExecThread&) = delete;
       typedef void (*callback)(void);
       callback cb;
       bool stopRequested;
@@ -167,7 +169,7 @@ namespace icl{
       app = (QApplication*)existingApp;
     }else{
       static int static_n = 1;
-      static char *static_ppc[] = { ppc[0], NULL };
+      static char *static_ppc[] = { ppc[0], nullptr };
       app = new QApplication(static_n, static_ppc);
     }
 #endif

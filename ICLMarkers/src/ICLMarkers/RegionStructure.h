@@ -56,7 +56,7 @@ namespace icl{
     };
 
     /// Managed pointer type definition
-    typedef utils::SmartPtr<RegionStructure> RegionStructurePtr;
+    using RegionStructurePtr = utils::SmartPtr<RegionStructure>;
 
 
 

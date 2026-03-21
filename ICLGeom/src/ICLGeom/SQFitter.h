@@ -52,7 +52,7 @@ namespace icl{
 
     class ICLGeom_API SQFitter{
     public:
-      typedef icl::math::LevenbergMarquardtFitter<float> LM; //!< Levenberg-Marquardt
+      using LM = icl::math::LevenbergMarquardtFitter<float>; //!< Levenberg-Marquardt
 
     private:
 
@@ -108,7 +108,7 @@ namespace icl{
       SQParams params;                     //!< last solution
       icl::utils::SmartPtr<Vec> camCenter; //!< camera center
     };
-    typedef icl::utils::SmartPtr<SQFitter> SQFitterPtr;
+    using SQFitterPtr = icl::utils::SmartPtr<SQFitter>;
 
   } // namespace geom
 }

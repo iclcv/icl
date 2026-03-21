@@ -36,8 +36,8 @@
 namespace icl{
   namespace markers{
 	  struct ICLMarkers_API MarkerGridEvaluater{
-      typedef AdvancedMarkerGridDetector::MarkerGrid MarkerGrid;
-      typedef AdvancedMarkerGridDetector::Marker Marker;
+      using MarkerGrid = AdvancedMarkerGridDetector::MarkerGrid;
+      using Marker = AdvancedMarkerGridDetector::Marker;
 
       const MarkerGrid *grid;
       struct Line{
@@ -50,8 +50,8 @@ namespace icl{
         Line(const std::vector<utils::Point32f> &ps, float *error=0);
 
         struct PCAInfo{
-          typedef math::FixedColVector<float,2> V;
-          typedef math::FixedMatrix<float,2,2> M;
+          using V = math::FixedColVector<float,2>;
+          using M = math::FixedMatrix<float,2,2>;
           V c;
           M evecs;
           V evals;

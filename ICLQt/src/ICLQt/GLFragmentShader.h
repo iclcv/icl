@@ -42,13 +42,16 @@ namespace icl{
     /** The GLFragmentShader class can be used to create simple fragment shader programs.
 
     */
-    class ICLQt_API GLFragmentShader : public utils::Uncopyable{
+    class ICLQt_API GLFragmentShader {
       struct Data;
       Data *m_data;
 
       void create();
 
       public:
+      GLFragmentShader(const GLFragmentShader&) = delete;
+      GLFragmentShader& operator=(const GLFragmentShader&) = delete;
+
       GLFragmentShader(const std::string &vertexProgram,
                        const std::string &fragmentProgram,
                        bool createOnFirstActivate=true);

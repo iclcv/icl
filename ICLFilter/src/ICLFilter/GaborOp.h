@@ -115,8 +115,11 @@ namespace icl{
         - \f$\gamma\f$ aspect-ratio of the Gaussian
 
     **/
-    class ICLFilter_API GaborOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API GaborOp : public UnaryOp{
       public:
+      GaborOp(const GaborOp&) = delete;
+      GaborOp& operator=(const GaborOp&) = delete;
+
       /// creates an empty GaborOp
       GaborOp();
 

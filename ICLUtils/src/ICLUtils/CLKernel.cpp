@@ -120,7 +120,7 @@ namespace icl {
       void setArg(const unsigned idx, const CLKernel::LocalMemory &value) {
         try
           {
-            kernel.setArg(idx, value.size, NULL);
+            kernel.setArg(idx, value.size, nullptr);
           } catch (cl::Error& error) {
           throw CLKernelException(CLException::getMessage(error.err(), error.what()));
         }

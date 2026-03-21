@@ -381,7 +381,7 @@ namespace icl{
                                        cl::NullRange,
                                        cl::NDRange(idSize), //input size for get global id
                                        cl::NullRange,
-                                       NULL,
+                                       nullptr,
                                        &waitEvent);
 
             m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -390,7 +390,7 @@ namespace icl{
                                     0,
                                     passes * adjs.size() * sizeof(int),
                                     (int*) &cAbove[0],
-                                    NULL,&waitEvent);
+                                    nullptr,&waitEvent);
 
             m_data->queue.enqueueReadBuffer(//read output from kernel
                                     countBelowBuffer,
@@ -398,7 +398,7 @@ namespace icl{
                                     0,
                                     passes * adjs.size() * sizeof(int),
                                     (int*) &cBelow[0],
-                                    NULL,&waitEvent);
+                                    nullptr,&waitEvent);
 
             m_data->queue.enqueueReadBuffer(//read output from kernel
                                     countOnBuffer,
@@ -406,7 +406,7 @@ namespace icl{
                                     0,
                                     passes * adjs.size() * sizeof(int),
                                     (int*) &cOn[0],
-                                    NULL,&waitEvent);
+                                    nullptr,&waitEvent);
 
             clFinish(m_data->queue());
 
@@ -521,7 +521,7 @@ namespace icl{
                                      cl::NullRange,
                                      cl::NDRange(idSize), //input size for get global id
                                      cl::NullRange,
-                                     NULL,
+                                     nullptr,
                                      &waitEvent);
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -530,7 +530,7 @@ namespace icl{
                                   0,
                                   passes * sizeof(int),
                                   (int*) &cAbove[0],//cAboveRead
-                                  NULL,&waitEvent);
+                                  nullptr,&waitEvent);
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
                                   countBelowBuffer,
@@ -538,7 +538,7 @@ namespace icl{
                                   0,
                                   passes * sizeof(int),
                                   (int*) &cBelow[0],
-                                  NULL,&waitEvent);
+                                  nullptr,&waitEvent);
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
                                   countOnBuffer,
@@ -546,7 +546,7 @@ namespace icl{
                                   0,
                                   passes * sizeof(int),
                                   (int*) &cOn[0],
-                                  NULL,&waitEvent);
+                                  nullptr,&waitEvent);
 
           clFinish(m_data->queue());
 

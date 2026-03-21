@@ -46,10 +46,10 @@ namespace icl{
       public:
 
       /// data used for instance creation
-      typedef std::map<std::string,std::string> Data;
+      using Data = std::map<std::string,std::string>;
 
       /// creator function for instances
-      typedef utils::Function<T*,const Data&> CreateFunction;
+      using CreateFunction = utils::Function<T*,const Data&>;
 
       /// internally used instance type:
       struct Plugin{

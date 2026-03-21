@@ -39,9 +39,9 @@
 namespace icl{
 namespace physics{
   struct ICLPhysics_API BendingConstraint{
-    typedef btSoftBody::tLinkArray LinkArray;
-    typedef btSoftBody::Material Material;
-    typedef btSoftBody::Link Link;
+    using LinkArray = btSoftBody::tLinkArray;
+    using Material = btSoftBody::Material;
+    using Link = btSoftBody::Link;
 
     Link *link;
     Material *material;

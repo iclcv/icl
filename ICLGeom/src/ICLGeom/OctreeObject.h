@@ -59,7 +59,7 @@ namespace icl{
 
     template<class Scalar, int CAPACITY, int SF, class Pt, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer{
-      typedef typename math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node Node;
+      using Node = typename math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node;
       static void render(const Node *node){
         glBegin(GL_POINTS);
         for(const Pt *p = node->points; p < node->next;++p){
@@ -73,8 +73,8 @@ namespace icl{
     /// this optimization is not working: Why?
     template<int CAPACITY, int SF, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer<float,CAPACITY,SF,math::FixedColVector<float,4>,ALLOC_CHUNK_SIZE>{
-      typedef FixedColVector<float,4> Pt;
-      typedef typename math::Octree<float,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node Node;
+      using Pt = FixedColVector<float,4>;
+      using Node = typename math::Octree<float,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node;
       static void render(const Node *node){
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(4,GL_FLOAT,0,node->points);
@@ -85,8 +85,8 @@ namespace icl{
 
     template<int CAPACITY, int SF, int ALLOC_CHUNK_SIZE>
     struct OctreePointRenderer<icl32s,CAPACITY,SF,math::FixedColVector<icl32s,4>,ALLOC_CHUNK_SIZE>{
-      typedef FixedColVector<icl32s,4> Pt;
-      typedef typename math::Octree<icl32s,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node Node;
+      using Pt = FixedColVector<icl32s,4>;
+      using Node = typename math::Octree<icl32s,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>::Node;
       static void render(const Node *node){
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(4,GL_INT,0,node->points);
@@ -129,7 +129,7 @@ namespace icl{
     class OctreeObject : public math::Octree<Scalar,CAPACITY,SF,Pt,ALLOC_CHUNK_SIZE>, public SceneObject{
 
       /// typedef to the parent class type
-      typedef math::Octree<Scalar,CAPACITY,SF,Pt, ALLOC_CHUNK_SIZE> Parent;
+      using Parent = math::Octree<Scalar,CAPACITY,SF,Pt, ALLOC_CHUNK_SIZE>;
       bool m_renderPoints;     //!< flag whether points are rendered as well
       bool m_renderBoxes;      //!< flag whether aabb boxes are rendered
       GeomColor m_pointColor;  //!< color used for the points (if rendered)

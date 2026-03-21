@@ -50,9 +50,9 @@ namespace icl{
       };
 
       /// Vector Type
-      typedef std::vector<float> Vec;
+      using Vec = std::vector<float>;
 
-      typedef utils::Function<float,const Vec&,const Vec&> DistanceFunction;
+      using DistanceFunction = utils::Function<float,const Vec&,const Vec&>;
 
       /// Creates an empty (null) vector tracker (isNull() returns true then)
       VectorTracker();

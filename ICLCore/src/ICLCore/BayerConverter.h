@@ -40,8 +40,11 @@ namespace icl {
     /// Utiltity class for bayer pattern conversion
     /** The internal implementation was basically taken from
         the libdc files */
-    class ICLCore_API BayerConverter : public utils::Uncopyable{
+    class ICLCore_API BayerConverter {
       public:
+      BayerConverter(const BayerConverter&) = delete;
+      BayerConverter& operator=(const BayerConverter&) = delete;
+
 
       enum bayerConverterMethod {
         nearestNeighbor = 0,

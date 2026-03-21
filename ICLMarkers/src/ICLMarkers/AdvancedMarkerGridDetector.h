@@ -42,7 +42,7 @@ namespace icl{
     /// Extension of the MarkerGridDetector class that provides a more advanced output
 	  class ICLMarkers_API AdvancedMarkerGridDetector : public MarkerGridDetector{
       public:
-      typedef MarkerGridDetector Super;
+      using Super = MarkerGridDetector;
 
 	  class ICLMarkers_API AdvancedGridDefinition : public Super::GridDefinition{
         utils::Size32f markerBounds; //!< size of a single marker in mm
@@ -168,7 +168,7 @@ namespace icl{
 
       /// Represents whole grid of markers
 	  class ICLMarkers_API MarkerGrid : public utils::Array2D<Marker>{
-        typedef utils::Array2D<Marker> Super; //!< convenience typedef
+        using Super = utils::Array2D<Marker>; //!< convenience typedef
         AdvancedGridDefinition gridDef;       //!< internal metrics
 
         public:

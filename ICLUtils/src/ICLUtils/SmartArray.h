@@ -45,7 +45,7 @@ namespace icl{
     template<class T>
     struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
       // type definition for the parent class
-      typedef SmartPtrBase<T,ArrayDelOp> super;
+      using super = SmartPtrBase<T,ArrayDelOp>;
       /// creates a null pointer
       SmartArray():super(){}
 

@@ -131,7 +131,7 @@ namespace icl{
     }
 
     Configurable::Configurable(const std::string &ID, bool ordered)
-      : m_isOrdered(ordered), m_elderConfigurable(NULL), m_ID(ID){
+      : m_isOrdered(ordered), m_elderConfigurable(nullptr), m_ID(ID){
       if(ID.length()){
         if(get(ID)) throw ICLException(str("Configurable(")+ID+"): given ID is already used");
       }

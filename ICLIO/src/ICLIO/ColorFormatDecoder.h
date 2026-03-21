@@ -73,7 +73,7 @@ namespace icl{
     class ICLIO_API ColorFormatDecoder{
       public:
       // conversion function type
-      typedef void (*decoder_func)(const icl8u*,const utils::Size&,core::ImgBase**,std::vector<icl8u>*);
+      using decoder_func = void(*)(const icl8u*,const utils::Size&,core::ImgBase**,std::vector<icl8u>*);
 
       private:
       std::vector<icl8u> m_buffer; //!< internal buffer

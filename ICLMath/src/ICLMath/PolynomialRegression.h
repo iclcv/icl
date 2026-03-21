@@ -87,10 +87,10 @@ namespace icl{
       public:
 
       /// internally used matrxi type
-      typedef DynMatrix<T> Matrix;
+      using Matrix = DynMatrix<T>;
 
       /// internally used type
-      typedef PolynomialRegressionAttrib<T> Attrib;
+      using Attrib = PolynomialRegressionAttrib<T>;
 
 
       /// result type

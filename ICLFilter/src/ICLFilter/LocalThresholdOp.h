@@ -162,8 +162,11 @@ namespace icl{
         The experimental gamma-slope-computation is much more expensive: Here, the RegionMean algorithms
         needs about 25ms.
     */
-    class ICLFilter_API LocalThresholdOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API LocalThresholdOp : public UnaryOp{
       public:
+      LocalThresholdOp(const LocalThresholdOp&) = delete;
+      LocalThresholdOp& operator=(const LocalThresholdOp&) = delete;
+
 
       /// Internally used algorithm
       enum algorithm{

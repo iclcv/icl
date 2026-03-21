@@ -53,7 +53,7 @@ namespace icl{
       public:
 
       /// internal data type (64Bit integer)
-      typedef int64_t value_type;
+      using value_type = int64_t;
 
       // undefined time: 0
       static const Time null;

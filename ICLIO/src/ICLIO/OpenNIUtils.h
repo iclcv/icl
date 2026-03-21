@@ -229,7 +229,7 @@ namespace icl {
           T* getNextReadBuffer(bool omit_double_frames=false,
                                int omit_max_wait_millis=1000,
                                int omit_sleep_micros=1000){
-            T* tmp = NULL;
+            T* tmp = nullptr;
             utils::Time t = utils::Time::now();
             while (true){
               m_Mutex.lock();
@@ -318,7 +318,10 @@ namespace icl {
       };
 
       /// A Context object encapsulating the OpenNI-Context-object.
-      class OpenNIContext : public utils::Uncopyable {
+      class OpenNIContext {
+        public:
+          OpenNIContext(const OpenNIContext&) = delete;
+          OpenNIContext& operator=(const OpenNIContext&) = delete;
         private:
           /// This is a singleton class so Constructor is private.
           OpenNIContext();
@@ -341,7 +344,7 @@ namespace icl {
           static XnStatus EnumerateProductionTrees(XnProductionNodeType type,
                                                    const xn::Query* pQuery,
                                                    xn::NodeInfoList& TreesList,
-                                                   xn::EnumerationErrors* pErrors = NULL);
+                                                   xn::EnumerationErrors* pErrors = nullptr);
 
           /// calls Create on the internal OpenNI context.
           static XnStatus Create(xn::DepthGenerator* generator);
@@ -494,9 +497,9 @@ namespace icl {
 
         private:
           /// A NodeInfo for the used device
-          xn::NodeInfo* m_DeviceInfo = NULL;
+          xn::NodeInfo* m_DeviceInfo = nullptr;
           /// the underlying rgb-image generator
-          xn::ImageGenerator* m_RgbGenerator = NULL;
+          xn::ImageGenerator* m_RgbGenerator = nullptr;
           /// the id of the last grabbed frame
           unsigned int m_FrameId;
           /// the underlying core::depth generator
@@ -504,12 +507,12 @@ namespace icl {
             The Xtion cam does not provide rgb images without depthGenerator
             being created.
           **/
-          xn::DepthGenerator* m_DepthGenerator = NULL;
-          xn::IRGenerator* m_IrGenerator = NULL;
+          xn::DepthGenerator* m_DepthGenerator = nullptr;
+          xn::IRGenerator* m_IrGenerator = nullptr;
           /// a ImagehMetaData object holding image information
           xn::ImageMetaData m_RgbMD;
           /// pointer to internally used MapGeneratorOptions
-          MapGeneratorOptions* m_Options = NULL;
+          MapGeneratorOptions* m_Options = nullptr;
       };
 
       /// IR Image Generator

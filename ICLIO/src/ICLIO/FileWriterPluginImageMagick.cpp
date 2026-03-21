@@ -199,7 +199,7 @@ namespace icl{
       static bool first = true;
       if(first){
         first = false;
-        Magick::InitializeMagick( NULL );
+        Magick::InitializeMagick( nullptr );
       }
     }
 

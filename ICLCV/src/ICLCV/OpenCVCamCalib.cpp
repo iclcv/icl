@@ -178,7 +178,7 @@ namespace icl{
         CV_MAT_ELEM(*(m_data->intrinsic_matrix), float, 1, 1) = 1.0;
         //TODO allow more params
         cvCalibrateCamera2(object_points2, image_points2, point_counts2, m_data->imgSize,
-                           m_data->intrinsic_matrix, m_data->distortion_coeffs, NULL, NULL, CV_CALIB_FIX_ASPECT_RATIO);
+                           m_data->intrinsic_matrix, m_data->distortion_coeffs, nullptr, nullptr, CV_CALIB_FIX_ASPECT_RATIO);
         cvReleaseMat(&object_points2);
         cvReleaseMat(&image_points2);
         cvReleaseMat(&point_counts2);

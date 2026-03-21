@@ -48,7 +48,11 @@ namespace icl{
         by the KD-Tree instance. Therefore, that tree instance will only stay valid as long as
         the referenced data does
     */
-    class ICLMath_API KDTree : public utils::Uncopyable{
+    class ICLMath_API KDTree {
+      public:
+      KDTree(const KDTree&) = delete;
+      KDTree& operator=(const KDTree&) = delete;
+
       private:
       ///Keeps data of node
       struct Node{

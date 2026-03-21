@@ -51,9 +51,12 @@ namespace icl{
         or use the optimze call where world points are generated automatically and
         layout of image points must be rowwise.
         */
-    class ICLIO_API IntrinsicCalibrator : public utils::Uncopyable{
+    class ICLIO_API IntrinsicCalibrator {
 
       public:
+      IntrinsicCalibrator(const IntrinsicCalibrator&) = delete;
+      IntrinsicCalibrator& operator=(const IntrinsicCalibrator&) = delete;
+
       ///Simple struct for handle result of computation of intrinsics
       struct ICLIO_API Result : public ImageUndistortion{
 
@@ -325,9 +328,9 @@ namespace icl{
       }
 
       //2d coordinates in picture
-      typedef math::FixedMatrix<double,1,2> Pos2D;
+      using Pos2D = math::FixedMatrix<double,1,2>;
       //grid of 2d coords in picture
-      typedef utils::Array2D<Pos2D> DetectedGrid;
+      using DetectedGrid = utils::Array2D<Pos2D>;
 
       struct CalibrationData{
         // list of detected images (row-major order of points)

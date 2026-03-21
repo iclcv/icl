@@ -50,13 +50,13 @@ namespace icl {
     public:
 
         /// Internal used matrix type
-        typedef math::DynMatrix<float> DMatF;
+        using DMatF = math::DynMatrix<float>;
         /// Histogram type
-        typedef std::vector<float> FloatHist;
+        using FloatHist = std::vector<float>;
         /// Array of points
-        typedef std::vector<utils::Point> PointVector;
+        using PointVector = std::vector<utils::Point>;
         /// Internal used index vector
-        typedef std::vector<int> IndexVector;
+        using IndexVector = std::vector<int>;
 
         /**
          * @brief RegionCurvature Constructor

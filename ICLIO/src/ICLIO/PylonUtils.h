@@ -50,7 +50,7 @@ namespace icl {
           Pylon::StreamBufferHandle m_hBuffer;
 
         public:
-          PylonGrabberBuffer(size_t size) : m_pBuffer(NULL) {
+          PylonGrabberBuffer(size_t size) : m_pBuffer(nullptr) {
             m_pBuffer = new T[size];
             if (!m_pBuffer)
               throw utils::ICLException("Not enough memory to allocate image buffer");
@@ -266,7 +266,7 @@ namespace icl {
       /// Returns a list of available Pylon devices.
       /** @param filter if provided will be used to filter available devices */
       ICLIO_API Pylon::DeviceInfoList_t
-      getPylonDeviceList(Pylon::DeviceInfoList_t* filter=NULL);
+      getPylonDeviceList(Pylon::DeviceInfoList_t* filter=nullptr);
 
     } //namespace pylon
   } // namespace io

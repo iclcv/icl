@@ -183,7 +183,7 @@ namespace icl{
       intr(0,0) = intr(1,1) = 1.0f;
 
       cvCalibrateCamera2(O.get(), I.get(), cs.get(), s, intr.get(),
-                         dist.get(), NULL, NULL, CV_CALIB_FIX_ASPECT_RATIO);
+                         dist.get(), nullptr, nullptr, CV_CALIB_FIX_ASPECT_RATIO);
 
       std::vector<double> params(10);
       params[0] = intr(0, 0);

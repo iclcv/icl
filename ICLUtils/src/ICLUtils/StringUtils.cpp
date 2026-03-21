@@ -232,7 +232,7 @@ namespace icl{
       }
 
       std::vector<regmatch_t> matchList(num);
-      status = regexec(&re, text.c_str(), num, num ? matchList.data() : NULL, 0);
+      status = regexec(&re, text.c_str(), num, num ? matchList.data() : nullptr, 0);
       // char buf[256];
       // regerror(status,&re,buf,256);
       //throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");

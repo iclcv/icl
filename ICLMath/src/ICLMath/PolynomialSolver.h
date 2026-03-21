@@ -40,7 +40,7 @@
 namespace icl{
   namespace math{
 
-  typedef std::complex<double> xcomplex;
+  using xcomplex = std::complex<double>;
 
     /****************************************************************************
      *
@@ -58,7 +58,7 @@ namespace icl{
      * The ICL developers applied only minor changes to this file
      ****************************************************************************/
 
-    typedef double xreal;
+    using xreal = double;
     static const struct { double ZERO, INFIN; int MIN_EXP, MAX_EXP; }
     xdata = { 0.0, DBL_MAX, DBL_MIN_EXP, DBL_MAX_EXP };
     static xreal xnorm(xcomplex z) { return std::norm(z); }

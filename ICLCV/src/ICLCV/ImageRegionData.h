@@ -49,7 +49,7 @@ namespace icl{
         declarations of this class. Nested classes cannot be 'forward-declared' */
     struct ICLCV_API ImageRegionData{
     private:
-      typedef ImageRegionData IRD;
+      using IRD = ImageRegionData;
     public:
       friend class RegionDetector;
       friend struct ImageRegion;

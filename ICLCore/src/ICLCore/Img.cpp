@@ -422,7 +422,7 @@ namespace icl {
         poDst = new Img<Type>(getROISize(),getChannels(),getFormat());
       }else{
         if(poDst->getSize().getDim()){
-          ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize(), NULL);
+          ICLASSERT_RETURN_VAL( poDst->getROISize() == getROISize(), nullptr);
         }else{
           poDst->setSize(getROISize());
         }
@@ -2181,7 +2181,7 @@ namespace icl {
     template<class T>
     ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> *inputImage){
       // {{{ open
-      ICLASSERT(inputImage != NULL);
+      ICLASSERT(inputImage != nullptr);
 
       if(inputImage){
         r = new Img<T>(*inputImage);

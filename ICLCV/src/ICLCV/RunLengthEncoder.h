@@ -99,7 +99,7 @@ namespace icl {
     */
     class ICLCV_API RunLengthEncoder{
       /// internal typedef
-      typedef WorkingLineSegment WLS;
+      using WLS = WorkingLineSegment;
 
       /// internal data buffer
       std::vector<WLS> m_data;

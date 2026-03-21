@@ -110,7 +110,7 @@ namespace icl{
     /// line primitive (the line references 2 vertices)
     struct LinePrimitive : public math::FixedColVector<int,2>, public Primitive{
       /// super type
-      typedef math::FixedColVector<int,2> super;
+      using super = math::FixedColVector<int,2>;
 
       /// constructor
       LinePrimitive(int a, int b, const GeomColor &color):
@@ -129,7 +129,7 @@ namespace icl{
     /// triangle primitive
     struct TrianglePrimitive : public math::FixedColVector<int,6>, public Primitive{
       /// super type
-      typedef  math::FixedColVector<int,6> super;
+      using super = math::FixedColVector<int,6>;
 
       /// constructor
       TrianglePrimitive(int a, int b, int c, const GeomColor &color, int na=-1, int nb=-1, int nc=-1):
@@ -153,7 +153,7 @@ namespace icl{
     /// quad primitive
     struct QuadPrimitive : public math::FixedColVector<int,8>, public Primitive{
       /// super type
-      typedef math::FixedColVector<int,8> super;
+      using super = math::FixedColVector<int,8>;
 
       /// visualization optimization flag
       bool trySurfaceOptimization;

@@ -52,7 +52,7 @@ namespace icl{
           GrabberDeviceDescription  description;
           int count;
 
-          GrabberInstance() : grabber(NULL), count(0) {}
+          GrabberInstance() : grabber(nullptr), count(0) {}
           GrabberInstance(Grabber* g, GrabberDeviceDescription  d, int c = 1)
            : grabber(g), description(d), count(c) {}
         };
@@ -206,9 +206,9 @@ namespace icl{
       }
 #endif
       m_poDesc = GrabberDeviceDescription();
-      m_poGrabber = NULL;
-      m_remoteServer = NULL;
-      setInternalConfigurable(NULL);
+      m_poGrabber = nullptr;
+      m_remoteServer = nullptr;
+      setInternalConfigurable(nullptr);
 
       // create param map
       ParamMap pmap = create_param_map(params);

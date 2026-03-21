@@ -45,7 +45,7 @@ namespace icl{
 
       public:
 
-      typedef SceneObject* Handle;
+      using Handle = SceneObject*;
 
       PlotWidget3D(QWidget *parent=0);
       ~PlotWidget3D();

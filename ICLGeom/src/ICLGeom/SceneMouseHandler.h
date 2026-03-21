@@ -65,7 +65,7 @@ namespace icl{
         Scene&                              pScene,
         void*                               pData
         **/
-    typedef void (*MouseActionCallback)(const qt::MouseEvent&,const utils::Point32f&,
+    using MouseActionCallback = void(*)(const qt::MouseEvent&,const utils::Point32f&,
                                         const utils::Point32f&,Camera&,Scene&,void* );
 
 

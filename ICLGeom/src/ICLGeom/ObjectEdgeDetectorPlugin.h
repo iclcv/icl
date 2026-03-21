@@ -43,11 +43,13 @@
 
 namespace icl{
   namespace geom{
-    class ObjectEdgeDetectorPlugin : public utils::Uncopyable{
+    class ObjectEdgeDetectorPlugin {
 
      public:
-
-      virtual ~ObjectEdgeDetectorPlugin() {}
+      ObjectEdgeDetectorPlugin() = default;
+      ObjectEdgeDetectorPlugin(const ObjectEdgeDetectorPlugin&) = delete;
+      ObjectEdgeDetectorPlugin& operator=(const ObjectEdgeDetectorPlugin&) = delete;
+      virtual ~ObjectEdgeDetectorPlugin() = default;
 
       /// One call function for calculation of the complete processingpipeline
       /** Order:  ((filter)->normals->(normalAvg)->angles->binarization)

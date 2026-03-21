@@ -140,12 +140,12 @@ OpenNIGrabber::~OpenNIGrabber(){
 const ImgBase* OpenNIGrabber::acquireImage(){
   Time t = Time::now();
   // get image from buffer
-  ImgBase* img = NULL;
+  ImgBase* img = nullptr;
   while(!img || !(img -> getDim())){ // catch null and empty images
     img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
     if((Time::now() - t).toSecondsDouble() >= 1.){
       ERROR_LOG("OpenNiGrabber could not grab an image for more than 1 Second");
-      return NULL;
+      return nullptr;
     }
   }
   return img;
@@ -204,7 +204,7 @@ static void getNIDeviceList(std::vector<GrabberDeviceDescription>& deviceList,
                             std::string postfix, std::string desc)
 {
   xn::NodeInfoList nodes;
-  OpenNIContext::EnumerateProductionTrees(type, NULL , nodes, NULL);
+  OpenNIContext::EnumerateProductionTrees(type, nullptr , nodes, nullptr);
   int i = 0;
   for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
     deviceList.push_back(

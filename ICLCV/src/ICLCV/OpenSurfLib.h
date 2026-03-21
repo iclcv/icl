@@ -55,9 +55,9 @@ namespace icl{
 
      namespace opensurf{
 
-       typedef SurfFeature Ipoint;
-       typedef std::vector<SurfFeature> IpVec;
-       typedef std::vector<SurfMatch> IpPairVec;
+       using Ipoint = SurfFeature;
+       using IpVec = std::vector<SurfFeature>;
+       using IpPairVec = std::vector<SurfMatch>;
 
        /** \cond */
        class ResponseLayer;

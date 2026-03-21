@@ -44,13 +44,16 @@ namespace icl{
   namespace cv{
 
     /// Cameracalibration using OpenCV functions.
-    class ICLCV_API OpenCVCamCalib : public utils::Uncopyable{
+    class ICLCV_API OpenCVCamCalib {
 
       struct Data;
       ///Class for internal params and buffers.
       Data *m_data;
 
       public:
+      OpenCVCamCalib(const OpenCVCamCalib&) = delete;
+      OpenCVCamCalib& operator=(const OpenCVCamCalib&) = delete;
+
       ///Constructor
       /**boardWidth and boardHeight should not be equal
   	  @param boardWidth width of the chessboard

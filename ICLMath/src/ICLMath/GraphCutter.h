@@ -43,12 +43,12 @@ namespace icl{
 
   	  public:
 
-        typedef struct{
+        struct CutNode{
           std::vector<int> subset;
           int parent;
           std::vector<int> children;
           float cost;
-        }CutNode;
+        };
 
         /// Applies a single minimum cut on a connected undirected graph
         /** @param adjacencyMatrix the input symmetric adjacency matrix (0 for "no edge", >0 for edge capacity)

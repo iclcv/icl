@@ -42,7 +42,7 @@
 namespace icl{
   namespace geom{
     /// color for geometry primitives
-    typedef core::Color4D32f GeomColor;
+    using GeomColor = core::Color4D32f;
 
     /// inline utililty function to create a white color instance
     inline GeomColor geom_white(float alpha=255) { return GeomColor(255,255,255,alpha); }
@@ -72,25 +72,25 @@ namespace icl{
     inline GeomColor geom_invisible() { return GeomColor(0,0,0,0); }
 
     /// Matrix Typedef of float matrices
-    typedef math::FixedMatrix<icl32f,4,4> Mat4D32f;
+    using Mat4D32f = math::FixedMatrix<icl32f,4,4>;
 
     /// Matrix Typedef of double matrices
-    typedef math::FixedMatrix<icl64f,4,4> Mat4D64f;
+    using Mat4D64f = math::FixedMatrix<icl64f,4,4>;
 
     /// Vector typedef of float vectors
-    typedef math::FixedColVector<icl32f,4> Vec4D32f;
+    using Vec4D32f = math::FixedColVector<icl32f,4>;
 
     /// Vector typedef of double vectors
-    typedef math::FixedColVector<icl64f,4> Vec4D64f;
+    using Vec4D64f = math::FixedColVector<icl64f,4>;
 
     /// Short typedef for 4D float vectors
-    typedef Vec4D32f Vec;
+    using Vec = Vec4D32f;
 
     /// Short typedef for 4D float matrices
-    typedef Mat4D32f Mat;
+    using Mat = Mat4D32f;
 
     /// typedef for vector of Vec instances
-    typedef std::vector<Vec> VecArray;
+    using VecArray = std::vector<Vec>;
 
   } // namespace geom
 }

@@ -268,7 +268,7 @@ namespace icl{
           if (r > eps) v *= sin(theta/2)/r;
           else { // rotation by 180 degrees: special case
             // rotate around a vector perpendicular to dx
-            perpendiculars<T>(dx.data(),v.data(),NULL,0);
+            perpendiculars<T>(dx.data(),v.data(),nullptr,0);
             v *= sin(theta/2);
           }
         } else {

@@ -177,7 +177,7 @@ namespace icl{
       public:
 
       // 2D-point type, internally used
-      typedef VECTOR_TYPE Pt;
+      using Pt = VECTOR_TYPE;
 
       protected:
 

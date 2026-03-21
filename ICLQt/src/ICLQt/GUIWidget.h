@@ -49,9 +49,12 @@ namespace icl{
     /** \endcond */
 
     /// Abstract class for GUI components \ingroup UNCOMMON
-    class ICLQt_API GUIWidget : public QWidget, public utils::Uncopyable{
+    class ICLQt_API GUIWidget : public QWidget{
       Q_OBJECT;
       public:
+      GUIWidget(const GUIWidget&) = delete;
+      GUIWidget& operator=(const GUIWidget&) = delete;
+
       enum layoutType{
         noLayout,       // do not call setLayout(..)
         hboxLayout,     // use a QHBoxLayout

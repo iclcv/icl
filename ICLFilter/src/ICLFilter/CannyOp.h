@@ -71,8 +71,11 @@ namespace icl {
 
 
     */
-    class ICLFilter_API CannyOp : public UnaryOp, public utils::Uncopyable{
+    class ICLFilter_API CannyOp : public UnaryOp{
       public:
+      CannyOp(const CannyOp&) = delete;
+      CannyOp& operator=(const CannyOp&) = delete;
+
         /// Constructor
         /**
           With this Constructor the derivations are computed within the CannyOp.

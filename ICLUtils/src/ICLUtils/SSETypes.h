@@ -2302,19 +2302,19 @@ namespace icl{
 
       // -- operations on SSE types -- //
 
-      typedef icl128 icl32fx4;
-      typedef icl256 icl32fx8;
-      typedef icl512 icl32fx16;
-      typedef icl128i8u icl8ux16;
-      typedef icl128i16s icl16sx8;
-      typedef icl128i32s icl32sx4;
-      typedef icl256i16s icl16sx16;
-      typedef icl256i32s icl32sx8;
-      typedef icl512i32s icl32sx16;
-      typedef icl128d icl64fx2;
-      typedef icl256d icl64fx4;
-      typedef icl512d icl64fx8;
-      typedef icl1024d icl64fx16;
+      using icl32fx4 = icl128;
+      using icl32fx8 = icl256;
+      using icl32fx16 = icl512;
+      using icl8ux16 = icl128i8u;
+      using icl16sx8 = icl128i16s;
+      using icl32sx4 = icl128i32s;
+      using icl16sx16 = icl256i16s;
+      using icl32sx8 = icl256i32s;
+      using icl32sx16 = icl512i32s;
+      using icl64fx2 = icl128d;
+      using icl64fx4 = icl256d;
+      using icl64fx8 = icl512d;
+      using icl64fx16 = icl1024d;
 
     #endif
 

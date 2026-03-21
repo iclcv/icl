@@ -61,7 +61,7 @@ namespace icl{
         an icl::Function instance that is then called whenever a new set of
         data is available.
     */
-    class ICLUtils_API ProcessMonitor : protected Thread, public Uncopyable{
+    class ICLUtils_API ProcessMonitor : protected Thread{
       /// internal data structure (pimpl)
       struct Data;
 
@@ -69,6 +69,9 @@ namespace icl{
       Data *m_data;
 
       public:
+      ProcessMonitor(const ProcessMonitor&) = delete;
+      ProcessMonitor& operator=(const ProcessMonitor&) = delete;
+
 
       /// Utility struct, that is used to pass available information at once
       struct Info{
@@ -99,7 +102,7 @@ namespace icl{
       Info getInfo() const;
 
       /// callback function/functor type
-      typedef Function<void,const Info&> Callback;
+      using Callback = Function<void,const Info&>;
 
       /// registers a callback instance that is automatically called when new data is available
       /** returns a callback ID */

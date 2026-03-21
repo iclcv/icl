@@ -77,7 +77,7 @@ namespace icl{
       /// FeatureSet class
       /** given a SeatureSet instances s, Feature x is supported if
           s[x] is true */
-      typedef std::bitset<(int)FeatureCount> FeatureSet;
+      using FeatureSet = std::bitset<(int)FeatureCount>;
 
       /// a full feature set
       static const FeatureSet AllFeatures;

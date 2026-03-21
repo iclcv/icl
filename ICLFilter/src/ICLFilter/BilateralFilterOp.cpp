@@ -542,13 +542,13 @@ protected:
 
 BilateralFilterOp::BilateralFilterOp(int radius,
 										 float sigma_s, float sigma_r, bool _use_lab, Mode mode, Method method)
-	: filter::UnaryOp(), utils::Uncopyable(), use_lab(_use_lab), radius(radius),
+	: filter::UnaryOp(),use_lab(_use_lab), radius(radius),
 		sigma_s(sigma_s), sigma_r(sigma_r), _method(method), impl(0) {
 	init(mode, method);
 }
 
 BilateralFilterOp::BilateralFilterOp(Mode mode, Method method)
-	: filter::UnaryOp(), utils::Uncopyable(), use_lab(true), radius(2), sigma_s(1), sigma_r(1), _method(method), impl(0) {
+	: filter::UnaryOp(),use_lab(true), radius(2), sigma_s(1), sigma_r(1), _method(method), impl(0) {
 	init(mode, method);
 }
 

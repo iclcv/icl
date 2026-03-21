@@ -181,7 +181,7 @@ namespace icl{
         QBrush fillBrush; //!< fill brush (this is e.g. used to fill the area beyond a function graph)
       };
       /// typedef for managed row-style pointers
-      typedef utils::SmartPtr<Pen> PenPtr;
+      using PenPtr = utils::SmartPtr<Pen>;
 
 
       /// updates the screen
@@ -260,7 +260,7 @@ namespace icl{
       virtual void clear() { clearAnnotations(); }
 
       /// function that is used to render a non-homo
-      typedef utils::Function<float,float,float> bgFunction;
+      using bgFunction = utils::Function<float,float,float>;
 
       /// sets the background function
       /** The function is then evaluated every time, the viewport or the window size.

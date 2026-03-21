@@ -93,8 +93,11 @@ namespace icl {
     in two Constructors.
     */
 
-    class ICLFilter_API ConvolutionOp : public NeighborhoodOp, public utils::Uncopyable{
+    class ICLFilter_API ConvolutionOp : public NeighborhoodOp{
       public:
+      ConvolutionOp(const ConvolutionOp&) = delete;
+      ConvolutionOp& operator=(const ConvolutionOp&) = delete;
+
 
       /// Default constructor (force unsigned is set to false)
       ConvolutionOp(const ConvolutionKernel &kernel=ConvolutionKernel());

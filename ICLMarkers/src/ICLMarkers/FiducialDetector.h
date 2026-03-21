@@ -45,7 +45,7 @@
 namespace icl{
   namespace markers{
     /// Main Fiducial Detector class
-    class ICLMarkers_API FiducialDetector : public utils::Uncopyable, public utils::Configurable{
+    class ICLMarkers_API FiducialDetector : public utils::Configurable{
 
       /// hidden data class
       struct Data;
@@ -54,6 +54,9 @@ namespace icl{
       Data *data;
 
       public:
+      FiducialDetector(const FiducialDetector&) = delete;
+      FiducialDetector& operator=(const FiducialDetector&) = delete;
+
 
       /// create a FiducialDetector instance with speical plugin type
       /** The given plugin type can be:

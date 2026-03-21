@@ -36,12 +36,15 @@
 namespace icl{
   namespace io{
 
-    class ConfigurableRemoteServer : public utils::Uncopyable{
+    class ConfigurableRemoteServer {
       struct Client;
       struct Data;
       Data *m_data;
 
       public:
+      ConfigurableRemoteServer(const ConfigurableRemoteServer&) = delete;
+      ConfigurableRemoteServer& operator=(const ConfigurableRemoteServer&) = delete;
+
       ConfigurableRemoteServer();
       ConfigurableRemoteServer(utils::Configurable *configurable,
                                const std::string &scope);

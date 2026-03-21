@@ -71,16 +71,16 @@ namespace icl{
       void reset() { m_uiPos = 0; }
 
       /// reverse iterator type
-      typedef std::vector<std::string>::reverse_iterator reverse_iterator;
+      using reverse_iterator = std::vector<std::string>::reverse_iterator;
 
       /// constant reverse iterator type
-      typedef std::vector<std::string>::const_reverse_iterator const_reverse_iterator;
+      using const_reverse_iterator = std::vector<std::string>::const_reverse_iterator;
 
       /// iterator type
-      typedef std::vector<std::string>::iterator iterator;
+      using iterator = std::vector<std::string>::iterator;
 
       /// constant iterator type
-      typedef std::vector<std::string>::const_iterator const_iterator;
+      using const_iterator = std::vector<std::string>::const_iterator;
 
       /// returns begin-iterator
       inline iterator begin() { return m_oTokens.begin(); }

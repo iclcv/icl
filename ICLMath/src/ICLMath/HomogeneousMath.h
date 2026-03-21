@@ -37,16 +37,16 @@ namespace icl{
   namespace math{
 
     /// another shortcut for 3D vectors
-    typedef FixedColVector<icl32f,3> Vec3;
+    using Vec3 = FixedColVector<icl32f,3>;
 
     /// another shortcut for 3D vectors
-    typedef FixedColVector<icl32f,4> Vec4;
+    using Vec4 = FixedColVector<icl32f,4>;
 
     /// typedef for 3x3 fixed matrices
-    typedef FixedMatrix<icl32f, 3,3> Mat3;
+    using Mat3 = FixedMatrix<icl32f, 3,3>;
 
     /// typedef for 4x4 fixed matrices
-    typedef FixedMatrix<icl32f, 4,4> Mat4;
+    using Mat4 = FixedMatrix<icl32f, 4,4>;
 
     /// linearly interpolates between a, b (x must be in range [0,1])
     /** if x is 0, a is returned and if x is 1, b is returned */

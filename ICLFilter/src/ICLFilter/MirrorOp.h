@@ -38,8 +38,11 @@ namespace icl{
   namespace filter{
 
     /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-    class ICLFilter_API MirrorOp : public BaseAffineOp, public utils::Uncopyable {
+    class ICLFilter_API MirrorOp : public BaseAffineOp {
       public:
+      MirrorOp(const MirrorOp&) = delete;
+      MirrorOp& operator=(const MirrorOp&) = delete;
+
       /// Constructor
       /**
         @param eAxis the axis on which the mirroring is performed

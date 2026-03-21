@@ -69,10 +69,10 @@ namespace icl{
       public:
 
       /// iterator type (just a T*)
-      typedef T* iterator;
+      using iterator = T*;
 
       /// const iterator type (just a const T*)
-      typedef const T* const_iterator;
+      using const_iterator = const T*;
 
       /// Creates null instance
       inline Array2D(){}

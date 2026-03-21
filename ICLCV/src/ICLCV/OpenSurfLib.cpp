@@ -418,7 +418,7 @@ namespace icl{
         H_inv = cvCreateMat( 3, 3, CV_64FC1 );
         cvInvert( H, H_inv, CV_SVD );
         cvInitMatHeader( &X, 3, 1, CV_64FC1, x, CV_AUTOSTEP );
-        cvGEMM( H_inv, dD, -1, NULL, 0, &X, 0 );
+        cvGEMM( H_inv, dD, -1, nullptr, 0, &X, 0 );
 
         cvReleaseMat( &dD );
         cvReleaseMat( &H );
@@ -1360,7 +1360,7 @@ namespace icl{
         clusters.clear();
 
         // Seed the random number generator
-        srand((int)time(NULL));
+        srand((int)time(nullptr));
 
         // add 'n' random ipoints to clusters list as initial centers
         for (int i = 0; i < n; ++i)

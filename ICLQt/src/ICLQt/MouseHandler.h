@@ -97,7 +97,7 @@ namespace icl{
       friend class ICLWidget;
 
       /// mouse_handler function type
-      typedef void (*mouse_handler)(const MouseEvent &event);
+      using mouse_handler = void(*)(const MouseEvent &event);
 
       /// Create a mouse handler with given callback function
       /** In most cases a MouseHandler can be used directly by passing

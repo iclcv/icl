@@ -52,7 +52,7 @@ namespace icl {
         class. The GenericGrabber also provides camera
         configuration via ConfigurableProxy interface.
     */
-    class ICLIO_API GenericGrabber : public utils::Uncopyable, public utils::ConfigurableProxy{
+    class ICLIO_API GenericGrabber : public utils::ConfigurableProxy{
 
         Grabber *m_poGrabber; //!< internally wrapped grabber instance
 
@@ -63,6 +63,9 @@ namespace icl {
         ConfigurableRemoteServer *m_remoteServer;
 
       public:
+        GenericGrabber(const GenericGrabber&) = delete;
+        GenericGrabber& operator=(const GenericGrabber&) = delete;
+
         using utils::ConfigurableProxy::registerCallback;
 
         /// Initialized the grabber from given prog-arg

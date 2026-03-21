@@ -62,12 +62,15 @@ namespace icl{
         float heartrate = detector.getHeartrate();
         \endcode
     **/
-    class ICLCV_API HeartrateDetector : public utils::Uncopyable {
+    class ICLCV_API HeartrateDetector {
 
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
 
       public:
+      HeartrateDetector(const HeartrateDetector&) = delete;
+      HeartrateDetector& operator=(const HeartrateDetector&) = delete;
+
       /// Default constructor with given arguments.
       HeartrateDetector(int framerate = 30, int historyDepth = 512);
 

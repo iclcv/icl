@@ -52,7 +52,9 @@ namespace icl{
 
       ~ORBFeatureDetector();
 
-      struct ICLCV_API FeatureSetClass : public utils::Uncopyable{
+      struct ICLCV_API FeatureSetClass {
+        FeatureSetClass(const FeatureSetClass&) = delete;
+        FeatureSetClass& operator=(const FeatureSetClass&) = delete;
         struct Impl;
         Impl *impl;
         FeatureSetClass();
@@ -60,7 +62,7 @@ namespace icl{
         utils::VisualizationDescription vis() const;
       };
 
-      typedef utils::SmartPtr<FeatureSetClass> FeatureSet;
+      using FeatureSet = utils::SmartPtr<FeatureSetClass>;
 
 
       struct Match{

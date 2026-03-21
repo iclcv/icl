@@ -45,12 +45,12 @@ static utils::Mutex* env_mutex = new icl::utils::Mutex();
 
 // Constructor sets all pointers to NULL
 ConvBuffers::ConvBuffers(){
-  m_Image = NULL;
-  m_ImageBuff = NULL;
-  m_ImageBuff16 = NULL;
-  m_ImageRGBA = NULL;
-  m_Channels = NULL;
-  m_Channels16 = NULL;
+  m_Image = nullptr;
+  m_ImageBuff = nullptr;
+  m_ImageBuff16 = nullptr;
+  m_ImageRGBA = nullptr;
+  m_Channels = nullptr;
+  m_Channels16 = nullptr;
   m_Reset = true;
 }
 
@@ -178,7 +178,7 @@ AcquisitionInterruptor::AcquisitionInterruptor(Interruptable* i, bool mock)
     DEBUG_LOG("stop acquisition")
     m_Interu -> acquisitionStop();
   } else {
-    m_Interu = NULL;
+    m_Interu = nullptr;
   }
 }
 
@@ -197,7 +197,7 @@ GrabbingInterruptor::GrabbingInterruptor(Interruptable* i, bool mock){
     m_Interu = i;
     m_Interu -> grabbingStop();
   } else {
-    m_Interu = NULL;
+    m_Interu = nullptr;
   }
 }
 
@@ -286,7 +286,7 @@ icl::io::pylon::getPylonDeviceList(Pylon::DeviceInfoList_t* filter){
 
   Pylon::DeviceInfoList_t lstDevices;
   // Get all attached cameras
-  if(filter==NULL){
+  if(filter==nullptr){
     Pylon::CTlFactory::GetInstance().EnumerateDevices(lstDevices);
   } else {
     Pylon::CTlFactory::GetInstance().EnumerateDevices(lstDevices, *filter);

@@ -74,7 +74,7 @@ namespace icl{
     template<class T>
     struct SmartPtr : public SmartPtrBase<T, PointerDelOp>{
       // type definition for the parent class
-      typedef SmartPtrBase<T,PointerDelOp> super;
+      using super = SmartPtrBase<T,PointerDelOp>;
       /// creates a null pointer
       SmartPtr():super(){}
       /// gets pointer, ownership is passed optionally

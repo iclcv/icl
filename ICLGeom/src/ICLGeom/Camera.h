@@ -152,7 +152,7 @@ namespace icl {
       };
 
       /// internal typedef
-      typedef math::FixedMatrix<icl32f,3,3> Mat3x3;
+      using Mat3x3 = math::FixedMatrix<icl32f,3,3>;
 
       /** @{ @name constructors */
 

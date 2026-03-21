@@ -38,11 +38,14 @@
 namespace icl{
   namespace core{
 
-    class ICLCore_API ImageRenderer : public utils::Uncopyable{
+    class ICLCore_API ImageRenderer {
       struct Data;
       Data *m_data;
 
       public:
+      ImageRenderer(const ImageRenderer&) = delete;
+      ImageRenderer& operator=(const ImageRenderer&) = delete;
+
       ImageRenderer(ImgBase *image=0);
       ~ImageRenderer();
 

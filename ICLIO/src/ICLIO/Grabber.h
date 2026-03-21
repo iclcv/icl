@@ -150,12 +150,16 @@ namespace icl {
         So far only a few grabbers provide this feature at all. If it
         is not provided, the registered callbacks will never be called.
     */
-    class ICLIO_API Grabber : public utils::Uncopyable, public utils::Configurable{
+    class ICLIO_API Grabber : public utils::Configurable{
         /// internal data class
         struct Data;
 
         /// hidden data
         Data *data;
+
+      public:
+        Grabber(const Grabber&) = delete;
+        Grabber& operator=(const Grabber&) = delete;
 
       protected:
         /// internally set a desired format
@@ -276,7 +280,7 @@ namespace icl {
         /// @}
 
         /// new image callback type
-        typedef utils::Function<void,const core::ImgBase*> callback;
+        using callback = utils::Function<void,const core::ImgBase*>;
 
         /// registers a callback that is called each time, a new image is available
         /** This feature must not be implemented by specific grabber implementations. And
@@ -299,7 +303,7 @@ namespace icl {
         /// main interface method, that is implemented by the actual grabber instances
         /** This method is defined in the grabber implementation. It acquires a new image
            using the grabbers specific image acquisition back-end */
-        virtual const core::ImgBase *acquireImage(){ return NULL; }
+        virtual const core::ImgBase *acquireImage(){ return nullptr; }
 
         /// Utility function that allows for much easier implementation of grabUD
         /** called by the grabbers grab() method **/
@@ -334,15 +338,15 @@ namespace icl {
         };
 
         // grabber functions map
-        typedef std::map<std::string, GrabberFunctions> GFM;
+        using GFM = std::map<std::string, GrabberFunctions>;
         GFM gfm;
 
         // grabber bus reset functions map
-        typedef std::map<std::string, utils::Function<void,bool> > GBRM;
+        using GBRM = std::map<std::string, utils::Function<void,bool> >;
         GBRM gbrm;
 
         // grabber device descriptions map
-        typedef std::set<std::string> GDS;
+        using GDS = std::set<std::string>;
         GDS gds;
 
         // private constructor

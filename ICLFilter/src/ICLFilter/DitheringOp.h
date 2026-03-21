@@ -74,8 +74,11 @@ namespace icl{
 
         </table>
         */
-    class ICLFilter_API DitheringOp : public UnaryOp, public utils::Uncopyable {
+    class ICLFilter_API DitheringOp : public UnaryOp {
       public:
+      DitheringOp(const DitheringOp&) = delete;
+      DitheringOp& operator=(const DitheringOp&) = delete;
+
 
       enum Algorithm{
         FloydSteinberg //!< right not the only available algorithm (fast)

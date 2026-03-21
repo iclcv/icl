@@ -40,10 +40,10 @@ namespace icl{
   namespace markers{
 
     /// used 36Bit BCH Code -> 12Bit data max-Error: 4bit
-    typedef std::bitset<36> BCHCode;
+    using BCHCode = std::bitset<36>;
 
     /// used to determine wich marker IDs are allowed
-    typedef std::bitset<4096> BCHCodeSubSet;
+    using BCHCodeSubSet = std::bitset<4096>;
 
     /// BCH decoder result
     struct DecodedBCHCode{
@@ -73,11 +73,14 @@ namespace icl{
 
     /// Main class for BCH encoding/decoding
     /** Due to some internal buffers, this must be implemented as a class */
-    class ICLMarkers_API BCHCoder : public utils::Uncopyable{
+    class ICLMarkers_API BCHCoder {
       class Impl; //!< internal implementation structure
       Impl *impl; //!< implementation pointer
 
       public:
+      BCHCoder(const BCHCoder&) = delete;
+      BCHCoder& operator=(const BCHCoder&) = delete;
+
       /// Default constructor
       BCHCoder();
 

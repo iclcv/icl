@@ -51,8 +51,11 @@ namespace icl{
         - unlocked (pthread_mutex_unlock)
         - and destroyed (Destructor)-> (pthread_mutex_destroy)
     **/
-    class Mutex : public Uncopyable{
+    class Mutex {
       public:
+      Mutex(const Mutex&) = delete;
+      Mutex& operator=(const Mutex&) = delete;
+
 
       /// This enum holds available mutex types.
       enum MutexType {
@@ -117,8 +120,11 @@ namespace icl{
       }
 
       /// Locks a mutex on the stack (mutex is unlocked when the stack's section is released
-      class Locker : public Uncopyable{
+      class Locker {
         public:
+        Locker(const Locker&) = delete;
+        Locker& operator=(const Locker&) = delete;
+
         /// Locks the given mutex until the section is leaved
         Locker(Mutex *m);
 

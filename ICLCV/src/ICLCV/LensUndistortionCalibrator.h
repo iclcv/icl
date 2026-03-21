@@ -50,11 +50,14 @@ namespace icl{
         the remaining x and y dimensions. Theses normalized x/y coordinates are
         defined by the LensUndistortionCalibrator::GridDefinition class.
         */
-    class ICLCV_API LensUndistortionCalibrator : public utils::Uncopyable{
+    class ICLCV_API LensUndistortionCalibrator {
       struct Data;  //!< internal data
       Data *m_data; //!< internal data pointer
 
       public:
+      LensUndistortionCalibrator(const LensUndistortionCalibrator&) = delete;
+      LensUndistortionCalibrator& operator=(const LensUndistortionCalibrator&) = delete;
+
 
       /// Utility data class describing the grid structure that is used
       struct ICLCV_API GridDefinition : public std::vector<utils::Point32f>{

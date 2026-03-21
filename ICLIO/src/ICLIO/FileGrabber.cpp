@@ -366,7 +366,7 @@ namespace icl{
         DEBUG_LOG("could not grab image. Name: "
                   << m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]
                   << " Error: " << e.what());
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -377,14 +377,14 @@ namespace icl{
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
           m_data->useTimeStamps = false;
         }
-        ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),NULL);
+        ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),nullptr);
         ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx];
         if(m_data->bAutoNext) ++m_data->iCurrIdx;
         if(m_data->iCurrIdx >= (int)m_data->vecImageBuffer.size()) m_data->iCurrIdx = 0;
         return p;
       }
 
-      ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),NULL);
+      ICLASSERT_RETURN_VAL(!m_data->oFileList.isNull(),nullptr);
 
       if(m_data->iCurrIdx >= m_data->oFileList.size()){
         if(m_data->loop){

@@ -69,11 +69,14 @@ namespace icl{
         -# ... ???
 
      */
-    class ICLGeom_API PointCloudNormalEstimator : public utils::Uncopyable{
+    class ICLGeom_API PointCloudNormalEstimator {
       struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
 
      public:
+      PointCloudNormalEstimator(const PointCloudNormalEstimator&) = delete;
+      PointCloudNormalEstimator& operator=(const PointCloudNormalEstimator&) = delete;
+
 
 
       /// Create new PointCloudNormalEstimator with given internal image size

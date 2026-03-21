@@ -146,7 +146,7 @@ int main(){
     template<class T,int N>
     struct DataSegment : public DataSegmentBase{
       /// vector typedef
-      typedef math::FixedColVector<T,N> VectorType;
+      using VectorType = math::FixedColVector<T,N>;
 
       /// Constructor (basically passes all parameters to the Base class)
       inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):
@@ -316,7 +316,7 @@ int main(){
       template<class T>
       struct DataSegment<T,1> : public DataSegmentBase{
         /// vector typedef
-        typedef T VectorType;
+        using VectorType = T;
 
         /// Constructor (basically passes all parameters to the Base class)
         inline DataSegment(T *data=0, size_t stride=0, size_t numElements=0, icl32s organizedWidth=-1):

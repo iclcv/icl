@@ -42,10 +42,13 @@ namespace icl{
 
   namespace core{
 
-    class ICLCore_API AbstractCanvas : public utils::Uncopyable{
+    class ICLCore_API AbstractCanvas {
       public:
-      typedef math::FixedMatrix<float,3,3> Transform;
-      typedef core::Color4D32f Color;
+      AbstractCanvas(const AbstractCanvas&) = delete;
+      AbstractCanvas& operator=(const AbstractCanvas&) = delete;
+
+      using Transform = math::FixedMatrix<float,3,3>;
+      using Color = core::Color4D32f;
       struct ICLCore_API ClipRect{
         ClipRect(float minx=0, float maxx=0, float miny=0, float maxy=0):
           minx(minx),maxx(maxx),miny(miny),maxy(maxy){}

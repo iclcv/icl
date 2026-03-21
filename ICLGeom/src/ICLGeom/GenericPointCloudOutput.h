@@ -37,11 +37,14 @@ namespace icl{
   namespace geom{
 
     /// Generic interface for PointCloud sources
-    class ICLGeom_API GenericPointCloudOutput : public PointCloudOutput, public utils::Uncopyable{
+    class ICLGeom_API GenericPointCloudOutput : public PointCloudOutput{
       struct Data;
       Data *m_data;
 
       public:
+      GenericPointCloudOutput(const GenericPointCloudOutput&) = delete;
+      GenericPointCloudOutput& operator=(const GenericPointCloudOutput&) = delete;
+
 
       /// Empty constructor (creates a null instance)
       GenericPointCloudOutput();

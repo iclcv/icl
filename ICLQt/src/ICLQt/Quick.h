@@ -103,7 +103,7 @@ namespace icl{
 
 
     /// typedef for the quick images type (this time core::Img<icl32f>)
-    typedef core::Img<ICL_QUICK_TYPE> ImgQ;
+    using ImgQ = core::Img<ICL_QUICK_TYPE>;
 
     /** @{ @name creator functions **/
     /* {{{ open */

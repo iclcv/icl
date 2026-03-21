@@ -48,10 +48,10 @@ namespace icl{
         virtual ~ConfigurableProxy(){}
 
         /// Constructor with passed internal Configurable
-        ConfigurableProxy(Configurable* c=NULL) : m_intConfigurable(c){}
+        ConfigurableProxy(Configurable* c=nullptr) : m_intConfigurable(c){}
 
         /// sets the internally used Configurable to the passed one
-        void setInternalConfigurable(Configurable* c=NULL){
+        void setInternalConfigurable(Configurable* c=nullptr){
           Mutex::Locker l(m_configurableLock);
           m_intConfigurable = c;
         }

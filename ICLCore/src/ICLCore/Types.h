@@ -42,19 +42,19 @@ namespace icl {
     template<class T> class Img;
 
     /// typedef for 8bit integer images \ingroup TYPES
-    typedef Img<icl8u> Img8u;
+    using Img8u = Img<icl8u>;
 
     /// typedef for 16bit integer images \ingroup TYPES
-    typedef Img<icl16s> Img16s;
+    using Img16s = Img<icl16s>;
 
     /// typedef for 8bit integer images \ingroup TYPES
-    typedef Img<icl32s> Img32s;
+    using Img32s = Img<icl32s>;
 
     /// typedef for 32bit float images \ingroup TYPES
-    typedef Img<icl32f> Img32f;
+    using Img32f = Img<icl32f>;
 
     /// typedef for 64bit float images \ingroup TYPES
-    typedef Img<icl64f> Img64f;
+    using Img64f = Img<icl64f>;
 
     /// determines the pixel type of an image (8Bit-int or 32Bit-float) \ingroup TYPES
     enum depth{

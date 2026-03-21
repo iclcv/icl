@@ -41,7 +41,7 @@ namespace icl{
 
 
      public:
-      typedef struct{
+      struct m_params{
         int medianFilterSize;
         int normalRange;
         int normalAveragingRange;
@@ -50,15 +50,15 @@ namespace icl{
         float binarizationThreshold;
         bool useNormalAveraging;
         bool useGaussSmoothing;
-      }m_params;
+      };
 
-      typedef struct{
+      struct m_kernel{
         float norm;
 	    math::DynMatrix<float> kernel;
 	    int l;
 	    int kSize;
 	    int rowSize;
-      }m_kernel;
+      };
 
 
       /// Create new ObjectEdgeDetectorData

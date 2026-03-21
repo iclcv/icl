@@ -69,7 +69,7 @@ namespace icl{
         change the position of the camera since it will be back
         changed to the lights position every frame.
         */
-    class ICLGeom_API SceneLight : public utils::Uncopyable{
+    class ICLGeom_API SceneLight {
       /// called by the scene
       /** This method is called by the scene and sets up the
           light in OpenGL by using the instances parameters */
@@ -153,12 +153,13 @@ namespace icl{
       /// private constructor -> only Scene's can create lights
       SceneLight(Scene *parent, int index);
 
-      /// copies everything (overwrites uncopyable)
+      /// copies everything
       /** Only accessible by friends, object anchor must be tackled manually */
       SceneLight(const SceneLight &other);
 
-
       public:
+      SceneLight& operator=(const SceneLight&) = delete;
+
 
       /// Destructor
       ~SceneLight();

@@ -108,7 +108,7 @@ namespace icl{
       QOpenGLWidget *sharedWidget;
 
       /// just type definition for convenience a void valued function with no args)
-      typedef void (*callback)(void);
+      using callback = void(*)(void);
 
       /// Such an exception is returned if a 2nd instance of ICLApplication is created
       struct SecondSingeltonException : public utils::ICLException{
@@ -240,6 +240,6 @@ namespace icl{
     };
 
     /// this is just a shortcut typedef
-    typedef ICLApplication ICLApp;
+    using ICLApp = ICLApplication;
   } // namespace qt
 }

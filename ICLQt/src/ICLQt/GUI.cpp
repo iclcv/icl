@@ -747,7 +747,7 @@ namespace icl{
       // {{{ open
 
       CamCfgGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,0,2), m_cfg(NULL), m_button(NULL)
+        GUIWidget(def,0,2), m_cfg(nullptr), m_button(nullptr)
       {
         if(def.numParams() != 0  && def.numParams() != 2){
           throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
@@ -2314,7 +2314,7 @@ namespace icl{
       // {{{ open
       m_sDefinition(g.createDefinition()),
       m_children(g.m_children),
-      m_poWidget(NULL),m_bCreated(false),
+      m_poWidget(nullptr),m_bCreated(false),
       m_poParent(parent){
     }
     // }}}
@@ -2323,7 +2323,7 @@ namespace icl{
     GUI &GUI::operator=(const GUI &other){
       m_sDefinition = other.createDefinition();
       m_children = other.m_children;
-      m_poWidget = NULL;
+      m_poWidget = nullptr;
       m_bCreated = false;
       m_poParent = other.m_poParent;
       m_oDataStore = other.m_oDataStore;

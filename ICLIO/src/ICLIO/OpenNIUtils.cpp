@@ -197,13 +197,13 @@ std::string OpenNIMapGenerator::getCurrentMapOutputMode(MapGenerator* gen){
 
 // Creates a DepthGenerator from Context
 OpenNIDepthGenerator::OpenNIDepthGenerator(int num)
-  : m_DepthGenerator(NULL), m_Options(NULL)
+  : m_DepthGenerator(nullptr), m_Options(nullptr)
 {
   XnStatus status = XN_STATUS_ERROR;
   m_DepthGenerator = new DepthGenerator();
   NodeInfoList l;
   // enumerate depth generators
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, nullptr , l);
   int i = 0;
   // look for generator according to number num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
@@ -280,7 +280,7 @@ MapGeneratorOptions* OpenNIDepthGenerator::getMapGeneratorOptions(){
 
 // Creates a RgbGenerator from Context
 OpenNIRgbGenerator::OpenNIRgbGenerator(int num)
-  : m_RgbGenerator(NULL), m_Options(NULL)
+  : m_RgbGenerator(nullptr), m_Options(nullptr)
 {
   XnStatus status;
   // create DepthGenerator. The Kinect rgb-generator did not work without
@@ -294,7 +294,7 @@ OpenNIRgbGenerator::OpenNIRgbGenerator(int num)
   m_RgbGenerator = new ImageGenerator();
   NodeInfoList l;
   // get all rgb-image generators
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, nullptr , l);
   int i = 0;
   // create generator according to num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
@@ -380,13 +380,13 @@ MapGeneratorOptions* OpenNIRgbGenerator::getMapGeneratorOptions(){
 
 // Creates a IrGenerator from Context
 OpenNIIRGenerator::OpenNIIRGenerator(int num)
-  : m_IrGenerator(NULL), m_Options(NULL)
+  : m_IrGenerator(nullptr), m_Options(nullptr)
 {
   XnStatus status = XN_STATUS_ERROR;
   m_IrGenerator = new IRGenerator();
   NodeInfoList l;
   // enumerate ir generators
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, nullptr , l);
   int i = 0;
   // create generator according to num
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
@@ -770,7 +770,7 @@ void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
   XnStatus status = XN_STATUS_OK;
   NodeInfoList l;
   // RGB
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IMAGE, nullptr , l);
   int i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
@@ -785,7 +785,7 @@ void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
     }
   }
   // DEPTH
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_DEPTH, nullptr , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
@@ -800,7 +800,7 @@ void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
     }
   }
   // IR
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_IR, nullptr , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;
@@ -815,7 +815,7 @@ void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
     }
   }
   // AUDIO
-  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, NULL , l);
+  OpenNIContext::EnumerateProductionTrees(XN_NODE_TYPE_AUDIO, nullptr , l);
   i = 0;
   for (NodeInfoList::Iterator it = l.Begin(); it != l.End(); ++it, ++i){
     std::ostringstream tmp;

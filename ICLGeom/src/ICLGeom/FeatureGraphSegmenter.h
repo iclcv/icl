@@ -65,7 +65,7 @@ namespace icl{
           @param useRemainingPoints use the remaining points assignment
           @return the color image of the segments */
       core::Img8u apply(core::DataSegment<float,4> xyz, const core::Img8u &edgeImg, const core::Img32f &depthImg,
-                  core::DataSegment<float,4> normals=NULL, bool stabelize=true, bool useROI=false,
+                  core::DataSegment<float,4> normals=nullptr, bool stabelize=true, bool useROI=false,
                   bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true);
 
   	  /// One line call for the hierarchical surface feature segmentation.
@@ -85,7 +85,7 @@ namespace icl{
           @param weightRemainingPoints use the remaining points assignment
           @return the hierachical segmentation tree */
   	  std::vector<PointCloudSegmentPtr> applyHierarchical(core::DataSegment<float,4> xyz, core::DataSegment<float,4> rgb, const core::Img8u &edgeImg, const core::Img32f &depthImg,
-                  core::DataSegment<float,4> normals=NULL, bool useROI=false,
+                  core::DataSegment<float,4> normals=nullptr, bool useROI=false,
                   bool useCutfreeAdjacency=true, bool useCoplanarity=true, bool useCurvature=true, bool useRemainingPoints=true,
                   float weightCutfreeAdjacency=1.0, float weightCoplanarity=0.9, float weightCurvature=0.8, float weightRemainingPoints=0.7);
 

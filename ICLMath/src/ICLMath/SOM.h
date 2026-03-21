@@ -74,7 +74,7 @@ namespace icl{
           addition, each neuron has a void* meta, that can be used to associate some
           meta-data with a certain neuron (Note,the pointer meta is not released automatically).*/
       struct ICLMath_API Neuron{
-        typedef utils::SmartPtr<float> vector_type;
+        using vector_type = utils::SmartPtr<float>;
 
         /// create a null neuron
         Neuron(){}

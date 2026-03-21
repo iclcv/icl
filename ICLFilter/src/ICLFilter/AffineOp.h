@@ -82,8 +82,11 @@ namespace icl{
         * linear interpolation 52ms
 
     */
-    class ICLFilter_API AffineOp : public BaseAffineOp, public utils::Uncopyable {
+    class ICLFilter_API AffineOp : public BaseAffineOp {
       public:
+      AffineOp(const AffineOp&) = delete;
+      AffineOp& operator=(const AffineOp&) = delete;
+
       /// Constructor
       AffineOp (core::scalemode eInterpolate=core::interpolateLIN);
       /// resets the internal Matrix

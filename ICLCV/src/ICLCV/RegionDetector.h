@@ -176,12 +176,15 @@ namespace icl{
         Lastly, all ImageRegionData structures are filtered w.r.t. the given size and
         value constraints.
     */
-    class ICLCV_API RegionDetector : public utils::Uncopyable, public utils::Configurable{
+    class ICLCV_API RegionDetector : public utils::Configurable{
 
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
 
       public:
+      RegionDetector(const RegionDetector&) = delete;
+      RegionDetector& operator=(const RegionDetector&) = delete;
+
 
       /// first constructor with given flag for creation of the region graph
       /** Note: at default, the region graph is not created */

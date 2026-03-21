@@ -39,23 +39,23 @@ namespace icl{
   namespace core{
 
     /// Default color type of the ICL
-    typedef math::FixedColVector<icl8u,3> Color;
+    using Color = math::FixedColVector<icl8u,3>;
 
     /// RGB Color
-    typedef math::FixedColVector<icl8u,3> RGB;
+    using RGB = math::FixedColVector<icl8u,3>;
 
     /// RGBA Color
-    typedef math::FixedColVector<icl8u,4> RGBA;
+    using RGBA = math::FixedColVector<icl8u,4>;
 
     /// Special color type for float valued colors
-    typedef math::FixedColVector<icl32f,3> Color32f;
+    using Color32f = math::FixedColVector<icl32f,3>;
 
 
     /// Special color type for e.g. rgba color information
-    typedef math::FixedColVector<icl8u,4> Color4D;
+    using Color4D = math::FixedColVector<icl8u,4>;
 
     /// Special color type for e.g. rgba color information (float)
-    typedef math::FixedColVector<icl32f,4> Color4D32f;
+    using Color4D32f = math::FixedColVector<icl32f,4>;
 
     // Create a color by given name (see GeneralColor Constructor)
     const Color &iclCreateColor(std::string name);

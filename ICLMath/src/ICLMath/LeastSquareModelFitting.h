@@ -136,10 +136,10 @@ namespace icl{
       public:
       /// fills the give float* with data from the given data point
       /** creates the rows of the design matrix */
-      typedef utils::Function<void,const DataPoint&,T*> DesignMatrixGen;
+      using DesignMatrixGen = utils::Function<void,const DataPoint&,T*>;
 
       /// model type (defines the model parameters)
-      typedef std::vector<T> Model;
+      using Model = std::vector<T>;
 
       private:
       /// model dimension

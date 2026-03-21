@@ -98,7 +98,7 @@ namespace icl{
     };
 
     ///
-    typedef utils::SmartPtr<PointCloudSegment> PointCloudSegmentPtr;
+    using PointCloudSegmentPtr = utils::SmartPtr<PointCloudSegment>;
 
     inline std::ostream &operator<<(std::ostream &str, const PointCloudSegment::AABB &a){
       return str << "AABB(min: " << a.min.transp() << "  max: " << a.max.transp() << ")";

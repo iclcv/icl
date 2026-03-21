@@ -74,11 +74,14 @@ namespace icl{
         Otherwise, a new image with the desired parameters is created, stored
         and returned.
     */
-    class ICLCore_API ImgBuffer : public utils::Uncopyable{
+    class ICLCore_API ImgBuffer {
       struct Data; //!< internal data storage class
       Data *data;  //!< internal data storage pointer
       ImgBuffer(); //!< private contructor -> use static function instance to get the singelton instance
       public:
+      ImgBuffer(const ImgBuffer&) = delete;
+      ImgBuffer& operator=(const ImgBuffer&) = delete;
+
 
       /// Destructor
       ~ImgBuffer();

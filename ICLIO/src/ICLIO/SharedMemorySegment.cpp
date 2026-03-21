@@ -384,7 +384,7 @@ namespace icl {
     //##########################################################################
 
     SharedMemorySegment::SharedMemorySegment(std::string name, int minsize) :
-      m_Mutex(Mutex::mutexTypeRecursive), m_Impl(NULL), m_Name(name), m_Minsize(minsize)
+      m_Mutex(Mutex::mutexTypeRecursive), m_Impl(nullptr), m_Name(name), m_Minsize(minsize)
     {}
 
     SharedMemorySegment::~SharedMemorySegment(){
@@ -395,7 +395,7 @@ namespace icl {
     void SharedMemorySegment::release(){
       Mutex::Locker l(m_Mutex);
       if(m_Impl) SharedMemorySegment::Impl::free(m_Impl->getName());
-      m_Impl = NULL;
+      m_Impl = nullptr;
     }
 
     std::string SharedMemorySegment::getName(){
@@ -441,31 +441,31 @@ namespace icl {
 
     void* SharedMemorySegment::data(){
       Mutex::Locker l(m_Mutex);
-      if(!m_Impl) return NULL;
+      if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.data();
       } else {
-        return NULL;
+        return nullptr;
       }
     }
 
     const void* SharedMemorySegment::data() const{
       Mutex::Locker l(m_Mutex);
-      if(!m_Impl) return NULL;
+      if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.data();
       } else {
-        return NULL;
+        return nullptr;
       }
     }
 
     const void* SharedMemorySegment::constData() const{
       Mutex::Locker l(m_Mutex);
-      if(!m_Impl) return NULL;
+      if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.constData();
       } else {
-        return NULL;
+        return nullptr;
       }
     }
 

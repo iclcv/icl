@@ -38,7 +38,10 @@ namespace icl {
     class RigidObject;
 
     /// This class is a MotionState for updating SceneObjects to match the PhysicsObject state.
-    class ICLPhysics_API MotionState : public btMotionState, public utils::Uncopyable{
+    class ICLPhysics_API MotionState : public btMotionState{
+      public:
+      MotionState(const MotionState&) = delete;
+      MotionState& operator=(const MotionState&) = delete;
 
       private:
       /// RigidObject this MotionState belongs to

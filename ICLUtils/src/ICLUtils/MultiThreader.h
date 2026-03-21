@@ -176,7 +176,7 @@ namespace icl{
       /** \endcond */
 
       /// set of work packages, that should be performed parallel
-      typedef std::vector<Work*> WorkSet;
+      using WorkSet = std::vector<Work*>;
 
       /// Empty (null) constructor
       MultiThreader();

@@ -150,7 +150,7 @@ namespace icl {
 
     } //namespace pylon
 
-    typedef pylon::PylonGrabber PylonGrabber;
+    using PylonGrabber = pylon::PylonGrabber;
 
   } // namespace io
 } //namespace icl

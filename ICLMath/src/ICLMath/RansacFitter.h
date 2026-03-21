@@ -63,13 +63,13 @@ namespace icl{
     class RansacFitter{
       public:
       /// DataSet type (just a set of DataPoint instances)
-      typedef std::vector<DataPoint> DataSet;
+      using DataSet = std::vector<DataPoint>;
 
       /// Function for the fitting module (gets a dataset and returns the fitted model)
-      typedef utils::Function<Model,const DataSet&> ModelFitting;
+      using ModelFitting = utils::Function<Model,const DataSet&>;
 
       /// Error function for single points
-      typedef utils::Function<icl64f,const Model&,const DataPoint&> PointError;
+      using PointError = utils::Function<icl64f,const Model&,const DataPoint&>;
 
       private:
       /// minimum points that are used to create a coarse model

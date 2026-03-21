@@ -64,7 +64,7 @@ namespace icl{
 
     */
     class RayCastOctreeObject : public OctreeObject<float, 16, 1, Vec, 1024>{
-      typedef OctreeObject<float,16,1,Vec,1024> Super;
+      using Super = OctreeObject<float,16,1,Vec,1024>;
       public:
       /// creates a QuadTree for the given 2D rectangle
       RayCastOctreeObject(const float &minX, const float &minY, const float &minZ,

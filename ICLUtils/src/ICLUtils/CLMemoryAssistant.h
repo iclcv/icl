@@ -67,8 +67,8 @@ namespace icl {
 			/// Destructor
 			~CLMemoryAssistant();
 
-			typedef std::string MemKeyType;
-			typedef std::map<MemKeyType,CLMemory*> CLMemoryMap;
+			using MemKeyType = std::string;
+			using CLMemoryMap = std::map<MemKeyType,CLMemory*>;
 
 			/**
 			 * @brief createNamedBuffer creates a CLBuffer object (internally handled as a CLMemory-pointer)

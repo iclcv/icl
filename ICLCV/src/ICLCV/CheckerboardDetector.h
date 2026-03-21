@@ -43,7 +43,7 @@ namespace icl{
     /** The CheckerboardDetector wrappes OpenCV's cvFindChessboardCorners and provides
         a flag to optionally optimize the detected corners using
         cvFindCornerSubPix */
-    class ICLCV_API CheckerboardDetector : public utils::Configurable, public utils::Uncopyable{
+    class ICLCV_API CheckerboardDetector : public utils::Configurable{
       struct Data;   //!< internal data data
       Data *m_data;  //!< internal data pointer
 
@@ -51,6 +51,9 @@ namespace icl{
       void init_properties();
 
       public:
+      CheckerboardDetector(const CheckerboardDetector&) = delete;
+      CheckerboardDetector& operator=(const CheckerboardDetector&) = delete;
+
 
       /// Default constructor (creates a null instance)
       CheckerboardDetector();

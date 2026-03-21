@@ -314,8 +314,8 @@ namespace icl {
     }
 
 #define ICL_INSTANTIATE_DEPTH(D)                  \
-  template ICLCore_API Img<icl##D> *ImgBase::convert<icl##D>(Img<icl##D> *poDst = NULL) const; \
-  template ICLCore_API Img<icl##D> *ImgBase::convertROI<icl##D>(Img<icl##D> *poDst = NULL) const;
+  template ICLCore_API Img<icl##D> *ImgBase::convert<icl##D>(Img<icl##D> *poDst = nullptr) const; \
+  template ICLCore_API Img<icl##D> *ImgBase::convertROI<icl##D>(Img<icl##D> *poDst = nullptr) const;
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
   } // namespace core

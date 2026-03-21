@@ -44,10 +44,10 @@ namespace icl{
     struct ParamList : public std::map<std::string, Any>{
 
       /// The Key type (std::string)
-      typedef std::string Key;
+      using Key = std::string;
 
       /// The Value type (icl::Any)
-      typedef Any Value;
+      using Value = Any;
 
       /// creates an empty param list instance
       inline ParamList(){}

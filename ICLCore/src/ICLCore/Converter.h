@@ -46,8 +46,11 @@ namespace icl{
         If demanded, the converter provides an interface to specify the order
         of the different operations.
     **/
-    class ICLCore_API Converter : public utils::Uncopyable{
+    class ICLCore_API Converter {
       public:
+      Converter(const Converter&) = delete;
+      Converter& operator=(const Converter&) = delete;
+
       /// enum to define internal used operation order
       enum oporder{
         orderScaleConvertCC = 12,

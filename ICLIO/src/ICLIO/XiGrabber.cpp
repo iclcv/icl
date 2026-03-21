@@ -133,10 +133,10 @@ namespace icl{
 
       Data(int deviceID){
         DEBUG_LOG("Generic Grabber created");
-        xiH = NULL;
+        xiH = nullptr;
         memset(&image,0,sizeof(image));
         image.size = sizeof(XI_IMG);
-        image.bp = NULL;
+        image.bp = nullptr;
         image.bp_size = 0;
 
         XI_RETURN s = xiOpenDevice(deviceID, &xiH);

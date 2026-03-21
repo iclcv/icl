@@ -456,16 +456,16 @@ namespace icl{
 
 
       /// default iterator type (just a data-pointer)
-      typedef T* iterator;
+      using iterator = T*;
 
       /// dafault const_iterator type (just a data-pointer)
-      typedef const T* const_iterator;
+      using const_iterator = const T*;
 
       /// comples row_iterator type
-      typedef T* row_iterator;
+      using row_iterator = T*;
 
       /// complex const_row_iterator type
-      typedef const T* const_row_iterator;
+      using const_row_iterator = const T*;
 
       /// height of the matrix (number of rows)
       unsigned int rows() const { return m_rows; }
@@ -492,8 +492,12 @@ namespace icl{
       int stride2() const { return sizeof(T); }
 
       /// Internal column iterator struct (using height-stride) \ingroup LINALG
-      struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
-        typedef unsigned int difference_type;
+      struct col_iterator {
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&;
+        using difference_type = unsigned int;
         mutable T *p;
         unsigned int stride;
         inline col_iterator(T *col_begin,unsigned int stride):p(col_begin),stride(stride){}
@@ -637,7 +641,7 @@ namespace icl{
       };
 
       /// const column iterator typedef
-      typedef const col_iterator const_col_iterator;
+      using const_col_iterator = const col_iterator;
 
       /// Internally used Utility structure referencing a matrix column shallowly
       class ICLMath_API DynMatrixColumn{
@@ -962,8 +966,8 @@ namespace icl{
       DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const;
 
   #ifdef ICL_HAVE_MKL
-      typedef void(*GESDD)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
-      typedef void(*CBLAS_GEMM)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
+      using GESDD = void(*)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
+      using CBLAS_GEMM = void(*)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
       DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const;
   #endif
 

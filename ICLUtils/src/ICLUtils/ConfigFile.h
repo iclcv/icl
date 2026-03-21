@@ -540,7 +540,7 @@ namespace icl{
       };
 
       /// iterator type to run through all entries (const only)
-      typedef std::map<std::string,Entry>::const_iterator const_iterator;
+      using const_iterator = std::map<std::string,Entry>::const_iterator;
 
       /// all-entry iterator begin
       const_iterator begin() const{ return m_entries.begin(); }

@@ -39,66 +39,66 @@ namespace icl{
     // The included PugiXML backend
 
     /// Node type \ingroup XML
-    typedef pugi::xml_node_type XMLNodeType;
+    using XMLNodeType = pugi::xml_node_type;
 
     /// XML encoding type \ingroup XML
-    typedef pugi::xml_encoding XMLEncoding;
+    using XMLEncoding = pugi::xml_encoding;
 
     /// XML writer interface \ingroup XML
-    typedef pugi::xml_writer XMLWriter;
+    using XMLWriter = pugi::xml_writer;
 
     /// XML writer implementation for streams \ingroup XML
-    typedef pugi::xml_writer_stream XMLStreamWriter;
+    using XMLStreamWriter = pugi::xml_writer_stream;
 
     /// XML writer implementation for files \ingroup XML
-    typedef pugi::xml_writer_file XMLFileWriter;
+    using XMLFileWriter = pugi::xml_writer_file;
 
     /// XML Attribute class \ingroup XML
-    typedef pugi::xml_attribute XMLAttribute;
+    using XMLAttribute = pugi::xml_attribute;
 
     /// XML Node class \ingroup XML
-    typedef pugi::xml_node XMLNode;
+    using XMLNode = pugi::xml_node;
 
     /// Iterator for XMLNodes \ingroup XML
-    typedef pugi::xml_node_iterator XMLNodeIterator;
+    using XMLNodeIterator = pugi::xml_node_iterator;
 
     /// Iterator for XMLAttributes \ingroup XML
-    typedef pugi::xml_attribute_iterator XMLAttributeIterator;
+    using XMLAttributeIterator = pugi::xml_attribute_iterator;
 
     /// XML-Treewalker class \ingroup XML
-    typedef pugi::xml_tree_walker XMLTreeWalker;
+    using XMLTreeWalker = pugi::xml_tree_walker;
 
     /// Parsing status enumeration \ingroup XML
-    typedef pugi::xml_parse_status XMLParseStatus;
+    using XMLParseStatus = pugi::xml_parse_status;
 
     /// Parsing status class \ingroup XML
-    typedef pugi::xml_parse_result XMLParseResult;
+    using XMLParseResult = pugi::xml_parse_result;
 
     /// Main XML Document class \ingroup XML
-    typedef pugi::xml_document XMLDocument;
+    using XMLDocument = pugi::xml_document;
 
     /// Type enumeration for xpath values \ingroup XML
-    typedef pugi::xpath_value_type XPathValueType;
+    using XPathValueType = pugi::xpath_value_type;
 
     /// Parse Result class for XPath expressions\ingroup XML
-    typedef pugi::xpath_parse_result XPathParseResult;
+    using XPathParseResult = pugi::xpath_parse_result;
 
     /// Variable Type for XPath expressions \ingroup XML
-    typedef pugi::xpath_variable XPathVariable;
+    using XPathVariable = pugi::xpath_variable;
 
     /// Set of XPathVariables \ingroup XML
-    typedef pugi::xpath_variable_set XPathVariableSet;
+    using XPathVariableSet = pugi::xpath_variable_set;
 
     /// Precompiled XPath expression \ingroup XML
-    typedef pugi::xpath_query XPathQuery;
+    using XPathQuery = pugi::xpath_query;
 
     /// Exception type for xpath expressions \ingroup XML
-    typedef pugi::xpath_exception XPathException;
+    using XPathException = pugi::xpath_exception;
 
     /// Special node type for XPath query results \ingroup XML
-    typedef pugi::xpath_node XPathNode;
+    using XPathNode = pugi::xpath_node;
 
     /// Set of XPath nodes \ingroup XML
-    typedef pugi::xpath_node_set XPathNodeSet;
+    using XPathNodeSet = pugi::xpath_node_set;
   } // namespace utils
 }

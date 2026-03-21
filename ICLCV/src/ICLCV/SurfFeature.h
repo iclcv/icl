@@ -58,7 +58,7 @@ namespace icl{
     };
 
     /// typedef for two matching features
-    typedef std::pair<SurfFeature,SurfFeature> SurfMatch;
+    using SurfMatch = std::pair<SurfFeature,SurfFeature>;
 
   }
 }

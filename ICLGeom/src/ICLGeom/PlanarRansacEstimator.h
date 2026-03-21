@@ -56,7 +56,7 @@ namespace icl{
         ~PlanarRansacEstimator();
 
 
-        typedef struct{
+        struct Result{
           int numPoints;//number of destination points
           int countOn;//number of points on the model
           int countAbove;//number of points above the model
@@ -68,7 +68,7 @@ namespace icl{
           int acc;//number of accepted passes for ON_ONE_SIDE (result smaller tolerance)
           int nacc;//number of rejected passes for ON_ONE_SIDE (result bigger tolerance)
           //int maxID;//for assignment of points (all with this id + on plane)
-        }Result;
+        };
 
 
         enum OptimizationCriterion {

@@ -44,8 +44,11 @@ namespace icl{
         the FixedConverter.
         @see icl::Converter
     **/
-    class ICLCore_API FixedConverter : public utils::Uncopyable{
+    class ICLCore_API FixedConverter {
       public:
+      FixedConverter(const FixedConverter&) = delete;
+      FixedConverter& operator=(const FixedConverter&) = delete;
+
       /// Create a new FixedConverter Object with given destination params and depth
       /** @param p output image parameters
           @param d output image depth

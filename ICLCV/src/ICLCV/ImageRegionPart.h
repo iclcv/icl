@@ -42,10 +42,10 @@ namespace icl{
     struct ICLCV_API ImageRegionPart{
 
       /// internally used type for buffering children
-      typedef std::vector<ImageRegionPart*> children_container;
+      using children_container = std::vector<ImageRegionPart*>;
 
       /// internally used type for buffring segments
-      typedef std::vector<WorkingLineSegment*> segment_container;
+      using segment_container = std::vector<WorkingLineSegment*>;
 
       /// initializes this instance with the first WorkingLoineSegment
       inline ImageRegionPart *init(WorkingLineSegment *s){

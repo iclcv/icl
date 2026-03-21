@@ -73,9 +73,9 @@ namespace icl{
     private:
       FreenectContext() : started(0), errors(0) {
         static Mutex cMutex;
-        static freenect_context *ctx = NULL;
+        static freenect_context *ctx = nullptr;
         Mutex::Locker l(cMutex);
-        if(!ctx && freenect_init(&ctx, NULL) < 0){
+        if(!ctx && freenect_init(&ctx, nullptr) < 0){
           throw ICLException("unable to create freenect_context");
         }
 #ifdef FREENECT_DEBUG_LOGGING

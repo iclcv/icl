@@ -54,7 +54,7 @@ namespace icl{
   	    };
 
 
-        typedef struct{
+        struct SurfaceFeature{
           int numPoints;//number of surface points
           core::Img32f normalHistogram;//normal histogram (11x11 bins representing x and y component (each from -1 to 1 in 0.2 steps)
           core::Channel32f normalHistogramChannel;
@@ -64,7 +64,7 @@ namespace icl{
           std::pair<Vec,Vec> boundingBox3D;
           std::pair<utils::Point,utils::Point> boundingBox2D;
           float volume;//volume of the 3D bounding box
-        }SurfaceFeature;
+        };
 
 
         enum CurvatureFactor {

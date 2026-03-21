@@ -114,7 +114,7 @@ namespace icl{
         gflags |= GLOB_QUOTE;
   //#endif
 
-        int gerr = glob(sPattern.c_str(), gflags, NULL, &pglob);
+        int gerr = glob(sPattern.c_str(), gflags, nullptr, &pglob);
         if (gerr) {
             // refine if necessary
             throw ICLException ("wrong use of glob");

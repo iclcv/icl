@@ -98,7 +98,7 @@ void PylonGrabberThread::grab(){
       write -> m_Image -> setTime();
     }
     // Reuse buffer for grabbing the next image
-    m_Grabber -> QueueBuffer(result.Handle(), NULL);
+    m_Grabber -> QueueBuffer(result.Handle(), nullptr);
   } else {
     ++m_Error;
     // Error handling
@@ -106,7 +106,7 @@ void PylonGrabberThread::grab(){
               << result.GetErrorDescription())
 
     // Reuse the buffer for grabbing the next image
-    m_Grabber -> QueueBuffer(result.Handle(), NULL);
+    m_Grabber -> QueueBuffer(result.Handle(), nullptr);
   }
 }
 

@@ -39,11 +39,14 @@ namespace icl{
 
     /// Utility class vor viewbased template tracking
     /** TODO: add more documentation! */
-    class ICLCV_API TemplateTracker : public utils::Configurable, public utils::Uncopyable{
+    class ICLCV_API TemplateTracker : public utils::Configurable{
       struct Data; //!< internal data storage
       Data *data;  //!< internal data pointer
 
       public:
+      TemplateTracker(const TemplateTracker&) = delete;
+      TemplateTracker& operator=(const TemplateTracker&) = delete;
+
       /// Result class that describes a tracking result
       struct Result{
         /// Constructor with given parameters

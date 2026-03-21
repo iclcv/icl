@@ -110,11 +110,14 @@ namespace icl{
     /** The wrapper simply handles construction, x/y- indexing and
         deletion of the internally used CvMat pointer in its destructor. */
     template<class T>
-    class CvMatWrapper : public utils::Uncopyable{
+    class CvMatWrapper {
       utils::Size size; //!< current size
       utils::SmartPtrBase<CvMat,CvMatDelOp> m;
 
       public:
+      CvMatWrapper(const CvMatWrapper&) = delete;
+      CvMatWrapper& operator=(const CvMatWrapper&) = delete;
+
       /// Constructor, creates a CvMat with given dimensions
       CvMatWrapper(int nrows=0, int ncols=0):
         size(ncols, nrows),

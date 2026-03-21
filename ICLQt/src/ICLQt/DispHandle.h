@@ -41,7 +41,7 @@ namespace icl{
 
     /// Type definition for handling GUI-"disp" components \ingroup HANDLES
     /** @see GUI, Array2D template class of the ICLUtils package */
-    typedef utils::Array2D<LabelHandle>  LabelMatrix;
+    using LabelMatrix = utils::Array2D<LabelHandle>;
 
     /// Handle class for disp components \ingroup HANDLE
     class DispHandle : public GUIHandle<LabelMatrix>{

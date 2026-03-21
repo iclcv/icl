@@ -252,9 +252,9 @@ namespace icl{
     class ICLMath_API LevenbergMarquardtFitter{
       public:
 
-      typedef DynColVector<Scalar> Vector; //!< vector type
-      typedef DynColVector<Scalar> Params; //!< parameter vector type
-      typedef DynMatrix<Scalar> Matrix;    //!< matrix type (used for input data)
+      using Vector = DynColVector<Scalar>; //!< vector type
+      using Params = DynColVector<Scalar>; //!< parameter vector type
+      using Matrix = DynMatrix<Scalar>;    //!< matrix type (used for input data)
 
       /// Utility structure, that represents a fitting result
       struct Result{
@@ -278,16 +278,16 @@ namespace icl{
       };
 
       /// to-be-optimized function type y = f(params, x)
-      typedef icl::utils::Function<Vector,const Params&,const Vector&> Function;
-      typedef icl::utils::Function<Matrix,const Params&,const Matrix&> FunctionMat;
+      using Function = icl::utils::Function<Vector,const Params&,const Vector&>;
+      using FunctionMat = icl::utils::Function<Matrix,const Params&,const Matrix&>;
 
       /// jacobian of F
       /** \see \ref _J_ */
-      typedef icl::utils::Function<void,const Params&, const Vector&, Vector&> Jacobian;
-      typedef icl::utils::Function<void,const Params&, const Matrix&, Matrix&> JacobianMat;
+      using Jacobian = icl::utils::Function<void,const Params&, const Vector&, Vector&>;
+      using JacobianMat = icl::utils::Function<void,const Params&, const Matrix&, Matrix&>;
 
       /// Optionally given debug callback, that is called in every iterations
-      typedef icl::utils::Function<void,const Result&> DebugCallback;
+      using DebugCallback = icl::utils::Function<void,const Result&>;
 
 
 

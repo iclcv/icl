@@ -52,7 +52,7 @@ using namespace Pylon;
 // Constructor
 PylonColorConverter::PylonColorConverter() : m_Mutex() {
   Mutex::Locker l(m_Mutex);
-  m_Converter = NULL;
+  m_Converter = nullptr;
 }
 
 // Destructor
@@ -195,9 +195,9 @@ ImgBase* PylonColorConverter::convert(const void *pImageBuffer, ConvBuffers* b){
   Time t = Time::now();
 #endif
   Mutex::Locker l(m_Mutex);
-  if(m_Converter == NULL){
+  if(m_Converter == nullptr){
     DEBUG_LOG(m_ErrorMessage)
-    return NULL;
+    return nullptr;
   }
   // reinitialize buffer if needed
   if(b -> m_Reset){

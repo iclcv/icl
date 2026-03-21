@@ -38,7 +38,10 @@ namespace icl {
   namespace physics{
 
     /// Base Class for constraints
-    class ICLPhysics_API Constraint:public utils::Uncopyable{
+    class ICLPhysics_API Constraint{
+      public:
+      Constraint(const Constraint&) = delete;
+      Constraint& operator=(const Constraint&) = delete;
 
       protected:
       /// internal constraint

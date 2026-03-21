@@ -41,8 +41,11 @@ using namespace icl::core;
 namespace icl{
   namespace filter{
 
-    class ColorSegmentationOp::LUT3D : public Uncopyable{
+    class ColorSegmentationOp::LUT3D {
       public:
+      LUT3D(const LUT3D&) = delete;
+      LUT3D& operator=(const LUT3D&) = delete;
+
       int dim, w, h,t, wh;
       icl8u *data;
       mutable Img8u image;

@@ -122,7 +122,7 @@ namespace icl{
       const GridDefinition &getGridDefinition() const;
 
       /// result data type
-      typedef utils::Array2D<Fiducial> Result;
+      using Result = utils::Array2D<Fiducial>;
 
 
       /// actual detection function

@@ -257,7 +257,7 @@ namespace icl{
 
       public:
       /// generic background color creator plugin
-      typedef utils::Function<core::Color> BGColorSource;
+      using BGColorSource = utils::Function<core::Color>;
 
       /// can be used to replace the default OSD-GUI based background color source
       /** The background color source can e.g. be adapted by higher level

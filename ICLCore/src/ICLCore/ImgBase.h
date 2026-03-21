@@ -151,7 +151,7 @@ namespace icl {
                                    const std::vector<int> &channelIndices,
                                    format fmt,
                                    utils::Time time=utils::Time::null,
-                                   ImgBase **ppoDst = NULL) = 0;
+                                   ImgBase **ppoDst = nullptr) = 0;
 
       /** Create a shallow copy of an image with given (const version)
           @see the above function
@@ -180,7 +180,7 @@ namespace icl {
           @param ppoDst destination image (exploited as possible)
           @return shallow copie with given format of NULL if an error occured
           **/
-      ImgBase *reinterpretChannels(format newFmt, ImgBase **ppoDst = NULL){
+      ImgBase *reinterpretChannels(format newFmt, ImgBase **ppoDst = nullptr){
         return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),ppoDst);
       }
 
@@ -206,10 +206,10 @@ namespace icl {
           is used.
           @return shallow copy of this image
           **/
-      ImgBase* shallowCopy(const utils::Rect &roi, ImgBase** ppoDst = NULL){
+      ImgBase* shallowCopy(const utils::Rect &roi, ImgBase** ppoDst = nullptr){
         return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),ppoDst);
       }
-      ImgBase* shallowCopy(ImgBase** ppoDst = NULL){
+      ImgBase* shallowCopy(ImgBase** ppoDst = nullptr){
         return shallowCopy(getROI(),std::vector<int>(),getFormat(),getTime(),ppoDst);
       }
 
@@ -317,7 +317,7 @@ namespace icl {
           @see deepCopy
           */
       template<class T> ICLCore_API
-      Img<T> *convert(Img<T> *poDst=NULL) const;
+      Img<T> *convert(Img<T> *poDst=nullptr) const;
 
       /// returns a converted (or deep copied) instance of this image
       /** This function can be called using an explicit destination depth.
@@ -341,7 +341,7 @@ namespace icl {
           @return converted image, containing the source images ROI
           */
       template<class T> ICLCore_API
-      Img<T> *convertROI(Img<T> *poDst=NULL) const;
+      Img<T> *convertROI(Img<T> *poDst=nullptr) const;
 
       /// returns a converted (or deep copied) instance of this images ROI
       /** This function behaves essentially like the above functions, except it

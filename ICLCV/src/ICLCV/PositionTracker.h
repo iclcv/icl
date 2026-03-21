@@ -288,13 +288,13 @@ namespace icl{
       private:
 
       /// internally used vector type
-      typedef std::vector<valueType> Vec;
+      using Vec = std::vector<valueType>;
 
       /// internally used matrix type
-      typedef std::vector<Vec> Mat;
+      using Mat = std::vector<Vec>;
 
       /// internally used queue-matrix (columns can be pushed and pop'ed in constant time
-      typedef std::deque<Vec> QMat;
+      using QMat = std::deque<Vec>;
 
       /// internal storage of the history matrix H
       QMat m_matData[2];

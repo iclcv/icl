@@ -59,7 +59,7 @@ namespace icl{
         for the post-processing the local-threshold result image before
         it's passed to the region detector internally
     */
-    class ICLMarkers_API QuadDetector : public utils::Configurable, public utils::Uncopyable{
+    class ICLMarkers_API QuadDetector : public utils::Configurable{
 
       /// Internal Data class
       class Data;
@@ -68,6 +68,9 @@ namespace icl{
       Data *data;
 
       public:
+      QuadDetector(const QuadDetector&) = delete;
+      QuadDetector& operator=(const QuadDetector&) = delete;
+
 
 
       /// enum, that helps to specify what quads are searched in the threshold-result image
@@ -105,10 +108,10 @@ namespace icl{
 
 
       /// internal typedef for vector of points
-      typedef std::vector<utils::Point32f> PVec;
+      using PVec = std::vector<utils::Point32f>;
 
       /// internal typedef for vector of vector of points
-      typedef std::vector<PVec> PVecVec;
+      using PVecVec = std::vector<PVec>;
 
       /// returns all corners (const)
       const PVecVec &getAllCorners() const;

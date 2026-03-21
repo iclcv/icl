@@ -45,11 +45,14 @@
 namespace icl{
   namespace io{
     /// encoding class for data-to-data jpeg compression
-    class ICLIO_API JPEGEncoder : public utils::Uncopyable{
+    class ICLIO_API JPEGEncoder {
       struct Data;  //!< pimpl type
       Data *m_data; //!< pimpl pointer
 
       public:
+      JPEGEncoder(const JPEGEncoder&) = delete;
+      JPEGEncoder& operator=(const JPEGEncoder&) = delete;
+
       /// constructor with given jpeg quality
       /** The quality value is always given in percet (1-100)*/
       JPEGEncoder(int quality=90);

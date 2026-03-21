@@ -155,7 +155,7 @@ namespace icl{
     template<class T>
     struct ICLMath_IMP GenericHomography2D : public FixedMatrix<T, 3, 3>{
       /// super class typedef for shorter super-class references
-      typedef FixedMatrix<T,3,3> Super;
+      using Super = FixedMatrix<T,3,3>;
 
       /// Internally used algorithm type
       enum Algorithm{
@@ -196,7 +196,7 @@ namespace icl{
     };
 
     /// default homography 2D type definition (usually float depth is enough)
-    typedef GenericHomography2D<float> Homography2D;
+    using Homography2D = GenericHomography2D<float>;
 
 
   } // namespace math

@@ -98,10 +98,10 @@ namespace icl{
     namespace clsurf{
 
       /// again, we use the generic Ipoint here!
-      typedef SurfFeature Ipoint;
+      using Ipoint = SurfFeature;
 
       /// used typedef for vector of interest points
-      typedef std::vector<Ipoint> IpVec;
+      using IpVec = std::vector<Ipoint>;
 
 
       /// OpenCL-based Surf Feature detector implmentation (by AMD)

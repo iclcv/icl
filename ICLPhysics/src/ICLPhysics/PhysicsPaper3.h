@@ -89,7 +89,7 @@ namespace icl{
 
       public:
 
-      typedef std::pair<utils::Point32f,utils::Point32f> LinkCoords;
+      using LinkCoords = std::pair<utils::Point32f,utils::Point32f>;
 
       void updateSceneObject(btSoftBody *soft);
 

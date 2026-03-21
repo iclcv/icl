@@ -40,11 +40,14 @@ namespace icl{
   /// Utility class that performs gradient-descent based inverse undistortion mapping
   /** Internally, the class has two operation modes. An OpenCL-implementation and a C++-version.
       Unfortunately, the OpenCL version is not significantly faster for common numbers of points */
-  class InverseUndistortionProcessor : public utils::Uncopyable{
+  class InverseUndistortionProcessor {
     struct Data;   //!< internal data structure
     Data *m_data;  //!< internal data pointer
 
     public:
+    InverseUndistortionProcessor(const InverseUndistortionProcessor&) = delete;
+    InverseUndistortionProcessor& operator=(const InverseUndistortionProcessor&) = delete;
+
 
     /// constructor
     InverseUndistortionProcessor(bool preferOpenCL);

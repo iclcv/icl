@@ -63,7 +63,7 @@ namespace icl{
           xine_config_load(xine,(str(xine_get_homedir())+"/.xine/config").c_str());
           xine_init(xine);
           vo_port = xine_new_framegrab_video_port (xine);
-          ao_port = xine_open_audio_driver(xine ,"auto", NULL);
+          ao_port = xine_open_audio_driver(xine ,"auto", nullptr);
           stream = xine_stream_new(xine, ao_port, vo_port);
 
           if(!xine_open(stream, filename.c_str())){

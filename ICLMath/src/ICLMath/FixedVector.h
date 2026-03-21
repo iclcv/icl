@@ -38,7 +38,7 @@ namespace icl{
 
     template<class T, int DIM>
     struct FixedColVector : public FixedMatrix<T, 1, DIM>{
-      typedef FixedMatrix<T,1,DIM> super;
+      using super = FixedMatrix<T,1,DIM>;
       FixedColVector(){}
       explicit FixedColVector(const T &init):super(init){}
       explicit FixedColVector(const T *srcData):super(srcData){}
@@ -59,7 +59,7 @@ namespace icl{
 
     template<class T, int DIM>
     struct FixedRowVector : public FixedMatrix<T, DIM, 1>{
-      typedef FixedMatrix<T,DIM,1> super;
+      using super = FixedMatrix<T,DIM,1>;
       FixedRowVector(){}
       explicit FixedRowVector(const T &init):super(init){}
       explicit FixedRowVector(const T *srcData):super(srcData){}

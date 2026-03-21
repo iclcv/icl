@@ -339,7 +339,7 @@ namespace icl{
     };
     template<class R>
     struct Function<R, NO_ARG>{
-      typedef R result_type;
+      using result_type = R;
       Function(){}
       Function(FunctionImpl<R> *impl):impl(impl){}
       Function(icl::utils::SmartPtr<FunctionImpl<R> >impl):impl(impl){}

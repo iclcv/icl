@@ -378,7 +378,7 @@ namespace icl{
             }
 
             buffers[i].length = buf.length;
-            buffers[i].data = mmap (NULL /* start anywhere */,
+            buffers[i].data = mmap (nullptr /* start anywhere */,
                                     buf.length,
                                     PROT_READ | PROT_WRITE /* required */,
                                     MAP_SHARED /* recommended */,
@@ -425,7 +425,7 @@ namespace icl{
             tv.tv_sec = 5;
             tv.tv_usec = 0;
 
-            int r = select(file + 1, &fds, NULL, NULL, &tv);
+            int r = select(file + 1, &fds, nullptr, nullptr, &tv);
             if(-1 == r && errno != EINTR){
               errno_exception("select failed");
             }

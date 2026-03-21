@@ -430,16 +430,16 @@ namespace icl{
 
 
       /// iterator type
-      typedef T* iterator;
+      using iterator = T*;
 
       /// const iterator type
-      typedef const T* const_iterator;
+      using const_iterator = const T*;
 
       /// row_iterator
-      typedef T* row_iterator;
+      using row_iterator = T*;
 
       /// const row_iterator
-      typedef const T* const_row_iterator;
+      using const_row_iterator = const T*;
 
       /// compatibility-function returns template parameter ROWS
       static unsigned int rows(){ return ROWS; }
@@ -457,10 +457,14 @@ namespace icl{
       static unsigned int dim() { return DIM; }
 
       /// internal struct for row-wise iteration with stride=COLS \ingroup LINALG
-      struct col_iterator : public std::iterator<std::random_access_iterator_tag,T>{
+      struct col_iterator {
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&;
 
         /// just for compatibility with STL
-        typedef unsigned int difference_type;
+        using difference_type = unsigned int;
 
         /// wrapped data pointer (held shallowly)
         mutable T *p;
@@ -610,7 +614,7 @@ namespace icl{
       };
 
       // const column operator typedef
-      typedef const col_iterator const_col_iterator;
+      using const_col_iterator = const col_iterator;
 
       /// returns an iterator to first element iterating over each element (row-major order)
       iterator begin() { return utils::FixedArray<T,COLS*ROWS>::m_data; }

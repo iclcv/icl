@@ -86,7 +86,7 @@ namespace icl{
         included in a hierarchical fashion, but here, the user has to take care to not create
         infinite inclusion loops.
     */
-    class DynamicGUI : public qt::GUI, public utils::Uncopyable{
+    class DynamicGUI : public qt::GUI{
       /// internal data
       struct Data;
 
@@ -94,6 +94,9 @@ namespace icl{
       Data *m_data;
 
       public:
+      DynamicGUI(const DynamicGUI&) = delete;
+      DynamicGUI& operator=(const DynamicGUI&) = delete;
+
 
       /// internal xml-parsing node class
       /** The node class represents the hierarchical structure of the
@@ -107,8 +110,8 @@ namespace icl{
           key-value-pair fashion, such as "handle='the slider'".
           */
       class Node{
-        typedef utils::SmartPtr<Node> NodePtr;                 //!< SmartPtr typedef
-        typedef std::pair<std::string,std::string> KeyValue;   //!< KeyValue pair class
+        using NodePtr = utils::SmartPtr<Node>;                 //!< SmartPtr typedef
+        using KeyValue = std::pair<std::string,std::string>;   //!< KeyValue pair class
 
         Node(const std::string &name="", NodePtr parent=NodePtr(), int level=0); // private constructur
 
@@ -138,9 +141,9 @@ namespace icl{
 
       };
 
-      typedef utils::SmartPtr<Node> NodePtr;  //!< typedef for node-pointers
-      typedef Node ParseTree;                 //!< A tree is simply the root-node
-      typedef utils::SmartPtr<ParseTree> ParseTreePtr; //!< pointer typedef
+      using NodePtr = utils::SmartPtr<Node>;  //!< typedef for node-pointers
+      using ParseTree = Node;                 //!< A tree is simply the root-node
+      using ParseTreePtr = utils::SmartPtr<ParseTree>; //!< pointer typedef
 
       /// creates a new DynamicGUI instance from a given XML-description filename
       /** if cfgFileName is "", a null GUI instance is created that can be initialized

@@ -57,14 +57,14 @@ namespace icl{
     struct RSBIOUtilDataBase{
       virtual ~RSBIOUtilDataBase(){}
 
-      typedef rsb::Informer<T> Informer;
-      typedef typename Informer::Ptr InformerPtr;
-      typedef typename Informer::DataPtr DataPtr;
-      typedef typename rsb::Scope Scope;
-      typedef typename rsb::ListenerPtr ListenerPtr;
+      using Informer = rsb::Informer<T>;
+      using InformerPtr = typename Informer::Ptr;
+      using DataPtr = typename Informer::DataPtr;
+      using Scope = typename rsb::Scope;
+      using ListenerPtr = typename rsb::ListenerPtr;
 
       /// Callback type that is used for listener_callbacks
-      typedef typename utils::Function<void,const T&> Callback;
+      using Callback = typename utils::Function<void,const T&>;
 
       InformerPtr m_informer;
       DataPtr m_data;
@@ -78,8 +78,8 @@ namespace icl{
     /// Tier 3: branding for using protocol-buffer types by  default!
     template<class T>
     struct RSBIOUtilDataExtra : public RSBIOUtilDataBase<T>{
-      typedef typename rsb::converter::ProtocolBufferConverter<T> Converter;
-      typedef typename boost::shared_ptr<Converter> ConverterPtr;
+      using Converter = typename rsb::converter::ProtocolBufferConverter<T>;
+      using ConverterPtr = typename boost::shared_ptr<Converter>;
       static void register_type(){
         ConverterPtr c(new Converter);
         rsb::converter::converterRepository<std::string>()->registerConverter(c);
@@ -117,10 +117,13 @@ namespace icl{
         supported.
     */
     template<class T>
-    class RSBIOUtil : public RSBIOUtilDataExtra<T>, public utils::Uncopyable{
+    class RSBIOUtil : public RSBIOUtilDataExtra<T>{
       public:
+      RSBIOUtil(const RSBIOUtil&) = delete;
+      RSBIOUtil& operator=(const RSBIOUtil&) = delete;
 
-      typedef  RSBIOUtilDataExtra<T> Super;
+
+      using Super = RSBIOUtilDataExtra<T>;
       /// creates an instance with given mode and scope
       /** mode must be either send or receive*/
       inline RSBIOUtil(const std::string &mode, const std::string &scope, bool autoRegisterType=true){
@@ -141,7 +144,7 @@ namespace icl{
           Super::m_data = typename Super::DataPtr(new T);
         }else  if(mode == "receive"){
           Super::m_listener = factory.createListener(Super::m_scope);
-          typedef typename rsb::DataFunctionHandler<T> FHandler;
+          using FHandler = typename rsb::DataFunctionHandler<T>;
           typename FHandler::DataFunction f = boost::bind(&RSBIOUtil<T>::handle,this,_1);
           Super::m_listener->addHandler(rsb::HandlerPtr(new FHandler(f)));
         }else{
@@ -187,7 +190,7 @@ namespace icl{
       utils::SmartPtr<RSBIOUtil<T> > impl;
       public:
 
-      typedef typename RSBIOUtilDataBase<T>::DataPtr DataPtr;
+      using DataPtr = typename RSBIOUtilDataBase<T>::DataPtr;
 
       inline RSBSender(const std::string &scope=""){
         if(scope.length()) init(scope);
@@ -221,8 +224,8 @@ namespace icl{
       utils::SmartPtr<RSBIOUtil<T> > impl;
       public:
 
-      typedef typename RSBIOUtilDataBase<T>::Callback Callback;
-       typedef typename RSBIOUtilDataBase<T>::DataPtr DataPtr;
+      using Callback = typename RSBIOUtilDataBase<T>::Callback;
+       using DataPtr = typename RSBIOUtilDataBase<T>::DataPtr;
 
       inline RSBListener(const std::string &scope=""){
         if(scope.length()) init(scope);

@@ -45,9 +45,12 @@ namespace filter {
  * (http://people.csail.mit.edu/sparis/publi/2006/tr/Paris_06_Fast_Bilateral_Filter_MIT_TR_low-res.pdf)
  * on the GPU using OpenCL (no CPU-backend at the moment).
  */
-class ICLFilter_API BilateralFilterOp : public filter::UnaryOp, public utils::Uncopyable {
+class ICLFilter_API BilateralFilterOp : public filter::UnaryOp {
 
 public:
+	BilateralFilterOp(const BilateralFilterOp&) = delete;
+	BilateralFilterOp& operator=(const BilateralFilterOp&) = delete;
+
 
 	enum Mode {BEST, GPU, CPU};
 	enum Method {GAUSS, KUWAHARA};

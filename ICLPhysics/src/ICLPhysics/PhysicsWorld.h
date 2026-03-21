@@ -53,9 +53,12 @@ namespace icl{
     class Constraint;
 
     /// A physical world that handles physical objects
-    class ICLPhysics_API PhysicsWorld : public utils::Lockable, public utils::Uncopyable{
+    class ICLPhysics_API PhysicsWorld : public utils::Lockable{
 
       public:
+      PhysicsWorld(const PhysicsWorld&) = delete;
+      PhysicsWorld& operator=(const PhysicsWorld&) = delete;
+
 
       enum BulletSolverType {
         SequentialImpulseConstraintSolver,

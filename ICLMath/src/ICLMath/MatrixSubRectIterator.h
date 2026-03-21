@@ -67,7 +67,14 @@ namespace icl{
 
     */
     template <typename Type>
-    class MatrixSubRectIterator : public std::iterator<std::forward_iterator_tag, Type>{
+    class MatrixSubRectIterator {
+      public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = Type;
+      using difference_type = std::ptrdiff_t;
+      using pointer = Type*;
+      using reference = Type&;
+
       protected:
       inline void init () {
          m_lineStep = m_matrixWidth - m_subRectWidth + 1;

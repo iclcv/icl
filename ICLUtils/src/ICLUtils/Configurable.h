@@ -218,7 +218,7 @@ namespace icl{
       private:
 
       /// by default internally use property list
-      typedef std::map<std::string,Property> PropertyMap;
+      using PropertyMap = std::map<std::string,Property>;
 
       /// list of all properties
       PropertyMap m_properties;
@@ -353,7 +353,7 @@ namespace icl{
 
 
       /// Function type for changed properties
-      typedef Function<void,const Property&> Callback;
+      using Callback = Function<void,const Property&>;
 
       /// add a callback for changed properties
       void registerCallback(const Callback &cb){

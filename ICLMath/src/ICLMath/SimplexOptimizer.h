@@ -142,16 +142,19 @@ namespace icl{
         to 2D/3D rendering
     */
     template<class T, class Vector=DynColVector<T> >
-    class ICLMath_IMP SimplexOptimizer : public utils::Uncopyable{
+    class ICLMath_IMP SimplexOptimizer {
       struct Data; //!< internal data structure
       Data *m_data;  //!< internal data pointer
 
       public:
+      SimplexOptimizer(const SimplexOptimizer&) = delete;
+      SimplexOptimizer& operator=(const SimplexOptimizer&) = delete;
+
       /// error function type that is used
-      typedef utils::Function<T, const Vector&> error_function;
-      typedef SimplexOptimizationResult<T,Vector> Result;
-      typedef utils::Function<void,const Result &> iteration_callback;
-      typedef utils::Function<Vector> init_gen;
+      using error_function = utils::Function<T, const Vector&>;
+      using Result = SimplexOptimizationResult<T,Vector>;
+      using iteration_callback = utils::Function<void,const Result &>;
+      using init_gen = utils::Function<Vector>;
 
       /// creates a new instance with given parameters
       /** @param f error function

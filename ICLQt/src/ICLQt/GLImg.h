@@ -78,11 +78,14 @@ namespace icl{
         the buffered data is automatically uploaded to the graphics hardware <b> if this is
         necessary</b>.
     */
-    class ICLQt_API GLImg : public utils::Uncopyable{
+    class ICLQt_API GLImg {
       struct Data;  //!< internal data structure
       Data *m_data; //!< internal data pointer
 
       public:
+      GLImg(const GLImg&) = delete;
+      GLImg& operator=(const GLImg&) = delete;
+
       /// creates a new GLImg instance
       /** optional parameters are
           @param src optionally given source image (if null, isNull() will return true)
@@ -182,10 +185,10 @@ namespace icl{
                       const int stride = 1, bool invertNormals=false);
 
       /// 3D vector type
-      typedef math::FixedColVector<float,3> Vec3;
+      using Vec3 = math::FixedColVector<float,3>;
 
       /// a grid function returns a 3D pos from given 2D grid position
-      typedef utils::Function<Vec3,int,int> grid_function;
+      using grid_function = utils::Function<Vec3,int,int>;
 
       /// draws the texture to an nx x ny grid whose positions and normals are defined by functions
       /** The grid results are buffered internally in order to avoid extra function evaluations.

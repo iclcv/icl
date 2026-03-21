@@ -36,21 +36,21 @@ namespace icl{
   namespace filter{
     namespace {
       template<class TT>
-      struct ThreshType{ typedef TT T; };
+      struct ThreshType{ using T = TT; };
 
-      template<> struct ThreshType<uint8_t> { typedef int T; };
-      template<> struct ThreshType<int16_t> { typedef int T; };
-      template<> struct ThreshType<int32_t> { typedef int T; };
-      template<> struct ThreshType<float> { typedef float T; };
-      template<> struct ThreshType<double> { typedef double T; };
+      template<> struct ThreshType<uint8_t> { using T = int; };
+      template<> struct ThreshType<int16_t> { using T = int; };
+      template<> struct ThreshType<int32_t> { using T = int; };
+      template<> struct ThreshType<float> { using T = float; };
+      template<> struct ThreshType<double> { using T = double; };
 
       inline float lt_clip_float(float f) { return f > 255 ? 255 : f < 0 ? 0 : f; }
 
-      typedef uint8_t lt_icl8u;
-      typedef int16_t lt_icl16s;
-      typedef int32_t lt_icl32s;
-      typedef float   lt_icl32f;
-      typedef double  lt_icl64f;
+      using lt_icl8u = uint8_t;
+      using lt_icl16s = int16_t;
+      using lt_icl32s = int32_t;
+      using lt_icl32f = float;
+      using lt_icl64f = double;
     }
     /// Internally used helper function
     /** This function was outsourced to optimize the compilation times by better

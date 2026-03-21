@@ -152,7 +152,7 @@ namespace icl{
       } else {
         action.sa_handler = SIG_DFL;
       }
-      sigaction(signal, &action, NULL);
+      sigaction(signal, &action, nullptr);
     }
 
     static void low_level_handler(int signum, siginfo_t* info, void *ptr) {

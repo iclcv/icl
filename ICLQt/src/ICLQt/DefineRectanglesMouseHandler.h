@@ -204,7 +204,7 @@ namespace icl{
       Options options;  //!< options structure
 
       private:
-      typedef utils::Function<void,const std::vector<utils::Rect> &>  Callback;
+      using Callback = utils::Function<void,const std::vector<utils::Rect> &>;
       std::map<std::string,Callback> callbacks;
       void callCallbacks();
 
