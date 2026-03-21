@@ -174,6 +174,14 @@ FUNCTION(BUILD_APP)
   ADD_EXECUTABLE(${BINARY} ${APP_SOURCES})
   target_include_directories(${BINARY} PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
   TARGET_LINK_LIBRARIES(${BINARY} ${APP_LIBRARIES})
+  IF(APPLE)
+    set(MACOSX_BUNDLE_BUNDLE_NAME "${BINARY}")
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/Info.plist.in
+                   ${CMAKE_BINARY_DIR}/Info.plist.${BINARY})
+    set_target_properties(${BINARY} PROPERTIES
+      MACOSX_BUNDLE FALSE
+      LINK_FLAGS "-sectcreate __TEXT __info_plist ${CMAKE_BINARY_DIR}/Info.plist.${BINARY}")
+  ENDIF()
   INSTALL(TARGETS ${BINARY}
           COMPONENT applications
           RUNTIME DESTINATION bin)
