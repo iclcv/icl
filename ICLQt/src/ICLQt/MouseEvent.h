@@ -197,7 +197,7 @@ namespace icl{
       inline bool isRight() const { return m_downMask[RightMouseButton]; }
 
       /// convenience function for left button
-      inline bool isLeftOnly() const { return (isLeft() && !isMiddle() & !isRight()); }
+      inline bool isLeftOnly() const { return (isLeft() && !isMiddle() && !isRight()); }
 
       /// convenience function for middle button
       inline bool isMiddleOnly() const { return (!isLeft() && isMiddle() && !isRight()); }

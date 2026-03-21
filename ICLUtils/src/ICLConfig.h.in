@@ -34,8 +34,7 @@
 
 #pragma once
 
-#cmakedefine ICL_32BIT @ICL_32BIT@
-#cmakedefine ICL_64BIT @ICL_64BIT@
+#define ICL_64BIT 1
 
 #cmakedefine ICL_MSC_VER @ICL_MSC_VER@
 

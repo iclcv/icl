@@ -111,16 +111,12 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/ICLUtils/src/ICLVersion.h.in
   ${CMAKE_BINARY_DIR}/src/ICLUtils/ICLVersion.h)
 
-# ---- Architecture detection ----
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  ADD_ICL_DEFINITIONS(-DICL_64BIT)
-  set(ICL_64BIT TRUE)
-  set(ARCH "x64")
-else()
-  ADD_ICL_DEFINITIONS(-DICL_32BIT)
-  set(ICL_64BIT FALSE)
-  set(ARCH "x86")
+# ---- Architecture (64-bit only) ----
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(FATAL_ERROR "ICL requires a 64-bit platform. 32-bit is no longer supported.")
 endif()
+set(ICL_64BIT TRUE)
+set(ARCH "x64")
 
 # ---- Platform definitions ----
 if(APPLE)
@@ -212,9 +208,6 @@ include(ICLFindPackage)
 if(WIN32)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
   set(ARCH_DEPENDENT_LIB_PATHS "lib/x64;lib/msvc_x64")
-  if(NOT ICL_64BIT)
-    set(ARCH_DEPENDENT_LIB_PATHS "lib/x86;lib/msvc;lib/Win32")
-  endif()
 elseif(APPLE)
   # Don't override CMAKE_FIND_LIBRARY_SUFFIXES — macOS uses .dylib and .tbd stubs
   # Ensure Homebrew paths are searched

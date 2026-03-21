@@ -709,14 +709,14 @@ void Segmentation3D::calculateCutfreeMatrix() {
 						cutfree(a,b)=false;
 					}
 
-          delete n0;
-          delete dist;
-          delete cAbove;
-          delete cBelow;
-          delete cOn;
-          delete cAboveRead;
-          delete cBelowRead;
-          delete cOnRead;
+          delete[] n0;
+          delete[] dist;
+          delete[] cAbove;
+          delete[] cBelow;
+          delete[] cOn;
+          delete[] cAboveRead;
+          delete[] cBelowRead;
+          delete[] cOnRead;
 #endif
 				} else {
 					for (int p = 0; p < RANSACpasses; p++) {
@@ -923,8 +923,8 @@ for(	unsigned int x=0; x<blobs.size(); x++) {
 		}
 	}
 
-  delete alrSet;
-  delete comp;
+  delete[] alrSet;
+  delete[] comp;
 }
 
 void Segmentation3D::calculateRemainingPoints() {
@@ -1217,7 +1217,7 @@ void Segmentation3D::calculateRemainingPoints() {
 				 }
 				 */
 			}
-      delete zuws;
+      delete[] zuws;
 		}
 	}
 }
@@ -1378,15 +1378,15 @@ void Segmentation3D::blobSegmentation() {
 	regionGrowBlobs();
   assignment = assignmentBlobs;
 
-  delete n0;
-  delete dist;
-  delete cOnRead;
+  delete[] n0;
+  delete[] dist;
+  delete[] cOnRead;
 #ifdef ICL_HAVE_OPENCL
-  delete cAbove;
-  delete cBelow;
-  delete cOn;
-  delete cAboveRead;
-  delete cBelowRead;
+  delete[] cAbove;
+  delete[] cBelow;
+  delete[] cOn;
+  delete[] cAboveRead;
+  delete[] cBelowRead;
 #endif
 }
 

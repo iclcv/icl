@@ -56,7 +56,7 @@ namespace icl{
         that is not alligned with the scene's origin, you can use this class. */
     class ComplexCoordinateFrameSceneObject : public SceneObject{
       /// internally used mutex
-      utils::Mutex mutex;
+      mutable utils::Mutex mutex;
 
       /// length of each axis
       float axisLength;
@@ -106,10 +106,10 @@ namespace icl{
       inline float getAxisThickness() const { return axisThickness; }
 
       /// locks the internal mutex
-      virtual void lock() { mutex.lock(); }
+      virtual void lock() const override { mutex.lock(); }
 
       /// unlocks the internal mutex
-      virtual void unlock() { mutex.unlock(); }
+      virtual void unlock() const override { mutex.unlock(); }
     };
   } // namespace geom
 }

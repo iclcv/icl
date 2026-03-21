@@ -434,7 +434,7 @@ namespace icl{
       if(isBinary()){
         write(&c,sizeof(char));
       }else{
-        sprintf(impl->writebuf,"%c",c);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),"%c",c);
         write(impl->writebuf);
       }
       return *this;
@@ -448,7 +448,7 @@ namespace icl{
       if(isBinary()){
         write(&uc,sizeof(unsigned char));
       }else{
-        sprintf(impl->writebuf,"%u",uc);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),"%u",uc);
         write(impl->writebuf);
       }
       return *this;
@@ -462,7 +462,7 @@ namespace icl{
       if(isBinary()){
         write(&i,sizeof(int));
       }else{
-        sprintf(impl->writebuf,"%d",i);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),"%d",i);
         write(impl->writebuf);
       }
       return *this;
@@ -476,7 +476,7 @@ namespace icl{
       if(isBinary()){
         write(&ui,sizeof(unsigned int));
       }else{
-        sprintf(impl->writebuf,"%u",ui);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),"%u",ui);
         write(impl->writebuf);
       }
       return *this;
@@ -490,7 +490,7 @@ namespace icl{
       if(isBinary()){
         write(&f,sizeof(float));
       }else{
-        sprintf(impl->writebuf,impl->precision.c_str(),f);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),impl->precision.c_str(),f);
         write(impl->writebuf);
       }
       return *this;
@@ -504,7 +504,7 @@ namespace icl{
       if(isBinary()){
         write(&d,sizeof(double));
       }else{
-        sprintf(impl->writebuf,impl->precision.c_str(),d);
+        snprintf(impl->writebuf,sizeof(impl->writebuf),impl->precision.c_str(),d);
         write(impl->writebuf);
       }
       return *this;

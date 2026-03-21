@@ -118,7 +118,7 @@ namespace icl{
         x -= dx;				// Newton step
       }
 
-      delete tmp;
+      delete[] tmp;
 
       return (xcomplex)(x);
     }
@@ -395,7 +395,7 @@ namespace icl{
        // Attempt an iteration with final H polynomial from second stage
        conv = vrshft(10, deg, P, p, H, h, zero, s);
 
-       delete Tmp;
+       delete[] Tmp;
 
        return conv;
     }
@@ -472,10 +472,10 @@ namespace icl{
         // if 9 shifts fail, the outer loop is repeated with another sequence of shifts
       }
 
-      delete P;
-      delete H;
-      delete h;
-      delete p;
+      delete[] P;
+      delete[] H;
+      delete[] h;
+      delete[] p;
 
       // The zerofinder has failed on two major passes
       // return empty handed with the number of roots found (less than the original degree)

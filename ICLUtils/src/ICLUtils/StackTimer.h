@@ -123,11 +123,11 @@ namespace icl{
         std::string getTimeStr(long int l){
           static char acBuf[100];
           if(l>1000000){
-            sprintf(acBuf,"%3ld.%1ld  s",l/1000000,l/100000-10*(l/1000000));
+            snprintf(acBuf,sizeof(acBuf),"%3ld.%1ld  s",l/1000000,l/100000-10*(l/1000000));
           }else if(l>1000){
-            sprintf(acBuf,"%3ld.%1ld ms",l/1000,l/100-10*(l/1000));
+            snprintf(acBuf,sizeof(acBuf),"%3ld.%1ld ms",l/1000,l/100-10*(l/1000));
           }else{
-            sprintf(acBuf,"  %3ld us",l);
+            snprintf(acBuf,sizeof(acBuf),"  %3ld us",l);
           }
           return std::string(acBuf);
         }

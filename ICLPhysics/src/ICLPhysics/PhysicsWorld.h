@@ -44,7 +44,7 @@ class btSoftBodyWorldInfo;
 
 namespace icl{
   namespace geom{
-    class ViewRay;
+    struct ViewRay;
   }
   namespace physics{
 

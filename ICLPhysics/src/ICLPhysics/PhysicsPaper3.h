@@ -91,6 +91,7 @@ namespace icl{
 
       using LinkCoords = std::pair<utils::Point32f,utils::Point32f>;
 
+      using PhysicsObject::updateSceneObject;
       void updateSceneObject(btSoftBody *soft);
 
       PhysicsPaper3(PhysicsWorld *world,
@@ -170,9 +171,9 @@ namespace icl{
 
       void setFacesVisible(bool visible);
 
-      virtual void lock();
+      virtual void lock() const override;
 
-      virtual void unlock();
+      virtual void unlock() const override;
 
       const std::vector<utils::Point32f> getTexCoords() const;
 

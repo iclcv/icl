@@ -48,18 +48,18 @@ namespace icl{
 
     std::string toStr(int i, const char* format, char *buf){
       if(buf){
-        sprintf(buf,format,i);
+        snprintf(buf,32,format,i);
         return buf;
       }else{
         char buf2[32];
-        sprintf(buf2,format,i);
+        snprintf(buf2,sizeof(buf2),format,i);
         return buf2;
       }
     }
 
     std::string toStr(double d, const char* format, char *buf){
       if(buf){
-        sprintf(buf,format,d);
+        snprintf(buf,64,format,d);
         return buf;
       }else{
         char buf2[64];
@@ -124,18 +124,18 @@ namespace icl{
 
     std::string strFmt(int i, const char* format, char *buf=0){
       if(buf){
-        sprintf(buf,format,i);
+        snprintf(buf,32,format,i);
         return buf;
       }else{
         char buf2[32];
-        sprintf(buf2,format,i);
+        snprintf(buf2,sizeof(buf2),format,i);
         return buf2;
       }
     }
 
     std::string strFmt(double d, const char* format, char *buf=0){
       if(buf){
-        sprintf(buf,format,d);
+        snprintf(buf,64,format,d);
         return buf;
       }else{
         char buf2[64];
@@ -266,15 +266,15 @@ namespace icl{
     string time2str(Time::value_type x){
       char acBuf[30];
 #if __WORDSIZE == 64
-      sprintf(acBuf, "%ld",x);
+      snprintf(acBuf, sizeof(acBuf), "%ld",x);
 #else
-      sprintf(acBuf, "%lld",x);
+      snprintf(acBuf, sizeof(acBuf), "%lld",x);
 #endif
       return acBuf;
     }
     string i2str(int i){
       char acBuf[12];
-      sprintf(acBuf, "%d",i);
+      snprintf(acBuf, sizeof(acBuf), "%d",i);
       return acBuf;
     }
 

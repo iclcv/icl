@@ -150,8 +150,8 @@ namespace icl{
       float *con = new float[data_length + 2 * radius + mask_length - 1];
       ippsConv_32f(val, data_length + 2 * radius, mask, mask_length, con);
       memcpy(convoluted,con+radius * 2,data_length * sizeof(float));
-      delete val;
-      delete con;
+      delete[] val;
+      delete[] con;
 #else
       int radius = mask_length / 2;
       for(int i = 0; i < data_length; i++) {
@@ -261,8 +261,8 @@ namespace icl{
                              array_length + num_boundaries * 4,
                              curvature_cutoff, curvature);
       }
-      delete padded_x;
-      delete padded_y;
+      delete[] padded_x;
+      delete[] padded_y;
     }
 
     //returns the offset of the first maxima
@@ -489,14 +489,14 @@ namespace icl{
           corners.push_back(Point32f(x[maximum], y[maximum]));
         }
 
-        delete x;
-        delete y;
-        delete smoothed_x;
-        delete smoothed_y;
-        delete curvature;
-        delete gauss;
-        delete extrema0;
-        delete extrema1;
+        delete[] x;
+        delete[] y;
+        delete[] smoothed_x;
+        delete[] smoothed_y;
+        delete[] curvature;
+        delete[] gauss;
+        delete[] extrema0;
+        delete[] extrema1;
       }
       return corners;
     }
@@ -595,21 +595,22 @@ namespace icl{
         }
       }
 
-      delete x;
-      delete y;
-      delete smoothed_x;
-      delete smoothed_y;
-      delete curvature;
-      delete gauss;
-      delete extrema0;
-      delete extrema0_sizes;
-      delete extrema1;
-      delete extrema1_sizes;
+      delete[] x;
+      delete[] y;
+      delete[] smoothed_x;
+      delete[] smoothed_y;
+      delete[] curvature;
+      delete[] gauss;
+      delete[] extrema0;
+      delete[] extrema0_sizes;
+      delete[] extrema1;
+      delete[] extrema1_sizes;
 
-      delete lengths;
-      delete indices;
-      delete indices_padded;
-      delete gauss_indices;
+      delete[] lengths;
+      delete[] indices;
+      delete[] indices_padded;
+      delete[] gauss_lengths;
+      delete[] gauss_indices;
 
       return corners_list;
     }

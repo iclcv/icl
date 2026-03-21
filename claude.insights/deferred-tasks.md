@@ -2,6 +2,13 @@
 
 Items identified during the initial overhaul that were postponed for dedicated follow-up work.
 
+## Code Modernization
+
+### Replace SmartPtr/SmartArray with std::shared_ptr
+`SmartPtrBase` is now just a thin wrapper around `std::shared_ptr` (legacy ref-counting removed). The next step is to replace all ~300+ use sites of `SmartPtr<T>` / `SmartArray<T>` with `std::shared_ptr<T>` / `std::shared_ptr<T[]>` directly, then remove `SmartPtrBase.h`, `SmartPtr.h`, and `SmartArray.h`.
+- **Approach:** `using SmartPtr = std::shared_ptr` as transitional typedef, then grep and replace all usage
+- `SmartArray<T>` → `std::shared_ptr<T[]>` (C++17 supports shared_ptr for arrays)
+
 ## Dependency Rewrites
 
 ### Eigen 5.0.1

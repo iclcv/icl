@@ -1445,7 +1445,6 @@ namespace icl{
 	T2 f= -FFT_2_PI/n;
 	T2 g = 0.0;
 	T2 h = 0.0;
-	std::complex<T2> temp(0,0);
 	for(unsigned int i=0;i<n;++i){
           h = f*i;
           for(unsigned int j=0;j<n;++j){

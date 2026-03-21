@@ -64,7 +64,7 @@ namespace icl{
       /// returns internal physical object as rigidBody (const)
       /** Rigid bodys are movable object that are rigid */
       virtual const btRigidBody *getRigidBody() const {
-        return this->getRigidBody();
+        return const_cast<RigidObject*>(this)->getRigidBody();
       }
 
       /// sets the linear velocity of that object

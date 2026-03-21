@@ -183,6 +183,7 @@
 
 #ifdef ICL_HAVE_OPENGL
   #ifdef ICL_SYSTEM_APPLE
+    #define GL_SILENCE_DEPRECATION
     #include <GL/glew.h>
     #include <OpenGL/gl.h>
     #include <OpenGL/glu.h>

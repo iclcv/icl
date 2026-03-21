@@ -399,11 +399,11 @@ namespace icl{
     }
 
 
-    void PhysicsPaper3::lock(){
+    void PhysicsPaper3::lock() const{
       m_data->mutex.lock();
     }
 
-    void PhysicsPaper3::unlock(){
+    void PhysicsPaper3::unlock() const{
       m_data->mutex.unlock();
     }
 
