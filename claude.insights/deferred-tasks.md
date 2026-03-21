@@ -9,6 +9,10 @@ Items identified during the initial overhaul that were postponed for dedicated f
 - **Approach:** `using SmartPtr = std::shared_ptr` as transitional typedef, then grep and replace all usage
 - `SmartArray<T>` → `std::shared_ptr<T[]>` (C++17 supports shared_ptr for arrays)
 
+### Remove C-style casts
+Replace all C-style casts `(type)expr` with proper C++ casts (`static_cast<>`, `reinterpret_cast<>`, `const_cast<>`). Found in FourCC.h, SSETypes.h, Time.h, and scattered through .cpp files.
+- **Approach:** `grep -rn '(icl8u)\|(icl32f)\|(int)\|(float)\|(double)\|(char\*)' across src/`
+
 ## Dependency Rewrites
 
 ### Eigen 5.0.1
