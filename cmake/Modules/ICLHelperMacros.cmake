@@ -174,18 +174,12 @@ FUNCTION(BUILD_APP)
   ADD_EXECUTABLE(${BINARY} ${APP_SOURCES})
   target_include_directories(${BINARY} PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
   TARGET_LINK_LIBRARIES(${BINARY} ${APP_LIBRARIES})
-  IF(APPLE)
-    set_target_properties(${BINARY} PROPERTIES
-      MACOSX_BUNDLE TRUE
-      MACOSX_BUNDLE_BUNDLE_NAME "${BINARY}"
-      MACOSX_BUNDLE_GUI_IDENTIFIER "org.iclcv.${BINARY}"
-      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/Info.plist.in")
-    # Create a symlink next to the .app for easy CLI access
-    add_custom_command(TARGET ${BINARY} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E create_symlink
-        "${BINARY}.app/Contents/MacOS/${BINARY}"
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BINARY}"
-      COMMENT "Creating symlink ${BINARY} -> ${BINARY}.app/Contents/MacOS/${BINARY}")
+  IF(APPLE AND TARGET Qt6::QDarwinCameraPermissionPlugin)
+    # Link Qt6 permission plugins (static, required for camera/microphone on macOS)
+    target_link_libraries(${BINARY} Qt6::QDarwinCameraPermissionPlugin Qt6::QDarwinCameraPermissionPlugin_init)
+    if(TARGET Qt6::QDarwinMicrophonePermissionPlugin)
+      target_link_libraries(${BINARY} Qt6::QDarwinMicrophonePermissionPlugin Qt6::QDarwinMicrophonePermissionPlugin_init)
+    endif()
   ENDIF()
   INSTALL(TARGETS ${BINARY}
           COMPONENT applications
