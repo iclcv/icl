@@ -10,31 +10,13 @@
 ** Module : ICLQt                                                  **
 ** Authors: Matthias Esau                                          **
 **                                                                 **
-**                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
 ********************************************************************/
 
-#include <QtCore>
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
 #pragma once
+
 #include <QtMultimedia/QCamera>
-#include <QFileInfo>
+#include <QtMultimedia/QMediaCaptureSession>
 #include <ICLQt/Common.h>
 #include <ICLQt/ICLVideoSurface.h>
 
@@ -43,7 +25,7 @@ namespace icl{
     class ICLQt_API QtCameraGrabber: public icl::io::Grabber{
       public:
 
-        /// Create Camera grabber with given Camera-file name
+        /// Create Camera grabber with given device id or name
         QtCameraGrabber(const std::string &device="0");
 
         /// Destructor
@@ -54,9 +36,8 @@ namespace icl{
 
       protected:
         QCamera* cam;
+        QMediaCaptureSession* captureSession;
         ICLVideoSurface* surface;
     };
   }
 }
-
-#endif

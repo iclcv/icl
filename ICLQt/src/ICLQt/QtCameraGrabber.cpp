@@ -10,61 +10,47 @@
 ** Module : ICLQt                                                  **
 ** Authors: Matthias Esau                                          **
 **                                                                 **
-**                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
 ********************************************************************/
 
 #include <ICLQt/QtCameraGrabber.h>
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QtGlobal>
-#include <QtMultimedia/QCameraInfo>
+#include <QtMultimedia/QMediaDevices>
+#include <QtMultimedia/QCameraDevice>
 #include <ICLUtils/StringUtils.h>
-#include <QtMultimedia/QCameraExposure>
-#include <QtMultimedia/QCameraImageProcessing>
 
 using namespace icl::utils;
 using namespace icl::io;
 
 namespace icl{
   namespace qt{
-    QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn) :cam(0),surface(0){
+    QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn)
+      : cam(0), captureSession(0), surface(0)
+    {
       surface = new ICLVideoSurface;
+
       std::vector<std::string> deviceTokens = tok(deviceIn,"|||",false);
       if(!deviceTokens.size()){
         throw ICLException("Could not create device from empty QtCamera device id");
       }
       std::string device = deviceTokens[0];
-      QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+
+      QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
       if(!cameras.size()){
-        throw ICLException("QtCamera device id " +str(device) +
+        throw ICLException("QtCamera device id " + str(device) +
                            " could not be instantiated (no supported cameras were found)");
       }
+
       bool isInt = false;
       int deviceIndex = QString::fromLatin1(device.c_str()).toInt(&isInt);
       if(isInt){
-        if(deviceIndex>=cameras.length()){
-          throw ICLException("QtCamera device index " +str(deviceIndex) +
-                             " out of range (possible range: [" + str(0) + "," + str(cameras.size()-1) +"])");
+        if(deviceIndex >= cameras.length()){
+          throw ICLException("QtCamera device index " + str(deviceIndex) +
+                             " out of range (possible range: [0," + str(cameras.size()-1) + "])");
         }
       }else{
         deviceIndex = -1;
         std::vector<std::string> allCams;
-        for(int i=0;i<cameras.size();++i){
+        for(int i = 0; i < cameras.size(); ++i){
           allCams.push_back(cameras[i].description().toLatin1().data());
           if(allCams.back() == device){
             deviceIndex = i;
@@ -77,51 +63,25 @@ namespace icl{
       }
 
       cam = new QCamera(cameras[deviceIndex]);
-      cam->setViewfinder(surface);
-      cam->load();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-      //check if the chosen device supports a format
-      // which can be transformed
-      // by the ICLSurface into an ICL format.
-      bool compatible = false;
-      QList<QVideoFrame::PixelFormat> camFormats  = cam->supportedViewfinderPixelFormats();
-      QList<QVideoFrame::PixelFormat> surfaceFormats = surface->supportedPixelFormats();
-      for (int i=0;i < camFormats.size(); ++i) {
-       if (surfaceFormats.contains(camFormats[i])) {
-         compatible = true;
-         break;
-       }
-      }
-      if (!compatible) {
-       cam->unload();
-       throw ICLException("QtCamera with device id " + str(device)
-                          + " is not supported (yed). Please try OpenCV instead.");
-      }
-#endif
+      // Qt6: wire camera → capture session → video sink
+      captureSession = new QMediaCaptureSession;
+      captureSession->setCamera(cam);
+      captureSession->setVideoSink(surface->videoSink());
+
       cam->start();
 
       addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
       addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
-
-      // QList<QSize> sizes = cam->supportedViewfinderResolutions();// needs qt 5.5
-      // for(int i=0;i<sizes.size();++i){
-      //   DEBUG_LOG("Width: " << sizes[i].width());
-      //   DEBUG_LOG("Height: " << sizes[i].height());
-      // }
-      // todo add properties format, and size
     }
 
     QtCameraGrabber::~QtCameraGrabber() {
-
-      /* deletion leads to issues
-          if(cam){
-          cam->stop();
-          delete cam;
-          cam = 0;
-          }
-      */
-      //ICL_DELETE(surface);
+      if(cam){
+        cam->stop();
+      }
+      delete captureSession;
+      delete cam;
+      delete surface;
     }
 
     const core::ImgBase *QtCameraGrabber::acquireImage() {
@@ -136,19 +96,16 @@ namespace icl{
       static std::vector<GrabberDeviceDescription> deviceList;
       if(rescan){
         deviceList.clear();
-        QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-        for(int i=0;i<cameras.size();++i){
+        QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
+        for(int i = 0; i < cameras.size(); ++i){
           deviceList.push_back(GrabberDeviceDescription("qtcam",
-                                                        str(i)+"|||"+cameras[i].deviceName().toLatin1().data(),
-                                                        str("Qt camera source ") +
-                                                        cameras[i].description().toLatin1().data()));
+            str(i) + "|||" + cameras[i].id().constData(),
+            str("Qt camera source ") + cameras[i].description().toLatin1().data()));
         }
       }
       return deviceList;
     }
 
-    REGISTER_GRABBER(qtcam,utils::function(createQtCameraGrabber), utils::function(getQtCameraDeviceList),"qtcam:video filename:Qt based Camera source");
+    REGISTER_GRABBER(qtcam,utils::function(createQtCameraGrabber), utils::function(getQtCameraDeviceList),"qtcam:device index or name:Qt based Camera source");
   }
 }
-
-#endif

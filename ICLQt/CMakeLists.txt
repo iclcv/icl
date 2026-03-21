@@ -5,7 +5,8 @@ file(GLOB HEADERS src/ICLQt/*.h)
 list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/RSBRemoteGUI.cpp)
 list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/RSBRemoteGUI.h)
 
-set(ICL_MOC_HEADERS src/ICLQt/Widget.h
+set(ICL_MOC_HEADERS src/ICLQt/ICLVideoSurface.h
+                    src/ICLQt/Widget.h
                     src/ICLQt/MouseHandler.h
                     src/ICLQt/DoubleSlider.h
                     src/ICLQt/ImgParamWidget.h
