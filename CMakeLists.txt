@@ -23,7 +23,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(ICL VERSION 10.0.2 LANGUAGES C CXX)
+project(ICL VERSION 26.0.0 LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 

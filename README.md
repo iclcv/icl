@@ -4,7 +4,7 @@
   Image Component Library
 </h1>
 
-[![Version](https://img.shields.io/badge/version-10.0.2-brightgreen.svg)](https://github.com/iclcv/icl)
+[![Version](https://img.shields.io/badge/version-26.0.0-brightgreen.svg)](https://github.com/iclcv/icl)
 [![License](https://img.shields.io/github/license/iclcv/icl.svg)](LICENSE.LGPL)
 
 ## Table of Contents

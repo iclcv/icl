@@ -1,5 +1,19 @@
 # Changelog
 
+## 26.0.0
+
+* Major overhaul: modernized build system and platform support
+* CMake minimum version bumped to 3.16, C++17 standard
+* Migrated from Qt5 to Qt6 (QOpenGLWidget, QVideoSink, QMediaCaptureSession)
+* macOS Apple Silicon (ARM) support
+* Removed dead dependencies: RSB/RST/RSC, OpenNI, MesaSR, Xine, XIAPI, LIBIRIMAGER
+* IPP/MKL restricted to Linux x86 (not available on ARM)
+* SSE SIMD restricted to x86 (NEON support planned)
+* Simplified all module CMakeLists.txt with icl_add_module() and file(GLOB)
+* Fixed Retina/HiDPI viewport scaling for 2D and 3D widgets
+* Fixed OpenCV camera BGR→RGB color conversion
+* New version scheme: year-based (26.0.0 = 2026)
+
 ## 10.0.2
 
 * added file globbing for Windows
