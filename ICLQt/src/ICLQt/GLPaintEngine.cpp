@@ -320,9 +320,15 @@ namespace icl{
 
 
     void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode, float angle){
+      const qreal dpr = m_widget->devicePixelRatio();
       QFontMetrics m(m_font);
       QRectF br = m.boundingRect(text.c_str());
-      QImage img(br.width()+4,br.height(),QImage::Format_ARGB32);
+      int logW = static_cast<int>(br.width() + 4);
+      int logH = static_cast<int>(br.height());
+      // Render text at native resolution for crisp HiDPI, but keep
+      // logical dimensions for GL placement via computeRect.
+      QImage img(static_cast<int>(logW * dpr), static_cast<int>(logH * dpr), QImage::Format_ARGB32);
+      img.setDevicePixelRatio(dpr);
       img.fill(0);
       QPainter painter(&img);
       painter.setFont(m_font);
@@ -331,17 +337,24 @@ namespace icl{
                              static_cast<int>(m_linecolor[0]*255),
                              min (254, static_cast<int>(m_linecolor[3]*255)) ));
 
-      painter.drawText(QRect(0,0,img.width(),img.height()),Qt::AlignHCenter,text.c_str());
+      painter.drawText(QRect(0, 0, logW, logH), Qt::AlignHCenter, text.c_str());
       painter.end();
 
       if(angle){
         QTransform R;
         R.rotate(angle);
-        QImage img2 = img.transformed(R);
-        image(r,img2,mode,interpolateLIN);
-      }else{
-        image(r,img,mode,interpolateLIN);
+        img = img.transformed(R);
+        logW = static_cast<int>(img.width() / dpr);
+        logH = static_cast<int>(img.height() / dpr);
       }
+      // Convert to Img8u at full physical resolution for texture quality
+      Img8u buf(Size(img.width(), img.height()), 4);
+      interleavedToPlanar(img.bits(), &buf);
+      // Draw using logical size so computeRect positions correctly
+      glColor4f(1,1,1,1);
+      GLImg gli(&buf, interpolateLIN);
+      gli.setBCI(m_bci[0], m_bci[1], m_bci[2]);
+      gli.draw2D(computeRect(r, Size(logW, logH), mode), Size(m_widget->width(), m_widget->height()));
       /*
           setupPixelTransfer(depth8u,0,0,0);
           glPixelStorei(GL_UNPACK_ALIGNMENT,4);
