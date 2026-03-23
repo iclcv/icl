@@ -182,7 +182,11 @@ namespace icl{
         result.key = entry.key;
         result.iterations = m_iterations;
 
-        // Warmup: run the benchmark repeatedly for warmupSeconds
+        // Cold run: trigger static initialization (allocations, image loading, etc.)
+        // This call is never timed.
+        entry.func(params);
+
+        // Warmup: run repeatedly to settle CPU frequency / thermal state
         if(m_warmupSeconds > 0){
           Time start = Time::now();
           while((Time::now() - start).toSecondsDouble() < m_warmupSeconds){
