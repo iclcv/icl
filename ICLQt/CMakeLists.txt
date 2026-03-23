@@ -41,3 +41,10 @@ icl_add_module(ICLQt
     <QObject>
     <QPainter>
     <QOpenGLWidget>)
+
+# GLEW is included before Qt's OpenGL headers (via CompatMacros.h).
+# Qt detects this and emits a #warning — suppress it since ICL uses
+# GLEW directly and does not use QOpenGLFunctions.
+if(TARGET ICLQt)
+  target_compile_options(ICLQt PRIVATE -Wno-\#warnings)
+endif()

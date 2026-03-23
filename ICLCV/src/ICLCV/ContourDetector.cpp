@@ -496,7 +496,7 @@ namespace icl{
 
           if (lc >= 0) {
             while (lc > 126) {
-              std::vector<icl::utils::Point>::const_iterator it = contours[lc].begin();
+              auto it = contours[lc].begin();
               for (; it != contours[lc].end(); ++it) {
                 if (it->y == y) if (it->x == lnbdx) {
                   break;

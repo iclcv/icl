@@ -88,6 +88,11 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::io;
 using namespace icl::cv;
+using std::string;
+using std::vector;
+using std::map;
+using std::max;
+using std::min;
 
 namespace icl{
   namespace qt{

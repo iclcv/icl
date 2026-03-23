@@ -235,11 +235,38 @@ namespace icl{
 #endif // ICL_HAVE_SSE2
 
     // ================================================================
-    // Explicit instantiation for all type pairs not covered by SSE2
-    // (the SSE2 specializations above handle the common conversions;
-    //  the generic template handles all remaining pairs)
+    // Explicit instantiation for all type pairs.
+    // Pairs with SSE2 specializations above are skipped when SSE2 is
+    // enabled (explicit instantiation after specialization is a no-op
+    // that triggers a warning).
     // ================================================================
 
+#ifdef ICL_HAVE_SSE2
+    // icl8u → others (icl8u→icl32f is SSE2-specialized)
+    template void convert(const icl8u*,  const icl8u*,  icl8u*);
+    template void convert(const icl8u*,  const icl8u*,  icl16s*);
+    template void convert(const icl8u*,  const icl8u*,  icl32s*);
+    template void convert(const icl8u*,  const icl8u*,  icl64f*);
+    // icl8s → all
+    template void convert(const icl8s*,  const icl8s*,  icl8u*);
+    template void convert(const icl8s*,  const icl8s*,  icl8s*);
+    template void convert(const icl8s*,  const icl8s*,  icl16s*);
+    template void convert(const icl8s*,  const icl8s*,  icl32s*);
+    template void convert(const icl8s*,  const icl8s*,  icl32f*);
+    template void convert(const icl8s*,  const icl8s*,  icl64f*);
+    // icl16s → others (icl16s→icl32s/icl32f/icl64f are SSE2-specialized)
+    template void convert(const icl16s*, const icl16s*, icl8u*);
+    template void convert(const icl16s*, const icl16s*, icl16s*);
+    // icl32s → others (icl32s→icl16s/icl32f/icl64f are SSE2-specialized)
+    template void convert(const icl32s*, const icl32s*, icl8u*);
+    template void convert(const icl32s*, const icl32s*, icl32s*);
+    // icl32f → others (icl32f→icl8u/icl16s/icl32s/icl64f are SSE2-specialized)
+    template void convert(const icl32f*, const icl32f*, icl32f*);
+    // icl64f → others (icl64f→icl32f/icl32s are SSE2-specialized)
+    template void convert(const icl64f*, const icl64f*, icl8u*);
+    template void convert(const icl64f*, const icl64f*, icl16s*);
+    template void convert(const icl64f*, const icl64f*, icl64f*);
+#else
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
     template void convert(const icl8u*,  const icl8u*,  icl##D*);      \
     template void convert(const icl8s*,  const icl8s*,  icl##D*);      \
@@ -249,6 +276,8 @@ namespace icl{
     template void convert(const icl64f*, const icl64f*, icl##D*);
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
+#endif
+    // icl*→icl8s (not in the macro's depth set, no SSE2 specializations)
     template void convert(const icl8u*,  const icl8u*,  icl8s*);
     template void convert(const icl16s*, const icl16s*, icl8s*);
     template void convert(const icl32s*, const icl32s*, icl8s*);

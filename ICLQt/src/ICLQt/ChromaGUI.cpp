@@ -372,7 +372,7 @@ namespace icl{
         filename = filenameIn.c_str();
       }
 
-      vector<int> data;
+      std::vector<int> data;
       m_poChromaWidget->load(filename.toLatin1().data(),data);
       ICLASSERT_RETURN(data.size() == 7);
 
@@ -399,7 +399,7 @@ namespace icl{
         filename = filenameIn.c_str();
       }
 
-      vector<int> data;
+      std::vector<int> data;
       data.push_back(m_aoSliderHandles[0][0].getValue());
       data.push_back(m_aoSliderHandles[0][1].getValue());
       data.push_back(m_aoSliderHandles[0][2].getValue());

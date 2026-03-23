@@ -39,6 +39,7 @@
 #include <list>
 using namespace icl::utils;
 using namespace icl::core;
+using std::string;
 
 namespace icl{
   namespace qt{

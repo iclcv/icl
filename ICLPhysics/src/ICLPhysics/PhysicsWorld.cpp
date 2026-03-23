@@ -57,6 +57,10 @@
 #include <ICLPhysics/Constraint.h>
 #include <mutex>
 
+using std::min;
+using std::max;
+using std::vector;
+
 namespace icl{
   namespace physics{
 

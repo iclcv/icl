@@ -67,6 +67,8 @@ using namespace icl::core;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::qt;
+using std::string;
+using std::vector;
 
 namespace icl{
   namespace geom{

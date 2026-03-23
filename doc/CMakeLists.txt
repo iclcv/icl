@@ -55,8 +55,8 @@ IF(DOXYGEN_FOUND)
   INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}//doc/icl-api/html"
           DESTINATION "share/icl-${SO_VERSION}/doc/icl-api"
           COMPONENT documentation)
-ELSEIF()
-  ADD_CUSTOM_TARGET(api echo "api cannot be build due to missing dependencies")
+ELSE()
+  ADD_CUSTOM_TARGET(api echo "api cannot be built due to missing dependencies")
 ENDIF()
 
 IF(SPHINX_FOUND)
@@ -67,7 +67,7 @@ IF(SPHINX_FOUND)
           DESTINATION "share/icl-${SO_VERSION}/doc/icl-manual"
           COMPONENT documentation)
 ELSE()
-  ADD_CUSTOM_TARGET(manual echo "tutorial cannot be build due to missing dependencies")
+  ADD_CUSTOM_TARGET(manual echo "tutorial cannot be built due to missing dependencies")
 ENDIF()
 
 IF(SPHINX_FOUND AND DOXYGEN_FOUND)
@@ -84,8 +84,8 @@ IF(SPHINX_FOUND AND DOXYGEN_FOUND)
                      COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/doc/pages/.nojekyll
                      COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/doc/icl-api/html ${CMAKE_BINARY_DIR}/doc/pages/icl-api)
 ELSE()
-  MESSAGE(WARNING "docs cannot be build due to missing dependencies")
-  ADD_CUSTOM_TARGET(doc echo "docs cannot be build due to missing dependencies")
+  MESSAGE(WARNING "docs cannot be built due to missing dependencies")
+  ADD_CUSTOM_TARGET(doc echo "docs cannot be built due to missing dependencies")
 ENDIF()
 
 

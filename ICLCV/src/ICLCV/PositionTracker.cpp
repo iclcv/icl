@@ -310,7 +310,7 @@ namespace icl{
       for(int i=0;i<dim;i++){
         //printf("processing step old data index %d \n",i);
         // find best hit for nr i
-        valueType minDist = numeric_limits<valueType>::max();
+        valueType minDist = std::numeric_limits<valueType>::max();
         int minIdx = -1;
         for(int j=0;j<dim;j++){
           valueType dist = distance(xsOld[i],ysOld[i],xsNew[j],ysNew[j]);

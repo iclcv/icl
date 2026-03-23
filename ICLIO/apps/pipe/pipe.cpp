@@ -48,6 +48,8 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
 using namespace icl::filter;
+using std::string;
+using std::vector;
 
 #ifdef ICL_HAVE_QT
 VBox gui;

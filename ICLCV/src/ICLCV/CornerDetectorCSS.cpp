@@ -373,7 +373,7 @@ namespace icl{
 
           diff_angle = fmod((atan2(y3-y1,x3-x1) - atan2(y2-y1,x2-x1)), float(2.f*M_PI));
           if (diff_angle>float(M_PI)) diff_angle = float(2*M_PI)-diff_angle;
-          if (diff_angle*180/float(M_PI) < max(straight_line_thresh, 0.01f)) { // fit straight line
+          if (diff_angle*180/float(M_PI) < std::max(straight_line_thresh, 0.01f)) { // fit straight line
             tangent_direction = atan2(y[last]-y[first], x[last]-x[first]);
           } else { // fit a circle
             const float sum1 = (x1*x1+y1*y1);

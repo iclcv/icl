@@ -70,3 +70,8 @@ icl_add_module(ICLGeom
   PKGCONFIG_DEPS ${_PKGDEP}
   HAS_DEMOS HAS_APPS
   PCH_HEADERS ${_PCH_HEADERS})
+
+# Suppress Qt #warning about GLEW incompatibility (Scene.cpp includes QOpenGLContext after GLEW)
+if(TARGET ICLGeom AND QT_FOUND)
+  target_compile_options(ICLGeom PRIVATE -Wno-\#warnings)
+endif()

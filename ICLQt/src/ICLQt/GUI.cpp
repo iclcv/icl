@@ -129,6 +129,9 @@
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
+using std::string;
+using std::vector;
+using std::map;
 
 
 namespace icl{

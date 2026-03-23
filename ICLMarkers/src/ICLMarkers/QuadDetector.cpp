@@ -50,6 +50,7 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::geom;
 using namespace icl::cv;
+using std::min;
 typedef FixedColVector<float, 2> Vec2;
 namespace icl {
   namespace markers {

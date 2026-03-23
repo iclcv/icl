@@ -32,6 +32,8 @@
 #include <string>
 #include <vector>
 #include <cstring>
+using std::string;
+using std::vector;
 
 int usage(){
   printf("jpg2cpp converts jpeg images into a c++ compatible data format.\n"

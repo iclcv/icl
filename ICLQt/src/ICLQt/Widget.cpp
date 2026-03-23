@@ -97,6 +97,8 @@
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
+using std::string;
+using std::vector;
 
 namespace icl{
   namespace qt{
