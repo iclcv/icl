@@ -2129,6 +2129,170 @@ namespace icl {
 
     // }}} Global functions ..
 
+    // {{{ Moved from Img.h — member function implementations
+
+    template<class Type>
+    void Img<Type>::extractChannels(Channel<Type> *dst){
+      ICLASSERT_RETURN(dst);
+      for(int i=0;i<getChannels();++i){
+        dst[i] = (*this)[i];
+      }
+    }
+
+    template<class Type>
+    void Img<Type>::extractPointers(Type **dst){
+      for(int i=0;i<getChannels();++i){
+        dst[i] = begin(i);
+      }
+    }
+
+    template<class Type>
+    void Img<Type>::extractPointers(const Type **dst) const{
+      for(int i=0;i<getChannels();++i){
+        dst[i] = begin(i);
+      }
+    }
+
+    template<class Type>
+    Img<Type> *Img<Type>::reinterpretChannels(format newFmt, Img<Type> *poDst){
+      ImgBase *poDstBase = poDst;
+      return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
+    }
+
+    template<class Type>
+    const Img<Type> *Img<Type>::reinterpretChannels(format newFmt){
+      return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
+    }
+
+    template<class Type>
+    Img<Type>* Img<Type>::shallowCopy(const Rect &roi, Img<Type>* poDst){
+      ImgBase *poDstBase = poDst;
+      return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
+    }
+
+    template<class Type>
+    Img<Type>* Img<Type>::selectChannels(const std::vector<int>& channelIndices, Img<Type>* poDst){
+      ImgBase *poDstBase = poDst;
+      return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),&poDstBase);
+    }
+
+    template<class Type>
+    Img<Type> *Img<Type>::selectChannel(int channelIndex, Img<Type> *poDst){
+      ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+      std::vector<int> v(1); v[0]= channelIndex;
+      return selectChannels(v,poDst);
+    }
+
+    template<class Type>
+    Img<Type> Img<Type>::detached() const {
+      Img<Type> detachedCopy = *this;
+      detachedCopy.detach();
+      return detachedCopy;
+    }
+
+    template<class Type>
+    void Img<Type>::append(Img<Type> *src, int iChannel) {
+      // call private const-version
+      this->append(static_cast<const Img<Type>*>(src), iChannel);
+    }
+
+    template<class Type>
+    void Img<Type>::append(Img<Type> *src, const std::vector<int>& vChannels) {
+      // call private const-version
+      this->append(static_cast<const Img<Type>*>(src), vChannels);
+    }
+
+    // }}} Moved member functions
+
+    // {{{ Moved from Img.h — free function implementations
+
+    template<class T>
+    void deepCopyChannel(const Img<T> *src, int srcC, Img<T> *dst, int dstC){
+      FUNCTION_LOG("");
+      ICLASSERT_RETURN( src && dst );
+      ICLASSERT_RETURN( src->getSize() == dst->getSize() );
+      ICLASSERT_RETURN( src->validChannel(srcC) );
+      ICLASSERT_RETURN( dst->validChannel(dstC) );
+      icl::core::copy<T>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
+    }
+
+    template<class S,class D>
+    void convertChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC){
+      FUNCTION_LOG("");
+      ICLASSERT_RETURN( src && dst );
+      ICLASSERT_RETURN( src->getSize() == dst->getSize() );
+      ICLASSERT_RETURN( src->validChannel(srcC) );
+      ICLASSERT_RETURN( dst->validChannel(dstC) );
+      icl::core::convert<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
+    }
+
+    template <class T>
+    void deepCopyChannelROI(const Img<T> *src, int srcC, const Point &srcOffs,
+                            const Size &srcSize,
+                            Img<T> *dst,int dstC, const Point &dstOffs,
+                            const Size &dstSize) {
+      CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
+
+      const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),
+                                 src->getSize().width,
+                                 Rect(srcOffs,srcSize));
+      ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+      const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(srcC),
+                                                                              src->getWidth(),
+                                                                              Rect(srcOffs,srcSize));
+
+      for(;itSrc != itSrcEnd;itSrc.incRow(),itDst.incRow()){
+        icl::core::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
+      }
+    }
+
+    template <class S,class D>
+    void convertChannelROI(const Img<S> *src, int srcC, const Point &srcOffs,
+                           const Size &srcROISize,
+                           Img<D> *dst,int dstC, const Point &dstOffs,
+                           const Size &dstROISize)
+    {
+      FUNCTION_LOG("");
+      CHECK_VALUES(src,srcC,srcOffs,srcROISize,dst,dstC,dstOffs,dstROISize);
+
+      const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),
+                                 src->getSize().width,
+                                 Rect(srcOffs,srcROISize));
+      ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,
+                           Rect(dstOffs,dstROISize));
+      const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src->getData(srcC),
+                                                                              src->getWidth(),
+                                                                              Rect(srcOffs,srcROISize));
+      for(;itSrc != itSrcEnd ;itSrc.incRow(),itDst.incRow()){
+        icl::core::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
+      }
+    }
+
+    // Explicit instantiation of free template functions
+#define ICL_INSTANTIATE_DEPTH(D) \
+    template ICLCore_API void deepCopyChannel(const Img<icl##D>*, int, Img<icl##D>*, int);
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(D) \
+    template ICLCore_API void deepCopyChannelROI(const Img<icl##D>*, int, const Point&, const Size&, \
+                                                 Img<icl##D>*, int, const Point&, const Size&);
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(S, D) \
+    template ICLCore_API void convertChannel(const Img<icl##S>*, int, Img<icl##D>*, int);
+    ICL_INSTANTIATE_ALL_DEPTHS_2
+#undef ICL_INSTANTIATE_DEPTH
+
+#define ICL_INSTANTIATE_DEPTH(S, D) \
+    template ICLCore_API void convertChannelROI(const Img<icl##S>*, int, const Point&, const Size&, \
+                                                Img<icl##D>*, int, const Point&, const Size&);
+    ICL_INSTANTIATE_ALL_DEPTHS_2
+#undef ICL_INSTANTIATE_DEPTH
+
+    // }}} Moved free functions
+
     template<class Type>
     const Img<Type> Img<Type>::null;
 

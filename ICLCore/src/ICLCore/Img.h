@@ -439,12 +439,7 @@ namespace icl {
       }
 
       /// extracts all image channels at once into given channel pointer
-      inline void extractChannels(Channel<Type> *dst){
-        ICLASSERT_RETURN(dst);
-        for(int i=0;i<getChannels();++i){
-          dst[i] = (*this)[i];
-        }
-      }
+      void extractChannels(Channel<Type> *dst);
 
       /// this function is forbidden, it produces an error message
       /** This would allow the programme to violate the Imgs const concept */
@@ -461,11 +456,7 @@ namespace icl {
       }
 
       /// extracts all data pointers into given destination pointer
-      inline void extractPointers(Type **dst){
-        for(int i=0;i<getChannels();++i){
-          dst[i] = begin(i);
-        }
-      }
+      void extractPointers(Type **dst);
 
       /// this function is forbidden, it produces an error message
       /** This would allow the programme to violate the Imgs const concept */
@@ -476,11 +467,7 @@ namespace icl {
       }
 
       /// extracts all data pointers into given destination pointer (const)
-      inline void extractPointers(const Type **dst) const{
-        for(int i=0;i<getChannels();++i){
-          dst[i] = begin(i);
-        }
-      }
+      void extractPointers(const Type **dst) const;
 
 
 
@@ -525,10 +512,7 @@ namespace icl {
             @param poDst destination image (exploited as possible)
             @return shallow copie with given format of NULL if an error occured
         **/
-        Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = nullptr){
-           ImgBase *poDstBase = poDst;
-           return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),&poDstBase);
-        }
+        Img<Type> *reinterpretChannels(format newFmt, Img<Type> *poDst = nullptr);
 
 
         /// Create a shallow copy of this image with a new format (const version)
@@ -536,9 +520,7 @@ namespace icl {
                              of this image.
             @return shallow copie with given format of NULL if an error occured
         **/
-        const Img<Type> *reinterpretChannels(format newFmt){
-          return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
-        }
+        const Img<Type> *reinterpretChannels(format newFmt);
         /// Create a shallow copy of the image
         /** It exploits the given destination image if possible,
             i.e. if the pixel depth matches. Else this image is released
@@ -551,10 +533,7 @@ namespace icl {
                        is used.
             @return shallow copy of this image
         **/
-        Img<Type>* shallowCopy(const utils::Rect &roi,Img<Type>* poDst = nullptr){
-          ImgBase *poDstBase = poDst;
-          return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),&poDstBase);
-        }
+        Img<Type>* shallowCopy(const utils::Rect &roi,Img<Type>* poDst = nullptr);
 
         /// Create a shallow copy of a const source image
         /** In contrast to the not const function shallowCopy, the const one does not provide
@@ -582,10 +561,7 @@ namespace icl {
                           format of that image becomes formatMatrix
             @see shallowCopy
         */
-        Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst=0){
-          ImgBase *poDstBase = poDst;
-          return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),&poDstBase);
-        }
+        Img<Type>* selectChannels (const std::vector<int>& channelIndices, Img<Type>* poDst=0);
 
         /// Create a shallow copy of a single image channel of an image
         /** This function is a shortcut to use
@@ -595,11 +571,7 @@ namespace icl {
             @param poDst destination image
             @return image containing only the selected channel
         **/
-        Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0){
-          ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
-          std::vector<int> v(1); v[0]= channelIndex;
-          return selectChannels(v,poDst);
-        }
+        Img<Type> *selectChannel(int channelIndex, Img<Type> *poDst=0);
         /// Create a shallow copy of selected channels of a const image.
         /** @param channelIndices vector containing channel indices to copy
             @return const image containing only the selected channels
@@ -720,11 +692,7 @@ namespace icl {
           Img8u deeplyCopiedInstance = sourceImage.detached();
           \endcode
       */
-      inline Img<Type> detached() const {
-        Img<Type> detachedCopy = *this;
-        detachedCopy.detach();
-        return detachedCopy;
-      }
+      Img<Type> detached() const;
 
       /// Removes a specified channel.
       /** \copydoc icl::core::ImgBase::removeChannel(int) */
@@ -741,18 +709,12 @@ namespace icl {
           @param src source image
           @param iChannel channel to append (or all, if < 0)
       **/
-      void append(Img<Type> *src, int iChannel=-1) {
-        // call private const-version
-        this->append (static_cast<const Img<Type>*>(src), iChannel);
-      }
+      void append(Img<Type> *src, int iChannel=-1);
 
       /// Append a set of selected channels from source image
       /** @param src source image
           @param vChannels vector of channels indices */
-      void append(Img<Type> *src, const std::vector<int>& vChannels) {
-        // call private const-version
-        this->append (static_cast<const Img<Type>*>(src), vChannels);
-      }
+      void append(Img<Type> *src, const std::vector<int>& vChannels);
 
       /// Returns a new image with a shallow copied single channel of this image
       /** param index channel index to extract (must be valid, else resulting image
@@ -1641,14 +1603,7 @@ namespace icl {
     /* {{{   deepCopyChannel */
     /// Copies the channel from one image to another \ingroup IMAGE
     template<class T>
-    inline void deepCopyChannel(const Img<T> *src, int srcC, Img<T> *dst, int dstC){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( src && dst );
-      ICLASSERT_RETURN( src->getSize() == dst->getSize() );
-      ICLASSERT_RETURN( src->validChannel(srcC) );
-      ICLASSERT_RETURN( dst->validChannel(dstC) );
-      icl::core::copy<T>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
-    }
+    void deepCopyChannel(const Img<T> *src, int srcC, Img<T> *dst, int dstC);
 
     /* }}} */
 
@@ -1664,14 +1619,7 @@ namespace icl {
         @param dstC destination image channel
      **/
     template<class S,class D>
-    inline void convertChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( src && dst );
-      ICLASSERT_RETURN( src->getSize() == dst->getSize() );
-      ICLASSERT_RETURN( src->validChannel(srcC) );
-      ICLASSERT_RETURN( dst->validChannel(dstC) );
-      icl::core::convert<S,D>(src->getData(srcC),src->getData(srcC)+src->getDim(),dst->getData(dstC));
-    }
+    void convertChannel(const Img<S> *src, int srcC, Img<D> *dst, int dstC);
 
     /* }}} */
 
@@ -1739,17 +1687,6 @@ namespace icl {
     /* }}} */
 
     /** {{{  check function */
-/// \cond
-#define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
-    FUNCTION_LOG("");                                                   \
-    ICLASSERT_RETURN( src && dst );                                     \
-    ICLASSERT_RETURN( srcSize == dstSize );                             \
-    ICLASSERT_RETURN( src->validChannel(srcC) );                        \
-    ICLASSERT_RETURN( dst->validChannel(dstC) );                        \
-    ICLASSERT_RETURN( srcOffs.x >= 0 && srcOffs.y >= 0 && dstOffs.x >= 0 && dstOffs.y >= 0); \
-    ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
-    ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
-/// \endcond
     /** }}} */
 
 
@@ -1768,24 +1705,10 @@ namespace icl {
         @param dstSize destination images ROI size (must be equal to srcSize)
     **/
     template <class T>
-    inline void deepCopyChannelROI(const Img<T> *src, int srcC, const utils::Point &srcOffs,
-                                   const utils::Size &srcSize,
-                                   Img<T> *dst,int dstC, const utils::Point &dstOffs,
-                                   const utils::Size &dstSize) {
-      CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-      const ImgIterator<T> itSrc(const_cast<T*>(src->getData(srcC)),
-                                 src->getSize().width,
-                                 utils::Rect(srcOffs,srcSize));
-      ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,utils::Rect(dstOffs,dstSize));
-      const ImgIterator<T> itSrcEnd = ImgIterator<T>::create_end_roi_iterator(src->getData(srcC),
-                                                                              src->getWidth(),
-                                                                              utils::Rect(srcOffs,srcSize));
-
-      for(;itSrc != itSrcEnd;itSrc.incRow(),itDst.incRow()){
-        icl::core::copy<T>(&*itSrc,&*itSrc+srcSize.width,&*itDst);
-      }
-    }
+    void deepCopyChannelROI(const Img<T> *src, int srcC, const utils::Point &srcOffs,
+                            const utils::Size &srcSize,
+                            Img<T> *dst,int dstC, const utils::Point &dstOffs,
+                            const utils::Size &dstSize);
 
     /* }}} */
 
@@ -1808,26 +1731,10 @@ namespace icl {
         @param dstROISize destination images ROI-size (dst->getROISize() is <b>not</b> regarded)
      **/
     template <class S,class D>
-    inline void convertChannelROI(const Img<S> *src, int srcC, const utils::Point &srcOffs,
-                                  const utils::Size &srcROISize,
-                                  Img<D> *dst,int dstC, const utils::Point &dstOffs,
-                                  const utils::Size &dstROISize)
-    {
-      FUNCTION_LOG("");
-      CHECK_VALUES(src,srcC,srcOffs,srcROISize,dst,dstC,dstOffs,dstROISize);
-
-      const ImgIterator<S> itSrc(const_cast<S*>(src->getData(srcC)),
-                                 src->getSize().width,
-                                 utils::Rect(srcOffs,srcROISize));
-      ImgIterator<D> itDst(dst->getData(dstC),dst->getSize().width,
-                           utils::Rect(dstOffs,dstROISize));
-      const ImgIterator<S> itSrcEnd = ImgIterator<S>::create_end_roi_iterator(src->getData(srcC),
-                                                                              src->getWidth(),
-                                                                              utils::Rect(srcOffs,srcROISize));
-      for(;itSrc != itSrcEnd ;itSrc.incRow(),itDst.incRow()){
-        icl::core::convert<S,D>(&*itSrc,&*itSrc+srcROISize.width,&*itDst);
-      }
-    }
+    void convertChannelROI(const Img<S> *src, int srcC, const utils::Point &srcOffs,
+                           const utils::Size &srcROISize,
+                           Img<D> *dst,int dstC, const utils::Point &dstOffs,
+                           const utils::Size &dstROISize);
 
     /// @}
 
@@ -1926,4 +1833,3 @@ namespace icl {
   } // namespace core
 } //namespace icl
 
-#undef CHECK_VALUES
