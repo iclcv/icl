@@ -128,7 +128,7 @@ elseif(WIN32)
   ADD_ICL_DEFINITIONS(-DICL_SYSTEM_WINDOWS -DHAVE_STRUCT_TIMESPEC)
 endif()
 
-# ---- SIMD detection (x86 only) ----
+# ---- SIMD detection ----
 set(HAVE_SIMDS "")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64|i[3-6]86)")
   include(CheckCXXCompilerFlag)
@@ -149,8 +149,19 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64|AMD64|i[3-6]86)")
       message(STATUS "${EXT} not found")
     endif()
   endforeach()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(aarch64|arm64|ARM64)")
+  # ARM NEON: use sse2neon to translate SSE intrinsics to NEON
+  option(ENABLE_SSE2NEON "Use sse2neon for SIMD on ARM (SSE→NEON translation)" ON)
+  if(ENABLE_SSE2NEON)
+    message(STATUS "ARM NEON: enabling SSE2/SSE3/SSSE3 via sse2neon")
+    ADD_ICL_DEFINITIONS(-DICL_USE_SSE2 -DICL_USE_SSE3 -DICL_USE_SSSE3)
+    include_directories(${ICL_SOURCE_DIR}/3rdparty/sse2neon)
+    list(APPEND HAVE_SIMDS SSE2 SSE3 SSSE3)
+  else()
+    message(STATUS "ARM NEON: sse2neon disabled")
+  endif()
 else()
-  message(STATUS "SIMD: SSE not applicable on ${CMAKE_SYSTEM_PROCESSOR}")
+  message(STATUS "SIMD: not applicable on ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 # ---- Optional dependency options ----

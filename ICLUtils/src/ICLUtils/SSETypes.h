@@ -30,17 +30,33 @@
 
 #pragma once
 
-#if defined ICL_USE_SSE2 && (__SSE2__ || defined _M_X64  || (defined _M_IX86_FP && _M_IX86_FP >= 2))
-	#include "emmintrin.h"
-	#define ICL_HAVE_SSE2
-	#if defined ICL_USE_SSE3 && (__SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
-		#include "pmmintrin.h"
-		#define ICL_HAVE_SSE3
-		#if defined ICL_USE_SSSE3 && (__SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
-			#include "tmmintrin.h"
-			#define ICL_HAVE_SSSE3
-		#endif
-	#endif
+#if defined ICL_USE_SSE2
+  #if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    // ARM NEON: use sse2neon to translate SSE/SSE3/SSSE3 intrinsics
+    // Prevent Apple Clang's mm_malloc.h from conflicting with sse2neon's _mm_malloc/_mm_free
+    #if defined(__APPLE__)
+      #define __MM_MALLOC_H
+    #endif
+    #include "sse2neon.h"
+    #define ICL_HAVE_SSE2
+    #if defined ICL_USE_SSE3
+      #define ICL_HAVE_SSE3
+      #if defined ICL_USE_SSSE3
+        #define ICL_HAVE_SSSE3
+      #endif
+    #endif
+  #elif __SSE2__ || defined _M_X64 || (defined _M_IX86_FP && _M_IX86_FP >= 2)
+    #include "emmintrin.h"
+    #define ICL_HAVE_SSE2
+    #if defined ICL_USE_SSE3 && (__SSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
+      #include "pmmintrin.h"
+      #define ICL_HAVE_SSE3
+      #if defined ICL_USE_SSSE3 && (__SSSE3__ || (defined _MSC_VER && _MSC_VER >= 1500))
+        #include "tmmintrin.h"
+        #define ICL_HAVE_SSSE3
+      #endif
+    #endif
+  #endif
 #endif
 
 #include <ICLUtils/CompatMacros.h>
