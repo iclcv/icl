@@ -232,8 +232,6 @@ private:
 
 	int filter;
 
-	CLProgram &program;
-
 	CLBuffer d_responses;
 
 	CLBuffer d_laplacian;
@@ -397,8 +395,7 @@ const char *cl_errs[MAX_ERR_VAL] = { "CL_SUCCESS",                         // 0
 //////////////////////////////////////////////////////////////////////////////
 
 ResponseLayer::ResponseLayer(int width, int height, int step, int filter,
-		CLProgram &program) :
-		program(program) {
+		CLProgram &program) {
 	this->width = width;
 	this->height = height;
 	this->step = step;
