@@ -1,6 +1,6 @@
 # Next Steps — Post-Overhaul Work Items
 
-## Completed in Overhaul (can be removed from lists)
+## Completed
 - ~~NULL → nullptr~~
 - ~~typedef → using~~
 - ~~Uncopyable → = delete~~
@@ -12,39 +12,41 @@
 - ~~PCL re-enable~~
 - ~~PugiXML update~~
 - ~~Warning cleanup~~
+- ~~Function.h → std::function~~ (removed entirely)
+- ~~C-style casts~~ (~1,250 replaced with static_cast/reinterpret_cast/const_cast)
+- ~~Random.h modernize~~ (drand48/srand48 → thread_local std::mt19937)
+- ~~malloc/free cleanup~~ (CannyOp, DynMatrix, CLSurfLib → std::vector)
+- ~~Precompiled headers~~ (39% CPU time reduction)
 
-## Ready to Do (next session)
+## Ready to Do
 
 ### Quick wins (1-2 hrs each)
 | Task | Description |
 |------|-------------|
-| **C-style casts** | Replace `(type)expr` with `static_cast<>` etc. throughout |
 | **sse2neon** | Drop in single header from https://github.com/DLTcollab/sse2neon, re-enable SIMD on ARM. Test with MedianOp, ConvolutionOp |
 | **OpenCL C++ bindings** | Bundle `cl2.hpp` from Khronos, re-enable `-DBUILD_WITH_OPENCL=ON` on macOS |
 
 ### Medium effort (3-4 hrs each)
 | Task | Description |
 |------|-------------|
-| **Function.h → std::function** | Replace 623-line custom class. ~50 call sites using `utils::Function<>` and `utils::function()` factory. Also `FunctionImpl`, `GlobalFunctionImpl`, `MemberFunctionImpl` etc. |
 | **Mutex → std::mutex** | Replace pthread wrapper. `Mutex` → `std::mutex`, `Mutex::Locker` → `std::lock_guard<std::mutex>`. ~100 use sites. |
 | **Thread → std::thread** | Replace pthread-based Thread class. Uses `ShallowCopyable` pattern, virtual `run()`. ~20 use sites. |
-| **SmartPtr → std::shared_ptr** | Make `SmartPtr<T>` a direct alias for `std::shared_ptr<T>`. ~300 use sites. `SmartArray<T>` → `std::shared_ptr<T[]>` (C++17). |
+| **SmartPtr/SmartArray → std::shared_ptr** | 97 files use SmartPtr, 8 use SmartArray. SmartArray deeply woven into Img channel storage with ownership control (`bOwn` flag). Needs careful refactor especially for non-owning wraps in Img.cpp and LowLevelPlotWidget.cpp. |
 
 ### Larger efforts (half day+)
 | Task | Description |
 |------|-------------|
-| **FFmpeg 7+ rewrite** | `LibAVVideoWriter.cpp` needs full rewrite for modern AVCodecContext API, const-correctness changes |
+| **FFmpeg 7+ rewrite** | `LibAVVideoWriter.cpp` needs full rewrite for modern AVCodecContext API |
 | **ImageMagick 7 rewrite** | `FileGrabber/WriterPluginImageMagick` — PixelPacket API removed, use Magick::Pixels |
 | **Apple Accelerate** | Investigate vImage/vDSP as IPP replacement for convolution, color conversion, FFT on macOS |
 
 ### Code quality (ongoing)
 | Task | Description |
 |------|-------------|
-| **ShallowCopyable removal** | Replace with `std::shared_ptr<Impl>` pattern. Used by Thread, File, Semaphore |
+| **ShallowCopyable removal** | Replace with `std::shared_ptr<Impl>` pattern. Used by Thread, File, Semaphore. Defer until after Mutex/Thread modernization. |
 | **DynMatrix RAII** | Replace raw `new/delete[]` with `std::unique_ptr<T[]>` or `std::vector<T>` |
 | **Channel const-correctness** | Remove mutable abuse in Channel.h, proper const/non-const design |
 | **Any.h rethink** | Currently inherits std::string. Consider `std::any` or cleaner wrapper |
-| **Random.h modernize** | Replace `drand48`/`srand48` with `std::mt19937` + distributions |
 
 ## Currently Disabled Optional Features
 To re-enable, add these cmake flags:
