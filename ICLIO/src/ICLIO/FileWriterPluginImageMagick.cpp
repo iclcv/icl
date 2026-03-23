@@ -81,7 +81,7 @@ namespace icl{
       switch(d){
         case depth8u: return Magick::CharPixel;
         case depth16s: return Magick::ShortPixel;
-        case depth32s: return Magick::IntegerPixel;
+        case depth32s: return Magick::LongPixel;
         case depth32f: return Magick::FloatPixel;
         case depth64f: return Magick::DoublePixel;
         default:

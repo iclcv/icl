@@ -37,7 +37,7 @@ namespace icl {
   namespace filter{
     namespace{
       template <class T, class D>
-      void apply_ws(const Img<T> *src, Img<D> *dst, const vector<D>& weights) {
+      void apply_ws(const Img<T> *src, Img<D> *dst, const std::vector<D>& weights) {
 
         const ImgIterator<T> itSrc = src->beginROI(0);
         const ImgIterator<T> itSrcEnd = src->endROI(0);
@@ -81,7 +81,7 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
         }
       }else{
-        vector<icl32f> v(m_vecWeights.size());
+        std::vector<icl32f> v(m_vecWeights.size());
         for(unsigned int i=0;i<m_vecWeights.size();++i){
           v[i] = static_cast<float>(m_vecWeights[i]);
         }

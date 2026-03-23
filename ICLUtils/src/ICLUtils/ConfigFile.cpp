@@ -50,7 +50,6 @@
 #include <ICLUtils/SteppingRange.h>
 
 #include <ICLUtils/Any.h>
-using namespace std;
 
 namespace icl{
   namespace utils{
@@ -67,7 +66,6 @@ namespace icl{
     }
 
     namespace{
-      using std::string;
 
       struct StaticConfigFileTypeRegistering{
 
@@ -80,7 +78,7 @@ namespace icl{
           REGISTER_CONFIG_FILE_TYPE(unsigned int);
           REGISTER_CONFIG_FILE_TYPE(float);
           REGISTER_CONFIG_FILE_TYPE(double);
-          REGISTER_CONFIG_FILE_TYPE(string);
+          ::icl::utils::ConfigFile::register_type<std::string>("string");
           REGISTER_CONFIG_FILE_TYPE(Any);
           REGISTER_CONFIG_FILE_TYPE(long int);
           REGISTER_CONFIG_FILE_TYPE(bool);
@@ -432,7 +430,7 @@ namespace icl{
 
 
 
-    std::ostream &operator<<(ostream &s, const ConfigFile &cf){
+    std::ostream &operator<<(std::ostream &s, const ConfigFile &cf){
       cf.m_doc->save(s);
       return s;
     }

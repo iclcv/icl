@@ -39,11 +39,11 @@ using namespace icl::utils;
 namespace icl{
   namespace io{
     namespace{
-      string generate_filename(int digits, int counter, const string &prefix, const string &postfix){
+      std::string generate_filename(int digits, int counter, const std::string &prefix, const std::string &postfix){
         if (!digits) {
           return prefix+postfix;
         }
-        ostringstream oss;
+        std::ostringstream oss;
         oss << prefix;
         oss.fill('0');
         oss.width(digits);
@@ -56,7 +56,7 @@ namespace icl{
 
     class FilenameGeneratorImpl{
     public:
-      FilenameGeneratorImpl(const string &patternIn, int maxFiles)
+      FilenameGeneratorImpl(const std::string &patternIn, int maxFiles)
 
         :m_iMaxFiles(maxFiles),m_bInfinite(maxFiles<0){
 
@@ -69,7 +69,7 @@ namespace icl{
         }
 
         m_eMode = hashPatterns;
-        string::size_type postfixpos=0;
+        std::string::size_type postfixpos=0;
         analyseHashes(pattern,m_uiNumHashes,postfixpos);
         m_sPraefix = pattern.substr(0,postfixpos-m_uiNumHashes);
         m_sPostfix = pattern.substr(postfixpos);
@@ -81,7 +81,7 @@ namespace icl{
         }
       }
 
-      FilenameGeneratorImpl(const string& prefix, const string& postfix,
+      FilenameGeneratorImpl(const std::string& prefix, const std::string& postfix,
                             int ostart, int oend, int istart, int iend){
         m_eMode = objectAndImage;
         m_iCurrIdx = 0;
@@ -99,12 +99,12 @@ namespace icl{
       }
 
 
-      string next(){
+      std::string next(){
 
         switch(m_eMode){
           case objectAndImage:{
             ICLASSERT_RETURN_VAL(m_iFilesLeft > 0, "");
-            string nextname = m_vecFileNames[m_iCurrIdx++];
+            std::string nextname = m_vecFileNames[m_iCurrIdx++];
             m_iFilesLeft--;
             return nextname;
             break;
@@ -120,7 +120,7 @@ namespace icl{
       }
 
 
-      string showNext() const{
+      std::string showNext() const{
 
         switch(m_eMode){
           case objectAndImage:{
@@ -160,11 +160,11 @@ namespace icl{
 
 
       unsigned int m_uiNumHashes;
-      string m_sPostfix;
-      string m_sPraefix;
+      std::string m_sPostfix;
+      std::string m_sPraefix;
       int m_iMaxFiles;
       bool m_bInfinite;
-      vector<string> m_vecFileNames;
+      std::vector<std::string> m_vecFileNames;
       int m_iFilesLeft;
       int m_iCurrIdx;
       FilenameGeneratorMode m_eMode;
@@ -174,11 +174,11 @@ namespace icl{
 
     FilenameGenerator::FilenameGenerator() = default;
 
-    FilenameGenerator::FilenameGenerator(const string &pattern, int maxFiles):
+    FilenameGenerator::FilenameGenerator(const std::string &pattern, int maxFiles):
       impl(std::make_shared<FilenameGeneratorImpl>(pattern,maxFiles)){
     }
 
-    FilenameGenerator::FilenameGenerator(const string& prefix, const string& postfix,
+    FilenameGenerator::FilenameGenerator(const std::string& prefix, const std::string& postfix,
                                          int ostart, int oend, int istart, int iend):
       impl(std::make_shared<FilenameGeneratorImpl>(prefix,postfix,ostart,oend,istart,iend)){
     }
@@ -189,14 +189,14 @@ namespace icl{
     }
 
 
-    string FilenameGenerator::next(){
+    std::string FilenameGenerator::next(){
 
       ICLASSERT_RETURN_VAL(impl,0);
       return impl->next();
     }
 
 
-    string FilenameGenerator::showNext() const{
+    std::string FilenameGenerator::showNext() const{
 
       ICLASSERT_RETURN_VAL(impl,0);
       return impl->showNext();
@@ -217,15 +217,15 @@ namespace icl{
     }
 
 
-    vector<string> FilenameGenerator::getList(){
+    std::vector<std::string> FilenameGenerator::getList(){
 
-      ICLASSERT_RETURN_VAL(impl,vector<string>());
-      ICLASSERT_RETURN_VAL(filesLeft() != FilenameGenerator::INFINITE_FILE_COUNT ,vector<string>());
+      ICLASSERT_RETURN_VAL(impl,std::vector<std::string>());
+      ICLASSERT_RETURN_VAL(filesLeft() != FilenameGenerator::INFINITE_FILE_COUNT ,std::vector<std::string>());
 
       FilenameGeneratorImpl save = *impl.get();
 
       reset();
-      vector<string> v;
+      std::vector<std::string> v;
       while(filesLeft()){
         v.push_back(next());
       }

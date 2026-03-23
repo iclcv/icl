@@ -49,7 +49,7 @@ namespace icl{
       ICLASSERT_RETURN(dest);
       file.open(File::readBinary);
 
-      string nextLine;
+      std::string nextLine;
       bool bIsICL = file.getSuffix() == ".icl" || file.getSuffix() == ".icl.gz";
 
       //////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ namespace icl{
       oInfo.imageCount = 1;
 
       if(!bIsICL){
-        string l = file.readLine();
+        std::string l = file.readLine();
         if(l.length() < 2 || l[0] != 'P') throw InvalidFileFormatException();
         switch (l[1]) {
           case '6': oInfo.imageFormat = formatRGB; break;
@@ -76,10 +76,10 @@ namespace icl{
 
       do {
         nextLine = skipWhitespaces(file.readLine());
-        vector<string> ts = tok(nextLine," ");
+        std::vector<std::string> ts = tok(nextLine," ");
 
         if(ts.size() < 3) continue;
-        string sKey = ts[1];
+        std::string sKey = ts[1];
 
         if (sKey == "NumFeatures" || sKey == "NumImages") {
           oInfo.imageCount = parse<int>(ts[2]);
@@ -105,7 +105,7 @@ namespace icl{
 
 
       // read image size
-      vector<string> ts = tok(nextLine," ");
+      std::vector<std::string> ts = tok(nextLine," ");
       if(ts.size() != 2) throw InvalidFileFormatException();
       if(bIsICL){
         oInfo.size = Size(ti(ts[0]),ti(ts[1]));

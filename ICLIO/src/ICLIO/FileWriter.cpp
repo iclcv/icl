@@ -52,7 +52,7 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
-    map<string,FileWriterPlugin*> FileWriter::s_mapPlugins;
+    std::map<std::string,FileWriterPlugin*> FileWriter::s_mapPlugins;
 
     class FileWriterPluginMapInitializer{
     public:
@@ -123,7 +123,7 @@ namespace icl{
         // add plugins
       }
       ~FileWriterPluginMapInitializer(){
-        for(std::map<string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.begin();
+        for(std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.begin();
             it != FileWriter::s_mapPlugins.end(); ++it){
           delete it->second;
         }
@@ -169,7 +169,7 @@ namespace icl{
 
       File file(m_oGen.next());
 
-      std::map<string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.find(toLower(file.getSuffix()));
+      std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.std::find(toLower(file.getSuffix()));
       if(it == s_mapPlugins.end()){
         ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
         return;
@@ -199,7 +199,7 @@ namespace icl{
   #ifdef WITH_JPEG_SUPPORT
         FileWriterPluginJPEG::setQuality(parse<int>(value));
   #else
-        ERROR_LOG("Unable to set option \"jpg:quality\" (JPEG support is currently disabled!)");
+        ERROR_LOG("Unable to std::set option \"jpg:quality\" (JPEG support is currently disabled!)");
   #endif
       }else{
         ERROR_LOG("Unsupported Option \"" << option << "\" (value: \"" << value << "\")");

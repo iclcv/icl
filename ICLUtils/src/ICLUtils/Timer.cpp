@@ -30,7 +30,6 @@
 
 #include <ICLUtils/Timer.h>
 #include <ICLUtils/Time.h>
-using namespace std;
 
 namespace icl {
   namespace utils{
@@ -44,20 +43,20 @@ namespace icl {
       m_vecTimerName.push_back("_START_");
     }
 
-    void Timer::stopSubTimer(string sName){
+    void Timer::stopSubTimer(std::string sName){
       m_vecTime.push_back(getTime());
       m_vecTimerName.push_back(sName);
     }
 
-    void Timer::stopTimer(string sName){
+    void Timer::stopTimer(std::string sName){
       long int lTmpTimeDiff = 0;
 
       m_vecTime.push_back(getTime());
       m_vecTimerName.push_back(sName);
 
-      cout << endl;
-      cout << " ------------------------------------------- " << endl;
-      cout << " --             Time measure              -- " << endl;
+      std::cout << std::endl;
+      std::cout << " ------------------------------------------- " << std::endl;
+      std::cout << " --             Time measure              -- " << std::endl;
 
       if (m_vecTime.size() > 2) {
         for (unsigned int i=1;i<m_vecTime.size();i++)
@@ -67,13 +66,13 @@ namespace icl {
             switch(m_iTimerMode)
               {
                 case 0:
-                  cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
-                       << lTmpTimeDiff << " ms" << endl;
+                  std::cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
+                       << lTmpTimeDiff << " ms" << std::endl;
                   break;
 
                 case 1:
-                  cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
-                       << lTmpTimeDiff << " micro sec" << endl;
+                  std::cout << " --  [" << m_vecTimerName[i] << "] -> Time: "
+                       << lTmpTimeDiff << " micro sec" << std::endl;
                   break;
               }
           }
@@ -84,16 +83,16 @@ namespace icl {
       switch(m_iTimerMode)
         {
           case 0:
-            cout << " ------------------------------------------- " << endl;
-            cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ms" << endl;
+            std::cout << " ------------------------------------------- " << std::endl;
+            std::cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ms" << std::endl;
             break;
 
           case 1:
-            cout << " ------------------------------------------- " << endl;
-            cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ns" << endl;
+            std::cout << " ------------------------------------------- " << std::endl;
+            std::cout << " [ --- ] -> Complete time: " << lTmpTimeDiff << " ns" << std::endl;
             break;
         }
-      cout << endl;
+      std::cout << std::endl;
     }
 
     long int Timer::stopSilent(){

@@ -43,8 +43,8 @@ using namespace icl::core;
 namespace icl{
   namespace io{
     namespace {
-      [[maybe_unused]] inline bool inList(const string &s, const std::vector<string> &vec){
-        return find(vec.begin(),vec.end(),s) != vec.end();
+      [[maybe_unused]] inline bool inList(const std::string &s, const std::vector<std::string> &vec){
+        return std::find(vec.begin(),vec.end(),s) != vec.end();
       }
     }
 
@@ -112,11 +112,11 @@ namespace icl{
       return data->desiredSize;
     }
 
-    string Grabber::translateSteppingRange(const SteppingRange<double>& range){
+    std::string Grabber::translateSteppingRange(const SteppingRange<double>& range){
       return str(range);
     }
 
-    SteppingRange<double> Grabber::translateSteppingRange(const string &rangeStr){
+    SteppingRange<double> Grabber::translateSteppingRange(const std::string &rangeStr){
       return parse<SteppingRange<double> >(rangeStr);
     }
 
@@ -138,7 +138,7 @@ namespace icl{
     }
 
     template <class T> static std::vector<T> translate_any_string(const std::string &v){
-      std::vector<string> vs = tok(v,",");
+      std::vector<std::string> vs = tok(v,",");
       std::vector<T> ts(vs.size());
       for(unsigned int i=0; i<vs.size();++i){
         if(i==0 && vs[i].length() && vs[i][0] == '{'){
@@ -152,16 +152,16 @@ namespace icl{
     }
 
 
-    string Grabber::translateDoubleVec(const vector<double> &v){
+    std::string Grabber::translateDoubleVec(const std::vector<double> &v){
       return translate_any_vec(v);
     }
-    vector<double> Grabber::translateDoubleVec(const string &s){
+    std::vector<double> Grabber::translateDoubleVec(const std::string &s){
       return translate_any_string<double>(s);
     }
-    string Grabber::translateStringVec(const vector<string> &v){
+    std::string Grabber::translateStringVec(const std::vector<std::string> &v){
       return translate_any_vec(v);
     }
-    vector<string> Grabber::translateStringVec(const string &v){
+    std::vector<std::string> Grabber::translateStringVec(const std::string &v){
       return translate_any_string<std::string>(v);
     }
 
@@ -208,7 +208,7 @@ namespace icl{
       if(data->warp){
         data->warp->setScaleMode(mode);
       }else {
-        WARNING_LOG("cannot set undistortion interpolation mode if distortion was not disabled before (skipped)!");
+        WARNING_LOG("cannot std::set undistortion interpolation mode if distortion was not disabled before (skipped)!");
       }
     }
 
@@ -343,12 +343,12 @@ namespace icl{
                                    std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.find(grabberid);
+      GFM::iterator it = gfm.std::find(grabberid);
       if(it != gfm.end()) throw ICLException("unable to register grabber "
           + grabberid + ": name already in use");
       GrabberFunctions f;
       f.init = creator;
-      f.list = device_list;
+      f.std::list = device_list;
       gfm[grabberid] = f;
     }
 
@@ -356,7 +356,7 @@ namespace icl{
                                    std::function<void(bool)> reset_function)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GBRM::iterator it = gbrm.find(grabberid);
+      GBRM::iterator it = gbrm.std::find(grabberid);
       if(it != gbrm.end()) throw ICLException(
           "unable to register grabber bus reset function for "
           + grabberid + ": only one per greabber can be registered");
@@ -366,16 +366,16 @@ namespace icl{
     void GrabberRegister::addGrabberDescription(const std::string &grabber_description)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GDS::iterator it = gds.find(grabber_description);
+      GDS::iterator it = gds.std::find(grabber_description);
       if(it != gds.end()) throw ICLException(
           "unable to add grabber description: \n"
           + grabber_description + "\n description already exists");
       gds.insert(grabber_description);
     }
 
-    Grabber* GrabberRegister::createGrabber(const std::string &grabberid, const string &param){
+    Grabber* GrabberRegister::createGrabber(const std::string &grabberid, const std::string &param){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.find(grabberid);
+      GFM::iterator it = gfm.std::find(grabberid);
       if(it != gfm.end()){
         // init grabber
         return (it -> second).init(param); // can throw too
@@ -406,19 +406,19 @@ namespace icl{
     const std::vector<GrabberDeviceDescription>&
     GrabberRegister::getDeviceList(std::string id, std::string hint, bool rescan){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.find(id);
+      GFM::iterator it = gfm.std::find(id);
       if(it != gfm.end()){
         // return device list
-        return ((it -> second).list)(hint,rescan);
+        return ((it -> second).std::list)(hint,rescan);
       } else {
         throw ICLException("unknown grabber id '"
-            + id + "'. can not list devices of unknown grabber");
+            + id + "'. can not std::list devices of unknown grabber");
       }
     }
 
     void GrabberRegister::resetGrabberBus(const std::string &id, bool verbose){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GBRM::iterator it = gbrm.find(id);
+      GBRM::iterator it = gbrm.std::find(id);
       if(it != gbrm.end()){
         // reset bus
         return (it -> second)(verbose);

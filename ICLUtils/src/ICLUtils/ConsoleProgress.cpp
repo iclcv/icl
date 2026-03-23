@@ -30,7 +30,6 @@
 
 #include <ICLUtils/ConsoleProgress.h>
 #include <cstdio>
-using namespace std;
 using namespace icl;
 
 namespace{
@@ -39,7 +38,7 @@ namespace{
 
   int BAR_LEN = 30;
 
-  string PROGRESS_STR;
+  std::string PROGRESS_STR;
 }
 namespace icl{
   namespace utils{

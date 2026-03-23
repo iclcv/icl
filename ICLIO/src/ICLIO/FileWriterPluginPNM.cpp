@@ -29,8 +29,8 @@
 ********************************************************************/
 
 #include <ICLIO/FileWriterPluginPNM.h>
-#include <string>
-#include <vector>
+#include <std::string>
+#include <std::vector>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/StringUtils.h>
@@ -47,7 +47,7 @@ namespace icl{
         return std::vector<int>(abc,abc+3);
       }
 
-      void pnm_write_gray2rgb(File &file, const ImgBase *poSrc, vector<icl8u> &buffer){
+      void pnm_write_gray2rgb(File &file, const ImgBase *poSrc, std::vector<icl8u> &buffer){
         int dim = poSrc->getDim();
         buffer.resize(3*dim);
         switch(poSrc->getDepth()){
@@ -64,7 +64,7 @@ namespace icl{
         }
         file.write(&buffer[0],buffer.size());
       }
-      void pnm_write_2channels2rgb(File &file, const ImgBase *poSrc, vector<icl8u> &buffer){
+      void pnm_write_2channels2rgb(File &file, const ImgBase *poSrc, std::vector<icl8u> &buffer){
         int dim = poSrc->getDim();
         buffer.resize(3*dim);
         switch(poSrc->getDepth()){
@@ -85,7 +85,7 @@ namespace icl{
         file.write(&buffer[0],buffer.size());
       }
 
-      void pnm_write3(File &file,const ImgBase *image, int channeloffs, vector<icl8u> &buffer){
+      void pnm_write3(File &file,const ImgBase *image, int channeloffs, std::vector<icl8u> &buffer){
         Rect fullROI(Point::null,image->getSize());
         format fmt = image->getFormat();
         const ImgBase *img = image->shallowCopy(fullROI,vec3(channeloffs,channeloffs+1,channeloffs+2),fmt);
@@ -100,7 +100,7 @@ namespace icl{
         delete img;
       }
 
-      void pgm_write(File &file,const ImgBase *image, int channel, vector<icl8u> &buffer){
+      void pgm_write(File &file,const ImgBase *image, int channel, std::vector<icl8u> &buffer){
         buffer.resize(image->getDim());
         switch(image->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                                            \
@@ -120,7 +120,7 @@ namespace icl{
       ICLASSERT_RETURN(poSrc);
       file.open(File::writeText);
 
-      string suffix = toLower( file.getSuffix() );
+      std::string suffix = toLower( file.getSuffix() );
       bool bPPM=false;
       bool bICL = suffix == ".icl" || suffix == ".icl.gz";
       int  iNumImages = poSrc->getChannels ();
@@ -147,16 +147,16 @@ namespace icl{
       //// WRITE HEADER INFORMATION  ////////////////////////////////////////////////////////////////////
       ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-      string endl = "\n";
+      std::string std::endl = "\n";
 
       if(!bICL){
-        file << string(bPPM ? "P6" :"P5") << endl;
+        file << std::string(bPPM ? "P6" :"P5") << std::endl;
       }
 
 
       std::ostringstream os;
 
-      static const string H = "# ";
+      static const std::string H = "# ";
       Rect roi = poSrc->getROI();
 
       os   << H << "TimeStamp " << poSrc->getTime() << std::endl
@@ -164,7 +164,7 @@ namespace icl{
            << H << "ImageDepth " << poSrc->getDepth() << std::endl
            << H << "ROI " << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << std::endl
            << H << "Format " << poSrc->getFormat() << std::endl // not shure, this is new!
-           << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << endl << 255 << endl;
+           << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << std::endl << 255 << std::endl;
 
       file << os.str();
 
@@ -213,7 +213,7 @@ namespace icl{
     file.open(File::writeText);
     ICLASSERT_RETURN(file.isOpen());
 
-    string suffix = toLower( file.getSuffix() );
+    std::string suffix = toLower( file.getSuffix() );
     bool bPPM=false;
     bool bICL = suffix == ".icl" || suffix == ".icl.gz";
     int  iNumImages = poSrc->getChannels ();
@@ -234,18 +234,18 @@ namespace icl{
     //// WRITE HEADER INFORMATION  ////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    string endl = "\n";
+    std::string std::endl = "\n";
 
     if(!bICL){
-      file << string(bPPM ? "P6" :"P5") << endl;
+      file << std::string(bPPM ? "P6" :"P5") << std::endl;
     }
-    file << "# Format " << translateFormat(poSrc->getFormat()) << endl;
-    file << "# TimeStamp " << ioutils::time2str( poSrc->getTime().toMicroSeconds() ) << endl;
-    file << "# NumFeatures " << iNumImages << endl;
-    file << "# ImageDepth " << translateDepth(poSrc->getDepth()) << endl;
+    file << "# Format " << translateFormat(poSrc->getFormat()) << std::endl;
+    file << "# TimeStamp " << ioutils::time2str( poSrc->getTime().toMicroSeconds() ) << std::endl;
+    file << "# NumFeatures " << iNumImages << std::endl;
+    file << "# ImageDepth " << translateDepth(poSrc->getDepth()) << std::endl;
     file << "# ROI " << poSrc->getROI().x << " " << poSrc->getROI().y
-         << " " << poSrc->getROI().width << " "  << poSrc->getROI().height << endl;
-    file << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << endl << 255 << endl;
+         << " " << poSrc->getROI().width << " "  << poSrc->getROI().height << std::endl;
+    file << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << std::endl << 255 << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //// WRITE IMAGE DATA  ////////////////////////////////////////////////////////////////////////////

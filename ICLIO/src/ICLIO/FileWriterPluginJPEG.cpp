@@ -86,7 +86,7 @@ namespace icl{
         case formatRGB:  jCS = JCS_RGB; break;
         default:
           throw ICLException (str(poSrc->getFormat()) +
-                              string (" not supported by jpeg"));
+                              std::string (" not supported by jpeg"));
       }
 
       ICLException writeError ("Error writing file.");
@@ -112,18 +112,18 @@ namespace icl{
       // Step 2: specify data destination
       jpeg_stdio_dest(&jpgCinfo, (FILE*)file.getHandle());
 
-      /* Step 3: set parameters for compression */
+      /* Step 3: std::set parameters for compression */
       jpgCinfo.image_width  = poSrc->getSize().width;
       jpgCinfo.image_height = poSrc->getSize().height;
       jpgCinfo.input_components = poSrc->getChannels(); // # of color components
       jpgCinfo.in_color_space = jCS; 	/* colorspace of input image */
 
-      /* Now use the library's routine to set default compression parameters.
-          * (You must set at least jpgCinfo.in_color_space before calling this,
+      /* Now use the library's routine to std::set default compression parameters.
+          * (You must std::set at least jpgCinfo.in_color_space before calling this,
           * since the defaults depend on the source color space.) */
       jpeg_set_defaults(&jpgCinfo);
 
-      /* Now you can set any non-default parameters you wish to.
+      /* Now you can std::set any non-default parameters you wish to.
           * Here we just illustrate the use of quality (quantization table) scaling: */
       jpeg_set_quality(&jpgCinfo, s_iQuality, TRUE /* limit to baseline-JPEG values */);
 
@@ -199,7 +199,7 @@ namespace icl{
       ERROR_LOG("JPEG support currently not available! \n" <<
                 "To enabled JPEG support: you have to compile the ICLIO package\n" <<
                 "with -DICL_HAVE_LIBJPEG compiler flag AND with a valid\n" <<
-                "LIBJPEG_ROOT set.");
+                "LIBJPEG_ROOT std::set.");
       (void) file;
       (void) poSrc;
     }

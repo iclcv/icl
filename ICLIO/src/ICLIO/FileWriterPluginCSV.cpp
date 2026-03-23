@@ -56,7 +56,7 @@ namespace icl{
            << image->getChannels() << ':' <<image->getDepth() << ':' <<image->getFormat()
            << file.getSuffix();
         /*
-            string newFileName = file.getDir()+
+            std::string newFileName = file.getDir()+
             file.getBaseName()+
             "-ICL:"+translateSize(image->getSize())+
             "x"+toStr(image->getChannels())+
@@ -71,7 +71,7 @@ namespace icl{
 
       if(!s_bExtendFileName){
         std::ostringstream os;
-        static const string H = "# ";
+        static const std::string H = "# ";
         Rect roi = image->getROI();
         os << H << "Size " << image->getWidth() << ' ' << image->getHeight() << std::endl
            << H << "Channels " << image->getChannels() << std::endl

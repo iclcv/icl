@@ -33,8 +33,8 @@
 #include <mutex>
 #include <ICLUtils/StrTok.h>
 
-#include <string>
-#include <vector>
+#include <std::string>
+#include <std::vector>
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;
@@ -46,7 +46,7 @@ namespace icl{
     namespace{
 
       template<class T>
-      void tokenzie_line_tmpl(const std::vector<string> &v, T *data){
+      void tokenzie_line_tmpl(const std::vector<std::string> &v, T *data){
 
         for(unsigned int i=0;i<v.size();i++){
           data[i] = clipped_cast<icl64f,T>(atof(v[i].c_str()));
@@ -54,7 +54,7 @@ namespace icl{
       }
 
 
-      void tokezize_line(const std::vector<string> &v,ImgBase *image, int c, int y){
+      void tokezize_line(const std::vector<std::string> &v,ImgBase *image, int c, int y){
 
         if(image->getWidth() > static_cast<int>(v.size())){
           throw InvalidFileFormatException(str("image width:")+
@@ -101,18 +101,18 @@ namespace icl{
       oInfo.roi = Rect::null;
       oInfo.time = Time();
 
-      string filename = file.getBaseName();       //printf("basename is {%s} \n",filename.c_str());
-      string line;
+      std::string filename = file.getBaseName();       //printf("basename is {%s} \n",filename.c_str());
+      std::string line;
 
-      string::size_type t = string::npos;
-      if((t=filename.find("-ICL:"))!= string::npos){
+      std::string::size_type t = std::string::npos;
+      if((t=filename.std::find("-ICL:"))!= std::string::npos){
         while(1){ // this is necessary to use break on errors
-          vector<string> ts = tok(filename.substr(t+5),":");
+          std::vector<std::string> ts = tok(filename.substr(t+5),":");
           if(ts.size() != 3){
             ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 1]");
             break;
           }
-          vector<string> whc = StrTok(ts[0],"x").allTokens();
+          std::vector<std::string> whc = StrTok(ts[0],"x").allTokens();
           if(whc.size() != 3) {
             ERROR_LOG("Invalid ICL-CSV filen name appendix in \"" << filename << "\"[CODE 2]");
             break;
@@ -129,7 +129,7 @@ namespace icl{
       }else do{
         line = skipWhitespaces(file.readLine());
         if(line.length() && line[0] == '#'){
-          vector<string> ts = tok(line," ");
+          std::vector<std::string> ts = tok(line," ");
           if(ts.size() < 3) continue;
 
           if (ts[1] == "ROI") {
@@ -162,7 +162,7 @@ namespace icl{
         bool end = false;
         while(!end){
           oInfo.size.height++; // additional line
-          oInfo.size.width = iclMax((string::size_type)oInfo.size.width,tok(line,",").size());
+          oInfo.size.width = iclMax((std::string::size_type)oInfo.size.width,tok(line,",").size());
           if(file.hasMoreLines()){
             line = file.readLine();
           }else{

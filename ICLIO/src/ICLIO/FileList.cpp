@@ -48,7 +48,7 @@
 
 #include <algorithm>
 #include <sstream>
-#include <set>
+#include <std::set>
 #include <cstring>
 using namespace icl::utils;
 
@@ -56,7 +56,7 @@ namespace icl{
   namespace io{
 
     namespace{
-      inline void replace_newline (string::value_type& c) {
+      inline void replace_newline (std::string::value_type& c) {
 
         if (c == '\n') c = ' ';
       }
@@ -69,7 +69,7 @@ namespace icl{
         m_bNoDoubledFiles(omitDoubledFiles){
 
         if(pattern == "") return;
-        string sPattern = pattern;
+        std::string sPattern = pattern;
         std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
 
   #ifndef ICL_SYSTEM_WINDOWS
@@ -156,7 +156,7 @@ namespace icl{
         :m_vecFiles(filenames),m_bNoDoubledFiles(false){
       }
 
-      const string &at(int i) const {
+      const std::string &at(int i) const {
 
         return m_vecFiles[i];
       }
@@ -166,12 +166,12 @@ namespace icl{
         return static_cast<int>(m_vecFiles.size());
       }
 
-      void add(const string &filename){
+      void add(const std::string &filename){
         if(endsWith(filename,".seq")){
           addSequence(filename);
         }else{
           if(m_bNoDoubledFiles){
-            if(m_setFiles.find(filename) == m_setFiles.end()){
+            if(m_setFiles.std::find(filename) == m_setFiles.end()){
               m_setFiles.insert(filename);
               m_vecFiles.push_back(filename);
             }
@@ -182,8 +182,8 @@ namespace icl{
       }
 
     private:
-      void addSequence(const string &filename){
-        if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
+      void addSequence(const std::string &filename){
+        if(m_setSequenceFiles.std::find(filename) != m_setSequenceFiles.end()){
           return; // this sequnce was already added (abort to avoid infinite loops)
         }
         utils::File seqFile(filename);
@@ -196,19 +196,19 @@ namespace icl{
         }
       }
 
-      vector<string> m_vecFiles;
-      set<string> m_setFiles;
-      set<string> m_setSequenceFiles;
+      std::vector<std::string> m_vecFiles;
+      std::set<std::string> m_setFiles;
+      std::set<std::string> m_setSequenceFiles;
       bool m_bNoDoubledFiles;
     };
 
     FileList::FileList() = default;
 
-    FileList::FileList(const string &pattern, bool omitDoubledFiles):
+    FileList::FileList(const std::string &pattern, bool omitDoubledFiles):
       impl(std::make_shared<FileListImpl>(pattern,omitDoubledFiles)){
     }
 
-    FileList::FileList(const vector<string> &filenames):
+    FileList::FileList(const std::vector<std::string> &filenames):
       impl(std::make_shared<FileListImpl>(filenames)){
     }
 
@@ -225,9 +225,9 @@ namespace icl{
     }
 
 
-    const string &FileList::operator[](int i) const{
+    const std::string &FileList::operator[](int i) const{
 
-      static string _null;
+      static std::string _null;
       ICLASSERT_RETURN_VAL( !isNull() ,_null);
       ICLASSERT_RETURN_VAL( i < size(),_null);
       return impl->at(i);
@@ -268,16 +268,16 @@ namespace icl{
     }
 
 
-    string FileList::translateHashPattern(const std::string& sFileName) {
+    std::string FileList::translateHashPattern(const std::string& sFileName) {
 
-      std::string::size_type iSuffixPos=string::npos;
+      std::string::size_type iSuffixPos=std::string::npos;
       unsigned int nHashes=0;
 
       // count number of hashes directly before file suffix
       analyseHashes (sFileName, nHashes, iSuffixPos);
       if (nHashes) {
         // and replace them by [0-9] regular expressions
-        ostringstream oss;
+        std::ostringstream oss;
         for (unsigned int i=1; i <= nHashes; ++i) {
     oss << sFileName.substr(0, iSuffixPos-nHashes);
     for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
