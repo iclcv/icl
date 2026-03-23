@@ -206,11 +206,10 @@ namespace icl{
     }
     }
 
-    void Configurable::removedCallback(const Callback &cb){
-      for(std::vector<Callback>::iterator it=callbacks.begin();it!=callbacks.end();++it){
-        if( *it == cb ){
-        }
-      }
+    void Configurable::removedCallback(const Callback &){
+      // std::function does not support equality comparison;
+      // this method was never functional (empty body) and is retained
+      // only for ABI compatibility.
     }
     Any Configurable::getPropertyValue(const std::string &propertyName) const{
       const Property &p = prop(propertyName);
@@ -451,23 +450,14 @@ namespace icl{
     }
 
 
-    namespace{
-      struct SyncImpl : public FunctionImpl<void,const Configurable::Property&>{
-        Configurable *src, *synced;
-        int num;
-        SyncImpl(Configurable *src, Configurable *synced, int num):
-          src(src),synced(synced),num(num){}
-        virtual void  operator()(const Configurable::Property &p) const{
-          Any val = src->getPropertyValue(p.name);
-          for(int i=0;i<num;++i){
-            synced[i].setPropertyValue(p.name,val);
-          }
-        }
-      };
-    }
-
     void Configurable::syncChangesTo(Configurable *others, int num){
-      registerCallback(Function<void,const Configurable::Property&>(new SyncImpl(this,others,num)));
+      Configurable *src = this;
+      registerCallback([src, others, num](const Configurable::Property &p){
+        Any val = src->getPropertyValue(p.name);
+        for(int i=0;i<num;++i){
+          others[i].setPropertyValue(p.name,val);
+        }
+      });
     }
 
   } // namespace utils

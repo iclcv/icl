@@ -1028,7 +1028,7 @@ namespace icl{
                            grid_function gridNormals){
       ICLASSERT_RETURN(!isNull());
 
-      bool haveNormals = gridNormals;
+      bool haveNormals = !!gridNormals;
       std::vector<Vec3> &grid = m_data->gridBuffer;
       std::vector<Vec3> &normals = m_data->gridNormalBuffer;
 

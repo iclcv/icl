@@ -175,7 +175,7 @@ namespace icl{
       void fillBackGround(QPainter &p, AbstractPlotWidget::bgFunction f, Rect32f win, const Rect32f &data,
                           bool usePC, bool useOpenMP){
         while(((int)win.width)%4) win.width+=1;
-        if(bgFuncUpdateRequested || bgData.f != f || bgData.win != win || bgData.data != data || bgData.usePC != usePC){
+        if(bgFuncUpdateRequested || bgData.win != win || bgData.data != data || bgData.usePC != usePC){
           bgData.f = f;
           bgData.win = win;
           bgData.data = data;

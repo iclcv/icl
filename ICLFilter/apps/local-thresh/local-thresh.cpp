@@ -95,7 +95,7 @@ void step(){
   int masksize = gui["masksize"];
   float threshold = gui["threshold"];
   float gamma = gui["gamma"];
-  gui["save"].registerCallback(save);
+  gui["save"].registerCallback([]{ save(); });
 
   ltop.setClipToROI(clipToROI);
   ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);

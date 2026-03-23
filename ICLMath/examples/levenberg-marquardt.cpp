@@ -94,7 +94,7 @@ void dbg(const LM::Result &res){
 
 #if 1
 int main(){
-  LM lm(f4,3);
+  LM lm(LM::Function(f4),3);
   const real r[6] = { 3, 1, 2, 100, 100, 100};
   const real s[6] = { 0.1, 0.1, 0.1, 10, 10, 10 };
   LM::Params realParams(6,r), startParams(6,s);

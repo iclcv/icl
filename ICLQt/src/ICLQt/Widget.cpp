@@ -210,14 +210,14 @@ namespace icl{
 
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText,
                   const std::string &id, int x, int y, int w, int h,
-                  IconType icon, const Function<void> &cb=(FunctionImpl<void>*)0):// clang fix Function<void>()):
+                  IconType icon, const Function<void> &cb={}):
         parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
         toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
         this->icon = get_icon(icon);
       }
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText,
                   const std::string &id, int x, int y, int w, int h, IconType icon,
-                  IconType downIcon, const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0,// clang fix Function<void,bool>(),
+                  IconType downIcon, const Function<void,bool> &cb={},
                   bool toggled = false):
         parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
         toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
@@ -230,7 +230,7 @@ namespace icl{
 
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h,
                   const ImgBase *untoggledIcon, const ImgBase *toggledIcon,
-                  const Function<void,bool> &cb=(FunctionImpl<void,bool>*)0, // clang fix Function<void,bool>(),
+                  const Function<void,bool> &cb={},
                   bool toggled = false):
         parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
         toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){

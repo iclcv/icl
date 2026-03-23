@@ -286,7 +286,6 @@ namespace icl{
     }
 
     typedef FixedColVector<float,6> Pose6D;
-    typedef FunctionImpl<float,const Pose6D&> ErrorFunction;
 
     struct SimplexErrorFunction{
       const Mat &P;

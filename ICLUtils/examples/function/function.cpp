@@ -32,6 +32,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <functional>
 
 
 using namespace icl::utils;
@@ -69,32 +70,27 @@ int main(){
   Function<int> gfoo2(global_foo2);
   std::cout << gfoo2() << std::endl;
 
-  /// Implicit cast from function with return value to function without return value
-
-  Function<void> gfoo3 = function((void (*)())global_foo2);
+  /// Using a lambda to adapt a function signature
+  Function<void> gfoo3 = []{ global_foo2(); };
   gfoo3();
 
   /// Global function with parameters
-  /// identical to function(global_add)(4,5)
   Function<int,int,int> gadd(global_add);
   std::cout << "global_add(4,5)=" << gadd(4,5) << std::endl;
 
-  /// Global function with parameters (ignoring the result of the function)
-  /// Functions with non-void return type can always be casted into another
-  /// Function type with return type (the return value is simply ignored then)
-  Function<void, int, int> gadd_void = function((void(*)(int,int))global_add); gadd_void(4, 5);
-
+  /// Wrapping a function and ignoring its return value via lambda
+  Function<void, int, int> gadd_void = [](int a, int b){ global_add(a,b); };
+  gadd_void(4, 5);
 
   /// create an std::vector
   std::vector<int> v;
 
-  /// void-Member function with one parameter
-  /// preserve type-correctness (argument is not int, but const int&)
-  Function<void,const int&> vpush = function(v,(void(std::vector<int>::*)(const int&))&std::vector<int>::push_back);
+  /// Member function wrapping via lambda
+  Function<void,const int&> vpush = [&v](const int& val){ v.push_back(val); };
   vpush(1);  vpush(2);  vpush(3);
 
-  /// access elements with this function
-  Function<int&,size_t> vat = function(v,&std::vector<int>::at);
+  /// access elements with a lambda wrapper
+  Function<int&,size_t> vat = [&v](size_t i) -> int& { return v.at(i); };
   std::cout << "elem 0: " << vat(0) << std::endl;
   std::cout << "elem 1: " << vat(1) << std::endl;
   std::cout << "elem 2: " << vat(2) << std::endl;
@@ -104,28 +100,24 @@ int main(){
 
   /// creating a list of functions of same type
   std::vector<Function<int,int,int> > list;
-  list.push_back(function(f,&Foo::add)); // member function
-  list.push_back(function(f,SelectFunctor<int,int,int>())); // a functor
+  list.push_back([&f](int a, int b){ return f.add(a,b); }); // member function
+  list.push_back([&f](int a, int b){ return f(a,b); }); // functor
   list.push_back(global_add);  // a global function
 
-  /// Finally, we are also able to implement the FunctionImpl-interface
-  /// here, we have to implement the corresponding constructor
-  /// (which must const!!!)
-  struct Impl : FunctionImpl<int,int,int>{
-    virtual int operator()(int a, int b) const{
+  /// Custom callable struct (replaces old FunctionImpl pattern)
+  struct Impl {
+    int operator()(int a, int b) const{
       std::cout << "custom impl:operator()(a,b) = " << a+b << std::endl;
       return a+b;
     }
   };
-  // list.push_back(function(new Impl));
-  // would also be possible, but implicit cast is possible
-  list.push_back(new Impl);
+  list.push_back(Impl{});
 
-  /// clear the vector of ints also by using a Function-instance:
-  function(v,&std::vector<int>::clear)();
+  /// clear the vector using a lambda
+  [&v]{ v.clear(); }();
 
   /// create a function that wraps the index operator
-  Function<int&,size_t> vidxop = function(v,&std::vector<int>::operator[]);
+  Function<int&,size_t> vidxop = [&v](size_t i) -> int& { return v[i]; };
 
   /// push the results of the function in the vector
   for(unsigned int i=0;i<list.size();++i){
@@ -133,16 +125,15 @@ int main(){
   }
 
   /// create a function for the vector size
-  Function<size_t> vsize = function(v,&std::vector<int>::size);
+  Function<size_t> vsize = [&v]() -> size_t { return v.size(); };
 
   /// show the result of the vector-size function
   std::cout << vsize() << std::endl;
-
 
   for(unsigned int i=0;i<vsize();++i){
     std::cout << "v[" << i << "] = " << vidxop(i) << std::endl;
   }
 
   /// or use a function and std::for_each to print the results
-  std::for_each(v.begin(),v.end(),function(Foo::show_int));
+  std::for_each(v.begin(),v.end(),Foo::show_int);
 }

@@ -459,12 +459,10 @@ namespace icl{
 
     namespace{
       template<class Scalar>
-      struct NumericJacobian : public FunctionImpl<void,const DynColVector<Scalar>&,
-      const DynColVector<Scalar>&,
-      DynColVector<Scalar>&>{
-        typedef typename LevenbergMarquardtFitter<Scalar>::Function Function;
-        typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
-        typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;
+      struct NumericJacobian {
+        using Function = typename LevenbergMarquardtFitter<Scalar>::Function;
+        using Params = typename LevenbergMarquardtFitter<Scalar>::Params;
+        using Vector = typename LevenbergMarquardtFitter<Scalar>::Vector;
 
         int o;
         Function f;
@@ -473,9 +471,9 @@ namespace icl{
         NumericJacobian(int o, Function f, Scalar delta):
           o(o),f(f),delta(delta){}
 
-        virtual void operator()(const Params &params,
-                                const Vector &x,
-                                Vector &target) const{
+        void operator()(const Params &params,
+                        const Vector &x,
+                        Vector &target) const{
           Vector p = params;
           for(unsigned int i=0;i<params.dim();++i){
             p[i] = params[i] + delta/2;
@@ -491,13 +489,11 @@ namespace icl{
 
     namespace{
       template<class Scalar>
-      struct NumericJacobianMat : public FunctionImpl<void,const DynColVector<Scalar>&,
-      const DynMatrix<Scalar>&,
-      DynMatrix<Scalar>&>{
-        typedef typename LevenbergMarquardtFitter<Scalar>::FunctionMat FunctionMat;
-        typedef typename LevenbergMarquardtFitter<Scalar>::Params Params;
-        typedef typename LevenbergMarquardtFitter<Scalar>::Vector Vector;
-        typedef typename LevenbergMarquardtFitter<Scalar>::Matrix Matrix;
+      struct NumericJacobianMat {
+        using FunctionMat = typename LevenbergMarquardtFitter<Scalar>::FunctionMat;
+        using Params = typename LevenbergMarquardtFitter<Scalar>::Params;
+        using Vector = typename LevenbergMarquardtFitter<Scalar>::Vector;
+        using Matrix = typename LevenbergMarquardtFitter<Scalar>::Matrix;
 
         int o;
         FunctionMat f;
@@ -506,9 +502,9 @@ namespace icl{
         NumericJacobianMat(int o, FunctionMat f, Scalar delta):
           o(o),f(f),delta(delta){}
 
-        virtual void operator()(const Params &params,
-                                const Matrix &x,
-                                Matrix &target) const{
+        void operator()(const Params &params,
+                        const Matrix &x,
+                        Matrix &target) const{
           Vector p = params;
           for(unsigned int i=0;i<params.dim();++i){
             p[i] = params[i] + delta/2;
@@ -526,13 +522,13 @@ namespace icl{
     template<class Scalar>
     typename LevenbergMarquardtFitter<Scalar>::Jacobian
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, Function f, float delta){
-      return Jacobian(new NumericJacobian<Scalar>(o,f,delta));
+      return NumericJacobian<Scalar>(o, f, delta);
     }
 
     template<class Scalar>
     typename LevenbergMarquardtFitter<Scalar>::JacobianMat
     LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, FunctionMat f, float delta){
-      return JacobianMat(new NumericJacobianMat<Scalar>(o,f,delta));
+      return NumericJacobianMat<Scalar>(o, f, delta);
     }
 
     template<class Scalar>

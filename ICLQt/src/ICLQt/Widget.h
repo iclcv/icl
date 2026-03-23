@@ -214,14 +214,14 @@ namespace icl{
                                   const core::ImgBase* untoggledIcon = 0,
                                   const core::ImgBase *toggledIcon = 0,
                                   bool initiallyToggled = 0,
-                                  const utils::Function<void,bool> &cb=(utils::FunctionImpl<void,bool>*)0,//Function<void,bool>(), fix for clang
+                                  const utils::Function<void,bool> &cb={},
                                   const std::string &toolTipText="");
 
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
       /** @see addSpecialToggleButton */
       void addSpecialButton(const std::string &id,
                             const core::ImgBase* icon = 0,
-                            const utils::Function<void> &cb=(utils::FunctionImpl<void>*)0,//Function<void>(), fix for clang
+                            const utils::Function<void> &cb={},
                             const std::string &toolTipText="");
 
       /// sets an info text, is shown as a dialog when pressing an extra info button
