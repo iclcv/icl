@@ -32,7 +32,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/CoreFunctions.h>
+#include <ICLCore/PixelOps.h>
 #include <ICLCore/ImgParams.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Range.h>

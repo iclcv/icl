@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/Macros.h>
 
 namespace icl {
   namespace core{
@@ -107,5 +109,21 @@ namespace icl {
       axisBoth  /**> flip both axis */
   #endif
     };
+    /// getDepth<T> returns the depth enum associated to type T \ingroup GENERAL
+    template<class T> inline depth getDepth();
+
+    /** \cond */
+#define ICL_INSTANTIATE_DEPTH(T)                                        \
+    template<> inline depth getDepth<icl ## T>() { return depth ## T; }
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    /** \endcond */
+
+    /// determines the count of channels for each color format \ingroup GENERAL
+    ICLCore_API int getChannelsOfFormat(format fmt);
+
+    /// return sizeof value for the given depth type \ingroup GENERAL
+    ICLCore_API unsigned int getSizeOf(depth eDepth);
+
   } // namespace core
 }

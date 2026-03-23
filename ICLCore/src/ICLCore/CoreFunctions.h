@@ -32,13 +32,10 @@
 #pragma once
 
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/ClippedCast.h>
-
-#include <ICLCore/Types.h>
+#include <ICLCore/PixelOps.h>
 #include <ICLCore/ImgParams.h>
 
 #include <string>
-#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -167,15 +164,8 @@ namespace icl {
     **/
     ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
 
-    /// determines the count of channels, for each color format \ingroup GENERAL
-    /** @param fmt source format which channel count should be returned
-        @return channel count of format eFormat
-    **/
-    ICLCore_API int getChannelsOfFormat(format fmt);
-
-    /// getDepth<T> returns to depth enum associated to type T \ingroup GENERAL
-    template<class T> inline depth getDepth();
-
+    // Note: getDepth<T>(), getChannelsOfFormat(), getSizeOf(), copy<T>(),
+    // and convert<S,D>() have moved to Types.h and PixelOps.h respectively.
 
     /// puts a string representation of format into the given stream
     ICLCore_API std::ostream &operator<<(std::ostream &s, const format &f);
@@ -188,138 +178,6 @@ namespace icl {
 
     /// puts a string representation of depth into the given stream
     ICLCore_API std::istream &operator>>(std::istream &s, depth &d);
-
-
-    /** \cond */
-  #define ICL_INSTANTIATE_DEPTH(T)                                        \
-    template<> inline depth getDepth<icl ## T>() { return depth ## T; }
-  ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
-    /** \endcond  */
-
-    /// return sizeof value for the given depth type \ingroup GENERAL
-    ICLCore_API unsigned int getSizeOf(depth eDepth);
-
-    /// moves data from source to destination array (no casting possible) \ingroup GENERAL
-    template <class T>
-    inline void copy(const T *src, const T *srcEnd, T *dst){
-      //std::copy<T>(src,srcEnd,dst);
-      memcpy(dst,src,(srcEnd-src)*sizeof(T));
-    }
-
-
-  #ifdef ICL_HAVE_IPP
-    /** \cond */
-    template <>
-    inline void copy<icl8u>(const icl8u *poSrcStart, const icl8u *poSrcEnd, icl8u *poDst){
-      ippsCopy_8u(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template <>
-    inline void copy<icl16s>(const icl16s *poSrcStart, const icl16s *poSrcEnd, icl16s *poDst){
-      ippsCopy_16s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template <>
-    inline void copy<icl32s>(const icl32s *poSrcStart, const icl32s *poSrcEnd, icl32s *poDst){
-      ippsCopy_32s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template <>
-    inline void copy<icl32f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32f *poDst){
-      ippsCopy_32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template <>
-    inline void copy<icl64f>(const icl64f *poSrcStart, const icl64f *poSrcEnd, icl64f *poDst){
-      ippsCopy_64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    /** \endcond */
-  #endif
-
-
-
-
-    /// moves value from source to destination array (with casting on demand) \ingroup GENERAL
-    template <class srcT,class dstT>
-    inline void convert(const srcT *poSrcStart,const srcT *poSrcEnd, dstT *poDst){
-      std::transform(poSrcStart,poSrcEnd,poDst,utils::clipped_cast<srcT,dstT>);
-    }
-
-  #ifdef ICL_HAVE_IPP
-    /** \cond */
-    /// from icl8u functions
-    template<> inline void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst){
-      ippsConvert_8u32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    /// from icl16s functions
-    template<> inline void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst){
-      ippsConvert_16s32s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template<> inline void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst){
-      ippsConvert_16s32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template<> inline void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst){
-      ippsConvert_16s64f_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),0);
-    }
-
-    // from icl32s functions
-    template<> inline void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst){
-      ippsConvert_32s16s(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template<> inline void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst){
-      ippsConvert_32s32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template<> inline void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst){
-      ippsConvert_32s64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-
-    // from icl32f functions
-    template <> inline void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst){
-      ippsConvert_32f8u_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
-    }
-    template <> inline void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst){
-      ippsConvert_32f16s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
-    }
-    template <> inline void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst){
-      ippsConvert_32f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
-    }
-    template <> inline void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst){
-      ippsConvert_32f64f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-
-    // from icl64f functions
-    template<> inline void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst){
-      ippsConvert_64f32f(poSrcStart,poDst,(poSrcEnd-poSrcStart));
-    }
-    template <> inline void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst){
-      ippsConvert_64f32s_Sfs(poSrcStart,poDst,(poSrcEnd-poSrcStart),ippRndNear,0);
-    }
-    /** \endcond */
-  #elif defined ICL_HAVE_SSE2
-    /** \cond */
-
-    /// from icl8u functions
-    template<> ICLCore_API void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst);
-
-    /// from icl16s functions
-    template<> ICLCore_API void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst);
-    template<> ICLCore_API void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst);
-    template<> ICLCore_API void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst);
-
-    // from icl32s functions
-    template<> ICLCore_API void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst);
-    template<> ICLCore_API void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst);
-    template<> ICLCore_API void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst);
-
-    // from icl32f functions
-    template <> ICLCore_API void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst);
-    template <> ICLCore_API void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst);
-    template <> ICLCore_API void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst);
-    template <> ICLCore_API void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst);
-
-    // from icl64f functions
-    template<> ICLCore_API void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst);
-    template <> ICLCore_API void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst);
-
-    /** \endcond */
-  #endif
 
 
     /// function, that calculates the mininum and the maximum value of three value \ingroup GENERAL
