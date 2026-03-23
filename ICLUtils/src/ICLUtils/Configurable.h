@@ -36,12 +36,12 @@
 #include <ICLUtils/UncopiedInstance.h>
 
 #include <functional>
-#include <ICLUtils/Mutex.h>
 
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <map>
+#include <mutex>
 
 namespace icl{
   namespace utils{
@@ -245,7 +245,7 @@ namespace icl{
 
       /// locks all accesses to property values
       /** adding and adapting properties is not thread safe! */
-      mutable UncopiedInstance<Mutex> m_mutex;
+      mutable UncopiedInstance<std::recursive_mutex> m_mutex;
 
       protected:
 

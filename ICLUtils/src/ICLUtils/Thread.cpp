@@ -37,6 +37,7 @@
   #include <Windows.h>
 #else
   #include <unistd.h>
+#include <mutex>
 #endif
 #endif
 
@@ -46,7 +47,7 @@ namespace icl{
     class ThreadImpl{
     public:
       pthread_t thread;
-      Mutex mutex;
+      std::recursive_mutex mutex;
       bool on;
       void *data;
     };
@@ -68,7 +69,7 @@ namespace icl{
     }
 
     void Thread::start(){
-      Mutex::Locker l(impl->mutex);
+      std::lock_guard<std::recursive_mutex> l(impl->mutex);
       if(impl->on){
         ERROR_LOG("unable to start thread (it's still running)");
       }else{
@@ -77,7 +78,7 @@ namespace icl{
   	}
     }
     void Thread::stop(){
-      Mutex::Locker l(impl->mutex);
+      std::lock_guard<std::recursive_mutex> l(impl->mutex);
       if(impl->on){
         pthread_cancel(impl->thread);
         pthread_join(impl->thread,&impl->data);
@@ -86,7 +87,7 @@ namespace icl{
       }
     }
     void Thread::wait(){
-      Mutex::Locker l(impl->mutex);
+      std::lock_guard<std::recursive_mutex> l(impl->mutex);
       if(impl->on){
         pthread_join(impl->thread,&impl->data);
         impl->on = false;
@@ -97,7 +98,7 @@ namespace icl{
       impl->mutex.lock();
     }
     int Thread::trylock(){
-      return impl->mutex.trylock();
+      return impl->mutex.try_lock() ? 0 : 1;
     }
     void Thread::unlock(){
       impl->mutex.unlock();
@@ -137,7 +138,7 @@ namespace icl{
 
     // Maybe this works
     bool Thread::running() const{
-      Mutex::Locker l(const_cast<Mutex&>(impl->mutex));
+      std::lock_guard<std::recursive_mutex> l(const_cast<std::recursive_mutex&>(impl->mutex));
       return impl->on;
     }
 

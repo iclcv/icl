@@ -31,6 +31,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLCore/PseudoColorConverter.h>
+#include <mutex>
 
 HSplit gui;
 GenericGrabber grabber;
@@ -48,8 +49,8 @@ void update_color(int maxSteps){
 }
 
 void step(const std::string &handle){
-  static Mutex mutex;
-  Mutex::Locker lock(mutex);
+  static std::recursive_mutex mutex;
+  std::lock_guard<std::recursive_mutex> lock(mutex);
 
   const float mult = gui["mult"];
   static float lastMult = -1;

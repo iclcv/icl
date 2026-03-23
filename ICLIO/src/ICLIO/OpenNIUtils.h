@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLCore/ImgBase.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/CCFunctions.h>
@@ -41,6 +40,7 @@
 #include <map>
 #include <limits>
 #include <set>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -178,7 +178,7 @@ namespace icl {
           ReadWriteBuffer(ReadWriteBufferHandler<T>* buffer_handler)
             : m_Mutex(), m_Write(0), m_Next(1), m_Read(2)
           {
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             m_BufferHandler = buffer_handler;
             m_Buffers[0] = m_BufferHandler -> initBuffer();
             m_Buffers[1] = m_BufferHandler -> initBuffer();
@@ -190,7 +190,7 @@ namespace icl {
 
           /// Destructor frees allocated memory.
           ~ReadWriteBuffer(){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             ICL_DELETE(m_Buffers[0]);
             ICL_DELETE(m_Buffers[1]);
             ICL_DELETE(m_Buffers[2]);
@@ -202,7 +202,7 @@ namespace icl {
             next call to getNextReadBuffer()
         **/
           T* getNextReadBuffer(){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             if(m_Avail){
               // new buffer is available.
               std::swap(m_Next, m_Read);
@@ -260,7 +260,7 @@ namespace icl {
             the old writeable as new.
         **/
           T* getNextWriteBuffer(){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             // swap write buffer and next buffer.
             std::swap(m_Next, m_Write);
             // new buffer is available for reading.
@@ -277,7 +277,7 @@ namespace icl {
 
           /// mark buffers to be reset on next write-access.
           void setReset(){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             m_ResetBuffers[0] = true;
             m_ResetBuffers[1] = true;
             m_ResetBuffers[2] = true;
@@ -285,7 +285,7 @@ namespace icl {
 
           /// switches the handler
           void switchHandler(ReadWriteBufferHandler<T>* new_handler){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             m_BufferHandler = new_handler;
             m_ResetBuffers[0] = true;
             m_ResetBuffers[1] = true;
@@ -294,7 +294,7 @@ namespace icl {
 
           /// tells whether a new ConvBuffers is available
           bool newAvailable(){
-            utils::Mutex::Locker l(m_Mutex);
+            std::lock_guard<std::recursive_mutex> l(m_Mutex);
             return m_Avail;
           }
 
@@ -306,7 +306,7 @@ namespace icl {
           /// a bool for every buffer telling whether it needs a reset
           bool  m_ResetBuffers[3];
           /// the mutex is used for concurrent reading and writing.
-          utils::Mutex m_Mutex;
+          std::recursive_mutex m_Mutex;
           /// the object currently written to.
           int m_Write;
           /// the write object currently not written to.
@@ -351,7 +351,7 @@ namespace icl {
 
         private:
           /// Lock for thread safety
-          utils::Mutex m_Lock;
+          std::recursive_mutex m_Lock;
           /// Tells whether the internal context in initialized or not.
           bool m_Initialized;
           /// The internal context object.

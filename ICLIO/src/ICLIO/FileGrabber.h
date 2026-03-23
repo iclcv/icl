@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 #include <ICLIO/FileGrabberPlugin.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -168,7 +169,7 @@ namespace icl{
 
         struct Data;
         Data *m_data;
-        utils::Mutex m_propertyMutex;
+        std::recursive_mutex m_propertyMutex;
         bool m_updatingProperties;
     };
 

@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/DrawWidget.h>
 #include <vector>
+#include <mutex>
 
 namespace icl{
   namespace qt{
@@ -82,7 +83,7 @@ namespace icl{
       GLCallback *m_linkedCallback;
 
       /// internal mutex
-      utils::Mutex m_linkMutex;
+      std::recursive_mutex m_linkMutex;
     };
   } // namespace qt
 }

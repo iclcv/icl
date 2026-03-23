@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <memory>
 
 #include <string>
@@ -288,7 +288,7 @@ namespace icl{
       using SmartDataMapPtr = std::shared_ptr<DataMap>;
 
       /// internal definition
-      using SmartMutexPtr = std::shared_ptr<Mutex>;
+      using SmartMutexPtr = std::shared_ptr<std::recursive_mutex>;
 
       /// Smart-Pointer to the underlying data (allows shallow copies)
       mutable SmartDataMapPtr m_oDataMapPtr;

@@ -35,6 +35,7 @@
 #include <ICLIO/OpenNIUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLIO/OpenNIIncludes.h>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -114,7 +115,7 @@ namespace icl {
         std::string getName();
 
         /// Mutex used for concurrency issues.
-        utils::Mutex m_Mutex;
+        std::recursive_mutex m_Mutex;
         /// a grabber id
         std::string m_Id;
         /// pointer to the currently used image generator

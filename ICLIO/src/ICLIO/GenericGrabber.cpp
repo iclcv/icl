@@ -35,6 +35,7 @@
 #include <ICLUtils/TextTable.h>
 #ifdef ICL_HAVE_RSB
 #include <ICLIO/ConfigurableRemoteServer.h>
+#include <mutex>
 #endif
 using namespace icl::utils;
 using namespace icl::core;
@@ -45,7 +46,7 @@ namespace icl{
     class GrabberInstanceTable : Uncopyable {
       private:
         static GrabberInstanceTable inst;
-        Mutex mutex;
+        std::recursive_mutex mutex;
         // grabber pointer with init counter
         struct GrabberInstance{
           Grabber* grabber;
@@ -71,7 +72,7 @@ namespace icl{
         }
 
         Grabber* createGrabber(const GrabberDeviceDescription &desc){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
 
           GPM::iterator it = gpm.find(desc.name());
           if(it != gpm.end()){
@@ -89,7 +90,7 @@ namespace icl{
         }
 
         void deleteGrabber(const GrabberDeviceDescription &desc){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           DEBUG_LOG("called delete grabber");
           GPM::iterator it = gpm.find(desc.name());
           if(it == gpm.end()){
@@ -192,7 +193,7 @@ namespace icl{
                               bool notifyErrors)
     {
       // get lock and grabber information
-      Mutex::Locker __lock(m_mutex);
+      std::lock_guard<std::recursive_mutex> __lock(m_mutex);
       GrabberRegister *grabberReg = GrabberRegister::getInstance();
 
       // (re)set GenericGrabber to default values

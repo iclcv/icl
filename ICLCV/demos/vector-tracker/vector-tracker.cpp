@@ -34,6 +34,7 @@
 #include <ICLCV/RegionDetector.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLCV/VectorTracker.h>
+#include <mutex>
 
 int error_counter = 0;
 int error_frames = 0;
@@ -210,11 +211,11 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
   }
 
   void add_single_blob(){
-    Mutex::Locker l(this);
+    std::lock_guard<std::recursive_mutex> l(getMutex());
     setBlobCount(blobs.size()+1);
   }
   void remove_single_blob(int x, int y){
-    Mutex::Locker l(this);
+    std::lock_guard<std::recursive_mutex> l(getMutex());
     int i = find_blob(x,y);
     if(i!=-1){
       blobs.erase(blobs.begin()+i);
@@ -271,7 +272,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
   }
 
   virtual const ImgBase *acquireImage(){
-    Mutex::Locker l(this);
+    std::lock_guard<std::recursive_mutex> l(getMutex());
     ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
 
     image.setSize(getDesired<Size>());

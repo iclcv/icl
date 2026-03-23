@@ -41,13 +41,14 @@
   #include <process.h>
 #else
   #include <unistd.h>
+#include <mutex>
 #endif
 
 namespace icl{
   namespace utils{
 
     struct ProcessMonitor::Data{
-      Mutex mutex;
+      std::recursive_mutex mutex;
       ProcessMonitor::Info info;
       FILE *pipe;
       std::vector<std::pair<int,ProcessMonitor::Callback> > callbacks;
@@ -135,11 +136,11 @@ namespace icl{
         line += c;
         if (c == '\n'){
           if(line.substr(0,7) == "Cpu(s):"){
-            Mutex::Locker l(m_data->mutex);
+            std::lock_guard<std::recursive_mutex> l(m_data->mutex);
             m_data->parse_top_line_cpus(line);
           }
           if(strip_line(line).substr(0,pid.length()) == pid){
-            Mutex::Locker l(m_data->mutex);
+            std::lock_guard<std::recursive_mutex> l(m_data->mutex);
             m_data->parse_top_line(line);
             m_data->evaluate_proc();
             m_data->call_callbacks();
@@ -155,18 +156,18 @@ namespace icl{
     }
 
     ProcessMonitor::Info ProcessMonitor::getInfo() const {
-      Mutex::Locker l(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> l(m_data->mutex);
       return m_data->info;
     }
 
     int ProcessMonitor::registerCallback(ProcessMonitor::Callback cb){
-      Mutex::Locker l(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> l(m_data->mutex);
       m_data->callbacks.push_back(std::make_pair(m_data->nextCallbackID++,cb));
       return m_data->callbacks.back().first;
     }
 
     void ProcessMonitor::removeCallback(int id){
-      Mutex::Locker l(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> l(m_data->mutex);
       for(unsigned int i=0;i<m_data->callbacks.size();++i){
         if(m_data->callbacks[i].first == id){
           m_data->callbacks.erase(m_data->callbacks.begin()+i);
@@ -177,7 +178,7 @@ namespace icl{
     }
 
     void ProcessMonitor::removeAllCallbacks(){
-      Mutex::Locker l(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> l(m_data->mutex);
       m_data->callbacks.clear();
     }
 

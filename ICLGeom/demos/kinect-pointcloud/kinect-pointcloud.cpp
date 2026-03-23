@@ -36,6 +36,7 @@
 #include <ICLGeom/PointCloudNormalEstimator.h>
 #include <ICLCore/PseudoColorConverter.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
+#include <mutex>
 
 HSplit gui;
 GenericGrabber grabDepth, grabColor;
@@ -57,14 +58,14 @@ Scene scene;
 Img8u normalsImage;
 
 struct AdaptedSceneMouseHandler : public MouseHandler{
-  Mutex mutex;
+  std::recursive_mutex mutex;
   MouseHandler *h;
 
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
 
   void process(const MouseEvent &e){
-    Mutex::Locker l(mutex);
+    std::lock_guard<std::recursive_mutex> l(mutex);
       h->process(e);
   }
 

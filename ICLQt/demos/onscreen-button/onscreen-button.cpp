@@ -30,14 +30,15 @@
 
 #include <ICLQt/Common.h>
 #include <ICLQt/IconFactory.h>
+#include <mutex>
 
 GUI gui;
 GenericGrabber grabber;
-Mutex mtex;
+std::recursive_mutex mtex;
 const ImgBase *image;
 
 void capture(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   std::string filename = saveFileDialog();
   if(filename.length()){
     save(cvt(image),filename);

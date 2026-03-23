@@ -36,6 +36,7 @@
 #include <ICLCore/Color.h>
 
 #include <ICLIO/Grabber.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -92,7 +93,7 @@ namespace icl{
         utils::Size m_drawSize;
 
         /// mutex for locking properties and grabbing
-        utils::Mutex m_mutex;
+        std::recursive_mutex m_mutex;
 
       public:
         /// callback for changed configurable properties

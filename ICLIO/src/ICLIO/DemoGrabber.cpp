@@ -32,6 +32,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Random.h>
 #include <ICLIO/DemoGrabber.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -54,7 +55,7 @@ namespace icl{
 
 
     DemoGrabber::DemoGrabber(float maxFPS)
-      : m_mutex(Mutex::mutexTypeRecursive)
+      : m_mutex()
     {
       m_x = Point32f(0.5,0.5);
       m_v = Point32f(0.01, 0.01);
@@ -121,7 +122,7 @@ namespace icl{
     }
 
     const ImgBase* DemoGrabber::acquireImage(){
-      Mutex::Locker __lock(m_mutex);
+      std::lock_guard<std::recursive_mutex> __lock(m_mutex);
       ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 
       m_v += Point32f(utils::random(-0.001, 0.001),utils::random(-0.001, 0.001));

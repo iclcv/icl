@@ -29,7 +29,6 @@
 ********************************************************************/
 
 #include <ICLCore/CCFunctions.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Time.h>
 #include <ICLIO/XiGrabber.h>
@@ -37,6 +36,7 @@
 #include <memory.h>
 #include <libusb-1.0/libusb.h>
 #include <unistd.h>
+#include <mutex>
 
 namespace icl{
   using namespace core;
@@ -128,7 +128,7 @@ namespace icl{
       HANDLE xiH;
       XI_IMG image;
       Img8u buf;
-      Mutex mutex;
+      std::recursive_mutex mutex;
       Size imageSize;
 
       Data(int deviceID){

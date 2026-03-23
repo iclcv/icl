@@ -30,8 +30,8 @@
 
 #include <ICLFilter/GradientImage.h>
 #include <ICLFilter/ConvolutionOp.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLFilter/LUT2D.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -51,7 +51,7 @@ namespace icl{
 
         static ConvolutionOp convX( (ConvolutionKernel(ConvolutionKernel::sobelX3x3)) );
         static ConvolutionOp convY( (ConvolutionKernel(ConvolutionKernel::sobelY3x3)) );
-        static Mutex convXYMutex;
+        static std::recursive_mutex convXYMutex;
         static bool first = true;
         convXYMutex.lock();
 

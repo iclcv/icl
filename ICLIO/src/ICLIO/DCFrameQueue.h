@@ -33,8 +33,8 @@
 #include <ICLIO/DC.h>
 #include <ICLIO/DCDeviceOptions.h>
 
-#include <ICLUtils/Mutex.h>
 #include <queue>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -107,7 +107,7 @@ namespace icl{
         std::queue<dc1394video_frame_t*> q;
 
         /// queue mutex
-        utils::Mutex mutex;
+        std::recursive_mutex mutex;
 
         /// associated camera
         dc1394camera_t *m_poCam;

@@ -35,6 +35,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Exception.h>
 #include <set>
+#include <mutex>
 
 
 namespace icl {
@@ -165,7 +166,7 @@ namespace icl {
         struct Impl;
       private:
         /// instance locking
-        mutable utils::Mutex m_Mutex;
+        mutable std::recursive_mutex m_Mutex;
 
         /// pointer to the internal implementation
         Impl* m_Impl;

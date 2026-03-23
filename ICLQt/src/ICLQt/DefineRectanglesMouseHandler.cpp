@@ -31,6 +31,7 @@
 #include <ICLQt/DefineRectanglesMouseHandler.h>
 #include <ICLQt/DrawWidget.h>
 #include <ICLUtils/CompatMacros.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -222,7 +223,7 @@ namespace icl{
 
 
     void DefineRectanglesMouseHandler::process(const MouseEvent &e){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
 
       struct CallCallbacksAtEnd{
         std::function<void()> f;
@@ -294,7 +295,7 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::visualize(ICLDrawWidget &w){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       for(unsigned int i=0;i<rects.size();++i){
         rects[i].visualize(w);
       }
@@ -313,14 +314,14 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::clearAllRects(){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(rects.size()){
         rects.clear();
       }
     }
 
     void DefineRectanglesMouseHandler::clearRectAt(int x, int y, bool all){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
 
       bool anyChanged = false;
       for(unsigned int i=0;i<rects.size();++i){
@@ -335,14 +336,14 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::addRect(const Rect &rect){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(static_cast<int>(rects.size()) < maxRects && rect.getDim() >= minDim){
         rects.push_back(DefinedRect(rect,&options));
       }
     }
 
     void DefineRectanglesMouseHandler::setMaxRects(int maxRects){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       this->maxRects = maxRects;
       if(static_cast<int>(rects.size()) > maxRects){
         rects.resize(maxRects);
@@ -359,12 +360,12 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::registerCallback(const std::string &id, Callback cb){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       callbacks[id] = cb;
     }
 
     void DefineRectanglesMouseHandler::unregisterCallback(const std::string &id){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       std::map<std::string,Callback>::iterator it = callbacks.find(id);
       if(it != callbacks.end()){
         callbacks.erase(it);
@@ -375,7 +376,7 @@ namespace icl{
 
 
     void DefineRectanglesMouseHandler::setMinDim(int minDim){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       this->minDim = minDim;
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].getDim() < minDim){
@@ -386,12 +387,12 @@ namespace icl{
 
 
     std::vector<Rect> DefineRectanglesMouseHandler::getRects() const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       return std::vector<Rect>(rects.begin(),rects.end());
     }
 
     Rect DefineRectanglesMouseHandler::getRectAt(int x, int y) const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].contains(x,y)){
           return rects[i];
@@ -401,7 +402,7 @@ namespace icl{
     }
 
     std::vector<Rect> DefineRectanglesMouseHandler::getAllRectsAt(int x, int y) const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       std::vector<Rect> rs;
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].contains(x,y)){
@@ -420,31 +421,31 @@ namespace icl{
     }
 
     int  DefineRectanglesMouseHandler::getNumRects() const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       return static_cast<int>(rects.size());
     }
 
     Rect  DefineRectanglesMouseHandler::getRectAtIndex(int index) const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(index < 0 || index >= static_cast<int>(rects.size())) return Rect::null;
       return rects[index];
     }
 
     const Any &DefineRectanglesMouseHandler::getMetaData(int index) const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       static Any null;
       if(index < 0 || index >= static_cast<int>(rects.size())) return null;
       return rects[index].meta;
     }
 
     void DefineRectanglesMouseHandler::setMetaData(int index, const Any &data){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(rects.size()));
       rects[index].meta = data;
     }
 
     const Any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].contains(x,y)){
           return rects[i].meta;
@@ -455,7 +456,7 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const Any &meta){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       for(unsigned int i=0;i<rects.size();++i){
         if(rects[i].contains(x,y)){
           rects[i].meta = meta;
@@ -465,7 +466,7 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::bringToFront(int idx){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);
@@ -473,7 +474,7 @@ namespace icl{
     }
 
     void DefineRectanglesMouseHandler::bringToBack(int idx){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);

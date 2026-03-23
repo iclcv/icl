@@ -36,7 +36,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <ICLCore/ConvexHull.h>
 #include <ICLFilter/WarpOp.h>
 #include <ICLQt/Common.h>

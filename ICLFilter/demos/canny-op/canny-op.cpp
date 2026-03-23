@@ -31,6 +31,7 @@
 #include <ICLQt/Common.h>
 #include <ICLFilter/CannyOp.h>
 #include <ICLFilter/ConvolutionOp.h>
+#include <mutex>
 
 
 VSplit gui;
@@ -61,8 +62,8 @@ void init(){
 
 
 void update(){
-  static Mutex mutex;
-  Mutex::Locker l(mutex);
+  static std::recursive_mutex mutex;
+  std::lock_guard<std::recursive_mutex> l(mutex);
 
   static ImageHandle image = gui["image"];
   static LabelHandle dt = gui["dt"];

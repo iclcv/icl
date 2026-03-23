@@ -32,11 +32,11 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/PylonIncludes.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -162,7 +162,7 @@ namespace icl {
           /// current objects which alternately are read and written.
           ConvBuffers*  m_Buffers[3];
           /// the Mutex is used for concurrent reading and writing.
-          utils::Mutex m_Mutex;
+          std::recursive_mutex m_Mutex;
           /// The object currently written to.
           int m_Write;
           /// The write object currently not written to.

@@ -36,6 +36,7 @@ using std::strlen;
 
 #ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/JPEGHandle.h>
+#include <mutex>
 #endif
 
 using namespace std;
@@ -51,7 +52,7 @@ namespace icl{
 
     Img8u FileWriterPluginJPEG::s_oBufferImage;
 
-    Mutex FileWriterPluginJPEG::s_oBufferImageMutex;
+    std::recursive_mutex FileWriterPluginJPEG::s_oBufferImageMutex;
 
 
   #ifdef ICL_HAVE_LIBJPEG
@@ -63,7 +64,7 @@ namespace icl{
         throw ICLException (str(fmt)+" not supported by jpeg");
       }
 
-      Mutex::Locker _locker(s_oBufferImageMutex);
+      std::lock_guard<std::recursive_mutex> _locker(s_oBufferImageMutex);
 
       const Img8u *poSrc = 0;
       if(image->getDepth()!= depth8u){

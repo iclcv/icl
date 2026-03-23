@@ -33,10 +33,10 @@
 #include <ICLQt/Common.h>
 #include <ICLQt/Application.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/GenericGrabber.h>
 
 #include <sstream>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::io;
@@ -44,7 +44,7 @@ using namespace icl::qt;
 using namespace std;
 
 std::string devlist;
-Mutex mux;
+std::recursive_mutex mux;
 CamCfgWidget* inst = NULL;
 
 void init(){
@@ -54,7 +54,7 @@ void init(){
 }
 
 void run(){
-  Mutex::Locker l(mux);
+  std::lock_guard<std::recursive_mutex> l(mux);
   if(inst) inst->update();
 }
 

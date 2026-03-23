@@ -41,9 +41,9 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLUtils/Mutex.h>
 
 #include <ICLIO/ColorFormatDecoder.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -100,7 +100,7 @@ namespace icl{
     };
 
     struct VideoGrabber::Data{
-        Mutex mutex;
+        std::recursive_mutex mutex;
         std::string fileName;
         Size imageSize;
 
@@ -117,7 +117,7 @@ namespace icl{
         ColorFormatDecoder cfd;
 
         Data(const std::string &filename, VideoGrabber::XineHandle* xine)
-          : mutex(Mutex::mutexTypeRecursive)
+          : mutex()
         {
           fileName = filename;
 
@@ -286,7 +286,7 @@ namespace icl{
 
 
     const ImgBase *VideoGrabber::acquireImage(){
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
 
       m_params->wait(m_data->fps);
 
@@ -329,7 +329,7 @@ namespace icl{
       if(prop.name == "stream-pos-info"){
         return;
       }
-      Mutex::Locker l(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> l(m_data->mutex);
       if(prop.name == "speed-mode"){
         m_params->speedMode = prop.value;
       }else if(prop.name == "speed"){

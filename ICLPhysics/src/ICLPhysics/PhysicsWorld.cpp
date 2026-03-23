@@ -55,6 +55,7 @@
 
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.h>
 #include <ICLPhysics/Constraint.h>
+#include <mutex>
 
 using namespace std;
 
@@ -231,7 +232,7 @@ namespace icl{
 		}
 
     void PhysicsWorld::addObject(PhysicsObject *obj){
-      utils::Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -257,7 +258,7 @@ namespace icl{
 
 
     void PhysicsWorld::removeObject(PhysicsObject *obj){
-      utils::Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -303,7 +304,7 @@ namespace icl{
     }
 
     void PhysicsWorld::step(float dtSecs, int maxSubSteps, float fixedTimeStep){
-      utils::Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
 
       //step simulation
       if(dtSecs < 0){

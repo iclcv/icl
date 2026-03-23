@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <mutex>
 
 namespace icl{
   namespace utils{
@@ -41,7 +42,7 @@ namespace icl{
         \code
         class Camera{
            float *data;
-           Mutex mutex;
+           std::recursive_mutex mutex;
            public:
            void lock(){ mutex.lock(); }
            void unlock() { mutex.unlock(); }
@@ -56,11 +57,11 @@ namespace icl{
         One major drawback is, that the wrapped T instance (wrapped by inheritance) is always constructed using
         the ()-empty constructor.\n
         The Camera class from above can simply use the default copy constructor and assignment operator if we
-        use an UncopiedInstance<Mutex> instead of the Mutex class itself.
+        use an UncopiedInstance<std::recursive_mutex> instead of the Mutex class itself.
         \code
         class Camera{
            float *data;
-           UncopiedInstance<Mutex> mutex;
+           UncopiedInstance<std::recursive_mutex> mutex;
            public:
            void lock(){ mutex.lock(); }
            void unlock() { mutex.unlock(); }

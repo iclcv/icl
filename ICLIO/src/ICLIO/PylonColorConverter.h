@@ -35,9 +35,9 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLCore/BayerConverter.h>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -74,7 +74,7 @@ namespace icl {
 
         private:
         /// A mutex lock for concurrency.
-        utils::Mutex m_Mutex;
+        std::recursive_mutex m_Mutex;
         /// A pointer to the currently used converter.
         ColorConverter* m_Converter;
         /// field for error message

@@ -40,6 +40,6 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLIO/GenericGrabber.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <ICLIO/FileWriter.h>
 #include <ICLCore/Color.h>

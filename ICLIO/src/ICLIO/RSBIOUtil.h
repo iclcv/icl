@@ -32,7 +32,6 @@
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Mutex.h>
 #include <functional>
 #include <string>
 #include <vector>
@@ -46,6 +45,7 @@
 #include <rst/generic/Value.pb.h>
 #include <rst/generic/Dictionary.pb.h>
 #include <rst/generic/KeyValuePair.pb.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -71,7 +71,7 @@ namespace icl{
       Scope m_scope;
       ListenerPtr m_listener;
 
-      utils::Mutex m_mutex;
+      std::recursive_mutex m_mutex;
       std::map<std::string,Callback> m_callbacks;
     };
 
@@ -162,7 +162,7 @@ namespace icl{
       }
 
       void handle(typename Super::DataPtr data){
-        utils::Mutex::Locker lock(Super::m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(Super::m_mutex);
         for(typename std::map<std::string,typename Super::Callback>::iterator it = Super::m_callbacks.begin();
             it != Super::m_callbacks.end();++it){
           it->second(*data);
@@ -170,12 +170,12 @@ namespace icl{
       }
 
       void registerListenerCallback(typename Super::Callback cb, const std::string &id="default"){
-        utils::Mutex::Locker lock(Super::m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(Super::m_mutex);
         Super::m_callbacks[id] = cb;
       }
 
       void unregisterListenerCallback(const std::string &id="default"){
-        utils::Mutex::Locker lock(Super::m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(Super::m_mutex);
         typename std::map<std::string,typename Super::Callback>::iterator it = Super::m_callbacks.find(id);
         if(it != Super::m_callbacks.end()){
           Super::m_callbacks.erase(it);

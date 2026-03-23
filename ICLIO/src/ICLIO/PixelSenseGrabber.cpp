@@ -36,6 +36,7 @@
   #include <lusb0_usb.h>
 #else
   #include <usb.h>
+#include <mutex>
 #endif
 
 using namespace icl::utils;
@@ -168,8 +169,8 @@ namespace icl{
       usb_dev_handle * s40;
       Img8u image;
       std::vector<ps_blob> blobs;
-      Mutex mutex;
-      Data():mutex(Mutex::mutexTypeRecursive){}
+      std::recursive_mutex mutex;
+      Data():mutex(){}
     };
 
 
@@ -196,7 +197,7 @@ namespace icl{
 
 
     const ImgBase* PixelSenseGrabber::acquireImage(){
-      Mutex::Locker __lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> __lock(m_data->mutex);
 
       ps_get_image( m_data->s40, m_data->image.begin(0) );
       int bc = ps_get_blobs( m_data->s40, m_data->blobs.data() );

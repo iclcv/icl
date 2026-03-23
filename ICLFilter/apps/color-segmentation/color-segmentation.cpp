@@ -39,6 +39,7 @@
 
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/GeomDefs.h>
+#include <mutex>
 
 VSplit gui;
 
@@ -46,7 +47,7 @@ VSplit gui;
 
 GenericGrabber grabber;
 std::shared_ptr<ColorSegmentationOp> segmenter;
-Mutex mtex;
+std::recursive_mutex mtex;
 
 Img8u currLUT,currLUTColor,segImage;
 
@@ -71,7 +72,7 @@ Scene scene;
 struct LUT3DSceneObject : public SceneObject {
   int w,h,t,dx,dy,dz,dim;
   std::vector<int> rs,gs,bs;
-  mutable Mutex mtex;
+  mutable std::recursive_mutex mtex;
   void lock() const override { mtex.lock(); }
   void unlock() const override { mtex.unlock(); }
 
@@ -186,7 +187,7 @@ void highlight_regions(int classID){
 }
 
 void mouse(const MouseEvent &e){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   if(!currLUT.getDim()) return;
 
   static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
@@ -245,7 +246,7 @@ void save_dialog(){
 }
 
 void clear_lut(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   segmenter->clearLUT(0);
 }
 
@@ -422,7 +423,7 @@ void run(){
 
   const Img8u *grabbedImage = inputImage->asImg<icl8u>();
 
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
 
   if(preMedian){
     static MedianOp m(Size(3,3));

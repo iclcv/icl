@@ -32,13 +32,13 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/SteppingRange.h>
 #include <ICLIO/OpenNIUtils.h>
 #include <limits>
 
 #include <sstream>
+#include <mutex>
 
 using namespace xn;
 using namespace icl;
@@ -68,7 +68,7 @@ OpenNIContext::OpenNIContext()
 {}
 
 OpenNIContext::~OpenNIContext(){
-  Mutex::Locker l(m_Lock);
+  std::lock_guard<std::recursive_mutex> l(m_Lock);
   if(m_Initialized){
     m_Context.Release();
     m_Initialized = false;
@@ -78,7 +78,7 @@ OpenNIContext::~OpenNIContext(){
 
 OpenNIContext* OpenNIContext::getInst(){
   static OpenNIContext inst;
-  Mutex::Locker l(inst.m_Lock);
+  std::lock_guard<std::recursive_mutex> l(inst.m_Lock);
   if(!inst.m_Initialized){
     XnStatus xn = inst.m_Context.Init();
     assertStatus(xn);

@@ -33,6 +33,7 @@
 #include <ICLMarkers/MultiCamFiducialDetector.h>
 #include <ICLGeom/Geom.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
+#include <mutex>
 
 HSplit gui;
 GenericGrabber grabber;
@@ -51,7 +52,7 @@ void updateCube(int id, const Mat &T){
     cube = new SceneObject("cuboid",p);
     cube->setVisible(Primitive::quad,false);
     cube->addChild(new ComplexCoordinateFrameSceneObject);
-    Mutex::Locker lock(scene);
+    std::lock_guard<std::recursive_mutex> lock(scene.getMutex());
     scene.addObject(cube);
   }
   cube->setTransformation(T);

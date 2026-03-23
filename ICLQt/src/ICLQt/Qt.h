@@ -38,7 +38,7 @@
 
 #include <QApplication>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 #include <ICLQt/ButtonHandle.h>
 #include <ICLQt/BoxHandle.h>

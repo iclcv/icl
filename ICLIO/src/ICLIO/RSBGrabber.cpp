@@ -35,13 +35,13 @@
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLCore/ImageSerializer.h>
 
 #include <ICLIO/RSBGrabber.h>
 #include <ICLIO/RSBImage.pb.h>
 #include <ICLIO/ImageCompressor.h>
+#include <mutex>
 
 using namespace boost;
 using namespace rsb;
@@ -55,13 +55,13 @@ namespace icl{
 
     struct RSBGrabber::Data {
 
-        Data() : mutex(Mutex::mutexTypeRecursive){}
+        Data() : mutex(){}
 
         ListenerPtr listener;
         Informer<std::string>::Ptr propertyInformer;
         std::string propertyScopeName;
 
-        Mutex mutex;
+        std::recursive_mutex mutex;
         ImgBase *bufferImage;
         ImgBase *outputImage;
         bool hasNewImage;
@@ -114,7 +114,7 @@ namespace icl{
         shared_ptr<rsb::Handler> handler;
 
 		void update(RSBImage &image, RSBGrabber *impl){
-		  Mutex::Locker lock(mutex); // "reentrant-ness" and external access
+		  std::lock_guard<std::recursive_mutex> lock(mutex); // "reentrant-ness" and external access
           const std::string &data = image.data();
 		  const std::string &mode = image.compressionmode();
 
@@ -204,7 +204,7 @@ namespace icl{
 
     const ImgBase *RSBGrabber::acquireImage(){
       ICLASSERT_RETURN_VAL(!isNull(),0);
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       while(!m_data->bufferImage || !m_data->hasNewImage){
         m_data->mutex.unlock();
         Thread::msleep(1);
@@ -230,7 +230,7 @@ namespace icl{
 
     // callback for changed configurable properties
     void RSBGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       if(prop.name == "compression-type"){
         m_data->setRLEQuality = m_data->receivedRLEQuality;
         m_data->setJPEGQuality = m_data->receivedJPEGQuality;

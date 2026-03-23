@@ -37,10 +37,11 @@
 #include <ICLIO/FileList.h>
 
 #include <QInputDialog>
+#include <mutex>
 HBox gui;
 GenericGrabber grabber;
 LocalThresholdOp ltop;
-Mutex mtex;
+std::recursive_mutex mtex;
 Rect selroi[3];
 
 void step();
@@ -83,7 +84,7 @@ void save(){
 }
 
 void step(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   static DrawHandle orig = gui["orig"];
   static ImageHandle prev = gui["prev"];
   static ButtonHandle next = gui["next"];

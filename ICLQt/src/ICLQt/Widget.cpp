@@ -93,6 +93,7 @@
 
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/HistogrammWidget.h>
+#include <mutex>
 
 using namespace std;
 using namespace icl::utils;
@@ -702,7 +703,7 @@ namespace icl{
       bool paused;
       enum CaptureTarget { SET_IMAGES, FRAME_BUFFER };
       CaptureTarget target;
-      Mutex mutex;
+      std::recursive_mutex mutex;
       GenericImageOutput imageOutput;
       std::string deviceType;
       std::string deviceInfo;
@@ -745,12 +746,12 @@ namespace icl{
 
       void registerRecordingCallback(std::function<void(const ImgBase*)> cb,
                                      const std::string &handle){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
         recordingCallbacks[handle] = cb;
       }
 
       void unregisterRecordingCallback(const std::string &handle){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
         std::map<std::string,std::function<void(const core::ImgBase*)> >::iterator it = recordingCallbacks.find(handle);
         if(it != recordingCallbacks.end()){
           recordingCallbacks.erase(it);
@@ -763,7 +764,7 @@ namespace icl{
 
       bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
                           bool forceParams, const Size &dstSize, core::format dstFmt,  core::depth dstDepth){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
 
         ICL_DELETE(converter);
         if(forceParams){
@@ -813,19 +814,19 @@ namespace icl{
         return true;
       }
       bool setPaused(bool val){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
         paused = val;
         return paused;
       }
       bool stopRecording(){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
         imageOutput.release();
         recording = false;
         return recording;
       }
 
       void captureImageHook(){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
         if(!recording || paused || (target != SET_IMAGES) ) return;
         ICLASSERT_RETURN(!imageOutput.isNull());
         if(frameIdx < frameSkip){
@@ -852,7 +853,7 @@ namespace icl{
       }
 
       void captureFrameBufferHook(){
-        Mutex::Locker l(mutex);
+        std::lock_guard<std::recursive_mutex> l(mutex);
 
         if(!recording || paused || (target != FRAME_BUFFER)) return;
         ICLASSERT_RETURN(!imageOutput.isNull());

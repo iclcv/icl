@@ -31,6 +31,7 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLIO/GenericImageOutput.h>
+#include <mutex>
 GUI gui;
 Scene scene;
 GenericImageOutput output;
@@ -39,7 +40,7 @@ Img8u image;
 
 
 struct ImgObj : public SceneObject{
-  Mutex mutex;
+  std::recursive_mutex mutex;
   ImgObj(){
     int w = image.getWidth(),h=image.getHeight();
 

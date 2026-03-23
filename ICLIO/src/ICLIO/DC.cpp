@@ -34,13 +34,12 @@
 
 #include <ICLCore/Img.h>
 #include <ICLCore/CCFunctions.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/SignalHandler.h>
 #include <ICLIO/DCGrabberThread.h>
 #include <ICLIO/DCDevice.h>
 #include <map>
-#include <ICLUtils/Mutex.h>
 #include <signal.h>
+#include <mutex>
 
 using std::string;
 using std::vector;
@@ -761,7 +760,7 @@ namespace icl{
         // {{{ open
 
       public:
-        Mutex mutex;
+        std::recursive_mutex mutex;
         dc1394_t *context;
         DCContextCreator():context(0){
         }

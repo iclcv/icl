@@ -29,7 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabberPluginCSV.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <ICLUtils/StrTok.h>
 
 #include <string>
@@ -80,7 +80,7 @@ namespace icl{
       // {{{ open
 
       m_poReadBuffer = new Img64f;
-      m_poReadBufferMutex = new Mutex;
+      m_poReadBufferMutex = new std::recursive_mutex;
     }
 
     // }}}

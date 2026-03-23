@@ -50,6 +50,7 @@
 #include <linux/sockios.h>
 #include <asm/ioctls.h>
 #include <sys/select.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -363,7 +364,7 @@ namespace icl{
 
     // adds properties to Configurable
     void SwissRangerGrabber::addProperties(){
-      Mutex::Locker l(m_mutex);
+      std::lock_guard<std::recursive_mutex> l(m_mutex);
       std::string imgmode;
       if(m_sr->iim == iimUnknownPixelsMinusOne){
         imgmode = "minus one";
@@ -407,7 +408,7 @@ namespace icl{
 
     // callback for changed configurable properties
     void SwissRangerGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      Mutex::Locker l(m_mutex);
+      std::lock_guard<std::recursive_mutex> l(m_mutex);
       if(prop.name == "intensity-image-mode"){
         if(prop.value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
         else if(prop.value == "zero") m_sr->iim = iimUnknownPixelsZero;
@@ -455,7 +456,7 @@ namespace icl{
     }
 
     const ImgBase *SwissRangerGrabber::acquireImage(){
-      Mutex::Locker l(m_mutex);
+      std::lock_guard<std::recursive_mutex> l(m_mutex);
       SR_Acquire(m_sr->cam);
       Time captureTime = Time::now();
 

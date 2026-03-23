@@ -41,6 +41,7 @@
 #include <QtWidgets/QMessageBox>
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLGeom/GridSceneObject.h>
+#include <mutex>
 
 
 namespace icl{
@@ -185,7 +186,7 @@ namespace icl{
 
     void CameraCalibrationUtils::BestOfNSaver::init(){
       num_end = nFramesSource();
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(inited) return;
       filename = CameraCalibrationUtils::get_save_filename("-o");
       if(filename != ""){
@@ -198,14 +199,14 @@ namespace icl{
     }
 
     void CameraCalibrationUtils::BestOfNSaver::stop(){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(inited){
         n = num_end;
       }
     }
 
     std::pair<int,float> CameraCalibrationUtils::BestOfNSaver::next_hook(const Camera &cam, float error){
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       if(!inited) return std::pair<int,float>(0,0);
 
 
@@ -753,7 +754,7 @@ namespace icl{
           scene.lock();
           Camera cam = scene.getCamera(0);
           {
-            Mutex::Locker lock(saver);
+            std::lock_guard<std::recursive_mutex> lock(saver->getMutex());
             try{
               if(givenIntrinsicParams){
                 cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams,

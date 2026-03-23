@@ -31,9 +31,9 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriterPlugin.h>
 #include <ICLIO/ImageCompressor.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -51,7 +51,7 @@ namespace icl{
 
       private:
       ImageCompressor compressor;
-      utils::Mutex mutex;
+      std::recursive_mutex mutex;
     };
   } // namespace io
 }

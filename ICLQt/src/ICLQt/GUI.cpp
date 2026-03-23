@@ -125,6 +125,7 @@
 
 #ifndef ICL_SYSTEM_WINDOWS
   #include <unistd.h>
+#include <mutex>
 #endif
 
 using namespace std;
@@ -282,7 +283,7 @@ namespace icl{
       GUI sub_gui;
       bool deactivateExec;
       std::string processingProperty;
-      utils::Mutex execMutex;
+      std::recursive_mutex execMutex;
       std::map<std::string,std::string> deferredAssignList;
 
       struct StSt{
@@ -448,7 +449,7 @@ namespace icl{
       ConfigurableGUIWidget(const GUIDefinition &def)
         : GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),
           deactivateExec(false), processingProperty(""),
-          execMutex(Mutex::mutexTypeRecursive)
+          execMutex()
 
       {
         static const std::string pointer_prefix = "@pointer@:";
@@ -615,7 +616,7 @@ namespace icl{
 
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
-        Mutex::Locker l(execMutex);
+        std::lock_guard<std::recursive_mutex> l(execMutex);
         const std::string &name = p.name;
         const std::string &type = p.type;
         deactivateExec = true;
@@ -656,7 +657,7 @@ namespace icl{
       }
 
       void exec(const std::string &handle){
-        Mutex::Locker l(execMutex);
+        std::lock_guard<std::recursive_mutex> l(execMutex);
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         if(deactivateExec || processingProperty == prop){

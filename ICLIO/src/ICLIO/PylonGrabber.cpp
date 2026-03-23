@@ -33,6 +33,7 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/PylonGrabber.h>
 #include <ICLUtils/Macros.h>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::io::pylon;
@@ -43,7 +44,7 @@ PylonGrabber::PylonGrabber(
   : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(nullptr)
 {
   FUNCTION_LOG("args: " << args);
-  utils::Mutex::Locker l(m_ImgMutex);
+  std::lock_guard<std::recursive_mutex> l(m_ImgMutex);
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 

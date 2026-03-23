@@ -34,7 +34,7 @@
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 /*
 TODOS:
@@ -126,7 +126,7 @@ namespace icl{
         std::map<std::string,void*> m_LibHandles;
 
         /// A mutex for the function handle map
-        Mutex m_FunctionHandleMutex;
+        std::recursive_mutex m_FunctionHandleMutex;
         /// A map holding handles to all dynamically loaded functions
         std::map<std::string,void*> m_FunctionHandles;
     };

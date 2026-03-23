@@ -59,6 +59,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::core;
@@ -79,7 +80,7 @@ namespace icl{
       float S;
       bool haveName;
       bool isShadowCam;
-      mutable Mutex mutex;
+      mutable std::recursive_mutex mutex;
       std::string lastName;
       Img8u nameTexture;
       CameraObject(Scene *parent, int cameraIndex, const float camSize, bool isShadowCam = false):
@@ -276,9 +277,9 @@ namespace icl{
 
         typedef std::map<Scene*,std::vector<ICLDrawWidget*> > LinkMap;
         static LinkMap current_links;
-        static Mutex mutex;
+        static std::recursive_mutex mutex;
 
-        Mutex::Locker lock(mutex);
+        std::lock_guard<std::recursive_mutex> lock(mutex);
         LinkMap::iterator it = current_links.find(parent);
         if(it != current_links.end()){
           std::vector<ICLDrawWidget*> &ws = it->second;
@@ -803,7 +804,7 @@ namespace icl{
 
    void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
       glewInit();
-      Mutex::Locker l(this);
+      std::lock_guard<std::recursive_mutex> l(getMutex());
       //update Sceneinfo
       (const_cast<Scene*>(this))->setPropertyValue("info.FPS",m_fps.getFPSString());
 

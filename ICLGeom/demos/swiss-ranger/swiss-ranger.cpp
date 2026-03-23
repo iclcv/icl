@@ -34,6 +34,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLCore/ImgBorder.h>
+#include <mutex>
 
 GenericGrabber *grabber = 0;
 
@@ -74,7 +75,7 @@ Vec estimate_3D_pos(const Point32f &p, float val, const Camera &cam){
 
 struct ImageObj : public SceneObject{
   Size size;
-  mutable Mutex mutex;
+  mutable std::recursive_mutex mutex;
   Img8u image;
 
   void lock() const override { mutex.lock(); }

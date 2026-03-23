@@ -31,6 +31,7 @@
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>
+#include <mutex>
 
 namespace icl{
   namespace utils{
@@ -216,7 +217,7 @@ namespace icl{
       if(p.configurable != this){
         return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
       }else{
-        Mutex::Locker lock(m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         return p.value;
       }
     }
@@ -231,7 +232,7 @@ namespace icl{
       if(p.configurable != this){
         p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
       }else{
-        Mutex::Locker lock(m_mutex);
+        std::lock_guard<std::recursive_mutex> lock(m_mutex);
         p.value = value;
       }
       call_callbacks(propertyName, this);

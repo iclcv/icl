@@ -30,6 +30,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+#include <mutex>
 HBox gui;
 Scene scene;
 GenericGrabber grabber;
@@ -38,7 +39,7 @@ Img8u image;
 Img8u backImage;
 
 struct Grid : public SceneObject{
-  Mutex mutex;
+  std::recursive_mutex mutex;
   int w,h;
   int idx(int x, int y) const { return x + w* y; }
   Grid(const ImgBase *image):w(50),h(50){

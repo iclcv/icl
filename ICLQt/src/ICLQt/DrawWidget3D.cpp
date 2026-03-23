@@ -37,6 +37,7 @@
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <mutex>
 #endif
 
 using namespace icl::utils;
@@ -48,7 +49,7 @@ namespace icl{
     }
 
     void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
-      Mutex::Locker lock(m_linkMutex);
+      std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
       //m_oCommandMutex.lock();
 
       glClear(GL_DEPTH_BUFFER_BIT);
@@ -86,7 +87,7 @@ namespace icl{
     }
 
     void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
-      Mutex::Locker lock(m_linkMutex);
+      std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
 
       if(cb == m_linkedCallback) return;
 

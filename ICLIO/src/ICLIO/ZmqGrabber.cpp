@@ -30,10 +30,10 @@
 
 #include <ICLIO/ZmqGrabber.h>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLIO/ImageCompressor.h>
 #include <zmq.hpp>
+#include <mutex>
 
 namespace icl{
 
@@ -52,7 +52,7 @@ namespace icl{
       std::string host;
       int port;
       std::vector<icl8u> rbuf;
-      Mutex mutex;
+      std::recursive_mutex mutex;
 
       Data(const std::string &host, int port):host(host),port(port){
         context = new zmq::context_t(1);

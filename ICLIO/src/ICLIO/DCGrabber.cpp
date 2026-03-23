@@ -34,6 +34,7 @@
 #include <ICLIO/IOFunctions.h>
 #include <dc1394/iso.h>
 #include <unistd.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -45,7 +46,7 @@ namespace icl{
     DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits):
       // {{{ open
 
-      m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(Mutex::mutexTypeRecursive),m_poImage(0),
+      m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(),m_poImage(0),
       m_poImageTmp(0)
     {
       dc::install_signal_handler();
@@ -72,7 +73,7 @@ namespace icl{
     const ImgBase *DCGrabber::acquireImage(){
       // {{{ open
       ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
-      utils::Mutex::Locker l(m_GrabberThreadMutex);
+      std::lock_guard<std::recursive_mutex> l(m_GrabberThreadMutex);
       if(!m_poGT){
         restartGrabberThread();
       }
@@ -158,7 +159,7 @@ namespace icl{
     // }}}
 
     void DCGrabber::restartGrabberThread(){
-      Mutex::Locker l (m_GrabberThreadMutex);
+      std::lock_guard<std::recursive_mutex> l(m_GrabberThreadMutex);
       if(m_poGT){
         m_poGT->stop();
         //      m_poGT->waitFor();

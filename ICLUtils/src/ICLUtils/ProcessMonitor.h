@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <ICLUtils/Uncopyable.h>
 
 #include <functional>

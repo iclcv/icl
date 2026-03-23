@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/OpenCVCamGrabber.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -72,14 +73,14 @@ namespace icl{
       cvc->read(frame);
       // OpenCV captures in BGR; convert to RGB for ICL
       cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-      Mutex::Locker lock(m_mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
       core::mat_to_img(&frame,&m_buffer);
       return m_buffer;
     }
 
     // callback for changed configurable properties
     void OpenCVCamGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      Mutex::Locker lock(m_mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_mutex);
       if(prop.name == "size"){
         cvc.reset(new cv::VideoCapture());
         cvc->open(device);

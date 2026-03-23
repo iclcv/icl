@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ShallowCopyable.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 namespace icl{
   namespace utils{
@@ -172,7 +172,7 @@ namespace icl{
         */
     template<class T>
     static inline void saveDelete(T* &pointer){
-      static Mutex m;
+      static std::recursive_mutex m;
       m.lock();
       ICL_DELETE(pointer);
       m.unlock();
@@ -185,7 +185,7 @@ namespace icl{
         */
     template<class T, void (T::*func)()>
     static inline void saveCall(T *obj){
-      static Mutex m;
+      static std::recursive_mutex m;
       m.lock();
       (obj->*func)();
       m.unlock();

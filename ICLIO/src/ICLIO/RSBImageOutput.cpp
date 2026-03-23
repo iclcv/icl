@@ -40,7 +40,7 @@
 #include <ICLIO/ImageCompressor.h>
 #include <ICLIO/RSBImageOutput.h>
 #include <ICLIO/RSBImage.pb.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 using namespace boost;
 using namespace rsb;
@@ -68,7 +68,7 @@ namespace icl{
     } static_RSBImage_type_registration;
 
     struct RSBImageOutput::Data{
-      Mutex mutex;
+      std::recursive_mutex mutex;
       Informer<RSBImage>::Ptr informer;
       Informer<RSBImage>::DataPtr out;
 
@@ -160,7 +160,7 @@ namespace icl{
       ICLASSERT_RETURN(image->getDim() > 0);
       ICLASSERT_RETURN(image->getChannels() > 0);
 
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       Informer<RSBImage>::DataPtr &out = m_data->out;
 
       out->set_width(image->getWidth());

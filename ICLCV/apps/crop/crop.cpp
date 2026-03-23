@@ -38,11 +38,12 @@
 
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QLabel>
+#include <mutex>
 
 GenericGrabber grabber;
 HSplit gui;
 Img8u curr;
-Mutex currMutex;
+std::recursive_mutex currMutex;
 Rect lastRect;
 
 struct Mouse1 : public MouseHandler{
@@ -136,7 +137,7 @@ void rectangular_changed(){
 }
 
 void save_as(){
-  Mutex::Locker lock(currMutex);
+  std::lock_guard<std::recursive_mutex> lock(currMutex);
   try{
     std::string filename = saveFileDialog();
     save(curr,filename);
@@ -144,7 +145,7 @@ void save_as(){
 }
 
 void overwrite(){
-  Mutex::Locker lock(currMutex);
+  std::lock_guard<std::recursive_mutex> lock(currMutex);
   std::string filename = pa("-i", 1).as<std::string>();
   save(curr,filename);
 }

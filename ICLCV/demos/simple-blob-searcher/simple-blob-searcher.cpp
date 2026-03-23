@@ -32,18 +32,19 @@
 #include <ICLQt/Common.h>
 #include <ICLCV/SimpleBlobSearcher.h>
 #include <ICLUtils/FPSLimiter.h>
+#include <mutex>
 
 GUI gui;
 GenericGrabber grabber;
 SimpleBlobSearcher S;
-Mutex mtex;
+std::recursive_mutex mtex;
 
 void mouse(const MouseEvent &e){
   if(e.hitImage() && e.isPressEvent()){
     static int &minSize = gui.get<int>("minSize");
     static int &maxSize = gui.get<int>("maxSize");
     static float &thresh = gui.get<float>("thresh");
-    Mutex::Locker lock(mtex);
+    std::lock_guard<std::recursive_mutex> lock(mtex);
     int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
     std::vector<double> color = e.getColor();
     ICLASSERT_RETURN(color.size() == 3);

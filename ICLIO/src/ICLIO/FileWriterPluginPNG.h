@@ -31,15 +31,15 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriterPlugin.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
 
     /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
     class FileWriterPluginPNG : public FileWriterPlugin{
-      utils::Mutex mutex;
+      std::recursive_mutex mutex;
       std::vector<unsigned char> data;
       std::vector<unsigned char*> rows;
 

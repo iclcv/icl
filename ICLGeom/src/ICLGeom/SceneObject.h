@@ -40,11 +40,11 @@
 #endif
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLGeom/Primitive.h>
 #include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Hit.h>
 #include <ICLQt/GLFragmentShader.h>
+#include <mutex>
 
 namespace icl{
   namespace geom{
@@ -107,7 +107,7 @@ namespace icl{
         look like this:
         \code
         class MySceneObject : public SceneObject{
-          utils::Mutex mutex;
+          std::recursive_mutex mutex;
           public:
           void lock() { mutex.lock(); }
           void unlock() { mutex.unlock(); }
@@ -838,7 +838,7 @@ namespace icl{
       SceneObject *m_parent;
       std::vector<std::shared_ptr<SceneObject> > m_children;
 
-      mutable utils::Mutex m_mutex; //!< for asynchronous updates
+      mutable std::recursive_mutex m_mutex; //!< for asynchronous updates
       bool m_enableLocking; //!< can be enabled
 
       bool m_pointSmoothingEnabled;

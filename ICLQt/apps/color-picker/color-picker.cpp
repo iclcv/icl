@@ -31,10 +31,11 @@
 #include <ICLQt/Common.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Thread.h>
+#include <mutex>
 
 VBox gui;
 GenericGrabber grabber;
-Mutex mtex;
+std::recursive_mutex mtex;
 
 
 struct XC{
@@ -56,7 +57,7 @@ std::vector<XC> colorbuffer;
 
 
 void mouse(const MouseEvent &event){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   std::string colormode = gui["colormode"].as<std::string>();
   if(event.isPressEvent()){
     const std::vector<icl64f> &c = event.getColor();
@@ -91,12 +92,12 @@ void mouse(const MouseEvent &event){
 
 
 void reset_list(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   colorbuffer.clear();
   printf("cleared! \n----------------------------------------\n");
 }
 void calc_mean(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   if(!colorbuffer.size()){
     return;
   }

@@ -39,6 +39,7 @@
 #include <ICLIO/PylonGrabberThread.h>
 #include <ICLIO/PylonColorConverter.h>
 #include <ICLUtils/Time.h>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -110,7 +111,7 @@ namespace icl {
 
         private:
           /// A mutex lock to synchronize buffer and color converter access.
-          utils::Mutex m_ImgMutex;
+          std::recursive_mutex m_ImgMutex;
           /// The PylonEnvironment automation.
           PylonAutoEnv m_PylonEnv;
           /// Count of buffers for grabbing

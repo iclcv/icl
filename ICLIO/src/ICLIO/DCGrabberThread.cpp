@@ -31,12 +31,12 @@
 #include <ICLIO/DCGrabberThread.h>
 #include <ICLIO/DCFrameQueue.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/SignalHandler.h>
 #include <ICLIO/DCDevice.h>
 #include <algorithm>
 #include <vector>
 #include <ICLIO/DCGrabber.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -47,7 +47,7 @@ namespace icl{
     namespace dc{
 
       /// mutex protected list of all currently running grabber threads
-      Mutex g_oGrabberThreadMutex;
+      std::recursive_mutex g_oGrabberThreadMutex;
       vector<DCGrabberThread*> g_vecAllThreads;
       bool g_bStopAllGrabberThreadsCalled = false;
 

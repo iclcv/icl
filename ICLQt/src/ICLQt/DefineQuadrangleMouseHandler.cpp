@@ -32,6 +32,7 @@
 #include <vector>
 #include <ICLCore/ConvexHull.h>
 #include <ICLCore/Line.h>
+#include <mutex>
 
 namespace icl{
 
@@ -70,7 +71,7 @@ namespace icl{
     }
 
     void DefineQuadrangleMouseHandler::init(const Size &maxSize, bool convexOnly){
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -105,13 +106,13 @@ namespace icl{
         throw ICLException("DefineQuadrangleMouseHandler::setQuadrangle: given quadrangle is not convex "
                            "or twisted");
       }
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       m_data->ps.assign(ps,ps+4);
     }
 
 
     void DefineQuadrangleMouseHandler::setOffset(const Point &o){
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::setOffset(p) was called before it was initialized!");
       }
@@ -121,7 +122,7 @@ namespace icl{
     }
 
     std::vector<Point> DefineQuadrangleMouseHandler::getQuadrangle() const{
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::getQuadrangle() was called before it was initialized!");
       }
@@ -130,7 +131,7 @@ namespace icl{
     }
 
     void DefineQuadrangleMouseHandler::process(const MouseEvent &e){
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
@@ -182,7 +183,7 @@ namespace icl{
     }
 
     VisualizationDescription DefineQuadrangleMouseHandler::vis() const{
-      Mutex::Locker lock(this);
+      std::lock_guard<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::vis() was called before it was initialized!");
       }

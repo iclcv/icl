@@ -31,8 +31,8 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileWriterPlugin.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -55,7 +55,7 @@ namespace icl{
       static core::Img8u s_oBufferImage;
 
       /// mutex to protect the static buffer
-      static utils::Mutex s_oBufferImageMutex;
+      static std::recursive_mutex s_oBufferImageMutex;
     };
   } // namespace io
 }

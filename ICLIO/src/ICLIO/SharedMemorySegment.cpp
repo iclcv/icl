@@ -41,6 +41,7 @@
 
 #include <map>
 #include <stdio.h>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::utils;
@@ -106,14 +107,14 @@ namespace icl {
       private:
         static const int SEGMENT_INFO_SIZE = sizeof(int)
             + sizeof(bool);
-        Mutex mutex;
+        std::recursive_mutex mutex;
         QSharedMemory info_mem;
         QSharedMemory data_mem;
         int segment_locked;
         std::string name;
         int minsize;
 
-        static Mutex implMapMutex;
+        static std::recursive_mutex implMapMutex;
         static std::map<std::string,SharedMemorySegment::Impl*> implmap;
         int localInstances;
 
@@ -130,7 +131,7 @@ namespace icl {
         }
 
         Impl(std::string key) :
-          mutex(Mutex::mutexTypeRecursive), segment_locked(0), name(key),
+          mutex(), segment_locked(0), name(key),
           minsize(0), localInstances(0)
         {
           SharedMemorySegmentRegister::freeSegment(name);
@@ -140,7 +141,7 @@ namespace icl {
         }
 
         ~Impl(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           while(segment_locked){
             unlock();
           }
@@ -237,7 +238,7 @@ namespace icl {
 
         // may need multiple calls until data_mem is attached
         void update(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           // acquire info segment
           acquireSegment(&info_mem, SEGMENT_INFO_SIZE);
           QSharedMemoryLocker li(info_mem);
@@ -264,14 +265,14 @@ namespace icl {
         }
 
         void attach(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           do{
             update();
           } while (!isAttached());
         }
 
         bool isAttached(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           return data_mem.isAttached();
         }
 
@@ -284,7 +285,7 @@ namespace icl {
         }
 
         void forceSetMinSize(int minsize){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           lock(minsize);
           if(needResize()) {
             setMinSize(minsize);
@@ -319,7 +320,7 @@ namespace icl {
         }
 
         bool unlock(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           if(!--segment_locked){
             // unlock both segments
             data_mem.unlock();
@@ -332,12 +333,12 @@ namespace icl {
         }
 
         bool isLocked(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           return segment_locked;
         }
 
         static SharedMemorySegment::Impl* alloc(std::string name){
-          Mutex::Locker l(implMapMutex);
+          std::lock_guard<std::recursive_mutex> l(implMapMutex);
           if(implmap.find(name) == implmap.end()){
             implmap[name] = new Impl(name);
           }
@@ -346,7 +347,7 @@ namespace icl {
         }
 
         static void free(std::string name){
-          Mutex::Locker l(implMapMutex);
+          std::lock_guard<std::recursive_mutex> l(implMapMutex);
           if(implmap.find(name) == implmap.end()) return;
           if(--(implmap[name] -> localInstances) == 0){
             ICL_DELETE(implmap[name]);
@@ -362,7 +363,7 @@ namespace icl {
         }
 
         static void handleSignal(){
-        Mutex::Locker l(implMapMutex);
+        std::lock_guard<std::recursive_mutex> l(implMapMutex);
           std::map<std::string,SharedMemorySegment::Impl*>* map =
               SharedMemorySegment::Impl::getImplMap();
           std::map<std::string,SharedMemorySegment::Impl*>::iterator it;
@@ -376,7 +377,7 @@ namespace icl {
 
     };
 
-    Mutex SharedMemorySegment::Impl::implMapMutex(Mutex::mutexTypeRecursive);
+    std::recursive_mutex SharedMemorySegment::Impl::implMapMutex;
     std::map<std::string,SharedMemorySegment::Impl*> SharedMemorySegment::Impl::implmap;
 
     //##########################################################################
@@ -384,50 +385,50 @@ namespace icl {
     //##########################################################################
 
     SharedMemorySegment::SharedMemorySegment(std::string name, int minsize) :
-      m_Mutex(Mutex::mutexTypeRecursive), m_Impl(nullptr), m_Name(name), m_Minsize(minsize)
+      m_Mutex(), m_Impl(nullptr), m_Name(name), m_Minsize(minsize)
     {}
 
     SharedMemorySegment::~SharedMemorySegment(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       release();
     }
 
     void SharedMemorySegment::release(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(m_Impl) SharedMemorySegment::Impl::free(m_Impl->getName());
       m_Impl = nullptr;
     }
 
     std::string SharedMemorySegment::getName(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       return m_Name;
     }
 
     void SharedMemorySegment::reset(std::string name, int minsize){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       m_Name = name;
       m_Minsize = minsize;
     }
 
     bool SharedMemorySegment::isAttached(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       return m_Impl && m_Impl->isAttached();
     }
 
     void SharedMemorySegment::forceMinSize(int size){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       //if(m_Impl) m_Impl->setMinSize(size);
       if(m_Impl && size) m_Impl->forceSetMinSize(size);
     }
 
     int SharedMemorySegment::getSize(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(!m_Impl) return -1;
       return m_Impl->getSize();
     }
 
     bool SharedMemorySegment::isEmpty() const{
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(m_Impl && m_Impl->isAttached()){
         const char* data = static_cast<const char*>(m_Impl->data_mem.constData());
         for(int i = 0; i < m_Impl->data_mem.size(); ++i){
@@ -440,7 +441,7 @@ namespace icl {
     }
 
     void* SharedMemorySegment::data(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.data();
@@ -450,7 +451,7 @@ namespace icl {
     }
 
     const void* SharedMemorySegment::data() const{
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.data();
@@ -460,7 +461,7 @@ namespace icl {
     }
 
     const void* SharedMemorySegment::constData() const{
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       if(!m_Impl) return nullptr;
       if(m_Impl->isAttached() && m_Impl->isLocked()){
         return m_Impl->data_mem.constData();
@@ -470,7 +471,7 @@ namespace icl {
     }
 
     bool SharedMemorySegment::lock(int minsize){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       // check impl
       if(m_Impl && (m_Impl->getName() != m_Name)){
         release();
@@ -489,7 +490,7 @@ namespace icl {
     }
 
     bool SharedMemorySegment::unlock(){
-      Mutex::Locker l(m_Mutex);
+      std::lock_guard<std::recursive_mutex> l(m_Mutex);
       return m_Impl->unlock();
     }
 
@@ -499,11 +500,11 @@ namespace icl {
 
     class SegmentRegisterData{
       private:
-        Mutex mutex;
+        std::recursive_mutex mutex;
         SharedMemorySegment reg_segment;
 
         // acquires special register segment
-        SegmentRegisterData() : mutex(Mutex::mutexTypeRecursive)
+        SegmentRegisterData() : mutex()
         {
           // reset segment (neccessary when not correctly destroyed)
           SharedMemorySegmentRegister::freeSegment(ICL_SHARED_MEMORY_REGISTER_NAME);
@@ -530,19 +531,19 @@ namespace icl {
           return &segment_register_data;
         }
 
-        static Mutex* regMutex(){
-          static Mutex segment_register_mutex;
+        static std::recursive_mutex* regMutex(){
+          static std::recursive_mutex segment_register_mutex;
           return &segment_register_mutex;
         }
 
         void lock(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           regMutex()->lock();
           reg_segment.lock();
         }
 
         void unlock(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           reg_segment.unlock();
           regMutex()->unlock();
         }
@@ -552,7 +553,7 @@ namespace icl {
         }
 
         std::multiset<std::string> getSegmentSet(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           std::multiset<std::string> gs;
           const char* data = static_cast<const char*>(reg_segment.constData());
           int count = *reinterpret_cast<const int*>(data);
@@ -566,7 +567,7 @@ namespace icl {
         }
 
         void setSegmentSet(std::multiset<std::string> set){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           char* data = static_cast<char*>(reg_segment.data());
           int* setSize = reinterpret_cast<int*>(data);
           data += sizeof(int);
@@ -596,14 +597,14 @@ namespace icl {
         }
 
         void addSegment(std::string name){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           std::multiset<std::string> set = getSegmentSet();
           set.insert(name);
           setSegmentSet(set);
         }
 
         void removeSegment(std::string name){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           std::multiset<std::string> set = getSegmentSet();
           if(set.find(name) != set.end()){
             set.erase(set.find(name));
@@ -616,7 +617,7 @@ namespace icl {
         }
 
         void release(){
-          Mutex::Locker l(mutex);
+          std::lock_guard<std::recursive_mutex> l(mutex);
           regMutex()->lock();
           reg_segment.release();
         }

@@ -42,6 +42,7 @@
 #include <ICLFilter/MorphologicalOp.h>
 
 #include <fstream>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::core;
@@ -56,7 +57,7 @@ HSplit gui;
 Scene scene;
 
 PointCloudObject obj;
-Mutex grabberMutex;
+std::recursive_mutex grabberMutex;
 std::shared_ptr<GenericPointCloudGrabber> grabber;
 const core::Img8u &calculate(const core::Img32f &depthImage, bool filter, bool average, bool gauss);
 std::shared_ptr<RayCastOctreeObject> octree;
@@ -160,7 +161,7 @@ void mouse(const MouseEvent &e){
 
       if(e.isPressEvent() && (e.isModifierActive(ShiftModifier)
                               || e.isModifierActive(ControlModifier))){
-        Mutex::Locker lock(grabberMutex);
+        std::lock_guard<std::recursive_mutex> lock(grabberMutex);
         grabber->setCameraWorldFrame(T);
         scene.getCamera(0).setWorldFrame(T);
 

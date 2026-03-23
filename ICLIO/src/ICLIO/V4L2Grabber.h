@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLIO/Grabber.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -41,7 +41,7 @@ namespace icl{
     class V4L2Grabber : public Grabber{
         class Impl; //!< internal implementation
         Impl *impl; //!< internal data structure
-        utils::Mutex implMutex; //!< protects the impl which is reallocated when the core::format is changed
+        std::recursive_mutex implMutex; //!< protects the impl which is reallocated when the core::format is changed
       public:
 
         /// create a new grabbers instance, with given device name (

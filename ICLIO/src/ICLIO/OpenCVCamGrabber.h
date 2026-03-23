@@ -36,9 +36,9 @@
 #include <ICLCore/OpenCV.h>
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Mutex.h>
 
 #include <opencv2/videoio.hpp>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -51,7 +51,7 @@ namespace icl{
         ///number of device
         int device;
         ///
-        utils::Mutex m_mutex;
+        std::recursive_mutex m_mutex;
         ///Buffer for imagescaling
         core::ImgBase *m_buffer;
       public:

@@ -32,10 +32,10 @@
 #include <ICLPhysics/PhysicsWorld.h>
 #include <ICLPhysics/PhysicsPaper.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLQt/MouseHandler.h>
 
 #include <map>
+#include <mutex>
 
 namespace icl{
 namespace physics{
@@ -83,7 +83,7 @@ namespace physics{
     AttractorMap attractors;
     PhysicsWorld *world;
     geom::Scene *scene;
-    utils::Mutex attractorMutex;
+    std::recursive_mutex attractorMutex;
     std::shared_ptr<qt::MouseHandler> mouse;
     std::vector<LineAnnotation*> lines;
     DraggedPositionIndicator *draggedPositionIndicator;

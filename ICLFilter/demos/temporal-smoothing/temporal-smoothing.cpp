@@ -33,6 +33,7 @@
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLUtils/Time.h>
+#include <mutex>
 
 VSplit gui;
 
@@ -60,8 +61,8 @@ void init(){
 
 
 void update(){
-  static Mutex mutex;
-  Mutex::Locker l(mutex);
+  static std::recursive_mutex mutex;
+  std::lock_guard<std::recursive_mutex> l(mutex);
 
   static ImageHandle image = gui["image"];
   static ImageHandle imageOut = gui["imageOut"];

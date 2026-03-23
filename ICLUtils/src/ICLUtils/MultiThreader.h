@@ -32,7 +32,6 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Semaphore.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/ShallowCopyable.h>
 #include <vector>
 

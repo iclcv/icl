@@ -36,6 +36,7 @@
 #include <png.h>
 #include <cstdio>
 #include <stdint.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -45,7 +46,7 @@ namespace icl{
 
 
     void FileWriterPluginPNG::write(File &file, const ImgBase *image){
-      Mutex::Locker lock(mutex);
+      std::lock_guard<std::recursive_mutex> lock(mutex);
       ICLASSERT_RETURN(image);
       FILE *cfile = fopen(file.getName().c_str(), "wb");
       if (!cfile){

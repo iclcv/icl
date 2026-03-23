@@ -31,10 +31,10 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLCore/Types.h>
 #include <ICLIO/FileWriterPlugin.h>
 #include <vector>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -47,7 +47,7 @@ namespace icl{
 
       private:
       /// internal mutex to protect the buffer
-      utils::Mutex m_oBufferMutex;
+      std::recursive_mutex m_oBufferMutex;
 
       /// internal data conversion buffer
       std::vector<icl8u> m_vecBuffer;

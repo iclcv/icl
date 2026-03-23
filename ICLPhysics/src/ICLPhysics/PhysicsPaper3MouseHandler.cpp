@@ -32,6 +32,7 @@
 //#include <ICLPhysics/PhysicsPaper.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLPhysics/PhysicsPaper3ContextMenu.h>
+#include <mutex>
 
 namespace icl{
   using namespace utils;
@@ -59,12 +60,12 @@ namespace icl{
       bool addLinksTwice;
 
       void setLinkHighlight(const VisualizationDescription &d){
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         linkHighlight = d;
       }
 
       VisualizationDescription getLinkHighlight() const {
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         return linkHighlight;
       }
 

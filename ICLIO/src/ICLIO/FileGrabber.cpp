@@ -60,6 +60,7 @@
 
 #if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
 #include <QtCore/QDir>
+#include <mutex>
 #endif
 
 using namespace icl::utils;
@@ -182,7 +183,7 @@ namespace icl{
     }
 
     FileGrabber::FileGrabber()
-      :  m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
+      :  m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
     {
       m_data->iCurrIdx  = 0;
       m_data->bBufferImages = false;
@@ -196,7 +197,7 @@ namespace icl{
     FileGrabber::FileGrabber(const std::string &pattern,
                                      bool buffer,
                                      bool ignoreDesired)
-      : m_data(new Data), m_propertyMutex(utils::Mutex::mutexTypeRecursive), m_updatingProperties(false)
+      : m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
     {
       // {{{ open
 
@@ -475,7 +476,7 @@ namespace icl{
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      utils::Mutex::Locker l(m_propertyMutex);
+      std::lock_guard<std::recursive_mutex> l(m_propertyMutex);
       if (m_updatingProperties) return;
       if(prop.name == "next") {
         next();
@@ -516,7 +517,7 @@ namespace icl{
     }
 
     void FileGrabber::updateProperties(const ImgBase* img){
-      utils::Mutex::Locker l(m_propertyMutex);
+      std::lock_guard<std::recursive_mutex> l(m_propertyMutex);
       m_updatingProperties = true;
       int s = m_data->oFileList.size();
       int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);

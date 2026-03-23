@@ -34,7 +34,7 @@
 #include <memory>
 #include <ICLUtils/Exception.h>
 #include <ICLMath/FixedVector.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 #include <ICLMarkers/BCHCode.h>
 

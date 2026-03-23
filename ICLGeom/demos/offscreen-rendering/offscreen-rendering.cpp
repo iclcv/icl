@@ -33,13 +33,14 @@
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Random.h>
+#include <mutex>
 
 // global data
 HBox gui;
 Scene scene;
 
 struct OSRCube : public SceneObject{
-  mutable Mutex mutex;
+  mutable std::recursive_mutex mutex;
   Img8u image;
 
   void lock() const override { mutex.lock(); }
@@ -65,7 +66,7 @@ struct OSRCube : public SceneObject{
     gui["image"] = screen;
 
 
-    Mutex::Locker lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(mutex);
     screen.deepCopy(&image);
     image.setROI(Rect(10,10,280,280));
     URand r(-50,50);

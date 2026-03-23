@@ -47,12 +47,13 @@
 #include <ICLGeom/Scene.h>
 #include <ICLPhysics/PhysicsWorld.h>
 #include <ICLPhysics/PhysicsObject.h>
+#include <mutex>
 
 namespace icl{
   namespace physics{
 
     void remove_fallen_objects(geom::Scene *scene, PhysicsWorld *world, float minZ){
-      utils::Mutex::Locker lock(scene);
+      std::lock_guard<std::recursive_mutex> lock(scene->getMutex());
       for(int i=scene->getObjectCount()-1;i>=0;--i){
         RigidObject *pobj = dynamic_cast<RigidObject*>(scene->getObject(i));
         if(pobj && pobj->getTransformation()(3,2) < minZ){

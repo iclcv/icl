@@ -32,7 +32,7 @@
 
 #include <ICLUtils/IppInterface.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::utils;
@@ -43,7 +43,7 @@ const char* def_iomp_path_var = "IOMP_LIB_DIR";
 const char* def_ipp_search_path = "/vol/nivision/share/IPP/7.07/ipp/lib/intel64/";
 const char* def_iomp_search_path = "/vol/nivision/share/IPP/7.07/lib/intel64/";
 
-Mutex current_path_lock;
+std::recursive_mutex current_path_lock;
 std::string current_ipp_search_path = "";
 std::string current_iomp_search_path = "";
 
@@ -86,7 +86,7 @@ void* loadFunction(void* lib, const char* name){
 }
 
 IppInterface::IppInterface(){
-  Mutex::Locker l(current_path_lock);
+  std::lock_guard<std::recursive_mutex> l(current_path_lock);
 
   DEBUG_LOG("Getting paths from environment.")
       // update ipp search path from environment
@@ -212,7 +212,7 @@ icl32s IppInterface::ippmDet_m_64f(
 
 void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_name)
 {
-  Mutex::Locker l(m_FunctionHandleMutex);
+  std::lock_guard<std::recursive_mutex> l(m_FunctionHandleMutex);
   // check if function is already loaded
   if(m_FunctionHandles.find(symbol_name) != m_FunctionHandles.end()){
     return m_FunctionHandles[symbol_name];

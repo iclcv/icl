@@ -30,10 +30,10 @@
 
 #include <ICLGeom/PointCloudCreator.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/Mutex.h>
 
 #ifdef ICL_HAVE_OPENCL
 #include <ICLGeom/PointCloudCreatorCL.h>
+#include <mutex>
 #endif
 
 
@@ -49,7 +49,7 @@ namespace icl{
     typedef FixedColVector<float,4> ViewRayDir;
 
     struct PointCloudCreator::Data{
-      Mutex mutex;
+      std::recursive_mutex mutex;
       std::shared_ptr<Mat>rgbdMapping;
       std::shared_ptr<Camera> depthCamera, colorCamera, depthCameraOrig, colorCameraOrig; // memorized for easy copying
       Size depthImageSize;
@@ -147,7 +147,7 @@ namespace icl{
       }
 
       void reinitIfNecessary(float focalLengthMultiplier, float positionOffsetAlongNorm){
-        Mutex::Locker lock(mutex);
+        std::lock_guard<std::recursive_mutex> lock(mutex);
         if(this->focalLengthMultiplier == focalLengthMultiplier &&
            this->positionOffsetAlongNorm == positionOffsetAlongNorm) return;
 
@@ -316,7 +316,7 @@ namespace icl{
 
     void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination,
                                    const Img8u *rgbImage, float depthScaling, bool addDepthFeature){
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       m_data->lastDepthImageMM = &depthImageMM;
 
       static_cam  = m_data->colorCamera.get();
@@ -561,7 +561,7 @@ namespace icl{
     }
 
     void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
       if(!depthImageMM) throw ICLException("PointCloudCreator::mapImage: no depthImage given and not depth image "
                                            "from preceding 'create' method call available");

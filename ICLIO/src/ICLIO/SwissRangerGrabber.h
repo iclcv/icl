@@ -32,7 +32,7 @@
 
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -81,7 +81,7 @@ namespace icl{
         SwissRanger *m_sr;
 
         /// Internally used mutex locks grabbing and setting of properties
-        utils::Mutex m_mutex;
+        std::recursive_mutex m_mutex;
     };
 
   } // namespace io

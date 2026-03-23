@@ -34,10 +34,11 @@
 #include <ICLCV/RegionDetector.h>
 #include <ICLCore/Line.h>
 #include <ICLCV/CornerDetectorCSS.h>
+#include <mutex>
 
 HBox gui;
 
-Mutex mutex;
+std::recursive_mutex mutex;
 Color refColor = Color(255,255,255);
 CornerDetectorCSS css;
 GenericGrabber *grabber = 0;
@@ -45,7 +46,7 @@ GenericGrabber *grabber = 0;
 void mouse(const MouseEvent &event){
   if(event.isPressEvent()){
     if(event.getColor().size() == 3) {
-      Mutex::Locker l(mutex);
+      std::lock_guard<std::recursive_mutex> l(mutex);
       for(int i=0;i<3;++i) refColor[i] = event.getColor()[i];
       std::cout << "new Ref-Color:"  << refColor.transp() << std::endl;
     }
@@ -90,7 +91,7 @@ void init(){
 
 template<class T>
     void thresh(const Img<T> &input, Img8u &result, float t,const Color &ref){
-  Mutex::Locker l(mutex);
+  std::lock_guard<std::recursive_mutex> l(mutex);
   result.setChannels(1);
   result.setSize(input.getSize());
   const Channel<T> cs[3] = {input[0], input[1], input[2]};

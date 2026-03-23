@@ -37,6 +37,7 @@
 #include <ICLUtils/ConfigurableProxy.h>
 #include <ICLIO/Grabber.h>
 #include <string>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -58,7 +59,7 @@ namespace icl {
 
         GrabberDeviceDescription m_poDesc; //!< description of current Grabber
 
-        mutable utils::Mutex m_mutex; //! << internal protection for re-initialization
+        mutable std::recursive_mutex m_mutex; //! << internal protection for re-initialization
 
         ConfigurableRemoteServer *m_remoteServer;
 
@@ -183,13 +184,13 @@ namespace icl {
 
         /// return the actual grabber type
         std::string getType() const {
-          utils::Mutex::Locker __lock(m_mutex);
+          std::lock_guard<std::recursive_mutex> __lock(m_mutex);
           return m_poDesc.type;
         }
 
         /// returns the wrapped grabber itself
         Grabber *getGrabber() const {
-          utils::Mutex::Locker __lock(m_mutex);
+          std::lock_guard<std::recursive_mutex> __lock(m_mutex);
           return m_poGrabber;
         }
 
@@ -199,7 +200,7 @@ namespace icl {
         /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
         /** If dst is not NULL, it is exploited and filled with image data **/
         const core::ImgBase *grab(core::ImgBase **dst = 0){
-          utils::Mutex::Locker __lock(m_mutex);
+          std::lock_guard<std::recursive_mutex> __lock(m_mutex);
           ICLASSERT_RETURN_VAL(!isNull(), 0);
 
           return m_poGrabber->grab(dst);
@@ -215,56 +216,56 @@ namespace icl {
         /// internally set a desired format
         void setDesiredFormatInternal(core::format fmt){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->setDesiredFormatInternal(fmt);
         }
 
         /// internally set a desired format
         void setDesiredSizeInternal(const utils::Size &size){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->setDesiredSizeInternal(size);
         }
 
         /// internally set a desired format
         void setDesiredDepthInternal(core::depth d){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->setDesiredDepthInternal(d);
         }
 
         /// returns the desired format
         core::format getDesiredFormatInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->getDesiredFormatInternal();
         }
 
         /// returns the desired format
         core::depth getDesiredDepthInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->getDesiredDepthInternal();
         }
 
         /// returns the desired format
         utils::Size getDesiredSizeInternal() const{
           ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->getDesiredSizeInternal();
         }
 
         /// passes registered callback to the internal pointer
         void registerCallback(Grabber::callback cb){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->registerCallback(cb);
         }
 
         /// passes registered callback to the internal pointer
         void removeAllCallbacks(){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->removeAllCallbacks();
         }
 
@@ -273,7 +274,7 @@ namespace icl {
         template<class T>
         bool desiredUsed() const{
           ICLASSERT_RETURN_VAL(!isNull(),false);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->desiredUsed<T>();
         }
 
@@ -281,14 +282,14 @@ namespace icl {
         template<class T>
         void useDesired(const T &t){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->useDesired<T>(t);
         }
 
         /// sets up the grabber to use all given desired parameters
         void useDesired(core::depth d, const utils::Size &size, core::format fmt){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->useDesired(d, size, fmt);
         }
 
@@ -297,14 +298,14 @@ namespace icl {
         template<class T>
         void ignoreDesired() {
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->ignoreDesired<T>();
         }
 
         /// sets up the grabber to ignore all desired parameters
         void ignoreDesired(){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->ignoreDesired();
         }
 
@@ -313,21 +314,21 @@ namespace icl {
         template<class T>
         T getDesired() const {
           ICLASSERT_RETURN_VAL(!isNull(), T());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->getDesired<T>();
         }
 
         /// enables the undistorion
         void enableUndistortion(const std::string &filename){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->enableUndistortion(filename);
         }
 
         /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
         void enableUndistortion(const ImageUndistortion &udist){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->enableUndistortion(udist);
         }
 
@@ -335,14 +336,14 @@ namespace icl {
         /** where first argument is the filename of the xml file and second is the size of picture*/
         void enableUndistortion(const utils::ProgArg &pa){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->enableUndistortion(pa);
         }
 
         /// enables undistortion for given warp map
         void enableUndistortion(const core::Img32f &warpMap){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->enableUndistortion(warpMap);
         }
 
@@ -352,28 +353,28 @@ namespace icl {
            if the undistortion is deactivated using Grabber::disableUndistortion */
         void setUndistortionInterpolationMode(core::scalemode mode){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->setUndistortionInterpolationMode(mode);
         }
 
         /// disables distortion
         void disableUndistortion(){
           ICLASSERT_RETURN(!isNull());
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           m_poGrabber->disableUndistortion();
         }
 
         /// returns whether distortion is currently enabled
         bool isUndistortionEnabled() const{
           ICLASSERT_RETURN_VAL(!isNull(),false);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->isUndistortionEnabled();
         }
 
         /// returns the internal warp map or NULL if undistortion is not enabled
         const core::Img32f *getUndistortionWarpMap() const{
           ICLASSERT_RETURN_VAL(!isNull(),0);
-          utils::Mutex::Locker l(m_mutex);
+          std::lock_guard<std::recursive_mutex> l(m_mutex);
           return m_poGrabber->getUndistortionWarpMap();
         }
 

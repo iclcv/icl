@@ -47,13 +47,13 @@ namespace icl{
 #include <set>
 #include <signal.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/StringUtils.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstring>
+#include <mutex>
 
 #ifdef ICL_SYSTEM_APPLE
 #define SIGPOLL SIGIO
@@ -101,7 +101,7 @@ namespace icl{
       }
 
       void handle(int signal){
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         std::string name = t(signal);
         std::vector<Handler*> ordered;
 
@@ -142,7 +142,7 @@ namespace icl{
 
 
     static void register_low_level_handler(void (*handler)(int, siginfo_t*, void*), int signal){
-      Mutex::Locker lock(ctx());
+      std::lock_guard<std::recursive_mutex> lock(ctx().getMutex());
 
       struct sigaction action;
       memset(&action, 0, sizeof(action));
@@ -171,7 +171,7 @@ namespace icl{
                                 const std::string &signals, int order){
 
       SignalHandlerContext &c = ctx();
-      Mutex::Locker lock(c);
+      std::lock_guard<std::recursive_mutex> lock(c.getMutex());
 
       if(c.handlers.find(id) != c.handlers.end()){
         throw ICLException("SingnalHandler with id " + id
@@ -200,7 +200,7 @@ namespace icl{
 
     void SignalHandler::uninstall(const std::string &id){
       SignalHandlerContext &c = ctx();
-      Mutex::Locker lock(c);
+      std::lock_guard<std::recursive_mutex> lock(c.getMutex());
 
       if(c.handlers.find(id) != c.handlers.end()){
         throw ICLException("SingnalHandler with id " + id

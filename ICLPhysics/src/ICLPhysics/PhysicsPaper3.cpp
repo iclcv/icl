@@ -43,6 +43,7 @@
 #endif
 
 #include <ICLPhysics/FoldMap.h>
+#include <mutex>
 
 namespace icl{
   namespace physics{
@@ -82,7 +83,7 @@ namespace icl{
       bool visLinks;
       bool visFaces;
 
-      mutable Mutex mutex;
+      mutable std::recursive_mutex mutex;
 
       FoldMap fm;
       std::function<void(const Img32f &)> fmCallback;
@@ -106,7 +107,7 @@ namespace icl{
         GeomColor bendingConstraints;
       } linkColors;
 
-      Data():mutex(Mutex::mutexTypeRecursive),fm(Size(200,300),1.0f){
+      Data():mutex(),fm(Size(200,300),1.0f){
         visLinks = true;
         visFaces = true;
         linkStiffness = 1.e-5;

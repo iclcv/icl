@@ -31,7 +31,6 @@
 
 #include <ICLIO/OptrisGrabber.h>
 #include <libirimager/IRImager.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/File.h>
 #include <ICLUtils/Thread.h>
 #include <ICLCore/Img.h>
@@ -44,6 +43,7 @@
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLMath/LinearTransform1D.h>
 #include <fstream>
+#include <mutex>
 
 namespace optris {}
 namespace evo {}
@@ -68,7 +68,7 @@ namespace icl{
         std::vector<unsigned char> buf;
         Img32f image;
         Img32f outBuf;
-        Mutex mutex;
+        std::recursive_mutex mutex;
         Time lastTimeAcquired;
 
         Img8u visibleFrame;
@@ -264,7 +264,7 @@ namespace icl{
       virtual void run(){
         while(true){
           {
-            Mutex::Locker lock(buffer.mutex);
+            std::lock_guard<std::recursive_mutex> lock(buffer.mutex);
             if(imager->getFrame(buffer.buf.data()) == IRIMAGER_SUCCESS){
               imager->process(buffer.buf.data(), &buffer);
               imager->releaseFrame();
@@ -337,7 +337,7 @@ namespace icl{
     const core::ImgBase* OptrisGrabber::acquireImage(){
       bool omitDoubledFrames = getPropertyValue("omit doubled frames");
 
-      Mutex::Locker lock(m_data->buffer.mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
         while(m_data->buffer.getImage().getTime() == m_data->buffer.lastTimeAcquired){
           m_data->buffer.mutex.unlock();

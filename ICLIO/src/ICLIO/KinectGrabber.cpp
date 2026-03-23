@@ -33,7 +33,6 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
 #include <ICLFilter/MedianOp.h>
@@ -41,6 +40,7 @@
 
 #include <libfreenect.h>
 #include <map>
+#include <mutex>
 
 //#define FREENECT_DEBUG_LOGGING
 
@@ -63,8 +63,8 @@ namespace icl{
     private:
       int started;
       int errors;
-      Mutex startMutex;
-      Mutex *ctx_mutex;
+      std::recursive_mutex startMutex;
+      std::recursive_mutex *ctx_mutex;
       freenect_context *ctx_ptr;
       static const int MAX_ERRORS = 100;
 
@@ -72,9 +72,9 @@ namespace icl{
       std::vector<std::string> deviceAssociation;
     private:
       FreenectContext() : started(0), errors(0) {
-        static Mutex cMutex;
+        static std::recursive_mutex cMutex;
         static freenect_context *ctx = nullptr;
-        Mutex::Locker l(cMutex);
+        std::lock_guard<std::recursive_mutex> l(cMutex);
         if(!ctx && freenect_init(&ctx, nullptr) < 0){
           throw ICLException("unable to create freenect_context");
         }
@@ -110,7 +110,7 @@ namespace icl{
       }
 
       int processEvents(){
-        Mutex::Locker l(ctx_mutex);
+        std::lock_guard<std::recursive_mutex> l(*ctx_mutex);
         //DEBUG_LOG("calling freenect_process_events");
         int x = freenect_process_events(ctx_ptr);
         //DEBUG_LOG("calling freenect_process_events done");
@@ -118,24 +118,24 @@ namespace icl{
       }
 
       int openDevice(freenect_device **dev, int index){
-        Mutex::Locker l(ctx_mutex);
+        std::lock_guard<std::recursive_mutex> l(*ctx_mutex);
         return freenect_open_device(ctx_ptr, dev, index);
       }
 
       int numDevices(){
-        Mutex::Locker l(ctx_mutex);
+        std::lock_guard<std::recursive_mutex> l(*ctx_mutex);
         return freenect_num_devices(ctx_ptr);
       }
 
       void start(){
-        Mutex::Locker l(startMutex);
+        std::lock_guard<std::recursive_mutex> l(startMutex);
         if(!started++){
           Thread::start();
         }
       }
 
       void stop(){
-        Mutex::Locker l(startMutex);
+        std::lock_guard<std::recursive_mutex> l(startMutex);
         if(!--started){
           Thread::stop();
         }
@@ -193,7 +193,7 @@ namespace icl{
         freenect_device *device;
         int numColorUsers;
         int numDepthUsers;
-        Mutex colorMutex,depthMutex;
+        std::recursive_mutex colorMutex,depthMutex;
         Img8u colorImage,colorImageOut;
         Img16s irImage16s,irImage16sOut;
         Img8u irImage,irImageOut;
@@ -211,7 +211,7 @@ namespace icl{
 
 
         void depth_cb(void *data, uint32_t timestamp){
-          Mutex::Locker lock(depthMutex);
+          std::lock_guard<std::recursive_mutex> lock(depthMutex);
           const int r = depthImagePostProcessingMedianRadius;
           MedianOp *pp = (r == 3) ? &postProcessor3x3 : r == 5 ? &postProcessor5x5 : static_cast<MedianOp*>(nullptr);
 
@@ -246,7 +246,7 @@ namespace icl{
           }
         }
         void color_cb(void *data, uint32_t timestamp){
-          Mutex::Locker lock(colorMutex);
+          std::lock_guard<std::recursive_mutex> lock(colorMutex);
           switch(currentColorMode){
             case KinectGrabber::GRAB_RGB_IMAGE:
               colorImage.setTime(Time::now());
@@ -274,7 +274,7 @@ namespace icl{
         }
 
         const Img32f &getLastDepthImage(bool avoidDoubleFrames){
-          Mutex::Locker lock(depthMutex);
+          std::lock_guard<std::recursive_mutex> lock(depthMutex);
           if(avoidDoubleFrames){
             while(lastDepthTime == depthImage.getTime()){
               depthMutex.unlock();
@@ -296,7 +296,7 @@ namespace icl{
           return depthImageOut;
         }
         const ImgBase &getLastColorImage(bool avoidDoubleFrames){
-          Mutex::Locker lock(colorMutex);
+          std::lock_guard<std::recursive_mutex> lock(colorMutex);
           ImgBase &src = ( currentColorMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImage :
                            currentColorMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImage :
                            (ImgBase&)irImage16s);
@@ -568,7 +568,7 @@ namespace icl{
       int ledColor;
       float desiredTiltDegrees;
       bool avoidDoubleFrames;
-      Mutex mutex;
+      std::recursive_mutex mutex;
       Time lastupdate;
       //std::string deviceSerialString;
 
@@ -594,7 +594,7 @@ namespace icl{
 
       Impl(KinectGrabber::Mode mode, std::string idOrSerial, const Size &size)
         : device(new FreenectDevice(getIndex(idOrSerial),mode, size)),
-          ledColor(0), desiredTiltDegrees(0), avoidDoubleFrames(true), mutex(Mutex::mutexTypeRecursive), lastupdate(Time::now())
+          ledColor(0), desiredTiltDegrees(0), avoidDoubleFrames(true), mutex(), lastupdate(Time::now())
       {
 
 
@@ -681,7 +681,7 @@ namespace icl{
     }
 
     const ImgBase* KinectGrabber::acquireImage(){
-      Mutex::Locker lock(m_impl->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_impl->mutex);
       // update current angle and accelometers every 200ms
       if(m_impl -> lastupdate.age() > 200000){
         updateState();
@@ -709,7 +709,7 @@ namespace icl{
 
     /// callback for changed configurable properties
     void KinectGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      Mutex::Locker lock(m_impl->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_impl->mutex);
 
       if(prop.name == "Avoid double frames"){
         m_impl->avoidDoubleFrames = parse<bool>(prop.value);

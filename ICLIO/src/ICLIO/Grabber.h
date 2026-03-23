@@ -45,6 +45,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <mutex>
 
 namespace icl {
   namespace io{
@@ -330,7 +331,7 @@ namespace icl {
 
     class ICLIO_API GrabberRegister : utils::Uncopyable {
       private:
-        utils::Mutex mutex;
+        std::recursive_mutex mutex;
 
         struct GrabberFunctions{
           std::function<Grabber*(const std::string&)> init;

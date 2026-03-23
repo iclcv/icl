@@ -39,6 +39,7 @@
 #include <ICLGeom/ObjectEdgeDetector.h>
 #include <ICLCore/PseudoColorConverter.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
+#include <mutex>
 
 using namespace icl::core;
 using namespace icl::utils;
@@ -71,14 +72,14 @@ Img8u edgeImage;
 
 
 struct AdaptedSceneMouseHandler : public MouseHandler{
-  Mutex mutex;
+  std::recursive_mutex mutex;
   MouseHandler *h;
 
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
 
   void process(const MouseEvent &e){
-    Mutex::Locker l(mutex);
+    std::lock_guard<std::recursive_mutex> l(mutex);
       h->process(e);
   }
 

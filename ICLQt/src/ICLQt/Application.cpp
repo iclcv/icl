@@ -33,8 +33,8 @@
 #include <QtCore/QThread>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/SignalHandler.h>
+#include <mutex>
 
 using namespace icl::utils;
 
@@ -266,8 +266,8 @@ namespace icl{
   namespace{
     struct AsynchronousEventWrapper : public QEvent{
       ICLApplication::AsynchronousEvent *ae;
-      Mutex *mutex;
-      AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae, Mutex *mutex = 0):
+      std::recursive_mutex *mutex;
+      AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae, std::recursive_mutex *mutex = 0):
         QEvent(static_cast<QEvent::Type>(QEvent::registerEventType())),ae(ae),mutex(mutex){}
       ~AsynchronousEventWrapper(){
         delete ae;
@@ -293,7 +293,7 @@ namespace icl{
       event->execute();
     }else{
       if(blocking) {
-        Mutex mutex;
+        std::recursive_mutex mutex;
         mutex.lock();
         QApplication::postEvent(this,new AsynchronousEventWrapper(event, &mutex));
         mutex.lock();

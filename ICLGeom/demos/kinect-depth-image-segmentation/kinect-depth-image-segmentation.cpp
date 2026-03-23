@@ -33,6 +33,7 @@
 #include <ICLCore/PseudoColorConverter.h>
 #include <ICLGeom/Scene.h>
 #include <ICLQt/Common.h>
+#include <mutex>
 
 using namespace icl;
 using namespace icl::core;
@@ -55,14 +56,14 @@ PointCloudObject *obj;
 Scene scene;
 
 struct AdaptedSceneMouseHandler : public MouseHandler{
-  Mutex mutex;
+  std::recursive_mutex mutex;
   MouseHandler *h;
 
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
 
   void process(const MouseEvent &e){
-    Mutex::Locker l(mutex);
+    std::lock_guard<std::recursive_mutex> l(mutex);
       h->process(e);
   }
 

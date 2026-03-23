@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Configurable.h>
+#include <mutex>
 
 namespace icl{
   namespace utils{
@@ -39,7 +40,7 @@ namespace icl{
     /// This class provides the getter and setter methods of an internally set Configurable.
     class ConfigurableProxy{
       private:
-        mutable Mutex m_configurableLock;
+        mutable std::recursive_mutex m_configurableLock;
         Configurable* m_intConfigurable;
 
       public:
@@ -52,13 +53,13 @@ namespace icl{
 
         /// sets the internally used Configurable to the passed one
         void setInternalConfigurable(Configurable* c=nullptr){
-          Mutex::Locker l(m_configurableLock);
+          std::lock_guard<std::recursive_mutex> l(m_configurableLock);
           m_intConfigurable = c;
         }
 
         /// returns the internally used Configurable
         Configurable* getInternalConfigurable() const{
-          Mutex::Locker l(m_configurableLock);
+          std::lock_guard<std::recursive_mutex> l(m_configurableLock);
           ICLASSERT_THROW(m_intConfigurable,ICLException("ConfigurableProxy: internal Configurable is null"));
           return m_intConfigurable;
         }

@@ -43,7 +43,6 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/CoreFunctions.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
 #include <ICLUtils/Time.h>
@@ -52,6 +51,7 @@
 
 
 #include <map>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -92,7 +92,7 @@ namespace icl{
             libfreenect2::Frame *ir = (*frames)[libfreenect2::Frame::Ir];
             libfreenect2::Frame *depth = (*frames)[libfreenect2::Frame::Depth];
 
-            Mutex::Locker lock(this);
+            std::lock_guard<std::recursive_mutex> lock(getMutex());
             rgbImage.setChannels(4);
             interleavedToPlanar(rgb->data, &rgbImage);
             rgbImage.swapChannels(0,2);
@@ -138,7 +138,7 @@ namespace icl{
     public:
 
       Device *openDevice(int idx){
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         if(!connectedDevices.count(idx)){
           throw ICLException("cannot open Kinect2 device " + str(idx) + " (device not found!)");
           return 0;
@@ -174,7 +174,7 @@ namespace icl{
       }
 
       void freeDevice(Device *dev){
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         if(!dev){
           ERROR_LOG("cannot free null-device ??");
           return;
@@ -197,7 +197,7 @@ namespace icl{
       }
 
       std::vector<int> getConnectedDeviceList() const{
-        Mutex::Locker lock(this);
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         return std::vector<int>(connectedDevices.begin(),connectedDevices.end());
       }
     };
@@ -313,7 +313,7 @@ namespace icl{
     }
 
     const ImgBase* Kinect2Grabber::acquireImage(){
-      Mutex::Locker lock(m_impl->dev);
+      std::lock_guard<std::recursive_mutex> lock(m_impl->dev);
       switch(m_impl->mode){
       case GRAB_DEPTH_IMAGE:{
           //m_impl->waitToAvoidDoubledFrames();

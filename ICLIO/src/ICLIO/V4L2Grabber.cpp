@@ -52,6 +52,7 @@
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLIO/V4L2Grabber.h>
 #include <ICLUtils/File.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -88,7 +89,7 @@ namespace icl{
         std::string deviceName;
         int file;
         std::vector<V4L2Buffer> buffers;
-        Mutex mutex;
+        std::recursive_mutex mutex;
 
         /// the ID is the format description
         typedef std::map<std::string,SupportedFormatPtr> FMap;
@@ -474,7 +475,7 @@ namespace icl{
 
 
         void process_image(const icl8u *p, int fourcc){
-          Mutex::Locker lock(mutex);
+          std::lock_guard<std::recursive_mutex> lock(mutex);
           Time t = Time::now();
           if(deviceNameInfo == "Myrmex"){ // spezialization for the myrmex tactile device
             fourcc = FourCC("MYRM");
@@ -484,7 +485,7 @@ namespace icl{
         }
 
         const ImgBase *acquireImage(){
-          Mutex::Locker lock(mutex);
+          std::lock_guard<std::recursive_mutex> lock(mutex);
           while(!image || (avoidDoubleFrames && lastTime == image->getTime())){
             mutex.unlock();
             Thread::msleep(0);
@@ -695,19 +696,19 @@ namespace icl{
 
 
     V4L2Grabber::V4L2Grabber(const std::string &device)
-      : implMutex(utils::Mutex::mutexTypeRecursive)
+      : implMutex()
     {
       impl = new Impl(device);
       addProperties();
     }
 
     V4L2Grabber::~V4L2Grabber(){
-      Mutex::Locker lock(implMutex);
+      std::lock_guard<std::recursive_mutex> lock(implMutex);
       delete impl;
     }
 
     const ImgBase *V4L2Grabber::acquireImage(){
-      Mutex::Locker lock(implMutex);
+      std::lock_guard<std::recursive_mutex> lock(implMutex);
       const ImgBase *image = 0;
       do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
       return image;
@@ -763,7 +764,7 @@ namespace icl{
 
     // callback for changed configurable properties
     void V4L2Grabber::processPropertyChange(const utils::Configurable::Property &prop){
-      Mutex::Locker lock(implMutex);
+      std::lock_guard<std::recursive_mutex> lock(implMutex);
       if(prop.name == "format"){
         std::string oldDeviceName = impl->deviceName;
         impl->stop();

@@ -31,6 +31,7 @@
 #include <ICLIO/PylonColorConverter.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
+#include <mutex>
 
 #define CONCAT(x) (std::ostringstream << x).str()
 
@@ -51,13 +52,13 @@ using namespace Pylon;
 
 // Constructor
 PylonColorConverter::PylonColorConverter() : m_Mutex() {
-  Mutex::Locker l(m_Mutex);
+  std::lock_guard<std::recursive_mutex> l(m_Mutex);
   m_Converter = nullptr;
 }
 
 // Destructor
 PylonColorConverter::~PylonColorConverter(){
-  Mutex::Locker l(m_Mutex);
+  std::lock_guard<std::recursive_mutex> l(m_Mutex);
   ICL_DELETE(m_Converter)
 }
 
@@ -67,7 +68,7 @@ void PylonColorConverter::resetConversion(
     Pylon::PixelType pixel_type, std::string pixel_type_name){
 
   //locking mutex
-  Mutex::Locker l(m_Mutex);
+  std::lock_guard<std::recursive_mutex> l(m_Mutex);
   DEBUG_LOG("w=" << width << " h=" << height << " t=" << pixel_type
                     << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   #ifdef SPEED_TEST
@@ -194,7 +195,7 @@ ImgBase* PylonColorConverter::convert(const void *pImageBuffer, ConvBuffers* b){
 #ifdef SPEED_TEST
   Time t = Time::now();
 #endif
-  Mutex::Locker l(m_Mutex);
+  std::lock_guard<std::recursive_mutex> l(m_Mutex);
   if(m_Converter == nullptr){
     DEBUG_LOG(m_ErrorMessage)
     return nullptr;

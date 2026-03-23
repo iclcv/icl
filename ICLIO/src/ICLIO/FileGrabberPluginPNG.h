@@ -31,9 +31,9 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <vector>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -45,7 +45,7 @@ namespace icl{
       std::vector<unsigned char*> rows;
 
       /// ensures, that data and rows is not used from several threads
-      utils::Mutex mutex;
+      std::recursive_mutex mutex;
 
       public:
       /// grab implementation

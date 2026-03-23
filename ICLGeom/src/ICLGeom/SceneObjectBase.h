@@ -39,7 +39,7 @@
 #else
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 #include <ICLQt/GLFragmentShader.h>
 
 namespace icl{

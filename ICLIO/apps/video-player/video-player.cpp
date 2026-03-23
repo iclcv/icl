@@ -29,13 +29,14 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <mutex>
 
 VSplit gui;
 std::string filename;
 GenericGrabber grabber;
 bool disableNextUpdate = false;
 bool mouseInWindow = false;
-Mutex mtex;
+std::recursive_mutex mtex;
 bool paused=false;
 
 #ifdef ICL_HAVE_OPENCV
@@ -54,7 +55,7 @@ enum SliderEventType { press,release };
 
 template<SliderEventType t>
 void stream_pos(){
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
   int posVal = gui["posVal"];
   switch(t){
     case press: paused = true; break;
@@ -97,7 +98,7 @@ void run(){
   int volume = gui["volume"];
 #endif
 
-  Mutex::Locker lock(mtex);
+  std::lock_guard<std::recursive_mutex> lock(mtex);
 
   while(paused || pause){
     mtex.unlock();

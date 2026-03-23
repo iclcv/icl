@@ -32,7 +32,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Semaphore.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 
 namespace icl{
@@ -103,7 +103,7 @@ namespace icl{
       MultiThreader::Work *work;
       Semaphore *m_apoSems[2];
       Semaphore *m_poSemDone;
-      Mutex m_oWorkMutex;
+      std::recursive_mutex m_oWorkMutex;
       bool m_bCurr;
       bool m_bEnd;
     };
@@ -184,7 +184,7 @@ namespace icl{
       std::vector<MultiThreader::MTWorkThread*> m_vecThreads;
       Semaphore *m_apoSems[2];
       Semaphore *m_poDoneSem;
-      Mutex m_oSemMutex;
+      std::recursive_mutex m_oSemMutex;
       bool m_bCurr;
 
     };

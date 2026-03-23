@@ -43,6 +43,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/PluginRegister.h>
+#include <mutex>
 
 using namespace boost;
 using namespace rsb;
@@ -56,7 +57,7 @@ namespace icl{
   namespace geom{
 
     struct RSBPointCloudGrabber::Data{
-      Mutex mutex;
+      std::recursive_mutex mutex;
       bool initialized;
       RSBPointCloud buffer;
       ProtoBufSerializationDevice sdev;
@@ -68,7 +69,7 @@ namespace icl{
         RSBPointCloudGrabber::Data *data;
         Handler(RSBPointCloudGrabber::Data *data):data(data){}
         virtual void notify(shared_ptr<RSBPointCloud> image){
-          Mutex::Locker lock(data->mutex);
+          std::lock_guard<std::recursive_mutex> lock(data->mutex);
           data->buffer.CopyFrom(*image);
         }
       };
@@ -129,7 +130,7 @@ namespace icl{
     }
 
     void RSBPointCloudGrabber::grab(PointCloudObjectBase &dst){
-      Mutex::Locker lock(m_data->mutex);
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       while(!m_data->buffer.IsInitialized()){
         m_data->mutex.unlock();
         Thread::msleep(10);

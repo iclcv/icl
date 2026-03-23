@@ -32,6 +32,7 @@
 #include <opencv2/videoio/videoio_c.h>
 
 #include <memory>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -61,7 +62,7 @@ namespace icl{
     }
 
     const ImgBase *OpenCVVideoGrabber::acquireImage(){
-      utils::Mutex::Locker l(mutex);
+      std::lock_guard<std::recursive_mutex> l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), 0);
       cv::Mat frame;
       data->cvc->read(frame);
@@ -79,7 +80,7 @@ namespace icl{
       return data->m_buffer;
     }
 
-    OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName) : data(new Data), mutex(Mutex::mutexTypeRecursive), updating(false){
+    OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName) : data(new Data), mutex(), updating(false){
       data->m_buffer = 0;
       data->use_video_fps = true;
       data->filename = fileName;
@@ -119,7 +120,7 @@ namespace icl{
 
     // callback for changed configurable properties
     void OpenCVVideoGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      utils::Mutex::Locker l(mutex);
+      std::lock_guard<std::recursive_mutex> l(mutex);
       if(updating) return;
       if(prop.name == "pos_msec"){
         data->cvc->set(cv::CAP_PROP_POS_MSEC,parse<double>(prop.value));

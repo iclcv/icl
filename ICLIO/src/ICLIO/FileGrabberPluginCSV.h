@@ -32,11 +32,9 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
+#include <mutex>
 
 namespace icl{
-  /** \cond */
-  namespace utils {class Mutex;}
-  /** \endcond */
 
   namespace io{
 
@@ -74,7 +72,7 @@ namespace icl{
       core::Img64f *m_poReadBuffer;
 
       /// internally used mutex to protect the reading buffer
-      utils::Mutex *m_poReadBufferMutex;
+      std::recursive_mutex *m_poReadBufferMutex;
     };
   } // namespace io
 }

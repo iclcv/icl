@@ -31,9 +31,10 @@
 #include <ICLQt/Common.h>
 #include <ICLCV/MeanShiftTracker.h>
 #include <ICLQt/MouseHandler.h>
+#include <mutex>
 
 
-Mutex m;
+std::recursive_mutex m;
 HSplit gui;
 GenericGrabber *grabber = 0;
 Point32f *newPos = 0;

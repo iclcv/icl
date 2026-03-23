@@ -37,7 +37,7 @@ namespace icl{
 
     MultiTypeMap::MultiTypeMap(){
       m_oDataMapPtr = SmartDataMapPtr(new DataMap);
-      m_oMutexPtr = SmartMutexPtr(new Mutex);
+      m_oMutexPtr = SmartMutexPtr(new std::recursive_mutex);
     }
 
     /// Destructor (deletes all remaining data)

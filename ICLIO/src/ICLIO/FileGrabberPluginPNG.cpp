@@ -34,6 +34,7 @@
 #include <png.h>
 
 #include <stdio.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -43,7 +44,7 @@ namespace icl{
   namespace io{
 
     void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
-      Mutex::Locker lock(mutex);
+      std::lock_guard<std::recursive_mutex> lock(mutex);
       png_byte header[8];
 
       FILE *cfile = fopen(file.getName().c_str(), "rb");

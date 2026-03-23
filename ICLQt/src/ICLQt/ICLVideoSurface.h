@@ -23,6 +23,7 @@
 #include <QtCore/QMutex>
 #include <QtCore/QWaitCondition>
 #include <QtCore/QAtomicInt>
+#include <mutex>
 
 namespace icl{
   namespace qt{
@@ -32,7 +33,7 @@ namespace icl{
     {
       Q_OBJECT
 
-      utils::Mutex lock;
+      std::recursive_mutex lock;
       core::Img8u img0;
       core::Img8u img1;
       core::Img8u img2;

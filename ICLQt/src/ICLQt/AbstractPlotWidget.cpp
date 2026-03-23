@@ -44,6 +44,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <mutex>
 
 
 using namespace icl::utils;
@@ -128,11 +129,11 @@ namespace icl{
       QRect zoomIndicatorRect;
       bool showZoomIndicator;
 
-      Mutex mouseHandlerMutex;
+      std::recursive_mutex mouseHandlerMutex;
       std::vector<MouseHandler*> mouseHandlers;
 
       void call_mouse_handlers(const MouseEvent &e){
-        Mutex::Locker locker(mouseHandlerMutex);
+        std::lock_guard<std::recursive_mutex> locker(mouseHandlerMutex);
         for(size_t i=0;i<mouseHandlers.size();++i){
           mouseHandlers[i]->process(e);
         }
@@ -1173,7 +1174,7 @@ namespace icl{
     }
 
     void AbstractPlotWidget::install(MouseHandler *h){
-      Mutex::Locker locker(data->mouseHandlerMutex);
+      std::lock_guard<std::recursive_mutex> locker(data->mouseHandlerMutex);
       data->mouseHandlers.push_back(h);
     }
 

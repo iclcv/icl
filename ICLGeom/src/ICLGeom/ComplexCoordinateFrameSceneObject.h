@@ -41,7 +41,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 
 namespace icl{
   namespace geom{
@@ -56,7 +56,7 @@ namespace icl{
         that is not alligned with the scene's origin, you can use this class. */
     class ComplexCoordinateFrameSceneObject : public SceneObject{
       /// internally used mutex
-      mutable utils::Mutex mutex;
+      mutable std::recursive_mutex mutex;
 
       /// length of each axis
       float axisLength;

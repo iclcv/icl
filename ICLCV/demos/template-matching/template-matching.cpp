@@ -32,6 +32,7 @@
 #include <ICLCV/CV.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLCV/ViewBasedTemplateMatcher.h>
+#include <mutex>
 
 using namespace icl::core;
 using namespace icl::utils;
@@ -46,7 +47,7 @@ Img8u templMask(Size(1,1),1);
 Img8u currImage;
 Img8u imageMask = cvt8u(ones(imageSize.width,imageSize.height,1)*255);
 
-Mutex mutex;
+std::recursive_mutex mutex;
 bool dragging = false;
 Rect currRect = Rect(Point::null,imageSize).enlarged(-imageSize.width/2);
 
@@ -65,7 +66,7 @@ void mouse(const MouseEvent &e){
     }
       dragging = true;
   }else if(e.isReleaseEvent()){
-    Mutex::Locker l(mutex);
+    std::lock_guard<std::recursive_mutex> l(mutex);
     if(dragging_R){
       currROI = currROI.normalized() & Rect(Point::null,imageSize);
       dragging = false;

@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
+#include <mutex>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -66,7 +67,7 @@ namespace icl{
                                                       const GeomColor &xAxisColor, const GeomColor &yAxisColor,
                                                       const GeomColor &zAxisColor, const GeomColor &textLabelColor,
                                                       float textScaling){
-      Mutex::Locker lock(mutex);
+      std::lock_guard<std::recursive_mutex> lock(mutex);
 
       m_vertices.clear();
       m_normals.clear();

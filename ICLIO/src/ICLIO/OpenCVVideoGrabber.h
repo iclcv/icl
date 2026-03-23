@@ -40,7 +40,7 @@
 
 #include <string>
 #include <ICLUtils/File.h>
-#include <ICLUtils/Mutex.h>
+#include <mutex>
 namespace icl{
   namespace io{
 
@@ -48,7 +48,7 @@ namespace icl{
     class ICLIO_API OpenCVVideoGrabber : public Grabber{
         struct Data; //!< pimpl type
         Data *data; //!< pimpl pointer
-        utils::Mutex mutex; //! locking
+        std::recursive_mutex mutex; //! locking
         bool updating; //! used while updating configurable
 
         /// callback for changed configurable properties

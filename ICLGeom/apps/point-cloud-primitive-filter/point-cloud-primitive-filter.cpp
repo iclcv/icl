@@ -44,6 +44,7 @@
 #include <ICLGeom/GenericPointCloudOutput.h>
 #include <ICLGeom/Primitive3DFilter.h>
 #include <ICLGeom/Primitive3DFloatSet.pb.h>
+#include <mutex>
 
 
 using namespace rsb;
@@ -60,7 +61,7 @@ GenericPointCloudOutput output;
 std::shared_ptr<Primitive3DFilter> primitiveFilter;
 
 std::vector<Primitive3DFilter::Primitive3D> primitives;
-icl::utils::Mutex primitivesMutex;
+std::recursive_mutex primitivesMutex;
 
 ListenerPtr primitivesetListener;
 

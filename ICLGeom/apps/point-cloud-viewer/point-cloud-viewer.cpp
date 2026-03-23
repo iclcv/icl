@@ -36,6 +36,7 @@
 #include <ICLGeom/GenericPointCloudGrabber.h>
 #include <ICLGeom/RayCastOctreeObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
+#include <mutex>
 
 HSplit gui;
 Scene scene;
@@ -45,7 +46,7 @@ PointCloudObject obj, obj2;
 GenericPointCloudGrabber grabber;
 GenericPointCloudGrabber grabber2; // used to add an extra point cloud if needed
 std::shared_ptr<RayCastOctreeObject> octree;
-Mutex octreeMutex;
+std::recursive_mutex octreeMutex;
 
 SceneObject *indicatorCS = 0;
 Vec pos;
@@ -56,7 +57,7 @@ void mouse(const MouseEvent &e){
   try{
     Vec v;
     {
-      Mutex::Locker lock(octreeMutex);
+      std::lock_guard<std::recursive_mutex> lock(octreeMutex);
       if(!octree) return;
       v = octree->rayCastClosest(scene.getCamera(0).getViewRay(e.getPos()), 10);
       pos = v;
@@ -183,7 +184,7 @@ void run_octree(){
     octree->insert(xyzh[i]);
   }
   //t.showAge("time for point insertion ... of " + str(xyzh.getDim()) + " points");
-  Mutex::Locker lock(octreeMutex);
+  std::lock_guard<std::recursive_mutex> lock(octreeMutex);
   ::octree = std::shared_ptr<RayCastOctreeObject>(octree);
 }
 

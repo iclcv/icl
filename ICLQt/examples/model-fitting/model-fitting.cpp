@@ -33,6 +33,7 @@
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLMath/LeastSquareModelFitting2D.h>
+#include <mutex>
 
 typedef LeastSquareModelFitting2D LS;
 typedef RansacFitter<Point32f,std::vector<double> > RANSAC;
@@ -79,8 +80,8 @@ const std::vector<Point32f> gen_circle_points(int num = 1000){
 }
 
 void compute(){
-  static Mutex mutex;
-  Mutex::Locker lock(mutex);
+  static std::recursive_mutex mutex;
+  std::lock_guard<std::recursive_mutex> lock(mutex);
 
   PlotHandle plot = gui["plot"];
   plot->lock();

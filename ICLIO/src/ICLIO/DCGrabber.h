@@ -37,6 +37,7 @@
 #include <ICLIO/DCDeviceOptions.h>
 #include <ICLIO/Grabber.h>
 #include <ICLCore/Converter.h>
+#include <mutex>
 
 namespace icl{
   namespace io{
@@ -142,7 +143,7 @@ namespace icl{
         dc::DCGrabberThread *m_poGT;
 
         /// Mutex for clean restarting of GrabberThread
-        utils::Mutex m_GrabberThreadMutex;
+        std::recursive_mutex m_GrabberThreadMutex;
 
         /// Internally used buffer images
         core::ImgBase *m_poImage, *m_poImageTmp;
