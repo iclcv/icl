@@ -30,6 +30,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+#include <ICLQt/GLFragmentShader.h>
 #include <mutex>
 HBox gui;
 Scene scene;

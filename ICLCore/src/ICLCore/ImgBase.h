@@ -179,9 +179,7 @@ namespace icl {
           @param ppoDst destination image (exploited as possible)
           @return shallow copie with given format of NULL if an error occured
           **/
-      ImgBase *reinterpretChannels(format newFmt, ImgBase **ppoDst = nullptr){
-        return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),ppoDst);
-      }
+      ImgBase *reinterpretChannels(format newFmt, ImgBase **ppoDst = nullptr);
 
 
       /// Create a shallow copy of this image with a new format (const version)
@@ -189,10 +187,7 @@ namespace icl {
           of this image.
           @return shallow copie with given format of NULL if an error occured
           **/
-      const ImgBase *reinterpretChannels(format newFmt) const{
-        // casting constness away is safe, because we effectively return a const Img<Type>*
-        return const_cast<ImgBase*>(this)->shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
-      }
+      const ImgBase *reinterpretChannels(format newFmt) const;
       /// Create a shallow copy of the image
       /** It exploits the given destination image if possible,
           i.e. if the pixel depth matches. Else this image is released
@@ -205,12 +200,8 @@ namespace icl {
           is used.
           @return shallow copy of this image
           **/
-      ImgBase* shallowCopy(const utils::Rect &roi, ImgBase** ppoDst = nullptr){
-        return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),ppoDst);
-      }
-      ImgBase* shallowCopy(ImgBase** ppoDst = nullptr){
-        return shallowCopy(getROI(),std::vector<int>(),getFormat(),getTime(),ppoDst);
-      }
+      ImgBase* shallowCopy(const utils::Rect &roi, ImgBase** ppoDst = nullptr);
+      ImgBase* shallowCopy(ImgBase** ppoDst = nullptr);
 
       /// Create a shallow copy of a const source image
       /** In contrast to the not const function shallowCopy, the const one does not provide
@@ -222,10 +213,7 @@ namespace icl {
           @param roi ROI of the returned image (Rect::null is not allowed!)
           @return shallow copy of this image with specified ROI
           */
-      const ImgBase* shallowCopy(const utils::Rect& roi) const {
-        // casting constness away is safe, because we effectively return a const Img<Type>*
-        return const_cast<ImgBase*>(this)->shallowCopy(roi,0);
-      }
+      const ImgBase* shallowCopy(const utils::Rect& roi) const;
 
 
       /// Create a shallow copy of selected channels of an image
@@ -238,9 +226,7 @@ namespace icl {
           format of that image becomes formatMatrix
           @see shallowCopy
           */
-      ImgBase* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0){
-        return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),ppoDst);
-      }
+      ImgBase* selectChannels (const std::vector<int>& channelIndices, ImgBase** ppoDst=0);
 
       /// Create a shallow copy of a single image channel of an image
       /** This function is a shortcut to use
@@ -250,11 +236,7 @@ namespace icl {
           @param ppoDst destination image
           @return image containing only the selected channel
           **/
-      ImgBase* selectChannel(int channelIndex, ImgBase **ppoDst=0){
-        ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
-        std::vector<int> v(1); v[0]= channelIndex;
-        return selectChannels(v,ppoDst);
-      }
+      ImgBase* selectChannel(int channelIndex, ImgBase **ppoDst=0);
       /// Create a shallow copy of selected channels of a const image.
       /** @param channelIndices vector containing channel indices to copy
           @return const image containing only the selected channels
@@ -821,29 +803,16 @@ namespace icl {
       /** @param s size to test
           @param nChannels channel count to test
           **/
-      bool isEqual(const utils::Size &s, int nChannels) const {
-        FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
-        return (getSize() == s) && (getChannels() == nChannels);
-      }
+      bool isEqual(const utils::Size &s, int nChannels) const;
 
       /// checks if the image has the given parameters
-      bool isEqual(const ImgParams &params){
-        FUNCTION_LOG("");
-        return m_oParams == params;
-      }
+      bool isEqual(const ImgParams &params);
 
       /// checks if the image has given params and depth
-      bool isEqual(const ImgParams &params, depth d){
-        FUNCTION_LOG("");
-        return m_oParams == params && getDepth() == d;
-      }
+      bool isEqual(const ImgParams &params, depth d);
 
       /// checks if the image has given params and depth as another image
-      bool isEqual(const ImgBase *otherImage){
-        FUNCTION_LOG("");
-        ICLASSERT_RETURN_VAL(otherImage,false);
-        return getParams() == otherImage->getParams() && getDepth() == otherImage->getDepth();
-      }
+      bool isEqual(const ImgBase *otherImage);
 
       /// returns whether image data is currently shared
       /** This function does only return true, if all channel pointers

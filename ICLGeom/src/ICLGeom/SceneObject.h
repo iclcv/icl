@@ -41,10 +41,10 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/Primitive.h>
-#include <ICLGeom/ViewRay.h>
 #include <ICLGeom/Hit.h>
-#include <ICLQt/GLFragmentShader.h>
 #include <mutex>
+
+namespace icl{ namespace qt{ class GLFragmentShader; } }
 
 namespace icl{
   namespace geom{
@@ -52,6 +52,7 @@ namespace icl{
     /** \cond */
     class Scene;
     class ShaderUtil;
+    struct ViewRay;
     /** \endcond */
 
 
@@ -435,21 +436,17 @@ namespace icl{
       /// adds a cube child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
           further properties of that object */
-      SceneObject *addCube(float x, float y, float z, float d){
-        return addCuboid(x,y,z,d,d,d);
-      }
+      ICLGeom_API SceneObject *addCube(float x, float y, float z, float d);
 
       /// adds a cuboid child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
           further properties of that object */
       ICLGeom_API SceneObject *addCuboid(float x, float y, float z, float dx, float dy, float dz);
 
-      /// adds a cuboid child-object with given parameters
-      /** returns a pointer to the cube added. This can be used to adapt
+      /// adds a sphere child-object with given parameters
+      /** returns a pointer to the sphere added. This can be used to adapt
           further properties of that object */
-      SceneObject *addSphere(float x, float y, float z, float r,int rzSteps, int xySlices){
-        return addSpheroid(x,y,z,r,r,r,rzSteps,xySlices);
-      }
+      ICLGeom_API SceneObject *addSphere(float x, float y, float z, float r, int rzSteps, int xySlices);
 
       /// adds a cuboid child-object with given parameters
       /** returns a pointer to the cube added. This can be used to adapt
@@ -647,9 +644,7 @@ namespace icl{
       ICLGeom_API Hit hit(const ViewRay &v, bool recursive = true);
 
       /// returns whether this object is hit by the given viewray (const)
-      const Hit hit(const ViewRay &v, bool recursive=true) const{
-        return const_cast<SceneObject*>(this)->hit(v,recursive);
-      }
+      ICLGeom_API const Hit hit(const ViewRay &v, bool recursive=true) const;
 
       /// returns all hits with SceneObjects form the given viewray
       ICLGeom_API std::vector<Hit> hits(const ViewRay &v, bool recursive = true);

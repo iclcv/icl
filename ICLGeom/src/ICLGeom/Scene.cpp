@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLGeom/Scene.h>
+#include <ICLQt/GLFragmentShader.h>
 #include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>

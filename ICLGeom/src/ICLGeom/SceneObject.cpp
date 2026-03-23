@@ -29,6 +29,8 @@
 ********************************************************************/
 
 #include <ICLGeom/SceneObject.h>
+#include <ICLGeom/ViewRay.h>
+#include <ICLQt/GLFragmentShader.h>
 #include <fstream>
 #include <ICLUtils/File.h>
 #include <ICLUtils/StringUtils.h>
@@ -1031,11 +1033,19 @@ namespace icl{
       return *this;
     }
 
+    SceneObject *SceneObject::addCube(float x, float y, float z, float d){
+      return addCuboid(x,y,z,d,d,d);
+    }
+
     SceneObject *SceneObject::addCuboid(float x, float y, float z, float dx, float dy, float dz){
       float params[] = {x,y,z,dx,dy,dz};
       SceneObject *o = new SceneObject("cuboid",params);
       addChild(o);
       return o;
+    }
+
+    SceneObject *SceneObject::addSphere(float x, float y, float z, float r, int rzSteps, int xySlices){
+      return addSpheroid(x,y,z,r,r,r,rzSteps,xySlices);
     }
 
     SceneObject *SceneObject::addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
@@ -1401,6 +1411,10 @@ namespace icl{
       std::vector<Hit> hits;
       collect_hits_recursive(this,v,hits,recursive);
       return hits.size() ? *std::min_element(hits.begin(),hits.end()) : Hit();
+    }
+
+    const Hit SceneObject::hit(const ViewRay &v, bool recursive) const{
+      return const_cast<SceneObject*>(this)->hit(v,recursive);
     }
 
     std::vector<Hit> SceneObject::hits(const ViewRay &v, bool recursive){

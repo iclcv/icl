@@ -40,6 +40,63 @@ namespace icl {
 
     ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) { }
 
+    // --- shallow copy convenience wrappers ---
+
+    ImgBase *ImgBase::reinterpretChannels(format newFmt, ImgBase **ppoDst){
+      return shallowCopy(getROI(),std::vector<int>(),newFmt,getTime(),ppoDst);
+    }
+
+    const ImgBase *ImgBase::reinterpretChannels(format newFmt) const{
+      // casting constness away is safe, because we effectively return a const Img<Type>*
+      return const_cast<ImgBase*>(this)->shallowCopy(getROI(),std::vector<int>(),newFmt,getTime());
+    }
+
+    ImgBase* ImgBase::shallowCopy(const Rect &roi, ImgBase** ppoDst){
+      return shallowCopy(roi,std::vector<int>(),getFormat(),getTime(),ppoDst);
+    }
+
+    ImgBase* ImgBase::shallowCopy(ImgBase** ppoDst){
+      return shallowCopy(getROI(),std::vector<int>(),getFormat(),getTime(),ppoDst);
+    }
+
+    const ImgBase* ImgBase::shallowCopy(const Rect& roi) const{
+      // casting constness away is safe, because we effectively return a const Img<Type>*
+      return const_cast<ImgBase*>(this)->shallowCopy(roi,0);
+    }
+
+    ImgBase* ImgBase::selectChannels(const std::vector<int>& channelIndices, ImgBase** ppoDst){
+      return shallowCopy(getROI(),channelIndices,formatMatrix,getTime(),ppoDst);
+    }
+
+    ImgBase* ImgBase::selectChannel(int channelIndex, ImgBase **ppoDst){
+      ICLASSERT_RETURN_VAL(validChannel(channelIndex), 0);
+      std::vector<int> v(1); v[0]= channelIndex;
+      return selectChannels(v,ppoDst);
+    }
+
+    // --- isEqual overloads ---
+
+    bool ImgBase::isEqual(const Size &s, int nChannels) const{
+      FUNCTION_LOG("isEqual("<<s.width<<","<< s.height << ","<< nChannels << ")");
+      return (getSize() == s) && (getChannels() == nChannels);
+    }
+
+    bool ImgBase::isEqual(const ImgParams &params){
+      FUNCTION_LOG("");
+      return m_oParams == params;
+    }
+
+    bool ImgBase::isEqual(const ImgParams &params, depth d){
+      FUNCTION_LOG("");
+      return m_oParams == params && getDepth() == d;
+    }
+
+    bool ImgBase::isEqual(const ImgBase *otherImage){
+      FUNCTION_LOG("");
+      ICLASSERT_RETURN_VAL(otherImage,false);
+      return getParams() == otherImage->getParams() && getDepth() == otherImage->getDepth();
+    }
+
     ImgBase::~ImgBase(){
       FUNCTION_LOG("");
     }

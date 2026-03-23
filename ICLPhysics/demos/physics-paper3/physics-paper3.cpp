@@ -29,6 +29,7 @@
 ********************************************************************/
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
+#include <ICLQt/GLFragmentShader.h>
 #include <ICLPhysics/PhysicsPaper3MouseHandler.h>
 #include <ICLPhysics/PhysicsPaper3.h>
 #include <DefaultGroundObject.h>

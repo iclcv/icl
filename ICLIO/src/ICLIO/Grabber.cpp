@@ -29,6 +29,8 @@
 ********************************************************************/
 
 #include <ICLIO/Grabber.h>
+#include <ICLIO/ImageUndistortion.h>
+#include <ICLUtils/ProgArg.h>
 #include <ICLFilter/WarpOp.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>
