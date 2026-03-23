@@ -75,9 +75,9 @@ namespace icl{
           throw ICLException("file already exists");
         }
 
-        // Allocate output format context
+        // Allocate output format context (auto-detect format from filename)
         int ret = avformat_alloc_output_context2(&formatCtx, nullptr,
-                    fourcc.empty() ? nullptr : fourcc.c_str(), filename.c_str());
+                    nullptr, filename.c_str());
         if(ret < 0 || !formatCtx){
           throw ICLException("Could not create output context");
         }
