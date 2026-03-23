@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLIO/src/ICLIO/LibAVVideoWriter.cpp                   **
 ** Module : ICLIO                                                  **
-** Authors: Matthias Esau                                          **
+** Authors: Matthias Esau, Christof Elbrechter                     **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,22 +28,19 @@
 **                                                                 **
 ********************************************************************/
 
+// Requires FFmpeg 5.0+ (send/receive encoding API)
+
 #include <ICLIO/LibAVVideoWriter.h>
 #include <ICLUtils/File.h>
 #include <ICLCore/CCFunctions.h>
 
-extern "C"
-{
-#include <libavutil/channel_layout.h>
-#include <libavutil/mathematics.h>
+extern "C" {
 #include <libavutil/opt.h>
+#include <libavutil/imgutils.h>
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libswresample/swresample.h>
 #include <libswscale/swscale.h>
-#include <libavcodec/version.h>
 }
-
-//#if LIBAVCODEC_VERSION_MAJOR <= 54
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -51,280 +48,232 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
+#define INPUT_FORMAT AV_PIX_FMT_RGB24
+#define STREAM_FORMAT AV_PIX_FMT_YUV420P
 
-    struct LibAVVideoWriter::Data{
-      Data(const std::string &filename, const std::string &fourcc, double fps, const Size &frame_size):
-        video_st(),filename(filename),fps(fps),frame_size(frame_size){
+    struct LibAVVideoWriter::Data {
 
-        DEBUG_LOG("fps:" << fps);
+      AVFormatContext *formatCtx = nullptr;
+      const AVCodec *codec = nullptr;
+      AVCodecContext *codecCtx = nullptr;
+      AVStream *stream = nullptr;
+      AVFrame *frame = nullptr;       // encoded format (YUV420P)
+      AVFrame *rgbFrame = nullptr;    // input format (RGB24)
+      AVPacket *pkt = nullptr;
+      SwsContext *swsCtx = nullptr;
+      int64_t nextPts = 0;
+      int swsWidth = 0, swsHeight = 0;
+      std::string filename;
+      double fps;
+      Size frameSize;
+
+      Data(const std::string &filename, const std::string &fourcc,
+           double fps, const Size &frame_size)
+        : filename(filename), fps(fps), frameSize(frame_size)
+      {
         if(File(filename).exists()){
           throw ICLException("file already exists");
         }
-        avformat_alloc_output_context2(&oc, nullptr, fourcc.empty() ? nullptr : fourcc.c_str(), filename.c_str());
-        if (!oc) throw ICLException("Memory error");
-        AVOutputFormat *fmt = oc->oformat;
-        add_video_stream(&video_st, oc, fmt->video_codec);
-        open_video(oc, &video_st);
-        av_dump_format(oc, 0, filename.c_str(), 1);
-        if (!(fmt->flags & AVFMT_NOFILE)) {
-            if (avio_open(&oc->pb, filename.c_str(), AVIO_FLAG_WRITE) < 0) {
-                throw ICLException("Could not open file");
-            }
+
+        // Allocate output format context
+        int ret = avformat_alloc_output_context2(&formatCtx, nullptr,
+                    fourcc.empty() ? nullptr : fourcc.c_str(), filename.c_str());
+        if(ret < 0 || !formatCtx){
+          throw ICLException("Could not create output context");
         }
-        if (avformat_write_header(oc, nullptr) < 0)
-          throw ICLException("Error writing video stream header");
+
+        // Find encoder
+        codec = avcodec_find_encoder(formatCtx->oformat->video_codec);
+        if(!codec){
+          throw ICLException("Codec not found for format");
+        }
+
+        // Create stream
+        stream = avformat_new_stream(formatCtx, codec);
+        if(!stream){
+          throw ICLException("Could not allocate stream");
+        }
+
+        // Allocate codec context
+        codecCtx = avcodec_alloc_context3(codec);
+        if(!codecCtx){
+          throw ICLException("Could not allocate codec context");
+        }
+
+        // Configure codec
+        codecCtx->width = frameSize.width;
+        codecCtx->height = frameSize.height;
+        codecCtx->pix_fmt = STREAM_FORMAT;
+        codecCtx->time_base = AVRational{1, static_cast<int>(std::round(fps))};
+        stream->time_base = codecCtx->time_base;
+        codecCtx->gop_size = 12;
+
+        if(codecCtx->codec_id == AV_CODEC_ID_MPEG2VIDEO){
+          codecCtx->max_b_frames = 2;
+        }
+
+        if(formatCtx->oformat->flags & AVFMT_GLOBALHEADER){
+          codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        }
+
+        // Open codec
+        ret = avcodec_open2(codecCtx, codec, nullptr);
+        if(ret < 0){
+          throw ICLException("Could not open codec");
+        }
+
+        // Copy codec parameters to stream
+        ret = avcodec_parameters_from_context(stream->codecpar, codecCtx);
+        if(ret < 0){
+          throw ICLException("Could not copy codec parameters");
+        }
+
+        // Allocate frames
+        frame = av_frame_alloc();
+        if(!frame) throw ICLException("Could not allocate video frame");
+        frame->format = codecCtx->pix_fmt;
+        frame->width = codecCtx->width;
+        frame->height = codecCtx->height;
+        ret = av_frame_get_buffer(frame, 0);
+        if(ret < 0) throw ICLException("Could not allocate frame buffer");
+
+        // Allocate packet
+        pkt = av_packet_alloc();
+        if(!pkt) throw ICLException("Could not allocate packet");
+
+        // Open output file
+        if(!(formatCtx->oformat->flags & AVFMT_NOFILE)){
+          ret = avio_open(&formatCtx->pb, filename.c_str(), AVIO_FLAG_WRITE);
+          if(ret < 0) throw ICLException("Could not open output file");
+        }
+
+        // Write header
+        ret = avformat_write_header(formatCtx, nullptr);
+        if(ret < 0) throw ICLException("Error writing stream header");
       }
 
       ~Data(){
-        av_write_trailer(oc);
-        close_stream(oc, &video_st);
-        if (!(oc->oformat->flags & AVFMT_NOFILE))avio_close(oc->pb);
-        avformat_free_context(oc);
-      }
-      struct OutputStream {
-        AVStream *st;
-        AVCodecContext *enc;
-        int64_t next_pts;
-        AVFrame *frame;
-        AVFrame *tmp_frame;
-        float t, tincr, tincr2;
-        struct SwsContext *sws_ctx;
-        int sws_ctx_width, sws_ctx_height;
-      };
-
-      OutputStream video_st;
-      std::string filename;
-      AVFormatContext *oc;
-      double fps;
-      utils::Size frame_size;
-      void add_video_stream(OutputStream *ost, AVFormatContext *oc, enum AVCodecID codec_id);
-      AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
-      void open_video(AVFormatContext *oc, OutputStream *ost);
-      void close_stream(AVFormatContext *oc, OutputStream *ost);
-      void fill_rgb_image(const core::ImgBase *src, AVFrame **pict);
-      AVFrame *get_video_frame(const core::ImgBase *src, OutputStream *ost);
-      int write_video_frame(const core::ImgBase *src, AVFormatContext *oc, OutputStream *ost);
-    };
-
-#define INPUT_FORMAT AV_PIX_FMT_RGB24
-#define STREAM_FORMAT AV_PIX_FMT_YUV420P
-    AVFrame *LibAVVideoWriter::Data::alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
-    {
-        AVFrame *picture;
-#if LIBAVCODEC_VERSION_MAJOR > 54
-        picture = av_frame_alloc();
-#else
-        picture = avcodec_alloc_frame();
-#endif
-        if (!picture)
-            return 0;
-
-        picture->format = pix_fmt;
-        picture->width  = width;
-        picture->height = height;
-
-        /* allocate the buffers for the frame data */
-#if LIBAVCODEC_VERSION_MAJOR > 54
-        if (av_frame_get_buffer(picture, 32) < 0) throw ICLException("Could not allocate frame data");
-#else
-        int size = avpicture_get_size(pix_fmt, width, height);
-        uint8_t *picture_buf = static_cast<uint8_t*>(av_malloc(size));
-        if (!picture_buf) {
-	    throw ICLException("Could not allocate frame data");
+        // Flush encoder
+        if(codecCtx){
+          avcodec_send_frame(codecCtx, nullptr);
+          while(avcodec_receive_packet(codecCtx, pkt) == 0){
+            av_packet_rescale_ts(pkt, codecCtx->time_base, stream->time_base);
+            pkt->stream_index = stream->index;
+            av_interleaved_write_frame(formatCtx, pkt);
+            av_packet_unref(pkt);
+          }
         }
-        avpicture_fill(reinterpret_cast<AVPicture *>(picture), picture_buf,
-                       pix_fmt, width, height);
-#endif
 
-        return picture;
-    }
+        if(formatCtx) av_write_trailer(formatCtx);
 
-    void LibAVVideoWriter::Data::open_video(AVFormatContext *oc, OutputStream *ost)
-    {
-        AVCodecContext *c = ost->enc;
-
-        /* open the codec */
-        if (avcodec_open2(c, 0, 0) < 0) throw ICLException("could not open codec");
-
-        /* Allocate the encoded raw picture. */
-        ost->frame = alloc_picture(c->pix_fmt, c->width, c->height);
-        if (!ost->frame) throw ICLException("Could not allocate picture");
-
-        /* If the output format is not YUV420P, then a temporary YUV420P
-         * picture is needed too. It is then converted to the required
-         * output format. */
-        ost->tmp_frame = 0;
-    }
-
-
-    void LibAVVideoWriter::Data::add_video_stream(OutputStream *ost, AVFormatContext *oc,
-                                 enum AVCodecID codec_id)
-    {
-        AVCodecContext *c;
-        AVCodec *codec;
-
-        /* find the video encoder */
-        codec = avcodec_find_encoder(codec_id);
-        if (!codec) throw ICLException("codec not found");
-
-        ost->st = avformat_new_stream(oc, nullptr);
-        if (!ost->st) throw ICLException("could not allocate stream");
-
-        c = avcodec_alloc_context3(codec);
-        if (!c) throw ICLException("could not allocate encoding context");
-        ost->enc = c;
-
-        /* Put sample parameters. */
-        //c->bit_rate = 400000;
-        /* Resolution must be a multiple of two. */
-        c->width    = frame_size.width;
-        c->height   = frame_size.height;
-        /* timebase: This is the fundamental unit of time (in seconds) in terms
-         * of which frame timestamps are represented. For fixed-fps content,
-         * timebase should be 1/framerate and timestamp increments should be
-         * identical to 1. */
-        ost->st->time_base = AVRational{ 10, static_cast<int>(fps*10.) };
-        std::cout<<"fps:"<<fps<<std::endl;
-        c->time_base       = ost->st->time_base;
-
-        c->gop_size      = 12; /* emit one intra frame every twelve frames at most */
-        c->pix_fmt       = STREAM_FORMAT;
-        if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
-            /* just for testing, we also add B frames */
-            c->max_b_frames = 2;
-        }
-        if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
-            /* Needed to avoid using macroblocks in which some coeffs overflow.
-             * This does not happen with normal video, it just happens here as
-             * the motion of the chroma plane does not match the luma plane. */
-            c->mb_decision = 2;
-        }
-        /* Some formats want stream headers to be separate. */
-        if (oc->oformat->flags & AVFMT_GLOBALHEADER)
-        #if LIBAVCODEC_VERSION_MAJOR > 56
-            c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-        #else
-            c->flags |= CODEC_FLAG_GLOBAL_HEADER;
-        #endif
-    }
-
-    void LibAVVideoWriter::Data::close_stream(AVFormatContext *oc, OutputStream *ost)
-    {
-
-
-        avcodec_close(ost->enc);
-
-#if LIBAVCODEC_VERSION_MAJOR > 54
-
-        av_frame_free(&ost->frame);
-        av_frame_free(&ost->tmp_frame);
-#else
-        WARNING_LOG("warning: proper memory deallocation is skipped to avoid seg-fault! please fix!");
-        //av_free(&ost->frame->data[0]);  if we do this, feeing the frame crashes!
-        //av_free(&ost->frame);
-        //av_free(&ost->tmp_frame->data[0]);
-        //av_free(&ost->tmp_frame);
-#endif
-        sws_freeContext(ost->sws_ctx);
-    }
-
-    void LibAVVideoWriter::Data::fill_rgb_image(const ImgBase *src, AVFrame **pict)
-    {
-      if(!*pict) {
-        *pict = alloc_picture(INPUT_FORMAT,src->getSize().width,src->getSize().height);
-      } else {
-        if((*pict)->width != src->getSize().width || (*pict)->height != src->getSize().height) {
-#if LIBAVCODEC_VERSION_MAJOR > 54
-          av_frame_free(pict);
-#else
-          av_free((*pict)->data[0]);
-          av_free(*pict);
-#endif
-          *pict = alloc_picture(INPUT_FORMAT,src->getSize().width,src->getSize().height);
+        av_frame_free(&frame);
+        av_frame_free(&rgbFrame);
+        av_packet_free(&pkt);
+        if(swsCtx) sws_freeContext(swsCtx);
+        if(codecCtx) avcodec_free_context(&codecCtx);
+        if(formatCtx){
+          if(!(formatCtx->oformat->flags & AVFMT_NOFILE)){
+            avio_closep(&formatCtx->pb);
+          }
+          avformat_free_context(formatCtx);
         }
       }
-#if LIBAVCODEC_VERSION_MAJOR > 54
-      av_frame_make_writable(*pict);
-#endif
-      depth d = src->getDepth();
-      switch(d) {
-        case depth16s:
-          core::planarToInterleaved(src->as16s(),(*pict)->data[0],(*pict)->linesize[0]);
-        case depth32f:
-          core::planarToInterleaved(src->as32f(),(*pict)->data[0],(*pict)->linesize[0]);
-        case depth32s:
-          core::planarToInterleaved(src->as32s(),(*pict)->data[0],(*pict)->linesize[0]);
-        case depth64f:
-          core::planarToInterleaved(src->as64f(),(*pict)->data[0],(*pict)->linesize[0]);
-        default:
-          core::planarToInterleaved(src->as8u(),(*pict)->data[0],(*pict)->linesize[0]);
-      }
-    }
 
-    AVFrame *LibAVVideoWriter::Data::get_video_frame(const ImgBase *src, OutputStream *ost)
-    {
-        AVCodecContext *c = ost->enc;
+      void fillRgbFrame(const ImgBase *src){
+        int w = src->getSize().width;
+        int h = src->getSize().height;
+
+        // Allocate or resize RGB frame
+        if(!rgbFrame || rgbFrame->width != w || rgbFrame->height != h){
+          av_frame_free(&rgbFrame);
+          rgbFrame = av_frame_alloc();
+          rgbFrame->format = INPUT_FORMAT;
+          rgbFrame->width = w;
+          rgbFrame->height = h;
+          if(av_frame_get_buffer(rgbFrame, 0) < 0){
+            throw ICLException("Could not allocate RGB frame buffer");
+          }
+        }
+        av_frame_make_writable(rgbFrame);
+
+        // Convert ICL planar image to interleaved RGB
+        switch(src->getDepth()){
+          case depth8u:
+            planarToInterleaved(src->as8u(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+          case depth16s:
+            planarToInterleaved(src->as16s(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+          case depth32s:
+            planarToInterleaved(src->as32s(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+          case depth32f:
+            planarToInterleaved(src->as32f(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+          case depth64f:
+            planarToInterleaved(src->as64f(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+          default:
+            planarToInterleaved(src->as8u(), rgbFrame->data[0], rgbFrame->linesize[0]);
+            break;
+        }
+      }
+
+      void writeFrame(const ImgBase *src){
         int sw = src->getSize().width;
         int sh = src->getSize().height;
-        //check if format or size of the input and output do not match
-        if (c->pix_fmt != INPUT_FORMAT || c->width != sw || c->height != sh) {
-            //check if the scale context needs to be updated
-            if (!ost->sws_ctx || ost->sws_ctx_width != sw || ost->sws_ctx_height != sh) {
-                //update context
-                if(ost->sws_ctx)sws_freeContext(ost->sws_ctx);
-                ost->sws_ctx = sws_getContext(sw, sh,
-                                              INPUT_FORMAT,
-                                              c->width, c->height,
-                                              c->pix_fmt,
-                                              SWS_BICUBIC, 0, 0, 0);
-                if (!ost->sws_ctx) throw ICLException("Cannot initialize the conversion context");
-            }
-            fill_rgb_image(src,&(ost->tmp_frame));
-            sws_scale(ost->sws_ctx, ost->tmp_frame->data, ost->tmp_frame->linesize,
-                      0, ost->tmp_frame->height, ost->frame->data, ost->frame->linesize);
+
+        fillRgbFrame(src);
+
+        // Scale/convert to codec format if needed
+        if(codecCtx->pix_fmt != INPUT_FORMAT ||
+           codecCtx->width != sw || codecCtx->height != sh)
+        {
+          if(!swsCtx || swsWidth != sw || swsHeight != sh){
+            if(swsCtx) sws_freeContext(swsCtx);
+            swsCtx = sws_getContext(sw, sh, INPUT_FORMAT,
+                                    codecCtx->width, codecCtx->height,
+                                    codecCtx->pix_fmt,
+                                    SWS_BICUBIC, nullptr, nullptr, nullptr);
+            if(!swsCtx) throw ICLException("Cannot create conversion context");
+            swsWidth = sw;
+            swsHeight = sh;
+          }
+          av_frame_make_writable(frame);
+          sws_scale(swsCtx, rgbFrame->data, rgbFrame->linesize,
+                    0, sh, frame->data, frame->linesize);
         } else {
-            fill_rgb_image(src,&(ost->frame));
+          // Direct copy when formats match (unlikely with YUV420P output)
+          av_frame_make_writable(frame);
+          av_frame_copy(frame, rgbFrame);
         }
 
-        ost->frame->pts = ost->next_pts++;
+        frame->pts = nextPts++;
 
-        return ost->frame;
-    }
+        // Send frame to encoder
+        int ret = avcodec_send_frame(codecCtx, frame);
+        if(ret < 0) throw ICLException("Error sending frame to encoder");
 
-    int LibAVVideoWriter::Data::write_video_frame(const ImgBase *src, AVFormatContext *oc, OutputStream *ost)
-    {
-        int ret;
-        AVCodecContext *c;
-        AVFrame *frame;
-        int got_packet = 0;
+        // Receive and write all available packets
+        while(ret >= 0){
+          ret = avcodec_receive_packet(codecCtx, pkt);
+          if(ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+          if(ret < 0) throw ICLException("Error receiving packet from encoder");
 
-        c = ost->enc;
+          av_packet_rescale_ts(pkt, codecCtx->time_base, stream->time_base);
+          pkt->stream_index = stream->index;
 
-        frame = get_video_frame(src,ost);
-
-        AVPacket pkt = { 0 };
-        av_init_packet(&pkt);
-
-        /* encode the image */
-        ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
-        if (ret < 0) throw ICLException("Error encoding a video frame");
-
-        if (got_packet) {
-#if LIBAVCODEC_VERSION_MAJOR > 54
-            av_packet_rescale_ts(&pkt, c->time_base, ost->st->time_base);
-#endif
-            pkt.stream_index = ost->st->index;
-
-            /* Write the compressed frame to the media file. */
-            ret = av_interleaved_write_frame(oc, &pkt);
+          ret = av_interleaved_write_frame(formatCtx, pkt);
+          av_packet_unref(pkt);
+          if(ret < 0) throw ICLException("Error writing video frame");
         }
-        if (ret != 0) throw ICLException("Error while writing video frame");
-        return (frame || got_packet) ? 0 : 1;
-    }
+      }
+    };
 
     LibAVVideoWriter::LibAVVideoWriter(const std::string &filename, const std::string &fourcc,
-                                       double fps, Size frame_size):
-      m_data(new Data(filename, fourcc, fps, frame_size)){
+                                       double fps, Size frame_size)
+      : m_data(new Data(filename, fourcc, fps, frame_size))
+    {
     }
 
     LibAVVideoWriter::~LibAVVideoWriter(){
@@ -332,15 +281,13 @@ namespace icl{
     }
 
     void LibAVVideoWriter::send(const ImgBase *image){
-       m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
+      m_data->writeFrame(image);
     }
-
 
     LibAVVideoWriter &LibAVVideoWriter::operator<<(const ImgBase *image){
-      m_data->write_video_frame(image, m_data->oc, &m_data->video_st);
+      m_data->writeFrame(image);
       return *this;
     }
-  } // namespace io
 
+  } // namespace io
 }
-//#endif
