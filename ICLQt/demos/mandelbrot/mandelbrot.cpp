@@ -92,6 +92,9 @@ static void mandelbrotCPU(icl8u *r, icl8u *g, icl8u *b,
 
 // --- OpenCL Mandelbrot ---
 #ifdef ICL_HAVE_OPENCL
+// Apple Silicon GPUs don't support cl_khr_fp64, so the kernel uses float.
+// Float gives ~7 digits of precision — good up to ~10^6x zoom.
+// The CPU path uses double for deep zooms.
 static const char *mandelbrotKernelSrc = R"CL(
 __kernel void mandelbrot(__global uchar *outR,
                          __global uchar *outG,
@@ -99,21 +102,21 @@ __kernel void mandelbrot(__global uchar *outR,
                          __global const uchar *palR,
                          __global const uchar *palG,
                          __global const uchar *palB,
-                         const double cx, const double cy,
-                         const double span, const int maxIter,
+                         const float cx, const float cy,
+                         const float span, const int maxIter,
                          const int width, const int height)
 {
   int px = get_global_id(0);
   int py = get_global_id(1);
   if(px >= width || py >= height) return;
 
-  double x0 = cx - span / 2.0 + px * span / width;
-  double y0 = cy - span * height / (2.0 * width) + py * span / width;
-  double zr = 0, zi = 0;
+  float x0 = cx - span / 2.0f + (float)px * span / (float)width;
+  float y0 = cy - span * (float)height / (2.0f * (float)width) + (float)py * span / (float)width;
+  float zr = 0, zi = 0;
   int iter = 0;
-  while(zr*zr + zi*zi <= 4.0 && iter < maxIter){
-    double tmp = zr*zr - zi*zi + x0;
-    zi = 2.0*zr*zi + y0;
+  while(zr*zr + zi*zi <= 4.0f && iter < maxIter){
+    float tmp = zr*zr - zi*zi + x0;
+    zi = 2.0f*zr*zi + y0;
     zr = tmp;
     ++iter;
   }
@@ -121,9 +124,9 @@ __kernel void mandelbrot(__global uchar *outR,
   if(iter >= maxIter){
     outR[idx] = outG[idx] = outB[idx] = 0;
   } else {
-    double logzn = log(zr*zr + zi*zi) / 2.0;
-    double mu = iter - log2(logzn);
-    int ci = ((int)(mu * 4.0)) & 255;
+    float logzn = log(zr*zr + zi*zi) / 2.0f;
+    float mu = (float)iter - log2(logzn);
+    int ci = ((int)(mu * 4.0f)) & 255;
     outR[idx] = palR[ci];
     outG[idx] = palG[ci];
     outB[idx] = palB[ci];
@@ -168,7 +171,8 @@ static void mandelbrotGPU(icl8u *r, icl8u *g, icl8u *b,
 {
   if(w != clW || h != clH) resizeOpenCL(w, h);
   clKernel.setArgs(clBufR, clBufG, clBufB, clPalR, clPalG, clPalB,
-                   cxv, cyv, sp, maxIter, w, h);
+                   static_cast<float>(cxv), static_cast<float>(cyv),
+                   static_cast<float>(sp), maxIter, w, h);
   clKernel.apply(w, h);
   clBufR.read(r, w * h);
   clBufG.read(g, w * h);
