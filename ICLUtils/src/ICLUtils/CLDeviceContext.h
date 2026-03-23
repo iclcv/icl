@@ -37,14 +37,8 @@
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/CLIncludes.h>
 #include <string>
-
-
-namespace cl{
-  class Device;
-  class CommandQueue;
-  class Context;
-}
 
 namespace icl {
 	namespace utils {
@@ -52,26 +46,18 @@ namespace icl {
 		/**
 		 * @brief The CLDeviceContext class allows preparation of the device used for CLPrograms.
 		 *
-		 * The CLDeviceContext class is a wrapper for the opencl c++ device, command queue and context classes.
-		 * This class is used in CLProgram to instanciate a device and allocate memory. It also is used
-		 * in CLMemoryAssistant to manage the buffer and image allocation. A CLDeviceContext can be shared over
-		 * different CLPrograms to allow memory exchanges, e.g. for processing pipelines
-		 *
+		 * The CLDeviceContext class wraps OpenCL device, command queue and context.
+		 * Used in CLProgram to instanciate a device and allocate memory, and in
+		 * CLMemoryAssistant to manage buffer/image allocation. Can be shared across
+		 * CLPrograms to allow memory exchanges (e.g. processing pipelines).
 		 */
 		class ICLUtils_API CLDeviceContext {
-			/**
-			 * Wrapper struct for internal implementation
-			 */
 			struct Impl;
-			///
 			Impl *impl;
 
-			/// returns the internal cl device structure
-			cl::Device &getDevice();
-			/// returns the internal cl command queue structure
-			cl::CommandQueue &getCommandQueue();
-			/// returns the internal cl context structure
-			cl::Context &getContext();
+			cl_device_id getDevice();
+			cl_command_queue getCommandQueue();
+			cl_context getContext();
 
 		public:
 

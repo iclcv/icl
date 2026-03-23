@@ -82,29 +82,7 @@ find_path(OpenCL_INCLUDE_DIR
     OpenCL/common/inc
     "AMD APP/include")
 
-find_path(OpenCL_2HPP_INCLUDE_DIR
-  NAMES
-    CL/cl2.hpp OpenCL/cl2.hpp
-  PATHS
-    ENV "PROGRAMFILES(X86)"
-    ENV AMDAPPSDKROOT
-    ENV INTELOCLSDKROOT
-    ENV NVSDKCOMPUTE_ROOT
-    ENV CUDA_PATH
-    ENV ATISTREAMSDKROOT
-  PATH_SUFFIXES
-    include
-    OpenCL/common/inc
-    "AMD APP/include")
-
-
-  IF(NOT OpenCL_2HPP_INCLUDE_DIR)
-    MESSAGE(WARNING "OpenCL2 header cl2.hpp not found")
-  ELSE()
-    MESSAGE(STATUS "OpenCL2 header cl2.hpp found: added definition:")
-    ADD_DEFINITIONS(-DICL_HAVE_CL2HPP)
-    SET(ICL_DEFINITIONS "${ICL_DEFINITIONS} -DICL_HAVE_CL2HPP")
-  ENDIF()
+  # C++ bindings (cl2.hpp) no longer needed — ICL uses the C API directly
 
 _FIND_OPENCL_VERSION()
 

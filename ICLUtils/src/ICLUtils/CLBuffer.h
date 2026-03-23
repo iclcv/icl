@@ -33,15 +33,8 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/CLException.h>
 #include <ICLUtils/CLMemory.h>
+#include <ICLUtils/CLIncludes.h>
 #include <string>
-
-/** \cond */
-namespace cl{
-  class Buffer;
-  class Context;
-  class CommandQueue;
-}
-/** \endcond */
 
 namespace icl {
   namespace utils {
@@ -50,19 +43,17 @@ namespace icl {
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
 	class ICLUtils_API CLBuffer : public CLMemory {
-      struct Impl; //!< internal hidden implementation type
-      Impl *impl;  //!< internal implemetation
+      struct Impl;
+      Impl *impl;
 
-      /// private constructor (buffer can only be created by CLProgram instances)
-      CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue,
+      CLBuffer(cl_context context, cl_command_queue cmdQueue,
                const std::string &accessMode, size_t size, const void *src=nullptr);
 
-	  CLBuffer(cl::Context& context, cl::CommandQueue &cmdQueue, const std::string &accessMode,
+	  CLBuffer(cl_context context, cl_command_queue cmdQueue, const std::string &accessMode,
 			   size_t length, size_t byte_depth, const void *src=nullptr);
 
-      /// provides access to the underlying cl-buffer
-      cl::Buffer &getBuffer();
-      const cl::Buffer &getBuffer() const;
+      cl_mem getBuffer();
+      cl_mem getBuffer() const;
 
     public:
       friend class CLProgram; //!< for tight integration with CLProgram instances

@@ -40,13 +40,7 @@
 #include <map>
 #include <stdint.h>
 
-/** \cond */
-namespace cl {
-    class Image2D;
-    class Context;
-    class CommandQueue;
-}
-/** \endcond */
+#include <ICLUtils/CLIncludes.h>
 
 namespace icl {
     namespace utils {
@@ -55,18 +49,16 @@ namespace icl {
         /** Valid CLImage2D instances can only be created by a CLProgram instance.
          @see CLProgram for more details */
 	  class ICLUtils_API CLImage2D : public CLMemory {
-            struct Impl; //!< internal hidden implementation type
-            Impl *impl;//!< internal implemetation
+            struct Impl;
+            Impl *impl;
 
-            /// private constructor (image can only be created by CLProgram instances)
-			CLImage2D(cl::Context& context, cl::CommandQueue &cmdQueue,
+			CLImage2D(cl_context context, cl_command_queue cmdQueue,
 					const std::string &accessMode, const size_t width, const size_t height,
 					int depth, int num_channel, const void *src=nullptr, std::map< uint32_t, std::set<uint32_t> > const
 					  &supported_formats = std::map< uint32_t, std::set<uint32_t> >());
 
-            /// provides access to the underlying cl-Image2D object
-            cl::Image2D getImage2D();
-			const cl::Image2D getImage2D() const;
+            cl_mem getImage2D();
+			cl_mem getImage2D() const;
 
 		public:
 

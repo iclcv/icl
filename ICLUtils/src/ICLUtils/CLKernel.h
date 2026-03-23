@@ -36,15 +36,9 @@
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLImage2D.h>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/CLIncludes.h>
 #include <ICLUtils/FixedArray.h>
 #include <string>
-
-/** \cond */
-namespace cl{
-  class CommandQueue;
-  class Program;
-}
-/** \endcond */
 
 namespace icl {
   namespace utils {
@@ -70,12 +64,11 @@ namespace icl {
         kernel[3] = outSize;
         **/
     class ICLUtils_API CLKernel {
-      struct Impl; //!< internal implementation
-      Impl *impl;  //!< internally used data
+      struct Impl;
+      Impl *impl;
 
-      /// private constructor (CLKernel instances can only be created by CLPrograms)
-      CLKernel(const std::string &id, cl::Program & program,
-               cl::CommandQueue& cmdQueue);
+      CLKernel(const std::string &id, cl_program program,
+               cl_command_queue cmdQueue);
 
       public:
 
