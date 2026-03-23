@@ -30,6 +30,7 @@
 
 #include <ICLFilter/UnaryArithmeticalOp.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/SSETypes.h>
 #include <cmath>
 
 using namespace icl::utils;
@@ -83,6 +84,54 @@ namespace icl {
 
       // }}}
 
+#ifdef ICL_HAVE_SSE2
+      // --- SSE2 specializations for icl32f (no val) ---
+      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::sqrOp>{
+        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
+          for(int c=src->getChannels()-1; c >= 0; --c) {
+            const icl32f *s = src->getROIData(c);
+            icl32f *d = dst->getROIData(c);
+            int n = src->getROISize().getDim();
+            int i = 0;
+            for(; i <= n-4; i += 4){
+              __m128 v = _mm_loadu_ps(s+i);
+              _mm_storeu_ps(d+i, _mm_mul_ps(v, v));
+            }
+            for(; i < n; ++i) d[i] = s[i] * s[i];
+          }
+        }
+      };
+      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::sqrtOp>{
+        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
+          for(int c=src->getChannels()-1; c >= 0; --c) {
+            const icl32f *s = src->getROIData(c);
+            icl32f *d = dst->getROIData(c);
+            int n = src->getROISize().getDim();
+            int i = 0;
+            for(; i <= n-4; i += 4){
+              _mm_storeu_ps(d+i, _mm_sqrt_ps(_mm_loadu_ps(s+i)));
+            }
+            for(; i < n; ++i) d[i] = std::sqrt(s[i]);
+          }
+        }
+      };
+      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::absOp>{
+        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
+          for(int c=src->getChannels()-1; c >= 0; --c) {
+            const icl32f *s = src->getROIData(c);
+            icl32f *d = dst->getROIData(c);
+            int n = src->getROISize().getDim();
+            __m128 mask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF)); // clear sign bit
+            int i = 0;
+            for(; i <= n-4; i += 4){
+              _mm_storeu_ps(d+i, _mm_and_ps(_mm_loadu_ps(s+i), mask));
+            }
+            for(; i < n; ++i) d[i] = std::fabs(s[i]);
+          }
+        }
+      };
+#endif
+
       ///-----------------------------------------------------------------------------------------------
       ///           with val
       ///-----------------------------------------------------------------------------------------------
@@ -115,6 +164,32 @@ namespace icl {
       };
 
       // }}}
+
+#ifdef ICL_HAVE_SSE2
+      // --- SSE2 specializations for icl32f (with val) ---
+      #define ICL_SSE2_UNARY_WITH_VAL_32F(OP, SSE_OP)                                    \
+      template<> struct LoopFuncWithVal<icl32f, UnaryArithmeticalOp::OP##Op>{              \
+        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst, icl32f val){   \
+          __m128 vval = _mm_set1_ps(val);                                                 \
+          for(int c=src->getChannels()-1; c >= 0; --c) {                                  \
+            const icl32f *s = src->getROIData(c);                                         \
+            icl32f *d = dst->getROIData(c);                                               \
+            int n = src->getROISize().getDim();                                           \
+            int i = 0;                                                                    \
+            for(; i <= n-4; i += 4){                                                      \
+              _mm_storeu_ps(d+i, SSE_OP(_mm_loadu_ps(s+i), vval));                        \
+            }                                                                             \
+            for(; i < n; ++i) d[i] = PixelFuncWithVal<icl32f,                             \
+                                       UnaryArithmeticalOp::OP##Op>::apply(s[i], val);    \
+          }                                                                               \
+        }                                                                                 \
+      }
+      ICL_SSE2_UNARY_WITH_VAL_32F(add, _mm_add_ps);
+      ICL_SSE2_UNARY_WITH_VAL_32F(sub, _mm_sub_ps);
+      ICL_SSE2_UNARY_WITH_VAL_32F(mul, _mm_mul_ps);
+      ICL_SSE2_UNARY_WITH_VAL_32F(div, _mm_div_ps);
+      #undef ICL_SSE2_UNARY_WITH_VAL_32F
+#endif
 
 
   #ifdef ICL_HAVE_IPP

@@ -30,7 +30,7 @@
 
 #include <ICLFilter/ThresholdOp.h>
 #include <ICLCore/Img.h>
-
+#include <ICLUtils/SSETypes.h>
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;
@@ -130,6 +130,75 @@ namespace icl {
      }
 
      // }}}
+
+#ifdef ICL_HAVE_SSE2
+     // --- SSE2 threshold specializations for icl32f ---
+     // Uses SIMD compare + blend: dst = (src CMP thresh) ? value : src
+
+     inline void sse_threshold_lt_val_32f(const Img<icl32f> *src, Img<icl32f> *dst,
+                                          icl32f threshold, icl32f value){
+       __m128 vt = _mm_set1_ps(threshold);
+       __m128 vv = _mm_set1_ps(value);
+       for(int c=src->getChannels()-1; c >= 0; --c){
+         const icl32f *s = src->getROIData(c);
+         icl32f *d = dst->getROIData(c);
+         int n = src->getROISize().getDim();
+         int i = 0;
+         for(; i <= n-4; i += 4){
+           __m128 v = _mm_loadu_ps(s+i);
+           __m128 mask = _mm_cmplt_ps(v, vt);  // mask = (v < threshold)
+           // blend: where mask is set use value, else use v
+           _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
+         }
+         for(; i < n; ++i) d[i] = (s[i] < threshold) ? value : s[i];
+       }
+     }
+
+     inline void sse_threshold_gt_val_32f(const Img<icl32f> *src, Img<icl32f> *dst,
+                                          icl32f threshold, icl32f value){
+       __m128 vt = _mm_set1_ps(threshold);
+       __m128 vv = _mm_set1_ps(value);
+       for(int c=src->getChannels()-1; c >= 0; --c){
+         const icl32f *s = src->getROIData(c);
+         icl32f *d = dst->getROIData(c);
+         int n = src->getROISize().getDim();
+         int i = 0;
+         for(; i <= n-4; i += 4){
+           __m128 v = _mm_loadu_ps(s+i);
+           __m128 mask = _mm_cmpgt_ps(v, vt);
+           _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
+         }
+         for(; i < n; ++i) d[i] = (s[i] > threshold) ? value : s[i];
+       }
+     }
+
+     inline void sse_threshold_ltgt_val_32f(const Img<icl32f> *src, Img<icl32f> *dst,
+                                            icl32f tLow, icl32f vLow, icl32f tUp, icl32f vUp){
+       __m128 vtLow = _mm_set1_ps(tLow);
+       __m128 vvLow = _mm_set1_ps(vLow);
+       __m128 vtUp  = _mm_set1_ps(tUp);
+       __m128 vvUp  = _mm_set1_ps(vUp);
+       for(int c=src->getChannels()-1; c >= 0; --c){
+         const icl32f *s = src->getROIData(c);
+         icl32f *d = dst->getROIData(c);
+         int n = src->getROISize().getDim();
+         int i = 0;
+         for(; i <= n-4; i += 4){
+           __m128 v = _mm_loadu_ps(s+i);
+           __m128 maskLo = _mm_cmplt_ps(v, vtLow);
+           __m128 maskHi = _mm_cmpgt_ps(v, vtUp);
+           __m128 result = v;
+           result = _mm_or_ps(_mm_and_ps(maskLo, vvLow), _mm_andnot_ps(maskLo, result));
+           result = _mm_or_ps(_mm_and_ps(maskHi, vvUp),  _mm_andnot_ps(maskHi, result));
+           _mm_storeu_ps(d+i, result);
+         }
+         for(; i < n; ++i){
+           icl32f v = s[i];
+           d[i] = (v < tLow) ? vLow : (v > tUp) ? vUp : v;
+         }
+       }
+     }
+#endif
 
   #define ICL_INSTANTIATE_ALL_IPP_DEPTHS \
     ICL_INSTANTIATE_DEPTH(8u)  \
@@ -288,35 +357,52 @@ namespace icl {
 
      // {{{ function specializations with Val postfix (fallback)
 
+  // Depths that always use C++ fallback threshold
+  #if defined(ICL_HAVE_IPP)
+    #define ICL_INSTANTIATE_THRESH_FB_DEPTHS ICL_INSTANTIATE_ALL_FB_DEPTHS
+  #elif defined(ICL_HAVE_SSE2)
+    // SSE2 handles 32f explicitly below; fallback for the rest
+    #define ICL_INSTANTIATE_THRESH_FB_DEPTHS \
+      ICL_INSTANTIATE_DEPTH(8u)  \
+      ICL_INSTANTIATE_DEPTH(16s) \
+      ICL_INSTANTIATE_DEPTH(32s) \
+      ICL_INSTANTIATE_DEPTH(64f)
+  #else
+    #define ICL_INSTANTIATE_THRESH_FB_DEPTHS ICL_INSTANTIATE_ALL_DEPTHS
+  #endif
+
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpLTVal<icl ## T>(t,val));}
-  #ifdef ICL_HAVE_IPP
-    ICL_INSTANTIATE_ALL_FB_DEPTHS
-  #else
-    ICL_INSTANTIATE_ALL_DEPTHS
-  #endif
+    ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tgtVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpGTVal<icl ## T>(t,val));}
-  #ifdef ICL_HAVE_IPP
-    ICL_INSTANTIATE_ALL_FB_DEPTHS
-  #else
-    ICL_INSTANTIATE_ALL_DEPTHS
-  #endif
+    ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltgtVal(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T minVal, icl ##T tMax, icl ## T maxVal){\
         fallbackThreshold (src, dst, ThreshOpLTGTVal<icl ## T>(tMin,minVal,tMax,maxVal));}
-  #ifdef ICL_HAVE_IPP
-    ICL_INSTANTIATE_ALL_FB_DEPTHS
-  #else
-    ICL_INSTANTIATE_ALL_DEPTHS
-  #endif
+    ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
+
+  #undef ICL_INSTANTIATE_THRESH_FB_DEPTHS
+
+  // SSE2 specializations for icl32f (when no IPP)
+  #if defined(ICL_HAVE_SSE2) && !defined(ICL_HAVE_IPP)
+    void ThresholdOp::tltVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
+      sse_threshold_lt_val_32f(src, dst, t, val);
+    }
+    void ThresholdOp::tgtVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
+      sse_threshold_gt_val_32f(src, dst, t, val);
+    }
+    void ThresholdOp::tltgtVal(const Img32f *src, Img32f *dst, icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
+      sse_threshold_ltgt_val_32f(src, dst, tMin, minVal, tMax, maxVal);
+    }
+  #endif
 
      // }}}
 

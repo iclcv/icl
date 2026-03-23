@@ -33,6 +33,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/SSETypes.h>
 
 namespace icl{
   namespace cv{
@@ -108,26 +109,49 @@ namespace icl{
   #define REGION_DETECTOR_2_USE_OPT_4_BYTES
 
 
-  #ifdef REGION_DETECTOR_2_USE_OPT_4_BYTES
-
+  #ifdef ICL_HAVE_SSE2
+      // SSE2: scan 16 bytes at a time using _mm_cmpeq_epi8 + _mm_movemask_epi8
       template<>
       inline const icl8u *find_first_not(const icl8u *first, const icl8u *last, icl8u val){
-        while( first < last && (uintptr_t)first & 0x3 ){
-          if(*first != val){
-            return first;
+        // scalar lead-in until 16-byte aligned
+        while(first < last && (reinterpret_cast<uintptr_t>(first) & 0xF)){
+          if(*first != val) return first;
+          ++first;
+        }
+        if(first >= last) return last;
+
+        __m128i vval = _mm_set1_epi8(static_cast<char>(val));
+        while(first + 16 <= last){
+          __m128i v = _mm_load_si128(reinterpret_cast<const __m128i*>(first));
+          int mask = _mm_movemask_epi8(_mm_cmpeq_epi8(v, vval));
+          if(mask != 0xFFFF){
+            // at least one byte differs — find which one
+            // mask has 1 for equal, 0 for not-equal; invert to find first not-equal
+            int idx = __builtin_ctz(~mask);
+            return first + idx;
           }
+          first += 16;
+        }
+        // scalar tail
+        while(first < last && *first == val) ++first;
+        return first;
+      }
+  #elif defined(REGION_DETECTOR_2_USE_OPT_4_BYTES)
+      // 4-byte optimization fallback
+      template<>
+      inline const icl8u *find_first_not(const icl8u *first, const icl8u *last, icl8u val){
+        while( first < last && (reinterpret_cast<uintptr_t>(first) & 0x3) ){
+          if(*first != val) return first;
           ++first;
         }
         if(first >= last) return first;
-
         unsigned int n = (last-first)/4;
         const icl32u *p32 = find_first_not(reinterpret_cast<const icl32u*>(first),
                                            reinterpret_cast<const icl32u*>(first)+n,
-                                           (icl32u)(val | (val<<8) | (val<<16) | (val<<24)) );
+                                           static_cast<icl32u>(val | (val<<8) | (val<<16) | (val<<24)) );
         const icl8u *p8u = reinterpret_cast<const icl8u*>(p32);
         while(p8u < last && *p8u == val) ++p8u;
         return p8u;
-        //  return find_first_not_no_opt(reinterpret_cast<const icl8u*>(p32),last,val);
       }
   #endif
 
