@@ -95,22 +95,16 @@ namespace icl {
     ICLCore_API ImgBase *imgNew(depth d = depth8u, const ImgParams &params = ImgParams::null);
 
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const utils::Size& size, format fmt,
-                           const utils::Rect &roi=utils::Rect::null){
-      return imgNew(d,ImgParams(size,fmt,roi));
-    }
+    ICLCore_API ImgBase *imgNew(depth d, const utils::Size& size, format fmt,
+                                const utils::Rect &roi=utils::Rect::null);
 
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const utils::Size& size, int channels=1,
-                           const utils::Rect &roi=utils::Rect::null){
-      return imgNew(d,ImgParams(size,channels,roi));
-    }
+    ICLCore_API ImgBase *imgNew(depth d, const utils::Size& size, int channels=1,
+                                const utils::Rect &roi=utils::Rect::null);
 
     /// creates a new Img (see the above function for more details) \ingroup IMAGE
-    inline ImgBase *imgNew(depth d, const utils::Size& size, int channels, format fmt,
-                           const utils::Rect &roi=utils::Rect::null){
-      return imgNew(d,ImgParams(size,channels,fmt,roi));
-    }
+    ICLCore_API ImgBase *imgNew(depth d, const utils::Size& size, int channels, format fmt,
+                                const utils::Rect &roi=utils::Rect::null);
 
 
     /// ensures that an image has the specified depth \ingroup IMAGE
@@ -149,12 +143,10 @@ namespace icl {
         @param roi desired ROI rectangle. If the ROI parameters are not given,
                    the ROI will comprise the whole image.
     **/
-    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const utils::Size& size,int channels, const utils::Rect &roi=utils::Rect::null)
-       { return ensureCompatible(dst,d,ImgParams(size,channels,roi)); }
+    ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, depth d, const utils::Size& size, int channels, const utils::Rect &roi=utils::Rect::null);
 
     /// ensures that an image has given depth, size, format and ROI \ingroup IMAGE
-    inline ImgBase *ensureCompatible(ImgBase **dst, depth d,const utils::Size& size, format fmt, const utils::Rect &roi=utils::Rect::null)
-       { return ensureCompatible(dst,d,ImgParams(size,fmt,roi)); }
+    ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, depth d, const utils::Size& size, format fmt, const utils::Rect &roi=utils::Rect::null);
 
     /// ensures that an image has given parameters  \ingroup IMAGE
     /** The given format must be compatible to the given channel count.

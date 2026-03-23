@@ -44,6 +44,16 @@ using namespace icl::math;
 namespace icl{
   namespace core{
 
+    ImgBase *imgNew(depth d, const Size& size, format fmt, const Rect &roi){
+      return imgNew(d, ImgParams(size, fmt, roi));
+    }
+    ImgBase *imgNew(depth d, const Size& size, int channels, const Rect &roi){
+      return imgNew(d, ImgParams(size, channels, roi));
+    }
+    ImgBase *imgNew(depth d, const Size& size, int channels, format fmt, const Rect &roi){
+      return imgNew(d, ImgParams(size, channels, fmt, roi));
+    }
+
     ImgBase *imgNew(depth d, const ImgParams &params){
       // {{{ open
 
@@ -256,6 +266,13 @@ namespace icl{
     }
 
     // }}}
+
+    ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size& size, int channels, const Rect &roi){
+      return ensureCompatible(dst, d, ImgParams(size, channels, roi));
+    }
+    ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size& size, format fmt, const Rect &roi){
+      return ensureCompatible(dst, d, ImgParams(size, fmt, roi));
+    }
 
     ImgBase* ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
       // {{{ open
