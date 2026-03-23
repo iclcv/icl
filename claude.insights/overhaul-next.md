@@ -33,7 +33,6 @@
 - **ImageMagick 7 fixed** — PixelPacket → image.write() export, IntegerPixel → LongPixel, enabled by default
 - **Dark theme infrastructure** — DefaultStyle.h (Fusion + QPalette + QSS), opt-in via ICL_THEME env
   - Fixed CompabilityLabel hardcoded black text → palette-aware
-  - Known issue: GroupBox title text on macOS needs more work for default-on
 - **Folding markers removed** — 1,722 lines of `// {{{ open` / `// }}}` stripped from 67 files
 - **Qt style demo** — work/qt-style-demo/ with all Qt controls + loadable .qss
 
@@ -114,6 +113,21 @@ PixelOps.cpp     ← SSE2 convert specializations (13 type pairs)
 ThresholdOp.cpp  ← SSE2 threshold (icl8u + icl32f)
 UnaryArithmeticalOp.cpp ← SSE2 arithmetic (icl32f)
 RegionDetectorTools.h   ← SSE2 find_first_not (icl8u)
+FixedMatrix.h    ← SSE2 4×4 float mat×mat and mat×vec multiply
+```
+
+### Test Infrastructure
+```
+ICLUtils/src/ICLUtils/Test.h  ← framework (registry, runner, assertions)
+tests/icl-tests.cpp           ← runner main (-l, -f, -j, -v)
+tests/test-utils.cpp           ← 14 tests (Size, Point, Rect, Range, String, Random)
+tests/test-math.cpp            ← 70 tests (FixedMatrix + DynMatrix comprehensive)
+```
+```bash
+icl-tests                      # all 84 tests, parallel (hardware_concurrency)
+icl-tests -f "math.fixed.*"   # glob filter
+icl-tests -j 1                # sequential
+icl-tests -l                  # list all registered tests
 ```
 
 ### Benchmark Tool
@@ -124,13 +138,13 @@ icl-benchmarks -p width=3840,height=2160  # parameter override
 icl-benchmarks -n 50 -w 2.0 -csv    # 50 iterations, 2s warmup, CSV output
 ```
 
-## Currently Disabled Optional Features
+## Optional Features Status
 ```bash
--DBUILD_WITH_EIGEN3=ON     # ✅ works with Eigen 5.0.1
--DBUILD_WITH_PCL=ON        # ✅ works with PCL 1.15
--DBUILD_WITH_IMAGEMAGICK=ON # ✅ works with ImageMagick 7.1 (fixed this session)
--DBUILD_WITH_OPENCL=ON     # ❌ needs C++ bindings on macOS
--DBUILD_WITH_LIBAV=ON      # ❌ needs FFmpeg 7+ rewrite
+-DBUILD_WITH_EIGEN3=ON      # ✅ works with Eigen 5.0.1
+-DBUILD_WITH_PCL=ON         # ✅ works with PCL 1.15
+-DBUILD_WITH_IMAGEMAGICK=ON # ✅ works with ImageMagick 7.1
+-DBUILD_WITH_OPENCL=ON      # ✅ works on macOS (C API, no C++ bindings needed)
+-DBUILD_WITH_LIBAV=ON       # ✅ works with FFmpeg 5+/7+/8+ (rewritten for modern API)
 ```
 
 ## Recommended Build Command
@@ -143,7 +157,10 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WITH_PCL=ON \
   -DBUILD_WITH_BULLET=ON \
   -DBUILD_WITH_IMAGEMAGICK=ON \
+  -DBUILD_WITH_OPENCL=ON \
+  -DBUILD_WITH_LIBAV=ON \
   -DBUILD_APPS=ON \
   -DBUILD_DEMOS=ON \
-  -DBUILD_EXAMPLES=ON
+  -DBUILD_EXAMPLES=ON \
+  -DBUILD_TESTS=ON
 ```
