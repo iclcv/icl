@@ -117,16 +117,16 @@ namespace icl{
         StrTok t(optParamList,"@");
         while(t.hasMoreTokens()){
           string s = t.nextToken();
-          if(!s.find("out",0)) m_vecOutputs = StrTok(cutName(s),",").allTokens();
-          else if(!s.find("inp",0)) m_vecInputs = StrTok(cutName(s),",").allTokens();
-          else if(!s.find("size",0)) m_oSize = parse<Size>(cutName(s));
-          else if(!s.find("minsize",0)) m_oMinSize = parse<Size>(cutName(s));
-          else if(!s.find("maxsize",0)) m_oMaxSize = parse<Size>(cutName(s));
-          else if(!s.find("label",0)) m_sLabel = cutName(s);
-          else if(!s.find("handle",0)) m_sHandle = cutName(s);
-          else if(!s.find("margin",0)) m_iMargin = static_cast<int>(abs(atoi(cutName(s).c_str())));
-          else if(!s.find("spacing",0)) m_iSpacing = static_cast<int>(abs(atoi(cutName(s).c_str())));
-          else if(!s.find("tooltip",0)) m_toolTip = cutName(s);
+          if(s.starts_with("out")) m_vecOutputs = StrTok(cutName(s),",").allTokens();
+          else if(s.starts_with("inp")) m_vecInputs = StrTok(cutName(s),",").allTokens();
+          else if(s.starts_with("size")) m_oSize = parse<Size>(cutName(s));
+          else if(s.starts_with("minsize")) m_oMinSize = parse<Size>(cutName(s));
+          else if(s.starts_with("maxsize")) m_oMaxSize = parse<Size>(cutName(s));
+          else if(s.starts_with("label")) m_sLabel = cutName(s);
+          else if(s.starts_with("handle")) m_sHandle = cutName(s);
+          else if(s.starts_with("margin")) m_iMargin = static_cast<int>(abs(atoi(cutName(s).c_str())));
+          else if(s.starts_with("spacing")) m_iSpacing = static_cast<int>(abs(atoi(cutName(s).c_str())));
+          else if(s.starts_with("tooltip")) m_toolTip = cutName(s);
           else throw GUISyntaxErrorException(def,string("illegal optional parameter \"")+s+"\"");
         }
       }

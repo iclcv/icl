@@ -214,7 +214,7 @@ void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_na
 {
   std::lock_guard<std::recursive_mutex> l(m_FunctionHandleMutex);
   // check if function is already loaded
-  if(m_FunctionHandles.find(symbol_name) != m_FunctionHandles.end()){
+  if(m_FunctionHandles.contains(symbol_name)){
     return m_FunctionHandles[symbol_name];
   } else {
     if(lib_name.empty()){
@@ -233,7 +233,7 @@ void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_na
       throw ICLDynamicFunctionLoadException(("can not find function " + std::string(symbol_name)).c_str());
     } else {
       // check whether lib is available
-      if(m_LibHandles.find(lib_name) == m_LibHandles.end()){
+      if(!m_LibHandles.contains(lib_name)){
         // load lib
         loadLib(current_ipp_search_path.c_str(), lib_name.c_str(), m_LibHandles);
       }

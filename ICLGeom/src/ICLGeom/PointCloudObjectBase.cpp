@@ -371,7 +371,7 @@ namespace icl{
 
 
     bool PointCloudObjectBase::hasMetaData(const std::string &key) const{
-      return m_metaData.find(key) != m_metaData.end();
+      return m_metaData.contains(key);
     }
 
 

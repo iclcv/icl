@@ -46,7 +46,7 @@ namespace icl{
       if(!t) return;
       for(int i=0;i<t->count();++i){
         std::string tabText = t->tabText(i).toLatin1().data();
-        if(m_map.find(tabText) != m_map.end()){
+        if(m_map.contains(tabText)){
           ERROR_LOG("Tab-Text "<<tabText<<" was found twice!");
         }else{
           m_map[tabText] = i;

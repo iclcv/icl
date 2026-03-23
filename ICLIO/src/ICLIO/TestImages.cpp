@@ -137,7 +137,7 @@ namespace {
     if(s.length()==6){
     int ai[6]={0,0,0,0,0,0};
     for(int i=0;i<6;i++){
-      if(g_mapHexLut.find(s[i]) != g_mapHexLut.end()){
+      if(g_mapHexLut.contains(s[i])){
         ai[i] = g_mapHexLut[s[i]];
       }else{
         ok=0;
@@ -154,7 +154,7 @@ namespace {
 
   XPMColor getGrayColor(string s, bool &ok){
 
-    if(s.find("gray",0)== 0){
+    if(s.starts_with("gray")){
       string n = &(s[4]);
       if(n.length() > 0){
         int g = atoi(n.c_str());
@@ -178,7 +178,7 @@ namespace {
   if(s[0]=='#'){
     s=&(s[1]);
   }
-  if(g_mapXPMColors.find(s) != g_mapXPMColors.end()){
+  if(g_mapXPMColors.contains(s)){
     return g_mapXPMColors[s];
   }
   c = getHexColor(s,ok);

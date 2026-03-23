@@ -471,11 +471,11 @@ namespace icl{
           bool doesnt_exist;
           if(pos == std::string::npos){
             name = "general";
-            doesnt_exist = sections.find(name) == sections.end();
+            doesnt_exist = !sections.contains(name);
             sections["general"].push_back(StSt(p,p));
           }else{
             name = p.substr(0,pos);
-            doesnt_exist = sections.find(name) == sections.end();
+            doesnt_exist = !sections.contains(name);
             sections[name].push_back(StSt(p,p.substr(pos+1))); //
           }
           if(conf->isOrderedFlagSet())
@@ -507,7 +507,7 @@ namespace icl{
         gui = HSplit(this).handle("__the_root__");
         bool use_tabs = sections.size() > 1 || (sections.size() == 1 && sections.begin()->first != "general");
         if(use_tabs){
-          if(sections.find("general") == sections.end()){
+          if(!sections.contains("general")){
             tablist += ",general";
             generalIdx = tablist.size()-1;
           }
@@ -2144,7 +2144,7 @@ namespace icl{
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
         const string &s2 = t.nextToken();
-        if(!s2.find("label",0)){
+        if(s2.starts_with("label")){
           if(s2.length() < 7) return "";
           return s2.substr(6);
         }
@@ -2162,7 +2162,7 @@ namespace icl{
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
         const string &s2 = t.nextToken();
-        if(!s2.find("minsize",0)){
+        if(s2.starts_with("minsize")){
           if(s2.length() < 9) return "";
           return s2.substr(8);
         }
@@ -2180,7 +2180,7 @@ namespace icl{
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
         const string &s2 = t.nextToken();
-        if(!s2.find("maxsize",0)){
+        if(s2.starts_with("maxsize")){
           if(s2.length() < 9) return "";
           return s2.substr(8);
         }
@@ -2198,7 +2198,7 @@ namespace icl{
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
         const string &s2 = t.nextToken();
-        if(!s2.find("size",0)){
+        if(s2.starts_with("size")){
           if(s2.length() < 6) return "";
           return s2.substr(5);
         }

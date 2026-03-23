@@ -169,7 +169,7 @@ namespace icl{
 
       File file(m_oGen.next());
 
-      std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.std::find(toLower(file.getSuffix()));
+      std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.find(toLower(file.getSuffix()));
       if(it == s_mapPlugins.end()){
         ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
         return;

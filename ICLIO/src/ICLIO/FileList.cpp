@@ -48,7 +48,7 @@
 
 #include <algorithm>
 #include <sstream>
-#include <std::set>
+#include <set>
 #include <cstring>
 using namespace icl::utils;
 

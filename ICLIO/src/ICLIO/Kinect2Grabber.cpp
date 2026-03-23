@@ -143,7 +143,7 @@ namespace icl{
           return 0;
         }
 
-        if(openDevices.find(idx) != openDevices.end()){
+        if(openDevices.contains(idx)){
           openDevices[idx]->numUsers++;
           return openDevices[idx];
         }

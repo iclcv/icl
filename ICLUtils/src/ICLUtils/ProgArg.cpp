@@ -322,7 +322,7 @@ namespace icl{
       void add(AllowedArg *arg){
         allowed.push_back(AllowedArgPtr(arg));
         for(unsigned int i=0;i<arg->names.size();++i){
-          if(allowedMap.find(arg->names[i]) != allowedMap.end()){
+          if(allowedMap.contains(arg->names[i])){
             THROW_ProgArgException("argument name/alternative '" + arg->names[i] + "' was found at least twice");
           }
           allowedMap[arg->names[i]] = allowed.back();

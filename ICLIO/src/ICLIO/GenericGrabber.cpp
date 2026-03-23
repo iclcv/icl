@@ -373,7 +373,7 @@ namespace icl{
 
     template<class T>
     static inline bool contains(const std::map<std::string,T> &m,const std::string &t){
-      return m.find(t) != m.end();
+      return m.contains(t);
     }
 
     static const GrabberDeviceDescription *find_description(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){

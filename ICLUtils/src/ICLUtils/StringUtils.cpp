@@ -279,11 +279,11 @@ namespace icl{
     }
 
     bool endsWith(const string &s,const string &postfix){
-      return s.length() >= postfix.length() && s.substr(s.length()-postfix.length()) == postfix;
+      return s.ends_with(postfix);
     }
 
     bool startsWith(const string &s, const string &praefix){
-      return s.find(praefix) == 0;
+      return s.starts_with(praefix);
     }
 
     void analyseHashes (const string &sFileName, unsigned int& nHashes, string::size_type& iPostfixPos) {

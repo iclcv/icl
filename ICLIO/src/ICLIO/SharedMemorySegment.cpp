@@ -339,7 +339,7 @@ namespace icl {
 
         static SharedMemorySegment::Impl* alloc(std::string name){
           std::lock_guard<std::recursive_mutex> l(implMapMutex);
-          if(implmap.find(name) == implmap.end()){
+          if(!implmap.contains(name)){
             implmap[name] = new Impl(name);
           }
           implmap[name] -> localInstances++;
@@ -348,7 +348,7 @@ namespace icl {
 
         static void free(std::string name){
           std::lock_guard<std::recursive_mutex> l(implMapMutex);
-          if(implmap.find(name) == implmap.end()) return;
+          if(!implmap.contains(name)) return;
           if(--(implmap[name] -> localInstances) == 0){
             ICL_DELETE(implmap[name]);
             implmap.erase(name);
@@ -606,7 +606,7 @@ namespace icl {
         void removeSegment(std::string name){
           std::lock_guard<std::recursive_mutex> l(mutex);
           std::multiset<std::string> set = getSegmentSet();
-          if(set.find(name) != set.end()){
+          if(set.contains(name)){
             set.erase(set.find(name));
             setSegmentSet(set);
           }

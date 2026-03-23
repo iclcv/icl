@@ -146,7 +146,7 @@ namespace icl{
 
       void send_string(const std::string &text, const std::string &fixedHandle){
         rsb::Informer<std::string>::DataPtr data(new std::string(text));
-        if(handleLUT.find(fixedHandle) == handleLUT.end()){
+        if(!handleLUT.contains(fixedHandle)){
           WARNING_LOG("strangely fixed handle " << fixedHandle << " was not found before");
         }else{
           handleLUT[fixedHandle].informer->publish(data);

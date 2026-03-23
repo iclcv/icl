@@ -399,9 +399,9 @@ namespace icl{
 
     bool ConfigFile::contains(const std::string &id) const{
       if(m_sDefaultPrefix.length()){
-        return (m_entries.find(m_sDefaultPrefix+id) != m_entries.end());
+        return m_entries.contains(m_sDefaultPrefix+id);
       }else{
-        return (m_entries.find(id) != m_entries.end());
+        return m_entries.contains(id);
       }
     }
 

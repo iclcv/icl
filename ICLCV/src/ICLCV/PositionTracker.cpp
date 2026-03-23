@@ -215,7 +215,7 @@ namespace icl{
             lut.insert( currentIDS[i] );
           }
           for(int i=0,id=0;i<n;i++){
-            while(lut.find(id) != lut.end()){
+            while(lut.contains(id)){
               id++;
             }
             ids.push_back(id);

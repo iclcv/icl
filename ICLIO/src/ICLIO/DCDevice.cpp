@@ -145,7 +145,7 @@ namespace icl{
         return pointGrey_Flea2G_13S2CC;
         }else{
         static set<string> warned;
-        if(warned.find(cam->model) == warned.end()){
+        if(!warned.contains(cam->model)){
         warned.insert(cam->model);
         ERROR_LOG("unknown camera model:" << cam->model);
         }

@@ -187,7 +187,7 @@ namespace icl{
         const std::string &propertyName, const Configurable* caller) const
     {
     std::string propname = propertyName;
-    if(m_childConfigurables.find(caller) != m_childConfigurables.end()){
+    if(m_childConfigurables.contains(caller)){
       propname = m_childConfigurables.find(caller)->second + propname;
     }
     try{

@@ -797,12 +797,12 @@ namespace icl{
         }else if(line[0] == 'g'){
           //++nSkippedG;
           continue;
-        }else if(!line.find("#")) {
+        }else if(line.starts_with("#")) {
           continue; // comment
-        }else if(!line.find("usemtl")) {
+        }else if(line.starts_with("usemtl")) {
           //++nSkippedUSEMTL;
           continue; // todo try to load material description
-        }else if(!line.find("mtllib")){
+        }else if(line.starts_with("mtllib")){
           //++nSkippedMTLLIB;
           continue;
         }else{

@@ -343,7 +343,7 @@ namespace icl{
                                    std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.std::find(grabberid);
+      GFM::iterator it = gfm.find(grabberid);
       if(it != gfm.end()) throw ICLException("unable to register grabber "
           + grabberid + ": name already in use");
       GrabberFunctions f;
@@ -356,7 +356,7 @@ namespace icl{
                                    std::function<void(bool)> reset_function)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GBRM::iterator it = gbrm.std::find(grabberid);
+      GBRM::iterator it = gbrm.find(grabberid);
       if(it != gbrm.end()) throw ICLException(
           "unable to register grabber bus reset function for "
           + grabberid + ": only one per greabber can be registered");
@@ -366,7 +366,7 @@ namespace icl{
     void GrabberRegister::addGrabberDescription(const std::string &grabber_description)
     {
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GDS::iterator it = gds.std::find(grabber_description);
+      GDS::iterator it = gds.find(grabber_description);
       if(it != gds.end()) throw ICLException(
           "unable to add grabber description: \n"
           + grabber_description + "\n description already exists");
@@ -375,7 +375,7 @@ namespace icl{
 
     Grabber* GrabberRegister::createGrabber(const std::string &grabberid, const std::string &param){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.std::find(grabberid);
+      GFM::iterator it = gfm.find(grabberid);
       if(it != gfm.end()){
         // init grabber
         return (it -> second).init(param); // can throw too
@@ -406,7 +406,7 @@ namespace icl{
     const std::vector<GrabberDeviceDescription>&
     GrabberRegister::getDeviceList(std::string id, std::string hint, bool rescan){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GFM::iterator it = gfm.std::find(id);
+      GFM::iterator it = gfm.find(id);
       if(it != gfm.end()){
         // return device list
         return ((it -> second).std::list)(hint,rescan);
@@ -418,7 +418,7 @@ namespace icl{
 
     void GrabberRegister::resetGrabberBus(const std::string &id, bool verbose){
       std::lock_guard<std::recursive_mutex> l(mutex);
-      GBRM::iterator it = gbrm.std::find(id);
+      GBRM::iterator it = gbrm.find(id);
       if(it != gbrm.end()){
         // reset bus
         return (it -> second)(verbose);

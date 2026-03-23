@@ -33,8 +33,8 @@
 #include <mutex>
 #include <ICLUtils/StrTok.h>
 
-#include <std::string>
-#include <std::vector>
+#include <string>
+#include <vector>
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;

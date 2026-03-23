@@ -29,8 +29,8 @@
 ********************************************************************/
 
 #include <ICLIO/FileWriterPluginPNM.h>
-#include <std::string>
-#include <std::vector>
+#include <string>
+#include <vector>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/StringUtils.h>

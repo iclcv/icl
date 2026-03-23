@@ -112,17 +112,10 @@ namespace icl{
       void exit();
 
       /// internal used lock function
-      /** This function (and unlock) can be used inside the reimplementation of
-          the run function to ensure that the code between lock() and unlock()
-          is executed to the end before the stop function is able to join the
-          Thread
-      **/
       void lock();
 
       /// internal used trylock function
-      /** works like lock but without blocking (it returns immediately).
-          @return zero if lock is acquired. otherwise an error-number
-      **/
+      /** @return zero if lock is acquired, non-zero otherwise */
       int trylock();
 
       /// internal used unlock function
