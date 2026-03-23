@@ -51,7 +51,17 @@ icl_add_module(ICLCV
   HEADERS ${HEADERS}
   ICL_DEPS ICLIO
   PKGCONFIG_DEPS ICLIO-${SO_VERSION}
-  HAS_DEMOS HAS_APPS)
+  HAS_DEMOS HAS_APPS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>)
 
 # HeartrateDetector needs ICLQt headers but we can't link against ICLQt (circular dep)
 if(QT_FOUND)

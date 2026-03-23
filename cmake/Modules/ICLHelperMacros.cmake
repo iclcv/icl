@@ -54,7 +54,7 @@ include(CMakeParseArguments)
 function(icl_add_module MODULE_NAME)
   set(options HAS_EXAMPLES HAS_DEMOS HAS_APPS)
   set(oneValueArgs "")
-  set(multiValueArgs SOURCES HEADERS ICL_DEPS 3RDPARTY_LIBS PKGCONFIG_DEPS MOC_HEADERS EXTRA_SOURCES)
+  set(multiValueArgs SOURCES HEADERS ICL_DEPS 3RDPARTY_LIBS PKGCONFIG_DEPS MOC_HEADERS EXTRA_SOURCES PCH_HEADERS)
   cmake_parse_arguments(MOD "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # Include directories: own src, generated headers, and all ICL module src dirs
@@ -90,6 +90,11 @@ function(icl_add_module MODULE_NAME)
     ${MOD_ICL_DEPS} ${MOD_3RDPARTY_LIBS})
 
   set_target_properties(${MODULE_NAME} PROPERTIES VERSION ${SO_VERSION})
+
+  # Precompiled headers (CMake 3.16+)
+  if(ENABLE_PCH AND MOD_PCH_HEADERS)
+    target_precompile_headers(${MODULE_NAME} PRIVATE ${MOD_PCH_HEADERS})
+  endif()
 
   # Register subdirectories for deferred processing (after all modules are built)
   if(MOD_HAS_EXAMPLES)

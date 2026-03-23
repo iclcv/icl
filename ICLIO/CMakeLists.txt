@@ -38,4 +38,15 @@ icl_add_module(ICLIO
   ICL_DEPS ICLFilter
   3RDPARTY_LIBS ${ICLIO_3RDPARTY_LIBRARIES}
   PKGCONFIG_DEPS ICLFilter-${SO_VERSION}
-  HAS_DEMOS HAS_APPS)
+  HAS_DEMOS HAS_APPS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLUtils/Configurable.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>)

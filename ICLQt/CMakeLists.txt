@@ -25,4 +25,19 @@ icl_add_module(ICLQt
   3RDPARTY_LIBS ${ICLQt_3RDPARTY_LIBRARIES}
   PKGCONFIG_DEPS ICLCV-${SO_VERSION}
   MOC_HEADERS ${ICL_MOC_HEADERS}
-  HAS_EXAMPLES HAS_DEMOS HAS_APPS)
+  HAS_EXAMPLES HAS_DEMOS HAS_APPS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>
+    <QWidget>
+    <QString>
+    <QObject>
+    <QPainter>
+    <QOpenGLWidget>)

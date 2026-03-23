@@ -70,6 +70,7 @@ else()
 endif()
 
 # ---- Build options ----
+option(ENABLE_PCH "Use precompiled headers to speed up compilation" ON)
 option(ENABLE_NATIVE_BUILD_OPTION "Use -march=native optimization" OFF)
 option(ENABLE_FASTMATH_BUILD_OPTION "Use -ffast-math optimization" OFF)
 option(ENABLE_SSEFPMATH_BUILD_OPTION "Use -mfpmath=sse optimization" OFF)

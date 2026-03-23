@@ -48,10 +48,25 @@ else()
   set(_PKGDEP ICLCV-${SO_VERSION})
 endif()
 
+set(_PCH_HEADERS
+  <vector> <string> <map> <algorithm> <functional>
+  <iostream> <sstream> <memory> <cmath> <type_traits>
+  <ICLUtils/CompatMacros.h>
+  <ICLUtils/BasicTypes.h>
+  <ICLUtils/Exception.h>
+  <ICLUtils/StringUtils.h>
+  <ICLUtils/Macros.h>
+  <ICLCore/Img.h>
+  <ICLCore/ImgBase.h>)
+if(QT_FOUND)
+  list(APPEND _PCH_HEADERS <QWidget> <QString> <QObject> <QOpenGLWidget>)
+endif()
+
 icl_add_module(ICLGeom
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}
   ICL_DEPS ${_DEP}
   3RDPARTY_LIBS ${ICLGeom_3RDPARTY_LIBRARIES}
   PKGCONFIG_DEPS ${_PKGDEP}
-  HAS_DEMOS HAS_APPS)
+  HAS_DEMOS HAS_APPS
+  PCH_HEADERS ${_PCH_HEADERS})

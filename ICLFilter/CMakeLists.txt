@@ -23,4 +23,15 @@ icl_add_module(ICLFilter
   ICL_DEPS ICLCore
   EXTRA_SOURCES ${KERNEL}
   PKGCONFIG_DEPS ICLCore-${SO_VERSION}
-  HAS_DEMOS HAS_APPS)
+  HAS_DEMOS HAS_APPS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>
+    <ICLFilter/UnaryOp.h>)

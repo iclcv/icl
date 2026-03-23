@@ -14,4 +14,18 @@ icl_add_module(ICLCore
   ICL_DEPS ICLMath
   3RDPARTY_LIBS ${ICLCore_3RDPARTY_LIBRARIES}
   PKGCONFIG_DEPS ICLMath-${SO_VERSION}
-  HAS_EXAMPLES HAS_DEMOS)
+  HAS_EXAMPLES HAS_DEMOS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLUtils/SmartPtr.h>
+    <ICLMath/DynMatrix.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>
+    <ICLCore/Types.h>
+    <ICLCore/Color.h>)

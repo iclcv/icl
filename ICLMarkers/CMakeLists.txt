@@ -6,4 +6,15 @@ icl_add_module(ICLMarkers
   HEADERS ${HEADERS}
   ICL_DEPS ICLGeom
   PKGCONFIG_DEPS ICLGeom-${SO_VERSION}
-  HAS_DEMOS HAS_APPS)
+  HAS_DEMOS HAS_APPS
+  PCH_HEADERS
+    <vector> <string> <map> <algorithm> <functional>
+    <iostream> <sstream> <memory> <cmath> <type_traits>
+    <ICLUtils/CompatMacros.h>
+    <ICLUtils/BasicTypes.h>
+    <ICLUtils/Exception.h>
+    <ICLUtils/StringUtils.h>
+    <ICLUtils/Macros.h>
+    <ICLCore/Img.h>
+    <ICLCore/ImgBase.h>
+    <QWidget> <QString> <QObject> <QOpenGLWidget>)
