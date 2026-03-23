@@ -7,7 +7,7 @@
 - Eigen 5 support, PCL re-enable, PugiXML update
 - Warning cleanup (1,209 → 0), CMake modernization (3.16+, C++17)
 
-## Completed (Phase 2 — this session)
+## Completed (Phase 2)
 - **Function.h → std::function** (removed entirely, 87+ files)
 - **C-style casts** (~1,250 replaced with static_cast/reinterpret_cast/const_cast, 248 files)
 - **Random.h** modernized (drand48/srand48 → thread_local std::mt19937, thread-safe)
@@ -19,31 +19,23 @@
 - **SIMD optimizations** — SSE2 for icl8u/icl32f thresholds (71x speedup), arithmetic ops, find_first_not
 - **Benchmark infrastructure** — BenchmarkRegistry + icl-benchmarks binary (14 benchmarks)
 - **Mutex** → std::mutex/std::recursive_mutex (deleted Mutex.h/cpp, 133 files)
-- **Header optimization** — major refactoring to reduce compilation times:
-  - Split CoreFunctions.h into PixelOps.h (copy/convert) + Types.h (getDepth, enums)
-  - ImgBase.h no longer includes CoreFunctions.h (was pulling in 2,600+ lines of SSE code)
-  - Moved 15 Img<Type> template methods to Img.cpp (explicit instantiation)
-  - Moved 11 ImgBase methods to ImgBase.cpp
-  - Forward-declared in SceneObject.h (ViewRay, GLFragmentShader) and Grabber.h (ProgArg, ImageUndistortion)
-  - Moved SSE2 convert specializations to PixelOps.cpp
-  - Removed IPP ippsCopy (memcpy is equally fast on modern systems)
-  - Moved Point/Rect non-trivial methods to .cpp files
-  - Removed CoreFunctions.h from 10 headers that didn't need it
+- **Header optimization** — CoreFunctions.h split, moved impls to .cpp, forward declarations
 
-## Completed (Phase 3 — this session)
-- **Thread → std::thread** (removed pthread, ShallowCopyable dep, ThreadImpl; cooperative stop via std::atomic<bool>)
-  - Thread.h: ~120 lines, uses std::thread + std::atomic<bool> + std::recursive_mutex, non-copyable
-  - Thread.cpp: std::this_thread::sleep_for for sleep methods, cooperative stop (set flag + join)
-  - Fixed 5 subclasses with while(true) → while(running()): DCGrabberThread, PylonGrabberThread, KinectGrabber, ExecThread, llm-2D demo
-  - 4 subclasses already had flag-based loops: MTWorkThread, V4L2Grabber, ZmqGrabber, RSBRemoteGUI
-  - Removed unused saveDelete/saveCall templates
-  - 88+ Thread::msleep/usleep/sleep call sites unchanged (static methods kept on class)
-- **Dark stylesheet infrastructure** (ICLQt/src/ICLQt/DefaultStyle.h)
-  - Comprehensive dark theme embedded as C++ raw string literal
-  - Opt-in via `ICL_THEME=dark` or `ICL_THEME=/path/to.qss` env var
-  - Known issue: macOS native Qt style ignores QSS for GroupBox title colors; Fusion style fixes it but needs more investigation for full integration
-  - Removed old `setStyle(QStyleFactory::create("fusion"))` per-GroupBox override from GUI.cpp
-- **Qt style demo** (work/qt-style-demo/) — standalone app showing all Qt controls with loadable .qss
+## Completed (Phase 3)
+- **Thread → std::thread** (removed pthread, cooperative stop via std::atomic<bool>)
+  - Fixed 5 subclasses: DCGrabberThread, PylonGrabberThread, KinectGrabber, ExecThread, llm-2D
+- **ShallowCopyable removal** — all 6 classes converted to std::shared_ptr<Impl>, files deleted
+- **SmartPtrBase.h deleted** — last user (ConfigFile) converted to std::shared_ptr
+- **MultiThreader + Semaphore deleted** — replaced by std::async/std::future in UnaryOp/NeighborhoodOp
+- **UnaryOpWork.h deleted** — no longer needed
+- **C++17 → C++20** — fixed parse<const char*>, removed all `using namespace std;` (53 files)
+- **C++20 idioms** — 17× map::contains(), 20× string::starts_with(), 1× string::ends_with()
+- **ImageMagick 7 fixed** — PixelPacket → image.write() export, IntegerPixel → LongPixel, enabled by default
+- **Dark theme infrastructure** — DefaultStyle.h (Fusion + QPalette + QSS), opt-in via ICL_THEME env
+  - Fixed CompabilityLabel hardcoded black text → palette-aware
+  - Known issue: GroupBox title text on macOS needs more work for default-on
+- **Folding markers removed** — 1,722 lines of `// {{{ open` / `// }}}` stripped from 67 files
+- **Qt style demo** — work/qt-style-demo/ with all Qt controls + loadable .qss
 
 ## Ready to Do
 
@@ -51,14 +43,14 @@
 | Task | Description |
 |------|-------------|
 | **OpenCL C++ bindings** | Bundle `cl2.hpp` from Khronos, re-enable `-DBUILD_WITH_OPENCL=ON` on macOS |
-| **Write tests** | SIMD correctness tests (threshold, arithmetic, find_first_not), Img tests (copy, convert, ROI), DynMatrix tests exist but test harness needs fixing |
+| **Write tests** | SIMD correctness tests (threshold, arithmetic, find_first_not), Img tests (copy, convert, ROI) |
 
 ### Medium effort
 | Task | Description |
 |------|-------------|
 | **More SIMD** | Convolution kernels (3x3, 5x5), morphological ops (erode/dilate 3x3), icl8u arithmetic |
 | **FixedMatrix 4x4 SIMD** | 4x4 matrix multiply fits perfectly in SSE registers — hot path in 3D transforms |
-| **Dark theme polish** | Fix GroupBox title rendering on macOS (QPalette approach? custom paint?), then enable by default |
+| **Dark theme default** | Fix GroupBox title rendering on macOS, then enable by default |
 
 ### Larger efforts
 | Task | Description |
@@ -69,12 +61,27 @@
 ### Code quality
 | Task | Description |
 |------|-------------|
-| **ShallowCopyable removal** | Replace with std::shared_ptr<Impl>. Used by File, Semaphore, etc. (Thread already done) |
-| **DynMatrix RAII** | Replace raw new/delete[] with unique_ptr/vector |
 | **Channel const-correctness** | Remove mutable abuse in Channel.h |
 | **Any.h rethink** | Currently inherits std::string. Consider std::any |
+| **DynMatrix** | RAII deferred — dual-ownership mode (owning + non-owning views) makes simple replacement risky |
+
+### Not available on Apple Clang
+| Feature | Status |
+|---------|--------|
+| **std::jthread** | Apple Clang 15 doesn't support it. Thread stays with std::thread + atomic<bool> |
 
 ## Architecture Notes
+
+### Deleted Infrastructure (no longer exists)
+- `Function.h` / `Function.cpp` — replaced by std::function
+- `SmartPtr.h` / `SmartPtr.cpp` — replaced by std::shared_ptr
+- `Mutex.h` / `Mutex.cpp` — replaced by std::mutex
+- `Random.cpp` — Random.h is now header-only
+- `ShallowCopyable.h` — replaced by std::shared_ptr<Impl> in each class
+- `SmartPtrBase.h` — replaced by std::shared_ptr
+- `MultiThreader.h` / `MultiThreader.cpp` — replaced by std::async
+- `Semaphore.h` / `Semaphore.cpp` — only user was MultiThreader
+- `UnaryOpWork.h` — only user was MultiThreader-based applyMT
 
 ### Header dependency chain (optimized)
 ```
@@ -109,8 +116,8 @@ icl-benchmarks -n 50 -w 2.0 -csv    # 50 iterations, 2s warmup, CSV output
 ```bash
 -DBUILD_WITH_EIGEN3=ON     # ✅ works with Eigen 5.0.1
 -DBUILD_WITH_PCL=ON        # ✅ works with PCL 1.15
+-DBUILD_WITH_IMAGEMAGICK=ON # ✅ works with ImageMagick 7.1 (fixed this session)
 -DBUILD_WITH_OPENCL=ON     # ❌ needs C++ bindings on macOS
--DBUILD_WITH_IMAGEMAGICK=ON # ❌ needs API v7 rewrite
 -DBUILD_WITH_LIBAV=ON      # ❌ needs FFmpeg 7+ rewrite
 ```
 
@@ -123,6 +130,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WITH_EIGEN3=ON \
   -DBUILD_WITH_PCL=ON \
   -DBUILD_WITH_BULLET=ON \
+  -DBUILD_WITH_IMAGEMAGICK=ON \
   -DBUILD_APPS=ON \
   -DBUILD_DEMOS=ON \
   -DBUILD_EXAMPLES=ON
