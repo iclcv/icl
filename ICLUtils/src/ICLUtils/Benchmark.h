@@ -146,7 +146,7 @@ namespace icl{
       static bool matchGlob(const std::string &pattern, const std::string &str){
         if(pattern == "*") return true;
         // simple glob: split on * and check substrings appear in order
-        size_t pi = 0, si = 0;
+        size_t si = 0;
         std::vector<std::string> parts;
         std::string current;
         for(char c : pattern){
