@@ -169,7 +169,8 @@ namespace icl {
 
       int w = dx->getWidth();
 
-      icl32f *mag = static_cast<icl32f*>(malloc(dx->getDim()*sizeof(icl32f)));
+      std::vector<icl32f> magVec(dx->getDim());
+      icl32f *mag = magVec.data();
 
     #ifdef SSE3
       // calculate magnitudes
@@ -234,7 +235,6 @@ namespace icl {
         }
       }
 
-      free(mag);
     }
 
     void CannyOp::applyCanny16s(const ImgBase *dx, const ImgBase *dy, ImgBase *dst, int c) {
@@ -248,7 +248,8 @@ namespace icl {
 
       int w = dx->getWidth();
 
-      icl16s *mag = static_cast<icl16s*>(malloc(dx->getDim()*sizeof(icl16s)));
+      std::vector<icl16s> magVec(dx->getDim());
+      icl16s *mag = magVec.data();
 
     #ifdef SSE3
       // calculate magnitudes
@@ -313,7 +314,6 @@ namespace icl {
         }
       }
 
-      free(mag);
     }
 
 

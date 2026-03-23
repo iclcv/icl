@@ -371,35 +371,25 @@ namespace icl{
       // success message
       int info;
 
-      // work buffer of size 1 to retrieve correct buffer size from first run of GESDD
-      T* work = static_cast<T*>(malloc( sizeof( T ) ));
-      ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
-
       // integer work buffer
-      int* iwork = static_cast<int*>(malloc( sizeof( int ) * std::max( 1, 8 * std::min( c, r ) ) ));
-      ICLASSERT_THROW( iwork != 0, 0 );
+      std::vector<int> iwork( std::max( 1, 8 * std::min( c, r ) ) );
 
-      // first run of GESDD to retrieve correct size of work buffer
+      // work buffer of size 1 to retrieve correct buffer size from first run of GESDD
+      std::vector<T> work( 1 );
       int lwork  = -1;
       gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
-             &c, U.begin(), &c, work, &lwork, iwork, &info );
+             &c, U.begin(), &c, work.data(), &lwork, iwork.data(), &info );
       ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
-      lwork = work[0];
+      lwork = static_cast<int>(work[0]);
 
-      // free old work buffer and allocate a new one
-      free( work );
-      work = static_cast<T*>(malloc( sizeof( T ) * lwork ));
-      ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
+      // resize work buffer to correct size
+      work.resize( lwork );
 
       // compute singular value decomposition of a general rectangular matrix
       // using a divide and conquer method.
       gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
-             &c, U.begin(), &c, work, &lwork, iwork, &info );
+             &c, U.begin(), &c, work.data(), &lwork, iwork.data(), &info );
       ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
-
-      // free buffers
-      free( iwork );
-      free( work );
 
       // prepare matrix S and check if singular values are below zero threshold
       DynMatrix<T> S( c, c, 0.0 );

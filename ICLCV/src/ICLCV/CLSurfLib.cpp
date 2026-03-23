@@ -164,19 +164,19 @@ struct Surf::Data {
 	CLBuffer d_j;
 
 	//! Position data on the host
-	float2* pixPos;
+	std::vector<float2> pixPos;
 
 	//! Scale data on the host
-	float* scale;
+	std::vector<float> scale;
 
 	//! Laplacian data on the host
-	int* laplacian;
+	std::vector<int> laplacian;
 
 	//! Descriptor data on the host
-	float* desc;
+	std::vector<float> desc;
 
 	//! Orientation data on the host
-	float* orientation;
+	std::vector<float> orientation;
 
 	//! Position buffer on the device
 	CLBuffer d_pixPos;
@@ -320,16 +320,6 @@ unsigned int roundUp(unsigned int value, unsigned int multiple) {
 // utils functions ///////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-// Wrapper for malloc
-void* alloc(size_t size) {
-	void* ptr = nullptr;
-	ptr = malloc(size);
-	if (ptr == nullptr) {
-		perror("malloc");
-		exit(-1);
-	}
-	return ptr;
-}
 
 //! OpenCl error code list
 /*!
@@ -822,12 +812,11 @@ Surf::Surf(int initialPoints, int i_height, int i_width, int octaves,
 	// Allocate buffers to store the output data (descriptor information)
 	// on the host
 
-	this->m_data->scale = static_cast<float*>(alloc(initialPoints * sizeof(float)));
-	this->m_data->pixPos = static_cast<float2*>(alloc(initialPoints * sizeof(float2)));
-	this->m_data->laplacian = static_cast<int*>(alloc(initialPoints * sizeof(int)));
-	this->m_data->desc = static_cast<float*>(alloc(
-			initialPoints * DESC_SIZE * sizeof(float)));
-	this->m_data->orientation = static_cast<float*>(alloc(initialPoints * sizeof(float)));
+	this->m_data->scale.resize(initialPoints);
+	this->m_data->pixPos.resize(initialPoints);
+	this->m_data->laplacian.resize(initialPoints);
+	this->m_data->desc.resize(initialPoints * DESC_SIZE);
+	this->m_data->orientation.resize(initialPoints);
 	// This is how much space is available for Ipts
 	this->m_data->maxIpts = initialPoints;
 
@@ -837,12 +826,6 @@ Surf::Surf(int initialPoints, int i_height, int i_width, int octaves,
 
 //! Destructor
 Surf::~Surf() {
-
-	free(this->m_data->orientation);
-	free(this->m_data->scale);
-	free(this->m_data->laplacian);
-	free(this->m_data->desc);
-	free(this->m_data->pixPos);
 
 	delete this->m_data->fh;
 
@@ -1014,12 +997,6 @@ void Surf::reallocateIptBuffers() {
 
 	// Release the old memory objects (that were too small)
 
-	free(this->m_data->orientation);
-	free(this->m_data->scale);
-	free(this->m_data->laplacian);
-	free(this->m_data->desc);
-	free(this->m_data->pixPos);
-
 	int newSize = this->m_data->maxIpts;
 
 	// Allocate new memory objects based on the new size
@@ -1041,11 +1018,11 @@ void Surf::reallocateIptBuffers() {
 	this->m_data->d_orientation = program.createBuffer("rw",
 			newSize * sizeof(float));
 
-	this->m_data->scale = static_cast<float*>(alloc(newSize * sizeof(float)));
-	this->m_data->pixPos = static_cast<float2*>(alloc(newSize * sizeof(float2)));
-	this->m_data->laplacian = static_cast<int*>(alloc(newSize * sizeof(int)));
-	this->m_data->desc = static_cast<float*>(alloc(newSize * DESC_SIZE * sizeof(float)));
-	this->m_data->orientation = static_cast<float*>(alloc(newSize * sizeof(float)));
+	this->m_data->scale.resize(newSize);
+	this->m_data->pixPos.resize(newSize);
+	this->m_data->laplacian.resize(newSize);
+	this->m_data->desc.resize(newSize * DESC_SIZE);
+	this->m_data->orientation.resize(newSize);
 
 }
 
@@ -1068,23 +1045,23 @@ const IpVec &Surf::retrieveDescriptors() {
 	// Copy back the output data
 
 	// Copy back Laplacian information
-	this->m_data->d_laplacian.read(this->m_data->laplacian,
+	this->m_data->d_laplacian.read(this->m_data->laplacian.data(),
 			(this->m_data->numIpts) * sizeof(int), false);
 
 	// Copy back scale data
-	this->m_data->d_scale.read(this->m_data->scale,
+	this->m_data->d_scale.read(this->m_data->scale.data(),
 			this->m_data->numIpts * sizeof(float), false);
 
 	// Copy back pixel positions
-	this->m_data->d_pixPos.read(this->m_data->pixPos,
+	this->m_data->d_pixPos.read(this->m_data->pixPos.data(),
 			(this->m_data->numIpts) * sizeof(float2), false);
 
 	// Copy back descriptors
-	this->m_data->d_desc.read(this->m_data->desc,
+	this->m_data->d_desc.read(this->m_data->desc.data(),
 			(this->m_data->numIpts) * DESC_SIZE * sizeof(float), false);
 
 	// Copy back orientation data
-	this->m_data->d_orientation.read(this->m_data->orientation,
+	this->m_data->d_orientation.read(this->m_data->orientation.data(),
 			(this->m_data->numIpts) * sizeof(float));
 
 	// Parse the data into Ipoint structures

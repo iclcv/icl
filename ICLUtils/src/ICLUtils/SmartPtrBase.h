@@ -31,9 +31,6 @@ namespace icl{
     /// Array delete operation class for the SmartPtr class \ingroup UTILS
     struct ArrayDelOp : public DelOpBase{ template<class T>  static void delete_func(T *t){ delete[] t; } };
 
-    /// C-Style delete operation class for the SmartPtr class \ingroup UTILS
-    struct FreeDelOp : public DelOpBase{ static void delete_func(void *v){ free(v); } };
-
     /// Reference counting smart pointer (backed by std::shared_ptr) \ingroup UTILS
     template<class T, class delOp = ArrayDelOp >
     class SmartPtrBase{
