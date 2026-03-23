@@ -119,7 +119,7 @@ namespace icl{
         //if(!m_poFrameQueue){
         // m_poFrameQueue = new DCFrameQueue(m_poCam, m_poOptions);
         //}
-        while(true){
+        while(running()){
           if(!trylock()){
             m_poFrameQueue->step();
             unlock();

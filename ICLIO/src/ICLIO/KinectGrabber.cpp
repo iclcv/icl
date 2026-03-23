@@ -143,7 +143,7 @@ namespace icl{
 
       virtual void run(){
         usleep(1000);
-        while(true){
+        while(running()){
           //DEBUG_LOG("kinect grabber running");
           usleep(1);
           if(!trylock()){

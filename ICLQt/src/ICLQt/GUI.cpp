@@ -1000,9 +1000,6 @@ namespace icl{
         }
 
         m_poGroupBox = new QGroupBox((def.param(0) + "  ").c_str(),def.parentWidget());
-        m_poGroupBox->setFlat(false);
-        //m_poGroupBox->setStyleSheet("QGroupBox{ border: 1px solid gray; border-radius: 3px;}");
-        m_poGroupBox->setStyle(QStyleFactory::create("fusion"));
         m_poLayout = new QVBoxLayout;
         m_poLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
         m_poLayout->setSpacing(def.spacing());

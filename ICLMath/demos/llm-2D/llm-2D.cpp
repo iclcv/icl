@@ -120,7 +120,7 @@ public:
 
     w.render();
 
-    while(1){
+    while(running()){
 
       llm.setEpsilonIn(gui.get<float>("e-in"));
       llm.setEpsilonOut(gui.get<float>("e-out"));

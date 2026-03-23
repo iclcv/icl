@@ -36,6 +36,8 @@ namespace icl{
 
     CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
       ThreadedUpdatableWidget(parent),m_sText(text),m_alignment(Qt::AlignCenter){
+      setAttribute(Qt::WA_StyledBackground, false);
+      setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
 
 
@@ -46,7 +48,7 @@ namespace icl{
 
       //    QWidget::paintEvent(evt); do i need this explicitly ??
       QPainter p(this);
-      p.setPen(QColor(0,0,0));
+      p.setPen(palette().color(QPalette::WindowText));
       p.drawText(QRect(0,0,width(),height()),m_alignment,t);
     }
     void CompabilityLabel::setNum(int i){

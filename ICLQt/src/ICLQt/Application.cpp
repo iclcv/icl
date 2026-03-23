@@ -29,41 +29,36 @@
 ********************************************************************/
 
 #include <ICLQt/Application.h>
+#include <ICLQt/DefaultStyle.h>
 #include <QtCore/QLocale>
 #include <QtCore/QThread>
+#include <QFile>
+#include <QTextStream>
+#include <QPalette>
+#include <QStyleFactory>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/SignalHandler.h>
 #include <mutex>
+#include <cstdlib>
 
 using namespace icl::utils;
 
 namespace icl{
   namespace qt{
     struct ExecThread : public Thread{
-      ExecThread(const ExecThread&) = delete;
-      ExecThread& operator=(const ExecThread&) = delete;
       typedef void (*callback)(void);
       callback cb;
-      bool stopRequested;
-      ExecThread(callback cb):cb(cb),stopRequested(false){
+      ExecThread(callback cb):cb(cb){
         if(!cb) throw ICLException("ExecThread called with NULL function!");
       }
-      virtual void stop(){
-        stopRequested = true;
-        Thread::join();
-      }
-
-      virtual void run(){
-        while(true){
+      void run() override {
+        while(running()){
           if(!trylock()){
             cb();
             unlock();
           }
           usleep(1);
-          if (stopRequested){
-            exit();
-          }
         }
       }
     };
@@ -174,6 +169,43 @@ namespace icl{
     }
 #endif
     sharedWidget = new QOpenGLWidget();
+
+    // Dark theme with Fusion style by default.
+    // ICL_THEME=none disables, ICL_THEME=/path/to.qss loads custom file.
+    const char *theme = std::getenv("ICL_THEME");
+    if(!theme || std::string(theme) != "none"){
+      app->setStyle("Fusion");
+
+      // Set dark palette — this is what Qt actually uses for text/background colors
+      QPalette p;
+      p.setColor(QPalette::Window,          QColor(43, 43, 43));
+      p.setColor(QPalette::WindowText,      QColor(224, 224, 224));
+      p.setColor(QPalette::Base,            QColor(60, 60, 60));
+      p.setColor(QPalette::AlternateBase,   QColor(51, 51, 51));
+      p.setColor(QPalette::ToolTipBase,     QColor(60, 60, 60));
+      p.setColor(QPalette::ToolTipText,     QColor(224, 224, 224));
+      p.setColor(QPalette::Text,            QColor(224, 224, 224));
+      p.setColor(QPalette::Button,          QColor(60, 60, 60));
+      p.setColor(QPalette::ButtonText,      QColor(224, 224, 224));
+      p.setColor(QPalette::BrightText,      QColor(255, 50, 50));
+      p.setColor(QPalette::Link,            QColor(61, 174, 233));
+      p.setColor(QPalette::Highlight,       QColor(61, 174, 233));
+      p.setColor(QPalette::HighlightedText, Qt::white);
+      p.setColor(QPalette::Disabled, QPalette::WindowText, QColor(128, 128, 128));
+      p.setColor(QPalette::Disabled, QPalette::Text,       QColor(128, 128, 128));
+      p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(128, 128, 128));
+      app->setPalette(p);
+
+      // Apply QSS polish on top (or load custom file)
+      if(theme && std::string(theme) != "none"){
+        QFile f(theme);
+        if(f.open(QIODevice::ReadOnly | QIODevice::Text)){
+          app->setStyleSheet(QTextStream(&f).readAll());
+        }
+      } else {
+        app->setStyleSheet(qt::defaultStyleSheet());
+      }
+    }
 
     QLocale::setDefault(QLocale::C);
 

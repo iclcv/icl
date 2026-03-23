@@ -56,8 +56,7 @@ void PylonGrabberThread::resetBuffer(){
 }
 
 void PylonGrabberThread::run(){
-  // non-stop-loop
-  while(1){
+  while(running()){
     msleep(1);
     // locking thread
     if(trylock()) {

@@ -30,6 +30,21 @@
   - Moved Point/Rect non-trivial methods to .cpp files
   - Removed CoreFunctions.h from 10 headers that didn't need it
 
+## Completed (Phase 3 — this session)
+- **Thread → std::thread** (removed pthread, ShallowCopyable dep, ThreadImpl; cooperative stop via std::atomic<bool>)
+  - Thread.h: ~120 lines, uses std::thread + std::atomic<bool> + std::recursive_mutex, non-copyable
+  - Thread.cpp: std::this_thread::sleep_for for sleep methods, cooperative stop (set flag + join)
+  - Fixed 5 subclasses with while(true) → while(running()): DCGrabberThread, PylonGrabberThread, KinectGrabber, ExecThread, llm-2D demo
+  - 4 subclasses already had flag-based loops: MTWorkThread, V4L2Grabber, ZmqGrabber, RSBRemoteGUI
+  - Removed unused saveDelete/saveCall templates
+  - 88+ Thread::msleep/usleep/sleep call sites unchanged (static methods kept on class)
+- **Dark stylesheet infrastructure** (ICLQt/src/ICLQt/DefaultStyle.h)
+  - Comprehensive dark theme embedded as C++ raw string literal
+  - Opt-in via `ICL_THEME=dark` or `ICL_THEME=/path/to.qss` env var
+  - Known issue: macOS native Qt style ignores QSS for GroupBox title colors; Fusion style fixes it but needs more investigation for full integration
+  - Removed old `setStyle(QStyleFactory::create("fusion"))` per-GroupBox override from GUI.cpp
+- **Qt style demo** (work/qt-style-demo/) — standalone app showing all Qt controls with loadable .qss
+
 ## Ready to Do
 
 ### Quick wins
@@ -41,9 +56,9 @@
 ### Medium effort
 | Task | Description |
 |------|-------------|
-| **Thread → std::thread** | Replace pthread-based Thread class. Uses ShallowCopyable, virtual `run()`. ~20 use sites. |
 | **More SIMD** | Convolution kernels (3x3, 5x5), morphological ops (erode/dilate 3x3), icl8u arithmetic |
 | **FixedMatrix 4x4 SIMD** | 4x4 matrix multiply fits perfectly in SSE registers — hot path in 3D transforms |
+| **Dark theme polish** | Fix GroupBox title rendering on macOS (QPalette approach? custom paint?), then enable by default |
 
 ### Larger efforts
 | Task | Description |
@@ -55,7 +70,7 @@
 ### Code quality
 | Task | Description |
 |------|-------------|
-| **ShallowCopyable removal** | Replace with std::shared_ptr<Impl>. Used by Thread, File, Semaphore. |
+| **ShallowCopyable removal** | Replace with std::shared_ptr<Impl>. Used by File, Semaphore, etc. (Thread already done) |
 | **DynMatrix RAII** | Replace raw new/delete[] with unique_ptr/vector |
 | **Channel const-correctness** | Remove mutable abuse in Channel.h |
 | **Any.h rethink** | Currently inherits std::string. Consider std::any |

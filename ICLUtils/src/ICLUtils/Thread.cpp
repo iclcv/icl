@@ -30,136 +30,70 @@
 
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Macros.h>
-#include <pthread.h>
-#include <unistd.h>
-#ifndef ICL_SYSTEM_APPLE
-#ifdef ICL_SYSTEM_WINDOWS
-  #include <Windows.h>
-#else
-  #include <unistd.h>
-#include <mutex>
-#endif
-#endif
+#include <chrono>
 
 namespace icl{
   namespace utils{
 
-    class ThreadImpl{
-    public:
-      pthread_t thread;
-      std::recursive_mutex mutex;
-      bool on;
-      void *data;
-    };
-
-    void ThreadImplDelOp::delete_func(ThreadImpl* impl){
-      ICL_DELETE(impl);
-    }
-
-    void *icl_thread_handler(void *t);
-
-
-    Thread::Thread():ShallowCopyable<ThreadImpl,ThreadImplDelOp>(new ThreadImpl){
-      impl->on = false;
-      impl->data = 0;
-    }
+    Thread::Thread() = default;
 
     Thread::~Thread(){
       stop();
     }
 
     void Thread::start(){
-      std::lock_guard<std::recursive_mutex> l(impl->mutex);
-      if(impl->on){
+      std::lock_guard<std::mutex> l(m_lifecycle);
+      if(m_running){
         ERROR_LOG("unable to start thread (it's still running)");
-      }else{
-        impl->on = true;
-  	  pthread_create(&impl->thread,0,icl_thread_handler, static_cast<void*>(this));
-  	}
-    }
-    void Thread::stop(){
-      std::lock_guard<std::recursive_mutex> l(impl->mutex);
-      if(impl->on){
-        pthread_cancel(impl->thread);
-        pthread_join(impl->thread,&impl->data);
-  	    impl->on = false;
-        finalize();
+        return;
       }
-    }
-    void Thread::wait(){
-      std::lock_guard<std::recursive_mutex> l(impl->mutex);
-      if(impl->on){
-        pthread_join(impl->thread,&impl->data);
-        impl->on = false;
-        finalize();
-      }
-    }
-    void Thread::lock(){
-      impl->mutex.lock();
-    }
-    int Thread::trylock(){
-      return impl->mutex.try_lock() ? 0 : 1;
-    }
-    void Thread::unlock(){
-      impl->mutex.unlock();
-    }
-    void Thread::join() {
-      pthread_join(impl->thread,&impl->data);
+      m_running = true;
+      m_thread = std::thread([this]{ run(); });
     }
 
+    void Thread::stop(){
+      m_running = false;
+      std::lock_guard<std::mutex> l(m_lifecycle);
+      if(m_thread.joinable()){
+        m_thread.join();
+        finalize();
+      }
+    }
+
+    void Thread::wait(){
+      std::lock_guard<std::mutex> l(m_lifecycle);
+      if(m_thread.joinable()){
+        m_thread.join();
+        m_running = false;
+        finalize();
+      }
+    }
+
+    void Thread::lock(){ m_mutex.lock(); }
+    int Thread::trylock(){ return m_mutex.try_lock() ? 0 : 1; }
+    void Thread::unlock(){ m_mutex.unlock(); }
+
+    void Thread::join(){
+      std::lock_guard<std::mutex> l(m_lifecycle);
+      if(m_thread.joinable()) m_thread.join();
+    }
+
+    void Thread::exit(){ m_running = false; }
+
+    bool Thread::running() const { return m_running.load(); }
+    bool Thread::runningNoLock() const { return m_running.load(); }
+
     void Thread::usleep(unsigned int usec){
-    #ifdef ICL_SYSTEM_WINDOWS
-      Sleep(usec / 1000);
-    #elif defined(__clang__)
-      ::usleep(usec);
-    #else
-      ::usleep(usec);
-    #endif
+      std::this_thread::sleep_for(std::chrono::microseconds(usec));
     }
 
     void Thread::msleep(unsigned int msecs){
-    #ifdef ICL_SYSTEM_WINDOWS
-      Sleep(msecs);
-    #elif defined(__clang__)
-      ::usleep(msecs*1000);
-    #else
-      ::usleep(msecs*1000);
-    #endif
+      std::this_thread::sleep_for(std::chrono::milliseconds(msecs));
     }
+
     void Thread::sleep(float secs){
-    #ifdef ICL_SYSTEM_WINDOWS
-      Sleep(secs*1000);
-    #elif defined(__clang__)
-      ::usleep(static_cast<unsigned int>(secs * 1000000));
-    #else
-      ::usleep(static_cast<long>(secs) * 1000000);
-    #endif
+      std::this_thread::sleep_for(std::chrono::duration<float>(secs));
     }
 
-    // Maybe this works
-    bool Thread::running() const{
-      std::lock_guard<std::recursive_mutex> l(const_cast<std::recursive_mutex&>(impl->mutex));
-      return impl->on;
-    }
-
-    bool Thread::runningNoLock() const {
-      return impl->on;
-    }
-
-    void Thread::exit(){
-      impl->mutex.lock();
-      if(impl->on){
-        impl->on = false;
-        impl->mutex.unlock();
-  	    pthread_exit(impl->data);
-      }
-      impl->mutex.unlock();
-    }
-
-    void *icl_thread_handler(void *t){
-      static_cast<Thread*>(t)->run();
-      //pthread_exit(0);
-  	return 0;
-    }
   } // namespace utils
 }
