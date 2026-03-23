@@ -294,7 +294,7 @@ namespace icl{
       ICLGeom_API void addVertex(const Vec &p, const GeomColor &color = GeomColor(255, 0, 0, 255));
 
       /// adds a GLImg as shared texture
-      ICLGeom_API void addSharedTexture(utils::SmartPtr<qt::GLImg> gli);
+      ICLGeom_API void addSharedTexture(std::shared_ptr<qt::GLImg> gli);
 
       /// adds an core::ImgBase * as shared texutre
       ICLGeom_API void addSharedTexture(const core::ImgBase *image, core::scalemode sm = core::interpolateLIN);
@@ -587,7 +587,7 @@ namespace icl{
           also be extended to the caller scope.
           Please note, that adding a child to an object o, will always set
           the child's parent to o */
-      void addChild(utils::SmartPtr<SceneObject> child);
+      void addChild(std::shared_ptr<SceneObject> child);
 
       /// removes given child
       /** no errors if the child was not found */
@@ -609,7 +609,7 @@ namespace icl{
       ICLGeom_API const SceneObject *getChild(int index) const;
 
       /// returns a shared pointer to the child at given index
-      utils::SmartPtr<SceneObject> getChildPtr(int index);
+      std::shared_ptr<SceneObject> getChildPtr(int index);
 
       /// returns whether the given object is a child of this one
       ICLGeom_API bool hasChild(const SceneObject *o) const;
@@ -816,7 +816,7 @@ namespace icl{
 
       std::vector<GeomColor> m_vertexColors;
       std::vector<Primitive*> m_primitives;
-      std::vector<utils::SmartPtr<qt::GLImg> > m_sharedTextures;
+      std::vector<std::shared_ptr<qt::GLImg> > m_sharedTextures;
       int m_visibleMask;
 
       bool m_lineColorsFromVertices;
@@ -836,7 +836,7 @@ namespace icl{
       Mat m_transformation;
       bool m_hasTransformation;
       SceneObject *m_parent;
-      std::vector<utils::SmartPtr<SceneObject> > m_children;
+      std::vector<std::shared_ptr<SceneObject> > m_children;
 
       mutable utils::Mutex m_mutex; //!< for asynchronous updates
       bool m_enableLocking; //!< can be enabled

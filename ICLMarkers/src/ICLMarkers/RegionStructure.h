@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <string>
 
 namespace icl{
@@ -57,7 +57,7 @@ namespace icl{
     };
 
     /// Managed pointer type definition
-    using RegionStructurePtr = utils::SmartPtr<RegionStructure>;
+    using RegionStructurePtr = std::shared_ptr<RegionStructure>;
 
 
 

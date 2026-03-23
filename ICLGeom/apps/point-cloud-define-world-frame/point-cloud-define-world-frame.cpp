@@ -57,10 +57,10 @@ Scene scene;
 
 PointCloudObject obj;
 Mutex grabberMutex;
-SmartPtr<GenericPointCloudGrabber> grabber;
+std::shared_ptr<GenericPointCloudGrabber> grabber;
 const core::Img8u &calculate(const core::Img32f &depthImage, bool filter, bool average, bool gauss);
-SmartPtr<RayCastOctreeObject> octree;
-SmartPtr<ObjectEdgeDetector> oed;
+std::shared_ptr<RayCastOctreeObject> octree;
+std::shared_ptr<ObjectEdgeDetector> oed;
 MorphologicalOp closing(MorphologicalOp::closeBorder);
 
 core::Img8u seg;

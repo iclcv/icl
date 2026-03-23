@@ -16,5 +16,5 @@ icl_add_module(ICLMath
     <ICLUtils/Exception.h>
     <ICLUtils/StringUtils.h>
     <ICLUtils/Macros.h>
-    <ICLUtils/SmartPtr.h>
+
     <ICLMath/DynMatrix.h>)

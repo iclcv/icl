@@ -111,7 +111,7 @@ namespace icl{
     };
 
     static FileGrabberPlugin *find_plugin(const std::string &type){
-      static std::map<std::string,SmartPtr<FileGrabberPlugin> > plugins;
+      static std::map<std::string,std::shared_ptr<FileGrabberPlugin> > plugins;
       if(!plugins.size()){
         plugins[".ppm"].reset(new FileGrabberPluginPNM);
         plugins[".pgm"].reset(new FileGrabberPluginPNM);
@@ -176,7 +176,7 @@ namespace icl{
       for(unsigned int i=0;i<lowerType.length();++i){
         lowerType[i] = tolower(lowerType[i]);
       }
-      std::map<std::string,SmartPtr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
+      std::map<std::string,std::shared_ptr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
       if(it == plugins.end()) return 0;
       else return it->second.get();
     }

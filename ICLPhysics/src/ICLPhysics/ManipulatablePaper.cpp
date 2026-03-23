@@ -63,7 +63,7 @@ namespace physics{
     ManipulatablePaper *parent;  // used as reference
     Time lastTime;
     int cameraIndex;
-    SmartPtr<QMenu> menu;
+    std::shared_ptr<QMenu> menu;
 
     ManipulatablePaperMouseHandler(MouseHandler *h, PhysicsWorld *world, Scene *scene, ManipulatablePaper *parent, int cameraIndex):
       h(h), obj(0), scene(scene), world(world), paper(0), parent(parent),

@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <functional>
 
 namespace icl{
@@ -152,7 +152,7 @@ namespace icl{
       DynMatrix<T> m_D, m_S, m_Evecs, m_Evals, m_svdU, m_svdS, m_svdVt;
 
       /// constraint matrix
-      utils::SmartPtr<DynMatrix<T> >m_C;
+      std::shared_ptr<DynMatrix<T> >m_C;
 
       /// the model parameters
       Model m_model;

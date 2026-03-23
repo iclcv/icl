@@ -32,7 +32,6 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Any.h>
 #include <ICLUtils/UncopiedInstance.h>
 

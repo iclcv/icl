@@ -172,7 +172,7 @@ namespace physics{
       setVisible(Primitive::quad,false);
       setVisible(Primitive::texture,false);
       if(backfaceTexture){
-        SmartPtr<ImgBase> cpy(backfaceTexture->deepCopy());
+        std::shared_ptr<ImgBase> cpy(backfaceTexture->deepCopy());
 #ifdef FLIP_MARKERS_ONLY
         FiducialDetector fd("bch","[0,4095]","size=1x1");
         std::vector<Fiducial> fids = fd.detect(cpy.get());

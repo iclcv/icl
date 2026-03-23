@@ -103,7 +103,7 @@ namespace icl{
     }
 
 
-    void ShaderUtil::recompilePerPixelShader(qt::GLFragmentShader** shaders, const utils::SmartPtr<SceneLight>* lights, int numShadowLights) {
+    void ShaderUtil::recompilePerPixelShader(qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights) {
       for(unsigned int i = 0; i < ShaderUtil::COUNT; i++) {
         delete shaders[i];
       }

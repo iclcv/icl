@@ -38,7 +38,7 @@
 #include "UndistortionUtil.h"
 
 HBox gui;
-//SmartPtr<FiducialDetector> fd;
+//std::shared_ptr<FiducialDetector> fd;
 GenericGrabber grabber;
 
 typedef AdvancedMarkerGridDetector Detector;
@@ -51,7 +51,7 @@ MarkerGridEvaluater gridEval;
 
 
 MarkerGridBasedUndistortionOptimizer opt;
-SmartPtr<UndistortionUtil> udist;
+std::shared_ptr<UndistortionUtil> udist;
 
 
 void init(){

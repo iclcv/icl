@@ -28,10 +28,8 @@
 **                                                                 **
 ********************************************************************/
 
-#define ICL_SMART_PTR_DEBUG
-
 #include <ICLUtils/ProgArg.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ICLVersion.h>
@@ -180,7 +178,7 @@ namespace icl{
     };
 
 
-    typedef SmartPtr<AllowedArg> AllowedArgPtr;
+    typedef std::shared_ptr<AllowedArg> AllowedArgPtr;
 
     struct ProgArgContext{
       std::vector<AllowedArgPtr> allowed;
@@ -268,9 +266,9 @@ namespace icl{
       /// creates the static instance (must not be called twice)
       static ProgArgContext* createInstance(){
         if(s_context) THROW_ProgArgException("pa_init must not be called twice!");
-        static SmartPtr<ProgArgContext> instance;
+        static std::shared_ptr<ProgArgContext> instance;
         s_context = new ProgArgContext;
-        instance = SmartPtr<ProgArgContext>(s_context);
+        instance = std::shared_ptr<ProgArgContext>(s_context);
         return s_context;
       }
 

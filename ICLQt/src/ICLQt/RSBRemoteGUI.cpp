@@ -85,11 +85,11 @@ namespace icl{
 
 
       struct Synchronizer : public Thread{
-        SmartPtr<io::RSBGrabber> grabber;
+        std::shared_ptr<io::RSBGrabber> grabber;
         std::string handle;
         GUI *gui;
         bool on;
-        Synchronizer(SmartPtr<io::RSBGrabber> grabber, const std::string &handle, GUI *gui):
+        Synchronizer(std::shared_ptr<io::RSBGrabber> grabber, const std::string &handle, GUI *gui):
           grabber(grabber),handle(handle),gui(gui),on(true){
           start();
         }
@@ -114,8 +114,8 @@ namespace icl{
         rsb::Informer<std::string>::Ptr informer;
         rsb::ListenerPtr listener;
         rsb::HandlerPtr receiver;
-        SmartPtr<io::RSBGrabber> grabber;
-        SmartPtr<Synchronizer> sync;
+        std::shared_ptr<io::RSBGrabber> grabber;
+        std::shared_ptr<Synchronizer> sync;
       };
 
       std::map<std::string,Instance> handleLUT;
@@ -245,8 +245,8 @@ namespace icl{
 
             rsb::ListenerPtr listener;
             rsb::HandlerPtr receiver;
-            SmartPtr<io::RSBGrabber> grabber;
-            SmartPtr<Synchronizer> sync;
+            std::shared_ptr<io::RSBGrabber> grabber;
+            std::shared_ptr<Synchronizer> sync;
 
             if(type == "image" || type == "draw" || type == "draw3d" || type == "draw3D"){
               grabber = new io::RSBGrabber(baseScope+"/set/"+fixed);

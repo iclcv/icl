@@ -269,7 +269,7 @@ namespace icl{
           }
           m_data->setLinkHighlight(VisualizationDescription());
         }else{
-          SmartPtr<PhysicsPaper3::LinkCoords> coords = m_data->model->getLinkCoords(e.getPos32f(), cam);
+          std::shared_ptr<PhysicsPaper3::LinkCoords> coords = m_data->model->getLinkCoords(e.getPos32f(), cam);
           VisualizationDescription d;
           if(coords){
             d = m_data->model->getFoldLineHighlight(*coords, cam);

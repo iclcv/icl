@@ -82,7 +82,7 @@ namespace icl{
       int maxLoaded;
       std::vector<Size32f> sizes;
 
-      SmartPtr<PatternBinarization> bin;
+      std::shared_ptr<PatternBinarization> bin;
       int maxBCHErr;
       BCHCoder bch;
     };

@@ -71,7 +71,7 @@ namespace icl{
 
     public:
       /// Constructor
-      SQFitter(icl::utils::SmartPtr<Vec> camCenter=utils::SmartPtr<Vec>());
+      SQFitter(std::shared_ptr<Vec> camCenter=std::shared_ptr<Vec>());
 
       /// fits superquadrics into given point cloud, considering only given number of points
       bool fit(icl::geom::PointCloudObject& pcObj,
@@ -106,9 +106,9 @@ namespace icl{
       LM shapeLM;                          //!< Levenberg-Marquardt for the shape
       LM eulerPosLM;                       //!< Levenberg-Marquardt for the euler angles and the position
       SQParams params;                     //!< last solution
-      icl::utils::SmartPtr<Vec> camCenter; //!< camera center
+      std::shared_ptr<Vec> camCenter; //!< camera center
     };
-    using SQFitterPtr = icl::utils::SmartPtr<SQFitter>;
+    using SQFitterPtr = std::shared_ptr<SQFitter>;
 
   } // namespace geom
 }

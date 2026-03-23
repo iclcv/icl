@@ -156,7 +156,7 @@ namespace icl{
       /// accumulates a combination of data needed for the calibration application
       struct CalibFileData{
         qt::GUI objGUI;
-        utils::SmartPtr<markers::FiducialDetector> fds[2];
+        std::shared_ptr<markers::FiducialDetector> fds[2];
         std::vector<PossibleMarker> possible[2];
         std::vector<std::string> configurables;
         std::string iin; // comma-sep. string list

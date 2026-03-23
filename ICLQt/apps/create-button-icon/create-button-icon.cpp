@@ -55,7 +55,7 @@ int main(int n, char **a){
     std::cout << "//#include <ICLCore/Img.h>" << std::endl;
     std::cout << "//#include <ICLCC/CCFunctions.h>" << std::endl;
     std::cout << "const Img8u& load_data_XYZ(){" << std::endl;
-    std::cout << "  static SmartPtr<Img8u> image;" << std::endl;
+    std::cout << "  static std::shared_ptr<Img8u> image;" << std::endl;
     std::cout << "  if(!image){" << std::endl;
     std::cout << "     image = new Img8u(Size(" << w << "," << h << ")," << c << ");" << std::endl;
     std::cout << "     interleavedToPlanar((const icl8u*)data_XYZ, image.get());" << std::endl;

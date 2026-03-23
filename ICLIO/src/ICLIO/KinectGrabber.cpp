@@ -562,7 +562,7 @@ namespace icl{
 
     struct KinectGrabber::Impl{
     private:
-      SmartPtr<FreenectDevice> device;
+      std::shared_ptr<FreenectDevice> device;
 
     public:
       int ledColor;
@@ -607,9 +607,9 @@ namespace icl{
       void switchMode(KinectGrabber::Mode mode, const Size &size){
         if(device->mode != mode || device->used->size != size){
           int idx = device->index;
-          //device = SmartPtr<FreenectDevice>();
+          //device = std::shared_ptr<FreenectDevice>();
           device.reset();
-          device = SmartPtr<FreenectDevice>(new FreenectDevice(idx,mode,size));
+          device = std::shared_ptr<FreenectDevice>(new FreenectDevice(idx,mode,size));
         }
       }
 
@@ -620,7 +620,7 @@ namespace icl{
         return device->used->getLastColorImage(avoidDoubleFrames);
       }
 
-      SmartPtr<FreenectDevice> &getDevice(){
+      std::shared_ptr<FreenectDevice> &getDevice(){
         return device;
       }
     };

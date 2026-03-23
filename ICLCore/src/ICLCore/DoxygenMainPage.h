@@ -52,7 +52,7 @@
     \section SC Shortcuts
 
     - <b>Utils</b> icl::utils::ConfigFile, icl::utils::Configurable,
-      icl::utils::ProgArg, icl::utils::SmartPtr, icl::utils::Thread
+      icl::utils::ProgArg, std::shared_ptr, icl::utils::Thread
     - <b>Math</b> icl::math::DynMatrix, icl::math::FixedMatrix, icl::math::Octree,
       icl::math::QuadTree, icl::math::LLM, icl::math::PolynomialRegression,
       icl::math::RansacFitter, icl::math::LevenbergMarquardtFitter,

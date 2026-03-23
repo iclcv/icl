@@ -753,16 +753,16 @@ namespace icl{
     template<class T>
     Img<T> grab(const std::string &dev, const std::string &devSpec,
               const Size &size, format fmt, bool releaseGrabber){
-      static std::map<std::string,SmartPtr<GenericGrabber> > grabbers;
+      static std::map<std::string,std::shared_ptr<GenericGrabber> > grabbers;
 
-      SmartPtr<GenericGrabber> g;
+      std::shared_ptr<GenericGrabber> g;
       std::string id;
       if(devSpec.substr(0,dev.length()) != (dev+"=")){
         id = dev+dev+"="+devSpec;
       }else{
         id = dev+devSpec;
       }
-      std::map<std::string,SmartPtr<GenericGrabber> >::iterator it = grabbers.find(id);
+      std::map<std::string,std::shared_ptr<GenericGrabber> >::iterator it = grabbers.find(id);
       if(it != grabbers.end()){
         g = it->second;
       }else{

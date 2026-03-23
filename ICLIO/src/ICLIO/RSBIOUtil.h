@@ -187,7 +187,7 @@ namespace icl{
 
     template<class T>
     class RSBSender {
-      utils::SmartPtr<RSBIOUtil<T> > impl;
+      std::shared_ptr<RSBIOUtil<T> > impl;
       public:
 
       using DataPtr = typename RSBIOUtilDataBase<T>::DataPtr;
@@ -221,7 +221,7 @@ namespace icl{
 
     template<class T>
     class RSBListener {
-      utils::SmartPtr<RSBIOUtil<T> > impl;
+      std::shared_ptr<RSBIOUtil<T> > impl;
       public:
 
       using Callback = typename RSBIOUtilDataBase<T>::Callback;

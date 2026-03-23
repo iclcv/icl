@@ -60,8 +60,8 @@ namespace icl{
       bool initialized;
       RSBPointCloud buffer;
       ProtoBufSerializationDevice sdev;
-      SmartPtr<Camera> depthCam;
-      SmartPtr<Camera> colorCam;
+      std::shared_ptr<Camera> depthCam;
+      std::shared_ptr<Camera> colorCam;
       Data():sdev(&buffer){}
 
       struct Handler : public DataHandler<RSBPointCloud>{

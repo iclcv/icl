@@ -579,7 +579,7 @@ namespace icl{
       ICLASSERT_RETURN(color);
 
       for(int i=0;i<image->getChannels();++i){
-        SmartPtr<const ImgBase> c(image->selectChannel(i));
+        std::shared_ptr<const ImgBase> c(image->selectChannel(i));
         drawTo(c.get(), color[i]);
       }
     }

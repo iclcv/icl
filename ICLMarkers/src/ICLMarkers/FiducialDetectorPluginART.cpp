@@ -76,7 +76,7 @@ namespace icl{
       };
 
       struct Matching{
-        virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &matchDim)=0;
+        virtual void prepare(const std::vector<std::shared_ptr<NamedImage> > &loaded, const Size &matchDim)=0;
         virtual NamedImage *match(const Img8u &image, int *rot, float *err) = 0;
         virtual ~Matching(){}
       };
@@ -90,7 +90,7 @@ namespace icl{
       struct MatchingBinaryHamming : public Matching{
         std::vector<Img4> is;
         Img8u dimBuf;
-        virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &dim){
+        virtual void prepare(const std::vector<std::shared_ptr<NamedImage> > &loaded, const Size &dim){
           dimBuf.setSize(dim);
           dimBuf.setChannels(1);
           for(unsigned int i=0;i<loaded.size();++i){
@@ -162,7 +162,7 @@ namespace icl{
 
         std::vector<Img4> is;
         Img8u dimBuf;
-        virtual void prepare(const std::vector<SmartPtr<NamedImage> > &loaded, const Size &dim){
+        virtual void prepare(const std::vector<std::shared_ptr<NamedImage> > &loaded, const Size &dim){
           dimBuf.setSize(dim);
           dimBuf.setChannels(1);
           for(unsigned int i=0;i<loaded.size();++i){
@@ -255,10 +255,10 @@ namespace icl{
 
 
     struct FiducialDetectorPluginART::Data{
-      std::vector<SmartPtr<NamedImage> > loaded;
+      std::vector<std::shared_ptr<NamedImage> > loaded;
       std::string lastMatching;
       Size lastMatchingSize;
-      SmartPtr<Matching> matching;
+      std::shared_ptr<Matching> matching;
 
       void updateMatching(const std::string &a,const Size &matchingSize){
         lastMatching = a;
@@ -310,7 +310,7 @@ namespace icl{
           FileGrabber g(l[i]);
           g.useDesired(formatGray);
           g.useDesired(depth8u);
-          data->loaded.push_back(SmartPtr<NamedImage>(new NamedImage( *g.grab()->asImg<icl8u>(),
+          data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( *g.grab()->asImg<icl8u>(),
                                                  File(l[i]).getBaseName(),
                                                  size, data->loaded.size())));
         }

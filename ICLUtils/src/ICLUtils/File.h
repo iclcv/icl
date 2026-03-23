@@ -55,7 +55,7 @@ namespace icl{
         In addition the implementation of the File class was split into two
         parts: The File itself and its certain implementation, which is
         defined invisibly for the user. This implementation is shared
-        by shallow copied instances using the ICL SmartPtr class. This mechanism
+        by shallow copied instances using std::shared_ptr. This mechanism
         provides save shallow copies using reference counting.
     **/
     class ICLUtils_API File : public utils::ShallowCopyable<FileImpl, FileImplDelOp>{

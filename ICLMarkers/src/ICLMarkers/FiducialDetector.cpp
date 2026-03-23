@@ -83,12 +83,12 @@ namespace icl{
 
     struct FiducialDetector::Data{
       std::string plugintype;
-      SmartPtr<FiducialDetectorPlugin> plugin;
+      std::shared_ptr<FiducialDetectorPlugin> plugin;
       Img8u buffer;
       std::vector<FiducialImpl*> fidImpls;
       std::vector<Fiducial> fids;
-      SmartPtr<Camera> camera;
-      SmartPtr<Preprocessor> pp;
+      std::shared_ptr<Camera> camera;
+      std::shared_ptr<Preprocessor> pp;
 
       struct IntermediaImages{
         IntermediaImages():input(0),pp(0){}

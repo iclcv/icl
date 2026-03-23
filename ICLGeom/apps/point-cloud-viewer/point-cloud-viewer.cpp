@@ -44,7 +44,7 @@ Scene scene;
 PointCloudObject obj, obj2;
 GenericPointCloudGrabber grabber;
 GenericPointCloudGrabber grabber2; // used to add an extra point cloud if needed
-SmartPtr<RayCastOctreeObject> octree;
+std::shared_ptr<RayCastOctreeObject> octree;
 Mutex octreeMutex;
 
 SceneObject *indicatorCS = 0;
@@ -175,7 +175,7 @@ void run_octree(){
     Thread::sleep(1000);
     return;
   }
-  SmartPtr<PointCloudObject> other(obj.copy());
+  std::shared_ptr<PointCloudObject> other(obj.copy());
   RayCastOctreeObject *octree = new RayCastOctreeObject(-3000,6000);
   //  Time t = Time::now();
   const DataSegment<float,4> xyzh = other->selectXYZH();
@@ -184,7 +184,7 @@ void run_octree(){
   }
   //t.showAge("time for point insertion ... of " + str(xyzh.getDim()) + " points");
   Mutex::Locker lock(octreeMutex);
-  ::octree = SmartPtr<RayCastOctreeObject>(octree);
+  ::octree = std::shared_ptr<RayCastOctreeObject>(octree);
 }
 
 void run(){

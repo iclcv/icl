@@ -84,7 +84,7 @@ namespace physics{
     PhysicsWorld *world;
     geom::Scene *scene;
     utils::Mutex attractorMutex;
-    utils::SmartPtr<qt::MouseHandler> mouse;
+    std::shared_ptr<qt::MouseHandler> mouse;
     std::vector<LineAnnotation*> lines;
     DraggedPositionIndicator *draggedPositionIndicator;
     friend struct ManipulatablePaperMouseHandler;
@@ -185,7 +185,7 @@ namespace physics{
       ManipulatablePaper *parent;
     };
 
-    utils::SmartPtr<Shadow> m_shadow;
+    std::shared_ptr<Shadow> m_shadow;
 
     void addShadow(float zLevel){
       if(m_shadow){

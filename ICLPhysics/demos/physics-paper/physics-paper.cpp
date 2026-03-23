@@ -52,8 +52,8 @@ VBox propGUI;
 DefaultGroundObject ground;
 DefaultGroundObjectVisualization groundVis;
 
-SmartPtr<ManipulatablePaper> paper;
-SmartPtr<SceneMultiCamCapturer> capturer;
+std::shared_ptr<ManipulatablePaper> paper;
+std::shared_ptr<SceneMultiCamCapturer> capturer;
 
 void fold_line_cb(const Point32f &a, const Point32f &b){
   //TODO IMPLEMENt LOCK PhysicsWorld::Locker lock(world);

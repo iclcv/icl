@@ -205,12 +205,12 @@ namespace icl{
                                                   color*COLOR_FACTOR,normalIndices));
     }
 
-    void SceneObject::addSharedTexture(SmartPtr<GLImg> gli){
+    void SceneObject::addSharedTexture(std::shared_ptr<GLImg> gli){
       m_sharedTextures.push_back(gli);
     }
 
     void SceneObject::addSharedTexture(const ImgBase *image, scalemode sm){
-      m_sharedTextures.push_back(SmartPtr<GLImg>(new GLImg(image,sm)));
+      m_sharedTextures.push_back(std::shared_ptr<GLImg>(new GLImg(image,sm)));
     }
 
     void SceneObject::addTexture(int a, int b, int c, int d,const ImgBase *texture,
@@ -894,13 +894,13 @@ namespace icl{
 
     void SceneObject::addChild(SceneObject *child, bool passOwnerShip){
       if(passOwnerShip){
-        m_children.push_back(SmartPtr<SceneObject>(child));
+        m_children.push_back(std::shared_ptr<SceneObject>(child));
       }else{
-        m_children.push_back(SmartPtr<SceneObject>(child, [](SceneObject*){}));
+        m_children.push_back(std::shared_ptr<SceneObject>(child, [](SceneObject*){}));
       }
       child->m_parent = this;
     }
-    void SceneObject::addChild(SmartPtr<SceneObject> child){
+    void SceneObject::addChild(std::shared_ptr<SceneObject> child){
       m_children.push_back(child);
       child->m_parent = this;
     }
@@ -945,8 +945,8 @@ namespace icl{
     }
 
     /// returns a shared pointer to the child at given index
-    SmartPtr<SceneObject> SceneObject::getChildPtr(int index){
-      if(index < 0 || index >= static_cast<int>(m_children.size())) return SmartPtr<SceneObject>();
+    std::shared_ptr<SceneObject> SceneObject::getChildPtr(int index){
+      if(index < 0 || index >= static_cast<int>(m_children.size())) return std::shared_ptr<SceneObject>();
       return m_children[index];
     }
 
@@ -1008,7 +1008,7 @@ namespace icl{
       m_children.clear();
       m_children.resize(other.m_children.size());
       for(unsigned int i=0;i<other.m_children.size();++i){
-        m_children[i] = SmartPtr<SceneObject>(other.m_children[i]->copy());
+        m_children[i] = std::shared_ptr<SceneObject>(other.m_children[i]->copy());
       }
 
       for(unsigned int i=0;i<m_primitives.size();++i){

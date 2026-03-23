@@ -287,7 +287,7 @@ void run(){
     ICLASSERT_THROW(rs.size() == 1, ICLException("expected exactly one rectangle"));
     lastRect = rs[0];
     mouse_2->visualize(**draw);
-    SmartPtr<const ImgBase> tmp(image->shallowCopy(rs[0] & image->getImageRect()));
+    std::shared_ptr<const ImgBase> tmp(image->shallowCopy(rs[0] & image->getImageRect()));
     roi.setChannels(tmp->getChannels());
     roi.setFormat(tmp->getFormat());
     roi.setSize(tmp->getROISize());

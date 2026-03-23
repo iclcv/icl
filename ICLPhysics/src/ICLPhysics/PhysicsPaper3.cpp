@@ -1339,7 +1339,7 @@ namespace icl{
       };
 
       struct RenderedTriangle{
-        utils::SmartPtr<RenderedTriangleImpl> impl;
+        std::shared_ptr<RenderedTriangleImpl> impl;
         RenderedTriangle():
           impl(new RenderedTriangleImpl){}
 
@@ -1707,7 +1707,7 @@ namespace icl{
       return d;
     }
 
-    SmartPtr<PhysicsPaper3::LinkCoords> PhysicsPaper3::getLinkCoords(const Point32f &pix,
+    std::shared_ptr<PhysicsPaper3::LinkCoords> PhysicsPaper3::getLinkCoords(const Point32f &pix,
                                                                      const Camera &cam) const {
       ViewRay v = cam.getViewRay(pix);
       Point32f p = hit(v);
@@ -1734,9 +1734,9 @@ namespace icl{
         }
       }
       if(bestIA != -1){
-        return SmartPtr<LinkCoords>(new LinkCoords(m_data->texCoords[bestIA],m_data->texCoords[bestIB]));
+        return std::shared_ptr<LinkCoords>(new LinkCoords(m_data->texCoords[bestIA],m_data->texCoords[bestIB]));
       }else{
-        return SmartPtr<LinkCoords>();
+        return std::shared_ptr<LinkCoords>();
       }
     }
 

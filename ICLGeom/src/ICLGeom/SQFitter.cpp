@@ -101,7 +101,7 @@ namespace icl{
     }
 
 
-    SQFitter::SQFitter(utils::SmartPtr<Vec> camCenter) : camCenter(camCenter) {
+    SQFitter::SQFitter(std::shared_ptr<Vec> camCenter) : camCenter(camCenter) {
       // get the error functions
       sErrorFunc = [this](const LM::Params &p, const LM::Matrix &Mx){ return sError(p, Mx); };
       ePErrorFunc = [this](const LM::Params &p, const LM::Matrix &Mx){ return ePError(p, Mx); };

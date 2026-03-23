@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ProgArg.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
 
@@ -64,7 +64,7 @@ namespace icl{
     class ICLIO_API GenericImageOutput : public ImageOutput{
       std::string type;
       std::string description;
-      utils::SmartPtr<ImageOutput> impl;
+      std::shared_ptr<ImageOutput> impl;
 
       public:
 

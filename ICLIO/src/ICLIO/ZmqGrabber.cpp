@@ -45,9 +45,9 @@ namespace icl{
     struct ZmqGrabber::Data : public Thread{
       ImageCompressor cmp;
 
-      SmartPtr<zmq::context_t> context;
-      SmartPtr<zmq::socket_t> subscriber;
-      SmartPtr<zmq::message_t> msg;
+      std::shared_ptr<zmq::context_t> context;
+      std::shared_ptr<zmq::socket_t> subscriber;
+      std::shared_ptr<zmq::message_t> msg;
       bool running;
       std::string host;
       int port;

@@ -45,8 +45,8 @@ namespace icl{
 
     struct TemplateTracker::Data{
       ImgBase *buf;
-      SmartPtr<ProximityOp> prox;
-      std::vector<SmartPtr<Img8u> > lut;
+      std::shared_ptr<ProximityOp> prox;
+      std::vector<std::shared_ptr<Img8u> > lut;
       TemplateTracker::Result lastResult;
     };
 
@@ -108,16 +108,16 @@ namespace icl{
         const int rw = r->getWidth();
         const int rh = r->getHeight();
         Rect center((rw-w)/2, (rh-h)/2, w,h);
-        SmartPtr<const Img8u> roiimage(r->shallowCopy(center));
+        std::shared_ptr<const Img8u> roiimage(r->shallowCopy(center));
 
         Img8u *tmp = new Img8u(test.getSize()/4,1);
         //      data->lut.push_back(roiimage->deepCopyROI());
         roiimage->scaledCopyROI(tmp,interpolateLIN);
-        data->lut.push_back(SmartPtr<Img8u>(tmp));
+        data->lut.push_back(std::shared_ptr<Img8u>(tmp));
       }
     }
 
-    void TemplateTracker::setRotationLUT(const std::vector<SmartPtr<Img8u> > &lut){
+    void TemplateTracker::setRotationLUT(const std::vector<std::shared_ptr<Img8u> > &lut){
       data->lut = lut;
     }
 
@@ -174,8 +174,8 @@ namespace icl{
 
       const Rect roi(X - ROI/2, Y-ROI/2, ROI, ROI);
 
-      SmartPtr<const Img8u> roiImageTmp(image.shallowCopy(roi));
-      SmartPtr<Img8u> roiImage(roiImageTmp->deepCopyROI());
+      std::shared_ptr<const Img8u> roiImageTmp(image.shallowCopy(roi));
+      std::shared_ptr<Img8u> roiImage(roiImageTmp->deepCopyROI());
 
       const int stepRadius = lutSize * rotationRange/720;
 

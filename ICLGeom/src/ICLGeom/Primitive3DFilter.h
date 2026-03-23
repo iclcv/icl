@@ -310,7 +310,7 @@ namespace icl{
                 std::map<unsigned char, float> mapGroupBitToPadding;
 
                 /// all filter actions to be performed
-                std::vector<utils::SmartPtr<FilterAction> > filterActions;
+                std::vector<std::shared_ptr<FilterAction> > filterActions;
 
             };
 

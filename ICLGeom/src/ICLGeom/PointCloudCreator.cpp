@@ -50,8 +50,8 @@ namespace icl{
 
     struct PointCloudCreator::Data{
       Mutex mutex;
-      SmartPtr<Mat>rgbdMapping;
-      SmartPtr<Camera> depthCamera, colorCamera, depthCameraOrig, colorCameraOrig; // memorized for easy copying
+      std::shared_ptr<Mat>rgbdMapping;
+      std::shared_ptr<Camera> depthCamera, colorCamera, depthCameraOrig, colorCameraOrig; // memorized for easy copying
       Size depthImageSize;
       Size colorImageSize;
       Vec viewRayOffset;
@@ -64,7 +64,7 @@ namespace icl{
 #ifdef ICL_HAVE_OPENCL
       bool clReady;
       bool clUse;
-      SmartPtr<PointCloudCreatorCL> creatorCL;
+      std::shared_ptr<PointCloudCreatorCL> creatorCL;
 #endif
 
       float focalLengthMultiplier;
@@ -85,8 +85,8 @@ namespace icl{
         }
         this->lastDepthImageMM = 0;
         this->mode = mode;
-        depthCamera = SmartPtr<Camera>(depthCam, [](Camera*){});
-        colorCamera = colorCam ? SmartPtr<Camera>(colorCam, [](Camera*){}) : SmartPtr<Camera>();
+        depthCamera = std::shared_ptr<Camera>(depthCam, [](Camera*){});
+        colorCamera = colorCam ? std::shared_ptr<Camera>(colorCam, [](Camera*){}) : std::shared_ptr<Camera>();
 
         if(!isReinit){
           depthCameraOrig.reset(new Camera(*depthCam));

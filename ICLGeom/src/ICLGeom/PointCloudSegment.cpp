@@ -86,11 +86,11 @@ namespace icl{
 
 
     /// returns week pointer to the i-th child (already casted to PointCloudSegment type)
-    utils::SmartPtr<PointCloudSegment>  PointCloudSegment::getSubSegment(int i){
+    std::shared_ptr<PointCloudSegment>  PointCloudSegment::getSubSegment(int i){
       if(i<0 || i >= getChildCount()){
         throw utils::ICLException("PointCloudSegment:getSubSegment: invalid index!");
       }
-      utils::SmartPtr<SceneObject> obj = getChildPtr(i);
+      std::shared_ptr<SceneObject> obj = getChildPtr(i);
       if(!obj){
         throw utils::ICLException("PointCloudSegment:getSubSegment: selected sub-segment is null (which should not happen)");
       }
@@ -299,7 +299,7 @@ namespace icl{
       return c;
     }
 
-    utils::SmartPtr<PointCloudSegment> PointCloudSegment::flatten() const{
+    std::shared_ptr<PointCloudSegment> PointCloudSegment::flatten() const{
       PointCloudSegmentPtr p(const_cast<PointCloudSegment*>(this), [](PointCloudSegment*){});
       return flatten_segment_hierarcy(p);
     }

@@ -349,8 +349,8 @@ namespace icl{
       m_fboData = new FBOData();
       #endif
 
-      m_lights[0] = SmartPtr<SceneLight>(new SceneLight(this,0));
-      m_shadowCameraObjects[0] = SmartPtr<SceneObject>(new CameraObject(this,0,1,true));
+      m_lights[0] = std::shared_ptr<SceneLight>(new SceneLight(this,0));
+      m_shadowCameraObjects[0] = std::shared_ptr<SceneObject>(new CameraObject(this,0,1,true));
       m_globalAmbientLight = FixedColVector<int,4>(255,255,255,20);
       m_backgroundColor = GeomColor(0,0,0,255);
       for(int i = 0; i < 8; i++) {
@@ -417,13 +417,13 @@ namespace icl{
   #ifdef ICL_HAVE_QT
       m_mouseHandlers.resize(scene.m_mouseHandlers.size());
       for(unsigned int i=0;i<m_mouseHandlers.size();++i){
-        m_mouseHandlers[i] = SmartPtr<SceneMouseHandler>(new SceneMouseHandler( *(scene.m_mouseHandlers[i].get()) ));
+        m_mouseHandlers[i] = std::shared_ptr<SceneMouseHandler>(new SceneMouseHandler( *(scene.m_mouseHandlers[i].get()) ));
         m_mouseHandlers[i]->setParentScene( this );
       }
 
       m_glCallbacks.resize(scene.m_glCallbacks.size());
       for(unsigned int i=0;i<m_glCallbacks.size();++i){
-        m_glCallbacks[i] = SmartPtr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
+        m_glCallbacks[i] = std::shared_ptr<GLCallback>(new GLCallback(scene.m_glCallbacks[i]->cameraIndex,this));
       }
       freeAllPBuffers();
 
@@ -431,14 +431,14 @@ namespace icl{
 
       for(unsigned int i=0;i<8;++i){
         if(scene.m_lights[i]){
-          m_lights[i] = SmartPtr<SceneLight>(new SceneLight(*scene.m_lights[i]));
+          m_lights[i] = std::shared_ptr<SceneLight>(new SceneLight(*scene.m_lights[i]));
           if(m_lights[i]->anchor == SceneLight::ObjectAnchor){
             m_lights[i]->setAnchor(getObject(scene.findPath(m_lights[i]->objectAnchor)));
           }
         }else{
-          m_lights[i] = SmartPtr<SceneLight>();
+          m_lights[i] = std::shared_ptr<SceneLight>();
         }
-        m_shadowCameraObjects[i] = SmartPtr<SceneObject>(new CameraObject(this,i,1,true));
+        m_shadowCameraObjects[i] = std::shared_ptr<SceneObject>(new CameraObject(this,i,1,true));
       }
 
       if(scene.m_bounds){
@@ -458,7 +458,7 @@ namespace icl{
 
     void Scene::addCamera(const Camera &cam, float visSize){
       m_cameras.push_back(cam);
-      m_cameraObjects.push_back(SmartPtr<SceneObject>(new CameraObject(this,m_cameraObjects.size(), visSize)));
+      m_cameraObjects.push_back(std::shared_ptr<SceneObject>(new CameraObject(this,m_cameraObjects.size(), visSize)));
     }
     void Scene::removeCamera(int index){
       ICLASSERT_RETURN(index > 0 && index <static_cast<int>(m_cameras.size()));
@@ -485,9 +485,9 @@ namespace icl{
 
     void Scene::addObject(SceneObject *object, bool passOwnerShip){
       if(passOwnerShip){
-        m_objects.push_back(SmartPtr<SceneObject>(object));
+        m_objects.push_back(std::shared_ptr<SceneObject>(object));
       }else{
-        m_objects.push_back(SmartPtr<SceneObject>(object, [](SceneObject*){}));
+        m_objects.push_back(std::shared_ptr<SceneObject>(object, [](SceneObject*){}));
       }
     }
 
@@ -499,13 +499,13 @@ namespace icl{
     namespace{ struct is_obj{
       const SceneObject *o;
       is_obj(const SceneObject *o):o(o){}
-      bool operator()(const SmartPtr<SceneObject> &p) const{
+      bool operator()(const std::shared_ptr<SceneObject> &p) const{
         return p.get() == o;
       }
     }; } // ending anonymos namespace
 
     void Scene::removeObject(const SceneObject *obj){
-      std::vector<SmartPtr<SceneObject> >::iterator it = std::find_if(m_objects.begin(),m_objects.end(),is_obj(obj));
+      std::vector<std::shared_ptr<SceneObject> >::iterator it = std::find_if(m_objects.begin(),m_objects.end(),is_obj(obj));
       if(it == m_objects.end()){
         WARNING_LOG("unable to remove given object " << static_cast<const void*>(obj) << " from scene: Object not found!");
       }
@@ -1171,7 +1171,7 @@ namespace icl{
 			} else {
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
       }
-      m_mouseHandlers.push_back(SmartPtr<SceneMouseHandler>(newSceneMouseHandler));
+      m_mouseHandlers.push_back(std::shared_ptr<SceneMouseHandler>(newSceneMouseHandler));
 
       // return mouse handler
       return newSceneMouseHandler;
@@ -1194,7 +1194,7 @@ namespace icl{
 
       // Camera did not have a mouse handler. Add new one.
       sceneMouseHandler->setParentScene(this);
-      m_mouseHandlers.push_back(SmartPtr<SceneMouseHandler>(sceneMouseHandler));
+      m_mouseHandlers.push_back(std::shared_ptr<SceneMouseHandler>(sceneMouseHandler));
     }
 
     ICLDrawWidget3D::GLCallback *Scene::getGLCallback(int camIndex){
@@ -1206,7 +1206,7 @@ namespace icl{
           return m_glCallbacks[i].get();
         }
       }
-      m_glCallbacks.push_back(SmartPtr<GLCallback>(new GLCallback(camIndex,this)));
+      m_glCallbacks.push_back(std::shared_ptr<GLCallback>(new GLCallback(camIndex,this)));
       return m_glCallbacks.back().get();
     }
 
@@ -1300,8 +1300,8 @@ namespace icl{
     SceneLight &Scene::getLight(int index){
       if(index < 0 || index > 7) throw ICLException("invalid light index");
       if(!m_lights[index]){
-        m_lights[index] = SmartPtr<SceneLight>(new SceneLight(this,index));
-        m_shadowCameraObjects[index] = SmartPtr<SceneObject>(new CameraObject(this,index,1,true));
+        m_lights[index] = std::shared_ptr<SceneLight>(new SceneLight(this,index));
+        m_shadowCameraObjects[index] = std::shared_ptr<SceneObject>(new CameraObject(this,index,1,true));
       }
       return *m_lights[index];
     }
@@ -1477,9 +1477,9 @@ namespace icl{
     struct Scene::PBuffer{
       QOpenGLContext m_context;
       QOffscreenSurface m_surface;
-      SmartPtr<QOpenGLFramebufferObject> m_fbo;
+      std::shared_ptr<QOpenGLFramebufferObject> m_fbo;
       QImageConverter conv;
-      SmartPtr<GLImg> background;
+      std::shared_ptr<GLImg> background;
       PBuffer(Size s){
         m_surface.setFormat(QSurfaceFormat::defaultFormat());
         m_surface.create();
@@ -1650,8 +1650,8 @@ namespace icl{
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             glDisable(GL_LIGHTING);
-            SmartPtr<GLImg> &bg = pbuffer->background;
-            if (!bg) bg = SmartPtr<GLImg>(new GLImg);
+            std::shared_ptr<GLImg> &bg = pbuffer->background;
+            if (!bg) bg = std::shared_ptr<GLImg>(new GLImg);
             bg->update(background);
             bg->draw2D(Rect(0, 0, w, h), s);
             glEnable(GL_LIGHTING);

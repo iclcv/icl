@@ -36,8 +36,8 @@
 HSplit gui;
 Scene scene;
 
-SmartPtr<PointCloudObject> obj;
-SmartPtr<DepthCameraPointCloudGrabber> grabber;
+std::shared_ptr<PointCloudObject> obj;
+std::shared_ptr<DepthCameraPointCloudGrabber> grabber;
 
 void init(){
   const Camera cam(*pa("-d",2));

@@ -46,7 +46,7 @@ namespace icl{
   namespace cv{
 
     struct ORBFeatureDetector::Data{
-      SmartPtr<ocv::ORB> orb;
+      std::shared_ptr<ocv::ORB> orb;
       ocv::Ptr<ocv::ORB> orbp;
 
       MatWrapper inputBuffer;
@@ -260,7 +260,7 @@ namespace icl{
         setPropertyValue("bench.detection time",bench_time_string(t.age()));
       }
 
-      return SmartPtr<FeatureSetClass>(ret);
+      return std::shared_ptr<FeatureSetClass>(ret);
     }
 
     std::vector<ORBFeatureDetector::Match>

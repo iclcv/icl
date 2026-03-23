@@ -66,7 +66,7 @@ namespace icl{
       void activateShader(Primitive::Type type, bool withShadow);
       void deactivateShaders();
       const Camera &getCurrentCamera() const;
-      static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const icl::utils::SmartPtr<SceneLight>* lights, int numShadowLights);
+      static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
     };
   }
 }

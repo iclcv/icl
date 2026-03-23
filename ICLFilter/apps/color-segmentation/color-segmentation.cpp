@@ -45,7 +45,7 @@ VSplit gui;
 #define MAX_LUT_3D_DIM 1000000
 
 GenericGrabber grabber;
-SmartPtr<ColorSegmentationOp> segmenter;
+std::shared_ptr<ColorSegmentationOp> segmenter;
 Mutex mtex;
 
 Img8u currLUT,currLUTColor,segImage;

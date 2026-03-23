@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLQt/GUIHandle.h>
 #include <string>
 #include <vector>
@@ -86,7 +86,7 @@ namespace icl{
 
       private:
 
-      utils::SmartPtr<bool> m_triggered; //!< internal boolean variable
+      std::shared_ptr<bool> m_triggered; //!< internal boolean variable
       std::string m_sID; //!< corresponding id
     };
   } // namespace qt

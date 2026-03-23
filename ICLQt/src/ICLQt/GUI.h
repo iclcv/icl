@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtr.h>
 #include <ICLQt/DataStore.h>
 #include <functional>
 #include <ICLQt/GUIComponents.h>

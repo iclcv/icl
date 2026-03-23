@@ -62,7 +62,7 @@ namespace icl{
         utils::VisualizationDescription vis() const;
       };
 
-      using FeatureSet = utils::SmartPtr<FeatureSetClass>;
+      using FeatureSet = std::shared_ptr<FeatureSetClass>;
 
 
       struct Match{

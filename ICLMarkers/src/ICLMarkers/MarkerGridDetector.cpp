@@ -35,7 +35,7 @@
 namespace  icl{
   namespace markers{
     struct MarkerGridDetector::Data{
-      utils::SmartPtr<FiducialDetector> fd;
+      std::shared_ptr<FiducialDetector> fd;
       utils::Array2D<Fiducial> fids;
       MarkerGridDetector::GridDefinition def;
     };

@@ -468,17 +468,17 @@ namespace icl{
       std::vector<Camera> m_cameras;
 
       /// internal list of top-level objects
-      std::vector<utils::SmartPtr<SceneObject> > m_objects;
+      std::vector<std::shared_ptr<SceneObject> > m_objects;
 
       /// internal list of top-level camera objects used for camera visualization
-      std::vector<utils::SmartPtr<SceneObject> > m_cameraObjects;
+      std::vector<std::shared_ptr<SceneObject> > m_cameraObjects;
 
 #ifdef ICL_HAVE_QT
       /// internally used list of mouse handlers
-      std::vector<utils::SmartPtr<SceneMouseHandler> > m_mouseHandlers;
+      std::vector<std::shared_ptr<SceneMouseHandler> > m_mouseHandlers;
 
       /// internally used list of callbacks
-      std::vector<utils::SmartPtr<GLCallback> > m_glCallbacks;
+      std::vector<std::shared_ptr<GLCallback> > m_glCallbacks;
 
       struct PBuffer;
 
@@ -497,16 +497,16 @@ namespace icl{
 #endif
 
       /// internally used scene object
-      mutable utils::SmartPtr<SceneObject> m_coordinateFrameObject;
+      mutable std::shared_ptr<SceneObject> m_coordinateFrameObject;
 
       /// also internally used object frame object
-      mutable utils::SmartPtr<SceneObject> m_objectFrameObject;
+      mutable std::shared_ptr<SceneObject> m_objectFrameObject;
 
       /// internal list of lights
-      utils::SmartPtr<SceneLight> m_lights[8];
+      std::shared_ptr<SceneLight> m_lights[8];
 
       ///list of cameras for visualisation of shadowcameras
-      utils::SmartPtr<SceneObject> m_shadowCameraObjects[8];
+      std::shared_ptr<SceneObject> m_shadowCameraObjects[8];
 
       /// previous lightstate
       mutable bool m_previousLightState[8][4];

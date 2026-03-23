@@ -28,7 +28,6 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLUtils/SmartPtr.h>
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Time.h>
 #include <ICLMath/LinearTransform1D.h>

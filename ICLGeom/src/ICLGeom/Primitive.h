@@ -86,7 +86,7 @@ namespace icl{
         const std::vector<Vec> &vertices;            //!< list of shared vertices
         const std::vector<Vec> &normals;             //!< list of shared normals
         const std::vector<GeomColor> &vertexColors;  //!< list of vertex colors
-        const std::vector<utils::SmartPtr<qt::GLImg> > &sharedTextures; //!< list of shared textures
+        const std::vector<std::shared_ptr<qt::GLImg> > &sharedTextures; //!< list of shared textures
         bool lineColorsFromVertices;                 //!< line coloring
         bool triangleColorsFromVertices;             //!< triangle coloring
         bool quadColorsFromVertices;                 //!< quad coloring
@@ -398,7 +398,7 @@ namespace icl{
 
     /// Texture Primitive for rendering textures with arbitrary texture coordinates
     struct GenericTexturePrimitive : public Primitive, public AlphaFuncProperty{
-      utils::SmartPtr<qt::GLImg> texture;
+      std::shared_ptr<qt::GLImg> texture;
       const core::ImgBase *image;
 
       std::vector<Vec> ps;

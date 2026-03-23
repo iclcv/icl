@@ -57,7 +57,7 @@ SceneObject *primitive_holder;
 PointCloudObject obj;
 GenericPointCloudGrabber grabber;
 GenericPointCloudOutput output;
-SmartPtr<Primitive3DFilter> primitiveFilter;
+std::shared_ptr<Primitive3DFilter> primitiveFilter;
 
 std::vector<Primitive3DFilter::Primitive3D> primitives;
 icl::utils::Mutex primitivesMutex;

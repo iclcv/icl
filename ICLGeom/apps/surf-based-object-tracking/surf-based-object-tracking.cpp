@@ -34,7 +34,7 @@
 #include <ICLGeom/RansacBasedPoseEstimator.h>
 
 GenericGrabber grabber;
-SmartPtr<SurfFeatureDetector> surf;
+std::shared_ptr<SurfFeatureDetector> surf;
 RansacBasedPoseEstimator *pe = 0;
 
 Size32f ts; // template pixel -> mm

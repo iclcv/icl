@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/ImgIterator.h>
@@ -1612,7 +1612,7 @@ namespace icl {
         \code
         template<class T>
         inline T p2o(T *ptr){
-          return T(*SmartPtr<T>(const_cast<T*>(ptr)));
+          return T(*std::shared_ptr<T>(const_cast<T*>(ptr)));
         }
         \endcode
 
@@ -1625,7 +1625,7 @@ namespace icl {
      */
     template<class T>
     static inline T p2o(T *ptr){
-      return *utils::SmartPtr<T>(ptr);
+      return *std::shared_ptr<T>(ptr);
     }
 
     /// Combine several images using shallow copy. \ingroup IMAGE

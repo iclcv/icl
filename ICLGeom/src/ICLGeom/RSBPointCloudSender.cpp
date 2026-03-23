@@ -72,7 +72,7 @@ namespace icl{
       //Mutex mutex;
       Informer<RSBPointCloud>::Ptr informer;
       Informer<RSBPointCloud>::DataPtr out;
-      SmartPtr<ProtoBufSerializationDevice> sdev;
+      std::shared_ptr<ProtoBufSerializationDevice> sdev;
     };
 
     RSBPointCloudSender::RSBPointCloudSender(const std::string &scope,

@@ -54,7 +54,7 @@ namespace icl{
       ImageCompressor::CompressionSpec compression;
 
   #ifdef ICL_HAVE_LIBJPEG
-      SmartPtr<JPEGEncoder> jpegEncoder;
+      std::shared_ptr<JPEGEncoder> jpegEncoder;
   #endif
 
     };

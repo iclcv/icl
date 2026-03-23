@@ -421,7 +421,7 @@ namespace icl{
     typedef std::map<std::string, std::function<Configurable*()> > CRM;
 
     static CRM &get_configurable_registration_map(){
-      static SmartPtr<CRM> crm(new CRM);
+      static std::shared_ptr<CRM> crm(new CRM);
       return *crm;
     }
 

@@ -110,7 +110,7 @@ namespace icl{
           key-value-pair fashion, such as "handle='the slider'".
           */
       class Node{
-        using NodePtr = utils::SmartPtr<Node>;                 //!< SmartPtr typedef
+        using NodePtr = std::shared_ptr<Node>;                 //!< shared_ptr typedef
         using KeyValue = std::pair<std::string,std::string>;   //!< KeyValue pair class
 
         Node(const std::string &name="", NodePtr parent=NodePtr(), int level=0); // private constructur
@@ -141,9 +141,9 @@ namespace icl{
 
       };
 
-      using NodePtr = utils::SmartPtr<Node>;  //!< typedef for node-pointers
+      using NodePtr = std::shared_ptr<Node>;  //!< typedef for node-pointers
       using ParseTree = Node;                 //!< A tree is simply the root-node
-      using ParseTreePtr = utils::SmartPtr<ParseTree>; //!< pointer typedef
+      using ParseTreePtr = std::shared_ptr<ParseTree>; //!< pointer typedef
 
       /// creates a new DynamicGUI instance from a given XML-description filename
       /** if cfgFileName is "", a null GUI instance is created that can be initialized
@@ -176,7 +176,7 @@ namespace icl{
 
       /// internal tree-traversal method
       static void traverse_tree(const pugi::xml_node &n, int level,
-                                utils::SmartPtr<DynamicGUI::Node> target);
+                                std::shared_ptr<DynamicGUI::Node> target);
 
       /// internal GUI-creation method
       static void create_gui(Node &n);

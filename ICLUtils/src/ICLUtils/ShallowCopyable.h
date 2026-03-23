@@ -42,7 +42,7 @@ namespace icl{
         Each inherited class of ShallowCopyable<T> can use a T*
         for storing its data. This pointer is then shared by shallow
         copied intances of that class using an instance of the ICL's
-        SmartPtr class.\n
+        std::shared_ptr class.\n
         See the following example for more details
         \code
         #include <stdio.h>

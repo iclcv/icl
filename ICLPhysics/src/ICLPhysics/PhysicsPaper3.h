@@ -177,7 +177,7 @@ namespace icl{
       const std::vector<utils::Point32f> getTexCoords() const;
 
       /// returns the possible paper coords of link at given camera pixel
-      utils::SmartPtr<LinkCoords> getLinkCoords(const utils::Point32f &pix, const geom::Camera &cam) const;
+      std::shared_ptr<LinkCoords> getLinkCoords(const utils::Point32f &pix, const geom::Camera &cam) const;
 
       /// adapts the stiffness of a given fold (optionally memorizes deformation)
       void adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize=false);

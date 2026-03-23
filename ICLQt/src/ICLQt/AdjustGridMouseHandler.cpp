@@ -164,7 +164,7 @@ namespace icl{
       };
 
       struct Grid{
-        SmartPtr<Texture> texture;
+        std::shared_ptr<Texture> texture;
         Handle handles[4];
         int draggedHandle;
         int state; // 0: nothing, 1: fully hovered, 2: fully dragged

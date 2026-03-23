@@ -1158,7 +1158,7 @@ namespace icl{
     template<> struct CCFunc<icl8u,icl8u,format##SRC_FMT,format##DST_FMT>{         \
       static void convert(const Img<icl8u> *srcIn, Img<icl8u> *dst, bool roiOnly){ \
         static const int bgr[] = {2,1,0};                                          \
-        SmartPtr<const Img8u> src = srcIn->selectChannels(std::vector<int>(bgr,bgr+3)); \
+        std::shared_ptr<const Img8u> src = srcIn->selectChannels(std::vector<int>(bgr,bgr+3)); \
         convert_color_with_ipp(src.get(),dst,roiOnly,ippi##FUNC);                  \
       }                                                                            \
     };

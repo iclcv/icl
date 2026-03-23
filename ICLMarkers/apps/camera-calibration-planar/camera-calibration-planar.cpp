@@ -120,7 +120,7 @@ struct View{
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
                    CoplanarPointPoseEstimator::SimplexSampling){}
 };
-typedef SmartPtr<View> ViewPtr;
+typedef std::shared_ptr<View> ViewPtr;
 
 std::vector<ViewPtr> views;
 

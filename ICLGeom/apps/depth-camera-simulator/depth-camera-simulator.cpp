@@ -39,7 +39,7 @@ GUI prevGUI = HBox();
 GenericImageOutput colorOut, depthOut;
 SceneObject *obj = 0;
 
-SmartPtr<Mat> relTM;
+std::shared_ptr<Mat> relTM;
 Camera initDepthCam;
 
 void init(){

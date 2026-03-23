@@ -32,7 +32,7 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLUtils/CLException.h>
 #include <vector>
 
@@ -50,7 +50,7 @@ namespace icl {
 		public:
 
 			/// smart pointer to this class type
-			using Ptr = SmartPtr<CLMemory>;
+			using Ptr = std::shared_ptr<CLMemory>;
 
 			/// Memorys type available
 			enum MemoryType {

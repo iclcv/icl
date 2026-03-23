@@ -57,7 +57,7 @@ namespace icl{
   namespace utils{
 
     ConfigFile::Maps *ConfigFile::getMapsInstance(){
-      static SmartPtr<Maps> typeMap(new Maps);
+      static std::shared_ptr<Maps> typeMap(new Maps);
       return typeMap.get();
     }
     //    std::map<std::string,std::string> ConfigFile::s_typeMap;

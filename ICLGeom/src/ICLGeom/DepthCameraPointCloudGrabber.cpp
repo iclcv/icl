@@ -50,10 +50,10 @@ namespace icl{
 
     namespace{
       struct BlurTool : public filter::UnaryOp{
-        SmartPtr<ConvolutionOp> c_3x3;
-        SmartPtr<ConvolutionOp> c_5x5;
-        SmartPtr<ConvolutionOp> c_horz;
-        SmartPtr<ConvolutionOp> c_vert;
+        std::shared_ptr<ConvolutionOp> c_3x3;
+        std::shared_ptr<ConvolutionOp> c_5x5;
+        std::shared_ptr<ConvolutionOp> c_horz;
+        std::shared_ptr<ConvolutionOp> c_vert;
 
         int lastDim;
 
@@ -111,14 +111,14 @@ namespace icl{
       PointCloudCreator creator;
       const Img32f *lastDepthImage;
       const Img8u *lastColorImage;
-      SmartPtr<const Img8u> colorMask,depthMask;
+      std::shared_ptr<const Img8u> colorMask,depthMask;
 
-      SmartPtr<MotionSensitiveTemporalSmoothing> temporalSmoothing;
+      std::shared_ptr<MotionSensitiveTemporalSmoothing> temporalSmoothing;
       int lastNFrames;
       int lastNullValue;
 
-      SmartPtr<MedianOp> median;
-      SmartPtr<BlurTool> blurTool;
+      std::shared_ptr<MedianOp> median;
+      std::shared_ptr<BlurTool> blurTool;
     };
 
     const Camera &DepthCameraPointCloudGrabber::get_default_depth_cam(){
@@ -260,7 +260,7 @@ namespace icl{
       if(passOwnerShip){
         m_data->colorMask.reset(mask);
       }else{
-        m_data->colorMask = SmartPtr<const Img8u>(mask, [](const Img8u*){});
+        m_data->colorMask = std::shared_ptr<const Img8u>(mask, [](const Img8u*){});
       }
     }
 
@@ -268,7 +268,7 @@ namespace icl{
       if(passOwnerShip){
         m_data->depthMask.reset(mask);
       }else{
-        m_data->depthMask = SmartPtr<const Img8u>(mask, [](const Img8u*){});
+        m_data->depthMask = std::shared_ptr<const Img8u>(mask, [](const Img8u*){});
       }
     }
 

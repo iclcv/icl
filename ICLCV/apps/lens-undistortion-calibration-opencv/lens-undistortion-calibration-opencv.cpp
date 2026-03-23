@@ -111,7 +111,7 @@ bool is_far_enough(const Mat &T, float f){
 struct ConfigurableUDist : public Configurable{
   std::vector<double> defaultValues;
   bool paramChanged;
-  SmartPtr<ImageUndistortion> udist;
+  std::shared_ptr<ImageUndistortion> udist;
   ConfigurableUDist(){
     setConfigurableID("udist");
     paramChanged = true;

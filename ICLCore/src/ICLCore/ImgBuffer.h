@@ -48,7 +48,7 @@ namespace icl{
         ImgBuffer class.
 
         \section HOW How Appropriate Images are Found
-        ICL Images internally use SmartPtr instances to manage their channel
+        ICL Images internally use std::shared_ptr instances to manage their channel
         data pointers. ImgBase instances can be <em>asked</em> whether they
         are <em>independent</em>, i.e. no other image does currently share
         the image data.

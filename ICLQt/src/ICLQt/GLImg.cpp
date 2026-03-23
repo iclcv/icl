@@ -124,7 +124,7 @@ namespace icl{
         return std::vector<Range64f>(rs,rs+C);
       }
     };
-    typedef SmartPtr<TextureElement> TextureElementPtr;
+    typedef std::shared_ptr<TextureElement> TextureElementPtr;
 
 
   #ifdef ICL_HAVE_IPP
@@ -386,7 +386,7 @@ namespace icl{
         for(int y=0;y<ny;++y){
           for(int x=0;x<nx;++x){
             TextureElement &t = *data(x,y);
-            SmartPtr<const Img<ExternalType> > roi(src.shallowCopy(Rect(t.offset,t.size)));
+            std::shared_ptr<const Img<ExternalType> > roi(src.shallowCopy(Rect(t.offset,t.size)));
             planarToInterleaved(roi.get(), reinterpret_cast<InternalType*>(t.data.data()),
                                 t.size.width*imageChannels*sizeof(InternalType));
           }
@@ -544,7 +544,7 @@ namespace icl{
         for(int y=0;y<ny;++y){
           for(int x=0;x<nx;++x){
             const TextureElement &t = *data(x,y);
-            SmartPtr<Img<T> > roi(dst.shallowCopy(Rect(t.offset,t.size)));
+            std::shared_ptr<Img<T> > roi(dst.shallowCopy(Rect(t.offset,t.size)));
             interleavedToPlanar<T,T>(reinterpret_cast<const T*>(t.data.data()), roi.get());
           }
         }
@@ -693,7 +693,7 @@ namespace icl{
       }
       m_data->isImageNull = false;
 
-      SmartPtr<ImgBase> pSrc;
+      std::shared_ptr<ImgBase> pSrc;
       if(src->getChannels() > 4){
         pSrc.reset(const_cast<ImgBase*>(src)->shallowCopy());
         pSrc->setChannels(4);

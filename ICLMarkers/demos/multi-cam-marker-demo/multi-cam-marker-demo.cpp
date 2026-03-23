@@ -37,7 +37,7 @@
 HSplit gui;
 GenericGrabber grabber;
 MultiCamFiducialDetector fd;
-std::vector<SmartPtr<GenericGrabber> > grabbers;
+std::vector<std::shared_ptr<GenericGrabber> > grabbers;
 Scene scene;
 
 std::map<int,SceneObject*> cubes;

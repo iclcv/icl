@@ -61,7 +61,7 @@ CCU::CalibFileData calibFileData;
 
 AdjustGridMouseHandler gridAdjuster;
 
-SmartPtr<Camera> knownIntrinsicCameraParams;
+std::shared_ptr<Camera> knownIntrinsicCameraParams;
 
 
 void mouse(const MouseEvent &e){
@@ -101,7 +101,7 @@ void init(){
     throw ICLException("The program arguments -if -ip and -is are exclusive");
   }
   if(pif){
-    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(Camera::create_camera_from_calibration_or_udist_file(*pa("-if"))));
+    knownIntrinsicCameraParams = std::shared_ptr<Camera>(new Camera(Camera::create_camera_from_calibration_or_udist_file(*pa("-if"))));
   }else if(pip){
     Camera c;
     c.setFocalLength(1);
@@ -110,7 +110,7 @@ void init(){
     c.setPrincipalPointOffset(pa("-ip",2),pa("-ip",3));
     c.setSkew(pa("-ip",4));
     c.setResolution(Size::null); // this means, we assume the target resolution
-    knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(c));
+    knownIntrinsicCameraParams = std::shared_ptr<Camera>(new Camera(c));
   }else if(pis){
     static const int N = 3;
     // specs were taken from
@@ -143,7 +143,7 @@ void init(){
           c.setPrincipalPointOffset(p.px, p.py);
           c.setSkew(p.skew);
           c.setResolution(p.size);
-          knownIntrinsicCameraParams = SmartPtr<Camera>(new Camera(c));
+          knownIntrinsicCameraParams = std::shared_ptr<Camera>(new Camera(c));
           break;
         }
       }

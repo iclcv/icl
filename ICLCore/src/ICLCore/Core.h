@@ -165,7 +165,7 @@
     In order to get an independent image a deep-copy as well as a so called detach method
     are provided. The latter replaces the "shared" image channel(s) with new
     independent ones. Shared channel data are stored using the boost-like
-    shared pointer class SmartPtr, which uses reference counting for autonomous garbage collection in order
+    shared pointer class std::shared_ptr, which uses reference counting for autonomous garbage collection in order
     to realease <i>unused</i> image channels.
 
 

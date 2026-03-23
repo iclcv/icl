@@ -92,7 +92,7 @@
     - <tt>icl::Size</tt> and <tt>icl::Size32f</tt>
     - <tt>icl::Range</tt> and <tt>icl::SteppingRange</tt>
     - <tt>icl::StraightLine2D</tt>
-    - <tt>icl::SmartPtr</tt>
+    - <tt>std::shared_ptr</tt>
     - <tt>icl::Uncopyable</tt>
     - <tt>icl::ShallowCopyable</tt>
 

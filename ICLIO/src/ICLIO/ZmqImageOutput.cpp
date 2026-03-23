@@ -40,9 +40,9 @@ namespace icl{
 
 
     struct ZmqImageOutput::Data{
-      SmartPtr<zmq::context_t> context;
-      SmartPtr<zmq::socket_t> publisher;
-      SmartPtr<zmq::message_t> message;
+      std::shared_ptr<zmq::context_t> context;
+      std::shared_ptr<zmq::socket_t> publisher;
+      std::shared_ptr<zmq::message_t> message;
     };
 
 

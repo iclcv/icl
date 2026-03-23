@@ -18,5 +18,4 @@ icl_add_module(ICLUtils
     <ICLUtils/BasicTypes.h>
     <ICLUtils/Exception.h>
     <ICLUtils/StringUtils.h>
-    <ICLUtils/Macros.h>
-    <ICLUtils/SmartPtr.h>)
+    <ICLUtils/Macros.h>)

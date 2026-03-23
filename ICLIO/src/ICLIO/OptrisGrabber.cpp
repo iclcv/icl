@@ -111,7 +111,7 @@ namespace icl{
     }
 
     struct OptrisGrabber::Data : public utils::Thread{
-      SmartPtr<IRImager> imager;
+      std::shared_ptr<IRImager> imager;
       Buffer buffer;
       PseudoColorConverter pcc;
       Img8u pccSrc;

@@ -84,7 +84,7 @@ void run(){
 
   ImgBase *resultImage = 0;
 
-  SmartPtr<GaborOp> g;
+  std::shared_ptr<GaborOp> g;
 
   while(1){
     float params[] = {lambda,theta,psi,gamma,sigma};

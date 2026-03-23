@@ -83,7 +83,7 @@ namespace icl{
             bool continuousSize; // actually this is not supported
         };
 
-        typedef SmartPtr<SupportedFormat> SupportedFormatPtr;
+        typedef std::shared_ptr<SupportedFormat> SupportedFormatPtr;
 
         std::string deviceName;
         int file;
@@ -579,7 +579,7 @@ namespace icl{
               }else return info;
             }
         };
-        typedef SmartPtr<SupportedProperty> SupportedPropertyPtr;
+        typedef std::shared_ptr<SupportedProperty> SupportedPropertyPtr;
         typedef std::map<std::string,SupportedPropertyPtr> PMap;
         PMap supportedProperties;
 
@@ -682,7 +682,7 @@ namespace icl{
           std::vector<GrabberDeviceDescription> all;
           for(int i=0;i<l.size();++i){
             const std::string &deviceName = l[i];
-            SmartPtr<Impl> test;
+            std::shared_ptr<Impl> test;
             try{
               test = new Impl(deviceName,"",false);
               all.push_back(GrabberDeviceDescription("v4l",deviceName,test->deviceNameInfo + " (" + deviceName + ")"));

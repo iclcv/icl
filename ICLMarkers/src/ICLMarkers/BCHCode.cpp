@@ -31,7 +31,7 @@
 #include <vector>
 #include <algorithm>
 
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLUtils/Exception.h>
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Mutex.h>
@@ -67,7 +67,7 @@ namespace icl {
     */
 
 
-    static SmartPtr<icl8u> static_indices;
+    static std::shared_ptr<icl8u> static_indices;
     static const char **static_bch_codes=0;
 
     static void init_static_data(){

@@ -83,14 +83,14 @@ namespace icl{
       }
 
       /// returns week pointer to the i-th child (already casted to PointCloudSegment type)
-      utils::SmartPtr<PointCloudSegment> getSubSegment(int i);
+      std::shared_ptr<PointCloudSegment> getSubSegment(int i);
 
       /// creates a flattened deep copy of the segment
-      utils::SmartPtr<PointCloudSegment> flatten() const;
+      std::shared_ptr<PointCloudSegment> flatten() const;
 
 
       /// returns a vector containing this and all recursive children
-      std::vector<utils::SmartPtr<PointCloudSegment> > extractThisAndChildren() const;
+      std::vector<std::shared_ptr<PointCloudSegment> > extractThisAndChildren() const;
 
     protected:
       void init(PointCloudObject &obj,
@@ -98,7 +98,7 @@ namespace icl{
     };
 
     ///
-    using PointCloudSegmentPtr = utils::SmartPtr<PointCloudSegment>;
+    using PointCloudSegmentPtr = std::shared_ptr<PointCloudSegment>;
 
     inline std::ostream &operator<<(std::ostream &str, const PointCloudSegment::AABB &a){
       return str << "AABB(min: " << a.min.transp() << "  max: " << a.max.transp() << ")";

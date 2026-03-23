@@ -46,7 +46,7 @@ struct Input{
   void save(){
     if(out) out->send(lastImage);
   }
-  SmartPtr<GenericImageOutput> out;
+  std::shared_ptr<GenericImageOutput> out;
 };
 
 int nInputs = -1;

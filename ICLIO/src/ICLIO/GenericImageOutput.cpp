@@ -81,11 +81,11 @@ namespace icl{
     }
 
     void GenericImageOutput::release(){
-      impl = SmartPtr<ImageOutput>();
+      impl = std::shared_ptr<ImageOutput>();
     }
 
     void GenericImageOutput::init(const std::string &type, const std::string &description){
-      impl = SmartPtr<ImageOutput>();
+      impl = std::shared_ptr<ImageOutput>();
 
       this->type = type;
       this->description = description;
@@ -211,7 +211,7 @@ namespace icl{
         ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
       }
       else{
-        impl = SmartPtr<ImageOutput>(o);
+        impl = std::shared_ptr<ImageOutput>(o);
       }
     }
   } // namespace io

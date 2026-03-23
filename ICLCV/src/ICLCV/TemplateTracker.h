@@ -79,7 +79,7 @@ namespace icl{
       void showRotationLUT() const;
 
       /// sets a new set or rotated template images
-      void setRotationLUT(const std::vector<utils::SmartPtr<core::Img8u> > &lut);
+      void setRotationLUT(const std::vector<std::shared_ptr<core::Img8u> > &lut);
 
       /// sets a new template image, that is internally rotated
       /** internally 360/rotationStepSizeDegree images are sampled using

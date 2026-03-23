@@ -468,13 +468,13 @@ namespace icl {
 
       std::vector<TiltedQuad> quads;
 
-      SmartPtr<RegionDetector> rd;
+      std::shared_ptr<RegionDetector> rd;
       CornerDetectorCSS css;
       RDPApproximation rdp;
       int approxAlgorithm;
 
-      SmartPtr<LocalThresholdOp> lt;
-      SmartPtr<UnaryOp> pp;
+      std::shared_ptr<LocalThresholdOp> lt;
+      std::shared_ptr<UnaryOp> pp;
 
       bool dynamicQuadColor;
       std::string lastPPType;

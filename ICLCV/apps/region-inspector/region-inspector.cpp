@@ -140,7 +140,7 @@ void run(){
 
   static const Img8u *useImage = 0;
   static const std::vector<ImageRegion> *rs = 0;
-  static SmartPtr<MedianOp> mo;
+  static std::shared_ptr<MedianOp> mo;
 
 
   int ms = medianSize;
@@ -155,7 +155,7 @@ void run(){
     }
 
     if(ms){
-      mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+      mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
       useImage = mo->apply(useImage)->asImg<icl8u>();
     }
 
@@ -177,12 +177,12 @@ void run(){
       reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
       useImage = &reducedLevels;
       if(ms){
-        mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+        mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
         useImage = mo->apply(useImage)->asImg<icl8u>();
       }
     }else if(ms != lastMedianSize){
       if(ms){
-        mo = SmartPtr<MedianOp>(new MedianOp(Size(ms,ms)));
+        mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
         useImage = mo->apply(useImage)->asImg<icl8u>();
       }
     }else{

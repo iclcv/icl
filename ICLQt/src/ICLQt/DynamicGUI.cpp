@@ -61,13 +61,13 @@ namespace icl{
       delete m_data;
     }
 
-    DynamicGUI::Node::Node(const std::string &name, SmartPtr<Node> parent, int level):
+    DynamicGUI::Node::Node(const std::string &name, std::shared_ptr<Node> parent, int level):
       name(name),parent(parent),level(level){
     }
 
 
-    SmartPtr<DynamicGUI::Node> DynamicGUI::Node::appendChild(const std::string &name, SmartPtr<Node> parent, int level){
-      children.push_back(SmartPtr<Node>(new Node(name,parent,level)));
+    std::shared_ptr<DynamicGUI::Node> DynamicGUI::Node::appendChild(const std::string &name, std::shared_ptr<Node> parent, int level){
+      children.push_back(std::shared_ptr<Node>(new Node(name,parent,level)));
       return children.back();
     }
 
@@ -127,7 +127,7 @@ namespace icl{
       return s;
     }
 
-    void DynamicGUI::traverse_tree(const xml_node &n, int level, SmartPtr<DynamicGUI::Node> target){
+    void DynamicGUI::traverse_tree(const xml_node &n, int level, std::shared_ptr<DynamicGUI::Node> target){
       std::string name = n.name();
       target->name = name;
       target->grabArgs(n);

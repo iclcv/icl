@@ -47,7 +47,7 @@ namespace icl{
     }
 
     ImgBuffer *ImgBuffer::instance(){
-      static SmartPtr<ImgBuffer> i(new ImgBuffer);
+      static std::shared_ptr<ImgBuffer> i(new ImgBuffer);
       return i.get();
     }
 

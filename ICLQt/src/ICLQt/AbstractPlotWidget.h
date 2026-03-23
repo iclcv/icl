@@ -182,7 +182,7 @@ namespace icl{
         QBrush fillBrush; //!< fill brush (this is e.g. used to fill the area beyond a function graph)
       };
       /// typedef for managed row-style pointers
-      using PenPtr = utils::SmartPtr<Pen>;
+      using PenPtr = std::shared_ptr<Pen>;
 
 
       /// updates the screen

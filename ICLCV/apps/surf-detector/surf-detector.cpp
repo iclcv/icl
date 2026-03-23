@@ -34,7 +34,7 @@
 #include <ICLFilter/RotateOp.h>
 
 GenericGrabber grabber;
-SmartPtr<SurfFeatureDetector> surf;
+std::shared_ptr<SurfFeatureDetector> surf;
 HSplit gui;
 Img8u templ,vis(Size(1,1),formatRGB);
 int iH=0, iW=0, tH=0, tW=0;

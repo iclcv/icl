@@ -133,7 +133,7 @@ const ImgBase *grab_image(){
      grabbers grab function using useDesired ...
   static bool reint = pa("-reinterpret-input-format");
   if(reint){
-    static SmartPtr<const ImgBase> re;
+    static std::shared_ptr<const ImgBase> re;
     static format fmt = pa("-reinterpret-input-format");
     format ifmt = img->getFormat();
     if(fmt != formatMatrix && getChannelsOfFormat(fmt) != img->getChannels()){

@@ -276,7 +276,7 @@ namespace icl{
     // quite complex component for embedded property component 'prop'
     struct ConfigurableGUIWidget : public GUIWidget{
 
-      std::vector<SmartPtr<VolatileUpdater> > timers;
+      std::vector<std::shared_ptr<VolatileUpdater> > timers;
       Configurable *conf;
       GUI gui;
       GUI sub_gui;
@@ -376,7 +376,7 @@ namespace icl{
 
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
-            timers.push_back(SmartPtr<VolatileUpdater>(new VolatileUpdater(volatileness,p.full,timerGUI,*conf)));
+            timers.push_back(std::shared_ptr<VolatileUpdater>(new VolatileUpdater(volatileness,p.full,timerGUI,*conf)));
           }
         }else if(t == "flag"){
           std::string handle = "#f#"+p.full;

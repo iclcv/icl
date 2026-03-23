@@ -36,7 +36,6 @@
 #include <ICLCore/ImgParams.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Range.h>
-#include <ICLUtils/SmartPtr.h>
 #include <vector>
 #include <string>
 

@@ -39,7 +39,7 @@ namespace icl{
     class SceneMultiCamCapturer {
       std::vector<int> camIndices;
       geom::Scene *scene;
-      std::vector<utils::SmartPtr<io::GenericImageOutput> > outputs;
+      std::vector<std::shared_ptr<io::GenericImageOutput> > outputs;
 
       public:
       /// Dummy constructor

@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtr.h>
 #include <ICLQt/DrawWidget.h>
 #include <vector>
 

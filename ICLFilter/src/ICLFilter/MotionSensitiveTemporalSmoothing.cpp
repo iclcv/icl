@@ -178,7 +178,7 @@ void MotionSensitiveTemporalSmoothing::apply(const ImgBase *poSrc,
 		const Img8u &src = *poSrc->as8u();
 		Img8u &dst = *(*ppoDst)->as8u();
 		for (int i = 0; i < numChannels; i++) {
-			SmartPtr<const Img8u> in(src.selectChannel(i));
+			std::shared_ptr<const Img8u> in(src.selectChannel(i));
 			Img8u out = clPointer.at(i)->temporalSmoothingC(*in);
 			dst.replaceChannel(i, &out, 0);
 		}
@@ -186,7 +186,7 @@ void MotionSensitiveTemporalSmoothing::apply(const ImgBase *poSrc,
 		const Img32f &src = *poSrc->as32f();
 		Img32f &dst = *(*ppoDst)->as32f();
 		for (int i = 0; i < numChannels; i++) {
-			SmartPtr<const Img32f> in(src.selectChannel(i));
+			std::shared_ptr<const Img32f> in(src.selectChannel(i));
 			Img32f out = clPointer.at(i)->temporalSmoothingF(*in);
 			dst.replaceChannel(i, &out, 0);
 		}

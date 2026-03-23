@@ -31,7 +31,7 @@
 
 #include <ICLMarkers/MarkerGridBasedUndistortionOptimizer.h>
 #include <ICLMarkers/MarkerGridEvaluater.h>
-#include <ICLUtils/SmartPtr.h>
+#include <memory>
 #include <ICLMarkers/InverseUndistortionProcessor.h>
 #include <ICLMath/SimplexOptimizer.h>
 #include <ICLUtils/Random.h>
@@ -44,10 +44,10 @@ namespace icl{
     using namespace utils;
 
     struct MarkerGridBasedUndistortionOptimizer::Data{
-      std::vector<SmartPtr<MarkerGrid> > grids;
-      std::vector<SmartPtr<MarkerGrid> > ugrids;
+      std::vector<std::shared_ptr<MarkerGrid> > grids;
+      std::vector<std::shared_ptr<MarkerGrid> > ugrids;
 
-      SmartPtr<InverseUndistortionProcessor> iup;
+      std::shared_ptr<InverseUndistortionProcessor> iup;
     };
 
     MarkerGridBasedUndistortionOptimizer::MarkerGridBasedUndistortionOptimizer():
@@ -57,7 +57,7 @@ namespace icl{
     }
 
     void MarkerGridBasedUndistortionOptimizer::add(const MarkerGrid &grid){
-      m_data->grids.push_back(SmartPtr<MarkerGrid>(new MarkerGrid(grid)));
+      m_data->grids.push_back(std::shared_ptr<MarkerGrid>(new MarkerGrid(grid)));
       m_data->grids.back()->detach();
     }
 
@@ -129,8 +129,8 @@ namespace icl{
     /// k = k0,k1,k2,k3,k4, ix-offset, iy-offset
     float MarkerGridBasedUndistortionOptimizer::computeError(const float k[9]){
       //Time t = Time::now();
-      std::vector<SmartPtr<MarkerGrid> > &gs = m_data->grids;
-      std::vector<SmartPtr<MarkerGrid> > &us = m_data->ugrids;
+      std::vector<std::shared_ptr<MarkerGrid> > &gs = m_data->grids;
+      std::vector<std::shared_ptr<MarkerGrid> > &us = m_data->ugrids;
 
       if(!gs.size()) return -1;
 

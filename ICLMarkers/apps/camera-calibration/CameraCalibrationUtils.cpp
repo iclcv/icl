@@ -358,7 +358,7 @@ namespace icl{
         }
 
         if(!d.fds[t]){
-          static SmartPtr<Size> s = pa("-s") ? SmartPtr<Size>(new Size(pa("-s").as<Size>())) : SmartPtr<Size>();
+          static std::shared_ptr<Size> s = pa("-s") ? std::shared_ptr<Size>(new Size(pa("-s").as<Size>())) : std::shared_ptr<Size>();
           d.fds[t].reset(create_new_fd(t,d.configurables,d.iin,s.get()));
           d.lastFD = d.fds[t].get();
         }
