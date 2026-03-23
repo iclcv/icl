@@ -36,14 +36,8 @@ namespace icl{
     template void copy(const icl32f*, const icl32f*, icl32f*);
     template void copy(const icl64f*, const icl64f*, icl64f*);
 
-#ifdef ICL_HAVE_IPP
-    // IPP specializations override the generic memcpy versions
-    template<> void copy(const icl8u *s, const icl8u *e, icl8u *d)  { ippsCopy_8u(s, d, static_cast<int>(e-s)); }
-    template<> void copy(const icl16s *s, const icl16s *e, icl16s *d){ ippsCopy_16s(s, d, static_cast<int>(e-s)); }
-    template<> void copy(const icl32s *s, const icl32s *e, icl32s *d){ ippsCopy_32s(s, d, static_cast<int>(e-s)); }
-    template<> void copy(const icl32f *s, const icl32f *e, icl32f *d){ ippsCopy_32f(s, d, static_cast<int>(e-s)); }
-    template<> void copy(const icl64f *s, const icl64f *e, icl64f *d){ ippsCopy_64f(s, d, static_cast<int>(e-s)); }
-#endif
+    // Note: IPP ippsCopy_* specializations removed — modern memcpy is
+    // equally fast (hand-tuned SIMD by the C library on all platforms).
 
     // --- convert<S,D>: generic clipped_cast conversion ---
     template<class srcT, class dstT>
