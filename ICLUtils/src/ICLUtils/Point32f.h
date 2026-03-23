@@ -90,9 +90,7 @@ namespace icl{
       Point32f& operator*=(double d) {x*=d; y*=d; return *this; }
 
       /// transforms the point by element-wise scaling
-      Point32f transform(double xfac, double yfac) const{
-        return Point32f(xfac*x,yfac*y);
-      }
+      Point32f transform(double xfac, double yfac) const;
 
       /// returns the euclidian distance to another point
       float distanceTo(const Point32f &p) const;
@@ -116,15 +114,11 @@ namespace icl{
       /** uses the euclidian norm!
           @ return a reference to (this) normalized
       **/
-      Point32f &normalize(){
-        float l = norm(); x/=l; y/=l; return *this;
-      }
+      Point32f &normalize();
 
       /// returns a normalized version of this Point
       /** @return normalized vec*/
-      Point32f normalized() const{
-        return Point32f(*this).normalize();
-      }
+      Point32f normalized() const;
 
       /// index based interface (returns i?y:x)
       float &operator[](int i) { return i?y:x; }

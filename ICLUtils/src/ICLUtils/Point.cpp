@@ -45,6 +45,10 @@ namespace icl{
       y = static_cast<int>(::round(p.y));
     }
 
+    Point Point::transform(double xfac, double yfac) const {
+      return Point(static_cast<int>(xfac * x), static_cast<int>(yfac * y));
+    }
+
     std::ostream &operator<<(std::ostream &s, const Point &p){
       return s << "(" << p.x << ',' << p.y << ")";
     }

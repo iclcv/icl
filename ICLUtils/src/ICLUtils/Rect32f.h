@@ -157,51 +157,26 @@ namespace icl {
       float getDim() const {return width*height;}
 
       /// intersection of two Rect32fs
-      Rect32f operator&(const Rect32f &r) const {
-         Point32f ul (iclMax (x, r.x), iclMax (y, r.y));
-         Point32f lr (iclMin (right(), r.right()), iclMin (bottom(), r.bottom()));
-         Rect32f result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
-         if (result.width > 0 && result.height > 0) return result;
-         else return null;
-      }
+      Rect32f operator&(const Rect32f &r) const;
 
       /// inplace intersection of two rects
-      Rect32f &operator&=(const Rect32f &r){
-        (*this)=(*this)&r;
-        return *this;
-      }
+      Rect32f &operator&=(const Rect32f &r);
 
       /// union of two Rect32fs
-      Rect32f operator|(const Rect32f &r) const {
-         Point32f ul (iclMin (x, r.x), iclMin (y, r.y));
-         Point32f lr (iclMax (right(), r.right()), iclMax (bottom(), r.bottom()));
-         return Rect32f (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
-      }
+      Rect32f operator|(const Rect32f &r) const;
 
       /// inplace union of two rects
-      Rect32f &operator|=(const Rect32f &r){
-        (*this)=(*this)|r;
-        return *this;
-      }
+      Rect32f &operator|=(const Rect32f &r);
 
       /// rects with negative sizes are normalized to Positive sizes
       /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-      Rect32f normalized() const {
-         Rect32f r (*this);
-         if (r.width < 0) {r.x += r.width; r.width = -r.width; }
-         if (r.height < 0) {r.y += r.height; r.height = -r.height; }
-         return r;
-      }
+      Rect32f normalized() const;
 
       /// returns if a Rect32f containes another rect
-      bool contains(const Rect32f &r) const {
-         return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
-      }
+      bool contains(const Rect32f &r) const;
 
       /// returns if the Rect32f contains a given point
-      bool contains(float x, float y) const{
-        return this->x<=x && right()>=x && this->y<=y && bottom()>=y;
-      }
+      bool contains(float x, float y) const;
 
       /// let the rect grow by k pixles into each direction
       /** if k<0 the rect becomes smaller
@@ -209,16 +184,11 @@ namespace icl {
           @param k amount of pixel the rectangle is enlarged by
           @return *this
           */
-      Rect32f &enlarge(float k){
-        x-=k; y-=k; width+=2*k; height+=2*k;
-        return *this;
-      }
+      Rect32f &enlarge(float k);
 
       /// returns an enlarged instance of this rect
       /** @see enlarge(float)*/
-      Rect32f enlarged(float k) const{
-        return Rect32f(*this).enlarge(k);
-      }
+      Rect32f enlarged(float k) const;
 
 
       /// returns upper left point of the rect
@@ -259,9 +229,7 @@ namespace icl {
       }
 
       /// multiplies the rect's x and width by xfac and y and height by yfac
-      Rect32f transform(double xfac, double yfac) const {
-        return Rect32f(x*xfac,y*yfac,width*xfac,height*yfac);
-      }
+      Rect32f transform(double xfac, double yfac) const;
     };
 
     /// ostream operator (x,y)wxy

@@ -38,6 +38,18 @@ namespace icl{
       return pow( pow(x,p)+ pow(y,p), float(1)/p);
     }
 
+    Point32f Point32f::transform(double xfac, double yfac) const {
+      return Point32f(xfac * x, yfac * y);
+    }
+
+    Point32f &Point32f::normalize(){
+      float l = norm(); x /= l; y /= l; return *this;
+    }
+
+    Point32f Point32f::normalized() const {
+      return Point32f(*this).normalize();
+    }
+
     float Point32f::distanceTo(const Point32f &p) const{
       return sqrt(pow(static_cast<float>(p.x-x), 2) + pow(static_cast<float>(p.y-y), 2));
     }

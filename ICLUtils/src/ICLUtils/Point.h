@@ -100,9 +100,7 @@ namespace icl{
       Point& operator*=(double d) {x=static_cast<int>(static_cast<double>(x)*d); y=static_cast<int>(static_cast<double>(y)*d); return *this;};
 
       /// transforms the point by element-wise scaling
-      Point transform(double xfac, double yfac) const{
-        return Point(static_cast<int>(xfac*x),static_cast<int>(yfac*y));
-      }
+      Point transform(double xfac, double yfac) const;
 
       /// returns the euclidian distance to another point
       float distanceTo(const Point &p) const;

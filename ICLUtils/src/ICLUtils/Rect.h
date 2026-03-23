@@ -217,46 +217,23 @@ namespace icl {
       int getDim() const {return width*height;}
 
       /// intersection of two Rects
-      Rect operator&(const Rect &r) const {
-         Point ul (iclMax(x, r.x), iclMax(y, r.y));
-         Point lr (iclMin(right(), r.right()), iclMin(bottom(), r.bottom()));
-         Rect result (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
-         if (result.width > 0 && result.height > 0) return result;
-         else return null;
-      }
+      Rect operator&(const Rect &r) const;
 
       /// inplace intersection of two rects
-      Rect &operator&=(const Rect &r){
-        (*this)=(*this)&r;
-        return *this;
-      }
+      Rect &operator&=(const Rect &r);
 
       /// union of two Rects
-      Rect operator|(const Rect &r) const {
-         Point ul (iclMin(x, r.x), iclMin(y, r.y));
-         Point lr (iclMax(right(), r.right()), iclMax(bottom(), r.bottom()));
-         return Rect (ul.x, ul.y, lr.x-ul.x, lr.y-ul.y);
-      }
+      Rect operator|(const Rect &r) const;
 
       /// inplace union of two rects
-      Rect &operator|=(const Rect &r){
-        (*this)=(*this)|r;
-        return *this;
-      }
+      Rect &operator|=(const Rect &r);
 
       /// rects with negative sizes are normalized to Positive sizes
       /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-      Rect normalized() const {
-         Rect r (*this);
-         if (r.width < 0) {r.x += r.width; r.width = -r.width; }
-         if (r.height < 0) {r.y += r.height; r.height = -r.height; }
-         return r;
-      }
+      Rect normalized() const;
 
       /// returns if a Rect containes another rect
-      bool contains(const Rect &r) const {
-         return x<=r.x && y <= r.y && right() >= r.right() && bottom() >= r.bottom();
-      }
+      bool contains(const Rect &r) const;
 
       /// returns if the Rect contains a given point (pixel-based)
       /** <b>Note:</b> We are talking here in terms of pixel-based rects:
@@ -264,9 +241,7 @@ namespace icl {
           interval [5,15[ (half-opened interval). In terms of discrete X-values,
           the intervall meets the set {5,6,...13,14}. The same is true for
           Y-values.*/
-      bool contains(int x, int y) const{
-        return this->x<=x && right()>x && this->y<=y && bottom()>y;
-      }
+      bool contains(int x, int y) const;
 
       /// let the rect grow by k pixles into each direction
       /** if k<0 the rect becomes smaller
@@ -274,16 +249,11 @@ namespace icl {
           @param k amount of pixel the rectangle is enlarged by
           @return *this
           */
-      Rect &enlarge(int k){
-        x-=k; y-=k; width+=2*k; height+=2*k;
-        return *this;
-      }
+      Rect &enlarge(int k);
 
       /// returns an enlarged instance of this rect
       /** @see enlarge(int)*/
-      Rect enlarged(int k) const{
-        return Rect(*this).enlarge(k);
-      }
+      Rect enlarged(int k) const;
 
 
       /// returns upper left point of the rect
@@ -323,9 +293,7 @@ namespace icl {
       /// returns the size of the rect
       Size getSize() const { return Size(width,height); }
 
-      Rect transform(double xfac, double yfac) const {
-        return Rect(static_cast<int>(xfac*x),static_cast<int>(yfac*y),static_cast<int>(xfac*width), static_cast<int>(yfac*height));
-      }
+      Rect transform(double xfac, double yfac) const;
     };
 
     /// ostream operator (x,y)wxy
