@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabberPluginImageMagick.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLIO/FileWriterPluginImageMagick.h>
 

@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/IFFTOp.h>
+#include <ICLCore/CoreFunctions.h>
 //#define IFFTOp_DEBUG(X) std::cout << X << std::endl;
 #define IFFTOp_DEBUG(X)
 using namespace icl::utils;

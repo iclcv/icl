@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/ImageSerializer.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;

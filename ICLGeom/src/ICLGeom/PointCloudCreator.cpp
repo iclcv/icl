@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLGeom/PointCloudCreator.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Img.h>
 
 #ifdef ICL_HAVE_OPENCL

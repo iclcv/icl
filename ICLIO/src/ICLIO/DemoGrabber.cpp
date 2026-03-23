@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLUtils/Thread.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Random.h>
 #include <ICLUtils/Point32f.h>

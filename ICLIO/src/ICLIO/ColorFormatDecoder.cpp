@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/CCFunctions.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/ColorFormatDecoder.h>
 #include <ICLIO/JPEGDecoder.h>
 #include <ICLUtils/StringUtils.h>

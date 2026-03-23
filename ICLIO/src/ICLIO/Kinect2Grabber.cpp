@@ -42,7 +42,6 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/Img.h>
-#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/Thread.h>
 #include <ICLFilter/TranslateOp.h>
 #include <ICLUtils/Time.h>

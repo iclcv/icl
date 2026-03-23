@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/LocalThresholdOp.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLFilter/BinaryCompareOp.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Macros.h>

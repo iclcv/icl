@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/FFTOp.h>
+#include <ICLCore/CoreFunctions.h>
 
 //#define FFTOp_DEBUG(X) std::cout << X << std::endl;
 #define FFTOp_DEBUG(X)

@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include "CameraCalibrationUtils.h"
+#include <ICLCore/CoreFunctions.h>
 #include <ICLGeom/Scene.h>
 
 #include <ICLUtils/ProgArg.h>

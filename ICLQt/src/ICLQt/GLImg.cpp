@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/Img.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/Application.h>
 #include <ICLCore/CCFunctions.h>

@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/VideoGrabber.h>
+#include <ICLCore/CoreFunctions.h>
 
 #undef  ICL_HAVE_CONFIG_H // xineutils.h tries to include its own config.h
 #define XINE_ENABLE_EXPERIMENTAL_FEATURES

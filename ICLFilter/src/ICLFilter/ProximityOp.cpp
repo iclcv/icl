@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/ProximityOp.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/StringUtils.h>
 

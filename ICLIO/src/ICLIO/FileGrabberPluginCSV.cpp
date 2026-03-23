@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabberPluginCSV.h>
+#include <ICLCore/CoreFunctions.h>
 #include <mutex>
 #include <ICLUtils/StrTok.h>
 

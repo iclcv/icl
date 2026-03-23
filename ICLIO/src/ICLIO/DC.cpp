@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/DC.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/DCDeviceOptions.h>
 #include <dc1394/conversions.h>
 

@@ -37,7 +37,6 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <ICLCore/CoreFunctions.h>
 #include <ICLQt/GUISyntaxErrorException.h>
 #include <QtCore/QString>
 

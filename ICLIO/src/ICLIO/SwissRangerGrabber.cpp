@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/SwissRangerGrabber.h>
+#include <ICLCore/CoreFunctions.h>
 
 /** why this is now defined */
 //typedef uint32_t DWORD;

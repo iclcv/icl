@@ -30,6 +30,7 @@
 
 
 #include <ICLIO/GenericImageOutput.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLQt/Common.h>
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/FPSLimiter.h>

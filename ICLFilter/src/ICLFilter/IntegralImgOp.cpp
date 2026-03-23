@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/IntegralImgOp.h>
+#include <ICLCore/CoreFunctions.h>
 
 using namespace icl::utils;
 using namespace icl::core;

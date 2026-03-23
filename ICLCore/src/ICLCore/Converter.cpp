@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/CCFunctions.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Converter.h>
 
 

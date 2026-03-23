@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/BayerConverter.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Exception.h>
 

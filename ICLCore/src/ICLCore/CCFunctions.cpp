@@ -31,6 +31,7 @@
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/CoreFunctions.h>
 #include <map>
 #include <ICLCore/CCLUT.h>
 #include <ICLUtils/SSEUtils.h>

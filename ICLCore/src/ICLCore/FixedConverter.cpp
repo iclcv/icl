@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/FixedConverter.h>
+#include <ICLCore/CoreFunctions.h>
 
 
 namespace icl{

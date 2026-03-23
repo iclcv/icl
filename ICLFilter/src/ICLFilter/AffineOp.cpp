@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/AffineOp.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Img.h>
 #include <cstring>
 #include <ICLMath/FixedMatrix.h>

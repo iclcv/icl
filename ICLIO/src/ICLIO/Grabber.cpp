@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/Grabber.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/ImageUndistortion.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLFilter/WarpOp.h>

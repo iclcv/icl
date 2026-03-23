@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/MyrmexDecoder.h>
+#include <ICLCore/CoreFunctions.h>
 
 using namespace icl::utils;
 using namespace icl::core;

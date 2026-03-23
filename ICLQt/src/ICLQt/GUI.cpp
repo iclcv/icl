@@ -33,7 +33,6 @@
 #include <ICLUtils/ProcessMonitor.h>
 #include <ICLUtils/Size.h>
 #include <ICLIO/GenericGrabber.h>
-#include <ICLCore/CoreFunctions.h>
 
 #include <ICLQt/GUI.h>
 #include <ICLQt/GUIWidget.h>

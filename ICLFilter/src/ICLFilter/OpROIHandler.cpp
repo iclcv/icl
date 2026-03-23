@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLUtils/Macros.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLFilter/OpROIHandler.h>
 
 using namespace icl::utils;

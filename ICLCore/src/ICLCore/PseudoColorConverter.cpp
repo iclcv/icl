@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/PseudoColorConverter.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/ConfigFile.h>
 

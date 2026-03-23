@@ -35,7 +35,7 @@
 ** Bill Lorensen   -- All  rights reserved.                        **
 *********************************************************************/
 #include <ICLGeom/PoseEstimator.h>
-#include <ICLCore/CoreFunctions.h>
+#include <ICLCore/Types.h>
 
 #ifdef ICL_HAVE_EIGEN3
 // for umeyama-based pose estimation

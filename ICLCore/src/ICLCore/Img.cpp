@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLCore/Img.h>
+#include <ICLCore/CoreFunctions.h>
 #include <functional>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>

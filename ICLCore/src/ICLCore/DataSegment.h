@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedVector.h>
-#include <ICLCore/CoreFunctions.h>
+#include <ICLCore/Types.h>
 #include <ICLCore/DataSegmentBase.h>
 #include <ICLUtils/ClippedCast.h>
 

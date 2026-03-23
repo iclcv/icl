@@ -34,7 +34,6 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
-#include <ICLCore/CoreFunctions.h>
 
 namespace icl{
   namespace qt{

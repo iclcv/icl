@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/TestImages.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Converter.h>
 #include <vector>
 #include <string>

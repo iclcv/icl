@@ -33,7 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/PylonIncludes.h>
 #include <ICLUtils/Exception.h>
-#include <ICLCore/CoreFunctions.h>
+#include <ICLCore/PixelOps.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <mutex>

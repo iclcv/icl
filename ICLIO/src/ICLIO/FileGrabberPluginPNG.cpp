@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabberPluginPNG.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/CCFunctions.h>
 #include <png.h>

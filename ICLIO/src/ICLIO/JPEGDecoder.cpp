@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/JPEGDecoder.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/JPEGHandle.h>
 #include <ICLUtils/Macros.h>
 #include <ICLIO/FileGrabberPlugin.h>

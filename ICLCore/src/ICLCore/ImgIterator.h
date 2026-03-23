@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/CoreFunctions.h>
 #include <ICLMath/MatrixSubRectIterator.h>
 
 namespace icl{

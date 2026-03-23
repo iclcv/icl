@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/ChamferOp.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/Point.h>
 

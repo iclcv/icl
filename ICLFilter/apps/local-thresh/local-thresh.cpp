@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabber.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/FileWriter.h>
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLCore/CCFunctions.h>

@@ -33,7 +33,6 @@
 #include <ICLUtils/Size.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/StrTok.h>
-#include <ICLCore/CoreFunctions.h>
 #include <ICLQt/ProxyLayout.h>
 
 

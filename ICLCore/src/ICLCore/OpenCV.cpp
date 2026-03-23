@@ -28,6 +28,7 @@
 **                                                                 **
 ********************************************************************/
 #include <ICLCore/OpenCV.h>
+#include <ICLCore/CoreFunctions.h>
 #include <opencv2/core/types_c.h>
 
 using namespace icl::utils;

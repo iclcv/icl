@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileWriterPluginImageMagick.h>
+#include <ICLCore/CoreFunctions.h>
 
 #ifdef ICL_HAVE_IMAGEMAGICK
 // default value which would be set otherwise in Magic++.h as of May 2019

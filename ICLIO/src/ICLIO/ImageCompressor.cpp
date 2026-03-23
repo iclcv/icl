@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/ImageCompressor.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLIO/Kinect11BitCompressor.h>
 #include <ICLFilter/DitheringOp.h>
 #include <stdint.h>

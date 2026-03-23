@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabberPluginPNM.h>
+#include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/CCFunctions.h>

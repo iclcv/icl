@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
-#include <ICLCore/CoreFunctions.h>
+#include <ICLCore/PixelOps.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Rect.h>

@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/BasicTypes.h>
+#include <ICLUtils/Size.h>
 #include <ICLUtils/Exception.h>
 #include <algorithm>
 
