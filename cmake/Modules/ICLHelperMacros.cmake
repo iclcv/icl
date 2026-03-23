@@ -123,10 +123,7 @@ function(icl_add_module MODULE_NAME)
     LIBRARY_DEPS ${MOD_3RDPARTY_LIBS}
     PKGCONFIG_DEPS ${MOD_PKGCONFIG_DEPS})
 
-  # Tests
-  if(BUILD_TESTS)
-    CONFIGURE_GTEST(${MODULE_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
-  endif()
+  # Tests are now handled by the icl-tests binary (tests/ directory)
 endfunction()
 
 #*********************************************************************
