@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCV/MeanShiftTracker.h>
+#include <ICLUtils/Point32f.h>
 #include <ICLCore/Channel.h>
 
 using namespace icl::utils;

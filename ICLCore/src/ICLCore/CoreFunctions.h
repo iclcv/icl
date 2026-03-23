@@ -32,10 +32,7 @@
 #pragma once
 
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Point32f.h>
 #include <ICLUtils/ClippedCast.h>
-#include <ICLUtils/PThreadFix.h>
-#include <ICLUtils/SSEUtils.h>
 
 #include <ICLCore/Types.h>
 #include <ICLCore/ImgParams.h>
@@ -341,20 +338,11 @@ namespace icl {
         @param maxVal return value for the maximum
     **/
     template<class T>
-    ICLCore_API inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
-      if(a<b) {
-        minVal=a;
-        maxVal=b;
-      }
-      else {
-        minVal=b;
-        maxVal=a;
-      }
-      if(c<minVal)
-        minVal=c;
-      else {
-        maxVal = c>maxVal ? c : maxVal;
-      }
+    inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
+      if(a<b) { minVal=a; maxVal=b; }
+      else { minVal=b; maxVal=a; }
+      if(c<minVal) minVal=c;
+      else maxVal = c>maxVal ? c : maxVal;
     }
 
     /* }}} */

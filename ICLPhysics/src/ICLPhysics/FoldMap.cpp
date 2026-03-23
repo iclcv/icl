@@ -28,6 +28,7 @@
 **                                                                 **
 ********************************************************************/
 #include <ICLPhysics/FoldMap.h>
+#include <ICLUtils/Point32f.h>
 #include <ICLCore/LineSampler.h>
 
 

@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/ImageUndistortion.h>
+#include <ICLUtils/Point32f.h>
 #include <ICLUtils/ConfigFile.h>
 #include <ICLUtils/XML.h>
 #include <fstream>

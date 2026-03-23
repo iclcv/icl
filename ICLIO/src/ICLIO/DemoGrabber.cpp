@@ -31,6 +31,7 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Random.h>
+#include <ICLUtils/Point32f.h>
 #include <ICLIO/DemoGrabber.h>
 #include <mutex>
 
