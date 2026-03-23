@@ -64,7 +64,6 @@
 | Task | Description |
 |------|-------------|
 | **FFmpeg 7+ rewrite** | `LibAVVideoWriter.cpp` needs full rewrite for modern AVCodecContext API |
-| **ImageMagick 7 rewrite** | `FileGrabber/WriterPluginImageMagick` — PixelPacket API removed |
 | **Apple Accelerate** | vImage/vDSP as IPP replacement for convolution, color conversion, FFT on macOS |
 
 ### Code quality

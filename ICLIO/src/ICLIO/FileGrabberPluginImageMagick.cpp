@@ -71,53 +71,22 @@ namespace icl{
     void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
       icl_initialize_image_magick_context();
 
-      Magick::Image *image = 0;
+      Magick::Image image;
       try{
-        image = new  Magick::Image(file.getName());
+        image.read(file.getName());
       }catch(Magick::Error &err){
         throw ICLException(std::string("ImageMagick::")+err.what());
       }
-      image->modifyImage();
-      image->type(Magick::TrueColorType);
 
-      Size size(image->columns(),image->rows());
-      unsigned int minsize=size.getDim()*3;
-      if(m_data->buffer.size()<minsize){
-        m_data->buffer.resize(minsize);
-      }
-
-      /**
-          Here we faced an error in the Magick++ library when reading png images ?
-          image->getConstPixels(0,0,size.width,size.height);
-          image->writePixels(Magick::RGBQuantum,m_data->buffer.data());
-
-          icl::ensureCompatible(dest,depth8u,size,formatRGB);
-          icl::interleavedToPlanar(m_data->buffer.data(),(*dest)->asImg<icl8u>());
-      **/
-
-      const Magick::PixelPacket *pix = image->getConstPixels(0,0,size.width,size.height);
-      core::ensureCompatible(dest,depth8u,size,formatRGB);
-
-      icl8u *r = (*dest)->asImg<icl8u>()->begin(0);
-      icl8u *g = (*dest)->asImg<icl8u>()->begin(1);
-      icl8u *b = (*dest)->asImg<icl8u>()->begin(2);
+      Size size(static_cast<int>(image.columns()), static_cast<int>(image.rows()));
       const int dim = size.getDim();
-      if(sizeof(Magick::PixelPacket) == 4){
-        for(int i=0;i<dim;++i){
-          const Magick::PixelPacket &p = pix[i];
-          r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red);
-          g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green);
-          b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue);
-        }
-      }else{
-        for(int i=0;i<dim;++i){
-          const Magick::PixelPacket &p = pix[i];
-          r[i] = clipped_cast<Magick::Quantum,icl8u>(p.red>>8);
-          g[i] = clipped_cast<Magick::Quantum,icl8u>(p.green>>8);
-          b[i] = clipped_cast<Magick::Quantum,icl8u>(p.blue>>8);
-        }
-      }
-      ICL_DELETE(image);
+
+      // Export pixel data as interleaved RGB unsigned chars
+      m_data->buffer.resize(dim * 3);
+      image.write(0, 0, size.width, size.height, "RGB", Magick::CharPixel, m_data->buffer.data());
+
+      core::ensureCompatible(dest, depth8u, size, formatRGB);
+      interleavedToPlanar(m_data->buffer.data(), (*dest)->asImg<icl8u>());
     }
 
   #else

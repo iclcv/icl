@@ -138,12 +138,12 @@ namespace icl{
       }
     }
 
-    const vector<SOM::Neuron> &SOM::getNeurons() const{
+    const std::vector<SOM::Neuron> &SOM::getNeurons() const{
 
       return m_vecNeurons;
     }
 
-    vector<SOM::Neuron> &SOM::getNeurons(){
+    std::vector<SOM::Neuron> &SOM::getNeurons(){
       return m_vecNeurons;
     }
 
