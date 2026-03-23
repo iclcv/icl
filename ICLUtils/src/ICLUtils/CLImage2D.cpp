@@ -92,7 +92,7 @@ namespace icl {
         return false;
       }
 
-      Impl() : image2D(nullptr), cmdQueue(nullptr), width(0), height(0) {}
+      Impl() : width(0), height(0), image2D(nullptr), cmdQueue(nullptr) {}
 
       ~Impl() {
         if (image2D) clReleaseMemObject(image2D);
