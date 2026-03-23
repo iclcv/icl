@@ -31,7 +31,7 @@
 #include <ICLGeom/SQFitter.h>
 
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Function.h>
+#include <functional>
 #include <ICLMath/MathFunctions.h>
 #include <ICLGeom/GeomDefs.h>
 #include <ICLMath/FixedMatrix.h>

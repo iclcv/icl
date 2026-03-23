@@ -440,7 +440,7 @@ namespace icl {
 
           DEBUG_LOG("staring optimization at cam position " << init.getPosition().transp());
           LMAOptUtil u(init);
-          LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
+          LMA lma([&u](const params &p, const vec &x) -> vec { return u.f(p,x); }, 2, std::vector<LMA::Jacobian>(),
                   0.1, 1000);
           //lma.setDebugCallback();
 

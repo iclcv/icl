@@ -34,7 +34,6 @@
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLUtils/Function.h>
 
 #include <functional>
 #include <iostream>

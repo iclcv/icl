@@ -470,13 +470,13 @@ GUI-thread**. This is particularly necessary when the callback needs
 to do Qt-GUI stuff, such as showing a dialog. There are two types of
 possible callbacks, simple ones of type::
 
-  utils::Function<void,void>
+  std::function<void()>
 
   e.g. void myCallback(){...}
 
 , or so called *complex* ones ::
 
-  utils::Function<void,const std::string&>
+  std::function<void(const std::string&)>
 
   e.g. void myComplexCallback(const std::string &)
 

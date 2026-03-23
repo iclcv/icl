@@ -33,7 +33,6 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SteppingRange.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/ProgArg.h>

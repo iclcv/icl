@@ -35,7 +35,6 @@
 #include <ICLUtils/Macros.h>
 #include <string>
 #include <vector>
-#include <ICLUtils/Function.h>
 
 #include <functional>
 

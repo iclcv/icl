@@ -29,7 +29,6 @@
 ********************************************************************/
 #pragma once
 
-#include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Point.h>
 #include <functional>

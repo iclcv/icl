@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/Scene.h>
-#include <ICLUtils/Function.h>
 #include <functional>
 
 

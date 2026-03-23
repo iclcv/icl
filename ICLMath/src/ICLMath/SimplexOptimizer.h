@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLMath/DynVector.h>
 #include <ICLMath/FixedVector.h>

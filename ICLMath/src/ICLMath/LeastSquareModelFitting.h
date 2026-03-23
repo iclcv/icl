@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/SmartPtr.h>
-#include <ICLUtils/Function.h>
 #include <functional>
 
 namespace icl{

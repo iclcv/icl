@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <ICLUtils/Function.h>
 #include <ICLUtils/TextTable.h>
 
 #include <functional>

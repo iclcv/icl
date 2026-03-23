@@ -36,7 +36,6 @@
 #include <ICLPhysics/BendingConstraint.h>
 #include <ICLGeom/PlaneEquation.h>
 #include <ICLGeom/ViewRay.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/VisualizationDescription.h>
 
 #include <functional>

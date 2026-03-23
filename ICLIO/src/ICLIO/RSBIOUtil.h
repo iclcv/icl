@@ -32,7 +32,6 @@
 
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/Mutex.h>
 #include <functional>
 #include <string>

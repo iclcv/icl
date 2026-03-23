@@ -32,7 +32,6 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Mutex.h>
-#include <ICLUtils/Function.h>
 #include <functional>
 class btCollisionObject;
 
