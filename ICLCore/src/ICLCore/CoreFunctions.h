@@ -180,20 +180,6 @@ namespace icl {
     ICLCore_API std::istream &operator>>(std::istream &s, depth &d);
 
 
-    /// function, that calculates the mininum and the maximum value of three value \ingroup GENERAL
-    /** @param a first input value
-        @param b second input value
-        @param c third input value
-        @param minVal return value for the minimum
-        @param maxVal return value for the maximum
-    **/
-    template<class T>
-    inline void getMinAndMax(T a, T b, T c, T &minVal, T &maxVal){
-      if(a<b) { minVal=a; maxVal=b; }
-      else { minVal=b; maxVal=a; }
-      if(c<minVal) minVal=c;
-      else maxVal = c>maxVal ? c : maxVal;
-    }
 
     /* }}} */
 

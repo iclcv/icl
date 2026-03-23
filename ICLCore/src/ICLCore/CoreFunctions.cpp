@@ -310,13 +310,9 @@ namespace icl{
     // }}}
 
 
-    // {{{ convert
+    // {{{ convert — IPP/SSE2 specializations are in PixelOps.cpp
 
-
-
-  #ifdef ICL_HAVE_IPP
-  #elif defined ICL_HAVE_SSE2
-    // --- from icl8u to icl32f ---
+  #if 0 // moved to PixelOps.cpp
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
       for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
@@ -765,7 +761,7 @@ namespace icl{
         static_cast<icl32s>(*poSrcStart);
       }
     }
-  #endif
+  #endif // moved to PixelOps.cpp
 
     // }}}
 

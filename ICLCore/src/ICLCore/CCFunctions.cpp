@@ -294,8 +294,7 @@ namespace icl{
       icl32f g = g255/255;
       icl32f b = b255/255;
 
-      icl32f m,v;
-      getMinAndMax(r,g,b,m,v);
+      icl32f m = std::min({r,g,b}), v = std::max({r,g,b});
 
       if((l = (m + v) / 2.0) <= 0.0){
         l=0; h=0; s=0; // just define anything!
@@ -344,8 +343,7 @@ namespace icl{
       icl32f g = g255/255;
       icl32f b = b255/255;
 
-      icl32f m,v;
-      getMinAndMax(r,g,b,m,v);
+      icl32f m = std::min({r,g,b}), v = std::max({r,g,b});
 
       if((l = (m + v) / 2.0) <= 0.0){
         l=0; h=0; s=0; // just define anything!
