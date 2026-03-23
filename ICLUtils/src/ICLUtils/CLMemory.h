@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <ICLUtils/CLException.h>
+#include <ICLUtils/BasicTypes.h>
 #include <vector>
 
 namespace icl {

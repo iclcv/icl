@@ -28,8 +28,6 @@
 **                                                                 **
 ********************************************************************/
 
-#define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
-
 #include <ICLGeom/PlanarRansacEstimator.h>
 
 #include <ICLUtils/CLIncludes.h>
@@ -134,9 +132,27 @@ namespace icl{
         }else{
           useCL=false;
         }
+
+        #ifdef ICL_HAVE_OPENCL
+        context = nullptr;
+        device = nullptr;
+        program = nullptr;
+        queue = nullptr;
+        kernelCheckRANSAC = nullptr;
+        kernelAssignRANSAC = nullptr;
+        kernelCheckRANSACmatrix = nullptr;
+        #endif
 	    }
 
 	    ~Data() {
+	      #ifdef ICL_HAVE_OPENCL
+	      if(kernelCheckRANSAC) clReleaseKernel(kernelCheckRANSAC);
+	      if(kernelAssignRANSAC) clReleaseKernel(kernelAssignRANSAC);
+	      if(kernelCheckRANSACmatrix) clReleaseKernel(kernelCheckRANSACmatrix);
+	      if(program) clReleaseProgram(program);
+	      if(queue) clReleaseCommandQueue(queue);
+	      if(context) clReleaseContext(context);
+	      #endif
 	    }
 
 	    bool clReady;
@@ -144,14 +160,14 @@ namespace icl{
 
 	    #ifdef ICL_HAVE_OPENCL
         //OpenCL
-        cl::Context context;
-        std::vector<cl::Device> devices;
-        cl::Program program;
-        cl::CommandQueue queue;
+        cl_context context;
+        cl_device_id device;
+        cl_program program;
+        cl_command_queue queue;
 
-        cl::Kernel kernelCheckRANSAC;
-        cl::Kernel kernelAssignRANSAC;
-        cl::Kernel kernelCheckRANSACmatrix;
+        cl_kernel kernelCheckRANSAC;
+        cl_kernel kernelAssignRANSAC;
+        cl_kernel kernelCheckRANSACmatrix;
       #endif
     };
 
@@ -283,144 +299,241 @@ namespace icl{
                     std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end){
       #ifdef ICL_HAVE_OPENCL
 
-        try{
-          if(adjs.size()>0){
-            cl::Event waitEvent;
-            cl::Buffer n0Buffer;
-            cl::Buffer distBuffer;
-            cl::Buffer countAboveBuffer;
-            cl::Buffer countBelowBuffer;
-            cl::Buffer countOnBuffer;
-            cl::Buffer adjsBuffer;
-            cl::Buffer startBuffer;
-            cl::Buffer endBuffer;
-            cl::Buffer xyzBuffer;
+        if(adjs.size()>0){
+          cl_int err = CL_SUCCESS;
+          cl_mem xyzBuffer = nullptr;
+          cl_mem RANSACpointsBuffer = nullptr;
+          cl_mem n0Buffer = nullptr;
+          cl_mem distBuffer = nullptr;
+          cl_mem countAboveBuffer = nullptr;
+          cl_mem countBelowBuffer = nullptr;
+          cl_mem countOnBuffer = nullptr;
+          cl_mem adjsBuffer = nullptr;
+          cl_mem startBuffer = nullptr;
+          cl_mem endBuffer = nullptr;
 
-            cl_mem n0Mem = n0Buffer();
-            cl_mem distMem = distBuffer();
-            cl_mem countAboveMem = countAboveBuffer();
-            cl_mem countBelowMem = countBelowBuffer();
-            cl_mem countOnMem = countOnBuffer();
+          utils::Size size = xyzh.getSize();
+          int w=size.width;
+          int h=size.height;
 
-            cl::Buffer RANSACpointsBuffer;
-            cl_mem RANSACpointsMem = RANSACpointsBuffer();
+          xyzBuffer = clCreateBuffer(
+                                     m_data->context,
+                                     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                     w*h * sizeof(cl_float4),
+                                     static_cast<void *>(&xyzh[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(xyzBuffer) error: " << err);
+            return;
+          }
 
-            utils::Size size = xyzh.getSize();
-            int w=size.width;
-            int h=size.height;
+          RANSACpointsBuffer = clCreateBuffer(
+                                              m_data->context,
+                                              CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                              w*h * sizeof(int),
+                                              static_cast<void *>(labelImage.begin(0)), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(RANSACpointsBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            return;
+          }
 
-            xyzBuffer = cl::Buffer(
-                                   m_data->context,
-                                   CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                   w*h * sizeof(cl_float4),
-                                   static_cast<void *>(&xyzh[0]));
-
-            RANSACpointsBuffer = cl::Buffer(
-                                            m_data->context,
-                                            CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                            w*h * sizeof(int),
-                                            static_cast<void *>(labelImage.begin(0)));
-
-            n0Buffer = cl::Buffer(
-                                  m_data->context,
-                                  CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                  passes * testMatrix.rows() * sizeof(cl_float4),
-                                  static_cast<void *>(&n0[0]));
-            distBuffer = cl::Buffer(
+          n0Buffer = clCreateBuffer(
                                     m_data->context,
                                     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                    passes * testMatrix.rows() * sizeof(float),
-                                    static_cast<void *>(&dist[0]));
-            countAboveBuffer = cl::Buffer(
-                                          m_data->context,
-                                          CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                          passes * adjs.size() * sizeof(int),
-                                          static_cast<void *>(&cAbove[0]));
-            countBelowBuffer = cl::Buffer(
-                                          m_data->context,
-                                          CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                          passes * adjs.size() * sizeof(int),
-                                          static_cast<void *>(&cBelow[0]));
-            countOnBuffer = cl::Buffer(
+                                    passes * testMatrix.rows() * sizeof(cl_float4),
+                                    static_cast<void *>(&n0[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(n0Buffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            return;
+          }
+
+          distBuffer = clCreateBuffer(
+                                      m_data->context,
+                                      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                      passes * testMatrix.rows() * sizeof(float),
+                                      static_cast<void *>(&dist[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(distBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            return;
+          }
+
+          countAboveBuffer = clCreateBuffer(
+                                            m_data->context,
+                                            CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                            passes * adjs.size() * sizeof(int),
+                                            static_cast<void *>(&cAbove[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(countAboveBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            return;
+          }
+
+          countBelowBuffer = clCreateBuffer(
+                                            m_data->context,
+                                            CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                            passes * adjs.size() * sizeof(int),
+                                            static_cast<void *>(&cBelow[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(countBelowBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            clReleaseMemObject(countAboveBuffer);
+            return;
+          }
+
+          countOnBuffer = clCreateBuffer(
+                                         m_data->context,
+                                         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                         passes * adjs.size() * sizeof(int),
+                                         static_cast<void *>(&cOn[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(countOnBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            clReleaseMemObject(countAboveBuffer);
+            clReleaseMemObject(countBelowBuffer);
+            return;
+          }
+
+          adjsBuffer = clCreateBuffer(
+                                      m_data->context,
+                                      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                      adjs.size() * sizeof(int),
+                                      static_cast<void *>(&adjs[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(adjsBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            clReleaseMemObject(countAboveBuffer);
+            clReleaseMemObject(countBelowBuffer);
+            clReleaseMemObject(countOnBuffer);
+            return;
+          }
+
+          startBuffer = clCreateBuffer(
                                        m_data->context,
                                        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                       passes * adjs.size() * sizeof(int),
-                                       static_cast<void *>(&cOn[0]));
-            adjsBuffer = cl::Buffer(
-                                    m_data->context,
-                                    CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                    adjs.size() * sizeof(int),
-                                    static_cast<void *>(&adjs[0]));
-            startBuffer = cl::Buffer(
+                                       testMatrix.rows() * sizeof(int),
+                                       static_cast<void *>(&start[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(startBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            clReleaseMemObject(countAboveBuffer);
+            clReleaseMemObject(countBelowBuffer);
+            clReleaseMemObject(countOnBuffer);
+            clReleaseMemObject(adjsBuffer);
+            return;
+          }
+
+          endBuffer = clCreateBuffer(
                                      m_data->context,
                                      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                      testMatrix.rows() * sizeof(int),
-                                     static_cast<void *>(&start[0]));
-            endBuffer = cl::Buffer(
-                                   m_data->context,
-                                   CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                   testMatrix.rows() * sizeof(int),
-                                   static_cast<void *>(&end[0]));
+                                     static_cast<void *>(&end[0]), &err);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clCreateBuffer(endBuffer) error: " << err);
+            clReleaseMemObject(xyzBuffer);
+            clReleaseMemObject(RANSACpointsBuffer);
+            clReleaseMemObject(n0Buffer);
+            clReleaseMemObject(distBuffer);
+            clReleaseMemObject(countAboveBuffer);
+            clReleaseMemObject(countBelowBuffer);
+            clReleaseMemObject(countOnBuffer);
+            clReleaseMemObject(adjsBuffer);
+            clReleaseMemObject(startBuffer);
+            return;
+          }
 
-            m_data->kernelCheckRANSACmatrix.setArg(0, xyzBuffer);//set parameter for kernel
-            m_data->kernelCheckRANSACmatrix.setArg(1, passes);
-            m_data->kernelCheckRANSACmatrix.setArg(2, n0Buffer);
-            m_data->kernelCheckRANSACmatrix.setArg(3, distBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(4, countAboveBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(5, countBelowBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(6, countOnBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(7, threshold);
-            m_data->kernelCheckRANSACmatrix.setArg(8, RANSACpointsBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(9, adjsBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(10, startBuffer);
-            m_data->kernelCheckRANSACmatrix.setArg(11, endBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 0, sizeof(cl_mem), &xyzBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 1, sizeof(int), &passes);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 2, sizeof(cl_mem), &n0Buffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 3, sizeof(cl_mem), &distBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 4, sizeof(cl_mem), &countAboveBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 5, sizeof(cl_mem), &countBelowBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 6, sizeof(cl_mem), &countOnBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 7, sizeof(float), &threshold);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 8, sizeof(cl_mem), &RANSACpointsBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 9, sizeof(cl_mem), &adjsBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 10, sizeof(cl_mem), &startBuffer);
+          clSetKernelArg(m_data->kernelCheckRANSACmatrix, 11, sizeof(cl_mem), &endBuffer);
 
-            int idSize=passes*w*h;
-            m_data->queue.enqueueNDRangeKernel(//run kernel
+          size_t idSize = static_cast<size_t>(passes*w*h);
+          cl_event waitEvent = nullptr;
+          err = clEnqueueNDRangeKernel(//run kernel
+                                       m_data->queue,
                                        m_data->kernelCheckRANSACmatrix,
-                                       cl::NullRange,
-                                       cl::NDRange(idSize), //input size for get global id
-                                       cl::NullRange,
+                                       1,
                                        nullptr,
+                                       &idSize, //input size for get global id
+                                       nullptr,
+                                       0, nullptr,
                                        &waitEvent);
+          if(err != CL_SUCCESS){
+            ERROR_LOG("clEnqueueNDRangeKernel error: " << err);
+          }
 
-            m_data->queue.enqueueReadBuffer(//read output from kernel
-                                    countAboveBuffer,
-                                    CL_TRUE, // block
-                                    0,
-                                    passes * adjs.size() * sizeof(int),
-                                    reinterpret_cast<int*>(&cAbove[0]),
-                                    nullptr,&waitEvent);
+          if(waitEvent){
+            clWaitForEvents(1, &waitEvent);
+            clReleaseEvent(waitEvent);
+          }
 
-            m_data->queue.enqueueReadBuffer(//read output from kernel
-                                    countBelowBuffer,
-                                    CL_TRUE, // block
-                                    0,
-                                    passes * adjs.size() * sizeof(int),
-                                    reinterpret_cast<int*>(&cBelow[0]),
-                                    nullptr,&waitEvent);
+          clEnqueueReadBuffer(//read output from kernel
+                              m_data->queue,
+                              countAboveBuffer,
+                              CL_TRUE, // block
+                              0,
+                              passes * adjs.size() * sizeof(int),
+                              reinterpret_cast<int*>(&cAbove[0]),
+                              0, nullptr, nullptr);
 
-            m_data->queue.enqueueReadBuffer(//read output from kernel
-                                    countOnBuffer,
-                                    CL_TRUE, // block
-                                    0,
-                                    passes * adjs.size() * sizeof(int),
-                                    reinterpret_cast<int*>(&cOn[0]),
-                                    nullptr,&waitEvent);
+          clEnqueueReadBuffer(//read output from kernel
+                              m_data->queue,
+                              countBelowBuffer,
+                              CL_TRUE, // block
+                              0,
+                              passes * adjs.size() * sizeof(int),
+                              reinterpret_cast<int*>(&cBelow[0]),
+                              0, nullptr, nullptr);
 
-            clFinish(m_data->queue());
+          clEnqueueReadBuffer(//read output from kernel
+                              m_data->queue,
+                              countOnBuffer,
+                              CL_TRUE, // block
+                              0,
+                              passes * adjs.size() * sizeof(int),
+                              reinterpret_cast<int*>(&cOn[0]),
+                              0, nullptr, nullptr);
 
-            clReleaseMemObject(n0Mem);
-            clReleaseMemObject(distMem);
-            clReleaseMemObject(countAboveMem);
-            clReleaseMemObject(countBelowMem);
-            clReleaseMemObject(countOnMem);
+          clFinish(m_data->queue);
 
-            clReleaseMemObject(RANSACpointsMem);
-      		}
-        }catch (const cl::Error& err) { //catch openCL errors
-          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
-        }
+          clReleaseMemObject(xyzBuffer);
+          clReleaseMemObject(RANSACpointsBuffer);
+          clReleaseMemObject(n0Buffer);
+          clReleaseMemObject(distBuffer);
+          clReleaseMemObject(countAboveBuffer);
+          clReleaseMemObject(countBelowBuffer);
+          clReleaseMemObject(countOnBuffer);
+          clReleaseMemObject(adjsBuffer);
+          clReleaseMemObject(startBuffer);
+          clReleaseMemObject(endBuffer);
+    		}
       #endif
     }
 
@@ -454,113 +567,150 @@ namespace icl{
                 std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn){
 
       #ifdef ICL_HAVE_OPENCL
-        try{
-          int numPoints=dstPoints.size();
+        cl_int err = CL_SUCCESS;
+        int numPoints=dstPoints.size();
 
-          cl::Buffer RANSACpointsBuffer;
-          cl_mem RANSACpointsMem = RANSACpointsBuffer();
-          RANSACpointsBuffer = cl::Buffer(
-                                          m_data->context,
-                                          CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                          numPoints * sizeof(cl_float4),
-                                          static_cast<void *>(&dstPoints[0]));
-
-          cl::Event waitEvent;
-          cl::Buffer n0Buffer;
-          cl::Buffer distBuffer;
-          cl::Buffer countAboveBuffer;
-          cl::Buffer countBelowBuffer;
-          cl::Buffer countOnBuffer;
-
-          cl_mem n0Mem = n0Buffer();
-          cl_mem distMem = distBuffer();
-          cl_mem countAboveMem = countAboveBuffer();
-          cl_mem countBelowMem = countBelowBuffer();
-          cl_mem countOnMem = countOnBuffer();
-
-          n0Buffer = cl::Buffer(
-                                m_data->context,
-                                CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                passes * sizeof(cl_float4),
-                                static_cast<void *>(&n0[0]));
-          distBuffer = cl::Buffer(
-                                  m_data->context,
-                                  CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                  passes * sizeof(float),
-                                  static_cast<void *>(&dist[0]));
-          countAboveBuffer = cl::Buffer(
-                                        m_data->context,
-                                        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                        passes * sizeof(int),
-                                        static_cast<void *>(&cAbove[0]));
-          countBelowBuffer = cl::Buffer(
-                                        m_data->context,
-                                        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                        passes * sizeof(int),
-                                        static_cast<void *>(&cBelow[0]));
-          countOnBuffer = cl::Buffer(
-                                     m_data->context,
-                                     CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                     passes * sizeof(int),
-                                     static_cast<void *>(&cOn[0]));
-
-          m_data->kernelCheckRANSAC.setArg(0, passes);
-          m_data->kernelCheckRANSAC.setArg(1, n0Buffer);
-          m_data->kernelCheckRANSAC.setArg(2, distBuffer);
-          m_data->kernelCheckRANSAC.setArg(3, countAboveBuffer);
-          m_data->kernelCheckRANSAC.setArg(4, countBelowBuffer);
-          m_data->kernelCheckRANSAC.setArg(5, countOnBuffer);
-          m_data->kernelCheckRANSAC.setArg(6, threshold);
-          m_data->kernelCheckRANSAC.setArg(7, numPoints);
-          m_data->kernelCheckRANSAC.setArg(8, RANSACpointsBuffer);
-          m_data->kernelCheckRANSAC.setArg(9, subset);
-
-          int idSize=passes*numPoints/subset;
-          m_data->queue.enqueueNDRangeKernel(//run kernel
-                                     m_data->kernelCheckRANSAC,
-                                     cl::NullRange,
-                                     cl::NDRange(idSize), //input size for get global id
-                                     cl::NullRange,
-                                     nullptr,
-                                     &waitEvent);
-
-          m_data->queue.enqueueReadBuffer(//read output from kernel
-                                  countAboveBuffer,
-                                  CL_TRUE, // block
-                                  0,
-                                  passes * sizeof(int),
-                                  reinterpret_cast<int*>(&cAbove[0]),//cAboveRead
-                                  nullptr,&waitEvent);
-
-          m_data->queue.enqueueReadBuffer(//read output from kernel
-                                  countBelowBuffer,
-                                  CL_TRUE, // block
-                                  0,
-                                  passes * sizeof(int),
-                                  reinterpret_cast<int*>(&cBelow[0]),
-                                  nullptr,&waitEvent);
-
-          m_data->queue.enqueueReadBuffer(//read output from kernel
-                                  countOnBuffer,
-                                  CL_TRUE, // block
-                                  0,
-                                  passes * sizeof(int),
-                                  reinterpret_cast<int*>(&cOn[0]),
-                                  nullptr,&waitEvent);
-
-          clFinish(m_data->queue());
-
-          clReleaseMemObject(n0Mem);
-          clReleaseMemObject(distMem);
-          clReleaseMemObject(countAboveMem);
-          clReleaseMemObject(countBelowMem);
-          clReleaseMemObject(countOnMem);
-
-          clReleaseMemObject(RANSACpointsMem);
-
-        }catch (const cl::Error& err) { //catch openCL errors
-          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
+        cl_mem RANSACpointsBuffer = clCreateBuffer(
+                                                   m_data->context,
+                                                   CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                                   numPoints * sizeof(cl_float4),
+                                                   static_cast<void *>(&dstPoints[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(RANSACpointsBuffer) error: " << err);
+          return;
         }
+
+        cl_mem n0Buffer = clCreateBuffer(
+                                         m_data->context,
+                                         CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                         passes * sizeof(cl_float4),
+                                         static_cast<void *>(&n0[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(n0Buffer) error: " << err);
+          clReleaseMemObject(RANSACpointsBuffer);
+          return;
+        }
+
+        cl_mem distBuffer = clCreateBuffer(
+                                           m_data->context,
+                                           CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                           passes * sizeof(float),
+                                           static_cast<void *>(&dist[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(distBuffer) error: " << err);
+          clReleaseMemObject(RANSACpointsBuffer);
+          clReleaseMemObject(n0Buffer);
+          return;
+        }
+
+        cl_mem countAboveBuffer = clCreateBuffer(
+                                                 m_data->context,
+                                                 CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                                 passes * sizeof(int),
+                                                 static_cast<void *>(&cAbove[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(countAboveBuffer) error: " << err);
+          clReleaseMemObject(RANSACpointsBuffer);
+          clReleaseMemObject(n0Buffer);
+          clReleaseMemObject(distBuffer);
+          return;
+        }
+
+        cl_mem countBelowBuffer = clCreateBuffer(
+                                                 m_data->context,
+                                                 CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                                 passes * sizeof(int),
+                                                 static_cast<void *>(&cBelow[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(countBelowBuffer) error: " << err);
+          clReleaseMemObject(RANSACpointsBuffer);
+          clReleaseMemObject(n0Buffer);
+          clReleaseMemObject(distBuffer);
+          clReleaseMemObject(countAboveBuffer);
+          return;
+        }
+
+        cl_mem countOnBuffer = clCreateBuffer(
+                                              m_data->context,
+                                              CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                              passes * sizeof(int),
+                                              static_cast<void *>(&cOn[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(countOnBuffer) error: " << err);
+          clReleaseMemObject(RANSACpointsBuffer);
+          clReleaseMemObject(n0Buffer);
+          clReleaseMemObject(distBuffer);
+          clReleaseMemObject(countAboveBuffer);
+          clReleaseMemObject(countBelowBuffer);
+          return;
+        }
+
+        clSetKernelArg(m_data->kernelCheckRANSAC, 0, sizeof(int), &passes);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 1, sizeof(cl_mem), &n0Buffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 2, sizeof(cl_mem), &distBuffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 3, sizeof(cl_mem), &countAboveBuffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 4, sizeof(cl_mem), &countBelowBuffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 5, sizeof(cl_mem), &countOnBuffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 6, sizeof(float), &threshold);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 7, sizeof(int), &numPoints);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 8, sizeof(cl_mem), &RANSACpointsBuffer);
+        clSetKernelArg(m_data->kernelCheckRANSAC, 9, sizeof(int), &subset);
+
+        size_t idSize = static_cast<size_t>(passes*numPoints/subset);
+        cl_event waitEvent = nullptr;
+        err = clEnqueueNDRangeKernel(//run kernel
+                                     m_data->queue,
+                                     m_data->kernelCheckRANSAC,
+                                     1,
+                                     nullptr,
+                                     &idSize, //input size for get global id
+                                     nullptr,
+                                     0, nullptr,
+                                     &waitEvent);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clEnqueueNDRangeKernel error: " << err);
+        }
+
+        if(waitEvent){
+          clWaitForEvents(1, &waitEvent);
+          clReleaseEvent(waitEvent);
+        }
+
+        clEnqueueReadBuffer(//read output from kernel
+                            m_data->queue,
+                            countAboveBuffer,
+                            CL_TRUE, // block
+                            0,
+                            passes * sizeof(int),
+                            reinterpret_cast<int*>(&cAbove[0]),
+                            0, nullptr, nullptr);
+
+        clEnqueueReadBuffer(//read output from kernel
+                            m_data->queue,
+                            countBelowBuffer,
+                            CL_TRUE, // block
+                            0,
+                            passes * sizeof(int),
+                            reinterpret_cast<int*>(&cBelow[0]),
+                            0, nullptr, nullptr);
+
+        clEnqueueReadBuffer(//read output from kernel
+                            m_data->queue,
+                            countOnBuffer,
+                            CL_TRUE, // block
+                            0,
+                            passes * sizeof(int),
+                            reinterpret_cast<int*>(&cOn[0]),
+                            0, nullptr, nullptr);
+
+        clFinish(m_data->queue);
+
+        clReleaseMemObject(RANSACpointsBuffer);
+        clReleaseMemObject(n0Buffer);
+        clReleaseMemObject(distBuffer);
+        clReleaseMemObject(countAboveBuffer);
+        clReleaseMemObject(countBelowBuffer);
+        clReleaseMemObject(countOnBuffer);
       #endif
     }
 
@@ -587,59 +737,125 @@ namespace icl{
     void PlanarRansacEstimator::initOpenCL(){
       #ifdef ICL_HAVE_OPENCL
       //create openCL context
-      std::vector<cl::Platform> platformList;//get number of available openCL platforms
-      int selectedDevice=0;//initially select platform 0
-      try{
-        if(cl::Platform::get(&platformList)==CL_SUCCESS){
-          std::cout<<"openCL platform found"<<std::endl;
-        }else{
-          std::cout<<"no openCL platform available"<<std::endl;
-        }
-        std::cout<<"number of openCL platforms: "<<platformList.size()<<std::endl;
+      cl_uint numPlatforms = 0;
+      cl_platform_id selectedPlatform = nullptr;
+      bool gpuFound = false;
 
-        //check devices on platforms
-        for(unsigned int i=0; i<platformList.size(); i++){//check all platforms
-          std::cout<<"platform "<<i+1<<":"<<std::endl;
-          std::vector<cl::Device> deviceList;
-          if(platformList.at(i).getDevices(CL_DEVICE_TYPE_GPU, &deviceList)==CL_SUCCESS){
-            std::cout<<"GPU-DEVICE(S) FOUND"<<std::endl;
-            selectedDevice=i; //if GPU found on platform, select this platform
-            m_data->clReady=true; //and mark CL context as available
-          }else if(platformList.at(i).getDevices(CL_DEVICE_TYPE_CPU, &deviceList)==CL_SUCCESS){
+      cl_int err = clGetPlatformIDs(0, nullptr, &numPlatforms);
+      if(err != CL_SUCCESS || numPlatforms == 0){
+        std::cout<<"no openCL platform available"<<std::endl;
+        m_data->clReady = false;
+        return;
+      }
+      std::cout<<"openCL platform found"<<std::endl;
+      std::cout<<"number of openCL platforms: "<<numPlatforms<<std::endl;
+
+      std::vector<cl_platform_id> platforms(numPlatforms);
+      clGetPlatformIDs(numPlatforms, platforms.data(), nullptr);
+
+      //check devices on platforms
+      for(cl_uint i=0; i<numPlatforms; i++){
+        std::cout<<"platform "<<i+1<<":"<<std::endl;
+        cl_uint numDevices = 0;
+        cl_int devErr = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, 0, nullptr, &numDevices);
+        if(devErr == CL_SUCCESS && numDevices > 0){
+          std::cout<<"GPU-DEVICE(S) FOUND"<<std::endl;
+          selectedPlatform = platforms[i];
+          gpuFound = true;
+        }else{
+          devErr = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_CPU, 0, nullptr, &numDevices);
+          if(devErr == CL_SUCCESS && numDevices > 0){
             std::cout<<"CPU-DEVICE(S) FOUND"<<std::endl;
           }else{
             std::cout<<"UNKNOWN DEVICE(S) FOUND"<<std::endl;
           }
-          std::cout<<"number of devices: "<<deviceList.size()<<std::endl;
         }
-      }catch (const cl::Error& err) {//catch openCL errors
-        ERROR_LOG(err.what()<< "("<< err.err()<< ")");
-        std::cout<<"OpenCL not ready"<<std::endl;
-        m_data->clReady=false;//disable openCL on error
+        std::cout<<"number of devices: "<<numDevices<<std::endl;
       }
 
-      if(m_data->clReady==true){//only if CL context is available
-        try{
-          cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(platformList[selectedDevice]()), 0};//get context properties of selected platform
-          m_data->context = cl::Context(CL_DEVICE_TYPE_GPU, cprops);//select GPU device
-          m_data->devices = m_data->context.getInfo<CL_CONTEXT_DEVICES>();
+      if(!gpuFound){
+        std::cout<<"OpenCL not ready"<<std::endl;
+        m_data->clReady = false;
+        return;
+      }
 
-          std::cout<<"selected devices: "<<m_data->devices.size()<<std::endl;
+      m_data->clReady = true;
 
-          cl::Program::Sources sources(1, std::make_pair(RansacKernel, 0)); //kernel source
-          m_data->program=cl::Program(m_data->context, sources); //program (bind context and source)
-          m_data->program.build(m_data->devices);//build program
+      // Get GPU device
+      cl_uint numDevices = 0;
+      err = clGetDeviceIDs(selectedPlatform, CL_DEVICE_TYPE_GPU, 1, &m_data->device, &numDevices);
+      if(err != CL_SUCCESS || numDevices == 0){
+        ERROR_LOG("clGetDeviceIDs error: " << err);
+        m_data->clReady = false;
+        return;
+      }
 
-          //create kernels
-          m_data->kernelCheckRANSAC=cl::Kernel(m_data->program, "checkRANSAC");
-          m_data->kernelAssignRANSAC=cl::Kernel(m_data->program, "assignRANSAC");
-          m_data->kernelCheckRANSACmatrix=cl::Kernel(m_data->program, "checkRANSACmatrix");
+      std::cout<<"selected devices: 1"<<std::endl;
 
-          m_data->queue=cl::CommandQueue(m_data->context, m_data->devices[0], 0);//create command queue
-        }catch (const cl::Error& err) { //catch openCL errors
-          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
-          m_data->clReady=false;
+      // Create context
+      cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(selectedPlatform), 0};
+      m_data->context = clCreateContext(cprops, 1, &m_data->device, nullptr, nullptr, &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateContext error: " << err);
+        m_data->clReady = false;
+        return;
+      }
+
+      // Create program from source
+      const char *src = RansacKernel;
+      size_t srcLen = strlen(RansacKernel);
+      m_data->program = clCreateProgramWithSource(m_data->context, 1, &src, &srcLen, &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateProgramWithSource error: " << err);
+        m_data->clReady = false;
+        return;
+      }
+
+      // Build program
+      err = clBuildProgram(m_data->program, 1, &m_data->device, nullptr, nullptr, nullptr);
+      if(err != CL_SUCCESS){
+        // Retrieve build log for diagnostics
+        size_t logLen = 0;
+        clGetProgramBuildInfo(m_data->program, m_data->device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logLen);
+        if(logLen > 0){
+          std::vector<char> log(logLen);
+          clGetProgramBuildInfo(m_data->program, m_data->device, CL_PROGRAM_BUILD_LOG, logLen, log.data(), nullptr);
+          ERROR_LOG("clBuildProgram error: " << err << "\n" << log.data());
+        }else{
+          ERROR_LOG("clBuildProgram error: " << err);
         }
+        m_data->clReady = false;
+        return;
+      }
+
+      // Create kernels
+      m_data->kernelCheckRANSAC = clCreateKernel(m_data->program, "checkRANSAC", &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateKernel(checkRANSAC) error: " << err);
+        m_data->clReady = false;
+        return;
+      }
+
+      m_data->kernelAssignRANSAC = clCreateKernel(m_data->program, "assignRANSAC", &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateKernel(assignRANSAC) error: " << err);
+        m_data->clReady = false;
+        return;
+      }
+
+      m_data->kernelCheckRANSACmatrix = clCreateKernel(m_data->program, "checkRANSACmatrix", &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateKernel(checkRANSACmatrix) error: " << err);
+        m_data->clReady = false;
+        return;
+      }
+
+      // Create command queue
+      m_data->queue = clCreateCommandQueue(m_data->context, m_data->device, 0, &err);
+      if(err != CL_SUCCESS){
+        ERROR_LOG("clCreateCommandQueue error: " << err);
+        m_data->clReady = false;
+        return;
       }
 
       #else
@@ -766,77 +982,115 @@ namespace icl{
     void PlanarRansacEstimator::relabelCL(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
                      int desiredID, int srcID, float threshold, Result &result, int w, int h){
       #ifdef ICL_HAVE_OPENCL
-        try{
-          cl::Buffer xyzBuffer = cl::Buffer(
-                                 m_data->context,
-                                 CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                 w*h * sizeof(cl_float4),
-                                 static_cast<void *>(&xyzh[0]));
+        cl_int err = CL_SUCCESS;
 
-          cl::Buffer elementsBlobsBuffer = cl::Buffer(
-				           m_data->context,
-				           CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-				           w*h * sizeof(cl_uchar),
-				           static_cast<void *>(newMask.begin(0)));
-
-          cl::Buffer assignmentBlobsBuffer = cl::Buffer(
-                                             m_data->context,
-                                             CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                             w*h * sizeof(int),
-                                             static_cast<void *>(newLabel.begin(0)));
-
-          cl::Buffer assignmentBuffer = cl::Buffer(
-                                        m_data->context,
-                                        CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                        w*h * sizeof(int),
-                                        static_cast<void *>(oldLabel.begin(0)));
-
-          m_data->kernelAssignRANSAC.setArg(0, xyzBuffer);
-          m_data->kernelAssignRANSAC.setArg(1, elementsBlobsBuffer);
-          m_data->kernelAssignRANSAC.setArg(2, assignmentBlobsBuffer);
-          m_data->kernelAssignRANSAC.setArg(3, result.n0);
-          m_data->kernelAssignRANSAC.setArg(4, result.dist);
-          m_data->kernelAssignRANSAC.setArg(5, threshold);
-          m_data->kernelAssignRANSAC.setArg(6, assignmentBuffer);
-          m_data->kernelAssignRANSAC.setArg(7, srcID);
-          m_data->kernelAssignRANSAC.setArg(8, desiredID);
-
-          m_data->queue.enqueueNDRangeKernel(//run kernel
-				     m_data->kernelAssignRANSAC,
-				     cl::NullRange,
-				     cl::NDRange(w*h), //input size for get global id
-				     cl::NullRange);
-
-    	    std::vector<int> assignmentBlobs(w*h);
-    	    std::vector<unsigned char> elementsBlobs(w*h);
-
-          m_data->queue.enqueueReadBuffer(//read output from kernel
-                                  assignmentBlobsBuffer,
-                                  CL_TRUE, // block
-                                  0,
-                                  w*h * sizeof(int),
-                                  reinterpret_cast<int*>(&assignmentBlobs[0]));
-
-          m_data->queue.enqueueReadBuffer(//read output from kernel
-                                  elementsBlobsBuffer,
-                                  CL_TRUE, // block
-                                  0,
-                                  w*h * sizeof(bool),
-                                  reinterpret_cast<cl_uchar*>(&elementsBlobs[0]));
-
-          //newLabel = Img32s(Size(w,h),1,std::vector<int*>(1,assignmentBlobs.data()),false);//,true);//false);
-          //newMask = Img8u(Size(w,h),1,std::vector<unsigned char*>(1,elementsBlobs.data()),false);//,true);//false);
-
-          for(int y=0; y<h; y++){
-            for(int x=0; x<w; x++){
-              newLabel(x,y,0)=assignmentBlobs[x+w*y];
-              newMask(x,y,0)=elementsBlobs[x+w*y];
-            }
-          }
-
-        }catch (const cl::Error& err) { //catch openCL errors
-          ERROR_LOG(err.what()<< "("<< err.err()<< ")");
+        cl_mem xyzBuffer = clCreateBuffer(
+                                          m_data->context,
+                                          CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                          w*h * sizeof(cl_float4),
+                                          static_cast<void *>(&xyzh[0]), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(xyzBuffer) error: " << err);
+          return;
         }
+
+        cl_mem elementsBlobsBuffer = clCreateBuffer(
+                                                    m_data->context,
+                                                    CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                                    w*h * sizeof(cl_uchar),
+                                                    static_cast<void *>(newMask.begin(0)), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(elementsBlobsBuffer) error: " << err);
+          clReleaseMemObject(xyzBuffer);
+          return;
+        }
+
+        cl_mem assignmentBlobsBuffer = clCreateBuffer(
+                                                      m_data->context,
+                                                      CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                                      w*h * sizeof(int),
+                                                      static_cast<void *>(newLabel.begin(0)), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(assignmentBlobsBuffer) error: " << err);
+          clReleaseMemObject(xyzBuffer);
+          clReleaseMemObject(elementsBlobsBuffer);
+          return;
+        }
+
+        cl_mem assignmentBuffer = clCreateBuffer(
+                                                 m_data->context,
+                                                 CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                                 w*h * sizeof(int),
+                                                 static_cast<void *>(oldLabel.begin(0)), &err);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clCreateBuffer(assignmentBuffer) error: " << err);
+          clReleaseMemObject(xyzBuffer);
+          clReleaseMemObject(elementsBlobsBuffer);
+          clReleaseMemObject(assignmentBlobsBuffer);
+          return;
+        }
+
+        // Convert Vec (result.n0) to cl_float4 for the kernel argument
+        cl_float4 n0Val = {{result.n0[0], result.n0[1], result.n0[2], result.n0[3]}};
+
+        clSetKernelArg(m_data->kernelAssignRANSAC, 0, sizeof(cl_mem), &xyzBuffer);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 1, sizeof(cl_mem), &elementsBlobsBuffer);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 2, sizeof(cl_mem), &assignmentBlobsBuffer);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 3, sizeof(cl_float4), &n0Val);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 4, sizeof(float), &result.dist);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 5, sizeof(float), &threshold);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 6, sizeof(cl_mem), &assignmentBuffer);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 7, sizeof(int), &srcID);
+        clSetKernelArg(m_data->kernelAssignRANSAC, 8, sizeof(int), &desiredID);
+
+        size_t globalSize = static_cast<size_t>(w*h);
+        err = clEnqueueNDRangeKernel(//run kernel
+                                     m_data->queue,
+                                     m_data->kernelAssignRANSAC,
+                                     1,
+                                     nullptr,
+                                     &globalSize, //input size for get global id
+                                     nullptr,
+                                     0, nullptr, nullptr);
+        if(err != CL_SUCCESS){
+          ERROR_LOG("clEnqueueNDRangeKernel error: " << err);
+        }
+
+    	  std::vector<int> assignmentBlobs(w*h);
+    	  std::vector<unsigned char> elementsBlobs(w*h);
+
+        clEnqueueReadBuffer(//read output from kernel
+                            m_data->queue,
+                            assignmentBlobsBuffer,
+                            CL_TRUE, // block
+                            0,
+                            w*h * sizeof(int),
+                            reinterpret_cast<int*>(&assignmentBlobs[0]),
+                            0, nullptr, nullptr);
+
+        clEnqueueReadBuffer(//read output from kernel
+                            m_data->queue,
+                            elementsBlobsBuffer,
+                            CL_TRUE, // block
+                            0,
+                            w*h * sizeof(bool),
+                            reinterpret_cast<cl_uchar*>(&elementsBlobs[0]),
+                            0, nullptr, nullptr);
+
+        //newLabel = Img32s(Size(w,h),1,std::vector<int*>(1,assignmentBlobs.data()),false);//,true);//false);
+        //newMask = Img8u(Size(w,h),1,std::vector<unsigned char*>(1,elementsBlobs.data()),false);//,true);//false);
+
+        for(int y=0; y<h; y++){
+          for(int x=0; x<w; x++){
+            newLabel(x,y,0)=assignmentBlobs[x+w*y];
+            newMask(x,y,0)=elementsBlobs[x+w*y];
+          }
+        }
+
+        clReleaseMemObject(xyzBuffer);
+        clReleaseMemObject(elementsBlobsBuffer);
+        clReleaseMemObject(assignmentBlobsBuffer);
+        clReleaseMemObject(assignmentBuffer);
       #endif
     }
 

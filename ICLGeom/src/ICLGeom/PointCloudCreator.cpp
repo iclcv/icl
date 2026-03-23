@@ -135,7 +135,7 @@ namespace icl{
 #ifdef ICL_HAVE_OPENCL
         try{
           clUse=true;
-          creatorCL = new PointCloudCreatorCL(depthImageSize, viewRayDirections);
+          creatorCL.reset(new PointCloudCreatorCL(depthImageSize, viewRayDirections));
           clReady = creatorCL->isCLReady();
         }catch(std::exception &e){
           ERROR_LOG("error creating OpenCL-based point cloud creator: "
@@ -186,7 +186,7 @@ namespace icl{
     PointCloudCreator::PointCloudCreator():m_data(new Data){
 #ifdef ICL_HAVE_OPENCL
       m_data->clUse=true;
-      m_data->creatorCL = 0;
+      m_data->creatorCL.reset();
       m_data->clReady = false;
 #endif
     }
