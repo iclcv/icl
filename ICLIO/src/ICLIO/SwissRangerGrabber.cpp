@@ -402,7 +402,7 @@ namespace icl{
       addProperty("format", "info", "", "not used", 0, "");
       addProperty("size", "info", "", "not used", 0, "");
 
-      Configurable::registerCallback(utils::function(this,&SwissRangerGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     // callback for changed configurable properties
@@ -583,7 +583,7 @@ namespace icl{
       return new SwissRangerGrabber(device,depth32f,channel);
     }
 
-    REGISTER_GRABBER(sr,utils::function(createSRGrabber), utils::function(SwissRangerGrabber::getDeviceList), "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
+    REGISTER_GRABBER(sr,createSRGrabber, SwissRangerGrabber::getDeviceList, "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
 
   } // namespace io
 }

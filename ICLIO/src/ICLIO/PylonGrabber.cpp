@@ -229,4 +229,4 @@ const std::vector<io::GrabberDeviceDescription>& getPylDeviceList(std::string hi
   return deviceList;
 }
 
-REGISTER_GRABBER(pylon,utils::function(createGrabber),utils::function(getPylDeviceList), "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");
+REGISTER_GRABBER(pylon,createGrabber,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");

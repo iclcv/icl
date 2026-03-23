@@ -35,7 +35,7 @@
 #include <QApplication>
 #include <ICLQt/SliderUpdateEvent.h>
 #include <ICLUtils/Macros.h>
-#include <ICLUtils/Function.h>
+#include <functional>
 
 namespace icl{
   namespace qt{
@@ -60,7 +60,7 @@ namespace icl{
       struct CB{
         /// associated event
         enum Event{ press,release,move,value,all } event;
-        utils::Function<void> f; //!< associated 'void f()' -function
+        std::function<void()> f; //!< associated 'void f()' -function
       };
 
       /// internal list of callbacks
@@ -104,7 +104,7 @@ namespace icl{
           - value (when the value is changed)
           - all (for all events)
       */
-      void registerCallback(const utils::Function<void> &cb, const std::string &events = "value");
+      void registerCallback(const std::function<void()> &cb, const std::string &events = "value");
 
       /// removes all callbacks associated to this slider component
       void removeCallbacks();

@@ -776,11 +776,11 @@ namespace icl{
     }
 
 
-    void DataStore::Data::install(Function<void,const MouseEvent&> f){
+    void DataStore::Data::install(std::function<void(const MouseEvent&)> f){
       /// crazy local class here!
       struct FunctionMouseHandler : public MouseHandler{
-        Function<void,const MouseEvent&> f;
-        FunctionMouseHandler(Function<void,const MouseEvent&> f):f(f){}
+        std::function<void(const MouseEvent&)> f;
+        FunctionMouseHandler(std::function<void(const MouseEvent&)> f):f(f){}
         void process(const MouseEvent &e){ f(e); }
       };
 

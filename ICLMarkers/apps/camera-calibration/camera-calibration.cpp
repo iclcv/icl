@@ -293,11 +293,11 @@ void init(){
 
 
   markerDetectionOptionGUI.create();
-  gui["show-marker-detection-options"].registerCallback(utils::function(&markerDetectionOptionGUI,&GUI::switchVisibility));
-  gui["show-plane-options"].registerCallback(utils::function(&planeOptionGUI, &GUI::switchVisibility));
-  gui["save"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::init));
-  gui["save_stop"].registerCallback(utils::function(bestOfNSaver, &CCU::BestOfNSaver::stop));
-  gui["showRelTransGUI"].registerCallback(utils::function(&relTransGUI, &GUI::switchVisibility));
+  gui["show-marker-detection-options"].registerCallback([]{ markerDetectionOptionGUI.switchVisibility(); });
+  gui["show-plane-options"].registerCallback([]{ planeOptionGUI.switchVisibility(); });
+  gui["save"].registerCallback([]{ bestOfNSaver->init(); });
+  gui["save_stop"].registerCallback([]{ bestOfNSaver->stop(); });
+  gui["showRelTransGUI"].registerCallback([]{ relTransGUI.switchVisibility(); });
 
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab()->getSize());

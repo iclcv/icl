@@ -125,6 +125,6 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(qtcam,utils::function(createQtCameraGrabber), utils::function(getQtCameraDeviceList),"qtcam:device index or name:Qt based Camera source");
+    REGISTER_GRABBER(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"qtcam:device index or name:Qt based Camera source");
   }
 }

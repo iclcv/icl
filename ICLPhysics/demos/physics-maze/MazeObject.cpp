@@ -316,7 +316,7 @@ namespace icl{
         mazeBall->setFriction(0.5f);
         mazeBall->setRollingFriction(0.0f);
         mazeBall->setColor(Primitive::all,geom_red());
-        mazeBall->setCollisionCallback(function(this,&MazeObject::ballCallback));
+        mazeBall->setCollisionCallback([this](PhysicsObject* self, PhysicsObject* other, geom::Vec pos){ ballCallback(self, other, pos); });
 
         setLineSmoothingEnabled(false);
         setPolygonSmoothingEnabled(false);

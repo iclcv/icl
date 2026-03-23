@@ -103,8 +103,8 @@ namespace icl{
 
     SQFitter::SQFitter(utils::SmartPtr<Vec> camCenter) : camCenter(camCenter) {
       // get the error functions
-      sErrorFunc = utils::function(sError, &shapeError::operator());
-      ePErrorFunc = utils::function(ePError, &eulerPosError::operator());
+      sErrorFunc = [this](const LM::Params &p, const LM::Matrix &Mx){ return sError(p, Mx); };
+      ePErrorFunc = [this](const LM::Params &p, const LM::Matrix &Mx){ return ePError(p, Mx); };
 
       // initialize Levenberg-Marquardt
       shapeLM = LM(sErrorFunc,1,std::vector<LM::JacobianMat>(),1.e-3,200,1.e-6,10,1.e-6,1.e-6,"svd");

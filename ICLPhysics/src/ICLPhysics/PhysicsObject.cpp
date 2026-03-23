@@ -185,7 +185,7 @@ namespace icl{
       m_world = world;
     }
 
-    void PhysicsObject::setCollisionCallback(utils::Function<void,PhysicsObject*,PhysicsObject*, geom::Vec> collisionCallback) {
+    void PhysicsObject::setCollisionCallback(std::function<void(PhysicsObject*,PhysicsObject*, geom::Vec)> collisionCallback) {
       m_collisionCallback = collisionCallback;
     }
 

@@ -553,7 +553,7 @@ namespace icl{
       return grid;
     }
 
-    PlotWidget3D::Handle PlotWidget3D::surf(Function<float,float,float> fxy,
+    PlotWidget3D::Handle PlotWidget3D::surf(std::function<float(float,float)> fxy,
                                             const Range32f &rx, const Range32f &ry,
                                             int nx, int ny,
                                             PlotWidget3D::Handle reuseObject){

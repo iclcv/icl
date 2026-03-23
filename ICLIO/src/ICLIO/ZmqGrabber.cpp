@@ -136,7 +136,7 @@ namespace icl{
     }
 
 
-    REGISTER_GRABBER(zmq,utils::function(createZmqGrabber), utils::function(getZmqDeviceList),
+    REGISTER_GRABBER(zmq,createZmqGrabber, getZmqDeviceList,
                      "zmq:host\\:port (host where data is published) :Zmq-based network grabber")
 
   } // namespace io

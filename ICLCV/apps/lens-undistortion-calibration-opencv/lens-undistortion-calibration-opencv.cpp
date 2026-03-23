@@ -167,7 +167,7 @@ struct ConfigurableUDist : public Configurable{
       add(k3,-10,10,0);
       add(k4,-10,10,0);
       add(k5,-10000,10000,0);
-      registerCallback(icl::utils::function(this,&ConfigurableUDist::cb));
+      registerCallback([this](const Property &p){ cb(p); });
     }
 
     udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);

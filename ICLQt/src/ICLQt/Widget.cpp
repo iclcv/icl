@@ -163,8 +163,8 @@ namespace icl{
 
       GLImg tmImage;
 
-      Function<void> vcb;
-      Function<void, bool> bcb;
+      std::function<void()> vcb;
+      std::function<void(bool)> bcb;
 
       std::string toolTipText;
 
@@ -196,7 +196,7 @@ namespace icl{
       }
 
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h,
-                  const ImgBase *icon, const Function<void> &cb=Function<void>()):
+                  const ImgBase *icon, const std::function<void()> &cb=std::function<void()>{}):
         parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
         toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
         if(icon){
@@ -210,14 +210,14 @@ namespace icl{
 
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText,
                   const std::string &id, int x, int y, int w, int h,
-                  IconType icon, const Function<void> &cb={}):
+                  IconType icon, const std::function<void()> &cb={}):
         parent(parent),id(id),bounds(x,y,w,h),toggable(false),over(false),down(false),
         toggled(false),visible(false),vcb(cb),toolTipText(toolTipText){
         this->icon = get_icon(icon);
       }
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText,
                   const std::string &id, int x, int y, int w, int h, IconType icon,
-                  IconType downIcon, const Function<void,bool> &cb={},
+                  IconType downIcon, const std::function<void(bool)> &cb={},
                   bool toggled = false):
         parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
         toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
@@ -230,7 +230,7 @@ namespace icl{
 
       OSDGLButton(ICLWidget *parent, const std::string &toolTipText, const std::string &id, int x, int y, int w, int h,
                   const ImgBase *untoggledIcon, const ImgBase *toggledIcon,
-                  const Function<void,bool> &cb={},
+                  const std::function<void(bool)> &cb={},
                   bool toggled = false):
         parent(parent),id(id),bounds(x,y,w,h),toggable(true),over(false),down(false),
         toggled(toggled),visible(false),bcb(cb),toolTipText(toolTipText){
@@ -710,7 +710,7 @@ namespace icl{
       int frameIdx;
       FixedConverter *converter;
       ImgBase *convertedBuffer;
-      std::map<std::string,Function<void,const core::ImgBase*> > recordingCallbacks;
+      std::map<std::string,std::function<void(const core::ImgBase*)> > recordingCallbacks;
 
     public:
       OutputBufferCapturer(ICLWidget *parent, ICLWidget::Data *data):
@@ -743,7 +743,7 @@ namespace icl{
 
 
 
-      void registerRecordingCallback(utils::Function<void,const ImgBase*> cb,
+      void registerRecordingCallback(std::function<void(const ImgBase*)> cb,
                                      const std::string &handle){
         Mutex::Locker l(mutex);
         recordingCallbacks[handle] = cb;
@@ -751,7 +751,7 @@ namespace icl{
 
       void unregisterRecordingCallback(const std::string &handle){
         Mutex::Locker l(mutex);
-        std::map<std::string,Function<void,const core::ImgBase*> >::iterator it = recordingCallbacks.find(handle);
+        std::map<std::string,std::function<void(const core::ImgBase*)> >::iterator it = recordingCallbacks.find(handle);
         if(it != recordingCallbacks.end()){
           recordingCallbacks.erase(it);
         }else{
@@ -836,7 +836,7 @@ namespace icl{
         }
         try{
           SmartPtr<const ImgBase> image(data->image.extractImage(),false);
-          for(std::map<std::string, utils::Function<void,const ImgBase*> >::iterator it = recordingCallbacks.begin();
+          for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
               it != recordingCallbacks.end();++it){
             it->second(image.get());
           }
@@ -865,7 +865,7 @@ namespace icl{
         }
         try{
           const ImgBase *fb = &parent->grabFrameBufferICL();
-          for(std::map<std::string, utils::Function<void,const ImgBase*> >::iterator it = recordingCallbacks.begin();
+          for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
               it != recordingCallbacks.end();++it){
             it->second(fb);
           }
@@ -1332,7 +1332,7 @@ namespace icl{
 
       data->menu.create();
 
-      data->menu["auto-cap-device"].registerCallback(utils::function(data,&ICLWidget::Data::autoCapDeviceChanged));
+      data->menu["auto-cap-device"].registerCallback([data]() { data->autoCapDeviceChanged(); });
 
 
       (*data->menu.get<ComboHandle>("auto-cap-mode"))->setToolTip("== Choose What to Capture =="
@@ -1518,30 +1518,30 @@ namespace icl{
       static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
       int &x = m_data->nextButtonX;
       m_data->glbuttons.push_back(new OSDGLButton(this,"show/hide menu","",x,y,w,h,OSDGLButton::Tool,
-                                                  utils::function(this,&ICLWidget::showHideMenu)));
+                                                  [this]() { showHideMenu(); }));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"popup/embedded menu","",x,y,w,h,OSDGLButton::Unlock,OSDGLButton::Lock,
-                                                  utils::function(this,&ICLWidget::setMenuEmbedded),true));
+                                                  [this](bool b) { setMenuEmbedded(b); },true));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"interpolation mode","",x,y,w,h,OSDGLButton::NNInter,OSDGLButton::LINInter,
-                                                  utils::function(this,&ICLWidget::setLinInterpolationEnabled),false));
+                                                  [this](bool b) { setLinInterpolationEnabled(b); },false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"zoom (left button drag)","",x,y,w,h,OSDGLButton::Zoom,OSDGLButton::RedZoom,
-                                                  utils::function(this,&ICLWidget::setEmbeddedZoomModeEnabled),false));
+                                                  [this](bool b) { setEmbeddedZoomModeEnabled(b); },false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"scale value range","",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
-                                                  utils::function(this,&ICLWidget::setRangeModeNormalOrScaled),false));
+                                                  [this](bool b) { setRangeModeNormalOrScaled(b); },false));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"enter/leave fullscreen (F11)","",x,y,w,h,OSDGLButton::EnterFullScreen,
                                                   OSDGLButton::LeaveFullScreen,
-                                                  utils::function(m_data,&ICLWidget::Data::changeFullScreenMode)));
+                                                  [this](bool b) { m_data->changeFullScreenMode(b); }));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"detach/attach window)","",x,y,w,h,OSDGLButton::Detach,
                                                   OSDGLButton::Reattach,
-                                                  utils::function(m_data,&ICLWidget::Data::changeDetachMode)));
+                                                  [this](bool b) { m_data->changeDetachMode(b); }));
       x+=GL_BUTTON_X_INC;
       m_data->glbuttons.push_back(new OSDGLButton(this,"press to stop recording","",x,y,w,h,OSDGLButton::RedCam,
-                                                  utils::function(this,&ICLWidget::stopButtonClicked)));
+                                                  [this]() { stopButtonClicked(); }));
       x+=GL_BUTTON_X_INC;
 
       m_data->imageInfoIndicator = new ImageInfoIndicator();
@@ -1562,7 +1562,7 @@ namespace icl{
                                            const ImgBase* untoggledIcon,
                                            const ImgBase *toggledIcon,
                                            bool initiallyToggled,
-                                           const Function<void,bool> &cb,
+                                           const std::function<void(bool)> &cb,
                                            const std::string &toolTipText){
       static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
       int &x = m_data->nextButtonX;
@@ -1576,7 +1576,7 @@ namespace icl{
 
     void ICLWidget::addSpecialButton(const std::string &id,
                                      const ImgBase* icon,
-                                     const Function<void> &cb,
+                                     const std::function<void()> &cb,
                                      const std::string &toolTipText){
       static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
       int &x = m_data->nextButtonX;
@@ -1727,7 +1727,7 @@ namespace icl{
       m_data->menuptr->setVisible(visible);
     }
 
-    void ICLWidget::registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb,
+    void ICLWidget::registerRecordingCallback(std::function<void(const core::ImgBase*)> cb,
                                               const std::string &handle){
       if(!m_data->outputCap){
         m_data->outputCap = new OutputBufferCapturer(this,m_data);
@@ -2744,7 +2744,7 @@ namespace icl{
     void ICLWidget::setInfoText(const std::string &infoText){
       if(!m_data->infoText.size()){
         static Img8u infoIcon = IconFactory::create_image("info");
-        addSpecialButton("info",&infoIcon,utils::function(this,&ICLWidget::showInfoDialog),"shows extra information");
+        addSpecialButton("info",&infoIcon,[this]() { showInfoDialog(); },"shows extra information");
       }
       m_data->infoText = infoText;
     }

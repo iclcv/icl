@@ -419,7 +419,7 @@ namespace icl{
 
       setContextMenuPolicy(Qt::CustomContextMenu);
 
-      registerCallback(function(this,&AbstractPlotWidget::property_changed));
+      registerCallback([this](const Property &p) { property_changed(p); });
 
       data->mousePressStart = data->mousePressCurr = QPoint(-1,-1);
       data->lastXRange = data->lastYRange = Range32f(0,0);

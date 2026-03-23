@@ -33,6 +33,7 @@
 #include <ICLUtils/Function.h>
 #include <ICLUtils/TextTable.h>
 
+#include <functional>
 #include <string>
 #include <map>
 #include <sstream>
@@ -49,7 +50,7 @@ namespace icl{
       using Data = std::map<std::string,std::string>;
 
       /// creator function for instances
-      using CreateFunction = utils::Function<T*,const Data&>;
+      using CreateFunction = std::function<T*(const Data&)>;
 
       /// internally used instance type:
       struct Plugin{

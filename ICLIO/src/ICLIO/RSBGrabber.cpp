@@ -189,7 +189,7 @@ namespace icl{
       addProperty("image data size", "info", "", m_data->lastImageDataSize, 0, "");
       addProperty("compression ratio", "info", "", str(m_data->lastCompressionRatio) + "%", 0, "");
       addProperty("rsb event received","command","",0,0,"");
-      Configurable::registerCallback(utils::function(this,&RSBGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     RSBGrabber::~RSBGrabber(){
@@ -275,7 +275,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(rsb,utils::function(createRSBGrabber), utils::function(getRSBDeviceList), "rsb:[comma sep. transport list=spread]\\:scope:Robotics Service Bus based image source");
+    REGISTER_GRABBER(rsb,createRSBGrabber, getRSBDeviceList, "rsb:[comma sep. transport list=spread]\\:scope:Robotics Service Bus based image source");
 
   } // namespace io
 }

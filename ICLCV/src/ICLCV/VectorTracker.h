@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Function.h>
+#include <functional>
 #include <vector>
 
 namespace icl{
@@ -52,7 +53,7 @@ namespace icl{
       /// Vector Type
       using Vec = std::vector<float>;
 
-      using DistanceFunction = utils::Function<float,const Vec&,const Vec&>;
+      using DistanceFunction = std::function<float(const Vec&,const Vec&)>;
 
       /// Creates an empty (null) vector tracker (isNull() returns true then)
       VectorTracker();

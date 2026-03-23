@@ -107,7 +107,7 @@ namespace icl{
         }
       }
       if(syncProperties){
-        Configurable::registerCallback(function(this,&MultiCamFiducialDetector::property_callback));
+        Configurable::registerCallback([this](const Configurable::Property &p){ property_callback(p); });
       }
 
       m_data->results.resize(cams.size());

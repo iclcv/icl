@@ -37,6 +37,8 @@
 #include <vector>
 #include <ICLUtils/Function.h>
 
+#include <functional>
+
 namespace icl{
   namespace utils{
 
@@ -118,7 +120,7 @@ namespace icl{
                  which usually ends Qt's event loop, so it should not be used.
       */
       static void install(const std::string &id,
-                          Function<void,const std::string&> handler,
+                          std::function<void(const std::string&)> handler,
                           const std::string &signalList="SIGINT,SIGTERM,SIGSEGV",
                           int orderPercent = 0);
 

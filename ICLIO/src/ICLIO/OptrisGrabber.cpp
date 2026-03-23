@@ -386,12 +386,12 @@ namespace icl{
       return devices;
     }
 
-    REGISTER_GRABBER(optris,utils::function(create_optris_grabber<OptrisGrabber::IR_IMAGE>),
-                     utils::function(create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>),
+    REGISTER_GRABBER(optris,create_optris_grabber<OptrisGrabber::IR_IMAGE>,
+                     create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>,
                      "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
 
-    REGISTER_GRABBER(optrisv,utils::function(create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>),
-                     utils::function(create_optris_grabber_device_list<OptrisGrabber::VISIBLE_IMAGE>),
+    REGISTER_GRABBER(optrisv,create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>,
+                     create_optris_grabber_device_list<OptrisGrabber::VISIBLE_IMAGE>,
                      "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
 
     //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);

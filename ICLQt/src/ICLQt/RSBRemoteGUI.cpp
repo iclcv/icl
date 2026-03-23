@@ -220,11 +220,11 @@ namespace icl{
           std::string type = all[i]->name;
           static std::vector<std::string> d = tok("slider,fslider,checkbox,combo,string,int,float",",");
           if(std::find(d.begin(),d.end(), type) != d.end()){
-            gui->registerCallback(function(this, &Data::cb_default), handle);
+            gui->registerCallback([this](const std::string &h) { cb_default(h); }, handle);
           }else if(type == "button"){
-            gui->registerCallback(function(this, &Data::cb_button), handle);
+            gui->registerCallback([this](const std::string &h) { cb_button(h); }, handle);
           }else if(type == "togglebutton"){
-            gui->registerCallback(function(this, &Data::cb_toggle_button), handle);
+            gui->registerCallback([this](const std::string &h) { cb_toggle_button(h); }, handle);
           }else if(type == "image" || type == "draw" || type == "draw3d" || type == "draw3D"){
             (*gui)[handle].install(new ImageComponentMouseHandler(this,fixed));
           }

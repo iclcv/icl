@@ -39,6 +39,7 @@
 #include <ICLQt/MouseHandler.h>
 
 #include <ICLQt/ThreadedUpdatableWidget.h>
+#include <functional>
 
 #include <QPen>
 #include <QBrush>
@@ -260,7 +261,7 @@ namespace icl{
       virtual void clear() { clearAnnotations(); }
 
       /// function that is used to render a non-homo
-      using bgFunction = utils::Function<float,float,float>;
+      using bgFunction = std::function<float(float,float)>;
 
       /// sets the background function
       /** The function is then evaluated every time, the viewport or the window size.

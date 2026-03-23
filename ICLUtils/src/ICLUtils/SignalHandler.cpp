@@ -32,7 +32,7 @@
 
 namespace icl{
   namespace utils{
-    void SignalHandler::install(const std::string &, Function<void, const std::string&>,
+    void SignalHandler::install(const std::string &, std::function<void(const std::string&)>,
                                 const std::string &, int){}
 
     void SignalHandler::uninstall(const std::string &){}
@@ -91,7 +91,7 @@ namespace icl{
       }
 
       struct Handler : public std::set<int>{
-        Function<void,const std::string&> f;
+        std::function<void(const std::string&)> f;
         int order;
 
       };
@@ -167,7 +167,7 @@ namespace icl{
       // bQuitting = false; ??
     }
 
-    void SignalHandler::install(const std::string &id, Function<void,const std::string&> f,
+    void SignalHandler::install(const std::string &id, std::function<void(const std::string&)> f,
                                 const std::string &signals, int order){
 
       SignalHandlerContext &c = ctx();

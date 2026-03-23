@@ -374,7 +374,7 @@ namespace icl{
     }
 
     template<class T, class Vector>
-    Function<T,const Vector&> SimplexOptimizer<T,Vector>::getErrorFunction() const{
+    std::function<T(const Vector&)> SimplexOptimizer<T,Vector>::getErrorFunction() const{
       return m_data->f;
     }
 

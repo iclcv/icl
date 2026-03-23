@@ -604,13 +604,13 @@ namespace icl{
 
         std::string cblist = ostr.str();
         if(cblist.size() > 1){
-          gui.registerCallback(utils::function(this,&icl::qt::ConfigurableGUIWidget::exec),cblist.substr(1),'\1');
+          gui.registerCallback([this](const std::string &handle) { exec(handle); },cblist.substr(1),'\1');
         }
         for(unsigned int i=0;i<timers.size();++i){
           timers[i]->start();
         }
 
-        conf->registerCallback(utils::function(this,&icl::qt::ConfigurableGUIWidget::propertyChanged));
+        conf->registerCallback([this](const Configurable::Property &p) { propertyChanged(p); });
       }
 
       /// Called if a property is changed from somewhere else

@@ -36,6 +36,8 @@
 #include <ICLUtils/Any.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/UncopiedInstance.h>
+
+#include <functional>
 #include <ICLUtils/Mutex.h>
 
 #include <vector>
@@ -353,7 +355,7 @@ namespace icl{
 
 
       /// Function type for changed properties
-      using Callback = Function<void,const Property&>;
+      using Callback = std::function<void(const Property&)>;
 
       /// add a callback for changed properties
       void registerCallback(const Callback &cb){
@@ -488,7 +490,7 @@ namespace icl{
 
       /// registers a configurable type
       /** @see \ref REG */
-      static void register_configurable_type(const std::string &classname, Function<Configurable*> creator);
+      static void register_configurable_type(const std::string &classname, std::function<Configurable*()> creator);
 
       /// returns a list of all registered configurable classnames
       /** @see \ref REG */

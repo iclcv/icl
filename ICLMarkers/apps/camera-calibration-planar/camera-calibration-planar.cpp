@@ -315,9 +315,9 @@ void init(){
   fidGUI << fidTab << Create();
 
 
-  gui["rel"].registerCallback(utils::function(relGUI,&GUI::switchVisibility));
-  gui["poseEst"].registerCallback(utils::function(poseEstGUI,&GUI::switchVisibility));
-  gui["fid"].registerCallback(utils::function(fidGUI,&GUI::switchVisibility));
+  gui["rel"].registerCallback([]{ relGUI.switchVisibility(); });
+  gui["poseEst"].registerCallback([]{ poseEstGUI.switchVisibility(); });
+  gui["fid"].registerCallback([]{ fidGUI.switchVisibility(); });
 
   cs = new ComplexCoordinateFrameSceneObject;
   cs->setVisible(false);
@@ -332,7 +332,7 @@ void init(){
                        )
                    << Create();
 
-  gui["cap"].registerCallback(utils::function(captureFramesGUI,&GUI::switchVisibility));
+  gui["cap"].registerCallback([]{ captureFramesGUI.switchVisibility(); });
 }
 
 void run(){

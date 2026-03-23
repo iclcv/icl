@@ -35,6 +35,8 @@
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Function.h>
+
+#include <functional>
 #include <iostream>
 
 namespace icl{
@@ -102,7 +104,7 @@ namespace icl{
       Info getInfo() const;
 
       /// callback function/functor type
-      using Callback = Function<void,const Info&>;
+      using Callback = std::function<void(const Info&)>;
 
       /// registers a callback instance that is automatically called when new data is available
       /** returns a callback ID */

@@ -32,8 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/Range.h>
+#include <functional>
 #include <ICLMath/FixedVector.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLQt/ImageStatistics.h>
@@ -188,7 +188,7 @@ namespace icl{
       using Vec3 = math::FixedColVector<float,3>;
 
       /// a grid function returns a 3D pos from given 2D grid position
-      using grid_function = utils::Function<Vec3,int,int>;
+      using grid_function = std::function<Vec3(int,int)>;
 
       /// draws the texture to an nx x ny grid whose positions and normals are defined by functions
       /** The grid results are buffered internally in order to avoid extra function evaluations.

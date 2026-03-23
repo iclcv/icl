@@ -107,7 +107,7 @@ namespace icl{
       addProperty("size", "menu", "VGA,SVGA,QVGA", sizevalue, 0,
                   "The image size.");
       Configurable::registerCallback(
-            utils::function(this,&DemoGrabber::processPropertyChange));
+            [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     DemoGrabber::~DemoGrabber(){
@@ -239,7 +239,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(demo,utils::function(createDemoGrabber), utils::function(getDemoDeviceList),"demo:0:demo image source");
+    REGISTER_GRABBER(demo,createDemoGrabber, getDemoDeviceList,"demo:0:demo image source");
 
   } // namespace io
 }

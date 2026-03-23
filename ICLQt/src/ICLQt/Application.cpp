@@ -104,7 +104,7 @@ namespace icl{
     }
 #if 0
     ;
-    ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
+    ICLApplication::instance()->executeInGUIThread(qapplication_quit_wrapper, (int)0, false, true); //QApplication::quit();
     QApplication::quit();
 
     DEBUG_LOG("ignoring signal " << signal);
@@ -115,7 +115,7 @@ namespace icl{
     }else if(signal == "SIGSEGV"){
       std::cout << "Segmentation violation detected!\n"
                 << "Trying to force 'normal' shutdown ..." << std::endl;
-      ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
+      ICLApplication::instance()->executeInGUIThread(qapplication_quit_wrapper, (int)0, false, true); //QApplication::quit();
     }else{
       static bool first = true;
       if(first){
@@ -124,7 +124,7 @@ namespace icl{
                   << "Trying to force 'normal' shutdown ...\n"
                   << "(Send signal again to force immediate exit)" << std::endl;
         //QApplication::quit();
-        ICLApplication::instance()->executeInGUIThread(function(qapplication_quit_wrapper), (int)0, false, true); //QApplication::quit();
+        ICLApplication::instance()->executeInGUIThread(qapplication_quit_wrapper, (int)0, false, true); //QApplication::quit();
         //QApplication::processEvents();
       }else{
         exit(EXIT_SUCCESS);

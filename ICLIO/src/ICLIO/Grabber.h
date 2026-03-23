@@ -42,6 +42,7 @@
 #include <ICLIO/GrabberDeviceDescription.h>
 #include <ICLIO/ImageUndistortion.h>
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <set>
@@ -280,7 +281,7 @@ namespace icl {
         /// @}
 
         /// new image callback type
-        using callback = utils::Function<void,const core::ImgBase*>;
+        using callback = std::function<void(const core::ImgBase*)>;
 
         /// registers a callback that is called each time, a new image is available
         /** This feature must not be implemented by specific grabber implementations. And
@@ -333,8 +334,8 @@ namespace icl {
         utils::Mutex mutex;
 
         struct GrabberFunctions{
-          utils::Function<Grabber*,const std::string&> init;
-          utils::Function<const std::vector<GrabberDeviceDescription> &,std::string,bool> list;
+          std::function<Grabber*(const std::string&)> init;
+          std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> list;
         };
 
         // grabber functions map
@@ -342,7 +343,7 @@ namespace icl {
         GFM gfm;
 
         // grabber bus reset functions map
-        using GBRM = std::map<std::string, utils::Function<void,bool> >;
+        using GBRM = std::map<std::string, std::function<void(bool)> >;
         GBRM gbrm;
 
         // grabber device descriptions map
@@ -356,11 +357,11 @@ namespace icl {
         static GrabberRegister* getInstance();
 
         void registerGrabberType(const std::string &grabberid,
-                                   utils::Function<Grabber *, const std::string &> creator,
-                                   utils::Function<const std::vector<GrabberDeviceDescription> &,std::string,bool> device_list);
+                                   std::function<Grabber *(const std::string &)> creator,
+                                   std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list);
 
         void registerGrabberBusReset(const std::string &grabberid,
-                                   utils::Function<void, bool> reset_function);
+                                   std::function<void(bool)> reset_function);
 
         void addGrabberDescription(const std::string &grabber_description);
 

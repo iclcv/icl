@@ -36,7 +36,6 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Thread.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/File.h>
 // plugins
 #include <ICLIO/FileGrabberPluginPNM.h>
@@ -472,7 +471,7 @@ namespace icl{
       addProperty("print meta-data","menu","disregard,to std::out,to meta-data label","disregard");
       addProperty("meta-data","info","","",0,"current image meta-data. Depends on mode set in print meta-data.");
 
-      Configurable::registerCallback(utils::function(this,&FileGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){
@@ -559,7 +558,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(file,utils::function(createGrabber),utils::function(getFileDeviceList),"file:file name or file-pattern (in ''):image source for single or a list of image files");
+    REGISTER_GRABBER(file,createGrabber,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
 
   } // namespace io
 }

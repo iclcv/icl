@@ -225,10 +225,10 @@ namespace icl{
       Mutex::Locker l(this);
 
       struct CallCallbacksAtEnd{
-        Function<void> f;
-        CallCallbacksAtEnd(Function<void> f):f(f){}
+        std::function<void()> f;
+        CallCallbacksAtEnd(std::function<void()> f):f(f){}
         ~CallCallbacksAtEnd(){ f(); }
-      } call_callbacks_at_end(function(this, &DefineRectanglesMouseHandler::callCallbacks));
+      } call_callbacks_at_end([this]() { callCallbacks(); });
 
       if(draggedRect){
         draggedRect->event(e);

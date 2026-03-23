@@ -118,7 +118,7 @@ namespace icl{
       layout()->setContentsMargins(2,2,2,2);
       layout()->addWidget(data->gui.getRootWidget());
 
-      data->gui.registerCallback(function(this,&icl::qt::CamCfgWidget::callback),"device,scan,capture,fps,hz");
+      data->gui.registerCallback([this](const std::string &handle) { callback(handle); },"device,scan,capture,fps,hz");
 
       scan();
     }

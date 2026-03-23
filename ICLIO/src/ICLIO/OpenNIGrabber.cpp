@@ -116,7 +116,7 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
               0, "The image format.");
   addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
   addChildConfigurable(m_Generator -> getMapGeneratorOptions());
-  Configurable::registerCallback(utils::function(this,&OpenNIGrabber::processPropertyChange));
+  Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 
   // register to grabber thread
   oniGrabberThread.addGrabber(this);
@@ -240,6 +240,6 @@ static const std::vector<GrabberDeviceDescription>& getNIDeviceListIr(std::strin
   return deviceList;
 }
 
-REGISTER_GRABBER(onid,utils::function(createNIGrabberDepth), utils::function(getNIDeviceListDepth), "onid:index 0 opens the first depth source:OpenNI based image source.");
-REGISTER_GRABBER(onic,utils::function(createNIGrabberColor), utils::function(getNIDeviceListColor), "onic:index 0 opens the first color source:OpenNI based image source.");
-REGISTER_GRABBER(onii,utils::function(createNIGrabberIr), utils::function(getNIDeviceListIr), "onii:index 0 opens the first ir source:OpenNI based image source.");
+REGISTER_GRABBER(onid,createNIGrabberDepth, getNIDeviceListDepth, "onid:index 0 opens the first depth source:OpenNI based image source.");
+REGISTER_GRABBER(onic,createNIGrabberColor, getNIDeviceListColor, "onic:index 0 opens the first color source:OpenNI based image source.");
+REGISTER_GRABBER(onii,createNIGrabberIr, getNIDeviceListIr, "onii:index 0 opens the first ir source:OpenNI based image source.");

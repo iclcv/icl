@@ -34,6 +34,7 @@
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/SmartPtr.h>
 #include <ICLUtils/Function.h>
+#include <functional>
 
 namespace icl{
   namespace math{
@@ -136,7 +137,7 @@ namespace icl{
       public:
       /// fills the give float* with data from the given data point
       /** creates the rows of the design matrix */
-      using DesignMatrixGen = utils::Function<void,const DataPoint&,T*>;
+      using DesignMatrixGen = std::function<void(const DataPoint&, T*)>;
 
       /// model type (defines the model parameters)
       using Model = std::vector<T>;

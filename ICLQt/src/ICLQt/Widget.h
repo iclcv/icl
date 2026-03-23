@@ -38,8 +38,8 @@
 #include <ICLQt/MouseHandler.h>
 #include <ICLQt/WidgetCaptureMode.h>
 #include <ICLQt/GUI.h>
-#include <ICLUtils/Function.h>
 #include <ICLCore/Color.h>
+#include <functional>
 
 namespace icl{
   namespace qt{
@@ -214,14 +214,14 @@ namespace icl{
                                   const core::ImgBase* untoggledIcon = 0,
                                   const core::ImgBase *toggledIcon = 0,
                                   bool initiallyToggled = 0,
-                                  const utils::Function<void,bool> &cb={},
+                                  const std::function<void(bool)> &cb={},
                                   const std::string &toolTipText="");
 
       /// Adds a new toggle-button to the OSD-button bar on the upper widget edge
       /** @see addSpecialToggleButton */
       void addSpecialButton(const std::string &id,
                             const core::ImgBase* icon = 0,
-                            const utils::Function<void> &cb={},
+                            const std::function<void()> &cb={},
                             const std::string &toolTipText="");
 
       /// sets an info text, is shown as a dialog when pressing an extra info button
@@ -257,7 +257,7 @@ namespace icl{
 
       public:
       /// generic background color creator plugin
-      using BGColorSource = utils::Function<core::Color>;
+      using BGColorSource = std::function<core::Color()>;
 
       /// can be used to replace the default OSD-GUI based background color source
       /** The background color source can e.g. be adapted by higher level
@@ -277,7 +277,7 @@ namespace icl{
       /** TODO: Use a non-default handle to manage different callbacks in parallel. use
           startRecording("null","",...) to use the callbacks without actually
           recording images. */
-      void registerRecordingCallback(utils::Function<void,const core::ImgBase*> cb,
+      void registerRecordingCallback(std::function<void(const core::ImgBase*)> cb,
                                      const std::string &handle="default");
 
       /// removes a recording callback function

@@ -32,6 +32,7 @@
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Point.h>
+#include <functional>
 #include <string>
 
 namespace icl{
@@ -45,7 +46,7 @@ namespace icl{
       PhysicsPaper3ContextMenu(const PhysicsPaper3ContextMenu&) = delete;
       PhysicsPaper3ContextMenu& operator=(const PhysicsPaper3ContextMenu&) = delete;
 
-      using callback = utils::Function<void,const std::string&>;
+      using callback = std::function<void(const std::string&)>;
 
       PhysicsPaper3ContextMenu();
 

@@ -142,9 +142,9 @@ void init(){
       << colors
       << Show();
 
-  gui.registerCallback(utils::function(step),"customH,load,save");
+  gui.registerCallback(step,"customH,load,save");
   for(int i=0;i<6;++i){
-    gui.registerCallback(utils::function(step),str(i)+",c"+str(i)+",p"+str(i));
+    gui.registerCallback(step,str(i)+",c"+str(i)+",p"+str(i));
   }
 
   step("");

@@ -305,7 +305,7 @@ namespace icl{
         static ImgQ icon = cvt(IconFactory::create_image("scene-props"));
 
         widget->addSpecialButton("mousehandler"+str(this),&icon,
-                                 utils::function(gui,&GUI::switchVisibility),
+                                 [this]{ gui->switchVisibility(); },
                                  "3D scene properties  ");
         parent->setConfigurableID(save);
       }
@@ -328,7 +328,7 @@ namespace icl{
 
       virtual void link(ICLDrawWidget3D *widget){
         needLink = true;
-        widget->setBackgroundColorSource(utils::function(this,&Scene::GLCallback::bgfunc));
+        widget->setBackgroundColorSource([this]{ return bgfunc(); });
       }
 
       virtual void unlink(ICLDrawWidget3D *widget){

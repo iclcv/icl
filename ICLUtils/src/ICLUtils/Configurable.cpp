@@ -418,7 +418,7 @@ namespace icl{
       }
     }
 
-    typedef std::map<std::string, Function<Configurable*> > CRM;
+    typedef std::map<std::string, std::function<Configurable*()> > CRM;
 
     static CRM &get_configurable_registration_map(){
       static SmartPtr<CRM> crm = new CRM;
@@ -426,7 +426,7 @@ namespace icl{
     }
 
     void Configurable::register_configurable_type(const std::string &classname,
-                                                  Function<Configurable*> creator){
+                                                  std::function<Configurable*()> creator){
       CRM &crm = get_configurable_registration_map();
       CRM::iterator it = crm.find(classname);
       if(it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");

@@ -301,7 +301,7 @@ namespace icl{
           break;
       }
 
-      Configurable::registerCallback(utils::function(this,&Kinect2Grabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     Kinect2Grabber::~Kinect2Grabber(){
@@ -439,9 +439,9 @@ namespace icl{
       return devices;
     }
 
-    REGISTER_GRABBER(kinect2d,utils::function(createDepth2Grabber), utils::function(getKinect2DDeviceList), "kinect2d:device ID:kinect2 depth camera source:");
-    REGISTER_GRABBER(kinect2c,utils::function(createRGB2Grabber), utils::function(getKinect2CDeviceList),"kinect2c:device ID:kinect2 color camera source");
-    REGISTER_GRABBER(kinect2i,utils::function(createIR2Grabber), utils::function(getKinect2IDeviceList),"kinect2i:devide ID:kinect2 IR camera source");
+    REGISTER_GRABBER(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "kinect2d:device ID:kinect2 depth camera source:");
+    REGISTER_GRABBER(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"kinect2c:device ID:kinect2 color camera source");
+    REGISTER_GRABBER(kinect2i,createIR2Grabber, getKinect2IDeviceList,"kinect2i:devide ID:kinect2 IR camera source");
 
   } // namespace io
 } // namespace icl

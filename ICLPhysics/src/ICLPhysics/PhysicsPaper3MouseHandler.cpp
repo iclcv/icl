@@ -193,7 +193,7 @@ namespace icl{
       m_data->scene->addObject(m_data->indicatorParent);
 
       m_data->men.addEntries("remove,streangthen,weaken,memorize weak,memorize strong");
-      m_data->men.setCallback(function(this,&PhysicsPaper3MouseHandler::menuCallback));
+      m_data->men.setCallback([this](const std::string &entry){ menuCallback(entry); });
 
       m_data->addLinksTwice = false;
     }

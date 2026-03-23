@@ -84,7 +84,7 @@ namespace physics{
   SoftObject::SoftObject(){
     m_usePoseMatching = true;
     m_useVolumeConversion = false; // todo: find the defaults !!
-    registerCallback(function(this,&SoftObject::propertyChanged));
+    registerCallback([this](const Configurable::Property &prop){ propertyChanged(prop); });
   }
 
   void SoftObject::createAllProperties(){
@@ -191,7 +191,7 @@ namespace physics{
 
     m_usePoseMatching = true;
     m_useVolumeConversion = false; // todo: find the defaults !!
-    registerCallback(function(this,&SoftObject::propertyChanged));
+    registerCallback([this](const Configurable::Property &prop){ propertyChanged(prop); });
 
     setPhysicalObject(new btSoftBody(world->getWorldInfo()));
 

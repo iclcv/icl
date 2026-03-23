@@ -35,6 +35,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLMath/DynVector.h>
 #include <ICLMath/FixedVector.h>
+#include <functional>
 
 namespace icl{
   namespace math{
@@ -151,10 +152,10 @@ namespace icl{
       SimplexOptimizer& operator=(const SimplexOptimizer&) = delete;
 
       /// error function type that is used
-      using error_function = utils::Function<T, const Vector&>;
+      using error_function = std::function<T(const Vector&)>;
       using Result = SimplexOptimizationResult<T,Vector>;
-      using iteration_callback = utils::Function<void,const Result &>;
-      using init_gen = utils::Function<Vector>;
+      using iteration_callback = std::function<void(const Result&)>;
+      using init_gen = std::function<Vector()>;
 
       /// creates a new instance with given parameters
       /** @param f error function

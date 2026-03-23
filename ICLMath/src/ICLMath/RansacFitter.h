@@ -36,6 +36,7 @@
 #include <ICLUtils/Random.h>
 #include <ICLMath/DynVector.h>
 #include <ICLMath/FixedVector.h>
+#include <functional>
 
 namespace icl{
   namespace math{
@@ -66,10 +67,10 @@ namespace icl{
       using DataSet = std::vector<DataPoint>;
 
       /// Function for the fitting module (gets a dataset and returns the fitted model)
-      using ModelFitting = utils::Function<Model,const DataSet&>;
+      using ModelFitting = std::function<Model(const DataSet&)>;
 
       /// Error function for single points
-      using PointError = utils::Function<icl64f,const Model&,const DataPoint&>;
+      using PointError = std::function<icl64f(const Model&, const DataPoint&)>;
 
       private:
       /// minimum points that are used to create a coarse model

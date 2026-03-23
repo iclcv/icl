@@ -69,6 +69,6 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(qtvideo,utils::function(createQtVideoGrabber), utils::function(getQtVideoDeviceList),"qtvideo:video filename:Qt based video file source");
+    REGISTER_GRABBER(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
   }
 }

@@ -338,8 +338,8 @@ namespace icl{
     }
 
     void GrabberRegister::registerGrabberType(const std::string &grabberid,
-                                   utils::Function<Grabber *, const std::string &> creator,
-                                   utils::Function<const std::vector<GrabberDeviceDescription> &,std::string,bool> device_list)
+                                   std::function<Grabber *(const std::string &)> creator,
+                                   std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list)
     {
       Mutex::Locker l(mutex);
       GFM::iterator it = gfm.find(grabberid);
@@ -352,7 +352,7 @@ namespace icl{
     }
 
     void GrabberRegister::registerGrabberBusReset(const std::string &grabberid,
-                                   utils::Function<void, bool> reset_function)
+                                   std::function<void(bool)> reset_function)
     {
       Mutex::Locker l(mutex);
       GBRM::iterator it = gbrm.find(grabberid);

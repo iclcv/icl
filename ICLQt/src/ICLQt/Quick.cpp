@@ -184,7 +184,7 @@ namespace icl{
           }
 
 
-          GUI::ComplexCallback cbf = utils::function(this,&CustomGetTextDialog::cb);
+          GUI::ComplexCallback cbf = [this](const std::string &s) { cb(s); };
           gui.registerCallback(cbf,"text,done,cancel");
 
           BoxHandle box = gui.get<BoxHandle>("box");

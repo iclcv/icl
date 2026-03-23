@@ -158,7 +158,7 @@ namespace icl{
       addProperty("omit-doubled-frames", "flag", "", m_data->omitDoubledFrames, 0, "");
       addProperty("enable-callbacks", "flag", "", m_data->callbacksEnabled, 0, "");
 
-      Configurable::registerCallback(utils::function(this,&SharedMemoryGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     void SharedMemoryGrabber::init(const std::string &sharedMemorySegmentID){
@@ -258,7 +258,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(sm,utils::function(createSMGrabber), utils::function(getSMDeviceList), "sm:shared memory segment name:Qt-based shared memory source");
+    REGISTER_GRABBER(sm,createSMGrabber, getSMDeviceList, "sm:shared memory segment name:Qt-based shared memory source");
     REGISTER_GRABBER_BUS_RESET_FUNCTION(sm,SharedMemoryGrabber::resetBus);
 
   } // namespace io

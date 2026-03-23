@@ -388,7 +388,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(ps,utils::function(createPixelSenseGrabber), utils::function(getPixelSenseDeviceList),"ps:0:pixelsense image source");
+    REGISTER_GRABBER(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"ps:0:pixelsense image source");
 
   } // namespace io
 }

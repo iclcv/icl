@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynVector.h>
 #include <ICLUtils/Function.h>
+#include <functional>
 
 namespace icl{
   namespace math{
@@ -278,16 +279,16 @@ namespace icl{
       };
 
       /// to-be-optimized function type y = f(params, x)
-      using Function = icl::utils::Function<Vector,const Params&,const Vector&>;
-      using FunctionMat = icl::utils::Function<Matrix,const Params&,const Matrix&>;
+      using Function = std::function<Vector(const Params&, const Vector&)>;
+      using FunctionMat = std::function<Matrix(const Params&, const Matrix&)>;
 
       /// jacobian of F
       /** \see \ref _J_ */
-      using Jacobian = icl::utils::Function<void,const Params&, const Vector&, Vector&>;
-      using JacobianMat = icl::utils::Function<void,const Params&, const Matrix&, Matrix&>;
+      using Jacobian = std::function<void(const Params&, const Vector&, Vector&)>;
+      using JacobianMat = std::function<void(const Params&, const Matrix&, Matrix&)>;
 
       /// Optionally given debug callback, that is called in every iterations
-      using DebugCallback = icl::utils::Function<void,const Result&>;
+      using DebugCallback = std::function<void(const Result&)>;
 
 
 

@@ -64,7 +64,7 @@ PylonCameraOptions::PylonCameraOptions(
     addProperty(*it, getType(*it), getInfo(*it), getValue(*it), isVolatile(*it), ""); //TODO getTooltip
   }
 
-  Configurable::registerCallback(utils::function(this,&PylonCameraOptions::processPropertyChange));
+  Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 }
 
 PylonCameraOptions::~PylonCameraOptions(){

@@ -88,7 +88,7 @@ namespace icl{
 
 #if 0
     static icl64f mean_error(const std::vector<std::vector<float> > &pts, const std::vector<float> &m,
-                             Function<icl64f,const std::vector<float> &, const std::vector<float> &> err_coplanar,
+                             std::function<icl64f(const std::vector<float> &, const std::vector<float> &)> err_coplanar,
                              const Camera &cam){
       //std::cout << "mean error ";
       icl64f err = 0;
@@ -209,8 +209,8 @@ namespace icl{
 
 
       RansacFitter<> ransac(minPoints, iterations,
-                            function(this,&RansacBasedPoseEstimator::fit_coplanar),
-                            function(this,&RansacBasedPoseEstimator::err_coplanar),
+                            [this](const std::vector<std::vector<float>> &pts){ return fit_coplanar(pts); },
+                            [this](const std::vector<float> &m, const std::vector<float> &p){ return err_coplanar(m, p); },
                             maxError, minPointsForGoodModel);
       RansacFitter<>::DataSet data(curr.size(), std::vector<float>(4,0));
       for(size_t i=0;i<curr.size();++i){

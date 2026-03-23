@@ -33,8 +33,8 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Any.h>
-#include <ICLUtils/Function.h>
 #include <ICLCore/Color.h>
+#include <functional>
 #include <ICLQt/MouseHandler.h>
 
 namespace icl{
@@ -204,7 +204,7 @@ namespace icl{
       Options options;  //!< options structure
 
       private:
-      using Callback = utils::Function<void,const std::vector<utils::Rect> &>;
+      using Callback = std::function<void(const std::vector<utils::Rect> &)>;
       std::map<std::string,Callback> callbacks;
       void callCallbacks();
 

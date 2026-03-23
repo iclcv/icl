@@ -95,7 +95,7 @@ namespace icl{
       }
     }
 
-    void ThreadedUpdatableSlider::registerCallback(const Function<void> &cb, const std::string &eventList){
+    void ThreadedUpdatableSlider::registerCallback(const std::function<void()> &cb, const std::string &eventList){
       std::vector<std::string> ts = tok(eventList,",");
       for(unsigned int i=0;i<ts.size();++i){
         const std::string &events = ts[i];

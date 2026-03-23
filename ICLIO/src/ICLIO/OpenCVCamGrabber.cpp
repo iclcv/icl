@@ -59,7 +59,7 @@ namespace icl{
                   cvc->get(cv::CAP_PROP_HUE), 0, "");
       addProperty("format", "menu", "RGB", "RGB", 0, "");
       Configurable::registerCallback(
-            utils::function(this,&OpenCVCamGrabber::processPropertyChange));
+            [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     OpenCVCamGrabber::~OpenCVCamGrabber(){
@@ -125,7 +125,7 @@ namespace icl{
       return new OpenCVCamGrabber(to32s(param));
     }
 
-    REGISTER_GRABBER(cvcam,utils::function(createCVCGrabber), utils::function(OpenCVCamGrabber::getDeviceList), "cvcam:camera ID:OpenCV based camera source");
+    REGISTER_GRABBER(cvcam,createCVCGrabber, OpenCVCamGrabber::getDeviceList, "cvcam:camera ID:OpenCV based camera source");
 
   } // namespace io
 }

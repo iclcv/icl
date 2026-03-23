@@ -249,7 +249,7 @@ namespace icl{
       addProperty("volume", "range", "[0,100]:1", xine_get_param(m_xine->stream,XINE_PARAM_AUDIO_VOLUME), 0, "The streams audio volume. (From 0: mute to 100:max volume)");
       addProperty("is-seekable", "info", "", m_data->isSeekable ? "yes" : "no", 0, "Whether the stream is seekable.");
 
-      Configurable::registerCallback(utils::function(this,&VideoGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     VideoGrabber::~VideoGrabber(){
@@ -383,7 +383,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(xine,utils::function(createVideoGrabber), utils::function(getVideoDeviceList),"xine:video filename:Xine library based video file source");
+    REGISTER_GRABBER(xine,createVideoGrabber, getVideoDeviceList,"xine:video filename:Xine library based video file source");
 
   } // namespace io
 }

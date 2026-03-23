@@ -170,7 +170,7 @@ namespace icl{
     }
 
 
-    CameraCalibrationUtils::BestOfNSaver::BestOfNSaver(utils::Function<int> nFramesSource):
+    CameraCalibrationUtils::BestOfNSaver::BestOfNSaver(std::function<int()> nFramesSource):
       inited(false),nFramesSource(nFramesSource){}
 
     bool CameraCalibrationUtils::BestOfNSaver::event ( QEvent * event ){
@@ -683,7 +683,7 @@ namespace icl{
                                const std::vector<Point32f> &xis){
 
           LMAOptUtil u(init);
-          LMA lma(function(u,&LMAOptUtil::f), 2, std::vector<LMA::Jacobian>(),
+          LMA lma([&u](const LMA::Params &p, const LMA::Vector &x){ return u.f(p, x); }, 2, std::vector<LMA::Jacobian>(),
                   0.1, 1000);
           //lma.setDebugCallback();
 

@@ -184,7 +184,7 @@ void init(){
   propGUI << Prop("paper").minSize(16,1).maxSize(16,100) << Create();
 
   gui["pct"].registerCallback(paper_coords_test);
-  gui["props"].registerCallback(utils::function((GUI&)propGUI,&GUI::switchVisibility));
+  gui["props"].registerCallback([]{ propGUI.switchVisibility(); });
   gui["resetPaper"].registerCallback(reset_paper);
   gui["globalStiffness"].registerCallback(change_global_stiffness);
 
@@ -196,7 +196,7 @@ void init(){
   draw->install(&foldLine);
   draw->link(scene.getGLCallback(0));
 
-  foldLine.cb = utils::function(fold_line_cb);
+  foldLine.cb = fold_line_cb;
 
 
 

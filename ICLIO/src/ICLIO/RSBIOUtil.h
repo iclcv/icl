@@ -34,6 +34,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Function.h>
 #include <ICLUtils/Mutex.h>
+#include <functional>
 #include <string>
 #include <vector>
 #include <map>
@@ -64,7 +65,7 @@ namespace icl{
       using ListenerPtr = typename rsb::ListenerPtr;
 
       /// Callback type that is used for listener_callbacks
-      using Callback = typename utils::Function<void,const T&>;
+      using Callback = std::function<void(const T&)>;
 
       InformerPtr m_informer;
       DataPtr m_data;

@@ -39,7 +39,7 @@
 #include <ICLUtils/Function.h>
 #include <ICLUtils/VisualizationDescription.h>
 
-
+#include <functional>
 #include <map>
 #include <set>
 
@@ -167,7 +167,7 @@ namespace icl{
 
       const core::Img32f &getFoldMap() const;
 
-      void setFoldMapChangedCallback(utils::Function<void,const core::Img32f &> cb);
+      void setFoldMapChangedCallback(std::function<void(const core::Img32f &)> cb);
 
       void setFacesVisible(bool visible);
 

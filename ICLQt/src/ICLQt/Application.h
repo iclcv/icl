@@ -32,8 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Function.h>
 #include <string>
+#include <functional>
 #include <vector>
 
 #include <QApplication>
@@ -180,11 +180,11 @@ namespace icl{
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T>
-      void executeInGUIThread(utils::Function<void,T> f, T data, bool blocking = false, bool forcePostEvent = false){
+      void executeInGUIThread(std::function<void(T)> f, T data, bool blocking = false, bool forcePostEvent = false){
         struct TmpAsynchronousEvent : public AsynchronousEvent{
           T data;
-          utils::Function<void,T> f;
-          TmpAsynchronousEvent(T data, utils::Function<void,T> f):data(data),f(f){}
+          std::function<void(T)> f;
+          TmpAsynchronousEvent(T data, std::function<void(T)> f):data(data),f(f){}
           void execute(){
             f(data);
           }
@@ -195,12 +195,12 @@ namespace icl{
       /// utility class for executing functions with given arguments in the GUI thread
       /** This function is a simple convenience wrapper for executeInGUIThread(AsynchronousEvent*,bool) */
       template<class T,class U>
-      void executeInGUIThread(utils::Function<void,T,U> f, T t, U u, bool blocking = false, bool forcePostEvent = false){
+      void executeInGUIThread(std::function<void(T,U)> f, T t, U u, bool blocking = false, bool forcePostEvent = false){
         struct TmpAsynchronousEvent : public AsynchronousEvent{
           T t;
           U u;
-          utils::Function<void,T,U> f;
-          TmpAsynchronousEvent(T t, U u, utils::Function<void,T,U> f):t(t),u(u),f(f){}
+          std::function<void(T,U)> f;
+          TmpAsynchronousEvent(T t, U u, std::function<void(T,U)> f):t(t),u(u),f(f){}
           void execute(){
             f(t,u);
           }

@@ -184,7 +184,7 @@ namespace icl{
                   data->ransacSpec.maxPointProjectionDistance, 0,
                   "Maximum projection error for points to be classified as inlier");
 
-      registerCallback(function(this,&CoplanarPointPoseEstimator::propertyChangedCallback));
+      registerCallback([this](const Property &p){ propertyChangedCallback(p); });
     }
 
     void CoplanarPointPoseEstimator::propertyChangedCallback(const Property &p){
@@ -920,7 +920,7 @@ namespace icl{
             break;
           case SimplexSampling:{
             SimplexErrorFunction err(cam.getProjectionMatrix(),modelPoints,imagePoints,n);
-            Function<float,const Pose6D &> ferr = function(err,&SimplexErrorFunction::f);
+            std::function<float(const Pose6D &)> ferr = [&err](const Pose6D &p){ return err.f(p); };
             SimplexOptimizer<float,Pose6D> opt(ferr,6,400,0.5);
             FixedMatrix<float,1,3> r = extract_euler_angles(data->T);
             FixedMatrix<float,1,3> t = data->T.part<3,0,1,3>();

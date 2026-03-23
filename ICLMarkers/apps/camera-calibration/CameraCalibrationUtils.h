@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLGeom/GeomDefs.h>
+#include <functional>
 #include <string>
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLQt/DrawHandle3D.h>
@@ -75,9 +76,9 @@ namespace icl{
         float lastBestError;
         std::string lastFileName;
         float runningBestError;
-        utils::Function<int> nFramesSource;
+        std::function<int()> nFramesSource;
 
-        BestOfNSaver(utils::Function<int> nFramesSource);
+        BestOfNSaver(std::function<int()> nFramesSource);
         virtual bool event(QEvent *event);
         void init();
         void stop();

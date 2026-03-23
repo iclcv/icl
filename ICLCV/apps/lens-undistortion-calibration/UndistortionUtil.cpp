@@ -54,7 +54,7 @@ namespace icl{
 
     init(imageSize, std::vector<float>(5,0), Point32f::null, true);
 
-    registerCallback(function(this, &UndistortionUtil::propertyCallback));
+    registerCallback([this](const utils::Configurable::Property &p){ propertyCallback(p); });
   }
 
   void UndistortionUtil::propertyCallback(const utils::Configurable::Property &p){

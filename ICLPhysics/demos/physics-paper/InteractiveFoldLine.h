@@ -32,14 +32,14 @@
 
 #include <ICLQt/MouseHandler.h>
 #include <ICLQt/MouseEvent.h>
-#include <ICLUtils/Function.h>
+#include <functional>
 
 namespace icl{
 
   struct InteractiveFoldLine : public MouseHandler{
     Point32f a,b;
     bool done;
-    typedef Function<void,const Point32f&,const Point32f&> FinishCB;
+    using FinishCB = std::function<void(const Point32f&, const Point32f&)>;
     FinishCB cb;
 
     InteractiveFoldLine():a(Point32f::null),b(Point32f::null),done(false){}

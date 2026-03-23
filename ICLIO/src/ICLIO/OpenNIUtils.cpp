@@ -913,7 +913,7 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
   addGeneralIntProperty(XN_CAPABILITY_LOW_LIGHT_COMPENSATION);
 
   Configurable::registerCallback(
-        utils::function(this,&MapGeneratorOptions::processPropertyChange));
+        [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 }
 
 // callback for changed configurable properties
@@ -980,7 +980,7 @@ DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
   addProperty("GmcMode", "flag", "", gmcMode, 0,
               "GmcMode");
   Configurable::registerCallback(
-        utils::function(this,&DepthGeneratorOptions::processPropertyChange));
+        [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 }
 
 // callback for changed configurable properties
@@ -1047,7 +1047,7 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
               0, "The pixel format of the aquired image.");
 
   Configurable::registerCallback(
-        utils::function(this,&ImageGeneratorOptions::processPropertyChange));
+        [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 }
 
 // callback for changed configurable properties

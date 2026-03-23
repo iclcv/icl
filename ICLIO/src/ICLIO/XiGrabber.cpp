@@ -266,7 +266,7 @@ namespace icl{
       m_data->addRangeProperty("int", this, XI_PRM_EXPOSURE);
       m_data->addRangeProperty("float", this, XI_PRM_GAIN);
 
-      Configurable::registerCallback(utils::function(this,&XiGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     XiGrabber::XiGrabber(int deviceID) : m_data(0){
@@ -506,7 +506,7 @@ namespace icl{
       Thread::msleep(1000);
     }
 
-    REGISTER_GRABBER(xi,utils::function(create_xi_grabber), utils::function(XiGrabber::getDeviceList), "xi:device index:M3API/XiApi based camera grabber source");
+    REGISTER_GRABBER(xi,create_xi_grabber, XiGrabber::getDeviceList, "xi:device index:M3API/XiApi based camera grabber source");
     REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

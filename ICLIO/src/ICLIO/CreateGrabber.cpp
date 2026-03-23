@@ -51,7 +51,7 @@ namespace icl{
       addProperty("format", "info", "", "RGB", 0, "");
       addProperty("size", "info", "", "512x512", 0, "");
       addProperty("update timestamp", "flag", "", m_updateTimeStamp, 0, "Whether the timestamp of the image should be set everytime an the image is grabbed.");
-      Configurable::registerCallback(utils::function(this,&CreateGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     CreateGrabber::~CreateGrabber(){
@@ -85,7 +85,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(create,utils::function(createCreateGrabber), utils::function(getCreateDeviceList),"create:parrot|lena|cameraman|mandril:everywhere available test images source");
+    REGISTER_GRABBER(create,createCreateGrabber, getCreateDeviceList,"create:parrot|lena|cameraman|mandril:everywhere available test images source");
 
   } // namespace io
 }

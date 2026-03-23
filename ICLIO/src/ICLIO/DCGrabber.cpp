@@ -218,7 +218,7 @@ namespace icl{
                     "Sets the color interpolation method used for the bayer->color conversion.");
       }
       addChildConfigurable(&m_oDeviceFeatures);
-      Configurable::registerCallback(utils::function(this,&DCGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     void DCGrabber::processPropertyChange(const utils::Configurable::Property &prop){
@@ -335,8 +335,8 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(dc,utils::function(createGrabberDC400), utils::function(getDC400DeviceList), "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
-    REGISTER_GRABBER(dc800,utils::function(createGrabberDC800), utils::function(getDC800DeviceList),"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
+    REGISTER_GRABBER(dc,createGrabberDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
+    REGISTER_GRABBER(dc800,createGrabberDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
     REGISTER_GRABBER_BUS_RESET_FUNCTION(dc,DCGrabber::dc1394_reset_bus);
     REGISTER_GRABBER_BUS_RESET_FUNCTION(dc800,DCGrabber::dc1394_reset_bus);
 

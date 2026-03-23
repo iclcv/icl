@@ -758,7 +758,7 @@ namespace icl{
         Impl::SupportedPropertyPtr p = it -> second;
         addProperty(it->first,p -> getType(), p -> getInfo(), p -> getValue(), 0,"");
       }
-      Configurable::registerCallback(utils::function(this,&V4L2Grabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     // callback for changed configurable properties
@@ -799,7 +799,7 @@ namespace icl{
       return new V4L2Grabber(param);
     }
 
-    REGISTER_GRABBER(v4l,utils::function(createVlGrabber), utils::function(V4L2Grabber::getDeviceList), "v4l:/dev/videoX index or device-file:V4l2 based camera source");
+    REGISTER_GRABBER(v4l,createVlGrabber, V4L2Grabber::getDeviceList, "v4l:/dev/videoX index or device-file:V4l2 based camera source");
 
   } // namespace io
 }

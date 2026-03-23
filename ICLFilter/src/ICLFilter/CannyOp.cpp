@@ -56,7 +56,7 @@ namespace icl {
 
       setUpPreBlurOp();
 
-      registerCallback(function(this,&CannyOp::property_callback));
+      registerCallback([this](const Property &p){ property_callback(p); });
     }
 
     // }}}
@@ -74,7 +74,7 @@ namespace icl {
 
       m_preBlurOp = 0;
       setUpPreBlurOp();
-      registerCallback(function(this,&CannyOp::property_callback));
+      registerCallback([this](const Property &p){ property_callback(p); });
     }
 
     // }}}

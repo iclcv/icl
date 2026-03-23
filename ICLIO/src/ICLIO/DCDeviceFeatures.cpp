@@ -273,7 +273,7 @@ namespace icl{
           }
         }
       }
-      Configurable::registerCallback(utils::function(this,&DCDeviceFeaturesImpl::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     void DCDeviceFeaturesImpl::processPropertyChange(const utils::Configurable::Property &prop){

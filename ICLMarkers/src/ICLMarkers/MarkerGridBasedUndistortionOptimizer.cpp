@@ -264,7 +264,7 @@ namespace icl{
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSimplex(const utils::Size &imageSize){
       //      utils::randomSeed();
       SimplexErrorFunction e(this, imageSize.width*0.5, imageSize.height*0.5);
-      Simplex simplex(function(e, &SimplexErrorFunction::error), 7, 500);
+      Simplex simplex([&e](const std::vector<float> &p){ return e.error(p); }, 7, 500);
       simplex.setIterationCallback(&SimplexErrorFunction::iteration_callback);
       const Simplex::Result &r =  simplex.optimize(&SimplexErrorFunction::gen, 20);
       std::vector<float> rvec = r.x;

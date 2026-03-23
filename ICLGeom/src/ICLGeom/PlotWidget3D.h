@@ -34,6 +34,7 @@
 #include <ICLQt/DrawWidget3D.h>
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/Function.h>
+#include <functional>
 
 
 namespace icl{
@@ -89,7 +90,7 @@ namespace icl{
 
       Handle surf(const std::vector<Vec> &points, int nx, int ny);
 
-      Handle surf(utils::Function<float,float,float> fxy,
+      Handle surf(std::function<float(float,float)> fxy,
                   const utils::Range32f &rx=utils::Range32f(0,0),
                   const utils::Range32f &ry=utils::Range32f(0,0),
                   int nx=100, int ny=100, Handle reuseObj=0);

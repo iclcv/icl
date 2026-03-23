@@ -85,7 +85,7 @@ namespace icl{
       mutable Mutex mutex;
 
       FoldMap fm;
-      utils::Function<void,const Img32f &> fmCallback;
+      std::function<void(const Img32f &)> fmCallback;
 
       bool enableSelfCollision;
 
@@ -769,7 +769,7 @@ namespace icl{
       return m_data->fm.getImage();
     }
 
-    void PhysicsPaper3::setFoldMapChangedCallback(utils::Function<void,const Img32f &> cb){
+    void PhysicsPaper3::setFoldMapChangedCallback(std::function<void(const Img32f &)> cb){
       m_data->fmCallback = cb;
     }
 

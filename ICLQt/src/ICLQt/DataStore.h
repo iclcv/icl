@@ -33,8 +33,8 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/Exception.h>
-#include <ICLUtils/Function.h>
 #include <ICLUtils/StringUtils.h>
+#include <functional>
 #include <ICLQt/MouseEvent.h>
 
 namespace icl{
@@ -77,12 +77,12 @@ namespace icl{
         /// Internally used Data- Structure
         struct Event{
           Event(const std::string &msg="", void *data=0):message(msg),data(data){}
-          Event(const std::string &msg, const utils::Function<void> &cb): message(msg),data(0),cb(cb){}
-          Event(const std::string &msg, const utils::Function<void,const std::string&> &cb2): message(msg),data(0),cb2(cb2){}
+          Event(const std::string &msg, const std::function<void()> &cb): message(msg),data(0),cb(cb){}
+          Event(const std::string &msg, const std::function<void(const std::string&)> &cb2): message(msg),data(0),cb2(cb2){}
           std::string message;
           void *data;
-          utils::Function<void> cb;
-          utils::Function<void,const std::string&> cb2;
+          std::function<void()> cb;
+          std::function<void(const std::string&)> cb2;
         };
 
         friend class DataStore;
@@ -131,7 +131,7 @@ namespace icl{
         }
 
         /// installs a function directly
-        ICLQt_API void install(utils::Function<void, const MouseEvent &> f);
+        ICLQt_API void install(std::function<void(const MouseEvent &)> f);
 
         // installs a global function (should be implicit)
         //void install(void (*f)(const MouseEvent &)){
@@ -139,12 +139,12 @@ namespace icl{
         //}
 
         /// register simple callback type
-        void registerCallback(const utils::Function<void> &cb){
+        void registerCallback(const std::function<void()> &cb){
           *this = Event("register",cb);
         }
 
         /// register simple callback type
-        void registerCallback(const utils::Function<void,const std::string&> &cb){
+        void registerCallback(const std::function<void(const std::string&)> &cb){
           *this = Event("register-complex",cb);
         }
 
@@ -240,11 +240,11 @@ namespace icl{
       template<class SRC, class DST>
       static inline void register_assignment_rule(const std::string &srcTypeName,
                                                   const std::string &dstTypeName,
-                                                  utils::Function<void,const SRC&,DST&> assign){
+                                                  std::function<void(const SRC&,DST&)> assign){
         struct TypeDependentAssign : public Assign{
-          utils::Function<void,const SRC&,DST&> assign;
+          std::function<void(const SRC&,DST&)> assign;
           TypeDependentAssign(const std::string &srcTypeName, const std::string &dstTypeName,
-                              utils::Function<void,const SRC&,DST&> assign):
+                              std::function<void(const SRC&,DST&)> assign):
           Assign(srcTypeName, dstType, get_type_name<SRC>(), get_type_name<DST>()),assign(assign){}
 
           virtual bool operator()(void *src, void *dst){

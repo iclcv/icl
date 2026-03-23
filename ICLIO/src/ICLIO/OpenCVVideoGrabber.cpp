@@ -108,7 +108,7 @@ namespace icl{
       addProperty("use_video_fps", "flag", "", data->use_video_fps, 0, "");
       addProperty("video_fps", "info", "", str(data->cvc->get(cv::CAP_PROP_FPS)), 0, "");
 
-      Configurable::registerCallback(utils::function(this,&OpenCVVideoGrabber::processPropertyChange));
+      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     OpenCVVideoGrabber::~OpenCVVideoGrabber(){
@@ -150,7 +150,7 @@ namespace icl{
       return deviceList;
     }
 
-    REGISTER_GRABBER(cvvideo,utils::function(createCVVGrabber), utils::function(getOCVVDeviceList), "cvvideo:video filename:OpenCV based video file source");
+    REGISTER_GRABBER(cvvideo,createCVVGrabber, getOCVVDeviceList, "cvvideo:video filename:OpenCV based video file source");
 
   } // namespace io
 }

@@ -33,6 +33,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/Function.h>
+#include <functional>
 class btCollisionObject;
 
 namespace icl {
@@ -52,7 +53,7 @@ namespace icl {
       /// is true if the physical state of the object has changed since the last updateSceneObject()
       bool m_stateChanged;
 
-      utils::Function<void,PhysicsObject*,PhysicsObject*, geom::Vec> m_collisionCallback;
+      std::function<void(PhysicsObject*,PhysicsObject*, geom::Vec)> m_collisionCallback;
 
 			std::string m_id;
 
@@ -67,7 +68,7 @@ namespace icl {
         struct defaultCallback {
           static void callback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos) {}
         };
-		m_collisionCallback = utils::function(&defaultCallback::callback);
+		m_collisionCallback = &defaultCallback::callback;
       }
 
       /// Destructor (freeing m_physicalObject if not 0)
@@ -152,7 +153,7 @@ namespace icl {
       void setCurrentPhysicsWorld(PhysicsWorld *world);
 
       /// sets the collision callback of the object
-      void setCollisionCallback(utils::Function<void,PhysicsObject*,PhysicsObject*, geom::Vec> collisionCallback);
+      void setCollisionCallback(std::function<void(PhysicsObject*,PhysicsObject*, geom::Vec)> collisionCallback);
 
 			/// calls the collision callback of the object
       void collisionCallback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos);
