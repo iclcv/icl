@@ -1109,6 +1109,23 @@ namespace icl{
       d[r*4+3] = _mm_cvtss_f32(s3);
     }
   }
+  // --- SSE2-optimized 4x4 float * 4x1 vector (matrix-vector transform) ---
+  template<> template<>
+  inline void FixedMatrix<float,4,4>::mult(
+      const FixedMatrix<float,1,4> &v,
+      FixedMatrix<float,1,4> &dst) const
+  {
+    const float *a = data();
+    __m128 vv = _mm_loadu_ps(v.data());
+    for(int r = 0; r < 4; ++r){
+      __m128 arow = _mm_loadu_ps(a + r*4);
+      __m128 prod = _mm_mul_ps(arow, vv);
+      // horizontal sum
+      __m128 s = _mm_add_ps(prod, _mm_shuffle_ps(prod, prod, _MM_SHUFFLE(1,0,3,2)));
+      s = _mm_add_ps(s, _mm_shuffle_ps(s, s, _MM_SHUFFLE(2,3,0,1)));
+      dst.data()[r] = _mm_cvtss_f32(s);
+    }
+  }
   #endif // ICL_HAVE_SSE2
 
   #define USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES

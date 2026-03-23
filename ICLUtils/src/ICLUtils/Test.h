@@ -262,51 +262,67 @@ namespace icl{
         }                                                                   \
       } while(0)
 
-    #define ICL_TEST_EQ(a, b) do {                                          \
-        auto _a = (a); auto _b = (b);                                       \
-        if(!(_a == _b)){                                                    \
-          std::ostringstream _s;                                            \
-          _s << #a " == " #b " failed: " << _a << " != " << _b;            \
-          throw ::icl::utils::TestFailure{__FILE__, __LINE__, _s.str()};    \
-        }                                                                   \
-      } while(0)
+    // Note: assertion macros use inline helpers to avoid preprocessor comma
+    // issues with template arguments like FixedMatrix<float,4,4>::id().det()
+    namespace test_detail {
+      template<class A, class B>
+      void check_eq(const A &a, const B &b, const char *ea, const char *eb, const char *file, int line){
+        if(!(a == b)){
+          std::ostringstream s;
+          s << ea << " == " << eb << " failed: " << a << " != " << b;
+          throw ::icl::utils::TestFailure{file, line, s.str()};
+        }
+      }
+      template<class A, class B>
+      void check_ne(const A &a, const B &b, const char *ea, const char *eb, const char *file, int line){
+        if(a == b){
+          std::ostringstream s;
+          s << ea << " != " << eb << " failed: both are " << a;
+          throw ::icl::utils::TestFailure{file, line, s.str()};
+        }
+      }
+      template<class A, class B>
+      void check_lt(const A &a, const B &b, const char *ea, const char *eb, const char *file, int line){
+        if(!(a < b)){
+          std::ostringstream s;
+          s << ea << " < " << eb << " failed: " << a << " >= " << b;
+          throw ::icl::utils::TestFailure{file, line, s.str()};
+        }
+      }
+      template<class A, class B>
+      void check_le(const A &a, const B &b, const char *ea, const char *eb, const char *file, int line){
+        if(!(a <= b)){
+          std::ostringstream s;
+          s << ea << " <= " << eb << " failed: " << a << " > " << b;
+          throw ::icl::utils::TestFailure{file, line, s.str()};
+        }
+      }
+      template<class A, class B, class E>
+      void check_near(const A &a, const B &b, const E &eps, const char *ea, const char *eb, const char *file, int line){
+        if(std::abs(a - b) > eps){
+          std::ostringstream s;
+          s << ea << " ~= " << eb << " failed: " << a << " vs " << b
+            << " (diff=" << std::abs(a - b) << ", eps=" << eps << ")";
+          throw ::icl::utils::TestFailure{file, line, s.str()};
+        }
+      }
+    } // namespace test_detail
 
-    #define ICL_TEST_NE(a, b) do {                                          \
-        auto _a = (a); auto _b = (b);                                       \
-        if(_a == _b){                                                       \
-          std::ostringstream _s;                                            \
-          _s << #a " != " #b " failed: both are " << _a;                    \
-          throw ::icl::utils::TestFailure{__FILE__, __LINE__, _s.str()};    \
-        }                                                                   \
-      } while(0)
+    #define ICL_TEST_EQ(a, b)                                               \
+      ::icl::utils::test_detail::check_eq((a), (b), #a, #b, __FILE__, __LINE__)
 
-    #define ICL_TEST_LT(a, b) do {                                          \
-        auto _a = (a); auto _b = (b);                                       \
-        if(!(_a < _b)){                                                     \
-          std::ostringstream _s;                                            \
-          _s << #a " < " #b " failed: " << _a << " >= " << _b;             \
-          throw ::icl::utils::TestFailure{__FILE__, __LINE__, _s.str()};    \
-        }                                                                   \
-      } while(0)
+    #define ICL_TEST_NE(a, b)                                               \
+      ::icl::utils::test_detail::check_ne((a), (b), #a, #b, __FILE__, __LINE__)
 
-    #define ICL_TEST_LE(a, b) do {                                          \
-        auto _a = (a); auto _b = (b);                                       \
-        if(!(_a <= _b)){                                                    \
-          std::ostringstream _s;                                            \
-          _s << #a " <= " #b " failed: " << _a << " > " << _b;             \
-          throw ::icl::utils::TestFailure{__FILE__, __LINE__, _s.str()};    \
-        }                                                                   \
-      } while(0)
+    #define ICL_TEST_LT(a, b)                                               \
+      ::icl::utils::test_detail::check_lt((a), (b), #a, #b, __FILE__, __LINE__)
 
-    #define ICL_TEST_NEAR(a, b, eps) do {                                   \
-        auto _a = (a); auto _b = (b);                                       \
-        if(std::abs(_a - _b) > (eps)){                                      \
-          std::ostringstream _s;                                            \
-          _s << #a " ~= " #b " failed: " << _a << " vs " << _b            \
-             << " (diff=" << std::abs(_a - _b) << ", eps=" << (eps) << ")"; \
-          throw ::icl::utils::TestFailure{__FILE__, __LINE__, _s.str()};    \
-        }                                                                   \
-      } while(0)
+    #define ICL_TEST_LE(a, b)                                               \
+      ::icl::utils::test_detail::check_le((a), (b), #a, #b, __FILE__, __LINE__)
+
+
+    #define ICL_TEST_NEAR(a, b, eps)                                        \
+      ::icl::utils::test_detail::check_near((a), (b), (eps), #a, #b, __FILE__, __LINE__)
 
     #define ICL_TEST_THROW(expr, ExType) do {                               \
         bool _caught = false;                                               \
