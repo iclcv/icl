@@ -67,9 +67,6 @@ using namespace icl::core;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::qt;
-using std::string;
-using std::vector;
-
 namespace icl{
   namespace geom{
 
@@ -837,24 +834,24 @@ namespace icl{
       m_renderSettings->useImprovedShading = (const_cast<Scene*>(this))->getPropertyValue("shadows.use improved shading");
       m_renderSettings->shadowBias = (const_cast<Scene*>(this))->getPropertyValue("shadows.bias");
 
-      string lineSmoothing = (const_cast<Scene*>(this))->getPropertyValue("line smoothing");
+      std::string lineSmoothing = (const_cast<Scene*>(this))->getPropertyValue("line smoothing");
       if(lineSmoothing == "force off")m_renderSettings->lineSmoothing=1;
       else if(lineSmoothing == "force on")m_renderSettings->lineSmoothing=2;
       else m_renderSettings->lineSmoothing=0;
 
-      string pointSmoothing = (const_cast<Scene*>(this))->getPropertyValue("point smoothing");
+      std::string pointSmoothing = (const_cast<Scene*>(this))->getPropertyValue("point smoothing");
       if(pointSmoothing == "force off")m_renderSettings->pointSmoothing=1;
       else if(pointSmoothing == "force on")m_renderSettings->pointSmoothing=2;
       else m_renderSettings->pointSmoothing=0;
 
-      string polygonSmoothing = (const_cast<Scene*>(this))->getPropertyValue("polygon smoothing");
+      std::string polygonSmoothing = (const_cast<Scene*>(this))->getPropertyValue("polygon smoothing");
       if(polygonSmoothing == "force off")m_renderSettings->polygonSmoothing=1;
       else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
       else m_renderSettings->polygonSmoothing=0;
 
       m_renderSettings->wireframe = (const_cast<Scene*>(this))->getPropertyValue("wireframe");
 
-      vector<Mat> project2shadow;
+      std::vector<Mat> project2shadow;
 
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading) {
 

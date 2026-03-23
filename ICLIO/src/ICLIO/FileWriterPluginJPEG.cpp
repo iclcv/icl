@@ -32,7 +32,6 @@
 #include <ICLCore/Types.h>
 #include <ICLUtils/StringUtils.h>
 #include <cstring>
-using std::strlen;
 
 #ifdef ICL_HAVE_LIBJPEG
 #include <ICLIO/JPEGHandle.h>
@@ -136,12 +135,12 @@ namespace icl{
       char acBuf[1024];
       // timestamp
       snprintf (acBuf, sizeof(acBuf), "TimeStamp %lld", static_cast<long long>(poSrc->getTime().toMicroSeconds()));
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), std::strlen(acBuf));
 
       // ROI
       Rect roi = poSrc->getROI ();
       snprintf (acBuf, sizeof(acBuf), "ROI %d %d %d %d", roi.x, roi.y, roi.width, roi.height);
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), std::strlen(acBuf));
 
 
       //////////////////////////////////////////////////////////////////////

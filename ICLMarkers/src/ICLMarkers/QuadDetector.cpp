@@ -50,7 +50,6 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::geom;
 using namespace icl::cv;
-using std::min;
 typedef FixedColVector<float, 2> Vec2;
 namespace icl {
   namespace markers {
@@ -336,12 +335,12 @@ namespace icl {
         Vec2 b = vecs[1];
         Vec2 c = vecs[2];
         Vec2 d = vecs[3];
-        float lenQuot1 = min(a.length()/c.length(), c.length()/a.length());
-        float lenQuot2 = min(b.length()/d.length(), d.length()/b.length());
+        float lenQuot1 = std::min(a.length()/c.length(), c.length()/a.length());
+        float lenQuot2 = std::min(b.length()/d.length(), d.length()/b.length());
         float dp1 = abs(dotProduct(a.normalized(), c.normalized()));
-        dp1 = min(dp1, 0.1f);
+        dp1 = std::min(dp1, 0.1f);
         float dp2 = abs(dotProduct(b.normalized(), d.normalized()));
-        dp2 = min(dp2, 0.1f);
+        dp2 = std::min(dp2, 0.1f);
 
         float avgLen1 = (a.length() + c.length()) / 2.0;
         float avgLen2 = (b.length() + d.length()) / 2.0;
@@ -350,9 +349,9 @@ namespace icl {
         //       ___________
         //      |           |
         //       ___________
-        float avgLenRating = min(avgLen1/avgLen2, avgLen2/avgLen1) * min(dp1/dp2, dp2/dp1);
+        float avgLenRating = std::min(avgLen1/avgLen2, avgLen2/avgLen1) * std::min(dp1/dp2, dp2/dp1);
         //the more perpendicular opposite edges are, the smaller is the length-quotient of the other 2 edges.
-        float lenRating = min(dp1/lenQuot2, lenQuot2/dp1) * min(dp2/lenQuot1, lenQuot1/dp2);
+        float lenRating = std::min(dp1/lenQuot2, lenQuot2/dp1) * std::min(dp2/lenQuot1, lenQuot1/dp2);
         return (lenRating + avgLenRating) / 2.0;
 #endif
       }

@@ -36,8 +36,6 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLQt/GLImg.h>
 
-using std::string;
-using std::min;
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -116,7 +114,7 @@ namespace icl{
       m_font.setPointSize(size);
     }
 
-    void  GLPaintEngine::font(string name, float size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
+    void  GLPaintEngine::font(std::string name, float size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
       m_font.setFamily(name.c_str());
       m_font.setPointSize(size);
       m_font.setStyle(style == PaintEngine::StyleNormal ? QFont::StyleNormal :
@@ -319,7 +317,7 @@ namespace icl{
     }
 
 
-    void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode, float angle){
+    void GLPaintEngine::text(const Rect32f &r, const std::string text, PaintEngine::AlignMode mode, float angle){
       const qreal dpr = m_widget->devicePixelRatio();
       QFontMetrics m(m_font);
       QRectF br = m.boundingRect(text.c_str());
@@ -335,7 +333,7 @@ namespace icl{
       painter.setPen(QColor( static_cast<int>(m_linecolor[2]*255),
                              static_cast<int>(m_linecolor[1]*255),
                              static_cast<int>(m_linecolor[0]*255),
-                             min (254, static_cast<int>(m_linecolor[3]*255)) ));
+                             std::min (254, static_cast<int>(m_linecolor[3]*255)) ));
 
       painter.drawText(QRect(0, 0, logW, logH), Qt::AlignHCenter, text.c_str());
       painter.end();

@@ -97,8 +97,6 @@
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
-using std::string;
-using std::vector;
 
 namespace icl{
   namespace qt{
@@ -1851,7 +1849,7 @@ namespace icl{
         if(m_data->histoWidget && m_data->infoTabVisible){
           m_data->histoWidget->updateData(getImageStatistics());
           // xxx TODO
-          std::vector<string> s = getImageInfo();
+          std::vector<std::string> s = getImageInfo();
           m_data->menu.get<LabelHandle>("image-info-label") = cat(s,"\n");
         }
         m_data->menuMutex.unlock();
@@ -1870,7 +1868,7 @@ namespace icl{
       std::string filename="image.pnm";
       switch(h.getSelectedIndex()){
         case 1:{
-          string t = Time::now().toString();
+          std::string t = Time::now().toString();
           for(unsigned int i=0;i<t.length();i++){
             if(t[i]=='/')t[i]='.';
             if(t[i]==' ')t[i]='_';
@@ -2535,17 +2533,17 @@ namespace icl{
 
 
     std::vector<std::string> ICLWidget::getImageInfo(){
-      std::vector<string> info;
+      std::vector<std::string> info;
 
       GLImg &i = m_data->image;
       if(i.isNull()){
         info.push_back("Image is NULL");
         return info;
       }
-      info.push_back(string("depth:   ")+str(i.getDepth()));
-      info.push_back(string("size:    ")+str(i.getSize()));
-      info.push_back(string("channels:")+str(i.getChannels()));
-      info.push_back(string("format:  ")+str(i.getFormat()));
+      info.push_back(std::string("depth:   ")+str(i.getDepth()));
+      info.push_back(std::string("size:    ")+str(i.getSize()));
+      info.push_back(std::string("channels:")+str(i.getChannels()));
+      info.push_back(std::string("format:  ")+str(i.getFormat()));
       if(i.getROI() == Rect(Point::null,i.getSize())){
         info.push_back("roi:   full");
       }else{
@@ -2558,7 +2556,7 @@ namespace icl{
         info.push_back(str("   ")+str(ranges[a]));
       }
 
-      info.push_back(string("time:  ")+str(i.getTime()));
+      info.push_back(std::string("time:  ")+str(i.getTime()));
       return info;
     }
 

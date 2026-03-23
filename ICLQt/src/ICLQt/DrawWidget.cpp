@@ -35,7 +35,6 @@
 
 #include <QtCore/QMutexLocker>
 
-using std::string;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
@@ -645,7 +644,7 @@ namespace icl{
         e->fontsize(oldFontSize);
       }
     protected:
-      string text;
+      std::string text;
       float fontsize;
     };
 
@@ -884,7 +883,7 @@ namespace icl{
       m_queues[0]->push_back(new ImageQuadrangleCommand(image,a,b,c,d));
     }
 
-    void ICLDrawWidget::text(string text, float x, float y, float w, float h, float fontsize){
+    void ICLDrawWidget::text(std::string text, float x, float y, float w, float h, float fontsize){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new TextCommand(text,x,y,w,h,fontsize));
     }

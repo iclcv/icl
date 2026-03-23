@@ -45,10 +45,6 @@
   #include <unistd.h>
 #endif
 
-using std::vector;
-using std::string;
-using std::map;
-
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -61,9 +57,9 @@ namespace {
 };
 
 
-  typedef map<string,XPMColor> colormap;
-  typedef map<char,int> charmap;
-  typedef vector<string> strvec;
+  typedef std::map<std::string,XPMColor> colormap;
+  typedef std::map<char,int> charmap;
+  typedef std::vector<std::string> strvec;
 
   colormap g_mapXPMColors;
   charmap g_mapHexLut;
@@ -133,7 +129,7 @@ namespace {
 }
 
 
-  XPMColor getHexColor(string s,bool &ok){
+  XPMColor getHexColor(std::string s,bool &ok){
     if(s.length()==6){
     int ai[6]={0,0,0,0,0,0};
     for(int i=0;i<6;i++){
@@ -152,10 +148,10 @@ namespace {
 }
 
 
-  XPMColor getGrayColor(string s, bool &ok){
+  XPMColor getGrayColor(std::string s, bool &ok){
 
     if(s.starts_with("gray")){
-      string n = &(s[4]);
+      std::string n = &(s[4]);
       if(n.length() > 0){
         int g = atoi(n.c_str());
         ok = 1;
@@ -167,7 +163,7 @@ namespace {
   }
 
 
-  XPMColor getColor(string s){
+  XPMColor getColor(std::string s){
 
   initColorMap();
   initHexLut();
@@ -429,17 +425,17 @@ namespace {
 };
 
 
-  strvec tokenize(string s,string sDelims){
+  strvec tokenize(std::string s,std::string sDelims){
 
-    string::size_type iPos;
-    string::size_type iLastPos = 0;
-    vector<string> oTokens;
+    std::string::size_type iPos;
+    std::string::size_type iLastPos = 0;
+    std::vector<std::string> oTokens;
     iPos = s.find_first_of( sDelims, iLastPos );
     // we don't want empty tokens
     if (iPos != iLastPos)
       oTokens.push_back(s.substr(iLastPos,iPos-iLastPos));
 
-    while(iPos != string::npos){
+    while(iPos != std::string::npos){
       iLastPos = iPos;
       iPos = s.find_first_of( sDelims, iLastPos+1 );
       oTokens.push_back(s.substr(iLastPos+1,iPos-iLastPos-1));
@@ -459,7 +455,7 @@ namespace {
   // parsing colors:
   XPMColor lut[256];
   for(int i=0;i<colors;i++){
-    string line(*p++);
+    std::string line(*p++);
     if(line.length() < 5){
       printf ("error paring color line \"%s\" \n",line.c_str());
       continue;
@@ -490,7 +486,7 @@ namespace {
 namespace icl{
   namespace io{
 
-    Img8u *TestImages::internalCreate(const string &name){
+    Img8u *TestImages::internalCreate(const std::string &name){
       try{
         if(name == "women"){
           return read_xpm(ppc_woman_xpm);
@@ -520,7 +516,7 @@ namespace icl{
       }
     }
 
-    ImgBase* TestImages::create(const string& name, format f, depth d){
+    ImgBase* TestImages::create(const std::string& name, format f, depth d){
 
       Img8u *src = internalCreate(name);
       if(!src) return 0;
@@ -539,7 +535,7 @@ namespace icl{
 
 
 
-    ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
+    ImgBase* TestImages::create(const std::string& name, const Size& size,format f, depth d){
 
       Img8u *src = internalCreate(name);
       src->setFullROI();
@@ -564,15 +560,15 @@ namespace icl{
 
       ICLASSERT_RETURN(image);
 
-      string timeStr = Time::now().toString();
+      std::string timeStr = Time::now().toString();
       for(unsigned int i=0;i<timeStr.length();i++){
         if(timeStr[i]=='/') timeStr[i]='_';
         if(timeStr[i]==' ') timeStr[i]='_';
         if(timeStr[i]==':') timeStr[i]='_';
       }
 
-      string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
-      string name = string(".tmpImage.")+timeStr+postfix;
+      std::string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
+      std::string name = std::string(".tmpImage.")+timeStr+postfix;
       try{
         FileWriter(name).write(image);
       }catch(FileOpenException &){
@@ -590,25 +586,25 @@ namespace icl{
       char rmCommandStr[500];
       snprintf(rmCommandStr,sizeof(rmCommandStr),rmCommand.c_str(),name.c_str());
 
-      int errorCode = system((string(showCommandStr)+" &").c_str());
+      int errorCode = system((std::string(showCommandStr)+" &").c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
 
-      if(string(rmCommand).length()){
+      if(std::string(rmCommand).length()){
         #ifndef ICL_SYSTEM_WINDOWS
         usleep(1000*msec_to_rm_call);
         #else
         //TODO where is this function located
         //sleep(1000*msec_to_rm_call);
         #endif
-        errorCode = system((string(rmCommandStr)+" &").c_str());
+        errorCode = system((std::string(rmCommandStr)+" &").c_str());
         if ( errorCode != 0 )
           WARNING_LOG( "Error code of system call unequal 0!" );
       }
     }
 
-  void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
-      string name = nameIn;
+  void TestImages::xv(const ImgBase *image, const std::string& nameIn, long msec){
+      std::string name = nameIn;
       if(image->getChannels() != 3){
         name+=".pgm";
       }
@@ -623,7 +619,7 @@ namespace icl{
         return;
       }
 
-      int errorCode = system(string("xv ").append(name).append(" &").c_str());
+      int errorCode = system(std::string("xv ").append(name).append(" &").c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
       //#ifndef ICL_SYSTEM_WINDOWS
@@ -632,7 +628,7 @@ namespace icl{
       //TODO where is this function located
       //sleep(msec*10000);
       //#endif
-      errorCode = system(string(ICL_SYSTEMCALL_RM).append(name).c_str());
+      errorCode = system(std::string(ICL_SYSTEMCALL_RM).append(name).c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
     }

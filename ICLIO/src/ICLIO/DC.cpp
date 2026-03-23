@@ -42,9 +42,6 @@
 #include <signal.h>
 #include <mutex>
 
-using std::string;
-using std::vector;
-
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -56,7 +53,7 @@ namespace icl{
   #define MODE_SWITCH_IF(X) if(s==#X) return X
   #define MODE_SWITCH_ELSE(X) else if(s==#X) return X
 
-      string to_string(dc1394video_mode_t vm){
+      std::string to_string(dc1394video_mode_t vm){
   #define MODE_SWITCH_A(S,F) case DC1394_VIDEO_MODE_##S##_##F: return #S "-" #F
   #define MODE_SWITCH_B(S) case DC1394_VIDEO_MODE_##S: return #S
         switch(vm){
@@ -98,7 +95,7 @@ namespace icl{
         }
       }
 
-      string to_string(dc1394framerate_t fr){
+      std::string to_string(dc1394framerate_t fr){
   #define FR_SWITCH_A(L) case DC1394_FRAMERATE_##L: return #L "Hz";
   #define FR_SWITCH_B(L,R) case DC1394_FRAMERATE_##L##_##R: return #L "." #R "Hz"
         switch(fr){
@@ -116,7 +113,7 @@ namespace icl{
         }
       }
 
-      string to_string(dc1394color_filter_t f){
+      std::string to_string(dc1394color_filter_t f){
 
         switch(f){
           MODE_SWITCH(DC1394_COLOR_FILTER_RGGB);
@@ -127,7 +124,7 @@ namespace icl{
         }
       }
 
-      string to_string(dc1394bayer_method_t bm){
+      std::string to_string(dc1394bayer_method_t bm){
 
         switch(bm){
           MODE_SWITCH(DC1394_BAYER_METHOD_NEAREST);
@@ -142,7 +139,7 @@ namespace icl{
         }
       }
 
-      string to_string(dc1394feature_t f){
+      std::string to_string(dc1394feature_t f){
 
         switch(f){
           MODE_SWITCH(DC1394_FEATURE_BRIGHTNESS);
@@ -172,7 +169,7 @@ namespace icl{
       }
 
 
-      dc1394video_mode_t videomode_from_string(const string &s){
+      dc1394video_mode_t videomode_from_string(const std::string &s){
   #define MODE_SWITCH_B_IF(S,F) if(s==#S "-" #F) return DC1394_VIDEO_MODE_##S##_##F
   #define MODE_SWITCH_B_ELIF(S,F) else MODE_SWITCH_B_IF(S,F)
   #define MODE_SWITCH_C_ELIF(S) else if(s==#S) return DC1394_VIDEO_MODE_##S
@@ -215,7 +212,7 @@ namespace icl{
 
       }
 
-      dc1394framerate_t framerate_from_string(const string &s){
+      dc1394framerate_t framerate_from_string(const std::string &s){
   #define FR_SWITCH_A(L) if(s== #L "Hz") return DC1394_FRAMERATE_##L
   #define FR_SWITCH_B(L,R) if(s== #L "." #R "Hz") return DC1394_FRAMERATE_##L##_##R
 
@@ -233,7 +230,7 @@ namespace icl{
         return static_cast<dc1394framerate_t>(-1);
       }
 
-      dc1394bayer_method_t bayermethod_from_string(const string &s){
+      dc1394bayer_method_t bayermethod_from_string(const std::string &s){
 
         MODE_SWITCH_IF(DC1394_BAYER_METHOD_NEAREST);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_SIMPLE);
@@ -246,7 +243,7 @@ namespace icl{
         return static_cast<dc1394bayer_method_t>(-1);
       }
 
-      dc1394feature_t feature_from_string(const string &s){
+      dc1394feature_t feature_from_string(const std::string &s){
 
         MODE_SWITCH_IF(DC1394_FEATURE_BRIGHTNESS);
         MODE_SWITCH_ELSE(DC1394_FEATURE_EXPOSURE);
@@ -280,7 +277,7 @@ namespace icl{
 
       const std::vector<std::string> &getListOfAllFeatures(){
 
-        static vector<string> v;
+        static std::vector<std::string> v;
         if(!v.size()){
           for(dc1394feature_t f = DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; f=static_cast<dc1394feature_t>(static_cast<int>(f)+1)){
             v.push_back(to_string(f));
@@ -293,7 +290,7 @@ namespace icl{
 
 
 
-      void dc_signal_handler(const string &signal){
+      void dc_signal_handler(const std::string &signal){
         static bool first = true;
         if((signal == "SIGINT" || signal == "SIGTERM") && first){
           first = false;

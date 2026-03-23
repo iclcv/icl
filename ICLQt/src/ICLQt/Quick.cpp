@@ -88,11 +88,6 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::io;
 using namespace icl::cv;
-using std::string;
-using std::vector;
-using std::map;
-using std::max;
-using std::min;
 
 namespace icl{
   namespace qt{
@@ -434,7 +429,7 @@ namespace icl{
       }
 
       int FONTSIZE = 12;
-      string FONTFAMILY = "Times";
+      std::string FONTFAMILY = "Times";
 
 
       inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
@@ -447,8 +442,8 @@ namespace icl{
         }
 
       Size sa = a.getROISize(), sb = b.getROISize();
-      Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
-      int cr = max(a.getChannels(),b.getChannels());
+      Size sr(std::max(sa.width,sb.width), std::max(sa.height,sb.height) );
+      int cr = std::max(a.getChannels(),b.getChannels());
 
       //    na = ImgQ(sr,a.getChannels());
       na = TEMP_IMG_SC(sr,a.getChannels());
@@ -485,8 +480,8 @@ namespace icl{
         }
 
         Size sa = a.getROISize(), sb = b.getROISize();
-        Size sr(max(sa.width,sb.width), max(sa.height,sb.height) );
-        int cr = max(a.getChannels(),b.getChannels());
+        Size sr(std::max(sa.width,sb.width), std::max(sa.height,sb.height) );
+        int cr = std::max(a.getChannels(),b.getChannels());
 
         //      ImgQ na(sr,a.getChannels());
         ImgQ na = TEMP_IMG_SC(sr,a.getChannels());
@@ -552,7 +547,7 @@ namespace icl{
 
 
     template<class T>
-    Img<T> load(const string &filename){
+    Img<T> load(const std::string &filename){
       FileGrabber g(filename);
       const ImgBase *grabbedImage = 0;
       try{
@@ -571,7 +566,7 @@ namespace icl{
 
 
     template<class T>
-    Img<T> load(const string &filename, format fmt){
+    Img<T> load(const std::string &filename, format fmt){
 
       FileGrabber g(filename);
       const ImgBase *gi  = 0;
@@ -593,7 +588,7 @@ namespace icl{
 
 
     template<class T>
-    Img<T> create(const string &name, format fmt){
+    Img<T> create(const std::string &name, format fmt){
       depth d = getDepth<T>();
       Img<T> *image = TestImages::create(name,fmt,d)->asImg<T>();
       if(!image){
@@ -753,9 +748,9 @@ namespace icl{
 
 
     template<class T>
-    Img<T> filter(const Img<T> &image,const string &filter){
+    Img<T> filter(const Img<T> &image,const std::string &filter){
 
-      static map<string,UnaryOp*> M;
+      static std::map<std::string,UnaryOp*> M;
       if(!M.size()){
         static Size s3x3(3,3);
         M["sobely"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3),true);
@@ -851,18 +846,18 @@ namespace icl{
     }
 
 
-    void save(const ImgBase &image,const string &filename){
+    void save(const ImgBase &image,const std::string &filename){
       FileWriter(filename).write(&image);
     }
 
 
     namespace{
-      string g_sShowCommand = "icl-xv -input %s -delete";
-      string g_sRmCommand = "";
+      std::string g_sShowCommand = "icl-xv -input %s -delete";
+      std::string g_sRmCommand = "";
       int g_iMsecBeforeDelete = 0;
     }
 
-    void showSetup(const string &showCommand, const string &rmCommand, int msecBeforeDelete){
+    void showSetup(const std::string &showCommand, const std::string &rmCommand, int msecBeforeDelete){
       g_sShowCommand = showCommand;
       g_sRmCommand = rmCommand;
       g_iMsecBeforeDelete = msecBeforeDelete;
@@ -1279,7 +1274,7 @@ namespace icl{
       if(a.getSize() == Size::null) return copy(b);
       if(b.getSize() == Size::null) return copy(a);
       //ImgQ r = zeros();
-      ImgQ r = TEMP_IMG_SC(Size(a.getWidth()+b.getWidth(),max(a.getHeight(),b.getHeight())),max(a.getChannels(),b.getChannels()));
+      ImgQ r = TEMP_IMG_SC(Size(a.getWidth()+b.getWidth(),std::max(a.getHeight(),b.getHeight())),std::max(a.getChannels(),b.getChannels()));
 
       r.setROI(a.getROI());
       roi(r) = a;
@@ -1295,7 +1290,7 @@ namespace icl{
     ImgQ operator%(const ImgQ &a, const ImgQ &b){
       if(a.getSize() == Size::null) return copy(b);
       if(b.getSize() == Size::null) return copy(a);
-      ImgQ r = zeros(max(a.getWidth(),b.getWidth()),a.getHeight()+b.getHeight(),max(a.getChannels(),b.getChannels()));
+      ImgQ r = zeros(std::max(a.getWidth(),b.getWidth()),a.getHeight()+b.getHeight(),std::max(a.getChannels(),b.getChannels()));
       r.setROI(a.getROI());
       roi(r) = a;
       Rect newroi(Point(r.getROIXOffset(),r.getROIYOffset()+r.getROIHeight()), b.getROISize());
@@ -1310,7 +1305,7 @@ namespace icl{
 
       if(a.getChannels() == 0 || a.getROISize() == Size::null) return copy(b);
       if(b.getChannels() == 0 || b.getROISize() == Size::null) return copy(a);
-      ImgQ r = zeros(max(a.getWidth(),b.getWidth()),max(a.getHeight(),b.getHeight()),a.getChannels()+b.getChannels());
+      ImgQ r = zeros(std::max(a.getWidth(),b.getWidth()),std::max(a.getHeight(),b.getHeight()),a.getChannels()+b.getChannels());
       r.setROI(a.getROI());
       for(int c=0;c<a.getChannels();c++){
         deepCopyChannelROI (&a,c,a.getROIOffset(),a.getROISize(), &r,c,r.getROIOffset(), r.getROISize());
@@ -1332,7 +1327,7 @@ namespace icl{
 
     ImgROI &ImgROI::operator=(const ImgQ &i){
       ICLASSERT_RETURN_VAL(image.getROISize() == i.getROISize(),*this);
-      for(int c=0;c<min(image.getChannels(),i.getChannels());++c){
+      for(int c=0;c<std::min(image.getChannels(),i.getChannels());++c){
         deepCopyChannelROI(&i,c,i.getROIOffset(),i.getROISize(),
                            &image,c,image.getROIOffset(),image.getROISize());
       }
@@ -1341,7 +1336,7 @@ namespace icl{
 
     ImgROI &ImgROI::operator=(const ImgROI &r){
       ICLASSERT_RETURN_VAL(image.getROISize() == r.image.getROISize(),*this);
-      for(int c=0;c<min(image.getChannels(),r.image.getChannels());++c){
+      for(int c=0;c<std::min(image.getChannels(),r.image.getChannels());++c){
         deepCopyChannelROI(&(r.image),c,r.image.getROIOffset(),r.image.getROISize(),
                            &image,c,image.getROIOffset(),image.getROISize());
       }
@@ -1705,7 +1700,7 @@ namespace icl{
         if(x1==x3 && y1 == y3){ line(image,x1,y1,x2,y2); return; }
         if(x2==x3 && y2 == y3){ line(image,x1,y1,x3,y3); return; }
 
-        vector<Point> v(3);
+        std::vector<Point> v(3);
         v[0] = Point(x1,y1);
         v[1] = Point(x2,y2);
         v[2] = Point(x3,y3);
@@ -1761,7 +1756,7 @@ namespace icl{
     }
 
 
-    void text(ImgQ &image, int xoffs, int yoffs, const string &text){
+    void text(ImgQ &image, int xoffs, int yoffs, const std::string &text){
       // first rendering the text
   #ifdef ICL_HAVE_QT
       int n = 0;
@@ -1816,28 +1811,28 @@ namespace icl{
     }
 
 
-    void pix(ImgQ &image, const vector<Point> &pts){
+    void pix(ImgQ &image, const std::vector<Point> &pts){
 
-      for(vector<Point>::const_iterator it = pts.begin();it!=pts.end();++it){
+      for(std::vector<Point>::const_iterator it = pts.begin();it!=pts.end();++it){
         pix(image,it->x,it->y);
       }
     }
 
 
-    void pix(ImgQ &image, const vector<vector<Point> > &pts){
+    void pix(ImgQ &image, const std::vector<std::vector<Point> > &pts){
 
-      for(vector<vector<Point> >::const_iterator it = pts.begin();it!=pts.end();++it){
+      for(std::vector<std::vector<Point> >::const_iterator it = pts.begin();it!=pts.end();++it){
         pix(image,*it);
       }
     }
 
 
-    ImgQ label(const ImgQ &imageIn, const string &text){
+    ImgQ label(const ImgQ &imageIn, const std::string &text){
       ImgQ image = copy(imageIn);
 
       float _COLOR[4] = { COLOR[0],COLOR[1],COLOR[2],COLOR[3] };
       int _FONTSIZE = FONTSIZE;
-      string _FONTFAMILY = FONTFAMILY;
+      std::string _FONTFAMILY = FONTFAMILY;
 
       FONTSIZE = 10;
       FONTFAMILY = "Arial";
@@ -1856,7 +1851,7 @@ namespace icl{
     }
 
 
-    void font(int size, const string &family){
+    void font(int size, const std::string &family){
 
       FONTSIZE = size;
       FONTFAMILY = family;

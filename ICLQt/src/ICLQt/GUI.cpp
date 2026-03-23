@@ -129,9 +129,6 @@
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
-using std::string;
-using std::vector;
-using std::map;
 
 
 namespace icl{
@@ -248,8 +245,8 @@ namespace icl{
       }
 
 
-      static string getSyntax(){
-        return string("ps(fps in ]0...10] = 10)[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("ps(fps in ]0...10] = 10)[general params]\n")+gen_params();
       }
 
       virtual void processIO(){
@@ -470,7 +467,7 @@ namespace icl{
         for(unsigned int i=0;i<props.size();++i){
           const std::string &p = props[i];
           size_t pos = p.find('.');
-          string name;
+          std::string name;
           bool doesnt_exist;
           if(pos == std::string::npos){
             name = "general";
@@ -711,8 +708,8 @@ namespace icl{
         processingProperty = "";
       }
 
-      static string getSyntax(){
-        return string("prop(ConfigurableID)[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("prop(ConfigurableID)[general params]\n")+gen_params();
       }
 
     };
@@ -769,8 +766,8 @@ namespace icl{
           m_cfg->show();
       }
 
-      static string getSyntax(){
-        return string("camcfg()[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("camcfg()[general params]\n")+gen_params();
       }
 
       CamPropertyWidget *m_cfg;
@@ -820,15 +817,15 @@ namespace icl{
 
     struct HScrollGUIWidget : public ScrollGUIWidgetBase{
       HScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::LeftToRight){}
-      static string getSyntax(){
-        return string("hscroll()[general params]\n")+ gen_params();
+      static std::string getSyntax(){
+        return std::string("hscroll()[general params]\n")+ gen_params();
       }
     };
 
     struct VScrollGUIWidget : public ScrollGUIWidgetBase{
       VScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::TopToBottom){}
-      static string getSyntax(){
-        return string("vscroll()[general params]\n")+ gen_params();
+      static std::string getSyntax(){
+        return std::string("vscroll()[general params]\n")+ gen_params();
       }
     };
 
@@ -845,8 +842,8 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("hbox()[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("hbox()[general params]\n")+gen_params();
       }
     };
 
@@ -865,8 +862,8 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("hbox()[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("hbox()[general params]\n")+gen_params();
       }
     };
 
@@ -901,7 +898,7 @@ namespace icl{
       virtual ProxyLayout *getProxyLayout() { return this; }
 
       //static string getSyntax(){
-      //  return string("(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
+      //  return std::string("(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
       //}
       QSplitter *m_splitter;
       QGridLayout *m_layout;
@@ -909,15 +906,15 @@ namespace icl{
 
     struct HSplitterGUIWidget : public SplitterGUIWidgetBase{
       HSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,true){}
-      static string getSyntax(){
-        return string("hsplit()[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("hsplit()[general params]\n")+gen_params();
       }
     };
 
     struct VSplitterGUIWidget : public SplitterGUIWidgetBase{
       VSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,false){}
-      static string getSyntax(){
-        return string("vsplit()[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("vsplit()[general params]\n")+gen_params();
       }
     };
 
@@ -960,8 +957,8 @@ namespace icl{
       // can directly return itself
       virtual ProxyLayout *getProxyLayout() { return this; }
 
-      static string getSyntax(){
-        return string("tab(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
+      static std::string getSyntax(){
+        return std::string("tab(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
       }
 
       std::vector<std::string> m_tabNames;
@@ -993,9 +990,9 @@ namespace icl{
         }
 
       }
-      static string getSyntax(){
-        return string("border(LABEL)[general params]\n")+
-        string("\tLABEL is the border label that is shown\n")+
+      static std::string getSyntax(){
+        return std::string("border(LABEL)[general params]\n")+
+        std::string("\tLABEL is the border label that is shown\n")+
         gen_params();
       }
       virtual QLayout *getGUIWidgetLayout() { return m_poLayout; }
@@ -1052,9 +1049,9 @@ namespace icl{
         colorLabel->setColor(Color4D(color.red(),color.green(),color.blue(),color.alpha()));
       }
 
-      static string getSyntax(){
-        return string("color(R,G,B[,A])[general params] \n")+
-        string("\tgiven initial Red, Green and Blue values (Alpha is optional)\n")+
+      static std::string getSyntax(){
+        return std::string("color(R,G,B[,A])[general params] \n")+
+        std::string("\tgiven initial Red, Green and Blue values (Alpha is optional)\n")+
         gen_params();
       }
       ColorLabel *colorLabel;
@@ -1081,9 +1078,9 @@ namespace icl{
           m_poClickedEvent = 0;
         }
       }
-      static string getSyntax(){
-        return string("button(TEXT)[general params] \n")+
-        string("\tTEXT is the button text\n")+
+      static std::string getSyntax(){
+        return std::string("button(TEXT)[general params] \n")+
+        std::string("\tTEXT is the button text\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1101,7 +1098,7 @@ namespace icl{
         GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,def.numParams())), m_uiInitialIndex(0){
 
         for(unsigned int i=0;i<def.numParams();i++){
-          string text = def.param(i);
+          std::string text = def.param(i);
           if(text.length() && text[0]=='!'){
             m_uiInitialIndex = i;
             text = text.substr(1);
@@ -1128,10 +1125,10 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("buttongroup(LIST)[general params] \n")+
-        string("\tLIST is a comma seperated list of radio button texts to create\n")+
-        string("\tthe button with a '!'-prefix is selected (of index 0 by default)\n")+
+      static std::string getSyntax(){
+        return std::string("buttongroup(LIST)[general params] \n")+
+        std::string("\tLIST is a comma seperated list of radio button texts to create\n")+
+        std::string("\tthe button with a '!'-prefix is selected (of index 0 by default)\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1148,7 +1145,7 @@ namespace icl{
       //}
     private:
       unsigned int *m_uiIdx;
-      vector<QRadioButton*> m_vecButtons;
+      std::vector<QRadioButton*> m_vecButtons;
       unsigned int m_uiInitialIndex ;
     };
 
@@ -1192,11 +1189,11 @@ namespace icl{
           m_poHandle = 0;
         }
       }
-      static string getSyntax(){
-        return string("togglebutton(U,T)[general params] \n")+
-        string("\tU is the buttons text in untoggled state\n")+
-        string("\tT is the buttons text in toggled state\n")+
-        string("\tif one of U or T has a '!'-prefix, the button is created with this state\n")+
+      static std::string getSyntax(){
+        return std::string("togglebutton(U,T)[general params] \n")+
+        std::string("\tU is the buttons text in untoggled state\n")+
+        std::string("\tT is the buttons text in toggled state\n")+
+        std::string("\tif one of U or T has a '!'-prefix, the button is created with this state\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1249,10 +1246,10 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("checkbox(TEXT,INIT>)[general params] \n")+
-        string("\tTEXT is the check box text\n");
-        string("\tINIT defines whether the checkbox is initially checked (checked|unchecked)\n")+
+      static std::string getSyntax(){
+        return std::string("checkbox(TEXT,INIT>)[general params] \n")+
+        std::string("\tTEXT is the check box text\n");
+        std::string("\tINIT defines whether the checkbox is initially checked (checked|unchecked)\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1282,10 +1279,10 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("label(TEXT="")[general params] \n")+
-        string("\tTEXT is the initial text showed by the label")+
+        std::string("label(TEXT="")[general params] \n")+
+        std::string("\tTEXT is the initial text showed by the label")+
         gen_params();
       }
     private:
@@ -1309,10 +1306,10 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("state(MAX_LINES)[general params] \n")+
-        string("\tMAX_LINES is the maximal line count of the state widget, odd lines are removed automatically");
+        std::string("state(MAX_LINES)[general params] \n")+
+        std::string("\tMAX_LINES is the maximal line count of the state widget, odd lines are removed automatically");
         gen_params();
       }
     private:
@@ -1394,14 +1391,14 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("slider(MIN,MAX,CURR,ORIENTATION=horizontal,DISPLAY=on)[general params] \n")+
-        string("\tMIN is the minimum value of the slider\n")+
-        string("\tMAX is the maximum value of the slider\n")+
-        string("\tCURR is the initializing value of the slider\n")+
-        string("\tORIENTATION is horizontal or vertical\n")+
-        string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
+        std::string("slider(MIN,MAX,CURR,ORIENTATION=horizontal,DISPLAY=on)[general params] \n")+
+        std::string("\tMIN is the minimum value of the slider\n")+
+        std::string("\tMAX is the maximum value of the slider\n")+
+        std::string("\tCURR is the initializing value of the slider\n")+
+        std::string("\tORIENTATION is horizontal or vertical\n")+
+        std::string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1486,14 +1483,14 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("fslider(MIN,MAX,CURR,ORIENTATION=horizontal)[general params] \n")+
-        string("\tMIN is the minimum value of the slider\n")+
-        string("\tMAX is the maximum value of the slider\n")+
-        string("\tCURR is the initializing value of the slider\n")+
-        string("\tORIENTATION is horizontal or vertical\n")+
-        string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
+        std::string("fslider(MIN,MAX,CURR,ORIENTATION=horizontal)[general params] \n")+
+        std::string("\tMIN is the minimum value of the slider\n")+
+        std::string("\tMAX is the maximum value of the slider\n")+
+        std::string("\tCURR is the initializing value of the slider\n")+
+        std::string("\tORIENTATION is horizontal or vertical\n")+
+        std::string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1540,12 +1537,12 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("int(MIN,MAX,CURR)[general params] \n")+
-        string("\tMIN is the minimum allowed input value\n")+
-        string("\tMAX is the maximum allowed input value\n")+
-        string("\tCURR is the initial value of the textfield\n")+
+        std::string("int(MIN,MAX,CURR)[general params] \n")+
+        std::string("\tMIN is the minimum allowed input value\n")+
+        std::string("\tMAX is the maximum allowed input value\n")+
+        std::string("\tCURR is the initial value of the textfield\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1583,12 +1580,12 @@ namespace icl{
         }
 
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("float(MIN,MAX,CURR)[general params] \n")+
-        string("\tMIN is the minimum allowed input value\n")+
-        string("\tMAX is the maximum allowed input value\n")+
-        string("\tCURR is the initial value of the textfield\n")+
+        std::string("float(MIN,MAX,CURR)[general params] \n")+
+        std::string("\tMIN is the minimum allowed input value\n")+
+        std::string("\tMAX is the maximum allowed input value\n")+
+        std::string("\tCURR is the initial value of the textfield\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1629,7 +1626,7 @@ namespace icl{
         addToGrid(m_poLineEdit);
 
         getGUI()->lockData();
-        m_psOutput = &getGUI()->allocValue<string>(def.output(0),def.param(0));
+        m_psOutput = &getGUI()->allocValue<std::string>(def.output(0),def.param(0));
         getGUI()->unlockData();
 
         if(def.handle() != ""){
@@ -1639,11 +1636,11 @@ namespace icl{
         }
 
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("string(TEXT,MAXLEN)[general params] \n")+
-        string("\tTEXT is the initial value of the textfield\n")+
-        string("\tMAXLEN is max. number of characters that might be written into the textfiled\n")+
+        std::string("string(TEXT,MAXLEN)[general params] \n")+
+        std::string("\tTEXT is the initial value of the textfield\n")+
+        std::string("\tMAXLEN is max. number of characters that might be written into the textfiled\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1653,7 +1650,7 @@ namespace icl{
       }
     private:
       QLineEdit *m_poLineEdit;
-      string *m_psOutput;
+      std::string *m_psOutput;
     };
 
     struct DispGUIWidget : public GUIWidget{
@@ -1691,11 +1688,11 @@ namespace icl{
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("disp(NW,NH)[general params] \n")+
-        string("\tNW is width of the display label matrix (must be > 0)")+
-        string("\tNH is height of the display label matrix (must be > 0)")+
+        std::string("disp(NW,NH)[general params] \n")+
+        std::string("\tNW is width of the display label matrix (must be > 0)")+
+        std::string("\tNH is height of the display label matrix (must be > 0)")+
         gen_params();
       }
 
@@ -1720,8 +1717,8 @@ namespace icl{
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
-        return string("image()[general params] \n")+
+      static std::string getSyntax(){
+        return std::string("image()[general params] \n")+
         gen_params();
       }
     private:
@@ -1781,16 +1778,16 @@ namespace icl{
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,"
+        std::string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,"
                "Y_VIEWPORT_MAX=0,GL=noGL,X_AXIS_LABEL=\"\",Y_AXIS_LABEL=\"\")[general params]\n")+
-        string("\tX/Y_VIEWPORT_MIN/MAX are optionally given. The parameters define the data viewport in\n")+
-        string("\tcreated PlotWidget. If min and max X are zero, the PlotWidget will automatically estimate\n")+
-        string("\tthe X-data viewport. The same is true for the Y-data viewport. Please note, that\n")+
-        string("\tthe data viewport can also later be set\n")+
-        string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n")+
-        string("\tX_AXIS_LABEL and Y_AXIS_LABEL can be given optionally use \"-\" as placeholder for no label\n");
+        std::string("\tX/Y_VIEWPORT_MIN/MAX are optionally given. The parameters define the data viewport in\n")+
+        std::string("\tcreated PlotWidget. If min and max X are zero, the PlotWidget will automatically estimate\n")+
+        std::string("\tthe X-data viewport. The same is true for the Y-data viewport. Please note, that\n")+
+        std::string("\tthe data viewport can also later be set\n")+
+        std::string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n")+
+        std::string("\tX_AXIS_LABEL and Y_AXIS_LABEL can be given optionally use \"-\" as placeholder for no label\n");
 
         gen_params();
       }
@@ -1817,8 +1814,8 @@ namespace icl{
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
-        return string("draw()[general params] \n")+
+      static std::string getSyntax(){
+        return std::string("draw()[general params] \n")+
         gen_params();
       }
     private:
@@ -1883,8 +1880,8 @@ namespace icl{
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
-        return string("multidraw(TAB-LIST)[general params] \n")+
+      static std::string getSyntax(){
+        return std::string("multidraw(TAB-LIST)[general params] \n")+
         gen_params();
       }
       private:
@@ -1920,8 +1917,8 @@ namespace icl{
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static string getSyntax(){
-        return string("draw()[general params] \n")+
+      static std::string getSyntax(){
+        return std::string("draw()[general params] \n")+
         gen_params();
       }
     private:
@@ -1940,7 +1937,7 @@ namespace icl{
         addToGrid(m_poCombo);
 
         unsigned int selectedIndex = 0;
-        string sFirst = def.param(0);
+        std::string sFirst = def.param(0);
         for(unsigned int i=0;i<def.numParams();i++){
           const std::string &s = def.param(i);
           if(s.length() && s[0]=='!'){
@@ -1953,7 +1950,7 @@ namespace icl{
         }
 
         getGUI()->lockData();
-        m_psCurrentText = &getGUI()->allocValue<string>(def.output(0),sFirst);
+        m_psCurrentText = &getGUI()->allocValue<std::string>(def.output(0),sFirst);
         getGUI()->unlockData();
 
         m_poCombo->setCurrentIndex(selectedIndex);
@@ -1966,10 +1963,10 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("combo(entry1,entry2,entry3)[general params] \n")+
-        string("\tentryX is the the X-th entry of the combo box\n")+
-        string("\tif any entry has a '!'-prefix, this entry will be selected initially\n")+
+      static std::string getSyntax(){
+        return std::string("combo(entry1,entry2,entry3)[general params] \n")+
+        std::string("\tentryX is the the X-th entry of the combo box\n")+
+        std::string("\tif any entry has a '!'-prefix, this entry will be selected initially\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -1979,7 +1976,7 @@ namespace icl{
       }
 
     private:
-      string *m_psCurrentText;
+      std::string *m_psCurrentText;
       QComboBox *m_poCombo;
     };
 
@@ -2008,12 +2005,12 @@ namespace icl{
         }
 
       }
-      static string getSyntax(){
+      static std::string getSyntax(){
         return
-        string("spinner(MIN,MAX,CURR)[general params] \n")+
-        string("\tMIN is the minimum possible value\n")+
-        string("\tMAX is the maximum possible value\n")+
-        string("\tCURR is the initial value of the spinbox\n")+
+        std::string("spinner(MIN,MAX,CURR)[general params] \n")+
+        std::string("\tMIN is the minimum possible value\n")+
+        std::string("\tMAX is the maximum possible value\n")+
+        std::string("\tCURR is the initial value of the spinbox\n")+
         gen_params();
       }
       virtual void processIO(){
@@ -2042,8 +2039,8 @@ namespace icl{
           getGUI()->unlockData();
         }
       }
-      static string getSyntax(){
-        return string("fps(TIME_WINDOW=10)[general params] \n"
+      static std::string getSyntax(){
+        return std::string("fps(TIME_WINDOW=10)[general params] \n"
                       "  TIME_WINDOW is the number of timesteps, that are used as \n"
                       "  Low-Pass-Filter for estimated fps counts\n")
                       +gen_params();
@@ -2137,16 +2134,16 @@ namespace icl{
     }
 
 
-    string extract_label(string s){
+    std::string extract_label(std::string s){
 
-      string::size_type p = s.find('[');
-      if(p == string::npos) return "";
+      std::string::size_type p = s.find('[');
+      if(p == std::string::npos) return "";
       s = s.substr(p+1);
       if(!s.length()) return "";
       if(s[s.length()-1] != ']') return "";
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
-        const string &s2 = t.nextToken();
+        const std::string &s2 = t.nextToken();
         if(s2.starts_with("label")){
           if(s2.length() < 7) return "";
           return s2.substr(6);
@@ -2155,16 +2152,16 @@ namespace icl{
       return "";
     }
 
-    string extract_minsize(string s){
+    std::string extract_minsize(std::string s){
 
-      string::size_type p = s.find('[');
-      if(p == string::npos) return "";
+      std::string::size_type p = s.find('[');
+      if(p == std::string::npos) return "";
       s = s.substr(p+1);
       if(!s.length()) return "";
       if(s[s.length()-1] != ']') return "";
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
-        const string &s2 = t.nextToken();
+        const std::string &s2 = t.nextToken();
         if(s2.starts_with("minsize")){
           if(s2.length() < 9) return "";
           return s2.substr(8);
@@ -2173,16 +2170,16 @@ namespace icl{
       return "";
     }
 
-    string extract_maxsize(string s){
+    std::string extract_maxsize(std::string s){
 
-      string::size_type p = s.find('[');
-      if(p == string::npos) return "";
+      std::string::size_type p = s.find('[');
+      if(p == std::string::npos) return "";
       s = s.substr(p+1);
       if(!s.length()) return "";
       if(s[s.length()-1] != ']') return "";
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
-        const string &s2 = t.nextToken();
+        const std::string &s2 = t.nextToken();
         if(s2.starts_with("maxsize")){
           if(s2.length() < 9) return "";
           return s2.substr(8);
@@ -2191,16 +2188,16 @@ namespace icl{
       return "";
     }
 
-    string extract_size(string s){
+    std::string extract_size(std::string s){
 
-      string::size_type p = s.find('[');
-      if(p == string::npos) return "";
+      std::string::size_type p = s.find('[');
+      if(p == std::string::npos) return "";
       s = s.substr(p+1);
       if(!s.length()) return "";
       if(s[s.length()-1] != ']') return "";
       StrTok t(s.substr(0,s.length()-1),"@");
       while(t.hasMoreTokens()){
-        const string &s2 = t.nextToken();
+        const std::string &s2 = t.nextToken();
         if(s2.starts_with("size")){
           if(s2.length() < 6) return "";
           return s2.substr(5);
@@ -2210,8 +2207,8 @@ namespace icl{
     }
 
 
-    string remove_label(const string &s, const std::string &label){
-      string toRemove = string("@label=")+label;
+    std::string remove_label(const std::string &s, const std::string &label){
+      std::string toRemove = std::string("@label=")+label;
       unsigned int p = s.find(toRemove);
       return s.substr(0,p) + s.substr(p+toRemove.length());
     }
@@ -2289,20 +2286,20 @@ namespace icl{
           //#endif
       **/
 
-      string label = extract_label(definition);
-      string minsize = extract_minsize(definition);
-      string maxsize = extract_maxsize(definition);
-      string size = extract_size(definition);
+      std::string label = extract_label(definition);
+      std::string minsize = extract_minsize(definition);
+      std::string maxsize = extract_maxsize(definition);
+      std::string size = extract_size(definition);
 
       Size S11(1,1);
-      if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
-      if(maxsize.length()) maxsize = string("@maxsize=")+str(parse<Size>(maxsize)+S11);
-      if(size.length()) size = string("@size=")+str(parse<Size>(size)+S11);
+      if(minsize.length()) minsize = std::string("@minsize=")+str(parse<Size>(minsize)+S11);
+      if(maxsize.length()) maxsize = std::string("@maxsize=")+str(parse<Size>(maxsize)+S11);
+      if(size.length()) size = std::string("@size=")+str(parse<Size>(size)+S11);
 
       if(label.length()){
-        string rest = remove_label(definition,label);
-        //      return ( (*this) << ( GUI(string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
-        GUI border(string("border(")+label+")["+minsize+maxsize+size+"]");
+        std::string rest = remove_label(definition,label);
+        //      return ( (*this) << ( GUI(std::string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
+        GUI border(std::string("border(")+label+")["+minsize+maxsize+size+"]");
         border << rest;
         *this << border;
         return *this;
@@ -2358,15 +2355,15 @@ namespace icl{
       }
 
       std::string def = g.createDefinition();
-      string label = extract_label(def);
-      string minsize = extract_minsize(def);
-      string maxsize = extract_maxsize(def);
-      string size = extract_size(def);
+      std::string label = extract_label(def);
+      std::string minsize = extract_minsize(def);
+      std::string maxsize = extract_maxsize(def);
+      std::string size = extract_size(def);
 
       Size S11(1,1);
-      if(minsize.length()) minsize = string("@minsize=")+str(parse<Size>(minsize)+S11);
-      if(maxsize.length()) maxsize = string("@maxsize=")+str(parse<Size>(maxsize)+S11);
-      if(size.length()) size = string("@size=")+str(parse<Size>(size)+S11);
+      if(minsize.length()) minsize = std::string("@minsize=")+str(parse<Size>(minsize)+S11);
+      if(maxsize.length()) maxsize = std::string("@maxsize=")+str(parse<Size>(maxsize)+S11);
+      if(size.length()) size = std::string("@size=")+str(parse<Size>(size)+S11);
 
 
       if(label.length()){
@@ -2376,7 +2373,7 @@ namespace icl{
           throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
         }
         gNew.m_sDefinition = remove_label(def,label);
-        return ( *this << (  GUI(string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
+        return ( *this << (  GUI(std::string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
       }else{
         m_children.push_back(new GUI(g));
         return *this;

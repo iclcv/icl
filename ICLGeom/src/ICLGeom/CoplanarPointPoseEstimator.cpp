@@ -52,9 +52,6 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-using std::max;
-using std::min;
-
 namespace icl{
   namespace geom{
     typedef DynMatrix<float> DMat;

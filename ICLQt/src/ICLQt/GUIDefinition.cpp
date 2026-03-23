@@ -39,16 +39,15 @@
 #include <list>
 using namespace icl::utils;
 using namespace icl::core;
-using std::string;
 
 namespace icl{
   namespace qt{
     namespace{
 
-      static string cutName(const string &s){
+      static std::string cutName(const std::string &s){
 
-        string::size_type pos = s.find("=",0);
-        if(pos == string::npos){
+        std::string::size_type pos = s.find("=",0);
+        if(pos == std::string::npos){
           throw GUISyntaxErrorException(s,"missing '=' character!");
           return "";
         }
@@ -59,16 +58,16 @@ namespace icl{
         return s.substr(pos+1);
       }
 
-      static void split_string(const std::string &s, string &type, string &params, string &optparams){
-        string::size_type obrPos = s.find('(');
-        string::size_type cbrPos = s.find(')');
-        string::size_type obrPos2 = s.find('[',cbrPos==string::npos ? 0 : cbrPos);
-        string::size_type cbrPos2 = s.find(']',cbrPos==string::npos ? 0 : cbrPos);
+      static void split_string(const std::string &s, std::string &type, std::string &params, std::string &optparams){
+        std::string::size_type obrPos = s.find('(');
+        std::string::size_type cbrPos = s.find(')');
+        std::string::size_type obrPos2 = s.find('[',cbrPos==std::string::npos ? 0 : cbrPos);
+        std::string::size_type cbrPos2 = s.find(']',cbrPos==std::string::npos ? 0 : cbrPos);
 
-        if(obrPos != string::npos){
-          if(cbrPos == string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");
-          if(obrPos2 != string::npos){
-            if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
+        if(obrPos != std::string::npos){
+          if(cbrPos == std::string::npos) throw GUISyntaxErrorException(s,"missing ')' character!");
+          if(obrPos2 != std::string::npos){
+            if(cbrPos2 == std::string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
             type = s.substr(0,obrPos);
             params = s.substr(obrPos+1, cbrPos-obrPos-1);
             optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1);
@@ -78,8 +77,8 @@ namespace icl{
             optparams = "";
           }
         }else{
-          if(obrPos2 != string::npos){
-            if(cbrPos2 == string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
+          if(obrPos2 != std::string::npos){
+            if(cbrPos2 == std::string::npos) throw GUISyntaxErrorException(s,"missing ']' character!");
             type = s.substr(0,obrPos2);
             optparams = s.substr(obrPos2+1, cbrPos2-obrPos2-1);
             params = "";
@@ -100,8 +99,8 @@ namespace icl{
        m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){
 
       // SYNTAX: type(commaSeperatedparamList)[@out=outNameList@inp=inNameList@size=Size@label=label]
-      string paramList;
-      string optParamList;
+      std::string paramList;
+      std::string optParamList;
       split_string(def,m_sType,paramList,optParamList);
 
 
@@ -117,7 +116,7 @@ namespace icl{
       if(optParamList.length()){
         StrTok t(optParamList,"@");
         while(t.hasMoreTokens()){
-          string s = t.nextToken();
+          std::string s = t.nextToken();
           if(s.starts_with("out")) m_vecOutputs = StrTok(cutName(s),",").allTokens();
           else if(s.starts_with("inp")) m_vecInputs = StrTok(cutName(s),",").allTokens();
           else if(s.starts_with("size")) m_oSize = parse<Size>(cutName(s));
@@ -128,20 +127,20 @@ namespace icl{
           else if(s.starts_with("margin")) m_iMargin = static_cast<int>(abs(atoi(cutName(s).c_str())));
           else if(s.starts_with("spacing")) m_iSpacing = static_cast<int>(abs(atoi(cutName(s).c_str())));
           else if(s.starts_with("tooltip")) m_toolTip = cutName(s);
-          else throw GUISyntaxErrorException(def,string("illegal optional parameter \"")+s+"\"");
+          else throw GUISyntaxErrorException(def,std::string("illegal optional parameter \"")+s+"\"");
         }
       }
     }
 
     const std::string &GUIDefinition::param(unsigned int idx) const {
 
-      static const string DEF;
+      static const std::string DEF;
       return idx < m_vecParams.size() ? m_vecParams[idx] : DEF;
     }
 
     int GUIDefinition::intParam(unsigned int idx) const {
 
-      const string &s = param(idx);
+      const std::string &s = param(idx);
       if(s != ""){
         return atoi(s.c_str());
       }else{
@@ -151,7 +150,7 @@ namespace icl{
 
     float GUIDefinition::floatParam(unsigned int idx) const {
 
-      const string &s = param(idx);
+      const std::string &s = param(idx);
       if(s != ""){
         return atof(s.c_str());
       }else{

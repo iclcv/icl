@@ -32,9 +32,6 @@
 #include <string>
 #include <vector>
 #include <cstring>
-using std::string;
-using std::vector;
-
 int usage(){
   printf("jpg2cpp converts jpeg images into a c++ compatible data format.\n"
          "usage: jpg2cpp <FILE> > <DESTINATIONFILE> \n"
@@ -59,10 +56,10 @@ int fileNotFound(char *pc){
 
 
 
-void writeLine(vector<unsigned char>::iterator &it, int len, bool isLastRow){
+void writeLine(std::vector<unsigned char>::iterator &it, int len, bool isLastRow){
   printf("  {");
 
-  vector<unsigned char>::iterator end = it+len-1;
+  std::vector<unsigned char>::iterator end = it+len-1;
   while(it != end){
     printf("%3d,",*it++);
   }
@@ -83,7 +80,7 @@ int main(int n, char **ppc){
   if(!f) return fileNotFound(ppc[1]);
 
   char buf[10000];
-  vector<unsigned char> dataVec;
+  std::vector<unsigned char> dataVec;
   int nBytesRead = 0;
   while(!feof(f)){
     int read = fread(buf,1,10000,f);
@@ -94,9 +91,9 @@ int main(int n, char **ppc){
   }
   fclose(f);
   //-------------------------------------------
-  string imageName = string(ppc[1]).substr(0,strlen(ppc[1])-4);
-  string arrayName = string("aauc_Data_")+imageName;
-  string extraArrayName = string("auc_ExtraData_")+imageName;
+  std::string imageName = std::string(ppc[1]).substr(0,strlen(ppc[1])-4);
+  std::string arrayName = std::string("aauc_Data_")+imageName;
+  std::string extraArrayName = std::string("auc_ExtraData_")+imageName;
 
   printf("#include <ICLIO/FileGrabber.h>\n");
   printf("#include <ICLCore/Img.h>\n");
@@ -116,7 +113,7 @@ int main(int n, char **ppc){
 
   printf("unsigned char %s[NROWS][NCOLS] = {\n",arrayName.c_str());
   printf("  // {{{ open\n");
-  vector<unsigned char>::iterator it=dataVec.begin();
+  std::vector<unsigned char>::iterator it=dataVec.begin();
   for(int l=0;l<ROWS;l++){
     writeLine(it,COLS,l==ROWS-1);
   }

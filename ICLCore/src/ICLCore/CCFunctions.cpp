@@ -41,8 +41,6 @@ using namespace icl::utils;
 namespace icl{
   namespace core{
 
-    using std::string;
-
   #define AVL ccAvailable
   #define IMU ccEmulated
   #define UAV ccUnavailable
@@ -82,7 +80,7 @@ namespace icl{
   #undef IPS
     std::string translateCCImpl(ccimpl i){
 
-      static string s_asNames[5] = { "available" , "emulated","adapted","unavailable", "impossible" };
+      static std::string s_asNames[5] = { "available" , "emulated","adapted","unavailable", "impossible" };
       return s_asNames[i];
     }
 

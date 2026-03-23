@@ -57,10 +57,6 @@
 #include <ICLPhysics/Constraint.h>
 #include <mutex>
 
-using std::min;
-using std::max;
-using std::vector;
-
 namespace icl{
   namespace physics{
 
@@ -154,8 +150,8 @@ namespace icl{
 		      PhysicsObject* obj1 = static_cast<PhysicsObject*>(static_cast<btCollisionObject*>(proxy1->m_clientObject)->getUserPointer());
 		      if(obj0 && obj1)
 		      {
-		        int col = min(obj0->getCollisionGroup(), obj1->getCollisionGroup());
-		        int row = max(obj0->getCollisionGroup(), obj1->getCollisionGroup());
+		        int col = std::min(obj0->getCollisionGroup(), obj1->getCollisionGroup());
+		        int row = std::max(obj0->getCollisionGroup(), obj1->getCollisionGroup());
 		        collides = collides && (*collisionMatrix)(col,row);
 		      }
 		      //stop here if collision masks already determined that no collision is needed
@@ -371,15 +367,15 @@ namespace icl{
 
     void PhysicsWorld::setGroupCollision(int group0, int group1, bool collides)
     {
-      int col = min(group0, group1);
-      int row = max(group0, group1);
+      int col = std::min(group0, group1);
+      int row = std::max(group0, group1);
       (*data->m_collisionMatrix)(col,row) = collides;
     }
 
     bool PhysicsWorld::getGroupCollision(int group0, int group1)
     {
-      int col = min(group0, group1);
-      int row = max(group0, group1);
+      int col = std::min(group0, group1);
+      int row = std::max(group0, group1);
       return (*data->m_collisionMatrix)(col,row);
     }
 
@@ -407,7 +403,7 @@ namespace icl{
     void PhysicsWorld::removeConstraint(Constraint* constraint){
       if(!constraint->getConstraint()) throw utils::ICLException("PhysicsWorld::removeConstraint: constraint was null");
       data->m_dynamicsWorld->removeConstraint(constraint->getConstraint());
-      vector<Constraint*>::iterator found = find(data->m_ownedConstraints.begin(),data->m_ownedConstraints.end(),constraint);
+      std::vector<Constraint*>::iterator found = std::find(data->m_ownedConstraints.begin(),data->m_ownedConstraints.end(),constraint);
       if(found != data->m_ownedConstraints.end())delete *found;
     }
 

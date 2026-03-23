@@ -40,9 +40,6 @@ using namespace icl::regex;
 #include <regex.h>
 #endif
 
-using std::string;
-using std::vector;
-
 namespace icl{
   namespace utils{
 
@@ -159,12 +156,12 @@ namespace icl{
 
 
 
-    vector<string> tok(const string &s, const string &delims, bool singleCharDelims, char escapeChar){
+    std::vector<std::string> tok(const std::string &s, const std::string &delims, bool singleCharDelims, char escapeChar){
       return StrTok(s,delims,singleCharDelims,escapeChar).allTokens();
     }
 
 
-    vector<string> &tok(const string &s, const string &delims,bool singleCharDelims, char escapeChar,vector<string> &dst){
+    std::vector<std::string> &tok(const std::string &s, const std::string &delims,bool singleCharDelims, char escapeChar,std::vector<std::string> &dst){
       // todo optimize
       dst = tok(s,delims,singleCharDelims,escapeChar);
       return dst;
@@ -218,7 +215,7 @@ namespace icl{
 
 
     MatchResult match(const std::string &text, const std::string &regexIn, int num){
-      string regexSave = regexIn;
+      std::string regexSave = regexIn;
   //#ifndef ICL_SYSTEM_WINDOWS // TODOW
       char *regex = const_cast<char*>(regexSave.c_str());
       regex_t    re;
@@ -254,7 +251,7 @@ namespace icl{
 
 
 #ifndef ICL_SYSTEM_WINDOWS // TODOW
-    string toLower(string s){
+    std::string toLower(std::string s){
       for(unsigned int i=0;i<s.length();i++){
         s[i]=tolower(s[i]);
       }
@@ -262,47 +259,47 @@ namespace icl{
     };
 #endif
 
-    string time2str(Time::value_type x){
+    std::string time2str(Time::value_type x){
       char acBuf[30];
       snprintf(acBuf, sizeof(acBuf), "%lld",static_cast<long long>(x));
       return acBuf;
     }
-    string i2str(int i){
+    std::string i2str(int i){
       char acBuf[12];
       snprintf(acBuf, sizeof(acBuf), "%d",i);
       return acBuf;
     }
 
-    string skipWhitespaces(const string &s){
+    std::string skipWhitespaces(const std::string &s){
       if(!s.length()) return "";
       return s.substr(s.find_first_not_of(' '));
     }
 
-    bool endsWith(const string &s,const string &postfix){
+    bool endsWith(const std::string &s,const std::string &postfix){
       return s.ends_with(postfix);
     }
 
-    bool startsWith(const string &s, const string &praefix){
+    bool startsWith(const std::string &s, const std::string &praefix){
       return s.starts_with(praefix);
     }
 
-    void analyseHashes (const string &sFileName, unsigned int& nHashes, string::size_type& iPostfixPos) {
-      nHashes = 0; iPostfixPos = string::npos;
+    void analyseHashes (const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos) {
+      nHashes = 0; iPostfixPos = std::string::npos;
 
       // search for first '.'
-      string::size_type iTmpPos = sFileName.rfind ('.');
-      if (iTmpPos == string::npos)
+      std::string::size_type iTmpPos = sFileName.rfind ('.');
+      if (iTmpPos == std::string::npos)
         throw ICLException ("cannot detect file type");
 
       // search for second '.' if the postfix is .gz so far
-      const string& sType = sFileName.substr (iTmpPos);
+      const std::string& sType = sFileName.substr (iTmpPos);
       if (sType == ".gz" && iTmpPos > 0) { // search further for file type
         iPostfixPos = sFileName.rfind ('.', iTmpPos-1);
       }
-      if (iPostfixPos == string::npos) iPostfixPos = iTmpPos;
+      if (iPostfixPos == std::string::npos) iPostfixPos = iTmpPos;
 
       // count number of hashes directly before the postfix
-      for (string::const_reverse_iterator start (sFileName.begin() + iPostfixPos),
+      for (std::string::const_reverse_iterator start (sFileName.begin() + iPostfixPos),
            it = start, end = sFileName.rend(); it != end; ++it) {
         if (*it != '#') {
           // first pos without hash, count hashes

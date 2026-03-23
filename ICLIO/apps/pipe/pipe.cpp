@@ -48,9 +48,6 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
 using namespace icl::filter;
-using std::string;
-using std::vector;
-
 #ifdef ICL_HAVE_QT
 VBox gui;
 #endif
@@ -63,8 +60,8 @@ bool *ppEnabled = 0;
 
 GenericGrabber grabber;
 
-std::vector<string> remove_size(const vector<string> &v){
-  vector<string> r;
+std::vector<std::string> remove_size(const std::vector<std::string> &v){
+  std::vector<std::string> r;
   for(unsigned int i=0;i<v.size();++i){
     if(v[i] != "size") r.push_back(v[i]);
   }
