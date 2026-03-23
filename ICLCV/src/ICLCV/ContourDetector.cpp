@@ -496,14 +496,14 @@ namespace icl{
 
           if (lc >= 0) {
             while (lc > 126) {
-              std::vector<icl::utils::Point>::const_iterator it = contours[lc].std::vector<Point>::begin();
-              for (; it != contours[lc].std::vector<Point>::end(); ++it) {
+              std::vector<icl::utils::Point>::const_iterator it = contours[lc].begin();
+              for (; it != contours[lc].end(); ++it) {
                 if (it->y == y) if (it->x == lnbdx) {
                   break;
                 }
               }
 
-              if (it != contours[lc].std::vector<Point>::end()) break;
+              if (it != contours[lc].end()) break;
 
               lc -= 126;
             }

@@ -32,7 +32,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/ShallowCopyable.h>
 #include <ICLUtils/Any.h>
 #include <ICLCore/Img.h>
 #include <ICLCV/RegionPCAInfo.h>

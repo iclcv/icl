@@ -348,7 +348,7 @@ namespace icl{
           + grabberid + ": name already in use");
       GrabberFunctions f;
       f.init = creator;
-      f.std::list = device_list;
+      f.list = device_list;
       gfm[grabberid] = f;
     }
 
@@ -409,7 +409,7 @@ namespace icl{
       GFM::iterator it = gfm.find(id);
       if(it != gfm.end()){
         // return device list
-        return ((it -> second).std::list)(hint,rescan);
+        return ((it -> second).list)(hint,rescan);
       } else {
         throw ICLException("unknown grabber id '"
             + id + "'. can not std::list devices of unknown grabber");

@@ -147,10 +147,10 @@ namespace icl{
       //// WRITE HEADER INFORMATION  ////////////////////////////////////////////////////////////////////
       ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-      std::string std::endl = "\n";
+      std::string newline = "\n";
 
       if(!bICL){
-        file << std::string(bPPM ? "P6" :"P5") << std::endl;
+        file << std::string(bPPM ? "P6" :"P5") << newline;
       }
 
 
@@ -159,12 +159,12 @@ namespace icl{
       static const std::string H = "# ";
       Rect roi = poSrc->getROI();
 
-      os   << H << "TimeStamp " << poSrc->getTime() << std::endl
-           << H << "NumFeatures " << iNumImages << std::endl
-           << H << "ImageDepth " << poSrc->getDepth() << std::endl
-           << H << "ROI " << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << std::endl
-           << H << "Format " << poSrc->getFormat() << std::endl // not shure, this is new!
-           << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << std::endl << 255 << std::endl;
+      os   << H << "TimeStamp " << poSrc->getTime() << newline
+           << H << "NumFeatures " << iNumImages << newline
+           << H << "ImageDepth " << poSrc->getDepth() << newline
+           << H << "ROI " << roi.x << ' ' << roi.y << ' '  << roi.width << ' ' << roi.height << newline
+           << H << "Format " << poSrc->getFormat() << newline // not shure, this is new!
+           << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << newline << 255 << newline;
 
       file << os.str();
 
@@ -234,18 +234,18 @@ namespace icl{
     //// WRITE HEADER INFORMATION  ////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    std::string std::endl = "\n";
+    std::string newline = "\n";
 
     if(!bICL){
-      file << std::string(bPPM ? "P6" :"P5") << std::endl;
+      file << std::string(bPPM ? "P6" :"P5") << newline;
     }
-    file << "# Format " << translateFormat(poSrc->getFormat()) << std::endl;
-    file << "# TimeStamp " << ioutils::time2str( poSrc->getTime().toMicroSeconds() ) << std::endl;
-    file << "# NumFeatures " << iNumImages << std::endl;
-    file << "# ImageDepth " << translateDepth(poSrc->getDepth()) << std::endl;
+    file << "# Format " << translateFormat(poSrc->getFormat()) << newline;
+    file << "# TimeStamp " << ioutils::time2str( poSrc->getTime().toMicroSeconds() ) << newline;
+    file << "# NumFeatures " << iNumImages << newline;
+    file << "# ImageDepth " << translateDepth(poSrc->getDepth()) << newline;
     file << "# ROI " << poSrc->getROI().x << " " << poSrc->getROI().y
-         << " " << poSrc->getROI().width << " "  << poSrc->getROI().height << std::endl;
-    file << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << std::endl << 255 << std::endl;
+         << " " << poSrc->getROI().width << " "  << poSrc->getROI().height << newline;
+    file << poSrc->getWidth() << " " << poSrc->getHeight()*(bICL ? 1 : iNumImages) << newline << 255 << newline;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //// WRITE IMAGE DATA  ////////////////////////////////////////////////////////////////////////////

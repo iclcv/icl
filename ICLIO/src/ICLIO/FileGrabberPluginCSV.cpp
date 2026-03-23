@@ -105,7 +105,7 @@ namespace icl{
       std::string line;
 
       std::string::size_type t = std::string::npos;
-      if((t=filename.std::find("-ICL:"))!= std::string::npos){
+      if((t=filename.find("-ICL:"))!= std::string::npos){
         while(1){ // this is necessary to use break on errors
           std::vector<std::string> ts = tok(filename.substr(t+5),":");
           if(ts.size() != 3){

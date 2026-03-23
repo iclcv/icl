@@ -61,9 +61,6 @@ namespace icl{
     //    std::map<std::string,std::string> ConfigFile::s_typeMap;
     //std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
 
-    void XMLDocumentDelOp::delete_func(XMLDocument *h){
-      ICL_DELETE(h);
-    }
 
     namespace{
 
@@ -270,7 +267,7 @@ namespace icl{
 
     void ConfigFile::load(const std::string &filename){
 
-      m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
+      m_doc = std::make_shared<XMLDocument>();
       pugi::xml_parse_result res = m_doc->load_file(filename.c_str());
       if(res.status != pugi::status_ok){
         if(res.status == pugi::status_file_not_found){
@@ -288,7 +285,7 @@ namespace icl{
 
     ConfigFile::ConfigFile(){
 
-      m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
+      m_doc = std::make_shared<XMLDocument>();
 
       m_doc->load_string("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
                          "<config>\n"

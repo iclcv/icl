@@ -171,7 +171,7 @@ namespace icl{
           addSequence(filename);
         }else{
           if(m_bNoDoubledFiles){
-            if(m_setFiles.std::find(filename) == m_setFiles.end()){
+            if(m_setFiles.find(filename) == m_setFiles.end()){
               m_setFiles.insert(filename);
               m_vecFiles.push_back(filename);
             }
@@ -183,7 +183,7 @@ namespace icl{
 
     private:
       void addSequence(const std::string &filename){
-        if(m_setSequenceFiles.std::find(filename) != m_setSequenceFiles.end()){
+        if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
           return; // this sequnce was already added (abort to avoid infinite loops)
         }
         utils::File seqFile(filename);

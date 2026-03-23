@@ -34,9 +34,9 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
-#include <ICLUtils/SmartPtrBase.h>
 #include <map>
 #include <typeinfo>
+#include <memory>
 
 /** \cond */
 namespace pugi{
@@ -48,7 +48,7 @@ namespace pugi{
 namespace icl{
   namespace utils{
     /** \cond */
-    struct ICLUtils_API XMLDocumentDelOp{ static void delete_func(pugi::xml_document *h); };
+    /** \endcond */
     /** \endcond */
 
     /// Utility class for creating and reading XML-based hierarchical configuration files
@@ -585,7 +585,7 @@ namespace icl{
                              const std::string &value,const KeyRestriction *restr=0);
 
       /// shallow copyable smart pointer of the document handle
-      mutable SmartPtrBase<pugi::xml_document,XMLDocumentDelOp> m_doc;
+      mutable std::shared_ptr<pugi::xml_document> m_doc;
 
       /// global ConfigFile instance
       static ConfigFile s_oConfig;

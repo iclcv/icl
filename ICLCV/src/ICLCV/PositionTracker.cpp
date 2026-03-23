@@ -98,7 +98,7 @@ namespace icl{
 
     template<class valueType>
     void removeElemsFromVector(std::vector<valueType> &v,const  std::vector<int> &rows){
-      vector<valueType> newV;//(v.size()-rows.size());
+      std::vector<valueType> newV;
       int r=0,vidx=0;
       for(; vidx<static_cast<int>(v.size()) && r<static_cast<int>(rows.size()) ; vidx++){
         if(rows[r]!=vidx){
@@ -121,10 +121,10 @@ namespace icl{
       for(int d=0; d <= 1; d++){
         std::deque<std::vector<valueType> > &md = m[d];
         for(int x=0;x<3;x++){
-          vector<valueType> &v = md[x];
+          std::vector<valueType> &v = md[x];
           removeElemsFromVector(v,rows);
           /*
-          vector<valueType> newV(v.size()-rows.size());
+          std::vector<valueType> newV(v.size()-rows.size());
           for(int r=0,vidx=0,newvidx=0;vidx<(int)v.size();vidx++){
           if(rows[r]!=vidx){
           newV[newvidx++] = v[vidx];
@@ -169,7 +169,7 @@ namespace icl{
 
 
     template<class valueType>
-    Array2D<valueType> createDistMat(const vector<valueType> a[2], const vector<valueType> b[2]){
+    Array2D<valueType> createDistMat(const std::vector<valueType> a[2], const std::vector<valueType> b[2]){
 
       ICLASSERT( a[X].size() == b[X].size() );
       // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());
@@ -190,8 +190,8 @@ namespace icl{
 
 
     template<class valueType>
-    inline vector<valueType> predict(int dim, std::deque<std::vector<valueType> > &data, const vector<int> &good){
-      vector<valueType> pred;
+    inline std::vector<valueType> predict(int dim, std::deque<std::vector<valueType> > &data, const std::vector<int> &good){
+      std::vector<valueType> pred;
       for(int y=0 ; y < dim; ++y){
         //if(y>=(int)good.size()) printf("!!!!!!!!!!!!!! waring dim=%d good.size = %d \n",dim,good.size());
         switch(good[y]){
@@ -206,9 +206,9 @@ namespace icl{
 
 
 
-    inline vector<int> get_n_new_ids(const vector<int> &currentIDS, int n, icl::cv::IDAllocationMode iaMode, int& lowestUnusedID){
-      vector<int> ids;
-      set<int> lut;
+    inline std::vector<int> get_n_new_ids(const std::vector<int> &currentIDS, int n, icl::cv::IDAllocationMode iaMode, int& lowestUnusedID){
+      std::vector<int> ids;
+      std::set<int> lut;
       switch(iaMode){
         case allocateFirstFreeIDs:
           for(unsigned int i=0;i<currentIDS.size();i++){
@@ -239,9 +239,9 @@ namespace icl{
     template<class valueType>
     void push_and_rearrange_data(int                       dim,
                                  std::deque<std::vector<valueType> > data[2],
-                                 const vector<int>         &assignment,
-                                 const vector<valueType>   newData[2]){
-      vector<valueType> arrangedData[2] = {vector<valueType>(dim),vector<valueType>(dim)};
+                                 const std::vector<int>         &assignment,
+                                 const std::vector<valueType>   newData[2]){
+      std::vector<valueType> arrangedData[2] = {std::vector<valueType>(dim),std::vector<valueType>(dim)};
       for(int i=0;i<dim;i++){
         arrangedData[X][ assignment[i] ] = newData[X][i];
         arrangedData[Y][ assignment[i] ] = newData[Y][i];
@@ -255,13 +255,13 @@ namespace icl{
 
     template<class valueType>
     void push_data_intern_diff_zero(int dim,
-                                    std::deque<vector<valueType> > data[2],
-                                    vector<int>               &assignment,
-                                    vector<valueType>         newData[2],
-                                    vector<int>               &good){
+                                    std::deque<std::vector<valueType> > data[2],
+                                    std::vector<int>               &assignment,
+                                    std::vector<valueType>         newData[2],
+                                    std::vector<int>               &good){
 
 
-      vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
+      std::vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
 
       Array2D<valueType> distMat = createDistMat( pred , newData );
 
@@ -283,27 +283,27 @@ namespace icl{
 
     template<class valueType>
     bool push_data_first_optimized_try(int dim,
-                                       std::deque<vector<valueType> > data[2],
-                                       vector<int>               &assignment,
-                                       vector<valueType>         newData[2],
-                                       vector<int>               &good,
+                                       std::deque<std::vector<valueType> > data[2],
+                                       std::vector<int>               &assignment,
+                                       std::vector<valueType>         newData[2],
+                                       std::vector<int>               &good,
                                        valueType threshold){
 
 
-      vector<valueType> xsOld(dim);
-      vector<valueType> ysOld(dim);
+      std::vector<valueType> xsOld(dim);
+      std::vector<valueType> ysOld(dim);
 
       for(int y=0 ; y < dim; ++y){
         xsOld[y] = data[0][2][y];
         ysOld[y] = data[1][2][y];
       }
 
-      vector<valueType> &xsNew = newData[0];
-      vector<valueType> &ysNew = newData[1];
+      std::vector<valueType> &xsNew = newData[0];
+      std::vector<valueType> &ysNew = newData[1];
 
-      vector<bool> assigned(dim,false);
+      std::vector<bool> assigned(dim,false);
 
-      vector<int> newAssignment(dim,-1);
+      std::vector<int> newAssignment(dim,-1);
       //    printf("==================== step ============\n");
       //printf("optimzation ... for %d centers\n",dim);
 
@@ -347,11 +347,11 @@ namespace icl{
 
     template<class valueType>
     void push_data_intern_diff_gtz(int DIFF,
-                                   deque<vector<valueType> > data[2],
-                                   vector<int>               &ids,
-                                   vector<int>               &assignment,
-                                   vector<valueType>         newData[2],
-                                   vector<int>               &good){
+                                   std::deque<std::vector<valueType> > data[2],
+                                   std::vector<int>               &ids,
+                                   std::vector<int>               &assignment,
+                                   std::vector<valueType>         newData[2],
+                                   std::vector<int>               &good){
 
       // new data contains less points -> enlarge new new data
       for(int i=0;i<DIFF;i++){
@@ -359,7 +359,7 @@ namespace icl{
         newData[Y].push_back(BLIND_VALUE);
       }
       int dim = data[X][0].size();
-      vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
+      std::vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
 
       Array2D<valueType> distMat = createDistMat( pred , newData );
 
@@ -367,7 +367,7 @@ namespace icl{
 
       push_and_rearrange_data(dim, data, assignment, newData);
 
-      vector<int> delRows;
+      std::vector<int> delRows;
       for(int i=0;i<DIFF;i++){
         delRows.push_back( assignment [dim-1-i]);
       }
@@ -387,11 +387,11 @@ namespace icl{
 
     template<class valueType>
     void push_data_intern_diff_ltz(int DIFF,
-                                   deque<vector<valueType> > data[2],
-                                   vector<int>               &ids,
-                                   vector<int>               &assignment,
-                                   vector<valueType>         newData[2],
-                                   vector<int>               &good,
+                                   std::deque<std::vector<valueType> > data[2],
+                                   std::vector<int>               &ids,
+                                   std::vector<int>               &assignment,
+                                   std::vector<valueType>         newData[2],
+                                   std::vector<int>               &good,
                                    icl::cv::IDAllocationMode iaMode,
                                    int                       &lowestUnusedID){
 
@@ -408,7 +408,7 @@ namespace icl{
       for(int i=0;i<DIFF;i++){
         good.push_back(1);
       }
-      vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
+      std::vector<valueType> pred[2] = { predict(dim,data[X],good), predict(dim,data[Y],good) };
       /// restore good
       good.resize(good.size()-DIFF);
 
@@ -417,8 +417,8 @@ namespace icl{
       assignment = HungarianAlgorithm<valueType>::apply(distMat);
 
       /// <old>
-      //vector<int> newDataCols;
-      vector<valueType> newDataColsValues[2];
+      //std::vector<int> newDataCols;
+      std::vector<valueType> newDataColsValues[2];
       for(int x=0;x<dim;++x){ // x is the col index of newData
         if(assignment[x] >= dim-DIFF){
           newDataColsValues[X].push_back(newData[X][ assignment[x] ]);
@@ -429,7 +429,7 @@ namespace icl{
         printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",static_cast<int>(newDataColsValues[X].size()),DIFF);
       }
 
-      vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode, lowestUnusedID);
+      std::vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode, lowestUnusedID);
 
       for(int i=0;i<DIFF;i++){
         for(int j=0;j<3;j++){
@@ -450,11 +450,11 @@ namespace icl{
 
 
     template<class valueType>
-    void push_data_intern_first_step(deque<vector<valueType> > data[2],
-                                     vector<int>               &ids,
-                                     vector<int>               &assignment,
-                                     vector<valueType>         newData[2],
-                                     vector<int>               &good){
+    void push_data_intern_first_step(std::deque<std::vector<valueType> > data[2],
+                                     std::vector<int>               &ids,
+                                     std::vector<int>               &assignment,
+                                     std::vector<valueType>         newData[2],
+                                     std::vector<int>               &good){
 
       for(int i=0;i<3;i++){
         data[X].push_back(newData[X]);
@@ -553,7 +553,7 @@ namespace icl{
       m_vecCurrentAssignement = HungarianAlgorithm<valueType>::apply(distMat);
         // add the new data column -> by assingned data elements
       if(DIFF > 0){
-      vector<int> delRows;
+      std::vector<int> delRows;
       for(int i=0;i<DIFF;i++){
       delRows.push_back(m_vecCurrentAssignement[DATA_AND_MATRIX_DIM-1-i]);
       }
@@ -561,7 +561,7 @@ namespace icl{
       newData[X].resize(newData[X].size()-DIFF);
       newData[X].resize(newData[Y].size()-DIFF);
       }else if(DIFF < 0){
-      vector<int> newDataCols;
+      std::vector<int> newDataCols;
       for(int i=0;i<DATA_AND_MATRIX_DIM;i++){
       if(m_vecCurrentAssignement[i] >= DATA_AND_MATRIX_DIM+DIFF){
       newDataCols.push_back(i); //ERROR not i but assignment[i] !!
@@ -577,7 +577,7 @@ namespace icl{
       }
 
       /// rearrange the new data arrays
-      vector<valueType> rearrangedData[2] = { vector<valueType>(DATA_AND_MATRIX_DIM), vector<valueType>(DATA_AND_MATRIX_DIM)} ;
+      std::vector<valueType> rearrangedData[2] = { std::vector<valueType>(DATA_AND_MATRIX_DIM), std::vector<valueType>(DATA_AND_MATRIX_DIM)} ;
       for(int i=0;i < DATA_AND_MATRIX_DIM ;i++){
       rearrangedData[X][i] = newData[X][ m_vecCurrentAssignement[i] ];
       rearrangedData[Y][i] = newData[Y][ m_vecCurrentAssignement[i] ];
@@ -601,8 +601,8 @@ namespace icl{
     template<class valueType>
     int PositionTracker<valueType>::getID(valueType x, valueType y){
 
-      vector<valueType> &rX = m_matData[X][2];
-      vector<valueType> &rY = m_matData[Y][2];
+      std::vector<valueType> &rX = m_matData[X][2];
+      std::vector<valueType> &rY = m_matData[Y][2];
       for(unsigned int i=0;i<rX.size();++i){
         if(rX[i] == x && rY[i] == y){
           return m_vecIDs[i];

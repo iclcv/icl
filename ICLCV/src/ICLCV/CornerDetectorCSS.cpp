@@ -441,7 +441,7 @@ namespace icl{
     }
 
     template<class T>
-    const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<T> &boundary) {
+    const std::vector<Point32f> &CornerDetectorCSS::detectCorners(const std::vector<T> &boundary) {
       corners.clear();
       //calculate length of the data
       int length = boundary.size();
@@ -498,11 +498,11 @@ namespace icl{
       }
       return corners;
     }
-    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point32f> &boundary);
-    template ICLCV_API const vector<Point32f> &CornerDetectorCSS::detectCorners(const vector<Point> &boundary);
+    template ICLCV_API const std::vector<Point32f> &CornerDetectorCSS::detectCorners(const std::vector<Point32f> &boundary);
+    template ICLCV_API const std::vector<Point32f> &CornerDetectorCSS::detectCorners(const std::vector<Point> &boundary);
 
     template<class T>
-    const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<T> > &boundaries, const vector<icl32f> &sigmas) {
+    const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<T> > &boundaries, const std::vector<icl32f> &sigmas) {
       corners_list.clear();
       //calculate length of the data
       int array_length = 0;
@@ -582,7 +582,7 @@ namespace icl{
       //extract the corners
       corners_list.reserve(boundaries.size());
       for(unsigned int i = 0; i < boundaries.size();i++) {
-        corners_list.push_back(vector<Point32f>());
+        corners_list.push_back(std::vector<Point32f>());
         corners_list.back().reserve(extrema0_sizes[i]);
         if(gauss_lengths[i] < lengths[i]) {
           for(int j = 0; j < extrema0_sizes[i]; j++) {
@@ -613,8 +613,8 @@ namespace icl{
       return corners_list;
     }
 
-    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point32f> > &boundaries, const vector<icl32f> &sigmas);
-    template ICLCV_API const vector<vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const vector<vector<Point> > &boundaries, const vector<icl32f> &sigmas);
+    template ICLCV_API const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<Point32f> > &boundaries, const std::vector<icl32f> &sigmas);
+    template ICLCV_API const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<Point> > &boundaries, const std::vector<icl32f> &sigmas);
 
 
     void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value){
