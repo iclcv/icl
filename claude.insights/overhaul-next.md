@@ -37,32 +37,44 @@
 - **Folding markers removed** — 1,722 lines of `// {{{ open` / `// }}}` stripped from 67 files
 - **Qt style demo** — work/qt-style-demo/ with all Qt controls + loadable .qss
 
+## Completed (Phase 4)
+- **Debug build fixes** — missing std:: qualifiers (10+ files), SSE2 instantiation warning, GLEW/Qt warning suppression
+- **HiDPI text rendering** — GLPaintEngine renders text textures at devicePixelRatio resolution
+- **Test framework** — custom registry (Test.h), parallel runner, 84 tests (utils + FixedMatrix + DynMatrix)
+  - Replaces GTest dependency entirely, `BUILD_TESTS=ON`, integrated with ctest
+- **SSE2 FixedMatrix** — 4×4 float matrix multiply + 4×4×4×1 vector transform (replaces IPP dependency)
+- **FixedMatrix::length()** — L2 norm uses sum-of-squares+sqrt (was calling pow() per element)
+- **`using std::` removal** — all 18 temporary `using std::X` declarations replaced with explicit `std::`
+- **OpenCL → C API** — rewrote all 6 CL wrapper classes from cl:: C++ bindings to C API
+  - Works on macOS natively (no bundled headers needed), M3 unified memory
+  - Also converted PlanarRansacEstimator.cpp (only non-wrapper cl:: user)
+- **FFmpeg 7+/8+ rewrite** — LibAVVideoWriter rewritten for modern send/receive API
+  - Removed 6 deprecated APIs (avcodec_encode_video2, AVPicture, av_init_packet, etc.)
+  - Tested with FFmpeg 8.1, enabled by default
+- **Mandelbrot demo** — interactive OpenCL GPU fractal explorer with CPU/GPU toggle, rect zoom
+
 ## Ready to Do
 
 ### Quick wins
 | Task | Description |
 |------|-------------|
-| **OpenCL C++ bindings** | Bundle `cl2.hpp` from Khronos, re-enable `-DBUILD_WITH_OPENCL=ON` on macOS |
-| **Write tests** | SIMD correctness tests (threshold, arithmetic, find_first_not), Img tests (copy, convert, ROI) |
+| **More tests** | Img (copy, convert, ROI, channel), SIMD correctness (threshold, arithmetic) |
 
 ### Medium effort
 | Task | Description |
 |------|-------------|
 | **More SIMD** | Convolution kernels (3x3, 5x5), morphological ops (erode/dilate 3x3), icl8u arithmetic |
-| **FixedMatrix 4x4 SIMD** | 4x4 matrix multiply fits perfectly in SSE registers — hot path in 3D transforms |
-| **Dark theme default** | Fix GroupBox title rendering on macOS, then enable by default |
+| **Channel const-correctness** | Remove mutable abuse in Channel.h |
+| **Any.h rethink** | Currently inherits std::string. Consider std::any or std::variant |
 
 ### Larger efforts
 | Task | Description |
 |------|-------------|
-| **FFmpeg 7+ rewrite** | `LibAVVideoWriter.cpp` needs full rewrite for modern AVCodecContext API |
 | **Apple Accelerate** | vImage/vDSP as IPP replacement for convolution, color conversion, FFT on macOS |
 
 ### Code quality
 | Task | Description |
 |------|-------------|
-| **Channel const-correctness** | Remove mutable abuse in Channel.h |
-| **Any.h rethink** | Currently inherits std::string. Consider std::any |
 | **DynMatrix** | RAII deferred — dual-ownership mode (owning + non-owning views) makes simple replacement risky |
 
 ### Not available on Apple Clang
