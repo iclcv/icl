@@ -36,29 +36,26 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/ClippedCast.h>
 #include <cmath>
-#include <cstdlib>
 #include <algorithm>
 #include <random>
 #include <vector>
 
-#ifdef WIN32
-  #undef max
-#endif
-
 namespace icl{
   namespace utils{
-    /// Initilaize the random number generator. \ingroup RANDOM
-    /** @param seedval The seed value (e.g. time(0) ...)
-    */
-    inline void randomSeed(long int seedval) {
-  #ifdef WIN32
-      srand(seedval);
-  #else
-      srand48(seedval);
-  #endif
+
+    /// Thread-local random engine used by all ICL random functions \ingroup RANDOM
+    inline std::mt19937 &random_engine(){
+      static thread_local std::mt19937 engine(std::random_device{}());
+      return engine;
     }
 
-    /// Initilaize the random number generator (with Time::now().toMicroSeconds()).\ingroup RANDOM
+    /// Seed the random number generator. \ingroup RANDOM
+    /** @param seedval The seed value (e.g. time(0) ...) */
+    inline void randomSeed(long int seedval) {
+      random_engine().seed(static_cast<std::mt19937::result_type>(seedval));
+    }
+
+    /// Seed the random number generator with current time.\ingroup RANDOM
     inline void randomSeed() { randomSeed(Time::now().toMicroSeconds()); }
 
     /// Object based random seed caller \ingroup RANDOM
@@ -67,72 +64,41 @@ namespace icl{
       inline RandomSeeder(){randomSeed();}
     };
 
-    /// Generates random numbers in range [0,1]  \ingroup RANDOM
+    /// Generates random numbers in range [0,max]  \ingroup RANDOM
     inline double random(double max = 1) {
-  #ifdef WIN32
-      // this generates quite poor random numbers, because RAND_MAX = 32767
-      return max*(static_cast<double>(rand()) / (1.0 + static_cast<double>(RAND_MAX)));
-  #else
-      return max*drand48();
-  #endif
+      std::uniform_real_distribution<double> dist(0.0, max);
+      return dist(random_engine());
     }
 
     /// Generate a random number in range [min,max] \ingroup RANDOM
-    /** @param min a float argument. The lower intervall bound
-        @param max a float argument. The upper interval bound
-    */
     inline double random(double min, double max) {
-      return ((max - min) * random() + min);
+      std::uniform_real_distribution<double> dist(min, max);
+      return dist(random_engine());
     }
 
-    /// equivalent to random (r.minVal,r.maxVal)
+    /// equivalent to random(r.minVal, r.maxVal) \ingroup RANDOM
     template<class T>
     inline double random(const Range<T> &r){
-      return random((double)r.minVal,(double)r.maxVal);
+      return random(static_cast<double>(r.minVal), static_cast<double>(r.maxVal));
     }
 
-    ///Creates a non-negative random number in range [0,max] \ingroup RANDOM
-    /** @param max The upper limit for the returned number
-    */
+    /// Creates a non-negative random number in range [0,max] \ingroup RANDOM
     inline unsigned int random(unsigned int max) {
-      unsigned int val = static_cast<unsigned int>(floor(random (static_cast<double>(max)+1.0)));
-      return iclMin(val, max);
+      std::uniform_int_distribution<unsigned int> dist(0, max);
+      return dist(random_engine());
     }
 
-  #if 0
-    // removed due to lack of usebility: use std::fill(i.begin(c),i.end(c),URand(range)) instead
-
-    /// fill an image with uniform distributed random values in the given range \ingroup RANDOM
-    /** @param poImage image to fill with random values (NULL is not allowed)
-        @param range for the random value
-        @param roiOnly decides whether to apply the operation on the whole image or on its ROI only
-    **/
-    ICLUtils_API void random(ImgBase *poImage, const Range<double> &range=Range<double>(0,255), bool roiOnly=true);
-
-    /// fill an image with gauss-distributed random values with given mean, variance and min/max value \ingroup RANDOM
-    /** @param poImage image to fill with random values (NULL is not allowed)
-        @param mean mean value for all gauss distributed random variables
-        @param var variance for all gauss distributed random variables
-        @param minAndMax clipping range for all variables
-        @param roiOnly decides whether to apply the operation on the whole image or on its ROI only
-    **/
-    ICLUtils_API void gaussRandom(ImgBase *poImage, double mean, double var, const Range<double> &minAndMax, bool roiOnly=true);
-  #endif
     /// Generate a gaussian random number with given mean and variance \ingroup RANDOM
-    /** @param mean mode of the gaussian
-        @param var variance of the gaussian
-        @return gaussian distributed variable
-        @sa double(double,double,const Range<double>&),
-    **/
-    ICLUtils_API double gaussRandom(double mean, double var);
+    /** Thread-safe (uses thread-local state).
+        @param mean mode of the gaussian
+        @param var variance of the gaussian (standard deviation)
+        @return gaussian distributed variable */
+    inline double gaussRandom(double mean, double var){
+      std::normal_distribution<double> dist(mean, var);
+      return dist(random_engine());
+    }
 
-    /// Generate a gaussian random number with given mean and variance and clips the result to a range \ingroup RANDOM
-    /** @param mean mode of the gaussian
-        @param var variance of the gaussian
-        @param range clipping range for the returned value
-        @return gaussian distributed variable clipped to range range
-        @sa double(double,double,const Range<double>&),
-    **/
+    /// Generate a gaussian random number clipped to a range \ingroup RANDOM
     inline double gaussRandom(double mean, double var, const Range<double> &range){
       return clip<double>( gaussRandom(mean,var), range.minVal, range.maxVal);
     }
