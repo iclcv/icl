@@ -611,6 +611,9 @@ if(BUILD_APPS)
   _icl_add_deferred_dirs(ICL_APP_DIRS)
 endif()
 
+# ---- Benchmark tool (after all modules) ----
+add_subdirectory(benchmarks)
+
 add_subdirectory(doc)
 add_subdirectory(cmake)
 
