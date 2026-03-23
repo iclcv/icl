@@ -126,8 +126,6 @@
   #include <unistd.h>
 #include <mutex>
 #endif
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
@@ -157,7 +155,6 @@ namespace icl{
     }
 
     static const std::string &gen_params(){
-      // {{{ open
 
       static std::string op = ( "general params are: \n"
                                 "\t@size=WxH     (W and H are positive integers) set min and max size of that widget\n"
@@ -174,7 +171,6 @@ namespace icl{
       return op;
     }
 
-    // }}}
 
     /// special gui component for visualizing process information
     struct ProcessMonitorGUIWidget : public GUIWidget{
@@ -744,7 +740,6 @@ namespace icl{
 
 
     struct CamCfgGUIWidget : public GUIWidget {
-      // {{{ open
 
       CamCfgGUIWidget(const GUIDefinition &def):
         GUIWidget(def,0,2), m_cfg(nullptr), m_button(nullptr)
@@ -780,7 +775,6 @@ namespace icl{
     };
 
     struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
-      // {{{ open
 
       ScrollGUIWidgetBase(const GUIDefinition &def, QBoxLayout::Direction d):
         GUIWidget(def,0,-1,GUIWidget::noLayout){
@@ -820,28 +814,22 @@ namespace icl{
       QScrollArea *m_poScroll;
     };
 
-    // }}}
 
     struct HScrollGUIWidget : public ScrollGUIWidgetBase{
-      // {{{ open
       HScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::LeftToRight){}
       static string getSyntax(){
         return string("hscroll()[general params]\n")+ gen_params();
       }
     };
-    // }}}
 
     struct VScrollGUIWidget : public ScrollGUIWidgetBase{
-      // {{{ open
       VScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::TopToBottom){}
       static string getSyntax(){
         return string("vscroll()[general params]\n")+ gen_params();
       }
     };
-    // }}}
 
     struct HBoxGUIWidget : public GUIWidget{
-      // {{{ open
       HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
         if(def.hasToolTip()){
@@ -859,11 +847,9 @@ namespace icl{
       }
     };
 
-    // }}}
 
 
     struct VBoxGUIWidget : public GUIWidget{
-      // {{{ open
       VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::vboxLayout){
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
         if(def.hasToolTip()){
@@ -881,10 +867,8 @@ namespace icl{
       }
     };
 
-    // }}}
 
     struct SplitterGUIWidgetBase : public GUIWidget, public ProxyLayout{
-      // {{{ open
       SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,0,0,GUIWidget::noLayout){
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
@@ -919,28 +903,22 @@ namespace icl{
       QSplitter *m_splitter;
       QGridLayout *m_layout;
     };
-    // }}}
 
     struct HSplitterGUIWidget : public SplitterGUIWidgetBase{
-      // {{{ open
       HSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,true){}
       static string getSyntax(){
         return string("hsplit()[general params]\n")+gen_params();
       }
     };
-    // }}}
 
     struct VSplitterGUIWidget : public SplitterGUIWidgetBase{
-      // {{{ open
       VSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,false){}
       static string getSyntax(){
         return string("vsplit()[general params]\n")+gen_params();
       }
     };
-    // }}}
 
     struct TabGUIWidget : public GUIWidget, public ProxyLayout{
-      // {{{ open
       TabGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20,GUIWidget::noLayout){
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
@@ -988,10 +966,8 @@ namespace icl{
       int m_nextTabIdx;
       QGridLayout *m_layout;
     };
-    // }}}
 
     struct BorderGUIWidget : public GUIWidget{
-      // {{{ open
 
       BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
 
@@ -1025,7 +1001,6 @@ namespace icl{
       QVBoxLayout *m_poLayout;
     };
 
-    // }}}
 
 
     struct ColorGUIWidget : public GUIWidget{
@@ -1087,7 +1062,6 @@ namespace icl{
 
     class ButtonGUIWidget : public GUIWidget{
     public:
-      // {{{ open
       ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
         QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
 
@@ -1118,9 +1092,7 @@ namespace icl{
       ButtonHandle *m_poClickedEvent;
     };
 
-    // }}}
     struct ButtonGroupGUIWidget : public GUIWidget{
-      // {{{ open
 
       ButtonGroupGUIWidget(const GUIDefinition &def):
         GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,def.numParams())), m_uiInitialIndex(0){
@@ -1177,9 +1149,7 @@ namespace icl{
       unsigned int m_uiInitialIndex ;
     };
 
-    // }}}
     class ToggleButtonGUIWidget : public GUIWidget{
-      // {{{ open
     public:
       ToggleButtonGUIWidget(const GUIDefinition &def):
         GUIWidget(def,2){
@@ -1236,11 +1206,9 @@ namespace icl{
       ButtonHandle *m_poHandle;
     };
 
-  // }}}
 
 
     struct CheckBoxGUIWidget : public GUIWidget{
-      // {{{ open
     public:
       CheckBoxGUIWidget(const GUIDefinition &def):
         GUIWidget(def,2){
@@ -1293,13 +1261,11 @@ namespace icl{
       QCheckBox *m_poCheckBox;
     };
 
-  // }}}
 
 
 
 
     struct LabelGUIWidget : public GUIWidget{
-      // {{{ open
       LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
 
         m_poLabel = new CompabilityLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
@@ -1323,12 +1289,10 @@ namespace icl{
       CompabilityLabel *m_poLabel;
     };
 
-    // }}}
 
 
 
     struct StateGUIWidget : public GUIWidget{
-      // {{{ open
       StateGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
         m_text = new ThreadedUpdatableTextView(def.parentWidget());
         m_text->setReadOnly(true);
@@ -1352,11 +1316,9 @@ namespace icl{
       ThreadedUpdatableTextView *m_text;
     };
 
-    // }}}
 
 
     struct SliderGUIWidget : public GUIWidget{
-      // {{{ open
 
       static bool vertical(const GUIDefinition &def){
         return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
@@ -1457,9 +1419,7 @@ namespace icl{
 
     };
 
-  // }}}
     struct FloatSliderGUIWidget : public GUIWidget{
-      // {{{ open
 
       static bool vertical(const GUIDefinition &def){
         return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
@@ -1554,9 +1514,7 @@ namespace icl{
       }
     };
 
-  // }}}
     struct IntGUIWidget : public GUIWidget{
-      // {{{ open
   public:
       IntGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
         m_poLineEdit = new QLineEdit(def.parentWidget());
@@ -1599,9 +1557,7 @@ namespace icl{
       int *m_piOutput;
     };
 
-  // }}}
     struct FloatGUIWidget : public GUIWidget{
-      // {{{ open
   public:
       FloatGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
         m_poLineEdit = new QLineEdit(def.parentWidget());
@@ -1644,9 +1600,7 @@ namespace icl{
       float *m_pfOutput;
     };
 
-  // }}}
     struct StringGUIWidget : public GUIWidget{
-      // {{{ open
       class StringLenValidator : public QValidator{
       public:
         StringLenValidator(int iMaxLen):QValidator(0){
@@ -1699,9 +1653,7 @@ namespace icl{
       string *m_psOutput;
     };
 
-  // }}}
     struct DispGUIWidget : public GUIWidget{
-      // {{{ open
 
       static Size dim(const GUIDefinition &def, int facX=1, int facY=1){
         int nW = def.intParam(0);
@@ -1748,9 +1700,7 @@ namespace icl{
       LabelMatrix *m_poLabelMatrix;
     };
 
-    // }}}
     struct ImageGUIWidget : public GUIWidget{
-      // {{{ open
       ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::gridLayout,Size(16,12)){
 
         m_poWidget = new ICLWidget(def.parentWidget());
@@ -1775,10 +1725,8 @@ namespace icl{
       ICLWidget *m_poWidget;
     };
 
-    // }}}
 
     struct PlotGUIWidget : public GUIWidget{
-      // {{{ open
       PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7,GUIWidget::gridLayout,Size(16,12)){
 
         m_plot = new PlotWidget(def.parentWidget());
@@ -1847,10 +1795,8 @@ namespace icl{
       PlotWidget *m_plot;
     };
 
-    // }}}
 
     struct DrawGUIWidget : public GUIWidget{
-      // {{{ open
       DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
         m_poWidget = new ICLDrawWidget(def.parentWidget());
         if(def.hasToolTip()) m_poWidget->setInfoText(def.toolTip());
@@ -1876,11 +1822,9 @@ namespace icl{
       ICLDrawWidget *m_poWidget;
     };
 
-    // }}}
 
 
     struct MultiDrawGUIWidget : public GUIWidget{
-      // {{{ open
       MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::vboxLayout){
         m_bAll = false;
         m_bDeep = true;
@@ -1950,11 +1894,9 @@ namespace icl{
       bool m_bDeep;
     };
 
-    // }}}
 
   #ifdef ICL_HAVE_OPENGL
     struct DrawGUIWidget3D : public GUIWidget{
-      // {{{ open
       DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
         m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
         if(def.numParams() == 1) {
@@ -1984,9 +1926,7 @@ namespace icl{
     };
   #endif
 
-    // }}}
     struct ComboGUIWidget : public GUIWidget{
-      // {{{ open
       ComboGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,1)){
         if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least 1 param needed here!");
 
@@ -2040,9 +1980,7 @@ namespace icl{
       QComboBox *m_poCombo;
     };
 
-    // }}}
     struct SpinnerGUIWidget : public GUIWidget{
-      // {{{ open
   public:
       SpinnerGUIWidget(const GUIDefinition &def):GUIWidget(def,3,3,GUIWidget::gridLayout,Size(4,1)){
         m_poSpinBox = new QSpinBox(def.parentWidget());
@@ -2083,10 +2021,8 @@ namespace icl{
       int *m_piOutput;
     };
 
-  // }}}
 
     struct FPSGUIWidget : public GUIWidget{
-      // {{{ open
       FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(5,2)){
         int np = def.numParams();
         int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
@@ -2120,7 +2056,6 @@ namespace icl{
     /// template for creating arbitrary GUIWidget's
     template<class T>
     GUIWidget *create_widget_template(const GUIDefinition &def){
-      // {{{ open
       T *t = 0;
       try{
         t = new  T(def);
@@ -2131,7 +2066,6 @@ namespace icl{
       return t;
     }
 
-    // }}}
 
     static std::map<std::string,GUI::CreatorFunction> &get_registered_widget_types(){
       static std::map<std::string,GUI::CreatorFunction> m;
@@ -2189,7 +2123,6 @@ namespace icl{
         it build a CreatorFuncMap which uses the GUIDefinitinos type-string as
         identifier to estimate which creation function must be called.         */
     GUIWidget *create_widget(const GUIDefinition &def){
-      // {{{ open
       typedef std::map<std::string,GUI::CreatorFunction> tmap;
       tmap &m = get_registered_widget_types();
       tmap::iterator it = m.find(def.type());
@@ -2200,10 +2133,8 @@ namespace icl{
       return it->second(def);
     }
 
-    // }}}
 
     string extract_label(string s){
-      // {{{ open
 
       string::size_type p = s.find('[');
       if(p == string::npos) return "";
@@ -2221,9 +2152,7 @@ namespace icl{
       return "";
     }
 
-    // }}}
     string extract_minsize(string s){
-      // {{{ open
 
       string::size_type p = s.find('[');
       if(p == string::npos) return "";
@@ -2241,9 +2170,7 @@ namespace icl{
       return "";
     }
 
-    // }}}
     string extract_maxsize(string s){
-      // {{{ open
 
       string::size_type p = s.find('[');
       if(p == string::npos) return "";
@@ -2261,9 +2188,7 @@ namespace icl{
       return "";
     }
 
-    // }}}
     string extract_size(string s){
-      // {{{ open
 
       string::size_type p = s.find('[');
       if(p == string::npos) return "";
@@ -2281,23 +2206,19 @@ namespace icl{
       return "";
     }
 
-    // }}}
 
     string remove_label(const string &s, const std::string &label){
-      // {{{ open
       string toRemove = string("@label=")+label;
       unsigned int p = s.find(toRemove);
       return s.substr(0,p) + s.substr(p+toRemove.length());
     }
 
-    // }}}
 
 
     GUI::GUI(QWidget *parent):
       m_sDefinition("vbox"),m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
     GUI::GUI(const std::string &definition,QWidget *parent):
-      // {{{ open
       m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 
@@ -2306,15 +2227,12 @@ namespace icl{
     }
 
 
-    // }}}
     GUI::GUI(const GUI &g,QWidget *parent):
-      // {{{ open
       m_sDefinition(g.createDefinition()),
       m_children(g.m_children),
       m_poWidget(nullptr),m_bCreated(false),
       m_poParent(parent){
     }
-    // }}}
 
 
     GUI &GUI::operator=(const GUI &other){
@@ -2341,7 +2259,6 @@ namespace icl{
     }
 
     GUI &GUI::operator<<(const std::string &definition){
-      // {{{ open
       if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
       if(definition.length() > 100000) {
         throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
@@ -2429,9 +2346,7 @@ namespace icl{
       return str.str();
     }
 
-    // }}}
     GUI &GUI::operator<<(const GUI &g){
-      // {{{ open
 
       if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
 
@@ -2469,10 +2384,8 @@ namespace icl{
       return *this;
     }
 
-    // }}}
 
     void GUI::create(QLayout *parentLayout,ProxyLayout *proxy,QWidget *parentWidget, DataStore *ds){
-      // {{{ open
       if(ds) m_oDataStore = *ds;
       try{
         if(isDummy()){
@@ -2512,7 +2425,6 @@ namespace icl{
 
     }
 
-    // }}}
 
     bool GUI::isVisible() const{
       if(!m_bCreated) return false;
@@ -2549,12 +2461,10 @@ namespace icl{
 
 
     void GUI::show(){
-      // {{{ open
       create();
       m_poWidget->setVisible(true);
     }
 
-    // }}}
 
     void GUI::waitForCreation(){
       while(!m_bCreated){

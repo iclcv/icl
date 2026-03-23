@@ -34,8 +34,6 @@
 #include <ICLUtils/Exception.h>
 #include <cstring>
 
-using namespace std;
-
 using namespace icl::utils;
 
 namespace icl{
@@ -44,7 +42,6 @@ namespace icl{
     namespace som{
 
       static inline float distance2(const float *a,const float *b, unsigned int dim){
-        // {{{ open
 
         float sum = 0;
         for(unsigned int i=0;i<dim;++i){
@@ -53,29 +50,23 @@ namespace icl{
         return sum;
       }
 
-      // }}}
 
       static inline float def_h_func(const float *r,const float *s, float sigma, unsigned int dim){
-        // {{{ open
 
         return ::exp( -distance2(r,s,dim)/(2*sigma*sigma) );
       }
 
-      // }}}
 
     }
 
 
     SOM::Neuron::Neuron(SOM::Neuron::vector_type gridpos,SOM::Neuron::vector_type prototype,unsigned int griddim, unsigned int datadim):
-      // {{{ open
       gridpos(gridpos),prototype(prototype),griddim(griddim),datadim(datadim){
     }
 
-    // }}}
 
     SOM::SOM(unsigned int dataDim, const std::vector<unsigned int> &dims,
              const std::vector<Range<float> > &prototypeBounds, float epsilon, float sigma){
-      // {{{ open
 
       ICLASSERT_THROW(dataDim>0,ICLException("SOM data dimension must be > 0"));
       ICLASSERT_THROW(dims.size()>0,ICLException("SOM grid dimension must be > 0"));
@@ -126,20 +117,16 @@ namespace icl{
       }
     }
 
-    // }}}
 
       SOM::~SOM(){
-      // {{{ open
 
       m_uiDataDim = 0;
       m_vecNeurons.clear();
       m_fEpsilon = 0;
     }
 
-    // }}}
 
     void SOM::train(const float *input){
-      // {{{ open
 
       const Neuron &s = getWinner(input);
 
@@ -151,24 +138,18 @@ namespace icl{
       }
     }
 
-    // }}}
     const vector<SOM::Neuron> &SOM::getNeurons() const{
-      // {{{ open
 
       return m_vecNeurons;
     }
 
-    // }}}
     vector<SOM::Neuron> &SOM::getNeurons(){
-      // {{{ open
       return m_vecNeurons;
     }
 
-    // }}}
 
 
     const SOM::Neuron &SOM::getWinner(const float *input) const{
-      // {{{ open
 
       static Neuron dummy;
       ICLASSERT_RETURN_VAL(m_vecNeurons.size(),dummy);
@@ -186,16 +167,12 @@ namespace icl{
       return m_vecNeurons[minIdx];
     }
 
-    // }}}
     SOM::Neuron &SOM::getWinner(const float *input){
-      // {{{ open
       return const_cast<Neuron&>(const_cast<const SOM*>(this)->getWinner(input));
     }
 
-    // }}}
 
     const SOM::Neuron &SOM::getNeuron(const std::vector<int> &dims) const{
-      // {{{ open
 
       static Neuron dummy;
       ICLASSERT_RETURN_VAL(dims.size() == m_uiSomDim, dummy);
@@ -207,28 +184,21 @@ namespace icl{
       return m_vecNeurons[idx];
     }
 
-    // }}}
     SOM::Neuron &SOM::getNeuron(const std::vector<int> &dims){
-      // {{{ open
       return const_cast<Neuron&>(const_cast<const SOM*>(this)->getNeuron(dims));
     }
 
-    // }}}
 
     void SOM::setEpsilon(float epsilon){
-      // {{{ open
 
       m_fEpsilon = epsilon;
     }
 
-    // }}}
     void SOM::setSigma(float sigma){
-      // {{{ open
 
       m_fSigma = sigma;
     }
 
-    // }}}
 
   } // namespace math
 }

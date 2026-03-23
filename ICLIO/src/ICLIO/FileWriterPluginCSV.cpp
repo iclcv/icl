@@ -35,8 +35,6 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-using namespace std;
-
 namespace icl{
   namespace io{
 

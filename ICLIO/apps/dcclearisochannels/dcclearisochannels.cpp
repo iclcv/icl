@@ -32,8 +32,6 @@
 #include <ICLIO/DC.h>
 #include <map>
 #include <vector>
-
-using namespace std;
 using namespace icl::io;
 
 typedef std::map<int,vector<dc1394camera_t*> > cammap;

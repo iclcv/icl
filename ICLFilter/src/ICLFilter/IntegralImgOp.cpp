@@ -39,37 +39,28 @@ namespace icl{
 
 
     IntegralImgOp::IntegralImgOp(depth d):
-      // {{{ open
       m_integralImageDepth(d),m_buf(0){
     }
 
-    // }}}
 
     IntegralImgOp::~IntegralImgOp(){
-      // {{{ open
       ICL_DELETE(m_buf);
     }
-    // }}}
 
     void IntegralImgOp::setIntegralImageDepth(depth integralImageDepth){
-      // {{{ open
 
       m_integralImageDepth = integralImageDepth;
     }
 
-    // }}}
     depth IntegralImgOp::getIntegralImageDepth() const{
-      // {{{ open
 
       return m_integralImageDepth;
     }
 
-    // }}}
 
 
     template<class S,class  D>
     static void create_integral_channel_cpp(const S *image,int w, int h, D *intImage){
-      // {{{ open
       /* algorithm:
           +++++..
           +++CA..
@@ -116,22 +107,18 @@ namespace icl{
       }
     }
 
-    // }}}
 
     template<class S, class D>
     static void create_integral_image_sd(const Img<S> &src, Img<D> &dst, ImgBase**){
-      // {{{ open
       for(int c=src.getChannels()-1;c>=0;--c){
         create_integral_channel_cpp(src.begin(c), src.getWidth(), src.getHeight(), dst.begin(c));
       }
     }
-    // }}}
 
   #ifdef ICL_HAVE_IPP_DEACTIVATED_BECAUSE_IT_IS_MUCH_SLOWER
 
     template<class S, class D, class B, class IPP_FUNC>
     void create_integral_image_ipp(const Img<S> &src, Img<D> &dst, ImgBase **buf,  IPP_FUNC ippfunc){
-      // {{{ open
 
       ensureCompatible(buf,getDepth<B>(), src.getSize()+Size(1,1), 1, formatMatrix, Rect::null);
       Img<B> &dbuf = *(*buf)->asImg<B>();
@@ -150,35 +137,27 @@ namespace icl{
       }
     }
 
-    // }}}
 
     template<> void create_integral_image_sd<icl8u,icl32s>(const Img<icl8u> &src, Img<icl32s> &dst, ImgBase **buf){
-      // {{{ open
 
       create_integral_image_ipp<icl8u,icl32s,icl32s>(src,dst, buf, ippiIntegral_8u32s_C1R);
     }
 
-    // }}}
     template<> void create_integral_image_sd<icl8u,icl32f>(const Img<icl8u> &src, Img<icl32f> &dst, ImgBase **buf){
-      // {{{ open
 
       create_integral_image_ipp<icl8u,icl32f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
     }
 
-    // }}}
     template<> void create_integral_image_sd<icl8u,icl64f>(const Img<icl8u> &src, Img<icl64f> &dst, ImgBase **buf){
-      // {{{ open
 
       create_integral_image_ipp<icl8u,icl64f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
     }
 
-    // }}}
 
   #endif
 
     template<class D>
     static void create_integral_image_xd(const ImgBase *src, Img<D> &dst, ImgBase **buf){
-      // {{{ open
 
       switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: create_integral_image_sd(*src->asImg<icl##D>(), dst, buf) ; break;
@@ -187,11 +166,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     void IntegralImgOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-      // {{{ open
 
       ICLASSERT_RETURN( poSrc );
       ICLASSERT_RETURN( poSrc );
@@ -220,7 +197,6 @@ namespace icl{
 
     }
 
-    // }}}
 
 
   } // namespace filter

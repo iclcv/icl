@@ -46,7 +46,6 @@ namespace icl{
     namespace{
       template<class T>
       struct DrawLineSegment{
-        // {{{ open
         Channel<T> &c;
         T val;
         inline DrawLineSegment(Channel<T> &c, T val):c(c),val(val){}
@@ -56,7 +55,6 @@ namespace icl{
           const icl16u &xend = sl.xend;
           std::fill(&c(x,y),&c(xend,y),val);
         }
-        // }}}
       };
     }
 
@@ -104,7 +102,6 @@ namespace icl{
     }
     **/
     int ImageRegion::getSize() const{
-      // {{{ open
 
       int &size = data()->size;
       if(size) return size;
@@ -114,25 +111,19 @@ namespace icl{
       return size;
     }
 
-    // }}}
 
     int ImageRegion::getVal() const {
-      // {{{ open
 
       return data()->value;
     }
 
-    // }}}
 
     int ImageRegion::getID() const{
-      // {{{ open
       return m_data->id;
     }
-    // }}}
 
 
     Point32f ImageRegion::getCOG() const{
-      // {{{ open
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->cog) return *simple->cog;
 
@@ -147,16 +138,12 @@ namespace icl{
       return *(simple->cog = new Point32f(s*cog.x,s*cog.y));
     }
 
-    // }}}
 
     const std::vector<LineSegment> &ImageRegion::getLineSegments() const{
-      // {{{ open
       return m_data->segments;
     }
-    // }}}
 
     const Rect &ImageRegion::getBoundingBox() const{
-      // {{{ open
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->boundingBox) return *simple->boundingBox;
 
@@ -176,25 +163,19 @@ namespace icl{
       return *(simple->boundingBox = new Rect(minX,minY,maxX-minX,maxY-minY+1));
     }
 
-    // }}}
 
 
     static inline double eval_sum_of_squares(double k){
-      // {{{ open (  retuns sum(i=0..k) i*i  )
 
       return k*(k+1)*(2*k+1)/6.0;
     }
 
-      // }}}
     static inline double eval_sum(double k){
-      // {{{ open (  returns sum(i=0..k) i  )
 
       return k*(k+1)/2.0;
     }
-    // }}}
 
     const RegionPCAInfo &ImageRegion::getPCAInfo() const {
-      // {{{ open
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->pcainfo) return *simple->pcainfo;
 
@@ -238,11 +219,9 @@ namespace icl{
 
       return *(simple->pcainfo = new RegionPCAInfo(2*::sqrt(fP + fD),2*::sqrt(fP - fD),::atan2(fA-fSxx,fSxy),avgX,avgY));
     }
-    // }}}
 
 
     const std::vector<Point> &ImageRegion::getBoundary(bool thinned) const {
-      // {{{ open
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
 
       if (!simple->boundary) {
@@ -301,18 +280,14 @@ namespace icl{
           (::abs(thinned.front().y - last_added.y) > 1)) thinned.push_back(boundary.back());
     }
 
-    // }}}
 
     static inline bool line_segment_cmp_y(const LineSegment &a, const LineSegment &b) {
-      // {{{ open
 
       return a.y < b.y;
     }
 
-    // }}}
 
     Point ImageRegion::getUpperLeftPixel()const{
-      // {{{ open
 
       Point p;
       p.y = std::min_element(m_data->segments.begin(),m_data->segments.end(),line_segment_cmp_y)->y;
@@ -326,12 +301,10 @@ namespace icl{
       return p;
     }
 
-    // }}}
 
 
     template<class T>
     void ImageRegion::calculateBoundaryIntern(const Img<T> &image) const {
-      // {{{ open
       const Rect &imageROI = image.getROI();
       int xMin = imageROI.x;
       int xMax = imageROI.right()-1;
@@ -429,15 +402,12 @@ namespace icl{
       }while ( (p != pBreak) || (dirIdx != dirIdxBreak) );
       boundary.pop_back();
     }
-    // }}}
 
     int ImageRegion::getBoundaryPointCount(bool thinned) const{
-      // {{{ open
 
       return static_cast<int>(getBoundary(thinned).size());
     }
 
-    // }}}
 
 
    // Estimates the boundary length by counting how often the three
@@ -481,7 +451,6 @@ namespace icl{
       return (simple->boundaryLength = length[0]*grad[0] + length[1]*grad[1] + length[2]*grad[2]);
     }
 
-    // }}}
 
     const std::vector<Point32f> &ImageRegion::getBoundaryCorners() const{
       ImageRegionData::ComplexInformation *complex = m_data->ensureComplex();
@@ -506,18 +475,15 @@ namespace icl{
 
 
     float ImageRegion::getFormFactor() const {
-      // {{{ open
       float U = getBoundaryLength();
       float A = getSize();
       return (U*U)/(4*M_PI*A);
     }
 
-    // }}}
 
 
 
     const std::vector<Point> &ImageRegion::getPixels() const {
-      // {{{ open
       ImageRegionData::SimpleInformation *simple = m_data->ensureSimple();
       if(simple->pixels) return *simple->pixels;
       simple->pixels = new std::vector<Point>(getSize());
@@ -532,12 +498,10 @@ namespace icl{
       return *simple->pixels;
     }
 
-    // }}}
 
 
     namespace{
       template<class T> struct DrawLineSeg{
-        // {{{ open
 
         Channel<T> *c;
         T val;
@@ -548,11 +512,9 @@ namespace icl{
         }
       };
 
-      // }}}
     }
 
     void ImageRegion::drawTo(const ImgBase *image, icl64f val) const{
-      // {{{ open
       ICLASSERT_RETURN(image);
       ICLASSERT_RETURN(image->getChannels());
 
@@ -570,7 +532,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     void ImageRegion::drawToColor(const ImgBase *image, const icl64f *color) const{

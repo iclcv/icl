@@ -36,7 +36,6 @@
 
 
 #include <iostream>
-using namespace std;
 namespace icl {
   namespace physics{
 

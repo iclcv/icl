@@ -58,7 +58,6 @@ namespace icl {
         static inline T apply(const T t1, const T t2){ return std::abs(t1-t2); }
       };
       template<class T, BinaryArithmeticalOp::optype OT> struct LoopFunc{
-        // {{{ open
         static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
           for(int c=src1->getChannels()-1; c >= 0; --c) {
             ImgIterator<T> itDst = dst->beginROI(c);
@@ -70,13 +69,11 @@ namespace icl {
         }
       };
 
-      // }}}
 
 
   #ifdef ICL_HAVE_IPP
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
       inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
-        // {{{ open
         for (int c=src1->getChannels()-1; c >= 0; --c) {
           func (src1->getROIData (c), src1->getLineStep(),
                 src2->getROIData (c), src2->getLineStep(),
@@ -84,11 +81,9 @@ namespace icl {
                 dst->getROISize());
         }
     }
-    // }}}
 
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, const T*, int, T*, int, IppiSize, int)>
       inline void ipp_call_sfs(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
-        // {{{ open
         for (int c=src1->getChannels()-1; c >= 0; --c) {
           func (src1->getROIData (c), src1->getLineStep(),
                 src2->getROIData (c), src2->getLineStep(),
@@ -96,7 +91,6 @@ namespace icl {
                 dst->getROISize(), 0);
         }
     }
-    // }}}
 
   #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                           \
       template<> struct LoopFunc<icl8u, BinaryArithmeticalOp::OP##Op>{                                    \
@@ -139,7 +133,6 @@ namespace icl {
 
       template<BinaryArithmeticalOp::optype OT>
       void apply_op(const ImgBase *src1,const ImgBase *src2, ImgBase *dst){
-        // {{{ open
         switch(src1->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: LoopFunc<icl##D,OT>::apply(src1->asImg<icl##D>(),src2->asImg<icl##D>(), dst->asImg<icl##D>()); break;
           ICL_INSTANTIATE_ALL_DEPTHS;
@@ -147,12 +140,10 @@ namespace icl {
         }
       }
 
-      // }}}
 
     } // end of anonymous namespace
 
     void BinaryArithmeticalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst){
-      // {{{ open
       ICLASSERT_RETURN( poSrc1 );
       ICLASSERT_RETURN( poSrc2 );
       ICLASSERT_RETURN( poDst );
@@ -169,7 +160,6 @@ namespace icl {
         case absSubOp:  apply_op<absSubOp>(poSrc1,poSrc2,*poDst); break;
       }
     }
-    // }}}
 
   } // namespace filter
 }

@@ -50,7 +50,6 @@
 #include <ICLUtils/SteppingRange.h>
 
 #include <ICLUtils/Any.h>
-
 using namespace std;
 
 namespace icl{
@@ -272,7 +271,6 @@ namespace icl{
     }
 
     void ConfigFile::load(const std::string &filename){
-      // {{{ open
 
       m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
       pugi::xml_parse_result res = m_doc->load_file(filename.c_str());
@@ -288,11 +286,9 @@ namespace icl{
       load_internal();
     }
 
-    // }}}
 
 
     ConfigFile::ConfigFile(){
-      // {{{ open
 
       m_doc = SmartPtrBase<XMLDocument,XMLDocumentDelOp>(new XMLDocument);
 
@@ -301,7 +297,6 @@ namespace icl{
                          "</config>\n");
     }
 
-    // }}}
 
     ConfigFile::ConfigFile(std::istream &stream){
 
@@ -312,28 +307,22 @@ namespace icl{
 
 
     void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r){
-      // {{{ open
       get_entry_internal(m_sDefaultPrefix+id).restr = std::make_shared<KeyRestriction>(r);
 
       // Search the corresponding node ...
     }
 
-    // }}}
 
     const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const{
-      // {{{ open
       return get_entry_internal(m_sDefaultPrefix+id).restr.get();
     }
 
-    // }}}
 
 
     ConfigFile::ConfigFile(const std::string &filename){
-      // {{{ open
       load(filename);
     }
 
-    // }}}
 
     ConfigFile::ConfigFile(XMLDocument *handle):
       m_doc(handle){
@@ -341,31 +330,25 @@ namespace icl{
     }
 
     void ConfigFile::loadConfig(const std::string &filename){
-      // {{{ open
 
       s_oConfig.load(filename);
     }
 
-    // }}}
 
     void ConfigFile::loadConfig(const ConfigFile &configFile){
-      // {{{ open
 
       s_oConfig = configFile;
     }
 
-    // }}}
 
 
 
     void ConfigFile::save(const std::string &filename) const{
-      // {{{ open
 	  if (!m_doc->save_file(filename.c_str())) {
 		  throw ICLException("failed to open file");
 	  }
     }
 
-    // }}}
 
     void ConfigFile::clear(){
       *this = ConfigFile();

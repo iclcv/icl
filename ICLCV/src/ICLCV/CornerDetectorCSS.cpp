@@ -37,8 +37,6 @@
 #include <ICLUtils/CLProgram.h>
 #endif
 #include <ICLUtils/CLIncludes.h>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 

@@ -33,7 +33,6 @@
 #include <ICLUtils/File.h>
 
 using namespace icl;
-using namespace std;
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -45,7 +44,6 @@ namespace icl{
       const int NCOLS = 30;
       const int NEXTRA = 11;
       unsigned char aauc_Data_flowers[NROWS][NCOLS] = {
-        // {{{ open
         {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  1,  1, 44,  1, 44,  0,  0,255,226, 12, 88, 73, 67, 67, 95, 80, 82},
         { 79, 70, 73, 76, 69,  0,  1,  1,  0,  0, 12, 72, 76,105,110,111,  2, 16,  0,  0,109,110,116,114, 82, 71, 66, 32, 88, 89},
         { 90, 32,  7,206,  0,  2,  0,  9,  0,  6,  0, 49,  0,  0, 97, 99,115,112, 77, 83, 70, 84,  0,  0,  0,  0, 73, 69, 67, 32},
@@ -1585,16 +1583,12 @@ namespace icl{
         {165,160,  2,241,164,229,177, 18, 82,114,232,239,195,141,227,133,199,114, 98,244,240,143, 42,175,115,162,111,138,117,163},
         { 62,175,240, 99,158,120,242,215, 42,117,228,231,245, 31,173,126, 14,190,114,190,206, 60,237,188,140, 57, 38, 99, 23,146}
       };
-      // }}}
     unsigned char auc_ExtraData_flowers[NEXTRA] = {
-      // {{{ open
       139,  9,158,162,  1, 46,128,106,143,255,217
     };
-    // }}}
 
     }//end namespace
     ImgBase* createImage_flowers(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
       File f("./.tmp_image_buffer.jpg",File::writeBinary);
@@ -1617,6 +1611,5 @@ namespace icl{
       f.erase();
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 } // end namespace icl

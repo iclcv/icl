@@ -30,7 +30,6 @@
 
 #include <ICLUtils/Timer.h>
 #include <ICLUtils/Time.h>
-
 using namespace std;
 
 namespace icl {

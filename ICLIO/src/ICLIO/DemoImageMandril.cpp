@@ -33,8 +33,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-
-using namespace std;
 namespace icl{
   namespace io{
   namespace{
@@ -42,7 +40,6 @@ namespace icl{
   const int NCOLS = 30;
   const int NEXTRA = 2;
   unsigned char aauc_Data_mandril[NROWS][NCOLS] = {
-    // {{{ open
     {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  2,  0, 28,  0, 28,  0,  0,255,219,  0, 67,  0, 13,  9, 10, 11, 10},
     {  8, 13, 11, 10, 11, 14, 14, 13, 15, 19, 32, 21, 19, 18, 18, 19, 39, 28, 30, 23, 32, 46, 41, 49, 48, 46, 41, 45, 44, 51},
     { 58, 74, 62, 51, 54, 70, 55, 44, 45, 64, 87, 65, 70, 76, 78, 82, 83, 82, 50, 62, 90, 97, 90, 80, 96, 74, 81, 82, 79,255},
@@ -1966,16 +1963,12 @@ namespace icl{
     {124,112,106,100,153, 39, 66,184,221, 73,192,206, 40, 23, 77,133, 36, 13,143, 74, 20, 82,133, 77,120,216,122, 83, 88,107},
     {216,102, 82,196,  0,124,186,230,135, 44, 65,  8, 60,251, 10,171,204,217,212, 14, 58,209, 90, 64,209, 13,127,165,  0,159}
 };
-  // }}}
   unsigned char auc_ExtraData_mandril[NEXTRA] = {
-    // {{{ open
     255,217
   };
-  // }}}
 
   }//end namespace
     ImgBase* createImage_mandril(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
       FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
@@ -1997,7 +1990,6 @@ namespace icl{
       remove("./.tmp_image_buffer.jpg");
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 
 } // end namespace icl

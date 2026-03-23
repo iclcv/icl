@@ -105,7 +105,6 @@ namespace icl {
 
       template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, IppiSize, const T*, int, IppiSize, icl32f*, int)>
       inline void ippiCall(const Img<T> *src1, const Img<T> *src2, Img32f *dst){
-        // {{{ open
         for (int c=src1->getChannels()-1; c >= 0; --c) {
           ippiFunc (src1->getROIData (c), src1->getLineStep(),
                     src1->getROISize(),
@@ -114,20 +113,16 @@ namespace icl {
                     dst->getROIData (c), dst->getLineStep());
         }
       }
-      // }}}
 
       template<class T, ProximityOp::optype ot, ProximityOp::applymode>
       struct ProximityOpTemplate{
-        // {{{ open
 
         static void apply(const Img<T> *poSrc1,const Img<T> *poSrc2, Img32f *poDst){
           (void)poSrc1; (void)poSrc2; (void)poDst;
         }
       };
 
-      // }}}
 
-      // {{{ ProximityOpTemplate specialization (each calling a specific ipp function)
       /** Description: the following macro costructs a full template spcialization for
           the ProximityOpTemplate class. The parameters contain all necessary information
           for the ICL variable names as well as the IPP function name definition.
@@ -175,7 +170,6 @@ namespace icl {
   #undef CREATE_TEMPLATE
   #undef CREATE_TEMPLATE_ALL_AM
 
-      // }}}
 
       template<class T>
       void proximity_apply(const Img<T> *poSrc1,
@@ -183,7 +177,6 @@ namespace icl {
                            Img32f *poDst,
                            ProximityOp::optype ot,
                            ProximityOp::applymode am){
-        // {{{ open
 
         switch(ot){
           case ProximityOp::sqrDistance:
@@ -228,12 +221,10 @@ namespace icl {
         }
       }
 
-      // }}}
 
     }// anonymous namespace
 
     void ProximityOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
-      // {{{ open
 
       ICLASSERT_RETURN( poSrc1 && poSrc2 );
       ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
@@ -270,7 +261,6 @@ namespace icl {
       }
     }
 
-    // }}}
   #endif
 
     REGISTER_CONFIGURABLE(ProximityOp, return new ProximityOp(ProximityOp::crossCorr));

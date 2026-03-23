@@ -31,25 +31,23 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace icl{
   namespace io{
     /** \cond */
     class FilenameGeneratorImpl;
-    struct FilenameGeneratorImplDelOp { static void delete_func(FilenameGeneratorImpl *i); };
     /** \endcond */
 
     /// Utility class for generating a stream of filenames \ingroup UTILS_G
     /** This list can have a finite or an infinite size. The class provides functions to
         get the next filename (which inplicitly increases the internal counter), to get
         the count of remaining filenames and to reset the internal counter to first value.\n
-        The FilenameGenerator class extends the ShallowCopyable class interface to provide
-        cheap-copies using reference counting.
+        Uses shared_ptr for cheap copies with reference counting.
     **/
-    class ICLIO_API FilenameGenerator : public utils::ShallowCopyable<FilenameGeneratorImpl, FilenameGeneratorImplDelOp>{
+    class ICLIO_API FilenameGenerator{
       public:
       static const int INFINITE_FILE_COUNT;
       /// Null constructor
@@ -117,8 +115,11 @@ namespace icl{
       /// shows all files to if( the filelist is finite, the 10 first files are show);
       void show();
 
+      /// returns whether this generator is null (not initialized)
+      bool isNull() const { return !impl; }
 
-
+      private:
+      std::shared_ptr<FilenameGeneratorImpl> impl;
     };
   } // namespace io
 }

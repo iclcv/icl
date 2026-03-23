@@ -32,7 +32,7 @@
 
 #include <ICLIO/DCDevice.h>
 #include <ICLUtils/Configurable.h>
-#include <ICLUtils/ShallowCopyable.h>
+#include <memory>
 
 
 namespace icl{
@@ -58,40 +58,21 @@ namespace icl{
       bool ignorePropertyChange;
     };
 
-    struct DCDeviceFeaturesImplDelOp{
-      ICLIO_API static void delete_func(DCDeviceFeaturesImpl *impl);
-    };
     /** endcond */
 
     /// Utility class for handling DC-Device features \ingroup G_DC
     /** The DCDeviceFeautre class provides read/write access to the following features of
         DC1394 devices (if supported by the camera):
-        - Brightness
-        - Sharpness
-        - white-balance (splitted in RV and BU component)
-        - hue
-        - saturation
-        - shutter
-        - gain
-        - iris
-        - focus
-        - temperature
-        - trigger (currently not fully supported!)
-        - trigger delay(currently not fully supported!)
-        - white shading
-        - frame rate
-        - zoom
-        - pan
-        - tilt
-        - optical filter
-        - capture size
-        - capture quality
-
+        - Brightness, Sharpness, white-balance, hue, saturation
+        - shutter, gain, iris, focus, temperature
+        - trigger, trigger delay, white shading
+        - frame rate, zoom, pan, tilt
+        - optical filter, capture size, capture quality
 
         The class interface is adapted to the get/set Property interface of the ICL Grabber interface.
-        In addition, it is derived from the ShallowCopyable interface to allow cheap copying.
+        Uses shared_ptr for cheap copying.
     */
-    class DCDeviceFeatures : public utils::ShallowCopyable<DCDeviceFeaturesImpl,DCDeviceFeaturesImplDelOp>, public utils::Configurable {
+    class DCDeviceFeatures : public utils::Configurable {
       public:
       /// Base constructor create a null Object
       ICLIO_API DCDeviceFeatures();
@@ -99,6 +80,8 @@ namespace icl{
       /// Default constructor with given DCDevice struct
       ICLIO_API DCDeviceFeatures(const DCDevice &dev);
 
+      private:
+      std::shared_ptr<DCDeviceFeaturesImpl> impl;
     };
   } // namespace io
 }

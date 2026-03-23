@@ -48,7 +48,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-using namespace std;
 
 namespace icl{
   namespace io{
@@ -57,7 +56,6 @@ namespace icl{
 
     class FileWriterPluginMapInitializer{
     public:
-      // {{{ open
 
       FileWriterPluginMapInitializer(){
         FileWriter::s_mapPlugins[".ppm"] = new FileWriterPluginPNM;
@@ -132,49 +130,37 @@ namespace icl{
       }
     };
 
-    // }}}
 
     static FileWriterPluginMapInitializer __static_filewriter_plugin_initializer__;
 
 
     FileWriter::FileWriter(){
-      // {{{ open
 
     }
 
-    // }}}
 
     FileWriter::FileWriter(const std::string &filepattern):
-      // {{{ open
 
       m_oGen(filepattern){}
 
-    // }}}
 
     FileWriter::FileWriter(const FilenameGenerator &gen):
-      // {{{ open
 
       m_oGen(gen){}
 
-    // }}}
 
     FileWriter::~FileWriter(){
-      // {{{ open
 
     }
 
-    // }}}
 
     const FilenameGenerator &FileWriter::getFilenameGenerator() const{
-      // {{{ open
 
       return m_oGen;
     }
 
-    // }}}
 
     void FileWriter::write(const ImgBase *image){
-      // {{{ open
       ICLASSERT_RETURN(image);
       ICLASSERT_RETURN(image->getDim());
       ICLASSERT_RETURN(image->getChannels());
@@ -192,16 +178,13 @@ namespace icl{
       it->second->write(file,image);
     }
 
-    // }}}
 
     FileWriter &FileWriter::operator<<(const ImgBase *image){
-      // {{{ open
 
       write(image);
       return *this;
     }
 
-    // }}}
 
     void FileWriter::setOption(const std::string &option, const std::string &value){
       if(option == "csv:extend-file-name"){

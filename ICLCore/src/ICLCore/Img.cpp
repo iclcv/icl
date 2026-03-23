@@ -43,12 +43,10 @@ using namespace icl::math;
 namespace icl {
   namespace core{
 
-    // {{{  constructors and destructors
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const ImgParams &params):
-      // {{{ open
 
       ImgBase(icl::core::getDepth<Type>(),params){
       FUNCTION_LOG("Img(params)");
@@ -58,12 +56,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size &s,int iChannels):
-      // {{{ open
 
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,iChannels)){
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," << iChannels << ")  this:" << this );
@@ -73,12 +69,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size& s, format eFormat):
-      // {{{ open
       ImgBase(icl::core::getDepth<Type>(), ImgParams(s, eFormat)){
 
       for(int i=0;i<getChannels();i++) {
@@ -86,12 +80,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size &s,int iChannels, format fmt):
-      // {{{ open
 
       ImgBase(icl::core::getDepth<Type>(), ImgParams(s, iChannels, fmt)){
       for(int i=0;i<getChannels();i++) {
@@ -99,12 +91,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size &s, int channels, const std::vector<Type*>& vptData, bool passOwnerShip) :
-      // {{{ open
 
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels)) {
       ICLASSERT_THROW (getChannels () <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
@@ -116,12 +106,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip) :
-      // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels,fmt)){
       ICLASSERT_THROW (getChannels () <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
 
@@ -131,12 +119,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
-      // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
       ICLASSERT_THROW(getChannels() <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
 
@@ -146,12 +132,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //--- Copy constructor -------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const Img<Type>& tSrc) :
-      // {{{ open
 
       ImgBase(tSrc.getDepth(),tSrc.getParams())
     {
@@ -161,17 +145,14 @@ namespace icl {
       setMetaData(tSrc.getMetaData());
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::~Img()
-    // {{{ open
     {
       FUNCTION_LOG("this: " << this);
     }
 
-    // }}}
 
     template<class Type>
     static int get_channel_count(const DynMatrix<Type> &c1,
@@ -206,15 +187,12 @@ namespace icl {
       }
 
 
-    // }}} constructors...
 
 
-    // {{{  operators: "=", ()-(float,float,channel,scalemode)
 
     template<class Type>
     Img<Type>& Img<Type>::shallowCopy(const Img<Type>& tSrc)
     {
-      // {{{ open
 
       FUNCTION_LOG("");
 
@@ -228,11 +206,9 @@ namespace icl {
       return *this;
     }
 
-    // }}}
 
     template<class Type>
     Type Img<Type>::operator()(float fX, float fY, int iChannel, scalemode eScaleMode) const {
-      // {{{ open
 
       switch(eScaleMode) {
         case interpolateNN: return clipped_cast<float, Type>(subPixelNN (fX, fY, iChannel));
@@ -243,33 +219,24 @@ namespace icl {
       }
     }
 
-    // }}}
 
-    // }}} operators...
 
-    // {{{  ensureCompatible<T>, and ensureDepth<T> utility templates
 
     template<class Type>
     inline Img<Type>* ensureCompatible (ImgBase** ppoDst, const ImgParams& p)
-    // {{{ open
     {
       if (!ppoDst) return new Img<Type>(p);
       icl::core::ensureCompatible (ppoDst, icl::core::getDepth<Type>(), p);
       return (*ppoDst)->asImg<Type>();
     }
-    // }}}
 
     template<class Type>
     Img<Type>* ensureDepth(ImgBase **ppoDst){
-      // {{{ open
       ImgBase *poDst = icl::core::ensureDepth(ppoDst,getDepth<Type>());
       return poDst->asImg<Type>();
     }
-    // }}}
 
-    // }}} enshure ..
 
-    // {{{  shallowCopy function
 
 
     template<class Type>
@@ -278,7 +245,6 @@ namespace icl {
                                       format fmt,
                                       Time t,
                                       ImgBase **ppoDst){
-      // {{{ open
       ImgParams p(this->getSize(), 0);
       Img<Type> *poDst = ensureCompatible<Type>(ppoDst,p);
       /// Die ROi wird nicht übernommen ???
@@ -297,48 +263,37 @@ namespace icl {
       return poDst;
     }
 
-    // }}} ..
 
-    // }}} shallow ..
 
-    // {{{  copy functions: deepCopy, scaledCopy, flippedCopy convert (with and without ROI)
 
-    // {{{ copy-functions with ImgBase** argument
 
     template<class Type>
     Img<Type> *Img<Type>::deepCopy(ImgBase **ppoDst) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<ppoDst);
       return deepCopy( ensureCompatible<Type>(ppoDst,getParams()) );
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopy( ImgBase **ppoDst, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<ppoDst);
       if(!ppoDst) return deepCopy();
       return scaledCopy( ensureDepth<Type>(ppoDst), eScaleMode );
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopy( const Size &newSize, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("new size:"<<newSize.width<<"x"<<newSize.height);
       return scaledCopy( new Img<Type>(newSize, getChannels(), getFormat()), eScaleMode);
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::deepCopyROI(ImgBase **ppoDst) const{
-      // {{{ open
       FUNCTION_LOG("ptr:"<<ppoDst);
       Img<Type> *tmp = ensureDepth<Type>(ppoDst);
       if(!ppoDst){
@@ -349,36 +304,28 @@ namespace icl {
       return deepCopyROI( tmp );
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopyROI(const Size &newSize, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("new size:"<<newSize.width<<"x"<<newSize.height);
       return scaledCopyROI( new Img<Type>(newSize, getChannels(),getFormat()), eScaleMode );
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopyROI(ImgBase **ppoDst, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<ppoDst);
       if(!ppoDst) return deepCopyROI();
       return scaledCopyROI( ensureDepth<Type>(ppoDst),eScaleMode );
     }
 
-    // }}}
 
-    // }}} with ImgBase**...
 
-    // {{{ copy-functions with Img<Type>*-argument
 
     template<class Type>
     Img<Type> *Img<Type>::deepCopy(Img<Type> *poDst) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<poDst);
       if(!poDst) poDst = new Img<Type>(getParams());
@@ -393,11 +340,9 @@ namespace icl {
 
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopy(Img<Type> *poDst, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<poDst);
       if(!poDst) return deepCopy( (ImgBase**)0 );
@@ -412,11 +357,9 @@ namespace icl {
       return poDst;
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::deepCopyROI(Img<Type> *poDst) const{
-      // {{{ open
       // NEW USING source ROI as well as destination images ROI
       FUNCTION_LOG("ptr:"<< poDst);
       if(!poDst){
@@ -440,11 +383,9 @@ namespace icl {
 
     }
 
-    // }}}
 
     template<class Type>
     Img<Type> *Img<Type>::scaledCopyROI(Img<Type> *poDst, scalemode eScaleMode) const{
-      // {{{ open
 
       FUNCTION_LOG("ptr:"<<poDst);
       if(!poDst) return deepCopyROI();
@@ -460,17 +401,12 @@ namespace icl {
       return poDst;
     }
 
-    // }}}
 
-    // }}} with Img<Type>* ...
 
-    // }}} copy f.. deepCopy,scaledCopy,flippedCopy,convert
 
-    // {{{  channel management: detach, append remove, swap,...
 
     template<class Type> void
     Img<Type>::detach(int iIndex){
-      // {{{ open
       FUNCTION_LOG("index:" << iIndex );
       ICLASSERT_RETURN(iIndex < getChannels());
 
@@ -482,12 +418,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::removeChannel(int iChannel)
-    // {{{ open
 
     {
       FUNCTION_LOG("removeChannel(" << iChannel << ")");
@@ -497,12 +431,10 @@ namespace icl {
       m_oParams.setChannels(m_vecChannels.size());
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::append(const Img<Type> *poSrc, int iIndex)
-    // {{{ open
 
     {
       FUNCTION_LOG("");
@@ -517,11 +449,9 @@ namespace icl {
       m_oParams.setChannels(m_vecChannels.size());
     }
 
-    // }}}
 
     template<class Type> void
     Img<Type>::append(const Img<Type> *poSrc, const std::vector<int>& vChannels)
-    // {{{ open
 
     {
       FUNCTION_LOG("");
@@ -540,12 +470,10 @@ namespace icl {
       m_oParams.setChannels(m_vecChannels.size());
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::swapChannels(int iIndexA, int iIndexB)
-    // {{{ open
     {
       FUNCTION_LOG("swapChannels("<<iIndexA<<","<< iIndexB<< ")");
       ICLASSERT_RETURN(validChannel(iIndexA));
@@ -554,19 +482,16 @@ namespace icl {
       std::swap(m_vecChannels[iIndexA], m_vecChannels[iIndexB]);
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> inline void
     Img<Type>::replaceChannel(int iThisIndex, Img<Type>* poSrc, int iOtherIndex)
-    // {{{ open
     {
       FUNCTION_LOG("");
       ICLASSERT_RETURN(validChannel(iThisIndex));
       ICLASSERT_RETURN(poSrc->validChannel(iOtherIndex));
       m_vecChannels[iThisIndex] = poSrc->m_vecChannels[iOtherIndex];
     }
-    // }}}
 
     template<class Type>
     Img<Type> Img<Type>::extractChannelImg(int index){
@@ -601,9 +526,7 @@ namespace icl {
     }
 
 
-    // }}} channel management...
 
-    // {{{  inplace operations: scale, mirror and lut
 
     //----------------------------------------------------------------------------
 
@@ -659,7 +582,6 @@ namespace icl {
 
     template<class Type> void
     Img<Type>::scale(const Size &size, scalemode eScaleMode){
-      // {{{ open
       FUNCTION_LOG("");
       ICLASSERT_RETURN ((size.width > 0) && (size.height > 0));
 
@@ -671,12 +593,10 @@ namespace icl {
         }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::mirror(axis eAxis, bool bOnlyROI)
-    // {{{ open
     {
       FUNCTION_LOG("");
       const Point& oOffset = bOnlyROI ? getROIOffset() : Point::null;
@@ -685,14 +605,12 @@ namespace icl {
         this->mirror (eAxis, c, oOffset, oSize);
       }
     }
-    // }}}
 
     static inline int getPointerOffset (int x, int y, int iLineLen) {return (x + y*iLineLen);}
     static bool getMirrorPointerOffsets (axis eAxis, bool bInplace,
                                          const Point& oSrcOffset, const int iSrcLineLen,
                                          const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
                                          int& s, int& d, int& e, int& eLine, int& iLineWarpS, int& iLineWarpD) {
-      // {{{ open
       int iRows=0, iCols=0;
       switch (eAxis) {
         case axisHorz:
@@ -758,14 +676,12 @@ namespace icl {
 
       return ( (iRows != 0) && (iCols != 0));
     }
-    // }}}
 
     template <typename Type>
     static inline bool getMirrorPointers (axis eAxis, bool bInplace,
                                           const Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen,
                                           Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
                                           const Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
-      // {{{ open
       int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
       if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
                                     deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
@@ -776,13 +692,11 @@ namespace icl {
       eLine = srcBegin + deltaLineEnd;
       return true;
     }
-    // }}}
     template <typename Type>
     static inline bool getMirrorPointers (axis eAxis, bool bInplace,
                                           Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen,
                                           Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
                                           Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
-      // {{{ open
       int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
       if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
                                     deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
@@ -793,12 +707,10 @@ namespace icl {
       eLine = srcBegin + deltaLineEnd;
       return true;
     }
-    // }}}
 
     template<class Type> void
     Img<Type>::mirror(axis eAxis, int iChannel,
                       const Point& oOffset, const Size& oSize){
-      // {{{ open
 
       FUNCTION_LOG("");
 
@@ -844,16 +756,12 @@ namespace icl {
     }
   #endif
 
-    // }}}
 
-    // }}} inplace operations...
 
-    // {{{  setter: setSize, setChannels
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::setSize(const Size &s)
-    // {{{ open
 
     {
       FUNCTION_LOG("");
@@ -870,12 +778,10 @@ namespace icl {
       }
     }
 
-    // }}}
 
     //----------------------------------------------------------------------------
     template<class Type> void
     Img<Type>::setChannels(int iNumNewChannels)
-    // {{{ open
     {
       FUNCTION_LOG("");
       ICLASSERT_RETURN(iNumNewChannels >= 0);
@@ -894,13 +800,9 @@ namespace icl {
       m_oParams.setChannels(m_vecChannels.size());
     }
 
-    // }}}
 
-    // }}} setter...
 
-    // {{{  Get Min/Max functions:
 
-    // {{{     getMax
 
     template<class Type> Type
     Img<Type>::getMax() const{
@@ -949,9 +851,7 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
   #endif
 
-    // }}}
 
-    // {{{     getMin
 
     template<class Type> Type
     Img<Type>::getMin() const{
@@ -1000,9 +900,7 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
   #endif
 
-    // }}}
 
-    // {{{     getMinMax
 
     template<class Type> const Range<Type>
     Img<Type>::getMinMax() const
@@ -1088,15 +986,11 @@ namespace icl {
   #endif
 
 
-    // }}}
 
-    // }}} Get Min/Max...
 
-    // {{{  Auxillary  functions
 
     template<class Type>
     SmartArray<Type> Img<Type>::createChannel(Type *ptDataToCopy) const {
-      // {{{ open
       FUNCTION_LOG("");
       int dim = getDim();
       if(!dim) return SmartArray<Type>();
@@ -1110,12 +1004,10 @@ namespace icl {
       return SmartArray<Type>(ptNewData);
     }
 
-    // }}}
 
     // sub-pixel access using linear interpolation
     template<class Type>
     float Img<Type>::subPixelLIN(float fX, float fY, int iChannel) const {
-      // {{{ open
 
       float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
       float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
@@ -1133,7 +1025,6 @@ namespace icl {
       return fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d);
     }
 
-    // }}}
 
     // sub-pixel access using region average interpolation
     template<class Type>
@@ -1185,7 +1076,6 @@ namespace icl {
       return sum / (w*h);
     }
 
-    // }}}
 
     template<class Type>
     float Img<Type>::subPixelRA(const unsigned int xB, const unsigned int xE,
@@ -1220,13 +1110,9 @@ namespace icl {
         return sum;
     }
 
-    // }}}
 
-    // }}} Auxillary...
 
-    // {{{  normalize and clear
 
-    // {{{  normalize wrappers
 
     template<class Type> void
     Img<Type>::normalizeAllChannels(const Range<Type> &dstRange){
@@ -1264,9 +1150,7 @@ namespace icl {
       }
     }
 
-    // }}} ..
 
-    // {{{  normalize main methods
 
     template <class Type> void
     Img<Type>::normalize(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange){
@@ -1298,11 +1182,9 @@ namespace icl {
     }
   #endif
 
-    // }}}
 
     template<class Type>
     void Img<Type>::clear(int iIndex, Type tValue, bool bROIOnly)
-    // {{{ open
     {
       //---- Log Message ----
       FUNCTION_LOG("clear(" << iIndex << "," << tValue << ")");
@@ -1314,16 +1196,12 @@ namespace icl {
         clearChannelROI(this,i,tValue,offs,size);
       }
     }
-    // }}}
 
-    // }}} normalize and clear...
 
-    // {{{  Global functions: combineImages , scaledCopyChannelROI
 
 
     template<class ImgType>
     const ImgType* combineImages (const std::vector<const ImgType*>& vec, ImgBase** ppoDst) {
-      // {{{ open
 
       FUNCTION_LOG("");
       // find first non-zero element
@@ -1355,12 +1233,10 @@ namespace icl {
       return poDst;
     }
 
-    // }}}
 
     // file local (i.e. private) function to mediate between ImgBase and Img<T> variants
     template<typename T>
     const Img<T>* __combineImages (const std::vector<const ImgBase*>& vec, ImgBase** ppoDst) {
-      // {{{ open
 
       std::vector<const Img<T>*> vecTyped;
       // create correctly typed vector
@@ -1374,11 +1250,9 @@ namespace icl {
       return combineImages (vecTyped, ppoDst);
     }
 
-    // }}}
 
     template<>
     const ImgBase* combineImages<ImgBase> (const std::vector<const ImgBase*>& vec, ImgBase** ppoDst) {
-      // {{{ open
 
       FUNCTION_LOG("ImgBase");
       // find first non-zero element
@@ -1401,7 +1275,6 @@ namespace icl {
       return 0;
     }
 
-    // }}}
 
 
   #define CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize) \
@@ -1428,7 +1301,6 @@ namespace icl {
     void scaledCopyChannelROI(const Img<T> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                               Img<T> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                               scalemode eScaleMode){
-      // {{{ open
 
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
@@ -1605,7 +1477,6 @@ namespace icl {
       }
     }
 
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(D)  template ICLCore_API void scaledCopyChannelROI<icl##D> \
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
@@ -1617,7 +1488,6 @@ namespace icl {
     scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                 Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                 scalemode eScaleMode)
-    // {{{ open
 
     {
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
@@ -1658,14 +1528,12 @@ namespace icl {
   #endif
     }
 
-    // }}}
 
     /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
     template<> inline void
     scaledCopyChannelROI<icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                  Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                                  scalemode eScaleMode)
-    // {{{ open
 
     {
       FUNCTION_LOG("");
@@ -1708,7 +1576,6 @@ namespace icl {
   #endif
     }
 
-    // }}}
 
     // ipp case: do not instantiate the already specialized functions 8u and 32f
     ICL_INSTANTIATE_DEPTH(16s)
@@ -1722,7 +1589,6 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
 
 
-    // {{{    flippedCopyChannelROI
 
 
     // mirror copy ROI of one image to the ROI of the other (for selected channel)
@@ -1730,7 +1596,6 @@ namespace icl {
     void flippedCopyChannelROI(axis eAxis,
                                const Img<T> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                Img<T> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
-      // {{{ open
 
       FUNCTION_LOG("");
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
@@ -1766,7 +1631,6 @@ namespace icl {
       } while (s != e);
     }
 
-    // }}}
 
 
   #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void flippedCopyChannelROI<icl##D>(axis eAxis, \
@@ -1779,7 +1643,6 @@ namespace icl {
     ICLCore_API void flippedCopyChannelROI<icl8u>(axis eAxis,
                                       const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                       Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
-      // {{{ open
 
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
@@ -1787,14 +1650,12 @@ namespace icl {
                         dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
     }
 
-    // }}}
 
     /// IPP-OPTIMIZED specialization for icl8u image flipping
     template <>
     ICLCore_API void flippedCopyChannelROI<icl32f>(axis eAxis,
                                        const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                        Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
-      // {{{ open
 
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
@@ -1802,7 +1663,6 @@ namespace icl {
                          reinterpret_cast<Ipp32s*>(dst->getROIData(dstC,dstOffs)),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
     }
 
-    // }}}
     // OLD version ...
     // ipp case: do not instantiate the already specialized functions 8u and 32f
     ICL_INSTANTIATE_DEPTH(16s)
@@ -1823,12 +1683,9 @@ namespace icl {
 
 
 
-    // }}}  flippedCopyChannelROI...
 
-    // {{{    flippedCopy / flippedCopyROI
 
     void flippedCopy(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst){
-      // {{{ open
 
       ICLASSERT_RETURN(poSrc);
 
@@ -1871,10 +1728,8 @@ namespace icl {
       delete poFullDst;
     }
 
-    // }}}
 
     void flippedCopyROI(axis eAxis, const ImgBase *poSrc, ImgBase **ppoDst){
-      // {{{ open
 
       ICLASSERT_RETURN(poSrc);
       ImgBase *poDst = 0;
@@ -1902,11 +1757,8 @@ namespace icl {
       }
     }
 
-    // }}}
 
-    // }}} flippedCopy / flippedCopyROI
 
-    // {{{ printAsMatrix
     template<class Type>
     void Img<Type>::printAsMatrix(const std::string &fmt, bool visROI) const{
       std::cout << "image matrix:    size: " << getSize() << std::endl;
@@ -1942,7 +1794,6 @@ namespace icl {
 
 
 
-    // }}}
 
 
     template<class T>
@@ -2128,9 +1979,7 @@ namespace icl {
     }
 
 
-    // }}} Global functions ..
 
-    // {{{ Moved from Img.h — member function implementations
 
     template<class Type>
     void Img<Type>::extractChannels(Channel<Type> *dst){
@@ -2203,9 +2052,7 @@ namespace icl {
       this->append(static_cast<const Img<Type>*>(src), vChannels);
     }
 
-    // }}} Moved member functions
 
-    // {{{ Moved from Img.h — free function implementations
 
     template<class T>
     void deepCopyChannel(const Img<T> *src, int srcC, Img<T> *dst, int dstC){
@@ -2292,14 +2139,12 @@ namespace icl {
     ICL_INSTANTIATE_ALL_DEPTHS_2
 #undef ICL_INSTANTIATE_DEPTH
 
-    // }}} Moved free functions
 
     template<class Type>
     const Img<Type> Img<Type>::null;
 
     template<class T>
     ImgBasePtrPtr<T>::~ImgBasePtrPtr(){
-      // {{{ open
       if(!r){
         ERROR_LOG("Result image is NULL");
         //if(o) delete o; this is not allowed because o could be allocated on the stack
@@ -2334,7 +2179,6 @@ namespace icl {
       delete r;
     }
 
-    // }}}
 
     template<class T>
     ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> &i){
@@ -2345,7 +2189,6 @@ namespace icl {
 
     template<class T>
     ImgBasePtrPtr<T>::ImgBasePtrPtr(Img<T> *inputImage){
-      // {{{ open
       ICLASSERT(inputImage != nullptr);
 
       if(inputImage){
@@ -2357,10 +2200,8 @@ namespace icl {
       }
     }
 
-    // }}}
 
 
-    // {{{  explicit instantiation of the Img<T> classes
 
 #define ICL_INSTANTIATE_DEPTH(D)           \
   template class ICLCore_API Img<icl##D>; \
@@ -2368,7 +2209,6 @@ namespace icl {
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
 
-      // }}}
 
 
 

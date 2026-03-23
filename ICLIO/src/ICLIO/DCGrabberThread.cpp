@@ -40,8 +40,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-
-using namespace std;
 namespace icl{
   namespace io{
     namespace dc{
@@ -71,7 +69,6 @@ namespace icl{
       }
 
       void DCGrabberThread::stopAllGrabberThreads(){
-        // {{{ open
 
         /* Why ???
             for(unsigned int i=0; i<g_vecAllThreads.size();++i){
@@ -95,11 +92,9 @@ namespace icl{
         DCGrabber::dc1394_reset_bus(false);
       }
 
-      // }}}
 
       DCGrabberThread::DCGrabberThread(dc1394camera_t* c,
                                        DCDeviceOptions *options):
-        // {{{ open
 
         m_poFrameQueue(0),m_poCam(c),m_poOptions(options),
         m_lastFramesTimeStamp(0){
@@ -110,10 +105,8 @@ namespace icl{
         m_poFrameQueue = new DCFrameQueue(c,options);
       }
 
-      // }}}
 
       void DCGrabberThread::run(){
-        // {{{ open
 
         // I moved this to the constructor (why was it placed here?)
         //if(!m_poFrameQueue){
@@ -130,7 +123,6 @@ namespace icl{
         }
       }
 
-      // }}}
 
 
       dc1394video_frame_t *DCGrabberThread::waitForNextImageFrame(){
@@ -154,7 +146,6 @@ namespace icl{
                                             dc1394color_filter_t bayerLayout,
                                             dc1394bayer_method_t bayerMethod){
 
-        // {{{ open
         while(!m_poFrameQueue) Thread::msleep(10);
 
         m_poFrameQueue->lock();
@@ -165,7 +156,6 @@ namespace icl{
 
 
       }
-      // }}}
 
 
       void DCGrabberThread::getCurrentImage(ImgBase **ppoDst,
@@ -176,7 +166,6 @@ namespace icl{
                                             depth desiredDepthHint,
                                             dc1394color_filter_t bayerLayout,
                                             dc1394bayer_method_t bayerMethod){
-        // {{{ open
 
         while(!m_poFrameQueue) Thread::msleep(10);
 
@@ -200,7 +189,6 @@ namespace icl{
 
       }
 
-      // }}}
     }
   } // namespace io
 }

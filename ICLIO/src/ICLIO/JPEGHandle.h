@@ -51,7 +51,6 @@ namespace icl{
     // passes controll back to the caller
     ICLIO_API void icl_jpeg_error_exit(j_common_ptr cinfo);
 
-    // }}}
 
 
     /// Handles JPEG info and error manager

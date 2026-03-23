@@ -40,13 +40,11 @@
 #include <ICLUtils/FastMedianList.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Timer.h>
-#include <ICLUtils/MultiThreader.h>
 #include <ICLUtils/MultiTypeMap.h>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Rect.h>
-#include <ICLUtils/Semaphore.h>
 #include <ICLUtils/SignalHandler.h>
 #include <ICLUtils/StackTimer.h>
 #include <ICLUtils/SteppingRange.h>

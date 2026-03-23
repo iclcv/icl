@@ -57,7 +57,6 @@ namespace icl{
   #define MODE_SWITCH_ELSE(X) else if(s==#X) return X
 
       string to_string(dc1394video_mode_t vm){
-        // {{{ open
   #define MODE_SWITCH_A(S,F) case DC1394_VIDEO_MODE_##S##_##F: return #S "-" #F
   #define MODE_SWITCH_B(S) case DC1394_VIDEO_MODE_##S: return #S
         switch(vm){
@@ -99,9 +98,7 @@ namespace icl{
         }
       }
 
-      // }}}
       string to_string(dc1394framerate_t fr){
-        // {{{ open
   #define FR_SWITCH_A(L) case DC1394_FRAMERATE_##L: return #L "Hz";
   #define FR_SWITCH_B(L,R) case DC1394_FRAMERATE_##L##_##R: return #L "." #R "Hz"
         switch(fr){
@@ -119,9 +116,7 @@ namespace icl{
         }
       }
 
-      // }}}
       string to_string(dc1394color_filter_t f){
-        // {{{ open
 
         switch(f){
           MODE_SWITCH(DC1394_COLOR_FILTER_RGGB);
@@ -132,9 +127,7 @@ namespace icl{
         }
       }
 
-      // }}}
       string to_string(dc1394bayer_method_t bm){
-        // {{{ open
 
         switch(bm){
           MODE_SWITCH(DC1394_BAYER_METHOD_NEAREST);
@@ -149,9 +142,7 @@ namespace icl{
         }
       }
 
-      // }}}
       string to_string(dc1394feature_t f){
-        // {{{ open
 
         switch(f){
           MODE_SWITCH(DC1394_FEATURE_BRIGHTNESS);
@@ -180,10 +171,8 @@ namespace icl{
         }
       }
 
-        // }}}
 
       dc1394video_mode_t videomode_from_string(const string &s){
-        // {{{ open
   #define MODE_SWITCH_B_IF(S,F) if(s==#S "-" #F) return DC1394_VIDEO_MODE_##S##_##F
   #define MODE_SWITCH_B_ELIF(S,F) else MODE_SWITCH_B_IF(S,F)
   #define MODE_SWITCH_C_ELIF(S) else if(s==#S) return DC1394_VIDEO_MODE_##S
@@ -226,9 +215,7 @@ namespace icl{
 
       }
 
-      // }}}
       dc1394framerate_t framerate_from_string(const string &s){
-        // {{{ open
   #define FR_SWITCH_A(L) if(s== #L "Hz") return DC1394_FRAMERATE_##L
   #define FR_SWITCH_B(L,R) if(s== #L "." #R "Hz") return DC1394_FRAMERATE_##L##_##R
 
@@ -246,9 +233,7 @@ namespace icl{
         return static_cast<dc1394framerate_t>(-1);
       }
 
-      // }}}
       dc1394bayer_method_t bayermethod_from_string(const string &s){
-        // {{{ open
 
         MODE_SWITCH_IF(DC1394_BAYER_METHOD_NEAREST);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_SIMPLE);
@@ -261,9 +246,7 @@ namespace icl{
         return static_cast<dc1394bayer_method_t>(-1);
       }
 
-      // }}}
       dc1394feature_t feature_from_string(const string &s){
-        // {{{ open
 
         MODE_SWITCH_IF(DC1394_FEATURE_BRIGHTNESS);
         MODE_SWITCH_ELSE(DC1394_FEATURE_EXPOSURE);
@@ -290,14 +273,12 @@ namespace icl{
         return static_cast<dc1394feature_t>(-1);
       }
 
-      // }}}
 
   #undef MODE_SWITCH
   #undef MODE_SWITCH_IF
   #undef MODE_SWITCH_ELSE
 
       const std::vector<std::string> &getListOfAllFeatures(){
-        // {{{ open
 
         static vector<string> v;
         if(!v.size()){
@@ -309,7 +290,6 @@ namespace icl{
         return v;
       }
 
-      // }}}
 
 
 
@@ -325,7 +305,6 @@ namespace icl{
       }
 
       void install_signal_handler(){
-        // {{{ open
         static bool first = true;
         if(first){
           first = false;
@@ -334,10 +313,8 @@ namespace icl{
         }
       }
 
-      // }}}
 
       void initialize_dc_cam(dc1394camera_t *c, int nDMABuffers, DCDeviceOptions *options){
-        // {{{ open
 
         dc1394_capture_stop(c);
         set_streaming(c,false);
@@ -364,20 +341,16 @@ namespace icl{
 
       }
 
-      // }}}
 
       void release_dc_cam(dc1394camera_t *c){
-        // {{{ open
         set_streaming(c,false);
         dc1394_capture_stop(c);
 
         //dc1394_cleanup_iso_channels_and_bandwidth(c);
       }
 
-      // }}}
 
       void set_streaming(dc1394camera_t* c, bool on){
-        // {{{ open
         dc1394switch_t currVal=DC1394_OFF;
         dc1394_video_get_transmission(c,&currVal);
         if( currVal == DC1394_OFF && on == true){
@@ -387,9 +360,7 @@ namespace icl{
         }
       }
 
-      // }}}
       dc1394video_frame_t *get_newest_frame(dc1394camera_t* c){
-        // {{{ open
         //  set_streaming(c,false);
         dc1394video_frame_t *frame=0;
         dc1394error_t err = DC1394_SUCCESS;
@@ -405,10 +376,8 @@ namespace icl{
         return frame;
       }
 
-      // }}}
 
       dc1394video_frame_t *get_a_frame(dc1394camera_t* c){
-        // {{{ open
         dc1394video_frame_t *frame=0;
         dc1394error_t err = dc1394_capture_dequeue(c,DC1394_CAPTURE_POLICY_WAIT,&frame);
         if(err == DC1394_SUCCESS){
@@ -418,7 +387,6 @@ namespace icl{
         }
       }
 
-      // }}}
 
       namespace{
         void rgb_to_gray_util(const icl8u *src, icl8u *dst, const icl8u *dstEnd, const Size &frameSize){
@@ -485,7 +453,6 @@ namespace icl{
                                   depth desiredDepthHint,
                                   std::vector<icl8u> &dataBuffer,
                                  dc1394bayer_method_t bayerMethod){
-        // {{{ open
         //      DEBUG_LOG("color_filter:" << f->color_filter);
         (void)desiredDepthHint;
         Size frameSize(f->size[0],f->size[1]);
@@ -552,7 +519,6 @@ namespace icl{
         }
       }
 
-      // }}}
 
       void extract_image_to_rgb(dc1394video_frame_t *f,
                                 dc1394color_filter_t bayerLayout,
@@ -562,7 +528,6 @@ namespace icl{
                                 std::vector<icl8u> &dataBuffer,
                                 dc1394bayer_method_t bayerMethod){
 
-        // {{{ open
 
         (void)desiredDepthHint;
         Size frameSize(f->size[0],f->size[1]);
@@ -605,7 +570,6 @@ namespace icl{
         }
       }
 
-      // }}}
 
       void extract_image_to(dc1394video_frame_t *f,
                             dc1394color_filter_t bayerLayout,
@@ -616,7 +580,6 @@ namespace icl{
                             std::vector<icl8u> &dataBuffer,
                             dc1394bayer_method_t bayerMethod){
 
-        // {{{ open
 
         // This function must work dynamically --> it must not use is_firefly_mono for example !!
 
@@ -632,14 +595,12 @@ namespace icl{
         }
       }
 
-      // }}}
 
       void extract_image_to_2(dc1394video_frame_t *f,
                               dc1394color_filter_t bayerLayout,
                               ImgBase **ppoDst,
                               std::vector<icl8u> &dataBuffer,
                               dc1394bayer_method_t bayerMethod){
-        // {{{ open xxx
 
         ICLASSERT_RETURN( f );
         unsigned char *data = f->image;
@@ -698,13 +659,11 @@ namespace icl{
           (*ppoDst)->setTime(Time(f->timestamp));
         }
       }
-      // }}}
 
       bool can_extract_image_to(dc1394video_frame_t *f,
                                 const Size &desiredSizeHint,
                                 format desiredFormatHint,
                                 depth desiredDepthHint){
-        // {{{ open
 
         if(desiredDepthHint != depth8u) return false;
         if(desiredSizeHint != Size(f->size[0],f->size[1])) return false;
@@ -714,11 +673,9 @@ namespace icl{
         return true;
       }
 
-      // }}}
 
   #if 0
       void grab_frame(int DUMMY,dc1394camera_t* c, ImgBase **image){
-        // {{{ open
         ERROR_LOG("this function has been removed!");
         /**
         ICLASSERT_RETURN(image);
@@ -754,11 +711,9 @@ namespace icl{
         **/
       }
 
-      // }}}
   #endif
 
       class DCContextCreator{
-        // {{{ open
 
       public:
         std::recursive_mutex mutex;
@@ -785,7 +740,6 @@ namespace icl{
         }
       };
 
-      // }}}
 
       DCContextCreator STATIC_DC_CONTEXT;
 

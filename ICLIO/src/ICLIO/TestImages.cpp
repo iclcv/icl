@@ -54,14 +54,12 @@ using namespace icl::core;
 
 namespace {
   struct XPMColor{
-    // {{{ open
 
   XPMColor(int r=0, int g=0, int b=0):
     r(r),g(g),b(b){}
   int r,g,b;
 };
 
-// }}}
 
   typedef map<string,XPMColor> colormap;
   typedef map<char,int> charmap;
@@ -71,7 +69,6 @@ namespace {
   charmap g_mapHexLut;
 
   void initColorMap(){
-    // {{{ open
 
   static int done=0;
   if(done)return;
@@ -125,10 +122,8 @@ namespace {
   g_mapXPMColors["cyan"]=XPMColor(0,255,255);
 }
 
-// }}}
 
   void initHexLut(){
-    // {{{ open
 
   static int done=0;
   if(done)return;
@@ -137,10 +132,8 @@ namespace {
   for(int i=0;i<16;i++) g_mapHexLut[_c[i]]=i;
 }
 
-// }}}
 
   XPMColor getHexColor(string s,bool &ok){
-    // {{{ open
     if(s.length()==6){
     int ai[6]={0,0,0,0,0,0};
     for(int i=0;i<6;i++){
@@ -158,10 +151,8 @@ namespace {
   return XPMColor();
 }
 
-  // }}}
 
   XPMColor getGrayColor(string s, bool &ok){
-    // {{{ open
 
     if(s.find("gray",0)== 0){
       string n = &(s[4]);
@@ -175,10 +166,8 @@ namespace {
     return XPMColor();
   }
 
-  // }}}
 
   XPMColor getColor(string s){
-    // {{{ open
 
   initColorMap();
   initHexLut();
@@ -201,10 +190,8 @@ namespace {
   return XPMColor();
 }
 
-// }}}
 
   static const char *ppc_woman_xpm[] = {
-    // {{{ open
 
   "63 60 14 1",
   "  c black",
@@ -283,10 +270,8 @@ namespace {
   "$$$$$$$oo$$$$     oooooooo++++++ooooooo XXXXXXXXXXXX     X$$$$$"
 };
 
-// }}}
 
   static const char *ppc_tree_xpm[] = {
-    // {{{ open
 
   "63 60 11 1",
   "  c black",
@@ -362,10 +347,8 @@ namespace {
   "OOOOOOOooOOoooOOOOOOOOOOooooOooOoOoooOoOOooooooooooooOooooooooo"
 };
 
-// }}}
 
   static const char *ppc_house_xpm[] = {
-    // {{{ open
 
   "63 60 15 1",
   "  c navy",
@@ -445,10 +428,8 @@ namespace {
   "oooooooooooooooooooooooooooooooooooooo&ooo&oo&&&&&&&&&&&&&&&&&&"
 };
 
-// }}}
 
   strvec tokenize(string s,string sDelims){
-    // {{{ open
 
     string::size_type iPos;
     string::size_type iLastPos = 0;
@@ -465,10 +446,8 @@ namespace {
     }
     return oTokens;
   }
-  // }}}
 
   Img8u *read_xpm(const char **p){
-    // {{{ open
 
   // header
   strvec headA = tokenize(*p++," ");
@@ -506,7 +485,6 @@ namespace {
   return image;
 }
 
-// }}}
 }
 
 namespace icl{
@@ -543,7 +521,6 @@ namespace icl{
     }
 
     ImgBase* TestImages::create(const string& name, format f, depth d){
-      // {{{ open
 
       Img8u *src = internalCreate(name);
       if(!src) return 0;
@@ -560,11 +537,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     ImgBase* TestImages::create(const string& name, const Size& size,format f, depth d){
-      // {{{ open
 
       Img8u *src = internalCreate(name);
       src->setFullROI();
@@ -580,7 +555,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     void TestImages::show(const ImgBase *image,
@@ -634,7 +608,6 @@ namespace icl{
     }
 
   void TestImages::xv(const ImgBase *image, const string& nameIn, long msec){
-      // {{{ open
       string name = nameIn;
       if(image->getChannels() != 3){
         name+=".pgm";
@@ -664,7 +637,6 @@ namespace icl{
         WARNING_LOG( "Error code of system call unequal 0!" );
     }
 
-    // }}}
 
   } // namespace io
 }

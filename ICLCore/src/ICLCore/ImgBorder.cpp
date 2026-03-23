@@ -38,7 +38,6 @@ namespace icl{
 
     template<class T>
     void ImgBorder::fixed(Img<T> *im, T* val){
-      // {{{ open
     /** clear strategy:
                 (top)
          tttttttttttttttttttttt
@@ -70,7 +69,6 @@ namespace icl{
 
       }
     }
-    // }}}
 
     // export these functions
   #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void ImgBorder::fixed<icl##D>(Img<icl##D> *im,icl##D *val);
@@ -79,7 +77,6 @@ namespace icl{
 
     template<class T>
     inline void _copy_border(Img<T> *poImage){
-      // {{{ open
 
       Rect im = Rect(Point::null,poImage->getSize());
       Rect roi = poImage->getROI();
@@ -146,10 +143,8 @@ namespace icl{
           }
         }
     }
-    // }}}
 
     void ImgBorder::copy(ImgBase *poImage){
-      // {{{ open
 
    /** copy strategy:
                 (top)
@@ -201,10 +196,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void ImgBorder::fromOther(ImgBase *dst, ImgBase* src){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN( dst && src );
@@ -281,7 +274,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
   } // namespace core
 }

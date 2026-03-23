@@ -200,10 +200,7 @@ namespace icl{
 
     template<>
     inline const char* parse(const std::string &s){
-      std::istringstream str(s);
-      char* t = nullptr;
-      str >> t;
-      return t;
+      return s.c_str();
     }
 
     /** \cond */

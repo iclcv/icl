@@ -35,8 +35,6 @@
 #include <QGridLayout>
 #include <math.h>
 
-using namespace std;
-
 namespace icl{
   namespace qt{
     DoubleSlider::DoubleSlider(QWidget *parent, const QString &id): QWidget(parent),m_qsID(id){

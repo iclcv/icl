@@ -110,14 +110,8 @@ namespace icl{
       int n;
     };
 
-    void SemaphoreImplDelOp::delete_func(SemaphoreImpl *impl){
-      ICL_DELETE(impl);
-    }
-
-
     Semaphore::Semaphore(int n):
-      ShallowCopyable<SemaphoreImpl,SemaphoreImplDelOp>(new SemaphoreImpl(n)){
-
+      impl(std::make_shared<SemaphoreImpl>(n)){
     }
 
     void Semaphore::operator++(int dummy){

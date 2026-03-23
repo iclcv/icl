@@ -59,10 +59,8 @@ namespace icl {
         }
       }
 
-     // {{{ C++ fallback ThreshOp classes
 
      template <typename T> class ThreshOpLTVal {
-        // {{{ open
 
      public:
         ThreshOpLTVal (T t, T v) : threshold(t), value(v) {}
@@ -75,9 +73,7 @@ namespace icl {
         T value;
      };
 
-     // }}}
      template <typename T> class ThreshOpGTVal {
-        // {{{ open
 
      public:
         ThreshOpGTVal (T t, T v) : threshold(t), value(v) {}
@@ -90,9 +86,7 @@ namespace icl {
         T value;
      };
 
-     // }}}
      template <typename T> class ThreshOpLTGTVal {
-        // {{{ open
      public:
         ThreshOpLTGTVal(T tLow, T vLow, T tUp, T vUp) :
            tLow(tLow), tUp(tUp), vLow(vLow), vUp(vUp) {}
@@ -106,11 +100,8 @@ namespace icl {
         T vLow, vUp;
      };
 
-     // }}}
 
-     // }}}
 
-     // {{{ C++ fallback threshold function for all threshold operations
 
      template <typename T, class ThresholdOp>
      inline void fallbackThreshold(const Img<T> *src, Img<T> *dst,
@@ -129,7 +120,6 @@ namespace icl {
         }
      }
 
-     // }}}
 
 #ifdef ICL_HAVE_SSE2
      // --- SSE2 threshold specializations for icl32f ---
@@ -291,11 +281,9 @@ namespace icl {
 
 
   #ifdef ICL_HAVE_IPP
-     // {{{ ippi-function call templates
 
      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T)>
      inline void ippiThresholdCall_1T(const Img<T> *src, Img<T> *dst, T t){
-        // {{{ open
 
         ICLASSERT_RETURN( src && dst );
         ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
@@ -308,11 +296,9 @@ namespace icl {
         }
      }
 
-     // }}}
 
      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T, T)>
      inline void ippiThresholdCall_2T(const Img<T> *src, Img<T> *dst, T t1, T t2){
-        // {{{ open
 
         ICLASSERT_RETURN( src && dst );
         ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
@@ -325,11 +311,9 @@ namespace icl {
         }
      }
 
-     // }}}
 
      template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, T, T, T, T)>
      inline void ippiThresholdCall_4T(const Img<T> *src, Img<T> *dst, T t1,T t2, T t3, T t4){
-        // {{{ open
 
         ICLASSERT_RETURN( src && dst );
         ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
@@ -342,11 +326,8 @@ namespace icl {
         }
      }
 
-     // }}}
 
-     // }}}
 
-     // {{{ function specializations without Val postfix
 
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tlt(const Img ## T *src,Img ## T *dst, icl ## T t){\
@@ -369,9 +350,7 @@ namespace icl {
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-     // }}}
 
-     // {{{ function specializations with Val postfix
 
   #define ICL_INSTANTIATE_DEPTH(T) \
     void ThresholdOp::tltVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
@@ -394,10 +373,8 @@ namespace icl {
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-     // }}}
   #endif
 
-     // {{{ function specializations without Val postfix (fallback)
      /* We just use the appropriate *Val functions, because there is no performance
         gain implementing a specialised variant */
 
@@ -432,9 +409,7 @@ namespace icl {
   #endif
   #undef ICL_INSTANTIATE_DEPTH
 
-     // }}}
 
-     // {{{ function specializations with Val postfix (fallback)
 
   // Depths that always use C++ fallback threshold
   #if defined(ICL_HAVE_IPP)
@@ -491,19 +466,16 @@ namespace icl {
     }
   #endif
 
-     // }}}
 
   #undef ICL_INSTANTIATE_ALL_IPP_DEPTHS
 
   #undef ICL_INSTANTIATE_ALL_FB_DEPTHS
 
 
-     // {{{ ImgBase* versions
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tlt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t)); break;
     void ThresholdOp::tlt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -512,12 +484,10 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t)); break;
     void ThresholdOp::tgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -526,12 +496,10 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tltgt(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(tMin), clipped_cast<icl32f,icl ## T>(tMax)); break;
     void ThresholdOp::tltgt(const ImgBase *poSrc, ImgBase **ppoDst, icl32f tMin, icl32f tMax)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -540,12 +508,10 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tltVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t), clipped_cast<icl32f,icl ## T>(val)); break;
     void ThresholdOp::tltVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -554,12 +520,10 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(t), clipped_cast<icl32f,icl ## T>(val)); break;
     void ThresholdOp::tgtVal(const ImgBase *poSrc, ImgBase **ppoDst, icl32f t, icl32f val)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -568,14 +532,12 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(T) \
       case depth ## T: tltgtVal(poSrc->asImg<icl ## T>(), (*ppoDst)->asImg<icl ## T>(), clipped_cast<icl32f,icl ## T>(tMin),\
                   clipped_cast<icl32f,icl ##T>(minVal), clipped_cast<icl32f,icl ## T>(tMax), clipped_cast<icl32f,icl ## T>(maxVal));break;
     void ThresholdOp::tltgtVal(const ImgBase *poSrc, ImgBase **ppoDst,
                              icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal)
-      // {{{ open
     {
       if (!UnaryOp::prepare (ppoDst, poSrc)) return;
       switch (poSrc->getDepth()){
@@ -584,7 +546,6 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
-  // }}}
 
   } // namespace filter
 } // namespace icl

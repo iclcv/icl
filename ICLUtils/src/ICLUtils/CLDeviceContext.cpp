@@ -42,8 +42,6 @@
 #include <set>
 #include <map>
 
-using namespace std;
-
 namespace icl {
 	namespace utils {
 

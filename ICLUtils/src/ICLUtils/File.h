@@ -31,18 +31,16 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/ShallowCopyable.h>
 #include <ICLUtils/BasicTypes.h>
 #include <string>
 #include <vector>
-
+#include <memory>
 
 namespace icl{
   namespace utils{
 
     /** \cond */
     class FileImpl;
-    struct ICLUtils_API FileImplDelOp { static void delete_func(FileImpl *i); };
     /** \endcond */
 
     /// Utility class for file handling (reading files is buffered) \ingroup UTILS_G
@@ -58,7 +56,7 @@ namespace icl{
         by shallow copied instances using std::shared_ptr. This mechanism
         provides save shallow copies using reference counting.
     **/
-    class ICLUtils_API File : public utils::ShallowCopyable<FileImpl, FileImplDelOp>{
+    class ICLUtils_API File{
       public:
 
       /// mode to open files
@@ -222,6 +220,11 @@ namespace icl{
       /// returns the current OpenMode of this file of notOpen
       OpenMode getOpenMode() const;
 
+      /// returns whether the file is null (not initialized)
+      bool isNull() const { return !impl; }
+
+      private:
+      std::shared_ptr<FileImpl> impl;
     };
   } // namespace utils
 }

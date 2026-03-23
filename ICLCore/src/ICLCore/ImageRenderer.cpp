@@ -147,7 +147,6 @@ namespace icl{
 
 
     void triangle_intern(Img32f &image,int x1, int y1, int x2, int y2, int x3, int y3 ){
-      // {{{ open
 
       // *  the coordinates of vertices are (A.x,A.y), (B.x,B.y), (C.x,C.y);
       //we assume that A.y<=B.y<=C.y (you should sort them first)

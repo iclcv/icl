@@ -33,8 +33,6 @@
 #include <vector>
 #include <cstring>
 
-using namespace std;
-
 int usage(){
   printf("jpg2cpp converts jpeg images into a c++ compatible data format.\n"
          "usage: jpg2cpp <FILE> > <DESTINATIONFILE> \n"

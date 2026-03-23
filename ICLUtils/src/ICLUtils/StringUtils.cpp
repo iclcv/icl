@@ -255,7 +255,6 @@ namespace icl{
 
 #ifndef ICL_SYSTEM_WINDOWS // TODOW
     string toLower(string s){
-      // {{{ open
       for(unsigned int i=0;i<s.length();i++){
         s[i]=tolower(s[i]);
       }

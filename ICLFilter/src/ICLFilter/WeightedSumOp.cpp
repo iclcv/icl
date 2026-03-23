@@ -35,8 +35,6 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
-    using namespace std;
-     // {{{ C++ fallback
     namespace{
       template <class T, class D>
       void apply_ws(const Img<T> *src, Img<D> *dst, const vector<D>& weights) {
@@ -62,7 +60,6 @@ namespace icl {
       }
     }
 
-    // }}}
 
     void WeightedSumOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
       ICLASSERT_RETURN(poSrc);

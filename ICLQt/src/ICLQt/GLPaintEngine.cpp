@@ -47,7 +47,6 @@ namespace icl{
 
     namespace{
       Rect32f computeRect(const Rect32f &rect, const Size &imageSize, PaintEngine::AlignMode mode){
-        // {{{ open
 
         switch(mode){
           case PaintEngine::NoAlign: return Rect32f(rect.x, rect.y, imageSize.width, imageSize.height);
@@ -60,14 +59,12 @@ namespace icl{
         }
       }
 
-      // }}}
 
       // inline float winToDraw(float x, float w) { return (2/w) * x -1; }
       // inline float drawToWin(float x, float w) { return (w/2) * x + (w/2); }
     }
 
     GLPaintEngine::GLPaintEngine(QOpenGLWidget *widget):
-      // {{{ open
       m_widget(widget),m_bciauto(false), m_font(QFont("Arial",30)),
       m_incompDepthBuf(0){
 
@@ -105,9 +102,7 @@ namespace icl{
       std::fill(m_bci,m_bci+3,0);
     }
 
-    // }}}
     GLPaintEngine::~GLPaintEngine(){
-      // {{{ open
       ICL_DELETE(m_incompDepthBuf);
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
@@ -116,16 +111,12 @@ namespace icl{
 
     }
 
-    // }}}
 
    void GLPaintEngine::fontsize(float size){
-      // {{{ open
       m_font.setPointSize(size);
     }
 
-    // }}}
     void  GLPaintEngine::font(string name, float size, PaintEngine::TextWeight weight, PaintEngine::TextStyle style){
-      // {{{ open
       m_font.setFamily(name.c_str());
       m_font.setPointSize(size);
       m_font.setStyle(style == PaintEngine::StyleNormal ? QFont::StyleNormal :
@@ -136,9 +127,7 @@ namespace icl{
                        weight == PaintEngine::Bold ? QFont::Bold : QFont::Black);
     }
 
-    // }}}
     void GLPaintEngine::color(float r, float g, float b, float a){
-      // {{{ open
 
       m_linecolor[0] = static_cast<float>(r)/255.0;
       m_linecolor[1] = static_cast<float>(g)/255.0;
@@ -146,9 +135,7 @@ namespace icl{
       m_linecolor[3] = static_cast<float>(a)/255.0;
     }
 
-    // }}}
     void GLPaintEngine::fill(float r, float g, float b, float a){
-      // {{{ open
 
       m_fillcolor[0] = static_cast<float>(r)/255.0;
       m_fillcolor[1] = static_cast<float>(g)/255.0;
@@ -165,9 +152,7 @@ namespace icl{
     }
 
 
-    // }}}
     void GLPaintEngine::line(const Point32f &a, const Point32f &b){
-      // {{{ open
       glEnable(GL_LINE_SMOOTH);
       glLineWidth(m_linewidth);
       glColor4fv(m_linecolor);
@@ -178,9 +163,7 @@ namespace icl{
       glDisable(GL_LINE_SMOOTH);
     }
 
-    // }}}
     void GLPaintEngine::point(const Point32f &p){
-      // {{{ open
 
       glColor4fv(m_linecolor);
       glPointSize(m_pointsize);
@@ -189,10 +172,8 @@ namespace icl{
       glEnd();
     }
 
-    // }}}
 
     void GLPaintEngine::image(const Rect32f &r,const QImage &image, PaintEngine::AlignMode mode, scalemode sm){
-      // {{{ open
 
       Img8u buf;
       if(image.format()==QImage::Format_Indexed8){
@@ -205,10 +186,8 @@ namespace icl{
       this->image(r,&buf,mode,sm);
     }
 
-    // }}}
 
     void GLPaintEngine::image(const Rect32f &r,ImgBase *image, PaintEngine::AlignMode mode, scalemode sm){
-      // {{{ open
 
       ICLASSERT_RETURN(image);
       glColor4f(1,1,1,1);
@@ -217,10 +196,8 @@ namespace icl{
       gli.draw2D(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()));
     }
 
-    // }}}
 
     void GLPaintEngine::rect(const Rect32f &r){
-      // {{{ open
 
       glLineWidth(m_linewidth);
       glColor4fv(m_fillcolor);
@@ -262,7 +239,6 @@ namespace icl{
       glEnd();
       glDisable(GL_LINE_SMOOTH);
     }
-    // }}}
 
     void GLPaintEngine::quad(const Point32f &a, const Point32f &b, const Point32f &c, const Point32f &d){
 
@@ -284,11 +260,9 @@ namespace icl{
       glEnd();
       glDisable(GL_LINE_SMOOTH);
     }
-    // }}}
 
 
     void GLPaintEngine::ellipse(const Rect32f &r){
-      // {{{ open
       glLineWidth(m_linewidth);
       glEnable(GL_LINE_SMOOTH);
       glColor4fv(m_fillcolor);
@@ -337,7 +311,6 @@ namespace icl{
       glDisable(GL_LINE_SMOOTH);
     }
 
-    // }}}
 
     Size GLPaintEngine::estimateTextBounds(const std::string &text) const{
       QFontMetrics m(m_font);
@@ -347,7 +320,6 @@ namespace icl{
 
 
     void GLPaintEngine::text(const Rect32f &r, const string text, PaintEngine::AlignMode mode, float angle){
-      // {{{ open
       QFontMetrics m(m_font);
       QRectF br = m.boundingRect(text.c_str());
       QImage img(br.width()+4,br.height(),QImage::Format_ARGB32);
@@ -384,49 +356,39 @@ namespace icl{
       */
     }
 
-    // }}}
 
     void GLPaintEngine::bci(float brightness, float contrast, float intensity){
-      // {{{ open
       m_bci[0]=brightness;
       m_bci[1]=contrast;
       m_bci[2]=intensity;
       m_bciauto = false;
     }
 
-    // }}}
 
     void GLPaintEngine::bciAuto(){
-      // {{{ open
 
       m_bciauto = true;
     }
 
-    // }}}
 
     void GLPaintEngine::getColor(float *piColor){
-      // {{{ open
 
       for(int i=0;i<4;i++){
         piColor[i]=static_cast<int>(m_linecolor[i]*255.0);
       }
     }
 
-    // }}}
 
     void GLPaintEngine::getFill(float *piColor){
-      // {{{ open
 
       for(int i=0;i<4;i++){
         piColor[i]=static_cast<int>(m_fillcolor[i]*255.0);
       }
     }
 
-    // }}}
 
 
     void GLPaintEngine::setupRasterEngine(const Rect32f& r, const Size32f &s, PaintEngine::AlignMode mode){
-      // {{{ open
 
       switch(mode){
         case PaintEngine::NoAlign:
@@ -444,9 +406,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void GLPaintEngine::setPackAlignment(depth d, int linewidth){
-      // {{{ open
       switch (d){
         case depth8u:{
           if(linewidth%2) glPixelStorei(GL_UNPACK_ALIGNMENT,1);
@@ -473,9 +433,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void GLPaintEngine::setupPixelTransfer(depth d, float brightness, float contrast, float intensity){
-      // {{{ open
       static_cast<void>(intensity);
       float fBiasRGB = static_cast<float>(brightness)/255.0;
 
@@ -507,6 +465,5 @@ namespace icl{
       glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
     }
 
-    // }}}
   } // namespace qt
 }

@@ -81,16 +81,13 @@ namespace icl{
   #undef UAV
   #undef IPS
     std::string translateCCImpl(ccimpl i){
-      // {{{ open
 
       static string s_asNames[5] = { "available" , "emulated","adapted","unavailable", "impossible" };
       return s_asNames[i];
     }
 
-    // }}}
 
     ccimpl translateCCImlp(const std::string &s){
-      // {{{ open
 
       if(s.length() < 3){
         ERROR_LOG("ccimpl \""<<s<<"\" is not defined");
@@ -109,7 +106,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     ccimpl cc_available(format srcFmt, format dstFmt){
       return g_aeAvailableTable[srcFmt*NFMTS + dstFmt];
@@ -118,15 +114,12 @@ namespace icl{
     std::map<format, std::map<format,CCLUT*> > g_mapCCLUTs;
 
     bool lut_available(format srcFmt, format dstFmt){
-      // {{{ open
 
       return g_mapCCLUTs[srcFmt][dstFmt] != 0;
     }
 
-    // }}}
 
     void createLUT(format srcFmt, format dstFmt){
-      // {{{ open
 
       CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
       if(!lut){
@@ -136,10 +129,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void releaseLUT(format srcFmt, format dstFmt){
-      // {{{ open
 
       CCLUT *&lut = g_mapCCLUTs[srcFmt][dstFmt];
       if(lut){
@@ -150,10 +141,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void releaseAllLUTs(){
-      // {{{ open
 
       typedef std::map<format,CCLUT*> fmap;
       typedef std::map<format,fmap> ffmap;
@@ -168,10 +157,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void cc_util_rgb_to_yuv(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v){
-      // {{{ integer open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       /// fixed point approximation of the the rgb2yuv version :
       /** we no longer use this version due to compatibility issues with IPP based code */
@@ -187,10 +174,8 @@ namespace icl{
       else if(v > 255) v = 255;
   #endif
     }
-    // }}}
 
     inline void cc_util_rgb_to_yuv_inline(const icl32s r, const icl32s g, const icl32s b, icl32s &y, icl32s &u, icl32s &v){
-      // {{{ integer open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       /// fixed point approximation of the the rgb2yuv version :
       /** we no longer use this version due to compatibility issues with IPP based code */
@@ -206,7 +191,6 @@ namespace icl{
       else if(v > 255) v = 255;
   #endif
     }
-    // }}}
 
     inline void cc_util_rgb_to_yuv(const icl32f r, const icl32f g, const icl32f b, icl32f &y, icl32f &u, icl32f &v){
       /// this is the way Intel IPP does rgb-to-yuv conversion
@@ -218,7 +202,6 @@ namespace icl{
     }
 
     void cc_util_yuv_to_rgb(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b){
-      // {{{ open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       icl32s u2 = 14343*u - 1828717;
       icl32s v2 = 20231*v - 2579497;
@@ -243,10 +226,8 @@ namespace icl{
       b = utils::clip(b,0,255);
   #endif
     }
-    // }}}
 
     inline void cc_util_yuv_to_rgb_inline(const icl32s y,const icl32s u,const icl32s v, icl32s &r, icl32s &g, icl32s &b){
-      // {{{ open
   #ifdef USE_RGB_TO_YUV_FULL_RANGE_UV
       icl32s u2 = 14343*u - 1828717;
       icl32s v2 = 20231*v - 2579497;
@@ -271,10 +252,8 @@ namespace icl{
       b = utils::clip(b,0,255);
   #endif
     }
-    // }}}
 
     inline void cc_util_yuv_to_rgb(const icl32f y,const icl32f u,const icl32f v, icl32f &r, icl32f &g, icl32f &b){
-      // {{{ open
       // ipp compatible version using 32f values
       icl32f u2 = u-128.0f;
       icl32f v2 = v-128.0f;
@@ -289,7 +268,6 @@ namespace icl{
     }
 
     void cc_util_rgb_to_hls(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){
-      // {{{ open
 
       icl32f r = r255/255;
       icl32f g = g255/255;
@@ -335,10 +313,8 @@ namespace icl{
       l *=255;
       s *=255;
     }
-    // }}}
 
     inline void cc_util_rgb_to_hls_inline(const icl32f r255,const icl32f g255,const icl32f b255, icl32f &h, icl32f &l, icl32f &s){
-      // {{{ open
 
       icl32f r = r255/255;
       icl32f g = g255/255;
@@ -384,10 +360,8 @@ namespace icl{
       l *=255;
       s *=255;
     }
-    // }}}
 
     inline void cc_util_rgb_to_xyz_inline(const icl32f r, const icl32f g, const icl32f b, icl32f &X, icl32f &Y, icl32f &Z){
-      // {{{ open
       /*
       icl32f fR = r / 255.0f;
       icl32f fG = g / 255.0f;
@@ -408,7 +382,6 @@ namespace icl{
       Y = m[1][0] * r + m[1][1] * g + m[1][2] * b;
       Z = m[2][0] * r + m[2][1] * g + m[2][2] * b;
     }
-    // }}}
 
       // cube root by W.Kahan (5bit precision)
       inline icl32f cbrt_kahan(icl32f x)
@@ -433,7 +406,6 @@ namespace icl{
       }
 
     inline void cc_util_xyz_to_lab_inline(const icl32f X, const icl32f Y, const icl32f Z, icl32f &L, icl32f &a, icl32f &b){
-      // {{{ open
       static const icl32f wX = 1/0.950455f;
       static const icl32f wY = 1/1.000;
       static const icl32f wZ = 1/1.088753f;
@@ -450,7 +422,6 @@ namespace icl{
       a = 500.0f * (fX - fY) + 128;
       b = 200.0f * (fY - fZ) + 128;
     }
-    // }}}
 
     void cc_util_rgb_to_lab(const icl32f &r, const icl32f &g, const icl32f &b, icl32f &L, icl32f &A, icl32f &B){
       icl32f x(0),y(0),z(0);
@@ -459,7 +430,6 @@ namespace icl{
     }
 
     void cc_util_hls_to_rgb(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
-      // {{{ open
 
       // H,L,S,R,G,B in range [0,255]
       icl32f h   = h255/255;
@@ -494,10 +464,8 @@ namespace icl{
       g *= 255;
       b *= 255;
     }
-    // }}}
 
     inline void cc_util_hls_to_rgb_inline(const icl32f h255, const icl32f l255, const icl32f sl255, icl32f &r, icl32f &g, icl32f &b){
-      // {{{ open
 
       // H,L,S,R,G,B in range [0,255]
       icl32f h   = h255/255;
@@ -532,20 +500,16 @@ namespace icl{
       g *= 255;
       b *= 255;
     }
-    // }}}
 
     void cc_util_rgb_to_chroma(const icl32f r, const icl32f g, const icl32f b, icl32f &chromaR, icl32f &chromaG){
-      // {{{ open
 
       icl32f sum = r+g+b;
       sum+=!sum; //avoid division by zero
       chromaR=r*255/sum;
       chromaG=g*255/sum;
     }
-    // }}}
 
     inline void cc_util_lab_to_xyz(const icl32f l, const icl32f a, const icl32f b, icl32f &x, icl32f &y, icl32f &z){
-      // {{{ open
 
       static const icl32f n = 16.0f/116.0f;
 
@@ -562,9 +526,7 @@ namespace icl{
       z = (fz>0.206893f) ?  wZ*pow(fz,3) : wZ*(fz-n)/7.787f;
     }
 
-    // }}}
     inline void cc_util_xyz_to_rgb(const icl32f x, const icl32f y, const icl32f z, icl32f &r, icl32f &g, icl32f &b){
-      // {{{ open
       static icl32f m[3][3] = {{ 3.240479*255.0f, -1.53715*255.0f, -0.498535*255.0f},
                                {-0.969256*255.0f,  1.875991*255.0f, 0.041556*255.0f},
                                { 0.055648*255.0f, -0.204043*255.0f, 1.057311*255.0f}};
@@ -575,7 +537,6 @@ namespace icl{
       b = m[2][0] * x + m[2][1] * y + m[2][2] * z;
     }
 
-    // }}}
 
 
   #define GET_3_CHANNEL_POINTERS_DIM(T,I,P1,P2,P3,DIM) T *P1=I->getData(0),*P2=I->getData(1),*P3=I->getData(2); int DIM = I->getDim()
@@ -584,15 +545,12 @@ namespace icl{
   #define GET_2_CHANNEL_POINTERS_NODIM(T,I,P1,P2) T *P1=I->getData(0),*P2=I->getData(1)
 
     template<class S, class D, format srcFmt, format dstFmt> struct CCFunc{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         (void)src; (void)dst; (void)roiOnly;
       }
     };
 
-    // }}}
     template<class S, class D, format srcDstFmt> struct CCFunc<S,D,srcDstFmt,srcDstFmt>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         if(roiOnly){
           src->convertROI(dst);
@@ -603,11 +561,9 @@ namespace icl{
 
     };
 
-    // }}}
 
     /// FROM FORMAT RGB
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatGray>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -630,9 +586,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatHLS>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
@@ -672,9 +626,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatChroma>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         if (roiOnly) {
           const ImgIterator<S> itR = src->beginROI(0);
@@ -705,9 +657,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatYUV>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         if(roiOnly){
           const ImgIterator<S> itR = src->beginROI(0);
@@ -744,9 +694,7 @@ namespace icl{
       }
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatRGB,formatLAB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         icl32f reg_X,reg_Y,reg_Z,reg_L, reg_a, reg_b;
 
@@ -788,12 +736,10 @@ namespace icl{
 
     };
 
-    // }}}
 
 
     /// FROM FORMAT GRAY
     template<class S, class D> struct CCFunc<S,D,formatGray,formatRGB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -816,9 +762,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatHLS>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -843,9 +787,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatYUV>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -871,9 +813,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatLAB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -898,9 +838,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatGray,formatChroma>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         WARNING_LOG("converting formatGray to formatChroma does not make sense");
@@ -910,11 +848,9 @@ namespace icl{
 
     };
 
-    // }}}
 
     /// FROM FORMAT HLS
     template<class S, class D> struct CCFunc<S,D,formatHLS,formatGray>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -926,10 +862,8 @@ namespace icl{
       }
 
     };
-    // }}}
 
     template<class S, class D> struct CCFunc<S,D,formatHLS,formatRGB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
@@ -967,11 +901,9 @@ namespace icl{
         }
       }
     };
-    // }}}
 
 /* the emulated version is faster than this one
     template<class S, class D> struct CCFunc<S,D,formatHLS,formatYUV>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
 
@@ -1012,12 +944,10 @@ namespace icl{
         }
       }
     };
-    // }}}
 */
 
     /// FROM FORMAT LAB
     template<class S, class D> struct CCFunc<S,D,formatLAB,formatGray>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -1030,9 +960,7 @@ namespace icl{
 
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatLAB,formatRGB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         icl32f reg_x, reg_y, reg_z, reg_r, reg_g, reg_b;
@@ -1072,12 +1000,10 @@ namespace icl{
 
     };
 
-    // }}}
 
 
     /// FROM FORMAT YUV
     template<class S, class D> struct CCFunc<S,D,formatYUV,formatGray>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         if(roiOnly){
@@ -1089,9 +1015,7 @@ namespace icl{
       }
     };
 
-    // }}}
     template<class S, class D> struct CCFunc<S,D,formatYUV,formatRGB>{
-      // {{{ open
       static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
         FUNCTION_LOG("");
         icl32s reg_r, reg_g, reg_b;
@@ -1129,7 +1053,6 @@ namespace icl{
 
     };
 
-    // }}}
 
 //  the IPP conversion functions are replaced by a SSE implementation
 /*
@@ -3852,9 +3775,7 @@ namespace icl{
 
 
     template<class S, class D> void cc_sd(const Img<S> *src, Img<D> *dst, bool roiOnly){
-    // {{{ open
 
-      // {{{ definition of CASE_LABEL(XXX)
 
   #define INNER_CASE_LABEL(XXX,YYY) \
     case format##YYY: CCFunc<S,D,format##XXX,format##YYY>::convert(src,dst,roiOnly); break
@@ -3872,7 +3793,6 @@ namespace icl{
           }                                       \
           break
 
-      // }}}
 
       switch(src->getFormat()){
         CASE_LABEL(RGB);
@@ -3887,10 +3807,8 @@ namespace icl{
   #undef CASE_LABEL
     }
 
-    // }}}
 
     template<class S> void cc_s(const Img<S> *src, ImgBase *dst, bool roiOnly){
-      // {{{ open
 
       switch(dst->getDepth()){      //TODO depth macro
         case depth8u: cc_sd(src, dst->asImg<icl8u>(),roiOnly); break;
@@ -3903,10 +3821,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void cc(const ImgBase *src, ImgBase *dst, bool roiOnly){
-      // {{{ open
 
       ICLASSERT_RETURN( src );
       ICLASSERT_RETURN( dst );
@@ -4033,7 +3949,6 @@ namespace icl{
       dst->setMetaData(src->getMetaData());
     }
 
-    // }}}
 
     template<class S, class D>
     void for_copy_p2c2(const S *s0, const S *s1, D *dst, const D *dstEnd) {
@@ -4445,7 +4360,6 @@ namespace icl{
 
     template<class S, class D>
     inline void planarToInterleaved_POD(int channels,int len, const S** src, D* dst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4475,11 +4389,9 @@ namespace icl{
         }
       }
     }
-    // }}}
 
     template<class S, class D>
     inline void planarToInterleaved_Generic_NO_ROI(const Img<S> *src, D*dst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4494,11 +4406,9 @@ namespace icl{
       delete [] srcData;
     }
 
-    // }}}
 
     template<class S, class D>
     inline void planarToInterleaved_Generic_WITH_ROI(const Img<S> *src, D *dst,int dstLineStep){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4535,11 +4445,9 @@ namespace icl{
       delete [] srcData;
     }
 
-    // }}}
 
     template<class S, class D>
     inline void planarToInterleaved_Generic(const Img<S> *src, D* dst, int dstLineStep){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4552,7 +4460,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     template<class S, class D>
     void for_copy_c2p2(const S *src, D *d0, D *d1, const D *dstEnd) {
@@ -4851,7 +4758,6 @@ namespace icl{
 
     template<class S, class D>
     inline void interleavedToPlanar_POD(int channels,int len, const S* src, D **dst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4883,11 +4789,9 @@ namespace icl{
         }
       }
     }
-    // }}}
 
     template<class S, class D>
     inline void interleavedToPlanar_Generic_NO_ROI(const S* src, Img<D> *dst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4902,11 +4806,9 @@ namespace icl{
       delete [] dstData;
     }
 
-    // }}}
 
     template<class S, class D>
     inline void interleavedToPlanar_Generic_WITH_ROI(const S *src, Img<D> *dst, int srcLineStep){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4943,11 +4845,9 @@ namespace icl{
       delete [] dstData;
     }
 
-    // }}}
 
     template<class S, class D>
     inline void interleavedToPlanar_Generic( const S *src, Img<D> *dst, int srcLineStep){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -4960,14 +4860,12 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     /****
 
     template<class S, class D>
     inline void interleavedToPlanar_Generic(const S *src,  Img<D> *dst, int srcLineStep){
-      // {{{ open
       printf("i2p called \n");
       FUNCTION_LOG("");
       ICLASSERT_RETURN(src);
@@ -5040,7 +4938,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     ********/
 
@@ -5058,7 +4955,6 @@ namespace icl{
 
   #ifdef ICL_HAVE_IPP
 
-   // {{{ PLANAR_2_INTERLEAVED_IPP
 
   #define PLANAR_2_INTERLEAVED_IPP(DEPTH)                                                                       \
     template<> ICLCore_API void planarToInterleaved(const Img<icl##DEPTH>*src, icl##DEPTH *dst, int dstLineStep){ \
@@ -5089,9 +4985,7 @@ namespace icl{
     PLANAR_2_INTERLEAVED_IPP(32f)
   #undef PLANAR_2_INTERLEAVED_IPP
 
-    // }}}
 
-    // {{{ INTERLEAVED_2_PLANAR_IPP
 
   #define INTERLEAVED_2_PLANAR_IPP(DEPTH)                                                                               \
     template<> ICLCore_API void interleavedToPlanar(const icl##DEPTH *src, Img<icl##DEPTH> *dst, int srcLineStep){      \
@@ -5124,11 +5018,9 @@ namespace icl{
     INTERLEAVED_2_PLANAR_IPP(32f)
   #undef INTERLEAVED_2_PLANAR_IPP
 
-    // }}}
 
   #endif // WITH_IPP_OPTINIZATION
 
-    // {{{ explicit template instatiations for interleavedToPlanar and planarToInterleaved
 
   #define EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION(TYPEA,TYPEB)                            \
     template ICLCore_API void planarToInterleaved<TYPEB, TYPEA>(const Img<TYPEB>*, TYPEA*, int);             \
@@ -5179,7 +5071,6 @@ namespace icl{
 
   #undef EXPLICIT_I2P_AND_P2I_TEMPLATE_INSTANTIATION
 
-    // }}}
 
   #ifdef ICL_HAVE_SSE2
       inline void subSSEYUV420toRGB(const icl8u *y, const icl8u *u, const icl8u *v,
@@ -5208,7 +5099,6 @@ namespace icl{
   #endif
 
     void convertYUV420ToRGB8(const unsigned char *pucSrc,const Size &s, Img8u *poDst){
-      // {{{ open
   #ifdef ICL_HAVE_SSE2
     const int w = s.width;
     const int w2 = w/2;
@@ -5378,7 +5268,6 @@ namespace icl{
   #endif
     }
 
-    // }}}
 
   } // namespace core
 }

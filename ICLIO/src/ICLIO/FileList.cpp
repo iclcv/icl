@@ -50,8 +50,6 @@
 #include <sstream>
 #include <set>
 #include <cstring>
-
-using namespace std;
 using namespace icl::utils;
 
 namespace icl{
@@ -59,18 +57,15 @@ namespace icl{
 
     namespace{
       inline void replace_newline (string::value_type& c) {
-        // {{{ open
 
         if (c == '\n') c = ' ';
       }
 
-      // }}}
     }
 
     class FileListImpl{
     public:
       FileListImpl(const std::string &pattern, bool omitDoubledFiles):
-        // {{{ open
         m_bNoDoubledFiles(omitDoubledFiles){
 
         if(pattern == "") return;
@@ -156,30 +151,22 @@ namespace icl{
   #endif /* WIN32 */
       }
 
-      // }}}
       FileListImpl(const std::vector<std::string> &filenames)
-        // {{{ open
 
         :m_vecFiles(filenames),m_bNoDoubledFiles(false){
       }
 
-      // }}}
       const string &at(int i) const {
-        // {{{ open
 
         return m_vecFiles[i];
       }
 
-      // }}}
       int size() const {
-        // {{{ open
 
         return static_cast<int>(m_vecFiles.size());
       }
 
-      // }}}
       void add(const string &filename){
-        // {{{ open
         if(endsWith(filename,".seq")){
           addSequence(filename);
         }else{
@@ -194,10 +181,8 @@ namespace icl{
         }
       }
 
-      // }}}
     private:
       void addSequence(const string &filename){
-        // {{{ open
         if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
           return; // this sequnce was already added (abort to avoid infinite loops)
         }
@@ -210,7 +195,6 @@ namespace icl{
           add(seqFile.readLine());
         }
       }
-      // }}}
 
       vector<string> m_vecFiles;
       set<string> m_setFiles;
@@ -218,55 +202,30 @@ namespace icl{
       bool m_bNoDoubledFiles;
     };
 
-    void FileListImplDelOp::delete_func(FileListImpl *i){
-      // {{{ open
-
-      ICL_DELETE( i );
-    }
-
-    // }}}
-
-    FileList::FileList():
-      // {{{ open
-      ShallowCopyable<FileListImpl,FileListImplDelOp>(0){
-    }
-
-    // }}}
+    FileList::FileList() = default;
 
     FileList::FileList(const string &pattern, bool omitDoubledFiles):
-      // {{{ open
-
-      ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(pattern,omitDoubledFiles)){
+      impl(std::make_shared<FileListImpl>(pattern,omitDoubledFiles)){
     }
-
-    // }}}
 
     FileList::FileList(const vector<string> &filenames):
-      // {{{ open
-
-      ShallowCopyable<FileListImpl,FileListImplDelOp>(new FileListImpl(filenames)){
+      impl(std::make_shared<FileListImpl>(filenames)){
     }
 
-    // }}}
 
     FileList::~FileList(){
-      // {{{ open
 
     }
 
-    // }}}
 
     int FileList::size() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       return impl->size();
     }
 
-    // }}}
 
     const string &FileList::operator[](int i) const{
-      // {{{ open
 
       static string _null;
       ICLASSERT_RETURN_VAL( !isNull() ,_null);
@@ -274,10 +233,8 @@ namespace icl{
       return impl->at(i);
     }
 
-    // }}}
 
     void FileList::join(const FileList &other){
-      // {{{ open
 
       ICLASSERT_RETURN(!isNull());
       for(int i=0;i<other.size();i++){
@@ -285,10 +242,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void FileList::toSequenceFile(const std::string &seqFileName) const{
-      // {{{ open
 
       ICLASSERT_RETURN(endsWith(seqFileName,".seq"));
       File seqFile(seqFileName);
@@ -299,10 +254,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void FileList::show() const {
-      // {{{ open
 
       if(isNull()){
         std::cout << "FileList: NULL" << std::endl;
@@ -314,10 +267,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     string FileList::translateHashPattern(const std::string& sFileName) {
-      // {{{ open
 
       std::string::size_type iSuffixPos=string::npos;
       unsigned int nHashes=0;
@@ -337,6 +288,5 @@ namespace icl{
       return sFileName;
     }
 
-    // }}}
   } // namespace io
 }

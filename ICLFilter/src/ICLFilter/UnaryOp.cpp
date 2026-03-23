@@ -31,8 +31,9 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLFilter/UnaryOp.h>
-#include <ICLFilter/UnaryOpWork.h>
 #include <ICLFilter/ImageSplitter.h>
+#include <future>
+#include <vector>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/MedianOp.h>
@@ -69,18 +70,17 @@ namespace icl{
                   "an exception is thrown.");
     }
 
-    UnaryOp::UnaryOp():m_poMT(0),m_buf(0){
+    UnaryOp::UnaryOp():m_buf(0){
       initConfigurable();
     }
 
     UnaryOp::UnaryOp(const UnaryOp &other):
-      m_poMT(0),m_oROIHandler(other.m_oROIHandler),m_buf(0){
+      m_oROIHandler(other.m_oROIHandler),m_buf(0){
       initConfigurable();
     }
 
     UnaryOp &UnaryOp::operator=(const UnaryOp &other){
       m_oROIHandler = other.m_oROIHandler;
-      ICL_DELETE( m_poMT );
 
       prop("UnaryOp.clip to ROI").value = other.prop("UnaryOp.clip to ROI").value;
       prop("UnaryOp.check only").value = other.prop("UnaryOp.check only").value;
@@ -88,7 +88,6 @@ namespace icl{
       return *this;
     }
     UnaryOp::~UnaryOp(){
-      ICL_DELETE( m_poMT );
       ICL_DELETE( m_buf );
     }
 
@@ -117,26 +116,13 @@ namespace icl{
       const std::vector<ImgBase*> srcs = ImageSplitter::split(poSrc,nThreads);
       std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
 
-      MultiThreader::WorkSet works(nThreads);
-
+      std::vector<std::future<void>> futures;
       for(unsigned int i=0;i<nThreads;i++){
-        works[i] = new UnaryOpWork(this,srcs[i],const_cast<ImgBase*>(dsts[i]));
+        ImgBase *s = srcs[i];
+        ImgBase *d = const_cast<ImgBase*>(dsts[i]);
+        futures.push_back(std::async(std::launch::async, [this,s,&d]{ apply(s, &d); }));
       }
-
-      if(!m_poMT){
-        m_poMT = new MultiThreader(nThreads);
-      }else{
-        if(m_poMT->getNumThreads() != static_cast<int>(nThreads)){
-          delete m_poMT;
-          m_poMT = new MultiThreader(nThreads);
-        }
-      }
-
-      (*m_poMT)( works );
-
-      for(unsigned int i=0;i<nThreads;i++){
-        delete works[i];
-      }
+      for(auto &f : futures) f.get();
 
       setClipToROI(ctr);
       setCheckOnly(co);

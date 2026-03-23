@@ -34,7 +34,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-using namespace std;
 
 namespace icl{
   namespace io{
@@ -43,7 +42,6 @@ namespace icl{
       const int NCOLS = 30;
       const int NEXTRA = 26;
       unsigned char aauc_Data_macaw[NROWS][NCOLS] = {
-        // {{{ open
         {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  1,  0, 72,  0, 72,  0,  0,255,219,  0, 67,  0, 53, 37, 40, 47, 40},
         { 33, 53, 47, 43, 47, 60, 57, 53, 63, 80,133, 87, 80, 73, 73, 80,163,117,123, 97,133,193,170,203,200,190,170,186,183,213},
         {240,255,255,213,226,255,230,183,186,255,255,255,255,255,255,255,255,255,206,255,255,255,255,255,255,255,255,255,255,255},
@@ -1149,16 +1147,12 @@ namespace icl{
         {224,103, 40,180,116,153,204, 14,103, 38,133,185,177,204,132,111, 20,201,104,160, 40,148,139, 66,  4, 42, 85,128,134,101},
         { 10, 70, 50,149, 51,103,193,140,205,114,176,183, 49, 43, 98, 41, 27,104,152,138,100,128,  0,  0, 21, 22, 18, 66,143, 37}
       };
-      // }}}
       unsigned char auc_ExtraData_macaw[NEXTRA] = {
-        // {{{ open
         75,130,  8,  0,  2,138,137,162, 34, 38,136,205, 74, 66, 99, 20,136,137,171, 29, 96, 16,209, 85,255,217
       };
-      // }}}
 
     }//end namespace
     ImgBase* createImage_macaw(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
 
@@ -1183,7 +1177,6 @@ namespace icl{
       f.erase();
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 
 } // end namespace icl

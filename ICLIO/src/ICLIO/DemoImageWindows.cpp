@@ -34,7 +34,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-using namespace std;
 namespace icl{
   namespace io{
     namespace{
@@ -42,7 +41,6 @@ namespace icl{
       const int NCOLS = 30;
       const int NEXTRA = 22;
       unsigned char aauc_Data_windows[NROWS][NCOLS] = {
-        // {{{ open
         {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  1,  0, 72,  0, 72,  0,  0,255,219,  0, 67,  0,  6,  4,  5,  6,  5},
         {  4,  6,  6,  5,  6,  7,  7,  6,  8, 10, 16, 10, 10,  9,  9, 10, 20, 14, 15, 12, 16, 23, 20, 24, 24, 23, 20, 22, 22, 26},
         { 29, 37, 31, 26, 27, 35, 28, 22, 22, 32, 44, 32, 35, 38, 39, 41, 42, 41, 25, 31, 45, 48, 45, 40, 48, 37, 40, 41, 40,255},
@@ -258,16 +256,12 @@ namespace icl{
         {183,133,188, 18,211, 60, 63,148, 39,199, 14,220,110,193, 37, 41,151, 43, 31,171,207, 94, 68,141,147,235,185,248,213,165},
         { 64, 41, 74, 80, 10, 82,148,  2,148,165,  0,165, 41, 64, 41, 74, 80, 10, 82,148,  2,148,165,  0,165, 41, 64, 41, 74, 80}
       };
-      // }}}
       unsigned char auc_ExtraData_windows[NEXTRA] = {
-        // {{{ open
         10, 82,148,  2,148,165,  0,165, 41, 64, 41, 74, 80, 10, 82,148,  2,148,165,  1,255,217
       };
-      // }}}
 
     }//end namespace
     ImgBase* createImage_windows(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
       File f("./.tmp_image_buffer.jpg",File::writeBinary);
@@ -289,7 +283,6 @@ namespace icl{
       f.erase();
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 
 } // end namespace icl

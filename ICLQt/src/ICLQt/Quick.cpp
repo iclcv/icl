@@ -82,8 +82,6 @@
 #include <cstdio>
 
 #include <QtWidgets/QCompleter>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
@@ -394,7 +392,6 @@ namespace icl{
 
 
       struct Color{
-        // {{{ open
 
         Color(const float *color){
           for(int i=0;i<4;++i)COLOR[i]=color[i];
@@ -402,7 +399,6 @@ namespace icl{
         float COLOR[4];
       };
 
-      // }}}
 
       Color *savedColor = 0;
       Color *savedFill = 0;
@@ -411,7 +407,6 @@ namespace icl{
       float FILL[4] = {0,0,0,0};
 
       void saveColorAndFill(){
-        // {{{ open
 
         if(savedColor) delete savedColor;
         if(savedFill) delete savedFill;
@@ -419,9 +414,7 @@ namespace icl{
         savedFill = new Color(FILL);
       }
 
-      // }}}
       void restoreColorAndFill(){
-        // {{{ open
 
         if(savedColor){
           for(int i=0;i<4;i++)COLOR[i]=savedColor->COLOR[i];
@@ -435,13 +428,11 @@ namespace icl{
         }
       }
 
-      // }}}
       int FONTSIZE = 12;
       string FONTFAMILY = "Times";
 
 
       inline ImgQ *prepare_for_binary_op(const ImgQ &a, const ImgQ &b, ImgQ &na, ImgQ &nb){
-        // {{{ open
 
         if(a.getROISize() == b.getROISize() && a.getChannels() == b.getChannels()){
           na = copy(a);
@@ -472,10 +463,8 @@ namespace icl{
       return new ImgQ(na.getParams());
     }
 
-    // }}}
 
       inline ImgQ apply_binary_arithmetical_op(const ImgQ &a, const ImgQ &b,  BinaryArithmeticalOp::optype ot){
-        // {{{ open
 
         BinaryArithmeticalOp binop(ot);
         binop.setCheckOnly(true);
@@ -518,9 +507,7 @@ namespace icl{
         return x;
       }
 
-      // }}}
       inline ImgQ apply_unary_arithmetical_op(const ImgQ &image,ICL_QUICK_TYPE val, UnaryArithmeticalOp::optype ot){
-        // {{{ open
 
         /* old  !!
             ImgBase *dst = 0;
@@ -535,33 +522,26 @@ namespace icl{
 
       }
 
-      // }}}
 
       Timer *TIMER=0;
       std::string TIMER_LABEL;
     }
 
-    using namespace std;
-
     template <class T>
     Img<T> zeros(int width, int height, int channels){
-      // {{{ open
       Img<T> &image = *ImgBuffer::instance()->get<T>(Size(width,height),channels);
       image.clear(-1,T(0),false);
       return image;
     }
 
-    // }}}
 
     template <class T>
     Img<T> ones(int width, int height, int channels){
-      // {{{ open
       Img<T> &image = *ImgBuffer::instance()->get<T>(Size(width,height),channels);
       image.clear(-1,T(1),false);
       return image;
     }
 
-    // }}}
 
 
 
@@ -587,7 +567,6 @@ namespace icl{
 
     template<class T>
     Img<T> load(const string &filename, format fmt){
-      // {{{ open
 
       FileGrabber g(filename);
       const ImgBase *gi  = 0;
@@ -606,12 +585,10 @@ namespace icl{
       return buf;
     }
 
-    // }}}
 
 
     template<class T>
     Img<T> create(const string &name, format fmt){
-      // {{{ open
       depth d = getDepth<T>();
       Img<T> *image = TestImages::create(name,fmt,d)->asImg<T>();
       if(!image){
@@ -623,13 +600,11 @@ namespace icl{
       return im;
     }
 
-    // }}}
 
 
 
 
     Img8u cvt8u(const ImgQ &image){
-      // {{{ open
 
       Img8u *p = image.convert<icl8u>();
       Img8u r = *p;
@@ -637,9 +612,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     Img16s cvt16s(const ImgQ &image){
-      // {{{ open
 
       Img16s *p = image.convert<icl16s>();
       Img16s r = *p;
@@ -648,9 +621,7 @@ namespace icl{
 
     }
 
-    // }}}
     Img32s cvt32s(const ImgQ &image){
-      // {{{ open
 
       Img32s *p = image.convert<icl32s>();
       Img32s r = *p;
@@ -658,9 +629,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     Img32f cvt32f(const ImgQ &image){
-      // {{{ open
 
       Img32f *p = image.convert<icl32f>();
       Img32f r = *p;
@@ -668,9 +637,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     Img64f cvt64f(const ImgQ &image){
-      // {{{ open
 
       Img64f *p = image.convert<icl64f>();
       Img64f r = *p;
@@ -678,10 +645,8 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     ImgQ cvt(const Img8u &image){
-      // {{{ open
 
       ImgQ *p = image.convert<ICL_QUICK_TYPE>();
       ImgQ r = *p;
@@ -689,9 +654,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ cvt(const Img16s &image){
-      // {{{ open
 
       ImgQ *p = image.convert<ICL_QUICK_TYPE>();
       ImgQ r = *p;
@@ -699,9 +662,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ cvt(const Img32s &image){
-      // {{{ open
 
       ImgQ *p = image.convert<ICL_QUICK_TYPE>();
       ImgQ r = *p;
@@ -709,9 +670,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ cvt(const Img32f &image){
-      // {{{ open
 
       ImgQ *p = image.convert<ICL_QUICK_TYPE>();
       ImgQ r = *p;
@@ -719,9 +678,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ cvt(const Img64f &image){
-      // {{{ open
 
       ImgQ *p = image.convert<ICL_QUICK_TYPE>();
       ImgQ r = *p;
@@ -729,7 +686,6 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
 
     ImgQ cvt(const ImgBase *image){
@@ -793,7 +749,6 @@ namespace icl{
 
     template<class T>
     Img<T> filter(const Img<T> &image,const string &filter){
-      // {{{ open
 
       static map<string,UnaryOp*> M;
       if(!M.size()){
@@ -823,7 +778,6 @@ namespace icl{
       u->apply(&image,bpp(buf));
       return buf;
     }
-    // }}}
 
 
     template<class T>
@@ -866,16 +820,13 @@ namespace icl{
 
     template<class T>
     Img<T> copy(const Img<T> &image){
-      // {{{ open
       Img<T> &cpy = *ImgBuffer::instance()->get<T>(image.getParams());
       image.deepCopy(&cpy);
       return cpy;
     }
 
-    // }}}
     template<class T>
     Img<T> copyroi(const Img<T> &image){
-      // {{{ open
       Img<T> &cpy = *ImgBuffer::instance()->get<T>(image.getROISize(),image.getChannels());
       cpy.setFormat(image.getFormat());
       cpy.setTime(image.getTime());
@@ -886,24 +837,19 @@ namespace icl{
 
 
 
-    // }}}
     template<class T>
     Img<T> norm(const Img<T> &image){
-      // {{{ open
 
       Img<T> cpy = copy(image);
       cpy.normalizeAllChannels(Range<T>(0,255));
       return cpy;
     }
 
-    // }}}
 
     void save(const ImgBase &image,const string &filename){
-      // {{{ open
       FileWriter(filename).write(&image);
     }
 
-    // }}}
 
     namespace{
       string g_sShowCommand = "icl-xv -input %s -delete";
@@ -919,7 +865,6 @@ namespace icl{
 
     template<class T>
     static void show_internal(const Img<T> &image){
-      // {{{ open
 
       if(image.hasFullROI()){
         if(image.getFormat()==formatMatrix && image.getChannels()==1){
@@ -969,16 +914,13 @@ namespace icl{
 
 
 
-    // }}}
 
     template<class T>
     void print(const Img<T> &image){
-      // {{{ open
 
       image.print("image");
     }
 
-    // }}}
 
   #define ICL_INSTANTIATE_DEPTH(D)                                   \
     template ICLQt_API Img<icl##D> zeros(int,int,int);                         \
@@ -999,72 +941,53 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
 
     ImgQ operator+(const ImgQ &a,const ImgQ &b){
-      // {{{ open
 
       return apply_binary_arithmetical_op(a,b,BinaryArithmeticalOp::addOp);
     }
 
-    // }}}
     ImgQ operator-(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
       return apply_binary_arithmetical_op(a,b,BinaryArithmeticalOp::subOp);
     }
 
-    // }}}
     ImgQ operator*(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
       return apply_binary_arithmetical_op(a,b,BinaryArithmeticalOp::mulOp);
     }
 
-    // }}}
     ImgQ operator/(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
       return apply_binary_arithmetical_op(a,b,BinaryArithmeticalOp::divOp);
     }
 
-    // }}}
 
     ImgQ operator+(const ImgQ &image, float val){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,val,UnaryArithmeticalOp::addOp);
     }
 
-    // }}}
     ImgQ operator-(const ImgQ &image, float val){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,val,UnaryArithmeticalOp::subOp);
     }
 
-    // }}}
     ImgQ operator*(const ImgQ &image, float val){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,val,UnaryArithmeticalOp::mulOp);
     }
 
-    // }}}
     ImgQ operator/(const ImgQ &image, float val){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,val,UnaryArithmeticalOp::divOp);
     }
 
-    // }}}
 
     ImgQ operator+(float val, const ImgQ &image){
-      // {{{ open
 
       return image+val;
     }
 
-    // }}}
     ImgQ operator-(float val, const ImgQ &image){
-      // {{{ open
       //    ImgQ res(image.getROISize(),image.getChannels());
 
       ImgQ res = TEMP_IMG_SC(image.getROISize(),image.getChannels());
@@ -1080,16 +1003,12 @@ namespace icl{
       return res;
     }
 
-    // }}}
     ImgQ operator*(float val, const ImgQ &image){
-      // {{{ open
 
       return image*val;
     }
 
-    // }}}
     ImgQ operator/(float val, const ImgQ &image){
-      // {{{ open
       //ImgQ res(image.getROISize(),image.getChannels());
 
       ImgQ res = TEMP_IMG_SC(image.getROISize(),image.getChannels());
@@ -1105,11 +1024,9 @@ namespace icl{
       return res;
     }
 
-    // }}}
 
 
     ImgQ cc(const ImgQ& image, format fmt){
-      // {{{ open
       //    ImgQ dst(image.getSize(),fmt);
       ImgQ dst = TEMP_IMG_SC(image.getROISize(),getChannelsOfFormat(fmt));
       dst.setFormat(fmt);
@@ -1120,46 +1037,34 @@ namespace icl{
       return dst;
     }
 
-    // }}}
     ImgQ rgb(const ImgQ &image){
-      // {{{ open
 
       return cc(image,formatRGB);
     }
 
-    // }}}
     ImgQ hls(const ImgQ &image){
-      // {{{ open
 
       return cc(image,formatHLS);
     }
 
-    // }}}
     ImgQ lab(const ImgQ &image){
-      // {{{ open
 
       return cc(image,formatLAB);
     }
 
-    // }}}
     ImgQ gray(const ImgQ &image){
-      // {{{ open
 
       return cc(image,formatGray);
     }
 
-    // }}}
 
 
     ImgQ scale(const ImgQ& image, float factor){
-      // {{{ open
 
       return scale(image,static_cast<int>(factor*image.getWidth()), static_cast<int>(factor*image.getHeight()));
     }
 
-    // }}}
     ImgQ scale(const ImgQ& image, int width, int height){
-      // {{{ open
       ImgQ *n = image.scaledCopyROI(Size(width,height));
 
       ImgQ a = *n;
@@ -1167,21 +1072,17 @@ namespace icl{
       return a;
     }
 
-    // }}}
 
     // TODO ...
 
     ImgQ channel(const ImgQ &image, int channel){
-      // {{{ open
       const ImgQ *c = image.selectChannel(channel)->asImg<ICL_QUICK_TYPE>();
       const ImgQ a = copy(*c);
       delete c;
       return a;
     }
 
-    // }}}
     ImgQ levels(const ImgQ &image, icl8u levels){
-      // {{{ open
 
       ImgBase *src = image.convertROI(depth8u);
       ImgBase *dst = 0;
@@ -1194,9 +1095,7 @@ namespace icl{
       return b;
     }
 
-    // }}}
     ImgQ thresh(const ImgQ &image, float threshold){
-      // {{{ open
 
       //ImgQ r(image.getROISize(),image.getChannels(),image.getFormat());
       ImgQ r = TEMP_IMG_SC(image.getROISize(),image.getChannels());
@@ -1213,18 +1112,14 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ flipx(const ImgQ& image){
-      // {{{ open
       ImgQ r(image.getParams());
       ImgBase *rr = &r;
       flippedCopy(axisVert,&image,&rr);
       return r;
     }
 
-    // }}}
     ImgQ flipy(const ImgQ& image){
-      // {{{ open
 
       ImgQ r(image.getParams());
       ImgBase *rr = &r;
@@ -1232,53 +1127,39 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     ImgQ exp(const ImgQ &image){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,0,UnaryArithmeticalOp::expOp);
     }
 
-    // }}}
     ImgQ ln(const ImgQ &image){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,0,UnaryArithmeticalOp::lnOp);
     }
 
-    // }}}
     ImgQ sqr(const ImgQ &image){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,0,UnaryArithmeticalOp::sqrOp);
     }
 
-    // }}}
     ImgQ sqrt(const ImgQ &image){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,0,UnaryArithmeticalOp::sqrtOp);
     }
 
-    // }}}
     ImgQ abs(const ImgQ &image){
-      // {{{ open
 
       return apply_unary_arithmetical_op(image,0,UnaryArithmeticalOp::absOp);
     }
 
-    // }}}
     ImgQ operator-(const ImgQ &image){
-      // {{{ open
 
       return image*(-1);
     }
 
-    // }}}
 
     ImgQ operator||(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
       ImgQ na,nb;
       ImgQ *res = prepare_for_binary_op(a,b,na,nb);
@@ -1297,9 +1178,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ operator&&(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
      ImgQ na,nb;
       ImgQ *res = prepare_for_binary_op(a,b,na,nb);
@@ -1317,11 +1196,9 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     template<class T>
     ImgQ binOR(const ImgQ &a, const ImgQ &b){
-      // {{{ open
       ImgQ na,nb;
       ImgQ *res = prepare_for_binary_op(a,b,na,nb);
       ImgQ r = *res;
@@ -1339,11 +1216,9 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     template<class T>
     ImgQ binXOR(const ImgQ &a, const ImgQ &b){
-      // {{{ open
       ImgQ na,nb;
       ImgQ *res = prepare_for_binary_op(a,b,na,nb);
       ImgQ r = *res;
@@ -1361,11 +1236,9 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     template<class T>
     ImgQ binAND(const ImgQ &a, const ImgQ &b){
-      // {{{ open
       ImgQ na,nb;
       ImgQ *res = prepare_for_binary_op(a,b,na,nb);
       ImgQ r = *res;
@@ -1383,7 +1256,6 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     template ICLQt_API ImgQ binOR<icl8u>(const ImgQ&, const ImgQ&);
     template ICLQt_API ImgQ binOR<icl16s>(const ImgQ&, const ImgQ&);
@@ -1399,7 +1271,6 @@ namespace icl{
 
 
     ImgQ operator,(const ImgQ &a, const ImgQ &b){
-      // {{{ open
       if(a.getSize() == Size::null) return copy(b);
       if(b.getSize() == Size::null) return copy(a);
       //ImgQ r = zeros();
@@ -1416,9 +1287,7 @@ namespace icl{
       return r;
     }
 
-    // }}}
     ImgQ operator%(const ImgQ &a, const ImgQ &b){
-      // {{{ open
       if(a.getSize() == Size::null) return copy(b);
       if(b.getSize() == Size::null) return copy(a);
       ImgQ r = zeros(max(a.getWidth(),b.getWidth()),a.getHeight()+b.getHeight(),max(a.getChannels(),b.getChannels()));
@@ -1431,10 +1300,8 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     ImgQ operator|(const ImgQ &a, const ImgQ &b){
-      // {{{ open
 
       if(a.getChannels() == 0 || a.getROISize() == Size::null) return copy(b);
       if(b.getChannels() == 0 || b.getROISize() == Size::null) return copy(a);
@@ -1451,18 +1318,14 @@ namespace icl{
       return r;
     }
 
-    // }}}
 
     ImgROI &ImgROI::operator=(float val){
-      // {{{ open
 
       image.clear(-1,val,true);
       return *this;
     }
 
-    // }}}
     ImgROI &ImgROI::operator=(const ImgQ &i){
-      // {{{ open
       ICLASSERT_RETURN_VAL(image.getROISize() == i.getROISize(),*this);
       for(int c=0;c<min(image.getChannels(),i.getChannels());++c){
         deepCopyChannelROI(&i,c,i.getROIOffset(),i.getROISize(),
@@ -1471,9 +1334,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     ImgROI &ImgROI::operator=(const ImgROI &r){
-      // {{{ open
       ICLASSERT_RETURN_VAL(image.getROISize() == r.image.getROISize(),*this);
       for(int c=0;c<min(image.getChannels(),r.image.getChannels());++c){
         deepCopyChannelROI(&(r.image),c,r.image.getROIOffset(),r.image.getROISize(),
@@ -1482,35 +1343,27 @@ namespace icl{
       return *this;
     }
 
-    // }}}
 
     ImgROI::operator ImgQ(){
-      // {{{ open
 
       return image;
     }
 
-    // }}}
     ImgROI roi(ImgQ &r){
-      // {{{ open
 
       ImgROI roi = { r };
       return roi;
     }
 
-    // }}}
     ImgROI data(ImgQ &r){
-      // {{{ open
 
       ImgROI roi = { r };
       roi.image.setFullROI();
       return roi;
     }
 
-    // }}}
 
     void color(float r, float g, float b, float a){
-      // {{{ open
 
       COLOR[0] = r;
       COLOR[1] = g<0 ? r : g;
@@ -1518,9 +1371,7 @@ namespace icl{
       COLOR[3] = a;
     }
 
-    // }}}
     void fill(float r, float g, float b, float a){
-      // {{{ open
 
       FILL[0] = r;
       FILL[1] = g<0 ? r : g;
@@ -1528,27 +1379,21 @@ namespace icl{
       FILL[3] = a;
     }
 
-    // }}}
 
     void colorinfo(float color[4], float fill[4]){
-      // {{{ open
       memcpy(color,COLOR,4*sizeof(float));
       memcpy(fill,FILL,4*sizeof(float));
     }
-    // }}}
 
     void cross(ImgQ &image, int X, int Y){
-      // {{{ open
 
       static const int CROSS_SIZE = 3;
       line(image, X-CROSS_SIZE,Y-CROSS_SIZE,X+CROSS_SIZE,Y+CROSS_SIZE);
       line(image, X-CROSS_SIZE,Y+CROSS_SIZE,X+CROSS_SIZE,Y-CROSS_SIZE);
     }
 
-    // }}}
 
     static void simple_rect(ImgQ &image, int x, int y, int w, int h){
-      // {{{ open
 
       line(image,x,y,x+w-1,y);
       line(image,x,y,x,y+h-1);
@@ -1569,7 +1414,6 @@ namespace icl{
     }
 
     void rect(ImgQ &image, int x_in, int y_in, int w_in, int h_in, int r){
-      // {{{ open
       if(!r){
         icl::qt::simple_rect(image,x_in,y_in,w_in,h_in);
         return;
@@ -1651,14 +1495,12 @@ namespace icl{
         if(y!=r-1) icl::qt::pix(image,xr+(r-y)-1,yb+x);
       }
     }
-    // }}}
 
 
 
 
     namespace{
       void draw_circle_outline(ImgQ &image, int xcenter, int ycenter, int radius){
-        // {{{ open
 
         float outline = 2*M_PI*radius;
         int nc = iclMin(3,image.getChannels());
@@ -1677,18 +1519,14 @@ namespace icl{
         }
       }
 
-      // }}}
 
       inline bool lessPt(const Point &a, const Point &b){
-        // {{{ open
 
         return a.y<b.y;
       }
 
-      // }}}
 
       void hline(ImgQ &image, int x1, int x2, int y, bool useFillColor){
-        // {{{ open
         if( y < 0 || y >= image.getHeight()) return;
         if(x1 > x2) std::swap(x1,x2);
         const float *color = useFillColor ? FILL : COLOR;
@@ -1703,16 +1541,12 @@ namespace icl{
         }
       }
 
-      // }}}
       inline void hlinef(ImgQ &image, float x1, float x2, float y,bool useFillColor){
-        // {{{ open
 
         hline(image,static_cast<int>(round(x1)), static_cast<int>(round(x2)), static_cast<int>(round(y)), useFillColor);
       }
 
-      // }}}
       void vline(ImgQ &image, int x, int y1, int y2,bool useFillColor){
-        // {{{ open
         if( x < 0 || x >= image.getWidth()) return;
         if(y1 > y2) std::swap(y1,y2);
         const float *color = useFillColor ? FILL : COLOR;
@@ -1727,12 +1561,10 @@ namespace icl{
         }
       }
 
-      // }}}
 
     }
 
     void circle(ImgQ &image, int xoffs, int yoffs, int radius) {
-      // {{{ open
 
       float rr = radius*radius;
       int h = image.getHeight();
@@ -1792,10 +1624,8 @@ namespace icl{
        **/
     }
 
-    // }}}
 
     void line(ImgQ &image, int x1, int y1, int x2, int y2){
-      // {{{ open
       if(x1 == x2) { vline(image,x1,y1,y2,false); return; }
       if(y1 == y2) { hline(image,x1,x2,y1,false); return; }
 
@@ -1811,7 +1641,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void linestrip(ImgQ &image, const std::vector<Point> &pts, bool closeLoop){
       /// {{{ open
@@ -1823,7 +1652,6 @@ namespace icl{
         line(image,pts.front(),pts.back());
       }
     }
-    // }}}
 
     /// draws a polygon (constructed out of linestrips
     void polygon(ImgQ &image, const std::vector<Point> &corners){
@@ -1858,7 +1686,6 @@ namespace icl{
 
 
     void triangle(ImgQ &image,int x1, int y1, int x2, int y2, int x3, int y3 ){
-      // {{{ open
 
       // *  the coordinates of vertices are (A.x,A.y), (B.x,B.y), (C.x,C.y);
       //we assume that A.y<=B.y<=C.y (you should sort them first)
@@ -1928,10 +1755,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void text(ImgQ &image, int xoffs, int yoffs, const string &text){
-      // {{{ open
       // first rendering the text
   #ifdef ICL_HAVE_QT
       int n = 0;
@@ -1974,10 +1799,8 @@ namespace icl{
   #endif
     }
 
-    // }}}
 
     void pix(ImgQ &image, int x, int y){
-      // {{{ open
       float A = COLOR[3]/255.0;
       if(x>=0 && y>=0 && x<image.getWidth() && y<image.getHeight()){
         for(int c=0;c<image.getChannels() && c<3; ++c){
@@ -1987,30 +1810,24 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void pix(ImgQ &image, const vector<Point> &pts){
-      // {{{ open
 
       for(vector<Point>::const_iterator it = pts.begin();it!=pts.end();++it){
         pix(image,it->x,it->y);
       }
     }
 
-    // }}}
 
     void pix(ImgQ &image, const vector<vector<Point> > &pts){
-      // {{{ open
 
       for(vector<vector<Point> >::const_iterator it = pts.begin();it!=pts.end();++it){
         pix(image,*it);
       }
     }
 
-    // }}}
 
     ImgQ label(const ImgQ &imageIn, const string &text){
-      // {{{ open
       ImgQ image = copy(imageIn);
 
       float _COLOR[4] = { COLOR[0],COLOR[1],COLOR[2],COLOR[3] };
@@ -2033,27 +1850,21 @@ namespace icl{
       return image;
     }
 
-    // }}}
 
     void font(int size, const string &family){
-      // {{{ open
 
       FONTSIZE = size;
       FONTFAMILY = family;
     }
 
-    // }}}
 
     void fontsize(int size){
-      // {{{ open
 
       FONTSIZE = size;
     }
 
-    // }}}
 
     void tic(const std::string &label){
-      // {{{ open
       std::string lastTimerLabel = TIMER_LABEL;
       TIMER_LABEL = label;
 
@@ -2069,9 +1880,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void toc(){
-      // {{{ open
 
       if(!TIMER){
         printf("could not stop timer: call tic first! \n");
@@ -2082,7 +1891,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
   } // namespace cv

@@ -35,12 +35,6 @@
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
-  /** \cond */
-  namespace utils{
-    class MultiThreader;
-  }
-  /** \endcond */
-
   namespace filter{
 
 
@@ -175,8 +169,6 @@ namespace icl{
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepth) {
         return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
       }
-
-      utils::MultiThreader *m_poMT;
 
       private:
 

@@ -31,20 +31,19 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/ShallowCopyable.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace icl{
   namespace io{
 
     /** \cond */
     class FileListImpl;
-    struct FileListImplDelOp { static void delete_func(FileListImpl *i); };
     /** \endcond */
 
     /// Utility class implementing a list of files \ingroup UTILS_G
-    class ICLIO_API FileList : public utils::ShallowCopyable<FileListImpl, FileListImplDelOp>{
+    class ICLIO_API FileList{
       public:
 
       /// Create a null file-list
@@ -107,6 +106,12 @@ namespace icl{
 
       /// translates a hashpattern to a regular expression
       static std::string translateHashPattern(const std::string &hashPattern);
+
+      /// returns whether the file list is null (not initialized)
+      bool isNull() const { return !impl; }
+
+      private:
+      std::shared_ptr<FileListImpl> impl;
     };
   } // namespace io
 }

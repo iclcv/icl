@@ -53,7 +53,6 @@ namespace icl {
       };
 
       template<class T, BinaryLogicalOp::optype OT> struct LoopFunc{
-        // {{{ open
         static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
           for(int c=src1->getChannels()-1; c >= 0; --c) {
             ImgIterator<T> itDst = dst->beginROI(c);
@@ -66,13 +65,11 @@ namespace icl {
         }
       };
 
-      // }}}
 
 
   #ifdef ICL_HAVE_IPP
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
       inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
-        // {{{ open
         for (int c=src1->getChannels()-1; c >= 0; --c) {
           func (src1->getROIData (c), src1->getLineStep(),
                 src2->getROIData (c), src2->getLineStep(),
@@ -80,7 +77,6 @@ namespace icl {
                 dst->getROISize());
         }
     }
-    // }}}
 
   #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                           \
       template<> struct LoopFunc<icl8u, BinaryLogicalOp::OP##Op>{                                    \
@@ -105,7 +101,6 @@ namespace icl {
 
       template<BinaryLogicalOp::optype OT>
       void apply_op(const ImgBase *src1,const ImgBase *src2, ImgBase *dst){
-        // {{{ open
         switch(src1->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: LoopFunc<icl##D,OT>::apply(src1->asImg<icl##D>(),src2->asImg<icl##D>(), dst->asImg<icl##D>()); break;
           ICL_INSTANTIATE_ALL_INT_DEPTHS;
@@ -114,12 +109,10 @@ namespace icl {
         }
       }
 
-      // }}}
 
     } // end of anonymous namespace
 
     void BinaryLogicalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **ppoDst){
-      // {{{ open
       ICLASSERT_RETURN( poSrc1 );
       ICLASSERT_RETURN( poSrc2 );
       ICLASSERT_RETURN( ppoDst );
@@ -139,7 +132,6 @@ namespace icl {
         case xorOp:  apply_op<xorOp>(poSrc1,poSrc2,*ppoDst); break;
       }
     }
-    // }}}
 
   } // namespace filter
 }

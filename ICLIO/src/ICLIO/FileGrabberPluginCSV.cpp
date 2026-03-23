@@ -37,8 +37,6 @@
 #include <vector>
 #include <ICLUtils/StringUtils.h>
 
-using namespace std;
-
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -49,17 +47,14 @@ namespace icl{
 
       template<class T>
       void tokenzie_line_tmpl(const std::vector<string> &v, T *data){
-        // {{{ open
 
         for(unsigned int i=0;i<v.size();i++){
           data[i] = clipped_cast<icl64f,T>(atof(v[i].c_str()));
         }
       }
 
-      // }}}
 
       void tokezize_line(const std::vector<string> &v,ImgBase *image, int c, int y){
-        // {{{ open
 
         if(image->getWidth() > static_cast<int>(v.size())){
           throw InvalidFileFormatException(str("image width:")+
@@ -74,28 +69,22 @@ namespace icl{
         }
       }
 
-      // }}}
     }
 
     FileGrabberPluginCSV::FileGrabberPluginCSV(){
-      // {{{ open
 
       m_poReadBuffer = new Img64f;
       m_poReadBufferMutex = new std::recursive_mutex;
     }
 
-    // }}}
     FileGrabberPluginCSV::~FileGrabberPluginCSV(){
-      // {{{ open
 
       ICL_DELETE( m_poReadBuffer );
       ICL_DELETE( m_poReadBufferMutex );
     }
 
-    // }}}
 
     void FileGrabberPluginCSV::grab(File &file, ImgBase **dest){
-      // {{{ open
 
       ICLASSERT_RETURN(dest);
       file.open(File::readText);
@@ -214,6 +203,5 @@ namespace icl{
       }
     }
 
-    // }}}
   } // namespace io
 }

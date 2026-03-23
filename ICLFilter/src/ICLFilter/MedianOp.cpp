@@ -44,7 +44,6 @@ namespace icl {
 
       template<typename T>
       void apply_median (const Img<T> *src, Img<T> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
-        // {{{ open
         std::vector<T> oList(oMaskSize.getDim());
         typename std::vector<T>::iterator itList = oList.begin();
         typename std::vector<T>::iterator itMedian = oList.begin()+((oMaskSize.width * oMaskSize.height)/2);
@@ -65,7 +64,6 @@ namespace icl {
         }
       }
 
-      // }}}
 
       template<class T>
       inline void subMedian3x3(const T *l0, const T *l1, const T *l2, T *med) {
@@ -614,7 +612,6 @@ namespace icl {
       // Generic (non-optimized) median for arbitrary mask sizes
       template<class T>
       void apply_median_all(const Img<T> *src, Img<T> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
-        // {{{ open
         std::vector<T> oList(oMaskSize.getDim());
         typename std::vector<T>::iterator itList = oList.begin();
         typename std::vector<T>::iterator itMedian = oList.begin()+((oMaskSize.width * oMaskSize.height)/2);
@@ -638,7 +635,6 @@ namespace icl {
 #ifdef ICL_HAVE_SSE2
       template<>
       void apply_median_all(const Img<icl8u> *src, Img<icl8u> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
-        // {{{ open
         const int half      = oMaskSize.getDim() / 2;
         const int halfexact = (oMaskSize.getDim() + 1) / 2;
 
@@ -702,7 +698,6 @@ namespace icl {
       }
       template<>
       void apply_median_all(const Img<icl16s> *src, Img<icl16s> *dst, const Size &oMaskSize,const Point &roiOffset, const Point &oAnchor) {
-        // {{{ open
         const int half      = oMaskSize.getDim() / 2;
         const int halfexact = (oMaskSize.getDim() + 1) / 2;
 
@@ -887,7 +882,6 @@ namespace icl {
 
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint)>
       void ippMedian(const Img<T>* src, Img<T> *dst, const Size& maskSize,const Point &roiOffset, const Point &oAnchor) {
-        // {{{ open
 
       for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData (c,roiOffset), src->getLineStep(),
@@ -896,11 +890,9 @@ namespace icl {
        }
     }
 
-      // }}}
 
       template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiMaskSize)>
       void ippMedianFixed(const Img<T>*src, Img<T> *dst,const Point &roiOffset, int maskSize) {
-        // {{{ open
 
         for(int c=0; c < src->getChannels(); c++) {
         ippiFunc(src->getROIData(c,roiOffset), src->getLineStep(),
@@ -909,11 +901,9 @@ namespace icl {
       }
     }
 
-      // }}}
 
       template<>
       void apply_median<icl8u>(const Img8u *src, Img8u *dst, const Size &maskSize,const Point &roiOffset, const Point &anchor){
-        // {{{ open
 
         if(maskSize == Size(3,3)){
           ippMedianFixed<icl8u,ippiFilterMedianCross_8u_C1R>(src,dst,roiOffset,3);
@@ -924,11 +914,9 @@ namespace icl {
         }
       }
 
-      // }}}
 
       template<>
       void apply_median<icl16s>(const Img16s *src, Img16s *dst, const Size &maskSize,const Point &roiOffset, const Point &anchor){
-        // {{{ open
 
         if(maskSize == Size(3,3)){
           ippMedianFixed<icl16s,ippiFilterMedianCross_16s_C1R>(src,dst,roiOffset,3);
@@ -942,12 +930,10 @@ namespace icl {
   /* our SSE version is always faster than IPP for icl32f
       template<>
       void apply_median<icl32f>(const Img32f *src, Img32f *dst, const Size &maskSize,const Point &roiOffset, const Point &anchor){
-        // {{{ open
 
         ippMedian<icl32f,ippiFilterMedian_32f_C1R>(src,dst,maskSize,roiOffset,anchor);
       }
 
-      // }}}
   */
 
   #endif
@@ -955,7 +941,6 @@ namespace icl {
     } // end of anonymous namespace
 
     void MedianOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-      // {{{ open
 
       FUNCTION_LOG("");
 
@@ -976,7 +961,6 @@ namespace icl {
 
     }
 
-    // }}}
 
   } // namespace filter
 }

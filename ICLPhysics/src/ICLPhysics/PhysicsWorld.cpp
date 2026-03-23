@@ -57,8 +57,6 @@
 #include <ICLPhysics/Constraint.h>
 #include <mutex>
 
-using namespace std;
-
 namespace icl{
   namespace physics{
 

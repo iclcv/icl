@@ -37,8 +37,6 @@
 
 
 #include <list>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -47,7 +45,6 @@ namespace icl{
     namespace{
 
       static string cutName(const string &s){
-        // {{{ open
 
         string::size_type pos = s.find("=",0);
         if(pos == string::npos){
@@ -93,13 +90,11 @@ namespace icl{
         }
       }
 
-    // }}}
     }
 
 
 
     GUIDefinition::GUIDefinition(const std::string &def, GUI *gui, QLayout *parentLayout, icl::qt::ProxyLayout *proxyLayout, QWidget *parentWidget)
-      // {{{ open
       :m_sDefinitionString(def),m_iMargin(2),m_iSpacing(2),m_poGUI(gui),m_poParentLayout(parentLayout),
        m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){
 
@@ -136,18 +131,14 @@ namespace icl{
         }
       }
     }
-    // }}}
 
     const std::string &GUIDefinition::param(unsigned int idx) const {
-      // {{{ open
 
       static const string DEF;
       return idx < m_vecParams.size() ? m_vecParams[idx] : DEF;
     }
 
-    // }}}
     int GUIDefinition::intParam(unsigned int idx) const {
-      // {{{ open
 
       const string &s = param(idx);
       if(s != ""){
@@ -157,9 +148,7 @@ namespace icl{
       }
     }
 
-      // }}}
     float GUIDefinition::floatParam(unsigned int idx) const {
-      // {{{ open
 
       const string &s = param(idx);
       if(s != ""){
@@ -169,7 +158,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     static std::string &create_def_value(const std::string &base){
       static std::list<std::string> store;
@@ -178,21 +166,16 @@ namespace icl{
     }
 
     const std::string &GUIDefinition::output(unsigned int idx) const {
-        // {{{ open
 
         return idx < m_vecOutputs.size() ? m_vecOutputs[idx] : create_def_value("out");
       }
 
-      // }}}
     const std::string &GUIDefinition::input(unsigned int idx) const {
-      // {{{ open
 
        return idx < m_vecInputs.size() ? m_vecInputs[idx] : create_def_value("in");
     }
 
-    // }}}
     void GUIDefinition::show() const{
-      // {{{ open
 
       printf("GUI of type \"%s\" \n",m_sType.c_str());
       printf("label is \"%s\" \n",m_sLabel.c_str());
@@ -211,7 +194,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
   } // namespace qt
 }

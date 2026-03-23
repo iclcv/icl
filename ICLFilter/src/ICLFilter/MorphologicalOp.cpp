@@ -518,7 +518,6 @@ namespace icl {
       return ippStsNoErr;
     }
 
-    // }}}
   #endif
 
     void MorphologicalOp::setMask (Size maskSize,const icl8u* pcMask) {

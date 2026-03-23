@@ -161,7 +161,6 @@ namespace icl{
   }
   namespace utils{
     std::string str(dc1394feature_t t){
-      // {{{ open
 
   #define X(x) if(t==DC1394_FEATURE_##x) return #x;
       X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
@@ -173,10 +172,8 @@ namespace icl{
   #undef X
       }
 
-    // }}}
 
     template<> dc1394feature_t parse<dc1394feature_t>(const std::string &s){
-      // {{{ open
 
   #define X(x) if(s==#x) return DC1394_FEATURE_##x;
       X(BRIGHTNESS);X(EXPOSURE);X(SHARPNESS);X(WHITE_BALANCE);X(HUE);
@@ -210,7 +207,6 @@ namespace icl{
     }
 
     DCDeviceFeaturesImpl::DCDeviceFeaturesImpl(const DCDevice &dev):dev(dev),ignorePropertyChange(false){
-      // {{{ open
       dc1394_feature_get_all(this->dev.getCam(),&features);
 
       for(int i=0;i<DC1394_FEATURE_NUM;++i){
@@ -320,10 +316,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     dc1394feature_info_t *DCDeviceFeaturesImpl::getInfoPtr(const std::string &name) const {
-      // {{{ open
 
       unsigned int l = name.length();
       if(l > 5 && name.substr(l-5)=="-mode" && name != "trigger-mode"){
@@ -339,31 +333,15 @@ namespace icl{
       return 0;
     }
 
-    void DCDeviceFeaturesImplDelOp::delete_func(DCDeviceFeaturesImpl *impl){
-      // {{{ open
-
-      ICL_DELETE(impl);
-    }
-
-    // }}}
-
-
     DCDeviceFeatures::DCDeviceFeatures(const DCDevice &dev)
-      // {{{ open
-
-      : ParentSC(dev.isNull() ? 0 : new DCDeviceFeaturesImpl(dev))
+      : impl(dev.isNull() ? nullptr : std::make_shared<DCDeviceFeaturesImpl>(dev))
     {
-      utils::Configurable::addChildConfigurable(impl.get());
+      if(impl) utils::Configurable::addChildConfigurable(impl.get());
     }
 
-    // }}}
-
-    DCDeviceFeatures::DCDeviceFeatures():
-      // {{{ open
-
-       ParentSC(0){DEBUG_LOG("called this. configurable of this will not work")}
-
-    // }}}
+    DCDeviceFeatures::DCDeviceFeatures(){
+      DEBUG_LOG("called this. configurable of this will not work")
+    }
 
   } // namespace io
 }

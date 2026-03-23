@@ -48,7 +48,6 @@ namespace icl{
     /// internally used classes
     class ICLDrawWidget::State{
       public:
-      // {{{  struct
       State(){}
       bool aa;             // antializing on
       bool rel;            // relative or absolut coords
@@ -84,7 +83,6 @@ namespace icl{
       q.clear();
     }
 
-    // {{{ abstract commands (intelligent, 2f, 3f 4f)
 
     class IntelligentDrawCommand : public ICLDrawWidget::DrawCommand{
 
@@ -207,7 +205,6 @@ namespace icl{
 
 
 
-    // {{{ geometric commands ( point, line, rect, ellipse )
 
     class PointCommand : public DrawCommand2F{
 
@@ -655,7 +652,6 @@ namespace icl{
 
 
 
-    // {{{ state commands( (no)edge, (no)fill, abs, rel, clear, setimagesize)
 
 
 
@@ -878,7 +874,6 @@ namespace icl{
       //unlock();
     }
 
-    // {{{ commands: line, sym, rel, ...
     void ICLDrawWidget::image(ImgBase *image,float x, float y, float w, float h){
       QMutexLocker lock(&m_oCommandMutex);
       m_queues[0]->push_back(new ImageCommand(image,x,y,w,h));

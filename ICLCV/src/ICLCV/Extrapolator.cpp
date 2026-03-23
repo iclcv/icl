@@ -40,27 +40,22 @@ namespace icl{
 
     template<class valueType,class timeType>
     valueType Extrapolator<valueType,timeType>::predict(valueType x2, valueType x1){
-      // {{{ open
 
       return valueType(x1 + x1 - x2);
     }
 
-    // }}}
 
     template<class valueType, class timeType>
     valueType Extrapolator<valueType,timeType>::predict(valueType x3, valueType x2, valueType x1){
-      // {{{ open
       valueType v1 = x1-x2;
       valueType a = v1-( x2-x3 );//v1-v2
       //    printf("prediciton for %d %d %d --> %d \n",(int)x3,(int)x2,(int)x1,(int)(x1 + v1 +  a/2.0));
       return valueType(x1 + v1 +  a/2.0);
     }
 
-    // }}}
 
     template<class valueType, class timeType>
     valueType Extrapolator<valueType,timeType>::predict(valueType x2, timeType t2, valueType x1, timeType t1, timeType t){
-      // {{{ open
 
       timeType dt1 = t1 - t2;
       timeType dt0 = t - t1;
@@ -68,11 +63,9 @@ namespace icl{
       return valueType(x1 + dt0*v1);
     }
 
-    // }}}
 
     template<class valueType, class timeType>
     valueType Extrapolator<valueType,timeType>::predict(valueType x3, timeType t3, valueType x2, timeType t2, valueType x1, timeType t1, timeType t){
-      // {{{ open
 
       timeType dt2 = t2 - t3;
       timeType dt1 = t1 - t2;
@@ -84,11 +77,9 @@ namespace icl{
 
     }
 
-    // }}}
 
     template<class valueType, class timeType>
     valueType Extrapolator<valueType,timeType>::predict(int n, valueType *xs, timeType *ts, timeType t){
-      // {{{ opem
       if(n == 0) return 0;
       if(n == 1) return *xs;
       if(ts){
@@ -106,7 +97,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     template ICLCV_API class Extrapolator<icl32s, int>;
     template ICLCV_API class Extrapolator<icl32f, long int>;

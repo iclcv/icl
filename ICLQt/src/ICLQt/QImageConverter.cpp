@@ -77,7 +77,6 @@ namespace icl{
                                                0,0,0,0}};
     template<class T>
     void img_to_qimage(const Img<T> *src, QImage *&dst, bool useSpeudoColors){
-      // {{{ open
 
     ICLASSERT_RETURN(src);
     static QVector<QRgb> palette;
@@ -156,11 +155,9 @@ namespace icl{
     }
   }
 
-    // }}}
 
     template<class T>
     void qimage_to_img(const QImage *src, Img<T> **ppDst, bool useSpeudoColors){
-      // {{{ open
       Img<T> *&dst = *ppDst;
 
       ICLASSERT_RETURN(src);
@@ -188,10 +185,8 @@ namespace icl{
       interleavedToPlanar(src->bits(),&tmp);
     }
 
-    // }}}
 
     QImageConverter::QImageConverter():m_usePC(false){
-      // {{{ open
 
       for(int i=0;i<5;i++){
         m_aeStates[i]=undefined;
@@ -201,10 +196,8 @@ namespace icl{
       m_eQImageState=undefined;
     }
 
-    // }}}
 
     QImageConverter::QImageConverter(const ImgBase *image):m_usePC(false){
-      // {{{ open
 
       for(int i=0;i<5;i++){
         m_aeStates[i]=undefined;
@@ -215,10 +208,8 @@ namespace icl{
       setImage(image);
     }
 
-    // }}}
 
     QImageConverter::QImageConverter(const QImage *qimage):m_usePC(false){
-      // {{{ open
 
       for(int i=0;i<5;i++){
         m_aeStates[i]=undefined;
@@ -230,10 +221,8 @@ namespace icl{
 
     }
 
-    // }}}
 
     QImageConverter::~QImageConverter(){
-      // {{{ open
 
       if(m_poQBuf && m_eQImageState != given){
         delete m_poQBuf;
@@ -245,11 +234,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     const QImage *QImageConverter::getQImage(){
-      // {{{ open
 
       if(m_eQImageState < 2) return m_poQBuf;
       for(int i=0;i<5;i++){
@@ -273,14 +260,12 @@ namespace icl{
       return 0;
     }
 
-    // }}}
 
     void QImageConverter::setUseSpeudoColors(bool use){
       m_usePC = use;
     }
 
     const ImgBase *QImageConverter::getImgBase(depth d){
-      // {{{ open
 
       switch(d){
         case depth8u:  return getImg<icl8u>();
@@ -294,11 +279,9 @@ namespace icl{
       return 0;
     }
 
-    // }}}
 
     template<class T>
     const Img<T> *QImageConverter::getImg(){
-      // {{{ open
 
       depth d = getDepth<T>();
       if(m_aeStates[d] < 2) return m_apoBuf[d]->asImg<T>();
@@ -327,10 +310,8 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
 
 
-    // }}}
 
     void QImageConverter::setImage(const ImgBase *image){
-      // {{{ open
 
       ICLASSERT_RETURN( image );
       depth d = image->getDepth();
@@ -355,10 +336,8 @@ namespace icl{
       m_eQImageState = undefined;
     }
 
-    // }}}
 
     void QImageConverter::setQImage(const QImage *qimage){
-      // {{{ open
 
       ICLASSERT_RETURN( qimage );
       ICLASSERT_RETURN( !qimage->isNull() );
@@ -376,7 +355,6 @@ namespace icl{
       m_eQImageState = given;
     }
 
-    // }}}
   } // namespace qt
 
 

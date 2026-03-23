@@ -94,8 +94,6 @@
 #include <ICLQt/ThreadedUpdatableSlider.h>
 #include <ICLQt/HistogrammWidget.h>
 #include <mutex>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;

@@ -75,7 +75,6 @@ namespace icl{
   namespace filter{
 
     LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope):
-      // {{{ open
       m_roiBufSrc(0), m_roiBufDst(0),
       m_iiOp(new IntegralImgOp),
       m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
@@ -95,10 +94,8 @@ namespace icl{
       addProperty("invert output","flag","",false);
     }
 
-    // }}}
 
     LocalThresholdOp::LocalThresholdOp(LocalThresholdOp::algorithm a, int maskSize, float globalThreshold, float gammaSlope):
-      // {{{ open
       m_roiBufSrc(0), m_roiBufDst(0),
       m_iiOp(new IntegralImgOp),
       m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
@@ -110,11 +107,9 @@ namespace icl{
       addProperty("algorithm","menu","region mean,tiled linear,tiled NN,gobal",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
       addProperty("actually used mask size","info","","0");
     }
-    // }}}
 
 
     LocalThresholdOp::~LocalThresholdOp(){
-      // {{{ open
 
       ICL_DELETE(m_roiBufDst);
       ICL_DELETE(m_iiOp);
@@ -123,55 +118,41 @@ namespace icl{
       ICL_DELETE(m_tiledBuf2);
     }
 
-    // }}}
 
     void LocalThresholdOp::setMaskSize(unsigned int maskSize){
-      // {{{ open
       prop("mask size").value = str(maskSize);
       call_callbacks("mask size",this);
     }
 
-    // }}}
 
     void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
-      // {{{ open
       prop("global threshold").value = str(globalThreshold);
       call_callbacks("global threshold",this);
     }
 
-    // }}}
 
     void LocalThresholdOp::setGammaSlope(float gammaSlope){
-      // {{{ open
       prop("gamma slope").value = str(gammaSlope);
       call_callbacks("gamma slope",this);
     }
 
-    // }}}
 
     unsigned int LocalThresholdOp::getMaskSize() const{
-      // {{{ open
       return parse<int>(prop("mask size").value);
     }
 
-    // }}}
 
     float LocalThresholdOp::getGlobalThreshold() const{
-      // {{{ open
       return parse<float>(prop("global threshold").value);
     }
 
-    // }}}
 
     float LocalThresholdOp::getGammaSlope() const{
-      // {{{ open
       return parse<float>(prop("gamma slope").value);
     }
 
-    // }}}
 
     void LocalThresholdOp::setup(unsigned int maskSize, float globalThreshold, LocalThresholdOp::algorithm a, float gammaSlope){
-      // {{{ open
 
       setMaskSize(maskSize);
       setGlobalThreshold(globalThreshold);
@@ -179,27 +160,22 @@ namespace icl{
       setAlgorithm(a);
     }
 
-    // }}}
 
     /// returns currently used algorithm type
     LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithm() const{
-      // {{{ open
       const std::string &a = prop("algorithm").value;
       return ( a == "region mean" ? regionMean :
                a =="tiled NN" ? tiledNN :
                a == "global" ? global : tiledLIN );
     }
 
-    // }}}
 
     /// sets internally used algorithm
     void LocalThresholdOp::setAlgorithm(algorithm a){
-      // {{{ open
       prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN": a == global ? "global" : "tiled linear");
       call_callbacks("algorithm",this);
     }
 
-    // }}}
 
 
 
@@ -207,7 +183,6 @@ namespace icl{
     /// this template resolves the destination images depths and if a gamma slope is set or not
     template<class S, class I>
     void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float tf, int m, float gs){
-      // {{{ open
       typename ThreshType<S>::T t = (typename ThreshType<S>::T)(tf);
       int w = src.getWidth(), h = src.getHeight();
       const S *psrc = src.begin(0);
@@ -276,12 +251,10 @@ namespace icl{
 
     }
 
-    // }}}
 
     /// this template resolves the integral image depths
     template<class S>
     void apply_local_threshold_sxx(const Img<S> &src,const ImgBase *ii, ImgBase *dst, float t,unsigned int m, float gs){
-      // {{{ open
 
       switch(ii->getDepth()){
         case depth32s:
@@ -299,15 +272,12 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     template<LocalThresholdOp::algorithm a>
     void LocalThresholdOp::apply_a(const ImgBase*, ImgBase**){
-      // {{{ open
       throw ICLException("this algorithm is not yet implemented for the LocalThresholdOp class");
     }
-    // }}}
 
 
     template<class T, class B>
@@ -558,7 +528,6 @@ namespace icl{
 
 
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledNN>(const ImgBase *src, ImgBase **dst){
-      // {{{ open
 
       int ts = 2*getMaskSize();
       // find closes number that devides w and h
@@ -597,17 +566,13 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
         }
     }
-    // }}}
 
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::tiledLIN>(const ImgBase *src, ImgBase **dst){
-      // {{{ open
       apply_a<tiledNN>(src,dst); // LIN vs NN is handled by a runtime-bool
     }
-    // }}}
 
 
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::regionMean>(const ImgBase *src, ImgBase **dst){
-      // {{{ open
 
       m_iiOp->setIntegralImageDepth((src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth());
       const ImgBase *ii = m_iiOp->apply(src);
@@ -624,11 +589,9 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-    // }}}
 
 
     void LocalThresholdOp::apply(const ImgBase *src, ImgBase **dst){
-      // {{{ open
       ICLASSERT_RETURN( src );
       ICLASSERT_RETURN( src->getSize() != Size::null );
       ICLASSERT_RETURN( src->getChannels() );
@@ -686,7 +649,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
   } // namespace filter

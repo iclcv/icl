@@ -44,7 +44,6 @@ namespace icl {
     }
 
     CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
-      // {{{ open
       m_lowT(lowThresh),m_highT(highThresh),m_ownOps(true),m_preBlurRadius(preBlurRadius){
       FUNCTION_LOG("");
       m_ops[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
@@ -59,10 +58,8 @@ namespace icl {
       registerCallback([this](const Property &p){ property_callback(p); });
     }
 
-    // }}}
 
     CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps, int preBlurRadius):
-      // {{{ open
       m_lowT(lowThresh),m_highT(highThresh),m_ownOps(deleteOps),m_preBlurRadius(preBlurRadius){
       FUNCTION_LOG("");
       m_ops[0] = dxOp;
@@ -77,10 +74,8 @@ namespace icl {
       registerCallback([this](const Property &p){ property_callback(p); });
     }
 
-    // }}}
 
     CannyOp::~CannyOp(){
-      // {{{ open
 
       FUNCTION_LOG("");
 
@@ -93,7 +88,6 @@ namespace icl {
       ICL_DELETE(m_preBlurOp);
     }
 
-    // }}}
 
     void CannyOp::setUpPreBlurOp(){
       int r = m_preBlurRadius;
@@ -318,7 +312,6 @@ namespace icl {
 
 
     void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
-        // {{{ open
       FUNCTION_LOG("");
       ICLASSERT_RETURN( poSrc );
       ICLASSERT_RETURN( ppoDst );
@@ -381,10 +374,8 @@ namespace icl {
   #endif
 
     }
-     // }}}
 
 	void CannyOp::apply (const ImgBase *src_x, const ImgBase *src_y, ImgBase **ppoDst) {
-		// {{{ open
 	  FUNCTION_LOG("");
 	  ICLASSERT_RETURN( src_x );
 	  ICLASSERT_RETURN( src_y );
@@ -451,28 +442,22 @@ namespace icl {
 	}
 
     void CannyOp::setThresholds(icl32f lo, icl32f hi){
-      // {{{ open
 
       m_lowT = lo;
       m_highT = hi;
     }
 
-    // }}}
 
     icl32f CannyOp::getLowThreshold()const {
-      // {{{ open
 
       return m_lowT;
     }
 
-    // }}}
     icl32f CannyOp::getHighThreshold()const {
-      // {{{ open
 
       return m_highT;
     }
 
-    // }}}
 
 
   } // namespace filter

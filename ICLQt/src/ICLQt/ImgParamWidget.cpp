@@ -45,7 +45,6 @@ namespace icl{
   namespace qt{
 
     ImgParamWidget::ImgParamWidget(QWidget *parent):QWidget(parent){
-      // {{{ open
 
       m_poLayout = new QHBoxLayout;
 
@@ -82,27 +81,21 @@ namespace icl{
       setup(-1,-1,static_cast<int>(depth8u),static_cast<int>(formatRGB));
     }
 
-    // }}}
 
     namespace{
       QString sizeToStr(const Size &size){
-        // {{{ open
         if(size == Size(-1,-1)) return "-grabber-";
         static char buf[100];
         snprintf(buf,sizeof(buf),"%dx%d",size.width,size.height);
         return buf;
       }
 
-      // }}}
       Size strToSize(const QString &s){
-        // {{{ open
         if(s == "-grabber-") return Size(-1,-1);
         return Size(s.section('x',0,0).toInt(), s.section('x',1,1).toInt());
       }
 
-      // }}}
       int getIndex(const QString &str, QComboBox *box){
-        // {{{ open
 
         for(int i=0;i<box->count();i++){
           if(str == box->itemText(i)){
@@ -112,19 +105,15 @@ namespace icl{
         return -1;
       }
 
-      // }}}
     }
 
     void ImgParamWidget::doEmitState(){
-      // {{{ open
 
       emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
     }
 
-    // }}}
 
     void ImgParamWidget::getParams(int &width, int &height, int &d, int &fmt)const{
-      // {{{ open
 
       width = m_iWidth;
       height = m_iHeight;
@@ -132,10 +121,8 @@ namespace icl{
       fmt = m_iFormat;
     }
 
-    // }}}
 
     void ImgParamWidget::setup(int width, int height, int dth, int fmt){
-      // {{{ open
 
       m_iWidth = width;
       m_iHeight = height;
@@ -168,7 +155,6 @@ namespace icl{
 
     }
 
-    // }}}
 
     void ImgParamWidget::sizeChanged(const QString &val){
       Size s = strToSize(val);

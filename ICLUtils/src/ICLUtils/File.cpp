@@ -58,7 +58,6 @@ namespace icl{
       }
 
       void break_apart(std::string s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
-        // {{{ open
         size_t p = s.rfind(DIR_SEPERATOR);
 
         /// split directory xxx/filename.suffix
@@ -88,9 +87,7 @@ namespace icl{
         }
       }
 
-      // }}}
       void buffer_file(FILE *fp, std::vector<unsigned char> &data){
-        // {{{ open
 
         int len = 0;
         static const int LEN = 1024;
@@ -110,11 +107,9 @@ namespace icl{
         }
       }
 
-      // }}}
 
   #ifdef ICL_HAVE_LIBZ
       void buffer_file_gz(gzFile fp, std::vector<unsigned char> &data){
-        // {{{ open
 
         int len = 0;
         static const int LEN = 1024;
@@ -134,7 +129,6 @@ namespace icl{
         }
       }
 
-      // }}}
   #endif
 
       static const char *s_apcOpenModes[4] = { "rb","r","wb","w" };
@@ -154,7 +148,6 @@ namespace icl{
     class FileImpl{
     public:
       FileImpl(const std::string &name):
-        // {{{ open
 
         name(name),handle(0),
   #ifdef ICL_HAVE_LIBZ
@@ -167,9 +160,7 @@ namespace icl{
         break_apart(name,dir,basename,suffix,filename);
       }
 
-      // }}}
       void open(File::OpenMode openmode){
-        // {{{ open
 
         ICLASSERT_RETURN(!handle);
         const char *pcOpenMode = s_apcOpenModes[openmode];
@@ -187,10 +178,8 @@ namespace icl{
         this->openmode = openmode;
       }
 
-      // }}}
 
       void reopen(File::OpenMode openmode){
-        // {{{ open
 
         if(!handle){
           open(openmode);
@@ -214,10 +203,8 @@ namespace icl{
         this->openmode = openmode;
       }
 
-      // }}}
 
       void close(){
-        // {{{ open
 
         ICLASSERT_RETURN(handle);
   #ifdef ICL_HAVE_LIBZ
@@ -232,9 +219,7 @@ namespace icl{
         handle = 0;
       }
 
-      // }}}
       void bufferData() {
-        // {{{ open
 
         ICLASSERT_RETURN(handle);
         if(buffer.size()) return;
@@ -250,7 +235,6 @@ namespace icl{
         bufferoffset = 0;
       }
 
-      // }}}
 
       std::string name;
       std::string dir;
@@ -270,111 +254,73 @@ namespace icl{
       File::OpenMode openmode;
     };
 
-    void FileImplDelOp::delete_func(FileImpl *i){
-      // {{{ open
+    File::File() = default;
 
-      ICL_DELETE( i );
-    }
-
-    // }}}
-
-
-
-    File::File():
-      // {{{ open
-      ShallowCopyable<FileImpl,FileImplDelOp>(0){
-
-    }
-
-    // }}}
     File::File(const std::string &name):
-      // {{{ open
-      ShallowCopyable<FileImpl,FileImplDelOp>(new FileImpl(name)){
+      impl(std::make_shared<FileImpl>(name)){
     }
 
-    // }}}
     File::File(const std::string &name, File::OpenMode openmode):
-      // {{{ open
-      ShallowCopyable<FileImpl,FileImplDelOp>(new FileImpl(name)){
+      impl(std::make_shared<FileImpl>(name)){
       open(openmode);
     }
 
-    // }}}
     File::~File(){
-      // {{{ open
 
       if(isOpen()) close();
     }
 
-    // }}}
 
     bool File::isBinary() const{
-      // {{{ open
       ICLASSERT_RETURN_VAL(!isNull(),false);
       return impl->binary;
     }
 
-    // }}}
 
     bool File::exists() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),false);
       return file_exists(impl->name);
     }
 
     bool File::isDirectory() const{
-      // {{{ open
       ICLASSERT_RETURN_VAL(!isNull(),false);
       return file_is_dir(impl->name);
     }
-    // }}}
 
-    // }}}
     bool File::isOpen() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),false);
       return impl->handle != 0;
     }
 
-    // }}}
 
     std::string File::getDir() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return impl->dir;
     }
 
-    // }}}
     std::string File::getBaseName() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return impl->basename;
     }
 
-    // }}}
     std::string File::getSuffix() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return impl->suffix;
     }
 
-    // }}}
     std::string File::getName() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),"");
       return impl->name;
     }
 
-    // }}}
 
     void File::write(const void *data, int len){
-      // {{{ open
 
       ICLASSERT_RETURN(!isNull());
       ICLASSERT_RETURN(isOpen());
@@ -398,17 +344,13 @@ namespace icl{
   #endif
     }
 
-    // }}}
     void File::writeLine(const void *data, int len){
-      // {{{ open
       ICLASSERT_RETURN(!isBinary());
       write(data,0);
       write(&NEW_LINE,1);
     }
 
-    // }}}
     void File::write(const std::string &text){
-      // {{{ open
       if(isBinary()){
         write(text.c_str(),text.length());
       }else{
@@ -416,19 +358,15 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void File::setPrecision(const std::string &p){
-      // {{{ open
 
       ICLASSERT_RETURN(!isNull());
       impl->precision = p;
     }
 
-    // }}}
 
     File &File::operator<<(char c){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -440,9 +378,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(unsigned char uc){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -454,9 +390,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(int i){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -468,9 +402,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(unsigned int ui){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -482,9 +414,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(float f){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -496,9 +426,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(double d){
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),*this);
       if(isBinary()){
@@ -510,43 +438,33 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     File &File::operator<<(const std::string &s){
-      // {{{ open
 
       write(s);
       return *this;
     }
 
-    // }}}
 
     bool File::canRead() const {
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       return getOpenMode() == readText || getOpenMode() == readBinary;
     }
 
-    // }}}
     bool File::canWrite() const {
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       return getOpenMode() == writeText || getOpenMode() == writeBinary;
     }
 
-    // }}}
 
     bool File::hasMoreLines() const{
-      // {{{ open
       return bytesAvailable();
     }
 
-    // }}}
     int File::bytesAvailable() const{
-      // {{{ open
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       const std::vector<icl8u> &data = readAll();
@@ -554,19 +472,15 @@ namespace icl{
       return std::max<unsigned int>(0,data.size()-offs);
     }
 
-    // }}}
     int File::getFileSize() const{
-      // {{{ open
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       ICLASSERT_RETURN_VAL(canRead(),0);
       return readAll().size();
     }
 
-    // }}}
 
     std::string File::readLine() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),"");
       ICLASSERT_RETURN_VAL(isOpen(),"");
@@ -590,9 +504,7 @@ namespace icl{
 
     }
 
-    // }}}
     std::string &File::readLine(std::string &dst) const{
-      // {{{ open
 
       static std::string _null;
       ICLASSERT_RETURN_VAL(!isNull(),_null);
@@ -616,9 +528,7 @@ namespace icl{
 
     }
 
-    // }}}
     std::vector<icl8u> File::read(int len) const{
-      // {{{ open
 
       static std::vector<icl8u> vec;
       ICLASSERT_RETURN_VAL(!isNull(),vec);
@@ -631,10 +541,8 @@ namespace icl{
       return data;
     }
 
-    // }}}
 
     int File::read(int len, void *dst) const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
@@ -648,10 +556,8 @@ namespace icl{
       return len;
     }
 
-    // }}}
 
     const std::vector<icl8u> &File::readAll() const{
-      // {{{ open
       static std::vector<icl8u> _null;
       ICLASSERT_RETURN_VAL(!isNull(),_null);
       ICLASSERT_RETURN_VAL(isOpen(),_null);
@@ -659,31 +565,25 @@ namespace icl{
       return impl->buffer;
     }
 
-    // }}}
 
     const icl8u* File::getCurrentDataPointer() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       return (&(readAll()[0]))+impl->bufferoffset;
     }
 
-    // }}}
 
     const icl8u* File::getFileDataPointer() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       return &readAll()[0];
     }
 
-    // }}}
 
 
     void File::open(File::OpenMode openmode){
-      // {{{ open
       ICLASSERT_RETURN(!isNull());
       ICLASSERT_RETURN(!isOpen());
       ICLASSERT_RETURN(openmode != notOpen);
@@ -693,18 +593,14 @@ namespace icl{
       ICLASSERT_THROW(isOpen(),FileOpenException(getName()+"(OpenMode: "+toString(openmode)+")"));
     }
 
-    // }}}
     void File::close(){
-      // {{{ open
 
       ICLASSERT_RETURN(!isNull());
       impl->close();
     }
 
-    // }}}
 
     void File::reset(){
-      // {{{ open
       ICLASSERT_RETURN(!isNull());
       if(getOpenMode() == readBinary || getOpenMode() == readText){
         impl->bufferoffset = 0;
@@ -713,44 +609,35 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void File::erase(){
-      // {{{ open
 
       ICLASSERT_RETURN(!isNull() && exists());
       remove(getName().c_str());
     }
 
-    // }}}
 
     void File::reopen(File::OpenMode om){
-      // {{{ open
       ICLASSERT_RETURN(!isNull());
       impl->reopen(om);
       ICLASSERT_THROW(isOpen(),FileOpenException(getName()+"(OpenMode: "+toString(om)+")"));
     }
 
-    // }}}
 
     File::OpenMode File::getOpenMode() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),notOpen);
       ICLASSERT_RETURN_VAL(isOpen(),notOpen);
       return impl->openmode;
     }
 
-    // }}}
     void *File::getHandle() const{
-      // {{{ open
 
       ICLASSERT_RETURN_VAL(!isNull(),0);
       ICLASSERT_RETURN_VAL(isOpen(),0);
       return impl->handle;
     }
 
-    // }}}
 
     std::string File::read_file(const std::string &filename, bool textMode){
       File f(filename,textMode ? File::readText:File::readBinary);

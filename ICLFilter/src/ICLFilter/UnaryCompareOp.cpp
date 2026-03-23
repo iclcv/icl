@@ -57,18 +57,15 @@ namespace icl {
   #undef CREATE_COMPARE_OP
 
     template <typename T> struct CompareOp_eqt {
-      // {{{ open
 
       static inline icl8u cmp(T val1, T val2, T tolerance){
         return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
       }
     };
 
-    // }}}
 
     template <class T, template<typename X> class C>
     inline void fallbackCompare(const Img<T> *src, T value,Img<icl8u> *dst){
-      // {{{ open
       for(int c=src->getChannels()-1; c >= 0; --c) {
         const ImgIterator<T> itSrc = src->beginROI(c);
         const ImgIterator<T> itSrcEnd = src->endROI(c);
@@ -79,11 +76,9 @@ namespace icl {
       }
     }
 
-    // }}}
 
     template <typename T>
     inline void fallbackCompareWithTolerance(const Img<T> *src, T value, Img8u *dst,T tolerance) {
-      // {{{ open
        for(int c=src->getChannels()-1; c >= 0; --c) {
          const ImgIterator<T> itSrc = src->beginROI(c);
          const ImgIterator<T> itSrcEnd = src->endROI(c);
@@ -93,11 +88,9 @@ namespace icl {
          }
        }
      }
-     // }}}
 
     template<class T>
     void cmp(const Img<T> *src, Img8u *dst, T value, T tolerance, UnaryCompareOp::optype ot){
-       // {{{ open
 
        switch(ot){
          case UnaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src,value,dst); break;
@@ -109,41 +102,33 @@ namespace icl {
        }
      }
 
-    // }}}
 
 
   #ifdef ICL_HAVE_IPP
     template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,T,icl8u*,int,IppiSize,IppCmpOp)>
     inline void ippCall(const Img<T> *src, T value, Img8u *dst, UnaryCompareOp::optype cmpOp){
-      // {{{ open
       for (int c=src->getChannels()-1; c >= 0; --c) {
         ippiFunc (src->getROIData (c), src->getLineStep(), value,
                   dst->getROIData (c), dst->getLineStep(),
                   dst->getROISize(),(IppCmpOp) cmpOp);
       }
     }
-    // }}}
 
     template<> void cmp<icl8u>(const Img8u *src, Img8u *dst, icl8u value, icl8u tolerance, UnaryCompareOp::optype ot){
-      // {{{ open
       if(ot == UnaryCompareOp::eqt){
         fallbackCompareWithTolerance<icl8u>(src,value,dst,tolerance);
       }else{
         ippCall<icl8u,ippiCompareC_8u_C1R>(src,value,dst,ot);
       }
     }
-    // }}}
     template<> void cmp<icl16s>(const Img16s *src, Img8u *dst, icl16s value, icl16s tolerance, UnaryCompareOp::optype ot){
-      // {{{ open
       if(ot == UnaryCompareOp::eqt){
         fallbackCompareWithTolerance<icl16s>(src,value,dst,tolerance);
       }else{
         ippCall<icl16s,ippiCompareC_16s_C1R>(src,value,dst,ot);
       }
     }
-    // }}}
     template<> void cmp<icl32f>(const Img32f *src, Img8u *dst, icl32f value, icl32f tolerance, UnaryCompareOp::optype ot){
-      // {{{ open
       if(ot == UnaryCompareOp::eqt){
         for (int c=src->getChannels()-1; c >= 0; --c) {
           ippiCompareEqualEpsC_32f_C1R (src->getROIData (c), src->getLineStep(), value,
@@ -154,11 +139,9 @@ namespace icl {
         ippCall<icl32f,ippiCompareC_32f_C1R>(src,value,dst,ot);
       }
     }
-    // }}}
   #endif
 
     void UnaryCompareOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-       // {{{ open
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       if( *ppoDst ){
@@ -178,7 +161,6 @@ namespace icl {
        }
      }
 
-    // }}}
 
 
 

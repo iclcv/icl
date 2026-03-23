@@ -40,7 +40,6 @@
 
 using namespace geom;
 using namespace physics;
-using namespace std;
 
 GUI gui;
 FPSLimiter fps(60);

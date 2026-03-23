@@ -40,8 +40,6 @@
 #include <ICLUtils/StringUtils.h>
 #include <set>
 #include <string>
-
-using namespace std;
 using namespace icl::io::dc;
 using namespace icl::utils;
 
@@ -66,7 +64,6 @@ namespace icl{
 #if 0
     // **NEW-CAM** (optional)
     std::string DCDevice::translate(DCDevice::CameraTypeID id){
-      // {{{ open
 
       switch(id){
 #define TRANSLATE(X) case X: return #X
@@ -85,11 +82,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
     // **NEW-CAM** (optional)
     DCDevice::CameraTypeID DCDevice::translate(const std::string &name){
-      // {{{ open
 
       if(name == "pointGrey_Fire_FlyMVMono" ) return pointGrey_Fire_FlyMVMono;
 #define TRANSLATE(X) else if( name == #X ) return X
@@ -108,24 +103,19 @@ namespace icl{
       else return unknownCameraType;
     }
 
-    // }}}
 #endif
 
     std::string DCDevice::getTypeID(const std::string &model, const std::string &vendor){
-      // {{{ open
 
       return vendor + " -- " + model;
     }
 
-    // }}}
 
     std::string DCDevice::getTypeID(const dc1394camera_t *cam){
-      // {{{ open
       if(!cam) return "";
       return getTypeID(cam->model, cam->vendor);
     }
 
-    // }}}
 
 
     /************************************* old *******************************
@@ -198,7 +188,6 @@ namespace icl{
         ***********************************************************************/
     // **NEW-CAM**
     dc1394color_filter_t DCDevice::getBayerFilterLayout() const{
-      // {{{ open
 
       switch(m_eBayerFilterMode){
         case BF_RGGB:
@@ -222,11 +211,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
     // **NEW-CAM**
     void DCDevice::estimateBayerFilterMode(){
-      // {{{ open
 
       if(isNull()) {
         m_eBayerFilterMode = BF_NONE;
@@ -301,11 +288,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     void DCDevice::dc1394_reset_bus(bool verbose){
-      // {{{ open
 
       dc1394_t * d;
       dc1394camera_t *camera;
@@ -355,9 +340,7 @@ namespace icl{
       Thread::msleep(1000);
     }
 
-    // }}}
     vector<DCDevice::Mode> DCDevice::getModes() const{
-      // {{{ open
 
       vector<DCDevice::Mode> v;
       ICLASSERT_RETURN_VAL( !isNull(), v);
@@ -390,47 +373,36 @@ namespace icl{
       return s.str();
     }
 
-    // }}}
     string DCDevice::getVendorID() const{
-      // {{{ open
 
       if(isNull()) return "null";
       return m_poCam->vendor;
     }
 
-    // }}}
     string DCDevice::getModelID() const{
-      // {{{ open
 
       if(isNull()) return "null";
       return m_poCam->model;
     }
 
-    // }}}
     uint64_t DCDevice::getGUID() const{
-      // {{{ open
 
       if(isNull()) return -1;
       return m_poCam->guid;
     }
 
-    // }}}
     icl32s DCDevice::getUnit() const{
-      // {{{ open
 
       if(isNull()) return -1;
       return m_poCam->unit;
     }
 
-    // }}}
     icl32s DCDevice::getUnitSpecID() const{
-      // {{{ open
 
       if(isNull()) return -1;
       return m_poCam->unit_spec_ID;
     }
 
-    // }}}
 
     static std::string replace_spaces(std::string s, const char x='_'){
       for(unsigned int i=0;i<s.length();++i){
@@ -440,7 +412,6 @@ namespace icl{
     }
 
     std::string DCDevice::getUniqueStringIdentifier() const{
-      // {{{ open
 
       if(isNull()) return "null";
       union GUID{
@@ -453,9 +424,7 @@ namespace icl{
 
     }
 
-    // }}}
     void DCDevice::setMode(const Mode &mode){
-      // {{{ open
 
       ICLASSERT_RETURN( !isNull() );
       dc1394error_t err = dc1394_video_set_mode(m_poCam,mode.videomode);
@@ -464,9 +433,7 @@ namespace icl{
       ICLASSERT_RETURN( err == DC1394_SUCCESS );
     }
 
-    // }}}
     void DCDevice::show(const string &title) const{
-      // {{{ open
 
       printf("DCDevice: %s \n",title.c_str());
       if(isNull()){
@@ -483,21 +450,17 @@ namespace icl{
       }
     }
 
-    // }}}
     bool DCDevice::supports(const DCDevice::Mode &mode) const{
-      // {{{ open
 
       if(isNull()) return false;
       return mode.supportedBy(m_poCam);
     }
 
-    // }}}
 
 
 
 
     DCDevice::Mode::Mode(dc1394camera_t *cam){
-      // {{{ open
 
       if(cam){
         dc1394_video_get_mode(cam,&videomode);
@@ -508,9 +471,7 @@ namespace icl{
       }
     }
 
-    // }}}
     DCDevice::Mode::Mode(const string &stringRepr){
-      // {{{ open
 
       StrTok s(stringRepr,"~");
       const vector<string> &toks = s.allTokens();
@@ -520,16 +481,12 @@ namespace icl{
 
     }
 
-    // }}}
     string DCDevice::Mode::toString() const{
-      // {{{ open
 
       return dc::to_string(videomode)+"~"+dc::to_string(framerate);
     }
 
-    // }}}
     bool DCDevice::Mode::supportedBy(dc1394camera_t *cam) const{
-      // {{{ open
 
       dc1394video_modes_t modeList;
       dc1394_video_get_supported_modes(cam,&modeList);
@@ -547,14 +504,11 @@ namespace icl{
       return false;
     }
 
-    // }}}
 
     void DCDevice::setISOSpeed(int mbits){
-      // {{{ open
       ICLASSERT_RETURN(!isNull());
       dc::set_iso_speed(getCam(),mbits);
     }
-    // }}}
 
 
     bool DCDevice::supportsDC800(){

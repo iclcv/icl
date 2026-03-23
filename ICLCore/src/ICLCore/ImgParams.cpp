@@ -39,32 +39,23 @@ namespace icl{
     const ImgParams ImgParams::null(0,0,0,formatMatrix,0,0,0,0);
 
     ImgParams::ImgParams(const Size &size, format fmt, const Rect &roi) {
-      // {{{ open
       setup(size,fmt,getChannelsOfFormat(fmt),roi);
     }
-    // }}}
 
     ImgParams::ImgParams(int width, int height, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
-      // {{{ open
       setup(Size(width,height),fmt,getChannelsOfFormat(fmt),Rect(roiX,roiY,roiWidth,roiHeight));
     }
-    // }}}
 
     ImgParams::ImgParams(int width, int height, int channels, int roiX, int roiY, int roiWidth, int roiHeight){
-      // {{{ open
       setup(Size(width,height),formatMatrix, channels, Rect(roiX,roiY,roiWidth,roiHeight));
     }
-    // }}}
 
     ImgParams::ImgParams(int width, int height, int channels, format fmt, int roiX, int roiY, int roiWidth, int roiHeight){
-      // {{{ open
       //    ERROR_LOG("creating ImgParams: (" << width << "," << height << "," << channels << "," << fmt << "...)");
       setup(Size(width,height),fmt, channels, Rect(roiX,roiY,roiWidth,roiHeight));
     }
-    // }}}
 
     bool ImgParams::operator==(const ImgParams &other) const{
-      // {{{ open
 
       FUNCTION_LOG("");
       return getSize()==other.getSize() &&
@@ -73,10 +64,8 @@ namespace icl{
         getFormat() == other.getFormat();
     }
 
-    // }}}
 
     void ImgParams::setup(const Size &size, format fmt, int channels,const Rect &roi){
-      // {{{ open
 
       ICLASSERT_THROW(fmt == formatMatrix || channels == getChannelsOfFormat(fmt),
                       InvalidImgParamException("incompatible format (" + str(fmt) + ") and channel count (" + str(channels) + ")"));
@@ -88,10 +77,8 @@ namespace icl{
       else setROI (Point::null, size); // or set full ROI
     }
 
-    // }}}
 
     void ImgParams::setSize(const Size &size){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_THROW( size.width>=0 && size.height>=0 ,InvalidImgParamException("size"));
@@ -99,20 +86,16 @@ namespace icl{
       setFullROI();
     }
 
-    // }}}
 
     void ImgParams::setFormat(format fmt){
-      // {{{ open
 
       FUNCTION_LOG("");
       m_eFormat = fmt;
       if(fmt != formatMatrix) m_iChannels = getChannelsOfFormat(fmt);
     }
 
-    // }}}
 
     void ImgParams::setChannels(int channels){
-      // {{{ open
 
       FUNCTION_LOG("");
       if(m_iChannels != channels){
@@ -121,10 +104,8 @@ namespace icl{
       m_iChannels = channels;
     }
 
-    // }}}
 
     void ImgParams::setROIOffset(const Point &offset) {
-      // {{{ open
 
         FUNCTION_LOG("");
         ICLASSERT_THROW(offset.x >= 0 && offset.x + getROIWidth() <= getWidth() &&
@@ -134,10 +115,8 @@ namespace icl{
         m_oROI.y = offset.y;
       }
 
-    // }}}
 
     void ImgParams::setROISize(const Size &size) {
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_THROW(size.width >= 0 && getROIXOffset() + size.width  <= getWidth() &&
@@ -147,10 +126,8 @@ namespace icl{
       m_oROI.height = size.height;
     }
 
-    // }}}
 
     void ImgParams::setROI(const Point &offset, const Size &size){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_THROW(offset.x >= 0 && size.width >= 0 && offset.x + size.width  <= m_oSize.width &&
@@ -162,10 +139,8 @@ namespace icl{
       m_oROI.height = size.height;
     }
 
-    // }}}
 
     void ImgParams::setROISizeAdaptive(const Size &s){
-      // {{{ open
 
       FUNCTION_LOG("setROISizeAdaptive("<< s.width << "," << s.height << ")");
 
@@ -176,10 +151,8 @@ namespace icl{
       m_oROI.height =  clip(iH, 0, getHeight()-getROIYOffset());
     }
 
-    // }}}
 
     void ImgParams::setROIOffsetAdaptive(const Point &p){
-      // {{{ open
 
       FUNCTION_LOG("setROIOffsetAdaptive("<< p.x << "," << p.y << ")");
 
@@ -190,10 +163,8 @@ namespace icl{
       m_oROI.y =  clip(y,0,getHeight()-getROIHeight());
     }
 
-    // }}}
 
     void ImgParams::setROIAdaptive(const Rect &roi){
-      // {{{ open
 
       FUNCTION_LOG("");
       m_oROI.x = 0;
@@ -202,16 +173,13 @@ namespace icl{
       setROIOffsetAdaptive (roi.ul());
     }
 
-    // }}}
 
     Rect& ImgParams::adaptROI(Rect &roi) const {
-      // {{{ open
        ImgParams curParams(*this);
        curParams.setROIAdaptive(roi);
        roi = curParams.getROI();
        return roi;
     }
-    // }}}
 
     /// ostream operator SIZExCHANNELS@FORMAT.ROI
     std::ostream &operator<<(std::ostream &s, const ImgParams &p){

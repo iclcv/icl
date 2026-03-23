@@ -199,7 +199,6 @@ namespace icl{
                                      bool ignoreDesired)
       : m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
     {
-      // {{{ open
 
       if(File(pattern).isDirectory()){
 #if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
@@ -257,10 +256,8 @@ namespace icl{
       addProperties();
     }
 
-    // }}}
 
     FileGrabber::~FileGrabber(){
-      // {{{ open
 
       ICL_DELETE(m_data->poBufferImage);
       for(unsigned int i=0;i<m_data->vecImageBuffer.size();i++){
@@ -269,10 +266,8 @@ namespace icl{
       delete(m_data);
     }
 
-    // }}}
 
     void FileGrabber::bufferImages(bool omitExceptions){
-      // {{{ open
 
       if(!m_data->vecImageBuffer.size()){
         std::vector<std::string> correctNames;
@@ -306,44 +301,35 @@ namespace icl{
       m_data->bBufferImages = true;
     }
 
-    // }}}
 
     void FileGrabber::next(){
-      // {{{ open
 
       ICLASSERT_RETURN(m_data->oFileList.size());
       m_data->iCurrIdx++;
       if(m_data->iCurrIdx >= m_data->oFileList.size()) m_data->iCurrIdx = 0;
     }
 
-    // }}}
     void FileGrabber::prev(){
-      // {{{ open
 
       ICLASSERT_RETURN(m_data->oFileList.size());
       m_data->iCurrIdx--;
       if(m_data->iCurrIdx < 0) m_data->iCurrIdx = m_data->oFileList.size()-1;
     }
 
-    // }}}
 
     unsigned int FileGrabber::getFileCount() const{
-      // {{{ open
 
       return m_data->oFileList.size();
     }
 
-    // }}}
 
     const std::string &FileGrabber::getNextFileName() const{
-      // {{{ open
       static const std::string myNull("null");
       return ( m_data->iCurrIdx >= m_data->oFileList.size()
                ? (m_data->loop ? m_data->oFileList[0] : myNull)
                : m_data->oFileList[m_data->iCurrIdx] );
     }
 
-    // }}}
 
     const ImgBase *FileGrabber::acquireImage(){
       try{
@@ -371,7 +357,6 @@ namespace icl{
     }
 
     const core::ImgBase *FileGrabber::grabImage(){
-      // {{{ open
       if(m_data->bBufferImages){
         if(m_data->useTimeStamps) {
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");
@@ -447,7 +432,6 @@ namespace icl{
       return m_data->poBufferImage;
     }
 
-    // }}}
 
     void FileGrabber::forcePluginType(const std::string &suffix){
       m_data->forcedPluginType = suffix;

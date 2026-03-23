@@ -32,8 +32,6 @@
 
 #include <ICLUtils/StrTok.h>
 #include <ICLIO/JPEGDecoder.h>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -41,10 +39,8 @@ namespace icl{
   namespace io{
   #ifdef ICL_HAVE_LIBJPEG
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
-      // {{{ open
       JPEGDecoder::decode(file,dest);
     }
-    // }}}
   #else
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
       ERROR_LOG("JPEG support currently not available! \n" <<

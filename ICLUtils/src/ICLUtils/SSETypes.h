@@ -73,8 +73,6 @@
    // ++++++++++++ black and white example ++++++++++++ //
     #include <ICLUtils/SSETypes.h>
     #include <ICLUtils/Time.h>
-
-    using namespace std;
     using namespace icl;
     using namespace icl::utils;
 
@@ -143,8 +141,6 @@
    #include <ICLUtils/SSETypes.h>
    #include <ICLUtils/ClippedCast.h>
    #include <ICLUtils/Time.h>
-
-   using namespace std;
    using namespace icl;
    using namespace icl::utils;
 

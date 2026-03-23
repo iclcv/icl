@@ -70,7 +70,6 @@ namespace icl {
       };
 
       template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncNoVal{
-        // {{{ open
 
         static inline void apply(const  Img<T> *src, Img<T> *dst ){
           for(int c=src->getChannels()-1; c >= 0; --c) {
@@ -82,7 +81,6 @@ namespace icl {
         }
       };
 
-      // }}}
 
 #ifdef ICL_HAVE_SSE2
       // --- SSE2 specializations for icl32f (no val) ---
@@ -151,7 +149,6 @@ namespace icl {
         static inline T apply(const T t, T val){ return t*val; }
       };
       template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncWithVal{
-        // {{{ open
 
         static inline void apply(const  Img<T> *src, Img<T> *dst, T val ){
           for(int c=src->getChannels()-1; c >= 0; --c) {
@@ -163,7 +160,6 @@ namespace icl {
         }
       };
 
-      // }}}
 
 #ifdef ICL_HAVE_SSE2
       // --- SSE2 specializations for icl32f (with val) ---
@@ -202,21 +198,17 @@ namespace icl {
       ***/
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize)>
       inline void ipp_call_no_val(const Img<T> *src, Img<T> *dst){
-        // {{{ open
         for (int c=src->getChannels()-1; c >= 0; --c) {
           func (src->getROIData (c), src->getLineStep(), dst->getROIData (c), dst->getLineStep(), dst->getROISize());
         }
     }
-    // }}}
 
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize,int)>
       inline void ipp_call_no_val_sfs(const Img<T> *src, Img<T> *dst){
-        // {{{ open
         for (int c=src->getChannels()-1; c >= 0; --c) {
           func (src->getROIData (c), src->getLineStep(), dst->getROIData (c), dst->getLineStep(), dst->getROISize(), 0);
         }
     }
-    // }}}
 
   #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                                                                   \
       template<> struct LoopFuncNoVal<icl8u, UnaryArithmeticalOp::OP##Op>{                                                                        \
@@ -249,21 +241,17 @@ namespace icl {
        ***/
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T,  T*, int, IppiSize)>
       inline void ipp_call_with_val(const Img<T> *src, Img<T> *dst, T val){
-        // {{{ open
         for (int c=src->getChannels()-1; c >= 0; --c) {
           func (src->getROIData (c), src->getLineStep(),val, dst->getROIData (c), dst->getLineStep(), dst->getROISize());
         }
     }
-    // }}}
 
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T,  T*, int, IppiSize, int)>
       inline void ipp_call_with_val_sfs(const Img<T> *src, Img<T> *dst, T val){
-        // {{{ open
         for (int c=src->getChannels()-1; c >= 0; --c) {
           func (src->getROIData (c), src->getLineStep(),val, dst->getROIData (c), dst->getLineStep(), dst->getROISize(),0);
         }
     }
-    // }}}
 
   #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                           \
       template<> struct LoopFuncWithVal<icl8u, UnaryArithmeticalOp::OP##Op>{              \
@@ -292,7 +280,6 @@ namespace icl {
 
       template<UnaryArithmeticalOp::optype OT>
       void apply_unary_arithmetical_op_no_val(const ImgBase *src, ImgBase *dst){
-        // {{{ open
 
         switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: LoopFuncNoVal<icl##D, OT>::apply(src->asImg<icl##D>(),dst->asImg<icl##D>()); break;
@@ -302,11 +289,9 @@ namespace icl {
         }
       }
 
-      // }}}
 
       template<UnaryArithmeticalOp::optype OT>
       void apply_unary_arithmetical_op_with_val(const ImgBase *src, ImgBase *dst, icl64f val){
-        // {{{ open
 
         switch(src->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D)                                                 \
@@ -318,11 +303,9 @@ namespace icl {
         }
       }
 
-      // }}}
     } // end of anonymous namespace
 
     void UnaryArithmeticalOp::apply(const ImgBase *poSrc, ImgBase **poDst){
-      // {{{ open
       ICLASSERT_RETURN( poSrc );
       if(!UnaryOp::prepare(poDst,poSrc)) return;
       switch(m_eOpType){
@@ -338,6 +321,5 @@ namespace icl {
         case absOp:  apply_unary_arithmetical_op_no_val<absOp>(poSrc,*poDst); break;
       }
     }
-    // }}}
   } // namespace filter
 }

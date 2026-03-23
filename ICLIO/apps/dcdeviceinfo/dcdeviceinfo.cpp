@@ -29,8 +29,6 @@
 ********************************************************************/
 
 #include <ICLIO/DCGrabber.h>
-
-using namespace std;
 using namespace icl::io;
 
 

@@ -10,6 +10,9 @@ foreach(kernel_file ${KERNEL})
   list(APPEND HEADERS ${kernel_header_file})
 endforeach()
 
+# Removed: UnaryOpWork (replaced by std::async in UnaryOp/NeighborhoodOp)
+list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/UnaryOpWork.h)
+
 if(NOT IPP_FOUND)
   list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/WienerOp.cpp
                            ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ProximityOp.cpp)

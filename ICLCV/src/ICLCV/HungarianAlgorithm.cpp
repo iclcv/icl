@@ -47,7 +47,6 @@ namespace icl{
     //#define BEGIN_METHOD(X) counter_##X++; MethodTimer __timer(&timer_##X)
 
     void clearCovers(vec &rowCover, vec &colCover){
-      // {{{ open
       for (unsigned int i=0; i<rowCover.size(); i++){
         rowCover[i] = 0;
       }
@@ -56,11 +55,9 @@ namespace icl{
       }
     }
 
-    // }}}
 
     template<class real>
     int hg_step1(int step, Array2D<real> &cost){
-      // {{{ open
 
       //What STEP 1 does:
       //For each row of the cost matrix, find the smallest element
@@ -79,11 +76,9 @@ namespace icl{
       return step;
     }
 
-    // }}}
 
     template<class real>
     int hg_step2(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover){
-      // {{{ open
 
       //What STEP 2 does:
       //Marks uncovered zeros as starred and covers their row and column.
@@ -102,9 +97,7 @@ namespace icl{
       return step;
     }
 
-    // }}}
     int hg_step3(int step, imat &mask, vec &colCover){
-      // {{{ open
 
       //What STEP 3 does:
       //Cover columns of starred zeros. Check if all columns are covered.
@@ -128,13 +121,11 @@ namespace icl{
       return step;
     }
 
-    // }}}
 
     /* orig:: working, but slow !!!
     template<class real>
     int hg_step4(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
       BEGIN_METHOD(hg_step4);
-      // {{{ open
 
       //What STEP 4 does:
       //Find an uncovered zero in cost and prime it (if none go to step 6). Check for star in same row:
@@ -170,12 +161,10 @@ namespace icl{
       return step;
     }
 
-    // }}}
     */
 
     template<class real>
     void findZeroPositions(std::vector<Point> &dst, Array2D<real> &cost){
-       // {{{ open
 
       for(int i=0;i<cost.getWidth();++i){
         for(int j=0;j<cost.getHeight();++j){
@@ -186,7 +175,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
 
@@ -195,7 +183,6 @@ namespace icl{
     */
     template<class real>
     vec findUncoveredZero(vec &row_col, Array2D<real> &cost, vec &rowCover, vec &colCover){
-      // {{{ open
       for(int i=0;i<cost.getWidth();++i){
         for(int j=0;j<cost.getHeight();++j){
           if(!cost[i][j] && !rowCover[i] && !colCover[j]){
@@ -231,13 +218,11 @@ namespace icl{
       ****************************/
     }
 
-    // }}}
 
     /*
     Best function, 5x faster then original, and twice as fast as ***Fast
     */
     vec findUncoveredZeroLite(vec &row_col, const std::vector<Point> &indices, vec &rowCover, vec &colCover){
-      // {{{ open
 
       //    x  = col;
       for(unsigned int i=0;i<indices.size();i++){
@@ -251,12 +236,10 @@ namespace icl{
       row_col[1] = 0;
       return row_col;
     }
-    // }}}
 
 
     template<class real>
     int hg_step4(int step, Array2D<real> &cost, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
-      // {{{ open
       //What STEP 4 does:
       //Find an uncovered zero in cost and prime it (if none go to step 6). Check for star in same row:
       //if yes, cover the row and uncover the star's column. Repeat until no uncovered zeros are left
@@ -299,10 +282,8 @@ namespace icl{
       return step;
     }
 
-    // }}}
 
     int findStarInCol(imat &mask, int col){
-      // {{{ open
       // int r=-1;	//Again this is a check value.
       for (int i=0; i<mask.getWidth(); i++){
         if (mask(i,col)==1){
@@ -314,10 +295,8 @@ namespace icl{
       return -1;
     }
 
-    // }}}
 
     int findPrimeInRow(imat &mask, int row){
-      // {{{ open
       //    int c = -1;
 
       for (int j=0; j<mask.getHeight(); j++){
@@ -330,9 +309,7 @@ namespace icl{
       return -1;
     }
 
-    // }}}
     void convertPath(imat &mask, imat &path, int count){
-      // {{{ open
 
       for (int i=0; i<=count; i++){
         int &m = mask(static_cast<int>(path(i,0)),static_cast<int>(path(i,1)));
@@ -344,9 +321,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void erasePrimes(imat &mask){
-      // {{{ open
 
       for (int i=0; i<mask.getWidth(); i++){
         for (int j=0; j<mask.getHeight(); j++){
@@ -357,10 +332,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     int hg_step5(int step, imat &mask, vec &rowCover, vec &colCover, vec &zero_RC){
-      // {{{ open
 
       //What STEP 5 does:
       //Construct series of alternating primes and stars. Start with prime from step 4.
@@ -421,11 +394,9 @@ namespace icl{
       return step;
     }
 
-    // }}}
 
     template<class real>
     real findSmallest(Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
-      // {{{ open
 
       real minval = maxCost;	   //There cannot be a larger cost than this.
       for (int i=0; i<cost.getWidth(); i++){ //Now find the smallest uncovered value.
@@ -438,11 +409,9 @@ namespace icl{
       return minval;
     }
 
-    // }}}
 
     template<class real>
     int hg_step6(int step, Array2D<real> &cost, vec &rowCover, vec &colCover, real maxCost){
-      // {{{ open
 
       //What STEP 6 does:
       //Find smallest uncovered value in cost: a. Add it to every element of covered rows
@@ -463,12 +432,10 @@ namespace icl{
       return step;
     }
 
-    // }}}
 
 
     template<class real>
     vec HungarianAlgorithm<real>::apply(const Array2D<real> &m, bool isCostMatrix){
-      // {{{ open
       if(!m.getDim()) return vec();
       mat cost = m.deepCopy();
       if(!isCostMatrix){
@@ -511,11 +478,9 @@ namespace icl{
       return assignment;
     }
 
-    // }}}
 
     template<class real>
     void HungarianAlgorithm<real>::visualizeAssignment(const Array2D<real> &cost, const vec &a){
-      // {{{ open
       mat v(cost.getWidth(),cost.getHeight());
       v.fill(0);
       for(unsigned int i=0;i<a.size();i++){
@@ -531,7 +496,6 @@ namespace icl{
       printf("\n");
     }
 
-  // }}}
 
 
     template class ICLCV_API HungarianAlgorithm<icl32s>;

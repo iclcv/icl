@@ -49,7 +49,6 @@ namespace icl {
                            const Point &roiOffset,
                            std::vector<icl8u> &vBuffer,
                            icl32f fNoise) {
-        // {{{ open
         int iBufferSize;
         ippiFilterWienerGetBufferSize(dst->getROISize(), oMaskSize, 1, &iBufferSize);
         vBuffer.reserve (iBufferSize);
@@ -61,12 +60,10 @@ namespace icl {
         };
       }
 
-  // }}}
     } // end of anonymous namespace
 
 
     void WienerOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
-      // {{{ open
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
 
@@ -80,7 +77,6 @@ namespace icl {
       }
     }
 
-    // }}}
 
 
   #endif

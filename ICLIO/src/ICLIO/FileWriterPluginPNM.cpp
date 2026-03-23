@@ -34,8 +34,6 @@
 #include <ICLCore/CCFunctions.h>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/StringUtils.h>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 

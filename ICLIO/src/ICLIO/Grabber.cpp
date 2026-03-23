@@ -37,8 +37,6 @@
 #include <ICLUtils/ConfigFile.h>
 #include <ICLCore/Converter.h>
 #include <mutex>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 

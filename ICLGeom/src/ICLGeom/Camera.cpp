@@ -732,7 +732,6 @@ namespace icl {
 
     /*
         static Point32f to_normalized_viewport(const Point32f &p, const Camera &cam){
-        // {{{ open
         Vec uv = cam.getViewportMatrixGL().inv() * Vec(p.x,p.y,0,1);
         return Point32f(-uv[0],-uv[1]);
         }
@@ -742,7 +741,6 @@ namespace icl {
 
     static Vec estimate_3D_internal(const std::vector<Camera*> cams,
                                     const std::vector<Point32f> &ps){
-      // {{{ open
       int K = static_cast<int>(cams.size());
       ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
 
@@ -777,14 +775,12 @@ namespace icl {
       return Vec(0,0,0,1);
     }
 
-    // }}}
 
 
 
     Vec Camera::estimate_3D(const std::vector<Camera*> cams,
                             const std::vector<Point32f> &UVs,
                             bool removeInvalidPoints){
-      // {{{ open
       ICLASSERT_THROW(cams.size() == UVs.size(),ICLException("Camera::estimate_3D: given camera count and point count differs"));
       if(removeInvalidPoints){
         std::vector<Camera*> camsOk;
@@ -801,7 +797,6 @@ namespace icl {
         return estimate_3D_internal(cams,UVs);
       }
     }
-    // }}}
 
     Mat Camera::estimatePose(const std::vector<Vec> &objectCoords,
       const std::vector<utils::Point32f> &imageCoords,

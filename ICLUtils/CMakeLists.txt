@@ -6,6 +6,12 @@ if(NOT DL_FOUND)
   list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLUtils/IppInterface.h)
 endif()
 
+# Removed: MultiThreader and Semaphore (replaced by std::async/std::future)
+list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLUtils/MultiThreader.cpp)
+list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLUtils/MultiThreader.h)
+list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLUtils/Semaphore.cpp)
+list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLUtils/Semaphore.h)
+
 icl_add_module(ICLUtils
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}

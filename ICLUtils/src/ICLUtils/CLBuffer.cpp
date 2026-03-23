@@ -37,8 +37,6 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-
 namespace icl {
   namespace utils {
 

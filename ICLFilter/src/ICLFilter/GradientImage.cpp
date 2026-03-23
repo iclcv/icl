@@ -41,7 +41,6 @@ namespace icl{
 
     namespace{
       void calculate_xy_gradient(const Img16s &src, Img16s &gx, Img16s &gy){
-        // {{{ open
 
         gx.setParams(src.getParams());
         gy.setParams(src.getParams());
@@ -69,24 +68,18 @@ namespace icl{
         convXYMutex.unlock();
       }
 
-      // }}}
 
       float intensity_func(icl16s a, icl16s b){
-        // {{{ open
         return sqrt(static_cast<float>(a*a+b*b));
       }
 
-      // }}}
 
       float angle_func(icl16s a, icl16s b){
-        // {{{ open
         return atan2(static_cast<float>(b),static_cast<float>(a));
       }
-      // }}}
 
 
       void apply_lut_func(bool roiOnly,const Img16s &X,const Img16s &Y, Img32f &R,const LUT2D<icl32f,icl16s> &LUT){
-        // {{{ open
 
         for(int i=0;i<X.getChannels();++i){
           if(roiOnly){
@@ -108,7 +101,6 @@ namespace icl{
         }
       }
 
-      // }}}
     }
 
     void GradientImage::update(const ImgBase *src, GradientImage::calculationMode mode){

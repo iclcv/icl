@@ -39,10 +39,8 @@ namespace icl{
   namespace utils{
     class MultiThreader::MTWorkThread : public Thread{
     public:
-      // {{{ open
 
       MTWorkThread(Semaphore *sem1, Semaphore *sem2, Semaphore *semDone):work(0),m_bCurr(0){
-        // {{{ open
 
         m_apoSems[0] = sem1;
         m_apoSems[1] = sem2;
@@ -50,10 +48,8 @@ namespace icl{
         m_bEnd = false;
       }
 
-      // }}}
 
       ~MTWorkThread(){
-        // {{{ open
 
         m_oWorkMutex.lock();
         work = 0;
@@ -62,10 +58,8 @@ namespace icl{
         m_apoSems[m_bCurr]->release(1);
       }
 
-      // }}}
 
       virtual void run(){
-        // {{{ open
 
         while(!m_bEnd){
           m_apoSems[m_bCurr]->acquire(1);
@@ -87,17 +81,14 @@ namespace icl{
         }
       }
 
-      // }}}
 
       void setWork(MultiThreader::Work *work){
-        // {{{ open
 
         m_oWorkMutex.lock();
         this->work = work;
         m_oWorkMutex.unlock();
       }
 
-      // }}}
 
     private:
       MultiThreader::Work *work;
@@ -108,14 +99,11 @@ namespace icl{
       bool m_bEnd;
     };
 
-    // }}}
 
     class MultiThreaderImpl{
-      // {{{ open
 
     public:
       MultiThreaderImpl(int nThreads):
-        // {{{ open
 
         m_iNThreads(nThreads),m_bCurr(0){
         m_vecThreads.resize(nThreads);
@@ -135,9 +123,7 @@ namespace icl{
         }
       }
 
-      // }}}
       ~MultiThreaderImpl(){
-        // {{{ open
 
         for(int i=0;i<m_iNThreads;++i){
           delete m_vecThreads[i];
@@ -146,10 +132,8 @@ namespace icl{
         delete m_apoSems[1];
       }
 
-      // }}}
 
       inline void apply(MultiThreader::WorkSet &ws){
-        // {{{ open
 
         ICLASSERT_RETURN(static_cast<int>(ws.size()) == m_iNThreads);
 
@@ -169,15 +153,12 @@ namespace icl{
         m_bCurr =! m_bCurr;
       }
 
-      // }}}
 
       inline int getNumThreads() const {
-        // {{{ open
 
         return m_iNThreads;
       }
 
-      // }}}
 
     private:
       int m_iNThreads;
@@ -189,49 +170,22 @@ namespace icl{
 
     };
 
-    // }}}
 
-    void MultiThreaderImplDelOp::delete_func( MultiThreaderImpl *impl){
-      // {{{ open
-
-      ICL_DELETE( impl);
-    }
-
-    // }}}
-
-    MultiThreader::MultiThreader():
-      // {{{ open
-
-      ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>(0){
-
-    }
-
-    // }}}
+    MultiThreader::MultiThreader() = default;
 
     MultiThreader::MultiThreader(int nThreads):
-      // {{{ open
-
-      ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>(new MultiThreaderImpl(nThreads)){
-
+      impl(std::make_shared<MultiThreaderImpl>(nThreads)){
     }
 
-    // }}}
-
     void MultiThreader::operator()(MultiThreader::WorkSet &ws){
-      // {{{ open
-      ICLASSERT_RETURN(!isNull());
+      ICLASSERT_RETURN(impl);
       impl->apply(ws);
     }
 
-    // }}}
-
     int MultiThreader::getNumThreads() const{
-      // {{{ open
-
-      ICLASSERT_RETURN_VAL(!isNull(),0);
+      ICLASSERT_RETURN_VAL(impl,0);
       return impl->getNumThreads();
     }
 
-    // }}}
   } // namespace utils
 }

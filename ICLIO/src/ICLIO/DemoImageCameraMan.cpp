@@ -33,8 +33,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-
-using namespace std;
 namespace icl{
   namespace io{
   namespace{
@@ -42,7 +40,6 @@ namespace icl{
   const int NCOLS = 30;
   const int NEXTRA = 11;
   unsigned char aauc_Data_cameraman[NROWS][NCOLS] = {
-    // {{{ open
     {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  2,  0, 28,  0, 28,  0,  0,255,219,  0, 67,  0,  2,  1,  1,  1,  1},
     {  1,  2,  1,  1,  1,  2,  2,  2,  2,  2,  4,  3,  2,  2,  2,  2,  5,  4,  4,  3,  4,  6,  5,  6,  6,  6,  5,  6,  6,  6},
     {  7,  9,  8,  6,  7,  9,  7,  6,  6,  8, 11,  8,  9, 10, 10, 10, 10, 10,  6,  8, 11, 12, 11, 10, 12,  9, 10, 10, 10,255},
@@ -2231,16 +2228,12 @@ namespace icl{
     {195,113,127, 76, 89, 31,131, 38, 59,225,161,177, 97, 45, 45, 68,125,202, 72,239, 70,233,166,147, 98,255,  0, 17,235,254},
     {184,109,137,173, 67, 62, 91,173, 52,216, 10, 81, 57, 57, 79,197, 93,218,134, 61,130, 14,145, 67,154,126,216, 89,100,145}
 };
-  // }}}
   unsigned char auc_ExtraData_cameraman[NEXTRA] = {
-    // {{{ open
     228,161,210,  9,  3,254,239,147, 95,255,217
   };
-  // }}}
 
   }//end namespace
     ImgBase* createImage_cameraman(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
       FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
@@ -2262,6 +2255,5 @@ namespace icl{
       remove("./.tmp_image_buffer.jpg");
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 } // end namespace icl

@@ -32,17 +32,14 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Semaphore.h>
-#include <ICLUtils/ShallowCopyable.h>
 #include <vector>
+#include <memory>
 
 namespace icl{
   namespace utils{
 
     /** \cond */
-    class ICLUtils_API MultiThreaderImpl;
-    class ICLUtils_API MultiThreaderImplDelOp{
-      public: static void delete_func(MultiThreaderImpl *impl);
-    };
+    class MultiThreaderImpl;
     /** \endcond */
 
     /// Utility class for parallelizing algorithms \ingroup THREAD
@@ -157,7 +154,7 @@ namespace icl{
         ICLFilter package, which provides a top level interface for parallelizing
         unary operators (class interface UnaryOp)
     */
-    class ICLUtils_API MultiThreader : public ShallowCopyable<MultiThreaderImpl,MultiThreaderImplDelOp>{
+    class ICLUtils_API MultiThreader{
       public:
 
       /// plugin class for work packages performed parallel
@@ -188,6 +185,9 @@ namespace icl{
 
       /// returns the number of WorkThreads
       int getNumThreads() const;
+
+      private:
+      std::shared_ptr<MultiThreaderImpl> impl;
     };
   } // namespace utils
 }

@@ -40,7 +40,6 @@ namespace icl{
   namespace math{
     namespace{
       inline float square_vec(const float *a,const  float *b,unsigned  int dim){
-        // {{{ open
 
         float sum = 0;
         for(unsigned int i=0;i<dim;++i){
@@ -49,9 +48,7 @@ namespace icl{
         return sum;
       }
 
-      // }}}
       inline float squared_pearson_dist(const float *a,const  float *b,const float *var, unsigned  int dim){
-        // {{{ open
         float sum = 0;
         for(unsigned int i=0;i<dim;++i){
           sum+=pow(a[i]-b[i],2)/(2*var[i]);
@@ -59,11 +56,9 @@ namespace icl{
         return sum;
       }
 
-      // }}}
 
       /// scalar product of row r of the w x ? matrix M with w-dim vector a
       inline float mult_mat_row(const float *M, unsigned int w, int r,const  float *a){
-        // {{{ open
 
         M += r*w;
         float sum = 0;
@@ -73,7 +68,6 @@ namespace icl{
         return sum;
       }
 
-      // }}}
 
       std::string vecToStr(const float *v, unsigned int dim){
         std::string s("{");
@@ -86,17 +80,14 @@ namespace icl{
 
 
     LLM::Kernel::Kernel():
-      // {{{ open
 
       w_in(0),w_out(0),A(0),dw_in(0),var(0),inputDim(0),outputDim(0){
     }
 
-    // }}}
 
 
 
     LLM::Kernel::Kernel(unsigned int inputDim, unsigned int outputDim):
-      // {{{ open
 
       inputDim(inputDim),outputDim(outputDim){
       w_in = new float [inputDim];
@@ -106,9 +97,7 @@ namespace icl{
       var = new float[inputDim];
     }
 
-    // }}}
     LLM::Kernel::~Kernel(){
-      // {{{ open
 
       if(w_in) delete [] w_in;
       if(w_out) delete [] w_out;
@@ -117,7 +106,6 @@ namespace icl{
       if(var)delete [] var;
     }
 
-    // }}}
 
     void LLM::Kernel::set(const float *w_in, const float *w_out, const float *A){
       std::copy(w_in, w_in+this->inputDim, this->w_in );
@@ -127,7 +115,6 @@ namespace icl{
 
 
     LLM::Kernel &LLM::Kernel::operator=(const LLM::Kernel &k){
-      // {{{ open
 
       inputDim = k.inputDim;
       outputDim = k.outputDim;
@@ -164,9 +151,7 @@ namespace icl{
       return *this;
     }
 
-    // }}}
     LLM::Kernel::Kernel(const LLM::Kernel &k):
-      // {{{ open
 
       inputDim(k.inputDim),outputDim(k.outputDim){
 
@@ -197,9 +182,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void LLM::Kernel::show(unsigned int idx) const{
-      // {{{ open
 
       printf("K:%d (%d>%d) w_in=%s w_out=%s A=%s sigma² = %s\n",
              idx,inputDim,outputDim,
@@ -209,7 +192,6 @@ namespace icl{
              vecToStr(var,inputDim).c_str());
     }
 
-    // }}}
 
 
     void LLM::init_private(unsigned int inputDim, unsigned int outputDim){
@@ -236,12 +218,10 @@ namespace icl{
     }
 
     LLM::LLM(unsigned int inputDim, unsigned int outputDim){
-      // {{{ open
       init_private(inputDim,outputDim);
 
     }
 
-    // }}}
 
     LLM::LLM(unsigned int inputDim, unsigned int outputDim, unsigned int numCenters,
              const std::vector<Range<icl32f> > &ranges,
@@ -252,7 +232,6 @@ namespace icl{
 
 
     void LLM::init(unsigned int numCenters, const std::vector<Range<icl32f> > &ranges,const std::vector<float> &var){
-      // {{{ open
       ICLASSERT_RETURN(ranges.size() == m_inputDim);
 
       std::vector<float*> centers(numCenters);
@@ -269,9 +248,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void LLM::init(const std::vector<float*> &centers,const std::vector<float> &var){
-      // {{{ open
 
       m_gBuf.resize(centers.size());
       m_kernels.resize(centers.size());
@@ -287,10 +264,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void LLM::showKernels() const{
-      // {{{ open
 
       printf("llm kernels: \n");
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -299,17 +274,13 @@ namespace icl{
       printf("------------\n");
     }
 
-    // }}}
 
 
     const float *LLM::apply(const float *x){
-      // {{{ open
       return applyIntern(x,updateGs(x));
     }
 
-    // }}}
     const float *LLM::applyIntern(const float *x, const float *g){
-      // {{{ open
 
       // y_net(x) = sum_i  (w_i^out + Ai*(x-w_i^in))*g_i(x)
       unsigned int N = m_kernels.size();
@@ -335,9 +306,7 @@ namespace icl{
       return out;
     }
 
-    // }}}
     void LLM::train(const float *x,const float *y, int trainflags){
-      // {{{ open
       const float *g = updateGs(x);
       if(trainflags & 1){
         trainCentersIntern(x,g);
@@ -358,38 +327,28 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void LLM::trainCenters(const float *x){
-      // {{{ open
 
       trainCentersIntern(x,updateGs(x));
     }
 
-    // }}}
     void LLM::trainSigmas(const float *x){
-      // {{{ open
 
       trainSigmasIntern(x,updateGs(x));
     }
 
-    // }}}
     void LLM::trainOutputs(const float *x,const float *y){
-      // {{{ open
       trainOutputsIntern(x,y,updateGs(x),getErrorVec(x,y),false);
     }
 
-    // }}}
     void LLM::trainMatrices(const float *x,const float *y){
-      // {{{ open
 
       trainMatricesIntern(x,y,updateGs(x),getErrorVec(x,y));
     }
 
-    // }}}
 
     const float *LLM::updateGs(const float *x){
-      // {{{ open
 
       float *g = m_gBuf.data();
       if(getPropertyValue("soft max enabled")){
@@ -414,16 +373,12 @@ namespace icl{
       return g;
     }
 
-    // }}}
     const float *LLM::getErrorVec(const float *x, const float *y){
-      // {{{ open
 
       return getErrorVecIntern(y,apply(x));
     }
 
-    // }}}
     const float *LLM::getErrorVecIntern(const float *y, const float *ynet){
-      // {{{ open
 
       for(unsigned int i=0;i<m_outputDim;++i){
         m_errorBuf[i] = y[i]-ynet[i];
@@ -431,9 +386,7 @@ namespace icl{
       return m_errorBuf.data();
     }
 
-    // }}}
     void LLM::trainCentersIntern(const float *x,const float *g){
-      // {{{ open
       const float eIn = getPropertyValue("epsilon In");
       if(!eIn) return;
       //    printf("training of centers g=%s \n",vecToStr(g,m_kernels.size()).c_str());
@@ -446,9 +399,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void LLM::trainSigmasIntern(const float *x,const float *g){
-      // {{{ open
       const float eS = getPropertyValue("epsilon Sigma");
       if(!eS) return;
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -460,9 +411,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void LLM::trainOutputsIntern(const float *x,const float *y, const float *g, const float *dy, bool useDeltaWin){
-      // {{{ open
       const float eO = getPropertyValue("epsilon Out");
       if(!eO) return;
       if(useDeltaWin){
@@ -480,9 +429,7 @@ namespace icl{
       }
     }
 
-    // }}}
     void LLM::trainMatricesIntern(const float *x,const float *y, const float *g, const float *dy){
-      // {{{ open
       const float eA = getPropertyValue("epsilon A");
       if(!eA) return;
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -499,7 +446,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
     REGISTER_CONFIGURABLE(LLM, return new LLM(1,1));
   } // namespace math

@@ -55,7 +55,6 @@ namespace icl{
     }
 
     ImgBase *imgNew(depth d, const ImgParams &params){
-      // {{{ open
 
       switch (d){
         case depth8u:  return new Img8u(params); break;
@@ -67,10 +66,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     int getChannelsOfFormat(format eFormat){
-      // {{{ open
 
       switch (eFormat){
         case formatRGB:
@@ -89,7 +86,6 @@ namespace icl{
       }
     }
 
-    // }}}
 
 
     /// puts a string representation of format into the given stream
@@ -234,7 +230,6 @@ namespace icl{
 
 
     ImgBase *ensureDepth(ImgBase **ppoImage, depth d){
-      // {{{ open
       if(!ppoImage){
         return imgNew(d);
       }
@@ -249,10 +244,8 @@ namespace icl{
       return *ppoImage;
     }
 
-    // }}}
 
     ImgBase *ensureCompatible(ImgBase **ppoDst, depth d, const ImgParams &params){
-      // {{{ open
       if(!ppoDst){
         return imgNew(d,params);
       }
@@ -265,7 +258,6 @@ namespace icl{
       return *ppoDst;
     }
 
-    // }}}
 
     ImgBase *ensureCompatible(ImgBase **dst, depth d, const Size& size, int channels, const Rect &roi){
       return ensureCompatible(dst, d, ImgParams(size, channels, roi));
@@ -275,7 +267,6 @@ namespace icl{
     }
 
     ImgBase* ensureCompatible(ImgBase **dst, depth d, const Size &size, int channels, format fmt, const Rect &roi){
-      // {{{ open
 
       FUNCTION_LOG("");
       if(fmt != formatMatrix && getChannelsOfFormat(fmt) != channels){
@@ -289,16 +280,12 @@ namespace icl{
       }
     }
 
-    // }}}
 
     ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src){
-      // {{{ open
       return ensureCompatible(dst,src->getDepth(),src->getParams());
     }
-    // }}}
 
     unsigned int getSizeOf(depth eDepth){
-      // {{{ open
       static unsigned int s_aiSizeTable[]= { sizeof(icl8u),
                                              sizeof(icl16s),
                                              sizeof(icl32s),
@@ -307,10 +294,8 @@ namespace icl{
       return s_aiSizeTable[eDepth];
     }
 
-    // }}}
 
 
-    // {{{ convert — IPP/SSE2 specializations are in PixelOps.cpp
 
   #if 0 // moved to PixelOps.cpp
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
@@ -763,7 +748,6 @@ namespace icl{
     }
   #endif // moved to PixelOps.cpp
 
-    // }}}
 
 
   namespace{
@@ -820,9 +804,7 @@ namespace icl{
 
 
 
-    // }}}
 
-    // {{{ variance
 
    namespace{
       template<class T>
@@ -868,9 +850,7 @@ namespace icl{
     std::vector<double> variance(const ImgBase *poImg, int iChannel, bool roiOnly){
       return variance(poImg,mean(poImg,iChannel,roiOnly),true,iChannel,roiOnly);
     }
-    // }}}
 
-    // {{{ std-deviation
 
     std::vector<double> stdDeviation(const ImgBase *poImage, int iChannel, bool roiOnly){
       std::vector<double> v = variance(poImage,iChannel,roiOnly);
@@ -892,9 +872,7 @@ namespace icl{
       }
       return v;
     }
-    // }}}
 
-    // {{{ mean-and-std-deviation
     std::vector< std::pair<double,double> > meanAndStdDev(const ImgBase *image,
                                                           int iChannel,
                                                           bool roiOnly){
@@ -908,9 +886,7 @@ namespace icl{
       }
       return md;
     }
-    // }}}
 
-    // {{{ histogramm functions
 
     namespace{
 
@@ -1041,7 +1017,6 @@ namespace icl{
       return h;
     }
 
-    // }}}
 
 
   } // namespace core

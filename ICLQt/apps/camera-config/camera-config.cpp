@@ -41,7 +41,6 @@
 using namespace icl::utils;
 using namespace icl::io;
 using namespace icl::qt;
-using namespace std;
 
 std::string devlist;
 std::recursive_mutex mux;

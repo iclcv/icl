@@ -44,26 +44,21 @@ namespace{
 namespace icl{
   namespace utils{
     void progress_init(const std::string &text){
-      // {{{ open
 
       printf("\n");
       printf("%s%s\n",BACK_LINE,text.c_str());
       PROGRESS_STR = text;
     }
 
-    // }}}
 
     void progress_finish(){
-      // {{{ open
 
       printf("%s%s:100%s[##############################]\n",BACK_LINE,PROGRESS_STR.c_str(),"%");
 
     }
 
-    // }}}
 
     void progress(int curr, int max, const std::string &t){
-      // {{{ open
 
       printf("%s%s:",BACK_LINE,PROGRESS_STR.c_str());
       float frac = static_cast<float>(curr)/static_cast<float>(max);

@@ -38,8 +38,6 @@ using std::strlen;
 #include <ICLIO/JPEGHandle.h>
 #include <mutex>
 #endif
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -197,7 +195,6 @@ namespace icl{
   #else // no JPEG_SUPPORT
     /// empty implementation with warning message!
     void FileWriterPluginJPEG::write(File &file, const ImgBase *poSrc){
-      // {{{ open
 
       ERROR_LOG("JPEG support currently not available! \n" <<
                 "To enabled JPEG support: you have to compile the ICLIO package\n" <<
@@ -207,7 +204,6 @@ namespace icl{
       (void) poSrc;
     }
 
-    // }}}
   #endif
 
 

@@ -52,8 +52,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-
-using namespace std;
 namespace icl{
   namespace qt{
 
@@ -61,7 +59,6 @@ namespace icl{
     class ChromaWidget : public ICLDrawWidget, public MouseHandler{
       public:
       ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
-        // {{{ open
 
         image = Img8u(Size(256,256),formatRGB);
 
@@ -80,9 +77,7 @@ namespace icl{
         updateDrawings();
       }
 
-      // }}}
       virtual void process(const MouseEvent &event){
-        // {{{ open
 
         Point32f p = event.getRelPos(); //Point32f(info->relImageX,info->relImageY);
 
@@ -150,24 +145,18 @@ namespace icl{
         updateDrawings();
       }
 
-      // }}}
       void setBlue(icl8u blue){
-        // {{{ open
 
         this->blue = blue;
         updateImage(blue);
       }
 
-      // }}}
       const core::Parable* getParables() const{
-        // {{{ open
 
         return P;
       }
 
-      // }}}
       void save(const std::string &filename,const std::vector<int>&other) const{
-        // {{{ open
 
         ICLASSERT_RETURN(other.size() == 7);
         ChromaAndRGBClassifier carc;
@@ -196,9 +185,7 @@ namespace icl{
 
       }
 
-      // }}}
       void load(const std::string &filename,std::vector<int> &other){
-        // {{{ open
         if(other.size() != 7){
           other.resize(7);
         }
@@ -224,9 +211,7 @@ namespace icl{
         updateDrawings();
       }
 
-      // }}}
       void updateDrawings(){
-        // {{{ open
         P[0] = Parable(D[0].pos()*255,D[1].pos()*255,D[2].pos()*255);
         P[1] = Parable(D[3].pos()*255,D[4].pos()*255,D[5].pos()*255);
         setImage(&image);
@@ -246,9 +231,7 @@ namespace icl{
         render();
       }
 
-      // }}}
       void updateImage(icl8u blue){
-        // {{{ open
 
 
         Channel8u rgb[3];
@@ -291,7 +274,6 @@ namespace icl{
         update();
       }
 
-      // }}}
 
       Dragger D[6];
       Parable P[2];
@@ -301,7 +283,6 @@ namespace icl{
 
 
     ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vsplit[@handle=parent]",parent){
-      // {{{ open
       (*this) << VBox().handle("image").label("Chromaticity Space").minSize(18,16)
               << ( HBox()
                    << Slider(0,255,128).handle("bluedisphandle").label("Disp. Blue").out("bluedisp")
@@ -350,9 +331,7 @@ namespace icl{
                        static_cast<QObject*>(this),SLOT(save()));
     }
 
-    // }}}
     ChromaClassifier ChromaGUI::getChromaClassifier(){
-      // {{{ open
 
       ChromaClassifier c;
       c.parables[0] = m_poChromaWidget->getParables()[0];
@@ -360,9 +339,7 @@ namespace icl{
       return c;
     }
 
-    // }}}
     ChromaAndRGBClassifier ChromaGUI::getChromaAndRGBClassifier(){
-      // {{{ open
 
       ChromaAndRGBClassifier c;
       c.c = getChromaClassifier();
@@ -377,17 +354,13 @@ namespace icl{
       return c;
     }
 
-    // }}}
     void ChromaGUI::blueSliderChanged(int val){
-      // {{{ open
 
       m_poChromaWidget->setBlue(val);
       m_poChromaWidget->update();
     }
 
-    // }}}
     void ChromaGUI::load(const std::string &filenameIn){
-      // {{{ open
 
       QString filename;
       if(filenameIn == ""){
@@ -414,9 +387,7 @@ namespace icl{
       get<SliderHandle>("bluedisphandle") = data[6];
     }
 
-    // }}}
     void ChromaGUI::save(const std::string &filenameIn){
-      // {{{ open
 
       QString filename;
       if(filenameIn == ""){
@@ -442,7 +413,6 @@ namespace icl{
 
     }
 
-    // }}}
 
   } // namespace qt
 }

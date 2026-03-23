@@ -43,7 +43,6 @@ namespace icl{
 
     template<class T>
     void AffineOp::affine (const ImgBase *poSrc, ImgBase *poDst) {
-      // {{{ open
 
       Rect dr = poDst->getROI();
       int sx = dr.x;
@@ -102,12 +101,10 @@ namespace icl{
       }
     }
 
-    // }}}
 
   #ifdef ICL_HAVE_IPP
     template<>
     void AffineOp::affine<icl8u> (const ImgBase *poSrc, ImgBase *poDst) {
-      // {{{ open
 
       for(int c=0; c < poSrc->getChannels(); c++) {
         ippiWarpAffine_8u_C1R (poSrc->asImg<icl8u>()->getData (c),
@@ -118,11 +115,9 @@ namespace icl{
                                m_aadT, m_eInterpolate);
       }
     }
-    // }}}
 
     template<>
     void AffineOp::affine<icl32f> (const ImgBase *poSrc, ImgBase *poDst) {
-      // {{{ opem
 
       for(int c=0; c < poSrc->getChannels(); c++) {
         ippiWarpAffine_32f_C1R (poSrc->asImg<icl32f>()->getData (c),
@@ -133,7 +128,6 @@ namespace icl{
                                 m_aadT, m_eInterpolate);
       }
     }
-    // }}}
   #endif
 
 
@@ -141,27 +135,22 @@ namespace icl{
 
     AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate),
                                                   m_adaptResultImage(true)  {
-       // {{{ open
        reset ();
   #define ICL_INSTANTIATE_DEPTH(D) m_aMethods[depth##D] = &AffineOp::affine<icl##D>;
        ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
      }
 
-    // }}}
 
 
      void AffineOp::reset () {
-       // {{{ open
 
         m_aadT[0][0] = m_aadT[1][1] = 1.0;
         m_aadT[0][1] = m_aadT[1][0] = m_aadT[0][2] = m_aadT[1][2] = 0.0;
      }
 
-    // }}}
 
      void AffineOp::rotate (double dAngle) {
-       // {{{ open
 
         double c=cos(dAngle * M_PI / 180.);
         double s=sin(dAngle * M_PI / 180.);
@@ -173,23 +162,19 @@ namespace icl{
         m_aadT[1][1] = O[1][1]*c - O[1][0]*s;
      }
 
-    // }}}
 
 
 
      inline void AffineOp::applyT (const double p[2], double adResult[2]) {
-       // {{{ open
 
         adResult[0] = m_aadT[0][0]*p[0] + m_aadT[0][1]*p[1] + m_aadT[0][2];
         adResult[1] = m_aadT[1][0]*p[0] + m_aadT[1][1]*p[1] + m_aadT[1][2];
      }
 
 
-    // }}}
 
      inline void AffineOp::useMinMax (const double adCur[2],
                                     double adMin[2], double adMax[2]) {
-       // {{{ open
 
         adMin[0] = std::min (adCur[0], adMin[0]);
         adMin[1] = std::min (adCur[1], adMin[1]);
@@ -197,11 +182,9 @@ namespace icl{
         adMax[1] = std::max (adCur[1], adMax[1]);
      }
 
-    // }}}
 
      void AffineOp::getShiftAndSize (const Rect& roi, Size& size,
                                    double& xShift, double& yShift) {
-       // {{{ open
 
         double adMin[2], adMax[2], adCur[2];
         // compute corners of the ROI rectangle
@@ -223,10 +206,8 @@ namespace icl{
         size.height = static_cast<int>(ceil(adMax[1] - adMin[1])); yShift = adMin[1];
      }
 
-    // }}}
 
      void AffineOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
-       // {{{ open
        ICLASSERT_RETURN(poSrc);
        ICLASSERT_RETURN(ppoDst);
        ICLASSERT_RETURN(poSrc != *ppoDst);
@@ -252,7 +233,6 @@ namespace icl{
        }
      }
 
-    // }}}
 
 
   } // namespace filter

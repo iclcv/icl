@@ -33,8 +33,6 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-
-using namespace std;
 namespace icl{
   namespace io{
     namespace{
@@ -42,7 +40,6 @@ namespace icl{
       const int NCOLS = 30;
       const int NEXTRA = 19;
       unsigned char aauc_Data_lena[NROWS][NCOLS] = {
-        // {{{ open
         {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  2,  0, 28,  0, 28,  0,  0,255,219,  0, 67,  0,  2,  1,  1,  1,  1},
         {  1,  2,  1,  1,  1,  2,  2,  2,  2,  2,  4,  3,  2,  2,  2,  2,  5,  4,  4,  3,  4,  6,  5,  6,  6,  6,  5,  6,  6,  6},
         {  7,  9,  8,  6,  7,  9,  7,  6,  6,  8, 11,  8,  9, 10, 10, 10, 10, 10,  6,  8, 11, 12, 11, 10, 12,  9, 10, 10, 10,255},
@@ -5186,16 +5183,12 @@ namespace icl{
     { 80,160,188, 33,214,  6,186,107,111, 58,198,141,  3, 68,  4, 45, 42, 10, 83,155,157,193,247,134,191, 79,133,163, 48,  4},
         {185, 25, 86, 58,215,144,202,192,197,235,195,238, 21,211, 93,183, 90, 10,169,144, 95, 74,137, 78,116,164,248,134,251,105}
       };
-      // }}}
       unsigned char auc_ExtraData_lena[NEXTRA] = {
-        // {{{ open
         172,219, 45,111,181,170,248,  4,210, 53,219, 50,199,125, 55,245, 88,255,217
       };
-      // }}}
 
     }//end namespace
     ImgBase* createImage_lena(){
-      // {{{ open
       static ImgBase *image = 0;
       if(image) return image->deepCopy();
       FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
@@ -5217,7 +5210,6 @@ namespace icl{
       remove("./.tmp_image_buffer.jpg");
       return image->deepCopy();
     }
-    // }}}
   } // namespace io
 
 } // end namespace icl

@@ -86,7 +86,6 @@ namespace icl {
       // IPP function specializations for "no val":
       template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize)>
       inline void ipp_call_no_val(const Img<T> *src, Img<T> *dst){
-        // {{{ open
         for (int c=src->getChannels()-1; c >= 0; --c) {
           func (src->getROIData (c), src->getLineStep(), dst->getROIData (c), dst->getLineStep(), dst->getROISize());
         }

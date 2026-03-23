@@ -32,7 +32,6 @@
 #include <ICLQt/Common.h>
 
 using namespace icl;
-using namespace std;
 
 HBox gui;
 ChromaGUI *cg;

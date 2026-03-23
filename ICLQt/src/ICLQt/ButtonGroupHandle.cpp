@@ -31,8 +31,6 @@
 #include <ICLQt/ButtonGroupHandle.h>
 #include <ICLUtils/Macros.h>
 #include <QRadioButton>
-
-using namespace std;
 namespace icl{
   namespace qt{
     void ButtonGroupHandle::select(int id){

@@ -33,8 +33,6 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLCore/CCFunctions.h>
-
-using namespace std;
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -74,7 +72,6 @@ namespace icl{
       }
       oInfo.channelCount = getChannelsOfFormat(oInfo.imageFormat);
 
-      // {{{ Read special header info
 
 
       do {
@@ -106,7 +103,6 @@ namespace icl{
         }
       } while (nextLine.length()==0 || nextLine[0]=='#');
 
-      // }}}
 
       // read image size
       vector<string> ts = tok(nextLine," ");

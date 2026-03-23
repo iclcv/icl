@@ -45,19 +45,15 @@ namespace icl{
 
     namespace{
       inline icl32s min3(icl32s a, icl32s b, icl32s c){
-        // {{{ open
 
         return iclMin(iclMin(a,b),c);
       }
 
-      // }}}
       inline icl32s min5(icl32s a, icl32s b, icl32s c, icl32s d, icl32s e){
-        // {{{ open
 
         return min3(min3(a,b,c),d,e);
       }
 
-      // }}}
 
       namespace co{
         inline Size scale(const Size &s, int f){
@@ -73,7 +69,6 @@ namespace icl{
 
       template<class T>
       void prepare_chamfer_image_unscaled(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal){
-        // {{{ open
         if(poSrc->hasFullROI() && poDst->hasFullROI()){
 
           Channel<T> src = (*poSrc)[channel];
@@ -95,10 +90,8 @@ namespace icl{
         }
       }
 
-      // }}}
       template<class T>
       void prepare_chamfer_image_scaled(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal, int scaleFactor){
-        // {{{ open
 
         ICLASSERT_RETURN(poSrc);
         ICLASSERT_RETURN(poDst);
@@ -137,13 +130,11 @@ namespace icl{
         }
       }
 
-      // }}}
 
 
 
       template<class T>
       void prepare_chamfer_image(const Img<T> *poSrc, Img32s *poDst, int channel, icl32s maxVal, int scaleFactor, Img32s &buffer, bool scaleUpResult){
-        // {{{ open
 
         if(scaleFactor > 1){
           ImgBase *buf = scaleUpResult ? &buffer : poDst;
@@ -156,10 +147,8 @@ namespace icl{
           prepare_chamfer_image_unscaled(poSrc,poDst,channel,maxVal);
         }
       }
-      // }}}
 
       void apply_chamfer_op_generic(Img32s *poDst, int channel, icl32s  d1, icl32s d2){
-        // {{{ open
 
         if(poDst->hasFullROI()){
           int w = poDst->getWidth();
@@ -234,19 +223,15 @@ namespace icl{
           }
         }
       }
-      // }}}
       int compute_max_val(icl32s d1, icl32s d2, const Size &imageSize){
-        // {{{ open
 
         return iclMax(d1,d2)*(imageSize.width+imageSize.height);
       }
 
-      // }}}
 
     }
 
     ChamferOp::ChamferOp( icl32s horizontalAndVerticalNeighbourDistance, icl32s diagonalNeighborDistance, int scaleFactor, bool scaleUpResult)
-      // {{{ open
 
       :m_iHorizontalAndVerticalNeighbourDistance(horizontalAndVerticalNeighbourDistance),
        m_iDiagonalNeighborDistance(diagonalNeighborDistance),
@@ -255,12 +240,10 @@ namespace icl{
       setClipToROI(false);
     }
 
-    // }}}
 
 
 
     void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
-      // {{{ open
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN(poSrc != *ppoDst);
@@ -313,13 +296,11 @@ namespace icl{
       }
       if(needSetCheckOnlyToFalseCall) setCheckOnly(false);
     }
-    // }}}
 
 
 
     namespace{
       struct PenaltyModeNone{
-        // {{{ open
 
         PenaltyModeNone( const Rect &roi, icl32s penalty):
           roi(roi),penalty(penalty){}
@@ -328,9 +309,7 @@ namespace icl{
         icl32s penalty;
       };
 
-      // }}}
       struct PenaltyModeConst{
-        // {{{ open
 
         PenaltyModeConst( const Rect &roi,icl32s penalty):
           roi(roi),penalty(penalty){}
@@ -339,9 +318,7 @@ namespace icl{
         icl32s penalty;
       };
 
-      // }}}
       struct PenaltyModeDist{
-        // {{{ open
 
         PenaltyModeDist( const Rect &roi,icl32s penalty):
           roi(roi),penalty(penalty){}
@@ -358,10 +335,8 @@ namespace icl{
         icl32s penalty;
       };
 
-      // }}}
 
       struct HausdorffMetricModeMean{
-        // {{{ open
 
         HausdorffMetricModeMean():n(0),val(0){}
         inline void operator<<(icl32s x){ val+=x; n++; }
@@ -370,9 +345,7 @@ namespace icl{
         double val;
       };
 
-      // }}}
       struct HausdorffMetricModeMax{
-        // {{{ open
 
         HausdorffMetricModeMax():val(-1){}
         inline void operator<<(icl32s x){ val = iclMax(val,x); }
@@ -380,11 +353,9 @@ namespace icl{
         icl32s val;
       };
 
-      // }}}
 
       template<class HausdorffMetricMode, class PenaltyMode>
       inline double apply_directed_hausdorff_distance(const Img32s *chamferImage, const std::vector<Point> &model, HausdorffMetricMode hmm,PenaltyMode pm){
-        // {{{ open
 
         Channel32s chan = (*chamferImage)[0];
         int x,y;
@@ -399,11 +370,9 @@ namespace icl{
         return hmm.getResult();
       }
 
-      // }}}
 
       template<class HausdorffMetricMode, class PenaltyMode>
       inline double apply_directed_hausdorff_distance_2(const Img32s *chamferImage, const Img32s *modelChamferImage, HausdorffMetricMode hmm,PenaltyMode pm){
-        // {{{ open
 
         Channel32s chan = (*chamferImage)[0];
         Channel32s modelChan = (*modelChamferImage)[0];
@@ -424,11 +393,9 @@ namespace icl{
         return hmm.getResult();
       }
 
-      // }}}
     }
 
     void ChamferOp::renderModel(const std::vector<Point> &model, ImgBase **image, const Size &size, icl32s bg, icl32s fg,  Rect roi){
-      // {{{ open
 
       ICLASSERT_RETURN(image);
       if(roi == Rect::null){
@@ -446,14 +413,12 @@ namespace icl{
       }
     }
 
-    // }}}
 
     double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImage,
                                                        const std::vector<Point> &model,
                                                        ChamferOp::hausdorffMetric m,
                                                        ChamferOp::outerROIPenaltyMode pm,
                                                        icl32s penaltyValue){
-      // {{{ open
       ICLASSERT_RETURN_VAL(chamferImage,-1);
       ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
       ICLASSERT_RETURN_VAL(model.size(),-1);
@@ -483,14 +448,12 @@ namespace icl{
       return -1;
     }
 
-    // }}}
 
     double ChamferOp::computeDirectedHausdorffDistance(const Img32s *chamferImage,
                                                        const Img32s *modelChamferImage,
                                                        ChamferOp::hausdorffMetric m,
                                                        ChamferOp::outerROIPenaltyMode pm,
                                                        icl32s penaltyValue){
-      // {{{ open
       ICLASSERT_RETURN_VAL(chamferImage,-1);
       ICLASSERT_RETURN_VAL(modelChamferImage,-1);
       ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
@@ -521,21 +484,18 @@ namespace icl{
       return -1;
     }
 
-    // }}}
 
     double ChamferOp::computeSymmetricHausdorffDistance(const Img32s *chamferImageA,
                                                         const Img32s *chamferImageB,
                                                         hausdorffMetric m,
                                                         ChamferOp::outerROIPenaltyMode pm,
                                                         icl32s penaltyValue){
-      // {{{ open
 
       double ab = computeDirectedHausdorffDistance(chamferImageA,chamferImageB,m,pm,penaltyValue);
       double ba = computeDirectedHausdorffDistance(chamferImageB,chamferImageA,m,pm,penaltyValue);
       return m==hausdorff_mean ? (ab+ba)/2 : iclMax(ab,ba);
     }
 
-    // }}}
 
 
 
@@ -543,7 +503,6 @@ namespace icl{
                                                         const std::vector<Point> setB, const Size &sizeB, const Rect &roiB, ImgBase **bufferB,
                                                         hausdorffMetric m,ChamferOp::outerROIPenaltyMode pm,icl32s penaltyValue,
                                                         ChamferOp coA, ChamferOp coB){
-      // {{{ open
 
       renderModel(setA,bufferA,sizeA,0,255,roiA);
       renderModel(setB,bufferB,sizeB,0,255,roiB);
@@ -552,7 +511,6 @@ namespace icl{
       return computeSymmetricHausdorffDistance((*bufferA)->asImg<icl32s>(),(*bufferB)->asImg<icl32s>(),m,pm,penaltyValue);
     }
 
-    // }}}
 
     double ChamferOp::computeSymmeticHausdorffDistance(const Img32s *chamferImage,
                                                        const std::vector<Point> &model,
@@ -564,7 +522,6 @@ namespace icl{
                                                        ChamferOp::outerROIPenaltyMode pm,
                                                        icl32s penaltyValue,
                                                        ChamferOp co){
-      // {{{ open
       ICLASSERT_RETURN_VAL(chamferImage,-1);
       ICLASSERT_RETURN_VAL(chamferImage->getChannels() == 1,-1);
       ICLASSERT_RETURN_VAL(bufferImageA,-1);
@@ -582,6 +539,5 @@ namespace icl{
 
     }
   } // namespace filter
-  // }}}
 
 }

@@ -38,7 +38,6 @@ namespace icl{
 
 
     Converter::Converter(bool bROIOnly) :
-      // {{{ open
 
       m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
       m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC),
@@ -46,29 +45,23 @@ namespace icl{
       FUNCTION_LOG("");
     }
 
-    // }}}
 
     Converter::Converter(Converter::oporder o, bool bROIOnly):
       m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
       m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o),m_scaleMode(interpolateNN){
       FUNCTION_LOG("");
-      // {{{ open
 
     }
-    // }}}
 
     Converter::Converter(const ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly):
-      // {{{ open
       m_poSizeBuffer(0), m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
       m_poColorBuffer(0), m_bROIOnly(applyToROIOnly),m_eOpOrder(orderScaleConvertCC),
       m_scaleMode(interpolateNN){
       apply(srcImage,dstImage);
     }
 
-    // }}}
 
     Converter::~Converter(){
-      // {{{ open
 
       FUNCTION_LOG("");
       if(m_poSizeBuffer)delete m_poSizeBuffer;
@@ -78,10 +71,8 @@ namespace icl{
       if(m_poColorBuffer)delete m_poColorBuffer;
     }
 
-    // }}}
 
     void Converter::dynamicConvert(const ImgBase *src, ImgBase *dst){
-      // {{{ open
       //case depth##D: src->convert<icl##D>(dst->asImg<icl##D>());
       switch(dst->getDepth()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: src->convert<icl##D>(dst->asImg<icl##D>()); break;
@@ -90,10 +81,8 @@ namespace icl{
       }
     }
 
-    // }}}
 
     void Converter::apply(const ImgBase *poSrc, ImgBase *poDst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN( poSrc );
@@ -209,10 +198,8 @@ namespace icl{
       poDst->setMetaData(poSrc->getMetaData());
     }
 
-    // }}}
 
     void Converter::cc(const ImgBase *srcIn, ImgBase *dst){
-      // {{{ open
 
       FUNCTION_LOG("");
       ICLASSERT_RETURN( srcIn );
@@ -240,7 +227,6 @@ namespace icl{
       dst->setMetaData(src->getMetaData());
     }
 
-    // }}}
 
 
     void Converter::setScaleMode(scalemode scaleMode){

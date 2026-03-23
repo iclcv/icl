@@ -35,13 +35,11 @@
 #include <ICLUtils/StringUtils.h>
 
 using namespace icl::utils;
-using namespace std;
 
 namespace icl{
   namespace io{
     namespace{
       string generate_filename(int digits, int counter, const string &prefix, const string &postfix){
-        // {{{ open
         if (!digits) {
           return prefix+postfix;
         }
@@ -52,7 +50,6 @@ namespace icl{
         oss << counter << postfix;
         return oss.str ();
       }
-      // }}}
 
       enum FilenameGeneratorMode { hashPatterns, objectAndImage };
     }
@@ -60,7 +57,6 @@ namespace icl{
     class FilenameGeneratorImpl{
     public:
       FilenameGeneratorImpl(const string &patternIn, int maxFiles)
-        // {{{ open
 
         :m_iMaxFiles(maxFiles),m_bInfinite(maxFiles<0){
 
@@ -85,10 +81,8 @@ namespace icl{
         }
       }
 
-      // }}}
       FilenameGeneratorImpl(const string& prefix, const string& postfix,
                             int ostart, int oend, int istart, int iend){
-        // {{{ open
         m_eMode = objectAndImage;
         m_iCurrIdx = 0;
         m_iFilesLeft = 0;
@@ -104,10 +98,8 @@ namespace icl{
         ICLASSERT( m_iFilesLeft );
       }
 
-      // }}}
 
       string next(){
-        // {{{ open
 
         switch(m_eMode){
           case objectAndImage:{
@@ -127,7 +119,6 @@ namespace icl{
         return "";
       }
 
-      // }}}
 
       string showNext() const{
 
@@ -146,15 +137,12 @@ namespace icl{
       }
 
       int filesLeft() const{
-        // {{{ open
 
         return m_iFilesLeft;
       }
 
-      // }}}
 
       void reset(){
-        // {{{ open
 
         switch(m_eMode){
           case objectAndImage:{
@@ -170,7 +158,6 @@ namespace icl{
         }
       }
 
-      // }}}
 
       unsigned int m_uiNumHashes;
       string m_sPostfix;
@@ -185,85 +172,54 @@ namespace icl{
 
     const int FilenameGenerator::INFINITE_FILE_COUNT = 2<<30;
 
-    void FilenameGeneratorImplDelOp::delete_func(FilenameGeneratorImpl *i){
-      // {{{ open
-
-      ICL_DELETE( i );
-    }
-
-    // }}}
-
-    FilenameGenerator::FilenameGenerator():
-      // {{{ open
-        ShallowCopyable<FilenameGeneratorImpl,FilenameGeneratorImplDelOp>(0){
-    }
-
-    // }}}
+    FilenameGenerator::FilenameGenerator() = default;
 
     FilenameGenerator::FilenameGenerator(const string &pattern, int maxFiles):
-      // {{{ open
-
-      ShallowCopyable<FilenameGeneratorImpl,FilenameGeneratorImplDelOp>(new FilenameGeneratorImpl(pattern,maxFiles)){
+      impl(std::make_shared<FilenameGeneratorImpl>(pattern,maxFiles)){
     }
-
-    // }}}
 
     FilenameGenerator::FilenameGenerator(const string& prefix, const string& postfix,
                                          int ostart, int oend, int istart, int iend):
-      // {{{ open
-
-      ShallowCopyable<FilenameGeneratorImpl,FilenameGeneratorImplDelOp>(new FilenameGeneratorImpl(prefix,postfix,ostart,oend,istart,iend)){
+      impl(std::make_shared<FilenameGeneratorImpl>(prefix,postfix,ostart,oend,istart,iend)){
     }
 
-    // }}}
 
     FilenameGenerator::~FilenameGenerator(){
-      // {{{ open
 
     }
 
-    // }}}
 
     string FilenameGenerator::next(){
-      // {{{ open
 
-      ICLASSERT_RETURN_VAL(!isNull(),0);
+      ICLASSERT_RETURN_VAL(impl,0);
       return impl->next();
     }
 
-    // }}}
 
     string FilenameGenerator::showNext() const{
-      // {{{ open
 
-      ICLASSERT_RETURN_VAL(!isNull(),0);
+      ICLASSERT_RETURN_VAL(impl,0);
       return impl->showNext();
     }
 
-    // }}}
 
     int FilenameGenerator::filesLeft() const{
-      // {{{ open
 
-      ICLASSERT_RETURN_VAL(!isNull(),0);
+      ICLASSERT_RETURN_VAL(impl,0);
       return impl->filesLeft();
     }
 
-    // }}}
 
     void FilenameGenerator::reset(){
-      // {{{ open
 
-      ICLASSERT_RETURN(!isNull());
+      ICLASSERT_RETURN(impl);
       impl->reset();
     }
 
-    // }}}
 
     vector<string> FilenameGenerator::getList(){
-      // {{{ open
 
-      ICLASSERT_RETURN_VAL(!isNull(),vector<string>());
+      ICLASSERT_RETURN_VAL(impl,vector<string>());
       ICLASSERT_RETURN_VAL(filesLeft() != FilenameGenerator::INFINITE_FILE_COUNT ,vector<string>());
 
       FilenameGeneratorImpl save = *impl.get();
@@ -278,12 +234,10 @@ namespace icl{
       return v;
     }
 
-    // }}}
 
     void FilenameGenerator::show(){
-      // {{{ open
 
-      ICLASSERT_RETURN(!isNull());
+      ICLASSERT_RETURN(impl);
 
       FilenameGeneratorImpl save = *impl.get();
       reset();
@@ -304,6 +258,5 @@ namespace icl{
 
     }
 
-    // }}}
   } // namespace io
 }

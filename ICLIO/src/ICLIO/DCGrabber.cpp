@@ -38,13 +38,11 @@
 
 namespace icl{
   namespace io{
-    using namespace std;
     using namespace icl::io::dc;
     using namespace icl::utils;
     using namespace icl::core;
 
     DCGrabber::DCGrabber(const DCDevice &dev, int isoMBits):
-      // {{{ open
 
       m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(),m_poImage(0),
       m_poImageTmp(0)
@@ -68,10 +66,8 @@ namespace icl{
       addProperties();
     }
 
-    // }}}
 
     const ImgBase *DCGrabber::acquireImage(){
-      // {{{ open
       ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
       std::lock_guard<std::recursive_mutex> l(m_GrabberThreadMutex);
       if(!m_poGT){
@@ -98,10 +94,8 @@ namespace icl{
       return m_poImage;
     }
 
-    // }}}
 
     DCGrabber::~DCGrabber(){
-      // {{{ open
       if(m_poGT){
         m_poGT->stop();
         ICL_DELETE(m_poGT);
@@ -111,11 +105,9 @@ namespace icl{
       release_dc_cam(m_oDev.getCam());
     }
 
-    // }}}
 
 
     std::vector<DCDevice> DCGrabber::getDCDeviceList(bool resetBusFirst){
-      // {{{ open
       if(resetBusFirst){
         DCGrabber::dc1394_reset_bus(false);
       }
@@ -156,7 +148,6 @@ namespace icl{
       return v;
     }
 
-    // }}}
 
     void DCGrabber::restartGrabberThread(){
       std::lock_guard<std::recursive_mutex> l(m_GrabberThreadMutex);

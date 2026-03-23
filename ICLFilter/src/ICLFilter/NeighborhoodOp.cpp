@@ -29,9 +29,10 @@
 ********************************************************************/
 
 #include <ICLFilter/NeighborhoodOp.h>
-#include <ICLFilter/UnaryOpWork.h>
 #include <ICLUtils/Macros.h>
 #include <ICLFilter/ImageSplitter.h>
+#include <future>
+#include <vector>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -125,26 +126,13 @@ namespace icl {
 
 
 
-      MultiThreader::WorkSet works(nThreads);
-
+      std::vector<std::future<void>> futures;
       for(unsigned int i=0;i<nThreads;i++){
-        works[i] = new UnaryOpWork(this,srcs[i],const_cast<ImgBase*>(dsts[i]));
+        ImgBase *s = srcs[i];
+        ImgBase *d = const_cast<ImgBase*>(dsts[i]);
+        futures.push_back(std::async(std::launch::async, [this,s,&d]{ apply(s, &d); }));
       }
-
-      if(!m_poMT){
-        m_poMT = new MultiThreader(nThreads);
-      }else{
-        if(m_poMT->getNumThreads() != static_cast<int>(nThreads)){
-          delete m_poMT;
-          m_poMT = new MultiThreader(nThreads);
-        }
-      }
-
-      (*m_poMT)( works );
-
-      for(unsigned int i=0;i<nThreads;i++){
-        delete works[i];
-      }
+      for(auto &f : futures) f.get();
 
       setClipToROI(ctr);
       setCheckOnly(co);

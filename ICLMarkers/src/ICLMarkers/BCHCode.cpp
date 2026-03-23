@@ -173,7 +173,6 @@ namespace icl {
       Impl(){
         init_static_data();
 
-        // {{{ open
         m = BCH_DEFAULT_M;
         length = BCH_DEFAULT_LENGTH;
         t = BCH_DEFAULT_T;
@@ -208,10 +207,8 @@ namespace icl {
 
           std::fill(m_elp.begin(),m_elp.end(),0);
       }
-      // }}}
 
       bool gen_poly(){
-        // {{{ open
         int ii, jj, ll, kaux;
         int test, aux, nocycles, root, noterms, rdncy;
         int cycle[1024][21], size[1024], min[1024], zeros[1024];
@@ -298,12 +295,10 @@ namespace icl {
         }
         return true;
       }
-      // }}}
 
 
       /// not used because, we pre-encoded the whole data-set
       void encode_bch(int *bb, const int *data){
-        // {{{ open
         int    i, j;
         int    feedback;
 
@@ -325,12 +320,10 @@ namespace icl {
           }
         }
       }
-      // }}}
 
       // adapted version that works on an encoded int64_t,
       // the original version got an int[]
       int decode_bch_2(int64_t &code){
-        // {{{ open
 
         int i, j, u, q, t2, count = 0, syn_error = 0;
         bool too_many_errors = false;
@@ -493,7 +486,6 @@ namespace icl {
         if(too_many_errors) return(BCH_DEFAULT_T+1);
         else return(syn_error == 0 ? 0 : m_l[u]); // number of errors
       }
-      // }}}
     };
 
     BCHCoder::BCHCoder():impl(new Impl){ }
@@ -502,7 +494,6 @@ namespace icl {
 
 
     BCHCode BCHCoder::encode(int idx){
-      // {{{ open
       init_static_data();
 
       if(idx < 0 || idx > 4095) throw ICLException("invalid bch code ID (allowed: 0 <= index <= 4095)");
@@ -519,10 +510,8 @@ namespace icl {
       }
       return c;
     }
-    // }}}
 
     DecodedBCHCode BCHCoder::decode(const BCHCode &code){
-      // {{{ open
       int64_t c=0,o=1;
       for(int i=0;i<36;++i){
         if(code[35-i]){
@@ -550,7 +539,6 @@ namespace icl {
       }
       return ret;
     }
-    // }}}
 
 
 
