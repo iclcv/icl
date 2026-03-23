@@ -76,7 +76,7 @@ namespace icl{
         default: return Rect::null;
       }
     }
-    inline Rect DefineRectanglesMouseHandler::DefinedRect::edgei(int i) const{ return edge((Edge)i); }
+    inline Rect DefineRectanglesMouseHandler::DefinedRect::edgei(int i) const{ return edge(static_cast<Edge>(i)); }
 
     inline Rect DefineRectanglesMouseHandler::DefinedRect::inner() const { return enlarged(-options->handleWidth); }
     inline Rect DefineRectanglesMouseHandler::DefinedRect::outer() const { return enlarged(options->handleWidth); }
@@ -286,7 +286,7 @@ namespace icl{
       }else if(e.isReleaseEvent()){
         draggedRect = 0;
         Rect r(currBegin, Size(currCurr.x-currBegin.x,currCurr.y-currBegin.y ));
-        if(r.getDim() >= minDim && (int)rects.size() < maxRects) {
+        if(r.getDim() >= minDim && static_cast<int>(rects.size()) < maxRects) {
           rects.push_back(DefinedRect(r.normalized(),&options));
         }
         currCurr = currBegin = Point::null;
@@ -336,7 +336,7 @@ namespace icl{
 
     void DefineRectanglesMouseHandler::addRect(const Rect &rect){
       Mutex::Locker l(this);
-      if((int)rects.size() < maxRects && rect.getDim() >= minDim){
+      if(static_cast<int>(rects.size()) < maxRects && rect.getDim() >= minDim){
         rects.push_back(DefinedRect(rect,&options));
       }
     }
@@ -344,7 +344,7 @@ namespace icl{
     void DefineRectanglesMouseHandler::setMaxRects(int maxRects){
       Mutex::Locker l(this);
       this->maxRects = maxRects;
-      if((int)rects.size() > maxRects){
+      if(static_cast<int>(rects.size()) > maxRects){
         rects.resize(maxRects);
       }
     }
@@ -421,25 +421,25 @@ namespace icl{
 
     int  DefineRectanglesMouseHandler::getNumRects() const{
       Mutex::Locker l(this);
-      return (int)rects.size();
+      return static_cast<int>(rects.size());
     }
 
     Rect  DefineRectanglesMouseHandler::getRectAtIndex(int index) const{
       Mutex::Locker l(this);
-      if(index < 0 || index >= (int)rects.size()) return Rect::null;
+      if(index < 0 || index >= static_cast<int>(rects.size())) return Rect::null;
       return rects[index];
     }
 
     const Any &DefineRectanglesMouseHandler::getMetaData(int index) const{
       Mutex::Locker l(this);
       static Any null;
-      if(index < 0 || index >= (int)rects.size()) return null;
+      if(index < 0 || index >= static_cast<int>(rects.size())) return null;
       return rects[index].meta;
     }
 
     void DefineRectanglesMouseHandler::setMetaData(int index, const Any &data){
       Mutex::Locker l(this);
-      ICLASSERT_RETURN(index >= 0 && index < (int)rects.size());
+      ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(rects.size()));
       rects[index].meta = data;
     }
 
@@ -466,7 +466,7 @@ namespace icl{
 
     void DefineRectanglesMouseHandler::bringToFront(int idx){
       Mutex::Locker l(this);
-      ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
+      ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);
       rects.insert(rects.begin(),1,r);
@@ -474,7 +474,7 @@ namespace icl{
 
     void DefineRectanglesMouseHandler::bringToBack(int idx){
       Mutex::Locker l(this);
-      ICLASSERT_RETURN(idx >= 0 && idx < (int)rects.size());
+      ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
       DefinedRect r = rects[idx];
       rects.erase(rects.begin()+idx);
       rects.push_back(r);

@@ -216,7 +216,7 @@ namespace icl{
       /** If the optional argument pos is given and it is not 0, *pos is
           set to the minimum elements x,y position in the matrix */
       inline const T &minElem(Point *pos=0) const {
-        int idx = (int)(std::min_element(begin(),end()) - begin());
+        int idx = static_cast<int>(std::min_element(begin(),end()) - begin());
         if(pos) *pos = Point(idx%getWidth(),idx/getWidth());
         return data()[idx];
       }
@@ -225,7 +225,7 @@ namespace icl{
       /** If the optional argument pos is given and it is not 0, *pos is
           set to the maximum elements x,y position in the matrix */
       inline const T &maxElem(Point *pos=0) const {
-        int idx = (int)(std::max_element(begin(),end()) - begin());
+        int idx = static_cast<int>(std::max_element(begin(),end()) - begin());
         if(pos) *pos = Point(idx%getWidth(),idx/getWidth());
         return data()[idx];
       }

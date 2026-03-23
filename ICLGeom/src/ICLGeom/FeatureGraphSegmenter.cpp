@@ -378,10 +378,10 @@ namespace icl {
                                 const core::Img32f &depthImg, int minSurfaceSize, bool useROI){
       m_data->surfaces.clear();//clear
       if(useROI){//create mask
-		    m_data->maskImage=m_data->segUtils->createROIMask(xyz, (core::Img32f&)depthImg, m_data->xMinROI,
+		    m_data->maskImage=m_data->segUtils->createROIMask(xyz, const_cast<core::Img32f&>(depthImg), m_data->xMinROI,
 		            m_data->xMaxROI, m_data->yMinROI, m_data->yMaxROI, m_data->zMinROI, m_data->zMaxROI);
 		  }else{
-		    m_data->maskImage=m_data->segUtils->createMask((core::Img32f&)depthImg);
+		    m_data->maskImage=m_data->segUtils->createMask(const_cast<core::Img32f&>(depthImg));
 		  }
 
 		  m_data->labelImage.setSize(edgeImg.getSize());
@@ -415,7 +415,7 @@ namespace icl {
       regions = m_data->region->detect(&edgeImgMasked);
       for(unsigned int i=0; i<regions.size(); i++){
         std::vector<utils::Point> ps = regions[i].getPixels();
-        if((int)ps.size()>=minSurfaceSize){
+        if(static_cast<int>(ps.size())>=minSurfaceSize){
           numCluster++;
           std::vector<int> data;
           for(unsigned int j=0; j<ps.size(); j++){

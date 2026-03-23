@@ -203,7 +203,7 @@ namespace icl{
     }
 
     static std::string bench_time_string(const Time &t){
-      int ms10 = (int)(t.toMilliSecondsDouble()*10);
+      int ms10 = static_cast<int>(t.toMilliSecondsDouble()*10);
       return str(float(ms10)/10.0f) + " ms";
     }
 
@@ -282,11 +282,11 @@ namespace icl{
         const ocv::DMatch &m = matches[i];
         int i1 = matches[i].queryIdx;
         int i2 = matches[i].trainIdx;
-        if((unsigned)i1 >= k1.size()){
+        if(static_cast<unsigned>(i1) >= k1.size()){
           ERROR_LOG("invalid key point index k1");
           continue;
         }
-        if((unsigned)i2 >= k2.size()){
+        if(static_cast<unsigned>(i2) >= k2.size()){
           ERROR_LOG("invalid key point index k2");
           continue;
         }

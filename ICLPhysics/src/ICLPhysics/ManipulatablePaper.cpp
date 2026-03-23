@@ -213,7 +213,7 @@ namespace physics{
 #ifdef USE_OLD_INTERACTION_STYLE
         paper->moveVertex(nodeCoords,viewRay.getIntersection(plane),factor/dt);
 #else
-        paper->movePosition(((ManipulatablePaper*)paper)->draggedPositionIndicator->p,viewRay.getIntersection(plane),factor/dt);
+        paper->movePosition(static_cast<ManipulatablePaper*>(paper)->draggedPositionIndicator->p,viewRay.getIntersection(plane),factor/dt);
 #endif
         paper->unlock();
       }
@@ -315,7 +315,7 @@ namespace physics{
     for(AttractorMap::iterator it = attractors.begin(); it != attractors.end(); ++it){
       it->second->apply(attractorForce);
     }
-    if(mouse) ((ManipulatablePaperMouseHandler*)mouse.get())->applyForce(mouseForce);
+    if(mouse) static_cast<ManipulatablePaperMouseHandler*>(mouse.get())->applyForce(mouseForce);
   }
 
   MouseHandler *ManipulatablePaper::createMouseHandler(int cameraIndex){
@@ -621,7 +621,7 @@ namespace physics{
     cfg.setPrefix("config.");
 
     cfg["orig-rest-length"] = cat(originalRestLengths);
-    cfg["num-constraints"] = (int)constaints.size();
+    cfg["num-constraints"] = static_cast<int>(constaints.size());
 
     for(size_t i=0;i<constaints.size();++i){
       BendingConstaint &c = constaints[i];

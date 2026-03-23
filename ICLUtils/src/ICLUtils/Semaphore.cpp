@@ -46,7 +46,7 @@ namespace icl{
       inline SemaphoreImpl(int n):n(n){
         ICLASSERT_RETURN(n>0);
   	  #ifndef ICL_SYSTEM_WINDOWS
-        sem_init(&s,0,(unsigned int)n);
+        sem_init(&s,0,static_cast<unsigned int>(n));
   	  #else
         // TODOW
   	  #endif
@@ -121,11 +121,11 @@ namespace icl{
     }
 
     void Semaphore::operator++(int dummy){
-      (void)dummy;
+      static_cast<void>(dummy);
       impl->inc(1);
     }
     void Semaphore::operator--(int dummy){
-      (void)dummy;
+      static_cast<void>(dummy);
       impl->dec(1);
     }
     void Semaphore::operator+=(int val){

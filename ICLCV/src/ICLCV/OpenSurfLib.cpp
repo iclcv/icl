@@ -495,8 +495,8 @@ namespace icl{
         int height = img->height;
         int width = img->width;
         int step = img->widthStep/sizeof(float);
-        float *data   = (float *) img->imageData;
-        float *i_data = (float *) int_img->imageData;
+        float *data   = reinterpret_cast<float*>(img->imageData);
+        float *i_data = reinterpret_cast<float*>(int_img->imageData);
 
         // first row only
         float rs = 0.0f;
@@ -525,7 +525,7 @@ namespace icl{
       }
 
       float BoxIntegral(IplImage *img, int row, int col, int rows, int cols){
-        float *data = (float *) img->imageData;
+        float *data = reinterpret_cast<float*>(img->imageData);
         int step = img->widthStep/sizeof(float);
 
         // The subtraction by one for row/col is because row/col is inclusive.
@@ -599,7 +599,7 @@ namespace icl{
         std::vector<CvPoint2D32f> pt1, pt2;
         CvMat _pt1, _pt2;
 
-        int n = (int)matches.size();
+        int n = static_cast<int>(matches.size());
         if( n < 4 ) return 0;
 
         // Set vectors to correct size
@@ -680,7 +680,7 @@ namespace icl{
         if (!ipts.size()) return;
 
         // Get the size of the vector for fixed loop bounds
-        int ipts_size = (int)ipts.size();
+        int ipts_size = static_cast<int>(ipts.size());
 
         if (upright)
           {
@@ -1360,7 +1360,7 @@ namespace icl{
         clusters.clear();
 
         // Seed the random number generator
-        srand((int)time(nullptr));
+        srand(static_cast<int>(time(nullptr)));
 
         // add 'n' random ipoints to clusters list as initial centers
         for (int i = 0; i < n; ++i)
@@ -1407,7 +1407,7 @@ namespace icl{
 
             for (unsigned int j = 0; j < ipts->size(); ++j)
               {
-                if (ipts->at(j).clusterIndex == (int)i)
+                if (ipts->at(j).clusterIndex == static_cast<int>(i))
                   {
                     Ipoint ip = ipts->at(j);
                     x += ip.x;

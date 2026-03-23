@@ -541,21 +541,21 @@ namespace icl{
       /// utility wrapper for vector based rotation
       template<class T>
       inline void rotate(const T &t, icl::math::AXES axes=icl::math::AXES_DEFAULT)
-        { rotate((float)t[0],(float)t[1],(float)t[2]); }
+        { rotate(static_cast<float>(t[0]),static_cast<float>(t[1]),static_cast<float>(t[2])); }
 
       /// translates the scene object (this affects it's translates matrix)
       ICLGeom_API virtual void translate(float dx, float dy, float dz);
 
       /// utility wrapper for vector based translation
       template<class T>
-      inline void translate(const T &t) { translate((float)t[0],(float)t[1],(float)t[2]); }
+      inline void translate(const T &t) { translate(static_cast<float>(t[0]),static_cast<float>(t[1]),static_cast<float>(t[2])); }
 
       /// transformes the current transformation matrix by a scale matrix
       ICLGeom_API virtual void scale(float sx, float sy, float sz);
 
       /// utility wrapper for vector based scaling
       template<class T>
-      inline void scale(const T &t) { scale((float)t[0],(float)t[1],(float)t[2]); }
+      inline void scale(const T &t) { scale(static_cast<float>(t[0]),static_cast<float>(t[1]),static_cast<float>(t[2])); }
 
       /// returns the current transformation matrix
       /** If the relative flag is true, only this objects transformation matrix is returned.

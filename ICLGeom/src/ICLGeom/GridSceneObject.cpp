@@ -41,7 +41,7 @@ namespace icl{
       this->nXCells = nXCells;
       this->nYCells = nYCells;
 
-      ICLASSERT_THROW((int)allGridPoints.size() == nXCells*nYCells,
+      ICLASSERT_THROW(static_cast<int>(allGridPoints.size()) == nXCells*nYCells,
                       ICLException("GridSceneObject::Constructor: nXCells*nYCells differs from allGridPoints.size()!"));
       for(int i=0;i<nXCells*nYCells;++i){
         addVertex(allGridPoints[i]);

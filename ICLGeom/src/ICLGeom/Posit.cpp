@@ -73,7 +73,7 @@ namespace icl{
 
     void Posit::setModel(const std::vector<Vec> &modelPoints){
       data->model = modelPoints;
-      data->N = (int)modelPoints.size();
+      data->N = static_cast<int>(modelPoints.size());
       const int N = data->N;
 
       data->M.setBounds(4,N);

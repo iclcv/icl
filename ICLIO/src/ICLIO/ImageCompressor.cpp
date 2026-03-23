@@ -71,7 +71,7 @@ namespace icl{
 
     /// only decodes an image header
     ImageCompressor::Header ImageCompressor::uncompressHeader(const icl8u *data,int len){
-      ICLASSERT_THROW(len > (int)sizeof(Header::Params), ICLException("ImageCompressor::uncompressHeader: data length too small"));
+      ICLASSERT_THROW(len > static_cast<int>(sizeof(Header::Params)), ICLException("ImageCompressor::uncompressHeader: data length too small"));
       Header header;
       header.params = *(reinterpret_cast<const Header::Params*>(data));
       header.data = data;
@@ -86,7 +86,7 @@ namespace icl{
     }
 
     int ImageCompressor::estimateEncodedBufferSize(const ImgBase *image, bool skipMetaData){
-      const int metaDataLength = skipMetaData ? 0 : (int)image->getMetaData().length();
+      const int metaDataLength = skipMetaData ? 0 : static_cast<int>(image->getMetaData().length());
       const int headerSize = sizeof(Header::Params) + metaDataLength;
       const int numPix = image->getDim() * image->getChannels() * getSizeOf(image->getDepth());
       if(m_data->compression.mode == "rlen" && m_data->compression.quality == "8"){
@@ -121,7 +121,7 @@ namespace icl{
       }else if(spec.mode == "dith"){
         DitheringOp op;
         op.setLevels(round(pow(2,parse<int>(spec.quality))));
-        Img8u tmp(imageSize, formatGray, std::vector<icl8u*>(1,(icl8u*)imageData), false);
+        Img8u tmp(imageSize, formatGray, std::vector<icl8u*>(1,const_cast<icl8u*>(imageData)), false);
         op.apply(&tmp,bpp(ditheringBuffer));
         return compressChannel(ditheringBuffer.begin(0), compressedData, imageSize, roi,
                                ImageCompressor::CompressionSpec("rlen",spec.quality),
@@ -133,7 +133,7 @@ namespace icl{
             icl8u currVal = !!*imageData;
             while(imageData < imageDataEnd){
               const icl8u *other = find_first_not_binarized(imageData,imageDataEnd,currVal);
-              size_t len = (size_t)(other-imageData);
+              size_t len = static_cast<size_t>(other-imageData);
               while(len >= 128){
                 *compressedData++ = 0xff >> int(!currVal);
                 len -= 128;
@@ -318,8 +318,8 @@ namespace icl{
       params.roiWidth = image->getROIWidth();
       params.roiHeight = image->getROIHeight();
       params.channels = image->getChannels();
-      params.colorFormat = (icl32s)image->getFormat();
-      params.depth = (icl32s)image->getDepth();
+      params.colorFormat = static_cast<icl32s>(image->getFormat());
+      params.depth = static_cast<icl32s>(image->getDepth());
       params.dataLen = 0;
       params.metaLen = skipMetaData ? 0 : image->getMetaData().length();
       params.timeStamp = image->getTime().toMicroSeconds();
@@ -345,7 +345,7 @@ namespace icl{
         const JPEGEncoder::EncodedData &jpeg = m_data->jpegEncoder->encode(image->as8u());
 
         int minLen = sizeof(Header::Params) + header.params.metaLen + jpeg.len;
-        if((int)m_data->encoded_buffer.size() < minLen){
+        if(static_cast<int>(m_data->encoded_buffer.size()) < minLen){
           m_data->encoded_buffer.resize(minLen);
         }
         icl8u *dst = m_data->encoded_buffer.data();
@@ -371,7 +371,7 @@ namespace icl{
 				int len = img16s_in->getSize().getDim(); // we support one channel only (single channel 16-bit-kinect image)
 
 				int encoded_len = Kinect11BitCompressor::estimate_packed_size(len);
-				const int metaDataLength = skipMetaData ? 0 : (int)image->getMetaData().length();
+				const int metaDataLength = skipMetaData ? 0 : static_cast<int>(image->getMetaData().length());
 				const int headerSize = sizeof(Header::Params) + metaDataLength;
 				const int numBytes = encoded_len*sizeof(uint16_t);
 				const int finalSize = headerSize+numBytes;
@@ -389,8 +389,8 @@ namespace icl{
 					dst += header.params.metaLen;
 				}
 
-				const uint16_t *src_16 = (const uint16_t*)(img16s_in->getData(0));
-				uint16_t *dst_16 = (uint16_t*)(dst);
+				const uint16_t *src_16 = reinterpret_cast<const uint16_t*>(img16s_in->getData(0));
+				uint16_t *dst_16 = reinterpret_cast<uint16_t*>(dst);
 
 				int q = parse<int>(m_data->compression.quality);
 				if (q == 0)
@@ -423,19 +423,19 @@ namespace icl{
                                 image8u->getImageRect(), header.compressionSpec(),
                                 m_data->ditheringBuffer);
         }
-        len = (float)(dst-m_data->encoded_buffer.data());
+        len = static_cast<float>(dst-m_data->encoded_buffer.data());
       }else{ // only no-compression mode
         int l = image->getDim() * getSizeOf(image->getDepth());
         for(int c=0;c<image->getChannels();++c){
-          std::copy((const icl8u*)image->getDataPtr(c),
-                    (const icl8u*)image->getDataPtr(c)+l,
+          std::copy(static_cast<const icl8u*>(image->getDataPtr(c)),
+                    static_cast<const icl8u*>(image->getDataPtr(c))+l,
                     dst+c*l);
         }
 
         len = l * image->getChannels();
       }
 
-      return CompressedData(m_data->encoded_buffer.data(), (int)len+sizeof(Header::Params), len/m_data->encoded_buffer.size());
+      return CompressedData(m_data->encoded_buffer.data(), static_cast<int>(len)+sizeof(Header::Params), len/m_data->encoded_buffer.size());
     }
 
     Time ImageCompressor::pickTimeStamp(const icl8u *data){
@@ -445,8 +445,8 @@ namespace icl{
     }
 
     void ImageCompressor::Header::setupImage(ImgBase **image){
-      ensureCompatible(image, (depth)params.depth, Size(params.width,params.height),
-                       params.channels, (format)params.colorFormat,
+      ensureCompatible(image, static_cast<depth>(params.depth), Size(params.width,params.height),
+                       params.channels, static_cast<format>(params.colorFormat),
                        Rect(params.roiX,params.roiY,params.roiWidth,params.roiHeight));
       (*image)->setTime(Time(params.timeStamp));
     }
@@ -458,7 +458,7 @@ namespace icl{
     const ImgBase *ImageCompressor::uncompress(const icl8u *data, int len, ImgBase **dst){
       ICLASSERT_THROW(data, ICLException("ImageCompressor::uncompress: "
                                          "given data pointer is NULL"));
-      ICLASSERT_THROW(len > (int)sizeof(Header::Params),
+      ICLASSERT_THROW(len > static_cast<int>(sizeof(Header::Params)),
                       ICLException("ImageCompressor::uncompress: given data pointer is too short"));
 
       Header header = uncompressHeader(data,len);
@@ -477,8 +477,8 @@ namespace icl{
 				useDst->getMetaData().assign(header.metaBegin(), header.metaBegin()+header.params.metaLen);
 
 				Img16s *s16s = useDst->as16s();
-				uint16_t *dst16 = (uint16_t*)s16s->getData(0);
-				const uint16_t *src16 = (const uint16_t*)header.imageBegin();
+				uint16_t *dst16 = reinterpret_cast<uint16_t*>(s16s->getData(0));
+				const uint16_t *src16 = reinterpret_cast<const uint16_t*>(header.imageBegin());
 				if (header.params.compressionQuality == 0)
 					Kinect11BitCompressor::unpack11to16_2(src16,dst16,len);
 				else if (header.params.compressionQuality == 1)
@@ -499,7 +499,7 @@ namespace icl{
         }else{
           int l = useDst->getDim() * getSizeOf(useDst->getDepth());
           for(int c=0;c<useDst->getChannels();++c){
-            std::copy(p+c*l, p+(c+1)*l, (icl8u*)useDst->getDataPtr(c));
+            std::copy(p+c*l, p+(c+1)*l, static_cast<icl8u*>(useDst->getDataPtr(c)));
 					}
 				}
       }

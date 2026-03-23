@@ -68,9 +68,9 @@ namespace icl {
 			CLBuffer *mem_ptr = 0;
 			try {
 				mem_ptr = m_context.createBufferHeap(accessMode,length,byteDepth,src);
-				m_memory_map[key] = (CLMemory*)mem_ptr;
+				m_memory_map[key] = static_cast<CLMemory*>(mem_ptr);
 			} catch (CLException const &e) {
-				(void)e;
+				static_cast<void>(e);
 				ICL_DELETE(mem_ptr);
 				m_memory_map.erase(key);
 				throw;
@@ -86,9 +86,9 @@ namespace icl {
 			CLImage2D *mem_ptr = 0;
 			try {
 				mem_ptr = m_context.createImage2DHeap(accessMode,width,height,depth,num_channel,src);
-				m_memory_map[key] = (CLMemory*)mem_ptr;
+				m_memory_map[key] = static_cast<CLMemory*>(mem_ptr);
 			} catch (CLException const &e) {
-				(void)e;
+				static_cast<void>(e);
 				ICL_DELETE(mem_ptr);
 				m_memory_map.erase(key);
 				throw;

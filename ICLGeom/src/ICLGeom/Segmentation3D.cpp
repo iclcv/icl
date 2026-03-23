@@ -529,7 +529,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 			cluster.clear();
 			for(int x=0; x<w*h; x++) {
 				if(assignment[x]!=0) {
-					if(assignment[x]>(int)cluster.size()) {
+					if(assignment[x]>static_cast<int>(cluster.size())) {
 						cluster.resize(assignment[x]);
 					}
 					cluster.at(assignment[x]-1).push_back(x);
@@ -808,7 +808,7 @@ void Segmentation3D::greedyComposition() {
 		}
 		for (unsigned int b = 0; b < combinable.rows(); b++) {
 			if (combinable(b, a) == true)
-				probabilities(b, a) = 1. / (float) count;
+				probabilities(b, a) = 1. / static_cast<float>(count);
 		}
 	}
 
@@ -831,7 +831,7 @@ void Segmentation3D::greedyComposition() {
 		for (unsigned int b = 0; b < W.rows(); b++) {
 			bool breaking = false;
 			for (unsigned int c = 0; c < facesCom.at(a).size(); c++) {
-				if (facesCom.at(a).at(c) == (int) b) {
+				if (facesCom.at(a).at(c) == static_cast<int>(b)) {
 					breaking = true;
 					break;
 				} else if (W(facesCom.at(a).at(c), b) == 0) {
@@ -948,7 +948,7 @@ void Segmentation3D::calculateRemainingPoints() {
 	for (unsigned int x = currentClusterSize; x < cluster.size(); x++) { //determine neighbours
 		std::vector<int> nb;
 		for (unsigned int y = 0; y < cluster.at(x).size(); y++) {
-			if ((int) cluster.at(x).at(y) - 1 >= 0) {
+			if (static_cast<int>(cluster.at(x).at(y)) - 1 >= 0) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) - 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) - 1])
@@ -956,7 +956,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) - 1]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) + 1 < w * h) {
+			if (static_cast<int>(cluster.at(x).at(y)) + 1 < w * h) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) + 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) + 1])
@@ -964,7 +964,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) + 1]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) - w >= 0) {
+			if (static_cast<int>(cluster.at(x).at(y)) - w >= 0) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) - w], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) - w])
@@ -972,7 +972,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) - w]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) + w < w * h) {
+			if (static_cast<int>(cluster.at(x).at(y)) + w < w * h) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) + w], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) + w])
@@ -980,7 +980,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) + w]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) + w - 1 < w * h) {
+			if (static_cast<int>(cluster.at(x).at(y)) + w - 1 < w * h) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) + w - 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) + w - 1])
@@ -988,7 +988,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) + w - 1]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) + w + 1 < w * h) {
+			if (static_cast<int>(cluster.at(x).at(y)) + w + 1 < w * h) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) + w + 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) + w + 1])
@@ -996,7 +996,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) + w + 1]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) - w - 1 >= 0) {
+			if (static_cast<int>(cluster.at(x).at(y)) - w - 1 >= 0) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) - w - 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) - w - 1])
@@ -1004,7 +1004,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					nb.push_back(assignment[cluster.at(x).at(y) - w - 1]);
 				}
 			}
-			if ((int) cluster.at(x).at(y) - w + 1 >= 0) {
+			if (static_cast<int>(cluster.at(x).at(y)) - w + 1 >= 0) {
 				if (checkNotExist(assignment[cluster.at(x).at(y) - w + 1], nb)
 						&& dist3(xyzData[cluster.at(x).at(y)],
 								xyzData[cluster.at(x).at(y) - w + 1])
@@ -1034,14 +1034,14 @@ void Segmentation3D::calculateRemainingPoints() {
 			bool assignElement = false;
 			int tol = 0;
 			for (unsigned int a = 0; a < cluster.at(x).size(); a++) {
-				int yy = (int) floor((float) cluster.at(x).at(a) / (float) w);
+				int yy = static_cast<int>(floor(static_cast<float>(cluster.at(x).at(a)) / static_cast<float>(w)));
 				int xx = cluster.at(x).at(a) - yy * w;
 				if (cluster.at(x).at(a) < w + 1
 						|| cluster.at(x).at(a) > w * h - w - 1) {
 				} else {
 					if (assignment[cluster.at(x).at(a) - 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) - 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx - 1, yy, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1052,7 +1052,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) + 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) + 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx + 1, yy, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1063,7 +1063,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) - w] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) - w]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx, yy - 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1074,7 +1074,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) + w] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) + w]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx, yy + 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1085,7 +1085,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) - w - 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) - w - 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx - 1, yy - 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1096,7 +1096,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) - w + 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) - w + 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx + 1, yy - 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1107,7 +1107,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) + w - 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) + w - 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx - 1, yy + 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1118,7 +1118,7 @@ void Segmentation3D::calculateRemainingPoints() {
 					}
 					if (assignment[cluster.at(x).at(a) + w + 1] != nb.at(0)
 							&& assignmentRemaining[cluster.at(x).at(a) + w + 1]
-									!= (int) x + 1
+									!= static_cast<int>(x) + 1
 							&& depthImage(xx + 1, yy + 1, 0) != 2047) {
 						if (tol < 9) {
 							tol++;
@@ -1424,44 +1424,44 @@ void Segmentation3D::colorPointcloud() {
 					segmentColorImage(x, y, 1) = 128;
 					segmentColorImage(x, y, 2) = 128;
 				} else {
-					int H = (int) (assignment[i] * 35.) % 360;
+					int H = static_cast<int>((assignment[i] * 35.)) % 360;
 					float S = 1.0 - assignment[i] * 0.01;
-					float hi = floor((float) H / 60.);
-					float f = ((float) H / 60.) - hi;
+					float hi = floor(static_cast<float>(H) / 60.);
+					float f = (static_cast<float>(H) / 60.) - hi;
 					float pp = 1.0 - S;
 					float qq = 1.0 - S * f;
 					float tt = 1.0 - S * (1. - f);
 					float newR = 0;
 					float newG = 0;
 					float newB = 0;
-					if ((int) hi == 0 || (int) hi == 6) {
+					if (static_cast<int>(hi) == 0 || static_cast<int>(hi) == 6) {
 						newR = 1.0;
 						newG = tt;
 						newB = pp;
-					} else if ((int) hi == 1) {
+					} else if (static_cast<int>(hi) == 1) {
 						newR = qq;
 						newG = 1.0;
 						newB = pp;
-					} else if ((int) hi == 2) {
+					} else if (static_cast<int>(hi) == 2) {
 						newR = pp;
 						newG = 1.0;
 						newB = tt;
-					} else if ((int) hi == 3) {
+					} else if (static_cast<int>(hi) == 3) {
 						newR = pp;
 						newG = qq;
 						newB = 1.0;
-					} else if ((int) hi == 4) {
+					} else if (static_cast<int>(hi) == 4) {
 						newR = tt;
 						newG = pp;
 						newB = 1.0;
-					} else if ((int) hi == 5) {
+					} else if (static_cast<int>(hi) == 5) {
 						newR = 1.0;
 						newG = pp;
 						newB = qq;
 					}
-					segmentColorImage(x, y, 0) = (unsigned char) (newR * 255.);
-					segmentColorImage(x, y, 1) = (unsigned char) (newG * 255.);
-					segmentColorImage(x, y, 2) = (unsigned char) (newB * 255.);
+					segmentColorImage(x, y, 0) = static_cast<unsigned char>((newR * 255.));
+					segmentColorImage(x, y, 1) = static_cast<unsigned char>((newG * 255.));
+					segmentColorImage(x, y, 2) = static_cast<unsigned char>((newB * 255.));
 				}
 			}
 		}

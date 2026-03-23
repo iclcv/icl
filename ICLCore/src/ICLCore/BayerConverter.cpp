@@ -234,9 +234,9 @@ namespace icl {
              t0 = (bayer[0] + bayer[iBayerStep * 2] + 1) >> 1; */
           t0 = (bayer[1] + bayer[iBayerStep * 2 + 1] + 1) >> 1;
           t1 = (bayer[iBayerStep] + bayer[iBayerStep + 2] + 1) >> 1;
-          pucRGBInterImg[-blue] = (icl8u) t0;
+          pucRGBInterImg[-blue] = static_cast<icl8u>(t0);
           pucRGBInterImg[0] = bayer[iBayerStep + 1];
-          pucRGBInterImg[blue] = (icl8u) t1;
+          pucRGBInterImg[blue] = static_cast<icl8u>(t1);
           bayer++;
           pucRGBInterImg += 3;
         }
@@ -248,16 +248,16 @@ namespace icl {
             t1 = (bayer[1] + bayer[iBayerStep] +
                   bayer[iBayerStep + 2] + bayer[iBayerStep * 2 + 1] +
                   2) >> 2;
-            pucRGBInterImg[-1] = (icl8u) t0;
-            pucRGBInterImg[0] = (icl8u) t1;
+            pucRGBInterImg[-1] = static_cast<icl8u>(t0);
+            pucRGBInterImg[0] = static_cast<icl8u>(t1);
             pucRGBInterImg[1] = bayer[iBayerStep + 1];
 
             t0 = (bayer[2] + bayer[iBayerStep * 2 + 2] + 1) >> 1;
             t1 = (bayer[iBayerStep + 1] + bayer[iBayerStep + 3] +
                   1) >> 1;
-            pucRGBInterImg[2] = (icl8u) t0;
+            pucRGBInterImg[2] = static_cast<icl8u>(t0);
             pucRGBInterImg[3] = bayer[iBayerStep + 2];
-            pucRGBInterImg[4] = (icl8u) t1;
+            pucRGBInterImg[4] = static_cast<icl8u>(t1);
           }
         } else {
           for (; bayer <= bayerEnd - 2; bayer += 2, pucRGBInterImg += 6) {
@@ -266,16 +266,16 @@ namespace icl {
             t1 = (bayer[1] + bayer[iBayerStep] +
                   bayer[iBayerStep + 2] + bayer[iBayerStep * 2 + 1] +
                   2) >> 2;
-            pucRGBInterImg[1] = (icl8u) t0;
-            pucRGBInterImg[0] = (icl8u) t1;
+            pucRGBInterImg[1] = static_cast<icl8u>(t0);
+            pucRGBInterImg[0] = static_cast<icl8u>(t1);
             pucRGBInterImg[-1] = bayer[iBayerStep + 1];
 
             t0 = (bayer[2] + bayer[iBayerStep * 2 + 2] + 1) >> 1;
             t1 = (bayer[iBayerStep + 1] + bayer[iBayerStep + 3] +
                   1) >> 1;
-            pucRGBInterImg[4] = (icl8u) t0;
+            pucRGBInterImg[4] = static_cast<icl8u>(t0);
             pucRGBInterImg[3] = bayer[iBayerStep + 2];
-            pucRGBInterImg[2] = (icl8u) t1;
+            pucRGBInterImg[2] = static_cast<icl8u>(t1);
           }
         }
 
@@ -285,8 +285,8 @@ namespace icl {
           t1 = (bayer[1] + bayer[iBayerStep] +
                 bayer[iBayerStep + 2] + bayer[iBayerStep * 2 + 1] +
                 2) >> 2;
-          pucRGBInterImg[-blue] = (icl8u) t0;
-          pucRGBInterImg[0] = (icl8u) t1;
+          pucRGBInterImg[-blue] = static_cast<icl8u>(t0);
+          pucRGBInterImg[0] = static_cast<icl8u>(t1);
           pucRGBInterImg[blue] = bayer[iBayerStep + 1];
           bayer++;
           pucRGBInterImg += 3;

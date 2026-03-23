@@ -216,7 +216,7 @@ namespace icl {
         case 4: return sqr(sqr(x));
         case 5: return sqr(sqr(x))*x;
         default:
-          return ::pow(x,(int)N);
+          return ::pow(x,static_cast<int>(N));
       }
     }
   } // namespace utils

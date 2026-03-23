@@ -414,7 +414,7 @@ namespace icl{
       // cube root by W.Kahan (5bit precision)
       inline icl32f cbrt_kahan(icl32f x)
       {
-	      icl32u* p = (icl32u *) &x;
+	      icl32u* p = reinterpret_cast<icl32u*>(&x);
 	      *p = *p/3 + 709921077;
 	      return x;
       }
@@ -476,7 +476,7 @@ namespace icl{
       icl32f m = l + l - v;
       icl32f sv = (v - m ) / v;
       h *= 6.0;
-      int sextant = (int)h;
+      int sextant = static_cast<int>(h);
       icl32f fract = h - sextant;
       icl32f vsf = v * sv * fract;
       icl32f mid1 = m + vsf;
@@ -514,7 +514,7 @@ namespace icl{
       icl32f m = l + l - v;
       icl32f sv = (v - m ) / v;
       h *= 6.0;
-      int sextant = (int)h;
+      int sextant = static_cast<int>(h);
       icl32f fract = h - sextant;
       icl32f vsf = v * sv * fract;
       icl32f mid1 = m + vsf;
@@ -1574,10 +1574,10 @@ namespace icl{
           icl8u *gr = dst->getData(0);
 
           // convert the channels to vector channels
-          __m128i *cR  = (__m128i*)r;
-          __m128i *cG  = (__m128i*)g;
-          __m128i *cB  = (__m128i*)b;
-          __m128i *cGr = (__m128i*)gr;
+          const __m128i *cR  = reinterpret_cast<const __m128i*>(r);
+          const __m128i *cG  = reinterpret_cast<const __m128i*>(g);
+          const __m128i *cB  = reinterpret_cast<const __m128i*>(b);
+          __m128i *cGr = reinterpret_cast<__m128i*>(gr);
 
           int i = 0;
 
@@ -1616,9 +1616,9 @@ namespace icl{
           icl32f *gr = dst->getData(0);
 
           // convert the channels to  vector channels
-          __m128i *cR = (__m128i*)r;
-          __m128i *cG = (__m128i*)g;
-          __m128i *cB = (__m128i*)b;
+          const __m128i *cR = reinterpret_cast<const __m128i*>(r);
+          const __m128i *cG = reinterpret_cast<const __m128i*>(g);
+          const __m128i *cB = reinterpret_cast<const __m128i*>(b);
 
           int i = 0;
 
@@ -4078,7 +4078,7 @@ namespace icl{
         icl8ux16 v0 = icl8ux16(src0);
         icl8ux16 v1 = icl8ux16(src1);
         icl8ux16 v2 = icl8ux16(src2);
-        icl8ux16 v3 = icl8ux16((icl8s)0);
+        icl8ux16 v3 = icl8ux16(static_cast<icl8s>(0));
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4123,7 +4123,7 @@ namespace icl{
         icl8ux16 v0 = icl8ux16(src0);
         icl8ux16 v1 = icl8ux16(src1);
         icl8ux16 v2 = icl8ux16(src2);
-        icl8ux16 v3 = icl8ux16((icl8s)0);
+        icl8ux16 v3 = icl8ux16(static_cast<icl8s>(0));
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4145,26 +4145,26 @@ namespace icl{
         vt1 = _mm_unpacklo_epi8(v0.v0, vk0);
         vt3 = _mm_unpackhi_epi8(v0.v0, vk0);
 
-        _mm_storeu_si128((__m128i*)dst,      vt1);
-        _mm_storeu_si128((__m128i*)(dst+8),  vt3);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst),      vt1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+8),  vt3);
 
         vt1 = _mm_unpacklo_epi8(v1.v0, vk0);
         vt3 = _mm_unpackhi_epi8(v1.v0, vk0);
 
-        _mm_storeu_si128((__m128i*)(dst+12), vt1);
-        _mm_storeu_si128((__m128i*)(dst+20), vt3);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+12), vt1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+20), vt3);
 
         vt1 = _mm_unpacklo_epi8(v2.v0, vk0);
         vt3 = _mm_unpackhi_epi8(v2.v0, vk0);
 
-        _mm_storeu_si128((__m128i*)(dst+24), vt1);
-        _mm_storeu_si128((__m128i*)(dst+32), vt3);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+24), vt1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+32), vt3);
 
         vt1 = _mm_unpacklo_epi8(v3.v0, vk0);
         vt3 = _mm_unpackhi_epi8(v3.v0, vk0);
 
-        _mm_storeu_si128((__m128i*)(dst+36), vt1);
-        _mm_storeu_si128((__m128i*)(dst+44), vt3);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+36), vt1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(dst+44), vt3);
       }
 
       inline void sse_copy_p3c3(const icl8u *src0, const icl8u *src1, const icl8u *src2, __m128i *dst) {
@@ -4174,7 +4174,7 @@ namespace icl{
         icl8ux16 v0 = icl8ux16(src0);
         icl8ux16 v1 = icl8ux16(src1);
         icl8ux16 v2 = icl8ux16(src2);
-        icl8ux16 v3 = icl8ux16((icl8s)0);
+        icl8ux16 v3 = icl8ux16(static_cast<icl8s>(0));
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4245,7 +4245,7 @@ namespace icl{
         icl8ux16 v0 = icl8ux16(src0);
         icl8ux16 v1 = icl8ux16(src1);
         icl8ux16 v2 = icl8ux16(src2);
-        icl8ux16 v3 = icl8ux16((icl8s)0);
+        icl8ux16 v3 = icl8ux16(static_cast<icl8s>(0));
 
         __m128i vl0 = _mm_unpacklo_epi8(v0.v0, v2.v0);
         __m128i vh0 = _mm_unpackhi_epi8(v0.v0, v2.v0);
@@ -4371,7 +4371,7 @@ namespace icl{
 
       for (; dst<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
-          sse_copy_p3c3(src0, src1, src2, (__m128i*)dst);
+          sse_copy_p3c3(src0, src1, src2, reinterpret_cast<__m128i*>(dst));
 
           // increment pointers to the next values
           src0 += 16;
@@ -4546,7 +4546,7 @@ namespace icl{
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
 
-      if(src->hasFullROI() && ( dstLineStep == -1 || dstLineStep/((int)sizeof(D)) == src->getWidth())){
+      if(src->hasFullROI() && ( dstLineStep == -1 || dstLineStep/(static_cast<int>(sizeof(D))) == src->getWidth())){
         planarToInterleaved_Generic_NO_ROI(src,dst);
       }else{
         planarToInterleaved_Generic_WITH_ROI(src,dst,dstLineStep < 0 ? src->getLineStep()*src->getChannels()*sizeof(D)/sizeof(S) : dstLineStep);
@@ -4954,7 +4954,7 @@ namespace icl{
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
 
-      if(dst->hasFullROI() && ( srcLineStep == -1 || srcLineStep/((int)sizeof(S)) == dst->getWidth())){
+      if(dst->hasFullROI() && ( srcLineStep == -1 || srcLineStep/(static_cast<int>(sizeof(S))) == dst->getWidth())){
         interleavedToPlanar_Generic_NO_ROI(src,dst);
       }else{
         interleavedToPlanar_Generic_WITH_ROI(src,dst,srcLineStep < 0 ? dst->getLineStep()*dst->getChannels() : srcLineStep);
@@ -5323,9 +5323,9 @@ namespace icl{
           fy = fy_lut[y];
           for(int v=0;v<256;v++){
             fv = fv_lut[v];
-            r_lut[y+256*v]= (int)( fy + (1.402 * fv) );
+            r_lut[y+256*v]= static_cast<int>( fy + (1.402 * fv) );
             fu = fu_lut[v];
-            b_lut[y+256*v]= (int)( fy + (1.772 * fu) );
+            b_lut[y+256*v]= static_cast<int>( fy + (1.772 * fu) );
           }
         }
         iInitedFlag = 1;
@@ -5356,7 +5356,7 @@ namespace icl{
           y=*ptY;
 
           r = r_lut[y+256*v];
-          g = (int) ( g_lut1[y+256*u] - g_lut2[v]);
+          g = static_cast<int>( g_lut1[y+256*u] - g_lut2[v]);
           b = b_lut[y+256*u];
 
           *pucR++=clip(r,0,255);

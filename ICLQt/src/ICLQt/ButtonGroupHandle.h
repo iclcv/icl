@@ -83,10 +83,10 @@ namespace icl{
 
       private:
       /// utility function (number of elements)
-      int n() const{ return (int)vec().size(); }
+      int n() const{ return static_cast<int>(vec().size()); }
 
       /// utility function (check indices for being valid)
-      bool valid(int id) const{ return id >= 0 && id < (int)vec().size(); }
+      bool valid(int id) const{ return id >= 0 && id < static_cast<int>(vec().size()); }
 
       /// utitliy function returns the underlying vector
       RadioButtonVec &vec() { return ***this; }

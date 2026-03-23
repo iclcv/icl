@@ -248,7 +248,7 @@ namespace icl{
           Assign(srcTypeName, dstType, get_type_name<SRC>(), get_type_name<DST>()),assign(assign){}
 
           virtual bool operator()(void *src, void *dst){
-            assign( *(const SRC*)src, *(DST*)dst );
+            assign( *static_cast<const SRC*>(src), *static_cast<DST*>(dst) );
             return true;
           }
         };
@@ -266,7 +266,7 @@ namespace icl{
           Assign(srcTypeName, dstTypeName, get_type_name<SRC>(),  get_type_name<DST>()){}
 
           virtual bool operator()(void *src, void *dst){
-            *(DST*)dst = *(const SRC*)src;
+            *static_cast<DST*>(dst) = *static_cast<const SRC*>(src);
             return true;
           }
         };

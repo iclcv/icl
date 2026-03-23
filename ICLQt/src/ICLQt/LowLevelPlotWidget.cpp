@@ -186,14 +186,14 @@ namespace icl{
         std::vector<float> &xbuf = data->xbuf;
         std::vector<float> &ybuf = data->ybuf;
         std::vector<bool> &clipBuf = data->yClipBuf;
-        if((int)xbuf.size() < s.size()) xbuf.resize(s.size());
-        if((int)ybuf.size() < s.size()) ybuf.resize(s.size());
-        if((int)clipBuf.size() < s.size()) clipBuf.resize(s.size());
+        if(static_cast<int>(xbuf.size()) < s.size()) xbuf.resize(s.size());
+        if(static_cast<int>(ybuf.size()) < s.size()) ybuf.resize(s.size());
+        if(static_cast<int>(clipBuf.size()) < s.size()) clipBuf.resize(s.size());
 
         // optimization for points: TODO!!!
         if(state.allowSymbols && style->symbolPen != Qt::NoPen && style->symbol){
           std::vector<QPoint> &qpointBuf = data->qpointBuf;
-          if((int)qpointBuf.size() < s.size()) qpointBuf.resize(s.size());
+          if(static_cast<int>(qpointBuf.size()) < s.size()) qpointBuf.resize(s.size());
           int &numUsedQPoints = data->numUsedQPoints;
           numUsedQPoints = -1;
           for(int j=0;j<s.size();++j){
@@ -224,7 +224,7 @@ namespace icl{
           p.setBrush(style->fillBrush);
 
           std::vector<QPoint> &polygonBuf = data->polygonBuf;
-          if((int)polygonBuf.size() < (int)s.size()){
+          if(static_cast<int>(polygonBuf.size()) < static_cast<int>(s.size())){
             polygonBuf.resize(s.size());
           }
           for(int j=0;j<s.size();++j){
@@ -289,7 +289,7 @@ namespace icl{
             // seems to be fixed now! TODO_LOG("rendering of bar plots leads to missing bars: this must be fixed");
       if(!data->barPlotData.size()) return false;
 
-      const int rows = (int)data->barPlotData.size();
+      const int rows = static_cast<int>(data->barPlotData.size());
 
       const Rect32f &v = state.dynamicViewPort;
       const Range32f xrange(v.x,v.right()), yrange(v.y,v.bottom());
@@ -312,8 +312,8 @@ namespace icl{
         const float *r = sd.data.get();
         const int stride = sd.stride;
 
-        int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
-        int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+2);
+        int firstVisibleX = iclMax(0,static_cast<int>(floor(lFrac*sd.size())));
+        int lastVisibleX = iclMin(static_cast<int>(sd.size()), static_cast<int>(ceil(rFrac*sd.size()))+2);
         firstVisibleX = clip(firstVisibleX,0,sd.size()-1);
         lastVisibleX = clip(lastVisibleX,0,sd.size()-1);
 
@@ -324,9 +324,9 @@ namespace icl{
         std::vector<float> &ybuf = data->ybuf;
         std::vector<float> &xbuf = data->xbuf;
         std::vector<bool> &yClipBuf = data->yClipBuf;
-        if((int)ybuf.size() < sd.size()) ybuf.resize(sd.size());
-        if((int)xbuf.size() < sd.size()) xbuf.resize(sd.size());
-        if(state.zoomed && (int)yClipBuf.size() < sd.size()) yClipBuf.resize(sd.size());
+        if(static_cast<int>(ybuf.size()) < sd.size()) ybuf.resize(sd.size());
+        if(static_cast<int>(xbuf.size()) < sd.size()) xbuf.resize(sd.size());
+        if(state.zoomed && static_cast<int>(yClipBuf.size()) < sd.size()) yClipBuf.resize(sd.size());
 
         for(int x=firstVisibleX;x<=lastVisibleX;++x){
           ybuf[x] = ly(r[stride*x]);
@@ -371,7 +371,7 @@ namespace icl{
     bool LowLevelPlotWidget::drawSeriesData(QPainter &p, const DrawState &state){
       if(!data->seriesData.size()) return false;
 
-      const int rows = (int)data->seriesData.size();
+      const int rows = static_cast<int>(data->seriesData.size());
 
       const Rect32f &v = state.dynamicViewPort;
       const Range32f xrange(v.x,v.right()), yrange(v.y,v.bottom());
@@ -392,17 +392,17 @@ namespace icl{
         const float *r = sd.data.get();
         const int stride = sd.stride;
 
-        int firstVisibleX = iclMax(0,(int)floor(lFrac*sd.size()));
-        int lastVisibleX = iclMin((int)sd.size(), (int)ceil(rFrac*sd.size())+1);
+        int firstVisibleX = iclMax(0,static_cast<int>(floor(lFrac*sd.size())));
+        int lastVisibleX = iclMin(static_cast<int>(sd.size()), static_cast<int>(ceil(rFrac*sd.size()))+1);
         firstVisibleX = clip(firstVisibleX,0,sd.size()-1);
         lastVisibleX = clip(lastVisibleX,0,sd.size()-1);
 
         std::vector<float> &ybuf = data->ybuf;
         std::vector<float> &xbuf = data->xbuf;
         std::vector<bool> &yClipBuf = data->yClipBuf;
-        if((int)ybuf.size() < sd.size()) ybuf.resize(sd.size());
-        if((int)xbuf.size() < sd.size()) xbuf.resize(sd.size());
-        if(state.zoomed && (int)yClipBuf.size() < sd.size()) yClipBuf.resize(sd.size());
+        if(static_cast<int>(ybuf.size()) < sd.size()) ybuf.resize(sd.size());
+        if(static_cast<int>(xbuf.size()) < sd.size()) xbuf.resize(sd.size());
+        if(state.zoomed && static_cast<int>(yClipBuf.size()) < sd.size()) yClipBuf.resize(sd.size());
 
         for(int x=firstVisibleX;x<=lastVisibleX;++x){
           ybuf[x] = ly(r[stride*x]);
@@ -510,7 +510,7 @@ namespace icl{
               PLOT_WIDGET_CASE_XY('d','D');
               case ' ': break;
               default:
-                ERROR_LOG("unabled to draw symbol of unknown type " + str((int) s->symbol));
+                ERROR_LOG("unabled to draw symbol of unknown type " + str(static_cast<int>(s->symbol)));
             }
   #undef PLOT_WIDGET_CASE_XY
   #undef PLOT_WIDGET_CASE_X
@@ -771,7 +771,7 @@ namespace icl{
       if(!dynamic_cast<QApplication*>(QApplication::instance())){
         static const char *args[] = {"app",0};
         static int n = 1;
-        static QApplication __static_app(n,(char**)args);
+        static QApplication __static_app(n,const_cast<char**>(args));
       }
       return new LowLevelPlotWidget;
     }

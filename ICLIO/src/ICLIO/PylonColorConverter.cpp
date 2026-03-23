@@ -245,7 +245,7 @@ void Mono8uToMono8u::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void Mono8uToMono8u::convert(const void *imgBuffer, ConvBuffers* b){
 // no conversion just copy values from buffer to m_Image
-  icl8u* imgBuffer8 = (icl8u*) imgBuffer;
+  const icl8u* imgBuffer8 = static_cast<const icl8u*>(imgBuffer);
   // m_ImageBuff is the channel of m_Image
   core::copy(imgBuffer8, imgBuffer8 + (m_Width*m_Height), b -> m_ImageBuff);
 }
@@ -271,7 +271,7 @@ void Mono16sToMono16s::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void Mono16sToMono16s::convert(const void *imgBuffer, ConvBuffers* b){
   // no conversion just copy values from buffer to m_Image
-  int16_t* imgBuffer16 = (int16_t*) imgBuffer;
+  const int16_t* imgBuffer16 = static_cast<const int16_t*>(imgBuffer);
   // m_ImageBuff16 is the channel of m_Image
   core::copy(imgBuffer16, imgBuffer16 + (m_Width*m_Height), b -> m_ImageBuff16);
 }
@@ -297,7 +297,7 @@ MonoToMono8u::MonoToMono8u(int width, int height, Pylon::PixelType pixel_type,
     // pylon truncate converter for packed images
     m_ColorConverter = new Pylon::CPixelFormatConverterTruncatePacked();
   } else {
-    m_InputFormat -> LinePitch = (int) (m_Width * (m_PixelSize/8.0) + 0.5);
+    m_InputFormat -> LinePitch = static_cast<int>(m_Width * (m_PixelSize/8.0) + 0.5);
     // pylon truncate converter for non packed images
     m_ColorConverter = new Pylon::CPixelFormatConverterTruncate();
   }
@@ -352,7 +352,7 @@ void Rgb8uToRgb8u::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void Rgb8uToRgb8u::convert(const void *imgBuffer, ConvBuffers* b){
     //only need interleaved to planar conversion on original image.
-    icl8u* imgBuffer8 = (icl8u*) imgBuffer;
+    const icl8u* imgBuffer8 = static_cast<const icl8u*>(imgBuffer);
     Img8u* img = dynamic_cast<Img8u*>(b -> m_Image);
     interleavedToPlanar(imgBuffer8, img);
 }
@@ -377,7 +377,7 @@ PylonColorToRgb::PylonColorToRgb(int width, int height,
     // no line pitch for packed images
     m_InputFormat -> LinePitch = 0;
   } else {
-    m_InputFormat -> LinePitch = (int) (m_Width * (m_PixelSize/8.0) + 0.5);
+    m_InputFormat -> LinePitch = static_cast<int>(m_Width * (m_PixelSize/8.0) + 0.5);
   }
   // create/init correct converter
   if (Pylon::IsBayer(m_PixelType)){
@@ -409,9 +409,9 @@ void PylonColorToRgb::initBuffers(ConvBuffers* b){
 
   // collect RGB channels from m_ImageRGBA for the m_Image
   b -> m_Channels = new std::vector<icl8u*>();
-  b -> m_Channels -> push_back((icl8u*) (b -> m_ImageRGBA->getDataPtr(2)));
-  b -> m_Channels -> push_back((icl8u*) (b -> m_ImageRGBA->getDataPtr(1)));
-  b -> m_Channels -> push_back((icl8u*) (b -> m_ImageRGBA->getDataPtr(0)));
+  b -> m_Channels -> push_back(static_cast<icl8u*>(b -> m_ImageRGBA->getDataPtr(2)));
+  b -> m_Channels -> push_back(static_cast<icl8u*>(b -> m_ImageRGBA->getDataPtr(1)));
+  b -> m_Channels -> push_back(static_cast<icl8u*>(b -> m_ImageRGBA->getDataPtr(0)));
 
   // m_Image gets the RGB channels from m_ImageRGBA
   b -> m_Image = new Img8u(Size(m_Width, m_Height), core::formatRGB, *b -> m_Channels);
@@ -457,7 +457,7 @@ void BayerToRgb8Icl::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // set buffer as channels of source image
-  m_Channels[0] = (icl8u*) imgBuffer;
+  m_Channels[0] = static_cast<icl8u*>(const_cast<void*>(imgBuffer));
   Img8u tmp = Img8u(m_Size, core::formatGray, m_Channels);
   m_Conv.apply(&tmp, &(b -> m_Image));
 }
@@ -484,14 +484,14 @@ void Yuv422ToRgb8Icl::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void Yuv422ToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiCbYCr422ToRGB_8u_C2C3R((icl8u*) imgBuffer,
+  ippiCbYCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
                            m_Size.width*2,
                            m_ConvBuffer,
                            m_Size.width*3,
                            m_Size
   );
   // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, (Img8u*) b -> m_Image);
+  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
 }
 
 // Constructor initializes conversion
@@ -515,13 +515,13 @@ void Yuv422YUYVToRgb8Icl::initBuffers(ConvBuffers* b){
 // writes image from imgBuffer to b using appropriate conversion.
 void Yuv422YUYVToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiYCbCr422ToRGB_8u_C2C3R((icl8u*) imgBuffer,
+  ippiYCbCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
                            m_Size.width*2,
                            m_ConvBuffer,
                            m_Size.width*3,
                            m_Size
   );
   // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, (Img8u*) b -> m_Image);
+  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
 }
 #endif

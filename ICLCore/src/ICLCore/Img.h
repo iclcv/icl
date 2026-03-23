@@ -400,7 +400,7 @@ namespace icl {
 
       /// sub-pixel access using nearest neighbor interpolation
       float subPixelNN(float fX, float fY, int iChannel) const {
-        return (*this)((int)fX, (int)fY, iChannel);
+        return (*this)(static_cast<int>(fX), static_cast<int>(fY), iChannel);
       }
 
       /// sub-pixel access using linear interpolation

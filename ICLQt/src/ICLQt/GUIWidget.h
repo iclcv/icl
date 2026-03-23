@@ -94,7 +94,7 @@ namespace icl{
       virtual void processIO(){}
 
       /// this function must be reimplemented for other layouts the hbox, vbox or grid
-      virtual QLayout *getGUIWidgetLayout() { return m_poGridLayout ? (QLayout*)m_poGridLayout : m_poOtherLayout; }
+      virtual QLayout *getGUIWidgetLayout() { return m_poGridLayout ? static_cast<QLayout*>(m_poGridLayout) : m_poOtherLayout; }
 
       /// this shall help to add containes that dont work with layouts (such as tab-widgets)
       virtual ProxyLayout *getProxyLayout() { return 0; }

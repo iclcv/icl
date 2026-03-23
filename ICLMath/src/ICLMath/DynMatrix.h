@@ -177,12 +177,12 @@ namespace icl{
 
       /// resets matrix dimensions
       inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0){
-        if((int)cols == m_cols && (int)rows==m_rows) return;
+        if(static_cast<int>(cols) == m_cols && static_cast<int>(rows)==m_rows) return;
         if(cols*rows == 0) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
         DynMatrix M(cols,rows,initializer);
         if(holdContent){
-          unsigned int min_cols = iclMin(cols,(unsigned int)m_cols);
-          unsigned int min_rows = iclMin(rows,(unsigned int)m_rows);
+          unsigned int min_cols = iclMin(cols,static_cast<unsigned int>(m_cols));
+          unsigned int min_rows = iclMin(rows,static_cast<unsigned int>(m_rows));
           for(unsigned int i=0;i<min_cols;++i){
             for(unsigned int j=0;j<min_rows;++j){
               M(i,j) = (*this)(i,j);
@@ -382,7 +382,7 @@ namespace icl{
       /// element access operator (x,y)-access index begin 0!
       inline T &operator()(unsigned int col,unsigned int row){
   #ifdef DYN_MATRIX_INDEX_CHECK
-        if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+        if(static_cast<int>(col) >= m_cols || static_cast<int>(row) >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
   #endif
         return m_data[col+cols()*row];
       }
@@ -390,7 +390,7 @@ namespace icl{
       /// element access operator (x,y)-access index begin 0! (const)
       inline const T &operator() (unsigned int col,unsigned int row) const{
   #ifdef DYN_MATRIX_INDEX_CHECK
-        if((int)col >= m_cols || (int)row >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+        if(static_cast<int>(col) >= m_cols || static_cast<int>(row) >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
   #endif
         return m_data[col+cols()*row];
       }
@@ -1097,14 +1097,14 @@ namespace icl{
     private:
       inline void row_check(unsigned int row) const{
   #ifdef DYN_MATRIX_INDEX_CHECK
-        if((int)row >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+        if(static_cast<int>(row) >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
   #else
         (void)row;
   #endif
       }
       inline void col_check(unsigned int col) const{
   #ifdef DYN_MATRIX_INDEX_CHECK
-        if((int)col >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
+        if(static_cast<int>(col) >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
   #else
         (void)col;
   #endif

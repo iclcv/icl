@@ -77,7 +77,7 @@ namespace icl{
     void show_vec(const std::vector<int> &v, const std::string &s){
       // {{{ open
 
-  	 printf("%s[%d][ ",s.c_str(),(unsigned int)v.size());
+  	 printf("%s[%d][ ",s.c_str(),static_cast<unsigned int>(v.size()));
       for(unsigned int i=0;i<v.size();i++){
         printf("%d ",v[i]);
       }
@@ -107,14 +107,14 @@ namespace icl{
       // {{{ open
       vector<valueType> newV;//(v.size()-rows.size());
       int r=0,vidx=0;
-      for(; vidx<(int)(v.size()) && r<(int)rows.size() ; vidx++){
+      for(; vidx<static_cast<int>(v.size()) && r<static_cast<int>(rows.size()) ; vidx++){
         if(rows[r]!=vidx){
           newV.push_back(v[vidx]);// [newvidx++] = v[vidx];
         }else{
           r++;
         }
       }
-      for(;vidx<(int)v.size();vidx++){
+      for(;vidx<static_cast<int>(v.size());vidx++){
         newV.push_back(v[vidx]);
       }
       v=newV;
@@ -188,14 +188,14 @@ namespace icl{
 
       ICLASSERT( a[X].size() == b[X].size() );
       // DEBUG if( a[X].size() != b[X].size() ) printf("error: %d != %d \n",a[X].size(),b[X].size());
-      int dim = (int)a[X].size();
+      int dim = static_cast<int>(a[X].size());
       Array2D<valueType> m(dim,dim);
       for(int i=0;i<dim;++i){
         for(int j=0;j<dim;++j){
           double dx = a[X][j] - b[X][i];
           double dy = a[Y][j] - b[Y][i];
           // !! use sqrt of the euclidian distance to stabilize the association procedure (..)
-          m(i,j) = (int)round (sqrt(sqrt( dx*dx + dy*dy )) );
+          m(i,j) = static_cast<int>(round (sqrt(sqrt( dx*dx + dy*dy )) ));
           // m[i][j] = (valueType)sqrt(sqrt (pow((double) (a[X][j] - b[X][i]), 2) +
           // pow((double) (a[Y][j] - b[Y][i]), 2) ));
         }
@@ -302,7 +302,7 @@ namespace icl{
 
     template<class valueType>
     inline valueType distance(valueType x1, valueType y1, valueType x2, valueType y2){
-      return (valueType) sqrt( pow((double)(x1-x2),2) +  pow((double)(y1-y2),2) );
+      return static_cast<valueType>(sqrt( pow(static_cast<double>(x1-x2),2) +  pow(static_cast<double>(y1-y2),2) ));
     }
 
     template<class valueType>
@@ -454,8 +454,8 @@ namespace icl{
           newDataColsValues[Y].push_back(newData[Y][ assignment[x] ]);
         }
       }
-      if((int)newDataColsValues[X].size() != DIFF){
-        printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",(int)newDataColsValues[X].size(),DIFF);
+      if(static_cast<int>(newDataColsValues[X].size()) != DIFF){
+        printf("WARNING: newDataColsValues[X].size()[%d] is != DIFF[%d]",static_cast<int>(newDataColsValues[X].size()),DIFF);
       }
 
       vector<int> newIDS = get_n_new_ids(ids,DIFF,iaMode, lowestUnusedID);
@@ -515,8 +515,8 @@ namespace icl{
         push_data_intern_first_step(m_matData, m_vecIDs, m_vecCurrentAssignment, newData, m_vecGoodDataCount);
         return;
       }
-      const int DATA_MATRIX_HEIGHT = (int)(m_matData[X][0].size());
-      const int NEW_DATA_DIMENSION = (int)(dataXs.size());
+      const int DATA_MATRIX_HEIGHT = static_cast<int>(m_matData[X][0].size());
+      const int NEW_DATA_DIMENSION = static_cast<int>(dataXs.size());
       const int DIFF = DATA_MATRIX_HEIGHT - NEW_DATA_DIMENSION;
 
       if(DIFF <  0){
@@ -571,7 +571,7 @@ namespace icl{
       }
       }
       }
-      const int DATA_AND_MATRIX_DIM = (int)(newData[X].size());
+      const int DATA_AND_MATRIX_DIM = static_cast<int>(newData[X].size());
       Vec vecPrediction[2];
       m_matData[X][0].size(),m_matData[X][1].size(),m_matData[X][2].size(),
       m_matData[Y][0].size(),m_matData[Y][1].size(),m_matData[Y][2].size());
@@ -582,7 +582,7 @@ namespace icl{
       Array2D<valueType> distMat(DATA_AND_MATRIX_DIM,DATA_AND_MATRIX_DIM);
       for(int x=0;x<DATA_AND_MATRIX_DIM;++x){
       for(int y=0;y<DATA_AND_MATRIX_DIM;++y){
-      distMat[x][y] = (valueType)sqrt (pow( vecPrediction[X][y] - newData[X][x], 2) + pow( vecPrediction[Y][y] - newData[Y][x], 2) );
+      distMat[x][y] = static_cast<valueType>(sqrt (pow( vecPrediction[X][y] - newData[X][x], 2) + pow( vecPrediction[Y][y] - newData[Y][x], 2) ));
       }
       }
       m_vecCurrentAssignement = HungarianAlgorithm<valueType>::apply(distMat);
@@ -602,7 +602,7 @@ namespace icl{
       newDataCols.push_back(i); //ERROR not i but assignment[i] !!
       }
       }
-      ICLASSERT( (int)newDataCols.size() == -DIFF );
+      ICLASSERT( static_cast<int>(newDataCols.size()) == -DIFF );
       for(int i=0;i<(-DIFF);i++){
       for(int j=0;j<3;j++){
       m_matData[X][j][DATA_AND_MATRIX_DIM+DIFF-i] = newData[X][newDataCols[i]];
@@ -653,7 +653,7 @@ namespace icl{
     template<class valueType>
     int PositionTracker<valueType>::getID(int index){
       // {{{ open
-      if(index >= 0 && index < (int)m_vecCurrentAssignment.size()){
+      if(index >= 0 && index < static_cast<int>(m_vecCurrentAssignment.size())){
         return m_vecIDs[ m_vecCurrentAssignment[index] ];
       }else{
         return -1;

@@ -148,12 +148,12 @@ namespace icl {
 
       /// scales all parameters of the rect by a double value
       Rect operator*(double d) const {
-        return Rect((int)(d*x),(int)(d*y),(int)(d*width),(int)(d*height));
+        return Rect(static_cast<int>(d*x),static_cast<int>(d*y),static_cast<int>(d*width),static_cast<int>(d*height));
       }
 
       /// scales all parameters of the rect by a double value
       Rect operator/(double d) const {
-        return Rect((int)(x/d),(int)(y/d),(int)(width/d),(int)(height/d));
+        return Rect(static_cast<int>(x/d),static_cast<int>(y/d),static_cast<int>(width/d),static_cast<int>(height/d));
       }
 
 
@@ -199,18 +199,18 @@ namespace icl {
 
       /// scales all rect params inplace
       Rect& operator*=(double d){
-        x=(int)((float)x*d);
-        y=(int)((float)y*d);
-        width=(int)((float)width*d);
-        height=(int)((float)height*d);
+        x=static_cast<int>(static_cast<float>(x)*d);
+        y=static_cast<int>(static_cast<float>(y)*d);
+        width=static_cast<int>(static_cast<float>(width)*d);
+        height=static_cast<int>(static_cast<float>(height)*d);
         return *this;
       }
       /// scales all rect params inplace
       Rect& operator/=(double d){
-        x=(int)((float)x/d);
-        y=(int)((float)y/d);
-        width=(int)((float)width/d);
-        height=(int)((float)height/d);
+        x=static_cast<int>(static_cast<float>(x)/d);
+        y=static_cast<int>(static_cast<float>(y)/d);
+        width=static_cast<int>(static_cast<float>(width)/d);
+        height=static_cast<int>(static_cast<float>(height)/d);
         return *this;
       }
       /// returns width*height
@@ -324,7 +324,7 @@ namespace icl {
       Size getSize() const { return Size(width,height); }
 
       Rect transform(double xfac, double yfac) const {
-        return Rect((int)(xfac*x),(int)(yfac*y),(int)(xfac*width), (int)(yfac*height));
+        return Rect(static_cast<int>(xfac*x),static_cast<int>(yfac*y),static_cast<int>(xfac*width), static_cast<int>(yfac*height));
       }
     };
 

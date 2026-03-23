@@ -254,7 +254,7 @@ namespace icl{
         sv = (v - m ) / v;
         h *= 6.0;
 
-        int sextant = (int)h;
+        int sextant = static_cast<int>(h);
 
         fract = h - sextant;
         vsf = v * sv * fract;

@@ -73,14 +73,14 @@ namespace icl{
 
       float intensity_func(icl16s a, icl16s b){
         // {{{ open
-        return sqrt((float)(a*a+b*b));
+        return sqrt(static_cast<float>(a*a+b*b));
       }
 
       // }}}
 
       float angle_func(icl16s a, icl16s b){
         // {{{ open
-        return atan2((float)b,(float)a);
+        return atan2(static_cast<float>(b),static_cast<float>(a));
       }
       // }}}
 

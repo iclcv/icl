@@ -135,7 +135,7 @@ namespace icl {
         for (unsigned i = 0; i < points.size(); i++) {
           clockSort.center += points[i];
         }
-        clockSort.center = clockSort.center * (1. / (float) points.size());
+        clockSort.center = clockSort.center * (1. / static_cast<float>(points.size()));
         std::sort(points.begin(), points.end(), clockSort);
       }
 
@@ -261,7 +261,7 @@ namespace icl {
 
       std::vector<Point32f> getQCornersByNearestPerpCorners(Point32f srcVecStart, Point32f srcVecEnd, std::vector<Point32f> &allCorners) {
         std::vector<Point32f> qCorners;
-        FixedMatrix<float, 2, 2> rotMat = create_rot_2D(M_PI / (float) 2);
+        FixedMatrix<float, 2, 2> rotMat = create_rot_2D(M_PI / static_cast<float>(2));
         Vec2 srcVec = getVector(srcVecStart, srcVecEnd);
         float refLength = srcVec.length();
         Vec2 orthVec = rotMat * srcVec;
@@ -378,7 +378,7 @@ namespace icl {
           Point32f longestVecStart = corners[longestVecStartIdx];
 
           //unsigned longestVecEndIdx = (longestVecStartIdx + 1 + corners.size()) % corners.size();
-          unsigned longestVecEndIdx = longestVecStartIdx == ((int)corners.size())-1 ? 0 : longestVecStartIdx+1;
+          unsigned longestVecEndIdx = longestVecStartIdx == (static_cast<int>(corners.size()))-1 ? 0 : longestVecStartIdx+1;
           Point32f longestVecEnd = corners[longestVecEndIdx];
 
           longest.push_back(longestVecStart);
@@ -433,10 +433,10 @@ namespace icl {
           float rs[] = {perpRating, interRating, mirrorRating};
           std::vector<Point32f> *cs[] = {&cornersPerp, &cornersInter, &cornersMirror};
 #ifdef USE_HOMOGRAPHY_BASED_ERROR
-          int idx = (int)(std::min_element(rs,rs+3)-rs);
+          int idx = static_cast<int>(std::min_element(rs,rs+3)-rs);
           quadCorners = *cs[idx];
 #else
-          int idx = (int)(std::max_element(rs,rs+3)-rs);
+          int idx = static_cast<int>(std::max_element(rs,rs+3)-rs);
           if(rs[idx] < minRating){
             quadCorners = *cs[idx];
           }
@@ -519,8 +519,8 @@ namespace icl {
       addProperty("mirror heuristic", "flag", "", "true", 0,
                   "Flag for reconstruct distorted quads by the perpendicular heuristic");
 
-      data->rd = new RegionDetector(40, 2 << 20, RD_VALS[(int) c],
-                                    RD_VALS[(int) c + 3]);
+      data->rd = new RegionDetector(40, 2 << 20, RD_VALS[static_cast<int>(c)],
+                                    RD_VALS[static_cast<int>(c) + 3]);
       data->rd->deactivateProperty("minimum value");
       data->rd->deactivateProperty("maximum value");
       data->rd->deactivateProperty("^CSS*");
@@ -566,7 +566,7 @@ namespace icl {
           data->rd->setConstraints(
                                    getPropertyValue("region detector.minimum size"),
                                    getPropertyValue("region detector.maximum size"),
-                                   RD_VALS[(int) c], RD_VALS[(int) c + 3]);
+                                   RD_VALS[static_cast<int>(c)], RD_VALS[static_cast<int>(c) + 3]);
         } else {
           ERROR_LOG(
                     "unable to adapt the region detectors min. and max. value property "
@@ -838,7 +838,7 @@ namespace icl {
     void optimize_edges(std::vector<Point32f> &e4,
                         const std::vector<Point> &boundary) {
       int num = boundary.size();
-      int i0 = (int) (std::find(boundary.begin(), boundary.end(), Point(e4[0]))
+      int i0 = static_cast<int>(std::find(boundary.begin(), boundary.end(), Point(e4[0]))
                       - boundary.begin());
       ICLASSERT_THROW(i0 < num,
                       ICLException("edge point was not found in the boundary"));

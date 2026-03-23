@@ -47,7 +47,7 @@ namespace icl{
       pca.c[0] = pca.c[1] = 0;
       pca.isNull = true;
 
-      int n = (int)ps.size();
+      int n = static_cast<int>(ps.size());
       if(ps.size() <= 2){
         return pca;
       }

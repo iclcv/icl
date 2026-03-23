@@ -174,7 +174,7 @@ namespace icl{
 
       data->iis.input = const_cast<ImgBase*>(image);
       const Img8u &ppImage = data->pp->pp(image);
-      data->iis.pp = (ImgBase*)(&ppImage);
+      data->iis.pp = const_cast<ImgBase*>(static_cast<const ImgBase*>(&ppImage));
       data->fidImpls.clear();
 
       data->plugin->detect(data->fidImpls,ppImage);

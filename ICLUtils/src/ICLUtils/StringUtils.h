@@ -63,24 +63,24 @@ namespace icl{
 
     /** \cond */
     template<> inline std::ostream &icl_to_stream(std::ostream &s, icl8u t){
-      return s << (int)t;
+      return s << static_cast<int>(t);
     }
 
     template<> inline std::istream &icl_from_stream(std::istream &s, icl8u &t){
       int tmp;
       s >> tmp;
-      t = (icl8u)tmp;
+      t = static_cast<icl8u>(tmp);
       return s;
     }
 
     template<> inline std::ostream &icl_to_stream(std::ostream &s, bool b){
-      return s << (int)b;
+      return s << static_cast<int>(b);
     }
 
     template<> inline std::istream &icl_from_stream(std::istream &s, bool &b){
       int tmp;
       s >> tmp;
-      b = (bool)tmp;
+      b = static_cast<bool>(tmp);
       return s;
     }
     /** \endcond */
@@ -144,7 +144,7 @@ namespace icl{
     template<>
     inline std::string str(const icl8u &t){
       std::ostringstream s;
-      s << (int)t;
+      s << static_cast<int>(t);
       return s.str();
     }
 

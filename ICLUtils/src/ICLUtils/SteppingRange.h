@@ -66,8 +66,8 @@ namespace icl{
       virtual bool contains(Type value) const {
         if(stepping == 0) return Range<Type>(Range<Type>::minVal,Range<Type>::maxVal).contains(value);
         Type offs = value - Range<Type>::minVal;
-        int n = (int)(offs/stepping);
-        double n2 = (double)offs/stepping;
+        int n = static_cast<int>(offs/stepping);
+        double n2 = static_cast<double>(offs)/stepping;
         return Range<Type>::contains(value) && double(n) == n2;
       }
 
@@ -81,9 +81,9 @@ namespace icl{
         if(value > Range<Type>::maxVal) return Range<Type>::maxVal;
         if(stepping == 0) return value;
         Type offs = value - Range<Type>::minVal;
-        int n = (int)(offs/stepping);
+        int n = static_cast<int>(offs/stepping);
         Type k = n*stepping;
-        if(value-k >= (double)(stepping)/2){
+        if(value-k >= static_cast<double>(stepping)/2){
           return k+stepping;
         }else{
           return k;

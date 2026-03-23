@@ -103,7 +103,7 @@ namespace icl{
                  events == "move" ? CB::move :
                  events == "press" ? CB::press :
                  events == "release" ? CB::release :
-                 events == "value" ? CB::value : (CB::Event)-1,
+                 events == "value" ? CB::value : static_cast<CB::Event>(-1),
                  cb };
         if(c.event < 0) throw ICLException("ThreadedUpdatableSlider::registerCallback: invalid event type " + events);
         callbacks.push_back(c);

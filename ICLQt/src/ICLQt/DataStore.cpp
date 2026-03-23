@@ -262,11 +262,11 @@ INST_OTHER_TYPES
       //template struct AssignSpecial<S,D>; // TODO: maybe we need this one in Unix
 
     // ComboHandle
-    FROM_TO_NUM(ComboHandle,dst.setSelectedIndex((int)src),dst=src.getSelectedIndex());
+    FROM_TO_NUM(ComboHandle,dst.setSelectedIndex(static_cast<int>(src)),dst=src.getSelectedIndex());
     FROM_TO_STR(ComboHandle,dst=src.getSelectedItem(),dst.setSelectedItem(src));
 
     // FloatHandle
-    FROM_TO_NUM(FloatHandle,dst=(float)src,dst=src.getValue());
+    FROM_TO_NUM(FloatHandle,dst=static_cast<float>(src),dst=src.getValue());
     FROM_TO_STR(FloatHandle,dst=str(src.getValue()),dst=parse<float>(src));
 
     // ImageHandle
@@ -293,7 +293,7 @@ INST_OTHER_TYPES
           dst.update();
         }
         else if(src.message=="install"){
-          (*dst)->install((MouseHandler*)src.data);
+          (*dst)->install(static_cast<MouseHandler*>(src.data));
         }
         return true;
       }
@@ -356,7 +356,7 @@ INST_OTHER_TYPES
               dst.render();
             }
             else if(src.message=="install"){
-              (*dst)->install((MouseHandler*)src.data);
+              (*dst)->install(static_cast<MouseHandler*>(src.data));
             });
     FROM_TO(ImageHandle,ICLWidget*,dst = *src);
 
@@ -365,7 +365,7 @@ INST_OTHER_TYPES
             if(src.message=="render"){
               dst.render();
             }else if(src.message=="install"){
-              (*dst)->install((MouseHandler*)src.data);
+              (*dst)->install(static_cast<MouseHandler*>(src.data));
             });
     FROM_TO(PlotHandle,PlotWidget*,dst = *src);
 
@@ -378,7 +378,7 @@ INST_OTHER_TYPES
               dst.render();
             }
             else if(src.message=="install"){
-              (*dst)->install((MouseHandler*)src.data);
+              (*dst)->install(static_cast<MouseHandler*>(src.data));
             });
     FROM_TO(DrawHandle,ICLDrawWidget*,dst = *src);
     FROM_TO(DrawHandle,ICLWidget*,dst = *src);
@@ -394,9 +394,9 @@ INST_OTHER_TYPES
               dst.render();
             }
             else if(src.message=="install"){
-              (*dst)->install((MouseHandler*)src.data);
+              (*dst)->install(static_cast<MouseHandler*>(src.data));
             }else if(src.message=="link"){
-              (*dst)->link((ICLDrawWidget3D::GLCallback*)src.data);
+              (*dst)->link(static_cast<ICLDrawWidget3D::GLCallback*>(src.data));
             });
 
     FROM_TO(DrawHandle3D,ICLDrawWidget3D*,dst = *src);
@@ -408,36 +408,36 @@ INST_OTHER_TYPES
     FROM_TO(DataStore::Data::Event,FPSHandle,if(src.message=="render")dst.render());
 
     // SliderHandle
-    FROM_TO_NUM(SliderHandle,dst.setValue((int)src),dst=src.getValue());
+    FROM_TO_NUM(SliderHandle,dst.setValue(static_cast<int>(src)),dst=src.getValue());
     FROM_TO_STR(SliderHandle,dst=str(src.getValue()),dst.setValue(parse<int>(src)));
     FROM_TO(Range8u,SliderHandle,dst.setRange(src.minVal,src.maxVal));
     FROM_TO(Range32s,SliderHandle,dst.setRange(src.minVal,src.maxVal));
-    FROM_TO(Range32f,SliderHandle,dst.setRange((int)src.minVal,(int)src.maxVal));
+    FROM_TO(Range32f,SliderHandle,dst.setRange(static_cast<int>(src.minVal),static_cast<int>(src.maxVal)));
 
     // IntHandle
-    FROM_TO_NUM(IntHandle,dst=(int)src,dst=src.getValue());
+    FROM_TO_NUM(IntHandle,dst=static_cast<int>(src),dst=src.getValue());
     FROM_TO_STR(IntHandle,dst=str(src.getValue()),dst=parse<int>(src));
 
     // SpinnerHandle
-    FROM_TO_NUM(SpinnerHandle,dst.setValue((int)src),dst=src.getValue());
+    FROM_TO_NUM(SpinnerHandle,dst.setValue(static_cast<int>(src)),dst=src.getValue());
     FROM_TO_STR(SpinnerHandle,dst=str(src.getValue()),dst.setValue(parse<int>(src)));
     FROM_TO(Range8u,SpinnerHandle,dst.setRange(src.minVal,src.maxVal));
     FROM_TO(Range32s,SpinnerHandle,dst.setRange(src.minVal,src.maxVal));
-    FROM_TO(Range32f,SpinnerHandle,dst.setRange((int)src.minVal,(int)src.maxVal));
+    FROM_TO(Range32f,SpinnerHandle,dst.setRange(static_cast<int>(src.minVal),static_cast<int>(src.maxVal)));
 
     // ButtonGroup
     TO_NUM(ButtonGroupHandle,dst=src.getSelected());
     FROM_TO(ButtonGroupHandle,std::string,dst=src.getSelectedText());
 
     // FSliderHandle
-    FROM_TO_NUM(FSliderHandle,dst.setValue((float)src),dst=src.getValue());
+    FROM_TO_NUM(FSliderHandle,dst.setValue(static_cast<float>(src)),dst=src.getValue());
     FROM_TO_STR(FSliderHandle,dst=str(src.getValue()),dst.setValue(parse<float>(src)));
     FROM_TO(Range8u,FSliderHandle,dst.setRange(src.minVal,src.maxVal));
     FROM_TO(Range32s,FSliderHandle,dst.setRange(src.minVal,src.maxVal));
     FROM_TO(Range32f,FSliderHandle,dst.setRange(src.minVal,src.maxVal));
 
     // LabelHandle
-    FROM_NUM(LabelHandle,dst=(double)src);
+    FROM_NUM(LabelHandle,dst=static_cast<double>(src));
     // FROM_TO(std::string,LabelHandle,dst=src);
     FROM_TO_STR(LabelHandle,dst=src->text().toLatin1().data(),dst = src);
     FROM_IMG(LabelHandle,dst=str(src));

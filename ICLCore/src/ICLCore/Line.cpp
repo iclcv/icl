@@ -42,12 +42,12 @@ namespace icl{
 
     Line::Line(Point start, float arc, float length):
       start(start){
-      end.x = start.x + (int)(cos(arc)*length);
-      end.y = start.y + (int)(sin(arc)*length);
+      end.x = start.x + static_cast<int>(cos(arc)*length);
+      end.y = start.y + static_cast<int>(sin(arc)*length);
     }
 
     float Line::length() const{
-      return ::sqrt (pow((float) (start.x-end.x),2 ) +  pow((float) (start.y -end.y) ,2) );
+      return ::sqrt (pow(static_cast<float>(start.x-end.x),2 ) +  pow(static_cast<float>(start.y -end.y) ,2) );
     }
 
     std::vector<Point> Line::sample( const Rect &limits) const{

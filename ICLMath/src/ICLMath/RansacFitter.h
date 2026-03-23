@@ -126,7 +126,7 @@ namespace icl{
       void find_random_consensus_set(DataSet &currConsensusSet,
                                      const DataSet &allPoints,
                                      std::vector<int> &usedIndices){
-        utils::get_random_subset(allPoints, (int) currConsensusSet.size(),
+        utils::get_random_subset(allPoints, static_cast<int>(currConsensusSet.size()),
                                  currConsensusSet, usedIndices);
         /*const std::vector<T> &s, int subsetSize,
                           std::vector<T> &subset, std::vector<int> &indices)
@@ -183,7 +183,7 @@ namespace icl{
                     << usedIndices[3] << "]" << std::endl;
               */
           Model model = m_fitting(consensusSet);
-          for(int j=0;j<(int)allPoints.size();++j){
+          for(int j=0;j<static_cast<int>(allPoints.size());++j){
             if(find_in(usedIndices, j, usedIndices.size())) continue;
             if(m_err(model, allPoints[j]) < m_maxModelDistance){
               consensusSet.push_back(allPoints[j]);
@@ -191,7 +191,7 @@ namespace icl{
           }
 
 
-          if((int)consensusSet.size() >= m_minClosePointsForGoodModel){
+          if(static_cast<int>(consensusSet.size()) >= m_minClosePointsForGoodModel){
             model = m_fitting(consensusSet);
             double error = 0;
             for(unsigned int j=0;j<consensusSet.size();++j){

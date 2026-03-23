@@ -62,7 +62,7 @@ namespace icl{
           p.setPen(QColor(255,255,255));
         }
 
-        p.drawText(QRect(2,2,width()-4,height()-4),Qt::AlignCenter|Qt::Horizontal,QString::number((int)(a*100./256.)) + "%");;
+        p.drawText(QRect(2,2,width()-4,height()-4),Qt::AlignCenter|Qt::Horizontal,QString::number(static_cast<int>(a*100./256.)) + "%");;
       }
     }
 

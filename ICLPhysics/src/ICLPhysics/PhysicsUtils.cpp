@@ -71,9 +71,9 @@ namespace icl{
         static utils::URand rand4(0,255);
         static utils::URand rand5(1,8);
 
-        RigidObject *cube = ((float)rand0) < 0.5 ?
-        (RigidObject *) new RigidBoxObject(rand1,rand1,rand2, rand3,rand3,rand3,10):
-        (RigidObject *) new RigidSphereObject(rand1,rand1,rand2, rand5,10);
+        RigidObject *cube = static_cast<float>(rand0) < 0.5 ?
+        static_cast<RigidObject *>(new RigidBoxObject(rand1,rand1,rand2, rand3,rand3,rand3,10)):
+        static_cast<RigidObject *>(new RigidSphereObject(rand1,rand1,rand2, rand5,10));
         cube->setVisible(geom::Primitive::vertex,false);
         cube->setVisible(geom::Primitive::line,false);
         cube->setColor(geom::Primitive::quad,geom::GeomColor(rand4,rand4,rand4,255));

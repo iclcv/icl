@@ -174,7 +174,7 @@ namespace icl{
 
       void fillBackGround(QPainter &p, AbstractPlotWidget::bgFunction f, Rect32f win, const Rect32f &data,
                           bool usePC, bool useOpenMP){
-        while(((int)win.width)%4) win.width+=1;
+        while((static_cast<int>(win.width))%4) win.width+=1;
         if(bgFuncUpdateRequested || bgData.win != win || bgData.data != data || bgData.usePC != usePC){
           bgData.f = f;
           bgData.win = win;
@@ -186,7 +186,7 @@ namespace icl{
           LinearTransform1D ty(Range32f(win.y, win.bottom()),Range32f(data.bottom(),data.y));// why is this inversed?
 
           bgData.buffer.setChannels(1);
-          int w = (int)win.width, h = (int)win.height;
+          int w = static_cast<int>(win.width), h = static_cast<int>(win.height);
           const int dx = win.x, dy = win.y;
           bgData.buffer.setSize(Size(w,h));
 
@@ -312,7 +312,7 @@ namespace icl{
             data->parentBeforeFullScreen->layout()->addWidget(this);
           }
         }else{
-          data->parentBeforeFullScreen = (QWidget*)parent();
+          data->parentBeforeFullScreen = static_cast<QWidget*>(parent());
           setParent(0);
           setWindowState(windowState() ^ Qt::WindowFullScreen);
         }
@@ -790,8 +790,8 @@ namespace icl{
       if(data->track_mouse && (data->mousePos.x() > 0)){
         p.setPen(QColor(0,100,255));
         p.setBrush(QColor(0,100,255,50));
-        const int x = clip(data->mousePos.x(),(int)b_left,(int)(w-b_right));
-        const int y = clip(data->mousePos.y(),(int)b_top,(int)(h-b_bottom));
+        const int x = clip(data->mousePos.x(),static_cast<int>(b_left),static_cast<int>(w-b_right));
+        const int y = clip(data->mousePos.y(),static_cast<int>(b_top),static_cast<int>(h-b_bottom));
         const int hb = h-b_bottom;
 
         const QPoint p1[3] = { QPoint(b_left,y), QPoint(b_left-5, y-5), QPoint(b_left-5, y+5)};
@@ -1180,7 +1180,7 @@ namespace icl{
 
     void AbstractPlotWidget::uninstall(MouseHandler *h){
       WARNING_LOG("removing mouse handlers is not supported yet");
-      (void)h;
+      static_cast<void>(h);
     }
 
 
@@ -1195,7 +1195,7 @@ namespace icl{
       if(!dynamic_cast<QApplication*>(QApplication::instance())){
         static const char *args[] = {"app",0};
         static int n = 1;
-        static QApplication __static_app(n,(char**)args);
+        static QApplication __static_app(n,const_cast<char**>(args));
       }
       return new AbstractPlotWidget_VIRTUAL;
     }

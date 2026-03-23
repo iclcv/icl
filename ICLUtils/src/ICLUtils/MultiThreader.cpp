@@ -151,7 +151,7 @@ namespace icl{
       inline void apply(MultiThreader::WorkSet &ws){
         // {{{ open
 
-        ICLASSERT_RETURN((int)ws.size() == m_iNThreads);
+        ICLASSERT_RETURN(static_cast<int>(ws.size()) == m_iNThreads);
 
         /// arm the threads
         for(unsigned int i=0;i<ws.size();i++){

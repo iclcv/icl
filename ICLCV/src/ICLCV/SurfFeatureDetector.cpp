@@ -250,7 +250,7 @@ namespace icl{
           m_data->distsKernel = m_data->matchProgram.createKernel("dists");
           m_data->matchKernel = m_data->matchProgram.createKernel("match");
         }catch(ICLException &e){
-          (void)e;
+          static_cast<void>(e);
           if(plugin == "best"){
 #ifdef ICL_HAVE_OPENSURF
             DEBUG_LOG("detected an error while initializing OpenCL backend [" + str(e.what()) + "]: using CPU-fallback");
@@ -417,15 +417,15 @@ namespace icl{
         // writing as one buffer is orders faster!
         m_data->matchBufferCur.write(curVec.data(),64*sizeof(float)*cur.size());
         m_data->distsKernel.setArgs(m_data->matchBufferRef,
-                                    (int)ref.size(),
+                                    static_cast<int>(ref.size()),
                                     m_data->matchBufferCur,
-                                    (int)cur.size(),
+                                    static_cast<int>(cur.size()),
                                     m_data->matchBufferDists);
 
         m_data->distsKernel.apply(ref.size(),cur.size());
 
         m_data->matchKernel.setArgs(m_data->matchBufferDists,
-                                    (int)ref.size(), (int)cur.size(),
+                                    static_cast<int>(ref.size()), static_cast<int>(cur.size()),
                                     significance,
                                     m_data->matchBufferMatches);
         m_data->matchKernel.apply(cur.size());

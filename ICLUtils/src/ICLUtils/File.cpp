@@ -201,13 +201,13 @@ namespace icl{
 
   #ifdef ICL_HAVE_LIBZ
         if(gzipped){
-          gzclose((gzFile)handle);
+          gzclose(static_cast<gzFile>(handle));
           handle = gzopen(name.c_str(),pcOpenMode);
         }else{
-          handle = freopen(name.c_str(),pcOpenMode,(FILE*)handle);
+          handle = freopen(name.c_str(),pcOpenMode,static_cast<FILE*>(handle));
         }
   #else
-        handle = freopen(name.c_str(),pcOpenMode,(FILE*)handle);
+        handle = freopen(name.c_str(),pcOpenMode,static_cast<FILE*>(handle));
   #endif
         binary = openmode == File::readBinary || openmode == File::writeBinary;
 
@@ -222,12 +222,12 @@ namespace icl{
         ICLASSERT_RETURN(handle);
   #ifdef ICL_HAVE_LIBZ
         if(gzipped){
-          gzclose((gzFile)handle);
+          gzclose(static_cast<gzFile>(handle));
         }else{
-          fclose((FILE*)handle);
+          fclose(static_cast<FILE*>(handle));
         }
   #else
-        fclose((FILE*)handle);
+        fclose(static_cast<FILE*>(handle));
   #endif
         handle = 0;
       }
@@ -240,12 +240,12 @@ namespace icl{
         if(buffer.size()) return;
   #ifdef ICL_HAVE_LIBZ
         if(gzipped){
-          buffer_file_gz((gzFile)handle,buffer);
+          buffer_file_gz(static_cast<gzFile>(handle),buffer);
         }else{
-          buffer_file((FILE*)handle,buffer);
+          buffer_file(static_cast<FILE*>(handle),buffer);
         }
   #else
-        buffer_file((FILE*)handle,buffer);
+        buffer_file(static_cast<FILE*>(handle),buffer);
   #endif
         bufferoffset = 0;
       }
@@ -384,16 +384,16 @@ namespace icl{
   #ifdef ICL_HAVE_LIBZ
       if(impl->gzipped){
         while(bytesWritten < len){
-          bytesWritten += gzwrite((gzFile)(impl->handle),data,len);
+          bytesWritten += gzwrite(static_cast<gzFile>(impl->handle),data,len);
         }
       }else{
         while(bytesWritten < len){
-          bytesWritten += fwrite(data,1,len,(FILE*)(impl->handle));
+          bytesWritten += fwrite(data,1,len,static_cast<FILE*>(impl->handle));
         }
       }
   #else
       while(bytesWritten < len){
-        bytesWritten += fwrite(data,1,len,(FILE*)(impl->handle));
+        bytesWritten += fwrite(data,1,len,static_cast<FILE*>(impl->handle));
       }
   #endif
     }
@@ -642,7 +642,7 @@ namespace icl{
       len = iclMin(len,bytesAvailable());
 
       const std::vector<icl8u> &data = readAll();
-      std::copy(&data[0]+impl->bufferoffset,&data[0]+impl->bufferoffset+len,(icl8u*)dst);
+      std::copy(&data[0]+impl->bufferoffset,&data[0]+impl->bufferoffset+len,static_cast<icl8u*>(dst));
       impl->bufferoffset+=len;
 
       return len;

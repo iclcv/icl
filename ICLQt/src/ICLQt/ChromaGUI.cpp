@@ -184,8 +184,8 @@ namespace icl{
         static std::string x[6] = {"xpos","ypos","dim","red","green","blue"};
         for(int i=0;i<6;i++){
           const Dragger &d = D[i];
-          float fs[6] = { (float)d.pos().x, (float)d.pos().y,(float)d.dim(),
-                          (float)d.col().r, (float)d.col().g, (float)d.col().b };
+          float fs[6] = { static_cast<float>(d.pos().x), static_cast<float>(d.pos().y),static_cast<float>(d.dim()),
+                          static_cast<float>(d.col().r), static_cast<float>(d.col().g), static_cast<float>(d.col().b) };
           for(int j=0;j<6;++j){
             f.set(std::string("config.gui-info.dragger-")+str(i)+"."+x[j],fs[j]);
           }
@@ -336,18 +336,18 @@ namespace icl{
       m_aoSliderHandles[1][2] = get<SliderHandle>("blue-thresh");
 
 
-      QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
-                       (QObject*)this,SLOT(blueSliderChanged(int)));
+      QObject::connect(static_cast<QObject*>(*(get<SliderHandle>("bluedisphandle"))),SIGNAL(valueChanged(int)),
+                       static_cast<QObject*>(this),SLOT(blueSliderChanged(int)));
 
-      QObject::connect((QObject*)*(get<SliderHandle>("bluedisphandle")),SIGNAL(valueChanged(int)),
-                       (QObject*)this,SLOT(blueSliderChanged(int)));
+      QObject::connect(static_cast<QObject*>(*(get<SliderHandle>("bluedisphandle"))),SIGNAL(valueChanged(int)),
+                       static_cast<QObject*>(this),SLOT(blueSliderChanged(int)));
 
-      QObject::connect((QObject*)*get<ButtonHandle>("load"),SIGNAL(clicked(bool)),
-                       (QObject*)this,SLOT(load()));
+      QObject::connect(static_cast<QObject*>(*get<ButtonHandle>("load")),SIGNAL(clicked(bool)),
+                       static_cast<QObject*>(this),SLOT(load()));
 
 
-      QObject::connect((QObject*)*(get<ButtonHandle>("save")),SIGNAL(clicked(bool)),
-                       (QObject*)this,SLOT(save()));
+      QObject::connect(static_cast<QObject*>(*(get<ButtonHandle>("save"))),SIGNAL(clicked(bool)),
+                       static_cast<QObject*>(this),SLOT(save()));
     }
 
     // }}}

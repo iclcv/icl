@@ -143,7 +143,7 @@ namespace icl{
       M(0,2) = M(2,0);
       M(1,2) = M(2,1);
 
-      M /= (float)cols;
+      M /= static_cast<float>(cols);
 
 
       // eigen vectors + eigen values

@@ -61,7 +61,7 @@ namespace icl{
         s += collect(*it,s,ird);
       }
 
-      return (unsigned int)(s - sSave);
+      return static_cast<unsigned int>(s - sSave);
     }
 
 

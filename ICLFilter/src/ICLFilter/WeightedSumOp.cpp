@@ -68,7 +68,7 @@ namespace icl {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN( *ppoDst != poSrc );
-      ICLASSERT_RETURN( (int)m_vecWeights.size() == poSrc->getChannels() );
+      ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == poSrc->getChannels() );
 
 
       if(!prepare(ppoDst,
@@ -86,7 +86,7 @@ namespace icl {
       }else{
         vector<icl32f> v(m_vecWeights.size());
         for(unsigned int i=0;i<m_vecWeights.size();++i){
-          v[i] = (float)m_vecWeights[i];
+          v[i] = static_cast<float>(m_vecWeights[i]);
         }
         switch (poSrc->getDepth()) {
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_ws(poSrc->asImg<icl##D>(),(*ppoDst)->asImg<icl32f>(),v); break;

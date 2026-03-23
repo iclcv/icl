@@ -41,9 +41,9 @@ namespace icl{
         float w;
       };
 
-      const Vec4* pa = (const Vec4*)a;
-      const Vec4* pb = (const Vec4*)b;
-      Vec4* pc = (Vec4*)c;
+      const Vec4* pa = reinterpret_cast<const Vec4*>(a);
+      const Vec4* pb = reinterpret_cast<const Vec4*>(b);
+      Vec4* pc = reinterpret_cast<Vec4*>(c);
       pc->x = pa->x-pb->x;
       pc->y = pa->y-pb->y;
       pc->z = pa->z-pb->z;
@@ -51,11 +51,11 @@ namespace icl{
     }
 
     Vec4 toVectorVec4(const char* point) {
-      return *(const Vec4*)point;
+      return *reinterpret_cast<const Vec4*>(point);
     }
 
     Vec4 toVectorVec8(const char* point) {
-      return *(const Vec4*)point;
+      return *reinterpret_cast<const Vec4*>(point);
     }
 
     void subVec8(const char * a, const char *b, char *c) {
@@ -69,9 +69,9 @@ namespace icl{
         Vec4 pos;
         Vec4 col;
       };
-      const Vec8* pa = (const Vec8*)a;
-      const Vec8* pb = (const Vec8*)b;
-      Vec8* pc = (Vec8*)c;
+      const Vec8* pa = reinterpret_cast<const Vec8*>(a);
+      const Vec8* pb = reinterpret_cast<const Vec8*>(b);
+      Vec8* pc = reinterpret_cast<Vec8*>(c);
       pc->pos.x = pa->pos.x-pb->pos.x;
       pc->pos.y = pa->pos.y-pb->pos.y;
       pc->pos.z = pa->pos.z-pb->pos.z;

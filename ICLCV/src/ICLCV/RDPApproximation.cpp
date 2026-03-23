@@ -270,7 +270,7 @@ namespace icl{
       T *d = img.getData(0);
       int lineStep = img.getLineStep();
       for(std::vector<Point32f>::iterator it = approx.begin(); it != approx.end(); ++it){
-        *(d + (int)(it->y) * lineStep + (int)(it->x)) = value;
+        *(d + static_cast<int>(it->y) * lineStep + static_cast<int>(it->x)) = value;
       }
     }
 

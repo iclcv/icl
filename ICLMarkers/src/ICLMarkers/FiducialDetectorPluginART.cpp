@@ -138,14 +138,14 @@ namespace icl{
               get_error(data,is[i][2].begin(0),dim),
               get_error(data,is[i][3].begin(0),dim)
             };
-            int m = (int)(std::min_element(es,es+4)-es);
+            int m = static_cast<int>(std::min_element(es,es+4)-es);
             if(es[m] < minErr){
               minIdx = i;
               minErr = es[m];
               minRot = m;
             }
           }
-          *err = float(minErr)/dim;
+          *err = static_cast<float>(minErr)/dim;
           *rot = minRot;
           return is[minIdx].ni;
         }
@@ -236,7 +236,7 @@ namespace icl{
               get_error(in,is[i][2][0]),
               get_error(in,is[i][3][0])
             };
-            int m = (int)(std::min_element(es,es+4)-es);
+            int m = static_cast<int>(std::min_element(es,es+4)-es);
             if(es[m] < minErr){
               minIdx = i;
               minErr = es[m];

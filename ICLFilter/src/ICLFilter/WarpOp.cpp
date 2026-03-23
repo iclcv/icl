@@ -135,8 +135,8 @@ namespace icl{
     T interpolate_pixel_lin(float x, float y, const Channel<T> &src){
       float fX0 = x - floor(x), fX1 = 1.0 - fX0;
       float fY0 = y - floor(y), fY1 = 1.0 - fY0;
-      int xll = (int) x;
-      int yll = (int) y;
+      int xll = static_cast<int>(x);
+      int yll = static_cast<int>(y);
 
       const T* pLL = &src(xll,yll);
       float a = *pLL;        //  a b
@@ -192,7 +192,7 @@ namespace icl{
         IppStatus s = ippiRemap_8u_C1R(src.begin(c),src.getSize(),src.getLineStep(),
                                        src.getImageRect(),warpMap[0].begin(),sizeof(icl32f)*warpMap[0].getWidth(),
                                        warpMap[1].begin(),sizeof(icl32f)*warpMap[1].getWidth(),dst.begin(c),
-                                       dst.getLineStep(),dst.getSize(),(int)mode);
+                                       dst.getLineStep(),dst.getSize(),static_cast<int>(mode));
         if(s != ippStsNoErr){
           ERROR_LOG("IPP-Error:" << ippGetStatusString(s));
           return;
@@ -208,7 +208,7 @@ namespace icl{
         IppStatus s = ippiRemap_32f_C1R(src.begin(c),src.getSize(),src.getLineStep(),
                                        src.getImageRect(),warpMap[0].begin(),sizeof(icl32f)*warpMap[0].getWidth(),
                                        warpMap[1].begin(),sizeof(icl32f)*warpMap[1].getWidth(),dst.begin(c),
-                                       dst.getLineStep(),dst.getSize(),(int)mode);
+                                       dst.getLineStep(),dst.getSize(),static_cast<int>(mode));
         if(s != ippStsNoErr){
           ERROR_LOG("IPP-Error:" << ippGetStatusString(s));
           return;

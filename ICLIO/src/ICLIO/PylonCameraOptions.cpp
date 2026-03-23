@@ -311,7 +311,7 @@ long PylonCameraOptions::getNeededBufferSize(){
   } catch (ICLException &e){
     DEBUG_LOG("The camera does not have a parameter called PayloadSize.")
         DEBUG_LOG("Assuming that the image size is width * height * pixelsize.")
-        return (long) ((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
+        return static_cast<long>((getWidth() * getHeight() * getCameraPixelSize() / 8) + 0.5);
   }
 }
 

@@ -57,7 +57,7 @@ namespace icl{
       std::vector<SurfaceFeatureExtractor::SurfaceFeature> features;
       for(unsigned int y=0; y<h; y++){
         for(unsigned int x=0; x<w; x++){
-          while((int)features.size()<labelI(x,y)){
+          while(static_cast<int>(features.size())<labelI(x,y)){
             features.push_back(getInitializedStruct());
           }
           if(labelI(x,y)>0){

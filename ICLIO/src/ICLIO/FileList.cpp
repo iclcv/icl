@@ -174,7 +174,7 @@ namespace icl{
       int size() const {
         // {{{ open
 
-        return (int)m_vecFiles.size();
+        return static_cast<int>(m_vecFiles.size());
       }
 
       // }}}

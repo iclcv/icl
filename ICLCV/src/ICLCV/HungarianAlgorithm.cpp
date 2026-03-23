@@ -223,7 +223,7 @@ namespace icl{
           j++;
         }//end inner while
         i++;
-        if ((int)i >= cost.getWidth()){
+        if (static_cast<int>(i) >= cost.getWidth()){
           done = true;
         }
       }//end outer while
@@ -335,7 +335,7 @@ namespace icl{
       // {{{ open
 
       for (int i=0; i<=count; i++){
-        int &m = mask((int)path(i,0),(int)path(i,1));
+        int &m = mask(static_cast<int>(path(i,0)),static_cast<int>(path(i,1)));
         if (m  == 1){
           m = 0;
         }else{
@@ -406,7 +406,7 @@ namespace icl{
         }
       }//end while
 
-      imat path((int)vecPath.size(),2);
+      imat path(static_cast<int>(vecPath.size()),2);
       for(unsigned int i=0;i<vecPath.size();i++){
         path(i,0) = vecPath[i].x;
         path(i,1) = vecPath[i].y;
@@ -480,7 +480,7 @@ namespace icl{
         }
       }
       real maxCost = cost.maxElem();
-      imat mask(m.getWidth(),m.getHeight(),(int)0);
+      imat mask(m.getWidth(),m.getHeight(),static_cast<int>(0));
       vec rowCover(m.getHeight());
       vec colCover(m.getWidth());
       vec zero_RC(2);
@@ -524,7 +524,7 @@ namespace icl{
 
       for(int j=0;j<cost.getWidth();j++){
         for(int i=0;i<cost.getHeight();i++){
-          printf("%3.3f%s ",(float)cost(i,j), v(i,j) ?  "* " : "  ");
+          printf("%3.3f%s ",static_cast<float>(cost(i,j)), v(i,j) ?  "* " : "  ");
         }
         printf("\n");
       }

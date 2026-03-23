@@ -491,8 +491,8 @@ Img8u TemporalSmoothingCL::temporalSmoothingC(const Img8u &inputImage) {
 						outputImageC(x, y, 0) = inputImagesC.at(imgCount - 1)(x,
 								y, 0);
 					} else {
-						outputImageC(x, y, 0) = (unsigned char) ((float) value
-								/ (float) count);
+						outputImageC(x, y, 0) = static_cast<unsigned char>(static_cast<float>(value)
+								/ static_cast<float>(count));
 					}
 				}
 			}

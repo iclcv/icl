@@ -60,10 +60,10 @@ namespace icl{
 
       namespace co{
         inline Size scale(const Size &s, int f){
-          return Size( (int)ceil(float(s.width)/f), (int)ceil(float(s.height)/f) );
+          return Size( static_cast<int>(ceil(float(s.width)/f)), static_cast<int>(ceil(float(s.height)/f)) );
         }
         inline Point scale(const Point &s, int f){
-          return Point( (int)ceil(float(s.x)/f), (int)ceil(float(s.y)/f) );
+          return Point( static_cast<int>(ceil(float(s.x)/f)), static_cast<int>(ceil(float(s.y)/f)) );
         }
         inline Rect scale(const Rect &r, int f){
           return Rect(scale(r.ul(),f), scale(r.getSize(),f) );

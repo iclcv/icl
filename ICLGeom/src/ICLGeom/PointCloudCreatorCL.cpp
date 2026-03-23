@@ -204,19 +204,19 @@ namespace icl {
         kernelCreateRGB.apply(DEPTH_DIM);
 
         if(xyz.getStride()==4*sizeof(float)) {
-          xyzBuffer.read((float*) &xyz[0][0], DEPTH_DIM * 4 * sizeof(float));
+          xyzBuffer.read(reinterpret_cast<float*>(&xyz[0][0]), DEPTH_DIM * 4 * sizeof(float));
         }
         else {
           xyzBuffer.read(xyzData, DEPTH_DIM * 4 * sizeof(float));
-          DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
+          DataSegment<float,3>(reinterpret_cast<float*>(xyzData),sizeof(float)*3,DEPTH_DIM).deepCopy(xyz); //copy pointcloud data
         }
 
         if(rgba.isPacked()) {
-          rgbaBuffer.read((FixedColVector<float, 4>*) &rgba[0][0], DEPTH_DIM * sizeof(FixedColVector<float, 4>));
+          rgbaBuffer.read(reinterpret_cast<FixedColVector<float, 4>*>(&rgba[0][0]), DEPTH_DIM * sizeof(FixedColVector<float, 4>));
         }
         else {
           rgbaBuffer.read(rgbaData, DEPTH_DIM * sizeof(FixedColVector<float, 4>));
-          DataSegment<float,4>((float*)rgbaData,sizeof(FixedColVector<float, 4>),DEPTH_DIM).deepCopy(rgba); //copy pointcloud color data
+          DataSegment<float,4>(reinterpret_cast<float*>(rgbaData),sizeof(FixedColVector<float, 4>),DEPTH_DIM).deepCopy(rgba); //copy pointcloud color data
         }
       } catch (CLException &err) { //catch openCL errors
         ERROR_LOG(err.what());
@@ -252,11 +252,11 @@ namespace icl {
         kernelCreate.apply(DEPTH_DIM);
 
         if(xyz.getStride()==4*sizeof(float)) {
-          xyzBuffer.read((float*) &xyz[0][0], DEPTH_DIM * 4 * sizeof(float));
+          xyzBuffer.read(reinterpret_cast<float*>(&xyz[0][0]), DEPTH_DIM * 4 * sizeof(float));
         }
         else {
           xyzBuffer.read(xyzData, DEPTH_DIM * 4 * sizeof(float));
-          DataSegment<float,3>((float*)xyzData,sizeof(float)*3,DEPTH_DIM).deepCopy(xyz);//copy pointcloud data
+          DataSegment<float,3>(reinterpret_cast<float*>(xyzData),sizeof(float)*3,DEPTH_DIM).deepCopy(xyz);//copy pointcloud data
         }
       } catch (CLException &err) { //catch openCL errors
         ERROR_LOG(err.what());

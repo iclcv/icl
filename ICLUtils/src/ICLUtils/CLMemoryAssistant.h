@@ -115,7 +115,7 @@ namespace icl {
 			 * @param key The name (std::string) and identifier for this CLMemory instance
 			 * @return true if the key exists, false otherwise
 			 */
-			bool keyExist(MemKeyType const &key) { return (bool)m_memory_map.count(key); }
+			bool keyExist(MemKeyType const &key) { return static_cast<bool>(m_memory_map.count(key)); }
 
 			/**
 			 * @brief clearAll clears and deletes all internal buffers. Use with care!

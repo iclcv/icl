@@ -68,10 +68,10 @@ namespace icl{
       int nextCol=0,nextRow=0;
       const unsigned int dim = M.cols();
       for(unsigned int i=0;i<dim;++i){
-        if((int)i!=row){
+        if(static_cast<int>(i)!=row){
           nextCol = 0;
           for(unsigned int j=0;j<dim;j++){
-            if((int)j!=col){
+            if(static_cast<int>(j)!=col){
               D(nextCol++,nextRow) = M(j,i);
             }
           }
@@ -137,7 +137,7 @@ namespace icl{
           DynMatrix<T> D(order-1,order-1);
           for(unsigned int i=0;i<order;++i){
             get_minor_matrix(*this,i,0,D);
-            det += ::pow(-1.0,(int)i) * (*this)(i,0) * D.det();
+            det += ::pow(-1.0,static_cast<int>(i)) * (*this)(i,0) * D.det();
           }
           return det;
         }
@@ -372,11 +372,11 @@ namespace icl{
       int info;
 
       // work buffer of size 1 to retrieve correct buffer size from first run of GESDD
-      T* work = (T*) malloc( sizeof( T ) );
+      T* work = static_cast<T*>(malloc( sizeof( T ) ));
       ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
 
       // integer work buffer
-      int* iwork = (int*) malloc( sizeof( int ) * std::max( 1, 8 * std::min( c, r ) ) );
+      int* iwork = static_cast<int*>(malloc( sizeof( int ) * std::max( 1, 8 * std::min( c, r ) ) ));
       ICLASSERT_THROW( iwork != 0, 0 );
 
       // first run of GESDD to retrieve correct size of work buffer
@@ -388,7 +388,7 @@ namespace icl{
 
       // free old work buffer and allocate a new one
       free( work );
-      work = (T*) malloc( sizeof( T ) * lwork );
+      work = static_cast<T*>(malloc( sizeof( T ) * lwork ));
       ICLASSERT_THROW( work != 0, ICLException("Insufficient memory to allocate work buffer!") );
 
       // compute singular value decomposition of a general rectangular matrix
@@ -801,7 +801,7 @@ namespace icl{
         std::getline(s,line);
         if(!line.length() || line[0] == '#' || line[0] == ' ') continue;
         std::vector<T> v = icl::utils::parseVecStr<T>(line,",");
-        int cLen = (int)v.size();
+        int cLen = static_cast<int>(v.size());
         if(lineLen == -1) lineLen = cLen;
         else if(lineLen != cLen){
           throw ICLException("DynMatrix::loadCSV: row lengths differ");

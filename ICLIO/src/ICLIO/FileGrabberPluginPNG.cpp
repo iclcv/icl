@@ -105,7 +105,7 @@ namespace icl{
         rows[i] = data.data() + i * rowlen;
       }
 
-      png_read_image(reader,(png_bytep*)rows.data());
+      png_read_image(reader,rows.data());
       fclose(cfile);
 
       if (setjmp(png_jmpbuf(reader))){

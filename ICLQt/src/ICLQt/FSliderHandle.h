@@ -123,7 +123,7 @@ namespace icl{
 
       /// utility function tranlating from valued to slider coordinates
       int f2i(float f) const{
-        return (int)((f-*m_fB)/ *m_fM);
+        return static_cast<int>((f-*m_fB)/ *m_fM);
       }
 
       /// utility function tranlating from slider to value coordinates

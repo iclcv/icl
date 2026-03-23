@@ -59,28 +59,28 @@
     }
     inline float pow(int a, int b)
     {
-      return pow((float)a, b);
+      return pow(static_cast<float>(a), b);
     }
     inline double pow(float a, double b)
     {
-      return pow((double)a, b);
+      return pow(static_cast<double>(a), b);
     }
     inline int rint(double a)
     {
       // this is not really what it should do
-      return (int)round(a);
+      return static_cast<int>(round(a));
     }
     inline float log(int a)
     {
-      return log((float)a);
+      return log(static_cast<float>(a));
     }
     inline float exp(int a)
     {
-      return exp((float)a);
+      return exp(static_cast<float>(a));
     }
     inline float sqrt(int a)
     {
-      return sqrt((float)a);
+      return sqrt(static_cast<float>(a));
     }
   #endif
   // in windows use this instead of #warning

@@ -233,7 +233,7 @@ namespace icl{
     template<class T, class Vector>
     SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(const std::vector<Vector> &init){
       if(&init != &m_data->x){
-        ICLASSERT_THROW((int)init.size() == m_data->num, ICLException(str(__FUNCTION__)+": invalid count of initial vertices"));
+        ICLASSERT_THROW(static_cast<int>(init.size()) == m_data->num, ICLException(str(__FUNCTION__)+": invalid count of initial vertices"));
         std::copy(init.begin(),init.end(),m_data->x.begin());
         m_data->centerOld = m_data->x[0];
         for(int i=1;i<m_data->num;++i){
@@ -249,13 +249,13 @@ namespace icl{
       //optimization begins
       for(currentIteration=0; currentIteration<m_data->iterations; ++currentIteration){
         // search for best, worst and 2ndWorst element
-        idxBest = (int)(std::min_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
+        idxBest = static_cast<int>(std::min_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
         T &fBest = m_data->fx[idxBest];
         if(fBest < m_data->minError) break;
-        idxWorst = (int)(std::max_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
+        idxWorst = static_cast<int>(std::max_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
         T fxWorst = m_data->fx[idxWorst];
         m_data->fx[idxWorst] = std::numeric_limits<T>::min();
-        idx2ndWorst = (int)(std::max_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
+        idx2ndWorst = static_cast<int>(std::max_element(m_data->fx.begin(),m_data->fx.end())-m_data->fx.begin());
         m_data->fx[idxWorst] = fxWorst;
 
         Vector &xWorst = m_data->x[idxWorst];
@@ -266,7 +266,7 @@ namespace icl{
         // find reflection point m_data->xg and update the simplex-center
         std::fill(m_data->xg.begin(),m_data->xg.end(),0);
         for(unsigned int i=0; i<m_data->x.size(); ++i){
-          if((int)i!=idxWorst) m_data->xg += m_data->x[i];
+          if(static_cast<int>(i)!=idxWorst) m_data->xg += m_data->x[i];
         }
 
         for(int i=0;i<m_data->dim;++i){
@@ -306,7 +306,7 @@ namespace icl{
           }
           else{ //----------------------------------------------> multiple contraction
             for(unsigned int i=0; i<m_data->x.size(); ++i ){
-              if( (int)i!=idxBest ){
+              if( static_cast<int>(i)!=idxBest ){
                 for(int j=0; j<m_data->dim; ++j){
                   m_data->x[i][j] = xBest[j] + m_data->h * ( m_data->x[i][j]-xBest[j] );
                 }

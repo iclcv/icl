@@ -84,7 +84,7 @@ namespace icl{
 
     /// puts a string representation of format into the given stream
     std::ostream &operator<<(std::ostream &s,const format &f){
-      if( ((int)f<0) || ((int)f)>=7) return s << "formatUnknown";
+      if( (static_cast<int>(f)<0) || (static_cast<int>(f))>=7) return s << "formatUnknown";
       static const char *fmts[7] = {
         "formatGray",
         "formatRGB",
@@ -99,7 +99,7 @@ namespace icl{
 
     /// puts a string representation of depth into the given stream
     std::ostream &operator<<(std::ostream &s,const depth &d){
-      if( ((int)d<0) || ((int)d)>=5) return s << "depthUnknown";
+      if( (static_cast<int>(d)<0) || (static_cast<int>(d))>=5) return s << "depthUnknown";
       static const char *depths[7] = {
         "depth8u",
         "depth16s",
@@ -302,7 +302,7 @@ namespace icl{
     // --- from icl8u to icl32f ---
     template<> void convert<icl8u,icl32f>(const icl8u *poSrcStart,const icl8u *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = static_cast<icl32f>(*poSrcStart);
       }
 
@@ -312,7 +312,7 @@ namespace icl{
         const __m128i vk0 = _mm_set1_epi8(0);
 
         // load 8u values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 16u values
         __m128i vl = _mm_unpacklo_epi8(v, vk0);
@@ -345,7 +345,7 @@ namespace icl{
     // --- from icl16s to icl32s ---
     template<> void convert<icl16s,icl32s>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32s *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = static_cast<icl32f>(*poSrcStart);
       }
 
@@ -355,15 +355,15 @@ namespace icl{
         const __m128i vk0 = _mm_set1_epi16(0);
 
         // load 16s values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 32s values
         __m128i vl = _mm_unpacklo_epi16(v, vk0);
         __m128i vh = _mm_unpackhi_epi16(v, vk0);
 
         // store 32s values
-        _mm_store_si128((__m128i*)poDst, vl);
-        _mm_store_si128((__m128i*)(poDst+4), vh);
+        _mm_store_si128(reinterpret_cast<__m128i*>(poDst), vl);
+        _mm_store_si128(reinterpret_cast<__m128i*>(poDst+4), vh);
       }
 
       // cast the last values
@@ -375,7 +375,7 @@ namespace icl{
     // --- from icl16s to icl32f ---
     template<> void convert<icl16s,icl32f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
@@ -386,7 +386,7 @@ namespace icl{
         // zero vector
         const __m128i vk0 = _mm_set1_epi16(0);
         // load 16s values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 32s values
         __m128i vl = _mm_unpacklo_epi16(v, vk0);
@@ -412,7 +412,7 @@ namespace icl{
     // --- from icl16s to icl64f ---
     template<> void convert<icl16s,icl64f>(const icl16s *poSrcStart,const icl16s *poSrcEnd, icl64f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
@@ -424,7 +424,7 @@ namespace icl{
         const __m128i vk0 = _mm_set1_epi16(0);
 
         // load 16s values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 32s values
         __m128i vl = _mm_unpacklo_epi16(v, vk0);
@@ -455,7 +455,7 @@ namespace icl{
     // --- from icl32s to icl16s ---
     template<> void convert<icl32s,icl16s>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl16s *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poSrcStart)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
@@ -464,11 +464,11 @@ namespace icl{
       // cast four values at the same time
       for (; poSrcStart < poSrcEnd-7; poSrcStart += 8, poDst += 8) {
         // load 32s values
-        __m128i v1 = _mm_load_si128((__m128i*)poSrcStart);
-        __m128i v2 = _mm_load_si128((__m128i*)(poSrcStart+4));
+        __m128i v1 = _mm_load_si128(reinterpret_cast<const __m128i*>(poSrcStart));
+        __m128i v2 = _mm_load_si128(reinterpret_cast<const __m128i*>(poSrcStart+4));
 
         // convert to 16s values; store 16s values
-        _mm_storeu_si128((__m128i*)poDst, _mm_packs_epi32(v1, v2));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(poDst), _mm_packs_epi32(v1, v2));
       }
 
       // cast the last values
@@ -482,7 +482,7 @@ namespace icl{
     // --- from icl16s to icl32f ---
     template<> void convert<icl32s,icl32f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < -std::numeric_limits<icl32f>::max() ? -std::numeric_limits<icl32f>::max() :
         *poSrcStart > std::numeric_limits<icl32f>::max() ? std::numeric_limits<icl32f>::max() :
         static_cast<icl32f>(*poSrcStart);
@@ -491,7 +491,7 @@ namespace icl{
       // cast four values at the same time
       for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
         // load 32s values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 32f values; store 32f values
         _mm_store_ps(poDst, _mm_cvtepi32_ps(v));
@@ -508,7 +508,7 @@ namespace icl{
     // --- from icl16s to icl64f ---
     template<> void convert<icl32s,icl64f>(const icl32s *poSrcStart,const icl32s *poSrcEnd, icl64f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < -std::numeric_limits<icl64f>::max() ? -std::numeric_limits<icl64f>::max() :
         *poSrcStart > std::numeric_limits<icl64f>::max() ? std::numeric_limits<icl64f>::max() :
         static_cast<icl64f>(*poSrcStart);
@@ -517,7 +517,7 @@ namespace icl{
       // cast four values at the same time
       for (; poSrcStart < poSrcEnd-3; poSrcStart += 4, poDst += 4) {
         // load 32s values
-        __m128i v = _mm_loadu_si128((__m128i*)poSrcStart);
+        __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(poSrcStart));
 
         // convert to 64f values
         __m128d vl = _mm_cvtepi32_pd(v);
@@ -540,7 +540,7 @@ namespace icl{
     // --- from icl32f to icl8u ---
     template <> void convert<icl32f,icl8u>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl8u *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poSrcStart)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < std::numeric_limits<icl8u>::min() ? std::numeric_limits<icl8u>::min() :
         *poSrcStart > std::numeric_limits<icl8u>::max() ? std::numeric_limits<icl8u>::max() :
         static_cast<icl8u>(*poSrcStart);
@@ -569,7 +569,7 @@ namespace icl{
         __m128i vh = _mm_packs_epi32(v2i, v3i);
 
         // convert to 8u values
-        _mm_storeu_si128((__m128i*)poDst, _mm_packus_epi16(vl, vh));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(poDst), _mm_packus_epi16(vl, vh));
       }
       // restore initial rounding mode
       _MM_SET_ROUNDING_MODE(initial_mode);
@@ -585,7 +585,7 @@ namespace icl{
     // --- from icl32f to icl16s ---
     template <> void convert<icl32f,icl16s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl16s *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poSrcStart)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < std::numeric_limits<icl16s>::min() ? std::numeric_limits<icl16s>::min() :
         *poSrcStart > std::numeric_limits<icl16s>::max() ? std::numeric_limits<icl16s>::max() :
         static_cast<icl16s>(*poSrcStart);
@@ -608,7 +608,7 @@ namespace icl{
         v2 = _mm_min_ps(v2, vMax);
 
         // convert to 32s values; convert to 16s values; store 16s values
-        _mm_storeu_si128((__m128i*)poDst, _mm_packs_epi32(_mm_cvttps_epi32(v1), _mm_cvttps_epi32(v2)));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(poDst), _mm_packs_epi32(_mm_cvttps_epi32(v1), _mm_cvttps_epi32(v2)));
       }
 
       // cast the last values
@@ -622,7 +622,7 @@ namespace icl{
     // --- from icl32f to icl32s ---
     template <> void convert<icl32f,icl32s>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl32s *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
@@ -642,7 +642,7 @@ namespace icl{
         v = _mm_min_ps(v, vMax);
 
         // convert to 32s values; store 32s values
-        _mm_store_si128((__m128i*)poDst, _mm_cvttps_epi32(v));
+        _mm_store_si128(reinterpret_cast<__m128i*>(poDst), _mm_cvttps_epi32(v));
       }
 
       // cast the last values
@@ -656,7 +656,7 @@ namespace icl{
     // --- from icl32f to icl64f ---
     template <> void convert<icl32f,icl64f>(const icl32f *poSrcStart, const icl32f *poSrcEnd, icl64f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poDst) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poDst)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = static_cast<icl64f>(*poSrcStart);
       }
 
@@ -684,7 +684,7 @@ namespace icl{
     // --- from icl64f to icl32f ---
     template<> void convert<icl64f,icl32f>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32f *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poSrcStart)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = static_cast<icl32f>(*poSrcStart);
       }
 
@@ -711,7 +711,7 @@ namespace icl{
     // --- from icl64f to icl32s ---
     template <> void convert<icl64f,icl32s>(const icl64f *poSrcStart,const icl64f *poSrcEnd, icl32s *poDst) {
       // cast the first unaligned values
-      for(; (((uintptr_t)poSrcStart) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
+      for(; ((reinterpret_cast<uintptr_t>(poSrcStart)) & 15) && (poSrcStart < poSrcEnd); ++poSrcStart, ++poDst) {
         *poDst = *poSrcStart < std::numeric_limits<icl32s>::min() ? std::numeric_limits<icl32s>::min() :
         *poSrcStart > std::numeric_limits<icl32s>::max() ? std::numeric_limits<icl32s>::max() :
         static_cast<icl32s>(*poSrcStart);
@@ -738,7 +738,7 @@ namespace icl{
         __m128i vh = _mm_cvttpd_epi32(v2);
 
         // store 32s values
-        _mm_storeu_si128((__m128i*)poDst, _mm_add_epi32(vl, _mm_shuffle_epi32(vh, _MM_SHUFFLE(1, 0, 3, 2))));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(poDst), _mm_add_epi32(vl, _mm_shuffle_epi32(vh, _MM_SHUFFLE(1, 0, 3, 2))));
       }
 
       // cast the last values
@@ -835,7 +835,7 @@ namespace icl{
   #define ICL_INSTANTIATE_DEPTH(D)                                                                           \
         case depth##D:                                                                                       \
           for(int i=firstChannel,j=0;i<=lastChannel;++i,++j){                                                \
-            ICLASSERT_RETURN_VAL(j<(int)mean.size(),vecVar);                                                 \
+            ICLASSERT_RETURN_VAL(j<static_cast<int>(mean.size()),vecVar);                                                 \
             vecVar.push_back(channel_var_with_mean(*poImg->asImg<icl##D>(),i,mean[j],empiricMean,roiOnly));  \
           }                                                                                                  \
         break;

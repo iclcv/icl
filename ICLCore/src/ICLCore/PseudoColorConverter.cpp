@@ -212,7 +212,7 @@ namespace icl{
       f["maxVal"] = m_data->maxVal;
       f["mode"] = std::string(m_data->mode == Default ? "default" : "custom");
       if(m_data->mode == Custom){
-        f["stop-count"] = (int) m_data->stops.size();
+        f["stop-count"] = static_cast<int>(m_data->stops.size());
         for(unsigned int i=0;i<m_data->stops.size();++i){
           f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) +  " "
                                      + str(m_data->stops[i].color[1]) +  " "

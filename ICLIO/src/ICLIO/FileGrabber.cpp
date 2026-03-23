@@ -379,7 +379,7 @@ namespace icl{
         ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),nullptr);
         ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx];
         if(m_data->bAutoNext) ++m_data->iCurrIdx;
-        if(m_data->iCurrIdx >= (int)m_data->vecImageBuffer.size()) m_data->iCurrIdx = 0;
+        if(m_data->iCurrIdx >= static_cast<int>(m_data->vecImageBuffer.size())) m_data->iCurrIdx = 0;
         return p;
       }
 

@@ -61,7 +61,7 @@ using namespace icl::qt;
 namespace icl{
   namespace geom{
     AlphaFuncProperty::AlphaFuncProperty(){
-      alphaFunc = (int)GL_GREATER;
+      alphaFunc = static_cast<int>(GL_GREATER);
       alphaValue = 0.1;
     }
 
@@ -352,7 +352,7 @@ namespace icl{
 
     void TexturePrimitive::render(const Primitive::RenderContext &ctx){
       glEnable(GL_ALPHA_TEST);
-      glAlphaFunc((GLenum)alphaFunc,alphaValue);
+      glAlphaFunc(static_cast<GLenum>(alphaFunc),alphaValue);
 
       if(image){
         texture.update(image);
@@ -379,7 +379,7 @@ namespace icl{
 
     void SharedTexturePrimitive::render(const Primitive::RenderContext &ctx){
       glEnable(GL_ALPHA_TEST);
-      glAlphaFunc((GLenum)alphaFunc,alphaValue);
+      glAlphaFunc(static_cast<GLenum>(alphaFunc),alphaValue);
 
       GLImg &gli = const_cast<GLImg&>(*ctx.sharedTextures[sharedTextureIndex]);
       const Vec &a = ctx.vertices[i(0)];
@@ -411,7 +411,7 @@ namespace icl{
       textSize(textSize), textColor(textColor), billboardHeight(billboardHeight){
       type = Primitive::text;
 
-      alphaFunc = (int)GL_GREATER;
+      alphaFunc = static_cast<int>(GL_GREATER);
       alphaValue = 0.3;
     }
 
@@ -422,7 +422,7 @@ namespace icl{
 
     void TextPrimitive::render(const Primitive::RenderContext &ctx){
       glEnable(GL_ALPHA_TEST);
-      glAlphaFunc((GLenum)alphaFunc,alphaValue);
+      glAlphaFunc(static_cast<GLenum>(alphaFunc),alphaValue);
 
       glPushAttrib(GL_ENABLE_BIT);
       glDisable(GL_LIGHTING);
@@ -463,7 +463,7 @@ namespace icl{
 
     void TextureGridPrimitive::render(const Primitive::RenderContext &ctx){
       glEnable(GL_ALPHA_TEST);
-      glAlphaFunc((GLenum)alphaFunc,alphaValue);
+      glAlphaFunc(static_cast<GLenum>(alphaFunc),alphaValue);
 
       if(image){
         texture.update(image);
@@ -475,7 +475,7 @@ namespace icl{
 
     void TwoSidedTextureGridPrimitive::render(const Primitive::RenderContext &ctx){
       glEnable(GL_ALPHA_TEST);
-      glAlphaFunc((GLenum)alphaFunc,alphaValue);
+      glAlphaFunc(static_cast<GLenum>(alphaFunc),alphaValue);
 
       if(image){
         texture.update(image);

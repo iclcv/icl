@@ -125,7 +125,7 @@ namespace icl{
       }
       for(int i=0;i<256;i++){
         float rel = i/256.f;
-        lut[i]=lv[(int)round(rel * (n-1))];
+        lut[i]=lv[static_cast<int>(round(rel * (n-1)))];
       }
       simple(src,dst,lut);
   #endif

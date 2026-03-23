@@ -166,7 +166,7 @@ namespace icl{
 
     QCoreApplication *existingApp = QCoreApplication::instance();
     if(existingApp && dynamic_cast<QApplication*>(existingApp)){
-      app = (QApplication*)existingApp;
+      app = static_cast<QApplication*>(existingApp);
     }else{
       static int static_n = 1;
       static char *static_ppc[] = { ppc[0], nullptr };
@@ -268,7 +268,7 @@ namespace icl{
       ICLApplication::AsynchronousEvent *ae;
       Mutex *mutex;
       AsynchronousEventWrapper(ICLApplication::AsynchronousEvent *ae, Mutex *mutex = 0):
-        QEvent((QEvent::Type)QEvent::registerEventType()),ae(ae),mutex(mutex){}
+        QEvent(static_cast<QEvent::Type>(QEvent::registerEventType())),ae(ae),mutex(mutex){}
       ~AsynchronousEventWrapper(){
         delete ae;
       }

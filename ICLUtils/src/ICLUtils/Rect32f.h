@@ -88,10 +88,10 @@ namespace icl {
 
       /// create a floating point rect from given int-valued rect
       Rect32f(const Rect &rect):
-        x((float)rect.x),
-        y((float)rect.y),
-        width((float)rect.width),
-        height((float)rect.height){
+        x(static_cast<float>(rect.x)),
+        y(static_cast<float>(rect.y)),
+        width(static_cast<float>(rect.width)),
+        height(static_cast<float>(rect.height)){
       }
 
       /// checks wether the object instance is null, i.e. all elements are zero

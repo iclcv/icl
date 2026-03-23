@@ -257,12 +257,12 @@ namespace icl{
         if(disabled->checkState() == Qt::Checked) return;
 
         info = pm->getInfo();
-        cpuBar->setValue((int)info.allCpuUsage);
+        cpuBar->setValue(static_cast<int>(info.allCpuUsage));
         if(!rangeSet){
           rangeSet = true;
           cpuBarThis->setRange(0,info.numCPUs * 100);
         }
-        cpuBarThis->setValue((int)info.cpuUsage);
+        cpuBarThis->setValue(static_cast<int>(info.cpuUsage));
 
         std::ostringstream s;
         s << info.numThreads << " (" << info.numCPUs << " cores) ";
@@ -624,7 +624,7 @@ namespace icl{
           SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
           if(r.stepping >= 1){
             int val = parse<icl32s>(conf->getPropertyValue(name));
-            int s = (int)(r.stepping);
+            int s = static_cast<int>(r.stepping);
             val = (val/s)*s;
             gui.get<SliderHandle>("#r#"+name).setValue( val );
           }else{
@@ -965,7 +965,7 @@ namespace icl{
       // using the GUI-stream operator <<
       virtual void addWidget(GUIWidget *widget){
         QString tabName;
-        if(m_nextTabIdx < (int)m_tabNames.size()){
+        if(m_nextTabIdx < static_cast<int>(m_tabNames.size())){
           tabName = m_tabNames[m_nextTabIdx].c_str();
         }else{
           ERROR_LOG("no tab name defined for " << (m_nextTabIdx) << "th tab");
@@ -1072,7 +1072,7 @@ namespace icl{
 
         QColor color = QColorDialog::getColor(c,this,"choose color...",
                                               m_haveAlpha ? QColorDialog::ShowAlphaChannel :
-                                              (QColorDialog::ColorDialogOption)0);
+                                              static_cast<QColorDialog::ColorDialogOption>(0));
 
         colorLabel->setColor(Color4D(color.red(),color.green(),color.blue(),color.alpha()));
       }
@@ -1550,7 +1550,7 @@ namespace icl{
       float m_fM,m_fB;
       float m_fMinVal, m_fMaxVal;
       int f2i(float f){
-        return (int)((f-m_fB)/m_fM);
+        return static_cast<int>((f-m_fB)/m_fM);
       }
       float i2f(int i){
         return m_fM*i+m_fB;
@@ -1656,7 +1656,7 @@ namespace icl{
           this->iMaxLen = iMaxLen;
         }
         virtual State validate(QString &sInput,int &iPos)const{
-          (void)iPos;
+          static_cast<void>(iPos);
           return sInput.length()>iMaxLen ?  Invalid : Acceptable;
         }
       private:

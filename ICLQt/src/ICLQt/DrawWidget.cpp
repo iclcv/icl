@@ -70,7 +70,7 @@ namespace icl{
     public:
       virtual ~DrawCommand(){}
       virtual void exec(PaintEngine *e, State* s){
-        (void)e; (void)s;
+        static_cast<void>(e); static_cast<void>(s);
         printf("drawCommand :: exec \n");
       }
     };
@@ -588,7 +588,7 @@ namespace icl{
 
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         //Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
         image.draw2D(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
       }
@@ -614,7 +614,7 @@ namespace icl{
 
       }
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         const float da[2] = { tX(a[0],s), tY(a[1],s) };
         const float db[2] = { tX(b[0],s), tY(b[1],s) };
         const float dc[2] = { tX(c[0],s), tY(c[1],s) };
@@ -665,8 +665,8 @@ namespace icl{
       EdgeCommand(float r, float g, float b, float alpha):
         DrawCommand4F(r,g,b,alpha){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)s;
-        e->color((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
+        static_cast<void>(s);
+        e->color(static_cast<int>(m_fA),static_cast<int>(m_fB),static_cast<int>(m_fC),static_cast<int>(m_fD));
       }
     };
 
@@ -678,8 +678,8 @@ namespace icl{
       FillCommand(float r, float g, float b, float alpha):
         DrawCommand4F(r,g,b,alpha){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)s;
-        e->fill((int)m_fA,(int)m_fB,(int)m_fC,(int)m_fD);
+        static_cast<void>(s);
+        e->fill(static_cast<int>(m_fA),static_cast<int>(m_fB),static_cast<int>(m_fC),static_cast<int>(m_fD));
       }
     };
 
@@ -689,7 +689,7 @@ namespace icl{
 
     public:
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)s;
+        static_cast<void>(s);
         e->color(0,0,0,0);
       }
     };
@@ -700,7 +700,7 @@ namespace icl{
 
     public:
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)s;
+        static_cast<void>(s);
         e->fill(0,0,0,0);
       }
     };
@@ -711,7 +711,7 @@ namespace icl{
 
 
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         s->rel = false;
       }
     };
@@ -722,7 +722,7 @@ namespace icl{
 
 
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         s->rel = true;
       }
     };
@@ -757,7 +757,7 @@ namespace icl{
     public:
       SetImageSizeCommand(const Size32f &s):m_oSize(s){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         s->imsize = m_oSize;
       }
     protected:
@@ -772,7 +772,7 @@ namespace icl{
     public:
       SymSizeCommand(float w, float h) : m_fW(w), m_fH(h){}
       virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-        (void)e;
+        static_cast<void>(e);
         s->symsize = QSizeF(m_fW,m_fH);
       }
     protected:
@@ -1060,13 +1060,13 @@ namespace icl{
 
     void ICLDrawWidget::initializeCustomPaintEvent(PaintEngine *e){
 
-      (void)e;
+      static_cast<void>(e);
     }
 
 
     void ICLDrawWidget::finishCustomPaintEvent(PaintEngine *e){
 
-      (void)e;
+      static_cast<void>(e);
     }
 
 
@@ -1157,13 +1157,13 @@ namespace icl{
             break;
           case 'p':{
             std::vector<float> v = parts[i].content;
-            Point32f *p = (Point32f*)v.data();
+            Point32f *p = reinterpret_cast<Point32f*>(v.data());
             this->points(std::vector<Point32f>(p,p+v.size()/2));
             break;
           }
           case 'y':{
             std::vector<float> v = parts[i].content;
-            Point32f *p = (Point32f*)v.data();
+            Point32f *p = reinterpret_cast<Point32f*>(v.data());
             this->polygon(std::vector<Point32f>(p,p+v.size()/2));
             break;
           }

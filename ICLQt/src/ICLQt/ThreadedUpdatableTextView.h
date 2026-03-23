@@ -39,8 +39,8 @@ namespace icl{
   namespace qt{
 
     class ICLQt_API ThreadedUpdatableTextView : public QTextEdit{
-      static const QEvent::Type ADD_TEXT=(QEvent::Type)(QEvent::User+1);
-      static const QEvent::Type CLEAR_TEXT=(QEvent::Type)(QEvent::User+2);
+      static const QEvent::Type ADD_TEXT=static_cast<QEvent::Type>(QEvent::User+1);
+      static const QEvent::Type CLEAR_TEXT=static_cast<QEvent::Type>(QEvent::User+2);
 
       struct AddTextEvent : public QEvent{
         std::string text;

@@ -304,7 +304,7 @@ namespace icl{
        ICLCV_API void loadSurf(char *filename, std::vector<Ipoint> &ipts);
 
        /// Round float to nearest integer
-       inline int fRound(float flt) {  return (int) floor(flt+0.5f); }
+       inline int fRound(float flt) {  return static_cast<int>(floor(flt+0.5f)); }
 
     } // end of namespace opensurf
 

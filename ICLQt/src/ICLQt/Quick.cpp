@@ -105,7 +105,7 @@ namespace icl{
       while( !feof(f) ){
         memset(buf,0,128);
         size_t res = fread(buf,1,127,f);
-        (void)res;
+        static_cast<void>(res);
         out << buf;
       }
       fclose(f);
@@ -229,7 +229,7 @@ namespace icl{
 
 
       void do_open(IOContext &c){
-        QString f = QFileDialog::getOpenFileName((QWidget*)c.parentWidget, c.caption.c_str(), c.initialDirectory.c_str(),
+        QString f = QFileDialog::getOpenFileName(static_cast<QWidget*>(c.parentWidget), c.caption.c_str(), c.initialDirectory.c_str(),
                                                  c.filter.c_str() );
         if(f.isNull() || !f.length()){
           c.except = true;
@@ -239,7 +239,7 @@ namespace icl{
         }
       }
       void do_save(IOContext &c){
-        QString f = QFileDialog::getSaveFileName((QWidget*)c.parentWidget, c.caption.c_str(), c.initialDirectory.c_str(),
+        QString f = QFileDialog::getSaveFileName(static_cast<QWidget*>(c.parentWidget), c.caption.c_str(), c.initialDirectory.c_str(),
                                                  c.filter.c_str() );
         if(f.isNull() || !f.length()){
           c.except = true;
@@ -254,7 +254,7 @@ namespace icl{
         if(c.visImage){
           //          throw ICLException("Sorry displaying images in a dialog does not work yet (TODO: implement this using a qimage view)");
           std::string dst;
-          CustomGetTextDialog dialog((QWidget*)c.parentWidget, c.message, c.caption,
+          CustomGetTextDialog dialog(static_cast<QWidget*>(c.parentWidget), c.message, c.caption,
                                      c.initialText, c.visImage, c.completionOptions, dst);
           int e = dialog.exec();
           if(e){
@@ -269,7 +269,7 @@ namespace icl{
             DEBUG_LOG("text completion options a QTextCompleter in textInputDialog(..) is not supported yet");
           }
           bool ok = false;
-          QString t = QInputDialog::getText((QWidget*)c.parentWidget, c.caption.c_str(),
+          QString t = QInputDialog::getText(static_cast<QWidget*>(c.parentWidget), c.caption.c_str(),
                                             c.message.c_str(), QLineEdit::Normal,
                                             c.initialText.c_str(), &ok);
           if(!ok){
@@ -833,7 +833,7 @@ namespace icl{
       const float sigma2 = 2*(maskRadius/2*maskRadius/2);
       int sum = 0;
       for(unsigned int i=0;i<k.size();++i){
-        float d = ((int)i)-maskRadius;
+        float d = (static_cast<int>(i))-maskRadius;
         k[i] = 255.0 * ::exp( - d*d / sigma2);
         sum += k[i];
       }
@@ -1154,7 +1154,7 @@ namespace icl{
     ImgQ scale(const ImgQ& image, float factor){
       // {{{ open
 
-      return scale(image,(int)(factor*image.getWidth()), (int)(factor*image.getHeight()));
+      return scale(image,static_cast<int>(factor*image.getWidth()), static_cast<int>(factor*image.getHeight()));
     }
 
     // }}}
@@ -1667,9 +1667,9 @@ namespace icl{
         int maxy = image.getHeight()-1;
         for(float f=0;f<2*M_PI;f+=1/outline){
           for(int c=0;c<nc;c++){
-            int x = (int)round(xcenter+cos(f)*radius);
+            int x = static_cast<int>(round(xcenter+cos(f)*radius));
             if(x<0 || x > maxx) continue;
-            int y = (int)round(ycenter+sin(f)*radius);
+            int y = static_cast<int>(round(ycenter+sin(f)*radius));
             if(y<0 || y > maxy) continue;
             ICL_QUICK_TYPE &v = image(x,y,c);
             v=(1.0-A)*v + A*COLOR[c];
@@ -1707,7 +1707,7 @@ namespace icl{
       inline void hlinef(ImgQ &image, float x1, float x2, float y,bool useFillColor){
         // {{{ open
 
-        hline(image,(int)round(x1), (int)round(x2), (int)round(y), useFillColor);
+        hline(image,static_cast<int>(round(x1)), static_cast<int>(round(x2)), static_cast<int>(round(y)), useFillColor);
       }
 
       // }}}
@@ -1743,7 +1743,7 @@ namespace icl{
       int nc = iclMin(image.getChannels(),3);
       for(int dy = ystart;dy<=yend;++dy){
         int y = dy+yoffs;
-        int dx = (int)round(::sqrt(rr-dy*dy));
+        int dx = static_cast<int>(round(::sqrt(rr-dy*dy)));
         float A = FILL[3]/255;
         int xend = iclMin(xoffs+dx,w-1);
         for(int x=iclMax(0,xoffs-dx);x<=xend;++x){
@@ -1783,7 +1783,7 @@ namespace icl{
           int iy = y+yoffs-radius;
           if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
           ICL_QUICK_TYPE &v = image(ix,iy,c);
-          float A = (((float)t(x,y,c))/255.0) * (FILL[3]/255);
+          float A = (static_cast<float>(t(x,y,c))/255.0) * (FILL[3]/255);
           v=(1.0-A)*v + A*FILL[c];
           }
           }
@@ -1962,14 +1962,14 @@ namespace icl{
             int iy = y+yoffs;
             if(ix >= 0 && iy >= 0 && ix < image.getWidth() && iy < image.getHeight() ){
               ICL_QUICK_TYPE &v = image(ix,iy,c);
-              float A = (((float)t(x,y,c))/255.0) * (COLOR[3]/255);
+              float A = ((static_cast<float>(t(x,y,c)))/255.0) * (COLOR[3]/255);
               v=(1.0-A)*v + A*COLOR[c];
             }
           }
         }
       }
   #else
-      (void)image;(void)xoffs; (void)yoffs; (void)text;
+      static_cast<void>(image);static_cast<void>(xoffs); static_cast<void>(yoffs); static_cast<void>(text);
       ERROR_LOG("this feature is not supported without Qt-Support");
   #endif
     }
@@ -2027,7 +2027,7 @@ namespace icl{
       std::fill(COLOR,COLOR+3,float(255.0));
       icl::qt::text(image,5,5,text);
 
-      std::copy((float*)_COLOR,_COLOR+4,COLOR);
+      std::copy(static_cast<float*>(_COLOR),_COLOR+4,COLOR);
       FONTSIZE = _FONTSIZE;
       FONTFAMILY = _FONTFAMILY;
       return image;

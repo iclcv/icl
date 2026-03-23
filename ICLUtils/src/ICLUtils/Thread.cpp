@@ -73,7 +73,7 @@ namespace icl{
         ERROR_LOG("unable to start thread (it's still running)");
       }else{
         impl->on = true;
-  	  pthread_create(&impl->thread,0,icl_thread_handler, (void*)this);
+  	  pthread_create(&impl->thread,0,icl_thread_handler, static_cast<void*>(this));
   	}
     }
     void Thread::stop(){
@@ -129,9 +129,9 @@ namespace icl{
     #ifdef ICL_SYSTEM_WINDOWS
       Sleep(secs*1000);
     #elif defined(__clang__)
-      ::usleep((unsigned int)(secs * 1000000));
+      ::usleep(static_cast<unsigned int>(secs * 1000000));
     #else
-      ::usleep((long)secs * 1000000);
+      ::usleep(static_cast<long>(secs) * 1000000);
     #endif
     }
 
@@ -156,7 +156,7 @@ namespace icl{
     }
 
     void *icl_thread_handler(void *t){
-      ((Thread*)t)->run();
+      static_cast<Thread*>(t)->run();
       //pthread_exit(0);
   	return 0;
     }

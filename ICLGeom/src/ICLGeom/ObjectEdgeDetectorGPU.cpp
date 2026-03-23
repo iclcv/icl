@@ -532,7 +532,7 @@ void ObjectEdgeDetectorGPU::applyGaussianNormalSmoothing() {
 
 	try {
 
-		m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), (void *) &kernel[0]);
+		m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), static_cast<void *>(&kernel[0]));
 
 		m_data->kernelNormalGaussSmoothing.setArgs(m_data->normalsBuffer,
 				m_data->avgNormalsBuffer,
@@ -551,11 +551,11 @@ void ObjectEdgeDetectorGPU::applyGaussianNormalSmoothing() {
 const DataSegment<float,4> ObjectEdgeDetectorGPU::getNormals() {
 	try {
 		if(m_data->params.useNormalAveraging==true) {
-			m_data->avgNormalsBuffer.read((float*) &m_data->avgNormals[0][0], m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
+			m_data->avgNormalsBuffer.read(reinterpret_cast<float*>(&m_data->avgNormals[0][0]), m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 			return m_data->avgNormals;
 		} else {
 			m_data->normalsBuffer.read( //read output from kernel
-					(float*) &m_data->normals[0][0],
+					reinterpret_cast<float*>(&m_data->normals[0][0]),
 					m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 			return m_data->normals;
 		}
@@ -571,7 +571,7 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 	Mat T2 = R.transp().resize<4, 4>(0);
 	T2(3, 3) = 1;
 	try {
-		m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), (void *) &T2[0]);
+		m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), static_cast<void *>(&T2[0]));
 
 		m_data->kernelWorldNormalCalculation.setArgs(m_data->rawImageBuffer,
 				m_data->normalImageRBuffer,
@@ -592,7 +592,7 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 
 const DataSegment<float,4> ObjectEdgeDetectorGPU::getWorldNormals() {
 	try {
-		m_data->worldNormalsBuffer.read((float*) &m_data->worldNormals[0][0],
+		m_data->worldNormalsBuffer.read(reinterpret_cast<float*>(&m_data->worldNormals[0][0]),
 				m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 		return m_data->worldNormals;
 	} catch (CLException &err) { //catch openCL errors

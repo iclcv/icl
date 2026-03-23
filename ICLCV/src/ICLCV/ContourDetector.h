@@ -81,7 +81,7 @@ namespace icl{
         return impl->end();
       }
       const int getSize() const{
-        return (int)(end() - begin());
+        return static_cast<int>(end() - begin());
       }
       // draws the contour in the first channel of the given image
       void drawTo(core::ImgBase *img, const icl64f &value);

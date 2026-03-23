@@ -214,10 +214,10 @@ namespace icl{
       setCurrentPhysicsWorld(world);
 
       // copy triangles
-      const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
+      const btSoftBody::Node *n0 = static_cast<const btSoftBody::Node*>(&sOrig->m_nodes[0]);
       for(int i=0;i<sOrig->m_faces.size();++i){
         const btSoftBody::Face &f = sOrig->m_faces[i];
-        addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
+        addTriangle(static_cast<int>(f.m_n[0]-n0),static_cast<int>(f.m_n[1]-n0),static_cast<int>(f.m_n[2]-n0));
         s->m_faces[i].m_normal = f.m_normal;
         s->m_faces[i].m_ra = f.m_ra;
       }
@@ -225,9 +225,9 @@ namespace icl{
       // copy constraints
       for(int i=0;i<sOrig->m_links.size();++i){
         const btSoftBody::Link &l = sOrig->m_links[i];
-        addLink((int)(l.m_n[0]-n0),(int)(l.m_n[1]-n0),
+        addLink(static_cast<int>(l.m_n[0]-n0),static_cast<int>(l.m_n[1]-n0),
                 l.m_material->m_kLST);
-        s->m_links[i].m_tag = ((LinkState*)l.m_tag)->p();
+        s->m_links[i].m_tag = static_cast<LinkState*>(l.m_tag)->p();
         s->m_links[i].m_bbending = l.m_bbending;
         s->m_links[i].m_c0 = l.m_c0;
         s->m_links[i].m_c1 = l.m_c1;
@@ -434,9 +434,9 @@ namespace icl{
 
       if(m_data->lastUsedFaceIdx >= 0){
         const btSoftBody::Face &f = s->m_faces[m_data->lastUsedFaceIdx];
-        ia = (int)(f.m_n[0] - &s->m_nodes[0]);
-        ib = (int)(f.m_n[1] - &s->m_nodes[0]);
-        ic = (int)(f.m_n[2] - &s->m_nodes[0]);
+        ia = static_cast<int>(f.m_n[0] - &s->m_nodes[0]);
+        ib = static_cast<int>(f.m_n[1] - &s->m_nodes[0]);
+        ic = static_cast<int>(f.m_n[2] - &s->m_nodes[0]);
         if(point_in_triangle(p,m_data->texCoords[ia],m_data->texCoords[ib],m_data->texCoords[ic])){
           hit_idx = m_data->lastUsedFaceIdx;
         }
@@ -445,9 +445,9 @@ namespace icl{
       if(hit_idx == -1){
         for(int i=0;i<s->m_faces.size();++i){
           const btSoftBody::Face &f = s->m_faces[i];
-          ia = (int)(f.m_n[0] - &s->m_nodes[0]);
-          ib = (int)(f.m_n[1] - &s->m_nodes[0]);
-          ic = (int)(f.m_n[2] - &s->m_nodes[0]);
+          ia = static_cast<int>(f.m_n[0] - &s->m_nodes[0]);
+          ib = static_cast<int>(f.m_n[1] - &s->m_nodes[0]);
+          ic = static_cast<int>(f.m_n[2] - &s->m_nodes[0]);
           if(point_in_triangle(p,m_data->texCoords[ia],m_data->texCoords[ib],m_data->texCoords[ic])){
             hit_idx = i;
             break;
@@ -526,8 +526,8 @@ namespace icl{
         if(!LinkState::is_first_order(ls[i].m_tag)){
           if(LinkState::has_memorized_rest_dist(ls[i].m_tag)){
             btSoftBody::Node *o = &s->m_nodes[0];
-            m_data->addMemorizedRestDistance((int)(ls[i].m_n[0]-o),
-                                             (int)(ls[i].m_n[1]-o),
+            m_data->addMemorizedRestDistance(static_cast<int>(ls[i].m_n[0]-o),
+                                             static_cast<int>(ls[i].m_n[1]-o),
                                              ls[i].m_rl);
           }
           rmLinks.push_back(i);
@@ -594,9 +594,9 @@ namespace icl{
            !foldNodes.count(f.m_n[1]) &&
            !foldNodes.count(f.m_n[2]) ){
 
-          int ia = (int)(f.m_n[0]-o);
-          int ib = (int)(f.m_n[1]-o);
-          int ic = (int)(f.m_n[2]-o);
+          int ia = static_cast<int>(f.m_n[0]-o);
+          int ib = static_cast<int>(f.m_n[1]-o);
+          int ic = static_cast<int>(f.m_n[2]-o);
 
           const Point32f A = m_data->texCoords[ia].transform(210,294);
           const Point32f B = m_data->texCoords[ib].transform(210,294);
@@ -613,7 +613,7 @@ namespace icl{
         }
       }
 
-      int n = (int)clusterFaces.size();
+      int n = static_cast<int>(clusterFaces.size());
       //s->releaseClusters();
 
       btAlignedObjectArray<btSoftBody::Cluster*> &cl = s->m_clusters;
@@ -748,7 +748,7 @@ namespace icl{
       for(int i=0;i<s->m_faces.size();++i){
         btSoftBody::Face&	f=s->m_faces[i];
         for(int j=0;j<3;++j){
-          const int index=(int)(f.m_n[j]-&s->m_nodes[0]);
+          const int index=static_cast<int>(f.m_n[j]-&s->m_nodes[0]);
           counts[index]++;
           f.m_n[j]->m_area+=fabs(f.m_ra);
         }
@@ -823,7 +823,7 @@ namespace icl{
             if( ((l.m_n[0] == na) && (l.m_n[1] == nb)) ||
                 ((l.m_n[0] == nb) && (l.m_n[1] == na)) ){
               if(!LinkState::is_fold(l.m_tag)){
-                delete (LinkState*)(l.m_tag);
+                delete static_cast<LinkState*>(l.m_tag);
                 l.m_tag = state.p();
                 const Point32f &ta = m_data->texCoords[a];
                 const Point32f &tb = m_data->texCoords[b];
@@ -853,7 +853,7 @@ namespace icl{
       btSoftBody *s = getSoftBody();
       if(it != m_data->texCoords.end()){
         t = *it;
-        idx = (int)(it - m_data->texCoords.begin());
+        idx = static_cast<int>(it - m_data->texCoords.begin());
         v = s->m_nodes[idx].m_x;
 
       }else{
@@ -865,8 +865,8 @@ namespace icl{
 
     bool PhysicsPaper3::hitLink(btSoftBody::Link *l, const Point32f &a, const Point32f &b){
       btSoftBody *s = getSoftBody();
-      int idx_la = (int)(l->m_n[0] - &s->m_nodes[0]);
-      int idx_lb = (int)(l->m_n[1] - &s->m_nodes[0]);
+      int idx_la = static_cast<int>(l->m_n[0] - &s->m_nodes[0]);
+      int idx_lb = static_cast<int>(l->m_n[1] - &s->m_nodes[0]);
 
       return line_segment_intersect(a,b,m_data->projectedPoints[idx_la],m_data->projectedPoints[idx_lb]);
     }
@@ -874,9 +874,9 @@ namespace icl{
 
     bool PhysicsPaper3::hitTriangle(btSoftBody::Face *f, const Point32f &a, const Point32f &b){
       btSoftBody *s = getSoftBody();
-      int idx_la = (int)(f->m_n[0] - &s->m_nodes[0]);
-      int idx_lb = (int)(f->m_n[1] - &s->m_nodes[0]);
-      int idx_lc = (int)(f->m_n[2] - &s->m_nodes[0]);
+      int idx_la = static_cast<int>(f->m_n[0] - &s->m_nodes[0]);
+      int idx_lb = static_cast<int>(f->m_n[1] - &s->m_nodes[0]);
+      int idx_lc = static_cast<int>(f->m_n[2] - &s->m_nodes[0]);
 
       Point32f ta = m_data->projectedPoints[idx_la];
       Point32f tb = m_data->projectedPoints[idx_lb];
@@ -897,9 +897,9 @@ namespace icl{
 
     bool PhysicsPaper3::replaceTriangle(btSoftBody::Face *f, const Point32f &lineA, const Point32f &lineB){
       btSoftBody *s = getSoftBody();
-      int idx_a = (int)(f->m_n[0] - &s->m_nodes[0]);
-      int idx_b = (int)(f->m_n[1] - &s->m_nodes[0]);
-      int idx_c = (int)(f->m_n[2] - &s->m_nodes[0]);
+      int idx_a = static_cast<int>(f->m_n[0] - &s->m_nodes[0]);
+      int idx_b = static_cast<int>(f->m_n[1] - &s->m_nodes[0]);
+      int idx_c = static_cast<int>(f->m_n[2] - &s->m_nodes[0]);
 
       btVector3 a = s->m_nodes[idx_a].m_x;
       btVector3 b = s->m_nodes[idx_b].m_x;
@@ -1140,10 +1140,10 @@ namespace icl{
         setPhysicalObject(s);
 
         // copy triangles
-        const btSoftBody::Node *n0 = (const btSoftBody::Node*)&sOrig->m_nodes[0];
+        const btSoftBody::Node *n0 = static_cast<const btSoftBody::Node*>(&sOrig->m_nodes[0]);
         for(int i=0;i<sOrig->m_faces.size();++i){
           const btSoftBody::Face &f = sOrig->m_faces[i];
-          addTriangle((int)(f.m_n[0]-n0),(int)(f.m_n[1]-n0),(int)(f.m_n[2]-n0));
+          addTriangle(static_cast<int>(f.m_n[0]-n0),static_cast<int>(f.m_n[1]-n0),static_cast<int>(f.m_n[2]-n0));
           s->m_faces[i].m_normal = f.m_normal;
           s->m_faces[i].m_ra = f.m_ra;
         }
@@ -1151,9 +1151,9 @@ namespace icl{
         // copy constraints
         for(int i=0;i<sOrig->m_links.size();++i){
           const btSoftBody::Link &l = sOrig->m_links[i];
-          addLink((int)(l.m_n[0]-n0),(int)(l.m_n[1]-n0),
+          addLink(static_cast<int>(l.m_n[0]-n0),static_cast<int>(l.m_n[1]-n0),
                   l.m_material->m_kLST);
-          s->m_links[i].m_tag = ((LinkState*)l.m_tag)->p();
+          s->m_links[i].m_tag = static_cast<LinkState*>(l.m_tag)->p();
           s->m_links[i].m_bbending = l.m_bbending;
           s->m_links[i].m_c0 = l.m_c0;
           s->m_links[i].m_c1 = l.m_c1;
@@ -1259,7 +1259,7 @@ namespace icl{
       for(int i=0;i<s->m_faces.size();++i){
         btSoftBody::Face *f = &s->m_faces[i];
         for(int j=0;j<3;++j){
-          m_data->smoothNormalGraph[(int)(f->m_n[j]-o)].push_back(f);
+          m_data->smoothNormalGraph[static_cast<int>(f->m_n[j]-o)].push_back(f);
         }
       }
     }
@@ -1383,12 +1383,12 @@ namespace icl{
           for(int j=0;j<3;++j){
             t.nodes[j] = bullet2icl_scaled(f.m_n[j]->m_x);
             if(m_data->useSmoothNormals){
-              t.normals[j] = m_data->smoothNormals[(int)(f.m_n[j]-o)];
+              t.normals[j] = m_data->smoothNormals[static_cast<int>(f.m_n[j]-o)];
               if(!t.normals[j][3]) isFlat = false;
             }else{
               t.normals[j] = bullet2icl_unscaled(f.m_n[j]->m_n);
             }
-            t.texCoords[j] = m_data->texCoords[(int)(f.m_n[j] - &s->m_nodes[0])];
+            t.texCoords[j] = m_data->texCoords[static_cast<int>(f.m_n[j] - &s->m_nodes[0])];
           }
 
           if(!isFlat){
@@ -1564,9 +1564,9 @@ namespace icl{
         ViewRay::TriangleIntersection inter = ray.getIntersectionWithTriangle(a,b,c,&pW,&coords);
 
         if(inter == ViewRay::foundIntersection){
-          const Point32f &ta = m_data->texCoords[ (int)(f.m_n[0] - &s->m_nodes[0]) ];
-          const Point32f &tb = m_data->texCoords[ (int)(f.m_n[1] - &s->m_nodes[0]) ];
-          const Point32f &tc = m_data->texCoords[ (int)(f.m_n[2] - &s->m_nodes[0]) ];
+          const Point32f &ta = m_data->texCoords[ static_cast<int>(f.m_n[0] - &s->m_nodes[0]) ];
+          const Point32f &tb = m_data->texCoords[ static_cast<int>(f.m_n[1] - &s->m_nodes[0]) ];
+          const Point32f &tc = m_data->texCoords[ static_cast<int>(f.m_n[2] - &s->m_nodes[0]) ];
 
           Point32f pPaper = ta + (tb-ta)*coords.x + (tc-ta)*coords.y;
 
@@ -1789,9 +1789,9 @@ namespace icl{
 
       btSoftBody::Node *offs = &s->m_nodes[0];
       for(int i=0;i<s->m_faces.size();++i){
-        str << (int)(s->m_faces[i].m_n[0] - offs) << ' ';
-        str << (int)(s->m_faces[i].m_n[1] - offs) << ' ';
-        str << (int)(s->m_faces[i].m_n[2] - offs) << ' ';
+        str << static_cast<int>(s->m_faces[i].m_n[0] - offs) << ' ';
+        str << static_cast<int>(s->m_faces[i].m_n[1] - offs) << ' ';
+        str << static_cast<int>(s->m_faces[i].m_n[2] - offs) << ' ';
       }
     }
 

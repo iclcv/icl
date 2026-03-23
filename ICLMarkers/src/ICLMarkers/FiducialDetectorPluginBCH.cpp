@@ -178,7 +178,7 @@ namespace icl{
         FiducialImpl *impl = new FiducialImpl(this,supported,computed,
                                               p.id, -1,data->sizes[p.id]);
         impl->imageRegion = r;
-        *rot = (int)p.rot;
+        *rot = static_cast<int>(p.rot);
         return impl;
       }else if (returnRejectedQuads){
         *rot = 0;

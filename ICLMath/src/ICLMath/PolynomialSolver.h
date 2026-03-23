@@ -135,8 +135,8 @@ namespace icl{
        int hi, lo, max, min, x, sc;
 
        // Find largest and smallest moduli of coefficients
-       hi = (int)(xdata.MAX_EXP / 2.0);
-       lo = (int)(xdata.MIN_EXP - xbits(P[0]));
+       hi = static_cast<int>(xdata.MAX_EXP / 2.0);
+       lo = static_cast<int>(xdata.MIN_EXP - xbits(P[0]));
        max = xlogb(P[0]); // leading coefficient does not vanish!
        min = xlogb(P[0]);
 

@@ -53,13 +53,13 @@ namespace icl {
         static inline T apply(const T t){ return t*t; }
       };
       template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::sqrtOp>{
-        static inline T apply(const T t){ return clipped_cast<double,T>(sqrt((double)t)); }
+        static inline T apply(const T t){ return clipped_cast<double,T>(sqrt(static_cast<double>(t))); }
       };
       template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::lnOp>{
-        static inline T apply(const T t){ return clipped_cast<double,T>(log((double)t)); }
+        static inline T apply(const T t){ return clipped_cast<double,T>(log(static_cast<double>(t))); }
       };
       template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::expOp>{
-        static inline T apply(const T t){ return clipped_cast<double,T>(exp((double)t)); }
+        static inline T apply(const T t){ return clipped_cast<double,T>(exp(static_cast<double>(t))); }
       };
       template<class T> struct PixelFuncNoVal<T,UnaryArithmeticalOp::absOp>{
         static inline T apply(const T t){ return AbsFunc<T>::f(t); }

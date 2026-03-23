@@ -232,7 +232,7 @@ namespace icl{
       inline T operator()(const Vec2D &p) const{
         float fX0 = p[0] - floor(p[0]), fX1 = 1.0 - fX0;
         float fY0 = p[1] - floor(p[1]), fY1 = 1.0 - fY0;
-        const T* pLL = &operator()((int)p[0],(int)p[1]);
+        const T* pLL = &operator()(static_cast<int>(p[0]),static_cast<int>(p[1]));
         float a = *pLL;        //  a b
         float b = *(++pLL);    //  c d
         pLL += getWidth();

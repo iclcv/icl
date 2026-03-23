@@ -510,7 +510,7 @@ namespace icl{
     T matrix_min(const DynMatrix<T> &m, int *x, int *y){
       ICLASSERT_RETURN_VAL(m.cols(),0);
       const T *a = std::min_element(m.begin(),m.end());
-      int idx = (int)(a-m.begin());
+      int idx = static_cast<int>(a-m.begin());
       if(x) *x = idx%m.cols();
       if(y) *y = idx/m.cols();
       return *a;
@@ -523,7 +523,7 @@ namespace icl{
     T matrix_max(const DynMatrix<T> &m, int *x, int *y){
       ICLASSERT_RETURN_VAL(m.cols(),0);
       const T *a = std::max_element(m.begin(),m.end());
-      int idx = (int)(a-m.begin());
+      int idx = static_cast<int>(a-m.begin());
       if(x) *x = idx%m.cols();
       if(y) *y = idx/m.cols();
       return *a;

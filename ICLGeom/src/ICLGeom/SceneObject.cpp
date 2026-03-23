@@ -715,7 +715,7 @@ namespace icl{
             continue;
           }
           char C = get_format(x[0], lineNr); // we assume, that the format is the same here
-          int n = (int)x.size();
+          int n = static_cast<int>(x.size());
           if( n < 3 ){
             ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unsupported number of face vertices]" );
             continue;
@@ -927,12 +927,12 @@ namespace icl{
     }
 
     int SceneObject::getChildCount() const{
-      return (int)m_children.size();
+      return static_cast<int>(m_children.size());
     }
 
 
     SceneObject *SceneObject::getChild(int index){
-      if(index < 0 || index >= (int)m_children.size()) return 0;
+      if(index < 0 || index >= static_cast<int>(m_children.size())) return 0;
       return m_children[index].get();
     }
 
@@ -942,7 +942,7 @@ namespace icl{
 
     /// returns a shared pointer to the child at given index
     SmartPtr<SceneObject> SceneObject::getChildPtr(int index){
-      if(index < 0 || index >= (int)m_children.size()) return SmartPtr<SceneObject>();
+      if(index < 0 || index >= static_cast<int>(m_children.size())) return SmartPtr<SceneObject>();
       return m_children[index];
     }
 
@@ -1035,21 +1035,21 @@ namespace icl{
     }
 
     SceneObject *SceneObject::addSpheroid(float x, float y, float z, float rx, float ry, float rz, int rzSteps, int xySlices){
-      float params[] = {x,y,z,rx,ry,rz,(float)rzSteps,(float)xySlices};
+      float params[] = {x,y,z,rx,ry,rz,static_cast<float>(rzSteps),static_cast<float>(xySlices)};
       SceneObject *o = new SceneObject("spheroid",params);
       addChild(o);
       return o;
     }
 
     SceneObject *SceneObject::addCylinder(float x, float y, float z, float dx, float dy, float h, int steps){
-      float params[] = {x,y,z,dx,dy,h,(float)steps};
+      float params[] = {x,y,z,dx,dy,h,static_cast<float>(steps)};
       SceneObject *o = new SceneObject("cylinder",params);
       addChild(o);
       return o;
     }
 
     SceneObject *SceneObject::addCone(float x, float y, float z, float rx, float ry, float h, int steps){
-      float params[] = {x,y,z,rx,ry,h,(float)steps};
+      float params[] = {x,y,z,rx,ry,h,static_cast<float>(steps)};
       SceneObject *o = new SceneObject("cone",params);
       addChild(o);
       return o;
@@ -1073,7 +1073,7 @@ namespace icl{
                         utils::sqr(pWorld[1]-ts[i][1]) +
                         utils::sqr(pWorld[2]-ts[i][2]) ); // no sqrt(..) neccessary since we need to find the max. only
       }
-      int idx = (int)(std::min_element(distances.begin(),distances.end()) - distances.begin());
+      int idx = static_cast<int>((std::min_element(distances.begin(),distances.end()) - distances.begin()));
       if(relative) return m_vertices[idx];
       else return ts[idx];
     }
@@ -1437,7 +1437,7 @@ namespace icl{
           Primitive *p = m_primitives[i];
           switch(p->type){
             case Primitive::triangle:{
-              TrianglePrimitive &t = (TrianglePrimitive&)*p;
+              TrianglePrimitive &t = reinterpret_cast<TrianglePrimitive&>(*p);
               Vec n = t.computeNormal(m_vertices);
               for(int i=0;i<3;++i){
                 graph[t[i]].push_back(n);
@@ -1449,7 +1449,7 @@ namespace icl{
             case Primitive::quad:
             case Primitive::texture:{
               if(dynamic_cast<QuadPrimitive*>(p)){
-                QuadPrimitive &q = (QuadPrimitive&)*p;
+                QuadPrimitive &q = reinterpret_cast<QuadPrimitive&>(*p);
                 Vec n = q.computeNormal(m_vertices);
                 for(int i=0;i<4;++i){
                   graph[q[i]].push_back(n);
@@ -1476,7 +1476,7 @@ namespace icl{
           Primitive *p = m_primitives[i];
           switch(p->type){
             case Primitive::triangle:{
-              TrianglePrimitive &t = (TrianglePrimitive&)*p;
+              TrianglePrimitive &t = reinterpret_cast<TrianglePrimitive&>(*p);
               m_normals[i] = t.computeNormal(m_vertices);
               for(int j=0;j<3;++j){
                 t[j+3] = i;
@@ -1486,7 +1486,7 @@ namespace icl{
             case Primitive::quad:
             case Primitive::texture:{
               if(dynamic_cast<QuadPrimitive*>(p)){
-                QuadPrimitive &q = (QuadPrimitive&)*p;
+                QuadPrimitive &q = reinterpret_cast<QuadPrimitive&>(*p);
                 m_normals[i] = q.computeNormal(m_vertices);
                 for(int j=0;j<4;++j){
                   q[j+4] = i;

@@ -78,7 +78,7 @@ namespace icl {
         }
 
         try {
-          buffer = cl::Buffer(context, memFlags, size, (void*)src);
+          buffer = cl::Buffer(context, memFlags, size, const_cast<void*>(src));
         } catch (cl::Error& error) {
           throw CLBufferException(CLException::getMessage(error.err(), error.what()));
         }

@@ -228,7 +228,7 @@ namespace icl{
       int findFullyDraggedGrid(const Point &p) const{
         for(size_t i=0;i<grids.size();++i){
           if(grids[i].contains(p)){
-            return (int)i;
+            return static_cast<int>(i);
           }
         }
         return -1;
@@ -462,7 +462,7 @@ namespace icl{
         if(!any){
           int fullyHitIndex = m_data->findFullyDraggedGrid(p);
           for(size_t i=0;i<m_data->grids.size();++i){
-            m_data->grids[i].state = (int)i == fullyHitIndex ? 1 : 0;
+            m_data->grids[i].state = static_cast<int>(i) == fullyHitIndex ? 1 : 0;
           }
         }
 

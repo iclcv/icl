@@ -63,10 +63,10 @@ namespace icl{
     PointCloudSerializer::MandatoryInfo ProtoBufSerializationDevice::getDeserializationInfo(){
       null_check(__FUNCTION__);
       PointCloudSerializer::MandatoryInfo mi = {
-        (int)protoBufObject->width(),
-        (int)protoBufObject->height(),
-        (bool)protoBufObject->organized(),
-        (int64_t)protoBufObject->timestamp()
+        static_cast<int>(protoBufObject->width()),
+        static_cast<int>(protoBufObject->height()),
+        static_cast<bool>(protoBufObject->organized()),
+        static_cast<int64_t>(protoBufObject->timestamp())
       };
       return mi;
     }
@@ -78,13 +78,13 @@ namespace icl{
         RSBPointCloud_MetaDataEntry *m = protoBufObject->add_metadata();
         m->set_key(featureName.substr(5));
         m->set_value(std::string(bytes,'\0'));
-        return (icl8u*) m->mutable_value()->c_str();
+        return reinterpret_cast<icl8u*>(m->mutable_value()->data());
       }else{
         RSBPointCloud_Field *f = protoBufObject->add_fields();
         f->set_name(featureName);
         f->set_compression("none");
         f->set_data(std::string(bytes,'\0'));
-        return (icl8u*) f->mutable_data()->c_str();
+        return reinterpret_cast<icl8u*>(f->mutable_data()->data());
       }
     }
 
@@ -114,16 +114,16 @@ namespace icl{
           //DEBUG_LOG("searching for meta-data entry " << name << " but found " <<  protoBufObject->metadata(i).key() );
           if(protoBufObject->metadata(i).key() == name){
             const std::string &value = protoBufObject->metadata(i).value();
-            bytes = (int)value.length();
-            return (icl8u*)value.c_str();
+            bytes = static_cast<int>(value.length());
+            return reinterpret_cast<const icl8u*>(value.c_str());
           }
         }
       }else{
         for(int i=0;i<protoBufObject->fields_size();++i){
           if(protoBufObject->fields(i).name() == featureName){
             const std::string &data = protoBufObject->fields(i).data();
-            bytes = (int)data.length();
-            return (icl8u*)data.c_str();
+            bytes = static_cast<int>(data.length());
+            return reinterpret_cast<const icl8u*>(data.c_str());
           }
         }
       }

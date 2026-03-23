@@ -484,7 +484,7 @@ namespace {
       printf ("error paring color line \"%s\" \n",line.c_str());
       continue;
     }
-    lut[(int)line[0]] = getColor(&(line[4]));
+    lut[static_cast<unsigned char>(line[0])] = getColor(&(line[4]));
   }
 
   // creating image
@@ -496,7 +496,7 @@ namespace {
   // paring image content
   for(int y=0;y<h;y++){
     for(const char *line = *p++; *line; line++, ++it[0], ++it[1], ++it[2]){
-      XPMColor c = lut[(int)(*line)];
+      XPMColor c = lut[static_cast<unsigned char>(*line)];
       *(it[0]) = c.r;
       *(it[1]) = c.g;
       *(it[2]) = c.b;

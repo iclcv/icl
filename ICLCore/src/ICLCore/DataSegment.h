@@ -192,7 +192,7 @@ int main(){
         const int dim = getDim();
         for(int i=0;i<dim;++i){
           for(int j=0;j<N;++j){
-            if(fabs((float)(operator[](i)[j] - dst[i][j])) > tollerance) return false;
+            if(fabs(static_cast<float>(operator[](i)[j] - dst[i][j])) > tollerance) return false;
           }
         }
         return true;
@@ -251,8 +251,8 @@ int main(){
         const int dim = src.getDim();
         const bool sp = src.isPacked(), dp = dst.isPacked();
         if(sp && dp){
-          const T *s = (const T*)src.begin();
-          T *d = (T*)dst.begin();
+          const T *s = reinterpret_cast<const T*>(src.begin());
+          T *d = reinterpret_cast<T*>(dst.begin());
           std::transform(s,s+dim*N,d,icl::utils::clipped_cast<T,OtherT>);
         }else if(sp){
           const math::FixedColVector<T,N> *srcpacked = &src[0];
@@ -360,7 +360,7 @@ int main(){
         if(isOrganized() && getSize() != dst.getSize()) return false;
         const int dim = getDim();
         for(int i=0;i<dim;++i){
-          if(fabs((float)(operator[](i) - dst[i])) > tollerance) return false;
+          if(fabs(static_cast<float>(operator[](i) - dst[i])) > tollerance) return false;
         }
         return true;
       }

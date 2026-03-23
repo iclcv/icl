@@ -88,7 +88,7 @@ namespace icl{
           ERROR_LOG("this should not happen!");
           return;
         }
-        if(idx < (int)m_imageBuffer->size()){
+        if(idx < static_cast<int>(m_imageBuffer->size())){
           (**this)->setImage(m_imageBuffer->at(idx));
           (**this)->render();
         }

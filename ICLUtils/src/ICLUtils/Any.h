@@ -169,7 +169,7 @@ namespace icl{
       /** @see \ref PTR */
       template<class T>
       static T* ptr(const Any &any){
-        return *(T**)(&any[0]);
+        return *reinterpret_cast<T**>(const_cast<char*>(&any[0]));
       }
 
       /// this method can be used to create an any that contains a binary encoded pointer
@@ -177,7 +177,7 @@ namespace icl{
       template<class T>
       static Any ptr(const T *p){
         Any any(std::string(sizeof(void*),'\0'));
-        *((const void**)&any[0]) = p;
+        *reinterpret_cast<const void**>(&any[0]) = p;
         return any;
       }
 
@@ -188,20 +188,20 @@ namespace icl{
     inline std::vector<float> Any::as<std::vector<float> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<float> size must be at least sizeof(int)");
-      const icl8u *p = (const icl8u*)&std::string::operator[](0);
-      int size = *((const int*)p);
+      const icl8u *p = reinterpret_cast<const icl8u*>(&std::string::operator[](0));
+      int size = *reinterpret_cast<const int*>(p);
       p += sizeof(int);
       if(l != sizeof(int) + sizeof(float) * size){
         throw ICLException("error converting Any to std::vector<float> unexpected size");
       }
-      return std::vector<float>((const float*)p, ((const float*)p) + size);
+      return std::vector<float>(reinterpret_cast<const float*>(p), reinterpret_cast<const float*>(p) + size);
     }
 
     template<>
     inline Any::Any(const std::vector<float> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(float));
-      icl8u *p = (icl8u*)&std::string::operator[](0);
-      *((int*)p) = v.size();
+      icl8u *p = reinterpret_cast<icl8u*>(&std::string::operator[](0));
+      *reinterpret_cast<int*>(p) = v.size();
       memcpy(p+sizeof(int),v.data(), v.size()*sizeof(float));
     }
 
@@ -209,20 +209,20 @@ namespace icl{
     inline std::vector<int> Any::as<std::vector<int> >() const{
       const size_t l = std::string::length();
       if(l < sizeof(int)) throw ICLException("cannot convert Any to std::vector<int> size must be at least sizeof(int)");
-      const icl8u *p = (const icl8u*)&std::string::operator[](0);
-      int size = *((const int*)p);
+      const icl8u *p = reinterpret_cast<const icl8u*>(&std::string::operator[](0));
+      int size = *reinterpret_cast<const int*>(p);
       p += sizeof(int);
       if(l != sizeof(int) + sizeof(int) * size){
         throw ICLException("error converting Any to std::vector<int> unexpected size");
       }
-      return std::vector<int>((const int*)p, ((const int*)p) + size);
+      return std::vector<int>(reinterpret_cast<const int*>(p), reinterpret_cast<const int*>(p) + size);
     }
 
     template<>
     inline Any::Any(const std::vector<int> &v){
       std::string::resize(sizeof(int) + v.size() * sizeof(int));
-      icl8u *p = (icl8u*)&std::string::operator[](0);
-      *((int*)p) = v.size();
+      icl8u *p = reinterpret_cast<icl8u*>(&std::string::operator[](0));
+      *reinterpret_cast<int*>(p) = v.size();
       memcpy(p+sizeof(int),v.data(), v.size()*sizeof(int));
     }
 

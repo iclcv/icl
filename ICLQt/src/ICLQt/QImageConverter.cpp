@@ -254,7 +254,7 @@ namespace icl{
       if(m_eQImageState < 2) return m_poQBuf;
       for(int i=0;i<5;i++){
         if(m_aeStates[i] < 2){
-          switch((depth)i){
+          switch(static_cast<depth>(i)){
             case depth8u:{
               img_to_qimage(m_apoBuf[i]->asImg<icl8u>(), m_poQBuf, m_usePC);
               break;

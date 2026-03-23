@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLGeom/Scene.h>
+#include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
 #include <ICLGeom/ComplexCoordinateFrameSceneObject.h>
 #include <ICLGeom/GeomDefs.h>
@@ -460,7 +461,7 @@ namespace icl{
       m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size(), visSize));
     }
     void Scene::removeCamera(int index){
-      ICLASSERT_RETURN(index > 0 && index <(int) m_cameras.size());
+      ICLASSERT_RETURN(index > 0 && index <static_cast<int>(m_cameras.size()));
       m_cameras.erase(m_cameras.begin()+index);
       m_cameraObjects.erase(m_cameraObjects.begin()+index);
       /**
@@ -487,7 +488,7 @@ namespace icl{
     }
 
     void Scene::removeObject(int idx){
-      ICLASSERT_RETURN(idx >= 0 && idx < (int)m_objects.size());
+      ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(m_objects.size()));
       m_objects.erase(m_objects.begin()+idx);
     }
 
@@ -502,7 +503,7 @@ namespace icl{
     void Scene::removeObject(const SceneObject *obj){
       std::vector<SmartPtr<SceneObject> >::iterator it = std::find_if(m_objects.begin(),m_objects.end(),is_obj(obj));
       if(it == m_objects.end()){
-        WARNING_LOG("unable to remove given object " << (void*) obj << " from scene: Object not found!");
+        WARNING_LOG("unable to remove given object " << static_cast<const void*>(obj) << " from scene: Object not found!");
       }
       m_objects.erase(it);
     }
@@ -513,8 +514,8 @@ namespace icl{
 
     void Scene::removeObjects(int startIndex, int endIndex){
       if(endIndex < 0) endIndex = m_objects.size();
-      ICLASSERT_RETURN(startIndex >= 0 && startIndex < (int)m_objects.size());
-      ICLASSERT_RETURN(endIndex >= 0 && endIndex <= (int)m_objects.size());
+      ICLASSERT_RETURN(startIndex >= 0 && startIndex < static_cast<int>(m_objects.size()));
+      ICLASSERT_RETURN(endIndex >= 0 && endIndex <= static_cast<int>(m_objects.size()));
       ICLASSERT_RETURN(endIndex > startIndex);
 
       int pos = startIndex;
@@ -618,7 +619,7 @@ namespace icl{
 
       glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
 
-      float shininess[] = { (float)o->m_shininess };
+      float shininess[] = { static_cast<float>(o->m_shininess) };
       glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 
       glPointSize(o->m_pointSize);
@@ -800,7 +801,7 @@ namespace icl{
       glewInit();
       Mutex::Locker l(this);
       //update Sceneinfo
-      ((Configurable*)this)->setPropertyValue("info.FPS",m_fps.getFPSString());
+      (const_cast<Scene*>(this))->setPropertyValue("info.FPS",m_fps.getFPSString());
 
       /* this is not thread save!
           int nObjs = 0, nPrim = 0, nVert = 0;
@@ -813,7 +814,7 @@ namespace icl{
           ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
       */
 
-      ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
+      ICLASSERT_RETURN(camIndex >= 0 && camIndex < static_cast<int>(m_cameras.size()));
 
       Rect currentImageRect = widget ? widget->getImageRect(true) : Rect::null;
       Size widgetSize = widget ? widget->getSize() : Size::null;
@@ -825,26 +826,26 @@ namespace icl{
       if(widget){
         cam.getRenderParams().viewport = currentImageRect;
       }
-      m_renderSettings->lightingEnabled = ((Configurable*)this)->getPropertyValue("enable lighting");
-      m_renderSettings->useImprovedShading = ((Configurable*)this)->getPropertyValue("shadows.use improved shading");
-      m_renderSettings->shadowBias = ((Configurable*)this)->getPropertyValue("shadows.bias");
+      m_renderSettings->lightingEnabled = (const_cast<Scene*>(this))->getPropertyValue("enable lighting");
+      m_renderSettings->useImprovedShading = (const_cast<Scene*>(this))->getPropertyValue("shadows.use improved shading");
+      m_renderSettings->shadowBias = (const_cast<Scene*>(this))->getPropertyValue("shadows.bias");
 
-      string lineSmoothing = ((Configurable*)this)->getPropertyValue("line smoothing");
+      string lineSmoothing = (const_cast<Scene*>(this))->getPropertyValue("line smoothing");
       if(lineSmoothing == "force off")m_renderSettings->lineSmoothing=1;
       else if(lineSmoothing == "force on")m_renderSettings->lineSmoothing=2;
       else m_renderSettings->lineSmoothing=0;
 
-      string pointSmoothing = ((Configurable*)this)->getPropertyValue("point smoothing");
+      string pointSmoothing = (const_cast<Scene*>(this))->getPropertyValue("point smoothing");
       if(pointSmoothing == "force off")m_renderSettings->pointSmoothing=1;
       else if(pointSmoothing == "force on")m_renderSettings->pointSmoothing=2;
       else m_renderSettings->pointSmoothing=0;
 
-      string polygonSmoothing = ((Configurable*)this)->getPropertyValue("polygon smoothing");
+      string polygonSmoothing = (const_cast<Scene*>(this))->getPropertyValue("polygon smoothing");
       if(polygonSmoothing == "force off")m_renderSettings->polygonSmoothing=1;
       else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
       else m_renderSettings->polygonSmoothing=0;
 
-      m_renderSettings->wireframe = ((Configurable*)this)->getPropertyValue("wireframe");
+      m_renderSettings->wireframe = (const_cast<Scene*>(this))->getPropertyValue("wireframe");
 
       vector<Mat> project2shadow;
 
@@ -899,7 +900,7 @@ namespace icl{
         }
 
         //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
-        unsigned int resolution = ((Configurable*)this)->getPropertyValue("shadows.resolution");
+        unsigned int resolution = (const_cast<Scene*>(this))->getPropertyValue("shadows.resolution");
         if(m_fboData->shadow_size != resolution || lightSetupChanged) {
           m_fboData->setShadowFBO(resolution,numShadowLights);
         }
@@ -952,11 +953,11 @@ namespace icl{
       else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
       if(m_renderSettings->lightingEnabled){
-        float size = ((Configurable*)this)->getPropertyValue("light object size");
+        float size = (const_cast<Scene*>(this))->getPropertyValue("light object size");
         glEnable(GL_LIGHTING);
         for(int i=0;i<8;++i){
           if(m_lights[i]) {
-            ((SceneLight*)m_lights[i].get())->setObjectSize(size);
+            const_cast<SceneLight*>(m_lights[i].get())->setObjectSize(size);
             m_lights[i]->setupGL(*this,getCamera(camIndex));
           }else{
             glDisable(GL_LIGHT0+i);
@@ -987,32 +988,32 @@ namespace icl{
       if(m_renderSettings->lightingEnabled && m_renderSettings->useImprovedShading){
         ShaderUtil util(&cam, m_shaders, &project2shadow, m_renderSettings->shadowBias);
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive(&util, (SceneObject*)m_objects[i].get(), camIndex);
+          renderSceneObjectRecursive(&util, const_cast<SceneObject*>(m_objects[i].get()), camIndex);
         }
       } else {
         for(size_t i=0;i<m_objects.size();++i){
-          renderSceneObjectRecursive((SceneObject*)m_objects[i].get(), camIndex);
+          renderSceneObjectRecursive(const_cast<SceneObject*>(m_objects[i].get()), camIndex);
         }
       }
 
-      if(((Configurable*)this)->getPropertyValue("visualize cameras")){
+      if((const_cast<Scene*>(this))->getPropertyValue("visualize cameras")){
         for(unsigned int i=0;i<m_cameraObjects.size();++i){
-          if((int)i == camIndex) continue;
-          renderSceneObjectRecursive((SceneObject*)m_cameraObjects[i].get(), camIndex);
+          if(static_cast<int>(i) == camIndex) continue;
+          renderSceneObjectRecursive(const_cast<SceneObject*>(m_cameraObjects[i].get()), camIndex);
         }
       }
 
       glPushAttrib(GL_ENABLE_BIT);
 
-      if(m_renderSettings->lightingEnabled && (bool)(((Configurable*)this)->getPropertyValue("visualize lights"))){
+      if(m_renderSettings->lightingEnabled && static_cast<bool>((const_cast<Scene*>(this))->getPropertyValue("visualize lights"))){
         for(int i=0;i<8;++i){
           if(m_lights[i] && m_lights[i]->on){
             if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
                (m_lights[i]->camAnchor != camIndex && m_lights[i]->camAnchor != -1)){
               m_lights[i]->updatePositions(*this,getCamera(camIndex));
-              renderSceneObjectRecursive((SceneObject*)m_lights[i]->getLightObject(), camIndex);
+              renderSceneObjectRecursive(const_cast<SceneLightObject*>(m_lights[i]->getLightObject()), camIndex);
               if(m_lights[i]->getShadowEnabled()) {
-                renderSceneObjectRecursive((SceneObject*)m_shadowCameraObjects[i].get(), camIndex);
+                renderSceneObjectRecursive(const_cast<SceneObject*>(m_shadowCameraObjects[i].get()), camIndex);
               }
             }
           }
@@ -1022,29 +1023,29 @@ namespace icl{
       glPopAttrib();
 
       if(getDrawObjectFramesEnabled()){
-        float size = ((Configurable*)this)->getPropertyValue("object frame size");
+        float size = (const_cast<Scene*>(this))->getPropertyValue("object frame size");
         if(!m_objectFrameObject){
           m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
           //m_objectFrameObject->createDisplayList();
         }else{
-          float currSize = ((ComplexCoordinateFrameSceneObject*)m_objectFrameObject.get())->getAxisLength();
+          float currSize = static_cast<ComplexCoordinateFrameSceneObject*>(m_objectFrameObject.get())->getAxisLength();
           if(size != currSize){
             m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
             //m_objectFrameObject->createDisplayList();
           }
         }
         for(size_t i=0;i<m_objects.size();++i){
-          renderObjectFramesRecursive((SceneObject*)m_objects[i].get(), (SceneObject*)m_objectFrameObject.get(), camIndex);
+          renderObjectFramesRecursive(const_cast<SceneObject*>(m_objects[i].get()), const_cast<SceneObject*>(m_objectFrameObject.get()), camIndex);
         }
       }
 
       if(getDrawCoordinateFrameEnabled()){
-        float size = ((Configurable*)this)->getPropertyValue("world frame size");
+        float size = (const_cast<Scene*>(this))->getPropertyValue("world frame size");
         if(!m_coordinateFrameObject){
           m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
           //m_coordinateFrameObject->createDisplayList();
         }else{
-          float currSize = ((ComplexCoordinateFrameSceneObject*)m_coordinateFrameObject.get())->getAxisLength();
+          float currSize = static_cast<ComplexCoordinateFrameSceneObject*>(m_coordinateFrameObject.get())->getAxisLength();
           if(size != currSize){
             m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
             //m_coordinateFrameObject->createDisplayList();
@@ -1057,10 +1058,10 @@ namespace icl{
           iclMax(m_globalAmbientLight[3],250),
         };
         glLightModeliv(GL_LIGHT_MODEL_AMBIENT, minumum_ambience);
-        renderSceneObjectRecursive((SceneObject*)m_coordinateFrameObject.get(), camIndex);
+        renderSceneObjectRecursive(const_cast<SceneObject*>(m_coordinateFrameObject.get()), camIndex);
       }
 
-      if(((Configurable*)this)->getPropertyValue("visualize cursor")){
+      if((const_cast<Scene*>(this))->getPropertyValue("visualize cursor")){
         renderSceneObjectRecursive(m_cursor, camIndex);
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         m_cursor->setDepthTestEnabled(false);
@@ -1102,7 +1103,7 @@ namespace icl{
 
       glEnable(GL_CULL_FACE);
 
-      bool cullFront = ((Configurable*)this)->getPropertyValue("shadows.cull object front for shadows");
+      bool cullFront = (const_cast<Scene*>(this))->getPropertyValue("shadows.cull object front for shadows");
         if(cullFront) {
           glCullFace(GL_FRONT);
       } else {
@@ -1111,7 +1112,7 @@ namespace icl{
 
         ShaderUtil util;
       for(size_t i=0;i<m_objects.size();++i){
-        renderSceneObjectRecursiveShadow(&util, (SceneObject*)m_objects[i].get(), camID);
+        renderSceneObjectRecursiveShadow(&util, const_cast<SceneObject*>(m_objects[i].get()), camID);
       }
         // enable the default framebuffer
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_framebuffer);
@@ -1142,12 +1143,12 @@ namespace icl{
     }
 
     bool Scene::getDrawLightsEnabled() const {
-      return ((Configurable*)this)->getPropertyValue("visualize lights");
+      return (const_cast<Scene*>(this))->getPropertyValue("visualize lights");
     }
 
     MouseHandler *Scene::getMouseHandler(int camIndex){
       // check input
-      ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
+      ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < static_cast<int>(m_cameras.size()),0);
 
       // Search for already exsiting mouse handler for given camera.
       for(unsigned int i=0;i<m_mouseHandlers.size();++i){
@@ -1174,7 +1175,7 @@ namespace icl{
 
     void Scene::setMouseHandler(SceneMouseHandler* sceneMouseHandler, int camIndex){
       // check input
-      ICLASSERT_RETURN(camIndex >= 0 && camIndex < (int)m_cameras.size());
+      ICLASSERT_RETURN(camIndex >= 0 && camIndex < static_cast<int>(m_cameras.size()));
       ICLASSERT_RETURN(sceneMouseHandler);
 
       // Search for existing mouse handler and replace it.
@@ -1193,7 +1194,7 @@ namespace icl{
     }
 
     ICLDrawWidget3D::GLCallback *Scene::getGLCallback(int camIndex){
-      ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < (int)m_cameras.size(),0);
+      ICLASSERT_RETURN_VAL(camIndex >= 0 && camIndex < static_cast<int>(m_cameras.size()),0);
 
       // search for already exsiting mouse handler for given camera
       for(unsigned int i=0;i<m_glCallbacks.size();++i){
@@ -1217,11 +1218,11 @@ namespace icl{
     }
 
     bool Scene::getDrawCamerasEnabled() const{
-      return ((Configurable*)this)->getPropertyValue("visualize cameras");
+      return (const_cast<Scene*>(this))->getPropertyValue("visualize cameras");
     }
 
     bool Scene::getDrawCoordinateFrameEnabled() const{
-      return ((Configurable*)this)->getPropertyValue("visualize world frame");
+      return (const_cast<Scene*>(this))->getPropertyValue("visualize world frame");
     }
 
     void Scene::setBackgroundColor(const GeomColor &color){
@@ -1229,7 +1230,7 @@ namespace icl{
     }
 
     GeomColor Scene::getBackgroundColor() const{
-      Color c = ((Configurable*)this)->getPropertyValue("background color");
+      Color c = (const_cast<Scene*>(this))->getPropertyValue("background color");
       return GeomColor(c[0],c[1],c[2],255);
     }
 
@@ -1316,7 +1317,7 @@ namespace icl{
     }
 
     bool Scene::getDrawObjectFramesEnabled() const{
-      return ((Configurable*)this)->getPropertyValue("visualize object frames");
+      return (const_cast<Scene*>(this))->getPropertyValue("visualize object frames");
     }
 
     void Scene::setCursor(Vec newPosition) {
@@ -1332,12 +1333,12 @@ namespace icl{
     }
 
     void Scene::activateCursor(bool activate) {
-        ((Configurable*)this)->setPropertyValue("visualize cursor",activate);
+        (const_cast<Scene*>(this))->setPropertyValue("visualize cursor",activate);
     }
 
 
     SceneObject *Scene::getObject(int index){
-      if(index < 0 || index >= (int)m_objects.size()) throw ICLException("Scene::getObject: invalid index");
+      if(index < 0 || index >= static_cast<int>(m_objects.size())) throw ICLException("Scene::getObject: invalid index");
       return m_objects[index].get();
     }
 
@@ -1346,7 +1347,7 @@ namespace icl{
     }
 
     SceneObject *find_object_recursive(SceneObject *o, int idx, const std::vector<int> &indices){
-      if(idx == (int)indices.size()-1) return o->getChild(indices[idx]);
+      if(idx == static_cast<int>(indices.size())-1) return o->getChild(indices[idx]);
       else return find_object_recursive(o->getChild(indices[idx]),idx+1,indices);
     }
 
@@ -1418,18 +1419,18 @@ namespace icl{
     }
 
     void Scene::freeDisplayList(void *handle){
-      glDeleteLists(*(GLuint*)handle,1);
-      delete (GLuint*)handle;
+      glDeleteLists(*reinterpret_cast<GLuint*>(handle),1);
+      delete reinterpret_cast<GLuint*>(handle);
     }
 
 
     void Scene::createDisplayList(SceneObject *o) const{
       if(!o->m_displayListHandle){
         o->m_displayListHandle = new GLuint(0);
-        *(GLuint*)o->m_displayListHandle = glGenLists(1);
+        *reinterpret_cast<GLuint*>(o->m_displayListHandle) = glGenLists(1);
       }
       creatingDisplayList = true;
-      glNewList(*(GLuint*)o->m_displayListHandle, GL_COMPILE_AND_EXECUTE);
+      glNewList(*reinterpret_cast<GLuint*>(o->m_displayListHandle), GL_COMPILE_AND_EXECUTE);
       renderSceneObjectRecursive(o, -1);
       glEndList();
       creatingDisplayList = false;
@@ -1584,7 +1585,7 @@ namespace icl{
     void Scene::grab(PointCloudObjectBase &dst){
       int camID = getPropertyValue("point cloud grabber cam");
       bool withDepth = getPropertyValue("grab depth feature");
-      if((int)m_cameras.size() <= camID) {
+      if(static_cast<int>(m_cameras.size()) <= camID) {
         ERROR_LOG("invalid camera id");
         return;
       }

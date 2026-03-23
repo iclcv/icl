@@ -136,7 +136,7 @@ namespace icl{
         return m_data->output;
       }
       m_data->numImplsUsed = maxID +1;
-      if((int)m_data->impls.size() < m_data->numImplsUsed){
+      if(static_cast<int>(m_data->impls.size()) < m_data->numImplsUsed){
         m_data->impls.resize(m_data->numImplsUsed);
       }
 

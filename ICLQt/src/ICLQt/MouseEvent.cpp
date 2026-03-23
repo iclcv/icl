@@ -52,7 +52,7 @@ namespace icl{
 
       std::copy(downMask,downMask+3,m_downMask);
 
-      m_keyboardModifiers = (int)QApplication::keyboardModifiers();
+      m_keyboardModifiers = static_cast<int>(QApplication::keyboardModifiers());
     }
 
     MouseEvent::MouseEvent():

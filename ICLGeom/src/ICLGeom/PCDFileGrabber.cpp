@@ -129,7 +129,7 @@ namespace icl{
           T *dst;
           TParser(int n, std::vector<icl8u> &dstV, int dim):n(n){
             dstV.resize(dim*sizeof(T));
-            dst = (T*)dstV.data();
+            dst = reinterpret_cast<T*>(dstV.data());
           }
           virtual void parse(std::istream &str){
             for(int i=0;i<n;++i){
@@ -175,7 +175,7 @@ namespace icl{
 
           for(size_t i=0;i<nFields;++i){
             int s = sizes[i], n = counts[i];
-            FieldDef def = {(int)i, this->fields[i], types[i], s, n};
+            FieldDef def = {static_cast<int>(i), this->fields[i], types[i], s, n};
             m_typeLUT[this->fields[i]]= def;
             switch(types[i].at(0)){
               case 'I':

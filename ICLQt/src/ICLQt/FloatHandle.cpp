@@ -40,7 +40,7 @@ namespace icl{
       (**this)->setText(QString::number(f));
     }
     float FloatHandle::getValue() const{
-      return (float)atof((**this)->text().toLatin1().data());
+      return static_cast<float>(atof((**this)->text().toLatin1().data()));
     }
   } // namespace qt
 }

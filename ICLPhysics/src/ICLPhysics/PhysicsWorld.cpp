@@ -119,7 +119,7 @@ namespace icl{
       data->m_dynamicsWorld->getDispatchInfo().m_enableSPU = DISPATCHER_ENABLE_SPU;
 
       data->m_worldInfo = new btSoftBodyWorldInfo;
-      data->m_worldInfo->air_density = (btScalar)WORLD_AIR_DENSITY;
+      data->m_worldInfo->air_density = static_cast<btScalar>(WORLD_AIR_DENSITY);
       data->m_worldInfo->water_density = 0;
       data->m_worldInfo->water_offset = 0;
       data->m_worldInfo->water_normal = btVector3(0,0,0);
@@ -298,7 +298,7 @@ namespace icl{
 
     void PhysicsWorld::splitImpulseEnabled(bool enable){
       btContactSolverInfo& info = data->m_dynamicsWorld->getSolverInfo();
-      info.m_splitImpulse = (int)enable;
+      info.m_splitImpulse = static_cast<int>(enable);
       info.m_splitImpulsePenetrationThreshold = -0.02;
     }
 

@@ -101,17 +101,17 @@ namespace icl{
 
     static std::string algorithm_to_string(CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
       static std::vector<std::string> as = tok(get_all_algorithms(),",");
-      if((int)a < 0 || (int)a>=(int)as.size()){
+      if(static_cast<int>(a) < 0 || static_cast<int>(a)>=static_cast<int>(as.size())){
         throw ICLException("CoplanarPointPoseEstimator: wrong PoseEstimationAlgorithm value");
       }
-      return as[(int)a];
+      return as[static_cast<int>(a)];
     }
 
     CoplanarPointPoseEstimator::PoseEstimationAlgorithm string_to_algorithm(const std::string &value){
       static std::vector<std::string> as = tok(get_all_algorithms(),",");
       std::vector<std::string>::const_iterator it = std::find(as.begin(),as.end(),value);
       if(it == as.end()) throw ICLException("CoplanarPointPoseEstimator: wrong string-value for PoseEstimationAlgorithm");
-      return (CoplanarPointPoseEstimator::PoseEstimationAlgorithm)(int)(it - as.begin());
+      return static_cast<CoplanarPointPoseEstimator::PoseEstimationAlgorithm>(static_cast<int>(it - as.begin()));
     }
 
 
@@ -476,7 +476,7 @@ namespace icl{
         axis(0,2) = 0;
         axis.normalize();
 
-        Rt = create_rot_3D(axis(0,0), axis(0,1), axis(0,2), (float)acos((v_z.dot(center))(0,0)));
+        Rt = create_rot_3D(axis(0,0), axis(0,1), axis(0,2), static_cast<float>(acos((v_z.dot(center))(0,0))));
       }
 
       void calculateError(const int n, std::vector< FixedMatrix<icl32f, 1, 3> > &P,

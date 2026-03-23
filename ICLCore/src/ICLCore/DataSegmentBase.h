@@ -104,7 +104,7 @@ namespace icl{
       /// associcates a core::depth values and the (byte)-size of the corresponding type
       static inline int getSizeOf(core::depth d){
         static const int lens[] = { 1, 2, 4, 4, 8 };
-        return lens[(int)d];
+        return lens[static_cast<int>(d)];
       }
 
       /// data pointer orign
@@ -176,7 +176,7 @@ namespace icl{
       inline DataSegmentBase(void *data=0, size_t stride=0,
                              size_t numElements=0, icl32s organizedWidth=-1,
                              core::depth dataDepth=core::depth8u, size_t elemDim=0):
-        data((icl8u*)data),stride(stride),numElements(numElements),
+        data(static_cast<icl8u*>(data)),stride(stride),numElements(numElements),
         organizedWidth(organizedWidth),dataDepth(dataDepth),elemDim(elemDim){}
 
       /// shallow and save cast from data segment base to special data segment version

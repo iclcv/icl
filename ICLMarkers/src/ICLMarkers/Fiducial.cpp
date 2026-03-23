@@ -40,7 +40,7 @@ using namespace icl::cv;
 namespace icl{
   namespace markers{
 
-    const Fiducial::FeatureSet Fiducial::AllFeatures(std::string((int)Fiducial::FeatureCount,'1'));
+    const Fiducial::FeatureSet Fiducial::AllFeatures(std::string(static_cast<int>(Fiducial::FeatureCount),'1'));
 
     int Fiducial::getID() const{
       return impl->id;
@@ -51,7 +51,7 @@ namespace icl{
     }
 
     bool Fiducial::supports(Feature f) const{
-      return impl->supported[(int)f];
+      return impl->supported[static_cast<int>(f)];
     }
 
     FiducialDetectorPlugin *Fiducial::getDetector(){
@@ -67,12 +67,12 @@ namespace icl{
 
   #define FORWARD_CALL_TO_IMPL(T,DIM,X)                \
     const T &Fiducial::get##X##DIM##D() const{         \
-      if(impl->computed[(int)Fiducial::X##DIM##D]){    \
+      if(impl->computed[static_cast<int>(Fiducial::X##DIM##D)]){    \
         return impl->info##DIM##D->info##X;            \
       }else{                                           \
         T &x = impl->ensure##DIM##D()->info##X;        \
         impl->parent->get##X##DIM##D(x,*impl);         \
-        impl->computed.set((int)Fiducial::X##DIM##D);  \
+        impl->computed.set(static_cast<int>(Fiducial::X##DIM##D));  \
         return x;                                      \
       }                                                \
     }

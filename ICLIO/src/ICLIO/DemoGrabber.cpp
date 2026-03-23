@@ -148,10 +148,10 @@ namespace icl{
 
       }
       Size s = m_drawBuffer->getSize();
-      Rect r((int)((m_x.x-m_size.width)*s.width),
-             (int)((m_x.y-m_size.height)*s.height),
-             (int)(m_size.width*s.width),
-             (int)(m_size.height*s.height));
+      Rect r(static_cast<int>((m_x.x-m_size.width)*s.width),
+             static_cast<int>((m_x.y-m_size.height)*s.height),
+             static_cast<int>(m_size.width*s.width),
+             static_cast<int>(m_size.height*s.height));
       r &= m_drawBuffer->getImageRect();
 
       if(m_drawBuffer->getDepth() == depth8u){

@@ -76,7 +76,7 @@ namespace icl{
         DEBUG_LOG("segment too small " << m_data->mem.getSize() << "-" << data.len)
             return;
       }
-      std::copy(data.bytes, data.bytes+data.len,(icl8u*)m_data->mem.data());
+      std::copy(data.bytes, data.bytes+data.len,static_cast<icl8u*>(m_data->mem.data()));
     }
 
     std::string SharedMemoryPublisher::getMemorySegmentName() const{

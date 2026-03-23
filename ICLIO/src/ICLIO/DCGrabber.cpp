@@ -52,9 +52,9 @@ namespace icl{
 
       m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
 
-      m_oOptions.framerate = (dc1394framerate_t)-1; // use default
+      m_oOptions.framerate = static_cast<dc1394framerate_t>(-1); // use default
 
-      m_oOptions.videomode = (dc1394video_mode_t)-1; // use default
+      m_oOptions.videomode = static_cast<dc1394video_mode_t>(-1); // use default
 
       m_oOptions.enable_image_labeling = false;
 
@@ -78,14 +78,14 @@ namespace icl{
       }
 
       dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
-      if((int)bayerLayout == 1){
+      if(static_cast<int>(bayerLayout) == 1){
         std::string s = getPropertyValue("bayer-layout");
         if(s == "RGGB") bayerLayout = DC1394_COLOR_FILTER_RGGB;
         else if(s == "GBRG") bayerLayout = DC1394_COLOR_FILTER_GBRG;
         else if(s == "GRBG") bayerLayout = DC1394_COLOR_FILTER_GRBG;
         else if(s == "BGGR") bayerLayout = DC1394_COLOR_FILTER_BGGR;
-        else if(s == "NONE") bayerLayout = (dc1394color_filter_t)(0);
-        else bayerLayout = (dc1394color_filter_t)0;
+        else if(s == "NONE") bayerLayout = static_cast<dc1394color_filter_t>(0);
+        else bayerLayout = static_cast<dc1394color_filter_t>(0);
       }
 
       m_poGT->getCurrentImage(&m_poImage,bayerLayout,bayermethod_from_string(to_string(m_oOptions.bayermethod)));
@@ -200,7 +200,7 @@ namespace icl{
                   (dc::is_dc800_capable(m_oDev.getCam())) ? "400,800" : "400", //m_oDev.getCam()->bmode_capable == DC1394_TRUE ? "400,800" : "400",
                   m_oOptions.isoMBits == 400 ? "400" : "800" , 0,
                   "Switches the cameraas iso-speed between 400 and 800.");
-      if((int)(m_oDev.getBayerFilterLayout()) == 1){
+      if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
         addProperty("bayer-layout", "menu",
                     "RGGB,GBRG,GRBG,BGGR,NONE"
                     , m_sUserDefinedBayerPattern, 0,
@@ -250,7 +250,7 @@ namespace icl{
       }else if(prop.name == "enable-image-labeling"){
         m_oOptions.enable_image_labeling = utils::parse<bool>(prop.value);
       }else if(prop.name == "bayer-layout"){
-        if((int)(m_oDev.getBayerFilterLayout()) == 1){
+        if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
           if(prop.value == "RGGB" || prop.value == "GBRG" || prop.value == "GRBG" || prop.value == "BGGR" || prop.value == "NONE"){
             m_sUserDefinedBayerPattern = prop.value;
           }else{
@@ -279,9 +279,9 @@ namespace icl{
       if(singlepar.size() < 4){
         //"0-999" -> very short string -> this is an index then
         int index = to32s(singlepar);
-        if(index >= (int)devs.size()){
+        if(index >= static_cast<int>(devs.size())){
           std::ostringstream error("Demanded device does not exist. Only ");
-          error << (int)devs.size() << " devices available.";
+          error << static_cast<int>(devs.size()) << " devices available.";
           throw ICLException(error.str());
         } else {
           return new DCGrabber(devs[index], bandwidth);

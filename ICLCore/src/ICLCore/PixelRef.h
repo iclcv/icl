@@ -169,7 +169,7 @@ namespace icl{
 
       /// returns the channel count
       int getChannels() const {
-        return (int)m_data.size();
+        return static_cast<int>(m_data.size());
       }
     };
   } // namespace core

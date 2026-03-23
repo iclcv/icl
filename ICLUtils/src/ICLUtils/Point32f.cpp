@@ -39,7 +39,7 @@ namespace icl{
     }
 
     float Point32f::distanceTo(const Point32f &p) const{
-      return sqrt(pow((float) (p.x-x), 2) + pow((float) (p.y-y), 2));
+      return sqrt(pow(static_cast<float>(p.x-x), 2) + pow(static_cast<float>(p.y-y), 2));
     }
 
     std::ostream &operator<<(std::ostream &s, const Point32f &p){

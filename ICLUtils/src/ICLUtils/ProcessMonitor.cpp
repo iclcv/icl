@@ -96,7 +96,7 @@ namespace icl{
       char res[128] = {0};
       fp = popen("/bin/cat /proc/cpuinfo |grep -c '^processor'","r");
       size_t fread_result = fread(res, 1, sizeof(res)-1, fp);
-      (void)fread_result;
+      static_cast<void>(fread_result);
       fclose(fp);
       m_data->info.numCPUs = parse<int>(res);
   #endif

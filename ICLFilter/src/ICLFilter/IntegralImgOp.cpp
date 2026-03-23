@@ -105,7 +105,7 @@ namespace icl{
   #define STEP *d =  -*(dl-1) + *dl + *(d-1) + D(*s);  ++s; ++d; ++dl;
 
         // we use 16x loop-unrolling here. This is about 5% faster then 8x
-        for(int n = ((int)(sEnd - s)) >> 4; n>0; --n){
+        for(int n = (static_cast<int>(sEnd - s)) >> 4; n>0; --n){
           STEP STEP STEP STEP STEP STEP STEP STEP
           STEP STEP STEP STEP STEP STEP STEP STEP
         }

@@ -252,7 +252,7 @@ namespace icl{
         }
 
 
-        Result r =  { T, true, (float)res.error };
+        Result r =  { T, true, static_cast<float>(res.error) };
         return r;
       }else{
         if(dbg){

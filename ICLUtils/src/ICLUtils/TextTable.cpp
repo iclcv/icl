@@ -61,7 +61,7 @@ namespace icl{
     }
 
     static inline std::string save_substr_justified(const std::string &s, int a, int l, int ll){
-      int sl = (int)s.length();
+      int sl = static_cast<int>(s.length());
       if(a>=sl) return std::string(ll,' ');
       if(a+l > sl) l=sl-a;
       std::string tmp = s.substr(a,l);
@@ -80,9 +80,9 @@ namespace icl{
       for(int x=0;x<getSize().width;++x){
         for(int y=0;y<getSize().height;++y){
           const std::string &s = m_texts[x + getSize().width*y ];
-          int l = (int)s.length();
+          int l = static_cast<int>(s.length());
           int cellWidth = iclMin(l,m_maxCellWidth);
-          int cellHeight = iclMax(1,(int)ceil(float(l) / m_maxCellWidth));
+          int cellHeight = iclMax(1,static_cast<int>(ceil(static_cast<float>(l) / m_maxCellWidth)));
           //        std::cout << "s: -"<< s << "- l:" << l << " cellH:" << cellHeight <<  " y:"<<  y << std::endl;
 
           if(cellWidth > columnWidths[x]) columnWidths[x] = cellWidth;

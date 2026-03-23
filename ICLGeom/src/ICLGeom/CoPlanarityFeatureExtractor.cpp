@@ -85,7 +85,7 @@ namespace icl{
 
     utils::Point CoPlanarityFeatureExtractor::getRandomPoint(std::vector<int> surface, int imgWidth){
       int id=surface[rand()%surface.size()];
-      int y = (int)floor((float)id/(float)imgWidth);
+      int y = static_cast<int>(floor(static_cast<float>(id)/static_cast<float>(imgWidth)));
       int x = id-y*imgWidth;
       utils::Point p(x,y);
       return p;
@@ -176,7 +176,7 @@ namespace icl{
         utils::Point p1=getRandomPoint(surface1, w);
         utils::Point p2=getRandomPoint(surface2, w);
 
-        if(SegmenterUtils::occlusionCheck((core::Img32f&)depthImage, p1, p2, distanceTolerance, outlierTolerance)){
+        if(SegmenterUtils::occlusionCheck(const_cast<core::Img32f&>(depthImage), p1, p2, distanceTolerance, outlierTolerance)){
           occlusions++;
         }
       }

@@ -98,7 +98,7 @@ namespace icl{
           dist(i,j) = cogs[i].distanceTo(cogs[j]);
         }
       }
-      int idx = (int)(std::max_element(dist.begin(),dist.end()) - dist.begin());
+      int idx = static_cast<int>(std::max_element(dist.begin(),dist.end()) - dist.begin());
       return std::pair<int,int>(idx%4,idx/4);
     }
 
@@ -175,7 +175,7 @@ namespace icl{
       // associate points
       for(int i=0;i<4;++i){
         const std::vector<ImageRegion> s=sorted[i].getSubRegions();
-        int n = (int)s.size();
+        int n = static_cast<int>(s.size());
         std::vector<Point32f> cs(n);
         for(int j=0;j<n;++j){
           cs[j] = s[j].getCOG();
@@ -219,10 +219,10 @@ namespace icl{
         if(srs.size() != 4) continue;
 
         int ns[] = {
-          iclMin(MarkerCodeICL1::P,(int)srs[0].getSubRegions().size()),
-          iclMin(MarkerCodeICL1::P,(int)srs[1].getSubRegions().size()),
-          iclMin(MarkerCodeICL1::P,(int)srs[2].getSubRegions().size()),
-          iclMin(MarkerCodeICL1::P,(int)srs[3].getSubRegions().size())
+          iclMin(MarkerCodeICL1::P,static_cast<int>(srs[0].getSubRegions().size())),
+          iclMin(MarkerCodeICL1::P,static_cast<int>(srs[1].getSubRegions().size())),
+          iclMin(MarkerCodeICL1::P,static_cast<int>(srs[2].getSubRegions().size())),
+          iclMin(MarkerCodeICL1::P,static_cast<int>(srs[3].getSubRegions().size()))
         };
 
 

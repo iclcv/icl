@@ -196,9 +196,9 @@ namespace icl {
 
         */
         virtual T transform(int v1, int v2, int v3){
-          return ::sqrt( ::pow((float) (v1-m_aiRef[0]),2) +
-                         ::pow((float) (v2-m_aiRef[1]),2) +
-                         ::pow((float) (v3-m_aiRef[2]),2) ) /
+          return ::sqrt( ::pow(static_cast<float>(v1-m_aiRef[0]),2) +
+                         ::pow(static_cast<float>(v2-m_aiRef[1]),2) +
+                         ::pow(static_cast<float>(v3-m_aiRef[2]),2) ) /
                          ::sqrt(3.0) < m_iThresh ? T(255) : T(0);
         }
         private:

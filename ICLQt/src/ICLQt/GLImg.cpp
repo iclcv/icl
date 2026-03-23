@@ -108,7 +108,7 @@ namespace icl{
 
       template<class T, int C>
       std::vector<Range64f> findMinMax() const{
-        const T *p = (const T*) data.data();
+        const T *p = reinterpret_cast<const T*>(data.data());
         const int dim = size.getDim();
         Range64f rs[C];
         for(int c=0;c<C;++c){
@@ -607,7 +607,7 @@ namespace icl{
           else if(imageDepth != depth8u) fScaleRGB = 1./255;
         }
 
-        float c = (float)bci[1]/255;
+        float c = static_cast<float>(bci[1])/255;
         if(c>0) c*=10;
         float s = fScaleRGB*(1.0+c);
         float b = fBiasRGB-c/2;
@@ -1113,7 +1113,7 @@ namespace icl{
       ICLASSERT_RETURN_VAL(!isNull(),std::vector<Range64f>());
       Range64f global;
       return m_data->findMinMaxGeneric(global);
-      (void)global;
+      static_cast<void>(global);
     }
 
 

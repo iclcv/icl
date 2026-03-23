@@ -665,9 +665,9 @@ void FastHessian::selectIpoints(CLBuffer d_laplacian, CLBuffer d_pixPos,
 					this->responseMap.at(filter_map[o][i + 2])->getFilter();
 			int tStep = this->responseMap.at(filter_map[o][i + 2])->getStep();
 
-			size_t localWorkSize[2] = { (size_t) BLOCK_W, (size_t) BLOCK_H };
-			size_t globalWorkSize[2] = { (size_t) roundUp(mWidth, BLOCK_W),
-					(size_t) roundUp(mHeight, BLOCK_H) };
+			size_t localWorkSize[2] = { static_cast<size_t>(BLOCK_W), static_cast<size_t>(BLOCK_H) };
+			size_t globalWorkSize[2] = { static_cast<size_t>(roundUp(mWidth, BLOCK_W)),
+					static_cast<size_t>(roundUp(mHeight, BLOCK_H)) };
 
 			non_max_supressionKernel[0] = tResponse;
 			non_max_supressionKernel[1] = tWidth;
@@ -784,16 +784,16 @@ Surf::Surf(int initialPoints, int i_height, int i_width, int octaves,
 
 	// Allocate constant data on device
 	this->m_data->d_gauss25 = program.createBuffer("r", sizeof(float) * 49,
-			(void*) Surf::Data::gauss25);
+			Surf::Data::gauss25);
 
 	this->m_data->d_id = program.createBuffer("r", sizeof(unsigned int) * 13,
-			(void*) Surf::Data::id);
+			Surf::Data::id);
 
 	this->m_data->d_i = program.createBuffer("r", sizeof(unsigned int) * 16,
-			(void*) Surf::Data::i);
+			Surf::Data::i);
 
 	this->m_data->d_j = program.createBuffer("r", sizeof(int) * 16,
-			(void*) Surf::Data::j);
+			Surf::Data::j);
 
 	// Allocate buffers for each of the interesting points.  We don't know
 	// how many there are initially, so must allocate more than enough space
@@ -822,12 +822,12 @@ Surf::Surf(int initialPoints, int i_height, int i_width, int octaves,
 	// Allocate buffers to store the output data (descriptor information)
 	// on the host
 
-	this->m_data->scale = (float*) alloc(initialPoints * sizeof(float));
-	this->m_data->pixPos = (float2*) alloc(initialPoints * sizeof(float2));
-	this->m_data->laplacian = (int*) alloc(initialPoints * sizeof(int));
-	this->m_data->desc = (float*) alloc(
-			initialPoints * DESC_SIZE * sizeof(float));
-	this->m_data->orientation = (float*) alloc(initialPoints * sizeof(float));
+	this->m_data->scale = static_cast<float*>(alloc(initialPoints * sizeof(float)));
+	this->m_data->pixPos = static_cast<float2*>(alloc(initialPoints * sizeof(float2)));
+	this->m_data->laplacian = static_cast<int*>(alloc(initialPoints * sizeof(int)));
+	this->m_data->desc = static_cast<float*>(alloc(
+			initialPoints * DESC_SIZE * sizeof(float)));
+	this->m_data->orientation = static_cast<float*>(alloc(initialPoints * sizeof(float)));
 	// This is how much space is available for Ipts
 	this->m_data->maxIpts = initialPoints;
 
@@ -871,7 +871,7 @@ void Surf::computeIntegralImage(const icl::core::Img32f &image) {
 	// set up variables for data access
 	int height = image.getHeight(); //img->height;
 	int width = image.getWidth(); //img->width;
-	float *data = (float*) image.begin(0); //img->imageData;
+	const float *data = image.begin(0); //img->imageData;
 
 	//m_grayBuffer = m_grayBuffer/(1.0f/255.0f);
 
@@ -890,7 +890,7 @@ void Surf::computeIntegralImage(const icl::core::Img32f &image) {
 	// -----------------------------------------------------------------
 
 	size_t localWorkSize1[2] = { 64, 1 };
-	size_t globalWorkSize1[2] = { (size_t) 64, (size_t) height };
+	size_t globalWorkSize1[2] = { static_cast<size_t>(64), static_cast<size_t>(height) };
 
 	scan_kernel.setArgs(this->m_data->d_intImage, this->m_data->d_tmpIntImage,
 			height, width);
@@ -917,7 +917,7 @@ void Surf::computeIntegralImage(const icl::core::Img32f &image) {
 	int widthT = height;
 
 	size_t localWorkSize3[2] = { 64, 1 };
-	size_t globalWorkSize3[2] = { (size_t) 64, (size_t) heightT };
+	size_t globalWorkSize3[2] = { static_cast<size_t>(64), static_cast<size_t>(heightT) };
 
 	scan_kernel.setArgs(this->m_data->d_tmpIntImageT1,
 			this->m_data->d_tmpIntImageT2, heightT, widthT);
@@ -955,7 +955,7 @@ void Surf::createDescriptors(int i_width, int i_height) {
 
 	size_t localWorkSizeSurf64[2] = { threadsPerWG, 1 };
 	size_t globalWorkSizeSurf64[2] = { (wgsPerIpt * threadsPerWG),
-			(size_t) this->m_data->numIpts };
+			static_cast<size_t>(this->m_data->numIpts) };
 
 	createDescrtptorsKernel.setArgs(this->m_data->d_intImage, i_width, i_height,
 			this->m_data->d_scale, this->m_data->d_desc, this->m_data->d_pixPos,
@@ -967,7 +967,7 @@ void Surf::createDescriptors(int i_width, int i_height) {
 			localWorkSizeSurf64[1]);
 
 	size_t localWorkSizeNorm64[] = { DESC_SIZE };
-	size_t globallWorkSizeNorm64[] = { (size_t) this->m_data->numIpts
+	size_t globallWorkSizeNorm64[] = { static_cast<size_t>(this->m_data->numIpts)
 			* DESC_SIZE };
 
 	normalizeDescriptorsKernel.setArgs(this->m_data->d_desc,
@@ -987,7 +987,7 @@ void Surf::createDescriptors(int i_width, int i_height) {
 void Surf::getOrientations(int i_width, int i_height) {
 
 	size_t localWorkSize1[] = { 169 };
-	size_t globalWorkSize1[] = { (size_t) this->m_data->numIpts * 169 };
+	size_t globalWorkSize1[] = { static_cast<size_t>(this->m_data->numIpts) * 169 };
 
 	/*!
 	 Assign the supplied Ipoint an orientation
@@ -1003,7 +1003,7 @@ void Surf::getOrientations(int i_width, int i_height) {
 			this->m_data->d_res);
 
 	size_t localWorkSize2[] = { 42 };
-	size_t globalWorkSize2[] = { (size_t) this->m_data->numIpts * 42 };
+	size_t globalWorkSize2[] = { static_cast<size_t>(this->m_data->numIpts) * 42 };
 
 	getOrientationStep2Kernel.apply(globalWorkSize2[0], 0, 0,
 			localWorkSize2[0]);
@@ -1041,11 +1041,11 @@ void Surf::reallocateIptBuffers() {
 	this->m_data->d_orientation = program.createBuffer("rw",
 			newSize * sizeof(float));
 
-	this->m_data->scale = (float*) alloc(newSize * sizeof(float));
-	this->m_data->pixPos = (float2*) alloc(newSize * sizeof(float2));
-	this->m_data->laplacian = (int*) alloc(newSize * sizeof(int));
-	this->m_data->desc = (float*) alloc(newSize * DESC_SIZE * sizeof(float));
-	this->m_data->orientation = (float*) alloc(newSize * sizeof(float));
+	this->m_data->scale = static_cast<float*>(alloc(newSize * sizeof(float)));
+	this->m_data->pixPos = static_cast<float2*>(alloc(newSize * sizeof(float2)));
+	this->m_data->laplacian = static_cast<int*>(alloc(newSize * sizeof(int)));
+	this->m_data->desc = static_cast<float*>(alloc(newSize * DESC_SIZE * sizeof(float)));
+	this->m_data->orientation = static_cast<float*>(alloc(newSize * sizeof(float)));
 
 }
 

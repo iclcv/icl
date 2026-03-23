@@ -173,8 +173,8 @@ namespace icl{
         } params;
 
         const icl8u *data;           //!< compressed data begin (data[0] = magick[0])
-        inline const char *metaBegin() const { return (char*)(data + sizeof(Params)); }
-        inline const icl8u *imageBegin() const { return (icl8u*)(metaBegin() + params.metaLen); }
+        inline const char *metaBegin() const { return reinterpret_cast<const char*>(data + sizeof(Params)); }
+        inline const icl8u *imageBegin() const { return reinterpret_cast<const icl8u*>(metaBegin() + params.metaLen); }
         inline int imageLen() const { return params.dataLen - sizeof(Params) - params.metaLen; }
         inline std::string getMagickCode() const { return std::string(params.magick,params.magick+4); }
         inline std::string getCompressionMode() const { return std::string(params.compressionMode,params.compressionMode+4); }

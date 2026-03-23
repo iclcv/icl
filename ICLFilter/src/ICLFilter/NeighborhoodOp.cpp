@@ -134,7 +134,7 @@ namespace icl {
       if(!m_poMT){
         m_poMT = new MultiThreader(nThreads);
       }else{
-        if(m_poMT->getNumThreads() != (int)nThreads){
+        if(m_poMT->getNumThreads() != static_cast<int>(nThreads)){
           delete m_poMT;
           m_poMT = new MultiThreader(nThreads);
         }

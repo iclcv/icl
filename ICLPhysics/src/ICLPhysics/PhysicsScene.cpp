@@ -36,7 +36,7 @@ namespace icl{
 				: geom::Scene(), PhysicsWorld(type) {}
 
       void PhysicsScene::addObject(PhysicsObject *object, bool passOwnerShip) {
-        Scene::addObject((geom::SceneObject*)object, passOwnerShip);
+        Scene::addObject(static_cast<geom::SceneObject*>(object), passOwnerShip);
         PhysicsWorld::addObject(object);
       }
 
@@ -50,13 +50,13 @@ namespace icl{
 
       void PhysicsScene::removeObject(PhysicsObject *obj) {
         PhysicsWorld::removeObject(obj);
-        Scene::removeObject((geom::SceneObject*)obj);
+        Scene::removeObject(static_cast<geom::SceneObject*>(obj));
       }
 
       void PhysicsScene::removeObjects(int startIndex, int endIndex) {
         if(endIndex < 0) endIndex = m_objects.size();
-        ICLASSERT_RETURN(startIndex >= 0 && startIndex < (int)m_objects.size());
-        ICLASSERT_RETURN(endIndex >= 0 && endIndex <= (int)m_objects.size());
+        ICLASSERT_RETURN(startIndex >= 0 && startIndex < static_cast<int>(m_objects.size()));
+        ICLASSERT_RETURN(endIndex >= 0 && endIndex <= static_cast<int>(m_objects.size()));
         ICLASSERT_RETURN(endIndex > startIndex);
 
         int pos = startIndex;

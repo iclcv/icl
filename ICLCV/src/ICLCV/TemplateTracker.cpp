@@ -136,7 +136,7 @@ namespace icl{
       Img8u r(Size(s.width*w,s.height*h),1);
       for(int y=0;y<h;++y){
         for(int x=0;x<w;++x){
-          if(x+w*y < (int)data->lut.size()){
+          if(x+w*y < static_cast<int>(data->lut.size())){
             r.setROI(Point(x*s.width,y*s.height),s);
             data->lut[x+w*y]->deepCopyROI(&r);
           }
@@ -164,7 +164,7 @@ namespace icl{
       const double angle = last.angle;
       const int X = last.pos.x;
       const int Y = last.pos.y;
-      const int lutSize = (int)data->lut.size();
+      const int lutSize = static_cast<int>(data->lut.size());
       const int angleIndex = angle / (2*M_PI) * (lutSize-1);
       const int ROI = getPropertyValue("tracking.position range");
       const float rotationRange = getPropertyValue("tracking.rotation range");

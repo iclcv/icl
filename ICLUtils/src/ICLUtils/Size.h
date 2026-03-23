@@ -190,7 +190,7 @@ namespace icl {
       Size operator-(const Size &s) const {return  Size(width-s.width,height-s.height);}
 
       /// scales the size by a scalar value
-      Size operator*(double d) const { return Size((int)(d*width),(int)(d*height));}
+      Size operator*(double d) const { return Size(static_cast<int>(d*width),static_cast<int>(d*height));}
 
       /// scales the size by a scalar value
       Size operator/(double d) const { return (*this)*(1.0/d); }
@@ -202,7 +202,7 @@ namespace icl {
       Size& operator-=(const Size &s){width-=s.width; height-=s.height; return *this;}
 
       /// scales the size parameters inplace by a scalar
-      Size& operator*=(double d) {width=(int)((float)width*d); height=(int)((float)height*d); return *this;};
+      Size& operator*=(double d) {width=static_cast<int>(static_cast<float>(width)*d); height=static_cast<int>(static_cast<float>(height)*d); return *this;};
 
       /// scales the size parameters inplace by a scalar
       Size& operator/=(double d) { return (*this)*=(1.0/d); }

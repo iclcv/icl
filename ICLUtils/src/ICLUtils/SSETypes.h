@@ -75,8 +75,8 @@
       // we have to convert them value by value to prevent memory access violation
       icl8u *dSSEEnd = dEnd - 15;
       // some constants
-      const icl8ux16 c128 = icl8ux16((icl8s)128);
-      const icl8ux16 cT = icl8ux16((icl8s)threshold - 129);
+      const icl8ux16 c128 = icl8ux16(static_cast<icl8s>(128));
+      const icl8ux16 cT = icl8ux16(static_cast<icl8s>(threshold - 129));
 
       // convert 16 values at the same time
       for (; d < dSSEEnd; d += 16) {

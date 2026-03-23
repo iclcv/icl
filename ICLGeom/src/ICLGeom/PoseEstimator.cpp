@@ -220,7 +220,7 @@ namespace icl{
 
       }else{
         // compute required scaling factor (if desired)
-        const double scale = (double)sqrt(sx/sy);
+        const double scale = static_cast<double>(sqrt(sx/sy));
 
         // -- build the 4x4 matrix N --
         M4 N;

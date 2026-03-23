@@ -62,9 +62,9 @@ namespace icl{
 
     template<class T>
     void sample_image_region(const std::vector<LineSegment> &ls, Img<T> &image, const std::vector<int> &cs){
-      for(int c=0;c<image.getChannels() && c<(int)cs.size();++c){
+      for(int c=0;c<image.getChannels() && c<static_cast<int>(cs.size());++c){
         Channel<T> ch = image[c];
-        std::for_each(ls.begin(),ls.end(),DrawLineSegment<T>(ch,(T)cs[c]));
+        std::for_each(ls.begin(),ls.end(),DrawLineSegment<T>(ch,static_cast<T>(cs[c])));
       }
     }
 
@@ -434,7 +434,7 @@ namespace icl{
     int ImageRegion::getBoundaryPointCount(bool thinned) const{
       // {{{ open
 
-      return (int)getBoundary(thinned).size();
+      return static_cast<int>(getBoundary(thinned).size());
     }
 
     // }}}

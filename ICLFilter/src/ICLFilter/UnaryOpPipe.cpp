@@ -74,7 +74,7 @@ namespace icl{
     }
 
     int UnaryOpPipe::getLength() const {
-      return (int)ops.size();
+      return static_cast<int>(ops.size());
     }
     ImgBase *&UnaryOpPipe::getLastImage() {
       return ims[getLength()-1];

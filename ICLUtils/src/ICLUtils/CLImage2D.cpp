@@ -138,7 +138,7 @@ namespace icl {
 						sstream << "channel: " << num_channel << ", depth-type: "  << depth;
 						throw CLBufferException("No such image type is supported: "+sstream.str());
 					}
-					image2D = cl::Image2D(context, memFlags, cl::ImageFormat(order, channelType), width, height, 0, (void*) src);
+					image2D = cl::Image2D(context, memFlags, cl::ImageFormat(order, channelType), width, height, 0, const_cast<void*>(src));
                 } catch (cl::Error& error) {
                     throw CLBufferException(CLException::getMessage(error.err(), error.what()));
                 }
@@ -250,7 +250,7 @@ namespace icl {
 
         void CLImage2D::write(const void *src, const utils::Rect &region,
                 bool block) {
-            impl->write((void *)src, region, block);
+            impl->write(const_cast<void*>(src), region, block);
         }
 
         cl::Image2D CLImage2D::getImage2D() {

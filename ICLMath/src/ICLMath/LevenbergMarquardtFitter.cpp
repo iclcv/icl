@@ -132,7 +132,7 @@ namespace icl{
     typename LevenbergMarquardtFitter<Scalar>::Result
     LevenbergMarquardtFitter<Scalar>::fitVec(const Matrix &xs, const Matrix &ys, Params params){
       const int O = ys.cols(); // output dim
-      ICLASSERT_THROW(O == (int)js.size(), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
+      ICLASSERT_THROW(O == static_cast<int>(js.size()), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
       const int I = xs.cols();
       const int D = xs.rows();
       const int P = params.dim();
@@ -308,7 +308,7 @@ namespace icl{
     typename LevenbergMarquardtFitter<Scalar>::Result
     LevenbergMarquardtFitter<Scalar>::fitMat(const Matrix &xs, const Matrix &ys, Params params){
       const int O = ys.cols(); // output dim
-      ICLASSERT_THROW(O == (int)jsMat.size(), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
+      ICLASSERT_THROW(O == static_cast<int>(jsMat.size()), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
       const int D = xs.cols();
       const int P = params.dim();
       const int MAX_IT = maxIterations;

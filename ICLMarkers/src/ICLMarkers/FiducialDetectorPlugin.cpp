@@ -65,7 +65,7 @@ namespace icl{
                                      " no camera was given to parent FiducialDetector!");
       try{
         const std::vector<Fiducial::KeyPoint> & kps = Fiducial(&impl).getKeyPoints2D();
-        int n = (int)kps.size();
+        int n = static_cast<int>(kps.size());
         std::vector<Point32f> ps(2*n);
         for(int i=0;i<n;++i){
           ps[i] = kps[i].markerPos;

@@ -67,7 +67,7 @@ namespace icl{
       double val = (dstRange/srcRange)*i + m_dMin;
 
       if(m_dStepping){
-        int stepIdx = (int)round((val-m_dMin)/m_dStepping);
+        int stepIdx = static_cast<int>(round((val-m_dMin)/m_dStepping));
         val = m_dMin+stepIdx*m_dStepping;
       }
 
@@ -84,14 +84,14 @@ namespace icl{
       double m = 10000.0/r;
       double b = -m*m_dMin;
       m_poLabel->setNum(d);
-      m_poSlider->setValue((int)(m*d+b));;
+      m_poSlider->setValue(static_cast<int>(m*d+b));;
     }
 
     void DoubleSlider::setDoubleStepping(double s){
       double r = m_dMax-m_dMin;
       static const double ri = 10000;
 
-      int interval =   (int)round(r/ri *s);
+      int interval =   static_cast<int>(round(r/ri *s));
       if(interval < 100) interval *=10;
       if(interval < 100) interval *=10;
 

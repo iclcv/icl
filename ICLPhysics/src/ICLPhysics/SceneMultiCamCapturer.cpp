@@ -88,7 +88,7 @@ namespace icl{
 
       std::string outputType = pa(progArgName,0);
       std::vector<std::string> defs = tok(*pa(progArgName,1),",");
-      ICLASSERT_THROW((int)defs.size() == num, ICLException("SceneMultiCamCapturer::init: "
+      ICLASSERT_THROW(static_cast<int>(defs.size()) == num, ICLException("SceneMultiCamCapturer::init: "
                                                             "number of camera indices is "
                                                             "different from the number of "
                                                             "given output definitions "));

@@ -61,7 +61,7 @@ namespace icl{
 
     std::string fourcc_to_string(int fourcc){
       int tmp[2] = {fourcc,0};
-      return std::string((char*)tmp);
+      return std::string(reinterpret_cast<char*>(tmp));
     }
 
     class V4L2Grabber::Impl : public Thread {
@@ -222,8 +222,8 @@ namespace icl{
 
             if(xioctl(VIDIOC_ENUM_FMT,&format) != 0) break;
 
-            SupportedFormatPtr &f = supportedFormats[(const char*)format.description];
-            f = new SupportedFormat(format.index,format.pixelformat, (const char*)format.description);
+            SupportedFormatPtr &f = supportedFormats[reinterpret_cast<const char*>(format.description)];
+            f = new SupportedFormat(format.index,format.pixelformat, reinterpret_cast<const char*>(format.description));
 
             for(int j=0;true;++j){
               v4l2_frmsizeenum sizes;
@@ -334,7 +334,7 @@ namespace icl{
             normal_exception("device does not support streaming i/o (mmap)");
           }
 
-          this->deviceNameInfo = (const char*)cap.card;
+          this->deviceNameInfo = reinterpret_cast<const char*>(cap.card);
 
           find_device_formats();
 
@@ -462,7 +462,7 @@ namespace icl{
           }
           SHOW(fourcc_to_string(this->currentFormat->fourcc));
               */
-          process_image ((const icl8u*)buffers[buf.index].data, this->currentFormat->fourcc);
+          process_image (static_cast<const icl8u*>(buffers[buf.index].data), this->currentFormat->fourcc);
 
           if (-1 == xioctl (VIDIOC_QBUF, &buf)){
             errno_exception("enqueue video buffer VIDIOC_QBUF failed");
@@ -602,7 +602,7 @@ namespace icl{
               break;
             }
             if(!(queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)){
-              std::string controlName = (const char*)queryctrl.name;
+              std::string controlName = reinterpret_cast<const char*>(queryctrl.name);
               switch(queryctrl.type){
                 case V4L2_CTRL_TYPE_MENU:{
                   v4l2_querymenu querymenu;
@@ -613,11 +613,11 @@ namespace icl{
                   SupportedPropertyPtr &p = supportedProperties[controlName];
                   p = new SupportedProperty(this,controlName,"menu","",value, queryctrl.id);
 
-                  for(querymenu.index = queryctrl.minimum; (int)querymenu.index <= queryctrl.maximum; querymenu.index++) {
+                  for(querymenu.index = queryctrl.minimum; static_cast<int>(querymenu.index) <= queryctrl.maximum; querymenu.index++) {
                     if(xioctl(VIDIOC_QUERYMENU,&querymenu)){
                       errno_exception("VIDIOC_QUERYMENU failed");
                     }
-                    std::string menuName = (const char*)querymenu.name;
+                    std::string menuName = reinterpret_cast<const char*>(querymenu.name);
                     p->menu[menuName] = querymenu.index;
                   }
                 }
@@ -643,7 +643,7 @@ namespace icl{
                 case V4L2_CTRL_TYPE_INTEGER64:
                 case V4L2_CTRL_TYPE_CTRL_CLASS:
                 default:
-                  WARNING_LOG("unsupported control type: " << (const char*)queryctrl.name);
+                  WARNING_LOG("unsupported control type: " << reinterpret_cast<const char*>(queryctrl.name));
               }
             }
           }

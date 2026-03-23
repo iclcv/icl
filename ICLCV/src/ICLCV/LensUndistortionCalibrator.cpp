@@ -202,8 +202,8 @@ namespace icl{
 
     LensUndistortionCalibrator::Info LensUndistortionCalibrator::getInfo(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::getInfo: instance is null"));
-      Info info = { m_data->imageSize, (int)m_data->points.size(),
-                    (int)m_data->subSetSizes.size(), m_data->gridDef };
+      Info info = { m_data->imageSize, static_cast<int>(m_data->points.size()),
+                    static_cast<int>(m_data->subSetSizes.size()), m_data->gridDef };
       return info;
     }
   }

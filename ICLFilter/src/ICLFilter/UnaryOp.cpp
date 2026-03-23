@@ -126,7 +126,7 @@ namespace icl{
       if(!m_poMT){
         m_poMT = new MultiThreader(nThreads);
       }else{
-        if(m_poMT->getNumThreads() != (int)nThreads){
+        if(m_poMT->getNumThreads() != static_cast<int>(nThreads)){
           delete m_poMT;
           m_poMT = new MultiThreader(nThreads);
         }
@@ -171,7 +171,7 @@ namespace icl{
         ICLASSERT_THROW(kernelSize.getDim()>=1,ICLException(str(__FUNCTION__)+":kernel dimension is <=0"))
         params.erase(params.begin());
         std::vector<float> kernelValues = parseVec<float>(params);
-        ICLASSERT_THROW(kernelSize.getDim() == (int)kernelValues.size(),ICLException(str(__FUNCTION__)+":kernel dimension is "+
+        ICLASSERT_THROW(kernelSize.getDim() == static_cast<int>(kernelValues.size()),ICLException(str(__FUNCTION__)+":kernel dimension is "+
                                                                                      str(kernelSize.getDim())+" kernel value list's size is "+
                                                                                      str(kernelValues.size())));
         return new ConvolutionOp(ConvolutionKernel(kernelValues.data(),kernelSize));

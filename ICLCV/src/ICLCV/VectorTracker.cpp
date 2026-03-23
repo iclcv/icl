@@ -182,7 +182,7 @@ namespace icl{
         // SHOW_VEC(newData);
         // SHOW_VEC(*cols[3]);
 
-        int w = (int)newData.size();
+        int w = static_cast<int>(newData.size());
         int h = height;
         int maxWH = iclMax(w,h);
         Array2D<float> distMat(maxWH,maxWH,largeVal);
@@ -208,7 +208,7 @@ namespace icl{
         height = newH;
       }
       void removeRows(const std::vector<int> &idxs){
-        int newH = height - (int)idxs.size();
+        int newH = height - static_cast<int>(idxs.size());
         std::vector<Vec> *newCols[4];
         std::vector<int> newGoodV;
         std::vector<int> newIDs;
@@ -410,7 +410,7 @@ namespace icl{
         ERROR_LOG("tried to push_data on a null-instance");
         return;
       }
-      int newNum = (int)newData.size();
+      int newNum = static_cast<int>(newData.size());
       int oldNum = m_data->h();
       int diff = oldNum-newNum;
 
@@ -436,7 +436,7 @@ namespace icl{
       if(m_data->distanceFunction){
         distMat = m_data->createDistanceMatrix(newData,m_data->distanceFunction,m_data->largeVal);
         useCostMatrix = !m_data->dfIsQualityFunction;
-      }else if((int)m_data->normFactors.size() == m_data->dim){
+      }else if(static_cast<int>(m_data->normFactors.size()) == m_data->dim){
         distMat = m_data->createDistanceMatrix(newData,PearsonDist(m_data->normFactors),m_data->largeVal);
       }else{
         if(m_data->normFactors.size()){
@@ -519,7 +519,7 @@ namespace icl{
 
     int VectorTracker::getID(int index,float *lastErrorOrScore) const{
       ICLASSERT_RETURN_VAL(!isNull(),-1);
-      if(index >= 0 && index < (int)m_data->ass.size()){
+      if(index >= 0 && index < static_cast<int>(m_data->ass.size())){
         int ass = m_data->ass.at(index);
         if(ass == -1){
           if(lastErrorOrScore){
@@ -542,7 +542,7 @@ namespace icl{
     }
 
     void VectorTracker::setExtrapolationMask(const std::vector<bool> &mask){
-      ICLASSERT_RETURN(m_data->dim == (int)mask.size());
+      ICLASSERT_RETURN(m_data->dim == static_cast<int>(mask.size()));
       m_data->extrapolationMask = mask;
     }
 

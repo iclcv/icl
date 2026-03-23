@@ -79,7 +79,7 @@ namespace icl{
     }
 
     void Configurable::removeChildConfigurable(Configurable *configurable){
-      (void) configurable;
+      static_cast<void>(configurable);
       throw ICLException("removeChildConfigurable: is not yet implemented");
     }
 
@@ -285,7 +285,7 @@ namespace icl{
         }else if(type == "menu"){
           f[prop] = val;
         }else if(type == "flag"){
-          f[prop] = parse<bool>(val) ? (bool)1 : (bool)0;
+          f[prop] = parse<bool>(val) ? static_cast<bool>(1) : static_cast<bool>(0);
         }else if(type == "color"){
           f[prop] = val;
         }

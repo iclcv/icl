@@ -87,7 +87,7 @@ namespace icl{
       void save(const std::string &filename, format fmt){
         ICLASSERT_THROW(filename.length(),ICLException("ColorSegmentationOp::save: emtpy filename"));
         std::string fn = filename;
-        int len = (int)fn.length();
+        int len = static_cast<int>(fn.length());
 
         bool isPGM = (len >= 4) && (fn.substr(len-4,4)==".pgm");
         bool isGZ = (len >= 7) && (fn.substr(len-7,7)==".pgm.gz");

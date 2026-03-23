@@ -41,7 +41,7 @@ namespace icl{
     template<class T>
     LUTOp3Channel<T>::LUTOp3Channel(Plugin *p,icl8u shift):m_poPlugin(0),m_ucShift(shift){
       ICLASSERT_THROW(shift<8,ICLException("invalid shift value ( must be < 8 )"));
-      int dim = (int)pow(256>>m_ucShift,3);
+      int dim = static_cast<int>(pow(256>>m_ucShift,3));
       m_oLUT = Img<T>(Size(dim,1),1);
       setPlugin(p);
     }

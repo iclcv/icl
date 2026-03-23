@@ -109,9 +109,9 @@ namespace icl{
       }
 
       if(args.size()) s << " ";
-      for(int i=0;i<(int)args.size();++i){
+      for(int i=0;i<static_cast<int>(args.size());++i){
         s << args[i].first << "=\"" << args[i].second << "\"";
-        if(i < (int)args.size()-1){
+        if(i < static_cast<int>(args.size())-1){
           s << " ";
         }
       }

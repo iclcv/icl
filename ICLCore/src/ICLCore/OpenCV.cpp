@@ -57,23 +57,23 @@ namespace icl{
       dst->setParams(ImgParams(Size(image->width,image->height),image->nChannels));
       switch(image->depth){
         case IPL_DEPTH_8U:{
-          interleavedToPlanar((icl8u*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<icl8u*>(image->imageData),dst,image->widthStep);
           break;}
         case IPL_DEPTH_8S:{
           //in this case we use icl16s
-          interleavedToPlanar((signed char*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<signed char*>(image->imageData),dst,image->widthStep);
           break;}
         case IPL_DEPTH_16S:{
-          interleavedToPlanar((icl16s*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<icl16s*>(image->imageData),dst,image->widthStep);
           break;}
         case IPL_DEPTH_32S:{
-          interleavedToPlanar((icl32s*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<icl32s*>(image->imageData),dst,image->widthStep);
           break;}
         case IPL_DEPTH_32F:{
-          interleavedToPlanar((icl32f*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<icl32f*>(image->imageData),dst,image->widthStep);
           break;}
         case IPL_DEPTH_64F:{
-          interleavedToPlanar((icl64f*)image->imageData,dst,image->widthStep);
+          interleavedToPlanar(reinterpret_cast<icl64f*>(image->imageData),dst,image->widthStep);
           break;}
         default :{
           //this should not happen
@@ -88,7 +88,7 @@ namespace icl{
       ImgBase *tmp = ensureCompatible(dst,getDepth<DST_T>(),Size(src->width,src->height),src->nChannels);
       if(!dst)
         dst = &tmp;
-      SRC_T *data = (SRC_T*) src->imageData;
+      SRC_T *data = reinterpret_cast<SRC_T*>(src->imageData);
       interleavedToPlanar(data,(*dst)->asImg<DST_T>(),src->widthStep);
       return *dst;
     }
@@ -148,16 +148,16 @@ namespace icl{
 
     template<typename SRC_T,typename DST_T>
     inline IplImage* img_to_ipl_srcpref(const ImgBase *src, IplImage **dst){
-      static const int IPL_DEPTHS[] = {(int)IPL_DEPTH_8U,(int)IPL_DEPTH_16S,(int)IPL_DEPTH_32S,(int)IPL_DEPTH_32F,(int)IPL_DEPTH_64F};
+      static const int IPL_DEPTHS[] = {static_cast<int>(IPL_DEPTH_8U),static_cast<int>(IPL_DEPTH_16S),static_cast<int>(IPL_DEPTH_32S),static_cast<int>(IPL_DEPTH_32F),static_cast<int>(IPL_DEPTH_64F)};
       CvSize s = cvSize(src->getWidth(),src->getHeight());
 
-      IplImage *ipl = ensureCompatible(dst,IPL_DEPTHS[(int)src->getDepth()],s,src->getChannels());
+      IplImage *ipl = ensureCompatible(dst,IPL_DEPTHS[static_cast<int>(src->getDepth())],s,src->getChannels());
 
       Img<SRC_T> tmp = *src->asImg<SRC_T>();
       for(int i=0;i<src->getChannels()/2;++i){
         tmp.swapChannels(i,src->getChannels()-1-i);
       }
-      planarToInterleaved(&tmp,(DST_T*)ipl->imageData,ipl->widthStep);
+      planarToInterleaved(&tmp,reinterpret_cast<DST_T*>(ipl->imageData),ipl->widthStep);
       dst = &ipl;
       return *dst;
       //return ipl;
@@ -174,23 +174,23 @@ namespace icl{
 
       switch(dstDepth){
         case IPL_DEPTH_8U:{
-          planarToInterleaved(&src,(icl8u*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<icl8u*>(dst->imageData));
           break;}
         case IPL_DEPTH_8S:{
           //in this case we use icl16s
-          planarToInterleaved(&src,(signed char*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<signed char*>(dst->imageData));
           break;}
         case IPL_DEPTH_16S:{
-          planarToInterleaved(&src,(icl16s*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<icl16s*>(dst->imageData));
           break;}
         case IPL_DEPTH_32S:{
-          planarToInterleaved(&src,(icl32s*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<icl32s*>(dst->imageData));
           break;}
         case IPL_DEPTH_32F:{
-          planarToInterleaved(&src,(icl32f*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<icl32f*>(dst->imageData));
           break;}
         case IPL_DEPTH_64F:{
-          planarToInterleaved(&src,(icl64f*)dst->imageData);
+          planarToInterleaved(&src,reinterpret_cast<icl64f*>(dst->imageData));
           break;}
         default :{
           //this should not happen
@@ -233,19 +233,19 @@ namespace icl{
       switch(ltype){
         case CV_8UC1:{
           for(int i=0;i<dim;++i){
-            dst->data.ptr[i]=(icl8u)srcdata[i];
+            dst->data.ptr[i]=static_cast<icl8u>(srcdata[i]);
           }
           break;
         }
         case CV_16SC1:{
           for(int i=0;i<dim;++i){
-            dst->data.s[i]=(short)srcdata[i];
+            dst->data.s[i]=static_cast<short>(srcdata[i]);
           }
           break;
         }
         case CV_32SC1:{
           for(int i=0;i<dim;++i){
-            dst->data.i[i]=(int)srcdata[i];
+            dst->data.i[i]=static_cast<int>(srcdata[i]);
           }
           break;
         }
@@ -257,7 +257,7 @@ namespace icl{
         }
         case CV_64FC1:{
           for(int i=0;i<dim;++i){
-            dst->data.db[i]=(icl64f)srcdata[i];
+            dst->data.db[i]=static_cast<icl64f>(srcdata[i]);
           }
           break;
         }
@@ -403,12 +403,12 @@ namespace icl{
 
     template<class T>
     T* MatWrapper::getInterleavedData(){
-      return (T*) mat.data;
+      return reinterpret_cast<T*>(mat.data);
     }
 
     template<class T>
     const T* MatWrapper::getInterleavedData() const{
-      return (const T*) mat.data;
+      return reinterpret_cast<const T*>(mat.data);
     }
 
     MatWrapper::MatWrapper(const MatWrapper &other){
@@ -444,7 +444,7 @@ ICL_INSTANTIATE_ALL_DEPTHS
       ICLASSERT_THROW(dst->isContinuous(), ICLException("created cv::Mat is not continuous"));
 
       switch(src->getDepth()){
-#define ICL_INSTANTIATE_DEPTH(D) case depth##D: planarToInterleaved(src->as##D(), (icl##D*)dst->data); break;
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: planarToInterleaved(src->as##D(), reinterpret_cast<icl##D*>(dst->data)); break;
         ICL_INSTANTIATE_ALL_DEPTHS;
 #undef ICL_INSTANTIATE_DEPTH
         default: ICL_INVALID_DEPTH;
@@ -469,11 +469,11 @@ ICL_INSTANTIATE_ALL_DEPTHS
 #define ICL_INSTANTIATE_DEPTH(D)                                        \
         case depth##D:{                                                 \
           switch(src->depth()){                                         \
-            case CV_8U: interleavedToPlanar((icl8u*)src->data,dst->as##D()); break; \
-            case CV_16S: interleavedToPlanar((icl16s*)src->data,dst->as##D()); break; \
-            case CV_32S: interleavedToPlanar((icl32s*)src->data,dst->as##D()); break; \
-            case CV_32F: interleavedToPlanar((icl32f*)src->data,dst->as##D()); break; \
-            case CV_64F: interleavedToPlanar((icl64f*)src->data,dst->as##D()); break; \
+            case CV_8U: interleavedToPlanar(reinterpret_cast<const icl8u*>(src->data),dst->as##D()); break; \
+            case CV_16S: interleavedToPlanar(reinterpret_cast<const icl16s*>(src->data),dst->as##D()); break; \
+            case CV_32S: interleavedToPlanar(reinterpret_cast<const icl32s*>(src->data),dst->as##D()); break; \
+            case CV_32F: interleavedToPlanar(reinterpret_cast<const icl32f*>(src->data),dst->as##D()); break; \
+            case CV_64F: interleavedToPlanar(reinterpret_cast<const icl64f*>(src->data),dst->as##D()); break; \
             default: break;                                             \
           }                                                             \
           break;                                                        \

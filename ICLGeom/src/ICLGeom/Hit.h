@@ -63,7 +63,7 @@ namespace icl{
 
       /// friendly implemented ostream operator ...
       friend std::ostream &operator<<(std::ostream &str, const Hit &h){
-        return (h ? (str << "Hit(obj=" << (void*) h.obj << ", dist=" << h.dist
+        return (h ? (str << "Hit(obj=" << static_cast<void*>(h.obj) << ", dist=" << h.dist
                      << ", pos=" << h.pos.transp() << ")" )
                 : (str << "Hit(NULL)"));
       }

@@ -55,8 +55,8 @@ namespace icl{
     };
 
     std::string fourCCStringFromDouble(double value){
-      int fourInt = (int) value;
-      std::string ret((char*) (&fourInt), 4);
+      int fourInt = static_cast<int>(value);
+      std::string ret(reinterpret_cast<char*>(&fourInt), 4);
       return ret;
     }
 

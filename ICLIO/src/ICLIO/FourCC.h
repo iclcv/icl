@@ -78,7 +78,7 @@ namespace icl{
       std::string asString() const {
         if(!key) return "null";
         int tmp[2] = {key,0};
-        return std::string((char*)tmp);
+        return std::string(reinterpret_cast<char*>(tmp));
       }
 
       /// obtain current key (uint)

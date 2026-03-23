@@ -60,7 +60,7 @@ namespace icl{
       const unsigned int w = c.getWidth()-1, h = c.getHeight()-1;
       for(int i=0;i<r.n;++i){
         const Point &p = r[i];
-        if((unsigned)p.x < w && (unsigned)p.y < h){
+        if(static_cast<unsigned>(p.x) < w && static_cast<unsigned>(p.y) < h){
           c(p.x,p.y) = value;
           c(p.x+1,p.y) = value;
           c(p.x,p.y+1) = value;
@@ -88,7 +88,7 @@ namespace icl{
       bool anyNeg = false;
       for(int i=1;i<r.n-2;++i){
         const Point &p = r[i];
-        if((unsigned)p.x >= w || (unsigned)p.y >= h){
+        if(static_cast<unsigned>(p.x) >= w || static_cast<unsigned>(p.y) >= h){
           continue;
         }
         const float cc = c(p.x,p.y);

@@ -88,7 +88,7 @@ namespace icl{
       Point operator-(const Point &s) const {return  Point(x-s.x,y-s.y);}
 
       /// scales a Points variables with a scalar value
-      Point operator*(double d) const { return Point((int)(d*x),(int)(d*y));}
+      Point operator*(double d) const { return Point(static_cast<int>(d*x),static_cast<int>(d*y));}
 
       /// Adds another Point inplace
       Point& operator+=(const Point &s){x+=s.x; y+=s.y; return *this;}
@@ -97,11 +97,11 @@ namespace icl{
       Point& operator-=(const Point &s){x-=s.x; y-=s.y; return *this;}
 
       /// scales the Point inplace with a scalar
-      Point& operator*=(double d) {x=(int)((double)x*d); y=(int)((double)y*d); return *this;};
+      Point& operator*=(double d) {x=static_cast<int>(static_cast<double>(x)*d); y=static_cast<int>(static_cast<double>(y)*d); return *this;};
 
       /// transforms the point by element-wise scaling
       Point transform(double xfac, double yfac) const{
-        return Point((int)(xfac*x),(int)(yfac*y));
+        return Point(static_cast<int>(xfac*x),static_cast<int>(yfac*y));
       }
 
       /// returns the euclidian distance to another point

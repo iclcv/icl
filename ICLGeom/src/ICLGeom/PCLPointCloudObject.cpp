@@ -46,7 +46,7 @@ namespace icl{
 
     template<class PCLPointType>
     icl8u* PCLPointCloudObject<PCLPointType>::data() {
-      return (icl8u*)&m_pcl->points[0];
+      return reinterpret_cast<icl8u*>(&m_pcl->points[0]);
     }
 
 
@@ -60,7 +60,7 @@ namespace icl{
     inline DataSegment<T,N>  PCLPointCloudObject<PCLPointType>::createSegment() {
       ICLASSERT_THROW(supports(t),utils::ICLException("the given feature type " + str(t) +
                                                " is not supported by this PCLPointCloudObject"));
-      return DataSegment<T,N>((T*)(data()+offset(t)),sizeof(Entry),
+      return DataSegment<T,N>(reinterpret_cast<T*>((data()+offset(t))),sizeof(Entry),
                               isOrganized() ? m_pcl->width * m_pcl->height : m_pcl->width,
                               isOrganized() ? m_pcl->width : -1);
     }

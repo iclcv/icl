@@ -106,7 +106,7 @@ namespace icl {
       // {{{ open
 
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels)) {
-      ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
+      ICLASSERT_THROW (getChannels () <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
       FUNCTION_LOG("Img(" << s.width <<","<< s.height << "," <<  channels << ",Type**)  this:" << this);
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
@@ -122,7 +122,7 @@ namespace icl {
     Img<Type>::Img(const Size &s, int channels, format fmt, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,channels,fmt)){
-      ICLASSERT_THROW (getChannels () <= (int) vptData.size(), InvalidImgParamException("channels"));
+      ICLASSERT_THROW (getChannels () <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
@@ -137,7 +137,7 @@ namespace icl {
     Img<Type>::Img(const Size &s, format eFormat, const std::vector<Type*>& vptData, bool passOwnerShip) :
       // {{{ open
       ImgBase(icl::core::getDepth<Type>(),ImgParams(s,eFormat)){
-      ICLASSERT_THROW(getChannels() <= (int)vptData.size(), InvalidImgParamException("channels"));
+      ICLASSERT_THROW(getChannels() <= static_cast<int>(vptData.size()), InvalidImgParamException("channels"));
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
@@ -286,7 +286,7 @@ namespace icl {
         poDst->setROI(roi);
       }
       if(channelIndices.size()){
-        ICLASSERT_RETURN_VAL(fmt == formatMatrix || (int)channelIndices.size() == getChannelsOfFormat(fmt),0);
+        ICLASSERT_RETURN_VAL(fmt == formatMatrix || static_cast<int>(channelIndices.size()) == getChannelsOfFormat(fmt),0);
         poDst->setChannels(0);
         poDst->append(this,channelIndices);
       }
@@ -626,7 +626,7 @@ namespace icl {
         const ImgIterator<Type> itSrcEnd = endROI(c);
         ImgIterator<Type> itDst = dst->beginROI(c);
         for(;itSrc != itSrcEnd ; ++itSrc, ++itDst){
-          *itDst = lut[ ((int)(*itSrc)) >> shift];
+          *itDst = lut[ (static_cast<int>(*itSrc)) >> shift];
         }
       }
       return dst;
@@ -827,19 +827,19 @@ namespace icl {
   #ifdef ICL_HAVE_IPP
     template <>
     void Img<icl8u>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, (IppiAxis) eAxis);
+      ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
     }
     template <>
     void Img<icl16s>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_16u_C1IR((Ipp16u*) getROIData(iChannel,oOffset), getLineStep(), oSize, (IppiAxis) eAxis);
+      ippiMirror_16u_C1IR(reinterpret_cast<Ipp16u*>(getROIData(iChannel,oOffset)), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
     }
     template <>
     void Img<icl32s>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_32s_C1IR( getROIData(iChannel,oOffset), getLineStep(), oSize, (IppiAxis) eAxis);
+      ippiMirror_32s_C1IR( getROIData(iChannel,oOffset), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
     }
     template <>
     void Img<icl32f>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_32s_C1IR((Ipp32s*) getROIData(iChannel,oOffset), getLineStep(), oSize, (IppiAxis) eAxis);
+      ippiMirror_32s_C1IR(reinterpret_cast<Ipp32s*>(getROIData(iChannel,oOffset)), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
     }
   #endif
 
@@ -1118,8 +1118,8 @@ namespace icl {
 
       float fX0 = fX - floor(fX), fX1 = 1.0 - fX0;
       float fY0 = fY - floor(fY), fY1 = 1.0 - fY0;
-      int xll = (int) fX;
-      int yll = (int) fY;
+      int xll = static_cast<int>(fX);
+      int yll = static_cast<int>(fY);
 
       const Type* pLL = getData(iChannel) + xll + yll * getWidth();
       float a = *pLL;        //  a b
@@ -1271,11 +1271,11 @@ namespace icl {
     Img<Type>::normalize(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange){
       FUNCTION_LOG("");
       for(int c = getStartIndex(iChannel);c<getEndIndex(iChannel);c++){
-        icl64f fScale  = (icl64f)(dstRange.getLength()) / (icl64f)(srcRange.getLength());
-        icl64f fShift  = (icl64f)(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
+        icl64f fScale  = static_cast<icl64f>(dstRange.getLength()) / static_cast<icl64f>(srcRange.getLength());
+        icl64f fShift  = static_cast<icl64f>(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
         const_roi_iterator e = endROI(c);
         for(roi_iterator p=beginROI(c);p!=e; ++p) {
-          *p = clipped_cast<icl64f,Type>( icl::utils::clip( fShift + (icl64f)(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
+          *p = clipped_cast<icl64f,Type>( icl::utils::clip( fShift + static_cast<icl64f>(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
         }
       }
     }
@@ -1431,8 +1431,8 @@ namespace icl {
 
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
-      float fSX = ((float)srcSize.width)/(float)(dstSize.width);
-      float fSY = ((float)srcSize.height)/(float)(dstSize.height);
+      float fSX = (static_cast<float>(srcSize.width))/static_cast<float>(dstSize.width);
+      float fSY = (static_cast<float>(srcSize.height))/static_cast<float>(dstSize.height);
 
       float (Img<T>::*subPixelMethod)(float fX, float fY, int iChannel) const;
       switch(eScaleMode) {
@@ -1447,7 +1447,7 @@ namespace icl {
               int yD = 0;
               float yS = srcOffs.y + fSY * yD;
               for(; itDst != itDstEnd ; ++itDst) {
-                *itDst = clipped_cast<float, T>(*(d + (int)(srcOffs.x + fSX * xD) + (int)yS * w));
+                *itDst = clipped_cast<float, T>(*(d + static_cast<int>(srcOffs.x + fSX * xD) + static_cast<int>(yS) * w));
                 if (++xD == dstSize.width) {
                   yS = srcOffs.y + fSY * ++yD;
                   xD = 0;
@@ -1457,8 +1457,8 @@ namespace icl {
           return;
         case interpolateLIN:
           {
-              fSX = ((float)srcSize.width-1)/(float)(dstSize.width);
-              fSY = ((float)srcSize.height-1)/(float)(dstSize.height);
+              fSX = (static_cast<float>(srcSize.width)-1)/static_cast<float>(dstSize.width);
+              fSY = (static_cast<float>(srcSize.height)-1)/static_cast<float>(dstSize.height);
 
               const T *d = src->getData(srcC);
               const unsigned int w = src->getWidth();
@@ -1472,8 +1472,8 @@ namespace icl {
                   float xS = srcOffs.x + fSX * xD;
                   float fX0 = xS - floor(xS), fX1 = 1.0 - fX0;
                   float fY0 = yS - floor(yS), fY1 = 1.0 - fY0;
-                  int xll = (int) xS;
-                  int yll = (int) yS;
+                  int xll = static_cast<int>(xS);
+                  int yll = static_cast<int>(yS);
 
                   const T *pLL = (d + xll + yll * w);
                   float a = *pLL;        //  a b
@@ -1631,11 +1631,11 @@ namespace icl {
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                         dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                        (float)dstSize.width/(float)srcSize.width,
-                        (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                        static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width),
+                        static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height),static_cast<int>(eScaleMode));
   #else
       int bufSize=0;
-      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, static_cast<int>(eScaleMode), &bufSize);
 
       if(s2 != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s2)));
@@ -1644,13 +1644,13 @@ namespace icl {
 
       std::vector<icl8u> buf(bufSize);
 
-      float fx = (float)dstSize.width/(float)srcSize.width, fy = (float)dstSize.height/(float)srcSize.height;
+      float fx = static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width), fy = static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height);
       float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
 
       // attention: for source image IPP wants indeed the *image* origin
       IppStatus s = ippiResizeSqrPixel_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                                               dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                                              fx,fy,tx,ty,(int)eScaleMode,buf.data());
+                                              fx,fy,tx,ty,static_cast<int>(eScaleMode),buf.data());
       if(s != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s)));
       }
@@ -1680,11 +1680,11 @@ namespace icl {
       // attention: for source image IPP wants indeed the *image* origin
       ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                          dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                         (float)dstSize.width/(float)srcSize.width,
-                         (float)dstSize.height/(float)srcSize.height,(int)eScaleMode);
+                         static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width),
+                         static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height),static_cast<int>(eScaleMode));
   #else
       int bufSize=0;
-      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, (int)eScaleMode, &bufSize);
+      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, static_cast<int>(eScaleMode), &bufSize);
 
       if(s2 != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s2)));
@@ -1693,13 +1693,13 @@ namespace icl {
       std::vector<icl8u> buf(bufSize);
 
 
-      float fx = (float)dstSize.width/(float)srcSize.width, fy = (float)dstSize.height/(float)srcSize.height;
+      float fx = static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width), fy = static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height);
       float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
 
       // attention: for source image IPP wants indeed the *image* origin
       IppStatus s = ippiResizeSqrPixel_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
                                                dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                                               fx,fy,tx,ty,(int)eScaleMode ,buf.data());
+                                               fx,fy,tx,ty,static_cast<int>(eScaleMode) ,buf.data());
       if(s != ippStsNoErr){
         throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s)));
       }
@@ -1783,7 +1783,7 @@ namespace icl {
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
       ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
-                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);
+                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
     }
 
     // }}}
@@ -1797,8 +1797,8 @@ namespace icl {
 
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
 
-      ippiMirror_32s_C1R((Ipp32s*) src->getROIData(srcC,srcOffs),src->getLineStep(),
-                         (Ipp32s*) dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,(IppiAxis) eAxis);
+      ippiMirror_32s_C1R(reinterpret_cast<const Ipp32s*>(src->getROIData(srcC,srcOffs)),src->getLineStep(),
+                         reinterpret_cast<Ipp32s*>(dst->getROIData(dstC,dstOffs)),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
     }
 
     // }}}
@@ -1928,9 +1928,9 @@ namespace icl {
           std::cout << "| ";
           for(int x=0;x<getWidth();++x){
             if(visROI){
-              printf(fmtFull.c_str(),(icl64f)(*this)(x,y,i),(r.contains(x,y)?'r':' '));
+              printf(fmtFull.c_str(),static_cast<icl64f>((*this)(x,y,i)),(r.contains(x,y)?'r':' '));
             }else{
-              printf(fmtFull.c_str(),(icl64f)(*this)(x,y,i));
+              printf(fmtFull.c_str(),static_cast<icl64f>((*this)(x,y,i)));
             }
           }
           std::cout << "|" << std::endl;
@@ -1958,7 +1958,7 @@ namespace icl {
     Point Img<Type>::getLocation(const Type *p, int channel, bool relToROI) const{
       ICLASSERT_RETURN_VAL(validChannel(channel), Point::null);
       ICLASSERT_RETURN_VAL(getDim(), Point::null);
-      int offs = (int)(p-getData(channel));
+      int offs = static_cast<int>(p-getData(channel));
       int x = offs%getWidth();
       int y = offs/getWidth();
       if(relToROI){
@@ -2063,7 +2063,7 @@ namespace icl {
     template<class Type>
     void Img<Type>::fillBorder(const std::vector<icl64f> &vals, bool setFullROI){
       ICLASSERT_RETURN( !hasFullROI() );
-      ICLASSERT_RETURN((int)vals.size() >= getChannels());
+      ICLASSERT_RETURN(static_cast<int>(vals.size()) >= getChannels());
       Rect roi = getROI();
       Size s = getSize();
       for(int c=0;c<getChannels();c++){

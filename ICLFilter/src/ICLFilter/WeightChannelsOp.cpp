@@ -41,7 +41,7 @@ namespace filter{
 
     void WeightChannelsOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
-      ICLASSERT_RETURN( (int) m_vecWeights.size() == poSrc->getChannels() );
+      ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == poSrc->getChannels() );
 
       const ImgBase *oTmpSrcImg;
       ImgBase *oTmpDstImg;

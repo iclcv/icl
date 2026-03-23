@@ -54,7 +54,7 @@ namespace icl{
     static std::ostream &operator<<(std::ostream &s, const KinectGrabber::Mode &m){
       static std::string names[] = { "GRAB_RGB_IMAGE", "GRAB_BAYER_IMAGE", "GRAB_DEPTH_IMAGE",
                                      "GRAB_IR_IMAGE_8BIT", "GRAB_IR_IMAGE_10BIT"};
-      if((int)m >= 0 && (int)m < 5) return s << names[(int)m];
+      if(static_cast<int>(m) >= 0 && static_cast<int>(m) < 5) return s << names[static_cast<int>(m)];
       else return s << "UNDEFINED MODE";
     }
 
@@ -213,7 +213,7 @@ namespace icl{
         void depth_cb(void *data, uint32_t timestamp){
           Mutex::Locker lock(depthMutex);
           const int r = depthImagePostProcessingMedianRadius;
-          MedianOp *pp = (r == 3) ? &postProcessor3x3 : r == 5 ? &postProcessor5x5 : (MedianOp*)0;
+          MedianOp *pp = (r == 3) ? &postProcessor3x3 : r == 5 ? &postProcessor5x5 : static_cast<MedianOp*>(nullptr);
 
 #if 0
           if(serial == "B00365713743108B"){
@@ -234,7 +234,7 @@ namespace icl{
           }
 #endif
           if(pp){
-            const Img16s tmp(Size::VGA, 1, std::vector<icl16s*>(1, (icl16s*)data));
+            const Img16s tmp(Size::VGA, 1, std::vector<icl16s*>(1, static_cast<icl16s*>(data)));
             pp->apply(&tmp)->convert(&depthImage);
             int b = (r-1)/2;
             depthImage.setROI(Rect(b,b,640-2*b, 480-2*b));
@@ -384,7 +384,7 @@ namespace icl{
           }
         }
         if(isVideo){
-          if( freenect_set_video_format(device, fvf[(int)mode]) < 0)  throw ICLException("Cannot set video format");
+          if( freenect_set_video_format(device, fvf[static_cast<int>(mode)]) < 0)  throw ICLException("Cannot set video format");
         }else{
           if( freenect_set_depth_format(device, FREENECT_DEPTH_11BIT) < 0) throw ICLException("Cannot set depth format");
         }
@@ -404,7 +404,7 @@ namespace icl{
                                     FREENECT_RESOLUTION_MEDIUM :
                                     FREENECT_RESOLUTION_LOW);
         if(isVideo){
-          m = freenect_find_video_mode(res, fvf[(int)mode]);
+          m = freenect_find_video_mode(res, fvf[static_cast<int>(mode)]);
         }else{
           m = freenect_find_depth_mode(res, FREENECT_DEPTH_11BIT);
         }
@@ -583,7 +583,7 @@ namespace icl{
         }else{
           for(size_t i=0;i<ctx.deviceAssociation.size();++i){
             if(ctx.deviceAssociation[i] == idOrSerial){
-              return (int)i;
+              return static_cast<int>(i);
             }
           }
           throw ICLException("Kinect device serial '" + idOrSerial + "' not found\n"
@@ -668,7 +668,7 @@ namespace icl{
       addProperty("Desired-Tilt-Angle", "range", "[-35,25]", m_impl->desiredTiltDegrees, 0, "");
       addProperty("Current-Tilt-Angle", "info", "", angleval, 100, "");
       addProperty("Accelerometers", "info", "", accelval, 100, "");
-      addProperty("shift-IR-image", "menu", "off,fast,accurate", values[(int)(m_impl->getDevice()->used->irShift)], 0, "");
+      addProperty("shift-IR-image", "menu", "off,fast,accurate", values[static_cast<int>(m_impl->getDevice()->used->irShift)], 0, "");
       addProperty("depth-image-unit", "menu", "raw,mm", diunit, 0, "");
       addProperty("depth-image-post-processing", "menu", "off,median 3x3,median 5x5", ppvalue, 0, "");
 
@@ -724,12 +724,12 @@ namespace icl{
           "IR Image {8Bit}",
           "IR Image {10Bit}"
         };
-        int idx = (int)(std::find(formats, formats+5, prop.value) - formats);
+        int idx = static_cast<int>(std::find(formats, formats+5, prop.value) - formats);
         if(idx == 5){
           ERROR_LOG("invalid property value for property 'format'");
           return;
         }
-        m_impl->switchMode((Mode)idx, m_impl->getDevice()->used->size);
+        m_impl->switchMode(static_cast<Mode>(idx), m_impl->getDevice()->used->size);
 
       } else if(prop.name == "size"){
         /*

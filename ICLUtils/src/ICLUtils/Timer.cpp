@@ -63,7 +63,7 @@ namespace icl {
       if (m_vecTime.size() > 2) {
         for (unsigned int i=1;i<m_vecTime.size();i++)
           {
-            lTmpTimeDiff = (long int)(m_vecTime[i] - m_vecTime[i-1]);
+            lTmpTimeDiff = static_cast<long int>(m_vecTime[i] - m_vecTime[i-1]);
 
             switch(m_iTimerMode)
               {
@@ -80,7 +80,7 @@ namespace icl {
           }
       }
 
-      lTmpTimeDiff = (long int)(m_vecTime[m_vecTime.size()-1] - m_vecTime[0]);
+      lTmpTimeDiff = static_cast<long int>(m_vecTime[m_vecTime.size()-1] - m_vecTime[0]);
 
       switch(m_iTimerMode)
         {
@@ -98,7 +98,7 @@ namespace icl {
     }
 
     long int Timer::stopSilent(){
-      return  (long int)(getTime() - m_vecTime[0]);
+      return  static_cast<long int>(getTime() - m_vecTime[0]);
     }
 
     Time::value_type Timer::getTime(){
@@ -106,7 +106,7 @@ namespace icl {
         case 0: //ms
           return Time::now().toMilliSeconds();
 
-        default: //µs
+        default: //ï¿½s
           return Time::now().toMicroSeconds();
       }
     }

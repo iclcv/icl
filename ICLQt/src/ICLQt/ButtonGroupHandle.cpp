@@ -77,11 +77,11 @@ namespace icl{
     }
 
     void ButtonGroupHandle::enable(int index){
-      ICLASSERT_RETURN(index >= 0 && index < (int)vec().size());
+      ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(vec().size()));
       vec()[index]->setEnabled(true);
     }
     void ButtonGroupHandle::disable(int index){
-      ICLASSERT_RETURN(index >= 0 && index < (int)vec().size());
+      ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(vec().size()));
       vec()[index]->setEnabled(false);
     }
 

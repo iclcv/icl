@@ -48,29 +48,29 @@ namespace icl{
         int* outsize;
       };
       void init_destination(j_compress_ptr compress){
-        MemDst *md = (MemDst*)compress->dest;
+        MemDst *md = reinterpret_cast<MemDst*>(compress->dest);
         md->mgr.next_output_byte = md->buffer; // target buffer
         md->mgr.free_in_buffer = md->bufsize;  // buffer size
         md->datasize = 0;
       }
       boolean empty_output_buffer (j_compress_ptr compress){
-        MemDst *md = (MemDst*)compress->dest;
+        MemDst *md = reinterpret_cast<MemDst*>(compress->dest);
         md->mgr.next_output_byte = md->buffer;
         md->mgr.free_in_buffer = md->bufsize;
         return TRUE;
       }
       void term_destination (j_compress_ptr compress){
-        MemDst *md = (MemDst*)compress->dest;
+        MemDst *md = reinterpret_cast<MemDst*>(compress->dest);
         md->datasize = md->bufsize - md->mgr.free_in_buffer;
-        if (md->outsize) *md->outsize += (int)md->datasize;
+        if (md->outsize) *md->outsize += static_cast<int>(md->datasize);
       }
 
       void install_MemDst(j_compress_ptr compress, JOCTET* buffer, int bufsize, int* outsize){
         if(!compress->dest){
-          compress->dest = ( (jpeg_destination_mgr*)(*compress->mem->alloc_small)
-                             ((j_common_ptr) compress, JPOOL_PERMANENT, sizeof(MemDst)));
+          compress->dest = reinterpret_cast<jpeg_destination_mgr*>((*compress->mem->alloc_small)
+                             (reinterpret_cast<j_common_ptr>(compress), JPOOL_PERMANENT, sizeof(MemDst)));
         }
-        MemDst *md = (MemDst*)compress->dest;
+        MemDst *md = reinterpret_cast<MemDst*>(compress->dest);
         md->bufsize = bufsize;
         md->buffer = buffer;
         md->outsize = outsize;
@@ -175,7 +175,7 @@ namespace icl{
       // Step 2: specify data destination
       int bytesWritten = 0;
       m_data->dataBuffer.resize(4000 + src.getWidth() * src.getHeight() * src.getChannels() * 2);
-      install_MemDst(&jpgCinfo,(JOCTET*)m_data->dataBuffer.data(),m_data->dataBuffer.size(),&bytesWritten);
+      install_MemDst(&jpgCinfo,reinterpret_cast<JOCTET*>(m_data->dataBuffer.data()),m_data->dataBuffer.size(),&bytesWritten);
 
       /* Step 3: set parameters for compression */
       jpgCinfo.image_width  = src.getSize().width;
@@ -208,12 +208,12 @@ namespace icl{
       sprintf (acBuf, "TimeStamp %lld", src.getTime().toMicroSeconds());
   #endif
 
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
 
       // ROI
       Rect roi = src.getROI ();
       sprintf (acBuf, "ROI %d %d %d %d", roi.x, roi.y, roi.width, roi.height);
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
   #endif
 
       //////////////////////////////////////////////////////////////////////

@@ -69,11 +69,11 @@ namespace icl{
       private:
       /// forbidden copy constructor
       Uncopyable(const Uncopyable &other){
-        (void)other;
+        static_cast<void>(other);
       }
       /// forbidden assignment operator
       Uncopyable &operator=(const Uncopyable &other){
-        (void)other;
+        static_cast<void>(other);
         return *this;
       }
     };

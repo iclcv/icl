@@ -42,7 +42,7 @@ namespace icl{
     }
 
     inline void clipped_add(icl8u &v, int x){
-      int s = (int)v + x;
+      int s = static_cast<int>(v) + x;
       v = s < 0 ? 0 : s > 255 ? 255 : s;
     }
 

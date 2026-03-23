@@ -135,7 +135,7 @@ namespace icl{
         ;  ++B; ++C; ++D; ++A; ++s; ++d;
 
         // 16x loop unrolling here
-        for(int n = ((int)(ends-s)) >> 4; n > 0; --n){
+        for(int n = (static_cast<int>(ends-s)) >> 4; n > 0; --n){
           STEP STEP STEP STEP STEP STEP STEP STEP
           STEP STEP STEP STEP STEP STEP STEP STEP
           }

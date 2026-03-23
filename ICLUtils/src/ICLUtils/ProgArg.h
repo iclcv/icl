@@ -55,7 +55,7 @@ namespace icl{
       int subargidx;
       bool danglingOnly;
       inline ProgArgData(const std::string &id, int subargidx):
-        id(id),subargidx((int)subargidx){
+        id(id),subargidx(static_cast<int>(subargidx)){
       }
       inline ProgArgData(unsigned int idx, bool danglingOnly):
         subargidx(idx),danglingOnly(danglingOnly){

@@ -45,7 +45,7 @@ namespace icl{
       btTransform T;
       T.setIdentity();
       T.setOrigin(btVector3(icl2bullet(x),icl2bullet(y),icl2bullet(z)));
-      MotionState* motion = new MotionState(T, (RigidObject*)this);
+      MotionState* motion = new MotionState(T, static_cast<RigidObject*>(this));
       btVector3 inertia(0,0,0);
       shape->calculateLocalInertia(mass, inertia);
       btRigidBody::btRigidBodyConstructionInfo ci(mass,motion,shape,inertia);

@@ -324,8 +324,8 @@ namespace icl {
     template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
     template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
 
-    template<> inline bool Grabber::desiredUsed<core::format>() const{ return (int)getDesired<core::format>() != -1; }
-    template<> inline bool Grabber::desiredUsed<core::depth>() const{ return (int)getDesired<core::depth>() != -1; }
+    template<> inline bool Grabber::desiredUsed<core::format>() const{ return static_cast<int>(getDesired<core::format>()) != -1; }
+    template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
     template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
     class ICLIO_API GrabberRegister : utils::Uncopyable {

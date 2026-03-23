@@ -246,7 +246,7 @@ namespace physics{
           continue;
         }
         char C = 10;//get_format(x[0], lineNr); // we assume, that the format is the same here
-        int n = (int)x.size();
+        int n = static_cast<int>(x.size());
         if( n < 3 ){
           ERROR_LOG("skipping line " + str(lineNr) + ":\"" + line + "\" [unsupported number of face vertices]" );
           continue;

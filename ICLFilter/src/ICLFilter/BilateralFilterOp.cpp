@@ -77,9 +77,9 @@ public:
 		program = utils::CLProgram("gpu",kernel_source);
 
 		rgb_to_lab = program.createKernel("rgbToLABCIE");
-		filter[(int)UCHAR_3COLORS] = program.createKernel("bilateral_filter_color");
-		filter[(int)UCHAR_SINGLE_CHANNEL] = program.createKernel("bilateral_filter_mono");
-		filter[(int)FLOAT_SINGLE_CHANNEL] = program.createKernel("bilateral_filter_mono_float");
+		filter[static_cast<int>(UCHAR_3COLORS)] = program.createKernel("bilateral_filter_color");
+		filter[static_cast<int>(UCHAR_SINGLE_CHANNEL)] = program.createKernel("bilateral_filter_mono");
+		filter[static_cast<int>(FLOAT_SINGLE_CHANNEL)] = program.createKernel("bilateral_filter_mono_float");
 
 		program.listSelectedDevice();
 	}
@@ -286,9 +286,9 @@ public:
 					rgb_to_lab.setArgs(in_r,in_g,in_b,lab_l,lab_a,lab_b);
 					rgb_to_lab.apply(w,h);
 					rgb_to_lab.finish();
-					kernel.setArgs(lab_l,lab_a,lab_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,(int)_use_lab);
+					kernel.setArgs(lab_l,lab_a,lab_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,static_cast<int>(_use_lab));
 				} else {
-					kernel.setArgs(in_r,in_g,in_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,(int)_use_lab);
+					kernel.setArgs(in_r,in_g,in_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,static_cast<int>(_use_lab));
 				}
 				kernel.apply(w,h);
 				kernel.finish();
@@ -393,9 +393,9 @@ public:
 					rgb_to_lab.setArgs(in_r,in_g,in_b,lab_l,lab_a,lab_b);
 					rgb_to_lab.apply(w,h);
 					rgb_to_lab.finish();
-					kernel.setArgs(lab_l,lab_a,lab_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,(int)_use_lab);
+					kernel.setArgs(lab_l,lab_a,lab_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,static_cast<int>(_use_lab));
 				} else {
-					kernel.setArgs(in_r,in_g,in_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,(int)_use_lab);
+					kernel.setArgs(in_r,in_g,in_b,out_r,out_g,out_b,w,h,radius,sigma_s,sigma_r,static_cast<int>(_use_lab));
 				}
 				kernel.apply(w,h);
 				kernel.finish();

@@ -184,7 +184,7 @@ namespace icl{
         int var=0;
         int m = mean();
         for(int i=0;i<m_iSize;i++){
-          var+=( m_piTable[i]*(int)pow(float(i-m),2) );
+          var+=( m_piTable[i]*static_cast<int>(pow(static_cast<float>(i-m),2)) );
         }
         return var/m_iCount;
 

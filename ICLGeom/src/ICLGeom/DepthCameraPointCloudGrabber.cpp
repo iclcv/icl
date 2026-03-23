@@ -90,7 +90,7 @@ namespace icl{
               const float sigma2 = 2*(maskRadius/2*maskRadius/2);
               int sum = 0;
               for(unsigned int i=0;i<k.size();++i){
-                float d = ((int)i)-maskRadius;
+                float d = (static_cast<int>(i))-maskRadius;
                 k[i] = 255.0 * ::exp( - d*d / sigma2);
                 sum += k[i];
               }
@@ -318,7 +318,7 @@ namespace icl{
 
       Img8u *rgbImage = 0;
       if(useNewImages || !m_data->lastColorImage){
-        rgbImage = m_data->colorGrabber.isNull() ? 0 : (Img8u*)m_data->colorGrabber.grab()->as8u();
+        rgbImage = m_data->colorGrabber.isNull() ? 0 : const_cast<Img8u*>(m_data->colorGrabber.grab()->as8u());
         if(rgbImage && m_data->colorMask){
           ICLASSERT_THROW(m_data->colorMask->getSize() == rgbImage->getSize(),
                           ICLException("DepthCameraPointCloudGrabber::grab: "

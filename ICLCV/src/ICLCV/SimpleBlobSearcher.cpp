@@ -69,7 +69,7 @@ namespace icl{
     }
 
     void SimpleBlobSearcher::remove(int index){
-      ICLASSERT_RETURN(index >= 0 && index < (int)m_data->colors.size());
+      ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(m_data->colors.size()));
       m_data->colors.erase(m_data->colors.begin()+index);
       m_data->thresholds.erase(m_data->thresholds.begin()+index);
       delete m_data->rds[index];
@@ -79,7 +79,7 @@ namespace icl{
 
     void SimpleBlobSearcher::adapt(int index, const Color &color,
                                    float thresh, const Range32s &sizeRange){
-      ICLASSERT_RETURN(index >= 0 && index < (int)m_data->colors.size());
+      ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(m_data->colors.size()));
       m_data->colors[index] = color;
       m_data->thresholds[index] = thresh;
       m_data->rds.push_back(new RegionDetector);
@@ -98,7 +98,7 @@ namespace icl{
       m_data->blobs.clear();
       ICLASSERT_RETURN_VAL(image.getChannels() == 3, m_data->blobs);
 
-      int N = (int)m_data->colors.size();
+      int N = static_cast<int>(m_data->colors.size());
       int dim = image.getDim();
 
       m_data->buffers.resize(N);

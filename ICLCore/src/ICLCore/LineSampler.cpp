@@ -238,10 +238,10 @@ namespace icl{
       int dx = std::abs(a.x - b.x);
       int dy = std::abs(a.y - b.y);
       int lenNeeded = iclMax(dx,dy)+1;
-      if((int)m_buf.size() < lenNeeded) m_buf.resize(lenNeeded);
+      if(static_cast<int>(m_buf.size()) < lenNeeded) m_buf.resize(lenNeeded);
       if(!dx || !dy){
         std::pair<Point*,Point*> res = sample_simple_line_level_0(!dx, a.x, a.y, b.x, b.y, m_br.size() ? m_br.data() : 0, m_buf);
-        Result r = { res.first, (int)(res.second - res.first) };
+        Result r = { res.first, static_cast<int>(res.second - res.first) };
         return r;
       }
 
@@ -253,7 +253,7 @@ namespace icl{
                                                    m_br.size()?m_br.data():0,pl);
       Point *begin = inverted ? cp+1 : m_buf.data();
       Point *end = inverted ? m_buf.data()+m_buf.size() : cp ;
-      Result r = { begin, (int)(end - begin) };
+      Result r = { begin, static_cast<int>(end - begin) };
       return r;
     }
 

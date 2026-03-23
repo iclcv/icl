@@ -143,8 +143,8 @@ icl32s IppInterface::statusNoError(){
 
 const char* IppInterface::ippGetStatusString(icl32s StsCode)
 {
-  static char* (*fn)(icl32s) = (char*(*)(icl32s)) loadFunction(
-        m_LibHandles["libippcore.so"], "ippGetStatusString");
+  static char* (*fn)(icl32s) = reinterpret_cast<char*(*)(icl32s)>(loadFunction(
+        m_LibHandles["libippcore.so"], "ippGetStatusString"));
   return fn(StsCode);
 }
 
@@ -154,8 +154,8 @@ icl32s IppInterface::ippmEigenValuesVectorsSym_m_32f(
     icl32f* pDstValues,  icl32s widthHeight)
 {
   static icl32s (*fn)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32f*,icl32s)
-      = (icl32s(*)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32f*,icl32s))
-      loadFunction(m_LibHandles["libippm.so"], "ippmEigenValuesVectorsSym_m_32f");
+      = reinterpret_cast<icl32s(*)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32f*,icl32s)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmEigenValuesVectorsSym_m_32f"));
   return fn(pSrc, srcStride1, srcStride2, pBuffer, pDstVectors, dstStride1, dstStride2, pDstValues, widthHeight);
 }
 
@@ -165,8 +165,8 @@ icl32s IppInterface::ippmEigenValuesVectorsSym_m_64f(
     icl64f* pDstValues,  icl32s widthHeight)
 {
   static icl32s (*fn)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl64f*,icl32s)
-      = (icl32s(*)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl64f*,icl32s))
-      loadFunction(m_LibHandles["libippm.so"], "ippmEigenValuesVectorsSym_m_64f");
+      = reinterpret_cast<icl32s(*)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl64f*,icl32s)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmEigenValuesVectorsSym_m_64f"));
   return fn(pSrc, srcStride1, srcStride2, pBuffer, pDstVectors, dstStride1, dstStride2, pDstValues, widthHeight);
 }
 
@@ -175,8 +175,8 @@ icl32s IppInterface::ippmInvert_m_32f(
     icl32f* pDst, icl32s dstStride1, icl32s dstStride2, icl32s widthHeight)
 {
   static icl32s (*fn)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32s)
-      = (icl32s(*)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32s))
-      loadFunction(m_LibHandles["libippm.so"], "ippmInvert_m_32f");
+      = reinterpret_cast<icl32s(*)(const icl32f*,icl32s,icl32s,icl32f*,icl32f*,icl32s,icl32s,icl32s)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmInvert_m_32f"));
   return fn(pSrc, srcStride1, srcStride2, pBuffer, pDst, dstStride1, dstStride2, widthHeight);
 }
 
@@ -185,8 +185,8 @@ icl32s IppInterface::ippmInvert_m_64f(
     icl64f* pDst, icl32s dstStride1, icl32s dstStride2, icl32s widthHeight)
 {
   static icl32s (*fn)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl32s)
-      = (icl32s(*)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl32s))
-      loadFunction(m_LibHandles["libippm.so"], "ippmInvert_m_64f");
+      = reinterpret_cast<icl32s(*)(const icl64f*,icl32s,icl32s,icl64f*,icl64f*,icl32s,icl32s,icl32s)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmInvert_m_64f"));
   return fn(pSrc, srcStride1, srcStride2, pBuffer, pDst, dstStride1, dstStride2, widthHeight);
 }
 
@@ -195,8 +195,8 @@ icl32s IppInterface::ippmDet_m_32f(
     icl32f* pBuffer, icl32f*  pDst)
 {
   static icl32s (*fn)(const icl32f*,icl32s,icl32s,icl32s,icl32f*,icl32f*)
-      = (icl32s(*)(const icl32f*,icl32s,icl32s,icl32s,icl32f*,icl32f*))
-      loadFunction(m_LibHandles["libippm.so"], "ippmDet_m_32f");
+      = reinterpret_cast<icl32s(*)(const icl32f*,icl32s,icl32s,icl32s,icl32f*,icl32f*)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmDet_m_32f"));
   return fn(pSrc, srcStride1, srcStride2, widthHeight, pBuffer, pDst);
 }
 
@@ -205,8 +205,8 @@ icl32s IppInterface::ippmDet_m_64f(
     icl64f* pBuffer, icl64f*  pDst)
 {
   static icl32s (*fn)(const icl64f*,icl32s,icl32s,icl32s,icl64f*,icl64f*)
-      = (icl32s(*)(const icl64f*,icl32s,icl32s,icl32s,icl64f*,icl64f*))
-      loadFunction(m_LibHandles["libippm.so"], "ippmDet_m_64f");
+      = reinterpret_cast<icl32s(*)(const icl64f*,icl32s,icl32s,icl32s,icl64f*,icl64f*)>(
+      loadFunction(m_LibHandles["libippm.so"], "ippmDet_m_64f"));
   return fn(pSrc, srcStride1, srcStride2, widthHeight, pBuffer, pDst);
 }
 

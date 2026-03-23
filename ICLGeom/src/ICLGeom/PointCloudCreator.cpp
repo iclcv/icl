@@ -292,7 +292,7 @@ namespace icl{
         const ViewRayDir &dir = dirs[i];
         const float d = (NEEDS_RAW_TO_MM_MAPPING ? raw_to_mm(depthValues[i]) : depthValues[i])*depthScaling;
 
-        ViewRayDir &dstXYZ = (ViewRayDir&)xyz[i]; // keep in mind to nerver access 4th component!
+        ViewRayDir &dstXYZ = reinterpret_cast<ViewRayDir&>(xyz[i]); // keep in mind to nerver access 4th component!
 
         dstXYZ[0] = O[0] + d * dir[0]; // avoid 3-float temporary
         dstXYZ[1] = O[1] + d * dir[1];
@@ -300,7 +300,7 @@ namespace icl{
 
         if(HAVE_RGBD_MAPPING){ // optimized as template parameter
           Point p = map_rgbd(M,dstXYZ);
-          if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){
+          if( (static_cast<unsigned int>(p.x)) < COLOR_W && (static_cast<unsigned int>(p.y)) < COLOR_H){
             const int idx = p.x + COLOR_W * p.y;
             assign_rgba(rgba[i], rgb[0][idx], rgb[1][idx], rgb[2][idx], 255);
             colorIDs[i][0]=p.x;
@@ -395,7 +395,7 @@ namespace icl{
             destination.addFeature(PointCloudObjectBase::Depth);
           }
         }
-        const DataSegment<float,1> dimage((float*)depthImageMM.begin(0), sizeof(float),
+        const DataSegment<float,1> dimage(const_cast<float*>(depthImageMM.begin(0)), sizeof(float),
                                           depthImageMM.getDim(), depthImageMM.getWidth());
         dimage.deepCopy(destination.selectDepth());
       }
@@ -530,7 +530,7 @@ namespace icl{
                              O[2] + d * dir[2]);
 
         Point p = map_rgbd(M,xyz);
-        if( ((unsigned int)p.x) < COLOR_W && ((unsigned int)p.y) < COLOR_H){
+        if( (static_cast<unsigned int>(p.x)) < COLOR_W && (static_cast<unsigned int>(p.y)) < COLOR_H){
           const int idx = p.x + COLOR_W * p.y;
 
           switch(NUM_CHANNELS){ // should be optimized out by the compiler

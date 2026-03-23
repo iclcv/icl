@@ -264,21 +264,21 @@ namespace icl{
         glGenBuffers(4,buffers);
         glBindBuffer(GL_ARRAY_BUFFER,buffers[VERTEX_BUFFER]);
         glBufferData(GL_ARRAY_BUFFER,xyz.getDim()*4*sizeof(float),xyz.data,GL_DYNAMIC_DRAW);
-        glVertexPointer(4, GL_FLOAT, 0, (GLubyte*)nullptr+0);
+        glVertexPointer(4, GL_FLOAT, 0, static_cast<GLubyte*>(nullptr));
         glEnableClientState(GL_VERTEX_ARRAY);
         //glVertexPointer(4, GL_FLOAT, 0, points.data());//xyz.getStride(), xyz.getDataPointer());
         //glVertexPointer(4, GL_FLOAT, xyz.stride, xyz.data);
         if(useTexturing==true){
           glBindBuffer(GL_ARRAY_BUFFER,buffers[TEX_BUFFER]);
           glBufferData(GL_ARRAY_BUFFER,textureCoordinates.getDim()*2*sizeof(float),textureCoordinates.data,GL_DYNAMIC_DRAW);
-          glTexCoordPointer(2, GL_FLOAT, 0, (GLubyte*)nullptr+0);
+          glTexCoordPointer(2, GL_FLOAT, 0, static_cast<GLubyte*>(nullptr));
           glEnableClientState(GL_TEXTURE_COORD_ARRAY);
           //glTexCoordPointer(2, GL_FLOAT, 0, texture.data());
           //glTexCoordPointer(2, GL_FLOAT, textureCoordinates.stride, textureCoordinates.data);
         }else{
           glBindBuffer(GL_ARRAY_BUFFER,buffers[COLOR_BUFFER]);
           glBufferData(GL_ARRAY_BUFFER,rgb.getDim()*4*sizeof(float),rgb.data,GL_DYNAMIC_DRAW);
-          glColorPointer(4, GL_FLOAT, 0, (GLubyte*)nullptr+0);
+          glColorPointer(4, GL_FLOAT, 0, static_cast<GLubyte*>(nullptr));
           glEnableClientState(GL_COLOR_ARRAY);
           //glColorPointer(4, GL_FLOAT, 0, colors.data());
           //glColorPointer(4, GL_FLOAT, rgb.stride, rgb.data);
@@ -287,7 +287,7 @@ namespace icl{
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffers[INDEX_BUFFER]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER,indices.size()*sizeof(unsigned int),indices.data(),GL_DYNAMIC_DRAW);
-        glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,(GLubyte*)nullptr+0);
+        glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,static_cast<GLubyte*>(nullptr));
         //glDrawArrays(GL_TRIANGLES, 0, numElements);
         //glDrawElements(GL_TRIANGLES,i*3,GL_UNSIGNED_INT,indices.data());
 
@@ -408,8 +408,8 @@ namespace icl{
       static std::string names[PointCloudObjectBase::NUM_FEATURES] = {
         "Intensity","Label", "BGR", "BGRA", "BGRA32s", "XYZ", "Normal", "RGBA32f"
       };
-      if( (unsigned int)t < (int)PointCloudObjectBase::NUM_FEATURES){
-        return s << names[(int)t];
+      if( static_cast<unsigned int>(t) < static_cast<int>(PointCloudObjectBase::NUM_FEATURES)){
+        return s << names[static_cast<int>(t)];
       }else{
         return s << "*unknown feature type*";
       }
@@ -743,9 +743,9 @@ namespace icl{
             const DataSegment<icl8u,4> a = selectBGRA();
             const DataSegment<icl8u,3> b = dst.selectBGR();
             for(int i=0;i<a.getDim();++i){
-              if(fabs((float)(a[i][0]-b[i][0])) > tollerance) return false;
-              if(fabs((float)(a[i][1]-b[i][1])) > tollerance) return false;
-              if(fabs((float)(a[i][2]-b[i][2])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][0]-b[i][0])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][1]-b[i][1])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][2]-b[i][2])) > tollerance) return false;
             }
           }else if(dst.supports(RGBA32f)){
             const DataSegment<icl8u,4> a = selectBGRA();
@@ -762,9 +762,9 @@ namespace icl{
             const DataSegment<icl8u,4> a = dst.selectBGRA();
             const DataSegment<icl8u,3> b = selectBGR();
             for(int i=0;i<a.getDim();++i){
-              if(fabs((float)(a[i][0]-b[i][0])) > tollerance) return false;
-              if(fabs((float)(a[i][1]-b[i][1])) > tollerance) return false;
-              if(fabs((float)(a[i][2]-b[i][2])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][0]-b[i][0])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][1]-b[i][1])) > tollerance) return false;
+              if(fabs(static_cast<float>(a[i][2]-b[i][2])) > tollerance) return false;
             }
           }else if(dst.supports(BGR)){
             if(!selectBGR().equals(dst.selectBGR(),tollerance)) return false;

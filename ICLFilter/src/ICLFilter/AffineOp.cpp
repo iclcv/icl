@@ -204,10 +204,10 @@ namespace icl{
 
         double adMin[2], adMax[2], adCur[2];
         // compute corners of the ROI rectangle
-        double aadRect[4][2] = {{(double)roi.x, (double)roi.y},
-                                {(double)roi.x + (double)roi.width, (double)roi.y},
-                                {(double)roi.x + (double)roi.width, (double)roi.y + (double)roi.height},
-                                {(double)roi.x, (double)roi.y + (double)roi.height}};
+        double aadRect[4][2] = {{static_cast<double>(roi.x), static_cast<double>(roi.y)},
+                                {static_cast<double>(roi.x) + static_cast<double>(roi.width), static_cast<double>(roi.y)},
+                                {static_cast<double>(roi.x) + static_cast<double>(roi.width), static_cast<double>(roi.y) + static_cast<double>(roi.height)},
+                                {static_cast<double>(roi.x), static_cast<double>(roi.y) + static_cast<double>(roi.height)}};
 
         // apply transform to each corner off the ROI rectangle
         // shift is smallest x and y coordinate of this transform
@@ -218,8 +218,8 @@ namespace icl{
         applyT (aadRect[2], adCur); useMinMax (adCur, adMin, adMax);
         applyT (aadRect[3], adCur); useMinMax (adCur, adMin, adMax);
 
-        size.width  = (int) ceil(adMax[0] - adMin[0]); xShift = adMin[0];
-        size.height = (int) ceil(adMax[1] - adMin[1]); yShift = adMin[1];
+        size.width  = static_cast<int>(ceil(adMax[0] - adMin[0])); xShift = adMin[0];
+        size.height = static_cast<int>(ceil(adMax[1] - adMin[1])); yShift = adMin[1];
      }
 
     // }}}

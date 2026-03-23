@@ -249,28 +249,28 @@ namespace icl{
 
     void ps_get_version( usb_dev_handle* handle, uint16_t index ) {
       uint8_t buf[13]; buf[12] = 0;
-      usb_control_msg( handle, 0xC0, PS_GET_VERSION, 0x00, index, (char*)buf, 12, TIMEOUT );
+      usb_control_msg( handle, 0xC0, PS_GET_VERSION, 0x00, index, reinterpret_cast<char*>(buf), 12, TIMEOUT );
       //printf("version string 0x%02x: %s\n", index, buf);
     }
 
     // get device status word
     int ps_get_status( usb_dev_handle* handle ) {
       uint8_t buf[4];
-      usb_control_msg( handle, 0xC0, PS_GET_STATUS, 0x00, 0x00, (char*)buf, 4, TIMEOUT );
+      usb_control_msg( handle, 0xC0, PS_GET_STATUS, 0x00, 0x00, reinterpret_cast<char*>(buf), 4, TIMEOUT );
       return (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0];
     }
 
     // get sensor status
     void ps_get_sensors( usb_dev_handle* handle ) {
       ps_sensors sensors;
-      usb_control_msg( handle, 0xC0, PS_GET_SENSORS, 0x00, 0x00, (char*)(&sensors), 8, TIMEOUT );
+      usb_control_msg( handle, 0xC0, PS_GET_SENSORS, 0x00, 0x00, reinterpret_cast<char*>(&sensors), 8, TIMEOUT );
       //printf("temp: %d x: %d y: %d z: %d\n",sensors.temp,sensors.acc_x,sensors.acc_y,sensors.acc_z);
     }
 
     // other commands
     void ps_command( usb_dev_handle* handle, uint16_t cmd, uint16_t index, uint16_t len ) {
       uint8_t buf[24];
-      usb_control_msg( handle, 0xC0, cmd, 0x00, index, (char*)buf, len, TIMEOUT );
+      usb_control_msg( handle, 0xC0, cmd, 0x00, index, reinterpret_cast<char*>(buf), len, TIMEOUT );
       /*
       printf("command 0x%02x,0x%02x: ", cmd, index );
       for (int i = 0; i < len; i++) printf("0x%02x ", buf[i]);
@@ -301,15 +301,15 @@ namespace icl{
       uint8_t buffer[512];
       int result, bufpos = 0;
 
-      result = usb_bulk_read( handle, ENDPOINT_VIDEO, (char*)buffer, sizeof(buffer), TIMEOUT );
+      result = usb_bulk_read( handle, ENDPOINT_VIDEO, reinterpret_cast<char*>(buffer), sizeof(buffer), TIMEOUT );
       if (result != sizeof(ps_image)) { printf("transfer size mismatch\n"); return -1; }
 
-      ps_image* header = (ps_image*)buffer;
+      ps_image* header = reinterpret_cast<ps_image*>(buffer);
       if (header->magic != VIDEO_HEADER_MAGIC) { printf("image magic mismatch\n"); return -1; }
       if (header->size  != VIDEO_BUFFER_SIZE ) { printf("image size  mismatch\n"); return -1; }
 
       while (bufpos < VIDEO_BUFFER_SIZE) {
-        result = usb_bulk_read( handle, ENDPOINT_VIDEO, (char*)(image+bufpos), VIDEO_PACKET_SIZE, TIMEOUT );
+        result = usb_bulk_read( handle, ENDPOINT_VIDEO, reinterpret_cast<char*>(image+bufpos), VIDEO_PACKET_SIZE, TIMEOUT );
         if (result < 0) { printf("error in usb_bulk_read\n"); return result; }
         bufpos += result;
       }
@@ -329,12 +329,12 @@ namespace icl{
       int need_blobs = -1;
       int current = 0;
 
-      ps_header* header = (ps_header*)buffer;
-      ps_blob*   inblob = (ps_blob*)(buffer+sizeof(ps_header));
+      ps_header* header = reinterpret_cast<ps_header*>(buffer);
+      ps_blob*   inblob = reinterpret_cast<ps_blob*>(buffer+sizeof(ps_header));
 
       do {
 
-        result = usb_bulk_read( handle, ENDPOINT_BLOBS, (char*)(buffer), sizeof(buffer), TIMEOUT ) - sizeof(ps_header);
+        result = usb_bulk_read( handle, ENDPOINT_BLOBS, reinterpret_cast<char*>(buffer), sizeof(buffer), TIMEOUT ) - sizeof(ps_header);
         if (result < 0) { printf("error in usb_bulk_read\n"); return result; }
         if (result % sizeof(ps_blob) != 0) { printf("transfer size mismatch\n"); return -1; }
         //printf("id: %x count: %d\n",header->packet_id,header->count);

@@ -328,7 +328,7 @@ namespace icl{
       std::vector<double> color;
 
       ImageInfoIndicator(): haveImage(false), isVisible(false){
-        d = (core::depth)(-2);
+        d = static_cast<core::depth>(-2);
       }
 
       void update(const ImgParams p, core::depth d){
@@ -404,10 +404,10 @@ namespace icl{
        std::ostringstream str;
        str << "[";
        for(size_t i=0;i<color.size();++i){
-         if((int)color[i] == color[i]){
+         if(static_cast<int>(color[i]) == color[i]){
            if(color[i] < 10) str << "  ";
            if(color[i] < 100) str << "  ";
-           str << (int)color[i];
+           str << static_cast<int>(color[i]);
          }else{
            str << color[i];
          }
@@ -588,7 +588,7 @@ namespace icl{
       void enterFullScreen(int screen = -1){
         if(!parent->isFullScreen()){
           if(parent->parent()){
-            parentBeforeFullScreen = (QWidget*)parent->parent();
+            parentBeforeFullScreen = static_cast<QWidget*>(parent->parent());
             geomBeforeFullScreen = parent->geometry();
             parent->setParent(0);
           }
@@ -617,13 +617,13 @@ namespace icl{
         if(!parent->parent()) return;
         if(!parent->windowTitle().length()){
           QWidget *p = parent;
-          while(p->parent()) p = (QWidget*)p->parent();
+          while(p->parent()) p = static_cast<QWidget*>(p->parent());
           parent->setWindowTitle(p->windowTitle() + " (detached)");
         }
         if(parent->isFullScreen()){
           parent->showNormal();
         }else{
-          parentBeforeFullScreen = (QWidget*)parent->parent();
+          parentBeforeFullScreen = static_cast<QWidget*>(parent->parent());
           geomBeforeFullScreen = parent->geometry();
           parent->setParent(0);
           if(parentBeforeFullScreen){
@@ -737,7 +737,7 @@ namespace icl{
         size_t begin = 0;
         while(begin<s.length() && s[begin] == ' ') ++begin;
         size_t end = s.length()-1;
-        while((int)end >= 0 && s[end] == ' ') --end;
+        while(static_cast<int>(end) >= 0 && s[end] == ' ') --end;
         return s.substr(begin,end-begin+1);
       }
 
@@ -897,16 +897,16 @@ namespace icl{
         case ICLWidget::fmHoldAR:{
           // check if the image is more "widescreen" as the widget or not
           // and adapt image-rect
-          float fWidgetAR = (float)iW/(float)iH;
-          float fImageAR = (float)iImageW/(float)iImageH;
+          float fWidgetAR = static_cast<float>(iW)/static_cast<float>(iH);
+          float fImageAR = static_cast<float>(iImageW)/static_cast<float>(iImageH);
           if(fImageAR >= fWidgetAR){ //Image is more "widescreen" then the widget
-            float fScaleFactor = (float)iW/(float)iImageW;
-            return Rect(0,(iH-(int)floor(iImageH*fScaleFactor))/2,
-                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+            float fScaleFactor = static_cast<float>(iW)/static_cast<float>(iImageW);
+            return Rect(0,(iH-static_cast<int>(floor(iImageH*fScaleFactor)))/2,
+                        static_cast<int>(floor(iImageW*fScaleFactor)),static_cast<int>(floor(iImageH*fScaleFactor)));
           }else{
-            float fScaleFactor = (float)iH/(float)iImageH;
-            return Rect((iW-(int)floor(iImageW*fScaleFactor))/2,0,
-                        (int)floor(iImageW*fScaleFactor),(int)floor(iImageH*fScaleFactor));
+            float fScaleFactor = static_cast<float>(iH)/static_cast<float>(iImageH);
+            return Rect((iW-static_cast<int>(floor(iImageW*fScaleFactor)))/2,0,
+                        static_cast<int>(floor(iImageW*fScaleFactor)),static_cast<int>(floor(iImageH*fScaleFactor)));
           }
           break;
         }
@@ -1083,7 +1083,7 @@ namespace icl{
       void leftDown(const QPointF &p){
         if(hitAny(p)){
           for(int i=LEFT;i<=BOTTOM;i++){
-            Edge e = (Edge)i;
+            Edge e = static_cast<Edge>(i);
             if(hit(e,p)){
               edgesHovered[e] = edgesDragged[e] = true;
             }else{
@@ -1099,7 +1099,7 @@ namespace icl{
       }
       void leftUp(const QPointF &p){
         for(int i=LEFT;i<=BOTTOM;i++){
-          Edge e = (Edge)i;
+          Edge e = static_cast<Edge>(i);
           edgesDragged[e] = false;
         }
         mode = NONE;
@@ -1130,7 +1130,7 @@ namespace icl{
       void move(const QPointF &p){
         currPos = Point32f(p.x(),p.y());
         for(int i=LEFT;i<=BOTTOM;i++){
-          Edge e = (Edge)i;
+          Edge e = static_cast<Edge>(i);
           edgesHovered[e] = hit(e,p);
         }
       }
@@ -1221,7 +1221,7 @@ namespace icl{
       VBox bciGUI;
 
       std::string bcis[3]={"custom,","off,","auto"};
-      bcis[((int)data->rm)-1] = str("!")+bcis[((int)data->rm)-1];
+      bcis[(static_cast<int>(data->rm))-1] = str("!")+bcis[(static_cast<int>(data->rm))-1];
       bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
       bciGUI << ( HBox()
                   << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
@@ -1971,7 +1971,7 @@ namespace icl{
     void ICLWidget::resizeGL(int w, int h){
       LOCK_SECTION;
       makeCurrent();
-      glViewport(0, 0, (GLint)w, (GLint)h);
+      glViewport(0, 0, static_cast<GLint>(w), static_cast<GLint>(h));
 
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
@@ -2030,7 +2030,7 @@ namespace icl{
         pe->color(0,150,255,200);
         pe->fill(0,150,255,50);
         Rect32f &r = *m_data->embeddedZoomRect;
-        pe->rect(Rect((int)r.x,(int)r.y,(int)r.width,(int)r.height));
+        pe->rect(Rect(static_cast<int>(r.x),static_cast<int>(r.y),static_cast<int>(r.width),static_cast<int>(r.height)));
       }
 
 
@@ -2349,8 +2349,8 @@ namespace icl{
       // Compute current relative image position
       float boxX = e->position().x() - ir.x;
       float boxY = e->position().y() - ir.y;
-      int imageX = (int) rint((boxX*(is.width))/ir.width);
-      int imageY = (int) rint((boxY*(is.height))/ir.height);
+      int imageX = static_cast<int>(rint((boxX*(is.width))/ir.width));
+      int imageY = static_cast<int>(rint((boxY*(is.height))/ir.height));
       float relImageX = float(imageX)/is.width;
       float relImageY = float(imageY)/is.height;
 
@@ -2619,8 +2619,8 @@ namespace icl{
       float boxY = m_data->mouseY - r.y;
       float imageX32f = (boxX*iw)/float(r.width);
       float imageY32f = (boxY*ih)/float(r.height);
-      int imageX = (int) rint(-0.5+(boxX*iw)/r.width);
-      int imageY = (int) rint(-0.5+(boxY*ih)/r.height);
+      int imageX = static_cast<int>(rint(-0.5+(boxX*iw)/r.width));
+      int imageY = static_cast<int>(rint(-0.5+(boxY*ih)/r.height));
 
       float relImageX = float(imageX)/iw;
       float relImageY = float(imageY)/ih;

@@ -68,7 +68,7 @@ namespace icl{
       SPECIALIZE(ln,::log(t));
       SPECIALIZE(exp,::exp(t));
 #ifdef ICL_SYSTEM_WINDOWS
-      SPECIALIZE(abs, ::fabs((double)t));
+      SPECIALIZE(abs, ::fabs(static_cast<double>(t)));
 #else
       SPECIALIZE(abs, ::fabs(t));
 #endif

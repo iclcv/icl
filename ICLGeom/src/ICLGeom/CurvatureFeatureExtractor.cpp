@@ -166,7 +166,7 @@ namespace icl{
 
       //occlusion check
       if(minError<maxError){
-        return SegmenterUtils::occlusionCheck((core::Img32f&)depthImg, pointPairImg.first, pointPairImg.second, distanceTolerance, outlierTolerance);
+        return SegmenterUtils::occlusionCheck(const_cast<core::Img32f&>(depthImg), pointPairImg.first, pointPairImg.second, distanceTolerance, outlierTolerance);
       }
       return false;
     }
@@ -277,7 +277,7 @@ namespace icl{
       std::vector<utils::Point> points(imgIDs.size());
       for(unsigned int i=0; i<imgIDs.size(); i++){
         int id = imgIDs[i];
-        int y = (int)floor((float)id/(float)w);
+        int y = static_cast<int>(floor(static_cast<float>(id)/static_cast<float>(w)));
         int x = id-y*w;
         points[i]=utils::Point(x,y);
       }
@@ -315,7 +315,7 @@ namespace icl{
 
 
     utils::Point CurvatureFeatureExtractor::idToPoint(int id, int w){
-      int y = (int)floor((float)id/(float)w);
+      int y = static_cast<int>(floor(static_cast<float>(id)/static_cast<float>(w)));
       int x = id-y*w;
       return utils::Point(x,y);
     }

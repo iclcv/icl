@@ -169,7 +169,7 @@ namespace icl {
 
       int w = dx->getWidth();
 
-      icl32f *mag = (icl32f*)malloc(dx->getDim()*sizeof(icl32f));
+      icl32f *mag = static_cast<icl32f*>(malloc(dx->getDim()*sizeof(icl32f)));
 
     #ifdef SSE3
       // calculate magnitudes
@@ -248,7 +248,7 @@ namespace icl {
 
       int w = dx->getWidth();
 
-      icl16s *mag = (icl16s*)malloc(dx->getDim()*sizeof(icl16s));
+      icl16s *mag = static_cast<icl16s*>(malloc(dx->getDim()*sizeof(icl16s)));
 
     #ifdef SSE3
       // calculate magnitudes
@@ -274,7 +274,7 @@ namespace icl {
       // non-maximum-suppression with filtering of low magnitude values
       for (int i = 0; i < dx->getDim(); ++i, ++dstIt) {
         if (mag[i] >= low) {
-          float dir = src0[i] / (float)(src1[i]);
+          float dir = src0[i] / static_cast<float>(src1[i]);
 
           if (fabs(dir) >= 2.414213562373095f) {
             if (mag[i] < mag[i-1] || mag[i] < mag[i+1]) {

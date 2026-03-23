@@ -66,10 +66,10 @@ namespace icl{
       // {{{ open
 
       printf("%s%s:",BACK_LINE,PROGRESS_STR.c_str());
-      float frac = (float)curr/(float)max;
-      printf("%3d%s",(int)(frac*100),"%");
+      float frac = static_cast<float>(curr)/static_cast<float>(max);
+      printf("%3d%s",static_cast<int>(frac*100),"%");
 
-      int N1 = (int)(frac*BAR_LEN);
+      int N1 = static_cast<int>(frac*BAR_LEN);
       int N2 = BAR_LEN - N1;
 
       printf("[");

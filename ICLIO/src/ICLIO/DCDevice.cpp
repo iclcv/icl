@@ -205,20 +205,20 @@ namespace icl{
         case BF_GBRG:
         case BF_GRBG:
         case BF_BGGR:
-          return (dc1394color_filter_t)m_eBayerFilterMode;
+          return static_cast<dc1394color_filter_t>(m_eBayerFilterMode);
         case BF_FROM_FEATURE:
-          return (dc1394color_filter_t)1;
+          return static_cast<dc1394color_filter_t>(1);
         case BF_FROM_MODE:
           if(getTypeID(m_poCam) == "Imaging Source -- DFx_21BF04"){
             if(getMode().videomode != DC1394_VIDEO_MODE_640x480_YUV422){
               return DC1394_COLOR_FILTER_GBRG;
             }else{
-              return (dc1394color_filter_t)0;
+              return static_cast<dc1394color_filter_t>(0);
             }
           }
         case BF_NONE:
         default:
-          return (dc1394color_filter_t)0;
+          return static_cast<dc1394color_filter_t>(0);
       }
     }
 
@@ -327,7 +327,7 @@ namespace icl{
         err=dc1394_camera_enumerate (d, &list);
         DC1394_ERR(err,"Failed to enumerate cameras");
 
-        if (i >= (int)list->num) {
+        if (i >= static_cast<int>(list->num)) {
           ERROR_LOG("cameras have disappeared during bus reset procedure");
           return;
         }
@@ -503,8 +503,8 @@ namespace icl{
         dc1394_video_get_mode(cam,&videomode);
         dc1394_video_get_framerate(cam,&framerate);
       }else{
-        framerate = (dc1394framerate_t)-1;
-        videomode = (dc1394video_mode_t)-1;
+        framerate = static_cast<dc1394framerate_t>(-1);
+        videomode = static_cast<dc1394video_mode_t>(-1);
       }
     }
 

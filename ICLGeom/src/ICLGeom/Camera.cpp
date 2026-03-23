@@ -339,7 +339,7 @@ namespace icl {
                                        const RenderParams &renderParams, bool performLMAbasedOptimiziation) {
       checkAndFixPoints(Xws,xis);
 
-      int n = (int)Xws.size();
+      int n = static_cast<int>(Xws.size());
 
       DynMatrix<double> M(12,2*n);
       for(int i=0;i<n;++i){
@@ -444,7 +444,7 @@ namespace icl {
                   0.1, 1000);
           //lma.setDebugCallback();
 
-          int n = (int)Xws.size();
+          int n = static_cast<int>(Xws.size());
           mat xs(3,n), ys(2,n);
           for(int i=0;i<n;++i){
             xs(0,i) = Xws[i].x;
@@ -475,7 +475,7 @@ namespace icl {
       // TODO: normalize points
       checkAndFixPoints(Xws,xis);
 
-      int N = (int)Xws.size();
+      int N = static_cast<int>(Xws.size());
 
       DynMatrix<double> U(1,2*N);
       for(int i=0;i<N;++i){
@@ -743,7 +743,7 @@ namespace icl {
     static Vec estimate_3D_internal(const std::vector<Camera*> cams,
                                     const std::vector<Point32f> &ps){
       // {{{ open
-      int K = (int)cams.size();
+      int K = static_cast<int>(cams.size());
       ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
 
       DynMatrix<float> A(3,2*K), B(1,2*K);
@@ -836,9 +836,9 @@ namespace icl {
     /// multiview 3D point estimation using svd-based linear optimization
     Vec Camera::estimate_3D_svd(const std::vector<Camera*> cams,
                                   const std::vector<Point32f> &UVs){
-      int K = (int)cams.size();
+      int K = static_cast<int>(cams.size());
       ICLASSERT_THROW(K>1,ICLException("estimate_3D_svd needs at least 2 views"));
-      ICLASSERT_THROW((int)UVs.size() == (int)cams.size(),
+      ICLASSERT_THROW(static_cast<int>(UVs.size()) == static_cast<int>(cams.size()),
                       ICLException("estimate_3D_svd got more or less cameras than points"));
 
       std::vector<FixedMatrix<icl32f,4,3> > P(K);

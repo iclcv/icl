@@ -57,7 +57,7 @@ namespace icl{
         // tests if an element of the given float* has decimals
         // if it does: return 0, else 1
         for(int i=0;i<len;i++){
-          if (data[i] != (float) rint (data[i])) return false;
+          if (data[i] != static_cast<float>(rint(data[i]))) return false;
         }
         return true;
       }

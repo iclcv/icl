@@ -69,7 +69,7 @@ namespace icl{
         subset1 = subsets[lambda_id];
         subset2.clear();
         for(unsigned int i=0; i<subsets.size(); i++){
-          if((int)i!=lambda_id){
+          if(static_cast<int>(i)!=lambda_id){
             for(unsigned int j=0; j<subsets[i].size(); j++){
               subset2.push_back(subsets[i][j]);
             }
@@ -399,7 +399,7 @@ namespace icl{
         }
         for(unsigned int b=0; b<initialMatrix.cols(); b++){//cost of each edge: 1. / num edges
           if(initialMatrix(a,b)==1 && initialMatrix(b,a)==1 && a!=b){
-            probabilities(b,a)=1./(float)count;
+            probabilities(b,a)=1./static_cast<float>(count);
           }
         }
       }

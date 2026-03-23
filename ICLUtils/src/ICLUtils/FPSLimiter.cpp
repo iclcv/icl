@@ -64,7 +64,7 @@ namespace icl{
       float interval = now.toMicroSecondsDouble() - m_lastTime.toMicroSecondsDouble();
       float timeToWait = desiredInterval - interval;
       if(timeToWait > 0){
-        Thread::usleep((unsigned int)timeToWait);
+        Thread::usleep(static_cast<unsigned int>(timeToWait));
       }
       m_lastTime = Time::now();
       return timeToWait;

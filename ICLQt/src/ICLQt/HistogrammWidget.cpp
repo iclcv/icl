@@ -138,7 +138,7 @@ namespace icl{
           setPropertyValue("labels.y-axis",logOn ? "log(number of pixels)" : "number of pixels");
           Range32f rx = Range32f(s.globalRange.minVal,s.globalRange.maxVal);
           setDataViewPort(rx,Range32f(0,maxY));
-          setPropertyValue("tics.x-distance",(int)iclMax(4.0,round(rx.getLength()/8)));
+          setPropertyValue("tics.x-distance",static_cast<int>(iclMax(4.0,round(rx.getLength()/8))));
         }
       }
       unlock();

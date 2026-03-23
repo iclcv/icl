@@ -136,13 +136,13 @@ namespace icl{
       /* Step 5: Write comments */
       char acBuf[1024];
       // timestamp
-      snprintf (acBuf, sizeof(acBuf), "TimeStamp %lld", (long long)poSrc->getTime().toMicroSeconds());
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+      snprintf (acBuf, sizeof(acBuf), "TimeStamp %lld", static_cast<long long>(poSrc->getTime().toMicroSeconds()));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
 
       // ROI
       Rect roi = poSrc->getROI ();
       snprintf (acBuf, sizeof(acBuf), "ROI %d %d %d %d", roi.x, roi.y, roi.width, roi.height);
-      jpeg_write_marker(&jpgCinfo, JPEG_COM, (JOCTET*) acBuf, strlen(acBuf));
+      jpeg_write_marker(&jpgCinfo, JPEG_COM, reinterpret_cast<JOCTET*>(acBuf), strlen(acBuf));
 
 
       //////////////////////////////////////////////////////////////////////

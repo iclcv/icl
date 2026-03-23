@@ -227,7 +227,7 @@ namespace icl{
 	if(dst.cols() != src.cols() || dst.rows() != src.rows()){
           dst.setBounds(src.cols(),src.rows());
 	}
-	std::complex<T> temp = (T)0.0;
+	std::complex<T> temp = static_cast<T>(0.0);
 	const std::complex<T>* srcdata = src.data();
 	T* dstdata = dst.data();
         T epsilon = std::numeric_limits<T>::min(); // 1.17549e-38 in order to avoid log(0)
@@ -251,7 +251,7 @@ namespace icl{
           dst.setBounds(src.cols(),src.rows());
 	}
 	const std::complex<T>* srcdata = src.data();
-	std::complex<T> temp = (T)0.0;
+	std::complex<T> temp = static_cast<T>(0.0);
 	T* dstdata = dst.data();
 	for(unsigned int i=0;i<src.dim();++i){
           temp = srcdata[i];
@@ -535,8 +535,8 @@ namespace icl{
 	T *realdata = real.data();
 	T *imagdata = img.data();
 	for(unsigned int i=0;i<src.dim();++i){
-          realdata[i] = (T) srcdata[i].real();
-          imagdata[i] = (T)srcdata[i].imag();
+          realdata[i] = static_cast<T>(srcdata[i].real());
+          imagdata[i] = static_cast<T>(srcdata[i].imag());
 	}
       }
       template ICLMath_API void
@@ -689,28 +689,28 @@ namespace icl{
 	}
 	T im;
 	T re;
-	T zero = (T) 0;
+	T zero = static_cast<T>(0);
 	const std::complex<T> *srcdata = src.data();
 	T *magnitudedata = magnitude.data();
 	T *phasedata = phase.data();
 	for(unsigned int i=0;i<src.dim();++i){
           im = srcdata[i].imag();
           re = srcdata[i].real();
-          magnitudedata[i] = (T)(std::sqrt(re*re+im*im));
+          magnitudedata[i] = static_cast<T>(std::sqrt(re*re+im*im));
           if(re==zero && im==zero){
             //unbestimmt
             phasedata[i] = zero;
           } else if(re<zero && im>=zero){
-            phasedata[i] = (T) atan2(im,re)+FFT_PI;
+            phasedata[i] = static_cast<T>(atan2(im,re))+FFT_PI;
           } else if(re<zero && im<zero){
-            phasedata[i] = (T) atan2(im,re)-FFT_PI;
+            phasedata[i] = static_cast<T>(atan2(im,re))-FFT_PI;
           } else if(re==zero && im>zero){
-            phasedata[i] = (T) FFT_PI_HALF;
+            phasedata[i] = static_cast<T>(FFT_PI_HALF);
           } else if(re==zero && im<zero){
-            phasedata[i] = (T) -FFT_PI_HALF;
+            phasedata[i] = static_cast<T>(-FFT_PI_HALF);
           } else {
             //real==0 && im whaterver else
-            phasedata[i] = (T) std::atan2(im,re);
+            phasedata[i] = static_cast<T>(std::atan2(im,re));
           }
 	}
       }

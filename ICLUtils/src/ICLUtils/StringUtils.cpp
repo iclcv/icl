@@ -197,7 +197,7 @@ namespace icl{
       std::string s2 = toLower(s);
       if(s == "true" || s == "yes" || s == "on" || s == "1") return true;
       if(s == "false" || s == "no" || s == "off" || s == "0") return false;
-      return (bool)parse_icl8u(s);
+      return static_cast<bool>(parse_icl8u(s));
     }
 
     icl8u to8u(const std::string &s) {
@@ -265,7 +265,7 @@ namespace icl{
 
     string time2str(Time::value_type x){
       char acBuf[30];
-      snprintf(acBuf, sizeof(acBuf), "%lld",(long long)x);
+      snprintf(acBuf, sizeof(acBuf), "%lld",static_cast<long long>(x));
       return acBuf;
     }
     string i2str(int i){

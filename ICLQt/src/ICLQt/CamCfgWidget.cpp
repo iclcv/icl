@@ -170,13 +170,13 @@ namespace icl{
               throw ICLException("unable to create device");
             }
           }else if(data->foundDevices.size() > 1){
-            data->grabber.init(data->foundDevices.at((int)data->gui["device"]));
+            data->grabber.init(data->foundDevices.at(static_cast<int>(data->gui["device"])));
             if(data->grabber.isNull()){
               throw ICLException("unable to create device");
             }
           }
           BoxHandle b = data->gui.get<BoxHandle>("props");
-          data -> properties = Prop(data->foundDevices.at((int)data->gui["device"]).name()).handle("camcfg");
+          data -> properties = Prop(data->foundDevices.at(static_cast<int>(data->gui["device"])).name()).handle("camcfg");
           data -> properties.show();
           b.add(data->properties.getRootWidget());
         } catch(const std::exception &x){

@@ -133,7 +133,7 @@ namespace icl{
           dc1394trigger_mode_t m;
           dc1394_external_trigger_get_mode(cam,&m);
           static const char* values[] = {"0","1","2","3","4","5","14","15"};
-          int idx = (int)m - (int)DC1394_TRIGGER_MODE_0;
+          int idx = static_cast<int>(m) - static_cast<int>(DC1394_TRIGGER_MODE_0);
           if(idx >= 0 && idx < 8){
             return values[idx];
           }else{
@@ -143,7 +143,7 @@ namespace icl{
           dc1394trigger_source_t s;
           dc1394_external_trigger_get_source(cam,&s);
           static const char *values [] = {"0","1","2","3"};
-          int idx = (int)s - (int)DC1394_TRIGGER_SOURCE_0;
+          int idx = static_cast<int>(s) - static_cast<int>(DC1394_TRIGGER_SOURCE_0);
           if(idx >=0 && idx < 4){
             return values[idx];
           }else{
@@ -184,7 +184,7 @@ namespace icl{
       X(TEMPERATURE);X(TRIGGER);X(TRIGGER_DELAY);X(WHITE_SHADING);
       X(FRAME_RATE);X(ZOOM);X(PAN);X(TILT);X(OPTICAL_FILTER);
       X(CAPTURE_SIZE);X(CAPTURE_QUALITY);
-      return (dc1394feature_t)0;
+      return static_cast<dc1394feature_t>(0);
     }
   #undef X
 

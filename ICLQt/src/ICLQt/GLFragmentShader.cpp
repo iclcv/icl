@@ -50,7 +50,7 @@ namespace icl{
 
       if (infologLength > 1){
         std::string info(infologLength,'\0');
-        glGetShaderInfoLog(obj, infologLength, &charsWritten, (GLchar*)info.c_str());
+        glGetShaderInfoLog(obj, infologLength, &charsWritten, const_cast<GLchar*>(info.c_str()));
         return info;
       }else{
         return "";
@@ -71,7 +71,7 @@ namespace icl{
 
       if (infologLength > 1){
         std::string info(infologLength,'\0');
-        glGetProgramInfoLog(obj, infologLength, &charsWritten, (GLchar*)info.c_str());
+        glGetProgramInfoLog(obj, infologLength, &charsWritten, const_cast<GLchar*>(info.c_str()));
         return info;
       }else{
         return "";

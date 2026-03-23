@@ -87,7 +87,7 @@ namespace icl{
           pLast = p-1;
           while(true){//p<pEnd){
             p = find_first_not(p,pEnd,curr);
-            sls->init((int)(pLast-pBegin), y,(int)(p-pBegin),curr);
+            sls->init(static_cast<int>(pLast-pBegin), y,static_cast<int>(p-pBegin),curr);
             ++sls;
             if(p == pEnd) break;
             pLast = p;
@@ -124,7 +124,7 @@ namespace icl{
           pLast = p-1;
           while(p<pEnd){
             p = find_first_not(p,pEnd,curr);
-            sls->init(rx+(int)(pLast-pBegin), y,rx+(int)(p-pBegin),curr);
+            sls->init(rx+static_cast<int>(pLast-pBegin), y,rx+static_cast<int>(p-pBegin),curr);
             ++sls;
             curr = *p;
             pLast = p;

@@ -40,7 +40,7 @@ namespace icl{
     }
 
     void StringSignalButton::receiveClick(bool enabled){
-      (void)enabled;
+      static_cast<void>(enabled);
       emit clicked(text());
     }
 

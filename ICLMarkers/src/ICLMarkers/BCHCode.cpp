@@ -144,7 +144,7 @@ namespace icl {
       const char *lut = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-\0";
       static_indices = new icl8u[256];
       for(const char *p=lut;*p;++p){
-        static_indices.get()[(int)*p] = (icl8u)(p-lut);
+        static_indices.get()[static_cast<int>(*p)] = static_cast<icl8u>(p-lut);
       }
     }
 
@@ -511,7 +511,7 @@ namespace icl {
 
       BCHCode c;
       for(int i=0;i<6;++i){
-        int idx = static_indices.get()[(int)pc[i]];
+        int idx = static_indices.get()[static_cast<int>(pc[i])];
         for(int j=0;j<6;++j){
           c[i*6+j] = idx & (1<<j);
         }
@@ -612,7 +612,7 @@ namespace icl {
         last = rotateCode(last);
         DecodedBCHCode2D curr = decode(last);
         if(curr.id > maxID) continue; //curr.errors = 36;
-        curr.rot = (DecodedBCHCode2D::Rotation)i;
+        curr.rot = static_cast<DecodedBCHCode2D::Rotation>(i);
         if(!curr.errors) return curr;
         if(curr < best){
           best = curr;

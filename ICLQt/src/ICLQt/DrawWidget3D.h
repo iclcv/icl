@@ -61,10 +61,10 @@ namespace icl{
         virtual void draw(ICLDrawWidget3D *widget){}
 
         /// custom code to link the visualization to the widget
-        virtual void link(ICLDrawWidget3D *widget){ (void)widget; }
+        virtual void link(ICLDrawWidget3D *widget){ static_cast<void>(widget); }
 
         /// custom code to un-link the visualization from the widget
-        virtual void unlink(ICLDrawWidget3D *widget){ (void)widget; }
+        virtual void unlink(ICLDrawWidget3D *widget){ static_cast<void>(widget); }
       };
 
       /// creates a new ICLDrawWidget embedded into the parent component

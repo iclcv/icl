@@ -159,7 +159,7 @@ namespace icl{
       std::vector<std::string> subargs;
 
       void checkArgCountThrow() const{
-        if(allowed->subargcount != (int)subargs.size()){
+        if(allowed->subargcount != static_cast<int>(subargs.size())){
           THROW_ProgArgException("sub-argument typecheck for arg '" + arg()
                                  +"' failed (invalid subargument count. Expected "
                                  + str(allowed->subargcount) + " but found "
@@ -541,7 +541,7 @@ namespace icl{
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
-        if(pa.subargidx >= (int)l.size()){
+        if(pa.subargidx >= static_cast<int>(l.size())){
           THROW_ProgArgException("invalid programm argument index " + str(pa.subargidx) +
                                  " (only " + str(l.size()) + " arguments available in '"
                                  + (pa.danglingOnly?"dangling":"all") + "' args list)");
@@ -577,7 +577,7 @@ namespace icl{
           THROW_ProgArgException("unable to access subargidx index "+str(pa.subargidx)
                                  + " of argument '" + pa.id + "', which has a variable sub- "
                                  "argument count and was not given");
-        }else if((int)a->given->subargs.size() <= pa.subargidx){
+        }else if(static_cast<int>(a->given->subargs.size()) <= pa.subargidx){
           THROW_ProgArgException("unable to access subargidx index "+str(pa.subargidx)
                                  + " of argument '" + pa.id + "', which got only "
                                  + str(a->given->subargs.size()) + " sub argument(s)");
@@ -591,7 +591,7 @@ namespace icl{
 
     int ProgArg::n() const{
       GivenArg *g = ProgArgContext::getInstance(__FUNCTION__)->findGivenArg(id);
-      return g ? (int)g->subargs.size() : 0;
+      return g ? static_cast<int>(g->subargs.size()) : 0;
     }
 
     Any ProgArg::operator[](int idx) const{
@@ -603,7 +603,7 @@ namespace icl{
       ProgArgContext &context = *ProgArgContext::getInstance(__FUNCTION__);
       if(!pa.id.length()){
         const std::vector<std::string> &l = pa.danglingOnly ? context.dangling : context.all;
-        return pa.subargidx < (int)l.size();
+        return pa.subargidx < static_cast<int>(l.size());
       }else{
         AllowedArg *g = context.findArg(pa.id);
         if(!g) THROW_ProgArgException("undefined argument '" + pa.id +"'");

@@ -207,8 +207,8 @@ namespace icl{
         /// returns whether the AABB intersects with another AABB
         bool intersects(const AABB &o) const{
 #ifdef WIN32
-          return  (fabs((float)center[0] - o.center[0]) < (halfSize[0] + o.halfSize[0])
-                   && fabs((float)center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1]));
+          return  (fabs(static_cast<float>(center[0]) - o.center[0]) < (halfSize[0] + o.halfSize[0])
+                   && fabs(static_cast<float>(center[1]) - o.center[1]) < (halfSize[1] + o.halfSize[1]));
 #else
           return  (fabs(center[0] - o.center[0]) < (halfSize[0] + o.halfSize[0])
             && fabs(center[1] - o.center[1]) < (halfSize[1] + o.halfSize[1]));
@@ -303,7 +303,7 @@ namespace icl{
             std::cout << "Leaf (";
           }
           std::cout << "AABB=" << boundary.rect() << ", ";
-          std::cout << "Content=" <<(int)(next-points) << "/" << CAPACITY;
+          std::cout << "Content=" <<static_cast<int>(next-points) << "/" << CAPACITY;
           std::cout <<  ")";
           if(children){
             std::cout << " {" << std::endl;

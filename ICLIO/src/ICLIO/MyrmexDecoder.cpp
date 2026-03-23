@@ -274,7 +274,7 @@ namespace icl{
 
     //swap16: Returns swapped low and high byte of value a
     unsigned short MyrmexDecoder::swap16(unsigned short a){
-      unsigned char *b = (unsigned char *) &a;
+      unsigned char *b = reinterpret_cast<unsigned char *>(&a);
       return ( *(b+1) + (*b << 8) );
     }
 
@@ -580,7 +580,7 @@ namespace icl{
         if (connections[i] == EAST ) x-=1;
         if (connections[i] == WEST ) x+=1;
 
-        if(ccounter >= (int)conversion.size()){
+        if(ccounter >= static_cast<int>(conversion.size())){
           throw ICLException("error while creating myrmex decoder conversion table");
         }
         conversion[ccounter++] = target[x][y];

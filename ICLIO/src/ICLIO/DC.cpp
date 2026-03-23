@@ -222,7 +222,7 @@ namespace icl{
         MODE_SWITCH_B_ELIF(FORMAT7,7);
   #undef MODE_SWITCH_B_ELIF
   #undef MODE_SWITCH_B_IF
-        return (dc1394video_mode_t)-1;
+        return static_cast<dc1394video_mode_t>(-1);
 
       }
 
@@ -243,7 +243,7 @@ namespace icl{
 
   #undef FR_SWICH_A
   #undef FR_SWICH_B
-        return (dc1394framerate_t)-1;
+        return static_cast<dc1394framerate_t>(-1);
       }
 
       // }}}
@@ -258,7 +258,7 @@ namespace icl{
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_EDGESENSE);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_VNG);
         MODE_SWITCH_ELSE(DC1394_BAYER_METHOD_AHD);
-        return (dc1394bayer_method_t)-1;
+        return static_cast<dc1394bayer_method_t>(-1);
       }
 
       // }}}
@@ -287,7 +287,7 @@ namespace icl{
         MODE_SWITCH_ELSE(DC1394_FEATURE_OPTICAL_FILTER);
         MODE_SWITCH_ELSE(DC1394_FEATURE_CAPTURE_SIZE);
         MODE_SWITCH_ELSE(DC1394_FEATURE_CAPTURE_QUALITY);
-        return (dc1394feature_t)-1;
+        return static_cast<dc1394feature_t>(-1);
       }
 
       // }}}
@@ -301,7 +301,7 @@ namespace icl{
 
         static vector<string> v;
         if(!v.size()){
-          for(dc1394feature_t f = DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; f=(dc1394feature_t)((int)f+1)){
+          for(dc1394feature_t f = DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; f=static_cast<dc1394feature_t>(static_cast<int>(f)+1)){
             v.push_back(to_string(f));
           }
         }
@@ -351,10 +351,10 @@ namespace icl{
         // old      dc1394_video_set_iso_speed(c,DC1394_ISO_SPEED_400);
 
 
-        if((int)options->videomode != -1){
+        if(static_cast<int>(options->videomode) != -1){
           dc1394_video_set_mode(c,options->videomode);
         }
-        if((int)options->framerate != -1){
+        if(static_cast<int>(options->framerate) != -1){
           dc1394_video_set_framerate(c, options->framerate);
         } // otherwise, the current framerate is used
 
@@ -440,11 +440,11 @@ namespace icl{
           int j = (width*height)-1;
 
           while (i >= 0) {
-            dest[j--] = (uint8_t) src[i--];
-            dest[j--] = (uint8_t) src[i--];
+            dest[j--] = static_cast<uint8_t>(src[i--]);
+            dest[j--] = static_cast<uint8_t>(src[i--]);
             i--;
-            dest[j--] = (uint8_t) src[i--];
-            dest[j--] = (uint8_t) src[i--];
+            dest[j--] = static_cast<uint8_t>(src[i--]);
+            dest[j--] = static_cast<uint8_t>(src[i--]);
             i--;
           }
         }
@@ -454,14 +454,14 @@ namespace icl{
           switch(byte_order){
             case DC1394_BYTE_ORDER_UYVY:
               while (i >= 0) {
-                dest[j--]= (uint8_t)src[i--]; i--;
-                dest[j--]= (uint8_t)src[i--]; i--;
+                dest[j--]= static_cast<uint8_t>(src[i--]); i--;
+                dest[j--]= static_cast<uint8_t>(src[i--]); i--;
               }
               break;
             case DC1394_BYTE_ORDER_YUYV:
               while (i >= 0) {
-                i--; dest[j--]= (uint8_t)src[i--];
-                i--; dest[j--]= (uint8_t)src[i--];
+                i--; dest[j--]= static_cast<uint8_t>(src[i--]);
+                i--; dest[j--]= static_cast<uint8_t>(src[i--]);
               }
               break;
             default:
@@ -493,7 +493,7 @@ namespace icl{
 
         if(bayerLayout){
           //      if(f->color_filter){ unfortunately this is not set for some cams??
-          if((int)dataBuffer.size() < frameSize.getDim()*3){
+          if(static_cast<int>(dataBuffer.size()) < frameSize.getDim()*3){
             dataBuffer.resize(frameSize.getDim()*3);
           }
           dc1394_bayer_decoding_8bit(f->image,
@@ -526,7 +526,7 @@ namespace icl{
                 if(f->data_depth == 8){
                   memcpy(dstData,f->image,frameSize.getDim());
                 }else{
-                  core::convert((icl16s*)f->image,((icl16s*)f->image)+frameSize.getDim(),dstData);
+                  core::convert(reinterpret_cast<icl16s*>(f->image),reinterpret_cast<icl16s*>(f->image)+frameSize.getDim(),dstData);
                 }
                 break;
               case DC1394_COLOR_CODING_YUV411:
@@ -574,7 +574,7 @@ namespace icl{
             ERROR_LOG("16Bit bayer decoding is not supported yet");
           }else{
             ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
-            if((int)dataBuffer.size() < frameSize.getDim()*3){
+            if(static_cast<int>(dataBuffer.size()) < frameSize.getDim()*3){
               dataBuffer.resize(frameSize.getDim()*3);
             }
             dc1394_bayer_decoding_8bit(f->image,
@@ -588,7 +588,7 @@ namespace icl{
         }else{
           ensureCompatible(ppoDst,depth8u, frameSize,formatRGB);
           /// rgb works directly TODO
-          if((int)dataBuffer.size() < frameSize.getDim()*3){
+          if(static_cast<int>(dataBuffer.size()) < frameSize.getDim()*3){
             dataBuffer.resize(frameSize.getDim()*3);
           }
           dc1394_convert_to_RGB8(f->image,
@@ -643,8 +643,8 @@ namespace icl{
 
         ICLASSERT_RETURN( f );
         unsigned char *data = f->image;
-        int width = (int)f->size[0];
-        int height = (int)f->size[1];
+        int width = static_cast<int>(f->size[0]);
+        int height = static_cast<int>(f->size[1]);
         dc1394color_coding_t cc = f->color_coding;
         //dc1394color_filter_t cf = f->color_filter; // not set (why ever)
         uint32_t yuv_byte_order = f->yuv_byte_order;
@@ -666,7 +666,7 @@ namespace icl{
              **/
           }else{
             ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
-            if((int)dataBuffer.size() < width*height*3){
+            if(static_cast<int>(dataBuffer.size()) < width*height*3){
               dataBuffer.resize(width*height*3);
             }
             dc1394_bayer_decoding_8bit(data,dataBuffer.data(),width,height,bayerLayout,bayerMethod);
@@ -684,7 +684,7 @@ namespace icl{
           };
           if(std::find(gray_ccs,gray_ccs+5,cc)==gray_ccs+5){
             ensureCompatible(ppoDst,depth8u, Size(width,height),formatRGB);
-            if((int)dataBuffer.size() < width*height*3){
+            if(static_cast<int>(dataBuffer.size()) < width*height*3){
               dataBuffer.resize(width*height*3);
             }
             dc1394_convert_to_RGB8(data,dataBuffer.data(),width,height,yuv_byte_order,cc,data_depth);

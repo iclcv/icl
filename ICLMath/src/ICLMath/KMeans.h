@@ -129,7 +129,7 @@ namespace icl{
         Scalar minDist = 0;
 
         if(reinitCenters){
-          URandI r((int)(end-begin)-1);
+          URandI r(static_cast<int>(end-begin)-1);
           for(size_t i=0;i<m_centers.size();++i){
             int ri = r;
             m_centers[i] = *(begin+ri);

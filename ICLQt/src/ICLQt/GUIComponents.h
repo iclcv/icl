@@ -228,7 +228,7 @@ namespace icl{
       static std::string form_args(const std::string &entries, int initialIndex){
         if(!initialIndex) return entries;
         std::vector<std::string> ls = utils::tok(entries,",");
-        if(initialIndex < 0 || initialIndex >= (int)ls.size()){
+        if(initialIndex < 0 || initialIndex >= static_cast<int>(ls.size())){
           throw utils::ICLException("Combo::Combo(entries,initialIndex): initialIndex is invalid");
         }
         ls[initialIndex] = '!' + ls[initialIndex];

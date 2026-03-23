@@ -240,7 +240,7 @@ namespace icl{
                 actionmapbuffer.write(actionMap.data(), dim);
                 formulabuffer.write((*actionit)->formula.data(), (*actionit)->formula.size());
 
-                kernelCreateActionMap.setArgs(groupmapbuffer, actionmapbuffer, formulabuffer, (unsigned int)((*actionit)->formula.size()));
+                kernelCreateActionMap.setArgs(groupmapbuffer, actionmapbuffer, formulabuffer, static_cast<unsigned int>(((*actionit)->formula.size())));
                 kernelCreateActionMap.apply(dim);
 
                 actionmapbuffer.read(actionMap.data(), dim);

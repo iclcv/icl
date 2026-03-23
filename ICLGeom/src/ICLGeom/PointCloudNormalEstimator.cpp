@@ -575,7 +575,7 @@ const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
 			m_data->filteredImageBuffer.read( //read output from kernel
-					(float*) m_data->outputFilteredImage,
+					reinterpret_cast<float*>(m_data->outputFilteredImage),
 					m_data->w*m_data->h * sizeof(float));
 
 			m_data->filteredImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputFilteredImage),false);
@@ -760,7 +760,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 #ifdef ICL_HAVE_OPENCL
 		try {
 
-			m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), (void *) &kernel[0]);
+			m_data->gaussKernelBuffer = m_data->program.createBuffer("rw", kSize * sizeof(float), static_cast<void *>(&kernel[0]));
 
 			m_data->kernelNormalGaussSmoothing.setArgs(m_data->normalsBuffer,
 					m_data->avgNormalsBuffer,
@@ -817,24 +817,24 @@ const Vec *PointCloudNormalEstimator::getNormals() {
 			if(m_data->useNormalAveraging==true) {
 				m_data->avgNormalsBuffer.read(m_data->outputNormals, m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 				m_data->avgNormals=m_data->outputNormals;
-				return (const Vec*)m_data->avgNormals;
+				return reinterpret_cast<const Vec*>(m_data->avgNormals);
 			} else {
 				m_data->normalsBuffer.read( //read output from kernel
 						m_data->outputNormals,
 						m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 				m_data->normals=m_data->outputNormals;
-				return (const Vec*)m_data->normals;
+				return reinterpret_cast<const Vec*>(m_data->normals);
 			}
 		} catch (CLException &err) { //catch openCL errors
 			ERROR_LOG(err.what());
 		}
 #endif
-		return (const Vec*) m_data->normals;
+		return reinterpret_cast<const Vec*>(m_data->normals);
 	} else {
 		if (m_data->useNormalAveraging == true) {
-			return (const Vec*) m_data->avgNormals;
+			return reinterpret_cast<const Vec*>(m_data->avgNormals);
 		} else {
-			return (const Vec*) m_data->normals;
+			return reinterpret_cast<const Vec*>(m_data->normals);
 		}
 	}
 }
@@ -847,7 +847,7 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 	if (m_data->useCL == true && m_data->clReady == true) {
 #ifdef ICL_HAVE_OPENCL
 		try {
-			m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), (void *) &T2[0]);
+			m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), static_cast<void *>(&T2[0]));
 
 			m_data->kernelWorldNormalCalculation.setArgs(m_data->rawImageBuffer,
 					m_data->normalImageRBuffer,
@@ -877,18 +877,18 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 				} else {
 					Vec pWN;
 					if (m_data->useNormalAveraging == true) {
-						pWN = T2 * (Vec&) m_data->avgNormals[i];
+						pWN = T2 * reinterpret_cast<Vec&>(m_data->avgNormals[i]);
 					} else {
-						pWN = T2 * (Vec&) m_data->normals[i];
+						pWN = T2 * reinterpret_cast<Vec&>(m_data->normals[i]);
 					}
 					m_data->worldNormals[i].x = -pWN[0];
 					m_data->worldNormals[i].y = -pWN[1];
 					m_data->worldNormals[i].z = -pWN[2];
 					m_data->worldNormals[i].w = 1.;
 
-					m_data->normalImage(x, y, 0) = (int) (fabs(pWN[0]) * 255.);
-					m_data->normalImage(x, y, 1) = (int) (fabs(pWN[1]) * 255.);
-					m_data->normalImage(x, y, 2) = (int) (fabs(pWN[2]) * 255.);
+					m_data->normalImage(x, y, 0) = static_cast<int>(fabs(pWN[0]) * 255.);
+					m_data->normalImage(x, y, 1) = static_cast<int>(fabs(pWN[1]) * 255.);
+					m_data->normalImage(x, y, 2) = static_cast<int>(fabs(pWN[2]) * 255.);
 				}
 			}
 		}
@@ -902,14 +902,14 @@ const Vec* PointCloudNormalEstimator::getWorldNormals() {
 			m_data->worldNormalsBuffer.read(m_data->outputWorldNormals,
 					m_data->w*m_data->h * sizeof(FixedColVector<float, 4>));
 			m_data->worldNormals=m_data->outputWorldNormals;
-			return (const Vec*)m_data->worldNormals;
+			return reinterpret_cast<const Vec*>(m_data->worldNormals);
 		} catch (CLException &err) { //catch openCL errors
 			ERROR_LOG(err.what());
 		}
 #endif
-		return (const Vec*) m_data->worldNormals;
+		return reinterpret_cast<const Vec*>(m_data->worldNormals);
 	} else {
-		return (const Vec*) m_data->worldNormals;
+		return reinterpret_cast<const Vec*>(m_data->worldNormals);
 	}
 }
 
@@ -945,9 +945,9 @@ const core::Img8u &PointCloudNormalEstimator::getRGBNormalImage() {
 
 void PointCloudNormalEstimator::setNormals(Vec* pNormals) {
 	if (m_data->useNormalAveraging == true) {
-		m_data->avgNormals = (Vec4*) pNormals;
+		m_data->avgNormals = reinterpret_cast<Vec4*>(pNormals);
 	} else {
-		m_data->normals = (Vec4*) pNormals;
+		m_data->normals = reinterpret_cast<Vec4*>(pNormals);
 	}
 #ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {

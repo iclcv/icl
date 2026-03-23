@@ -182,7 +182,7 @@ namespace icl{
     void RegionDetector::analyseRegions(){
       //BENCHMARK_THIS_FUNCTION;
       int W = m_data->roi.width, H = m_data->roi.height;
-      if((int)m_data->parts.size() != W*H){
+      if(static_cast<int>(m_data->parts.size()) != W*H){
         m_data->parts.resize(W*H);
       }
 
@@ -224,7 +224,7 @@ namespace icl{
         }
       }
       ++nextReg;
-      m_data->nUsedParts =  (int)(nextReg-m_data->parts.data());
+      m_data->nUsedParts =  static_cast<int>(nextReg-m_data->parts.data());
     }
 
     void RegionDetector::joinRegions(){
@@ -345,9 +345,9 @@ namespace icl{
     inline std::string msec_string_and_reset(Time &t){
       Time ct = Time::now();
       Time dt = ct - t;
-      float msec = (float)dt.toMilliSecondsDouble();
+      float msec = static_cast<float>(dt.toMilliSecondsDouble());
       t =  ct;
-      return str( 0.01*(int)(msec * 100) );
+      return str( 0.01*static_cast<int>(msec * 100) );
     }
 
     const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){

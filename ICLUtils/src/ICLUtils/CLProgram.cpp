@@ -212,11 +212,11 @@ namespace icl {
 	}
 
 	bool CLProgram::isValid() {
-		return ((bool)impl && impl->is_valid);
+		return (static_cast<bool>(impl) && impl->is_valid);
 	}
 
 	bool CLProgram::isValid() const {
-		return ((bool)impl && impl->is_valid);
+		return (static_cast<bool>(impl) && impl->is_valid);
 	}
 
 	void CLProgram::listSelectedPlatform() {

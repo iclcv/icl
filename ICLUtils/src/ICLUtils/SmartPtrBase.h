@@ -90,7 +90,7 @@ namespace icl{
       T *operator-> () { return impl.get(); }
       const T *operator-> () const { return impl.get(); }
 
-      operator bool() const { return (bool)impl; }
+      operator bool() const { return static_cast<bool>(impl); }
 
       int use_count() const { return impl.use_count(); }
 

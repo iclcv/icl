@@ -313,54 +313,54 @@ namespace icl{
                                    m_data->context,
                                    CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                    w*h * sizeof(cl_float4),
-                                   (void *) &xyzh[0]);
+                                   static_cast<void *>(&xyzh[0]));
 
             RANSACpointsBuffer = cl::Buffer(
                                             m_data->context,
                                             CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                             w*h * sizeof(int),
-                                            (void *) labelImage.begin(0));
+                                            static_cast<void *>(labelImage.begin(0)));
 
             n0Buffer = cl::Buffer(
                                   m_data->context,
                                   CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                   passes * testMatrix.rows() * sizeof(cl_float4),
-                                  (void *) &n0[0]);
+                                  static_cast<void *>(&n0[0]));
             distBuffer = cl::Buffer(
                                     m_data->context,
                                     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                     passes * testMatrix.rows() * sizeof(float),
-                                    (void *) &dist[0]);
+                                    static_cast<void *>(&dist[0]));
             countAboveBuffer = cl::Buffer(
                                           m_data->context,
                                           CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                           passes * adjs.size() * sizeof(int),
-                                          (void *) &cAbove[0]);
+                                          static_cast<void *>(&cAbove[0]));
             countBelowBuffer = cl::Buffer(
                                           m_data->context,
                                           CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                           passes * adjs.size() * sizeof(int),
-                                          (void *) &cBelow[0]);
+                                          static_cast<void *>(&cBelow[0]));
             countOnBuffer = cl::Buffer(
                                        m_data->context,
                                        CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                        passes * adjs.size() * sizeof(int),
-                                       (void *) &cOn[0]);
+                                       static_cast<void *>(&cOn[0]));
             adjsBuffer = cl::Buffer(
                                     m_data->context,
                                     CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                     adjs.size() * sizeof(int),
-                                    (void *) &adjs[0]);
+                                    static_cast<void *>(&adjs[0]));
             startBuffer = cl::Buffer(
                                      m_data->context,
                                      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                      testMatrix.rows() * sizeof(int),
-                                     (void *) &start[0]);
+                                     static_cast<void *>(&start[0]));
             endBuffer = cl::Buffer(
                                    m_data->context,
                                    CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                    testMatrix.rows() * sizeof(int),
-                                   (void *) &end[0]);
+                                   static_cast<void *>(&end[0]));
 
             m_data->kernelCheckRANSACmatrix.setArg(0, xyzBuffer);//set parameter for kernel
             m_data->kernelCheckRANSACmatrix.setArg(1, passes);
@@ -389,7 +389,7 @@ namespace icl{
                                     CL_TRUE, // block
                                     0,
                                     passes * adjs.size() * sizeof(int),
-                                    (int*) &cAbove[0],
+                                    reinterpret_cast<int*>(&cAbove[0]),
                                     nullptr,&waitEvent);
 
             m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -397,7 +397,7 @@ namespace icl{
                                     CL_TRUE, // block
                                     0,
                                     passes * adjs.size() * sizeof(int),
-                                    (int*) &cBelow[0],
+                                    reinterpret_cast<int*>(&cBelow[0]),
                                     nullptr,&waitEvent);
 
             m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -405,7 +405,7 @@ namespace icl{
                                     CL_TRUE, // block
                                     0,
                                     passes * adjs.size() * sizeof(int),
-                                    (int*) &cOn[0],
+                                    reinterpret_cast<int*>(&cOn[0]),
                                     nullptr,&waitEvent);
 
             clFinish(m_data->queue());
@@ -463,7 +463,7 @@ namespace icl{
                                           m_data->context,
                                           CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                           numPoints * sizeof(cl_float4),
-                                          (void *) &dstPoints[0]);
+                                          static_cast<void *>(&dstPoints[0]));
 
           cl::Event waitEvent;
           cl::Buffer n0Buffer;
@@ -482,27 +482,27 @@ namespace icl{
                                 m_data->context,
                                 CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                 passes * sizeof(cl_float4),
-                                (void *) &n0[0]);
+                                static_cast<void *>(&n0[0]));
           distBuffer = cl::Buffer(
                                   m_data->context,
                                   CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                   passes * sizeof(float),
-                                  (void *) &dist[0]);
+                                  static_cast<void *>(&dist[0]));
           countAboveBuffer = cl::Buffer(
                                         m_data->context,
                                         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                         passes * sizeof(int),
-                                        (void *) &cAbove[0]);
+                                        static_cast<void *>(&cAbove[0]));
           countBelowBuffer = cl::Buffer(
                                         m_data->context,
                                         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                         passes * sizeof(int),
-                                        (void *) &cBelow[0]);
+                                        static_cast<void *>(&cBelow[0]));
           countOnBuffer = cl::Buffer(
                                      m_data->context,
                                      CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
                                      passes * sizeof(int),
-                                     (void *) &cOn[0]);
+                                     static_cast<void *>(&cOn[0]));
 
           m_data->kernelCheckRANSAC.setArg(0, passes);
           m_data->kernelCheckRANSAC.setArg(1, n0Buffer);
@@ -529,7 +529,7 @@ namespace icl{
                                   CL_TRUE, // block
                                   0,
                                   passes * sizeof(int),
-                                  (int*) &cAbove[0],//cAboveRead
+                                  reinterpret_cast<int*>(&cAbove[0]),//cAboveRead
                                   nullptr,&waitEvent);
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -537,7 +537,7 @@ namespace icl{
                                   CL_TRUE, // block
                                   0,
                                   passes * sizeof(int),
-                                  (int*) &cBelow[0],
+                                  reinterpret_cast<int*>(&cBelow[0]),
                                   nullptr,&waitEvent);
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
@@ -545,7 +545,7 @@ namespace icl{
                                   CL_TRUE, // block
                                   0,
                                   passes * sizeof(int),
-                                  (int*) &cOn[0],
+                                  reinterpret_cast<int*>(&cOn[0]),
                                   nullptr,&waitEvent);
 
           clFinish(m_data->queue());
@@ -620,7 +620,7 @@ namespace icl{
 
       if(m_data->clReady==true){//only if CL context is available
         try{
-          cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[selectedDevice])(), 0};//get context properties of selected platform
+          cl_context_properties cprops[] = {CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(platformList[selectedDevice]()), 0};//get context properties of selected platform
           m_data->context = cl::Context(CL_DEVICE_TYPE_GPU, cprops);//select GPU device
           m_data->devices = m_data->context.getInfo<CL_CONTEXT_DEVICES>();
 
@@ -771,25 +771,25 @@ namespace icl{
                                  m_data->context,
                                  CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                  w*h * sizeof(cl_float4),
-                                 (void *) &xyzh[0]);
+                                 static_cast<void *>(&xyzh[0]));
 
           cl::Buffer elementsBlobsBuffer = cl::Buffer(
 				           m_data->context,
 				           CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
 				           w*h * sizeof(cl_uchar),
-				           (void *) newMask.begin(0));
+				           static_cast<void *>(newMask.begin(0)));
 
           cl::Buffer assignmentBlobsBuffer = cl::Buffer(
                                              m_data->context,
                                              CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                              w*h * sizeof(int),
-                                             (void *) newLabel.begin(0));
+                                             static_cast<void *>(newLabel.begin(0)));
 
           cl::Buffer assignmentBuffer = cl::Buffer(
                                         m_data->context,
                                         CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                                         w*h * sizeof(int),
-                                        (void *) oldLabel.begin(0));
+                                        static_cast<void *>(oldLabel.begin(0)));
 
           m_data->kernelAssignRANSAC.setArg(0, xyzBuffer);
           m_data->kernelAssignRANSAC.setArg(1, elementsBlobsBuffer);
@@ -815,14 +815,14 @@ namespace icl{
                                   CL_TRUE, // block
                                   0,
                                   w*h * sizeof(int),
-                                  (int*) &assignmentBlobs[0]);
+                                  reinterpret_cast<int*>(&assignmentBlobs[0]));
 
           m_data->queue.enqueueReadBuffer(//read output from kernel
                                   elementsBlobsBuffer,
                                   CL_TRUE, // block
                                   0,
                                   w*h * sizeof(bool),
-                                  (cl_uchar*) &elementsBlobs[0]);
+                                  reinterpret_cast<cl_uchar*>(&elementsBlobs[0]));
 
           //newLabel = Img32s(Size(w,h),1,std::vector<int*>(1,assignmentBlobs.data()),false);//,true);//false);
           //newMask = Img8u(Size(w,h),1,std::vector<unsigned char*>(1,elementsBlobs.data()),false);//,true);//false);

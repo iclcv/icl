@@ -73,16 +73,16 @@ namespace icl{
         LinkState *p() const { return new LinkState(*this); }
 
         static bool is_first_order(void *tag){
-          return ((LinkState*)tag)->isFirstOrder;
+          return static_cast<LinkState*>(tag)->isFirstOrder;
         }
         static bool is_fold(void *tag){
-          return ((LinkState*)tag)->isFold;
+          return static_cast<LinkState*>(tag)->isFold;
         }
         static bool has_memorized_rest_dist(void *tag){
-          return ((LinkState*)tag)->hasMemorizedRestDist;
+          return static_cast<LinkState*>(tag)->hasMemorizedRestDist;
         }
         static bool is_original(void *tag){
-          return ((LinkState*)tag)->isOriginal;
+          return static_cast<LinkState*>(tag)->isOriginal;
         }
       };
 
@@ -162,7 +162,7 @@ namespace icl{
 
       void simulateSelfCollision();
 
-      static inline void free_link_state(void *p) { delete (LinkState*)p; }
+      static inline void free_link_state(void *p) { delete static_cast<LinkState*>(p); }
 
       const core::Img32f &getFoldMap() const;
 

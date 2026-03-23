@@ -213,8 +213,8 @@ namespace physics{
                                &m_normals[0][0],
                                &m_normals[0][1],
                                &m_normals[0][2],4);
-        TwoSidedTextureGridPrimitive * p = (TwoSidedTextureGridPrimitive*)(m_primitives.back());
-        p->alphaFunc = (int)GL_ALWAYS;
+        TwoSidedTextureGridPrimitive * p = static_cast<TwoSidedTextureGridPrimitive*>(m_primitives.back());
+        p->alphaFunc = static_cast<int>(GL_ALWAYS);
         //addCustomPrimitive(new DepthTestOnOffPrimitive(true));
       }else{
         addTextureGrid(cells.width,cells.height,
@@ -283,7 +283,7 @@ namespace physics{
     for(int i=0;i<nodes.size();++i){
       ds[i] = sqr(nodes[i].m_x[0]-x) + sqr(nodes[i].m_x[1]-y) + sqr(nodes[i].m_x[2]-z);
     }
-    int minDistIdx = (int)(std::min_element(ds.begin(),ds.end())-ds.begin());
+    int minDistIdx = static_cast<int>(std::min_element(ds.begin(),ds.end())-ds.begin());
     return Point(minDistIdx%cells.width,minDistIdx/cells.width);
   }
 

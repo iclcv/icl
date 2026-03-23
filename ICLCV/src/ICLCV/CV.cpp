@@ -148,7 +148,7 @@ namespace icl{
 
       //    show(cvt(m));
 
-      icl8u t = useCrossCorrCoeffInsteadOfSqrDistance ? (icl8u)(float(255)*significance) : 255 - (icl8u)(float(255)*significance);
+      icl8u t = useCrossCorrCoeffInsteadOfSqrDistance ? static_cast<icl8u>(float(255)*significance) : 255 - static_cast<icl8u>(float(255)*significance);
 
       if(m.hasFullROI()){
         if(!useCrossCorrCoeffInsteadOfSqrDistance){

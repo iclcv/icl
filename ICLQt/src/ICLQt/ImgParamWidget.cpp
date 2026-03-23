@@ -65,7 +65,7 @@ namespace icl{
         m_poFormatCombo->addItem(str(f).c_str());
       }
 
-      for(core::depth d=core::depth8u; d<=core::depthLast; d=(core::depth)(d+1)){
+      for(core::depth d=core::depth8u; d<=core::depthLast; d=static_cast<core::depth>(d+1)){
         m_poDepthCombo->addItem(str(d).c_str());
       }
 
@@ -79,7 +79,7 @@ namespace icl{
 
       setLayout(m_poLayout);
 
-      setup(-1,-1,(int)depth8u,(int)formatRGB);
+      setup(-1,-1,static_cast<int>(depth8u),static_cast<int>(formatRGB));
     }
 
     // }}}
@@ -150,7 +150,7 @@ namespace icl{
         m_poSizeCombo->setCurrentIndex(sizeIdx);
       }
 
-      QString depthText = str((core::depth)dth).c_str();
+      QString depthText = str(static_cast<core::depth>(dth)).c_str();
       int depthIdx = getIndex(depthText,m_poDepthCombo);
       if(depthIdx == -1){
         ERROR_LOG("invalid depth \"" << depthText.toLatin1().data() << "\"");
@@ -179,14 +179,14 @@ namespace icl{
 
     void ImgParamWidget::formatChanged(const QString &val){
       format fmt = parse<format>(str(val.toLatin1().data()));
-      m_iFormat = (int)fmt;
+      m_iFormat = static_cast<int>(fmt);
       emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
     }
 
     void ImgParamWidget::depthChanged(const QString &val){
       std::string x = str(val.toLatin1().data());
       core::depth d = parse<core::depth>(x);
-      m_iDepth = (int)d;
+      m_iDepth = static_cast<int>(d);
       emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
     }
   } // namespace qt

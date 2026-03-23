@@ -53,7 +53,7 @@ namespace icl{
 
     bool ThreadedUpdatableTextView::event ( QEvent * event ){
       ICLASSERT_RETURN_VAL(event,false);
-      switch((int)event->type()){
+      switch(static_cast<int>(event->type())){
         case ADD_TEXT:
           append(reinterpret_cast<AddTextEvent*>(event)->text.c_str());
           return true;

@@ -222,7 +222,7 @@ namespace icl{
                                      Camera &pCamera, Scene &pScene, void *pData,
                                      bool pInverseX, bool pInverseY){
       // sensitivities given by additional data pointer
-      MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
+      MouseSensitivities* tMouseSensitivities = static_cast<MouseSensitivities*>(pData);
       ICLASSERT( tMouseSensitivities );
 
       // factors
@@ -254,7 +254,7 @@ namespace icl{
                                                Camera &pCamera, Scene &pScene, void *pData){
       bool useCursor = true; //pScene.getPropertyValue("visualize cursor");
       // sensitivities given by additional data pointer
-      MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
+      MouseSensitivities* tMouseSensitivities = static_cast<MouseSensitivities*>(pData);
       ICLASSERT( tMouseSensitivities );
 
       // factors
@@ -294,7 +294,7 @@ namespace icl{
                                    const utils::Point32f &pDeltaMousePosition,
                                    Camera &pCamera, Scene &pScene, void *pData){
       // sensitivities given by additional data pointer
-      MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
+      MouseSensitivities* tMouseSensitivities = static_cast<MouseSensitivities*>(pData);
       ICLASSERT( tMouseSensitivities );
 
       // factors
@@ -318,7 +318,7 @@ namespace icl{
                                             const utils::Point32f &pDeltaMousePosition,
                                             Camera &pCamera, Scene &pScene, void *pData){
       // sensitivities given by additional data pointer
-      MouseSensitivities* tMouseSensitivities = (MouseSensitivities*) pData;
+      MouseSensitivities* tMouseSensitivities = static_cast<MouseSensitivities*>(pData);
       ICLASSERT( tMouseSensitivities );
 
       // factors

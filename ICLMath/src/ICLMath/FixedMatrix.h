@@ -837,20 +837,20 @@ namespace icl{
       inline double length(T norm=2) const{
         double sumSquares = 0;
         for(unsigned int i=0;i<DIM;++i){
-          sumSquares += ::pow((double)(*this)[i],(double)norm);
+          sumSquares += ::pow(static_cast<double>((*this)[i]),static_cast<double>(norm));
         }
         return ::pow( sumSquares, 1.0/norm);
       }
 
       /// inplace normalization
       inline void normalize(T norm=2){
-        T l = (T)length(norm);
+        T l = static_cast<T>(length(norm));
         if(l) (*this) /= l;
       }
 
       /// create a normalized version of this matrix
       inline FixedMatrix<T,COLS,ROWS> normalized(T norm=2) const{
-        T l = (T)length(norm);
+        T l = static_cast<T>(length(norm));
         return l ?  (*this)/l : *this;
       }
 

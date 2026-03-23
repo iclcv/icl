@@ -190,7 +190,7 @@ namespace icl{
       const Camera &getCamera(int camIndex =0) const;
 
       /// returns the count of contained cameras
-      inline int getCameraCount() const { return (int)m_cameras.size(); }
+      inline int getCameraCount() const { return static_cast<int>(m_cameras.size()); }
 
       /// returns a vector with pointers to all cameras in given range
       /** Please note, that the results become invalid if addCamera() or
@@ -293,7 +293,7 @@ namespace icl{
           will remain allocated for later use. If you need to render images of different sizes
           (the output image is rendered to the image size that the camera at given index has), you should
           free the pbuffers from time to time using
-          Scene::freeAllPBuffers and Scene::freePBuffer(const utils::Size&).
+          Scene::freeAllPBuffers and Scene::freePBufferreinterpret_cast<const utils::Size&>(.)
 
           If a non-null depthBuffer parameter is provided, it is filled with data from the scene core::depth buffer
           usually, the raw core::depth buffer does not provide useful information for further processing.

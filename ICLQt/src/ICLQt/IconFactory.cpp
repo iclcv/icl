@@ -1230,7 +1230,7 @@ namespace icl{
 
     const Img8u load_image_data_new(icl8u data[32][32][4]){
       Img8u image(Size(32,32),4);
-      interleavedToPlanar((const icl8u*)data, &image);
+      interleavedToPlanar(reinterpret_cast<const icl8u*>(data), &image);
       return image;
     }
 

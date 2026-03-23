@@ -58,8 +58,8 @@ namespace icl{
     }
 
     std::vector<Point> Line32f::sample( const Rect &limits) const{
-      Point startInt = Point( (int)round(start.x), (int)round(start.y) );
-      Point endInt = Point( (int)round(end.x), (int)round(end.y) );
+      Point startInt = Point( static_cast<int>(round(start.x)), static_cast<int>(round(start.y)) );
+      Point endInt = Point( static_cast<int>(round(end.x)), static_cast<int>(round(end.y)) );
       return Line(startInt,endInt).sample(limits);
     }
 

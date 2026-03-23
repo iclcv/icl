@@ -39,7 +39,7 @@ namespace icl{
       struct BinarySerializer : public std::vector<icl8u>{
         template<class T>
         BinarySerializer &operator<<(const T &t){
-          const icl8u *p = (const icl8u*)(&t);
+          const icl8u *p = reinterpret_cast<const icl8u*>(&t);
           std::copy(p,p+sizeof(T),std::back_inserter(*this));
           return *this;
         }
@@ -49,11 +49,11 @@ namespace icl{
         const icl8u *data;
       public:
         BinaryUnserializer(const void *data) :
-          data((const icl8u*)data){ }
+          data(static_cast<const icl8u*>(data)){ }
 
         template<class T>
         BinaryUnserializer &operator>>(T &t){
-          t = *(const T*)data;
+          t = *reinterpret_cast<const T*>(data);
           data += sizeof(T);
           return *this;
         }
@@ -69,16 +69,16 @@ namespace icl{
     ImageSerializer::ImageHeader ImageSerializer::createHeader(const ImgBase *image){
       ICLASSERT_THROW(image,ICLException(str(__FUNCTION__)+": image was null"));
       BinarySerializer ser;
-      ser << (icl32s)image->getDepth()
-          << (icl32s)image->getSize().width
-          << (icl32s)image->getSize().height
-          << (icl32s)image->getFormat()
-          << (icl32s)image->getChannels()
-          << (icl32s)image->getROI().x
-          << (icl32s)image->getROI().y
-          << (icl32s)image->getROI().width
-          << (icl32s)image->getROI().height
-          << (int64_t)image->getTime().toMilliSeconds();
+      ser << static_cast<icl32s>(image->getDepth())
+          << static_cast<icl32s>(image->getSize().width)
+          << static_cast<icl32s>(image->getSize().height)
+          << static_cast<icl32s>(image->getFormat())
+          << static_cast<icl32s>(image->getChannels())
+          << static_cast<icl32s>(image->getROI().x)
+          << static_cast<icl32s>(image->getROI().y)
+          << static_cast<icl32s>(image->getROI().width)
+          << static_cast<icl32s>(image->getROI().height)
+          << static_cast<int64_t>(image->getTime().toMilliSeconds());
       return ser;
     }
 
@@ -110,9 +110,9 @@ namespace icl{
         }
       }
       if(skipMetaData){
-        *(icl32s*)dst = 0;
+        *reinterpret_cast<icl32s*>(dst) = 0;
       }else{
-        *(icl32s*)dst = (icl32s)image->getMetaData().length();
+        *reinterpret_cast<icl32s*>(dst) = static_cast<icl32s>(image->getMetaData().length());
         dst += sizeof(icl32s);
         std::copy(image->getMetaData().begin(), image->getMetaData().end(), dst);
       }
@@ -141,7 +141,7 @@ namespace icl{
       ser >> l;
       data += getHeaderSize();
 
-      ensureCompatible(dst,depth(is[0]),Size(is[1],is[2]),is[4],(format)is[3],Rect(is[5],is[6],is[7],is[8]));
+      ensureCompatible(dst,depth(is[0]),Size(is[1],is[2]),is[4],static_cast<format>(is[3]),Rect(is[5],is[6],is[7],is[8]));
 
       ImgBase *image = *dst;
       image->setTime(Time(l));
@@ -154,10 +154,10 @@ namespace icl{
         }
       }
 
-      int metaLen = *(icl32s*)data;
+      int metaLen = *reinterpret_cast<const icl32s*>(data);
       data+= sizeof(icl32s);
       if(metaLen){
-        (*dst)->getMetaData().assign((char*)data, metaLen);
+        (*dst)->getMetaData().assign(reinterpret_cast<const char*>(data), metaLen);
       }else{
         (*dst)->clearMetaData();
       }
@@ -169,7 +169,7 @@ namespace icl{
     }
 
     Time ImageSerializer::deserializeTimeStamp(const icl8u *data){
-      return Time(*(const int64_t*)(data+9*sizeof(icl32s)));
+      return Time(*reinterpret_cast<const int64_t*>(data+9*sizeof(icl32s)));
     }
   } // namespace core
 }

@@ -349,7 +349,7 @@ namespace icl{
     template<class S>
     static void linear_interpolate(S a, S b, S *dst, int n){
       // fixed-point approx x 100
-      float dy = ((float)b - float(a));
+      float dy = (static_cast<float>(b) - float(a));
       float slope = dy / float(n-1);
       for(int i=0;i<n;++i){
         dst[i] = a + i * slope;
@@ -362,7 +362,7 @@ namespace icl{
     template<class S>
     static void linear_interpolate_cmp(S a, S b, int n, const S *src, icl8u *dst, int threshold, icl32f *cmp){
       // fixed-point approx x 100
-      float dy = ((float)b - float(a));
+      float dy = (static_cast<float>(b) - float(a));
       float slope = dy / float(n-1);
       float base = a + threshold;
       for(int i=0;i<n;++i){
@@ -549,7 +549,7 @@ namespace icl{
     }
 
     inline bool is_int(float x){
-      return float((int)x) == x;
+      return float(static_cast<int>(x)) == x;
     }
     inline bool can_devide_by(int i, int devider){
       return is_int(float(i)/float(devider));
@@ -648,8 +648,8 @@ namespace icl{
         src = m_roiBufSrc;
         roi = true;
       }
-      ICLASSERT_RETURN(src->getWidth() > 2*(int)getMaskSize());
-      ICLASSERT_RETURN(src->getHeight() > 2*(int)getMaskSize());
+      ICLASSERT_RETURN(src->getWidth() > 2*static_cast<int>(getMaskSize()));
+      ICLASSERT_RETURN(src->getHeight() > 2*static_cast<int>(getMaskSize()));
 
       // prepare the destination image
       depth dstDepth = getAlgorithm() == regionMean ? (getGammaSlope() ? depth32f : depth8u) : depth8u;

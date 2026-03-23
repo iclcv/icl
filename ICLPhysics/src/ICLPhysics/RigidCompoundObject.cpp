@@ -42,7 +42,7 @@ namespace icl{
       btTransform T;
       T.setIdentity();
       T.setOrigin(btVector3(icl2bullet(x),icl2bullet(y),icl2bullet(z)));
-      MotionState* motion = new MotionState(T, (RigidObject*)this);
+      MotionState* motion = new MotionState(T, static_cast<RigidObject*>(this));
       btVector3 inertia(1,1,1);
       btRigidBody::btRigidBodyConstructionInfo ci(mass,motion,shape,inertia);
       ci.m_linearSleepingThreshold *= METER_TO_BULLET_UNIT;

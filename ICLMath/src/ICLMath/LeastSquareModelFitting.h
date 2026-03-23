@@ -186,7 +186,7 @@ namespace icl{
           used */
       Model fit(const std::vector<DataPoint> &points){
         const int M = m_modelDim;
-        const int N = (int)points.size();
+        const int N = static_cast<int>(points.size());
 
         m_D.setBounds(M,N);
 

@@ -177,7 +177,7 @@ namespace icl{
           int t;
           EqualThreshold(int t):t(t){}
           bool operator()(icl8u a, icl8u b) const{
-            return (int)b == t;
+            return static_cast<int>(b) == t;
           }
         };
 

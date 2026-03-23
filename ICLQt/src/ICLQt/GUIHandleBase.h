@@ -71,7 +71,7 @@ namespace icl{
                  functionality. By default, the paremter 'events' is not regarded at all
       */
       virtual void registerCallback(const GUI::Callback &cb, const std::string &events="all"){
-        (void)events;
+        static_cast<void>(events);
         if(m_poGUIWidget){
           m_poGUIWidget->registerCallback(cb);
         }else{
@@ -81,7 +81,7 @@ namespace icl{
 
       /// registers a complex callback on this gui component
       virtual void registerCallback(const GUI::ComplexCallback &cb, const std::string &events="all"){
-        (void)events;
+        static_cast<void>(events);
         if(m_poGUIWidget){
           m_poGUIWidget->registerCallback(cb);
         }else{

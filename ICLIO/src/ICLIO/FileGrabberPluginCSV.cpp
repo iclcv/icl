@@ -60,7 +60,7 @@ namespace icl{
       void tokezize_line(const std::vector<string> &v,ImgBase *image, int c, int y){
         // {{{ open
 
-        if(image->getWidth() > (int)v.size()){
+        if(image->getWidth() > static_cast<int>(v.size())){
           throw InvalidFileFormatException(str("image width:")+
                                            str(image->getWidth())+
                                            str(" line width:") +

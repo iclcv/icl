@@ -239,7 +239,7 @@ namespace icl {
 				try {
 					res = new CLBuffer(context, cmdQueue, accessMode, length, byteDepth, src);
 				} catch(CLException const &e) {
-					(void)e;
+					static_cast<void>(e);
 					ICL_DELETE(res);
 					throw;
 				}
@@ -251,7 +251,7 @@ namespace icl {
 				try {
 					res = new CLImage2D(context, cmdQueue, accessMode, width, height, depth, num_channel, src, supported_channel_orders);
 				} catch(CLException const &e) {
-					(void)e;
+					static_cast<void>(e);
 					ICL_DELETE(res);
 					throw;
 				}
@@ -273,7 +273,7 @@ namespace icl {
 			try {
 				impl->init(device);
 			} catch (CLException const &e) {
-				(void)e;
+				static_cast<void>(e);
 				ICL_DELETE(impl);
 				throw;
 			}

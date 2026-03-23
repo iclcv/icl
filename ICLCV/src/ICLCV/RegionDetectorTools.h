@@ -51,7 +51,7 @@ namespace icl{
 
       template<class T>
       inline const T *find_first_not(const T *first,const T* last, T val){
-        int n = (int)((last - first) >> 3);
+        int n = static_cast<int>((last - first) >> 3);
 
         for (; n ; --n){
   #define REGION_DETECTOR_2_ONE if(*first != val) return first; ++first;
@@ -81,7 +81,7 @@ namespace icl{
 
       template<class T>
       inline const T *find_first_not_no_opt(const T *first,const T* last, T val){
-        int n = (int)((last - first) >> 3);
+        int n = static_cast<int>((last - first) >> 3);
 
         for (; n ; --n){
   #define REGION_DETECTOR_2_ONE if(*first != val) return first; ++first;

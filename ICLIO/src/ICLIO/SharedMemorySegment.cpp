@@ -148,8 +148,8 @@ namespace icl {
         }
 
         void clearSegment(QSharedMemory* seg){
-          char* data = (char*) seg->data();
-          std::fill(data, data + seg->size() ,(char) 0);
+          char* data = static_cast<char*>(seg->data());
+          std::fill(data, data + seg->size() , '\0');
         }
 
         // sets the segments value to 0
@@ -217,17 +217,17 @@ namespace icl {
 
         void setMinSize(int minsize){
           this->minsize = minsize;
-          int* data = (int*) info_mem.data();
+          int* data = static_cast<int*>(info_mem.data());
           *(data) = minsize;
         }
 
         bool needResize(){
-          const bool* data = (const bool*) ((const char*)info_mem.constData() + sizeof(int));
+          const bool* data = reinterpret_cast<const bool*>(static_cast<const char*>(info_mem.constData()) + sizeof(int));
           return *data;
         }
 
         void setResize(bool resize){
-          bool* data = (bool*) ((char*)info_mem.data() + sizeof(int));
+          bool* data = reinterpret_cast<bool*>(static_cast<char*>(info_mem.data()) + sizeof(int));
           *data = resize;
         }
 
@@ -429,9 +429,9 @@ namespace icl {
     bool SharedMemorySegment::isEmpty() const{
       Mutex::Locker l(m_Mutex);
       if(m_Impl && m_Impl->isAttached()){
-        const char* data = (const char*) m_Impl->data_mem.constData();
+        const char* data = static_cast<const char*>(m_Impl->data_mem.constData());
         for(int i = 0; i < m_Impl->data_mem.size(); ++i){
-          if(*(data + i) != (char) 0){
+          if(*(data + i) != '\0'){
             return false;
           }
         }
@@ -554,8 +554,8 @@ namespace icl {
         std::multiset<std::string> getSegmentSet(){
           Mutex::Locker l(mutex);
           std::multiset<std::string> gs;
-          const char* data = (const char*) reg_segment.constData();
-          int count = *((int*) data);
+          const char* data = static_cast<const char*>(reg_segment.constData());
+          int count = *reinterpret_cast<const int*>(data);
           data += sizeof(int);
           for(int i = 0; i < count; ++i){
             std::string value = data;
@@ -567,8 +567,8 @@ namespace icl {
 
         void setSegmentSet(std::multiset<std::string> set){
           Mutex::Locker l(mutex);
-          char* data = (char*) reg_segment.data();
-          int* setSize = (int*) data;
+          char* data = static_cast<char*>(reg_segment.data());
+          int* setSize = reinterpret_cast<int*>(data);
           data += sizeof(int);
           *setSize = 0;
 #ifdef WIN32

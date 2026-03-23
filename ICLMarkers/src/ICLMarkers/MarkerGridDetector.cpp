@@ -51,7 +51,7 @@ namespace  icl{
       if(!ids.size()){
         for(int i=0;i<n;++i) ids.push_back(i);
       }else{
-        if((int)ids.size() != n){
+        if(static_cast<int>(ids.size()) != n){
           throw utils::ICLException("given number of marker IDs differs from grid size");
         }
         int i = 0;
@@ -80,7 +80,7 @@ namespace  icl{
         if(it == posLUT.end()) return -1;
         return it->second.x + it->second.y * getWidth();
       }else{
-        if((unsigned)id >= (unsigned)getDim()){
+        if(static_cast<unsigned>(id) >= static_cast<unsigned>(getDim())){
           return -1;
         }
         return id;

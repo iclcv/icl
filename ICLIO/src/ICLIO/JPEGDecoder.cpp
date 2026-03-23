@@ -80,7 +80,7 @@ namespace icl{
       static void s_skip_input_data(j_decompress_ptr cinfo, long num_bytes){
         DataSourceManager *dsm = reinterpret_cast<DataSourceManager*>(cinfo->src);
 
-        if(num_bytes >= (long)dsm->bytes_in_buffer)
+        if(num_bytes >= static_cast<long>(dsm->bytes_in_buffer))
           {
             s_fill_input_buffer(cinfo);
             return;
@@ -151,7 +151,7 @@ namespace icl{
       for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
 
         if (m->marker != JPEG_COM) continue;
-        std::vector<std::string> ts = StrTok(std::string((char*)m->data,(char*)m->data+m->data_length)," ").allTokens();
+        std::vector<std::string> ts = StrTok(std::string(reinterpret_cast<char*>(m->data),reinterpret_cast<char*>(m->data)+m->data_length)," ").allTokens();
         if(ts.size() < 2) continue;
         //      char acBuf[1025] = "";
         //memcpy (acBuf, m->data, m->data_length);

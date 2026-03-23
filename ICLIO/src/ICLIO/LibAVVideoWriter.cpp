@@ -128,11 +128,11 @@ namespace icl{
         if (av_frame_get_buffer(picture, 32) < 0) throw ICLException("Could not allocate frame data");
 #else
         int size = avpicture_get_size(pix_fmt, width, height);
-        uint8_t *picture_buf = (uint8_t*) av_malloc(size);
+        uint8_t *picture_buf = static_cast<uint8_t*>(av_malloc(size));
         if (!picture_buf) {
 	    throw ICLException("Could not allocate frame data");
         }
-        avpicture_fill((AVPicture *)picture, picture_buf,
+        avpicture_fill(reinterpret_cast<AVPicture *>(picture), picture_buf,
                        pix_fmt, width, height);
 #endif
 
@@ -183,7 +183,7 @@ namespace icl{
          * of which frame timestamps are represented. For fixed-fps content,
          * timebase should be 1/framerate and timestamp increments should be
          * identical to 1. */
-        ost->st->time_base = (AVRational){ 10, (int)(fps*10.) };
+        ost->st->time_base = AVRational{ 10, static_cast<int>(fps*10.) };
         std::cout<<"fps:"<<fps<<std::endl;
         c->time_base       = ost->st->time_base;
 

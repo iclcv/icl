@@ -82,7 +82,7 @@ namespace icl {
         // if no initial indices for interesting regions R are given, we initialize
         // them to the whole contour according to the steps given in 'm_steps'
         if (indices.empty()) {
-            indices.reserve(std::floor(dim/(float)m_steps));
+            indices.reserve(std::floor(dim/static_cast<float>(m_steps)));
             for (uint32_t i = 0; i < dim; i+=m_steps)
                 indices.push_back(i);
         }

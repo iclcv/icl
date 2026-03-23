@@ -267,18 +267,18 @@ void ObjectEdgeDetectorCPU::applyWorldNormalCalculation(const Camera &cam) {
 			} else {
 				Vec pWN;
 				if (m_data->params.useNormalAveraging == true) {
-					pWN = T2 * (Vec&) m_data->avgNormals[i];
+					pWN = T2 * reinterpret_cast<Vec&>(m_data->avgNormals[i]);
 				} else {
-					pWN = T2 * (Vec&) m_data->normals[i];
+					pWN = T2 * reinterpret_cast<Vec&>(m_data->normals[i]);
 				}
 				m_data->worldNormals[i].x = -pWN[0];
 				m_data->worldNormals[i].y = -pWN[1];
 				m_data->worldNormals[i].z = -pWN[2];
 				m_data->worldNormals[i].w = 1.;
 
-				m_data->normalImage(x, y, 0) = (int) (fabs(pWN[0]) * 255.);
-				m_data->normalImage(x, y, 1) = (int) (fabs(pWN[1]) * 255.);
-				m_data->normalImage(x, y, 2) = (int) (fabs(pWN[2]) * 255.);
+				m_data->normalImage(x, y, 0) = static_cast<int>(fabs(pWN[0]) * 255.);
+				m_data->normalImage(x, y, 1) = static_cast<int>(fabs(pWN[1]) * 255.);
+				m_data->normalImage(x, y, 2) = static_cast<int>(fabs(pWN[2]) * 255.);
 			}
 		}
 	}

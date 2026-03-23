@@ -118,7 +118,7 @@ namespace icl{
 
         // create some randomly initialized prototypes (using the given ranges for each dimension)
         for(unsigned int d=0;d<m_uiDataDim;++d){
-          prototype[d] = random((double)m_vecPrototypeBounds[d].minVal,(double)m_vecPrototypeBounds[d].maxVal);
+          prototype[d] = random(static_cast<double>(m_vecPrototypeBounds[d].minVal),static_cast<double>(m_vecPrototypeBounds[d].maxVal));
         }
 
         // set up new neuron

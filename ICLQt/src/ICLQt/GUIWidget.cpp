@@ -58,7 +58,7 @@ namespace icl{
       int minPC = minParamCount;
       int maxPC = maxParamCount == -1 ? minPC : maxParamCount;
 
-      int nP = (int)def.numParams();
+      int nP = static_cast<int>(def.numParams());
       if(nP > maxPC || nP < minPC){
         throw GUISyntaxErrorException(def.defString(),"invalid parameter count! found " + str(nP) + " expected [" +str(minPC) + "-"
                                       + str(maxPC) + "] for component type " + def.type());

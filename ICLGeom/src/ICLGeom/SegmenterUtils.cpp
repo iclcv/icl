@@ -392,7 +392,7 @@ namespace icl{
       std::vector<std::vector<int> > segments;
       for(int y=0; y<h; y++){
         for(int x=0; x<w; x++){
-          if(labelImageC(x,y)>(int)segments.size()){
+          if(labelImageC(x,y)>static_cast<int>(segments.size())){
             segments.resize(labelImageC(x,y));
           }
           if(labelImageC(x,y)>0){
@@ -447,7 +447,7 @@ namespace icl{
 
       if(abs(p2.x-p1.x)>abs(p2.y-p1.y)){//sample x init
         sampleX=true;
-        gradient = (float)(p2.y-p1.y)/(float)(p2.x-p1.x);
+        gradient = static_cast<float>((p2.y-p1.y))/static_cast<float>((p2.x-p1.x));
         depthGradient=(endValue-startValue)/(p2.x-p1.x);
         if(p2.x-p1.x>0){
           step=1;
@@ -456,7 +456,7 @@ namespace icl{
         }
       }else{//sample y init
         sampleX=false;
-        gradient = (float)(p2.x-p1.x)/(float)(p2.y-p1.y);
+        gradient = static_cast<float>((p2.x-p1.x))/static_cast<float>((p2.y-p1.y));
         depthGradient=(endValue-startValue)/(p2.y-p1.y);
         if(p2.y-p1.y>0){
           step=1;
@@ -468,7 +468,7 @@ namespace icl{
       int numReject=0;
       if(sampleX){//sample x process
         for(int i=p1.x; (i-p2.x)*step<=0; i+=step){
-          int newY=(int)round(p1.y+(i-p1.x)*gradient);
+          int newY=static_cast<int>(round(p1.y+(i-p1.x)*gradient));
           float realValue = depthImageC(i,newY);
           float augmentedValue = startValue+(i-p1.x)*depthGradient;
           float s1 = realValue-augmentedValue;//minus -> real closer than augmented
@@ -476,12 +476,12 @@ namespace icl{
             numReject++;
           }
         }
-        if((float)numReject/(float)(abs(p2.x-p1.x)+1)>outlierTolerance/100.){
+        if(static_cast<float>(numReject)/static_cast<float>((abs(p2.x-p1.x)+1))>outlierTolerance/100.){
           return false;
         }
       }else{//sample y process
         for(int i=p1.y; (i-p2.y)*step<=0; i+=step){
-          int newX=(int)round(p1.x+(i-p1.y)*gradient);
+          int newX=static_cast<int>(round(p1.x+(i-p1.y)*gradient));
           float realValue = depthImageC(newX,i);
           float augmentedValue = startValue+(i-p1.y)*depthGradient;
           float s1 = realValue-augmentedValue;
@@ -489,7 +489,7 @@ namespace icl{
             numReject++;
           }
         }
-        if((float)numReject/(float)(abs(p2.y-p1.y)+1)>outlierTolerance/100.){
+        if(static_cast<float>(numReject)/static_cast<float>((abs(p2.y-p1.y)+1))>outlierTolerance/100.){
           return false;
         }
       }
@@ -505,7 +505,7 @@ namespace icl{
         for( int x=0; x<s.width; x++){
           int id = x+y*s.width;
           if(labelImageC(x,y)>0){
-            if(labelImageC(x,y)>(int)labelVector.size()){
+            if(labelImageC(x,y)>static_cast<int>(labelVector.size())){
               labelVector.resize(labelImageC(x,y));
             }
             labelVector[labelImageC(x,y)-1].push_back(id);
@@ -573,44 +573,44 @@ namespace icl{
 					  colorImage(x, y, 1) = 128;
 					  colorImage(x, y, 2) = 128;
 				  } else {
-					  int H = (int) (labelImage(x,y,0) * 35.) % 360;
+					  int H = static_cast<int>((labelImage(x,y,0) * 35.)) % 360;
 					  float S = 1.0 - labelImage(x,y,0) * 0.01;
-					  float hi = floor((float) H / 60.);
-					  float f = ((float) H / 60.) - hi;
+					  float hi = floor(static_cast<float>(H) / 60.);
+					  float f = (static_cast<float>(H) / 60.) - hi;
 					  float pp = 1.0 - S;
 					  float qq = 1.0 - S * f;
 					  float tt = 1.0 - S * (1. - f);
 					  float newR = 0;
 					  float newG = 0;
 					  float newB = 0;
-					  if ((int) hi == 0 || (int) hi == 6) {
+					  if (static_cast<int>(hi) == 0 || static_cast<int>(hi) == 6) {
 						  newR = 1.0;
 						  newG = tt;
 						  newB = pp;
-					  } else if ((int) hi == 1) {
+					  } else if (static_cast<int>(hi) == 1) {
 						  newR = qq;
 						  newG = 1.0;
 						  newB = pp;
-					  } else if ((int) hi == 2) {
+					  } else if (static_cast<int>(hi) == 2) {
 						  newR = pp;
 						  newG = 1.0;
 						  newB = tt;
-					  } else if ((int) hi == 3) {
+					  } else if (static_cast<int>(hi) == 3) {
 						  newR = pp;
 						  newG = qq;
 						  newB = 1.0;
-					  } else if ((int) hi == 4) {
+					  } else if (static_cast<int>(hi) == 4) {
 						  newR = tt;
 						  newG = pp;
 						  newB = 1.0;
-					  } else if ((int) hi == 5) {
+					  } else if (static_cast<int>(hi) == 5) {
 						  newR = 1.0;
 						  newG = pp;
 						  newB = qq;
 					  }
-					  colorImage(x, y, 0) = (unsigned char) (newR * 255.);
-					  colorImage(x, y, 1) = (unsigned char) (newG * 255.);
-					  colorImage(x, y, 2) = (unsigned char) (newB * 255.);
+					  colorImage(x, y, 0) = static_cast<unsigned char>((newR * 255.));
+					  colorImage(x, y, 1) = static_cast<unsigned char>((newG * 255.));
+					  colorImage(x, y, 2) = static_cast<unsigned char>((newB * 255.));
 				  }
 			  }
 		  }
@@ -641,8 +641,8 @@ namespace icl{
           float lastScore;
           float compScore;
           if(assignmentMatrix(i,j)>0){
-            curScore=(float)assignmentMatrix(i,j)/(float)curNum[i];
-            lastScore=(float)assignmentMatrix(i,j)/(float)lastNum[j];
+            curScore=static_cast<float>(assignmentMatrix(i,j))/static_cast<float>(curNum[i]);
+            lastScore=static_cast<float>(assignmentMatrix(i,j))/static_cast<float>(lastNum[j]);
             compScore=(curScore+lastScore)/2.;
           }
           else{
@@ -694,7 +694,7 @@ namespace icl{
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
         math::DynMatrix<bool> neighbours(numSurfaces,numSurfaces,false);
-        math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,(unsigned char)0);
+        math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,static_cast<unsigned char>(0));
         if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit
 	        m_data->size = s;
 	        int w = s.width;
@@ -738,7 +738,7 @@ namespace icl{
 				      numSurfaces*numSurfaces * sizeof(unsigned char));
 				  for(unsigned int i=0; i<neighboursC.rows(); i++){
 				    for(unsigned int j=0; j<neighboursC.cols(); j++){
-				      neighbours(i,j)=(bool)neighboursC(i,j);
+				      neighbours(i,j)=static_cast<bool>(neighboursC(i,j));
 				    }
 				  }
 		      if(pointAssignment){

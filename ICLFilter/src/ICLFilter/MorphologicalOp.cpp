@@ -152,7 +152,7 @@ namespace icl {
           break;
         }
         default:
-          ERROR_LOG("invalid optype: " << (int) m_eType);
+          ERROR_LOG("invalid optype: " << static_cast<int>(m_eType));
       }
       if(!getClipToROI() && (m_eType == erodeBorderReplicate || m_eType == dilateBorderReplicate) ){
         rep_border(dst,getMaskSize());

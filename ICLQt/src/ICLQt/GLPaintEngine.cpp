@@ -140,20 +140,20 @@ namespace icl{
     void GLPaintEngine::color(float r, float g, float b, float a){
       // {{{ open
 
-      m_linecolor[0] = (float)r/255.0;
-      m_linecolor[1] = (float)g/255.0;
-      m_linecolor[2] = (float)b/255.0;
-      m_linecolor[3] = (float)a/255.0;
+      m_linecolor[0] = static_cast<float>(r)/255.0;
+      m_linecolor[1] = static_cast<float>(g)/255.0;
+      m_linecolor[2] = static_cast<float>(b)/255.0;
+      m_linecolor[3] = static_cast<float>(a)/255.0;
     }
 
     // }}}
     void GLPaintEngine::fill(float r, float g, float b, float a){
       // {{{ open
 
-      m_fillcolor[0] = (float)r/255.0;
-      m_fillcolor[1] = (float)g/255.0;
-      m_fillcolor[2] = (float)b/255.0;
-      m_fillcolor[3] = (float)a/255.0;
+      m_fillcolor[0] = static_cast<float>(r)/255.0;
+      m_fillcolor[1] = static_cast<float>(g)/255.0;
+      m_fillcolor[2] = static_cast<float>(b)/255.0;
+      m_fillcolor[3] = static_cast<float>(a)/255.0;
     }
 
     void GLPaintEngine::linewidth(float w){
@@ -185,7 +185,7 @@ namespace icl{
       glColor4fv(m_linecolor);
       glPointSize(m_pointsize);
       glBegin(GL_POINTS);
-      glVertex2f((GLfloat)p.x,(GLfloat)p.y);
+      glVertex2f(static_cast<GLfloat>(p.x),static_cast<GLfloat>(p.y));
       glEnd();
     }
 
@@ -225,19 +225,19 @@ namespace icl{
       glLineWidth(m_linewidth);
       glColor4fv(m_fillcolor);
       glBegin(GL_QUADS);
-      glVertex2f((GLfloat)r.x,(GLfloat)r.y);
-      glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
-      glVertex2f((GLfloat)r.right(),(GLfloat)r.bottom());
-      glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
+      glVertex2f(static_cast<GLfloat>(r.x),static_cast<GLfloat>(r.y));
+      glVertex2f(static_cast<GLfloat>(r.right()),static_cast<GLfloat>(r.y));
+      glVertex2f(static_cast<GLfloat>(r.right()),static_cast<GLfloat>(r.bottom()));
+      glVertex2f(static_cast<GLfloat>(r.x),static_cast<GLfloat>(r.bottom()));
       glEnd();
 
       glColor4fv(m_linecolor);
       glBegin(GL_LINE_STRIP);
-      glVertex2f((GLfloat)r.x,(GLfloat)r.y);
-      glVertex2f((GLfloat)r.right(),(GLfloat)r.y);
-      glVertex2f((GLfloat)r.right(),(GLfloat)r.bottom());
-      glVertex2f((GLfloat)r.x,(GLfloat)r.bottom());
-      glVertex2f((GLfloat)r.x,(GLfloat)r.y);
+      glVertex2f(static_cast<GLfloat>(r.x),static_cast<GLfloat>(r.y));
+      glVertex2f(static_cast<GLfloat>(r.right()),static_cast<GLfloat>(r.y));
+      glVertex2f(static_cast<GLfloat>(r.right()),static_cast<GLfloat>(r.bottom()));
+      glVertex2f(static_cast<GLfloat>(r.x),static_cast<GLfloat>(r.bottom()));
+      glVertex2f(static_cast<GLfloat>(r.x),static_cast<GLfloat>(r.y));
       glEnd();
 
 
@@ -247,18 +247,18 @@ namespace icl{
 
       glColor4fv(m_fillcolor);
       glBegin(GL_TRIANGLES);
-      glVertex2f((GLfloat)a.x,(GLfloat)a.y);
-      glVertex2f((GLfloat)b.x,(GLfloat)b.y);
-      glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+      glVertex2f(static_cast<GLfloat>(a.x),static_cast<GLfloat>(a.y));
+      glVertex2f(static_cast<GLfloat>(b.x),static_cast<GLfloat>(b.y));
+      glVertex2f(static_cast<GLfloat>(c.x),static_cast<GLfloat>(c.y));
       glEnd();
 
       glLineWidth(m_linewidth);
       glEnable(GL_LINE_SMOOTH);
       glColor4fv(m_linecolor);
       glBegin(GL_LINE_LOOP);
-      glVertex2f((GLfloat)a.x,(GLfloat)a.y);
-      glVertex2f((GLfloat)b.x,(GLfloat)b.y);
-      glVertex2f((GLfloat)c.x,(GLfloat)c.y);
+      glVertex2f(static_cast<GLfloat>(a.x),static_cast<GLfloat>(a.y));
+      glVertex2f(static_cast<GLfloat>(b.x),static_cast<GLfloat>(b.y));
+      glVertex2f(static_cast<GLfloat>(c.x),static_cast<GLfloat>(c.y));
       glEnd();
       glDisable(GL_LINE_SMOOTH);
     }
@@ -269,18 +269,18 @@ namespace icl{
       glEnable(GL_LINE_SMOOTH);
       glColor4fv(m_fillcolor);
       glBegin(GL_QUADS);
-      glVertex2f((GLfloat)a.x,(GLfloat)a.y);
-      glVertex2f((GLfloat)b.x,(GLfloat)b.y);
-      glVertex2f((GLfloat)c.x,(GLfloat)c.y);
-      glVertex2f((GLfloat)d.x,(GLfloat)d.y);
+      glVertex2f(static_cast<GLfloat>(a.x),static_cast<GLfloat>(a.y));
+      glVertex2f(static_cast<GLfloat>(b.x),static_cast<GLfloat>(b.y));
+      glVertex2f(static_cast<GLfloat>(c.x),static_cast<GLfloat>(c.y));
+      glVertex2f(static_cast<GLfloat>(d.x),static_cast<GLfloat>(d.y));
       glEnd();
 
       glColor4fv(m_linecolor);
       glBegin(GL_LINE_LOOP);
-      glVertex2f((GLfloat)a.x,(GLfloat)a.y);
-      glVertex2f((GLfloat)b.x,(GLfloat)b.y);
-      glVertex2f((GLfloat)c.x,(GLfloat)c.y);
-      glVertex2f((GLfloat)d.x,(GLfloat)d.y);
+      glVertex2f(static_cast<GLfloat>(a.x),static_cast<GLfloat>(a.y));
+      glVertex2f(static_cast<GLfloat>(b.x),static_cast<GLfloat>(b.y));
+      glVertex2f(static_cast<GLfloat>(c.x),static_cast<GLfloat>(c.y));
+      glVertex2f(static_cast<GLfloat>(d.x),static_cast<GLfloat>(d.y));
       glEnd();
       glDisable(GL_LINE_SMOOTH);
     }
@@ -318,7 +318,7 @@ namespace icl{
 
       //DEBUG_LOG("circumference: " << circumference << " using nSteps:" << NSTEPS << " Rect was: " << r);
 
-      const GLfloat D_ARC = (2*M_PI)/(double)NSTEPS;
+      const GLfloat D_ARC = (2*M_PI)/static_cast<double>(NSTEPS);
       glBegin(GL_POLYGON);
       for(int i=0;i<NSTEPS;i++){
         float arc = i*D_ARC;
@@ -354,10 +354,10 @@ namespace icl{
       img.fill(0);
       QPainter painter(&img);
       painter.setFont(m_font);
-      painter.setPen(QColor( (int)(m_linecolor[2]*255),
-                             (int)(m_linecolor[1]*255),
-                             (int)(m_linecolor[0]*255),
-                             min (254, (int)(m_linecolor[3]*255)) ));
+      painter.setPen(QColor( static_cast<int>(m_linecolor[2]*255),
+                             static_cast<int>(m_linecolor[1]*255),
+                             static_cast<int>(m_linecolor[0]*255),
+                             min (254, static_cast<int>(m_linecolor[3]*255)) ));
 
       painter.drawText(QRect(0,0,img.width(),img.height()),Qt::AlignHCenter,text.c_str());
       painter.end();
@@ -408,7 +408,7 @@ namespace icl{
       // {{{ open
 
       for(int i=0;i<4;i++){
-        piColor[i]=(int)(m_linecolor[i]*255.0);
+        piColor[i]=static_cast<int>(m_linecolor[i]*255.0);
       }
     }
 
@@ -418,7 +418,7 @@ namespace icl{
       // {{{ open
 
       for(int i=0;i<4;i++){
-        piColor[i]=(int)(m_fillcolor[i]*255.0);
+        piColor[i]=static_cast<int>(m_fillcolor[i]*255.0);
       }
     }
 
@@ -438,8 +438,8 @@ namespace icl{
           glPixelZoom(1.0,-1.0);
           break;
         case PaintEngine::Justify:
-          glPixelZoom((GLfloat)r.width/s.width,-(GLfloat)r.height/s.height);
-          glRasterPos2i(r.x,(int)(r.y-r.height+(s.height*(GLfloat)r.height/s.height)));
+          glPixelZoom(static_cast<GLfloat>(r.width)/s.width,-static_cast<GLfloat>(r.height)/s.height);
+          glRasterPos2i(r.x,static_cast<int>(r.y-r.height+(s.height*static_cast<GLfloat>(r.height)/s.height)));
           break;
       }
     }
@@ -476,8 +476,8 @@ namespace icl{
     // }}}
     void GLPaintEngine::setupPixelTransfer(depth d, float brightness, float contrast, float intensity){
       // {{{ open
-      (void)intensity;
-      float fBiasRGB = (float)brightness/255.0;
+      static_cast<void>(intensity);
+      float fBiasRGB = static_cast<float>(brightness)/255.0;
 
       // old
       // float fScaleRGB = d == depth8u ? 1.0 : 1.0/255;  //TODO_depth
@@ -494,7 +494,7 @@ namespace icl{
           fScaleRGB = 1.0/255; break;
       }
 
-      float c = (float)contrast/255;
+      float c = static_cast<float>(contrast)/255;
       if(c>0) c*=10;
       fScaleRGB*=(1.0+c);
       fBiasRGB-=c/2;

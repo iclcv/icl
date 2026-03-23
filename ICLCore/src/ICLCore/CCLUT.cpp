@@ -41,7 +41,7 @@ namespace icl{
     static const int C3 = 256*256*256;
 
     static unsigned char ROW[256];
-    struct ROW_INIT { ROW_INIT(){ for(int i=0;i<256;i++) ROW[i] = (unsigned char)(i); } } __RI;;
+    struct ROW_INIT { ROW_INIT(){ for(int i=0;i<256;i++) ROW[i] = static_cast<unsigned char>(i); } } __RI;;
 
 
     template<class T>

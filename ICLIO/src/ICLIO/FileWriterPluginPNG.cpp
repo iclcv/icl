@@ -119,7 +119,7 @@ namespace icl{
           } else if (d == depth16s) {
             const icl16s *p16 = 0;
             p16 = image->asImg<icl16s>()->begin(0);
-            p = (icl8u*)p16;
+            p = reinterpret_cast<const icl8u*>(p16);
           }else{
             data.resize(w*h);
             Img8u tmp(Size(w,h),1,std::vector<icl8u*>(1,data.data()));
@@ -152,7 +152,7 @@ namespace icl{
 
       rows.resize(h);
       for(int i=0;i<h;++i){
-        rows[i] = (icl8u*)(p+i*w*c*num_bytes);
+        rows[i] = const_cast<icl8u*>(p+i*w*c*num_bytes);
       }
 
       if(setjmp(png_jmpbuf(writer))){
@@ -160,7 +160,7 @@ namespace icl{
         return;
       }
 
-      png_write_image(writer, (png_bytep*)rows.data());
+      png_write_image(writer, rows.data());
 
 
       if(setjmp(png_jmpbuf(writer))){

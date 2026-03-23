@@ -225,7 +225,7 @@ namespace icl{
           CASE(custom);
   #undef CASE
           default:
-            ERROR_LOG("undefined ConvolutionKernel::fixedType here: (int value:" << (int)op.getKernel().getFixedType() << ")");
+            ERROR_LOG("undefined ConvolutionKernel::fixedType here: (int value:" << static_cast<int>(op.getKernel().getFixedType()) << ")");
         }
       }
 

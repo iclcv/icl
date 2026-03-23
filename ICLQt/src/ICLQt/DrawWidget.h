@@ -424,25 +424,25 @@ int main(int n, char **ppc){
       /// utility template method that allows to pass 3D vectors as colors
       template<class T, unsigned int COLS>
       inline void color(const math::FixedMatrix<T,COLS,3/COLS> &v){
-        color((float)v[0],(float)v[1],(float)v[2]);
+        color(static_cast<float>(v[0]),static_cast<float>(v[1]),static_cast<float>(v[2]));
       }
 
       /// utility template method that allows to pass 4D vectors as colors
       template<class T, unsigned int COLS>
       inline void color(const math::FixedMatrix<T,COLS,4/COLS> &v){
-        color((float)v[0],(float)v[1],(float)v[2],(float)v[3]);
+        color(static_cast<float>(v[0]),static_cast<float>(v[1]),static_cast<float>(v[2]),static_cast<float>(v[3]));
       }
 
       /// utility template method that allows to pass 3D vectors as fill color
       template<class T, unsigned int COLS>
       inline void fill(const math::FixedMatrix<T,COLS,3/COLS> &v){
-        fill((float)v[0],(float)v[1],(float)v[2]);
+        fill(static_cast<float>(v[0]),static_cast<float>(v[1]),static_cast<float>(v[2]));
       }
 
       /// utility template method that allows to pass 4D vectors as fill color
       template<class T, unsigned int COLS>
       inline void fill(const math::FixedMatrix<T,COLS,4/COLS> &v){
-        fill((float)v[0],(float)v[1],(float)v[2],(float)v[3]);
+        fill(static_cast<float>(v[0]),static_cast<float>(v[1]),static_cast<float>(v[2]),static_cast<float>(v[3]));
       }
 
       /// disables drawing edges

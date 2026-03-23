@@ -69,7 +69,7 @@ namespace icl{
         next = &mem[0];
       }
       void reinit(int imageDim){
-        if((int)mem.size() < 4*imageDim){
+        if(static_cast<int>(mem.size()) < 4*imageDim){
           mem.resize(4*imageDim);
         }
       }
@@ -205,7 +205,7 @@ namespace icl{
         // convert 16 values at the same time
         icl8ux16 v = icl8ux16(d);
         v.v0 = _mm_sub_epi8(v.v0, _mm_set1_epi8(128));
-        v.v0 = _mm_cmpgt_epi8(v.v0, _mm_set1_epi8((char)threshold-129));
+        v.v0 = _mm_cmpgt_epi8(v.v0, _mm_set1_epi8(static_cast<char>(threshold)-129));
         v.storeu(d);
       }
 
@@ -262,7 +262,7 @@ namespace icl{
       core::Img<icl8u> img;
       _img.deepCopy(&img);
       Size size = img.getSize();
-      char *img_d = (char*)(img.getData(0));
+      char *img_d = reinterpret_cast<char*>(img.getData(0));
 
       // the image border values have to be 0
       memset(img_d, 0, size.width);
@@ -289,7 +289,7 @@ namespace icl{
       c.id = -1;
       c.is_hole = -1;
       c.parent = -1;
-      img_d = (char*)(img.getData(0));
+      img_d = reinterpret_cast<char*>(img.getData(0));
 
       for (int y = 1; y < h-1; ++y) {
         // previous value is 0 because the for-loop starts at x = 1
@@ -414,7 +414,7 @@ namespace icl{
       Img<icl8u> img;
       _img.deepCopy(&img);
       Size size = img.getSize();
-      char *img_d = (char*)(img.getData(0));
+      char *img_d = reinterpret_cast<char*>(img.getData(0));
 
       // the image border values have to be 0
       memset(img_d, 0, size.width);
@@ -439,7 +439,7 @@ namespace icl{
 
       ComplexContourImpl c;
       id_count = 0;
-      img_d = (char*)(img.getData(0));
+      img_d = reinterpret_cast<char*>(img.getData(0));
 
       for (int y = 1; y < h-1; ++y) {
         // previous value is 0 because the for-loop starts at x = 1
