@@ -181,7 +181,7 @@ static void mandelbrotGPU(icl8u *r, icl8u *g, icl8u *b,
 #endif
 
 // --- GUI ---
-GUI gui;
+VSplit gui;
 Img8u image;
 
 static void mouseHandler(const MouseEvent &event){
