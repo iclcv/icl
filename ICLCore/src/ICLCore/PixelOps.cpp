@@ -49,7 +49,7 @@ namespace icl{
     template<class srcT, class dstT>
     void convert(const srcT *poSrcStart, const srcT *poSrcEnd, dstT *poDst){
       if constexpr (std::is_same_v<srcT, dstT>){
-        copy(poSrcStart, poSrcEnd, const_cast<srcT*>(poDst));
+        copy(poSrcStart, poSrcEnd, poDst);
       } else {
         std::transform(poSrcStart, poSrcEnd, poDst, utils::clipped_cast<srcT, dstT>);
       }
