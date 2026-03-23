@@ -766,7 +766,7 @@ namespace icl{
       if(it != grabbers.end()){
         g = it->second;
       }else{
-        g = new GenericGrabber();
+        g.reset(new GenericGrabber());
         g -> init(dev,devSpec);
         if(!releaseGrabber){
           grabbers[id] = g;

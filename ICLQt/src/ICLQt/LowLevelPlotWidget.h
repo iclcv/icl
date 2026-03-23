@@ -297,7 +297,7 @@ namespace icl{
                  is called.
           */
       void addSeriesData(const float *data, int len,
-                         const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
+                         const AbstractPlotWidget::PenPtr &style = AbstractPlotWidget::PenPtr(new AbstractPlotWidget::Pen(QColor(255,0,0))),
                          const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
 
 
@@ -306,7 +306,7 @@ namespace icl{
           bars are drawn instead of a (filled) function graph line
           @see addSeriesData */
       void addBarPlotData(const float *data, int len,
-                          const AbstractPlotWidget::PenPtr &style = new AbstractPlotWidget::Pen(QColor(255,0,0)),
+                          const AbstractPlotWidget::PenPtr &style = AbstractPlotWidget::PenPtr(new AbstractPlotWidget::Pen(QColor(255,0,0))),
                           const std::string &name="", int stride=1, bool deepCopy=true, bool passOwnerShip=false);
 
         /// adds a list of symbols

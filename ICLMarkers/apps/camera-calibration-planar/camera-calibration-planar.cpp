@@ -185,7 +185,7 @@ void init(){
   }
   for(int i=0;i<pai.n();i+=3){
     int id = i/3;
-    views[id] = new View;
+    views[id].reset(new View);
     View &v = *views[id];
     v.lastImage = 0;
     v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);

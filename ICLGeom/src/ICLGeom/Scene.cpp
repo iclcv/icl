@@ -412,7 +412,7 @@ namespace icl{
       m_objects.resize(scene.m_objects.size());
       m_backgroundColor = scene.m_backgroundColor;
       for(unsigned int i=0;i<m_objects.size();++i){
-        m_objects[i] = scene.m_objects[i]->copy();
+        m_objects[i].reset(scene.m_objects[i]->copy());
       }
   #ifdef ICL_HAVE_QT
       m_mouseHandlers.resize(scene.m_mouseHandlers.size());
@@ -458,7 +458,7 @@ namespace icl{
 
     void Scene::addCamera(const Camera &cam, float visSize){
       m_cameras.push_back(cam);
-      m_cameraObjects.push_back(new CameraObject(this,m_cameraObjects.size(), visSize));
+      m_cameraObjects.push_back(SmartPtr<SceneObject>(new CameraObject(this,m_cameraObjects.size(), visSize)));
     }
     void Scene::removeCamera(int index){
       ICLASSERT_RETURN(index > 0 && index <static_cast<int>(m_cameras.size()));
@@ -484,7 +484,11 @@ namespace icl{
     }
 
     void Scene::addObject(SceneObject *object, bool passOwnerShip){
-      m_objects.push_back(SmartPtr<SceneObject>(object,passOwnerShip));
+      if(passOwnerShip){
+        m_objects.push_back(SmartPtr<SceneObject>(object));
+      }else{
+        m_objects.push_back(SmartPtr<SceneObject>(object, [](SceneObject*){}));
+      }
     }
 
     void Scene::removeObject(int idx){
@@ -1025,12 +1029,12 @@ namespace icl{
       if(getDrawObjectFramesEnabled()){
         float size = (const_cast<Scene*>(this))->getPropertyValue("object frame size");
         if(!m_objectFrameObject){
-          m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+          m_objectFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
           //m_objectFrameObject->createDisplayList();
         }else{
           float currSize = static_cast<ComplexCoordinateFrameSceneObject*>(m_objectFrameObject.get())->getAxisLength();
           if(size != currSize){
-            m_objectFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+            m_objectFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
             //m_objectFrameObject->createDisplayList();
           }
         }
@@ -1042,12 +1046,12 @@ namespace icl{
       if(getDrawCoordinateFrameEnabled()){
         float size = (const_cast<Scene*>(this))->getPropertyValue("world frame size");
         if(!m_coordinateFrameObject){
-          m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+          m_coordinateFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
           //m_coordinateFrameObject->createDisplayList();
         }else{
           float currSize = static_cast<ComplexCoordinateFrameSceneObject*>(m_coordinateFrameObject.get())->getAxisLength();
           if(size != currSize){
-            m_coordinateFrameObject = new ComplexCoordinateFrameSceneObject(size,size/20);
+            m_coordinateFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
             //m_coordinateFrameObject->createDisplayList();
           }
         }
@@ -1167,7 +1171,7 @@ namespace icl{
 			} else {
         newSceneMouseHandler->setSensitivities(getMaxSceneDim());
       }
-      m_mouseHandlers.push_back(newSceneMouseHandler);
+      m_mouseHandlers.push_back(SmartPtr<SceneMouseHandler>(newSceneMouseHandler));
 
       // return mouse handler
       return newSceneMouseHandler;
@@ -1183,14 +1187,14 @@ namespace icl{
         if(m_mouseHandlers[i]->getCameraIndex() == camIndex){
           // assign new mouse handler
           sceneMouseHandler->setParentScene(this);
-          m_mouseHandlers[i] = sceneMouseHandler;
+          m_mouseHandlers[i].reset(sceneMouseHandler);
           return;
         }
       }
 
       // Camera did not have a mouse handler. Add new one.
       sceneMouseHandler->setParentScene(this);
-      m_mouseHandlers.push_back(sceneMouseHandler);
+      m_mouseHandlers.push_back(SmartPtr<SceneMouseHandler>(sceneMouseHandler));
     }
 
     ICLDrawWidget3D::GLCallback *Scene::getGLCallback(int camIndex){
@@ -1202,7 +1206,7 @@ namespace icl{
           return m_glCallbacks[i].get();
         }
       }
-      m_glCallbacks.push_back(new GLCallback(camIndex,this));
+      m_glCallbacks.push_back(SmartPtr<GLCallback>(new GLCallback(camIndex,this)));
       return m_glCallbacks.back().get();
     }
 
@@ -1482,7 +1486,7 @@ namespace icl{
         m_context.setShareContext(QOpenGLContext::globalShareContext());
         m_context.create();
         m_context.makeCurrent(&m_surface);
-        m_fbo = new QOpenGLFramebufferObject(s.width, s.height, QOpenGLFramebufferObject::CombinedDepthStencil);
+        m_fbo.reset(new QOpenGLFramebufferObject(s.width, s.height, QOpenGLFramebufferObject::CombinedDepthStencil));
       }
       void update(const Camera &cam) {
         depthCorr.update(cam);

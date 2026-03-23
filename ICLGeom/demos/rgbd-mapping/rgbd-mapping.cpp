@@ -53,14 +53,14 @@ void init(){
   Size res = cam.getResolution();
 
   if(pa("-c")){
-    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
+    grabber.reset(new DepthCameraPointCloudGrabber(*pa("-d",2), *pa("-c",2),
                                                *pa("-d",0), *pa("-d",1),
-                                               *pa("-c",0), *pa("-c",1) );
-    obj = new PointCloudObject(res.width, res.height);
+                                               *pa("-c",0), *pa("-c",1) ));
+    obj.reset(new PointCloudObject(res.width, res.height));
   }else{
-    grabber = new DepthCameraPointCloudGrabber(*pa("-d",2), DepthCameraPointCloudGrabber::get_null_color_cam(),
-                                               *pa("-d",0), *pa("-d",1),"","");
-    obj = new PointCloudObject(res.width, res.height, true, false, false);
+    grabber.reset(new DepthCameraPointCloudGrabber(*pa("-d",2), DepthCameraPointCloudGrabber::get_null_color_cam(),
+                                               *pa("-d",0), *pa("-d",1),"",""));
+    obj.reset(new PointCloudObject(res.width, res.height, true, false, false));
   }
   if(pa("-no-cl")){
     grabber->setUseCL(false);

@@ -601,14 +601,14 @@ namespace icl{
       }
 
       ~Impl(){
-        device.setNull();
+        device.reset();
       }
 
       void switchMode(KinectGrabber::Mode mode, const Size &size){
         if(device->mode != mode || device->used->size != size){
           int idx = device->index;
           //device = SmartPtr<FreenectDevice>();
-          device.setNull();
+          device.reset();
           device = SmartPtr<FreenectDevice>(new FreenectDevice(idx,mode,size));
         }
       }

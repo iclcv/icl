@@ -426,7 +426,7 @@ namespace icl{
       /// deep copy method
       virtual Primitive *copy() const {
         GenericTexturePrimitive *cpy = new GenericTexturePrimitive(*this);
-        cpy->texture = new qt::GLImg(image ? image : texture->extractImage());
+        cpy->texture.reset(new qt::GLImg(image ? image : texture->extractImage()));
         return cpy;
       }
     };

@@ -519,13 +519,13 @@ namespace icl {
       addProperty("mirror heuristic", "flag", "", "true", 0,
                   "Flag for reconstruct distorted quads by the perpendicular heuristic");
 
-      data->rd = new RegionDetector(40, 2 << 20, RD_VALS[static_cast<int>(c)],
-                                    RD_VALS[static_cast<int>(c) + 3]);
+      data->rd.reset(new RegionDetector(40, 2 << 20, RD_VALS[static_cast<int>(c)],
+                                    RD_VALS[static_cast<int>(c) + 3]));
       data->rd->deactivateProperty("minimum value");
       data->rd->deactivateProperty("maximum value");
       data->rd->deactivateProperty("^CSS*");
 
-      data->lt = new LocalThresholdOp;
+      data->lt.reset(new LocalThresholdOp);
       data->lt->deactivateProperty("gamma slope");
       data->lt->deactivateProperty("^UnaryOp*");
 
@@ -589,24 +589,24 @@ namespace icl {
         //"menu","none,median,erosion,dilatation,opening,closing"
 
         if (kernelType == "median") {
-          data->pp = new MedianOp(kernelSize);
+          data->pp.reset(new MedianOp(kernelSize));
         } else if (kernelType == "none") {
-          data->pp.setNull();
+          data->pp.reset();
         } else if (kernelType == "erosion") {
-          data->pp = new MorphologicalOp(
+          data->pp.reset(new MorphologicalOp(
                                          is3x3 ? MorphologicalOp::erode3x3 : MorphologicalOp::erode,
-                                         kernelSize);
+                                         kernelSize));
         } else if (kernelType == "dilatation") {
-          data->pp =
+          data->pp.reset(
           new MorphologicalOp(
                               is3x3 ? MorphologicalOp::dilate3x3 : MorphologicalOp::dilate,
-                              kernelSize);
+                              kernelSize));
         } else if (kernelType == "opening") {
-          data->pp = new MorphologicalOp(MorphologicalOp::openBorder,
-                                         kernelSize);
+          data->pp.reset(new MorphologicalOp(MorphologicalOp::openBorder,
+                                         kernelSize));
         } else if (kernelType == "closing") {
-          data->pp = new MorphologicalOp(MorphologicalOp::closeBorder,
-                                         kernelSize);
+          data->pp.reset(new MorphologicalOp(MorphologicalOp::closeBorder,
+                                         kernelSize));
         }
         if (data->pp) {
           data->pp->setClipToROI(false);

@@ -157,7 +157,7 @@ void init(){
          )
       << Show();
   grabber.grab()->convert(&templ);
-  surf = new SurfFeatureDetector(5,4,2,0.00005,*pa("-p"));
+  surf.reset(new SurfFeatureDetector(5,4,2,0.00005,*pa("-p")));
   surf->setReferenceImage(&templ);
 
   mouse = new Mouse(templ.getSize());

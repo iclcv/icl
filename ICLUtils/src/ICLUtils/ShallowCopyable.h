@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/SmartPtrBase.h>
 
 namespace icl{
   namespace utils{

@@ -78,9 +78,9 @@ namespace icl{
                     int xStride, int yStride):
           AbstractData(name, num),xStride(xStride),yStride(yStride){
           QColor color(r,g,b);
-          style = new AbstractPlotWidget::Pen(connect ? QPen(color) : QPen(Qt::NoPen),
+          style.reset(new AbstractPlotWidget::Pen(connect ? QPen(color) : QPen(Qt::NoPen),
                                               QPen(color), sym, size,
-                                              filled ? QBrush(color) : QBrush(Qt::NoBrush));
+                                              filled ? QBrush(color) : QBrush(Qt::NoBrush)));
 
         }
         int xStride;

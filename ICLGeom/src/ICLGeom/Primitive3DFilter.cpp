@@ -380,7 +380,7 @@ namespace icl{
                 if(formula.size() > 0) {
                     std::string actionName = actionNode.name();
                     if(actionName == "remove") {
-                        utils::SmartPtr<RemoveAction> removeActionPtr = new RemoveAction(formula);
+                        utils::SmartPtr<RemoveAction> removeActionPtr(new RemoveAction(formula));
                         filterActions.push_back(removeActionPtr);
                     } else if(actionName == "setpos") {
                         pugi::xml_attribute xAttr = actionNode.attribute("x");
@@ -389,7 +389,7 @@ namespace icl{
                         if(yAttr.empty()) throw utils::ParseException("Setpos has no y attribute.");
                         pugi::xml_attribute zAttr = actionNode.attribute("z");
                         if(zAttr.empty()) throw utils::ParseException("Setpos has no z attribute.");
-                        utils::SmartPtr<SetposAction> setposActionPtr = new SetposAction(formula, xAttr.as_float(), yAttr.as_float(), zAttr.as_float());
+                        utils::SmartPtr<SetposAction> setposActionPtr(new SetposAction(formula, xAttr.as_float(), yAttr.as_float(), zAttr.as_float()));
                         filterActions.push_back(setposActionPtr);
                     } else if(actionName == "color") {
                         pugi::xml_attribute rAttr = actionNode.attribute("r");
@@ -400,22 +400,22 @@ namespace icl{
                         if(bAttr.empty()) throw utils::ParseException("Color has no b attribute.");
                         pugi::xml_attribute aAttr = actionNode.attribute("a");
                         if(aAttr.empty()) throw utils::ParseException("Color has no a attribute.");
-                        utils::SmartPtr<ColorAction> colorActionPtr = new ColorAction(formula, rAttr.as_float(), gAttr.as_float(), bAttr.as_float(), aAttr.as_float());
+                        utils::SmartPtr<ColorAction> colorActionPtr(new ColorAction(formula, rAttr.as_float(), gAttr.as_float(), bAttr.as_float(), aAttr.as_float()));
                         filterActions.push_back(colorActionPtr);
                     } else if(actionName == "label") {
                         pugi::xml_attribute valueAttr = actionNode.attribute("value");
                         if(valueAttr.empty()) throw utils::ParseException("Label has no value attribute.");
-                        utils::SmartPtr<LabelAction> labelActionPtr = new LabelAction(formula, valueAttr.as_int());
+                        utils::SmartPtr<LabelAction> labelActionPtr(new LabelAction(formula, valueAttr.as_int()));
                         filterActions.push_back(labelActionPtr);
                     } else if(actionName == "intensity") {
                         pugi::xml_attribute valueAttr = actionNode.attribute("value");
                         if(valueAttr.empty()) throw utils::ParseException("Intensity has no value attribute.");
-                        utils::SmartPtr<IntensityAction> intensityActionPtr = new IntensityAction(formula, valueAttr.as_float());
+                        utils::SmartPtr<IntensityAction> intensityActionPtr(new IntensityAction(formula, valueAttr.as_float()));
                         filterActions.push_back(intensityActionPtr);
                     } else if(actionName == "filterdepthimg") {
                         pugi::xml_attribute valueAttr = actionNode.attribute("value");
                         if(valueAttr.empty()) throw utils::ParseException("Filterdepthimg has no value attribute.");
-                        utils::SmartPtr<FilterDepthImgAction> filterDepthImgActionPtr = new FilterDepthImgAction(formula, valueAttr.as_float());
+                        utils::SmartPtr<FilterDepthImgAction> filterDepthImgActionPtr(new FilterDepthImgAction(formula, valueAttr.as_float()));
                         filterActions.push_back(filterDepthImgActionPtr);
                     }
                 }

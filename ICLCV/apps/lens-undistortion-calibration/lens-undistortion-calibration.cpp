@@ -70,7 +70,7 @@ void init(){
   detector.setPropertyValue("thresh.mask size", 30);
 
   const Size &imageSize = grabber.grab()->getSize();
-  udist = new UndistortionUtil(imageSize);
+  udist.reset(new UndistortionUtil(imageSize));
   udist->setConfigurableID("udist");
 
 

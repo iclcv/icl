@@ -198,7 +198,7 @@ namespace icl{
     void DynamicGUI::initInternal(pugi::xml_node &root){
       release();
 
-      m_data->parseTree = new Node(root.name());
+      m_data->parseTree.reset(new Node(root.name()));
       traverse_tree(root, 0, m_data->parseTree);
       //    SHOW(*target);
       create_gui(*m_data->parseTree);

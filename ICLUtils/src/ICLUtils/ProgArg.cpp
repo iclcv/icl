@@ -322,7 +322,7 @@ namespace icl{
       }
       // ownership is passed and then managed by a smartptr instance
       void add(AllowedArg *arg){
-        allowed.push_back(arg);
+        allowed.push_back(AllowedArgPtr(arg));
         for(unsigned int i=0;i<arg->names.size();++i){
           if(allowedMap.find(arg->names[i]) != allowedMap.end()){
             THROW_ProgArgException("argument name/alternative '" + arg->names[i] + "' was found at least twice");

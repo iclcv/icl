@@ -57,7 +57,7 @@ void init(){
   obj->setLineWidth(3);
   scene.addObject(obj);
 
-  surf = new SurfFeatureDetector(5,4,2,0.00005,"opensurf");
+  surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"opensurf"));
   Img8u templ = load<icl8u>(pa("-t"));
   surf->setReferenceImage(&templ);
 

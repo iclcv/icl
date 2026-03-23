@@ -62,7 +62,7 @@ void init(){
   if(pa("-c").n() != n) throw ICLException("camera count and grabber count must be equal");
   grabbers.resize(n);
   for(int i=0;i<n;++i){
-    grabbers[i] = new GenericGrabber();
+    grabbers[i].reset(new GenericGrabber());
     grabbers[i] -> init(*pa("-i",2*i), *pa("-i",2*i) + "=" + *pa("-i",2*i+1));
     grabbers[i] -> useDesired(formatGray);
     scene.addCamera(Camera(*pa("-c",i)));

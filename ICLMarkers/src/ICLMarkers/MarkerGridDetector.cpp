@@ -123,8 +123,8 @@ namespace  icl{
                                   const utils::ParamList &extraParams) {
       m_data->def = def;
       m_data->fids = Result(def.getSize());
-      m_data->fd = new FiducialDetector(def.getMarkerType(), "{"+utils::cat(def.getMarkerIDs(),",")+"}",
-                                        extraParams);
+      m_data->fd.reset(new FiducialDetector(def.getMarkerType(), "{"+utils::cat(def.getMarkerIDs(),",")+"}",
+                                        extraParams));
       addChildConfigurable(m_data->fd.get());
     }
 

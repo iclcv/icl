@@ -94,7 +94,7 @@ void init(){
     Mat D=scene.getCamera(0).getCSTransformationMatrix();
     Mat C=scene.getCamera(1).getCSTransformationMatrix();
 
-    relTM = new Mat( C * D.inv() );
+    relTM.reset(new Mat( C * D.inv() ));
   }
 
   SceneObject* ground = SceneObject::cuboid(0,0,0,200,200,3);

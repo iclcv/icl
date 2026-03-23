@@ -57,7 +57,7 @@ namespace icl{
   namespace utils{
 
     ConfigFile::Maps *ConfigFile::getMapsInstance(){
-      static SmartPtr<Maps> typeMap = new Maps;
+      static SmartPtr<Maps> typeMap(new Maps);
       return typeMap.get();
     }
     //    std::map<std::string,std::string> ConfigFile::s_typeMap;
@@ -313,7 +313,7 @@ namespace icl{
 
     void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r){
       // {{{ open
-      get_entry_internal(m_sDefaultPrefix+id).restr = SmartPtr<KeyRestriction>(new KeyRestriction(r));
+      get_entry_internal(m_sDefaultPrefix+id).restr = std::make_shared<KeyRestriction>(r);
 
       // Search the corresponding node ...
     }

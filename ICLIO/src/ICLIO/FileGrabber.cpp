@@ -113,41 +113,41 @@ namespace icl{
     static FileGrabberPlugin *find_plugin(const std::string &type){
       static std::map<std::string,SmartPtr<FileGrabberPlugin> > plugins;
       if(!plugins.size()){
-        plugins[".ppm"] = new FileGrabberPluginPNM;
-        plugins[".pgm"] = new FileGrabberPluginPNM;
-        plugins[".pnm"] = new FileGrabberPluginPNM;
-        plugins[".icl"] = new FileGrabberPluginPNM;
-        plugins[".csv"] = new FileGrabberPluginCSV;
-        plugins[".bicl"] = new FileGrabberPluginBICL;
-        plugins[".rle1"] = new FileGrabberPluginBICL;
-        plugins[".rle4"] = new FileGrabberPluginBICL;
-        plugins[".rle6"] = new FileGrabberPluginBICL;
-        plugins[".rle8"] = new FileGrabberPluginBICL;
+        plugins[".ppm"].reset(new FileGrabberPluginPNM);
+        plugins[".pgm"].reset(new FileGrabberPluginPNM);
+        plugins[".pnm"].reset(new FileGrabberPluginPNM);
+        plugins[".icl"].reset(new FileGrabberPluginPNM);
+        plugins[".csv"].reset(new FileGrabberPluginCSV);
+        plugins[".bicl"].reset(new FileGrabberPluginBICL);
+        plugins[".rle1"].reset(new FileGrabberPluginBICL);
+        plugins[".rle4"].reset(new FileGrabberPluginBICL);
+        plugins[".rle6"].reset(new FileGrabberPluginBICL);
+        plugins[".rle8"].reset(new FileGrabberPluginBICL);
 
 #ifdef ICL_HAVE_LIBJPEG
-        plugins[".jpg"] = new FileGrabberPluginJPEG;
-        plugins[".jpeg"] = new FileGrabberPluginJPEG;
-        plugins[".jicl"] = new FileGrabberPluginBICL;
+        plugins[".jpg"].reset(new FileGrabberPluginJPEG);
+        plugins[".jpeg"].reset(new FileGrabberPluginJPEG);
+        plugins[".jicl"].reset(new FileGrabberPluginBICL);
 #elif ICL_HAVE_IMAGEMAGICK
-        plugins[".jpg"] = new FileGrabberPluginImageMagick;
-        plugins[".jpeg"] = new FileGrabberPluginImageMagick;
+        plugins[".jpg"].reset(new FileGrabberPluginImageMagick);
+        plugins[".jpeg"].reset(new FileGrabberPluginImageMagick);
 #endif
 
 #ifdef ICL_HAVE_LIBZ
-        plugins[".ppm.gz"] = new FileGrabberPluginPNM;
-        plugins[".pgm.gz"] = new FileGrabberPluginPNM;
-        plugins[".pnm.gz"] = new FileGrabberPluginPNM;
-        plugins[".icl.gz"] = new FileGrabberPluginPNM;
-        plugins[".csv.gz"] = new FileGrabberPluginCSV;
-        plugins[".bicl.gz"] = new FileGrabberPluginBICL;
-        plugins[".rle1.gz"] = new FileGrabberPluginBICL;
-        plugins[".rle4.gz"] = new FileGrabberPluginBICL;
-        plugins[".rle6.gz"] = new FileGrabberPluginBICL;
-        plugins[".rle8.gz"] = new FileGrabberPluginBICL;
+        plugins[".ppm.gz"].reset(new FileGrabberPluginPNM);
+        plugins[".pgm.gz"].reset(new FileGrabberPluginPNM);
+        plugins[".pnm.gz"].reset(new FileGrabberPluginPNM);
+        plugins[".icl.gz"].reset(new FileGrabberPluginPNM);
+        plugins[".csv.gz"].reset(new FileGrabberPluginCSV);
+        plugins[".bicl.gz"].reset(new FileGrabberPluginBICL);
+        plugins[".rle1.gz"].reset(new FileGrabberPluginBICL);
+        plugins[".rle4.gz"].reset(new FileGrabberPluginBICL);
+        plugins[".rle6.gz"].reset(new FileGrabberPluginBICL);
+        plugins[".rle8.gz"].reset(new FileGrabberPluginBICL);
 #endif
 
 #ifdef ICL_HAVE_LIBPNG
-        plugins[".png"] = new FileGrabberPluginPNG;
+        plugins[".png"].reset(new FileGrabberPluginPNG);
 #endif
 
 #ifdef ICL_HAVE_IMAGEMAGICK
@@ -167,7 +167,7 @@ namespace icl{
         };
 
         for(const char **pc=imageMagickFormats;*pc;++pc){
-          plugins[std::string(".")+*pc] = new FileGrabberPluginImageMagick;
+          plugins[std::string(".")+*pc].reset(new FileGrabberPluginImageMagick);
         }
 #endif
         // add additional plugins to the map

@@ -60,8 +60,8 @@ namespace icl{
         int currMaskDim;
 
         BlurTool():lastDim(-1), currMaskDim(0){
-          c_3x3 = new ConvolutionOp(ConvolutionKernel::gauss3x3);
-          c_5x5 = new ConvolutionOp(ConvolutionKernel::gauss5x5);
+          c_3x3.reset(new ConvolutionOp(ConvolutionKernel::gauss3x3));
+          c_5x5.reset(new ConvolutionOp(ConvolutionKernel::gauss5x5));
 
           c_3x3->setClipToROI(false);
           c_5x5->setClipToROI(false);
@@ -94,8 +94,8 @@ namespace icl{
                 k[i] = 255.0 * ::exp( - d*d / sigma2);
                 sum += k[i];
               }
-              c_horz = new ConvolutionOp(ConvolutionKernel(k.data(),Size(k.size(),1),iclMax(1,sum),false));
-              c_vert = new ConvolutionOp(ConvolutionKernel(k.data(),Size(1,k.size()),iclMax(1,sum),false));
+              c_horz.reset(new ConvolutionOp(ConvolutionKernel(k.data(),Size(k.size(),1),iclMax(1,sum),false)));
+              c_vert.reset(new ConvolutionOp(ConvolutionKernel(k.data(),Size(1,k.size()),iclMax(1,sum),false)));
               c_horz->setClipToROI(false);
               c_vert->setClipToROI(false);
             }
@@ -181,12 +181,12 @@ namespace icl{
       addProperty("pp.temporal smoothing threshold","range","[1:100]:1",5);
       addProperty("pp.spacial filter size","menu","3,5,7,9,11,13,15,17,19,21",5);
 
-      m_data->temporalSmoothing = new MotionSensitiveTemporalSmoothing(0,5);
+      m_data->temporalSmoothing.reset(new MotionSensitiveTemporalSmoothing(0,5));
       m_data->lastNullValue = 0;
       m_data->lastNFrames = 5;
-      m_data->median = new MedianOp(Size(3,3));
+      m_data->median.reset(new MedianOp(Size(3,3)));
       m_data->median->setClipToROI(false);
-      m_data->blurTool = new BlurTool;
+      m_data->blurTool.reset(new BlurTool);
     }
 
     void DepthCameraPointCloudGrabber::reinit(const std::string &description){
@@ -257,11 +257,19 @@ namespace icl{
         throw ICLException("DepthCameraPointCloudGrabber::setColorImageMask: "
                            "cannot be used of the Grabber has no color image source set");
       }
-      m_data->colorMask = SmartPtr<const Img8u>(mask,passOwnerShip);
+      if(passOwnerShip){
+        m_data->colorMask.reset(mask);
+      }else{
+        m_data->colorMask = SmartPtr<const Img8u>(mask, [](const Img8u*){});
+      }
     }
 
     void DepthCameraPointCloudGrabber::setDepthImageMask(const Img8u *mask, bool passOwnerShip){
-      m_data->depthMask = SmartPtr<const Img8u>(mask,passOwnerShip);
+      if(passOwnerShip){
+        m_data->depthMask.reset(mask);
+      }else{
+        m_data->depthMask = SmartPtr<const Img8u>(mask, [](const Img8u*){});
+      }
     }
 
 
@@ -280,7 +288,7 @@ namespace icl{
         }
         if(getPropertyValue("pp.enable median")){
           int s = getPropertyValue("pp.spacial filter size");
-          m_data->median = new MedianOp(Size(s,s));
+          m_data->median.reset(new MedianOp(Size(s,s)));
           m_data->median->setClipToROI(false);
           depthImage = const_cast<Img32f*>(m_data->median->apply(depthImage)->as32f());
           depthImage->setFullROI();
@@ -291,8 +299,8 @@ namespace icl{
           int threshold = getPropertyValue("pp.temporal smoothing threshold");
           if(nullValue != m_data->lastNullValue){
             m_data->lastNullValue = nullValue;
-            m_data->temporalSmoothing = SmartPtr<MotionSensitiveTemporalSmoothing>();
-            m_data->temporalSmoothing = new MotionSensitiveTemporalSmoothing(nullValue,20);
+            m_data->temporalSmoothing.reset();
+            m_data->temporalSmoothing.reset(new MotionSensitiveTemporalSmoothing(nullValue,20));
           }
           m_data->temporalSmoothing->setFilterSize(nFrames);
           m_data->temporalSmoothing->setDifference(threshold);

@@ -142,7 +142,7 @@ namespace icl {
 
       static_bch_codes = all_codes;
       const char *lut = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-\0";
-      static_indices = new icl8u[256];
+      static_indices.reset(new icl8u[256], std::default_delete<icl8u[]>());
       for(const char *p=lut;*p;++p){
         static_indices.get()[static_cast<int>(*p)] = static_cast<icl8u>(p-lut);
       }

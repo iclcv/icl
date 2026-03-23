@@ -378,7 +378,7 @@ namespace icl{
     }
 
     void SQFitter::setCameraCenter(const Vec &c){
-      camCenter = new Vec(c);
+      camCenter.reset(new Vec(c));
     }
 
   } // namespace geom

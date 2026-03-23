@@ -191,7 +191,7 @@ namespace physics{
       if(m_shadow){
         throw utils::ICLException("shadow cannot be added twice!");
       }
-      m_shadow = new Shadow(zLevel,this);
+      m_shadow.reset(new Shadow(zLevel,this));
       addChild(m_shadow.get());
     }
   };

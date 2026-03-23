@@ -133,7 +133,7 @@ void init(){
     Vec(-s.width/2, s.height/2, 150,1),
   };
 
-  paper = new ManipulatablePaper(&scene,&scene,W,H,corners,true,&frontFace,&backFace);
+  paper.reset(new ManipulatablePaper(&scene,&scene,W,H,corners,true,&frontFace,&backFace));
   //scene.removeObject(paper);
   //paper->addShadow(-74.5);
 
@@ -143,7 +143,7 @@ void init(){
     for(int i=0;i<3;++i){
       cams.push_back(Camera(*pa("-c",i)));
     }
-    capturer = new SceneMultiCamCapturer(scene, cams);
+    capturer.reset(new SceneMultiCamCapturer(scene, cams));
     //    Scene::enableSharedOffscreenRendering();
     scene.setDrawCamerasEnabled(false);
   }

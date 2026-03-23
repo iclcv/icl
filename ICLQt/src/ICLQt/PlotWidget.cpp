@@ -153,7 +153,7 @@ namespace icl{
           b[i] =  data[i*stride];
         }
       }
-      addSeriesData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
+      addSeriesData(b,num,AbstractPlotWidget::PenPtr(new AbstractPlotWidget::Pen(m_data->state)), m_data->label, 1, false, false);
     }
 
     template<class T>
@@ -166,7 +166,7 @@ namespace icl{
           b[i] =  data[i*stride];
         }
       }
-      addBarPlotData(b,num,new AbstractPlotWidget::Pen(m_data->state), m_data->label, 1, false, false);
+      addBarPlotData(b,num,AbstractPlotWidget::PenPtr(new AbstractPlotWidget::Pen(m_data->state)), m_data->label, 1, false, false);
     }
 
 

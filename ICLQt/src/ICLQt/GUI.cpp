@@ -376,7 +376,7 @@ namespace icl{
 
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
-            timers.push_back(new VolatileUpdater(volatileness,p.full,timerGUI,*conf));
+            timers.push_back(SmartPtr<VolatileUpdater>(new VolatileUpdater(volatileness,p.full,timerGUI,*conf)));
           }
         }else if(t == "flag"){
           std::string handle = "#f#"+p.full;

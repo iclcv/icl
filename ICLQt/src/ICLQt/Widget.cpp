@@ -835,7 +835,7 @@ namespace icl{
           frameIdx = 0;
         }
         try{
-          SmartPtr<const ImgBase> image(data->image.extractImage(),false);
+          std::shared_ptr<const ImgBase> image(data->image.extractImage(),[](auto*){});
           for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
               it != recordingCallbacks.end();++it){
             it->second(image.get());
@@ -843,7 +843,7 @@ namespace icl{
 
           if(converter){
             converter->apply(image.get(),&convertedBuffer);
-            image = SmartPtr<ImgBase>(convertedBuffer,false);
+            image = std::shared_ptr<ImgBase>(convertedBuffer,[](auto*){});
           }
           imageOutput.send(image.get());
         }catch(ICLException &ex){

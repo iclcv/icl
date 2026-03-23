@@ -442,7 +442,7 @@ namespace icl {
       std::vector<PointCloudSegmentPtr> pointCloudSegments(cutNodes.size());
       for(unsigned int i=0; i<cutNodes.size(); i++){//create segments
         if(cutNodes[i].children.size()==0){//leaf (no children)
-          pointCloudSegments[i]=new PointCloudSegment(m_data->surfaces[cutNodes[i].subset[0]].size(), true);
+          pointCloudSegments[i].reset(new PointCloudSegment(m_data->surfaces[cutNodes[i].subset[0]].size(), true));
           core::DataSegment<float,4> dst_xyzh=pointCloudSegments[i]->selectXYZH();
           core::DataSegment<float,4> dst_rgba=pointCloudSegments[i]->selectRGBA32f();
           for(unsigned int j=0; j<m_data->surfaces[cutNodes[i].subset[0]].size(); j++){
@@ -452,7 +452,7 @@ namespace icl {
           pointCloudSegments[i]->cutCost=0;//cost 0
         }
         else{//parent node
-          pointCloudSegments[i]=new PointCloudSegment(0,false);
+          pointCloudSegments[i].reset(new PointCloudSegment(0,false));
           pointCloudSegments[i]->cutCost=cutNodes[i].cost;//cost x
         }
       }

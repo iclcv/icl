@@ -138,7 +138,7 @@ void init(){
         throw ICLException("less outputs were given to -o "
                            "then inputs were given to -i");
       }
-      in.out = new GenericImageOutput(o[2*i], o[2*i+1]);
+      in.out.reset(new GenericImageOutput(o[2*i], o[2*i+1]));
     }
   }
 

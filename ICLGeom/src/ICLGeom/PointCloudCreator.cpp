@@ -85,15 +85,15 @@ namespace icl{
         }
         this->lastDepthImageMM = 0;
         this->mode = mode;
-        depthCamera = depthCam;
-        colorCamera = colorCam;
+        depthCamera = SmartPtr<Camera>(depthCam, [](Camera*){});
+        colorCamera = colorCam ? SmartPtr<Camera>(colorCam, [](Camera*){}) : SmartPtr<Camera>();
 
         if(!isReinit){
-          depthCameraOrig = new Camera(*depthCam);
+          depthCameraOrig.reset(new Camera(*depthCam));
           if(colorCam){
-            colorCameraOrig = new Camera(*colorCam);
+            colorCameraOrig.reset(new Camera(*colorCam));
           }else{
-            colorCameraOrig = SmartPtr<Camera>();
+            colorCameraOrig.reset();
           }
 
           focalLengthMultiplier = 1;
@@ -105,8 +105,8 @@ namespace icl{
         depthImageSize = depthCam->getRenderParams().chipSize;
         if(colorCam){
           colorImageSize = colorCam->getRenderParams().chipSize;
-          this->rgbdMapping = new Mat(colorCam->getProjectionMatrix()*
-                                      colorCam->getCSTransformationMatrix());
+          this->rgbdMapping.reset(new Mat(colorCam->getProjectionMatrix()*
+                                      colorCam->getCSTransformationMatrix()));
         }
 
         textureIDsData=Array2D<Point32f>(depthImageSize.width,depthImageSize.height);
@@ -506,7 +506,7 @@ namespace icl{
 
 
     bool PointCloudCreator::hasColorCamera() const{
-      return m_data->colorCamera;
+      return m_data->colorCamera != nullptr;
     }
 
     template<class T, int NUM_CHANNELS>

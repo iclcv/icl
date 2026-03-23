@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLUtils/Macros.h>
 #include <ICLUtils/Mutex.h>
 #include <ICLUtils/SmartPtr.h>
 

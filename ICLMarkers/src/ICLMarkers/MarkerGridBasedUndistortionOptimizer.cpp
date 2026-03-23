@@ -57,7 +57,7 @@ namespace icl{
     }
 
     void MarkerGridBasedUndistortionOptimizer::add(const MarkerGrid &grid){
-      m_data->grids.push_back(new MarkerGrid(grid));
+      m_data->grids.push_back(SmartPtr<MarkerGrid>(new MarkerGrid(grid)));
       m_data->grids.back()->detach();
     }
 
@@ -103,7 +103,7 @@ namespace icl{
         }
       }
 
-      if(!m_data->iup) m_data->iup = new InverseUndistortionProcessor(false);
+      if(!m_data->iup) m_data->iup.reset(new InverseUndistortionProcessor(false));
       const std::vector<Point32f> &out = m_data->iup->run(sp, k);
 
       std::vector<Point32f>::const_iterator it2 = out.begin();
@@ -140,7 +140,7 @@ namespace icl{
       float error = 0;
       us.resize(gs.size()); // shallow copy for existing ones
       for(size_t i=0;i<us.size();++i){
-        if(!us[i]) us[i] = new MarkerGrid;  // only on-demand creation
+        if(!us[i]) us[i].reset(new MarkerGrid);  // only on-demand creation
         undistort(*gs[i], *us[i], k);
         // dst points in-place
         float e = MarkerGridEvaluater::compute_error(*us[i]);

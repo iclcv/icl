@@ -109,13 +109,13 @@ namespace icl{
       data->plugin = 0;
       data->plugintype = plugin;
       if(plugin == "bch"){
-        data->plugin = new FiducialDetectorPluginBCH;
+        data->plugin.reset(new FiducialDetectorPluginBCH);
       }else if(plugin == "art"){
-        data->plugin = new FiducialDetectorPluginART;
+        data->plugin.reset(new FiducialDetectorPluginART);
       }else if(plugin == "amoeba"){
-        data->plugin = new FiducialDetectorPluginAmoeba;
+        data->plugin.reset(new FiducialDetectorPluginAmoeba);
       }else if(plugin == "icl1"){
-        data->plugin = new FiducialDetectorPluginICL1;
+        data->plugin.reset(new FiducialDetectorPluginICL1);
       }else{
         throw ICLException("FiducialDetector: invalid plugin type: " + plugin);
       }
@@ -128,15 +128,15 @@ namespace icl{
 	  switch(data->plugin->getPreProcessing()){
         case FiducialDetectorPlugin::Binary:{
           BinaryPP *p = new BinaryPP;
-          data->pp = p;
+          data->pp.reset(p);
           addChildConfigurable(p,"thresh");
           break;
          }
         case FiducialDetectorPlugin::Gray:
-          data->pp = new FormatPP(formatGray);
+          data->pp.reset(new FormatPP(formatGray));
           break;
         case FiducialDetectorPlugin::Color:
-          data->pp = new FormatPP(formatRGB);
+          data->pp.reset(new FormatPP(formatRGB));
           break;
         default:
           throw ICLException("FiducialDetector: invalid preprocessing type returned by plugin");
@@ -148,7 +148,7 @@ namespace icl{
     }
 
     void FiducialDetector::setCamera(const Camera &camera){
-      data->camera = new Camera(camera);
+      data->camera.reset(new Camera(camera));
       data->plugin->camera = data->camera.get();
     }
 

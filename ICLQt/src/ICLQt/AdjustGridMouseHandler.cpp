@@ -519,7 +519,7 @@ namespace icl{
       if(idx >= m_data->grids.size()){
         throw ICLException("AdjustGridMouseHandler::defineGridTexture() invalid index");
       }
-      m_data->grids[idx].texture = new Data::Texture(dim,lines);
+      m_data->grids[idx].texture.reset(new Data::Texture(dim,lines));
     }
   }
 }

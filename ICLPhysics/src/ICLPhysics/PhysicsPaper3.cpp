@@ -1734,7 +1734,7 @@ namespace icl{
         }
       }
       if(bestIA != -1){
-        return new LinkCoords(m_data->texCoords[bestIA],m_data->texCoords[bestIB]);
+        return SmartPtr<LinkCoords>(new LinkCoords(m_data->texCoords[bestIA],m_data->texCoords[bestIB]));
       }else{
         return SmartPtr<LinkCoords>();
       }

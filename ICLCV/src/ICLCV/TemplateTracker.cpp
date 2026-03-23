@@ -59,7 +59,7 @@ namespace icl{
                                      const Result &initialResult){
       data = new Data;
       data->buf = 0;
-      data->prox = new ProximityOp(ProximityOp::crossCorrCoeff);
+      data->prox.reset(new ProximityOp(ProximityOp::crossCorrCoeff));
       data->lastResult = initialResult;
 
       addProperty("tracking.position range","range","[1,1000]:1",positionTrackingRangePix,0,
@@ -108,12 +108,12 @@ namespace icl{
         const int rw = r->getWidth();
         const int rh = r->getHeight();
         Rect center((rw-w)/2, (rh-h)/2, w,h);
-        SmartPtr<const Img8u> roiimage = r->shallowCopy(center);
+        SmartPtr<const Img8u> roiimage(r->shallowCopy(center));
 
         Img8u *tmp = new Img8u(test.getSize()/4,1);
         //      data->lut.push_back(roiimage->deepCopyROI());
         roiimage->scaledCopyROI(tmp,interpolateLIN);
-        data->lut.push_back(tmp);
+        data->lut.push_back(SmartPtr<Img8u>(tmp));
       }
     }
 
@@ -174,8 +174,8 @@ namespace icl{
 
       const Rect roi(X - ROI/2, Y-ROI/2, ROI, ROI);
 
-      SmartPtr<const Img8u> roiImageTmp = image.shallowCopy(roi);
-      SmartPtr<Img8u> roiImage = roiImageTmp->deepCopyROI();
+      SmartPtr<const Img8u> roiImageTmp(image.shallowCopy(roi));
+      SmartPtr<Img8u> roiImage(roiImageTmp->deepCopyROI());
 
       const int stepRadius = lutSize * rotationRange/720;
 

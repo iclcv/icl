@@ -92,7 +92,7 @@ void run(){
 
 
     if(!is_equal(params,saveParams,5) || size != saveSize || !g){
-      g = new GaborOp(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma));
+      g.reset(new GaborOp(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma)));
       Img32f m = g->getKernels()[0].detached();
       m.normalizeAllChannels(Range<float>(0,255));
       gui["mask"] = m;

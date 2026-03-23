@@ -30,45 +30,57 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtrBase.h>
+#include <ICLUtils/Macros.h>
+#include <memory>
 
 namespace icl{
   namespace utils{
-#ifdef ICL_USE_STD_SHARED_PTR
+
+    /// Reference-counting smart pointer for arrays (uses delete[]) \ingroup UTILS
+    /** SmartArray wraps std::shared_ptr with array semantics:
+        - Default construction gives a null pointer
+        - Owning construction (default): managed with delete[]
+        - Non-owning construction (bOwn=false): pointer is not deleted
+        - Supports operator[] for element access
+        - Reference-counted copies (shallow copy semantics) */
     template<class T>
-    using SmartArray = SmartPtrBase<T,ArrayDelOp>;
-#else
-    /// Specialization of the SmartPtrBase class for Arrays
-    /** If the internal reference counter becomes 0, the contained
-        data pointer is release using <tt>delete []</tt>*/
-    template<class T>
-    struct SmartArray : public SmartPtrBase<T, ArrayDelOp>{
-      // type definition for the parent class
-      using super = SmartPtrBase<T,ArrayDelOp>;
+    class SmartArray {
+      std::shared_ptr<T> m_ptr;
+    public:
       /// creates a null pointer
-      SmartArray():super(){}
+      SmartArray() = default;
 
       /// gets pointer, ownership is passed optionally
-      template<class DerivedT>
-      SmartArray(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
+      SmartArray(T *p, bool bOwn = true)
+        : m_ptr(p, bOwn ? [](T *t){ delete[] t; } : [](T*){}) {}
 
-      /// gets pointer, ownership is passed optionally
-      SmartArray(T *ptData, bool bOwn=true):super(ptData,bOwn){}
+      T &operator*() { return *m_ptr; }
+      const T &operator*() const { return *m_ptr; }
 
-      /// reference counting copy constructor
-      template<class DerivedT>
-      SmartArray(const SmartPtrBase<DerivedT,ArrayDelOp>& r):super(r){}
+      T *operator->() { return m_ptr.get(); }
+      const T *operator->() const { return m_ptr.get(); }
 
-      /// reference counting copy constructor
-      SmartArray(const SmartPtrBase<T,ArrayDelOp>& r):super(r){}
+      T *get() { return m_ptr.get(); }
+      const T *get() const { return m_ptr.get(); }
 
-      /// index access operator (no index checks)
-      T &operator[](int idx){ ICLASSERT(super::e); return super::e[idx]; }
+      /// index access operator (no bounds checking)
+      T &operator[](int idx) { ICLASSERT(m_ptr); return m_ptr.get()[idx]; }
 
-      /// index access operator (const, no index checks)
-      const T&operator[](int idx) const{ ICLASSERT(super::e); return super::e[idx]; }
+      /// index access operator (const, no bounds checking)
+      const T &operator[](int idx) const { ICLASSERT(m_ptr); return m_ptr.get()[idx]; }
+
+      operator bool() const { return !!m_ptr; }
+
+      int use_count() const { return m_ptr.use_count(); }
+
+      void reset() { m_ptr.reset(); }
+
+      /// assign from raw pointer (takes ownership, uses delete[])
+      SmartArray &operator=(T *p) {
+        m_ptr = std::shared_ptr<T>(p, [](T *t){ delete[] t; });
+        return *this;
+      }
     };
-#endif
+
   } // namespace utils
 }

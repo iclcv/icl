@@ -34,7 +34,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
-#include <ICLUtils/SmartPtr.h>
+#include <ICLUtils/SmartPtrBase.h>
 #include <map>
 #include <typeinfo>
 
@@ -525,7 +525,7 @@ namespace icl{
         std::string id;           //!< entries key (config.foo.bar....)
         std::string value;        //!< entries value as string
         std::string rttiType;     //!< entries rtti type ID
-        SmartPtr<KeyRestriction> restr;  /// optional restriction pointer
+        std::shared_ptr<KeyRestriction> restr;  /// optional restriction pointer
 
         /// returns the written type name that is associated with rttiType internally
         const std::string &getTypeName() const { return getMapsInstanceRef().typeMap[rttiType]; }

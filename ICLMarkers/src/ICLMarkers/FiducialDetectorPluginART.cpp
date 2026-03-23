@@ -264,11 +264,11 @@ namespace icl{
         lastMatching = a;
         lastMatchingSize = matchingSize;
         if( a == "binary hamming" ){
-          matching = new MatchingBinaryHamming;
+          matching.reset(new MatchingBinaryHamming);
         }else if( a == "gray sqrdist" ){
-          matching = new MatchingGray(MatchingGray::sqrDist);
+          matching.reset(new MatchingGray(MatchingGray::sqrDist));
         }else if ( a== "gray ncc"){
-          matching = new MatchingGray(MatchingGray::normalizedCrossCorr);
+          matching.reset(new MatchingGray(MatchingGray::normalizedCrossCorr));
         }else{
           throw ICLException("currently unsupported matching type: " + a);
         }
@@ -310,9 +310,9 @@ namespace icl{
           FileGrabber g(l[i]);
           g.useDesired(formatGray);
           g.useDesired(depth8u);
-          data->loaded.push_back(new NamedImage( *g.grab()->asImg<icl8u>(),
+          data->loaded.push_back(SmartPtr<NamedImage>(new NamedImage( *g.grab()->asImg<icl8u>(),
                                                  File(l[i]).getBaseName(),
-                                                 size, data->loaded.size()));
+                                                 size, data->loaded.size())));
         }
       }else{
         if(which == "*"){

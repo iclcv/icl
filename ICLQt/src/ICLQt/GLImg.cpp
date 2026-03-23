@@ -379,14 +379,14 @@ namespace icl{
             for(int x=0;x<nx;++x){
               Point offs(x*M, y*M);
               Size size(iclMin(M,w-x*M),iclMin(M,h-y*M));
-              data(x,y) = new TextureElement(offs,size, c*sizeof(InternalType), imageSize);
+              data(x,y).reset(new TextureElement(offs,size, c*sizeof(InternalType), imageSize));
             }
           }
         }
         for(int y=0;y<ny;++y){
           for(int x=0;x<nx;++x){
             TextureElement &t = *data(x,y);
-            SmartPtr<const Img<ExternalType> > roi = src.shallowCopy(Rect(t.offset,t.size));
+            SmartPtr<const Img<ExternalType> > roi(src.shallowCopy(Rect(t.offset,t.size)));
             planarToInterleaved(roi.get(), reinterpret_cast<InternalType*>(t.data.data()),
                                 t.size.width*imageChannels*sizeof(InternalType));
           }
@@ -544,7 +544,7 @@ namespace icl{
         for(int y=0;y<ny;++y){
           for(int x=0;x<nx;++x){
             const TextureElement &t = *data(x,y);
-            SmartPtr<Img<T> > roi = dst.shallowCopy(Rect(t.offset,t.size));
+            SmartPtr<Img<T> > roi(dst.shallowCopy(Rect(t.offset,t.size)));
             interleavedToPlanar<T,T>(reinterpret_cast<const T*>(t.data.data()), roi.get());
           }
         }
@@ -695,11 +695,11 @@ namespace icl{
 
       SmartPtr<ImgBase> pSrc;
       if(src->getChannels() > 4){
-        pSrc = const_cast<ImgBase*>(src)->shallowCopy();
+        pSrc.reset(const_cast<ImgBase*>(src)->shallowCopy());
         pSrc->setChannels(4);
         src = pSrc.get();
       }else if(src->getChannels() == 2){
-        pSrc = const_cast<ImgBase*>(src)->shallowCopy();
+        pSrc.reset(const_cast<ImgBase*>(src)->shallowCopy());
         pSrc->setChannels(3); // todo use a buffer for the channel data
         src = pSrc.get();
       }

@@ -30,67 +30,14 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartPtrBase.h>
+#include <memory>
 
 namespace icl{
   namespace utils{
-#ifdef ICL_USE_STD_SHARED_PTR
+
+    /// SmartPtr is a direct alias for std::shared_ptr \ingroup UTILS
     template<class T>
-    using SmartPtr = SmartPtrBase<T,PointerDelOp>;
-#else
-    /// Specialization of the SmartPtrBase class for Pointers
-    /** If the internal reference counter becomes 0, the contained
-        data pointer is release using <tt>delete</tt>
+    using SmartPtr = std::shared_ptr<T>;
 
-        \section EX Example
-
-        <pre>
-        class MyClass{...};
-        typedef SmartPtr<MyClass> MyClassPtr;
-
-        //create an array of empty auto pointers
-        MyClassPtr ps[100];
-
-        // fill the first element of the array with one reference
-        // of type MyClass*
-        ps[0] = new MyClass;
-
-        // fill the other elements of the array with the
-        // SAME reference
-        std::fill(ps+1,ps+100,ps[0])
-
-        // reference counter is 100 now
-        // delete all except the last one
-        for(int i=0;i<99;i++){
-           array[i].setNull();
-        }
-
-        // now the reference counter of array[99] is 1, if it
-        // is deleted, the hold element is deleted as well
-        array[99].setNull();
-        </pre>
-    */
-    template<class T>
-    struct SmartPtr : public SmartPtrBase<T, PointerDelOp>{
-      // type definition for the parent class
-      using super = SmartPtrBase<T,PointerDelOp>;
-      /// creates a null pointer
-      SmartPtr():super(){}
-      /// gets pointer, ownership is passed optionally
-      template<class DerivedT>
-      SmartPtr(DerivedT *ptData, bool bOwn=true):super(ptData,bOwn){}
-
-      /// gets pointer, ownership is passed optionally
-      SmartPtr(T *ptData, bool bOwn=true):super(ptData,bOwn){}
-
-      /// reference counting copy constructor
-      template<class DerivedT>
-      SmartPtr(const SmartPtrBase<DerivedT,PointerDelOp>& r):super(r){}
-
-      /// reference counting copy constructor
-      SmartPtr(const SmartPtrBase<T,PointerDelOp>& r):super(r){}
-    };
-#endif
   } // namespace utils
 }

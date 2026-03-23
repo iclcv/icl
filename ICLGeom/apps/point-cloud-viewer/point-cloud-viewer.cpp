@@ -175,7 +175,7 @@ void run_octree(){
     Thread::sleep(1000);
     return;
   }
-  SmartPtr<PointCloudObject> other = obj.copy();
+  SmartPtr<PointCloudObject> other(obj.copy());
   RayCastOctreeObject *octree = new RayCastOctreeObject(-3000,6000);
   //  Time t = Time::now();
   const DataSegment<float,4> xyzh = other->selectXYZH();

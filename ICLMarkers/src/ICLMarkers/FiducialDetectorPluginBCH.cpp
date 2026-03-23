@@ -154,9 +154,9 @@ namespace icl{
       data->maxBCHErr = getPropertyValue("max bch errors");
       std::string mode = getPropertyValue("binarize.mode");
       if(mode == "threshold"){
-        data->bin = new PatternBinarizationThresh(getPropertyValue("binarize.threshold").as<int>());
+        data->bin.reset(new PatternBinarizationThresh(getPropertyValue("binarize.threshold").as<int>()));
       }else{
-        data->bin = new PatternBinarizationKMeans(getPropertyValue("binarize.k-means steps").as<int>());
+        data->bin.reset(new PatternBinarizationKMeans(getPropertyValue("binarize.k-means steps").as<int>()));
       }
     }
 

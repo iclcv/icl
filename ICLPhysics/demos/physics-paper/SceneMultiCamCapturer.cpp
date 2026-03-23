@@ -61,7 +61,7 @@ namespace icl{
       for(int i=0;i<3;++i){
         camIndices.push_back(num+i);
         this->scene->addCamera(cams2[i]);
-        outputs[i] = new GenericImageOutput("sm","sm="+str(i));
+        outputs[i].reset(new GenericImageOutput("sm","sm="+str(i)));
       }
     }else{
       outputs.resize(cams.size());
@@ -69,7 +69,7 @@ namespace icl{
       for(size_t i=0;i<cams.size();++i){
         camIndices.push_back(num+i);
         this->scene->addCamera(cams[i]);
-        outputs[i] = new GenericImageOutput("sm","sm="+str(i));
+        outputs[i].reset(new GenericImageOutput("sm","sm="+str(i)));
       }
 
     }
@@ -94,7 +94,7 @@ namespace icl{
 
     outputs.resize(num);
     for(int i=0;i<num;++i){
-      outputs[i] = new GenericImageOutput(outputType,outputType+"="+defs[i]);
+      outputs[i].reset(new GenericImageOutput(outputType,outputType+"="+defs[i]));
     }
   }
 

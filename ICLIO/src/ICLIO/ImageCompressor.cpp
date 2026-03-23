@@ -340,7 +340,7 @@ namespace icl{
       if(m_data->compression.mode == "jpeg"){
   #ifdef ICL_HAVE_LIBJPEG
 
-        if(!m_data->jpegEncoder) m_data->jpegEncoder = new JPEGEncoder;
+        if(!m_data->jpegEncoder) m_data->jpegEncoder.reset(new JPEGEncoder);
         m_data->jpegEncoder->setQuality(parse<int>(m_data->compression.quality));
         const JPEGEncoder::EncodedData &jpeg = m_data->jpegEncoder->encode(image->as8u());
 

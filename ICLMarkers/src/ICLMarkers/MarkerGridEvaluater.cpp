@@ -122,9 +122,9 @@ namespace icl{
       const size_t oHorz = 2*w, oDiag=2*w+2*h;
       /// vertical lines
       for(int x=0;x<w;++x){
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &l = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &r = *ps.back();
 
         for(int y=0;y<h;++y){
@@ -140,9 +140,9 @@ namespace icl{
       }
       /// horizontal lines
       for(int y=0;y<h;++y){
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &u = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &b = *ps.back();
         for(int x=0;x<w;++x){
           const Marker &m = (*grid)(x,y);
@@ -159,18 +159,18 @@ namespace icl{
       // diagonal lines bottom-left to upper-right
       int xs=0, ys=1, xe=1, ye=0;
       while(true){
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &l = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &c = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &r = *ps.back();
 
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &lu = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &cu = *ps.back();
-        ps.push_back(new std::vector<Point32f>);
+        ps.push_back(SmartPtr<std::vector<Point32f> >(new std::vector<Point32f>));
         std::vector<Point32f> &ru = *ps.back();
 
         for(int x=xs,y=ys; x<=xe;++x, --y){

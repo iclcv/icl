@@ -909,7 +909,7 @@ namespace icl {
     Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename){
       SmartPtr<io::ImageUndistortion> udist;
       try{
-        udist = new io::ImageUndistortion(filename);
+        udist.reset(new io::ImageUndistortion(filename));
       }catch(...){
         return Camera(filename);
       }

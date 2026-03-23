@@ -268,7 +268,7 @@ void init(){
     WARNING_LOG("program arguments -l and -s are exclusive:(-l is used here)");
   }
 
-  segmenter = new ColorSegmentationOp(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f"));
+  segmenter.reset(new ColorSegmentationOp(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f")));
 
 
 

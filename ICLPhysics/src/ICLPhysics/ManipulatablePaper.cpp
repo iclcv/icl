@@ -97,7 +97,7 @@ namespace physics{
       if(o && o->getParent() == parent && !dynamic_cast<ManipulatablePaper::DraggedPositionIndicator*>(o)){
         o->setColor(Primitive::quad,GeomColor(255,150,0,255));
         if(!menu){
-          menu = new QMenu;
+          menu.reset(new QMenu);
           menu->addAction("fix here");
           menu->addAction("release");
           menu->addAction("release all");
@@ -319,8 +319,8 @@ namespace physics{
   }
 
   MouseHandler *ManipulatablePaper::createMouseHandler(int cameraIndex){
-    if(!mouse) mouse = new ManipulatablePaperMouseHandler(scene->getMouseHandler(cameraIndex),
-                                                          world, scene, this, cameraIndex);
+    if(!mouse) mouse.reset(new ManipulatablePaperMouseHandler(scene->getMouseHandler(cameraIndex),
+                                                          world, scene, this, cameraIndex));
     return mouse.get();
   }
 

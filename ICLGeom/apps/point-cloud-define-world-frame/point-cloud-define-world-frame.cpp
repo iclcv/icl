@@ -188,7 +188,7 @@ void mouse(const MouseEvent &e){
 }
 
 void init(){
-  grabber = new GenericPointCloudGrabber;
+  grabber.reset(new GenericPointCloudGrabber);
   grabber->init(pa("-pci"));
   grabber->setConfigurableID("grabber");
   grabber->grab(obj);
@@ -241,8 +241,8 @@ void init(){
   indicatorPoints = new PointsIndicator;
   scene.addObject(indicatorPoints,true);
 
-  oed = new geom::ObjectEdgeDetector;
-  octree = new RayCastOctreeObject(-3000,6000);
+  oed.reset(new geom::ObjectEdgeDetector);
+  octree.reset(new RayCastOctreeObject(-3000,6000));
 
 
   closing.setClipToROI(false);

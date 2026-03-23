@@ -210,7 +210,7 @@ namespace icl{
     }
 
     void SceneObject::addSharedTexture(const ImgBase *image, scalemode sm){
-      m_sharedTextures.push_back(new GLImg(image,sm));
+      m_sharedTextures.push_back(SmartPtr<GLImg>(new GLImg(image,sm)));
     }
 
     void SceneObject::addTexture(int a, int b, int c, int d,const ImgBase *texture,
@@ -893,7 +893,11 @@ namespace icl{
 
 
     void SceneObject::addChild(SceneObject *child, bool passOwnerShip){
-      m_children.push_back(SmartPtr<SceneObject>(child,passOwnerShip));
+      if(passOwnerShip){
+        m_children.push_back(SmartPtr<SceneObject>(child));
+      }else{
+        m_children.push_back(SmartPtr<SceneObject>(child, [](SceneObject*){}));
+      }
       child->m_parent = this;
     }
     void SceneObject::addChild(SmartPtr<SceneObject> child){
@@ -1012,8 +1016,8 @@ namespace icl{
       }
       m_sharedTextures = other.m_sharedTextures;
       for(unsigned int i=0;i<m_sharedTextures.size();++i){
-        m_sharedTextures[i] = new GLImg(m_sharedTextures[i]->extractImage(),
-                                        m_sharedTextures[i]->getScaleMode());
+        m_sharedTextures[i].reset(new GLImg(m_sharedTextures[i]->extractImage(),
+                                        m_sharedTextures[i]->getScaleMode()));
       }
       if(m_displayListHandle){
         Scene::freeDisplayList(m_displayListHandle);

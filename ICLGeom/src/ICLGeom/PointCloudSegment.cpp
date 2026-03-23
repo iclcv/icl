@@ -99,8 +99,7 @@ namespace icl{
                                        "given child index does not refer to an actual "
                                        "PointCloudSegment instance! (to avoid undefined behaviour "
                                        "in further processing steps, this exception is thrown)");
-      return obj; // implicit smart-pointer cast should carry referrence conter
-      //explicit cast//utils::SmartPtr<PointCloudSegment>(p,false);
+      return std::dynamic_pointer_cast<PointCloudSegment>(obj);
     }
 
 
@@ -287,7 +286,7 @@ namespace icl{
     static PointCloudSegmentPtr flatten_segment_hierarcy(PointCloudSegmentPtr p){
       int n = 0;
       count_points_recursive(p,n);
-      PointCloudSegmentPtr c = new PointCloudSegment(n,true);
+      PointCloudSegmentPtr c(new PointCloudSegment(n,true));
       int offs = 0;
       copy_points_recursive(p, c, offs);
       c->mean = p->mean;
@@ -301,7 +300,7 @@ namespace icl{
     }
 
     utils::SmartPtr<PointCloudSegment> PointCloudSegment::flatten() const{
-      PointCloudSegmentPtr p(const_cast<PointCloudSegment*>(this),false);
+      PointCloudSegmentPtr p(const_cast<PointCloudSegment*>(this), [](PointCloudSegment*){});
       return flatten_segment_hierarcy(p);
     }
 
@@ -318,7 +317,7 @@ namespace icl{
     /// returns a vector containing this and all recursive children
     std::vector<PointCloudSegmentPtr> PointCloudSegment::extractThisAndChildren() const{
       std::vector<PointCloudSegmentPtr> v;
-      collect_children_recursive(v,PointCloudSegmentPtr(const_cast<PointCloudSegment*>(this),false));
+      collect_children_recursive(v,PointCloudSegmentPtr(const_cast<PointCloudSegment*>(this), [](PointCloudSegment*){}));
       return v;
     }
 
