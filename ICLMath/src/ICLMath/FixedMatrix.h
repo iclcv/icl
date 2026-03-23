@@ -38,6 +38,7 @@
 #include <ICLMath/MatrixSubRectIterator.h>
 
 #include <iterator>
+#include <ICLUtils/SSETypes.h>
 #include <algorithm>
 #include <numeric>
 #include <functional>
@@ -835,11 +836,21 @@ namespace icl{
 
       /// Calculates the length of the matrix data vector
       inline double length(T norm=2) const{
-        double sumSquares = 0;
-        for(unsigned int i=0;i<DIM;++i){
-          sumSquares += ::pow(static_cast<double>((*this)[i]),static_cast<double>(norm));
+        if(norm == T(2)){
+          double s = 0;
+          for(unsigned int i=0;i<DIM;++i) s += static_cast<double>((*this)[i]) * static_cast<double>((*this)[i]);
+          return std::sqrt(s);
         }
-        return ::pow( sumSquares, 1.0/norm);
+        if(norm == T(1)){
+          double s = 0;
+          for(unsigned int i=0;i<DIM;++i) s += std::abs(static_cast<double>((*this)[i]));
+          return s;
+        }
+        double s = 0;
+        for(unsigned int i=0;i<DIM;++i){
+          s += ::pow(std::abs(static_cast<double>((*this)[i])),static_cast<double>(norm));
+        }
+        return ::pow(s, 1.0/norm);
       }
 
       /// inplace normalization
@@ -1056,32 +1067,49 @@ namespace icl{
     }
     /** \endcond */
 
-  #ifdef ICL_HAVE_IPP
-  #define OPTIMIZED_MATRIX_MULTIPLICATION(LEFT_COLS,LEFT_ROWS,RIGHT_COLS,TYPE,IPPSUFFIX) \
-    template<> template<>                                                                \
-    inline void                                                                          \
-    FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS>::mult                                         \
-       (                                                                                 \
-          const FixedMatrix<TYPE,RIGHT_COLS,LEFT_COLS> &m,                               \
-          FixedMatrix<TYPE,RIGHT_COLS,LEFT_ROWS> &dst                                    \
-       ) const {                                                                         \
-      static const unsigned int ST=sizeof(TYPE);                                         \
-      ippmMul_mm_##IPPSUFFIX(data(),LEFT_COLS*ST,ST,LEFT_COLS,LEFT_ROWS,                 \
-                             m.data(),RIGHT_COLS*ST,ST,RIGHT_COLS,LEFT_COLS,             \
-                             dst.data(),RIGHT_COLS*ST,ST);                               \
+  // --- SSE2-optimized 4x4 float matrix multiply ---
+  // Row-major: dst = A * B where A=this, B=m
+  // Strategy: load each column of B, dot with each row of A
+  #ifdef ICL_HAVE_SSE2
+  template<> template<>
+  inline void FixedMatrix<float,4,4>::mult(
+      const FixedMatrix<float,4,4> &B,
+      FixedMatrix<float,4,4> &dst) const
+  {
+    // Load columns of B (B is row-major, so column j = elements j, j+4, j+8, j+12)
+    const float *b = B.data();
+    __m128 bcol0 = _mm_set_ps(b[12], b[8], b[4], b[0]);
+    __m128 bcol1 = _mm_set_ps(b[13], b[9], b[5], b[1]);
+    __m128 bcol2 = _mm_set_ps(b[14], b[10], b[6], b[2]);
+    __m128 bcol3 = _mm_set_ps(b[15], b[11], b[7], b[3]);
+
+    const float *a = data();
+    float *d = dst.data();
+    for(int r = 0; r < 4; ++r){
+      __m128 arow = _mm_loadu_ps(a + r*4);
+      // dot(arow, bcol_j) for each j
+      __m128 d0 = _mm_mul_ps(arow, bcol0);
+      __m128 d1 = _mm_mul_ps(arow, bcol1);
+      __m128 d2 = _mm_mul_ps(arow, bcol2);
+      __m128 d3 = _mm_mul_ps(arow, bcol3);
+      // horizontal sum each: a0*b0 + a1*b1 + a2*b2 + a3*b3
+      // SSE2: shuffle + add pairs
+      __m128 s0 = _mm_add_ps(d0, _mm_shuffle_ps(d0, d0, _MM_SHUFFLE(1,0,3,2)));
+      s0 = _mm_add_ps(s0, _mm_shuffle_ps(s0, s0, _MM_SHUFFLE(2,3,0,1)));
+      __m128 s1 = _mm_add_ps(d1, _mm_shuffle_ps(d1, d1, _MM_SHUFFLE(1,0,3,2)));
+      s1 = _mm_add_ps(s1, _mm_shuffle_ps(s1, s1, _MM_SHUFFLE(2,3,0,1)));
+      __m128 s2 = _mm_add_ps(d2, _mm_shuffle_ps(d2, d2, _MM_SHUFFLE(1,0,3,2)));
+      s2 = _mm_add_ps(s2, _mm_shuffle_ps(s2, s2, _MM_SHUFFLE(2,3,0,1)));
+      __m128 s3 = _mm_add_ps(d3, _mm_shuffle_ps(d3, d3, _MM_SHUFFLE(1,0,3,2)));
+      s3 = _mm_add_ps(s3, _mm_shuffle_ps(s3, s3, _MM_SHUFFLE(2,3,0,1)));
+
+      d[r*4+0] = _mm_cvtss_f32(s0);
+      d[r*4+1] = _mm_cvtss_f32(s1);
+      d[r*4+2] = _mm_cvtss_f32(s2);
+      d[r*4+3] = _mm_cvtss_f32(s3);
     }
-
-    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,float,32f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,float,32f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,float,32f);
-
-    OPTIMIZED_MATRIX_MULTIPLICATION(2,2,2,double,64f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(3,3,3,double,64f);
-    OPTIMIZED_MATRIX_MULTIPLICATION(4,4,4,double,64f);
-  #undef OPTIMIZED_MATRIX_MULTIPLICATION
-
-
-  #endif
+  }
+  #endif // ICL_HAVE_SSE2
 
   #define USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
 

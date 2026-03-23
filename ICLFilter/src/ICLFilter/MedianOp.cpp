@@ -31,6 +31,7 @@
 
 #include <ICLFilter/MedianOp.h>
 #include <ICLCore/Img.h>
+#include <ICLUtils/SSEUtils.h>
 #include <vector>
 #include <algorithm>
 
