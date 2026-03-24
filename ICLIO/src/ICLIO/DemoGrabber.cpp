@@ -222,7 +222,8 @@ namespace icl{
     REGISTER_CONFIGURABLE(DemoGrabber, return new DemoGrabber(30));
 
     Grabber* createDemoGrabber(const std::string &param){
-      return new DemoGrabber(to32f(param));
+      float fps = to32f(param);
+      return new DemoGrabber(fps > 0 ? fps : 30);
     }
 
     const std::vector<GrabberDeviceDescription>& getDemoDeviceList(std::string hint, bool rescan){
