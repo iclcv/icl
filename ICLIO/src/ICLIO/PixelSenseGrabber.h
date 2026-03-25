@@ -73,7 +73,7 @@ namespace icl{
       };
 
       /// default grab function
-      ICLIO_API virtual const core::ImgBase* acquireImage();
+      ICLIO_API virtual const core::ImgBase* acquireDisplay();
 
       /// Create a PixelSenseGrabber with given max. fps count
       ICLIO_API PixelSenseGrabber(float maxFPS = 30);

@@ -30,7 +30,7 @@ void init(){
    // can conveniently streamed into each other to create
    // complex GUIs, but also for simple GUI as necessary
    // in this example, it is convenient to use.
-   gui << Image().handle("image") << Show();
+   gui << Display().handle("image") << Show();
 }
 
 // the run function contains our processing loop which is

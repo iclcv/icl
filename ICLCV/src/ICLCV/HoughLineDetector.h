@@ -162,7 +162,7 @@ namespace icl{
       void add(const core::Img8u &binaryImage);
 
       /// returns current hough-table image
-      const core::Img32s &getImage() const;
+      const core::Img32s &getDisplay() const;
 
       /// returns current gaussian inhibition map
       const core::Img32f &getInhibitionMap() const;

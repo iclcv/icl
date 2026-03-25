@@ -42,8 +42,8 @@ GenericGrabber grabber;
 void init(){
 
 
-  gui << Image().handle("image").minSize(20,20).label("undistorted image")
-      << (pa("-wm") ? Image().handle("warp").minSize(20,20).label("warp map") : Dummy())
+  gui << Display().handle("image").minSize(20,20).label("undistorted image")
+      << (pa("-wm") ? Display().handle("warp").minSize(20,20).label("warp map") : Dummy())
       << Show();
 
   grabber.init(pa("-i"));

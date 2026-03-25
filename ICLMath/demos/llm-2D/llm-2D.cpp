@@ -79,8 +79,8 @@ public:
     initI();
 
 
-    gui << Image().minSize(20,15).label("Original").handle("orig-image")
-        << Image().minSize(20,15).label("Net Output").handle("net-image")
+    gui << Display().minSize(20,15).label("Original").handle("orig-image")
+        << Display().minSize(20,15).label("Net Output").handle("net-image")
         << ( VBox().minSize(15,0)
              << Button("Train Step").handle("train")
              << Button("Train Off","Train On").out("train-loop")

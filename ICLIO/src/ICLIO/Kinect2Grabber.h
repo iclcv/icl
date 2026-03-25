@@ -53,7 +53,7 @@ namespace icl{
         ICLIO_API ~Kinect2Grabber();
 
         /// grabs a new image
-        ICLIO_API virtual const core::ImgBase* acquireImage();
+        ICLIO_API virtual const core::ImgBase* acquireDisplay();
 
         /// callback for changed configurable properties
         ICLIO_API void processPropertyChange(const utils::Configurable::Property &prop);

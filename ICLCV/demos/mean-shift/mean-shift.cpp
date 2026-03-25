@@ -69,10 +69,10 @@ void init(){
   grabber->useDesired(formatRGB);
   grabber->useDesired<Size>(pa("-size"));
 
-  gui << Draw().handle("image").minSize(32,24).label("image stream ")
+  gui << Canvas().handle("image").minSize(32,24).label("image stream ")
       << ( VBox()
-           << Image().handle("kernel").minSize(8,6).label("kernel image")
-           << Image().handle("color").minSize(8,6).label("current color")
+           << Display().handle("kernel").minSize(8,6).label("kernel image")
+           << Display().handle("color").minSize(8,6).label("current color")
            << Slider(1,1000,20).out("maxCycles").label("max cycles")
            << FSlider(0.1,5,1.0).out("convergence").label("conv. crit.")
            << Slider(4,200,50).out("bandwidth").label("kernel bandwidth")
@@ -121,7 +121,7 @@ void run(){
   if(ms.getKernel() != kernelType.getSelectedIndex()||
      ms.getBandwidth() != bandwidth){
     ms.setKernel((MeanShiftTracker::kernelType)kernelType.getSelectedIndex(),bandwidth,bandwidth/2);
-    gui["kernel"] = ms.getKernelImage();
+    gui["kernel"] = ms.getKernelDisplay();
   }
   if(newPos){
     pos = *newPos;

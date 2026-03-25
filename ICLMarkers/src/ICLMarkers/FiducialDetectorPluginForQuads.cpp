@@ -233,7 +233,7 @@ namespace icl{
     const ImgBase *FiducialDetectorPluginForQuads::getIntermediateImage(const std::string &name)
       const{
       if(name != "binary") return FiducialDetectorPlugin::getIntermediateImage(name);
-      return &data->quadd.getLastBinaryImage();
+      return &data->quadd.getLastBinaryDisplay();
     }
   } // namespace markers
 }

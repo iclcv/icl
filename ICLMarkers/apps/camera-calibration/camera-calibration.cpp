@@ -179,7 +179,7 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
-  gui << Draw3D().handle("draw").minSize(32,24);
+  gui << Canvas3D().handle("draw").minSize(32,24);
 
   markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
 

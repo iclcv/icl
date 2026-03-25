@@ -306,7 +306,7 @@ namespace icl{
 //	}
 
     /// returns current hough-table image
-    const core::Img32s &HoughLineDetector::getImage() const { return m_data->image; }
+    const core::Img32s &HoughLineDetector::getDisplay() const { return m_data->image; }
 
     /// returns current gaussian inhibition map
     const core::Img32f &HoughLineDetector::getInhibitionMap() const { return m_data->inhibitImage; }

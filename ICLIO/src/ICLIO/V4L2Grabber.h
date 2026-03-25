@@ -51,7 +51,7 @@ namespace icl{
         ICLIO_API ~V4L2Grabber();
 
         /// obtains the next image
-        ICLIO_API virtual const core::ImgBase *acquireImage();
+        ICLIO_API virtual const core::ImgBase *acquireDisplay();
 
         /// returns a list of all supported video devices
         ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);

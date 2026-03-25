@@ -742,7 +742,7 @@ namespace icl {
 
 
 
-    const Img8u &QuadDetector::getLastBinaryImage() const {
+    const Img8u &QuadDetector::getLastBinaryDisplay() const {
       return *data->lastBinImage->asImg<icl8u>();
     }
 

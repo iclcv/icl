@@ -32,7 +32,7 @@ namespace icl{
         ~QtCameraGrabber();
 
         /// grab function
-        virtual const core::ImgBase *acquireImage();
+        virtual const core::ImgBase *acquireDisplay();
 
       protected:
         QCamera* cam;

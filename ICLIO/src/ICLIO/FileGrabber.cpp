@@ -331,9 +331,9 @@ namespace icl{
     }
 
 
-    const ImgBase *FileGrabber::acquireImage(){
+    const ImgBase *FileGrabber::acquireDisplay(){
       try{
-        const ImgBase* img = grabImage();
+        const ImgBase* img = grabDisplay();
         updateProperties(img);
 
         std::string print = getPropertyValue("print meta-data");
@@ -356,7 +356,7 @@ namespace icl{
       }
     }
 
-    const core::ImgBase *FileGrabber::grabImage(){
+    const core::ImgBase *FileGrabber::grabDisplay(){
       if(m_data->bBufferImages){
         if(m_data->useTimeStamps) {
           ERROR_LOG("buffering images and using timestamps cannot be used in parallel! (deactivating use of timestamps)");

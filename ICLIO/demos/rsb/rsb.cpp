@@ -61,7 +61,7 @@ void init(){
            Both );
 
   if(MODE == Send || MODE == Both){
-    gui << Image().handle("image")
+    gui << Display().handle("image")
         << String("",100).handle("text").label("write some text message here!")
         << Fps(10).handle("fps")
         << Show();
@@ -75,12 +75,12 @@ void init(){
     gui = HSplit();
     gui << ( VBox().label("loop based")
              << Label().handle("text").label("received text")
-             << Image().handle("image")
+             << Display().handle("image")
            );
     if(!pa("-no-callback")){
       gui<< ( VBox().label("callback based")
               << Label("").handle("cb_text").label("received text")
-              << Image().handle("cb_image") );
+              << Display().handle("cb_image") );
     }
     gui << Fps(10).handle("fps")
         << Show();

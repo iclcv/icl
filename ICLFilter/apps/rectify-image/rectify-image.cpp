@@ -43,9 +43,9 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
 
-  gui << Draw().handle("draw")
+  gui << Canvas().handle("draw")
       << (VBox()
-          << Image().handle("rectified")
+          << Display().handle("rectified")
           << (HBox().label("target size").maxSize(99,3)
               << Spinner(2,2000,512).handle("width")
               << Label("x")

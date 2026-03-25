@@ -1208,7 +1208,7 @@ namespace icl{
 
   static QIcon image_to_qicon(const Img8u &image){
     QImageConverter c(&image);
-    QPixmap pm = QPixmap::fromImage(*c.getQImage());
+    QPixmap pm = QPixmap::fromImage(*c.getQDisplay());
     return QIcon(pm);
   }
 

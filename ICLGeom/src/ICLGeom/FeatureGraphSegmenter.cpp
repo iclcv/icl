@@ -369,7 +369,7 @@ namespace icl {
     }
 
 
-    core::Img8u FeatureGraphSegmenter::getMaskImage(){
+    core::Img8u FeatureGraphSegmenter::getMaskDisplay(){
       return m_data->maskImage;
     }
 

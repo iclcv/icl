@@ -351,7 +351,7 @@ static void mouseHandler(const MouseEvent &event){
 void init(){
   initPalette();
 
-  gui << Draw().handle("draw").minSize(40, 30)
+  gui << Canvas().handle("draw").minSize(40, 30)
       << ( VBox()
            << Combo("!Mandelbrot,Julia,Burning Ship,Tricorn")
               .handle("fractal").label("fractal type")

@@ -168,7 +168,7 @@ namespace icl{
 
       /// Returns the mask image.
       /**        @return the mask image of the segmentation */
-      core::Img8u getMaskImage();
+      core::Img8u getMaskDisplay();
 
      private:
 

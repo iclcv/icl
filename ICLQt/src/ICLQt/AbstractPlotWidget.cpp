@@ -206,7 +206,7 @@ namespace icl{
           bgData.qic.setImage(&bgData.buffer);
         }
         bgData.qic.setUseSpeudoColors(usePC);
-        p.drawImage(QRect(win.x,win.y, win.width, win.height), *bgData.qic.getQImage());
+        p.drawImage(QRect(win.x,win.y, win.width, win.height), *bgData.qic.getQDisplay());
       }
     };
 

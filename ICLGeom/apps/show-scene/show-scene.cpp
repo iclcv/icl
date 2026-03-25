@@ -79,7 +79,7 @@ void init(){
 
 
 
-  gui << Draw3D().handle("draw").minSize(32,24)
+  gui << Canvas3D().handle("draw").minSize(32,24)
       << ( VBox().minSize(10,1).maxSize(10,100)
            << Combo(comboList.str()).handle("cams").label("cameras")
            << CheckBox("background image",true).handle("grab").hideIf(!pa("-i"))

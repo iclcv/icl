@@ -199,8 +199,8 @@ void mouse(const MouseEvent &evt){
 void init(){
 
   gui << ( Tab("2D,3D").handle("tab")
-           << Draw().handle("draw").minSize(32,24)
-           << Draw3D().handle("draw3D").minSize(32,24)
+           << Canvas().handle("draw").minSize(32,24)
+           << Canvas3D().handle("draw3D").minSize(32,24)
          )
       << ( VBox().maxSize(12,100)
            << Button("off","!on").out("grab").label("grab loop")

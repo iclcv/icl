@@ -895,8 +895,8 @@ namespace icl{
 
         //bind the projection textures
         for(int i = 0; i <8;i++) {
-          if(m_lights[i] && m_lights[i]->getShadowEnabled() && m_lights[i]->getProjectionEnabled() && m_lights[i]->getProjectionImage()) {
-            GLImg *pi = m_lights[i]->getProjectionImage();
+          if(m_lights[i] && m_lights[i]->getShadowEnabled() && m_lights[i]->getProjectionEnabled() && m_lights[i]->getProjectionDisplay()) {
+            GLImg *pi = m_lights[i]->getProjectionDisplay();
             pi->lock();
             pi->bind(0,0,8+i);
             pi->unlock();
@@ -1492,7 +1492,7 @@ namespace icl{
         depthCorr.update(cam);
       }
 
-      const Img8u &getImage() {
+      const Img8u &getDisplay() {
         QImage img = m_fbo->toImage();
         conv.setQImage(&img);
         return *conv.getImgBase()->as8u();
@@ -1659,7 +1659,7 @@ namespace icl{
           }
 
           scene->renderScene(camIndex);
-          *out = &pbuffer->getImage();
+          *out = &pbuffer->getDisplay();
           if (depthBuffer){
             depthBuffer->setSize(Size(w, h));
             depthBuffer->setChannels(1);

@@ -51,7 +51,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
   scene.addCamera(cam);
   RigidBoxObject *ground = new RigidBoxObject(0,0,-200, 5000, 5000, 200, 0);
   Vec car_size(100,200,70);

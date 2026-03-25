@@ -123,7 +123,7 @@ namespace icl{
       t.transform([](float v){ return v * 0.99f; },t);
     }
 
-    const ImgBase* DemoGrabber::acquireImage(){
+    const ImgBase* DemoGrabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> __lock(m_mutex);
       ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 

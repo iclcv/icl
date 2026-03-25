@@ -38,8 +38,8 @@ namespace icl{
       delete surface;
     }
 
-    const core::ImgBase *QtVideoGrabber::acquireImage() {
-      return surface->getImage();
+    const core::ImgBase *QtVideoGrabber::acquireDisplay() {
+      return surface->getDisplay();
     }
 
     void QtVideoGrabber::pause() {

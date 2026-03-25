@@ -146,30 +146,29 @@ namespace icl{
 
     /// Image visualization component
     /** Creates an ImageHandle for image visualization */
-    struct Image : public GUIComponent{
-      /// constructor
-      Image():GUIComponent("image"){}
+    struct Display : public GUIComponent{
+      Display():GUIComponent("image"){}
     };
 
     /// Image visualization component that allows for overlayed 2D image annotation
-    /** Creates an DrawHandle for image visualization and annotation */
-    struct Draw : public GUIComponent{
-      /// create draw component with given default view port size
-      /** The defaultViewPortsize is uses as annotation coordinate frame as long as not image
+    /** Creates a DrawHandle for image visualization and annotation */
+    struct Canvas : public GUIComponent{
+      /// create Canvas component with given default view port size
+      /** The defaultViewPortsize is used as annotation coordinate frame as long as no image
           is provided */
-      Draw(const utils::Size &defaultViewPortsize=utils::Size::VGA):
+      Canvas(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw",str(defaultViewPortsize)){}
     };
 
-    /// Image visualization compoent that allows for 2D and 3D image annotation
-    /** Creates a DrawHandle3D for image visualization and annotation. The Draw3D component
+    /// Image visualization component that allows for 2D and 3D image annotation
+    /** Creates a DrawHandle3D for image visualization and annotation. The Canvas3D component
         is closely integrated with the icl::geom::Scene class. Together these classes can
         be used to render a 3D scene on top of a camera image */
-    struct Draw3D : public GUIComponent{
-      /// create Draw3D component with given defaultViewPortsize
+    struct Canvas3D : public GUIComponent{
+      /// create Canvas3D component with given defaultViewPortsize
       /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
-          backgrond image is given. */
-      Draw3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
+          background image is given. */
+      Canvas3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw3D",str(defaultViewPortsize)){}
     };
 

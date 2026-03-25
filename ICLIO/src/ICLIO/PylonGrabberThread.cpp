@@ -109,7 +109,7 @@ void PylonGrabberThread::grab(){
   }
 }
 
-core::ImgBase* PylonGrabberThread::getCurrentImage(){
+core::ImgBase* PylonGrabberThread::getCurrentDisplay(){
   // just return the buffered readimage.
   return m_Buffers.getNextReadBuffer() -> m_Image;
 }

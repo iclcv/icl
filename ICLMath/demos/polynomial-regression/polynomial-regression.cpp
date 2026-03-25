@@ -104,8 +104,8 @@ void init_2D_demo(){
   grabber.useDesired(depth32f);
   grabber.useDesired(Size::QVGA);
 
-  gui << Image().handle("input")
-      << Image().handle("result")
+  gui << Display().handle("input")
+      << Display().handle("result")
       << ( VBox().minSize(14,1)
            << Slider(2,100,16).handle("cellsize").label("cell size")
            << CheckBox("use svd").handle("use svd")
@@ -183,7 +183,7 @@ void init_3D_demo(){
                                                  0,1)));
 
 
-  gui << Draw3D().handle("draw").minSize(32,24) << Show();
+  gui << Canvas3D().handle("draw").minSize(32,24) << Show();
 
   gui["draw"].install(scene.getMouseHandler(0));
   gui["draw"].link(scene.getGLCallback(0));

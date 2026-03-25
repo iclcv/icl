@@ -48,7 +48,7 @@ bool is_different(const float a[13],const float b[13]){
 
 
 void init(){
-  gui << Draw3D(Size::VGA).minSize(32,24).handle("draw")
+  gui << Canvas3D(Size::VGA).minSize(32,24).handle("draw")
       << ( VBox().minSize(15,1)
            << FSlider(-7,7,0).out("rx").label("x-rotation")
            << FSlider(-7,7,0).out("ry").label("y-rotation")

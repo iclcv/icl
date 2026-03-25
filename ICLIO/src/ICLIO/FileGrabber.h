@@ -92,7 +92,7 @@ namespace icl{
         virtual ~FileGrabber();
 
         /// grab implementation
-        virtual const core::ImgBase *acquireImage();
+        virtual const core::ImgBase *acquireDisplay();
 
         /// returns the count of files that are available
         unsigned int getFileCount() const;
@@ -158,8 +158,8 @@ namespace icl{
         void forcePluginType(const std::string &suffix);
 
       private:
-        /// grab implementation called bz acquireImage().
-        const core::ImgBase *grabImage();
+        /// grab implementation called bz acquireDisplay().
+        const core::ImgBase *grabDisplay();
         /// adds FileGrabbers properties to Configurable.
         void addProperties();
         /// callback function for property changes.

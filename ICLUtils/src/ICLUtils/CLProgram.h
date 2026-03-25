@@ -141,7 +141,7 @@ namespace icl {
         void init(){
           grabber.init(pa("-i"));
 
-          gui << Image().handle("image") << Show();
+          gui << Display().handle("image") << Show();
           const ImgBase &image = *grabber.grab();
           const float mask[] = { 0.25, 0, -0.25,
                                  0.50, 0, -0.50,
@@ -231,7 +231,7 @@ namespace icl {
         void init(){
           grabber.init(pa("-i"));
 
-          gui << Image().handle("image") << Show();
+          gui << Display().handle("image") << Show();
           const ImgBase &image = *grabber.grab();
           const float mask[]  = { 0.25, 0, -0.25,
                                   0.5,  0, -0.5,

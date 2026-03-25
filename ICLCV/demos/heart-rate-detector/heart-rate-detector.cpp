@@ -77,7 +77,7 @@ Rect detectFace(Img8u *image)
 
 void init(){
   bool gl = pa("-gl");
-  gui << Image().handle("image").minSize(16,12)
+  gui << Display().handle("image").minSize(16,12)
       << ( HBox().maxSize(100,2)
            << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
           )

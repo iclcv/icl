@@ -356,17 +356,17 @@ namespace icl{
     }
 
 
-    const Img32f &DepthCameraPointCloudGrabber::getLastDepthImage() const{
+    const Img32f &DepthCameraPointCloudGrabber::getLastDepthDisplay() const{
       if(!m_data->lastDepthImage){
-        throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal depht image was null "
+        throw ICLException("DepthCameraPointCloudGrabber::getLastColorDisplay(): internal depht image was null "
                            " you must call grab(dst) first)");
       }
       return *m_data->lastDepthImage;
     }
 
-    const Img8u &DepthCameraPointCloudGrabber::getLastColorImage() const{
+    const Img8u &DepthCameraPointCloudGrabber::getLastColorDisplay() const{
       if(!m_data->lastColorImage){
-        throw ICLException("DepthCameraPointCloudGrabber::getLastColorImage(): internal color image was null (either"
+        throw ICLException("DepthCameraPointCloudGrabber::getLastColorDisplay(): internal color image was null (either"
                            " no color grabber is availalble, or grab(dst) was not called before)");
       }
       return *m_data->lastColorImage;
@@ -394,12 +394,12 @@ namespace icl{
 
 
 
-    const Img32f *DepthCameraPointCloudGrabber::getDepthImage() const{
+    const Img32f *DepthCameraPointCloudGrabber::getDepthDisplay() const{
       //DEBUG_LOG("this function was called!!!");
       return m_data->lastDepthImage;
     }
 
-    const Img8u *DepthCameraPointCloudGrabber::getColorImage() const{
+    const Img8u *DepthCameraPointCloudGrabber::getColorDisplay() const{
       return m_data->lastColorImage;
     }
 

@@ -64,9 +64,9 @@ namespace icl {
           /**
           * @return a pointer to an internally used TsBuffer the buffer
           *         can safely be used until the next call to
-          *         getCurrentImage() or resetBuffer().
+          *         getCurrentDisplay() or resetBuffer().
           */
-          ICLIO_API core::ImgBase* getCurrentImage();
+          ICLIO_API core::ImgBase* getCurrentDisplay();
         private:
           /// A pointer to the image-providing StreamGrabber.
           Pylon::IStreamGrabber* m_Grabber;

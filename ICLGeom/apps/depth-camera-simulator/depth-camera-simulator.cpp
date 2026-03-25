@@ -53,12 +53,12 @@ void init(){
   }
 
   if(cOut || dOut){
-    prevGUI << (cOut ? Image().handle("color") : Dummy())
-            << (dOut ? Image().handle("depth") : Dummy())
+    prevGUI << (cOut ? Display().handle("color") : Dummy())
+            << (dOut ? Display().handle("depth") : Dummy())
             << Create();
   }
 
-  gui << Draw3D().handle("draw")
+  gui << Canvas3D().handle("draw")
       << ( VBox().minSize(10,2)
            << FSlider(-10,10,0).out("x").label("translate x")
            << FSlider(-10,10,0).out("y").label("translate y")

@@ -48,7 +48,7 @@ void init(){
    orb.setConfigurableID("orb");
 
    grabber.init(pa("-i"));
-   gui << Draw().handle("image")
+   gui << Canvas().handle("image")
        << ( VBox().minSize(16,1).maxSize(16,99)
             << Combo("input,gray,contrast enhanced").handle("vis")
             << Prop("orb").label("orb properties")

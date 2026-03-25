@@ -48,7 +48,7 @@ void capture(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Image().handle("image") << Show();
+  gui << Display().handle("image") << Show();
 
   ICLWidget *w = gui["image"];
 

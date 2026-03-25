@@ -214,8 +214,8 @@ void init(){
 
   bool c_arg = pa("-c");
 
-  gui << Draw().handle("draw").label("input image")
-      << Image().handle("cropped").label("cropped")
+  gui << Canvas().handle("draw").label("input image")
+      << Display().handle("cropped").label("cropped")
       << ( VBox().maxSize(c_arg ? 0 : 12,99).minSize(c_arg ? 0 : 12,1)
            << Button("save as ..").handle("saveAs")
            << Button("overwrite input").handle("overwrite")

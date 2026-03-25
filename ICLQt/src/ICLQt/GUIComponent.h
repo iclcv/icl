@@ -171,9 +171,9 @@ namespace icl{
           \code
           bool flag = ....;
           GUI gui;
-          gui << (flag ? Image() : Dummy()).handle("image"); // does not work
+          gui << (flag ? Display() : Dummy()).handle("image"); // does not work
 
-          gui << Image().hideIf(!flag).handle("image");    // works
+          gui << Display().hideIf(!flag).handle("image");    // works
           \endcode
 
       */

@@ -94,10 +94,10 @@ namespace icl{
       virtual void grab(PointCloudObjectBase &dst);
 
       /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img32f *getDepthImage() const;
+      virtual const core::Img32f *getDepthDisplay() const;
 
       /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img8u *getColorImage() const;
+      virtual const core::Img8u *getColorDisplay() const;
 
     };
   } // namespace geom

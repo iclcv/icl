@@ -182,14 +182,14 @@ void PylonGrabber::cameraDefaultSettings(){
   //(m_Camera, "GevSCPSPacketSize", 8192);
 }
 
-const core::ImgBase* PylonGrabber::acquireImage(){
+const core::ImgBase* PylonGrabber::acquireDisplay(){
   core::ImgBase* ret = nullptr;
   int counter = 0;
   while(1){
     // lock image lock so buffers are safe till release.
     m_ImgMutex.lock();
     // Get the image from the grabber thread
-    ret = m_GrabberThread -> getCurrentImage();
+    ret = m_GrabberThread -> getCurrentDisplay();
     if(m_CameraOptions-> omitDoubleFrames() && ret == m_LastBuffer
        && counter <= 1000)
     {

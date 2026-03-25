@@ -50,7 +50,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
   scene.addCamera(cam);
 
   RigidBoxObject *door = new RigidBoxObject(0,115,200, 20, 200, 390, 0.1);

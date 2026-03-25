@@ -35,7 +35,7 @@ GenericGrabber grabber;
 
 void init(){
 
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix").handle("fmt").maxSize(100,3)
       << Show();
 

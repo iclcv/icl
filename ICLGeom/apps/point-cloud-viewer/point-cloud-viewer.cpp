@@ -83,7 +83,7 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Draw3D().minSize(32,24).handle("scene")
+  gui << Canvas3D().minSize(32,24).handle("scene")
       << Prop("grabber").hideIf(!pa("-tune")).minSize(16,1).maxSize(16,99)
       << Prop("grabber").hideIf(!pa("-tune") || !pa("-pci2")).minSize(16,1).maxSize(16,99)
       << ( HBox().label("show objects")

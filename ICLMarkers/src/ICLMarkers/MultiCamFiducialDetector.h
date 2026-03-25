@@ -130,7 +130,7 @@ namespace icl{
           icl::markers::MultiCamFiducialDetector fd;
           fd.init(...);
           gui << Combo(fd.getIntermediateImageNames()).label("current image").handle("vis")
-              << Draw3D().handle("image")
+              << Canvas3D().handle("image")
               << Show();
 
           ...

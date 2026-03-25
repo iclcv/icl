@@ -16,8 +16,8 @@ void init()  {
 
 	grabber.init(pa("-i"));
 
-	gui << Draw().label("View Original").handle("view_original")
-				 << Draw().label("View received").handle("view_received");
+	gui << Canvas().label("View Original").handle("view_original")
+				 << Canvas().label("View received").handle("view_received");
 
 	gui << Show();
 

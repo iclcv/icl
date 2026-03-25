@@ -53,7 +53,7 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Draw3D().minSize(32,24).handle("scene")
+  gui << Canvas3D().minSize(32,24).handle("scene")
       << Show();
 
 

@@ -43,8 +43,8 @@ GenericGrabber grabber;
 void update();
 
 void init(){
-  gui << Image().handle("image").minSize(32,24)
-      << Image().handle("imageOut").minSize(32,24)
+  gui << Display().handle("image").minSize(32,24)
+      << Display().handle("imageOut").minSize(32,24)
       << Slider(1,22,5).out("filterSize").label("filterSize").maxSize(100,2).handle("filterSize-handle")
       << Slider(1,22,10).out("difference").label("difference").maxSize(100,2).handle("difference-handle")
       << CheckBox("useCL", true).out("disableCL").maxSize(100,2).handle("disableCL-handle")

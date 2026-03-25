@@ -80,12 +80,12 @@ void init(){
   std::cout << "device firmware: " << dev->getFirmwareVersion() << std::endl;
 
   gui << ( VBox()
-           << Image().handle("hdepth").minSize(10,8)
-           << Image().handle("hcolor").minSize(10,8)
-           << Image().handle("hir").minSize(10,8)
+           << Display().handle("hdepth").minSize(10,8)
+           << Display().handle("hcolor").minSize(10,8)
+           << Display().handle("hir").minSize(10,8)
          )
       << ( HSplit()
-           << Draw3D().handle("draw3D").minSize(40,30)
+           << Canvas3D().handle("draw3D").minSize(40,30)
            )
       << Show();
 }

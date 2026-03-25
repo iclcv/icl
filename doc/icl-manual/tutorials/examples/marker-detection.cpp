@@ -15,7 +15,7 @@ void init(){
   fid.setConfigurableID("fid");
 
   // create the GUI
-  gui << Draw().handle("draw")          // create drawing component
+  gui << Canvas().handle("draw")          // create drawing component
       << Prop("fid").maxSize(18,100)    // create the property widged for 'fid'
       << Show();                        // show the main widget
 

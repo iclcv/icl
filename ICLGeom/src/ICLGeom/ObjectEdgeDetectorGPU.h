@@ -72,7 +72,7 @@ namespace icl{
 
       /// Returns the filtered depth image
       /** @return the filtered depth image */
-      const core::Img32f &getFilteredDepthImage();
+      const core::Img32f &getFilteredDepthDisplay();
 
       /// Sets the (filtered) depth image (input for normal calculation)
       /** This call is not necessary if medianFilter() is executed before
@@ -114,7 +114,7 @@ namespace icl{
 
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
-      const core::Img8u &getRGBNormalImage();
+      const core::Img8u &getRGBNormalDisplay();
 
       /// Sets the point normals (input for angle image calculation).
       /** This call is not necessary if normalCalculation() is executed before.
@@ -128,7 +128,7 @@ namespace icl{
 
       /// Returns the angle image.
       /** @return the angle image */
-      const core::Img32f &getAngleImage();
+      const core::Img32f &getAngleDisplay();
 
       /// Sets the angle image (input for image binarization).
       /** This call is not necessary if angleImageCalculation() is executed before.
@@ -141,7 +141,7 @@ namespace icl{
 
       /// Returns the binarized angle image (final output).
       /** @return the (final) binarized angle image */
-      const core::Img8u &getBinarizedAngleImage();
+      const core::Img8u &getBinarizedAngleDisplay();
 
       /// Sets the mask size for applyMedianFilter()
       /** size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)

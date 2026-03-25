@@ -59,8 +59,8 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
   gui << ( VBox()
-           << Image().minSize(16,12).handle("image").label("Camera Image")
-           << Image().minSize(16,12).handle("segimage").label("Semented Image")
+           << Display().minSize(16,12).handle("image").label("Camera Image")
+           << Display().minSize(16,12).handle("segimage").label("Semented Image")
            )
       << HBox().handle("box")
       << Show();

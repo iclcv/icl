@@ -134,7 +134,7 @@ namespace icl{
 
       /// returns the Adapt Result image option
       /** @see \ref ARI */
-      inline bool getAdaptResultImage() const{
+      inline bool getAdaptResultDisplay() const{
         return m_adaptResultImage;
       }
 

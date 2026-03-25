@@ -43,7 +43,7 @@ void run(){
 }
 
 void init(){
-  gui << Image().handle("image").minSize(16,12);
+  gui << Display().handle("image").minSize(16,12);
   gui << ( HBox().maxSize(100,2)
            << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
            << CamCfg("")

@@ -40,7 +40,7 @@ SimpleBlobSearcher S;
 std::recursive_mutex mtex;
 
 void mouse(const MouseEvent &e){
-  if(e.hitImage() && e.isPressEvent()){
+  if(e.hitDisplay() && e.isPressEvent()){
     static int &minSize = gui.get<int>("minSize");
     static int &maxSize = gui.get<int>("maxSize");
     static float &thresh = gui.get<float>("thresh");
@@ -54,7 +54,7 @@ void mouse(const MouseEvent &e){
 
 
 void init(){
-  gui << Draw().minSize(32,24).handle("draw");
+  gui << Canvas().minSize(32,24).handle("draw");
   gui << ( HBox().maxSize(100,3)
            << Spinner(1,100000,100).out("minSize").label("min size")
            << Spinner(1,100000,1000).out("maxSize").label("max size")

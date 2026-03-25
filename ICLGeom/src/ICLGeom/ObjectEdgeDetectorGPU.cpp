@@ -467,7 +467,7 @@ void ObjectEdgeDetectorGPU::applyMedianFilter() {
 	}
 }
 
-const Img32f &ObjectEdgeDetectorGPU::getFilteredDepthImage() {
+const Img32f &ObjectEdgeDetectorGPU::getFilteredDepthDisplay() {
 	try {
 		m_data->filteredImageBuffer.read( //read output from kernel
 				m_data->outputFilteredImage.data(),
@@ -601,7 +601,7 @@ const DataSegment<float,4> ObjectEdgeDetectorGPU::getWorldNormals() {
 	return m_data->worldNormals;
 }
 
-const core::Img8u &ObjectEdgeDetectorGPU::getRGBNormalImage() {
+const core::Img8u &ObjectEdgeDetectorGPU::getRGBNormalDisplay() {
 	try {
 		m_data->normalImageRBuffer.read(m_data->normalImageRArray.data(),
 				m_data->w*m_data->h * sizeof(unsigned char));
@@ -661,7 +661,7 @@ void ObjectEdgeDetectorGPU::applyAngleImageCalculation() {
 	}
 }
 
-const Img32f &ObjectEdgeDetectorGPU::getAngleImage() {
+const Img32f &ObjectEdgeDetectorGPU::getAngleDisplay() {
 	try {
 		m_data->angleImageBuffer.read(m_data->outputAngleImage.data(), m_data->w*m_data->h * sizeof(float));
 		m_data->angleImage = Img32f(Size(m_data->w,m_data->h),1,std::vector<float*>(1,m_data->outputAngleImage.data()),false);
@@ -694,7 +694,7 @@ void ObjectEdgeDetectorGPU::applyImageBinarization() {
 	}
 }
 
-const Img8u &ObjectEdgeDetectorGPU::getBinarizedAngleImage() {
+const Img8u &ObjectEdgeDetectorGPU::getBinarizedAngleDisplay() {
 	try {
 		m_data->binarizedImageBuffer.read(m_data->outputBinarizedImage.data(), m_data->w*m_data->h * sizeof(unsigned char));
 		m_data->binarizedImage = Img8u(Size(m_data->w,m_data->h),1,std::vector<unsigned char*>(1,m_data->outputBinarizedImage.data()),false);
@@ -755,7 +755,7 @@ const Img8u &ObjectEdgeDetectorGPU::calculate(const Img32f &depthImage,
 	applyNormalCalculation();
 	applyAngleImageCalculation();
 	applyImageBinarization();
-	return getBinarizedAngleImage();
+	return getBinarizedAngleDisplay();
 }
 } // namespace geom
 }

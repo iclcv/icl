@@ -22,7 +22,7 @@ void init(){
   scene.addCamera(cam);
   maze = new MazeObject();
   maze->addToWorld(&scene);
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
   gui["draw"].install(&handler);
   gui["draw"].link(scene.getGLCallback(0));
   scene.setGravity(Vec(0,0,-10000));

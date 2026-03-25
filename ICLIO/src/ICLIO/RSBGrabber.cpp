@@ -202,7 +202,7 @@ namespace icl{
     }
 
 
-    const ImgBase *RSBGrabber::acquireImage(){
+    const ImgBase *RSBGrabber::acquireDisplay(){
       ICLASSERT_RETURN_VAL(!isNull(),0);
       std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
       while(!m_data->bufferImage || !m_data->hasNewImage){

@@ -109,7 +109,7 @@ namespace icl{
       /// applies all ops sequentially
       virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
 
-      /// This function is reimplemented here; it uses getLastImage() as destination image
+      /// This function is reimplemented here; it uses getLastDisplay() as destination image
       virtual const core::ImgBase *apply(const core::ImgBase *src);
 
       /// returns the number of contained ops
@@ -125,10 +125,10 @@ namespace icl{
       /** This image is only used, if it is given a 2nd parameter to
           the apply function
           \code
-          MyPipe.apply(mySourceImagePtr,&(MyPipe.getLastImage());
+          MyPipe.apply(mySourceImagePtr,&(MyPipe.getLastDisplay());
           \endcode
       **/
-      core::ImgBase *&getLastImage();
+      core::ImgBase *&getLastDisplay();
 
       private:
       /// Internal buffer of ops

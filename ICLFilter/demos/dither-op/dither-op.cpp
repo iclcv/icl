@@ -39,8 +39,8 @@ DitheringOp op;
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Image().handle("image").minSize(32,24).label("input image")
-      << Image().handle("result").minSize(32,24).label("dithered image")
+  gui << Display().handle("image").minSize(32,24).label("input image")
+      << Display().handle("result").minSize(32,24).label("dithered image")
       << ( VBox().maxSize(12,99).minSize(12,1)
            << Combo("2,3,4,5,6,7,8").handle("levels").label("Levels")
            << CamCfg()

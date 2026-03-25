@@ -44,7 +44,7 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Draw().handle("image") << Show();
+  gui << Canvas().handle("image") << Show();
 
   gui["image"].install(mouse);
 }

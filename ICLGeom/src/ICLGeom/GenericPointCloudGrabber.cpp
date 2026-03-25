@@ -131,14 +131,14 @@ namespace icl{
       return m_data->impl->grab(dst);
     }
 
-    const core::Img32f *GenericPointCloudGrabber::getDepthImage() const{
+    const core::Img32f *GenericPointCloudGrabber::getDepthDisplay() const{
       if(isNull()) throw ICLException("GenericPointCloudGrabber::getDepthImage: called on a null instance");
-      return m_data->impl->getDepthImage();
+      return m_data->impl->getDepthDisplay();
     }
 
-    const core::Img8u *GenericPointCloudGrabber::getColorImage() const{
+    const core::Img8u *GenericPointCloudGrabber::getColorDisplay() const{
       if(isNull()) throw ICLException("GenericPointCloudGrabber::getColorImage: called on a null instance");
-      return m_data->impl->getColorImage();
+      return m_data->impl->getColorDisplay();
     }
 
   }

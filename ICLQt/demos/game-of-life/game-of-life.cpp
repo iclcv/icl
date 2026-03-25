@@ -337,7 +337,7 @@ void init(){
   gridBuf.assign(gridW * gridH, 0);
   randomizeGrid(0.2f);
 
-  gui << Draw().handle("draw").minSize(40,30)
+  gui << Canvas().handle("draw").minSize(40,30)
       << ( VBox().maxSize(15,99)
            << CheckBox("Running", true).handle("running").maxSize(15,2)
            << Button("Step").handle("step").maxSize(15,2)

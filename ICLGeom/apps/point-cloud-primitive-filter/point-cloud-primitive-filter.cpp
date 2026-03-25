@@ -101,7 +101,7 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Draw3D().minSize(32,24).handle("scene")
+  gui << Canvas3D().minSize(32,24).handle("scene")
       << ( VBox() << Fps(10).handle("fps").label("FPS")
                   << CheckBox("Filter with primitives from RSB").handle("filterRSBHandle")
                   << CheckBox("Filter with primitive from GUI").handle("filterGUIHandle")

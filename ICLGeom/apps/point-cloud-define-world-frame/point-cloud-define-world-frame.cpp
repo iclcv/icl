@@ -200,12 +200,12 @@ void init(){
 
   Camera cam(*pa("-d"));
 
-  gui << Draw3D(obj.getSize()).minSize(32,24).handle("scene")
+  gui << Canvas3D(obj.getSize()).minSize(32,24).handle("scene")
       << (VBox().minSize(16,1)
           << Prop("grabber").hideIf(!pa("-tune"))
           << Label("Use \"SHIF-click\" in the 3D view to define\n"
                    "world frame and \"CTRL-click\" to also save it").minSize(15,2)
-          << Image().handle("seg")
+          << Display().handle("seg")
         )
       << Show();
 
@@ -259,7 +259,7 @@ void run(){
 
 
   grabberMutex.lock();
-  const Img32f *di = grabber->getDepthImage();
+  const Img32f *di = grabber->getDepthDisplay();
   if(!di){
     throw std::logic_error("option '-redefine-world-frame' "
                            "does not work with the selected point cloud "

@@ -124,12 +124,12 @@ void init(){
             << Slider(1,22,10).out("difference").label("difference").maxSize(100,2).handle("difference-handle")
         );
   gui << ( VBox()
-           << Draw3D().handle("hdepth").minSize(10,8)
+           << Canvas3D().handle("hdepth").minSize(10,8)
            << Button("heatmap","gray").out("heatmap")
-           << Draw3D().handle("hcolor").minSize(10,8)
+           << Canvas3D().handle("hcolor").minSize(10,8)
          )
       << ( HSplit()
-           << Draw3D().handle("draw3D").minSize(40,30)
+           << Canvas3D().handle("draw3D").minSize(40,30)
            << controls
            << controls2
            )
@@ -341,7 +341,7 @@ void run(){
     }
     normalEstimator->applyNormalCalculation();
     normalEstimator->applyWorldNormalCalculation(depthCam);
-    normalsImage=normalEstimator->getRGBNormalImage();
+    normalsImage=normalEstimator->getRGBNormalDisplay();
     if(gui["enableSmoothing"]){
       creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);
     }else{

@@ -67,7 +67,7 @@ namespace icl{
     }
 
 
-    const ImgBase *DCGrabber::acquireImage(){
+    const ImgBase *DCGrabber::acquireDisplay(){
       ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
       std::lock_guard<std::recursive_mutex> l(m_GrabberThreadMutex);
       if(!m_poGT){

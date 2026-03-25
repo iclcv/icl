@@ -75,7 +75,7 @@ namespace icl{
         Img8u visibleOutBuf;
         OptrisGrabber::Mode mode;
 
-        ImgBase &getImage() { return mode == OptrisGrabber::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
+        ImgBase &getDisplay() { return mode == OptrisGrabber::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
         ImgBase &getOutBuf() { return mode == OptrisGrabber::IR_IMAGE ?  (ImgBase&)outBuf : (ImgBase&)visibleOutBuf; }
         void deepCopy(){
           if(mode == OptrisGrabber::IR_IMAGE){
@@ -334,18 +334,18 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* OptrisGrabber::acquireImage(){
+    const core::ImgBase* OptrisGrabber::acquireDisplay(){
       bool omitDoubledFrames = getPropertyValue("omit doubled frames");
 
       std::lock_guard<std::recursive_mutex> lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
-        while(m_data->buffer.getImage().getTime() == m_data->buffer.lastTimeAcquired){
+        while(m_data->buffer.getDisplay().getTime() == m_data->buffer.lastTimeAcquired){
           m_data->buffer.mutex.unlock();
           Thread::msleep(1);
           m_data->buffer.mutex.lock();
         }
       }
-      m_data->buffer.lastTimeAcquired = m_data->buffer.getImage().getTime();
+      m_data->buffer.lastTimeAcquired = m_data->buffer.getDisplay().getTime();
       m_data->buffer.deepCopy();
 
       const ImgBase *cvt = 0;

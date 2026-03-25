@@ -34,6 +34,7 @@
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
+  namespace core { class Image; }
   namespace filter{
     /// Abstract base class for binary image operations \ingroup BINARY
     /** A list of all binary operators can be found here: \n
@@ -62,6 +63,12 @@ namespace icl{
       /** Usually this function must not be reimplemented, because it's default operation does simply use
           an internal buffer to call apply(const ImgBase*,const ImgBase*,ImgBase**). */
       virtual const core::ImgBase *apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
+
+      /// Image-based apply: filters src1 and src2 into dst
+      void apply(const core::Image &src1, const core::Image &src2, core::Image &dst);
+
+      /// Image-based apply: returns a shallow copy of an internally held buffer
+      core::Image apply(const core::Image &src1, const core::Image &src2);
 
       /// function operator (alternative for apply(src1,src2,dst)
       inline void operator()(const core::ImgBase *src1,const core::ImgBase *src2, core::ImgBase **dst){

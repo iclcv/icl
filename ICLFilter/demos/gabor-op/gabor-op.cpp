@@ -45,10 +45,10 @@ inline std::vector<float> vec1(float f) {
 }
 
 void init(){
-  gui << Image().minSize(32,24).label("Result Image").handle("image")
+  gui << Display().minSize(32,24).label("Result Image").handle("image")
       << (VBox().handle("sidebar")
           << ( HBox()
-               << Image().minSize(15,15).label("Gabor Mask").handle("mask")
+               << Display().minSize(15,15).label("Gabor Mask").handle("mask")
                << Fps(10).handle("fps")
               )
           << (VBox()

@@ -137,7 +137,7 @@ namespace icl{
       return topEdges;
     }
 
-    const core::Img32f &getTopImage() const{
+    const core::Img32f &getTopDisplay() const{
       return topImage;
     }
 

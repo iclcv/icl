@@ -127,9 +127,9 @@ void init(){
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
   }
-  gui << Draw3D().handle("draw").minSize(20,15).label("interaction area")
-      << Image().handle("offscreen0").label("offscreen rendered cam 0")
-      << Image().handle("offscreen1").label("offscreen rendered cam 1")
+  gui << Canvas3D().handle("draw").minSize(20,15).label("interaction area")
+      << Display().handle("offscreen0").label("offscreen rendered cam 0")
+      << Display().handle("offscreen1").label("offscreen rendered cam 1")
       << FSlider(0,1,0.2,true).out("freq").label("frequence")
       << Show();
 

@@ -70,7 +70,7 @@ void stream_pos(){
 void init(){
   grabber.init(type,type+"="+filename);
   int len = parse<int>(grabber.getPropertyValue("len"));
-  gui << Image().minSize(32,24).handle("image")
+  gui << Display().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)
       << ( HBox().maxSize(1000,3)
 #ifndef ICL_HAVE_OPENCV

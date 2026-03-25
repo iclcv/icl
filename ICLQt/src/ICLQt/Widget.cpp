@@ -834,7 +834,7 @@ namespace icl{
           frameIdx = 0;
         }
         try{
-          std::shared_ptr<const ImgBase> image(data->image.extractImage(),[](auto*){});
+          std::shared_ptr<const ImgBase> image(data->image.extractDisplay(),[](auto*){});
           for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
               it != recordingCallbacks.end();++it){
             it->second(image.get());
@@ -1433,7 +1433,7 @@ namespace icl{
       data->zoomAdjuster = new ZoomAdjustmentWidgetParent(Size::null,0,data->zoomRect,widget);
       data->menu.get<BoxHandle>("scale-widget").add(data->zoomAdjuster);
 
-      QObject::connect(*data->menu.get<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentImage()));
+      QObject::connect(*data->menu.get<ButtonHandle>("cap-image"),SIGNAL(clicked()),widget,SLOT(captureCurrentDisplay()));
       QObject::connect(*data->menu.get<ButtonHandle>("cap-fb"),SIGNAL(clicked()),widget,SLOT(captureCurrentFrameBuffer()));
 
 
@@ -1892,12 +1892,12 @@ namespace icl{
 
 
 
-    void ICLWidget::captureCurrentImage(){
+    void ICLWidget::captureCurrentDisplay(){
       const ImgBase *buf = 0;
       {
         LOCK_SECTION;
         if(!m_data->image.isNull()){
-          buf = m_data->image.extractImage();
+          buf = m_data->image.extractDisplay();
         }
       }
 

@@ -45,7 +45,7 @@ void mouse(const MouseEvent &evt){
 
 void init(){
 
-  gui << Draw().minSize(32,24).label("image").handle("image")
+  gui << Canvas().minSize(32,24).label("image").handle("image")
       << ( VBox().label("Region information")
            << Label().label("Total Region Count").minSize(6,2).handle("total")
            << ( HBox()

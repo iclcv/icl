@@ -129,7 +129,7 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-r")) grabber.resetBus();
 
-  gui << Draw().handle("draw").minSize(48,18)
+  gui << Canvas().handle("draw").minSize(48,18)
       << ( VBox().maxSize(14,99).minSize(14,1)
            << ( HBox().label("template ...")
                 << Button("extract from image").handle("extract")

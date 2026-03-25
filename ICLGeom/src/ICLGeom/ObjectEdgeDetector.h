@@ -47,7 +47,7 @@ namespace icl{
      The common way to use this class is the calculate() method, getting a depth image and returning an edge image.
      This method computes the whole pipeline (image filtering, normal calculation and smoothing, angle image calculation
      and binarization). The performance of this method is optimized with minimal read/write for the underlying OpenCL
-     implementation. The interim results can be accessed with getNormals() and getAngleImage() afterwards. It is also possible
+     implementation. The interim results can be accessed with getNormals() and getAngleDisplay() afterwards. It is also possible
      to use subparts of the pipeline using the setter methods to set the interim data. */
     class ICLGeom_API ObjectEdgeDetector{
 
@@ -86,7 +86,7 @@ namespace icl{
 
       /// Returns the filtered depth image
       /** @return the filtered depth image */
-      const core::Img32f &getFilteredDepthImage();
+      const core::Img32f &getFilteredDepthDisplay();
 
       /// Sets the (filtered) depth image (input for normal calculation)
       /** This call is not necessary if medianFilter() is executed before
@@ -128,7 +128,7 @@ namespace icl{
 
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
-      const core::Img8u &getRGBNormalImage();
+      const core::Img8u &getRGBNormalDisplay();
 
       /// Sets the point normals (input for angle image calculation).
       /** This call is not necessary if normalCalculation() is executed before.
@@ -142,7 +142,7 @@ namespace icl{
 
       /// Returns the angle image.
       /** @return the angle image */
-      const core::Img32f &getAngleImage();
+      const core::Img32f &getAngleDisplay();
 
       /// Sets the angle image (input for image binarization).
       /** This call is not necessary if angleImageCalculation() is executed before.
@@ -155,7 +155,7 @@ namespace icl{
 
       /// Returns the binarized angle image (final output).
       /** @return the (final) binarized angle image */
-      const core::Img8u &getBinarizedAngleImage();
+      const core::Img8u &getBinarizedAngleDisplay();
 
       /// Sets the mask size for applyMedianFilter()
       /** size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)

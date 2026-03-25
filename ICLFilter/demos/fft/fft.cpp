@@ -58,8 +58,8 @@ void init(){
   std::string resultModes = "complex,imag,real,power,log-power,magnitude,phase,magnitude/phase";
   std::string sizeAdaptionModes = "no-scale,pad-zero,pad-copy,pad-mirror,scale-up,scale-down";
   gui << ( VBox()
-          << Image().handle("image").minSize(16,12)
-          << Image().handle("result").minSize(16,12)
+          << Display().handle("image").minSize(16,12)
+          << Display().handle("result").minSize(16,12)
           << Fps(10).handle("fps").maxSize(100,2).minSize(8,2))
       << ( VBox().minSize(8,1)
            << Combo(resultModes).label("result mode").handle("resultMode")

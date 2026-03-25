@@ -66,7 +66,7 @@ void reload_obj(){
 void init(){
   // create graphical user interface
 
-  gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
+  gui << Canvas3D().minSize(16,12).handle("draw").label("scene view")
       << ( HBox()
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!pa("-o"))

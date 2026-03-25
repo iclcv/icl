@@ -37,7 +37,7 @@ using namespace icl::core;
 namespace icl{
   namespace io{
 
-    const ImgBase* CreateGrabber::acquireImage(){
+    const ImgBase* CreateGrabber::acquireDisplay(){
       if(m_updateTimeStamp){
         m_image -> setTime();
       }

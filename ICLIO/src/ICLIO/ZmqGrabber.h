@@ -56,7 +56,7 @@ namespace icl{
 
       /// grabbing function
       /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-      ICLIO_API virtual const core::ImgBase* acquireImage();
+      ICLIO_API virtual const core::ImgBase* acquireDisplay();
     };
 
   } // namespace io

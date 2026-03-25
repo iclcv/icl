@@ -131,7 +131,7 @@ void init(){
   grabber.init(pa("-i"));
 
 
-  gui << Image().label("image").handle("image").size(32,24);
+  gui << Display().label("image").handle("image").size(32,24);
   gui << Button("Run!","Stop!",true).out("running");
   gui << ( HBox()
               << Combo("!rgb,hls,gray,yuv").handle("colormode").label("colormode")

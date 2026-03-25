@@ -8,7 +8,7 @@ GenericImageOutput out;
 void init(){
    grabber.init(pa("-i"));
    out.init(pa("-o"));
-   gui << Image().handle("image") << Show();
+   gui << Display().handle("image") << Show();
 }
 void run(){
   const ImgBase *image = grabber.grab();

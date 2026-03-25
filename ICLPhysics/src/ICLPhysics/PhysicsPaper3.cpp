@@ -188,8 +188,8 @@ namespace icl{
       setLockingEnabled(true);
       if(other.m_data->haveTexture){
         m_data->haveTexture = true;
-        m_data->tex[0].update(other.m_data->tex[0].extractImage());
-        m_data->tex[1].update(other.m_data->tex[1].extractImage());
+        m_data->tex[0].update(other.m_data->tex[0].extractDisplay());
+        m_data->tex[1].update(other.m_data->tex[1].extractDisplay());
       }
       const btSoftBody *sOrig = other.getSoftBody();
       std::vector<btVector3> ns(sOrig->m_nodes.size());
@@ -767,7 +767,7 @@ namespace icl{
     }
 
     const Img32f &PhysicsPaper3::getFoldMap() const{
-      return m_data->fm.getImage();
+      return m_data->fm.getDisplay();
     }
 
     void PhysicsPaper3::setFoldMapChangedCallback(std::function<void(const Img32f &)> cb){
@@ -1171,7 +1171,7 @@ namespace icl{
       createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
-        m_data->fmCallback(m_data->fm.getImage());
+        m_data->fmCallback(m_data->fm.getDisplay());
       }
 
       m_data->physicsWorld->unlock();
@@ -1239,7 +1239,7 @@ namespace icl{
       createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
-        m_data->fmCallback(m_data->fm.getImage());
+        m_data->fmCallback(m_data->fm.getDisplay());
       }
 
       m_data->physicsWorld->unlock();

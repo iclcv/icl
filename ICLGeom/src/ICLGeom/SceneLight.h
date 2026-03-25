@@ -270,7 +270,7 @@ namespace icl{
       void setProjectionImage(qt::GLImg* img);
 
       /// get the projection image
-      qt::GLImg* getProjectionImage() const;
+      qt::GLImg* getProjectionDisplay() const;
 
       /// sets all paramters to OpenGL's default values
       void reset();

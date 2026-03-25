@@ -51,9 +51,9 @@ void init(){
 
   hld.setConfigurableID("hld");
 
-  gui << Draw().handle("view").minSize(32,24)
+  gui << Canvas().handle("view").minSize(32,24)
       << ( VSplit()
-           << Image().handle("lut").label("hough space").minSize(16,12)
+           << Display().handle("lut").label("hough space").minSize(16,12)
            << ( VBox()
                 << Button("load image").handle("load")
                 << Spinner(0,100,1).out("maxlines").label("max lines")
@@ -89,7 +89,7 @@ void run(){
 
   ImageHandle lut = gui["lut"];
   DrawHandle view = gui["view"];
-  lut = hld.getImage();
+  lut = hld.getDisplay();
   hld.reset();
 
   view = edgeImage;

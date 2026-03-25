@@ -316,7 +316,7 @@ namespace icl{
       void scaleModeChanged(int modeIdx);
       void currentChannelChanged(int modeIdx);
 
-      void captureCurrentImage();
+      void captureCurrentDisplay();
       void captureCurrentFrameBuffer();
 
       void recordButtonToggled(bool checked);

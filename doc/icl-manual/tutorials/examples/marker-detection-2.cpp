@@ -8,7 +8,7 @@ FiducialDetector fid("bch","[100-200]","size=30x30");
 void init(){
   fid.setConfigurableID("fid");
 
-  gui << Draw().handle("draw")
+  gui << Canvas().handle("draw")
       << Prop("fid").maxSize(18,100)
       << Show();
 

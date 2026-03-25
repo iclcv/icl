@@ -151,7 +151,7 @@ void init(){
 
   scene.addCamera(Camera(Vec(0,0,1500,1)));
 
-  gui << Draw3D().handle("draw3D").minSize(32,24) << Show();
+  gui << Canvas3D().handle("draw3D").minSize(32,24) << Show();
 
   gui["draw3D"].link(scene.getGLCallback(0));
   gui["draw3D"].install(scene.getMouseHandler(0));

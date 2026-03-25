@@ -34,7 +34,7 @@
 GUI gui;
 GenericGrabber grabber;
 void init(){
-  gui << Image().handle("image").minSize(32,24)
+  gui << Display().handle("image").minSize(32,24)
       << ( HBox().maxSize(100,3)
            << Button("no","!yes").label("enable-warping").out("warp")
            << Button("nn","lin").label("interpolation").out("interpolation")

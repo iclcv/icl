@@ -69,7 +69,7 @@ namespace icl{
         ICLIO_API void init(const std::string &scope, const std::string &transportList = "spread");
 
         /// grabber-interface
-        ICLIO_API virtual const core::ImgBase *acquireImage();
+        ICLIO_API virtual const core::ImgBase *acquireDisplay();
 
         /// returns whether this grabber has not jet been initialized
         inline bool isNull() const { return !m_data; }

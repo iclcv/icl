@@ -50,7 +50,7 @@ namespace icl{
         The basic use case is just to convert one Image into another:
         <pre>
         core::ImgBase *i = imgNew(...);
-        QImage *q = QImageConverter(i).getImage();
+        QImage *q = QImageConverter(i).getDisplay();
         </pre>
         This will temporarily create a converter object on the stack,
         that converts the given image <em>i</em> into a qimage.
@@ -66,7 +66,7 @@ namespace icl{
            ...
            core::ImgBase *i = ...
            c.setImage(i);
-           QImage *q = q.getQImage();
+           QImage *q = q.getQDisplay();
            ...
         }
         </pre>
@@ -103,7 +103,7 @@ namespace icl{
           Images can be set by calling setImage, setQImage, or by using
           one of the not empty constructors.
       */
-      const QImage *getQImage();
+      const QImage *getQDisplay();
 
       /// returns converted core::ImgBase (of given core::depth")
       /** This function will cause an error if no images were set before.

@@ -14,7 +14,7 @@ FPSLimiter fps(25);        // utility to limit the run-loop
 // and the grabber is initialized
 void init(){
   // The stream operator '<<' can be cascaded to layout GUIs
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Slider(0,255,127).handle("thresh").label("threshold").maxSize(100,2)
       << Show();
 

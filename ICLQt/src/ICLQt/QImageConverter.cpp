@@ -236,7 +236,7 @@ namespace icl{
 
 
 
-    const QImage *QImageConverter::getQImage(){
+    const QImage *QImageConverter::getQDisplay(){
 
       if(m_eQImageState < 2) return m_poQBuf;
       for(int i=0;i<5;i++){

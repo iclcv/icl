@@ -97,7 +97,7 @@ namespace icl{
 
       data->gui = VSplit(this);
       data->gui <<  (HSplit()
-                      << Image().handle("image").minSize(10,14).label("preview")
+                      << Display().handle("image").minSize(10,14).label("preview")
                       )
                 << ( HSplit().maxSize(100,15)
                     << ( HBox().label("devices")
@@ -123,7 +123,7 @@ namespace icl{
       scan();
     }
 
-    const ImgBase *CamCfgWidget::getCurrentImage(){
+    const ImgBase *CamCfgWidget::getCurrentDisplay(){
       QMutexLocker __lock(&data->mutex);
       if(data->grabber.isNull()) return 0;
 

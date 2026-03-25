@@ -53,7 +53,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
   scene.addCamera(cam);
 
   table.setColor(Primitive::all,geom_red());

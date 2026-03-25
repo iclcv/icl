@@ -81,7 +81,7 @@ namespace icl{
 
 	    ///Returns the motionImage (visualize the movement in the image, usable as motion detector)
 	    /**   @return the motion image */
-	    core::Img32f getMotionImage();
+	    core::Img32f getMotionDisplay();
 
 	    /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
       /**        @return openCL context ready/unavailable */
@@ -181,7 +181,7 @@ namespace icl{
 
 	    ///Returns the motionImage (visualize the movement in the image, usable as motion detector)
 	    /**   @return the motion image */
-	    core::Img32f getMotionImage();
+	    core::Img32f getMotionDisplay();
 
 	    /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
       /**        @return openCL enabled/disabled */

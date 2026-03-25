@@ -32,7 +32,7 @@ namespace icl{
         ~QtVideoGrabber();
 
         /// grab function
-        virtual const core::ImgBase *acquireImage();
+        virtual const core::ImgBase *acquireDisplay();
 
         /// direct access to pause video playback (grab will block then)
         void pause();

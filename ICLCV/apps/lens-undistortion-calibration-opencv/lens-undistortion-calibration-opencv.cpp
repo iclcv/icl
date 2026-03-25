@@ -481,12 +481,12 @@ void init(){
   }
 
   gui << ( VSplit().label("image")
-           << Draw().label("input image").handle("image")
-           << Image().label("undistorted image").handle("uimage")
+           << Canvas().label("input image").handle("image")
+           << Display().label("undistorted image").handle("uimage")
          )
       << ( VSplit().label("data")
-           << Draw3D(image->getSize()).label("recorded planes").handle("plot")
-           << Draw().label("displacement map").handle("vecImage")
+           << Canvas3D(image->getSize()).label("recorded planes").handle("plot")
+           << Canvas().label("displacement map").handle("vecImage")
          )
       << ( VBox().label("controls").minSize(15,1)
            << CheckBox("detection", true).out("detection")

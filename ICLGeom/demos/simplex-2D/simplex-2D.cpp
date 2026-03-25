@@ -41,7 +41,7 @@ float error_function(const Pos &p){
 }
 
 void init(){
-  gui << Draw().minSize(20,20).handle("draw") << Show();
+  gui << Canvas().minSize(20,20).handle("draw") << Show();
 
   Img32f bg(Size(1000,1000),1);
   Channel32f bgc = bg[0];

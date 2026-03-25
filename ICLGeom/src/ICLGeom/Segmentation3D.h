@@ -45,7 +45,7 @@
 namespace icl{
   namespace geom{
     /**
-       This class includes segmentation algorithms for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the PointNormalEstimation class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromImage() method of the PointCloudObject class).*/
+       This class includes segmentation algorithms for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the PointNormalEstimation class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromDisplay() method of the PointCloudObject class).*/
     class ICLGeom_API Segmentation3D{
 
      public:
@@ -132,7 +132,7 @@ namespace icl{
 
       /// Returns the color segment image. (Use one line calls)
       /**        @return the color segment image */
-      core::Img8u getSegmentColorImage();
+      core::Img8u getSegmentColorDisplay();
 
       /// Returns the cluster.
       /**        @return a vector of cluster. Every entry contains a vector with the point indices */

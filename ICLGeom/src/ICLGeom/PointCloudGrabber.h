@@ -50,10 +50,10 @@ namespace icl{
       virtual ~PointCloudGrabber(){}
 
       /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img32f *getDepthImage() const { return 0; }
+      virtual const core::Img32f *getDepthDisplay() const { return 0; }
 
       /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img8u *getColorImage() const { return 0; }
+      virtual const core::Img8u *getColorDisplay() const { return 0; }
 
       /// returns current depth camera (CAN be implemented by implementation
       virtual Camera getDepthCamera() const{

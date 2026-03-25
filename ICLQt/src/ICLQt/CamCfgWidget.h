@@ -101,7 +101,7 @@ namespace icl{
       ~CamCfgWidget();
 
       /// returns the current image
-      virtual const core::ImgBase *getCurrentImage();
+      virtual const core::ImgBase *getCurrentDisplay();
 
       /// reimplemented
       virtual void setVisible (bool visible);

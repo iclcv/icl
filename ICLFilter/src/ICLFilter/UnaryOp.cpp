@@ -31,6 +31,8 @@
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
+#include <ICLCore/ImgBase.h>
 #include <ICLFilter/ImageSplitter.h>
 #include <future>
 #include <vector>
@@ -94,6 +96,17 @@ namespace icl{
     const ImgBase *UnaryOp::apply(const ImgBase *src){
       apply(src,&m_buf);
       return m_buf;
+    }
+
+    void UnaryOp::apply(const core::Image &src, core::Image &dst){
+      ImgBase *tmp = nullptr;
+      apply(src.ptr(), &tmp);
+      dst = core::Image(tmp);
+    }
+
+    core::Image UnaryOp::apply(const core::Image &src){
+      const ImgBase *result = apply(src.ptr());
+      return core::Image(result->deepCopy());
     }
 
 

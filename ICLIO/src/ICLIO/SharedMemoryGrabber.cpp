@@ -121,7 +121,7 @@ namespace icl{
                   Thread::msleep(100);
                 }
                 try{
-                const ImgBase* ptr = impl->acquireImage();
+                const ImgBase* ptr = impl->acquireDisplay();
                 impl->notifyNewImageAvailable(ptr);
                 } catch (ICLException &e){
                   DEBUG_LOG("catched " << e.what());
@@ -190,7 +190,7 @@ namespace icl{
       return (i.getDepth() == d) && (i.getSize() == s) && (i.getFormat() == f);
     }
 
-    const ImgBase* SharedMemoryGrabber::acquireImage(){
+    const ImgBase* SharedMemoryGrabber::acquireDisplay(){
       QMutexLocker lock(&m_data->acquireMutex);
 
       if(!m_data->mem.lock()) throw ICLException(str(__FUNCTION__)+": can't get lock for shared memory segment");

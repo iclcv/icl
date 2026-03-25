@@ -217,8 +217,8 @@ void MotionSensitiveTemporalSmoothing::setDifference(int difference) {
 	}
 }
 
-Img32f MotionSensitiveTemporalSmoothing::getMotionImage() {
-	return clPointer.at(0)->getMotionImage();
+Img32f MotionSensitiveTemporalSmoothing::getMotionDisplay() {
+	return clPointer.at(0)->getMotionDisplay();
 }
 
 bool MotionSensitiveTemporalSmoothing::isCLActive() {
@@ -513,7 +513,7 @@ void TemporalSmoothingCL::setDifference(int iDifference) {
 	currentDifference = iDifference;
 }
 
-Img32f TemporalSmoothingCL::getMotionImage() {
+Img32f TemporalSmoothingCL::getMotionDisplay() {
 	if (useCL == true && clReady == true) {
 #ifdef ICL_HAVE_OPENCL
 		motionImageBuffer.read(motionImageArray, w*h * sizeof(float));

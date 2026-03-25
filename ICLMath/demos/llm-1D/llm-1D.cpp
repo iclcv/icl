@@ -54,7 +54,7 @@ float func(float x){
 void init(){
   llm.setConfigurableID("llm");
 
-  gui << Draw().minSize(40,30).label("View").handle("draw")
+  gui << Canvas().minSize(40,30).label("View").handle("draw")
       << ( VBox().minSize(15,0)
            << Button("Train Step").handle("train")
            << Button("Train Off","Train On").out("train-loop")

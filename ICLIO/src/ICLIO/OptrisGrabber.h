@@ -66,7 +66,7 @@ namespace icl{
 
         /// grabbing function
         /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-        virtual const core::ImgBase* acquireImage();
+        virtual const core::ImgBase* acquireDisplay();
 
         /// callback for changed configurable properties
         void processPropertyChange(const utils::Configurable::Property &prop);

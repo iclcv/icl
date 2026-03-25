@@ -260,7 +260,7 @@ namespace icl{
 
       /// creates core::ImgBase version of the currently buffered images
       /** Please note that the ownership is not passed to the caller! */
-      const core::ImgBase *extractImage() const;
+      const core::ImgBase *extractDisplay() const;
 
       /// returns statistics of the currently buffered image
       const ImageStatistics &getStats() const;

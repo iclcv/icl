@@ -165,7 +165,7 @@ void init(){
   octree.setRenderPoints(true);
   octree.setLockingEnabled(true);
 
-  gui << Draw3D(scene.getCamera(0).getResolution()).handle("plot") << Show();
+  gui << Canvas3D(scene.getCamera(0).getResolution()).handle("plot") << Show();
 
 
   if(pa("-pci")){

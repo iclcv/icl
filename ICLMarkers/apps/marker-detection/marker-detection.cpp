@@ -62,7 +62,7 @@ void init(){
   if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
   grabber.useDesired(formatGray);
 
-  gui << Draw3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
+  gui << Canvas3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
       << (VBox().maxSize(16,100)
           << FSlider(1,10,2).handle("label-size-factor").label("label size factor")
           << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")

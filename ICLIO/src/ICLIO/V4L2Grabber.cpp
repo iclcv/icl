@@ -484,7 +484,7 @@ namespace icl{
           if(image) image->setTime(t);
         }
 
-        const ImgBase *acquireImage(){
+        const ImgBase *acquireDisplay(){
           std::lock_guard<std::recursive_mutex> lock(mutex);
           while(!image || (avoidDoubleFrames && lastTime == image->getTime())){
             mutex.unlock();
@@ -707,10 +707,10 @@ namespace icl{
       delete impl;
     }
 
-    const ImgBase *V4L2Grabber::acquireImage(){
+    const ImgBase *V4L2Grabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> lock(implMutex);
       const ImgBase *image = 0;
-      do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
+      do{ image = impl->acquireDisplay(); } while(!image || !image->getDim() );
       return image;
     }
 

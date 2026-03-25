@@ -88,7 +88,7 @@ namespace icl{
 
   void init(){
     // create graphical user interface with a scene's viewport set of size 640x480
-    gui << Draw3D(utils::Size(640,480)).minSize(16,12).handle("draw").label("scene view")
+    gui << Canvas3D(utils::Size(640,480)).minSize(16,12).handle("draw").label("scene view")
         << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3);
     gui.show();
 

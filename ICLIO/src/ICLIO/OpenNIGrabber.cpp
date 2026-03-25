@@ -85,7 +85,7 @@ void OpenNIGrabberThread::run(){
       DEBUG_LOG("Read failed: " << xnGetStatusString(rc));
     } else {
       for(std::set<OpenNIGrabber*>::iterator it = m_Grabber.begin(); it != m_Grabber.end(); ++it){
-        (*it) -> grabNextImage();
+        (*it) -> grabNextDisplay();
       }
     }
     // allow thread-stop.
@@ -138,7 +138,7 @@ OpenNIGrabber::~OpenNIGrabber(){
   ICL_DELETE(m_Buffer);
 }
 
-const ImgBase* OpenNIGrabber::acquireImage(){
+const ImgBase* OpenNIGrabber::acquireDisplay(){
   Time t = Time::now();
   // get image from buffer
   ImgBase* img = nullptr;
@@ -158,7 +158,7 @@ void* OpenNIGrabber::getHandle(){
 }
 
 // grabs an image from ImageGenerator
-void OpenNIGrabber::grabNextImage(){
+void OpenNIGrabber::grabNextDisplay(){
   std::lock_guard<std::recursive_mutex> l(m_Mutex);
   // check whether a new frame is available
   if(m_Generator->newFrameAvailable()){

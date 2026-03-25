@@ -153,8 +153,8 @@ void init(){
     gamma = f["config.gammaslope"];
   }
 
-  gui << Draw().minSize(16,12).handle("orig").label("original image")
-      << Image().minSize(16,12).handle("prev").label("preview image")
+  gui << Canvas().minSize(16,12).handle("orig").label("original image")
+      << Display().minSize(16,12).handle("prev").label("preview image")
       << ( VBox().label("controls")
            << Slider(2,200,masksize).label("mask size").out("masksize").minSize(15,2).handle("a")
            << FSlider(-30,40,thresh).label("threshold").out("threshold").minSize(15,2).handle("b")

@@ -120,7 +120,7 @@ namespace icl{
           QGraphicsScene* scene = new QGraphicsScene(this);
           setScene(scene);
           QImageConverter cvt(image);
-          QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(*cvt.getQImage()));
+          QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(*cvt.getQDisplay()));
           scene->addItem(item);
           setSceneRect(0,0,image->getWidth(), image->getHeight());
           setDragMode(ScrollHandDrag);

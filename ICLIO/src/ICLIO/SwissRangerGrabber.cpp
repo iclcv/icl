@@ -456,7 +456,7 @@ namespace icl{
       return unitFactor * maxRange;
     }
 
-    const ImgBase *SwissRangerGrabber::acquireImage(){
+    const ImgBase *SwissRangerGrabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> l(m_mutex);
       SR_Acquire(m_sr->cam);
       Time captureTime = Time::now();

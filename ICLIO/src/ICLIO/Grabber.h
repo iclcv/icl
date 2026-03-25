@@ -39,6 +39,7 @@
 #include <ICLIO/GrabberDeviceDescription.h>
 
 namespace icl {
+  namespace core { class Image; }
   namespace utils { class ProgArg; }
   namespace io { class ImageUndistortion; }
 }
@@ -200,6 +201,9 @@ namespace icl {
         /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
         /** If dst is not NULL, it is exploited and filled with image data **/
         const core::ImgBase *grab(core::ImgBase **dst=0);
+
+        /// Image-based grab: returns a deep copy as an Image value
+        core::Image grabImage();
 
         /// returns whether the desired parameter for the given type is used
         /** This method is only available for the type core::depth,icl::utils::Size and core::format*/

@@ -355,7 +355,7 @@ bool Segmentation3D::isCLActive() {
 	return useCL;
 }
 
-Img8u Segmentation3D::getSegmentColorImage() {
+Img8u Segmentation3D::getSegmentColorDisplay() {
 	return segmentColorImage;
 }
 

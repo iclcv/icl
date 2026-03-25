@@ -310,7 +310,7 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* XiGrabber::acquireImage(){
+    const core::ImgBase* XiGrabber::acquireDisplay(){
       //DEBUG_LOG("acquire image called!");
       XI_RETURN s = XI_TIMEOUT;
       Time timestamp;

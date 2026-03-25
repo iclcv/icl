@@ -98,7 +98,7 @@ namespace icl{
       return deviceList;
     }
 
-    const core::ImgBase* ZmqGrabber::acquireImage(){
+    const core::ImgBase* ZmqGrabber::acquireDisplay(){
       m_data->mutex.lock();
       while(!m_data->rbuf.size()){
         m_data->mutex.unlock();

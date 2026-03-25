@@ -116,15 +116,15 @@ void init(){
               );
 
   gui << ( VBox()
-           << Draw3D().handle("hdepth").minSize(10,8)
-           << Draw3D().handle("hcolor").minSize(10,8)
+           << Canvas3D().handle("hdepth").minSize(10,8)
+           << Canvas3D().handle("hcolor").minSize(10,8)
          )
       << ( VBox()
-           << Draw3D().handle("hedge").minSize(10,8)
-           << Draw3D().handle("hnormal").minSize(10,8)
+           << Canvas3D().handle("hedge").minSize(10,8)
+           << Canvas3D().handle("hnormal").minSize(10,8)
          )
       << ( HSplit()
-           << Draw3D().handle("draw3D").minSize(40,30)
+           << Canvas3D().handle("draw3D").minSize(40,30)
            << controls
          )
       << Show();
@@ -178,8 +178,8 @@ void run(){
 
   //segment
   segmentation->apply(*depthImage.as32f(), *obj);
-  core::Img8u edgeImg = segmentation->getEdgeImage();
-  core::Img8u normImg = segmentation->getNormalImage();
+  core::Img8u edgeImg = segmentation->getEdgeDisplay();
+  core::Img8u normImg = segmentation->getNormalDisplay();
 
   //display
   hdepth = heatmapImage;

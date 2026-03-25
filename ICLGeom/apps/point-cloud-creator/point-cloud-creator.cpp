@@ -67,9 +67,9 @@ void init_icl() {
 
   // GUI
   gui << ( HBox()
-           << Draw().handle("depth-view").label("Depth Image")
-           << Draw().handle("color-view").label("Color Image")
-           << Draw3D().handle("main-view").label("Main View")
+           << Canvas().handle("depth-view").label("Depth Image")
+           << Canvas().handle("color-view").label("Color Image")
+           << Canvas3D().handle("main-view").label("Main View")
            );
   gui << Show();
 

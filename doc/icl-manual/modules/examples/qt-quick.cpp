@@ -7,7 +7,7 @@ ImgQ last;  // last image
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Slider(0,255,127).out("thresh")
       << Show();
 }

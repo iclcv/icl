@@ -137,8 +137,8 @@ void init(){
          << Label("--").handle("dt").label("time");
 
   gui << ( VBox()
-           << Image().handle("color").minSize(32,10)
-           << Image().handle("image").minSize(32,24)
+           << Display().handle("color").minSize(32,10)
+           << Display().handle("image").minSize(32,24)
          )
       << colors
       << Show();

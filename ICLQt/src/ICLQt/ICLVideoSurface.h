@@ -54,7 +54,7 @@ namespace icl{
       QVideoSink *videoSink() { return m_sink; }
 
       /// Blocking call: returns the most recent frame as an ICL image
-      const core::Img8u* getImage();
+      const core::Img8u* getDisplay();
 
       /// Stops receiving frames and wakes any blocked consumer
       void stop();

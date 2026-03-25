@@ -60,7 +60,7 @@ struct OSRCube : public SceneObject{
     setVisible(Primitive::quad,false);
   }
 
-  int updateImage(){
+  int updateDisplay(){
     Time t = Time::now();
     const Img8u &screen = scene.render(0);
     gui["image"] = screen;
@@ -86,8 +86,8 @@ struct OSRCube : public SceneObject{
 void init(){
   // create graphical user interface
 
-  gui << Draw3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
-      << Draw().minSize(16,16).handle("image").label("offscreen rendered image")
+  gui << Canvas3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
+      << Canvas().minSize(16,16).handle("image").label("offscreen rendered image")
       << Show();
 
   // create camera and add to scene instance
@@ -109,7 +109,7 @@ void run(){
   DrawHandle3D draw = gui["draw"];
   DrawHandle image = gui["image"];
 
-  int ms = cube.updateImage();
+  int ms = cube.updateDisplay();
   image->color(255,255,255,255);
   image->text("offscreen rendering time: " + str(ms)+" ms",10,10,9);
   image.render();

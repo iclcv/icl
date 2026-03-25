@@ -88,12 +88,12 @@ namespace icl{
       virtual void grab(PointCloudObjectBase &dst);
 
       /// returns the last grabbed core::depth image
-      const core::Img32f &getLastDepthImage() const;
+      const core::Img32f &getLastDepthDisplay() const;
 
       /// returns the last grabbed color image
       /** Throws an exception if no color camera or not valid color camera device
           type and ID were passed. */
-      const core::Img8u &getLastColorImage() const;
+      const core::Img8u &getLastColorDisplay() const;
 
       /// creates the defautl VGA core::depth camera
       static const Camera &get_default_depth_cam();
@@ -134,10 +134,10 @@ namespace icl{
       void reinit(const std::string &description);
 
       /// returns the last grabbed point cloud's underlying depth image
-      virtual const core::Img32f *getDepthImage() const;
+      virtual const core::Img32f *getDepthDisplay() const;
 
       /// returns the last grabbed point cloud's underlying color image (if available)
-      virtual const core::Img8u *getColorImage() const;
+      virtual const core::Img8u *getColorDisplay() const;
 
       /// returns current depth camera
       virtual Camera getDepthCamera() const;

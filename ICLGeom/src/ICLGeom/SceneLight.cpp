@@ -275,7 +275,7 @@ namespace icl{
     }
 
 
-    qt::GLImg* SceneLight::getProjectionImage() const{
+    qt::GLImg* SceneLight::getProjectionDisplay() const{
       return projectionImage;
     }
 

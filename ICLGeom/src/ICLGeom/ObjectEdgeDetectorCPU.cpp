@@ -120,7 +120,7 @@ void ObjectEdgeDetectorCPU::applyMedianFilter() {
 	m_data->medianFilter->apply(&m_data->rawImage, bpp(m_data->filteredImage));
 }
 
-const Img32f &ObjectEdgeDetectorCPU::getFilteredDepthImage() {
+const Img32f &ObjectEdgeDetectorCPU::getFilteredDepthDisplay() {
 	return m_data->filteredImage;
 }
 
@@ -288,7 +288,7 @@ const DataSegment<float,4> ObjectEdgeDetectorCPU::getWorldNormals() {
 	return m_data->worldNormals;
 }
 
-const core::Img8u &ObjectEdgeDetectorCPU::getRGBNormalImage() {
+const core::Img8u &ObjectEdgeDetectorCPU::getRGBNormalDisplay() {
 	return m_data->normalImage;
 }
 
@@ -360,7 +360,7 @@ void ObjectEdgeDetectorCPU::applyAngleImageCalculation() {
 	}
 }
 
-const Img32f &ObjectEdgeDetectorCPU::getAngleImage() {
+const Img32f &ObjectEdgeDetectorCPU::getAngleDisplay() {
 	return m_data->angleImage;
 }
 
@@ -381,7 +381,7 @@ void ObjectEdgeDetectorCPU::applyImageBinarization() {
 	}
 }
 
-const Img8u &ObjectEdgeDetectorCPU::getBinarizedAngleImage() {
+const Img8u &ObjectEdgeDetectorCPU::getBinarizedAngleDisplay() {
 	return m_data->binarizedImage;
 }
 
@@ -434,7 +434,7 @@ const Img8u &ObjectEdgeDetectorCPU::calculate(const Img32f &depthImage,
 	applyNormalCalculation();
 	applyAngleImageCalculation();
 	applyImageBinarization();
-	return getBinarizedAngleImage();
+	return getBinarizedAngleDisplay();
 }
 
 

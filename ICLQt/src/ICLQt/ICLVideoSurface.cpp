@@ -80,7 +80,7 @@ namespace icl{
       lock.unlock();
     }
 
-    const Img8u* ICLVideoSurface::getImage(){
+    const Img8u* ICLVideoSurface::getDisplay(){
       if(useLocking.loadRelaxed()) {
         QMutexLocker waitLock(&waitMutex);
         while(!nextFrameReady) {

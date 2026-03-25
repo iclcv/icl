@@ -89,7 +89,7 @@ namespace icl {
 
         /// grab function grabs an image (destination image is adapted on demand)
         /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-        virtual const core::ImgBase* acquireImage();
+        virtual const core::ImgBase* acquireDisplay();
 
         /**
             returns the underlying handle of the grabber.
@@ -99,7 +99,7 @@ namespace icl {
 
       private:
         /// makes the MapGenerator grab a new image. called repeatedly in thread.
-        void grabNextImage();
+        void grabNextDisplay();
 
         /**
             switches the current generator to desired. this function works but

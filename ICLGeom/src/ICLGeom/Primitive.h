@@ -282,7 +282,7 @@ namespace icl{
       /// deep copy
       virtual Primitive *copy() const {
         return new TexturePrimitive(i(0),i(1),i(2),i(3),
-                                    image ? image : texture.extractImage(),
+                                    image ? image : texture.extractDisplay(),
                                     !image,
                                     i(4),i(5),i(6),i(7),
                                     texture.getScaleMode());
@@ -313,7 +313,7 @@ namespace icl{
       ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
 
       virtual Primitive *copy() const {
-        return new TextureGridPrimitive(w,h,image ? image : texture.extractImage(),
+        return new TextureGridPrimitive(w,h,image ? image : texture.extractDisplay(),
                                         px,py,pz,pnx,pny,pnz,stride,!image,
                                         texture.getScaleMode());
       }
@@ -426,7 +426,7 @@ namespace icl{
       /// deep copy method
       virtual Primitive *copy() const {
         GenericTexturePrimitive *cpy = new GenericTexturePrimitive(*this);
-        cpy->texture.reset(new qt::GLImg(image ? image : texture->extractImage()));
+        cpy->texture.reset(new qt::GLImg(image ? image : texture->extractDisplay()));
         return cpy;
       }
     };

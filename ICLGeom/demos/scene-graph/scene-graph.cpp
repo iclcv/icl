@@ -120,8 +120,8 @@ void mouse_2(const MouseEvent &evt){
 void init(){
   //  Scene::enableSharedOffscreenRendering();
 
-  gui << Draw3D().handle("view")
-      << Draw().handle("image")
+  gui << Canvas3D().handle("view")
+      << Canvas().handle("image")
       << (VBox()
           << Combo("none,rgb,depth").handle("capture").label("offscreen rendering")
           << Combo("raw,dist. to z0,dist to cam center").handle("dmode").label("depth map mode")

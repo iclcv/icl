@@ -40,8 +40,8 @@ Scene scene;
 
 void init(){
 
-  gui << Draw3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
-      << Draw3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
+  gui << Canvas3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
+      << Canvas3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
       << ( VBox().minSize(12,1)
            << FSlider(0.1,10,1.7).label("focal length left").out("fl")
            << FSlider(0.1,10,1.7).label("focal length right").out("fr")

@@ -182,7 +182,7 @@ namespace icl{
       inline const std::vector<double> &getColor() const { return m_color; }
 
       /// returns if the widget's image was hit (and a color is available)
-      inline bool hitImage() const { return m_color.size(); }
+      inline bool hitDisplay() const { return m_color.size(); }
 
       /// returns the downmask in order [left, middle, right]- button
       inline std::vector<bool> getDownMask() const { return std::vector<bool>(m_downMask,m_downMask+3); }

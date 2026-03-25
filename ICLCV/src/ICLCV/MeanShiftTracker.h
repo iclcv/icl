@@ -156,7 +156,7 @@ namespace icl {
       int getKernel() const { return m_kernelType;  }
 
       /// returns current kernel image
-      const core::Img32f &getKernelImage() const { return m_kernelImage; }
+      const core::Img32f &getKernelDisplay() const { return m_kernelImage; }
 
       /// Returns current kernel bandwidth
       int getBandwidth() const { return m_bandwidth; }

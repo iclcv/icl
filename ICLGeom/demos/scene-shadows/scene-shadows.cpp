@@ -50,7 +50,7 @@ unsigned int lights;
 void init(){
   // create graphical user interface
 
-  gui << Draw3D().minSize(16,12).handle("draw").label("scene view")
+  gui << Canvas3D().minSize(16,12).handle("draw").label("scene view")
       << ( HBox().maxSize(99,3)
            << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
            << FSlider(1,100,15).out("r").label("light radius").maxSize(100,3)

@@ -1125,7 +1125,7 @@ namespace icl{
       return m_data->sm;
     }
 
-    const ImgBase *GLImg::extractImage() const{
+    const ImgBase *GLImg::extractDisplay() const{
       ICLASSERT_RETURN_VAL(!isNull(),0);
       return &m_data->extractImageGeneric();
     }

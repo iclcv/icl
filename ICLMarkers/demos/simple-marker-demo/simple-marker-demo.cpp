@@ -42,10 +42,10 @@ void init() {
   fid.setConfigurableID("fid");
   gui
       << (VSplit()
-          << (HBox() << CamCfg("") << Draw().handle("draw").minSize(16, 12)
-              << Draw().handle("regionsImg").minSize(16, 12))
-          << (HBox() << Draw().handle("heuristicsImg").minSize(16, 12)
-              << Draw().handle("quadImg").minSize(16, 12)))
+          << (HBox() << CamCfg("") << Canvas().handle("draw").minSize(16, 12)
+              << Canvas().handle("regionsImg").minSize(16, 12))
+          << (HBox() << Canvas().handle("heuristicsImg").minSize(16, 12)
+              << Canvas().handle("quadImg").minSize(16, 12)))
       << Prop("fid").label("detection properties").maxSize(18, 100).minSize(14,
           1) << Show();
 

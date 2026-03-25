@@ -98,10 +98,10 @@ void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
 
-  gui << Draw().label("image").minSize(32,24).handle("image")
+  gui << Canvas().label("image").minSize(32,24).handle("image")
       << ( VBox()
-           << Draw().label("template").minSize(10,6).handle("templ")
-           << Draw().label("buffer").minSize(10,6).handle("buf")
+           << Canvas().label("template").minSize(10,6).handle("templ")
+           << Canvas().label("buffer").minSize(10,6).handle("buf")
            )
       << (VBox().minSize(7,7)
           << FSlider(0,1,0.9).handle("significance-handle").label("significance").out("significance")

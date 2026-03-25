@@ -61,7 +61,7 @@ namespace icl{
       return ret;
     }
 
-    const ImgBase *OpenCVVideoGrabber::acquireImage(){
+    const ImgBase *OpenCVVideoGrabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> l(mutex);
       ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), 0);
       cv::Mat frame;

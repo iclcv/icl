@@ -613,10 +613,10 @@ namespace icl{
         }
       }
 
-      inline const Img32f &getLastDepthImage(){
+      inline const Img32f &getLastDepthDisplay(){
         return device->used->getLastDepthImage(avoidDoubleFrames);
       }
-      inline const ImgBase &getLastColorImage(){
+      inline const ImgBase &getLastColorDisplay(){
         return device->used->getLastColorImage(avoidDoubleFrames);
       }
 
@@ -680,16 +680,16 @@ namespace icl{
       FreenectContext::getFreenectContext().stop();
     }
 
-    const ImgBase* KinectGrabber::acquireImage(){
+    const ImgBase* KinectGrabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> lock(m_impl->mutex);
       // update current angle and accelometers every 200ms
       if(m_impl -> lastupdate.age() > 200000){
         updateState();
       }
       if(m_impl->getDevice()->mode != GRAB_DEPTH_IMAGE){
-        return &m_impl->getLastColorImage();
+        return &m_impl->getLastColorDisplay();
       }else{
-        return &m_impl->getLastDepthImage();
+        return &m_impl->getLastDepthDisplay();
       }
     }
 

@@ -148,7 +148,7 @@ void init(){
     scene.setDrawCamerasEnabled(false);
   }
 
-  gui << Draw3D(Size::VGA).minSize(32,24).handle("draw")
+  gui << Canvas3D(Size::VGA).minSize(32,24).handle("draw")
       << (VBox().maxSize(12,100).minSize(12,1)
           << ( HBox()
                << Fps(10).handle("fps")

@@ -81,7 +81,7 @@ void init(){
                                                  0,1)));
   scene.setBounds(1000);
 
-  gui << Draw3D().handle("draw3D").minSize(32,24)
+  gui << Canvas3D().handle("draw3D").minSize(32,24)
       << (VBox().minSize(12,1).maxSize(12,99)
           << CheckBox("physics on",true).handle("physics on")
           << CheckBox("gravity on",true).handle("gravity on")
@@ -95,7 +95,7 @@ void init(){
           << Button("reset model").handle("reset")
           << FSlider(1,20,10).handle("f").label("move force")
           << FSlider(0.01,1,0.25).handle("r").label("move radius")
-          << Image().label("fold map").handle("fm").minSize(8,8)
+          << Display().label("fold map").handle("fm").minSize(8,8)
          )
       << Show();
 

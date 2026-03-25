@@ -82,7 +82,7 @@ namespace icl{
           and enques this frame into the DMA-Queue immediately. Then, it waits for the next frame
           that was filled by the DMA-Thread by calling dc1394_capture_deque(..,POLICY_WAIT). When
           this function call returns, the Thread will push the new frame into its internal
-          DCFrameQueue, where it can be accessed by the application by calling the getCurrentImage()
+          DCFrameQueue, where it can be accessed by the application by calling the getCurrentDisplay()
           function.\n
           <b>Note:</b> As it is strongly recommended <b>not</b> to create an own DCGrabberThread, but
           to use an instance of the DCGrabber instead, the DCGrabberThread has no public constructor.

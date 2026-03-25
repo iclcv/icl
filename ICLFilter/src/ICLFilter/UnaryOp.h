@@ -35,6 +35,7 @@
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
+  namespace core { class Image; }
   namespace filter{
 
 
@@ -72,6 +73,14 @@ namespace icl{
           will call apply(const ImgBase *,ImgBase**) using an internal buffer as destination image.
           This destination image is returned. */
       virtual const core::ImgBase *apply(const core::ImgBase *src);
+
+      /// Image-based apply: filters src into dst
+      /** dst is always freshly allocated to avoid shared_ptr ownership conflicts
+          with the legacy ImgBase** API. */
+      void apply(const core::Image &src, core::Image &dst);
+
+      /// Image-based apply: returns a shallow copy of an internally held buffer
+      core::Image apply(const core::Image &src);
 
       /// function operator (alternative for apply(src,dst)
       inline void operator()(const core::ImgBase *src, core::ImgBase **dst){

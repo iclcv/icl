@@ -44,7 +44,7 @@ void init(){
   scene.addCamera(grabber.getDepthCamera());
   scene.setBounds(1000);
   scene.addObject(&obj,false);
-  gui << Draw3D().minSize(32,24).handle("scene")
+  gui << Canvas3D().minSize(32,24).handle("scene")
       << FSlider(0.5,10,2).handle("ps").label("point size").maxSize(99,2)
       << Show();
 

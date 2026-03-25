@@ -89,7 +89,7 @@ int main (int n, char **ppc){
     }
 
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::primaryScreen());
-    gui << Draw().handle("draw").size(size/20);
+    gui << Canvas().handle("draw").size(size/20);
     gui.show();
 
     DrawHandle draw = gui["draw"];
@@ -131,7 +131,7 @@ int main (int n, char **ppc){
     Tab t(imageList);
 
     for(size_t i=0;i<imageVecStrs.size();++i){
-      t << Image().handle("image-"+str(i)).size(size/20);
+      t << Display().handle("image-"+str(i)).size(size/20);
     }
 
     gui << t << Show();

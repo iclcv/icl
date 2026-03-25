@@ -100,7 +100,7 @@ namespace icl{
       const std::vector<TiltedQuad> &detect(const core::ImgBase *image);
 
       /// returns the last binary image that was produced internally
-      const core::Img8u &getLastBinaryImage() const;
+      const core::Img8u &getLastBinaryDisplay() const;
 
 
       /// returns the internal region detector instance

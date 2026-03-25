@@ -63,7 +63,7 @@ void init(){
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
-  gui << Draw3D().handle("draw").minSize(32,24)
+  gui << Canvas3D().handle("draw").minSize(32,24)
       << (HBox()
           << FSlider(-7,-1,-3).handle("t").maxSize(99,3).label("threshold exponent")
           << Button("ransac ...").handle("ransac options").maxSize(6,3)

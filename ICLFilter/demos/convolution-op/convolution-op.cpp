@@ -48,8 +48,8 @@ void init(){
            << Label("--").handle("apply-time").label("apply time")
            )
       << ( VSplit()
-           << Draw().minSize(16,12).handle("src").label("source image")
-           << Draw().minSize(16,12).handle("dst").label("result image")
+           << Canvas().minSize(16,12).handle("src").label("source image")
+           << Canvas().minSize(16,12).handle("dst").label("result image")
            )
       << Show();
 

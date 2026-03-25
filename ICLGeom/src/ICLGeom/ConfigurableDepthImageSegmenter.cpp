@@ -226,7 +226,7 @@ namespace icl{
 																								 useAveraging, usedSmoothingFlag);
 				}
 				m_data->objectEdgeDetector->applyWorldNormalCalculation(m_data->depthCamera);
-				m_data->normalImage=m_data->objectEdgeDetector->getRGBNormalImage();
+				m_data->normalImage=m_data->objectEdgeDetector->getRGBNormalDisplay();
 			}
 
 
@@ -326,26 +326,26 @@ namespace icl{
 		return m_data->objectEdgeDetector->getNormals();
     }
 
-	const core::Img32f ConfigurableDepthImageSegmenter::getAngleImage() {
-		return m_data->objectEdgeDetector->getAngleImage();
+	const core::Img32f ConfigurableDepthImageSegmenter::getAngleDisplay() {
+		return m_data->objectEdgeDetector->getAngleDisplay();
 	}
 
-    const core::Img8u ConfigurableDepthImageSegmenter::getNormalImage(){
+    const core::Img8u ConfigurableDepthImageSegmenter::getNormalDisplay(){
       return m_data->normalImage;
     }
 
 
-    const core::Img8u ConfigurableDepthImageSegmenter::getEdgeImage(){
+    const core::Img8u ConfigurableDepthImageSegmenter::getEdgeDisplay(){
       return m_data->edgeImage;
     }
 
 
-	  core::Img32s ConfigurableDepthImageSegmenter::getLabelImage(){
+	  core::Img32s ConfigurableDepthImageSegmenter::getLabelDisplay(){
 	    return m_data->segmentation->getLabelImage(getPropertyValue("general.stabelize segmentation"));
 	  }
 
 
-    core::Img8u ConfigurableDepthImageSegmenter::getColoredLabelImage(){
+    core::Img8u ConfigurableDepthImageSegmenter::getColoredLabelDisplay(){
       return m_data->segmentation->getColoredLabelImage(getPropertyValue("general.stabelize segmentation"));
     }
 

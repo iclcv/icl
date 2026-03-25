@@ -70,7 +70,7 @@ void bench(){
 }
 
 void init(){
-  gui << Image().handle("draw").minSize(32,24)
+  gui << Display().handle("draw").minSize(32,24)
       << ( VBox().maxSize(10,100)
            << FSlider(0.1,5,1,true).out("scale").label("scale").handle("a")
            << FSlider(0,6.3,0,true).out("angle").label("angle").handle("b")

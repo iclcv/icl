@@ -54,18 +54,18 @@ void init(){
     c_out.init("file",*pa("-s")+"/color-######.bicl");
     d_out.init("file",*pa("-s")+"/depth-######.bicl");
 
-    gui << Image().handle("depth").minSize(16,12).label("depth image")
-        << Image().handle("color").minSize(16,12).label("color image");
+    gui << Display().handle("depth").minSize(16,12).label("depth image")
+        << Display().handle("color").minSize(16,12).label("color image");
   }else{
     if(!pa("-d") && !pa("-c")) throw ICLException("no input given");
     if(pa("-d")){
       d_in.init(pa("-d"));
 
-      gui << Image().handle("depth").minSize(16,12).label("depth image");
+      gui << Display().handle("depth").minSize(16,12).label("depth image");
     }else if(pa("-do")) throw ICLException("depth output given, but no input!");
     if(pa("-c")){
       c_in.init(pa("-c"));
-      gui << Image().handle("color").minSize(16,12).label("color image");
+      gui << Display().handle("color").minSize(16,12).label("color image");
     }else if(pa("-co")) throw ICLException("color output given, but no input!");
 
     if(pa("-do")) d_out.init(pa("-do"));

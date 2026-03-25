@@ -65,7 +65,7 @@
 
     void init(){
       grabber.init(pa("-i"));
-      gui << Image().handle("image") << Show();
+      gui << Display().handle("image") << Show();
     }
 
     void run(){

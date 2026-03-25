@@ -55,7 +55,7 @@ void init(){
 
     grabber.init(pa("-i"));
 
-    gui << Draw3D().label("3d view").handle("3d")
+    gui << Canvas3D().label("3d view").handle("3d")
            << ( VBox()
                 << Slider(1,20,3).handle("steps_handle").label("steps")
                 << Slider(10,100,20).handle("radius_handle").label("radius")

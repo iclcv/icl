@@ -1018,7 +1018,7 @@ namespace icl{
       }
       m_sharedTextures = other.m_sharedTextures;
       for(unsigned int i=0;i<m_sharedTextures.size();++i){
-        m_sharedTextures[i].reset(new GLImg(m_sharedTextures[i]->extractImage(),
+        m_sharedTextures[i].reset(new GLImg(m_sharedTextures[i]->extractDisplay(),
                                         m_sharedTextures[i]->getScaleMode()));
       }
       if(m_displayListHandle){

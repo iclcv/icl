@@ -81,11 +81,11 @@ void init(){
            << ButtonGroup("max,mean").handle("usedAngle")
            << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle");
 
-  gui << Image().handle("depth").minSize(16,12)
-      << Image().handle("color").minSize(16,12)
-      << Image().handle("angle").minSize(16,12)
-      << Image().handle("edge").minSize(16,12)
-      << Image().handle("normal").minSize(16,12)
+  gui << Display().handle("depth").minSize(16,12)
+      << Display().handle("color").minSize(16,12)
+      << Display().handle("angle").minSize(16,12)
+      << Display().handle("edge").minSize(16,12)
+      << Display().handle("normal").minSize(16,12)
       << controls
       << Show();
 
@@ -157,11 +157,11 @@ void run(){
   WARNING_LOG("Hello");
 
   //access interim result
-  angleImage=objectEdgeDetector->getAngleImage();
+  angleImage=objectEdgeDetector->getAngleDisplay();
 
   if(pa("-cam")){
     objectEdgeDetector->applyWorldNormalCalculation(cam);
-    normalImage=objectEdgeDetector->getRGBNormalImage();
+    normalImage=objectEdgeDetector->getRGBNormalDisplay();
   }
   end = Time::now();
   std::cout<<"Size: "<<size<<" ,Runtime: ";

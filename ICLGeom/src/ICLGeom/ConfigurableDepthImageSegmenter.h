@@ -70,25 +70,25 @@ namespace icl{
 
       /// Returns the colored normal image.
       /**        @return the colored normal image */
-      const core::Img8u getNormalImage();
+      const core::Img8u getNormalDisplay();
 
   	  /// Returns the edge image.
       /**        @return the edge image */
-      const core::Img8u getEdgeImage();
+      const core::Img8u getEdgeDisplay();
 
   	  /// Returns the label image.
       /**        @return the label image */
-  	  core::Img32s getLabelImage();
+  	  core::Img32s getLabelDisplay();
 
       const core::DataSegment<float,4> getNormalSegment();
 
   	  /// Returns the colored label image.
       /**        @return the colored label image */
-      core::Img8u getColoredLabelImage();
+      core::Img8u getColoredLabelDisplay();
 
 	  /// Returns the angle image of the object edge detector
 	  /// /**        @return the angle image */
-	  const core::Img32f getAngleImage();
+	  const core::Img32f getAngleDisplay();
 
       /// Returns the mapped image (the last passed depth image is used for mapping) assumed to be grabbed by the camera cam
       /**       @return the mapped image */

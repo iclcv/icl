@@ -144,7 +144,7 @@ namespace icl {
           /// returns a pointer to the most recent actualized ConvBuffers.
           /**
               ConvBuffers will then be marked and not overwritten till the
-              next call to getNextImage()
+              next call to getNextDisplay()
           **/
           ICLIO_API ConvBuffers* getNextReadBuffer();
           /// returns a pointer to the next write ConvBuffers.

@@ -79,10 +79,10 @@ void init(){
 
   gui << ( Tab("distorted input,undistorted image,"
                "difference image,undistortion map").handle("tab").minSize(32,24)
-           << Draw().handle("image")
-           << Draw().handle("uimage")
-           << Image().handle("diff")
-           << Draw(imageSize).handle("map")
+           << Canvas().handle("image")
+           << Canvas().handle("uimage")
+           << Display().handle("diff")
+           << Canvas(imageSize).handle("map")
          )
       << ( VBox().maxSize(14,99).minSize(14,1)
            << Fps(10).handle("fps").maxSize(99,2).minSize(1,2)

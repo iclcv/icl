@@ -58,12 +58,12 @@ void init(){
   }
 
   gui << ( VBox()
-           << Image().handle("color").label("color image")
-           << Image().handle("depth").label("depth image")
+           << Display().handle("color").label("color image")
+           << Display().handle("depth").label("depth image")
            )
       <<( VBox()
-          << Draw3D().handle("overlay").label("mapped color image overlay")
-          << Draw3D().handle("scene").label("interactive scene")
+          << Canvas3D().handle("overlay").label("mapped color image overlay")
+          << Canvas3D().handle("scene").label("interactive scene")
           )
       <<( VBox()
           << CheckBox("show overlay",true).out("showOverlay")
@@ -95,9 +95,9 @@ void run(){
 
   grabber->grab(*obj);
   if(pa("-c")){
-    gui["color"] = grabber->getLastColorImage();
+    gui["color"] = grabber->getLastColorDisplay();
   }
-  gui["depth"] = grabber->getLastDepthImage();
+  gui["depth"] = grabber->getLastDepthDisplay();
 
   // gui["overlay"] =
   gui["overlay"].render();

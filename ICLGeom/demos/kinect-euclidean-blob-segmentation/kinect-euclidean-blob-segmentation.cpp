@@ -200,16 +200,16 @@ void init(){
           );
 
   gui << ( VBox()
-           << Draw3D().handle("hdepth").minSize(10,8)
+           << Canvas3D().handle("hdepth").minSize(10,8)
            << Button("heatmap","gray").out("heatmap")
-           << Draw3D().handle("hcolor").minSize(10,8)
+           << Canvas3D().handle("hcolor").minSize(10,8)
          )
       << ( VBox()
-           << Draw3D().handle("hedge").minSize(10,8)
-           << Draw3D().handle("hnormal").minSize(10,8)
+           << Canvas3D().handle("hedge").minSize(10,8)
+           << Canvas3D().handle("hnormal").minSize(10,8)
          )
       << ( HSplit()
-           << Draw3D().handle("draw3D").minSize(40,30)
+           << Canvas3D().handle("draw3D").minSize(40,30)
            << controlsTabs
            )
       << Show();
@@ -332,11 +332,11 @@ void run(){
   }
 
   //access interim result
-  //angleImage=objectEdgeDetector->getAngleImage();
+  //angleImage=objectEdgeDetector->getAngleDisplay();
 
   if(pa("-d")){
     objectEdgeDetector->applyWorldNormalCalculation(depthCam);
-    normalImage=objectEdgeDetector->getRGBNormalImage();
+    normalImage=objectEdgeDetector->getRGBNormalDisplay();
   }
 
 	bool enableSegmentation = gui["enableSegmentation"];

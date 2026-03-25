@@ -113,7 +113,7 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Draw().handle("draw").minSize(16,12) << Show();
+  gui << Canvas().handle("draw").minSize(16,12) << Show();
 
   gui["draw"].install(new MouseHandler(mouse));
 }

@@ -6,7 +6,7 @@ GenericGrabber grabber;
 UnaryCompareOp cmp(">");
 
 void init(){
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Slider(0,255,127).handle("thresh")
          .label("threshold").maxSize(100,2)
       << Show();

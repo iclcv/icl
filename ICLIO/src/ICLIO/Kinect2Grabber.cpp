@@ -311,7 +311,7 @@ namespace icl{
       }
     }
 
-    const ImgBase* Kinect2Grabber::acquireImage(){
+    const ImgBase* Kinect2Grabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> lock(m_impl->dev);
       switch(m_impl->mode){
       case GRAB_DEPTH_IMAGE:{
@@ -356,7 +356,7 @@ namespace icl{
            //return &m_impl->irImage;
           break;
         default:
-          throw ICLException("Kinect2Grabber::acquireImage() invalid image mode!");
+          throw ICLException("Kinect2Grabber::acquireDisplay() invalid image mode!");
           break;
       }
       return 0;

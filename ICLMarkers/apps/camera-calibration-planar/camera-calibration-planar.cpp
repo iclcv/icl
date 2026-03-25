@@ -243,14 +243,14 @@ void init(){
 
   gui << (HSplit()
           << (Tab("input view,3D scene view")
-              << Draw3D(imageSize0).handle("draw").minSize(32,24)
+              << Canvas3D(imageSize0).handle("draw").minSize(32,24)
               << (VBox()
                   << (HBox().maxSize(99,2)
                       << Button("sync cam").handle("sync")
                       << CheckBox("visualize cameras",false).handle("vis cams")
                       << CheckBox("show 10mm camera coordinate frames",false).handle("show ccs")
                       )
-                  << Draw3D(imageSize0).handle("3D").minSize(32,24)
+                  << Canvas3D(imageSize0).handle("3D").minSize(32,24)
                   )
              )
           << controls

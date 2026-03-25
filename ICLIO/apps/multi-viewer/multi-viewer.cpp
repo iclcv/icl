@@ -129,7 +129,7 @@ void init(){
     if(pa("-f")) in.grabber.useDesired(pa("-f").as<format>());
     if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
 
-    rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
+    rows[i/layout.width] << Display().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
 
     if(pa("-o")){
       ProgArg o = pa("-o");

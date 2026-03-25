@@ -286,7 +286,7 @@ namespace icl{
     }
 
 
-    const ImgBase *VideoGrabber::acquireImage(){
+    const ImgBase *VideoGrabber::acquireDisplay(){
       std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
 
       m_params->wait(m_data->fps);

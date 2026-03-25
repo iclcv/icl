@@ -323,7 +323,7 @@ void init_gui(){
   bool idu = pa("-idu");
 
   if(pa("-pp")){
-    gui << Image().handle("image").minSize(12,8)
+    gui << Display().handle("image").minSize(12,8)
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
@@ -339,7 +339,7 @@ void init_gui(){
 
     ppEnabled = &gui.get<bool>("pp-on");
   }else{
-    gui << Image().handle("image").minSize(12,8)
+    gui << Display().handle("image").minSize(12,8)
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)

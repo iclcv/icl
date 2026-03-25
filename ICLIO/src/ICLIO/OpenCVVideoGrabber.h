@@ -57,7 +57,7 @@ namespace icl{
       public:
         /// grab function grabs an image (destination image is adapted on demand)
         /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-        virtual const core::ImgBase *acquireImage();
+        virtual const core::ImgBase *acquireDisplay();
 
         /// Constructor creates a new OpenCVVideoGrabber instance
         /** @param fileName name of file to use */

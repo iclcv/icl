@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/Grabber.h>
+#include <ICLCore/Image.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLIO/ImageUndistortion.h>
 #include <ICLUtils/ProgArg.h>
@@ -190,6 +191,12 @@ namespace icl{
       }else{
         return adapted;
       }
+    }
+
+    core::Image Grabber::grabImage(){
+      const ImgBase *result = grab();
+      if(!result) return core::Image();
+      return core::Image(result->deepCopy());
     }
 
     void Grabber::enableUndistortion(const ImageUndistortion &udist){

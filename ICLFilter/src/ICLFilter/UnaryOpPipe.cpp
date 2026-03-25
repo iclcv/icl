@@ -69,14 +69,14 @@ namespace icl{
     }
 
     const ImgBase *UnaryOpPipe::apply(const ImgBase *src){
-      apply(src,&getLastImage());
-      return getLastImage();
+      apply(src,&getLastDisplay());
+      return getLastDisplay();
     }
 
     int UnaryOpPipe::getLength() const {
       return static_cast<int>(ops.size());
     }
-    ImgBase *&UnaryOpPipe::getLastImage() {
+    ImgBase *&UnaryOpPipe::getLastDisplay() {
       return ims[getLength()-1];
     }
     UnaryOp *&UnaryOpPipe::getOp(int i) {

@@ -48,7 +48,7 @@ std::string get_filters(){
 GUI gui_col(int i){
   std::string si = str(i);
   return ( VBox()
-           << Image().handle("im"+si).minSize(8,6)
+           << Display().handle("im"+si).minSize(8,6)
            << ( HBox().maxSize(100,3)
                 << Combo(get_filters()).handle("cb"+si).maxSize(100,2).minSize(3,2).label("filter")
                 << String("").label("params").handle("ps"+si).maxSize(100,2).minSize(4,2)
@@ -74,7 +74,7 @@ void init(){
 #endif
 
   gui << ( VBox()
-           << Image().handle("input").minSize(8,6)
+           << Display().handle("input").minSize(8,6)
            << (HBox().label("desired params").maxSize(100,4)
                << Combo("1:1,QVGA,VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("size")

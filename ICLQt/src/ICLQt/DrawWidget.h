@@ -89,7 +89,7 @@ if(e.isLeft() && !gui["vis"].as<int>()){
 }
 
 void init(){
-  gui << Draw().handle("draw").minSize(32,24)
+  gui << Canvas().handle("draw").minSize(32,24)
       << (HBox().maxSize(100,3)
          << Combo("image,levelmap").handle("vis")
          << Slider(2,10,5).out("levels").label("levels"));

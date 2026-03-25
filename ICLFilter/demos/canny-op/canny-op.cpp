@@ -40,7 +40,7 @@ GenericGrabber grabber;
 void update();
 
 void init(){
-  gui << Image().handle("image").minSize(32,24)
+  gui << Display().handle("image").minSize(32,24)
       << (VBox()
           << FSlider(0,2000,10).out("low").label("low").maxSize(100,2).handle("low-handle")
           << FSlider(0,2000,100).out("high").label("high").maxSize(100,2).handle("high-handle")

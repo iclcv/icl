@@ -271,7 +271,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
     }
   }
 
-  virtual const ImgBase *acquireImage(){
+  virtual const ImgBase *acquireDisplay(){
     std::lock_guard<std::recursive_mutex> l(getMutex());
     ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
 
@@ -336,7 +336,7 @@ void init(){
   grabber->useDesired(Size::VGA);
   grabber->useDesired(depth8u);
   grabber->useDesired(formatGray);
-  gui << Draw().handle("image").minSize(32,24);
+  gui << Canvas().handle("image").minSize(32,24);
   gui << ( HBox()
            << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
            << Button("off","on",true).out("Vlo").label("Show labels")

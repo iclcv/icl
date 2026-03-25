@@ -49,7 +49,7 @@ namespace icl{
       public:
 
         /// default grab function
-        virtual const core::ImgBase* acquireImage();
+        virtual const core::ImgBase* acquireDisplay();
 
         /// Create a CreateGrabber with given max. fps count
         CreateGrabber(const std::string &what);
