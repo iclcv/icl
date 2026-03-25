@@ -11,9 +11,9 @@ void init(){
    gui << Display().handle("image") << Show();
 }
 void run(){
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
   gui["image"] = image;
-  out.send(image);
+  out.send(image.ptr());
 }
 int main(int n, char **args){
   return ICLApp(n,args,"-input|-i(2) -output|-o(2)",init,run).exec();

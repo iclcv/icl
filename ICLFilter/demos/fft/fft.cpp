@@ -42,7 +42,7 @@ void run(){
   fft.setResultMode((FFTOp::ResultMode)(int)resultMode);
   fft.setSizeAdaptionMode((FFTOp::SizeAdaptionMode)(int)sizeAdMode);
 
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   gui["image"] = image;
   gui["result"] = fft.apply(image);

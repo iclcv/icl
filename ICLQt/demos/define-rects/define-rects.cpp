@@ -48,7 +48,7 @@ void init(){
 
 void run(){
   DrawHandle draw = gui["draw"];
-  draw = grabber.grab();
+  draw = grabber.grabImage();
   mouse.visualize(**draw);
   draw.render();
 }

@@ -37,14 +37,14 @@ struct Input{
   std::string a,b;
   GenericGrabber grabber;
   ImageHandle handle;
-  const ImgBase *lastImage;
+  Image lastImage;
   std::string id;
   void operator()(){
-    lastImage = grabber.grab();
+    lastImage = grabber.grabImage();
     handle = lastImage;
   }
   void save(){
-    if(out) out->send(lastImage);
+    if(out) out->send(lastImage.ptr());
   }
   std::shared_ptr<GenericImageOutput> out;
 };
@@ -87,7 +87,7 @@ void save_all(){
           if(c == '/') c = '-';
         }
         std::string fn = pref+"-"+part+suff;
-        save(*in.lastImage, fn);
+        save(*in.lastImage.ptr(), fn);
         std::cout << "saved file " << fn << std::endl;
       }
       std::cout << std::endl;

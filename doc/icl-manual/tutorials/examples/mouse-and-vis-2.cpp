@@ -23,7 +23,7 @@ void init(){
 void run(){
   cd.setThreshold(gui["t"]);
   DrawHandle draw = gui["image"];
-  const ImgBase *I = grabber.grab();
+  Image I = grabber.grabImage();
 
   draw = I;
   draw->color(255,0,0);

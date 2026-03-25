@@ -38,7 +38,7 @@ void init(){
 
 void run(){
   static ButtonHandle next = gui["next"];
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   if(next.wasTriggered()){
     currFilter = (currFilter+1)%10;
@@ -46,7 +46,7 @@ void run(){
   }
 
   resultMutex.lock();
-  op.apply(image,&result);
+  op.apply(image.ptr(),&result);
   resultMutex.unlock();
 
   gui["result"] = result;

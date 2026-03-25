@@ -35,13 +35,13 @@
 GUI gui;
 GenericGrabber grabber;
 std::recursive_mutex mtex;
-const ImgBase *image;
+Image image;
 
 void capture(){
   std::lock_guard<std::recursive_mutex> lock(mtex);
   std::string filename = saveFileDialog();
   if(filename.length()){
-    save(cvt(image),filename);
+    save(cvt(image.ptr()),filename);
   }
 }
 
@@ -67,7 +67,7 @@ void init(){
 
 void run(){
   mtex.lock();
-  image = grabber.grab();
+  image = grabber.grabImage();
   mtex.unlock();
   gui["image"] = image;
 }

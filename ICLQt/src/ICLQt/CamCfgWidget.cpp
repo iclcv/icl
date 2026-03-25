@@ -127,14 +127,14 @@ namespace icl{
       QMutexLocker __lock(&data->mutex);
       if(data->grabber.isNull()) return 0;
 
-      const ImgBase *image = data->grabber.grab();
+      Image image = data->grabber.grabImage();
 
       if(data->complex){
         data->gui["image"] = image;
         data->gui["fps"] = data->fps.getFPSString();
       }
 
-      return image;
+      return image.ptr();
     }
 
 
@@ -230,7 +230,7 @@ namespace icl{
         data->grabbing = true;
 
         if(!data->grabber.isNull()){
-          data->gui["image"] = data->grabber.grab();
+          data->gui["image"] = data->grabber.grabImage();
           data->gui["fps"] = data->fps.getFPSString();
           data->mutex.unlock();
           if(data->useFPSLimiter){

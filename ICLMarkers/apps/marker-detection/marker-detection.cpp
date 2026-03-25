@@ -126,10 +126,10 @@ inline float round2(float f){
 void run(){
   static bool enable3D = pa("-3D").as<bool>() || pa("-c").as<bool>();
   while(gui["pause"]) Thread::msleep(100);
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   Time t = Time::now();
-  const std::vector<Fiducial> &fids = fid->detect(image);
+  const std::vector<Fiducial> &fids = fid->detect(image.ptr());
   gui["ms"] = round2(t.age().toMilliSecondsDouble());
 
   DrawHandle3D draw = gui["draw"];

@@ -99,8 +99,8 @@ void init(){
 }
 
 void run(){
-  const ImgBase *grabbedImage = grabber.grab();
-  Img8u *image = grabbedImage->asImg<icl::icl8u>()->deepCopy();
+  Image grabbedImage = grabber.grabImage();
+  Img8u *image = grabbedImage.as<icl::icl8u>().deepCopy();
 
   if(faceCounter > detector->getFramerate()) {
     //add roi of the face to the heartrate detector

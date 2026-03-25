@@ -53,7 +53,7 @@ void run(){
   static WarpOp op(icl::qt::load(pa("-w")));
   grabber.useDesired(parse<depth>(gui["depth"]));
 
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
   if(gui["warp"]){
     op.setScaleMode(gui["lin"]?interpolateLIN:interpolateNN);
 

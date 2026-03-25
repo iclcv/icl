@@ -116,7 +116,7 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(formatGray);
   grabber.useDesired(depth8u);
-  grabber.grab();
+  grabber.grabImage();
 
   GUI colors = ( VBox().minSize(18,1)
                  << CheckBox("use custom gradient below").out("custom").handle("customH")
@@ -152,7 +152,7 @@ void init(){
 }
 
 void run(){
-  ::image = *grabber.grab()->asImg<icl8u>();
+  ::image = grabber.grabImage().as<icl8u>();
   step("");
 }
 

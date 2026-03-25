@@ -72,15 +72,15 @@ int main(int n, char **ppc){
 
   if(s){
     std::string val = pa("-s", 1).as<std::string>();
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) grabber.grabImage();
     grabber.setPropertyValue(pa("-s",0),val);
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) grabber.grabImage();
   }else if(g){
     std::cout << grabber.getPropertyValue(pa("-g")) << std::endl;
   }else if(p){
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) grabber.grabImage();
     grabber.loadProperties(pa("-p"));
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) grabber.grabImage();
   }else if(o){
     grabber.saveProperties(pa("-o"));
   }else{

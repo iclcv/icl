@@ -96,14 +96,14 @@ void init(){
 
 void run(){
   DrawHandle3D draw = gui["draw"];
-  const ImgBase *image = grabber.grab();
-  draw = image;
+  Image image = grabber.grabImage();
+  draw = image.ptr();
 
   float tExp = gui["t"];
   float t = ::pow(10,tExp);
 
   surf->setThreshold(t);
-  const std::vector<SurfMatch> &ms = surf->match(image);
+  const std::vector<SurfMatch> &ms = surf->match(image.ptr());
   if(ms.size() >= 4){
     std::vector<Point32f> curr(ms.size()),templ(ms.size());
     for(size_t i=0;i<ms.size();++i){

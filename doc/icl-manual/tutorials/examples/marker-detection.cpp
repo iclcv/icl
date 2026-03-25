@@ -30,10 +30,10 @@ void run(){
   static DrawHandle draw = gui["draw"];
 
   // grab the next image
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   // detect markers
-  const std::vector<Fiducial> &fids = fid.detect(image);
+  const std::vector<Fiducial> &fids = fid.detect(image.ptr());
 
   // visualize the image
   draw = image;

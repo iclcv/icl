@@ -238,12 +238,12 @@ void init(){
   if(!c_arg){
     gui["batch"].registerCallback(batch_crop);
   }
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
   if(!c_arg){
-    mouse_1 = new Mouse1(image->getSize());
+    mouse_1 = new Mouse1(image.getSize());
     gui["draw"].install(mouse_1);
   }
-  mouse_2 = new Mouse2(image->getSize());
+  mouse_2 = new Mouse2(image.getSize());
   gui["draw"].install(mouse_2);
 
   DrawHandle draw = gui["draw"];
@@ -268,7 +268,8 @@ void run(){
   static FPSLimiter fpsLimit(30);
   fpsLimit.wait();
 
-  const ImgBase *image = grabber.grab();
+  Image imageHolder = grabber.grabImage();
+  const ImgBase *image = imageHolder.ptr();
   DrawHandle draw = gui["draw"];
   ImageHandle cropped = gui["cropped"];
 

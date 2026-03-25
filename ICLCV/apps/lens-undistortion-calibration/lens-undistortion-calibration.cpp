@@ -69,7 +69,7 @@ void init(){
   detector.setPropertyValue("thresh.global threshold", 21);
   detector.setPropertyValue("thresh.mask size", 30);
 
-  const Size &imageSize = grabber.grab()->getSize();
+  const Size imageSize = grabber.grabImage().getSize();
   udist.reset(new UndistortionUtil(imageSize));
   udist->setConfigurableID("udist");
 
@@ -125,9 +125,9 @@ void run(){
   DrawHandle udraw = gui["uimage"];
 
   FiducialDetector *fd = detector.getFiducialDetector();
-  const ImgBase * image = grabber.grab();
+  Image image = grabber.grabImage();
 
-  const MarkerGrid &grid = detector.detect(image);
+  const MarkerGrid &grid = detector.detect(image.ptr());
 
   static  FiducialDetector abc ("bch","[0-23]",ParamList("size","40x40"));
 

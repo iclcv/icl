@@ -414,14 +414,14 @@ void run(){
   int zAxis = gui["zAxis"];
   int &z = gui.get<int>("z");
 
-  static const ImgBase *inputImage = 0;
+  static Image inputImage;
   if(!inputImage || !gui["paused"].as<bool>()){
-    inputImage = grabber.grab();
+    inputImage = grabber.grabImage();
   }else{
     Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
   }
 
-  const Img8u *grabbedImage = inputImage->asImg<icl8u>();
+  const Img8u *grabbedImage = &inputImage.as<icl8u>();
 
   std::lock_guard<std::recursive_mutex> lock(mtex);
 

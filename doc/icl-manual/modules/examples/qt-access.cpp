@@ -18,7 +18,7 @@ void run(){
   cmp.setValue(gui["thresh"]);
 
   // set displayed image
-  gui["image"] = cmp.apply(grabber.grab());
+  gui["image"] = cmp.apply(grabber.grabImage());
 }
 int main(int n, char **args){
   return ICLApp(n,args,"-input|-i(2)",init,run).exec();

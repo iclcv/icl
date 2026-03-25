@@ -38,7 +38,8 @@ ChromaGUI *cg;
 GenericGrabber grabber;
 
 void run(){
-  const Img8u &image = *grabber.grab()->asImg<icl8u>();
+  Image grabImg = grabber.grabImage();
+  const Img8u &image = grabImg.as<icl8u>();
   static Img8u segImage(image.getSize(),1);
 
   Channel8u c[3] = {image[0],image[1],image[2] };

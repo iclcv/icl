@@ -33,7 +33,7 @@ void init(){
 }
 
 void run(){
-  gui["image"] = grabber.grab();
+  gui["image"] = grabber.grabImage();
 
   // image processing stuff ...
 

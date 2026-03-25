@@ -76,14 +76,14 @@ void update(){
   }
 
   static ImgBase *dst = 0;
-  const ImgBase *src = grabber.grab();
+  Image src = grabber.grabImage();
 
   smoothing->setFilterSize(filterSize);
   smoothing->setDifference(difference);
 
   Time startT, endT;
   startT = Time::now();
-  smoothing->apply(src, &dst);
+  smoothing->apply(src.ptr(), &dst);
   endT = Time::now();
   std::cout << (smoothing->isCLActive() ? "OpenCL: " : "CPU: ");
   std::cout << (endT-startT).toMilliSeconds() << " ms" << std::endl;

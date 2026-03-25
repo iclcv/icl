@@ -84,24 +84,24 @@ void run() {
   static DrawHandle &hImgHeuristics = gui.get<DrawHandle>("heuristicsImg");
   static DrawHandle &hImgQuad = gui.get<DrawHandle>("quadImg");
 
-  const ImgBase *image = grabber.grab();
-  static Img8u imgRegions(image->getSize(), 1);
+  Image image = grabber.grabImage();
+  static Img8u imgRegions(image.getSize(), 1);
   imgRegions.clear(0, 255);
 
-  static Img8u imgOldDet(image->getSize(), 1);
+  static Img8u imgOldDet(image.getSize(), 1);
   imgOldDet.clear(0, 255);
 
-  static Img8u imgHeuristics(image->getSize(), 1);
+  static Img8u imgHeuristics(image.getSize(), 1);
   imgHeuristics.clear(0, 255);
-  static Img8u imgQuad(image->getSize(), 1);
+  static Img8u imgQuad(image.getSize(), 1);
   imgQuad.clear(0, 255);
 
-  const std::vector<Fiducial> &fids = fid.detect(image);
+  const std::vector<Fiducial> &fids = fid.detect(image.ptr());
   FiducialDetectorPlugin* plugin = fid.getPlugin();
   FiducialDetectorPluginBCH* bchplug = (FiducialDetectorPluginBCH*) plugin;
   QuadDetector& quadd = bchplug->getQuadDetector();
 
-  const std::vector<TiltedQuad> &quadsNew = quadd.detect(image);
+  const std::vector<TiltedQuad> &quadsNew = quadd.detect(image.ptr());
   icl::cv::RegionDetector* rd = quadd.getRegionDetector();
   const std::vector<ImageRegion>& regions = rd->getLastDetectedRegions();
 

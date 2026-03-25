@@ -39,7 +39,7 @@ void run(){
   DrawHandle draw = gui["image"];
 
   // grab image
-  const ImgBase *I = grabber.grab();
+  Image I = grabber.grabImage();
 
   // set the background image
   draw = I;

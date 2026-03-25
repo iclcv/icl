@@ -446,7 +446,8 @@ void init(){
   if(pa("-s")){
     grabber.useDesired(pa("-s").as<Size>());
   }
-  const ImgBase *image = grabber.grab();
+  Image grabImg = grabber.grabImage();
+  const ImgBase *image = grabImg.ptr();
   udist.init(image->getSize());
 
   if(pa("-cb")){
@@ -573,7 +574,8 @@ void run(){
   }
 
 
-  const ImgBase *img = grabber.grab();
+  Image grabImg2 = grabber.grabImage();
+  const ImgBase *img = grabImg2.ptr();
   draw = img;
 
   if(warp.getWarpMap().getSize().getDim()){

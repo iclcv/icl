@@ -87,14 +87,16 @@ void init_grabber(){
   }
 }
 
+static Image grabImageHolder;
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
-  //  const ImgBase *image = grabber.grab();
+  //  const ImgBase *image = grabber.grabImage();
 
+  grabImageHolder = grabber.grabImage();
   if (!(bool)pa("-flip")){
-    img = grabber.grab();
+    img = grabImageHolder.ptr();
   }else{
-    ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
+    ImgBase *hack = grabImageHolder.ptr();
     std::string axis = pa("-flip").as<std::string>();
     if(axis  ==   "x"){
       hack->mirror(axisVert);

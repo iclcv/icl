@@ -45,11 +45,11 @@ void init(){
 
 void run(){
   //grabber.useDesired(parse<format>(gui["fmt"]));
-  //gui["image"] = grabber.grab();
-  const ImgBase *image = grabber.grab();
+  //gui["image"] = grabber.grabImage();
+  Image image = grabber.grabImage();
   static Img8u dst;
   dst.setFormat(parse<format>(gui["fmt"]));
-  cc(image,&dst);
+  cc(image.ptr(),&dst);
   gui["image"] = dst;
 }
 

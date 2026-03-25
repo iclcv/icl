@@ -70,7 +70,7 @@ void run(){
   if(pa("-s")){
     Thread::msleep(1000);
   }else{
-    grabber.grab()->convert(&image);
+    grabber.grabImage().ptr()->convert(&image);
     if(pa("-o")){
       const Img8u &image = scene.render(0);
       if(pa("-d")){
@@ -93,7 +93,7 @@ void init(){
   }
 
 
-  grabber.grab()->convert(&image);
+  grabber.grabImage().ptr()->convert(&image);
   obj = new ImgObj;
 
   scene.addObject(obj);

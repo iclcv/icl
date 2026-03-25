@@ -114,7 +114,7 @@ struct View{
   CoplanarPointPoseEstimator cbPoseEst;
   Camera camera;
   Camera calibratedCamera;
-  const ImgBase *lastImage;
+  Image lastImage;
   ComplexCoordinateFrameSceneObject *cs;
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
@@ -187,10 +187,11 @@ void init(){
     int id = i/3;
     views[id].reset(new View);
     View &v = *views[id];
-    v.lastImage = 0;
+    v.lastImage = Image();
     v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);
     inputIDs += "input-" + str(id) + ",";
-    const ImgBase  *image = v.grabber.grab();
+    Image grabImg = v.grabber.grabImage();
+    const ImgBase  *image = grabImg.ptr();
     if(!i) imageSize0 = image->getSize();
     v.camera = extract_camera_from_udist_file(pai[i+2]);
     v.camera.setName("Input: " + pai[i] + " " + pai[i+1]);
@@ -363,8 +364,8 @@ void run(){
 
   for(size_t i=0;i<views.size();++i){
     View &v = *views[i];
-    const ImgBase *image = !acquisition ? v.lastImage : v.grabber.grab();
-    v.lastImage = image;
+    if(acquisition) v.lastImage = v.grabber.grabImage();
+    const ImgBase *image = v.lastImage.ptr();
 
     Camera cam = v.camera;
     Mat T;

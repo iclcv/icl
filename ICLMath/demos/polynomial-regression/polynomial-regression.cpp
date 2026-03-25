@@ -202,7 +202,7 @@ void init(){
 }
 
 void run_2D(){
-  ImgQ image = *grabber.grab()->as32f();
+  ImgQ image = grabber.grabImage().as<icl32f>();
   int cellsize = gui["cellsize"];
   while( (image.getWidth() % cellsize) || (image.getHeight() % cellsize)) --cellsize;
 

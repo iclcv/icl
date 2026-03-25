@@ -202,15 +202,15 @@ void init() {
 
 void run() {
 
-	const ImgBase* img = grabber.grab();
+	Image img = grabber.grabImage();
 
-	switch(img->getDepth()) {
+	switch(img.getDepth()) {
 		case(core::depth8u): {
-			grab_cb<icl8u>(img);
+			grab_cb<icl8u>(img.ptr());
 			break;
 		}
 		case(core::depth32f): {
-			grab_cb<icl32f>(img);
+			grab_cb<icl32f>(img.ptr());
 			break;
 		}
 		default: break;

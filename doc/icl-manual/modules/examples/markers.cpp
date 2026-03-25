@@ -18,7 +18,7 @@ void init(){
 
 void run(){
   static DrawHandle draw = gui["draw"];
-  const core::ImgBase *image = grabber.grab();
+  const core::ImgBase *image = grabber.grabImage();
 
   const std::vector<Fiducial> &fids = fid.detect(image);
 

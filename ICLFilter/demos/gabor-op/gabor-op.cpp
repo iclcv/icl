@@ -100,7 +100,7 @@ void run(){
     saveSize = size;
     memcpy(saveParams,params,5*sizeof(float));
 
-    g->apply(grabber.grab(),&resultImage);
+    g->apply(grabber.grabImage().ptr(),&resultImage);
     resultImage->normalizeAllChannels(Range<icl64f>(0,255));
 
     gui["image"] = resultImage;

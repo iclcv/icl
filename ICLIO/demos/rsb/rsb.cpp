@@ -98,10 +98,10 @@ void init(){
 
 void run(){
   if(MODE == Send || MODE == Both){
-    const ImgBase *image = grabber.grab();
-    const_cast<ImgBase*>(image)->setMetaData(gui["text"]);
+    Image image = grabber.grabImage();
+    image.ptr()->setMetaData(gui["text"]);
     gui["image"] = image;
-    sender.send(image);
+    sender.send(image.ptr());
   }else{
     const ImgBase *image = receiver.grab();
     gui["image"] = image;

@@ -102,10 +102,10 @@ void run(){
   static DrawHandle3D draw = gui["draw"];
 
   if(grabber){
-    const ImgBase *image = grabber.grab();
-    static Img8u black(image->getSize(),1);
+    Image image = grabber.grabImage();
+    static Img8u black(image.getSize(),1);
     if(gui["grab"]){
-      draw = image;
+      draw = image.ptr();
     }else{
       draw = &black;
     }

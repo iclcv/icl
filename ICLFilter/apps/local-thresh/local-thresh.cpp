@@ -102,17 +102,17 @@ void step(){
   ltop.setClipToROI(clipToROI);
   ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);
 
-  static const ImgBase *image = 0;
+  static Image image;
   if(!image || loop || next.wasTriggered()){
     bool init = !image;
-    image = grabber.grab();
+    image = grabber.grabImage();
     if(init){
-      selroi[0]=selroi[2]=image->getImageRect();
+      selroi[0]=selroi[2]=image.ptr()->getImageRect();
     }
   }
 
-  const ImgBase *useImage = image;
-  if(selroi[1] != image->getImageRect()){
+  const ImgBase *useImage = image.ptr();
+  if(selroi[1] != image.ptr()->getImageRect()){
     useImage = useImage->shallowCopy(selroi[1]);
   }
   Time last = Time::now();
@@ -124,7 +124,7 @@ void step(){
 
   orig = image;
 
-  if(image != useImage){
+  if(image.ptr() != useImage){
     delete useImage;
   }
 
@@ -221,7 +221,8 @@ void batch_mode(){
       if(maxSteps > 0){
         printf("processing image %30s ......",fl[i++].c_str());
       }
-      const ImgBase *image = grabber.grab();
+      Image grabImg = grabber.grabImage();
+      const ImgBase *image = grabImg.ptr();
       if(image->getFormat() != formatGray){
         printf("...");
         static ImgBase *grayImage = 0;

@@ -37,6 +37,7 @@
 using namespace icl::qt;
 using icl::utils::pa;
 using icl::core::Img8u;
+using icl::core::Image;
 using icl::io::GenericGrabber;
 using icl::cv::ORBFeatureDetector;
 
@@ -58,7 +59,8 @@ void init(){
 
 }
 void run(){
-  const Img8u &image = *grabber.grab()->as8u();
+  Image grabImg = grabber.grabImage();
+  const Img8u &image = grabImg.as<icl::icl8u>();
 
   ORBFeatureDetector::FeatureSet fs = orb.detect(image);
 

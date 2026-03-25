@@ -99,9 +99,9 @@ void run(){
   grabber.useDesired(parse<Size>(srcSize.getSelectedItem()));
   grabber.useDesired(parse<depth>(srcDepth.getSelectedItem()));
 
-  const ImgBase *grabbedImage = grabber.grab();
-  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
-  const ImgBase *roiedImage = grabbedImage->shallowCopy(roi);
+  Image grabbedImage = grabber.grabImage();
+  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage.ptr()->getImageRect());
+  const ImgBase *roiedImage = grabbedImage.ptr()->shallowCopy(roi);
 
   ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
   conv.setClipToROI(clipToROI);

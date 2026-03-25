@@ -135,6 +135,7 @@ void run(){
 
   static int lastLevels = levels;
   static int lastMedianSize = medianSize;
+  static core::Image grabbedImageHolder;
   static const Img8u *grabbedImage;
   static Img8u reducedLevels;
 
@@ -146,7 +147,8 @@ void run(){
   int ms = medianSize;
   bool rdUpdated = false;
   if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
-    grabbedImage = grabber.grab()->as8u();
+    grabbedImageHolder = grabber.grabImage();
+    grabbedImage = &grabbedImageHolder.as<icl8u>();
     useImage = grabbedImage;
 
     if(levels != 256){

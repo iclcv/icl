@@ -17,7 +17,7 @@ void init(){
 
 void run(){
   cmp.setValue(gui["thresh"]);
-  gui["image"] = cmp.apply(grabber.grab());
+  gui["image"] = cmp.apply(grabber.grabImage());
   fps.wait();
 }
 int main(int n, char **args){

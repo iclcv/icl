@@ -35,13 +35,13 @@
 GenericGrabber  grabber;
 Scene scene;
 GUI gui;
-const ImgBase *image = 0;
+Image image;
 
 struct Obj : public SceneObject{
   Obj(){
     Point32f ts[100];
     int idx[100];
-    const float ar = float(image->getWidth()) / float(image->getHeight());
+    const float ar = float(image.getWidth()) / float(image.getHeight());
     for(int i=0;i<100;++i){
       float angle = (float(i)/100) * 2 *M_PI;
       addVertex(Vec(cos(angle)*5*ar, sin(angle)*5, -2, 1));
@@ -50,7 +50,7 @@ struct Obj : public SceneObject{
       idx[i] = i;
     }
     bool createTextureOnce = false; // just to make this more explicit
-    addTexture(image,100,idx, ts, idx, createTextureOnce);
+    addTexture(image.ptr(),100,idx, ts, idx, createTextureOnce);
   }
 
 #if 0
@@ -74,7 +74,7 @@ struct Obj : public SceneObject{
 void init(){
 
   grabber.init(pa("-i"));
-  image = grabber.grab();
+  image = grabber.grabImage();
   scene.addCamera(Camera());
 
   obj = new Obj;
@@ -88,7 +88,7 @@ void init(){
 }
 
 void run(){
-  image = grabber.grab();
+  image = grabber.grabImage();
   gui["draw"].render();
 }
 

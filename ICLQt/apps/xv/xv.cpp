@@ -113,11 +113,11 @@ int main (int n, char **ppc){
       std::string s = pa(i).as<std::string>();
       try{
         FileGrabber grabber(s,false,true);
-        const ImgBase *image = grabber.grab();
+        Image image = grabber.grabImage();
         if(!image) throw ICLException("");
-        maxSize.width = iclMax(image->getWidth(),maxSize.width);
-        maxSize.height = iclMax(image->getHeight(),maxSize.height);
-        imageVec.push_back(image->deepCopy());
+        maxSize.width = iclMax(image.getWidth(),maxSize.width);
+        maxSize.height = iclMax(image.getHeight(),maxSize.height);
+        imageVec.push_back(image.ptr()->deepCopy());
 
         std::replace(s.begin(),s.end(),',','-');
         imageList += (imageList.length() ? ",": "") +s;

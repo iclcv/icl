@@ -27,7 +27,7 @@ void run(){
   static ButtonHandle next = gui["next"];
   static ButtonHandle save = gui["save"];
 
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   if(next.wasTriggered()){
     currFilter = (currFilter+1)%10;
@@ -35,7 +35,7 @@ void run(){
   }
 
   static ImgBase *resultBuf = 0;
-  op.apply(image, &resultBuf);
+  op.apply(image.ptr(), &resultBuf);
 
   gui["result"] = resultBuf;
 
