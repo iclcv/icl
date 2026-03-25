@@ -320,10 +320,21 @@ namespace icl {
         }
       }
 
-      /// Calls f(other_typed) for two images of the same depth.
-      /** Both images must have the same depth. */
+      /// Calls f(typed, other_typed) for two images of the same depth.
       template<class F>
       auto visitWith(Image &other, F &&f) {
+        switch(getDepth()){
+          case depth8u:  return f(as<icl8u>(),  other.as<icl8u>());
+          case depth16s: return f(as<icl16s>(), other.as<icl16s>());
+          case depth32s: return f(as<icl32s>(), other.as<icl32s>());
+          case depth32f: return f(as<icl32f>(), other.as<icl32f>());
+          default:       return f(as<icl64f>(), other.as<icl64f>());
+        }
+      }
+
+      /// const version — f receives (const Img<T>&, Img<T>&)
+      template<class F>
+      auto visitWith(Image &other, F &&f) const {
         switch(getDepth()){
           case depth8u:  return f(as<icl8u>(),  other.as<icl8u>());
           case depth16s: return f(as<icl16s>(), other.as<icl16s>());

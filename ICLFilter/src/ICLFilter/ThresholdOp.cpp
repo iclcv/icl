@@ -478,7 +478,7 @@ namespace icl {
     void ThresholdOp::apply(const core::Image &src, core::Image &dst) {
       if(!prepare(dst, src)) return;
       src.visitWith(dst, [this](const auto &s, auto &d) {
-        using T = typename std::decay_t<decltype(s)>::Type;
+        using T = std::decay_t<decltype(*s.begin(0))>;
         switch(m_eType){
           case lt:      tlt(&s, &d, clipped_cast<icl32f,T>(m_fLowThreshold)); break;
           case gt:      tgt(&s, &d, clipped_cast<icl32f,T>(m_fHighThreshold)); break;
