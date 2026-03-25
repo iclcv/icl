@@ -32,7 +32,8 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/ImgBase.h>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 
 #ifndef ICL_HAVE_LIBJPEG
   #if WIN32

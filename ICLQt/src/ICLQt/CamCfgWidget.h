@@ -31,10 +31,11 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 #include <ICLIO/GenericGrabber.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <QSplitter>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl{
   namespace qt{

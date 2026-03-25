@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 #include <QOpenGLWidget>
 #include <ICLCore/Types.h>
 #include <ICLQt/ImageStatistics.h>
@@ -40,6 +40,7 @@
 #include <ICLQt/GUI.h>
 #include <ICLCore/Color.h>
 #include <functional>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl{
   namespace qt{

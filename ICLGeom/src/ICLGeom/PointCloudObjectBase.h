@@ -34,8 +34,9 @@
 #include <ICLUtils/Time.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLCore/DataSegment.h>
-#include <ICLCore/ImgBase.h>
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 #include <map>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl{
   namespace geom{

@@ -33,11 +33,12 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/ImgBase.h>
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 #include <ICLCV/RegionDetector.h>
 #include <vector>
 
 #include <ICLMarkers/TiltedQuad.h>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl{
   namespace markers{

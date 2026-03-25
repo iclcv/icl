@@ -35,7 +35,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
-#include <ICLCore/ImgBase.h>
+// forward declaration (was #include <ICLCore/ImgBase.h>)
 #include <ICLIO/GrabberDeviceDescription.h>
 
 namespace icl {
@@ -49,6 +49,7 @@ namespace icl {
 #include <vector>
 #include <set>
 #include <mutex>
+namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl {
   namespace io{

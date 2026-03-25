@@ -34,6 +34,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace utils{}
@@ -269,6 +270,9 @@ namespace icl{
         @return conveted image
     **/
     ICLQt_API ImgQ cvt(const core::ImgBase &image);
+
+    /// converts a core::Image to ImgQ
+    inline ImgQ cvt(const core::Image &image){ return cvt(*image.ptr()); }
     /** @} **/
     /* }}} */
 
