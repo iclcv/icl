@@ -43,3 +43,4 @@
 #include <mutex>
 #include <ICLIO/FileWriter.h>
 #include <ICLCore/Color.h>
+#include <ICLCore/Image.h>

@@ -53,20 +53,15 @@ namespace icl{
       ICL_DELETE(m_buf);
     }
 
-    const core::ImgBase *BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
-      apply(a,b,&m_buf);
-      return m_buf;
+    core::Image BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
+      apply(a, b, &m_buf);
+      return core::Image(m_buf->deepCopy());
     }
 
     void BinaryOp::apply(const core::Image &src1, const core::Image &src2, core::Image &dst){
       core::ImgBase *tmp = nullptr;
       apply(src1.ptr(), src2.ptr(), &tmp);
       dst = core::Image(tmp);
-    }
-
-    core::Image BinaryOp::apply(const core::Image &src1, const core::Image &src2){
-      const core::ImgBase *result = apply(src1.ptr(), src2.ptr());
-      return core::Image(result->deepCopy());
     }
 
   } // namespace filter

@@ -31,10 +31,10 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
-  namespace core { class Image; }
   namespace filter{
     /// Abstract base class for binary image operations \ingroup BINARY
     /** A list of all binary operators can be found here: \n
@@ -59,30 +59,35 @@ namespace icl{
       /// pure virtual apply function
       virtual void apply(const core::ImgBase *operand1,const core::ImgBase *operand2, core::ImgBase **result)=0;
 
-      /// applyfunction without explicit destination image
-      /** Usually this function must not be reimplemented, because it's default operation does simply use
-          an internal buffer to call apply(const ImgBase*,const ImgBase*,ImgBase**). */
-      virtual const core::ImgBase *apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
+      /// Applies the filter using an internal buffer and returns the result as Image
+      core::Image apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
 
       /// Image-based apply: filters src1 and src2 into dst
       void apply(const core::Image &src1, const core::Image &src2, core::Image &dst);
 
-      /// Image-based apply: returns a shallow copy of an internally held buffer
-      core::Image apply(const core::Image &src1, const core::Image &src2);
+      /// Image-based apply (convenience)
+      inline core::Image apply(const core::Image &src1, const core::Image &src2){
+        return apply(src1.ptr(), src2.ptr());
+      }
 
-      /// function operator (alternative for apply(src1,src2,dst)
-      inline void operator()(const core::ImgBase *src1,const core::ImgBase *src2, core::ImgBase **dst){
+      /// function operator (alternative for apply(src1,src2,dst))
+      inline void operator()(const core::ImgBase *src1, const core::ImgBase *src2, core::ImgBase **dst){
         apply(src1,src2,dst);
       }
 
-      /// function operator for the implicit destination apply(a,b) call
-      inline const core::ImgBase *operator()(const core::ImgBase *src1,const core::ImgBase *src2){
+      /// function operator for single-result apply
+      inline core::Image operator()(const core::ImgBase *src1, const core::ImgBase *src2){
         return apply(src1,src2);
       }
 
+      /// function operator for Image-based apply
+      inline core::Image operator()(const core::Image &src1, const core::Image &src2){
+        return apply(src1.ptr(), src2.ptr());
+      }
+
       /// reference based function operator
-      inline const core::ImgBase &operator()(const core::ImgBase &sr1,const core::ImgBase &src2){
-        return *apply(&sr1,&src2);
+      inline core::Image operator()(const core::ImgBase &sr1, const core::ImgBase &src2){
+        return apply(&sr1, &src2);
       }
 
       /// sets if the image should be clip to ROI or not
