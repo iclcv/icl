@@ -109,8 +109,8 @@ namespace icl{
       /// applies all ops sequentially
       virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
 
-      /// This function is reimplemented here; it uses getLastDisplay() as destination image
-      virtual const core::ImgBase *apply(const core::ImgBase *src);
+      /// Reimplemented: uses getLastDisplay() as destination image
+      core::Image apply(const core::ImgBase *src);
 
       /// returns the number of contained ops
       int getLength() const;

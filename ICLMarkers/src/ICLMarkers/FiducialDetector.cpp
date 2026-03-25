@@ -62,7 +62,9 @@ namespace icl{
         addChildConfigurable(&lt);
       }
       virtual const Img8u &pp(const ImgBase *src){
-        return *lt.apply(src)->asImg<icl8u>();
+        static ImgBase *buf = nullptr;
+        lt.apply(src, &buf);
+        return *buf->asImg<icl8u>();
       }
     };
 

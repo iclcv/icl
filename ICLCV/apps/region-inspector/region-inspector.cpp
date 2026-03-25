@@ -156,7 +156,9 @@ void run(){
 
     if(ms){
       mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
-      useImage = mo->apply(useImage)->asImg<icl8u>();
+      static ImgBase *moBuf = 0;
+      mo->apply(useImage, &moBuf);
+      useImage = moBuf->asImg<icl8u>();
     }
 
     d.setImage(useImage);
@@ -178,12 +180,16 @@ void run(){
       useImage = &reducedLevels;
       if(ms){
         mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
-        useImage = mo->apply(useImage)->asImg<icl8u>();
+        static ImgBase *moBuf2 = 0;
+        mo->apply(useImage, &moBuf2);
+        useImage = moBuf2->asImg<icl8u>();
       }
     }else if(ms != lastMedianSize){
       if(ms){
         mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));
-        useImage = mo->apply(useImage)->asImg<icl8u>();
+        static ImgBase *moBuf3 = 0;
+        mo->apply(useImage, &moBuf3);
+        useImage = moBuf3->asImg<icl8u>();
       }
     }else{
       useImage = grabbedImage;

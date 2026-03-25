@@ -229,8 +229,9 @@ namespace icl{
         m_data->lt.setMaskSize(maskSize);
         m_data->lt.setGammaSlope(slope);
         m_data->lt.setGlobalThreshold(threshold);
-        const ImgBase *result = m_data->lt.apply(&m_data->grayInputBuffer);
-        result->convert(&m_data->ltBuffer);
+        static ImgBase *ltResult = nullptr;
+        m_data->lt.apply(&m_data->grayInputBuffer, &ltResult);
+        ltResult->convert(&m_data->ltBuffer);
         m_data->inputBuffer = m_data->ltBuffer;
       }else{
         m_data->inputBuffer = m_data->grayInputBuffer;

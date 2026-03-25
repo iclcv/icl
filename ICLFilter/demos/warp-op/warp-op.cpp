@@ -58,7 +58,7 @@ void run(){
     op.setScaleMode(gui["lin"]?interpolateLIN:interpolateNN);
 
     Time t = Time::now();
-    const ImgBase *result = op.apply(image);
+    Image result = op.apply(image);
     gui["apply-time"] = str(t.age().toMilliSeconds())+"ms";
 
     gui["image"] = result;

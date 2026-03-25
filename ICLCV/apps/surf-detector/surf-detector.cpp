@@ -191,7 +191,9 @@ void extract_template(const Img8u &image){
 
 void rotate_template(){
   RotateOp r(90);
-  r.apply(&templ)->deepCopy(bpp(templ));
+  static ImgBase *rotBuf = 0;
+  r.apply(&templ, &rotBuf);
+  rotBuf->deepCopy(bpp(templ));
   surf->setReferenceImage(&templ);
   //  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
 }

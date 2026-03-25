@@ -613,7 +613,9 @@ namespace icl {
       }
 
       if (data->pp) {
-        data->pp->apply(data->lt->apply(image), &data->lastBinImage);
+        static ImgBase *ltBuf = nullptr;
+        data->lt->apply(image, &ltBuf);
+        data->pp->apply(ltBuf, &data->lastBinImage);
       } else {
         data->lt->apply(image, &data->lastBinImage);
       }

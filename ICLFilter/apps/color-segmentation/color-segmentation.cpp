@@ -427,25 +427,37 @@ void run(){
 
   if(preMedian){
     static MedianOp m(Size(3,3));
-    grabbedImage = m.apply(grabbedImage)->asImg<icl8u>();
+    static ImgBase *preMedianBuf = 0;
+    m.apply(grabbedImage, &preMedianBuf);
+    grabbedImage = preMedianBuf->asImg<icl8u>();
   }
 
   image = grabbedImage;
   Time t = Time::now();
-  segImage = *segmenter->apply(grabbedImage)->asImg<icl8u>();
+  {
+    static ImgBase *segBuf = 0;
+    segmenter->apply(grabbedImage, &segBuf);
+    segImage = *segBuf->asImg<icl8u>();
+  }
 
   if(postMedian){
     static MedianOp m(Size(3,3));
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *postMedianBuf = 0;
+    m.apply(&segImage, &postMedianBuf);
+    segImage = *postMedianBuf->asImg<icl8u>();
   }
 
   if(postErosion){
     static MorphologicalOp m(MorphologicalOp::erode3x3);
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *erosionBuf = 0;
+    m.apply(&segImage, &erosionBuf);
+    segImage = *erosionBuf->asImg<icl8u>();
   }
   if(postDilatation){
     static MorphologicalOp m(MorphologicalOp::dilate3x3);
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *dilateBuf = 0;
+    m.apply(&segImage, &dilateBuf);
+    segImage = *dilateBuf->asImg<icl8u>();
   }
 
   seg = &segImage;

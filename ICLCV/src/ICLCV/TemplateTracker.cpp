@@ -104,7 +104,9 @@ namespace icl{
 
       for(float a=0;a<=360;a+=rotationStepSizeDegree){
         rot.setAngle(a);
-        const Img8u *r = rot.apply(&templateImage)->as8u();
+        static ImgBase *rotBuf = 0;
+        rot.apply(&templateImage, &rotBuf);
+        const Img8u *r = rotBuf->as8u();
         const int rw = r->getWidth();
         const int rh = r->getHeight();
         Rect center((rw-w)/2, (rh-h)/2, w,h);

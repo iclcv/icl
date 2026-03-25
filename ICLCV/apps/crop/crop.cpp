@@ -281,7 +281,8 @@ void run(){
     rot.setAngle(parse<int>(gui["rot"]));
   }
 
-  const ImgBase *cro = 0;
+  static ImgBase *croBuf = 0;
+  bool croValid = false;
   if(c_arg || gui["rect"].as<bool>()){
     static Img8u roi;
     std::vector<utils::Rect> rs = mouse_2->getRects();
@@ -293,7 +294,8 @@ void run(){
     roi.setFormat(tmp->getFormat());
     roi.setSize(tmp->getROISize());
     tmp->convertROI(&roi);
-    cro = rot.apply(&roi);
+    rot.apply(&roi, &croBuf);
+    croValid = true;
 
     draw->color(0,255,0,255);
     draw->text(str(rs[0]), rs[0].x, rs[0].y);
@@ -307,7 +309,8 @@ void run(){
       case depth##D:{                                           \
         static ImageRectification<icl##D> ir;                   \
         try{                                                    \
-          cro = rot.apply(&ir.apply(ps,*image->as##D(),s));     \
+          rot.apply(&ir.apply(ps,*image->as##D(),s), &croBuf);  \
+          croValid = true;                                      \
         }catch(...){}                                           \
         break;                                                  \
       }
@@ -315,10 +318,10 @@ void run(){
 #undef ICL_INSTANTIATE_DEPTH
     }
   }
-  if(cro){
-    cropped = cro;
+  if(croValid && croBuf){
+    cropped = croBuf;
     currMutex.lock();
-    cro->convert(&curr);
+    croBuf->convert(&curr);
     currMutex.unlock();
   }
 

@@ -794,7 +794,10 @@ namespace icl{
       ConvolutionOp c_horz(ConvolutionKernel(k.data(),Size(k.size(),1),iclMax(1,sum),false));
       ConvolutionOp c_vert(ConvolutionKernel(k.data(),Size(1,k.size()),iclMax(1,sum),false));
 
-      const ImgBase *result = c_horz.apply(c_vert.apply(&image));
+      static ImgBase *tmp1 = nullptr, *tmp2 = nullptr;
+      c_vert.apply(&image, &tmp1);
+      c_horz.apply(tmp1, &tmp2);
+      const ImgBase *result = tmp2;
       if(result->getDepth() == getDepth<T>()){
         switch(getDepth<T>()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return *result->asImg<T>();

@@ -575,7 +575,9 @@ namespace icl{
     template<> void LocalThresholdOp::apply_a<LocalThresholdOp::regionMean>(const ImgBase *src, ImgBase **dst){
 
       m_iiOp->setIntegralImageDepth((src->getDepth() == depth8u || src->getDepth() == depth16s) ? depth32s : src->getDepth());
-      const ImgBase *ii = m_iiOp->apply(src);
+      static ImgBase *iiBuf = nullptr;
+      m_iiOp->apply(src, &iiBuf);
+      const ImgBase *ii = iiBuf;
 
       float t = getGlobalThreshold();
       int s = getMaskSize();

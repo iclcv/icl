@@ -186,7 +186,8 @@ namespace icl{
           data->warp->apply(adapted, ppoDst);
           return *ppoDst;
         }else{
-          return data->warp->apply(adapted);
+          data->warp->apply(adapted, &data->image);
+          return data->image;
         }
       }else{
         return adapted;

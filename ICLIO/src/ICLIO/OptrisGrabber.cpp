@@ -357,7 +357,9 @@ namespace icl{
       }
 
       if(getPropertyValue("threshold output")){
-        cvt = m_data->lt.apply(cvt);
+        static ImgBase *ltBuf = 0;
+        m_data->lt.apply(cvt, &ltBuf);
+        cvt = ltBuf;
       }
 
       return cvt;

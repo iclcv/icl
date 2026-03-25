@@ -34,16 +34,17 @@ void run(){
     op.setOptype((MorphologicalOp::optype)currFilter);
   }
 
-  const ImgBase *result = op.apply(image);
+  static ImgBase *resultBuf = 0;
+  op.apply(image, &resultBuf);
 
-  gui["result"] = result;
+  gui["result"] = resultBuf;
 
   if(input.isVisible()){
     input["image"] = image;
   }
 
   if(save.wasTriggered()){
-    qt::save(*result,"current-image.png");
+    qt::save(*resultBuf,"current-image.png");
   }
 }
 int main(int n, char **args){

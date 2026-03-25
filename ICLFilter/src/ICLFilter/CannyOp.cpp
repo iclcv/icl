@@ -318,7 +318,9 @@ namespace icl {
       ICLASSERT_RETURN( poSrc != *ppoDst);
 
       if(m_preBlurRadius>0){
-        poSrc = m_preBlurOp->apply(poSrc);
+        static ImgBase *blurBuf = nullptr;
+        m_preBlurOp->apply(poSrc, &blurBuf);
+        poSrc = blurBuf;
       }
 
       for(int i=0;i<2;i++){
@@ -385,8 +387,11 @@ namespace icl {
 	  ICLASSERT_RETURN( src_x != *ppoDst && src_y != *ppoDst);
 
 	  if(m_preBlurRadius>0){
-		src_x = m_preBlurOp->apply(src_x);
-		src_y = m_preBlurOp->apply(src_y);
+		static ImgBase *bx = nullptr, *by = nullptr;
+		m_preBlurOp->apply(src_x, &bx);
+		m_preBlurOp->apply(src_y, &by);
+		src_x = bx;
+		src_y = by;
 	  }
 
 	  //for(int i=0;i<2;i++){

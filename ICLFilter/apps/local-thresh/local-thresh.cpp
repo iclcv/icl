@@ -116,7 +116,9 @@ void step(){
     useImage = useImage->shallowCopy(selroi[1]);
   }
   Time last = Time::now();
-  const ImgBase *result = ltop.apply(useImage);
+  static ImgBase *resultBuf = 0;
+  ltop.apply(useImage, &resultBuf);
+  const ImgBase *result = resultBuf;
   time = str((Time::now()-last).toMilliSeconds())+"ms";
 
 

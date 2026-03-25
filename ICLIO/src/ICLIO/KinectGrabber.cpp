@@ -235,7 +235,9 @@ namespace icl{
 #endif
           if(pp){
             const Img16s tmp(Size::VGA, 1, std::vector<icl16s*>(1, static_cast<icl16s*>(data)));
-            pp->apply(&tmp)->convert(&depthImage);
+            static ImgBase *ppBuf = 0;
+            pp->apply(&tmp, &ppBuf);
+            ppBuf->convert(&depthImage);
             int b = (r-1)/2;
             depthImage.setROI(Rect(b,b,640-2*b, 480-2*b));
             depthImage.fillBorder(&tmp);

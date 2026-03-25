@@ -30,6 +30,7 @@
 
 #include <ICLFilter/UnaryOpPipe.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 #include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 
@@ -68,9 +69,9 @@ namespace icl{
       }
     }
 
-    const ImgBase *UnaryOpPipe::apply(const ImgBase *src){
-      apply(src,&getLastDisplay());
-      return getLastDisplay();
+    core::Image UnaryOpPipe::apply(const ImgBase *src){
+      apply(src, &getLastDisplay());
+      return core::Image(getLastDisplay()->deepCopy());
     }
 
     int UnaryOpPipe::getLength() const {

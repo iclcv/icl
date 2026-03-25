@@ -32,10 +32,10 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/OpROIHandler.h>
 
 namespace icl{
-  namespace core { class Image; }
   namespace filter{
 
 
@@ -68,33 +68,32 @@ namespace icl{
       virtual ICL_DEPRECATED void applyMT(const core::ImgBase *operand1,
                                           core::ImgBase **dst, unsigned int nThreads);
 
-      /// applys the filter usign an internal buffer as output image
-      /** Normally, this function must not be reimplemented, because it's default implementation
-          will call apply(const ImgBase *,ImgBase**) using an internal buffer as destination image.
-          This destination image is returned. */
-      virtual const core::ImgBase *apply(const core::ImgBase *src);
+      /// Applies the filter using an internal buffer and returns the result as Image
+      /** Uses an internal buffer as destination. Returns a deep copy so the
+          result is independent and valid beyond the next apply() call. */
+      core::Image apply(const core::ImgBase *src);
 
       /// Image-based apply: filters src into dst
-      /** dst is always freshly allocated to avoid shared_ptr ownership conflicts
-          with the legacy ImgBase** API. */
       void apply(const core::Image &src, core::Image &dst);
 
-      /// Image-based apply: returns a shallow copy of an internally held buffer
-      core::Image apply(const core::Image &src);
+      /// Image-based apply (convenience, same as apply(src.ptr()))
+      inline core::Image apply(const core::Image &src){
+        return apply(src.ptr());
+      }
 
-      /// function operator (alternative for apply(src,dst)
+      /// function operator (alternative for apply(src,dst))
       inline void operator()(const core::ImgBase *src, core::ImgBase **dst){
         apply(src,dst);
       }
 
-      /// function operator for the implicit destination apply(src) call
-      inline const core::ImgBase *operator()(const core::ImgBase *src){
+      /// function operator for the single-arg apply
+      inline core::Image operator()(const core::ImgBase *src){
         return apply(src);
       }
 
-      /// reference based function operator
-      inline const core::ImgBase &operator()(const core::ImgBase &src){
-        return *apply(&src);
+      /// function operator for Image-based apply
+      inline core::Image operator()(const core::Image &src){
+        return apply(src.ptr());
       }
 
 

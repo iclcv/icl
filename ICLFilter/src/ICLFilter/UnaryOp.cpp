@@ -93,20 +93,15 @@ namespace icl{
       ICL_DELETE( m_buf );
     }
 
-    const ImgBase *UnaryOp::apply(const ImgBase *src){
-      apply(src,&m_buf);
-      return m_buf;
+    core::Image UnaryOp::apply(const ImgBase *src){
+      apply(src, &m_buf);
+      return core::Image(m_buf->deepCopy());
     }
 
     void UnaryOp::apply(const core::Image &src, core::Image &dst){
       ImgBase *tmp = nullptr;
       apply(src.ptr(), &tmp);
       dst = core::Image(tmp);
-    }
-
-    core::Image UnaryOp::apply(const core::Image &src){
-      const ImgBase *result = apply(src.ptr());
-      return core::Image(result->deepCopy());
     }
 
 

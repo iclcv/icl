@@ -251,7 +251,9 @@ void send_app(){
         }
       }
       pp->setClipToROI(false);
-      ppImage  = pp->apply(grabbedImage);
+      static ImgBase *ppBuf = 0;
+      pp->apply(grabbedImage, &ppBuf);
+      ppImage = ppBuf;
       static const bool ppp = pa("-ppp");
       if(!ppp){
         const_cast<ImgBase*>(ppImage)->setFullROI();

@@ -260,7 +260,9 @@ void run(){
     if(pp){
       static MedianOp mo(Size(3,3));
       mo.setClipToROI(false);
-      IMAGE=cvt(mo.apply(image));
+      static ImgBase *moBuf = 0;
+      mo.apply(image, &moBuf);
+      IMAGE=cvt(moBuf);
       ImgBorder::copy(&IMAGE);
       IMAGE.setFullROI();
     }else{

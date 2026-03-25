@@ -99,7 +99,9 @@ namespace icl{
               c_horz->setClipToROI(false);
               c_vert->setClipToROI(false);
             }
-            c_horz->apply(c_vert->apply(&image),dst);
+            static ImgBase *vertBuf = nullptr;
+            c_vert->apply(&image, &vertBuf);
+            c_horz->apply(vertBuf, dst);
           }
         }
       };
@@ -283,14 +285,18 @@ namespace icl{
         if(getPropertyValue("pp.enable gaussian")){
           int s = getPropertyValue("pp.spacial filter size");
           m_data->blurTool->setMaskDim(s);
-          depthImage = const_cast<Img32f*>(m_data->blurTool->apply(depthImage)->as32f());
+          static ImgBase *blurBuf = nullptr;
+          m_data->blurTool->apply(depthImage, &blurBuf);
+          depthImage = blurBuf->as32f();
           depthImage->setFullROI();
         }
         if(getPropertyValue("pp.enable median")){
           int s = getPropertyValue("pp.spacial filter size");
           m_data->median.reset(new MedianOp(Size(s,s)));
           m_data->median->setClipToROI(false);
-          depthImage = const_cast<Img32f*>(m_data->median->apply(depthImage)->as32f());
+          static ImgBase *medBuf = nullptr;
+          m_data->median->apply(depthImage, &medBuf);
+          depthImage = medBuf->as32f();
           depthImage->setFullROI();
         }
         if(getPropertyValue("pp.enable temporal smoothing")){
@@ -305,7 +311,9 @@ namespace icl{
           m_data->temporalSmoothing->setFilterSize(nFrames);
           m_data->temporalSmoothing->setDifference(threshold);
           m_data->temporalSmoothing->setClipToROI(false);
-          depthImage = const_cast<Img32f*>(m_data->temporalSmoothing->apply(depthImage)->as32f());
+          static ImgBase *tempBuf = nullptr;
+          m_data->temporalSmoothing->apply(depthImage, &tempBuf);
+          depthImage = tempBuf->as32f();
           depthImage->setFullROI();
         }
 
