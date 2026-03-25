@@ -1,6 +1,7 @@
 ADD_SUBDIRECTORY(chromaticity-space)
 ADD_SUBDIRECTORY(configurable-gui)
 ADD_SUBDIRECTORY(define-rects)
+ADD_SUBDIRECTORY(game-of-life)
 ADD_SUBDIRECTORY(interactive-filter)
 ADD_SUBDIRECTORY(onscreen-button)
 ADD_SUBDIRECTORY(plot-component)
