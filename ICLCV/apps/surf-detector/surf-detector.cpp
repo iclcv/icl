@@ -228,7 +228,7 @@ void run(){
   ButtonHandle load = gui["load"];
 
   core::Image grabImg = grabber.grabImage();
-  const Img8u &image = grabImg.as<icl8u>();
+  const Img8u &image = grabImg.as8u();
   iW = image.getWidth();
   iH = image.getHeight();
   tW = templ.getWidth();

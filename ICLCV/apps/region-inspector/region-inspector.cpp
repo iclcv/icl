@@ -148,7 +148,7 @@ void run(){
   bool rdUpdated = false;
   if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
     grabbedImageHolder = grabber.grabImage();
-    grabbedImage = &grabbedImageHolder.as<icl8u>();
+    grabbedImage = &grabbedImageHolder.as8u();
     useImage = grabbedImage;
 
     if(levels != 256){

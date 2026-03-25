@@ -39,7 +39,7 @@ GenericGrabber grabber;
 
 void run(){
   Image grabImg = grabber.grabImage();
-  const Img8u &image = grabImg.as<icl8u>();
+  const Img8u &image = grabImg.as8u();
   static Img8u segImage(image.getSize(),1);
 
   Channel8u c[3] = {image[0],image[1],image[2] };

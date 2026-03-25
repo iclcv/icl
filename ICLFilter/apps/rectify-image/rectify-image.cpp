@@ -68,7 +68,7 @@ void run(){
   ButtonHandle now = gui["now"];
   bool automatic = gui["auto"];
 
-  const Img8u image = grabber.grabImage().as<icl8u>();
+  const Img8u image = grabber.grabImage().as8u();
   draw = image;
 
   if(now.wasTriggered() || automatic){

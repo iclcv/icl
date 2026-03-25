@@ -152,7 +152,7 @@ void init(){
 }
 
 void run(){
-  ::image = grabber.grabImage().as<icl8u>();
+  ::image = grabber.grabImage().as8u();
   step("");
 }
 

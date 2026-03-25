@@ -284,7 +284,7 @@ namespace icl{
       Img32f *depthImage = 0;
       if(useNewImages || !m_data->lastDepthImage){
         m_data->depthHolder = m_data->depthGrabber.grabImage();
-        depthImage = &m_data->depthHolder.as<icl32f>();
+        depthImage = &m_data->depthHolder.as32f();
         if(getPropertyValue("pp.enable gaussian")){
           int s = getPropertyValue("pp.spacial filter size");
           m_data->blurTool->setMaskDim(s);
@@ -339,7 +339,7 @@ namespace icl{
       if(useNewImages || !m_data->lastColorImage){
         if(!m_data->colorGrabber.isNull()){
           m_data->colorHolder = m_data->colorGrabber.grabImage();
-          rgbImage = &m_data->colorHolder.as<icl8u>();
+          rgbImage = &m_data->colorHolder.as8u();
         }
         if(rgbImage && m_data->colorMask){
           ICLASSERT_THROW(m_data->colorMask->getSize() == rgbImage->getSize(),

@@ -25,7 +25,7 @@ void init()  {
 
 void run() {
 
-	depth_f = grabber.grabImage().as<icl32f>();
+	depth_f = grabber.grabImage().as32f();
 	Img16s *img16s = depth_f.convert(icl::core::depth16s)->as16s();
 
 	ImageCompressor compressor(ImageCompressor::CompressionSpec("1611","0"));

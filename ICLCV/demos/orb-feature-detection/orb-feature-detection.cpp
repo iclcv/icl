@@ -60,7 +60,7 @@ void init(){
 }
 void run(){
   Image grabImg = grabber.grabImage();
-  const Img8u &image = grabImg.as<icl::icl8u>();
+  const Img8u &image = grabImg.as8u();
 
   ORBFeatureDetector::FeatureSet fs = orb.detect(image);
 

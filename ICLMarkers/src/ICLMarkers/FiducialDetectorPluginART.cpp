@@ -310,7 +310,7 @@ namespace icl{
           FileGrabber g(l[i]);
           g.useDesired(formatGray);
           g.useDesired(depth8u);
-          data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( g.grabImage().as<icl8u>(),
+          data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( g.grabImage().as8u(),
                                                  File(l[i]).getBaseName(),
                                                  size, data->loaded.size())));
         }
@@ -391,7 +391,7 @@ namespace icl{
       g.useDesired(formatGray);
       g.useDesired(depth8u);
       Image grabbed = g.grabImage();
-      const Img8u &l = grabbed.as<icl8u>();
+      const Img8u &l = grabbed.as8u();
       float b = params["border ratio"];
       Size s(l.getWidth()*(1+b), l.getHeight()*(1+b));
       Img8u r(s,1);
