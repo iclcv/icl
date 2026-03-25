@@ -121,16 +121,12 @@ namespace icl {
 
     void Image::convertTo(Image &dst) const {
       if(isNull()) return;
-      ImgBase *raw = dst.isNull() ? nullptr : dst.ptr();
-      m_impl->convert(&raw);
-      if(raw != dst.ptr()) dst = Image(raw);
+      m_impl->convert(dst.ptr());
     }
 
     void Image::convertROITo(Image &dst) const {
       if(isNull()) return;
-      ImgBase *raw = dst.isNull() ? nullptr : dst.ptr();
-      m_impl->convertROI(&raw);
-      if(raw != dst.ptr()) dst = Image(raw);
+      m_impl->convertROI(dst.ptr());
     }
 
     Image Image::scaledCopy(const utils::Size &newSize, scalemode sm) const {
