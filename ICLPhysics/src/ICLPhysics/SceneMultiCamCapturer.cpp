@@ -102,7 +102,7 @@ namespace icl{
     void SceneMultiCamCapturer::capture(){
       for(size_t i=0;i<camIndices.size();++i){
         Img8u image = scene->render(camIndices[i]);
-        outputs[i]->send(&image);
+        outputs[i]->send(Image::wrap(&image));
       }
     }
 

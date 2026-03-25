@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLIO/ImageOutput.h>
 
@@ -83,7 +82,7 @@ namespace icl{
       void init(const std::string &deviceString);
 
       /// actual publishing function
-      virtual void send(const core::ImgBase *image);
+      virtual void send(const core::Image &image);
     };
   }
 }

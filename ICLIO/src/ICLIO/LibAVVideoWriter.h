@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/ImgBase.h>
 
 namespace icl{
   namespace io{
@@ -71,7 +70,7 @@ namespace icl{
     ~LibAVVideoWriter();
 
     /// wraps write to implement ImageOutput interface
-    virtual void send(const core::ImgBase *image);
+    virtual void send(const core::Image &image);
 
   	/// as write but in stream manner
     LibAVVideoWriter &operator<<(const core::ImgBase *image);

@@ -46,6 +46,12 @@ namespace icl {
       : m_impl(p)
     {}
 
+    Image Image::wrap(const ImgBase *p) {
+      if(!p) return Image();
+      return Image(std::shared_ptr<ImgBase>(
+        const_cast<ImgBase*>(p), [](ImgBase*){}));
+    }
+
     // --- Null check ---
 
     bool Image::isNull() const { return !m_impl; }

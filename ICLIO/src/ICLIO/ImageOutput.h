@@ -31,7 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
+#include <ICLCore/Image.h>
 #include <ICLIO/ImageCompressor.h>
 
 namespace icl{
@@ -56,7 +56,7 @@ namespace icl{
       virtual ~ImageOutput() {}
 
       /// ImageOutput instances must implement this method
-      virtual void send(const core::ImgBase *image) = 0;
+      virtual void send(const core::Image &image) = 0;
 
       /// provide the protectedly inherited image compressor options here
       using ImageCompressor::getCompression;

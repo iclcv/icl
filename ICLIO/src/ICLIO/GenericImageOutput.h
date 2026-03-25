@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/ProgArg.h>
 #include <memory>
-#include <ICLCore/ImgBase.h>
 #include <ICLIO/ImageOutput.h>
 
 namespace icl{
@@ -88,7 +87,7 @@ namespace icl{
       void release();
 
       /// sends a new image
-      virtual void send(const core::ImgBase *image){
+      virtual void send(const core::Image &image){
         if (impl) {
           impl->send(image);
         }

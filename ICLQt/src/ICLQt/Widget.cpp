@@ -844,7 +844,7 @@ namespace icl{
             converter->apply(image.get(),&convertedBuffer);
             image = std::shared_ptr<ImgBase>(convertedBuffer,[](auto*){});
           }
-          imageOutput.send(image.get());
+          imageOutput.send(core::Image::wrap(image.get()));
         }catch(ICLException &ex){
           ERROR_LOG("unable to capture current image:" << ex.what());
         }
@@ -872,7 +872,7 @@ namespace icl{
             converter->apply(fb,&convertedBuffer);
             fb = convertedBuffer;
           }
-          imageOutput.send(fb);
+          imageOutput.send(core::Image::wrap(fb));
         }catch(ICLException &ex){
           ERROR_LOG("unable to capture frame buffer:" << ex.what());
         }

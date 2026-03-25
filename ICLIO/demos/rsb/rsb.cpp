@@ -101,7 +101,7 @@ void run(){
     Image image = grabber.grabImage();
     image.ptr()->setMetaData(gui["text"]);
     gui["image"] = image;
-    sender.send(image.ptr());
+    sender.send(image);
   }else{
     const ImgBase *image = receiver.grab();
     gui["image"] = image;

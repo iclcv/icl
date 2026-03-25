@@ -280,8 +280,8 @@ namespace icl{
       delete m_data;
     }
 
-    void LibAVVideoWriter::send(const ImgBase *image){
-      m_data->writeFrame(image);
+    void LibAVVideoWriter::send(const Image &image){
+      m_data->writeFrame(image.ptr());
     }
 
     LibAVVideoWriter &LibAVVideoWriter::operator<<(const ImgBase *image){

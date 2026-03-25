@@ -154,7 +154,7 @@ namespace icl{
       m_data->propertyListener->addHandler(m_data->propertyHandler);
     }
 
-    void RSBImageOutput::send(const ImgBase *image){
+    void send(const Image &image){
       ICLASSERT_RETURN(image);
       ICLASSERT_RETURN(!isNull());
       ICLASSERT_RETURN(image->getDim() > 0);

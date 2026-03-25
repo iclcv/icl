@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCV/ImageRegion.h>
 
 #include <vector>

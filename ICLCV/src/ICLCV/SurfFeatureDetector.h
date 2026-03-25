@@ -32,7 +32,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCV/SurfFeature.h>
 #include <string>
 #include <vector>

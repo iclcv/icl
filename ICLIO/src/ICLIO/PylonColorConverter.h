@@ -33,7 +33,6 @@
 #include <ICLIO/PylonIncludes.h>
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCore/Img.h>
 #include <ICLIO/PylonUtils.h>
 #include <ICLCore/BayerConverter.h>

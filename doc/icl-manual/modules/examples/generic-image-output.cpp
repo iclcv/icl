@@ -13,7 +13,7 @@ void init(){
 void run(){
   Image image = grabber.grabImage();
   gui["image"] = image;
-  out.send(image.ptr());
+  out.send(image);
 }
 int main(int n, char **args){
   return ICLApp(n,args,"-input|-i(2) -output|-o(2)",init,run).exec();

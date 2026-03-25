@@ -97,7 +97,7 @@ namespace icl{
 
       if(type == "null"){
         struct NullOutput : public ImageOutput{
-          virtual void send(const ImgBase *) {}
+          virtual void send(const Image &) {}
         };
         o = new NullOutput;
       }

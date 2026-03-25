@@ -151,7 +151,7 @@ namespace icl{
       void write(const core::ImgBase *image);
 
       /// wraps write to implement ImageOutput interface
-      virtual void send(const core::ImgBase *image) { write(image); }
+      virtual void send(const core::Image &image) { write(image.ptr()); }
 
       /// as write but in stream manner
       FileWriter &operator<<(const core::ImgBase *image);

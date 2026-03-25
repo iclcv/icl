@@ -31,8 +31,9 @@
 #pragma once
 
 #include <ICLUtils/Point32f.h>
-#include <ICLCore/ImgBase.h>
 #include <vector>
+
+namespace icl { namespace core { class ImgBase; } }
 
 namespace icl{
   namespace cv{

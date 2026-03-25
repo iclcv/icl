@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <ICLCore/ImgBase.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/Configurable.h>
 #include <ICLCore/CCFunctions.h>

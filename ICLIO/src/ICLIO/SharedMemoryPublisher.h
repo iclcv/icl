@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
-#include <ICLCore/ImgBase.h>
+#include <ICLCore/Image.h>
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLIO/ImageOutput.h>
 
@@ -60,7 +60,7 @@ namespace icl{
       void publish(const core::ImgBase *image);
 
       /// wraps publish to implement ImageOutput interface
-      virtual void send(const core::ImgBase *image) { publish(image); }
+      virtual void send(const core::Image &image) { publish(image.ptr()); }
 
       /// returns current memory segment name
       std::string getMemorySegmentName() const;

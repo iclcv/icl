@@ -31,7 +31,6 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCore/Types.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Time.h>

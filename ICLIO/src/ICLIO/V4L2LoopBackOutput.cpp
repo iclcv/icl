@@ -113,7 +113,7 @@ namespace icl{
           CHECK(colorspace);
         }
       }
-      void send(const core::ImgBase *image){
+      void send(const core::Image &image){
         using namespace utils;
         using namespace core;
 
@@ -173,7 +173,7 @@ namespace icl{
       delete m_data;
     }
 
-    void V4L2LoopBackOutput::send(const core::ImgBase *image){
+    void send(const core::Image &image){
       m_data->send(image);
     }
   }

@@ -66,7 +66,7 @@ namespace icl{
       ICLIO_API void init(const std::string &scope, const std::string &transportList = "spread");
 
       /// sender method
-      ICLIO_API virtual void send(const core::ImgBase *image);
+      ICLIO_API virtual void send(const core::Image &image);
 
       /// returns whether this is a null instance
       inline bool isNull() const { return !m_data; }

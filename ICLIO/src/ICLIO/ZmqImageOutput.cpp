@@ -66,7 +66,7 @@ namespace icl{
       //DEBUG_LOG("publishing to |" << ("tcp://*:"+str(port)).c_str() << "|");
     }
 
-    void ZmqImageOutput::send(const core::ImgBase *image){
+    void send(const core::Image &image){
       const CompressedData d = ImageCompressor::compress(image);
       zmq::message_t m(d.bytes,d.len,0);
       m_data->publisher->send(m);

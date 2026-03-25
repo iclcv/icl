@@ -44,7 +44,7 @@ struct Input{
     handle = lastImage;
   }
   void save(){
-    if(out) out->send(lastImage.ptr());
+    if(out) out->send(lastImage);
   }
   std::shared_ptr<GenericImageOutput> out;
 };

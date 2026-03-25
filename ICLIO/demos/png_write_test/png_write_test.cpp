@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 
     test.fill(1000);
 
-    out.send(&test);
+    out.send(Image::wrap(&test));
 
     return 0;
 }
