@@ -61,6 +61,7 @@ namespace icl {
     int Image::getWidth() const { return m_impl->getWidth(); }
     int Image::getHeight() const { return m_impl->getHeight(); }
     int Image::getDim() const { return m_impl->getDim(); }
+    utils::Rect Image::getImageRect() const { return utils::Rect(utils::Point::null, getSize()); }
     int Image::getChannels() const { return m_impl->getChannels(); }
     depth Image::getDepth() const { return m_impl->getDepth(); }
     format Image::getFormat() const { return m_impl->getFormat(); }
@@ -116,6 +117,20 @@ namespace icl {
     Image Image::convert(depth d) const {
       if(isNull()) return Image();
       return Image(m_impl->convert(d));
+    }
+
+    void Image::convertTo(Image &dst) const {
+      if(isNull()) return;
+      ImgBase *raw = dst.isNull() ? nullptr : dst.ptr();
+      m_impl->convert(&raw);
+      if(raw != dst.ptr()) dst = Image(raw);
+    }
+
+    void Image::convertROITo(Image &dst) const {
+      if(isNull()) return;
+      ImgBase *raw = dst.isNull() ? nullptr : dst.ptr();
+      m_impl->convertROI(&raw);
+      if(raw != dst.ptr()) dst = Image(raw);
     }
 
     Image Image::scaledCopy(const utils::Size &newSize, scalemode sm) const {

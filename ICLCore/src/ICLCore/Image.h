@@ -120,6 +120,7 @@ namespace icl {
       int getWidth() const;
       int getHeight() const;
       int getDim() const;        ///< width * height
+      utils::Rect getImageRect() const; ///< Rect(0,0,w,h)
       int getChannels() const;
       depth getDepth() const;
       format getFormat() const;
@@ -177,6 +178,12 @@ namespace icl {
 
       /// Returns a copy converted to the given depth
       Image convert(depth d) const;
+
+      /// Converts this image into dst (dst determines the target depth)
+      void convertTo(Image &dst) const;
+
+      /// Converts only the ROI of this image into dst (dst determines target depth)
+      void convertROITo(Image &dst) const;
 
       /// Returns a scaled copy
       Image scaledCopy(const utils::Size &newSize,

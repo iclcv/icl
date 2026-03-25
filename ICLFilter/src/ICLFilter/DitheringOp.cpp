@@ -57,10 +57,10 @@ namespace icl{
       // Convert src to dst (depth → 8u)
       Rect roi;
       if(getClipToROI()){
-        src.ptr()->convertROI(dst.ptr());
-        roi = dst.ptr()->getImageRect();
+        src.convertROITo(dst);
+        roi = dst.getImageRect();
       }else{
-        src.ptr()->convert(dst.ptr());
+        src.convertTo(dst);
         roi = dst.getROI();
       }
 
