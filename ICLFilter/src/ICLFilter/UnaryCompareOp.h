@@ -136,9 +136,8 @@ namespace icl {
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
-      private:
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
 
+      private:
       /// internal storage of the current optype
       optype m_eOpType;
 

@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 5)
+## Current State (Session 6)
 
 ### Architecture
 
@@ -9,6 +9,13 @@ Public API:  Image (value type, shared_ptr<ImgBase>)
                 |
 Internal:    ImgBase → Img<T>  (implementation detail)
 ```
+
+### SIMD Status
+
+SSE2 intrinsics are transparently mapped to ARM NEON via `sse2neon` (3rdparty).
+`ICL_HAVE_SSE2` is effectively "have SIMD" on both x86 and Apple Silicon.
+IPP is x86-only (absent on ARM) — filters fall back to C++ on Apple Silicon.
+No runtime dispatcher needed; compile-time `#ifdef` is the right granularity.
 
 ### UnaryOp Virtual Interface
 
@@ -45,16 +52,17 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (4 done)
+### Fully Native Image Filters (5 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
 1. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
 2. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
-3. **ThresholdOp** — same depth, uses `prepare()` + `visitWith()`, typed statics are file-local
+3. **ThresholdOp** — same depth, uses `prepare()` + `visitWith()`, dispatch structs
 4. **UnaryArithmeticalOp** — same depth, uses `visitWith()` + `LoopFunc` template structs
+5. **UnaryCompareOp** — different output depth (always 8u), uses `visit()` + `as8u()` + dispatch struct
 
-### Filters with applyImgBase Bridge (24 remaining)
+### Filters with applyImgBase Bridge (23 remaining)
 
 These have `apply(const Image&, Image&) override` that delegates to `applyImgBase()`:
 
@@ -67,60 +75,98 @@ void Filter::apply(const Image &src, Image &dst) {
 }
 ```
 
-Remaining: AffineOp, BilateralFilterOp, CannyOp, ChamferOp, ColorDistanceOp,
-ColorSegmentationOp, ConvolutionOp, FFTOp, GaborOp, IFFTOp, IntegralImgOp,
-LUTOp, LUTOp3Channel, LocalThresholdOp, MedianOp, MorphologicalOp,
-MotionSensitiveTemporalSmoothing, UnaryCompareOp, UnaryLogicalOp,
-WarpOp, WeightChannelsOp, WeightedSumOp, WienerOp
+**With IPP acceleration (11):**
+AffineOp, CannyOp, ConvolutionOp, LUTOp, LocalThresholdOp, MedianOp,
+MorphologicalOp, UnaryLogicalOp, WarpOp, WienerOp
+(+ IntegralImgOp has IPP code but disabled — slower than C++)
+
+**Pure C++ (12):**
+BilateralFilterOp, ChamferOp, ColorDistanceOp, ColorSegmentationOp,
+FFTOp, GaborOp, IFFTOp, LUTOp3Channel, MotionSensitiveTemporalSmoothing,
+WeightChannelsOp, WeightedSumOp
 
 ### BinaryOp Filters (not started)
 
 BinaryArithmeticalOp, BinaryCompareOp, BinaryLogicalOp — still override
-the ImgBase version. Need same treatment as UnaryOp filters.
+the ImgBase version. All three have IPP specializations.
+Need same treatment as UnaryOp filters.
 
-## Migration Pattern
+## Migration Pattern — Dispatch Struct Approach
 
-### For each filter:
+The established pattern uses **template structs with specializations** to replace
+the `#ifdef` macro jungle. This was validated on ThresholdOp (most complex case)
+and UnaryCompareOp (different output depth).
 
-**1. In the .cpp:**
-- Rename `applyImgBase(const ImgBase*, ImgBase**)` to file-local static or remove
-- Rewrite `apply(const Image&, Image&)` natively:
+### Structure of a migrated filter .cpp:
 
 ```cpp
+// 1. C++ fallback functors / loops (always compiled)
+template <typename T, class Op>
+inline void fallbackLoop(const Img<T> &src, Img<T> &dst, ...) { ... }
+
+// 2. SSE2/NEON SIMD helpers (file-local, inside #ifdef ICL_HAVE_SSE2)
+#ifdef ICL_HAVE_SSE2
+inline void sse_op_32f(const Img32f &src, Img32f &dst, ...) { ... }
+inline void sse_op_8u(const Img8u &src, Img8u &dst, ...) { ... }
+#endif
+
+// 3. IPP helpers (file-local, inside #ifdef ICL_HAVE_IPP)
+#ifdef ICL_HAVE_IPP
+template <typename T, IppStatus (IPP_DECL *F)(...)>
+inline void ippCall(const Img<T> &src, Img<T> &dst, ...) { ... }
+#endif
+
+// 4. Dispatch struct — primary template = C++ fallback
+template<class T> struct OpImpl {
+  static void apply(const Img<T> &src, Img<T> &dst, ...) {
+    fallbackLoop(src, dst, ...);
+  }
+};
+
+// 5. Single #if/#elif/#endif block for accelerated specializations
+#if defined(ICL_HAVE_IPP)
+template<> struct OpImpl<icl8u>  { static void apply(...) { ippCall<...>(...); } };
+template<> struct OpImpl<icl16s> { static void apply(...) { ippCall<...>(...); } };
+template<> struct OpImpl<icl32f> { static void apply(...) { ippCall<...>(...); } };
+#elif defined(ICL_HAVE_SSE2)
+template<> struct OpImpl<icl8u>  { static void apply(...) { sse_op_8u(...); } };
+template<> struct OpImpl<icl32f> { static void apply(...) { sse_op_32f(...); } };
+#endif
+
+// 6. apply() — zero #ifdefs
 void Filter::apply(const Image &src, Image &dst) {
-    if(!prepare(dst, src)) return;          // or prepare(dst, depth, size, ...)
+    if(!prepare(dst, src)) return;
     src.visitWith(dst, [this](const auto &s, auto &d) {
         using T = typename std::remove_reference_t<decltype(s)>::type;
-        // call typed implementation
+        OpImpl<T>::apply(s, d, ...);
     });
 }
 ```
 
-**2. In the .h:**
-- Remove `void applyImgBase(const core::ImgBase *, core::ImgBase **);`
-- Remove any typed dispatch declarations that were only used internally
-- Keep `using UnaryOp::apply;` if present
+### Key conventions:
 
-**3. Typed implementations:**
-- Keep IPP/SSE2/fallback `LoopFunc` or similar typed structs as file-local
-- Move any class-member typed methods to file-local static functions
-- The visitor calls them directly — no dispatch switch needed
+- **References everywhere** — `visitWith`/`visit` give references, pass them through
+  to helpers and dispatch structs. No pointer-taking (`&s, &d`) needed.
+- **No macros for depth dispatch** — `visitWith`/`visit` replaces all
+  `ICL_INSTANTIATE_DEPTH` / `ICL_INSTANTIATE_ALL_DEPTHS` macro rounds.
+- **No forward declarations** — primary template defined first, specializations after.
+- **Non-val ops fold into val-variant calls** — e.g. `ThreshLTVal<T>::apply(s, d, t, t)`
+  for the non-val `lt` operation, avoiding separate dispatch paths.
 
-### Common patterns in the existing filters:
+### For different output depths (e.g. UnaryCompareOp → always 8u):
 
-**Same depth (most filters):** `prepare(dst, src)` + `visitWith`
-**Different output depth:** `prepare(dst, outputDepth, src.getSize(), ...)` + `convertTo`
-**Method pointer table:** Replace with `visitWith` (eliminates m_aMethods array)
-**ICL_INSTANTIATE_ALL_DEPTHS macro switch:** Replace with `visitWith`
-
-### Extracting pixel type in visitor:
 ```cpp
-src.visitWith(dst, [](const auto &s, auto &d) {
-    using T = typename std::remove_reference_t<decltype(s)>::type;
-    // T is icl8u, icl16s, icl32s, icl32f, or icl64f
-});
+void Filter::apply(const Image &src, Image &dst) {
+    if(!prepare(dst, src, depth8u)) return;
+    Img8u &d = dst.as8u();
+    src.visit([&](const auto &s) {
+        using T = typename std::remove_reference_t<decltype(s)>::type;
+        OpImpl<T>::apply(s, d, ...);
+    });
+}
 ```
-(`Img<T>::type` was added to Img.h for this purpose)
+
+Use `visit()` (single-image) instead of `visitWith()` since src/dst have different depths.
 
 ## Key Image Methods for Filter Migration
 
@@ -152,4 +198,13 @@ src.getImageRect()                   // Rect(0,0,w,h)
 - **BinaryOp filters** — same migration as UnaryOp
 - **Converter::convert()** — static method replacing constructor-that-does-work
 - **Quick.h** — consider reworking to use Image instead of ImgQ (Img<icl32f>)
-- **Runtime dispatcher for IPP/SSE/fallback** — could simplify the #ifdef maze
+- **Custom SSE2/NEON specializations** — add SIMD fast paths to filters that currently
+  only have IPP acceleration or pure C++ fallback. The dispatch struct pattern makes
+  this easy: just add a `#elif defined(ICL_HAVE_SSE2)` specialization block.
+  Priority candidates (high pixel throughput, simple inner loops):
+  - UnaryLogicalOp (bitwise ops — natural SIMD fit)
+  - UnaryCompareOp (compare+mask — similar to ThresholdOp SSE2 pattern)
+  - BinaryArithmeticalOp, BinaryLogicalOp, BinaryCompareOp (same patterns, two inputs)
+  - ConvolutionOp (fixed-kernel convolutions, e.g. 3x3 Sobel)
+  - MedianOp (already has SSE2 — extend to more depths/sizes)
+  - MorphologicalOp (erode/dilate with flat structuring elements)
