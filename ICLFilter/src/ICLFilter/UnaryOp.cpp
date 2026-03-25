@@ -72,12 +72,12 @@ namespace icl{
                   "an exception is thrown.");
     }
 
-    UnaryOp::UnaryOp():m_buf(0){
+    UnaryOp::UnaryOp(){
       initConfigurable();
     }
 
     UnaryOp::UnaryOp(const UnaryOp &other):
-      m_oROIHandler(other.m_oROIHandler),m_buf(0){
+      m_oROIHandler(other.m_oROIHandler){
       initConfigurable();
     }
 
@@ -90,22 +90,30 @@ namespace icl{
       return *this;
     }
     UnaryOp::~UnaryOp(){
-      ICL_DELETE( m_buf );
     }
 
-    // Default Image apply — delegates to legacy ImgBase** apply.
-    // Existing subclasses that override apply(ImgBase*, ImgBase**) get this for free.
-    // New subclasses should override this method directly.
-    void UnaryOp::apply(const core::Image &src, core::Image &dst){
-      ImgBase *tmp = nullptr;
-      apply(src.ptr(), &tmp);
-      if(tmp) dst = core::Image(tmp);
+    // Legacy ImgBase** wrapper (final) — delegates to Image-based apply
+    void UnaryOp::apply(const ImgBase *src, ImgBase **dst){
+      ICLASSERT_RETURN(src);
+      ICLASSERT_RETURN(dst);
+      core::Image srcImg(*src);
+      core::Image dstImg;
+      if(*dst) dstImg = core::Image(**dst);
+      apply(srcImg, dstImg);
+      if(!dstImg.isNull()){
+        if(!*dst || (*dst)->getDepth() != dstImg.getDepth()){
+          ICL_DELETE(*dst);
+          *dst = dstImg.ptr()->shallowCopy();
+        } else {
+          dstImg.ptr()->deepCopy(dst);
+        }
+      }
     }
 
-    // Single-arg convenience: applies using internal buffer, returns deep copy
-    core::Image UnaryOp::apply(const ImgBase *src){
-      apply(src, &m_buf);
-      return core::Image(m_buf->deepCopy());
+    // Single-arg: uses internal buffer, returns reference
+    const core::Image& UnaryOp::apply(const core::Image &src){
+      apply(src, m_buf);
+      return m_buf;
     }
 
     // Image-based prepare implementations

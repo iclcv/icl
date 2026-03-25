@@ -61,38 +61,17 @@ namespace icl{
       /// Destructor
       virtual ~UnaryOp();
 
-      /// Primary apply method — subclasses should override this
-      /** Default implementation delegates to the legacy ImgBase** apply
-          for backward compatibility. New filters should override this
-          directly and use Image throughout. */
-      virtual void apply(const core::Image &src, core::Image &dst);
+      /// Pure virtual apply — all subclasses implement this
+      virtual void apply(const core::Image &src, core::Image &dst) = 0;
 
-      /// apply function for multithreaded filtering
-      virtual ICL_DEPRECATED void applyMT(const core::ImgBase *operand1,
-                                          core::ImgBase **dst, unsigned int nThreads);
+      /// Legacy ImgBase** wrapper — final, delegates to Image-based apply
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst) final;
 
-      /// Legacy ImgBase** apply — existing subclasses override this
-      /** The default Image apply() delegates here for backward compatibility.
-          New subclasses should override the Image version instead. */
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst){}
+      /// Single-arg apply: uses internal buffer, returns reference to it
+      const core::Image& apply(const core::Image &src);
 
-      /// Single-arg apply returning Image (uses internal buffer)
-      core::Image apply(const core::ImgBase *src);
-
-      /// Single-arg Image apply
-      inline core::Image apply(const core::Image &src){
-        core::Image dst;
-        apply(src, dst);
-        return dst;
-      }
-
-      /// function operator (legacy)
-      inline void operator()(const core::ImgBase *src, core::ImgBase **dst){
-        apply(src, dst);
-      }
-
-      /// function operator returning Image
-      inline core::Image operator()(const core::Image &src){
+      /// function operator
+      inline const core::Image& operator()(const core::Image &src){
         return apply(src);
       }
 
@@ -194,7 +173,7 @@ namespace icl{
 
       OpROIHandler m_oROIHandler;
 
-      core::ImgBase *m_buf;
+      core::Image m_buf;
     };
 
 
