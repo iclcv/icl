@@ -43,10 +43,6 @@
 namespace icl {
   namespace io{
 
-    /** \cond */
-    class ConfigurableRemoteServer;
-    /** \endcond */
-
     /// Common interface class for all grabbers \ingroup GRABBER_G
     /** The generic grabber provides an interface for a multi-platform
         compatible grabber.
@@ -62,8 +58,6 @@ namespace icl {
 
         mutable std::recursive_mutex m_mutex; //! << internal protection for re-initialization
 
-        ConfigurableRemoteServer *m_remoteServer;
-
       public:
         GenericGrabber(const GenericGrabber&) = delete;
         GenericGrabber& operator=(const GenericGrabber&) = delete;
@@ -72,7 +66,7 @@ namespace icl {
 
         /// Initialized the grabber from given prog-arg
         /** The progarg needs two sub-parameters */
-        GenericGrabber(const utils::ProgArg &pa):m_poGrabber(0),m_remoteServer(0){
+        GenericGrabber(const utils::ProgArg &pa):m_poGrabber(0){
           init(pa);
         }
 
@@ -80,14 +74,14 @@ namespace icl {
         /** internally this function calls the init function immediately*/
         GenericGrabber(const std::string &devicePriorityList,
                        const std::string &params,
-                       bool notifyErrors = true):m_poGrabber(0),m_remoteServer(0){
+                       bool notifyErrors = true):m_poGrabber(0){
           init(devicePriorityList,params,notifyErrors);
         }
 
 
         /// Empty default constructor, which creates a null-instance
         /** null instances of grabbers can be adapted using the init-function*/
-      GenericGrabber():m_poGrabber(0),m_remoteServer(0){}
+      GenericGrabber():m_poGrabber(0){}
 
         /// initialization function to change/initialize the grabber back-end
         /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
@@ -110,7 +104,6 @@ namespace icl {
                                     - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's core::depth images
                                     - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
                                     - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
-                                    - <b>rsb</b> Robotics Service Bus Source
                                     - <b>optris</b> For Optris' IR-Cameras
 
 
@@ -168,7 +161,6 @@ namespace icl {
                                     - kinectd=device-index (int)
                                     - kinectc=device-index (int)
                                     - kinecti=device-index (int)
-                                    - rsb=[comma-sep. transport-list=spread]:scope)
                                     - optris=camera-serial
 
           @param notifyErrors if set to false, no exception is thrown if no suitable device was found

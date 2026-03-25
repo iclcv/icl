@@ -48,9 +48,6 @@
 #include <ICLIO/LibAVVideoWriter.h>
 #endif
 
-#if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
-#include <ICLIO/RSBImageOutput.h>
-#endif
 
 #ifdef ICL_HAVE_VIDEODEV
 #include <ICLIO/V4L2LoopBackOutput.h>
@@ -160,25 +157,6 @@ namespace icl{
       }
   #endif
 
-  #if defined(ICL_HAVE_RSB) && defined(ICL_HAVE_PROTOBUF)
-      plugins.push_back("rsb~[transport:]/scope~Network output stream");
-      if(type == "rsb"){
-        try{
-          std::vector<std::string> ts = tok(d,":");
-          if(!ts.size()) throw ICLException("unable to create RSBImageOutput without scope-definition");
-          if(ts.size() == 1){
-      o = new RSBImageOutput(ts[0],"");
-          }else if(ts.size() == 2){
-            o = new RSBImageOutput(ts[1],ts[0]);
-          }else{
-            throw ICLException("invalid definition string (exptected: [transport-list:]scope");
-          }
-
-        }catch(std::exception &e){
-          ERROR_LOG("Unable to create RSBImageOutput with this parameters: " << d << "(error: "  <<e.what() << ")");
-        }
-      }
-  #endif
       plugins.push_back("file~File Pattern~File Writer");
 
       if(type == "file"){
