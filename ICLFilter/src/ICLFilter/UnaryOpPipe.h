@@ -109,9 +109,7 @@ namespace icl{
       }
       /// applies all ops sequentially
       void apply(const core::Image &src, core::Image &dst) override;
-
-      /// Reimplemented: uses getLastDisplay() as destination image
-      core::Image apply(const core::ImgBase *src);
+      using UnaryOp::apply;
 
       /// returns the number of contained ops
       int getLength() const;

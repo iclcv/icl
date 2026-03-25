@@ -69,11 +69,6 @@ namespace icl{
       }
     }
 
-    core::Image UnaryOpPipe::apply(const ImgBase *src){
-      UnaryOp::apply(src, &getLastDisplay());
-      return core::Image(getLastDisplay()->deepCopy());
-    }
-
     int UnaryOpPipe::getLength() const {
       return static_cast<int>(ops.size());
     }
