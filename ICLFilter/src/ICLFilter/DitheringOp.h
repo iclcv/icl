@@ -112,7 +112,6 @@ namespace icl{
       /// import base-class symbols
       using UnaryOp::apply;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       Algorithm m_algorithm;
       int m_levels;

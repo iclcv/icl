@@ -37,55 +37,37 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-     template<typename T>
-     void MirrorOp::mirror (const ImgBase *poSrc, ImgBase *poDst) {
-        const Img<T> *poS = (const Img<T>*) poSrc;
-        Img<T> *poD = (Img<T>*) poDst;
-        for(int c=0; c < poSrc->getChannels(); c++) {
-           flippedCopyChannelROI (m_eAxis, poS, c, m_oSrcOffset, m_oSize,
-                                  poD, c, m_oDstOffset, m_oSize);
-        }
-     }
-
      MirrorOp::MirrorOp (axis eAxis) :
         m_eAxis (eAxis)
-     {
-        this->m_aMethods[depth8u] = &MirrorOp::mirror<icl8u>;
-        this->m_aMethods[depth16s] = &MirrorOp::mirror<icl16s>;
-        this->m_aMethods[depth32s] = &MirrorOp::mirror<icl32s>;
-        this->m_aMethods[depth32f] = &MirrorOp::mirror<icl32f>;
-        this->m_aMethods[depth64f] = &MirrorOp::mirror<icl64f>;
-     }
+     {}
 
-     void MirrorOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
+     void MirrorOp::apply(const Image &src, Image &dst) {
         Point oROIOffset;
-        if (getClipToROI()) {
-           m_oSrcOffset = poSrc->getROIOffset();
+        if(getClipToROI()){
+           m_oSrcOffset = src.getROIOffset();
            oROIOffset = m_oDstOffset = Point::null;
-           m_oSize = poSrc->getROISize();
+           m_oSize = src.getROISize();
         } else {
            m_oDstOffset = m_oSrcOffset = Point::null;
-           m_oSize = poSrc->getSize();
-
-           oROIOffset = poSrc->getROIOffset();
-           if (m_eAxis == axisHorz || m_eAxis == axisBoth)
-              oROIOffset.y = m_oSize.height - oROIOffset.y - poSrc->getROISize().height;
-           if (m_eAxis == axisVert || m_eAxis == axisBoth)
-              oROIOffset.x = m_oSize.width - oROIOffset.x - poSrc->getROISize().width;
+           m_oSize = src.getSize();
+           oROIOffset = src.getROIOffset();
+           if(m_eAxis == axisHorz || m_eAxis == axisBoth)
+              oROIOffset.y = m_oSize.height - oROIOffset.y - src.getROISize().height;
+           if(m_eAxis == axisVert || m_eAxis == axisBoth)
+              oROIOffset.x = m_oSize.width - oROIOffset.x - src.getROISize().width;
         }
 
-        if (UnaryOp::prepare (ppoDst, poSrc->getDepth(), m_oSize,
-                             poSrc->getFormat(), poSrc->getChannels(),
-                             Rect (oROIOffset, poSrc->getROISize()), poSrc->getTime()))
-           (this->*(m_aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
+        if(!prepare(dst, src.getDepth(), m_oSize,
+                    src.getFormat(), src.getChannels(),
+                    Rect(oROIOffset, src.getROISize()), src.getTime())) return;
+
+        src.visitWith(dst, [this](const auto &s, auto &d) {
+           for(int c=0; c < s.getChannels(); c++){
+              flippedCopyChannelROI(m_eAxis, &s, c, m_oSrcOffset, m_oSize,
+                                    &d, c, m_oDstOffset, m_oSize);
+           }
+        });
      }
-  
-    void MirrorOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
-    }
 
   } // namespace filter
 }

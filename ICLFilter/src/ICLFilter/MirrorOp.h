@@ -56,14 +56,7 @@ namespace icl{
       /// Applies the mirror transform to the images
       void apply(const core::Image &src, core::Image &dst) override;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
-      /// array of class methods used to transform depth8u and depth32f images
-      void (MirrorOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
-
-      template<typename T>
-      void mirror (const core::ImgBase *poSrc, core::ImgBase *poDst);
-
       core::axis  m_eAxis;
       utils::Size  m_oSize;
       utils::Point m_oSrcOffset, m_oDstOffset;
