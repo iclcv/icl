@@ -37,8 +37,10 @@
 #include <ICLCore/Img.h>
 #include <ICLCV/WorkingLineSegment.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl {
+  namespace core{ class Image; }
   namespace cv{
 
     /// Simple class for creation of a run-length encoding of an image
@@ -124,6 +126,11 @@ namespace icl {
 
       /// main encoding function
       void encode(const core::ImgBase *image);
+
+      /// Image-based overload
+      inline void encode(const core::Image &image) {
+        encode(image.ptr());
+      }
 
       /// Returns a begin()-pointer for the first encoded image line
       /** row-indices are always relative to the image ROI's offset (see \ref ROI) */

@@ -33,10 +33,11 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Exception.h>
 #include <ICLQt/GUIHandle.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   /** \cond */
-  namespace core{ class ImgBase; }
+  namespace core{ class ImgBase; class Image; }
   /** \endcond */
 
   namespace qt{
@@ -62,6 +63,9 @@ namespace icl{
 
       /// make the wrapped ICLWidget show a given image (as set Image)
       void operator=(const core::ImgBase &image) { setImage(&image); }
+
+      /// Image-based overload
+      void operator=(const core::Image &image) { setImage(image.ptr()); }
 
       /// calles updated internally
       void render();

@@ -34,8 +34,10 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLUtils/Configurable.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  namespace core{ class Image; }
 
   namespace cv{
 
@@ -95,6 +97,11 @@ namespace icl{
 
       /// convenience method that automatically scales the source images range to 0,255 if it is not already of type Img8u
       const Checkerboard &detect(const core::ImgBase *image);
+
+      /// Image-based overload
+      inline const Checkerboard &detect(const core::Image &image) {
+        return detect(image.ptr());
+      }
     };
 
   } // namespace cv

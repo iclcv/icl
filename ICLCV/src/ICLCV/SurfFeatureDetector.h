@@ -36,8 +36,10 @@
 #include <ICLCV/SurfFeature.h>
 #include <string>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  namespace core{ class Image; }
   namespace cv{
 
       /// ICL's *New* Generic Surf Feature detection class
@@ -64,6 +66,11 @@ namespace icl{
         /// detects SURF features in given image
         const std::vector<SurfFeature> &detect(const core::ImgBase *image);
 
+        /// Image-based overload
+        inline const std::vector<SurfFeature> &detect(const core::Image &image) {
+          return detect(image.ptr());
+        }
+
         /// detects SURF features in given image and stores them as internal reference features
         /** Please note, that the reference image is internally stored (by deep copy)
             When parameters are changed and the back-end must be re-initialized, the
@@ -71,11 +78,21 @@ namespace icl{
             based on the new parameters. */
         void setReferenceImage(const core::ImgBase *image);
 
+        /// Image-based overload
+        inline void setReferenceImage(const core::Image &image) {
+          setReferenceImage(image.ptr());
+        }
+
         /// returns the featuers internally stored as reference
         const std::vector<SurfFeature> &getReferenceFeatures() const ;
 
         /// detections SURF features and matches them against the given reference features
         const std::vector<SurfMatch> &match(const core::ImgBase *image, float significance=0.65);
+
+        /// Image-based overload
+        inline const std::vector<SurfMatch> &match(const core::Image &image, float significance=0.65) {
+          return match(image.ptr(), significance);
+        }
 
         void setOctaves(int octaves);
 

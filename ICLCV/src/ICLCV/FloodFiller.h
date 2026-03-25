@@ -32,8 +32,10 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  namespace core{ class Image; }
   namespace cv{
 
     /// Utility class for image flood filling
@@ -87,6 +89,10 @@ namespace icl{
           referenceValue is less then the given threshold */
       const Result &apply(const core::ImgBase *image, const utils::Point &seed, double referenceValue, double threshold);
 
+      /// Image-based overload
+      inline const Result &apply(const core::Image &image, const utils::Point &seed, double referenceValue, double threshold) {
+        return apply(image.ptr(), seed, referenceValue, threshold);
+      }
 
       /// flood-fills the given 3-channel image starting from the given seed point
       /** Here, the fill-criterion is the euclidian distance to the given (refR,refG,regB)

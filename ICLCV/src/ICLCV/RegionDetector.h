@@ -37,8 +37,10 @@
 #include <ICLCV/ImageRegion.h>
 
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  // (Image forward decl removed)
   namespace cv{
 
     /// Complex utility class for detection of connected image components \ingroup G_RD
@@ -216,6 +218,11 @@ namespace icl{
       /// main apply function that is used to detect an images image-regions
       /** As explained in \ref DEPTHS, this function is only valid for icl8u, icl16s and icl32s images */
       const std::vector<ImageRegion> &detect(const core::ImgBase *image);
+
+      /// Image-based detect overload
+      inline const std::vector<ImageRegion> &detect(const core::Image &image){
+        return detect(image.ptr());
+      }
 
       /// Utility function that returns the image regions that contains a given position (e.g. from mouse input)
       /** click always refers to the last detect call. If no region contains the given point (e.g. because

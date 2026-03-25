@@ -39,6 +39,7 @@
 #include <ICLGeom/Camera.h>
 
 #include <ICLMarkers/Fiducial.h>
+#include <ICLCore/Image.h>
 
 
 
@@ -160,6 +161,11 @@ namespace icl{
           plugin will use gray images as input. You can query this information
           by calling getPropertyValue("preferred image type") */
       const std::vector<Fiducial> &detect(const core::ImgBase *image);
+
+      /// Image-based detect overload
+      inline const std::vector<Fiducial> &detect(const core::Image &image){
+        return detect(image.ptr());
+      }
 
       /// returns the list of supported features
       Fiducial::FeatureSet getFeatures() const;

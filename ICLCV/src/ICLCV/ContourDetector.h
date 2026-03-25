@@ -35,8 +35,10 @@
 #include <ICLCore/Img.h>
 
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  namespace core{ class Image; }
   namespace cv{
 
     struct ContourImpl{
@@ -144,6 +146,11 @@ namespace icl{
 
       // calculates all contours (creates a deep copy/conversion to Img8u of the input image)
       const std::vector<Contour> &detect(const core::ImgBase *image);
+
+      /// Image-based overload
+      inline const std::vector<Contour> &detect(const core::Image &image) {
+        return detect(image.ptr());
+      }
 
       // calculates all controus (alters the values of the input image)
       const std::vector<Contour> &detect(core::Img8u &image);
