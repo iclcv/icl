@@ -184,8 +184,8 @@ void run(){
   //display
   hdepth = heatmapImage;
   hcolor = colorImage;
-  hedge = &edgeImg;
-  hnormal = &normImg;
+  hedge = edgeImg;
+  hnormal = normImg;
 
   gui["fps"].render();
   hdepth.render();

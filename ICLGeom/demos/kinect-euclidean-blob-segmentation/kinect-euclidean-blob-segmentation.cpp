@@ -346,9 +346,9 @@ void run(){
 	//create pointcloud
 	if(pa("-c") && enableSegmentation==false){//RGB
 	  if(gui["enableSmoothing"]){
-      creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(*filteredImage->as32f(), *obj, &colorImage.as8u(), depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(depthImage.as32f(), *obj, &colorImage.as8u(), depthScaling);
 	  }
   }else if(enableSegmentation==false){//UniColor
 	  GeomColor c(1.,0.,0.,1.);
@@ -356,13 +356,13 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);
 	  }
   }else{//segmentation
     if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);
 	  }
 	}
 
@@ -394,7 +394,7 @@ void run(){
       Img8u lI=segmentation->apply(obj->selectXYZH(),edgeImage,*filteredImage->as32f(), stabelize, useROI);
 	    obj->setColorsFromImage(lI);
 	  }else{
-	    Img8u lI=segmentation->apply(obj->selectXYZH(),edgeImage,*depthImage.as32f(), stabelize, useROI);
+	    Img8u lI=segmentation->apply(obj->selectXYZH(),edgeImage,depthImage.as32f(), stabelize, useROI);
 	    obj->setColorsFromImage(lI);
 	  }
 

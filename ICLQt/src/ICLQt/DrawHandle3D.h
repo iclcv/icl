@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <ICLCore/Image.h>
 #include <ICLQt/GUIHandle.h>
 
 namespace icl{
@@ -59,6 +60,9 @@ namespace icl{
 
       /// make the wrapped ICLWidget show a given image (as set Image)
       void operator=(const core::ImgBase *image) { setImage(image); }
+
+      /// Image-based overload
+      void operator=(const core::Image &image) { setImage(image.ptr()); }
 
       /// re-renders the widget
       void render();
