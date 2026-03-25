@@ -37,6 +37,10 @@
 using namespace icl::utils;
 using namespace icl::core;
 
+// TODO: clean up the threshold implementation — there are overlapping
+// IPP, SSE2, and C++ fallback code paths with duplicated logic.
+// Consider consolidating into a single dispatch using the visitor pattern.
+
 namespace icl {
   namespace filter{
 
@@ -50,6 +54,15 @@ namespace icl {
     ThresholdOp::~ThresholdOp(){
     }
 
+
+    // Forward declarations for file-local typed threshold functions
+    // (needed because tlt/tgt/tltgt delegate to tltVal/tgtVal/tltgtVal)
+#define ICL_INSTANTIATE_DEPTH(T) \
+    static void tltVal(const Img ## T*, Img ## T*, icl ## T, icl ## T); \
+    static void tgtVal(const Img ## T*, Img ## T*, icl ## T, icl ## T); \
+    static void tltgtVal(const Img ## T*, Img ## T*, icl ## T, icl ## T, icl ## T, icl ## T);
+    ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
 
      template <typename T> class ThreshOpLTVal {
 
@@ -321,21 +334,21 @@ namespace icl {
 
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tlt(const Img ## T *src,Img ## T *dst, icl ## T t){\
+    static void tlt(const Img ## T *src,Img ## T *dst, icl ## T t){\
       ippiThresholdCall_1T<icl ## T, ippiThreshold_LT_ ## T ## _C1R> (src, dst, t);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tgt(const Img ## T *src,Img ## T *dst, icl ## T t){\
+    static void tgt(const Img ## T *src,Img ## T *dst, icl ## T t){\
       ippiThresholdCall_1T<icl ## T, ippiThreshold_GT_ ## T ## _C1R> (src, dst, t);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltgt(const Img ## T *src,Img ## T *dst, icl ## T tMin, icl ## T tMax){\
+    static void tltgt(const Img ## T *src,Img ## T *dst, icl ## T tMin, icl ## T tMax){\
         ippiThresholdCall_4T<icl ## T, ippiThreshold_LTValGTVal_ ## T ## _C1R> (src, dst, tMin,tMin, tMax,tMax);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
@@ -344,21 +357,21 @@ namespace icl {
 
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
+    static void tltVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
       ippiThresholdCall_2T<icl ## T , ippiThreshold_LTVal_ ## T ## _C1R> (src, dst, t, val);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tgtVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
+    static void tgtVal(const Img ## T *src,Img ## T *dst, icl ## T t, icl ## T val){\
       ippiThresholdCall_2T<icl ## T , ippiThreshold_GTVal_ ## T ## _C1R> (src, dst, t, val);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltgtVal(const Img ## T *src,Img ## T *dst, icl ## T tMin,icl ## T minVal, icl ## T tMax,icl ## T maxVal){\
+    static void tltgtVal(const Img ## T *src,Img ## T *dst, icl ## T tMin,icl ## T minVal, icl ## T tMax,icl ## T maxVal){\
         ippiThresholdCall_4T<icl ## T, ippiThreshold_LTValGTVal_ ## T ##_C1R> (src, dst, tMin, minVal, tMax, maxVal);}
 
     ICL_INSTANTIATE_ALL_IPP_DEPTHS
@@ -371,8 +384,8 @@ namespace icl {
 
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tlt(const Img ## T *src, Img ## T *dst, icl ## T t){\
-      ThresholdOp::tltVal(src, dst, t, t);}
+    static void tlt(const Img ## T *src, Img ## T *dst, icl ## T t){\
+      tltVal(src, dst, t, t);}
   #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
@@ -381,8 +394,8 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tgt(const Img ## T *src, Img ## T *dst, icl ## T t){\
-      ThresholdOp::tgtVal(src, dst, t, t);}
+    static void tgt(const Img ## T *src, Img ## T *dst, icl ## T t){\
+      tgtVal(src, dst, t, t);}
   #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
@@ -391,8 +404,8 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltgt(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T tMax){\
-      ThresholdOp::tltgtVal(src, dst, tMin,tMin, tMax,tMax);}
+    static void tltgt(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T tMax){\
+      tltgtVal(src, dst, tMin,tMin, tMax,tMax);}
   #ifdef ICL_HAVE_IPP
     ICL_INSTANTIATE_ALL_FB_DEPTHS
   #else
@@ -416,19 +429,19 @@ namespace icl {
   #endif
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
+    static void tltVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpLTVal<icl ## T>(t,val));}
     ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tgtVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
+    static void tgtVal(const Img ##T *src, Img ## T *dst, icl ## T t, icl ## T val){\
       fallbackThreshold (src, dst, ThreshOpGTVal<icl ## T>(t,val));}
     ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
   #define ICL_INSTANTIATE_DEPTH(T) \
-    void ThresholdOp::tltgtVal(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T minVal, icl ##T tMax, icl ## T maxVal){\
+    static void tltgtVal(const Img ## T *src, Img ## T *dst, icl ## T tMin, icl ## T minVal, icl ##T tMax, icl ## T maxVal){\
         fallbackThreshold (src, dst, ThreshOpLTGTVal<icl ## T>(tMin,minVal,tMax,maxVal));}
     ICL_INSTANTIATE_THRESH_FB_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
@@ -437,22 +450,22 @@ namespace icl {
 
   // SSE2 specializations for icl8u and icl32f (when no IPP)
   #if defined(ICL_HAVE_SSE2) && !defined(ICL_HAVE_IPP)
-    void ThresholdOp::tltVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
+    static void tltVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
       sse_threshold_lt_val_8u(src, dst, t, val);
     }
-    void ThresholdOp::tgtVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
+    static void tgtVal(const Img8u *src, Img8u *dst, icl8u t, icl8u val){
       sse_threshold_gt_val_8u(src, dst, t, val);
     }
-    void ThresholdOp::tltgtVal(const Img8u *src, Img8u *dst, icl8u tMin, icl8u minVal, icl8u tMax, icl8u maxVal){
+    static void tltgtVal(const Img8u *src, Img8u *dst, icl8u tMin, icl8u minVal, icl8u tMax, icl8u maxVal){
       sse_threshold_ltgt_val_8u(src, dst, tMin, minVal, tMax, maxVal);
     }
-    void ThresholdOp::tltVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
+    static void tltVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
       sse_threshold_lt_val_32f(src, dst, t, val);
     }
-    void ThresholdOp::tgtVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
+    static void tgtVal(const Img32f *src, Img32f *dst, icl32f t, icl32f val){
       sse_threshold_gt_val_32f(src, dst, t, val);
     }
-    void ThresholdOp::tltgtVal(const Img32f *src, Img32f *dst, icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
+    static void tltgtVal(const Img32f *src, Img32f *dst, icl32f tMin, icl32f minVal, icl32f tMax, icl32f maxVal){
       sse_threshold_ltgt_val_32f(src, dst, tMin, minVal, tMax, maxVal);
     }
   #endif

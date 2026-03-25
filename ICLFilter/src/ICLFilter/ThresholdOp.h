@@ -153,16 +153,6 @@ namespace icl {
         */
         void setType(optype type) {m_eType=type;}
 
-  #define ICL_INSTANTIATE_DEPTH(T)                                        \
-        static void tlt(const core::Img## T*, core::Img##T*, icl##T);         \
-        static void tgt(const core::Img## T*, core::Img##T*, icl##T);                 \
-        static void tltgt(const core::Img## T*, core::Img##T*, icl##T, icl##T);       \
-        static void tltVal(const core::Img## T*, core::Img##T*, icl##T, icl##T tVal); \
-        static void tgtVal(const core::Img## T*, core::Img##T*, icl##T, icl##T tVal); \
-        static void tltgtVal(const core::Img## T*, core::Img##T*, icl##T, icl##T, icl##T, icl##T);
-        ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
-
      private:
         float m_fLowThreshold;
         float m_fHighThreshold;
