@@ -1,4 +1,5 @@
 #include <ICLQt/Common.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLUtils/FPSLimiter.h>
 
@@ -37,7 +38,8 @@ void run(){
   // apply method of the UnaryCompareOp instance. The resulting
   // image is again forwarded directly to the GUI-component
   // for visualization
-  gui["image"] = cmp.apply(grabber.grab());
+  Image img = grabber.grabImage();
+  gui["image"] = cmp.apply(img);
 
   // this suspends the current thread until at least 1/25 seconds
   // have passed since the last time this function was called

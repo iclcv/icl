@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/CannyOp.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <mutex>
@@ -72,10 +73,10 @@ void update(){
   int preGaussRadius = gui["preGaussRadius"];
 
   CannyOp canny(low,high,preGaussRadius);
-  static ImgBase *dst = 0;
+  static Image dst;
 
   Time t = Time::now();
-  canny.apply(grabber.grab(),&dst);
+  canny.apply(grabber.grabImage(), dst);
 
   dt = (Time::now()-t).toMilliSecondsDouble();
 

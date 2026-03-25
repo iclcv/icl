@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/DitheringOp.h>
 
 
@@ -53,8 +54,8 @@ void init(){
 
 void run(){
   op.setLevels(parse<int>(gui["levels"].as<std::string>()));
-  const ImgBase *image = grabber.grab();
-  const ImgBase *dithered = op.apply(image);
+  Image image = grabber.grabImage();
+  Image dithered = op.apply(image);
 
   gui["image"] = image;
   gui["result"] = dithered;

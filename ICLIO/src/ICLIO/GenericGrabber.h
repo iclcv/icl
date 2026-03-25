@@ -36,6 +36,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/ConfigurableProxy.h>
 #include <ICLIO/Grabber.h>
+#include <ICLCore/Image.h>
 #include <string>
 #include <mutex>
 
@@ -204,6 +205,13 @@ namespace icl {
           ICLASSERT_RETURN_VAL(!isNull(), 0);
 
           return m_poGrabber->grab(dst);
+        }
+
+        /// Image-based grab: returns a deep copy as an Image value
+        core::Image grabImage(){
+          std::lock_guard<std::recursive_mutex> __lock(m_mutex);
+          ICLASSERT_RETURN_VAL(!isNull(), core::Image());
+          return m_poGrabber->grabImage();
         }
 
         /// returns wheter an underlying grabber could be created

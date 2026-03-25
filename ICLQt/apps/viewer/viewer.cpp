@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLQt/Common.h>
+#include <ICLCore/Image.h>
 #include <ICLUtils/FPSLimiter.h>
 
 GUI gui;
@@ -37,7 +38,7 @@ GenericGrabber grabber;
 void run(){
   static FPSLimiter fps(pa("-maxfps"),10);
 
-  gui["image"] = grabber.grab();
+  gui["image"] = grabber.grabImage();
   gui["fps"].render();
   fps.wait();
 }

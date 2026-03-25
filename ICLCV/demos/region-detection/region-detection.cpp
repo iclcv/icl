@@ -28,6 +28,7 @@
 **                                                                 **
 ********************************************************************/
 #include <ICLQt/Common.h>
+#include <ICLCore/Image.h>
 #include <ICLCV/RegionDetector.h>
 #include <ICLFilter/ColorDistanceOp.h>
 
@@ -51,11 +52,12 @@ void init(){
 
 void run(){
   DrawHandle draw = gui["image"];
-  const ImgBase *I = grabber.grab();
+  Image I = grabber.grabImage();
 
   draw = I;
 
-  std::vector<ImageRegion> rs = rd.detect(cd.apply(I));
+  Image filtered = cd.apply(I);
+  std::vector<ImageRegion> rs = rd.detect(filtered);
   for(size_t i=0;i<rs.size();++i){
     draw->linestrip(rs[i].getBoundary());
   }

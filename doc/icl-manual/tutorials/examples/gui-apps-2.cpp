@@ -40,7 +40,7 @@ void init(){
 void run(){
    // pass the next grabbed image from the grabber instance
    // directly to the visualization component
-   gui["image"] = grabber.grab();
+   gui["image"] = grabber.grabImage();
 }
 
 // the main function creates an ICLApp instance and
