@@ -402,10 +402,10 @@ void run(){
 
   obj->unlock();
 
-  hcolor = &colorImage;
-  hedge = &edgeImage;
+  hcolor = colorImage;
+  hedge = edgeImage;
   if(pa("-d")){
-    hnormal = &normalImage;
+    hnormal = normalImage;
   }
 
   gui["fps"].render();

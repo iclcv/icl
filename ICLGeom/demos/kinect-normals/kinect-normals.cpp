@@ -112,8 +112,10 @@ void run(){
 
   Size size = pa("-size");
 
-  const Img8u &colorImage = *grabColor.grab()->asImg<icl8u>();
-  const Img32f &depthImage = *grabDepth.grab()->asImg<icl32f>();
+  Image colorImg = grabColor.grabImage();
+  Image depthImg = grabDepth.grabImage();
+  const Img8u &colorImage = colorImg.as8u();
+  const Img32f &depthImage = depthImg.as32f();
 
   WARNING_LOG("Hello");
 

@@ -272,9 +272,9 @@ void run(){
   }
 
   //grab images
-  const ImgBase *colorImagePtr = grabColor.grab();
-  const ImgBase *depthImagePtr = grabDepth.grab();
-  if(colorImagePtr == NULL || depthImagePtr == NULL){
+  Image colorImage = grabColor.grabImage();
+  Image depthImage = grabDepth.grabImage();
+  if(!colorImage || !depthImage){
     obj->unlock();
     return;
   }

@@ -349,11 +349,12 @@ void init(){
 void run(){
   static ICLDrawWidget *w = *gui.get<DrawHandle>("image");
 
-  const ImgBase *image = grabber->grab();
+  static Image grabbed;
+  grabbed = grabber->grabImage();
 
-  std::vector<std::vector<float> > vVT = getCentersAndSizes(*(image->asImg<icl8u>()));
+  std::vector<std::vector<float> > vVT = getCentersAndSizes(grabbed.as8u());
 
-  w->setImage(image);
+  w->setImage(grabbed.ptr());
 
   if(vVT.size()){
 

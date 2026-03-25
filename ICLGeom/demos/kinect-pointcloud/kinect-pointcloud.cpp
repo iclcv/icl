@@ -238,8 +238,8 @@ void run(){
   }
 
   //grab images
-  const ImgBase &colorImage = *grabColor.grab();
-  const ImgBase &depthImage = *grabDepth.grab();
+  Image colorImage = grabColor.grabImage();
+  Image depthImage = grabDepth.grabImage();
 
   static ImgBase *heatmapImage = 0;
 

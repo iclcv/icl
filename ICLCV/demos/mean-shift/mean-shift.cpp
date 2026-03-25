@@ -105,7 +105,9 @@ const Img32f &create_weight_image(const Img32f &image, const std::vector<double>
 
 
 void run(){
-  const Img32f *image = grabber->grab()->asImg<icl32f>();
+  static Image grabbed;
+  grabbed = grabber->grabImage();
+  const Img32f *image = &grabbed.as32f();
 
   m.lock();
   const Img32f &wi = create_weight_image(*image,COLOR);
