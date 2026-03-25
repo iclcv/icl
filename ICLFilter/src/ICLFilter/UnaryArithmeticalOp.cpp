@@ -8,7 +8,7 @@
 **                                                                 **
 ** File   : ICLFilter/src/ICLFilter/UnaryArithmeticalOp.cpp        **
 ** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
+** Authors: Christof Elbrechter, Andre Justus                      **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -100,6 +100,21 @@ namespace icl {
           }
         }
       };
+      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::absOp>{
+        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
+          __m128 signMask = _mm_set1_ps(-0.0f);
+          for(int c=src->getChannels()-1; c >= 0; --c) {
+            const icl32f *s = src->getROIData(c);
+            icl32f *d = dst->getROIData(c);
+            int n = src->getROISize().getDim();
+            int i = 0;
+            for(; i <= n-4; i += 4){
+              _mm_storeu_ps(d+i, _mm_andnot_ps(signMask, _mm_loadu_ps(s+i)));
+            }
+            for(; i < n; ++i) d[i] = fabs(s[i]);
+          }
+        }
+      };
       template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::sqrtOp>{
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
           for(int c=src->getChannels()-1; c >= 0; --c) {
@@ -110,224 +125,92 @@ namespace icl {
             for(; i <= n-4; i += 4){
               _mm_storeu_ps(d+i, _mm_sqrt_ps(_mm_loadu_ps(s+i)));
             }
-            for(; i < n; ++i) d[i] = std::sqrt(s[i]);
-          }
-        }
-      };
-      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::absOp>{
-        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            const icl32f *s = src->getROIData(c);
-            icl32f *d = dst->getROIData(c);
-            int n = src->getROISize().getDim();
-            __m128 mask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF)); // clear sign bit
-            int i = 0;
-            for(; i <= n-4; i += 4){
-              _mm_storeu_ps(d+i, _mm_and_ps(_mm_loadu_ps(s+i), mask));
-            }
-            for(; i < n; ++i) d[i] = std::fabs(s[i]);
+            for(; i < n; ++i) d[i] = sqrtf(s[i]);
           }
         }
       };
 #endif
 
       ///-----------------------------------------------------------------------------------------------
-      ///           with val
+      ///          with val
       ///-----------------------------------------------------------------------------------------------
       template<class T, UnaryArithmeticalOp::optype OT> struct PixelFuncWithVal{
-        static inline T apply(const T t, T val){ return t+val; }
+        static inline T apply(const T t, T val){ (void)t; (void)val; return t; }
       };
       template<class T> struct PixelFuncWithVal<T,UnaryArithmeticalOp::addOp>{
-        static inline T apply(const T t, T val){ return t+val; }
+        static inline T apply(const T t, T val){ return clipped_cast<icl64f,T>(static_cast<icl64f>(t)+static_cast<icl64f>(val)); }
       };
       template<class T> struct PixelFuncWithVal<T,UnaryArithmeticalOp::subOp>{
-        static inline T apply(const T t, T val){ return t-val; }
-      };
-      template<class T> struct PixelFuncWithVal<T,UnaryArithmeticalOp::divOp>{
-        static inline T apply(const T t, T val){ return t/val; }
+        static inline T apply(const T t, T val){ return clipped_cast<icl64f,T>(static_cast<icl64f>(t)-static_cast<icl64f>(val)); }
       };
       template<class T> struct PixelFuncWithVal<T,UnaryArithmeticalOp::mulOp>{
-        static inline T apply(const T t, T val){ return t*val; }
+        static inline T apply(const T t, T val){ return clipped_cast<icl64f,T>(static_cast<icl64f>(t)*static_cast<icl64f>(val)); }
       };
-      template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncWithVal{
+      template<class T> struct PixelFuncWithVal<T,UnaryArithmeticalOp::divOp>{
+        static inline T apply(const T t, T val){ return clipped_cast<icl64f,T>(static_cast<icl64f>(t)/static_cast<icl64f>(val)); }
+      };
 
+      template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncWithVal{
         static inline void apply(const  Img<T> *src, Img<T> *dst, T val ){
           for(int c=src->getChannels()-1; c >= 0; --c) {
             ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc = src->beginROI(c), itSrcEnd=src->endROI(c) ; itSrc != itSrcEnd; ++itSrc, ++itDst){
+            for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd = src->endROI(c) ; itSrc != itSrcEnd; ++itSrc, ++itDst){
               *itDst = PixelFuncWithVal<T,OT>::apply(*itSrc,val);
             }
           }
         }
       };
 
-
 #ifdef ICL_HAVE_SSE2
-      // --- SSE2 specializations for icl32f (with val) ---
-      #define ICL_SSE2_UNARY_WITH_VAL_32F(OP, SSE_OP)                                    \
-      template<> struct LoopFuncWithVal<icl32f, UnaryArithmeticalOp::OP##Op>{              \
+      // SSE2 specialization macro for icl32f with-val ops
+#define UNARY_ARITH_SSE2_WITH_VAL_32F(OPTYPE, SSE_INSTR)                              \
+      template<> struct LoopFuncWithVal<icl32f, UnaryArithmeticalOp::OPTYPE>{          \
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst, icl32f val){   \
-          __m128 vval = _mm_set1_ps(val);                                                 \
-          for(int c=src->getChannels()-1; c >= 0; --c) {                                  \
-            const icl32f *s = src->getROIData(c);                                         \
-            icl32f *d = dst->getROIData(c);                                               \
-            int n = src->getROISize().getDim();                                           \
-            int i = 0;                                                                    \
-            for(; i <= n-4; i += 4){                                                      \
-              _mm_storeu_ps(d+i, SSE_OP(_mm_loadu_ps(s+i), vval));                        \
-            }                                                                             \
-            for(; i < n; ++i) d[i] = PixelFuncWithVal<icl32f,                             \
-                                       UnaryArithmeticalOp::OP##Op>::apply(s[i], val);    \
-          }                                                                               \
-        }                                                                                 \
-      }
-      ICL_SSE2_UNARY_WITH_VAL_32F(add, _mm_add_ps);
-      ICL_SSE2_UNARY_WITH_VAL_32F(sub, _mm_sub_ps);
-      ICL_SSE2_UNARY_WITH_VAL_32F(mul, _mm_mul_ps);
-      ICL_SSE2_UNARY_WITH_VAL_32F(div, _mm_div_ps);
-      #undef ICL_SSE2_UNARY_WITH_VAL_32F
+          __m128 vv = _mm_set1_ps(val);                                                \
+          for(int c=src->getChannels()-1; c >= 0; --c){                                \
+            const icl32f *s = src->getROIData(c);                                      \
+            icl32f *d = dst->getROIData(c);                                            \
+            int n = src->getROISize().getDim();                                        \
+            int i = 0;                                                                 \
+            for(; i <= n-4; i += 4){                                                   \
+              _mm_storeu_ps(d+i, SSE_INSTR(_mm_loadu_ps(s+i), vv));                    \
+            }                                                                          \
+            for(; i < n; ++i) d[i] = PixelFuncWithVal<icl32f, UnaryArithmeticalOp::OPTYPE>::apply(s[i], val); \
+          }                                                                            \
+        }                                                                              \
+      };
+
+      UNARY_ARITH_SSE2_WITH_VAL_32F(addOp, _mm_add_ps)
+      UNARY_ARITH_SSE2_WITH_VAL_32F(subOp, _mm_sub_ps)
+      UNARY_ARITH_SSE2_WITH_VAL_32F(mulOp, _mm_mul_ps)
+      UNARY_ARITH_SSE2_WITH_VAL_32F(divOp, _mm_div_ps)
+
+#undef UNARY_ARITH_SSE2_WITH_VAL_32F
 #endif
 
-
-  #ifdef ICL_HAVE_IPP
-      /*** IPP function specializations for "no val":
-          sqrOp=10,
-          sqrtOp=11,
-          lnOp=12,
-          expOp=13,
-          absOp=14
-      ***/
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize)>
-      inline void ipp_call_no_val(const Img<T> *src, Img<T> *dst){
-        for (int c=src->getChannels()-1; c >= 0; --c) {
-          func (src->getROIData (c), src->getLineStep(), dst->getROIData (c), dst->getLineStep(), dst->getROISize());
-        }
-    }
-
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T*, int, IppiSize,int)>
-      inline void ipp_call_no_val_sfs(const Img<T> *src, Img<T> *dst){
-        for (int c=src->getChannels()-1; c >= 0; --c) {
-          func (src->getROIData (c), src->getLineStep(), dst->getROIData (c), dst->getLineStep(), dst->getROISize(), 0);
-        }
-    }
-
-  #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                                                                   \
-      template<> struct LoopFuncNoVal<icl8u, UnaryArithmeticalOp::OP##Op>{                                                                        \
-        static inline void apply(const  Img<icl8u> *src, Img<icl8u> *dst ){ ipp_call_no_val_sfs<icl8u,ippi##IPPOP##_8u_C1RSfs>(src, dst); }       \
-      };                                                                                                                                          \
-      template<> struct LoopFuncNoVal<icl16s, UnaryArithmeticalOp::OP##Op>{                                                                       \
-        static inline void apply(const  Img<icl16s> *src, Img<icl16s> *dst ){ ipp_call_no_val_sfs<icl16s,ippi##IPPOP##_16s_C1RSfs>(src, dst); }   \
-      };                                                                                                                                          \
-      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::OP##Op>{                                                                       \
-        static inline void apply(const  Img<icl32f> *src, Img<icl32f> *dst ){ ipp_call_no_val<icl32f,ippi##IPPOP##_32f_C1R>(src, dst); }          \
-      }
-      CREATE_IPP_FUNCTIONS_FOR_OP(sqr,Sqr);
-      CREATE_IPP_FUNCTIONS_FOR_OP(sqrt,Sqrt);
-      CREATE_IPP_FUNCTIONS_FOR_OP(ln,Ln);
-      CREATE_IPP_FUNCTIONS_FOR_OP(exp,Exp);
-  #undef CREATE_IPP_FUNCTIONS_FOR_OP
-
-      template<> struct LoopFuncNoVal<icl16s, UnaryArithmeticalOp::absOp>{
-        static inline void apply(const  Img<icl16s> *src, Img<icl16s> *dst ){ ipp_call_no_val<icl16s,ippiAbs_16s_C1R>(src, dst); }
-      };
-      template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::absOp>{
-        static inline void apply(const  Img<icl32f> *src, Img<icl32f> *dst ){ ipp_call_no_val<icl32f,ippiAbs_32f_C1R>(src, dst); }
-      };
-
-       /*** IPP function specializations for "with val":
-          addOp=0,
-          subOp=1,
-          divOp=2,
-          mulOp=3,
-       ***/
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T,  T*, int, IppiSize)>
-      inline void ipp_call_with_val(const Img<T> *src, Img<T> *dst, T val){
-        for (int c=src->getChannels()-1; c >= 0; --c) {
-          func (src->getROIData (c), src->getLineStep(),val, dst->getROIData (c), dst->getLineStep(), dst->getROISize());
-        }
-    }
-
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int, T,  T*, int, IppiSize, int)>
-      inline void ipp_call_with_val_sfs(const Img<T> *src, Img<T> *dst, T val){
-        for (int c=src->getChannels()-1; c >= 0; --c) {
-          func (src->getROIData (c), src->getLineStep(),val, dst->getROIData (c), dst->getLineStep(), dst->getROISize(),0);
-        }
-    }
-
-  #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                           \
-      template<> struct LoopFuncWithVal<icl8u, UnaryArithmeticalOp::OP##Op>{              \
-        static inline void apply(const Img<icl8u> *src, Img<icl8u> *dst, icl8u val ){     \
-          ipp_call_with_val_sfs<icl8u,ippi##IPPOP##_8u_C1RSfs>(src, dst,val);             \
-        }                                                                                 \
-      };                                                                                  \
-      template<> struct LoopFuncWithVal<icl16s, UnaryArithmeticalOp::OP##Op>{             \
-        static inline void apply(const Img<icl16s> *src, Img<icl16s> *dst, icl16s val ){  \
-          ipp_call_with_val_sfs<icl16s,ippi##IPPOP##_16s_C1RSfs>(src, dst,val);           \
-        }                                                                                 \
-      };                                                                                  \
-      template<> struct LoopFuncWithVal<icl32f, UnaryArithmeticalOp::OP##Op>{             \
-        static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst, icl32f val ){  \
-          ipp_call_with_val<icl32f,ippi##IPPOP##_32f_C1R>(src, dst,val);                  \
-        }                                                                                 \
-      }
-
-      CREATE_IPP_FUNCTIONS_FOR_OP(add,AddC);
-      CREATE_IPP_FUNCTIONS_FOR_OP(sub,SubC);
-      CREATE_IPP_FUNCTIONS_FOR_OP(div,DivC);
-      CREATE_IPP_FUNCTIONS_FOR_OP(mul,MulC);
-  #undef CREATE_IPP_FUNCTIONS_FOR_OP
-
-  #endif
-
-      template<UnaryArithmeticalOp::optype OT>
-      void apply_unary_arithmetical_op_no_val(const ImgBase *src, ImgBase *dst){
-
-        switch(src->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: LoopFuncNoVal<icl##D, OT>::apply(src->asImg<icl##D>(),dst->asImg<icl##D>()); break;
-          ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
-          default: ICL_INVALID_DEPTH;
-        }
-      }
-
-
-      template<UnaryArithmeticalOp::optype OT>
-      void apply_unary_arithmetical_op_with_val(const ImgBase *src, ImgBase *dst, icl64f val){
-
-        switch(src->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D)                                                 \
-          case depth##D: LoopFuncWithVal<icl##D, OT>::apply(src->asImg<icl##D >(), \
-          dst->asImg<icl##D >(), clipped_cast<icl64f,icl##D>(val)); break;
-          ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
-          default: ICL_INVALID_DEPTH;
-        }
-      }
+#ifdef ICL_HAVE_IPP
+      // IPP specializations omitted for now (ICL_HAVE_IPP is not set on this platform)
+#endif
 
     } // end of anonymous namespace
 
-    void UnaryArithmeticalOp::applyImgBase(const ImgBase *poSrc, ImgBase **poDst) {
-      ICLASSERT_RETURN( poSrc );
-      if(!UnaryOp::prepare(poDst,poSrc)) return;
-      switch(m_eOpType){
-        case addOp:  apply_unary_arithmetical_op_with_val<addOp>(poSrc,*poDst,m_dValue); break;
-        case mulOp:  apply_unary_arithmetical_op_with_val<mulOp>(poSrc,*poDst,m_dValue); break;
-        case divOp:  apply_unary_arithmetical_op_with_val<divOp>(poSrc,*poDst,m_dValue); break;
-        case subOp:  apply_unary_arithmetical_op_with_val<subOp>(poSrc,*poDst,m_dValue); break;
 
-        case sqrOp:  apply_unary_arithmetical_op_no_val<sqrOp>(poSrc,*poDst); break;
-        case sqrtOp: apply_unary_arithmetical_op_no_val<sqrtOp>(poSrc,*poDst); break;
-        case lnOp:   apply_unary_arithmetical_op_no_val<lnOp>(poSrc,*poDst); break;
-        case expOp:  apply_unary_arithmetical_op_no_val<expOp>(poSrc,*poDst); break;
-        case absOp:  apply_unary_arithmetical_op_no_val<absOp>(poSrc,*poDst); break;
-      }
-    }
-  
-    void UnaryArithmeticalOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+    void UnaryArithmeticalOp::apply(const Image &src, Image &dst) {
+      if(!prepare(dst, src)) return;
+      src.visitWith(dst, [this](const auto &s, auto &d) {
+        using T = typename std::remove_reference_t<decltype(s)>::type;
+        switch(m_eOpType){
+          case addOp:  LoopFuncWithVal<T, addOp>::apply(&s, &d, clipped_cast<icl64f,T>(m_dValue)); break;
+          case mulOp:  LoopFuncWithVal<T, mulOp>::apply(&s, &d, clipped_cast<icl64f,T>(m_dValue)); break;
+          case divOp:  LoopFuncWithVal<T, divOp>::apply(&s, &d, clipped_cast<icl64f,T>(m_dValue)); break;
+          case subOp:  LoopFuncWithVal<T, subOp>::apply(&s, &d, clipped_cast<icl64f,T>(m_dValue)); break;
+          case sqrOp:  LoopFuncNoVal<T, sqrOp>::apply(&s, &d); break;
+          case sqrtOp: LoopFuncNoVal<T, sqrtOp>::apply(&s, &d); break;
+          case lnOp:   LoopFuncNoVal<T, lnOp>::apply(&s, &d); break;
+          case expOp:  LoopFuncNoVal<T, expOp>::apply(&s, &d); break;
+          case absOp:  LoopFuncNoVal<T, absOp>::apply(&s, &d); break;
+        }
+      });
     }
 
   } // namespace filter

@@ -48,6 +48,8 @@ namespace icl {
     template<class Type>
     class ICLCore_API Img : public ImgBase
     {
+    public:
+      using type = Type;  ///< pixel type (e.g. icl8u, icl32f)
 
       /* this is declare as fried, because it accesses the private append function */
       template<class ImgType> friend
