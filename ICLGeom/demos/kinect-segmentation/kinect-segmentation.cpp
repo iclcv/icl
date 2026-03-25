@@ -278,9 +278,6 @@ void run(){
     obj->unlock();
     return;
   }
-  const ImgBase &colorImage = *colorImagePtr;
-  const ImgBase &depthImage = *depthImagePtr;
-
   static ImgBase *heatmapImage = 0;
 
   int filterSize = gui["filterSize"];
@@ -290,7 +287,7 @@ void run(){
 
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
-    temporalSmoothing->apply(&depthImage,&filteredImage);
+    temporalSmoothing->apply(depthImage.ptr(),&filteredImage);
     if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
       hdepth = heatmapImage;//->as8u();
@@ -299,10 +296,10 @@ void run(){
     }
 	}else{
     if(gui["heatmap"]){//heatmap image
-      pseudoColorConverter->apply(&depthImage,&heatmapImage);
+      pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
       hdepth = heatmapImage;//->as8u();
     }else{//depth image
-      hdepth = &depthImage;
+      hdepth = depthImage;
     }
   }
 
@@ -365,25 +362,25 @@ void run(){
   }else{
     if(usedFilterHandle.getSelected()==0){//unfiltered
       if(gui["disableAveraging"]){
-        edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, false, false);
+        edgeImage=normalEstimator->calculate(depthImage.as32f(), false, false, false);
       }
       else{//normal averaging
         if(usedSmoothingHandle.getSelected()==0){//linear
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, true, false);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), false, true, false);
         }
         else if(usedSmoothingHandle.getSelected()==1){//gauss
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, true, true);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), false, true, true);
         }
       }
     }else{
       if(gui["disableAveraging"]){//filtered
-        edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, false, false);
+        edgeImage=normalEstimator->calculate(depthImage.as32f(), true, false, false);
       }else{//normal averaging
         if(usedSmoothingHandle.getSelected()==0){//linear
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, true, false);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), true, true, false);
         }
         else if(usedSmoothingHandle.getSelected()==1){//gauss
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, true, true);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), true, true, true);
         }
       }
     }
@@ -401,9 +398,9 @@ void run(){
 
 	if(pa("-c") && mode==0){//RGB
 	  if(gui["enableSmoothing"]){
-      creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(*filteredImage->as32f(), *obj, &colorImage.as8u(), depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(depthImage.as32f(), *obj, &colorImage.as8u(), depthScaling);
 	  }
   }else if(mode==0){//UniColor
 	  GeomColor c(1.,0.,0.,1.);
@@ -411,14 +408,14 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
   }
   else{//all other modes
     if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
 	}
 
@@ -479,7 +476,7 @@ void run(){
     if(gui["enableSmoothing"]){
 	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,*filteredImage->as32f()));
 	  }else{
-	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
+	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,depthImage.as32f()));
 	  }
   }
 
@@ -487,17 +484,17 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*filteredImage->as32f()));
 	  }else{
-	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
+	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,depthImage.as32f()));
 	  }
   }
 
 
   obj->unlock();
 
-  hcolor = &colorImage;
-  hedge = &edgeImage;
+  hcolor = colorImage;
+  hedge = edgeImage;
   if(pa("-d")){
-    hnormal = &normalImage;
+    hnormal = normalImage;
   }
 
   gui["fps"].render();

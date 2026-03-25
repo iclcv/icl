@@ -249,7 +249,7 @@ void run(){
   temporalSmoothing->setDifference(difference);
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
-    temporalSmoothing->apply(&depthImage,&filteredImage);
+    temporalSmoothing->apply(depthImage.ptr(),&filteredImage);
 
     if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
@@ -260,11 +260,11 @@ void run(){
     }
 	}else{
     if(gui["heatmap"]){//heatmap image
-      pseudoColorConverter->apply(&depthImage,&heatmapImage);
+      pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
       heatSet=true;//heatmap image calculated
       hdepth = heatmapImage;//->as8u();
     }else{//depth image
-      hdepth = &depthImage;
+      hdepth = depthImage;
     }
   }
 
@@ -279,14 +279,14 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
 
   }else if(usedVisualizationHandle.getSelected()==1){//rgb
     if(gui["enableSmoothing"]){
-      creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(*filteredImage->as32f(), *obj, &colorImage.as8u(), depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(depthImage.as32f(), *obj, &colorImage.as8u(), depthScaling);
 	  }
 
   }else if(usedVisualizationHandle.getSelected()==2){//pseudocolor
@@ -294,13 +294,13 @@ void run(){
       if(gui["enableSmoothing"]){
         pseudoColorConverter->apply(filteredImage,&heatmapImage);
       }else{
-        pseudoColorConverter->apply(&depthImage,&heatmapImage);
+        pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
       }
     }
     if(gui["enableSmoothing"]){
       creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
+      creator->create(depthImage.as32f(), *obj, 0, depthScaling);
     }
     obj->setColorsFromImage(*heatmapImage);////*heatmapImage->as8u());
 
@@ -311,7 +311,7 @@ void run(){
 		  if(gui["enableSmoothing"]){
 		    normalEstimator->setDepthImage(*filteredImage->as32f());
 		  }else{
-		    normalEstimator->setDepthImage(*depthImage.as32f());
+		    normalEstimator->setDepthImage(depthImage.as32f());
 		  }
       normalEstimator->applyMedianFilter();
 	  }
@@ -320,7 +320,7 @@ void run(){
 		  if(gui["enableSmoothing"]){
 		    normalEstimator->setDepthImage(*filteredImage->as32f());
       }else{
-        normalEstimator->setDepthImage(*depthImage.as32f());
+        normalEstimator->setDepthImage(depthImage.as32f());
       }
       normalEstimator->applyMedianFilter();
 	  }
@@ -328,7 +328,7 @@ void run(){
 	    if(gui["enableSmoothing"]){
               normalEstimator->setFilteredDepthImage((Img32f&)depthImage);
             }else{
-              normalEstimator->setDepthImage(*depthImage.as32f());
+              normalEstimator->setDepthImage(depthImage.as32f());
             }
 	  }
 	  normalEstimator->setNormalCalculationRange(normalrange);
@@ -345,7 +345,7 @@ void run(){
     if(gui["enableSmoothing"]){
       creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, 0, depthScaling);
+      creator->create(depthImage.as32f(), *obj, 0, depthScaling);
 	  }
     obj->setColorsFromImage(normalsImage);
 
@@ -365,7 +365,7 @@ void run(){
 
   obj->unlock();
 
-  hcolor = &colorImage;
+  hcolor = colorImage;
 
   gui["fps"].render();
   hdepth.render();
