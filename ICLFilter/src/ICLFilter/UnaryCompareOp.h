@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -131,11 +132,12 @@ namespace icl {
       /** @param poSrc source image
           @param ppoDst destination image
       **/
-      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
       private:
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
 
       /// internal storage of the current optype
       optype m_eOpType;

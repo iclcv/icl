@@ -65,6 +65,7 @@ namespace icl{
         #include <ICLFilter/WeightedSumOp.h>
         #include <ICLFilter/UnaryCompareOp.h>
         #include <ICLFilter/MorphologicalOp.h>
+#include <ICLCore/Image.h>
 
         int main(){
            // create an input image (the nice parrot here!)
@@ -107,7 +108,7 @@ namespace icl{
         add(op); return *this;
       }
       /// applies all ops sequentially
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Reimplemented: uses getLastDisplay() as destination image
       core::Image apply(const core::ImgBase *src);
@@ -130,6 +131,7 @@ namespace icl{
       **/
       core::ImgBase *&getLastDisplay();
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// Internal buffer of ops
       std::vector<UnaryOp*> ops;

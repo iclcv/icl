@@ -43,6 +43,7 @@
 #include <ICLUtils/CLKernel.h>
 
 #include <ICLFilter/OpenCL/BilateralFilterOpKernel.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
 
@@ -575,7 +576,7 @@ void BilateralFilterOp::init(Mode mode, Method method) {
 BilateralFilterOp::~BilateralFilterOp() {
 }
 
-void BilateralFilterOp::apply(const core::ImgBase *in, core::ImgBase **out) noexcept {
+void BilateralFilterOp::applyImgBase(const core::ImgBase *in, core::ImgBase **out) {
 	if (_method == GAUSS)
 		impl->applyGauss(in,out,radius,sigma_s,sigma_r,use_lab);
 	else if (_method == KUWAHARA)
@@ -587,6 +588,13 @@ void BilateralFilterOp::apply(const core::ImgBase *in, core::ImgBase **out) noex
 core::Img32f const &BilateralFilterOp::getSumImg() {
 	return impl->sum_img;
 }
+
+    void BilateralFilterOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      core::ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
 } // namespace filter
 } // namespace icl

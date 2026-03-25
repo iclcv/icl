@@ -32,6 +32,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/SSETypes.h>
 #include <cmath>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -305,7 +306,7 @@ namespace icl {
 
     } // end of anonymous namespace
 
-    void UnaryArithmeticalOp::apply(const ImgBase *poSrc, ImgBase **poDst){
+    void UnaryArithmeticalOp::applyImgBase(const ImgBase *poSrc, ImgBase **poDst) {
       ICLASSERT_RETURN( poSrc );
       if(!UnaryOp::prepare(poDst,poSrc)) return;
       switch(m_eOpType){
@@ -321,5 +322,13 @@ namespace icl {
         case absOp:  apply_unary_arithmetical_op_no_val<absOp>(poSrc,*poDst); break;
       }
     }
+  
+    void UnaryArithmeticalOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

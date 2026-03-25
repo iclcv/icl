@@ -30,6 +30,7 @@
 
 #include <ICLFilter/DitheringOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   using namespace utils;
@@ -46,7 +47,7 @@ namespace icl{
       v = s < 0 ? 0 : s > 255 ? 255 : s;
     }
 
-    void DitheringOp::apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst){
+    void DitheringOp::applyImgBase (const core::ImgBase *poSrc, core::ImgBase **ppoDst) {
       if(!prepare(ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(),
                   poSrc->getROI(), poSrc->getTime())){
         throw ICLException("DitheringOp::apply: prepare failed");
@@ -101,5 +102,13 @@ namespace icl{
         }
       }
     }
+  
+    void DitheringOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

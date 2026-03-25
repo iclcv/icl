@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -90,7 +91,7 @@ namespace icl{
       virtual ~DitheringOp(){}
 
       /// Applies the mirror transform to the images
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// returns the internal dithering algorithm used
       Algorithm getAlgorithm() const { return m_algorithm; }
@@ -111,6 +112,7 @@ namespace icl{
       /// import base-class symbols
       using UnaryOp::apply;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       Algorithm m_algorithm;
       int m_levels;

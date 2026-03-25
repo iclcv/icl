@@ -33,6 +33,7 @@
 #include <ICLUtils/CLProgram.h>
 #endif
 #include <ICLUtils/CLIncludes.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -268,7 +269,7 @@ namespace icl{
     }
 
 
-    void WarpOp::apply(const ImgBase *src, ImgBase **dst){
+    void WarpOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
       ICLASSERT_RETURN(src != *dst);
@@ -333,6 +334,14 @@ namespace icl{
       m_tryUseOpenCL = on;
     }
 
+
+  
+    void WarpOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

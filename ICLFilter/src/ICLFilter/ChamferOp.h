@@ -35,6 +35,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -231,7 +232,7 @@ namespace icl{
                        apply(image,&image)
                        \endcode
       */
-      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -353,6 +354,7 @@ namespace icl{
                                                      icl32s penaltyValue=0,
                                                      ChamferOp co=ChamferOp());
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
 
       private:
       /// internally used variable for horizontally or vertically adjacent pixels

@@ -32,6 +32,7 @@
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -148,7 +149,7 @@ void MotionSensitiveTemporalSmoothing::init(int iChannels, core::depth iDepth,
 	}
 }
 
-void MotionSensitiveTemporalSmoothing::apply(const ImgBase *poSrc,
+void MotionSensitiveTemporalSmoothing::applyImgBase(const ImgBase *poSrc,
 		ImgBase **ppoDst) {
 	ICLASSERT_RETURN(poSrc);
 	ICLASSERT_RETURN(ppoDst);
@@ -531,5 +532,13 @@ bool TemporalSmoothingCL::isCLActive() {
 	return useCL;
 }
 
-} // namespace filter
+
+    void MotionSensitiveTemporalSmoothing::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
+  } // namespace filter
 }

@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -82,7 +83,7 @@ namespace icl {
                         icl64f too.
 
           **/
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -95,6 +96,7 @@ namespace icl {
       /** @param weights new weight vector **/
       void setWeights(const std::vector<icl64f> &weights){ m_vecWeights = weights; }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// internal storage for the channel weights
       std::vector<icl64f> m_vecWeights;

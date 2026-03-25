@@ -35,6 +35,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -86,7 +87,7 @@ namespace icl {
        /** @param src source image
            @param dst destination image**
        */
-       virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+       void apply(const core::Image &src, core::Image &dst) override;
 
        /// Import unaryOps apply function without destination image
        using UnaryOp::apply;
@@ -125,6 +126,7 @@ namespace icl {
        /// retruns whether current mode is levels-mode
        bool isLevelsSet() const;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
        private:
        bool m_bLevelsSet;
        bool m_bLutSet;

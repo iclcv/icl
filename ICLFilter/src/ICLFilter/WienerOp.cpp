@@ -30,6 +30,7 @@
 
 #include <ICLFilter/WienerOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -63,7 +64,7 @@ namespace icl {
     } // end of anonymous namespace
 
 
-    void WienerOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+    void WienerOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
 
@@ -80,5 +81,13 @@ namespace icl {
 
 
   #endif
+  
+    void WienerOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

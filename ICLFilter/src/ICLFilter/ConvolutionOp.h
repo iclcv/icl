@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLFilter/ConvolutionKernel.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -111,7 +112,7 @@ namespace icl {
           @param src  source image
           @param dst destination image
       */
-      void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;
@@ -125,6 +126,7 @@ namespace icl {
       ///  returns currently used kernel (const)
       ConvolutionKernel &getKernel() { return m_kernel; }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       ConvolutionKernel m_kernel;
       bool m_forceUnsignedOutput;

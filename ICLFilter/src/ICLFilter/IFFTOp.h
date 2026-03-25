@@ -38,6 +38,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <cmath>
 #include <complex>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -48,6 +49,7 @@ namespace icl{
         to use it if possible.*/
     class ICLFilter_API IFFTOp : public UnaryOp{
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       ///Forwarddeklaration.
       class Data;
@@ -157,7 +159,7 @@ namespace icl{
       /**Applies IFFTOp on src and dst.
   	  @param *src pointer to sourceimage
   	  @param **dst pointer to pointer to destinationimage*/
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;

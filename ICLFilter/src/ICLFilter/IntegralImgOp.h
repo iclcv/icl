@@ -34,6 +34,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -120,11 +121,12 @@ namespace icl{
       /** @param src The source image
         @param dst Pointer to the destination image
       */
-      void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       core::depth m_integralImageDepth; //!< destination depth
       core::ImgBase *m_buf; //!< used only if IPP is available

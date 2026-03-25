@@ -31,6 +31,7 @@
 #include <ICLFilter/UnaryLogicalOp.h>
 #include <ICLCore/Img.h>
 #include <cmath>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -161,7 +162,7 @@ namespace icl {
 
     } // end of anonymous namespace
 
-    void UnaryLogicalOp::apply(const ImgBase *poSrc, ImgBase **poDst){
+    void UnaryLogicalOp::applyImgBase(const ImgBase *poSrc, ImgBase **poDst) {
       ICLASSERT_RETURN( poSrc );
       if(!UnaryOp::prepare(poDst,poSrc)) return;
       switch(m_eOpType){
@@ -172,5 +173,13 @@ namespace icl {
         case notOp:  apply_unary_logical_op_no_val<notOp>(poSrc,*poDst); break;
       }
     }
+  
+    void UnaryLogicalOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

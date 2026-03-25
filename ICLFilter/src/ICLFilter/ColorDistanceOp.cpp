@@ -30,6 +30,7 @@
 
 #include <ICLFilter/ColorDistanceOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -57,7 +58,7 @@ namespace icl{
       }
     }
 
-    void ColorDistanceOp::apply(const ImgBase *src, ImgBase **dst){
+    void ColorDistanceOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(src->getChannels() == 3);
       ICLASSERT_RETURN(m_refColor.size() == 3);
@@ -109,5 +110,13 @@ namespace icl{
         }
       }
     }
+  
+    void ColorDistanceOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

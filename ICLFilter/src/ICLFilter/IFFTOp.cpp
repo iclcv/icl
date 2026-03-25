@@ -30,6 +30,7 @@
 
 #include <ICLFilter/IFFTOp.h>
 #include <ICLCore/CoreFunctions.h>
+#include <ICLCore/Image.h>
 //#define IFFTOp_DEBUG(X) std::cout << X << std::endl;
 #define IFFTOp_DEBUG(X)
 using namespace icl::utils;
@@ -342,7 +343,7 @@ namespace icl{
     template const Img<icl64f> *IFFTOp::adapt_source(const Img<icl64f> *src);
 
 
-    void IFFTOp::apply(const ImgBase *src, ImgBase **dst){
+    void IFFTOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
       if(!*dst){
@@ -383,6 +384,13 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
-  } // namespace filter
 
+    void IFFTOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
+  } // namespace filter
 } // namespace icl

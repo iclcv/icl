@@ -40,6 +40,7 @@
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLKernel.h>
 #include <ICLUtils/CLBuffer.h>
+#include <ICLCore/Image.h>
 #endif
 
 namespace icl{
@@ -162,7 +163,7 @@ namespace icl{
           @param src the source image
           @param dst pointer to the destination image
       */
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -187,6 +188,7 @@ namespace icl{
       /**        @return openCL enabled/disabled */
 	    bool isCLActive();
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
      private:
 
       void init(int iChannels, core::depth iDepth, utils::Size iSize);

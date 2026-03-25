@@ -31,6 +31,7 @@
 #include <ICLFilter/GaborOp.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <cmath>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -102,7 +103,7 @@ namespace icl{
       }
     }
 
-    void GaborOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    void GaborOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN( poSrc );
       ICLASSERT_RETURN( ppoDst );
       ICLASSERT_RETURN( poSrc != *ppoDst);
@@ -175,5 +176,13 @@ namespace icl{
 
       return poKernelImage;
     }
+  
+    void GaborOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

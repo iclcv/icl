@@ -30,6 +30,7 @@
 
 #include <ICLFilter/MirrorOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -56,7 +57,7 @@ namespace icl{
         this->m_aMethods[depth64f] = &MirrorOp::mirror<icl64f>;
      }
 
-     void MirrorOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+     void MirrorOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
         Point oROIOffset;
         if (getClipToROI()) {
            m_oSrcOffset = poSrc->getROIOffset();
@@ -78,5 +79,13 @@ namespace icl{
                              Rect (oROIOffset, poSrc->getROISize()), poSrc->getTime()))
            (this->*(m_aMethods[poSrc->getDepth()]))(poSrc, *ppoDst);
      }
+  
+    void MirrorOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

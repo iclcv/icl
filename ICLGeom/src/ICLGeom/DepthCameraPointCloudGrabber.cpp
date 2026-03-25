@@ -74,8 +74,10 @@ namespace icl{
         }
 
         using UnaryOp::apply;
-        virtual void apply(const ImgBase *src, ImgBase **dst){
-          blur_seperated(*src->as32f(), currMaskDim, dst);
+        void apply(const core::Image &src, core::Image &dst) override {
+          ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+          blur_seperated(*src.ptr()->as32f(), currMaskDim, &dstPtr);
+          if(dstPtr) dst = core::Image(*dstPtr);
         }
 
         void blur_seperated(const Img32f &image, int maskDim, ImgBase **dst){

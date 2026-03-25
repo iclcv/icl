@@ -41,6 +41,7 @@
 #include <ICLFilter/UnaryCompareOp.h>
 
 #include <stdio.h>
+#include <ICLCore/Image.h>
 
 template<class T>
 inline unsigned char myclip(T x){
@@ -593,7 +594,7 @@ namespace icl{
     }
 
 
-    void LocalThresholdOp::apply(const ImgBase *src, ImgBase **dst){
+    void LocalThresholdOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_RETURN( src );
       ICLASSERT_RETURN( src->getSize() != Size::null );
       ICLASSERT_RETURN( src->getChannels() );
@@ -652,6 +653,14 @@ namespace icl{
     }
 
 
+
+  
+    void LocalThresholdOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

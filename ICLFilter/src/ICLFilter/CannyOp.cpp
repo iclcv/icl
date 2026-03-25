@@ -32,6 +32,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLUtils/SSEUtils.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -311,7 +312,7 @@ namespace icl {
     }
 
 
-    void CannyOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
+    void CannyOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
       FUNCTION_LOG("");
       ICLASSERT_RETURN( poSrc );
       ICLASSERT_RETURN( ppoDst );
@@ -464,6 +465,14 @@ namespace icl {
     }
 
 
+
+  
+    void CannyOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

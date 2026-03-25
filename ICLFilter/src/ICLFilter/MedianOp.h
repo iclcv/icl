@@ -33,6 +33,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/NeighborhoodOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -247,7 +248,7 @@ namespace icl {
           @param poSrc  source image
           @param ppoDst pointer to destination image
       **/
-      void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;
@@ -264,6 +265,9 @@ namespace icl {
       }
 
 
+    
+    private:
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
     };
 
   } // namespace filter

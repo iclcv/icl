@@ -32,6 +32,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/SSETypes.h>
 #include <ICLUtils/StringUtils.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -48,7 +49,7 @@ namespace icl {
     }
     ThresholdOp::~ThresholdOp(){
       }
-      void ThresholdOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
+      void ThresholdOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
         switch (m_eType){
           case lt:tlt(poSrc,ppoDst,m_fLowThreshold);break;
           case gt:tgt(poSrc,ppoDst,m_fHighThreshold);break;
@@ -546,6 +547,13 @@ namespace icl {
       }
     }
   #undef ICL_INSTANTIATE_DEPTH
+
+    void ThresholdOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 } // namespace icl

@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/BaseAffineOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -53,8 +54,9 @@ namespace icl{
       virtual ~MirrorOp(){}
 
       /// Applies the mirror transform to the images
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// array of class methods used to transform depth8u and depth32f images
       void (MirrorOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);

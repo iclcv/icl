@@ -35,6 +35,7 @@
 #include <ICLUtils/Size.h>
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -197,7 +198,7 @@ namespace icl{
       /** roi support is realized by copying the current input image ROI into a
           dedicate image buffer with no roi set
       **/
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -229,6 +230,7 @@ namespace icl{
       /// sets internally used algorithm
       void setAlgorithm(algorithm a);
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
 
       /// internal algorithm function

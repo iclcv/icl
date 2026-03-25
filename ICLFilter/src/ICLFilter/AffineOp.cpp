@@ -33,6 +33,7 @@
 #include <ICLCore/Img.h>
 #include <cstring>
 #include <ICLMath/FixedMatrix.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -207,7 +208,7 @@ namespace icl{
      }
 
 
-     void AffineOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+     void AffineOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
        ICLASSERT_RETURN(poSrc);
        ICLASSERT_RETURN(ppoDst);
        ICLASSERT_RETURN(poSrc != *ppoDst);
@@ -234,6 +235,14 @@ namespace icl{
      }
 
 
+
+  
+    void AffineOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

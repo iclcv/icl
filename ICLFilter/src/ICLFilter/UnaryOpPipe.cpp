@@ -54,7 +54,7 @@ namespace icl{
       ims.push_back(im);
     }
 
-    void UnaryOpPipe::apply(const ImgBase *src, ImgBase **dst){
+    void UnaryOpPipe::applyImgBase(const ImgBase *src, ImgBase **dst) {
       int length = getLength();
       switch(length){
         case 0: ERROR_LOG("length must be > 0"); break;
@@ -70,7 +70,7 @@ namespace icl{
     }
 
     core::Image UnaryOpPipe::apply(const ImgBase *src){
-      apply(src, &getLastDisplay());
+      UnaryOp::apply(src, &getLastDisplay());
       return core::Image(getLastDisplay()->deepCopy());
     }
 
@@ -86,5 +86,13 @@ namespace icl{
     ImgBase *&UnaryOpPipe::getImage(int i) {
       return ims[i];
     }
+  
+    void UnaryOpPipe::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

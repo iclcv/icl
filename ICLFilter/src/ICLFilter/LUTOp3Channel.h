@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 #include <vector>
 
 namespace icl {
@@ -223,9 +224,9 @@ namespace icl {
 
       /// Common Filter apply function using current mode
       /** @param src source image
-          @param dst destination image**
+          @param dst destination image
        */
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -254,6 +255,8 @@ namespace icl {
 
       /// channel range increment (...)
       icl8u m_ucShift;
+
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
     };
 
   } // namespace filter

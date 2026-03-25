@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -135,11 +136,12 @@ namespace icl{
       bool getAllowWarpMapScaling() const { return m_allowWarpMapScaling; }
 
       /// virtual apply function
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       bool m_allowWarpMapScaling;
       core::Img32f m_warpMap;

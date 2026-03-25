@@ -36,6 +36,7 @@
 #include <limits>
 #include <cmath>
 #include <vector>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -243,7 +244,7 @@ namespace icl{
 
 
 
-    void ChamferOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    void ChamferOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN(poSrc != *ppoDst);
@@ -538,6 +539,14 @@ namespace icl{
       return m == hausdorff_mean ? (hd1+hd2)/2 : iclMax(hd1,hd2);
 
     }
+  
+    void ChamferOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 
 }

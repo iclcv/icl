@@ -34,6 +34,7 @@
 #include <ICLCore/ImgBorder.h>
 #include <functional>
 #include <ICLFilter/BinaryArithmeticalOp.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -165,7 +166,7 @@ namespace icl {
     }
 
 
-    void MorphologicalOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
+    void MorphologicalOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
 
@@ -347,7 +348,7 @@ namespace icl {
       }
     }
 
-    void MorphologicalOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
+    void MorphologicalOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst){
       FUNCTION_LOG("");
       if (!prepare (ppoDst, poSrc)) return;
 
@@ -557,6 +558,14 @@ namespace icl {
       return m_eType;
     }
 
+
+  
+    void MorphologicalOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

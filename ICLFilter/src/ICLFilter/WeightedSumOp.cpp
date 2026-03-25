@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/WeightedSumOp.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -61,7 +62,7 @@ namespace icl {
     }
 
 
-    void WeightedSumOp::apply (const ImgBase *poSrc, ImgBase **ppoDst){
+    void WeightedSumOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN( *ppoDst != poSrc );
@@ -91,6 +92,14 @@ namespace icl {
   #undef ICL_INSTANTIATE_DEPTH
         }
       }
+    }
+
+  
+    void WeightedSumOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter

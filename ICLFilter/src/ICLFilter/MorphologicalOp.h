@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/NeighborhoodOp.h>
+#include <ICLCore/Image.h>
 
 
 namespace icl {
@@ -147,7 +148,7 @@ namespace icl {
       optype getOptype() const;
 
       /// Performs morph of an image with given optype and mask.
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -180,6 +181,7 @@ namespace icl {
       void apply_t(const core::ImgBase *src, core::ImgBase **dst);
   #endif
     private:
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       icl8u * m_pcMask;
       utils::Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
       ICLMorphState* m_pState8u;

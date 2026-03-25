@@ -33,6 +33,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/BaseAffineOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -121,7 +122,7 @@ namespace icl{
       }
 
       /// Applies the affine transform to the image
-      virtual void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// import from super-class
       using BaseAffineOp::apply;
@@ -139,6 +140,7 @@ namespace icl{
       }
 
       private:
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       /// array of class methods used to transform depth8u and depth32f images
       void (AffineOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
 

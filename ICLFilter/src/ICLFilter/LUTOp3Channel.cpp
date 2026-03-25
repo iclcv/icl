@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/LUTOp3Channel.h>
+#include <ICLCore/Image.h>
 #include <ICLUtils/Exception.h>
 #include <cmath>
 
@@ -101,7 +102,7 @@ namespace icl{
     }
 
     template<class T>
-    void LUTOp3Channel<T>::apply(const ImgBase *src, ImgBase **dst){
+    void LUTOp3Channel<T>::applyImgBase(const ImgBase *src, ImgBase **dst){
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
       ICLASSERT_RETURN(src != *dst);
@@ -150,6 +151,14 @@ namespace icl{
           m_poPlugin = 0;
         }
       }
+    }
+
+    template<class T>
+    void LUTOp3Channel<T>::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API LUTOp3Channel<icl##D>;

@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/LUTOp.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -78,7 +79,7 @@ namespace icl{
     }
 
 
-    void LUTOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    void LUTOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       ICLASSERT_RETURN(poSrc != *ppoDst);
@@ -130,5 +131,13 @@ namespace icl{
       simple(src,dst,lut);
   #endif
     }
+  
+    void LUTOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

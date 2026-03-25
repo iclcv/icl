@@ -33,6 +33,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
 
@@ -80,7 +81,7 @@ public:
 	 * @param in Image to filter.
 	 * @param out Filter result (must be of the same size and format)
 	 */
-	void apply(const core::ImgBase *in, core::ImgBase **out) noexcept;
+	void apply(const core::Image &src, core::Image &dst) override;
 
 	/// Sets the kernel radius
 	void setRadius(int radius) { this->radius = radius; }
@@ -109,6 +110,7 @@ protected:
 	/// Bilateral filter method used
 	Method _method;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
 private:
 
 	struct Impl;	//!< internal data type

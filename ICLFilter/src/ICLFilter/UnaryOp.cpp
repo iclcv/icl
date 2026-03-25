@@ -147,39 +147,7 @@ namespace icl{
     }
 
 
-    void UnaryOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
-      ICLASSERT_RETURN( nThreads > 0 );
-      ICLASSERT_RETURN( poSrc );
-      if(nThreads == 1){
-        apply(poSrc,ppoDst);
-        return;
-      }
-
-      if(!prepare (ppoDst, poSrc)) return;
-
-      bool ctr = getClipToROI();
-      bool co = getCheckOnly();
-
-      setClipToROI(false);
-      setCheckOnly(true);
-
-      const std::vector<ImgBase*> srcs = ImageSplitter::split(poSrc,nThreads);
-      std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
-
-      std::vector<std::future<void>> futures;
-      for(unsigned int i=0;i<nThreads;i++){
-        ImgBase *s = srcs[i];
-        ImgBase *d = const_cast<ImgBase*>(dsts[i]);
-        futures.push_back(std::async(std::launch::async, [this,s,&d]{ apply(s, &d); }));
-      }
-      for(auto &f : futures) f.get();
-
-      setClipToROI(ctr);
-      setCheckOnly(co);
-
-      ImageSplitter::release(srcs);
-      ImageSplitter::release(dsts);
-    }
+    // applyMT removed — only NeighborhoodOp provides it now
 
 
     namespace unary_op_from_string{
@@ -233,10 +201,9 @@ namespace icl{
       }
 
       struct PassOp:public UnaryOp{
-        void apply(const ImgBase *src, ImgBase **dst){
-          ICLASSERT(dst);
-          const_cast<ImgBase*>(src)->deepCopy(dst);
-          (*dst)->setFullROI();
+        void apply(const core::Image &src, core::Image &dst) override {
+          dst = src.deepCopy();
+          dst.setFullROI();
         }
         static UnaryOp *create(const paramlist &params){
           ICLASSERT_THROW(!params.size(),ICLException(str(__FUNCTION__)+": no parameters allowed here"));
@@ -462,7 +429,7 @@ namespace icl{
 
 
     struct UnaryOp_VIRTUAL : public UnaryOp{
-      virtual void apply(const ImgBase *,ImgBase **){}
+      void apply(const core::Image &, core::Image &) override {}
     };
 
     REGISTER_CONFIGURABLE_DEFAULT(UnaryOp_VIRTUAL);

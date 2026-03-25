@@ -31,6 +31,7 @@
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLCore/Img.h>
 #include <limits>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -260,7 +261,7 @@ namespace icl{
       setKernel(kernel);
     }
 
-    void ConvolutionOp::apply(const ImgBase *src, ImgBase **dst){
+    void ConvolutionOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(!m_kernel.isNull());
       if(m_forceUnsignedOutput){
@@ -283,5 +284,13 @@ namespace icl{
         apply_convolution<int>(*src,**dst,m_kernel.getIntData(),*this);
       }
     }
+  
+    void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

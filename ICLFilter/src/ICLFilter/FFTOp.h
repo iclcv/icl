@@ -53,6 +53,7 @@ namespace icl{
       \code
       #include <ICLQuick/Common.h>
       #include <ICLFilter/FFTOp.h>
+#include <ICLCore/Image.h>
       using namespace icl;
 
       GUI gui;
@@ -116,6 +117,7 @@ namespace icl{
     */
   class ICLFilter_API FFTOp : public UnaryOp{
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
   private:
   	///Forwarddeklaration.
   	class Data;
@@ -219,7 +221,7 @@ namespace icl{
   	/**Applies FFTOp on src and dst.
   	  @param *src pointer to sourceimage
   	  @param **dst pointer to pointer to destinationimage*/
-  	virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+  	void apply(const core::Image &src, core::Image &dst) override;
 
   	/// Import unaryOps apply function without destination image
   	using UnaryOp::apply;

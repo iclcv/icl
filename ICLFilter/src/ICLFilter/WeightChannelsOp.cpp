@@ -30,6 +30,7 @@
 
 #include <ICLFilter/WeightChannelsOp.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::core;
 
@@ -37,7 +38,7 @@ namespace icl {
 
 namespace filter{
 
-    void WeightChannelsOp::apply (const ImgBase *poSrc, ImgBase **ppoDst) {
+    void WeightChannelsOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == poSrc->getChannels() );
 
@@ -57,5 +58,13 @@ namespace filter{
         delete oTmpDstImg;
       }
     }
+
+    void WeightChannelsOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 } // namespace icl

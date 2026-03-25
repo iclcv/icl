@@ -34,6 +34,7 @@
 #include <ICLUtils/SSEUtils.h>
 #include <vector>
 #include <algorithm>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -941,7 +942,7 @@ namespace icl {
 
     } // end of anonymous namespace
 
-    void MedianOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    void MedianOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
 
       FUNCTION_LOG("");
 
@@ -962,6 +963,14 @@ namespace icl {
 
     }
 
+
+  
+    void MedianOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

@@ -32,6 +32,7 @@
 
 #include <ICLFilter/NeighborhoodOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -65,7 +66,7 @@ namespace icl {
       /** @param poSrc Source image
           @param ppoDst Destination image
       **/
-      ICLFilter_API void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using NeighborhoodOp::apply;
@@ -78,6 +79,7 @@ namespace icl {
       /** @ param noise new noise factor **/
       void setNoise(icl32f noise) { m_fNoise = noise; }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// internal buffer for applying the wiener operation
       std::vector<icl8u> m_vecBuffer;

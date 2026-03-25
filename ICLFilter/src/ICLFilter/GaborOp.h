@@ -36,6 +36,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -177,7 +178,7 @@ namespace icl{
       /** The output image gets as many channels as kernels could be created by
           combining given parameters. Channels c of ppoDst is complies the
           convolution result of the c-th kernel. */
-      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -201,6 +202,7 @@ namespace icl{
       /// returns all currently created kernels
       const std::vector<core::Img32f> &getKernels() const { return m_vecKernels; }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
 
       private:
       std::vector<icl32f> m_vecLambdas;

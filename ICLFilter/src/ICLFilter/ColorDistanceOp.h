@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -65,7 +66,7 @@ namespace icl {
 
           The source image is assumed to have 3 channels
       */
-      void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
@@ -89,6 +90,7 @@ namespace icl {
                         utils::ICLException("ColorDistanceOp::setReferenceColor: ref color needs at least 3 entries"));
       }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// internal reference color
       std::vector<double> m_refColor;

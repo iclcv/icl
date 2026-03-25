@@ -30,6 +30,7 @@
 
 #include <ICLFilter/FFTOp.h>
 #include <ICLCore/CoreFunctions.h>
+#include <ICLCore/Image.h>
 
 //#define FFTOp_DEBUG(X) std::cout << X << std::endl;
 #define FFTOp_DEBUG(X)
@@ -363,7 +364,7 @@ namespace icl{
     template const Img<icl32f> *FFTOp::adapt_source(const Img<icl32f> *src);
     template const Img<icl64f> *FFTOp::adapt_source(const Img<icl64f> *src);
 
-    void FFTOp::apply(const ImgBase *src, ImgBase **dst){
+    void FFTOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       FFTOp_DEBUG("f: apply");
       ICLASSERT_RETURN(src);
       ICLASSERT_RETURN(dst);
@@ -403,5 +404,13 @@ namespace icl{
 #undef ICL_INSTANTIATE_DEPTH
       }
     }
+  
+    void FFTOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }

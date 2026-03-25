@@ -30,6 +30,7 @@
 
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -141,7 +142,7 @@ namespace icl {
     }
   #endif
 
-    void UnaryCompareOp::apply(const ImgBase *poSrc, ImgBase **ppoDst){
+    void UnaryCompareOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
       ICLASSERT_RETURN(poSrc);
       ICLASSERT_RETURN(ppoDst);
       if( *ppoDst ){
@@ -165,6 +166,14 @@ namespace icl {
 
 
 
+
+  
+    void UnaryCompareOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
 
   } // namespace filter
 }

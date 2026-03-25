@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -123,7 +124,7 @@ namespace icl {
           @param src the source image
           @param dst pointer to the destination image
       */
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
 	  ///applies the Canny Operator
 	  /**
@@ -152,6 +153,7 @@ namespace icl {
         return m_preBlurRadius;
       }
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
 
       void property_callback(const Property &p);

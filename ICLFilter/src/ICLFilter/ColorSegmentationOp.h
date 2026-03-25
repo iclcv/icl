@@ -33,6 +33,7 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/Color.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl{
   namespace filter{
@@ -114,6 +115,7 @@ namespace icl{
       /// Internally used class
       class LUT3D;
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       core::format m_segFormat;       //!< format, that is used for internal segmentation
       core::Img8u m_inputBuffer;      //!< internal image in depth8u and segmentation format
@@ -137,7 +139,7 @@ namespace icl{
       ~ColorSegmentationOp();
 
       /// main apply function
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
+      void apply(const core::Image &src, core::Image &dst) override;
 
       /// Imported apply from parent UnaryOp class
       using UnaryOp::apply;

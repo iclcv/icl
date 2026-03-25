@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -88,7 +89,7 @@ namespace icl {
           @param poSrc the source image
           @param ppoDst pointer to the destination image
         */
-        virtual void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+        void apply(const core::Image &src, core::Image &dst) override;
 
         /// Import unaryOps apply function without destination image
         using UnaryOp::apply;
@@ -162,6 +163,7 @@ namespace icl {
         ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
      private:
         float m_fLowThreshold;
         float m_fHighThreshold;

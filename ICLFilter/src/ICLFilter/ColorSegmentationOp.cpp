@@ -34,6 +34,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLCore/Color.h>
+#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -349,7 +350,7 @@ namespace icl{
     }
 
 
-    void ColorSegmentationOp::apply(const ImgBase *src, ImgBase **dst){
+    void ColorSegmentationOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
       ICLASSERT_THROW(src,ICLException("ColorSegmentationOp::apply: source must not be null"));
       ICLASSERT_THROW(src->hasFullROI(), ICLException("ColorSegmentationOp::apply: source image has a ROI which is not supported yet!"));
 
@@ -554,5 +555,13 @@ namespace icl{
       h = m_lut->h;
       t = m_lut->t;
     }
+  
+    void ColorSegmentationOp::apply(const core::Image &src, core::Image &dst) {
+      // TODO: use Image natively!
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      applyImgBase(src.ptr(), &dstPtr);
+      if(dstPtr) dst = core::Image(*dstPtr);
+    }
+
   } // namespace filter
 }
