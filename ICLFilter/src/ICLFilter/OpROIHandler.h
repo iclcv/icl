@@ -31,8 +31,7 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
-// forward declaration (was #include <ICLCore/ImgBase.h>)
+#include <ICLCore/ImgBase.h>
 
 namespace icl {
   namespace filter{

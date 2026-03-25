@@ -93,15 +93,49 @@ namespace icl{
       ICL_DELETE( m_buf );
     }
 
+    // Default Image apply — delegates to legacy ImgBase** apply.
+    // Existing subclasses that override apply(ImgBase*, ImgBase**) get this for free.
+    // New subclasses should override this method directly.
+    void UnaryOp::apply(const core::Image &src, core::Image &dst){
+      ImgBase *tmp = nullptr;
+      apply(src.ptr(), &tmp);
+      if(tmp) dst = core::Image(tmp);
+    }
+
+    // Single-arg convenience: applies using internal buffer, returns deep copy
     core::Image UnaryOp::apply(const ImgBase *src){
       apply(src, &m_buf);
       return core::Image(m_buf->deepCopy());
     }
 
-    void UnaryOp::apply(const core::Image &src, core::Image &dst){
-      ImgBase *tmp = nullptr;
-      apply(src.ptr(), &tmp);
-      dst = core::Image(tmp);
+    // Image-based prepare implementations
+    bool UnaryOp::prepare(core::Image &dst, core::depth d, const utils::Size &s,
+                          core::format fmt, int channels, const utils::Rect &roi,
+                          utils::Time t) {
+      if(m_oROIHandler.getCheckOnly()){
+        if(dst.isNull()) return false;
+        if(dst.getDepth() != d) return false;
+        if(dst.getChannels() != channels) return false;
+        if(dst.getFormat() != fmt) return false;
+        dst.setTime(t);
+      } else {
+        dst.ensureCompatible(d, s, channels, fmt);
+        if(roi != utils::Rect::null) dst.setROI(roi);
+        dst.setTime(t);
+      }
+      return true;
+    }
+
+    bool UnaryOp::prepare(core::Image &dst, const core::Image &src) {
+      utils::Rect roi = getClipToROI() ? src.getROI() : utils::Rect(utils::Point::null, src.getSize());
+      return prepare(dst, src.getDepth(), getClipToROI() ? src.getROISize() : src.getSize(),
+                     src.getFormat(), src.getChannels(), roi, src.getTime());
+    }
+
+    bool UnaryOp::prepare(core::Image &dst, const core::Image &src, core::depth d) {
+      utils::Rect roi = getClipToROI() ? src.getROI() : utils::Rect(utils::Point::null, src.getSize());
+      return prepare(dst, d, getClipToROI() ? src.getROISize() : src.getSize(),
+                     src.getFormat(), src.getChannels(), roi, src.getTime());
     }
 
 

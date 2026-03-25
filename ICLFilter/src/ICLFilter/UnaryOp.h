@@ -61,39 +61,39 @@ namespace icl{
       /// Destructor
       virtual ~UnaryOp();
 
-      /// pure virtual apply function, that must be implemented in all derived classes
-      virtual void apply(const core::ImgBase *operand1, core::ImgBase **dst)=0;
+      /// Primary apply method — subclasses should override this
+      /** Default implementation delegates to the legacy ImgBase** apply
+          for backward compatibility. New filters should override this
+          directly and use Image throughout. */
+      virtual void apply(const core::Image &src, core::Image &dst);
 
-      /// apply function for multithreaded filtering (currently even slower than using one thread)
+      /// apply function for multithreaded filtering
       virtual ICL_DEPRECATED void applyMT(const core::ImgBase *operand1,
                                           core::ImgBase **dst, unsigned int nThreads);
 
-      /// Applies the filter using an internal buffer and returns the result as Image
-      /** Uses an internal buffer as destination. Returns a deep copy so the
-          result is independent and valid beyond the next apply() call. */
+      /// Legacy ImgBase** apply — existing subclasses override this
+      /** The default Image apply() delegates here for backward compatibility.
+          New subclasses should override the Image version instead. */
+      virtual void apply(const core::ImgBase *src, core::ImgBase **dst){}
+
+      /// Single-arg apply returning Image (uses internal buffer)
       core::Image apply(const core::ImgBase *src);
 
-      /// Image-based apply: filters src into dst
-      void apply(const core::Image &src, core::Image &dst);
-
-      /// Image-based apply (convenience, same as apply(src.ptr()))
+      /// Single-arg Image apply
       inline core::Image apply(const core::Image &src){
-        return apply(src.ptr());
+        core::Image dst;
+        apply(src, dst);
+        return dst;
       }
 
-      /// function operator (alternative for apply(src,dst))
+      /// function operator (legacy)
       inline void operator()(const core::ImgBase *src, core::ImgBase **dst){
-        apply(src,dst);
+        apply(src, dst);
       }
 
-      /// function operator for the single-arg apply
-      inline core::Image operator()(const core::ImgBase *src){
-        return apply(src);
-      }
-
-      /// function operator for Image-based apply
+      /// function operator returning Image
       inline core::Image operator()(const core::Image &src){
-        return apply(src.ptr());
+        return apply(src);
       }
 
 
@@ -161,19 +161,31 @@ namespace icl{
                                   core::ImgBase **dst);
 
       protected:
+
+      /// Image-based prepare: ensures dst matches the given parameters
+      bool prepare(core::Image &dst, core::depth d, const utils::Size &s,
+                   core::format fmt, int channels, const utils::Rect &roi,
+                   utils::Time t = utils::Time::null);
+
+      /// Image-based prepare: ensures dst matches src's parameters
+      bool prepare(core::Image &dst, const core::Image &src);
+
+      /// Image-based prepare: matches src but with explicit depth
+      bool prepare(core::Image &dst, const core::Image &src, core::depth d);
+
+      /// Legacy prepare (for subclasses not yet migrated)
       bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize,
                     core::format eFormat, int nChannels, const utils::Rect& roi,
                     utils::Time timestamp=utils::Time::null){
         return m_oROIHandler.prepare(ppoDst, eDepth,imgSize,eFormat, nChannels, roi, timestamp);
       }
 
-      /// check+adapt destination image to properties of given source image
+      /// Legacy prepare
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) {
         return m_oROIHandler.prepare(ppoDst, poSrc);
       }
 
-      /// check+adapt destination image to properties of given source image
-      /// but use explicitly given depth
+      /// Legacy prepare
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepth) {
         return m_oROIHandler.prepare(ppoDst, poSrc, eDepth);
       }
