@@ -1,0 +1,284 @@
+#include <ICLUtils/Test.h>
+#include <ICLCore/Image.h>
+#include <ICLCore/Img.h>
+
+using namespace icl;
+using namespace icl::utils;
+using namespace icl::core;
+
+// ---- Image: construction and null ----
+
+ICL_REGISTER_TEST("Image.null", "default-constructed image is null") {
+  Image img;
+  ICL_TEST_EQ(img.isNull(), true);
+  ICL_TEST_EQ(static_cast<bool>(img), false);
+}
+
+ICL_REGISTER_TEST("Image.construct", "construct with size/depth/channels") {
+  Image img(Size(320, 240), depth8u, 3, formatRGB);
+  ICL_TEST_EQ(img.isNull(), false);
+  ICL_TEST_EQ(img.getWidth(), 320);
+  ICL_TEST_EQ(img.getHeight(), 240);
+  ICL_TEST_EQ(img.getChannels(), 3);
+  ICL_TEST_EQ(static_cast<int>(img.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_EQ(static_cast<int>(img.getFormat()), static_cast<int>(formatRGB));
+  ICL_TEST_EQ(img.getDim(), 320 * 240);
+}
+
+ICL_REGISTER_TEST("Image.construct_defaults", "default channels and format") {
+  Image img(Size(64, 64), depth32f);
+  ICL_TEST_EQ(img.getChannels(), 1);
+  ICL_TEST_EQ(static_cast<int>(img.getFormat()), static_cast<int>(formatMatrix));
+}
+
+// ---- Image: is<T> and as<T> ----
+
+ICL_REGISTER_TEST("Image.is", "type check with is<T>") {
+  Image img(Size(10, 10), depth8u);
+  ICL_TEST_EQ(img.is<icl8u>(), true);
+  ICL_TEST_EQ(img.is<icl32f>(), false);
+  ICL_TEST_EQ(img.is<icl64f>(), false);
+}
+
+ICL_REGISTER_TEST("Image.as", "typed access with as<T>") {
+  Image img(Size(4, 4), depth32f, 1);
+  Img<icl32f> &typed = img.as<icl32f>();
+  typed(0, 0, 0) = 42.0f;
+  ICL_TEST_NEAR(img.as<icl32f>()(0, 0, 0), 42.0f, 1e-6f);
+}
+
+// ---- Image: shallow copy ----
+
+ICL_REGISTER_TEST("Image.shallow_copy", "copy shares data") {
+  Image a(Size(8, 8), depth32f, 1);
+  a.as<icl32f>()(0, 0, 0) = 7.0f;
+
+  Image b = a;  // shallow copy
+  ICL_TEST_NEAR(b.as<icl32f>()(0, 0, 0), 7.0f, 1e-6f);
+
+  // Modify through b, visible in a
+  b.as<icl32f>()(0, 0, 0) = 99.0f;
+  ICL_TEST_NEAR(a.as<icl32f>()(0, 0, 0), 99.0f, 1e-6f);
+}
+
+// ---- Image: deep copy ----
+
+ICL_REGISTER_TEST("Image.deep_copy", "deepCopy creates independent data") {
+  Image a(Size(8, 8), depth32f, 1);
+  a.as<icl32f>()(0, 0, 0) = 7.0f;
+
+  Image b = a.deepCopy();
+  ICL_TEST_NEAR(b.as<icl32f>()(0, 0, 0), 7.0f, 1e-6f);
+
+  b.as<icl32f>()(0, 0, 0) = 99.0f;
+  ICL_TEST_NEAR(a.as<icl32f>()(0, 0, 0), 7.0f, 1e-6f);  // unchanged
+}
+
+// ---- Image: ensureCompatible ----
+
+ICL_REGISTER_TEST("Image.ensureCompatible_null", "ensureCompatible on null image") {
+  Image img;
+  img.ensureCompatible(depth8u, Size(100, 100), 3);
+  ICL_TEST_EQ(img.isNull(), false);
+  ICL_TEST_EQ(img.getWidth(), 100);
+  ICL_TEST_EQ(img.getChannels(), 3);
+  ICL_TEST_EQ(static_cast<int>(img.getDepth()), static_cast<int>(depth8u));
+}
+
+ICL_REGISTER_TEST("Image.ensureCompatible_same_depth", "same depth adapts in-place") {
+  Image img(Size(10, 10), depth8u, 1);
+  ImgBase *origPtr = img.ptr();
+  img.ensureCompatible(depth8u, Size(20, 20), 3);
+  ICL_TEST_EQ(img.ptr(), origPtr);  // same allocation
+  ICL_TEST_EQ(img.getWidth(), 20);
+  ICL_TEST_EQ(img.getChannels(), 3);
+}
+
+ICL_REGISTER_TEST("Image.ensureCompatible_depth_change", "depth change reallocates") {
+  Image img(Size(10, 10), depth8u, 1);
+  ImgBase *origPtr = img.ptr();
+  img.ensureCompatible(depth32f, Size(10, 10), 1);
+  ICL_TEST_EQ(static_cast<int>(img.getDepth()), static_cast<int>(depth32f));
+  ICL_TEST_EQ(img.ptr() != origPtr, true);  // different allocation
+}
+
+// ---- Image: convert ----
+
+ICL_REGISTER_TEST("Image.convert", "depth conversion") {
+  Image img(Size(4, 4), depth8u, 1);
+  img.as<icl8u>()(0, 0, 0) = 200;
+
+  Image f = img.convert(depth32f);
+  ICL_TEST_EQ(f.is<icl32f>(), true);
+  ICL_TEST_NEAR(f.as<icl32f>()(0, 0, 0), 200.0f, 1e-3f);
+}
+
+// ---- Image: visit ----
+
+ICL_REGISTER_TEST("Image.visit_mut", "mutable visit") {
+  Image img(Size(4, 4), depth32f, 1);
+  img.visit([](auto &typed) {
+    typed(0, 0, 0) = 123;
+  });
+  ICL_TEST_NEAR(img.as<icl32f>()(0, 0, 0), 123.0f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("Image.visit_const", "const visit reads correctly") {
+  Image img(Size(4, 4), depth8u, 1);
+  img.as<icl8u>()(0, 0, 0) = 42;
+
+  const Image &cimg = img;
+  int val = cimg.visit([](const auto &typed) -> int {
+    return static_cast<int>(typed(0, 0, 0));
+  });
+  ICL_TEST_EQ(val, 42);
+}
+
+ICL_REGISTER_TEST("Image.visit_all_depths", "visit works for all 5 depths") {
+  depth depths[] = {depth8u, depth16s, depth32s, depth32f, depth64f};
+  for(auto d : depths){
+    Image img(Size(2, 2), d, 1);
+    img.visit([](auto &typed) { typed(0, 0, 0) = 1; });
+    int v = img.visit([](const auto &typed) -> int {
+      return static_cast<int>(typed(0, 0, 0));
+    });
+    ICL_TEST_EQ(v, 1);
+  }
+}
+
+// ---- Image: ROI ----
+
+ICL_REGISTER_TEST("Image.roi", "ROI set/get/full") {
+  Image img(Size(100, 100), depth8u, 1);
+  ICL_TEST_EQ(img.hasFullROI(), true);
+
+  img.setROI(Rect(10, 10, 50, 50));
+  ICL_TEST_EQ(img.hasFullROI(), false);
+  ICL_TEST_EQ(img.getROISize().width, 50);
+  ICL_TEST_EQ(img.getROIOffset().x, 10);
+
+  img.setFullROI();
+  ICL_TEST_EQ(img.hasFullROI(), true);
+}
+
+// ---- Image: clear ----
+
+ICL_REGISTER_TEST("Image.clear", "clear fills with zero") {
+  Image img(Size(4, 4), depth32f, 1);
+  img.as<icl32f>()(0, 0, 0) = 99.0f;
+  img.clear();
+  ICL_TEST_NEAR(img.as<icl32f>()(0, 0, 0), 0.0f, 1e-6f);
+}
+
+// ---- Image: selectChannel ----
+
+ICL_REGISTER_TEST("Image.selectChannel", "extract single channel") {
+  Image img(Size(4, 4), depth8u, 3, formatRGB);
+  img.as<icl8u>()(0, 0, 1) = 42;  // green channel
+
+  Image ch = img.selectChannel(1);
+  ICL_TEST_EQ(ch.getChannels(), 1);
+  ICL_TEST_EQ(static_cast<int>(ch.as<icl8u>()(0, 0, 0)), 42);
+}
+
+// ---- Image: swap ----
+
+ICL_REGISTER_TEST("Image.swap", "swap exchanges contents") {
+  Image a(Size(10, 10), depth8u, 1);
+  Image b(Size(20, 20), depth32f, 3);
+  a.swap(b);
+  ICL_TEST_EQ(a.getWidth(), 20);
+  ICL_TEST_EQ(a.is<icl32f>(), true);
+  ICL_TEST_EQ(b.getWidth(), 10);
+  ICL_TEST_EQ(b.is<icl8u>(), true);
+}
+
+// ---- Image: visitWith ----
+
+ICL_REGISTER_TEST("Image.visitWith", "binary visit dispatches correctly") {
+  Image a(Size(4, 4), depth32f, 1);
+  Image b(Size(4, 4), depth32f, 1);
+  a.as<icl32f>()(0, 0, 0) = 10.0f;
+  b.as<icl32f>()(0, 0, 0) = 20.0f;
+
+  a.visitWith(b, [](auto &ta, auto &tb) {
+    ta(0, 0, 0) = ta(0, 0, 0) + tb(0, 0, 0);
+  });
+  ICL_TEST_NEAR(a.as<icl32f>()(0, 0, 0), 30.0f, 1e-6f);
+}
+
+// ---- Image: visitChannel ----
+
+ICL_REGISTER_TEST("Image.visitChannel", "single channel raw pointer access") {
+  Image img(Size(4, 4), depth8u, 3, formatRGB);
+  img.visitChannel(1, [](auto *data, int dim) {
+    for(int i = 0; i < dim; ++i) data[i] = 42;
+  });
+  ICL_TEST_EQ(static_cast<int>(img.as<icl8u>()(0, 0, 1)), 42);
+  ICL_TEST_EQ(static_cast<int>(img.as<icl8u>()(3, 3, 1)), 42);
+}
+
+ICL_REGISTER_TEST("Image.visitChannel_const", "const channel read") {
+  Image img(Size(4, 4), depth32f, 1);
+  img.as<icl32f>()(2, 2, 0) = 7.5f;
+
+  const Image &cimg = img;
+  float val = 0;
+  cimg.visitChannel(0, [&val](const auto *data, int dim) {
+    val = static_cast<float>(data[2 * 4 + 2]);  // y=2, x=2
+  });
+  ICL_TEST_NEAR(val, 7.5f, 1e-6f);
+}
+
+// ---- Image: visitChannelWith ----
+
+ICL_REGISTER_TEST("Image.visitChannelWith", "binary channel pointer access") {
+  Image src(Size(4, 4), depth32f, 1);
+  Image dst(Size(4, 4), depth32f, 1);
+  src.as<icl32f>()(0, 0, 0) = 5.0f;
+  dst.clear();
+
+  src.visitChannelWith(dst, 0, [](auto *s, auto *d, int dim) {
+    for(int i = 0; i < dim; ++i) d[i] = s[i] * 2;
+  });
+  ICL_TEST_NEAR(dst.as<icl32f>()(0, 0, 0), 10.0f, 1e-6f);
+}
+
+// ---- Image: visitChannels ----
+
+ICL_REGISTER_TEST("Image.visitChannels", "iterate all channels") {
+  Image img(Size(4, 4), depth8u, 3, formatRGB);
+  img.clear();
+  int channelCount = 0;
+  img.visitChannels([&channelCount](auto *data, int channel, int dim) {
+    for(int i = 0; i < dim; ++i) data[i] = channel + 1;
+    ++channelCount;
+  });
+  ICL_TEST_EQ(channelCount, 3);
+  ICL_TEST_EQ(static_cast<int>(img.as<icl8u>()(0, 0, 0)), 1);  // R
+  ICL_TEST_EQ(static_cast<int>(img.as<icl8u>()(0, 0, 1)), 2);  // G
+  ICL_TEST_EQ(static_cast<int>(img.as<icl8u>()(0, 0, 2)), 3);  // B
+}
+
+// ---- Image: visitChannelsWith ----
+
+ICL_REGISTER_TEST("Image.visitChannelsWith", "binary all-channel iteration") {
+  Image src(Size(4, 4), depth32f, 2);
+  Image dst(Size(4, 4), depth32f, 2);
+  src.visit([](auto &t) { t(0,0,0) = 3; t(0,0,1) = 7; });
+  dst.clear();
+
+  src.visitChannelsWith(dst, [](auto *s, auto *d, int channel, int dim) {
+    for(int i = 0; i < dim; ++i) d[i] = s[i] + channel;
+  });
+  ICL_TEST_NEAR(dst.as<icl32f>()(0, 0, 0), 3.0f, 1e-6f);  // 3 + 0
+  ICL_TEST_NEAR(dst.as<icl32f>()(0, 0, 1), 8.0f, 1e-6f);  // 7 + 1
+}
+
+// ---- Image: stream output ----
+
+ICL_REGISTER_TEST("Image.print_null", "null image doesn't crash on print") {
+  Image img;
+  img.print("test-null");
+  ICL_TEST_EQ(img.isNull(), true);
+}
