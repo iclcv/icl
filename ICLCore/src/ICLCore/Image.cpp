@@ -84,17 +84,11 @@ namespace icl {
 
     void Image::ensureCompatible(depth d, const utils::Size &s,
                                  int channels, format fmt) {
-      if(!m_impl){
-        m_impl.reset(imgNew(d, s, channels, fmt));
-      } else if(m_impl->getDepth() != d){
-        // Depth change requires new allocation.
-        // Other shared holders keep the old buffer.
+      if(!m_impl || m_impl->getDepth() != d){
         m_impl.reset(imgNew(d, s, channels, fmt));
       } else {
-        // Same depth — adapt in-place (may reallocate channels internally)
-        if(m_impl->getSize() != s) m_impl->setSize(s);
-        if(m_impl->getChannels() != channels) m_impl->setChannels(channels);
-        if(m_impl->getFormat() != fmt) m_impl->setFormat(fmt);
+        // Same depth — batch-update params in one call
+        m_impl->setParams(ImgParams(s, channels, fmt));
       }
     }
 
