@@ -261,12 +261,12 @@ void run(){
       static MedianOp mo(Size(3,3));
       mo.setClipToROI(false);
       static ImgBase *moBuf = 0;
-      mo.apply(image, &moBuf);
+      mo.apply(image.ptr(), &moBuf);
       IMAGE=cvt(moBuf);
       ImgBorder::copy(&IMAGE);
       IMAGE.setFullROI();
     }else{
-      IMAGE=cvt(image);
+      IMAGE=cvt(image.ptr());
     }
   }
   draw = IMAGE;

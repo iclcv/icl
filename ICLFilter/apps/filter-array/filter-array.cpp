@@ -121,8 +121,8 @@ void run(){
     if(op && image && gui["vis"+si].as<bool>()){
       try{
         static ImgBase *buf = 0;
-        op->apply(image, &buf);
-        image = buf;
+        op->apply(image.ptr(), &buf);
+        image = Image(*buf);
       }catch(const ICLException &ex){
         gui["err"+si] = str(ex.what());
       }

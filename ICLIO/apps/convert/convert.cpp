@@ -102,9 +102,9 @@ int main(int n, char **ppc){
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
 
-  format fmt = pa("-format") ? parse<format>(pa("-format")) : image->getFormat();
-  int channels = pa("-format") ? getChannelsOfFormat(fmt) : image->getChannels();
-  Size size = pa("-size") ? parse<Size>(pa("-size")) : image->getSize();
+  format fmt = pa("-format") ? parse<format>(pa("-format")) : image.getFormat();
+  int channels = pa("-format") ? getChannelsOfFormat(fmt) : image.getChannels();
+  Size size = pa("-size") ? parse<Size>(pa("-size")) : image.getSize();
   if(pa("-scale")){
     Size32f s32(size.width,size.height);
     s32 = s32 * parse<float>(pa("-scale"));
@@ -115,7 +115,7 @@ int main(int n, char **ppc){
   ImgParams p(size,
               channels,
               fmt);
-  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image->getDepth();
+  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image.getDepth();
 
   FixedConverter conv(p,d);
   scalemode sm = interpolateLIN;
@@ -136,7 +136,7 @@ int main(int n, char **ppc){
   conv.setScaleMode(sm);
 
   ImgBase *dst = 0;
-  conv.apply(image,&dst);
+  conv.apply(image.ptr(),&dst);
 
   if(pa("-flip")){
     std::string axis = pa("-flip").as<std::string>();

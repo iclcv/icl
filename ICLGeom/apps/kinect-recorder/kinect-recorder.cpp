@@ -115,7 +115,7 @@ void run(){
     throw std::logic_error("num drop '-drop' frames must be >= 0");
   }
 
-  const ImgBase *c=0,*d=0;
+  Image c, d;
   if(!c_in.isNull()) c = c_in.grabImage();
   if(!d_in.isNull()) d = d_in.grabImage();
 

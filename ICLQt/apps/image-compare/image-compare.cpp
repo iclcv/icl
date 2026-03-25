@@ -43,8 +43,10 @@ int main(int n, char **ppc){
   ga.init(pa("-a"));
   gb.init(pa("-b"));
 
-  const ImgBase *a = ga.grab();
-  const ImgBase *b = gb.grab();
+  Image imgA = ga.grabImage();
+  Image imgB = gb.grabImage();
+  const ImgBase *a = imgA.ptr();
+  const ImgBase *b = imgB.ptr();
 
   if(pa("-ca")){
     a = a->selectChannel(pa("-ca"));

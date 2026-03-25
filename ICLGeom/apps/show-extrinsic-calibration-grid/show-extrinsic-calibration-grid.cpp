@@ -79,7 +79,7 @@ void init(){
 void run(){
   static DrawHandle draw = gui["draw"];
 
-  draw=grabber->grab();
+  draw=grabber->grabImage();
 
   draw->color(0,100,255,200);
   draw->grid(grid.data(),Nx,Ny);
