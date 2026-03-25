@@ -154,6 +154,12 @@ namespace icl {
 
     void Image::mirror(axis a) { m_impl->mirror(a); }
 
+    Image Image::mirrored(axis a) const {
+      Image dst = deepCopy();
+      dst.mirror(a);
+      return dst;
+    }
+
     void Image::scale(const utils::Size &s, scalemode sm) {
       m_impl->scale(s, sm);
     }

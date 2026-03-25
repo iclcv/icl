@@ -1116,18 +1116,13 @@ namespace icl{
     }
 
     ImgQ flipx(const ImgQ& image){
-      ImgQ r(image.getParams());
-      ImgBase *rr = &r;
-      flippedCopy(axisVert,&image,&rr);
-      return r;
+      Image result = Image(image).mirrored(axisVert);
+      return result.as32f();
     }
 
     ImgQ flipy(const ImgQ& image){
-
-      ImgQ r(image.getParams());
-      ImgBase *rr = &r;
-      flippedCopy(axisHorz,&image,&rr);
-      return r;
+      Image result = Image(image).mirrored(axisHorz);
+      return result.as32f();
     }
 
 

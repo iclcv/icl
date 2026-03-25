@@ -206,8 +206,11 @@ namespace icl {
       /// Fills all (or one) channel(s) with a value
       void clear(int channel = -1, icl64f val = 0);
 
-      /// Mirrors the image along the given axis
+      /// Mirrors the image in-place along the given axis
       void mirror(axis a);
+
+      /// Returns a mirrored copy (flipped along given axis)
+      Image mirrored(axis a) const;
 
       /// Scales the image in-place
       void scale(const utils::Size &s, scalemode sm = interpolateNN);

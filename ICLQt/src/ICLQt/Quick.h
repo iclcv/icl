@@ -103,6 +103,10 @@ namespace icl{
   #define ICL_QUICK_TYPE icl32f
 
 
+    // TODO: consider reworking Quick to use Image directly instead of ImgQ.
+    // ImgQ (Img<icl32f>) forces all quick operations to float depth.
+    // With Image, the depth could be preserved from the source.
+
     /// typedef for the quick images type (this time core::Img<icl32f>)
     using ImgQ = core::Img<ICL_QUICK_TYPE>;
 
