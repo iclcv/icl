@@ -35,7 +35,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
-// forward declaration (was #include <ICLCore/ImgBase.h>)
+#include <ICLCore/ImgBase.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 
 namespace icl {

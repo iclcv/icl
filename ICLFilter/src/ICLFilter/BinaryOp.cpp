@@ -53,15 +53,16 @@ namespace icl{
       ICL_DELETE(m_buf);
     }
 
-    core::Image BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
-      apply(a, b, &m_buf);
-      return core::Image(m_buf->deepCopy());
-    }
-
+    // Default Image apply — delegates to legacy ImgBase** for backward compat
     void BinaryOp::apply(const core::Image &src1, const core::Image &src2, core::Image &dst){
       core::ImgBase *tmp = nullptr;
       apply(src1.ptr(), src2.ptr(), &tmp);
-      dst = core::Image(tmp);
+      if(tmp) dst = core::Image(tmp);
+    }
+
+    core::Image BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
+      apply(a, b, &m_buf);
+      return core::Image(m_buf->deepCopy());
     }
 
   } // namespace filter
