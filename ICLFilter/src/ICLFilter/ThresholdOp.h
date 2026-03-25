@@ -163,27 +163,12 @@ namespace icl {
         ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
      private:
         float m_fLowThreshold;
         float m_fHighThreshold;
         float m_fLowVal;
         float m_fHighVal;
         optype m_eType;
-        /// less than thresholding
-        void tlt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold);
-        /// greater than thresholding
-        void tgt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold);
-        /// less than and greater than thresholding
-        void tltgt(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float low, float hi);
-        /// less than thresholding with explicit set value
-        void tltVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold, float val);
-        /// greater than thresholding with explicit set value
-        void tgtVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst, float threshold, float val);
-        /// less than and greater than thresholding with explicit set values
-        void tltgtVal(const core::ImgBase *poSrc, core::ImgBase **ppoDst,
-                     float low, float lowVal, float hi, float hiVal);
-
      };
 
     // LATER ... DYNAMIC_UNARY_OP_CREATION_FUNCTION(ThresholdOp);
