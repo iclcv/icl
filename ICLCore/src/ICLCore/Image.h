@@ -89,17 +89,12 @@ namespace icl {
       /// Wraps an existing shared pointer
       Image(const std::shared_ptr<ImgBase> &p);
 
-      /// Non-owning wrap of an existing ImgBase pointer
-      /** The caller retains ownership. The Image is valid only as long
-          as the pointed-to ImgBase exists. Useful for passing stack-allocated
-          Img<T> or internal buffers to Image-based APIs. */
-      static Image wrap(const ImgBase *p);
-
-      /// Non-owning wrap of a typed image
-      template<class T>
-      static Image wrap(const Img<T> *p) {
-        return wrap(static_cast<const ImgBase*>(p));
-      }
+      /// Shallow copy from an ImgBase (or Img<T> via inheritance)
+      /** Creates a new Image that shares channel data with the source.
+          Non-explicit: allows implicit conversion from Img<T> to Image,
+          so any Img<T> can be passed where const Image& is expected.
+          Only metadata is copied — pixel data is shared (refcounted). */
+      Image(const ImgBase &img);
 
       /// Default shallow copy (shared_ptr semantics)
       Image(const Image &) = default;

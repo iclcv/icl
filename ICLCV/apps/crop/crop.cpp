@@ -181,7 +181,7 @@ void batch_pattern_changed(){
           GenericGrabber g("file","file="+f[i]);
           const ImgBase *image = g.grab()->shallowCopy(r);
           image->deepCopyROI(&dst);
-          out.send(Image::wrap(dst));
+          out.send(*dst);
           std::cout << "converted file " << f[i] << " successfully" << std::endl;
           delete image;
         }

@@ -60,7 +60,7 @@ struct ImgObj : public SceneObject{
 void mouse(const MouseEvent &e){
   if(e.isLeft() || e.isRight() || e.isMiddle() || e.isWheelEvent()){
     if(pa("-o")){
-      output.send(&scene.render(0));
+      output.send(scene.render(0));
     }
   }
 }
@@ -76,9 +76,9 @@ void run(){
       if(pa("-d")){
         static Img8u buf(pa("-d").as<Size>(),formatRGB);
         image.scaledCopyROI(&buf,interpolateRA);
-        output.send(&buf);
+        output.send(buf);
       }else{
-        output.send(&image);
+        output.send(image);
       }
     }
     gui["draw"].render();

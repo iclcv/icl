@@ -67,7 +67,7 @@ int main(int n, char **a){
 
     if(pa("-o")){
       GenericImageOutput out(pa("-o"));
-      out.send(&image);
+      out.send(image);
     }else{
       show(image);
     }

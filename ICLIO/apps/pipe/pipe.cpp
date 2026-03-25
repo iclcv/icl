@@ -273,7 +273,7 @@ void send_app(){
     }else{
       normImage = ppImage;
     }
-    output.send(Image::wrap(normImage));
+    output.send(*normImage);
 #ifdef ICL_HAVE_QT
     if(!(bool)pa("-no-gui")){
       bool &updateImages = gui.get<bool>("updateImages");

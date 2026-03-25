@@ -146,19 +146,19 @@ void run() {
       c.setTransformation( *relTM * d.getCSTransformationMatrix() );
 
       const Img8u colorImage2 = scene.render(1);
-      if(cOut) colorOut.send(&colorImage2);
+      if(cOut) colorOut.send(colorImage2);
       if(prevGUI.isVisible()){
         if(cOut) prevGUI["color"] = colorImage2;
         if(dOut) prevGUI["depth"] = depthImage;
       }
     }else{
-      if(cOut) colorOut.send(&colorImage);
+      if(cOut) colorOut.send(colorImage);
       if(prevGUI.isVisible()){
         if(cOut) prevGUI["color"] = colorImage;
         if(dOut) prevGUI["depth"] = depthImage;
       }
     }
-    if(dOut) depthOut.send(&depthImage);
+    if(dOut) depthOut.send(depthImage);
 
   }
   gui["draw"].render();
