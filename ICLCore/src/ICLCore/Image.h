@@ -267,6 +267,18 @@ namespace icl {
         return *static_cast<const Img<T>*>(m_impl.get());
       }
 
+      // Convenience typed accessors (match ImgBase::asImg<T>() / as8u() etc.)
+      Img<icl8u>&  as8u()        { return as<icl8u>();  }
+      Img<icl16s>& as16s()       { return as<icl16s>(); }
+      Img<icl32s>& as32s()       { return as<icl32s>(); }
+      Img<icl32f>& as32f()       { return as<icl32f>(); }
+      Img<icl64f>& as64f()       { return as<icl64f>(); }
+      const Img<icl8u>&  as8u()  const { return as<icl8u>();  }
+      const Img<icl16s>& as16s() const { return as<icl16s>(); }
+      const Img<icl32s>& as32s() const { return as<icl32s>(); }
+      const Img<icl32f>& as32f() const { return as<icl32f>(); }
+      const Img<icl64f>& as64f() const { return as<icl64f>(); }
+
       /// @}
       /// @name Visitor (type-safe depth dispatch)
       /// @{

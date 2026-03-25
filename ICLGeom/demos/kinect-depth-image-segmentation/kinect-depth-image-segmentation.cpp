@@ -177,13 +177,13 @@ void run(){
   pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
 
   //segment
-  segmentation->apply(*depthImage.as32f(), *obj);
+  segmentation->apply(depthImage.as32f(), *obj);
   core::Img8u edgeImg = segmentation->getEdgeDisplay();
   core::Img8u normImg = segmentation->getNormalDisplay();
 
   //display
   hdepth = heatmapImage;
-  hcolor = &colorImage;
+  hcolor = colorImage;
   hedge = &edgeImg;
   hnormal = &normImg;
 

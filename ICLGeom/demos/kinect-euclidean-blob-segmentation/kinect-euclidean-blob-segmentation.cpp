@@ -281,19 +281,19 @@ void run(){
   //heatmap and temporal smoothing
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
-    temporalSmoothing->apply(&depthImage,&filteredImage);
+    temporalSmoothing->apply(depthImage.ptr(),&filteredImage);
     if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
-      hdepth = heatmapImage;//->as8u();
+      hdepth = heatmapImage;
     }else{//depth image
       hdepth = filteredImage;
     }
 	}else{
     if(gui["heatmap"]){//heatmap image
-      pseudoColorConverter->apply(&depthImage,&heatmapImage);
-      hdepth = heatmapImage;//->as8u();
+      pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
+      hdepth = heatmapImage;
     }else{//depth image
-      hdepth = &depthImage;
+      hdepth = depthImage;
     }
   }
 
@@ -327,7 +327,7 @@ void run(){
     edgeImage=objectEdgeDetector->calculate(*filteredImage->as32f(), usedFilterHandle.getSelected(),
                                            !disableAveraging, usedSmoothingHandle.getSelected());
   }else{
-    edgeImage=objectEdgeDetector->calculate(*depthImage.as32f(), usedFilterHandle.getSelected(),
+    edgeImage=objectEdgeDetector->calculate(depthImage.as32f(), usedFilterHandle.getSelected(),
                                            !disableAveraging, usedSmoothingHandle.getSelected());
   }
 
