@@ -121,6 +121,8 @@ namespace icl{
 
       std::shared_ptr<MedianOp> median;
       std::shared_ptr<BlurTool> blurTool;
+      Image depthHolder;
+      Image colorHolder;
     };
 
     const Camera &DepthCameraPointCloudGrabber::get_default_depth_cam(){
@@ -281,7 +283,8 @@ namespace icl{
       bool useNewImages = !getPropertyValue("re-use exisiting images").as<bool>();
       Img32f *depthImage = 0;
       if(useNewImages || !m_data->lastDepthImage){
-        depthImage = const_cast<Img32f*>(m_data->depthGrabber.grab()->as32f());
+        m_data->depthHolder = m_data->depthGrabber.grabImage();
+        depthImage = &m_data->depthHolder.as<icl32f>();
         if(getPropertyValue("pp.enable gaussian")){
           int s = getPropertyValue("pp.spacial filter size");
           m_data->blurTool->setMaskDim(s);
@@ -334,7 +337,10 @@ namespace icl{
 
       Img8u *rgbImage = 0;
       if(useNewImages || !m_data->lastColorImage){
-        rgbImage = m_data->colorGrabber.isNull() ? 0 : const_cast<Img8u*>(m_data->colorGrabber.grab()->as8u());
+        if(!m_data->colorGrabber.isNull()){
+          m_data->colorHolder = m_data->colorGrabber.grabImage();
+          rgbImage = &m_data->colorHolder.as<icl8u>();
+        }
         if(rgbImage && m_data->colorMask){
           ICLASSERT_THROW(m_data->colorMask->getSize() == rgbImage->getSize(),
                           ICLException("DepthCameraPointCloudGrabber::grab: "

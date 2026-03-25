@@ -549,17 +549,17 @@ namespace icl{
     template<class T>
     Img<T> load(const std::string &filename){
       FileGrabber g(filename);
-      const ImgBase *grabbedImage = 0;
+      Image grabbedImage;
       try{
-        grabbedImage = g.grab();
+        grabbedImage = g.grabImage();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
       if(!grabbedImage){
         return Img<T>();
       }
-      Img<T> buf = *ImgBuffer::instance()->get<T>(grabbedImage->getParams());
-      grabbedImage->convert(&buf);
+      Img<T> buf = *ImgBuffer::instance()->get<T>(grabbedImage.ptr()->getParams());
+      grabbedImage.ptr()->convert(&buf);
       return buf;
     }
 
@@ -569,18 +569,18 @@ namespace icl{
     Img<T> load(const std::string &filename, format fmt){
 
       FileGrabber g(filename);
-      const ImgBase *gi  = 0;
+      Image gi;
       try{
-        gi = g.grab();
+        gi = g.grabImage();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
       if(!gi){
         return Img<T>();
       }
-      Img<T> buf = *ImgBuffer::instance()->get<T>(gi->getSize(),getChannelsOfFormat(fmt));
+      Img<T> buf = *ImgBuffer::instance()->get<T>(gi.getSize(),getChannelsOfFormat(fmt));
       buf.setFormat(fmt);
-      cc(gi,&buf);
+      cc(gi.ptr(),&buf);
 
       return buf;
     }
@@ -733,12 +733,12 @@ namespace icl{
         g->useDesired(size);
         g->useDesired(fmt);
         g->useDesired(getDepth<T>());
-        back = *g->grab()->asImg<T>();
+        back = g->grabImage().as<T>();
       }else{
-        const ImgBase *image = g->grab();
-        back.setSize(image->getSize());
+        Image image = g->grabImage();
+        back.setSize(image.getSize());
         back.setFormat(fmt);
-        cc(image,&back);
+        cc(image.ptr(),&back);
       }
       return back;
     }

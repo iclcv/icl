@@ -198,16 +198,7 @@ namespace icl {
         /// Destructor
         virtual ~GenericGrabber();
 
-        /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
-        /** If dst is not NULL, it is exploited and filled with image data **/
-        const core::ImgBase *grab(core::ImgBase **dst = 0){
-          std::lock_guard<std::recursive_mutex> __lock(m_mutex);
-          ICLASSERT_RETURN_VAL(!isNull(), 0);
-
-          return m_poGrabber->grab(dst);
-        }
-
-        /// Image-based grab: returns a deep copy as an Image value
+        /// Grabs the next image and returns it as an Image value
         core::Image grabImage(){
           std::lock_guard<std::recursive_mutex> __lock(m_mutex);
           ICLASSERT_RETURN_VAL(!isNull(), core::Image());

@@ -160,7 +160,7 @@ void init(){
 
 void run(){
   // use cvt to create an Img32 (aka ImgQ)
-  ImgQ curr = cvt(grabber.grab());
+  ImgQ curr = cvt(grabber.grabImage());
   // nested use of operators
   gui["image"] = thresh(abs(last-curr),gui["thresh"]);
   last = curr;

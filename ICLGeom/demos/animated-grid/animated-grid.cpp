@@ -110,7 +110,7 @@ struct Grid : public SceneObject{
 void run(){
   grabber.grabImage().ptr()->convert(&image);
   if(pa("-b")){
-    backFaceGrabber.grab()->convert(&backImage);
+    backFaceGrabber.grabImage().ptr()->convert(&backImage);
   }
   gui["draw"].render();
 #if 0

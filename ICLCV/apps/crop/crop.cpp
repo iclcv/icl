@@ -337,7 +337,7 @@ int main(int n, char **args){
           "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
   if(pa("-estimate-image-size-only").as<bool>() || pa("-estimate-image-ar-only").as<bool>() || pa("-compute-optimal-scaling-size").as<bool>()){
     GenericGrabber g(pa("-input"));
-    Size s = g.grab()->getSize();
+    Size s = g.grabImage().getSize();
     if(pa("-estimate-image-size-only")){
       std::cout << s << std::endl;
     }

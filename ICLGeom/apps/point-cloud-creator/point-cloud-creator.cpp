@@ -85,8 +85,8 @@ void init_icl() {
 
 void run_icl() {
 
-  depth_img = *grabber_d.grab()->as32f();
-  color_img = *grabber_c.grab()->as8u();
+  depth_img = *grabber_d.grabImage()->as32f();
+  color_img = *grabber_c.grabImage()->as8u();
 
   pc_obj->lock();
   pcc.create(depth_img,*pc_obj);

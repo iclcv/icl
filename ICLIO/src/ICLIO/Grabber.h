@@ -198,11 +198,7 @@ namespace icl {
         /// Destructor
         virtual ~Grabber();
 
-        /// grab function calls the Grabber-specific acquireImage-method and applies distortion if necessary
-        /** If dst is not NULL, it is exploited and filled with image data **/
-        const core::ImgBase *grab(core::ImgBase **dst=0);
-
-        /// Image-based grab: returns a deep copy as an Image value
+        /// Grabs the next image and returns it as an Image value
         core::Image grabImage();
 
         /// returns whether the desired parameter for the given type is used
@@ -315,6 +311,10 @@ namespace icl {
         /// Utility function that allows for much easier implementation of grabUD
         /** called by the grabbers grab() method **/
         const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
+
+      protected:
+        /// Internal grab using legacy ImgBase** mechanism (not public — use grabImage())
+        const core::ImgBase *grab(core::ImgBase **dst=0);
 
       private:
         /// callback for changed configurable properties

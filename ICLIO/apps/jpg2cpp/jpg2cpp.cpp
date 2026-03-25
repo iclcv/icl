@@ -147,7 +147,7 @@ int main(int n, char **ppc){
          "  fwrite(buf,1,DIM,f);\n"
          "  fclose(f);\n"
          "  delete [] buf;\n"
-         "  image = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grab()->deepCopy();\n"
+         "  image = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grabImage().ptr();\n"
          "  remove(\"./.tmp_image_buffer.jpg\");\n"
          "  return image->deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());

@@ -70,7 +70,7 @@ int main (int n, char **ppc){
 
     try{
       static FileGrabber w(imageName);
-      image = w.grab();
+      image = w.grabImage();
       if(pa("-delete")){
         if(imageName.length()){
           int errorCode = system((std::string(ICL_SYSTEMCALL_RM) + imageName).c_str());

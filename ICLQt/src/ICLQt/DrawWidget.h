@@ -108,7 +108,7 @@ void run(){
   DrawHandle draw = gui["draw"];
 
   // do some image processing (pretty slow here)
-  ImgQ im = cvt(g.grab());
+  ImgQ im = cvt(g.grabImage());
 
   // re-quantize grabbed image to reduce levels
   ImgQ lm = levels(im,gui["levels"].as<int>());

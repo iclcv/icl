@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLIO/FileGrabber.h>
+#include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/File.h>
 
@@ -1173,7 +1174,7 @@ namespace icl{
 
       f.close();
       delete [] buf;
-      image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grab()->deepCopy();
+      image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grabImage().ptr();
       f.erase();
       return image->deepCopy();
     }

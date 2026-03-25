@@ -135,7 +135,7 @@ void run(){
 
   while(1){
     mutex.lock();
-    g.grab(bpp(currImage));
+    currImage = g.grabImage().as<icl8u>();
     if(!dragging){
       currImage.setROI(currROI.normalized() & currImage.getImageRect());
     }

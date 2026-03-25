@@ -84,7 +84,7 @@ int main(int n, char **ppc){
 
   const ImgBase *image = 0;
   try{
-    image = fg.grab();
+    image = fg.grabImage();
   }catch(ICLException &ex){
     ERROR_LOG("unable to grab file:" << ex.what());
     exit(-1);

@@ -169,12 +169,12 @@ void run(){
   }
 
   //grab images
-  const ImgBase &colorImage = *grabColor.grab();
-  const ImgBase &depthImage = *grabDepth.grab();
+  Image colorImage = grabColor.grabImage();
+  Image depthImage = grabDepth.grabImage();
 
   //create heatmap
   static ImgBase *heatmapImage = 0;
-  pseudoColorConverter->apply(&depthImage,&heatmapImage);
+  pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
 
   //segment
   segmentation->apply(*depthImage.as32f(), *obj);

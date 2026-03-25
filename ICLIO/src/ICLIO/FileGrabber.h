@@ -130,7 +130,7 @@ namespace icl{
           \code
           FileGrabber g("images/ *.jpg");
           for(int i=0;i<g.getFileCount()/2;++i){
-            g.grab();
+            g.grabImage();
             g.next();
           }
           \endcode

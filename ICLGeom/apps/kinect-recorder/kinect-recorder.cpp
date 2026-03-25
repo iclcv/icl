@@ -116,8 +116,8 @@ void run(){
   }
 
   const ImgBase *c=0,*d=0;
-  if(!c_in.isNull()) c = c_in.grab();
-  if(!d_in.isNull()) d = d_in.grab();
+  if(!c_in.isNull()) c = c_in.grabImage();
+  if(!d_in.isNull()) d = d_in.grabImage();
 
   if(nDrop){
     --nDrop;
