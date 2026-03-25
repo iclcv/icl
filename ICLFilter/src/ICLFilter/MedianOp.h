@@ -260,7 +260,7 @@ namespace icl {
           @return adjusted size (width and height are rounded up to the next
                            higher odd value
       **/
-      virtual utils::Size adaptSize(const utils::Size &size){
+      utils::Size adaptSize(const utils::Size &size) override {
         return utils::Size(1+ 2*(size.width/2),1+ 2*(size.height/2));
       }
 
