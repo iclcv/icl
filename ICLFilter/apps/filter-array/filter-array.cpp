@@ -99,7 +99,7 @@ void run(){
   }
   g.useDesired(parse<format>(gui["dformat"]));
 
-  const ImgBase *image = g.grab();
+  Image image = g.grabImage();
   gui["input"] = image;
   std::vector<UnaryOp*> ops;
   for(int i=0;i<N;++i){

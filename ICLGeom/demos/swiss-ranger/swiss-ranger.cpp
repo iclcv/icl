@@ -256,7 +256,7 @@ void run(){
   bool pp = gui["pp"];
 
   if(grab){
-    const ImgBase *image = grabber->grab();
+    Image image = grabber->grabImage();
     if(pp){
       static MedianOp mo(Size(3,3));
       mo.setClipToROI(false);

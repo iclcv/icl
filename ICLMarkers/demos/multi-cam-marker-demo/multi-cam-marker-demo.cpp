@@ -89,9 +89,11 @@ void run(){
   DrawHandle3D draw = gui["draw"];
   draw = fd.getIntermediateImage(gui["vis"]);
 
+  std::vector<Image> grabbedImages(grabbers.size());
   std::vector<const ImgBase*> images(grabbers.size());
   for(unsigned int i=0;i<grabbers.size();++i){
-    images[i] = grabbers[i]->grab();
+    grabbedImages[i] = grabbers[i]->grabImage();
+    images[i] = grabbedImages[i].ptr();
   }
 
   const std::vector<MultiCamFiducial> &fs = fd.detect(images,1);

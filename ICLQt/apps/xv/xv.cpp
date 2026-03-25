@@ -64,13 +64,15 @@ int main (int n, char **ppc){
    "The -fs flag only works when explicitly defining the input using the -input|-i arg!");
   pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r -fullscreen|-fs(screen)",true);
 
+  static Image imageHolder;
   const ImgBase *image = 0;
   if(pa("-input")){
     std::string imageName = pa("-input").as<std::string>();
 
     try{
       static FileGrabber w(imageName);
-      image = w.grabImage();
+      imageHolder = w.grabImage();
+      image = imageHolder.ptr();
       if(pa("-delete")){
         if(imageName.length()){
           int errorCode = system((std::string(ICL_SYSTEMCALL_RM) + imageName).c_str());

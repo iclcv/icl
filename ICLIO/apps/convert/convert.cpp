@@ -82,7 +82,7 @@ int main(int n, char **ppc){
 
   FileGrabber fg(inFileName);
 
-  const ImgBase *image = 0;
+  Image image;
   try{
     image = fg.grabImage();
   }catch(ICLException &ex){
@@ -94,7 +94,7 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-	std::string time_string = image->getTime().toStringFormated("%H%M%S%#",32,true);
+	std::string time_string = image.getTime().toStringFormated("%H%M%S%#",32,true);
 	std::string::size_type pos = outFileName.find("%D");
 	if (pos != std::string::npos) {
 		outFileName.replace(pos,2,time_string);
