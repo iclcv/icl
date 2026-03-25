@@ -216,7 +216,7 @@ namespace icl{
                   const T& v4=0,const T& v5=0,const T& v6=0,const T& v7=0,
                   const T& v8=0,const T& v9=0,const T& v10=0,const T& v11=0,
                   const T& v12=0,const T& v13=0,const T& v14=0,const T& v15=0){
-  #define C1(N) if(DIM>N) utils::FixedArray<T,COLS*ROWS>::m_data[N]=v##N
+  #define C1(N) if constexpr(DIM>N) utils::FixedArray<T,COLS*ROWS>::m_data[N]=v##N
   #define C4(A,B,C,D) C1(A);C1(B);C1(C);C1(D)
         C4(0,1,2,3);C4(4,5,6,7);C4(8,9,10,11);C4(12,13,14,15);
   #undef C1
