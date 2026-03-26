@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 6)
+## Current State (Session 7)
 
 ### Architecture
 
@@ -16,6 +16,34 @@ SSE2 intrinsics are transparently mapped to ARM NEON via `sse2neon` (3rdparty).
 `ICL_HAVE_SSE2` is effectively "have SIMD" on both x86 and Apple Silicon.
 IPP is x86-only (absent on ARM) — filters fall back to C++ on Apple Silicon.
 No runtime dispatcher needed; compile-time `#ifdef` is the right granularity.
+
+### Line-Based ROI Visitors (NEW)
+
+`Visitors.h` and `VisitorsN.h` in ICLCore replace ImgIterator per-pixel loops
+with tight line-pointer inner loops. All visitors have a contiguous fast-path:
+when `roiWidth == imageWidth`, the callback gets `w * h` elements in one call.
+
+```
+Visitors.h  (lightweight, no extra headers beyond Img.h):
+  visitROILines(img, ch, f)                        — f(T*, width)
+  visitROILinesWith(src, sCh, dst, dCh, f)         — f(const S*, D*, width)
+  visitROILinesPerChannel(img, f)                   — f(T*, ch, width)
+  visitROILinesPerChannelWith(src, dst, f)          — f(const S*, D*, ch, width)
+
+VisitorsN.h (includes Visitors.h + <array> + <utility>):
+  visitROILinesN<N>(img, f)                         — f(const T* ch0, ..., width)
+  visitROILinesNWith<N,M>(src, dst, f)              — f(const S* s0, ..., D* d0, ..., width)
+```
+
+**All migrated filters now use these** instead of ImgIterator. This fixed pre-existing
+ROI bugs in SSE2/NEON specializations (ThresholdOp, UnaryArithmeticalOp) that were
+treating ROI data as contiguous when it wasn't.
+
+Image.h `visitChannel`/`visitChannels`/`visitChannelWith`/`visitChannelsWith` were
+removed (zero usage, ROI-broken). Image.h now points to Visitors.h in a comment.
+
+**TODO for BinaryOp**: will need a `visitROILines2With(src1, src2, dst, f)` variant
+for two-source + one-dst patterns. Add to Visitors.h when BinaryOp migration starts.
 
 ### UnaryOp Virtual Interface
 
@@ -52,38 +80,29 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (5 done)
+### Fully Native Image Filters (8 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
 1. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
 2. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
-3. **ThresholdOp** — same depth, uses `prepare()` + `visitWith()`, dispatch structs
-4. **UnaryArithmeticalOp** — same depth, uses `visitWith()` + `LoopFunc` template structs
-5. **UnaryCompareOp** — different output depth (always 8u), uses `visit()` + `as8u()` + dispatch struct
+3. **ThresholdOp** — same depth, dispatch structs, all paths use `visitROILinesPerChannelWith`
+4. **UnaryArithmeticalOp** — same depth, `LoopFunc` structs, all paths use `visitROILinesPerChannelWith`
+5. **UnaryCompareOp** — output always 8u, `CmpImpl` struct, uses `visitROILinesPerChannelWith`
+6. **WeightChannelsOp** — same depth, per-channel multiply via `visitROILinesPerChannelWith`
+7. **WeightedSumOp** — output 32f/64f, 1 channel, `visit()` + typed dst
+8. **ColorDistanceOp** — output 8u/32f/64f, `visitROILinesNWith<3,1>`, all math in double
 
-### Filters with applyImgBase Bridge (23 remaining)
-
-These have `apply(const Image&, Image&) override` that delegates to `applyImgBase()`:
-
-```cpp
-void Filter::apply(const Image &src, Image &dst) {
-    // TODO: use Image natively!
-    ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-    applyImgBase(src.ptr(), &dstPtr);
-    if(dstPtr) dst = Image(*dstPtr);
-}
-```
+### Filters with applyImgBase Bridge (20 remaining)
 
 **With IPP acceleration (11):**
 AffineOp, CannyOp, ConvolutionOp, LUTOp, LocalThresholdOp, MedianOp,
 MorphologicalOp, UnaryLogicalOp, WarpOp, WienerOp
 (+ IntegralImgOp has IPP code but disabled — slower than C++)
 
-**Pure C++ (12):**
-BilateralFilterOp, ChamferOp, ColorDistanceOp, ColorSegmentationOp,
-FFTOp, GaborOp, IFFTOp, LUTOp3Channel, MotionSensitiveTemporalSmoothing,
-WeightChannelsOp, WeightedSumOp
+**Pure C++ (9):**
+BilateralFilterOp, ChamferOp, ColorSegmentationOp,
+FFTOp, GaborOp, IFFTOp, LUTOp3Channel, MotionSensitiveTemporalSmoothing
 
 ### BinaryOp Filters (not started)
 
@@ -100,40 +119,38 @@ and UnaryCompareOp (different output depth).
 ### Structure of a migrated filter .cpp:
 
 ```cpp
-// 1. C++ fallback functors / loops (always compiled)
-template <typename T, class Op>
-inline void fallbackLoop(const Img<T> &src, Img<T> &dst, ...) { ... }
+#include <ICLCore/Visitors.h>  // or VisitorsN.h for multi-channel
 
-// 2. SSE2/NEON SIMD helpers (file-local, inside #ifdef ICL_HAVE_SSE2)
-#ifdef ICL_HAVE_SSE2
-inline void sse_op_32f(const Img32f &src, Img32f &dst, ...) { ... }
-inline void sse_op_8u(const Img8u &src, Img8u &dst, ...) { ... }
-#endif
-
-// 3. IPP helpers (file-local, inside #ifdef ICL_HAVE_IPP)
-#ifdef ICL_HAVE_IPP
-template <typename T, IppStatus (IPP_DECL *F)(...)>
-inline void ippCall(const Img<T> &src, Img<T> &dst, ...) { ... }
-#endif
-
-// 4. Dispatch struct — primary template = C++ fallback
+// 1. C++ fallback — uses visitROILinesPerChannelWith
 template<class T> struct OpImpl {
   static void apply(const Img<T> &src, Img<T> &dst, ...) {
-    fallbackLoop(src, dst, ...);
+    visitROILinesPerChannelWith(src, dst, [...](const T *s, T *d, int, int w) {
+      for(int i = 0; i < w; ++i) d[i] = /* operation */;
+    });
   }
 };
 
-// 5. Single #if/#elif/#endif block for accelerated specializations
-#if defined(ICL_HAVE_IPP)
-template<> struct OpImpl<icl8u>  { static void apply(...) { ippCall<...>(...); } };
-template<> struct OpImpl<icl16s> { static void apply(...) { ippCall<...>(...); } };
-template<> struct OpImpl<icl32f> { static void apply(...) { ippCall<...>(...); } };
-#elif defined(ICL_HAVE_SSE2)
-template<> struct OpImpl<icl8u>  { static void apply(...) { sse_op_8u(...); } };
-template<> struct OpImpl<icl32f> { static void apply(...) { sse_op_32f(...); } };
+// 2. SSE2/NEON overrides — same visitor, SIMD inner loop
+#ifdef ICL_HAVE_SSE2
+template<> struct OpImpl<icl32f> {
+  static void apply(const Img32f &src, Img32f &dst, ...) {
+    visitROILinesPerChannelWith(src, dst, [...](const icl32f *s, icl32f *d, int, int w) {
+      int i = 0;
+      for(; i <= w-4; i += 4) { /* _mm_xxx_ps */ }
+      for(; i < w; ++i) { /* scalar tail */ }
+    });
+  }
+};
 #endif
 
-// 6. apply() — zero #ifdefs
+// 3. IPP overrides — use getROIData/getLineStep/getROISize (IPP handles stride)
+#if defined(ICL_HAVE_IPP)
+template<> struct OpImpl<icl8u> { ... };
+#elif defined(ICL_HAVE_SSE2)
+template<> struct OpImpl<icl8u> { ... };
+#endif
+
+// 4. apply() — zero #ifdefs
 void Filter::apply(const Image &src, Image &dst) {
     if(!prepare(dst, src)) return;
     src.visitWith(dst, [this](const auto &s, auto &d) {
@@ -145,13 +162,14 @@ void Filter::apply(const Image &src, Image &dst) {
 
 ### Key conventions:
 
-- **References everywhere** — `visitWith`/`visit` give references, pass them through
-  to helpers and dispatch structs. No pointer-taking (`&s, &d`) needed.
+- **Visitors for inner loops** — all C++ fallbacks and SSE2 specializations use
+  `visitROILinesPerChannelWith` (or `visitROILinesNWith` for multi-channel).
+  This ensures correct ROI handling and enables the contiguous fast-path.
+- **References everywhere** — `visitWith`/`visit` give references, pass them through.
 - **No macros for depth dispatch** — `visitWith`/`visit` replaces all
-  `ICL_INSTANTIATE_DEPTH` / `ICL_INSTANTIATE_ALL_DEPTHS` macro rounds.
-- **No forward declarations** — primary template defined first, specializations after.
-- **Non-val ops fold into val-variant calls** — e.g. `ThreshLTVal<T>::apply(s, d, t, t)`
-  for the non-val `lt` operation, avoiding separate dispatch paths.
+  `ICL_INSTANTIATE_DEPTH` macro rounds.
+- **IPP is the exception** — IPP functions accept stride+size natively, so they
+  use `getROIData()`/`getLineStep()`/`getROISize()` directly (no visitor needed).
 
 ### For different output depths (e.g. UnaryCompareOp → always 8u):
 
@@ -167,6 +185,17 @@ void Filter::apply(const Image &src, Image &dst) {
 ```
 
 Use `visit()` (single-image) instead of `visitWith()` since src/dst have different depths.
+
+### For multi-channel → single-channel (e.g. ColorDistanceOp):
+
+```cpp
+src.visit([&](const auto &s) {
+    visitROILinesNWith<3,1>(s, dst_typed, [&](const S *r, const S *g, const S *b,
+                                              D *d, int w) {
+        for(int i = 0; i < w; ++i) { ... }
+    });
+});
+```
 
 ## Key Image Methods for Filter Migration
 
@@ -195,7 +224,7 @@ src.getImageRect()                   // Rect(0,0,w,h)
 - **bpp()** — still used in ~30 places. Once all filters use Image natively,
   bpp() call sites can be replaced with Image-based apply, then bpp() removed.
 - **applyParallel()** — free function replacing deprecated applyMT
-- **BinaryOp filters** — same migration as UnaryOp
+- **BinaryOp filters** — same migration as UnaryOp, needs visitROILines2With
 - **Converter::convert()** — static method replacing constructor-that-does-work
 - **Quick.h** — consider reworking to use Image instead of ImgQ (Img<icl32f>)
 - **Custom SSE2/NEON specializations** — add SIMD fast paths to filters that currently
