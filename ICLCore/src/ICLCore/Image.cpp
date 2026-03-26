@@ -107,6 +107,18 @@ namespace icl {
     void Image::detach(int channel) { m_impl->detach(channel); }
     bool Image::isIndependent() const { return m_impl->isIndependent(); }
 
+    // --- Equality ---
+
+    bool Image::operator==(const Image &other) const {
+      if(isNull() && other.isNull()) return true;
+      if(isNull() || other.isNull()) return false;
+      if(getDepth() != other.getDepth()) return false;
+      return visit([&](const auto &a) {
+        using T = typename std::remove_reference_t<decltype(a)>::type;
+        return a == other.as<T>();
+      });
+    }
+
     // --- Copy / Convert ---
 
     Image Image::deepCopy() const {

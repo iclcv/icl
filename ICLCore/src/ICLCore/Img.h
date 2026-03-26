@@ -40,6 +40,7 @@
 #include <ICLMath/DynMatrix.h>
 #include <cmath>
 #include <algorithm>
+#include <initializer_list>
 
 
 namespace icl {
@@ -245,6 +246,28 @@ namespace icl {
       Img(const utils::Size &size, int channels, format fmt,
           const std::vector<Type*>& vptData, bool passOwnerShip=false);
 
+      /// Construct a single-channel image from a 2D initializer list (rows of pixels)
+      /** Example:
+          \code
+          Img32f img = {{1, 2, 3},
+                        {4, 5, 6}};  // 3x2, 1 channel
+          \endcode
+          All rows must have the same length; throws if they differ.
+          @param rows each inner list is one row of pixel values
+      */
+      Img(std::initializer_list<std::initializer_list<Type>> rows);
+
+      /// Construct a multi-channel image from a 3D initializer list (channels of rows of pixels)
+      /** Example:
+          \code
+          Img32f img = {{{1, 2}, {3, 4}},   // channel 0: 2x2
+                        {{5, 6}, {7, 8}}};   // channel 1: 2x2
+          \endcode
+          All channels must have the same dimensions; throws if they differ.
+          @param channels each element is one channel, given as rows of pixels
+      */
+      Img(std::initializer_list<std::initializer_list<std::initializer_list<Type>>> channels);
+
       /// Copy constructor WARNING: Violates const concept
       /** Creates a flat copy of the source image. The new image will contain a
           flat copy of all channels of the source image. This constructor is only
@@ -332,6 +355,16 @@ namespace icl {
           }
           #endif
       */
+
+      /// Element-wise equality comparison
+      /** For integer types, exact comparison is used. For icl32f and icl64f,
+          an epsilon of 1e-5 and 1e-9 respectively is applied.
+          Two images are equal if they have the same size, channel count, and
+          all pixel values match within the epsilon (ROI data only). */
+      bool operator==(const Img<Type> &other) const;
+
+      /// Element-wise inequality
+      bool operator!=(const Img<Type> &other) const { return !(*this == other); }
 
       /// pixel access operator
       /** This operator may be used, to access the pixel data of the image

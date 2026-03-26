@@ -102,6 +102,14 @@ namespace icl {
       Image& operator=(const Image &) = default;
       Image& operator=(Image &&) = default;
 
+      /// Element-wise equality comparison
+      /** Both images must have the same depth, size, and channel count.
+          Pixel comparison uses epsilon for floating-point depths. */
+      bool operator==(const Image &other) const;
+
+      /// Element-wise inequality
+      bool operator!=(const Image &other) const { return !(*this == other); }
+
       /// @}
       /// @name Null Check
       /// @{

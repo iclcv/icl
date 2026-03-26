@@ -32,6 +32,7 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/CoreFunctions.h>
 #include <functional>
+#include <limits>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
@@ -132,6 +133,81 @@ namespace icl {
       }
     }
 
+
+    //--- Initializer list constructors -------------------------------------------
+    template<class Type>
+    Img<Type>::Img(std::initializer_list<std::initializer_list<Type>> rows)
+      : Img({rows}) {}
+
+    template<class Type>
+    Img<Type>::Img(std::initializer_list<std::initializer_list<std::initializer_list<Type>>> channels)
+      : ImgBase(icl::core::getDepth<Type>(), ImgParams::null)
+    {
+      int nCh = static_cast<int>(channels.size());
+      ICLASSERT_THROW(nCh > 0, InvalidImgParamException("empty initializer list"));
+
+      auto chIt = channels.begin();
+      int h = static_cast<int>(chIt->size());
+      ICLASSERT_THROW(h > 0, InvalidImgParamException("empty channel in initializer list"));
+      int w = static_cast<int>(chIt->begin()->size());
+      ICLASSERT_THROW(w > 0, InvalidImgParamException("empty row in initializer list"));
+
+      m_oParams = ImgParams(Size(w, h), nCh);
+
+      for(const auto &ch : channels) {
+        ICLASSERT_THROW(static_cast<int>(ch.size()) == h,
+          InvalidImgParamException("inconsistent channel heights in initializer list"));
+        m_vecChannels.push_back(SmartArray<Type>(new Type[w * h], true));
+        Type *base = m_vecChannels.back().get();
+        int y = 0;
+        for(const auto &row : ch) {
+          ICLASSERT_THROW(static_cast<int>(row.size()) == w,
+            InvalidImgParamException("inconsistent row lengths in initializer list"));
+          Type *dst = base + y * w;
+          int x = 0;
+          for(const auto &val : row) {
+            dst[x++] = val;
+          }
+          ++y;
+        }
+      }
+    }
+
+    //--- Element-wise equality ---------------------------------------------------
+    namespace {
+      template<class T>
+      bool pixels_equal(T a, T b) { return a == b; }
+
+      template<> bool pixels_equal<icl32f>(icl32f a, icl32f b) {
+        // 4 * machine epsilon (~4.8e-7) — tolerates a few ULPs of rounding
+        return std::abs(a - b) <= 4 * std::numeric_limits<icl32f>::epsilon();
+      }
+      template<> bool pixels_equal<icl64f>(icl64f a, icl64f b) {
+        return std::abs(a - b) <= 4 * std::numeric_limits<icl64f>::epsilon();
+      }
+    }
+
+    template<class Type>
+    bool Img<Type>::operator==(const Img<Type> &other) const {
+      if(getSize() != other.getSize()) return false;
+      if(getChannels() != other.getChannels()) return false;
+      for(int c = 0; c < getChannels(); ++c) {
+        const Type *a = getROIData(c);
+        const Type *b = other.getROIData(c);
+        int ls_a = getLineStep() / sizeof(Type);
+        int ls_b = other.getLineStep() / sizeof(Type);
+        int w = getROISize().width;
+        int h = getROISize().height;
+        for(int y = 0; y < h; ++y) {
+          for(int x = 0; x < w; ++x) {
+            if(!pixels_equal(a[x], b[x])) return false;
+          }
+          a += ls_a;
+          b += ls_b;
+        }
+      }
+      return true;
+    }
 
     //--- Copy constructor -------------------------------------------------------
     template<class Type>

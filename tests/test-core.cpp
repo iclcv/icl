@@ -214,3 +214,115 @@ ICL_REGISTER_TEST("Image.print_null", "null image doesn't crash on print") {
   img.print("test-null");
   ICL_TEST_EQ(img.isNull(), true);
 }
+
+// ---- Img<T>: initializer list constructors ----
+
+ICL_REGISTER_TEST("Img.init_list_1ch", "single-channel from 2D initializer list") {
+  Img32f img = {{1, 2, 3},
+                {4, 5, 6}};
+  ICL_TEST_EQ(img.getWidth(), 3);
+  ICL_TEST_EQ(img.getHeight(), 2);
+  ICL_TEST_EQ(img.getChannels(), 1);
+  ICL_TEST_NEAR(img(0, 0, 0), 1.f, 1e-6f);
+  ICL_TEST_NEAR(img(2, 0, 0), 3.f, 1e-6f);
+  ICL_TEST_NEAR(img(0, 1, 0), 4.f, 1e-6f);
+  ICL_TEST_NEAR(img(2, 1, 0), 6.f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("Img.init_list_8u", "8u single-channel from initializer list") {
+  Img8u img = {{10, 20},
+               {30, 40}};
+  ICL_TEST_EQ(img.getWidth(), 2);
+  ICL_TEST_EQ(img.getHeight(), 2);
+  ICL_TEST_EQ(static_cast<int>(img(0, 0, 0)), 10);
+  ICL_TEST_EQ(static_cast<int>(img(1, 1, 0)), 40);
+}
+
+ICL_REGISTER_TEST("Img.init_list_multi_ch", "multi-channel from 3D initializer list") {
+  Img32f img = {{{1, 2}, {3, 4}},    // channel 0
+                {{5, 6}, {7, 8}}};   // channel 1
+  ICL_TEST_EQ(img.getWidth(), 2);
+  ICL_TEST_EQ(img.getHeight(), 2);
+  ICL_TEST_EQ(img.getChannels(), 2);
+  ICL_TEST_NEAR(img(0, 0, 0), 1.f, 1e-6f);
+  ICL_TEST_NEAR(img(1, 1, 0), 4.f, 1e-6f);
+  ICL_TEST_NEAR(img(0, 0, 1), 5.f, 1e-6f);
+  ICL_TEST_NEAR(img(1, 1, 1), 8.f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("Img.init_list_to_image", "initializer list Img converts to Image") {
+  Image img = Img32f{{10, 20, 30}};
+  ICL_TEST_EQ(img.getWidth(), 3);
+  ICL_TEST_EQ(img.getHeight(), 1);
+  ICL_TEST_EQ(img.is<icl32f>(), true);
+  ICL_TEST_NEAR(img.as32f()(2, 0, 0), 30.f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("Img.init_list_bad_rows", "inconsistent row lengths throw") {
+  ICL_TEST_THROW((Img32f{{1, 2}, {3}}), utils::ICLException);
+}
+
+ICL_REGISTER_TEST("Img.init_list_bad_channels", "inconsistent channel dims throw") {
+  ICL_TEST_THROW((Img32f{{{1, 2}}, {{3}}}), utils::ICLException);
+}
+
+// ---- Img<T>: equality operators ----
+
+ICL_REGISTER_TEST("Img.eq_identical", "identical images are equal") {
+  Img32f a = {{1, 2}, {3, 4}};
+  Img32f b = {{1, 2}, {3, 4}};
+  ICL_TEST_TRUE(a == b);
+  ICL_TEST_FALSE(a != b);
+}
+
+ICL_REGISTER_TEST("Img.eq_different_pixel", "differing pixel values are not equal") {
+  Img8u a = {{1, 2}, {3, 4}};
+  Img8u b = {{1, 2}, {3, 5}};
+  ICL_TEST_FALSE(a == b);
+  ICL_TEST_TRUE(a != b);
+}
+
+ICL_REGISTER_TEST("Img.eq_different_size", "different sizes are not equal") {
+  Img8u a = {{1, 2, 3}};
+  Img8u b = {{1, 2}};
+  ICL_TEST_FALSE(a == b);
+}
+
+ICL_REGISTER_TEST("Img.eq_float_epsilon", "float comparison uses epsilon") {
+  Img32f a = {{1.0f, 2.0f}};
+  Img32f b = {{1.0f + 1e-8f, 2.0f - 1e-8f}};  // well within 4*FLT_EPSILON (~4.8e-7)
+  ICL_TEST_TRUE(a == b);
+}
+
+ICL_REGISTER_TEST("Img.eq_float_beyond_eps", "float values beyond epsilon are not equal") {
+  Img32f a = {{1.0f}};
+  Img32f b = {{1.0f + 1e-5f}};  // beyond 4*FLT_EPSILON (~4.8e-7)
+  ICL_TEST_FALSE(a == b);
+}
+
+ICL_REGISTER_TEST("Img.eq_multichannel", "multi-channel equality") {
+  Img8u a = {{{10, 20}}, {{30, 40}}};
+  Img8u b = {{{10, 20}}, {{30, 40}}};
+  ICL_TEST_TRUE(a == b);
+  Img8u c = {{{10, 20}}, {{30, 41}}};
+  ICL_TEST_FALSE(a == c);
+}
+
+// ---- Image: equality operators ----
+
+ICL_REGISTER_TEST("Image.eq_same", "Image equality via Img<T>") {
+  Image a = Img8u{{1, 2}, {3, 4}};
+  Image b = Img8u{{1, 2}, {3, 4}};
+  ICL_TEST_TRUE(a == b);
+}
+
+ICL_REGISTER_TEST("Image.eq_different_depth", "different depth images are not equal") {
+  Image a = Img8u{{1, 2}};
+  Image b = Img32f{{1.f, 2.f}};
+  ICL_TEST_FALSE(a == b);
+}
+
+ICL_REGISTER_TEST("Image.eq_null", "two null images are equal") {
+  Image a, b;
+  ICL_TEST_TRUE(a == b);
+}
