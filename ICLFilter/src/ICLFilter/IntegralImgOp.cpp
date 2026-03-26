@@ -169,43 +169,33 @@ namespace icl{
 
 
 
-    void IntegralImgOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
+    void IntegralImgOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
+      ICLASSERT_RETURN(m_integralImageDepth == depth32s ||
+                       m_integralImageDepth == depth32f ||
+                       m_integralImageDepth == depth64f);
 
-      ICLASSERT_RETURN( poSrc );
-      ICLASSERT_RETURN( poSrc );
-      ICLASSERT_RETURN( poSrc != *ppoDst );
-
-      if(!prepare(ppoDst,  m_integralImageDepth, poSrc->getSize(),
-                  formatMatrix, poSrc->getChannels(), Rect::null)){
-        ERROR_LOG("unable to prepare destination image");
-        return;
-      }
+      if(!prepare(dst, m_integralImageDepth, src.getSize(), formatMatrix,
+                  src.getChannels(), Rect::null, src.getTime())) return;
 
       switch(m_integralImageDepth){
-        case depth32s:
-          create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl32s>(), &m_buf);
+        case depth32s: {
+          Img32s &d = dst.as32s();
+          src.visit([&](const auto &s) { create_integral_image_sd(s, d, &m_buf); });
           break;
-        case depth32f:
-          create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl32f>(), &m_buf);
+        }
+        case depth32f: {
+          Img32f &d = dst.as32f();
+          src.visit([&](const auto &s) { create_integral_image_sd(s, d, &m_buf); });
           break;
-        case depth64f:
-          create_integral_image_xd(poSrc, *(*ppoDst)->asImg<icl64f>(), &m_buf);
+        }
+        case depth64f: {
+          Img64f &d = dst.as64f();
+          src.visit([&](const auto &s) { create_integral_image_sd(s, d, &m_buf); });
           break;
-        default:
-          ERROR_LOG("integral image destination depth must be 32s, 32f, or 64f");
-          ICL_INVALID_DEPTH;
+        }
+        default: break;
       }
-
-    }
-
-
-
-  
-    void IntegralImgOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter

@@ -126,7 +126,6 @@ namespace icl{
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       core::depth m_integralImageDepth; //!< destination depth
       core::ImgBase *m_buf; //!< used only if IPP is available

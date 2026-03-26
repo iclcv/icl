@@ -79,25 +79,6 @@ namespace icl{
     }
 
 
-    void LUTOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
-      ICLASSERT_RETURN(poSrc);
-      ICLASSERT_RETURN(ppoDst);
-      ICLASSERT_RETURN(poSrc != *ppoDst);
-
-
-      if(poSrc->getDepth() != depth8u){
-        poSrc->convert(m_poBuffer);
-        poSrc = m_poBuffer;
-      }
-      if (!prepare (ppoDst, poSrc, depth8u)) return;
-
-      if(m_bLevelsSet){
-        reduceBits(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_ucQuantizationLevels);
-      }else{
-        simple(poSrc->asImg<icl8u>(), (*ppoDst)->asImg<icl8u>(),m_vecLUT);
-      }
-    }
-
     void LUTOp::simple(const Img8u *src, Img8u *dst, const std::vector<icl8u>& lut){
       ICLASSERT_RETURN( src && dst );
       ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
@@ -118,11 +99,10 @@ namespace icl{
                             src->getROISize(),0, ippDitherNone, n);
       }
   #else
-      // n = nLevels
       std::vector<icl8u> lut(256),lv(n);
       float range = 255.0/(n-1);
       for(int i=0;i<n;i++) {
-        lv[i] = round(iclMin(i*range,255.f)); //6 levels: [0,51,102,153,204,255]
+        lv[i] = round(iclMin(i*range,255.f));
       }
       for(int i=0;i<256;i++){
         float rel = i/256.f;
@@ -131,12 +111,24 @@ namespace icl{
       simple(src,dst,lut);
   #endif
     }
-  
-    void LUTOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+
+    void LUTOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
+
+      const Img8u *src8u;
+      if(src.getDepth() != depth8u){
+        src.ptr()->convert(m_poBuffer);
+        src8u = m_poBuffer;
+      }else{
+        src8u = &src.as8u();
+      }
+      if(!prepare(dst, src, depth8u)) return;
+
+      if(m_bLevelsSet){
+        reduceBits(src8u, &dst.as8u(), m_ucQuantizationLevels);
+      }else{
+        simple(src8u, &dst.as8u(), m_vecLUT);
+      }
     }
 
   } // namespace filter

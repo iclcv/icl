@@ -102,23 +102,6 @@ namespace icl{
     }
 
     template<class T>
-    void LUTOp3Channel<T>::applyImgBase(const ImgBase *src, ImgBase **dst){
-      ICLASSERT_RETURN(src);
-      ICLASSERT_RETURN(dst);
-      ICLASSERT_RETURN(src != *dst);
-      ICLASSERT_RETURN(src->getChannels() == 3);
-      if(!prepare(dst,getDepth<T>(), src->getSize(),formatMatrix,1, src->getROI(),src->getTime())){
-        ERROR_LOG("unable to prepare output image");
-      }
-      switch(src->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: apply_lut_op_3(*(src->asImg<icl##D>()), *((*dst)->asImg<T>()), m_oLUT.getData(0), m_ucShift); break;
-        ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
-        default: ICL_INVALID_DEPTH;
-      }
-    }
-
-    template<class T>
     void LUTOp3Channel<T>::setPlugin(Plugin *p){
       if(p){
         if(m_poPlugin) delete m_poPlugin;
@@ -154,11 +137,17 @@ namespace icl{
     }
 
     template<class T>
-    void LUTOp3Channel<T>::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+    void LUTOp3Channel<T>::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
+      ICLASSERT_RETURN(src.getChannels() == 3);
+
+      if(!prepare(dst, getDepth<T>(), src.getSize(), formatMatrix, 1,
+                  src.getROI(), src.getTime())) return;
+
+      Img<T> &d = dst.as<T>();
+      src.visit([&](const auto &s) {
+        apply_lut_op_3(s, d, m_oLUT.getData(0), m_ucShift);
+      });
     }
 
   #define ICL_INSTANTIATE_DEPTH(D) template class ICLFilter_API LUTOp3Channel<icl##D>;

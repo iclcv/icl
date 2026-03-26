@@ -30,8 +30,9 @@
 
 #include <ICLFilter/UnaryLogicalOp.h>
 #include <ICLCore/Img.h>
-#include <cmath>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
+#include <type_traits>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -50,13 +51,10 @@ namespace icl {
       };
 
       template<class T, UnaryLogicalOp::optype OT> struct LoopFuncNoVal{
-        static inline void apply(const  Img<T> *src, Img<T> *dst ){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd=src->endROI(c) ; itSrc!=itSrcEnd; ++itSrc, ++itDst){
-              *itDst = PixelFuncNoVal<T,OT>::apply(*itSrc);
-            }
-          }
+        static inline void apply(const Img<T> *src, Img<T> *dst){
+          visitROILinesPerChannelWith(*src, *dst, [](const T *s, T *d, int, int w) {
+            for(int i = 0; i < w; ++i) d[i] = PixelFuncNoVal<T, OT>::apply(s[i]);
+          });
         }
       };
 
@@ -73,13 +71,10 @@ namespace icl {
         static inline T apply(const T t, T val){ return t ^ val; }
       };
       template<class T, UnaryLogicalOp::optype OT> struct LoopFuncWithVal{
-        static inline void apply(const  Img<T> *src, Img<T> *dst, T val ){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd = src->endROI(c) ; itSrc!=itSrcEnd; ++itSrc, ++itDst){
-              *itDst = PixelFuncWithVal<T,OT>::apply(*itSrc,val);
-            }
-          }
+        static inline void apply(const Img<T> *src, Img<T> *dst, T val){
+          visitROILinesPerChannelWith(*src, *dst, [val](const T *s, T *d, int, int w) {
+            for(int i = 0; i < w; ++i) d[i] = PixelFuncWithVal<T, OT>::apply(s[i], val);
+          });
         }
       };
 
@@ -162,23 +157,20 @@ namespace icl {
 
     } // end of anonymous namespace
 
-    void UnaryLogicalOp::applyImgBase(const ImgBase *poSrc, ImgBase **poDst) {
-      ICLASSERT_RETURN( poSrc );
-      if(!UnaryOp::prepare(poDst,poSrc)) return;
-      switch(m_eOpType){
-        case andOp:  apply_unary_logical_op_with_val<andOp>(poSrc,*poDst,m_dValue); break;
-        case orOp:  apply_unary_logical_op_with_val<orOp>(poSrc,*poDst,m_dValue); break;
-        case xorOp:  apply_unary_logical_op_with_val<xorOp>(poSrc,*poDst,m_dValue); break;
-
-        case notOp:  apply_unary_logical_op_no_val<notOp>(poSrc,*poDst); break;
-      }
-    }
-  
-    void UnaryLogicalOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+    void UnaryLogicalOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(src.getDepth() == depth8u || src.getDepth() == depth16s || src.getDepth() == depth32s);
+      if(!prepare(dst, src)) return;
+      src.visitWith(dst, [this](const auto &s, auto &d) {
+        using T = typename std::remove_reference_t<decltype(s)>::type;
+        if constexpr (std::is_integral_v<T>) {
+          switch(m_eOpType){
+            case andOp: LoopFuncWithVal<T, andOp>::apply(&s, &d, clipped_cast<icl32s,T>(m_dValue)); break;
+            case orOp:  LoopFuncWithVal<T, orOp>::apply(&s, &d, clipped_cast<icl32s,T>(m_dValue)); break;
+            case xorOp: LoopFuncWithVal<T, xorOp>::apply(&s, &d, clipped_cast<icl32s,T>(m_dValue)); break;
+            case notOp: LoopFuncNoVal<T, notOp>::apply(&s, &d); break;
+          }
+        }
+      });
     }
 
   } // namespace filter

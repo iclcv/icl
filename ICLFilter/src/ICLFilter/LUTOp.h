@@ -126,7 +126,6 @@ namespace icl {
        /// retruns whether current mode is levels-mode
        bool isLevelsSet() const;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
        private:
        bool m_bLevelsSet;
        bool m_bLutSet;

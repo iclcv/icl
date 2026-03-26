@@ -95,8 +95,6 @@ namespace icl {
       */
       optype getOpType() const { return m_eOpType; }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-
       private:
       optype m_eOpType;
       icl32s m_dValue;

@@ -255,8 +255,6 @@ namespace icl {
 
       /// channel range increment (...)
       icl8u m_ucShift;
-
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
     };
 
   } // namespace filter

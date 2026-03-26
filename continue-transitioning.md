@@ -80,7 +80,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (8 done)
+### Fully Native Image Filters (12 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -92,17 +92,20 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 6. **WeightChannelsOp** — same depth, per-channel multiply via `visitROILinesPerChannelWith`
 7. **WeightedSumOp** — output 32f/64f, 1 channel, `visit()` + typed dst
 8. **ColorDistanceOp** — output 8u/32f/64f, `visitROILinesNWith<3,1>`, all math in double
+9. **UnaryLogicalOp** — integer depths only, `if constexpr` guard, `visitROILinesPerChannelWith`
+10. **LUTOp** — always 8u, converts non-8u input via buffer, IPP `reduceBits` untouched
+11. **LUTOp3Channel** — template class, `visit()` for src depth, output typed by class param
+12. **IntegralImgOp** — output 32s/32f/64f, full-image sequential algorithm, IPP disabled
 
-### Filters with applyImgBase Bridge (20 remaining)
+### Filters with applyImgBase Bridge (16 remaining)
 
-**With IPP acceleration (11):**
-AffineOp, CannyOp, ConvolutionOp, LUTOp, LocalThresholdOp, MedianOp,
-MorphologicalOp, UnaryLogicalOp, WarpOp, WienerOp
-(+ IntegralImgOp has IPP code but disabled — slower than C++)
+**With IPP acceleration (7):**
+AffineOp, CannyOp, ConvolutionOp, LocalThresholdOp, MedianOp,
+MorphologicalOp, WarpOp, WienerOp
 
-**Pure C++ (9):**
+**Pure C++ (8):**
 BilateralFilterOp, ChamferOp, ColorSegmentationOp,
-FFTOp, GaborOp, IFFTOp, LUTOp3Channel, MotionSensitiveTemporalSmoothing
+FFTOp, GaborOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 ### BinaryOp Filters (not started)
 
