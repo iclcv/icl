@@ -153,26 +153,29 @@ namespace icl {
         return m_preBlurRadius;
       }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
 
       void property_callback(const Property &p);
 
       void setUpPreBlurOp();
 
-      /// applies canny for one channel
-      void applyCanny32f(const core::ImgBase *dx, const core::ImgBase *dy, core::ImgBase *dst, int c);
-      void applyCanny16s(const core::ImgBase *dx, const core::ImgBase *dy, core::ImgBase *dst, int c);
+      /// applies canny for one channel (C++ fallback)
+      void applyCanny32f(const core::Img32f &dx, const core::Img32f &dy, core::Img8u &dst, int c);
+      void applyCanny16s(const core::Img16s &dx, const core::Img16s &dy, core::Img8u &dst, int c);
+
+      /// core canny logic shared by both apply overloads
+      void applyCannyCore(const core::Image &derivX, const core::Image &derivY,
+                          core::Image &dst, const core::Image &srcForMeta);
 
       /// buffer for ippiCanny
       std::vector<icl8u> m_cannyBuf;
-      core::ImgBase *m_derivatives[2];
+      core::Image m_derivatives[2];
+      core::Image m_legacyResult;  ///< keeps 3-arg apply result alive
       UnaryOp *m_ops[2];
       UnaryOp *m_preBlurOp;
       icl32f m_lowT,m_highT;
       bool m_ownOps;
-	  bool m_use_derivatives_info;
-      core::Img32f m_buffer;
+      bool m_use_derivatives_info;
       int m_preBlurRadius;
     };
   } // namespace filter

@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 8)
+## Current State (Session 9)
 
 ### Architecture
 
@@ -10,6 +10,35 @@ Public API:  Image (value type, shared_ptr<ImgBase>)
 Internal:    ImgBase → Img<T>  (implementation detail)
 ```
 
+### Img<T> Initializer List Constructors
+
+```cpp
+Img32f img = {{1, 2, 3},
+              {4, 5, 6}};           // 3x2, 1 channel
+
+Img8u img = {{{1, 2}, {3, 4}},     // channel 0: 2x2
+             {{5, 6}, {7, 8}}};    // channel 1: 2x2
+
+Image img = Img32f{{1, 2, 3}};     // implicit conversion to Image
+```
+
+Single-channel delegates to multi-channel internally. All rows must be same length.
+**Ambiguity**: `{{{x}}, {{y}}}` is ambiguous when each row has 1 element — use 2+ columns
+for multi-channel, or construct differently for the 1-pixel-wide case.
+
+### Img<T> and Image Equality Operators
+
+```cpp
+Img8u a = {{1,2},{3,4}};
+Img8u b = {{1,2},{3,4}};
+a == b;  // true — element-wise, compares ROI data
+```
+
+- Integer types: exact comparison
+- `icl32f`: tolerance `4 * FLT_EPSILON` (~4.8e-7)
+- `icl64f`: tolerance `4 * DBL_EPSILON` (~8.9e-16)
+- `Image::operator==` delegates through `visit()` to typed `Img<T>::operator==`
+
 ### SIMD Status
 
 SSE2 intrinsics are transparently mapped to ARM NEON via `sse2neon` (3rdparty).
@@ -17,7 +46,7 @@ SSE2 intrinsics are transparently mapped to ARM NEON via `sse2neon` (3rdparty).
 IPP is x86-only (absent on ARM) — filters fall back to C++ on Apple Silicon.
 No runtime dispatcher needed; compile-time `#ifdef` is the right granularity.
 
-### Line-Based ROI Visitors (NEW)
+### Line-Based ROI Visitors
 
 `Visitors.h` and `VisitorsN.h` in ICLCore replace ImgIterator per-pixel loops
 with tight line-pointer inner loops. All visitors have a contiguous fast-path:
@@ -34,13 +63,6 @@ VisitorsN.h (includes Visitors.h + <array> + <utility>):
   visitROILinesN<N>(img, f)                         — f(const T* ch0, ..., width)
   visitROILinesNWith<N,M>(src, dst, f)              — f(const S* s0, ..., D* d0, ..., width)
 ```
-
-**All migrated filters now use these** instead of ImgIterator. This fixed pre-existing
-ROI bugs in SSE2/NEON specializations (ThresholdOp, UnaryArithmeticalOp) that were
-treating ROI data as contiguous when it wasn't.
-
-Image.h `visitChannel`/`visitChannels`/`visitChannelWith`/`visitChannelsWith` were
-removed (zero usage, ROI-broken). Image.h now points to Visitors.h in a comment.
 
 **TODO for BinaryOp**: will need a `visitROILines2With(src1, src2, dst, f)` variant
 for two-source + one-dst patterns. Add to Visitors.h when BinaryOp migration starts.
@@ -65,6 +87,18 @@ class UnaryOp {
 };
 ```
 
+### NeighborhoodOp Image-based prepare
+
+NeighborhoodOp has Image-based `prepare()` methods that compute the shrunk ROI
+(accounting for mask size), then delegate to `UnaryOp::prepare(Image, ...)`.
+Required for migrating any NeighborhoodOp subclass (WienerOp, MedianOp,
+ConvolutionOp, MorphologicalOp, LocalThresholdOp, etc.).
+
+```cpp
+bool NeighborhoodOp::prepare(Image &dst, const Image &src);
+bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d);
+```
+
 ### BinaryOp Virtual Interface
 
 Same pattern as UnaryOp but with two inputs:
@@ -80,19 +114,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### NeighborhoodOp Image-based prepare (NEW)
-
-NeighborhoodOp now has Image-based `prepare()` methods that compute the shrunk ROI
-(accounting for mask size), then delegate to `UnaryOp::prepare(Image, ...)`.
-This is required for migrating any NeighborhoodOp subclass (WienerOp, MedianOp,
-ConvolutionOp, MorphologicalOp, LocalThresholdOp, etc.).
-
-```cpp
-bool NeighborhoodOp::prepare(Image &dst, const Image &src);
-bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d);
-```
-
-### Fully Native Image Filters (17 done)
+### Fully Native Image Filters (18 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -113,16 +135,26 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 15. **ColorSegmentationOp** — depth8u only, `visitROILinesNWith<3,1>`, compile-time shift templates
 16. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
 17. **AffineOp** — `AffineImpl` dispatch struct, IPP 8u/32f, C++ fallback with inverse matrix
+18. **CannyOp** — composition (Sobel→Canny), shared `applyCannyCore`, fixed non-clipToROI stride bug
 
-### Filters with applyImgBase Bridge (11 remaining)
+### Filters with applyImgBase Bridge (10 remaining)
 
 **With IPP acceleration (5):**
-CannyOp, ConvolutionOp, LocalThresholdOp, MedianOp,
-MorphologicalOp, WarpOp
+ConvolutionOp, LocalThresholdOp, MedianOp, MorphologicalOp, WarpOp
 
 **Pure C++ (4):**
-BilateralFilterOp,
-FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
+BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
+
+**Difficulty estimates:**
+- ConvolutionOp (medium) — 20+ IPP specializations for fixed kernels, C++ fallback with 3x3 opt
+- MorphologicalOp (medium) — IPP state management, C++ fallback with predicates
+- LocalThresholdOp (medium) — 4 algorithms, IPP in tiled threshold
+- WarpOp (hard) — OpenCL path, IPP remap
+- BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
+- FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
+- IFFTOp (hard) — same as FFTOp but reverse
+- MedianOp (hardest) — heavy ImgIterator, hand-optimized SSE2 3x3/5x5, IPP 8u/16s
+- MotionSensitiveTemporalSmoothing (hardest) — stateful, OpenCL, temporal buffers
 
 ### BinaryOp Filters (not started)
 
@@ -152,15 +184,7 @@ template<class T> struct OpImpl {
 
 // 2. SSE2/NEON overrides — same visitor, SIMD inner loop
 #ifdef ICL_HAVE_SSE2
-template<> struct OpImpl<icl32f> {
-  static void apply(const Img32f &src, Img32f &dst, ...) {
-    visitROILinesPerChannelWith(src, dst, [...](const icl32f *s, icl32f *d, int, int w) {
-      int i = 0;
-      for(; i <= w-4; i += 4) { /* _mm_xxx_ps */ }
-      for(; i < w; ++i) { /* scalar tail */ }
-    });
-  }
-};
+template<> struct OpImpl<icl32f> { ... };
 #endif
 
 // 3. IPP overrides — use getROIData/getLineStep/getROISize (IPP handles stride)
@@ -180,42 +204,13 @@ void Filter::apply(const Image &src, Image &dst) {
 }
 ```
 
-### Key conventions:
+### For composition filters (e.g. CannyOp, GaborOp):
 
-- **Visitors for inner loops** — all C++ fallbacks and SSE2 specializations use
-  `visitROILinesPerChannelWith` (or `visitROILinesNWith` for multi-channel).
-  This ensures correct ROI handling and enables the contiguous fast-path.
-- **References everywhere** — `visitWith`/`visit` give references, pass them through.
-- **No macros for depth dispatch** — `visitWith`/`visit` replaces all
-  `ICL_INSTANTIATE_DEPTH` macro rounds.
-- **IPP is the exception** — IPP functions accept stride+size natively, so they
-  use `getROIData()`/`getLineStep()`/`getROISize()` directly (no visitor needed).
-
-### For different output depths (e.g. UnaryCompareOp → always 8u):
-
-```cpp
-void Filter::apply(const Image &src, Image &dst) {
-    if(!prepare(dst, src, depth8u)) return;
-    Img8u &d = dst.as8u();
-    src.visit([&](const auto &s) {
-        using T = typename std::remove_reference_t<decltype(s)>::type;
-        OpImpl<T>::apply(s, d, ...);
-    });
-}
-```
-
-Use `visit()` (single-image) instead of `visitWith()` since src/dst have different depths.
-
-### For multi-channel → single-channel (e.g. ColorDistanceOp):
-
-```cpp
-src.visit([&](const auto &s) {
-    visitROILinesNWith<3,1>(s, dst_typed, [&](const S *r, const S *g, const S *b,
-                                              D *d, int w) {
-        for(int i = 0; i < w; ++i) { ... }
-    });
-});
-```
+These delegate to other ops rather than doing pixel work directly.
+Use `m_innerOp->apply(src, result)` with Image-based apply on the inner ops.
+Store intermediate results as `Image` members (not `ImgBase*`).
+For legacy secondary apply overloads (e.g. CannyOp's 3-arg apply), use a member
+`Image m_legacyResult` to keep the result alive past the call.
 
 ## Key Image Methods for Filter Migration
 
@@ -238,6 +233,34 @@ src.visitWith(dst, [](auto &s, auto &d){...})  // two-image dispatch
 src.getSize(), getChannels(), getDepth(), getFormat(), getROI(), ...
 src.getImageRect()                   // Rect(0,0,w,h)
 ```
+
+## Test Infrastructure
+
+196 tests total (tests/ directory, single icl-tests executable):
+- `test-utils.cpp` — Size, Point, Rect, Range, string, random
+- `test-math.cpp` — FixedMatrix, DynMatrix
+- `test-core.cpp` — Image, Img<T> (including initializer list + equality)
+- `test-filter.cpp` — 76 filter tests covering all 18 migrated filters
+
+Test patterns using initializer list constructors:
+```cpp
+// Concise pixel-correctness test
+ICL_TEST_TRUE((op.apply(Img8u{{1,2,3}}) == Img8u{{3,2,1}}));
+
+// Multi-channel
+Image src = Img8u{{{10, 20}}, {{30, 40}}};  // 2ch
+```
+
+## Bugs Fixed During Migration
+
+- **UnaryOp::prepare clipToROI** — source ROI offset was incorrectly applied to the
+  smaller clipped destination, causing "Invalid Img-Parameter: roi". Fixed to use
+  `Rect(Point::null, src.getROISize())` for destination when clipping.
+- **CannyOp non-clipToROI stride** — pre-existing bug: C++ fallback used derivative
+  width as stride for dst writes and followEdge, but dst can be larger than derivatives
+  when clipToROI=false. Fixed by separating mag indexing (derivative stride) from dst
+  indexing (dst stride via getROIData + getWidth).
+- **MirrorOp missing `using UnaryOp::apply`** — single-arg apply was hidden.
 
 ## Other TODOs
 

@@ -30,9 +30,9 @@
 
 #include <ICLFilter/CannyOp.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLUtils/SSEUtils.h>
-#include <ICLCore/Image.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -41,7 +41,6 @@ namespace icl {
   namespace filter{
 
     void CannyOp::property_callback(const Property &p){
-      //SHOW(p.name());
     }
 
     CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
@@ -49,46 +48,32 @@ namespace icl {
       FUNCTION_LOG("");
       m_ops[0] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3));
       m_ops[1] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelY3x3));
-      m_derivatives[0]=m_derivatives[1]=0;
       m_preBlurOp = 0;
-
-	  m_use_derivatives_info = false;
-
+      m_use_derivatives_info = false;
       setUpPreBlurOp();
-
       registerCallback([this](const Property &p){ property_callback(p); });
     }
-
 
     CannyOp::CannyOp(UnaryOp *dxOp, UnaryOp *dyOp,icl32f lowThresh, icl32f highThresh, bool deleteOps, int preBlurRadius):
       m_lowT(lowThresh),m_highT(highThresh),m_ownOps(deleteOps),m_preBlurRadius(preBlurRadius){
       FUNCTION_LOG("");
       m_ops[0] = dxOp;
       m_ops[1] = dyOp;
-
-	  m_use_derivatives_info = false;
-
-      m_derivatives[0]=m_derivatives[1]=0;
-
       m_preBlurOp = 0;
+      m_use_derivatives_info = false;
       setUpPreBlurOp();
       registerCallback([this](const Property &p){ property_callback(p); });
     }
 
-
     CannyOp::~CannyOp(){
-
       FUNCTION_LOG("");
-
       for(int i=0;i<2;++i){
         if(m_ownOps){
           ICL_DELETE(m_ops[i]);
         }
-        ICL_DELETE(m_derivatives[i]);
       }
       ICL_DELETE(m_preBlurOp);
     }
-
 
     void CannyOp::setUpPreBlurOp(){
       int r = m_preBlurRadius;
@@ -110,38 +95,28 @@ namespace icl {
       }
     }
 
-  #ifdef SSE3
-
+#ifdef SSE3
     inline void subCalcMag(const icl32f *dx, const icl32f *dy, icl32f *mag) {
       *mag = fabs(*dx) + fabs(*dy);
-//      *mag = sqrt(*dx * *dx + *dy * *dy);
     }
-
     inline void subSSECalcMag(const icl32f *dx, const icl32f *dy, icl32f *mag) {
       icl128 vDx = abs(icl128(dx));
       icl128 vDy = abs(icl128(dy));
-
       vDx += vDy;
-
       vDx.storeu(mag);
     }
-
     inline void subCalcMag(const icl16s *dx, const icl16s *dy, icl16s *mag) {
       *mag = abs(*dx) + abs(*dy);
     }
-
     inline void subSSECalcMag(const icl16s *dx, const icl16s *dy, icl16s *mag) {
       icl128i vDx = abs16(icl128i(dx));
       icl128i vDy = abs16(icl128i(dy));
-
       vDx.add16(vDy);
-
       vDx.storeu(mag);
     }
+#endif
 
-  #endif
-
-    void followEdge(icl8u *mag, int w) {
+    static void followEdge(icl8u *mag, int w) {
       *mag = 255;
       if (mag[-w-1] == 1) followEdge(&mag[-w-1], w);
       if (mag[-w] == 1) followEdge(&mag[-w], w);
@@ -153,325 +128,252 @@ namespace icl {
       if (mag[w+1] == 1) followEdge(&mag[w+1], w);
     }
 
-    void CannyOp::applyCanny32f(const ImgBase *dx, const ImgBase *dy, ImgBase *dst, int c) {
+    void CannyOp::applyCanny32f(const Img32f &dx, const Img32f &dy, Img8u &dst, int c) {
       icl32f low  = m_lowT;
       icl32f high = m_highT;
-      const icl32f *src0 = dx->asImg<icl32f>()->getData(c);
-      const icl32f *src1 = dy->asImg<icl32f>()->getData(c);
-      Img8u *dst0 = dst->asImg<icl8u>();
-      ImgIterator<icl8u> dstIt    = dst0->beginROI(c);
-      ImgIterator<icl8u> dstItEnd = dst0->endROI(c);
+      const icl32f *src0 = dx.getData(c);
+      const icl32f *src1 = dy.getData(c);
+      icl8u *dstBase = dst.getROIData(c);
+      int dxW = dx.getWidth();
+      int dxH = dx.getHeight();
+      int dxDim = dx.getDim();
+      int dstStride = dst.getWidth();
 
-      int w = dx->getWidth();
-
-      std::vector<icl32f> magVec(dx->getDim());
+      std::vector<icl32f> magVec(dxDim);
       icl32f *mag = magVec.data();
 
-    #ifdef SSE3
-      // calculate magnitudes
-      sse_for(src0, src1, mag, mag+dx->getDim(), subCalcMag, subCalcMag, 4, 4);
-    #else
-      icl32f *it = mag;
-      icl32f *itEnd = mag + dx->getDim();
-      for (const icl32f *sIt0 = src0, *sIt1 = src1; it != itEnd; ++it, ++sIt0, ++sIt1) {
-        *it = fabs(*sIt0) + fabs(*sIt1);
+#ifdef SSE3
+      sse_for(src0, src1, mag, mag+dxDim, subCalcMag, subCalcMag, 4, 4);
+#else
+      for (int i = 0; i < dxDim; ++i) {
+        mag[i] = fabs(src0[i]) + fabs(src1[i]);
       }
-    #endif
+#endif
 
-      // set borders to unvalid values
-      for (int i = 0; i < w; ++i) {
+      // set borders to invalid values (in magnitude array, using derivative stride)
+      for (int i = 0; i < dxW; ++i) {
         mag[i] = -1.0f;
-        mag[dx->getDim() - w + i] = -1.0f;
+        mag[dxDim - dxW + i] = -1.0f;
       }
-      for (int i = 0; i < dx->getDim(); i += w) {
+      for (int i = 0; i < dxDim; i += dxW) {
         mag[i] = -1.0f;
-        mag[i + w - 1] = -1.0f;
+        mag[i + dxW - 1] = -1.0f;
       }
 
-      // non-maximum-suppression with filtering of low magnitude values
-      for (int i = 0; i < dx->getDim(); ++i, ++dstIt) {
-        if (mag[i] >= low) {
-          float dir = src0[i] / src1[i];
-
-          if (fabs(dir) >= 2.414213562373095f) {
-            if (mag[i] <= mag[i-1] || mag[i] < mag[i+1]) {
-              *dstIt = 0;
-              continue;
+      // non-maximum-suppression: mag uses derivative stride, dst uses dst stride
+      for (int y = 0; y < dxH; ++y) {
+        for (int x = 0; x < dxW; ++x) {
+          int i = y * dxW + x;
+          icl8u &out = dstBase[y * dstStride + x];
+          if (mag[i] >= low) {
+            float dir = src0[i] / src1[i];
+            if (fabs(dir) >= 2.414213562373095f) {
+              if (mag[i] <= mag[i-1] || mag[i] < mag[i+1]) { out = 0; continue; }
+            } else if (dir > 0.4142135623730950f) {
+              if (mag[i] <= mag[i-1-dxW] || mag[i] < mag[i+1+dxW]) { out = 0; continue; }
+            } else if (dir < -0.4142135623730950f) {
+              if (mag[i] <= mag[i-1+dxW] || mag[i] < mag[i+1-dxW]) { out = 0; continue; }
+            } else {
+              if (mag[i] <= mag[i-dxW] || mag[i] < mag[i+dxW]) { out = 0; continue; }
             }
-          } else if (dir > 0.4142135623730950f) {
-            if (mag[i] <= mag[i-1-w] || mag[i] < mag[i+1+w]) {
-              *dstIt = 0;
-              continue;
-            }
-          } else if (dir < -0.4142135623730950f) {
-            if (mag[i] <= mag[i-1+w] || mag[i] < mag[i+1-w]) {
-              *dstIt = 0;
-              continue;
-            }
+            out = (mag[i] > high) ? 2 : 1;
           } else {
-            if (mag[i] <= mag[i-w] || mag[i] < mag[i+w]) {
-              *dstIt = 0;
-              continue;
-            }
+            out = 0;
           }
-
-          if (mag[i] > high) *dstIt = 2;
-          else *dstIt = 1;
-        } else {
-          *dstIt = 0;
         }
       }
 
-      // hysteresis thresholding
-      dstIt = dst0->beginROI(c);
-      for (;dstIt != dstItEnd; ++dstIt) {
-        if (*dstIt == 2) {
-          followEdge(&(*dstIt), w);
+      // hysteresis thresholding (followEdge uses dst stride for neighbor access)
+      for (int y = 0; y < dxH; ++y) {
+        for (int x = 0; x < dxW; ++x) {
+          icl8u &px = dstBase[y * dstStride + x];
+          if (px == 2) followEdge(&px, dstStride);
         }
       }
-
     }
 
-    void CannyOp::applyCanny16s(const ImgBase *dx, const ImgBase *dy, ImgBase *dst, int c) {
+    void CannyOp::applyCanny16s(const Img16s &dx, const Img16s &dy, Img8u &dst, int c) {
       icl16s low  = m_lowT;
       icl16s high = m_highT;
-      const icl16s *src0 = dx->asImg<icl16s>()->getROIData(c);
-      const icl16s *src1 = dy->asImg<icl16s>()->getROIData(c);
-      Img8u *dst0 = dst->asImg<icl8u>();
-      ImgIterator<icl8u> dstIt    = dst0->beginROI(c);
-      ImgIterator<icl8u> dstItEnd = dst0->endROI(c);
+      const icl16s *src0 = dx.getData(c);
+      const icl16s *src1 = dy.getData(c);
+      icl8u *dstBase = dst.getROIData(c);
+      int dxW = dx.getWidth();
+      int dxH = dx.getHeight();
+      int dxDim = dx.getDim();
+      int dstStride = dst.getWidth();
 
-      int w = dx->getWidth();
-
-      std::vector<icl16s> magVec(dx->getDim());
+      std::vector<icl16s> magVec(dxDim);
       icl16s *mag = magVec.data();
 
-    #ifdef SSE3
-      // calculate magnitudes
-      sse_for(src0, src1, mag, mag+dx->getDim(), subCalcMag, subSSECalcMag, 8, 8);
-    #else
-      icl16s *it = mag;
-      icl16s *itEnd = mag + dx->getDim();
-      for (const icl16s *sIt0 = src0, *sIt1 = src1; it != itEnd; ++it, ++sIt0, ++sIt1) {
-        *it = abs(*sIt0) + abs(*sIt1);
+#ifdef SSE3
+      sse_for(src0, src1, mag, mag+dxDim, subCalcMag, subSSECalcMag, 8, 8);
+#else
+      for (int i = 0; i < dxDim; ++i) {
+        mag[i] = abs(src0[i]) + abs(src1[i]);
       }
-    #endif
+#endif
 
-      // set borders to unvalid values
-      for (int i = 0; i < w; ++i) {
+      // set borders to invalid values (in magnitude array, using derivative stride)
+      for (int i = 0; i < dxW; ++i) {
         mag[i] = -1;
-        mag[dx->getDim() - w + i] = -1;
+        mag[dxDim - dxW + i] = -1;
       }
-      for (int i = 0; i < dx->getDim(); i += w) {
+      for (int i = 0; i < dxDim; i += dxW) {
         mag[i] = -1;
-        mag[i + w - 1] = -1;
+        mag[i + dxW - 1] = -1;
       }
 
-      // non-maximum-suppression with filtering of low magnitude values
-      for (int i = 0; i < dx->getDim(); ++i, ++dstIt) {
-        if (mag[i] >= low) {
-          float dir = src0[i] / static_cast<float>(src1[i]);
-
-          if (fabs(dir) >= 2.414213562373095f) {
-            if (mag[i] < mag[i-1] || mag[i] < mag[i+1]) {
-              *dstIt = 0;
-              continue;
+      // non-maximum-suppression: mag uses derivative stride, dst uses dst stride
+      for (int y = 0; y < dxH; ++y) {
+        for (int x = 0; x < dxW; ++x) {
+          int i = y * dxW + x;
+          icl8u &out = dstBase[y * dstStride + x];
+          if (mag[i] >= low) {
+            float dir = src0[i] / static_cast<float>(src1[i]);
+            if (fabs(dir) >= 2.414213562373095f) {
+              if (mag[i] < mag[i-1] || mag[i] < mag[i+1]) { out = 0; continue; }
+            } else if (dir > 0.4142135623730950f) {
+              if (mag[i] < mag[i-1-dxW] || mag[i] < mag[i+1+dxW]) { out = 0; continue; }
+            } else if (dir < -0.4142135623730950f) {
+              if (mag[i] < mag[i-1+dxW] || mag[i] < mag[i+1-dxW]) { out = 0; continue; }
+            } else {
+              if (mag[i] < mag[i-dxW] || mag[i] < mag[i+dxW]) { out = 0; continue; }
             }
-          } else if (dir > 0.4142135623730950f) {
-            if (mag[i] < mag[i-1-w] || mag[i] < mag[i+1+w]) {
-              *dstIt = 0;
-              continue;
-            }
-          } else if (dir < -0.4142135623730950f) {
-            if (mag[i] < mag[i-1+w] || mag[i] < mag[i+1-w]) {
-              *dstIt = 0;
-              continue;
-            }
+            out = (mag[i] > high) ? 2 : 1;
           } else {
-            if (mag[i] < mag[i-w] || mag[i] < mag[i+w]) {
-              *dstIt = 0;
-              continue;
-            }
+            out = 0;
           }
-
-          if (mag[i] > high) *dstIt = 2;
-          else *dstIt = 1;
-        } else {
-          *dstIt = 0;
         }
       }
 
-      // hysteresis thresholding
-      dstIt = dst0->beginROI(c);
-      for (;dstIt != dstItEnd; ++dstIt) {
-        if (*dstIt == 2) {
-          followEdge(&(*dstIt), w);
+      // hysteresis thresholding (followEdge uses dst stride for neighbor access)
+      for (int y = 0; y < dxH; ++y) {
+        for (int x = 0; x < dxW; ++x) {
+          icl8u &px = dstBase[y * dstStride + x];
+          if (px == 2) followEdge(&px, dstStride);
         }
       }
-
     }
 
 
-    void CannyOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( poSrc );
-      ICLASSERT_RETURN( ppoDst );
-      ICLASSERT_RETURN( poSrc != *ppoDst);
-
-      if(m_preBlurRadius>0){
-        static ImgBase *blurBuf = nullptr;
-        m_preBlurOp->apply(poSrc, &blurBuf);
-        poSrc = blurBuf;
+    void CannyOp::applyCannyCore(const Image &derivX, const Image &derivY,
+                                 Image &dst, const Image &srcForMeta) {
+      Size dstSize;
+      Rect dstROI;
+      format dstFmt;
+      int dstCh;
+      if(getClipToROI()) {
+        dstSize = derivX.getSize();
+        dstROI = Rect(Point::null, dstSize);
+        dstFmt = derivX.getFormat();
+        dstCh = derivX.getChannels();
+      } else {
+        dstSize = srcForMeta.getSize();
+        dstROI = Rect(Point(1,1), derivX.getSize());
+        const Image &metaSrc = m_use_derivatives_info ? derivX : srcForMeta;
+        dstFmt = metaSrc.getFormat();
+        dstCh = metaSrc.getChannels();
       }
+      if(!prepare(dst, depth8u, dstSize, dstFmt, dstCh, dstROI,
+                  srcForMeta.getTime())) return;
 
-      for(int i=0;i<2;i++){
-        m_ops[i]->setClipToROI (true);
-        m_ops[i]->apply(poSrc,&m_derivatives[i]);
-      }
+      Img8u &d = dst.as8u();
 
-      if (getClipToROI()) {
-        if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
-	  } else {
-		  if (m_use_derivatives_info) {
-			  if (!prepare (ppoDst, depth8u, poSrc->getSize(), m_derivatives[0]->getFormat(), m_derivatives[0]->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
-		  } else {
-			  if (!prepare (ppoDst, depth8u, poSrc->getSize(), poSrc->getFormat(), poSrc->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
-		  }
-      }
-
-  #ifdef ICL_HAVE_IPP
-      int minSize=0;
-      ippiCannyGetSize(m_derivatives[0]->getSize(), &minSize);
+#ifdef ICL_HAVE_IPP
+      int minSize = 0;
+      ippiCannyGetSize(derivX.getSize(), &minSize);
       m_cannyBuf.resize(minSize);
-      for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
-        switch(m_derivatives[0]->getDepth()){
+      for(int c = derivX.getChannels()-1; c >= 0; --c) {
+        switch(derivX.getDepth()) {
           case depth32f:
-            ippiCanny_32f8u_C1R (m_derivatives[0]->asImg<icl32f>()->getROIData(c), m_derivatives[0]->getLineStep(),
-                                 m_derivatives[1]->asImg<icl32f>()->getROIData(c), m_derivatives[1]->getLineStep(),
-                                 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
-                                 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+            ippiCanny_32f8u_C1R(derivX.as32f().getROIData(c), derivX.as32f().getLineStep(),
+                                derivY.as32f().getROIData(c), derivY.as32f().getLineStep(),
+                                d.getROIData(c), d.getLineStep(),
+                                d.getROISize(), m_lowT, m_highT, m_cannyBuf.data());
             break;
           case depth16s:
-            ippiCanny_16s8u_C1R (m_derivatives[0]->asImg<icl16s>()->getROIData(c), m_derivatives[0]->getLineStep(),
-                                 m_derivatives[1]->asImg<icl16s>()->getROIData(c), m_derivatives[1]->getLineStep(),
-                                 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
-                                 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
+            ippiCanny_16s8u_C1R(derivX.as16s().getROIData(c), derivX.as16s().getLineStep(),
+                                derivY.as16s().getROIData(c), derivY.as16s().getLineStep(),
+                                d.getROIData(c), d.getLineStep(),
+                                d.getROISize(), m_lowT, m_highT, m_cannyBuf.data());
             break;
-          default:
-            ICL_INVALID_DEPTH;
+          default: ICL_INVALID_DEPTH;
         }
       }
-  #else
-      for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
-        switch(m_derivatives[0]->getDepth()){
+#else
+      for(int c = derivX.getChannels()-1; c >= 0; --c) {
+        switch(derivX.getDepth()) {
           case depth32f:
-            applyCanny32f(m_derivatives[0], m_derivatives[1], *ppoDst, c);
+            applyCanny32f(derivX.as32f(), derivY.as32f(), d, c);
             break;
           case depth16s:
-            applyCanny16s(m_derivatives[0], m_derivatives[1], *ppoDst, c);
+            applyCanny16s(derivX.as16s(), derivY.as16s(), d, c);
             break;
-          default:
-            ICL_INVALID_DEPTH;
+          default: ICL_INVALID_DEPTH;
         }
       }
-  #endif
-
+#endif
     }
 
-	void CannyOp::apply (const ImgBase *src_x, const ImgBase *src_y, ImgBase **ppoDst) {
-	  FUNCTION_LOG("");
-	  ICLASSERT_RETURN( src_x );
-	  ICLASSERT_RETURN( src_y );
-	  ICLASSERT_RETURN( ppoDst );
-	  ICLASSERT_RETURN( src_x->getChannels() == 1 );
-	  ICLASSERT_RETURN( src_y->getChannels() == 1 );
-	  ICLASSERT_RETURN( src_x != *ppoDst && src_y != *ppoDst);
+    void CannyOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
 
-	  if(m_preBlurRadius>0){
-		static ImgBase *bx = nullptr, *by = nullptr;
-		m_preBlurOp->apply(src_x, &bx);
-		m_preBlurOp->apply(src_y, &by);
-		src_x = bx;
-		src_y = by;
-	  }
+      const Image *input = &src;
+      if(m_preBlurRadius > 0) {
+        input = &m_preBlurOp->apply(src);
+      }
 
-	  //for(int i=0;i<2;i++){
-		m_ops[0]->setClipToROI (true);
-		m_ops[0]->apply(src_x,&m_derivatives[0]);
-		m_ops[1]->setClipToROI (true);
-		m_ops[1]->apply(src_y,&m_derivatives[1]);
-	  //}
+      for(int i = 0; i < 2; i++){
+        m_ops[i]->setClipToROI(true);
+        m_ops[i]->apply(*input, m_derivatives[i]);
+      }
 
-	  if (getClipToROI()) {
-		if (!prepare (ppoDst, m_derivatives[0], depth8u)) return;
-	  } else {
-		if (!prepare (ppoDst, depth8u, src_x->getSize(), src_x->getFormat(), src_x->getChannels(), Rect(Point(1,1), m_derivatives[0]->getSize()))) return;
-	  }
+      applyCannyCore(m_derivatives[0], m_derivatives[1], dst, *input);
+    }
 
-  #ifdef ICL_HAVE_IPP
-	  int minSize=0;
-	  ippiCannyGetSize(m_derivatives[0]->getSize(), &minSize);
-	  m_cannyBuf.resize(minSize);
-	  for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
-		switch(m_derivatives[0]->getDepth()){
-		  case depth32f:
-			ippiCanny_32f8u_C1R (m_derivatives[0]->asImg<icl32f>()->getROIData(c), m_derivatives[0]->getLineStep(),
-								 m_derivatives[1]->asImg<icl32f>()->getROIData(c), m_derivatives[1]->getLineStep(),
-								 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
-								 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
-			break;
-		  case depth16s:
-			ippiCanny_16s8u_C1R (m_derivatives[0]->asImg<icl16s>()->getROIData(c), m_derivatives[0]->getLineStep(),
-								 m_derivatives[1]->asImg<icl16s>()->getROIData(c), m_derivatives[1]->getLineStep(),
-								 (*ppoDst)->asImg<icl8u>()->getROIData(c), (*ppoDst)->getLineStep(),
-								 (*ppoDst)->getROISize(),m_lowT,m_highT,m_cannyBuf.data());
-			break;
-		  default:
-			ICL_INVALID_DEPTH;
-		}
-	  }
-  #else
-	  for (int c=m_derivatives[0]->getChannels()-1; c >= 0; --c) {
-		switch(m_derivatives[0]->getDepth()){
-		  case depth32f:
-			applyCanny32f(m_derivatives[0], m_derivatives[1], *ppoDst, c);
-			break;
-		  case depth16s:
-			applyCanny16s(m_derivatives[0], m_derivatives[1], *ppoDst, c);
-			break;
-		  default:
-			ICL_INVALID_DEPTH;
-		}
-	  }
-  #endif
+    void CannyOp::apply(const ImgBase *src_x, const ImgBase *src_y, ImgBase **ppoDst) {
+      FUNCTION_LOG("");
+      ICLASSERT_RETURN( src_x );
+      ICLASSERT_RETURN( src_y );
+      ICLASSERT_RETURN( ppoDst );
+      ICLASSERT_RETURN( src_x->getChannels() == 1 );
+      ICLASSERT_RETURN( src_y->getChannels() == 1 );
 
-	}
+      Image imgX(*src_x), imgY(*src_y);
+      const Image *inputX = &imgX;
+      const Image *inputY = &imgY;
+
+      if(m_preBlurRadius > 0){
+        const Image &bx = m_preBlurOp->apply(*inputX);
+        inputX = &bx;
+        // Note: can't blur both with same op (overwrites internal buffer),
+        // but the original code had the same limitation with static locals
+      }
+
+      m_ops[0]->setClipToROI(true);
+      m_ops[0]->apply(*inputX, m_derivatives[0]);
+      m_ops[1]->setClipToROI(true);
+      m_ops[1]->apply(*inputY, m_derivatives[1]);
+
+      // Use member to keep result alive past this call
+      m_legacyResult = (ppoDst && *ppoDst) ? Image(**ppoDst) : Image();
+      applyCannyCore(m_derivatives[0], m_derivatives[1], m_legacyResult, *inputX);
+      *ppoDst = m_legacyResult.ptr();
+    }
+
 
     void CannyOp::setThresholds(icl32f lo, icl32f hi){
-
       m_lowT = lo;
       m_highT = hi;
     }
 
-
     icl32f CannyOp::getLowThreshold()const {
-
       return m_lowT;
     }
 
     icl32f CannyOp::getHighThreshold()const {
-
       return m_highT;
-    }
-
-
-
-  
-    void CannyOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter

@@ -16,6 +16,7 @@
 #include <ICLFilter/GaborOp.h>
 #include <ICLFilter/ChamferOp.h>
 #include <ICLFilter/AffineOp.h>
+#include <ICLFilter/CannyOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -888,6 +889,95 @@ ICL_REGISTER_TEST("Filter.GaborOp.single_kernel", "single kernel gives 1 output 
   Image src = make_empty(10, 10, depth32f);
   Image dst = op.apply(src);
   ICL_TEST_EQ(dst.getChannels(), 1);
+}
+
+// ====================================================================
+// CannyOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.CannyOp.output_depth", "output is always depth8u") {
+  Image src = make_empty(20, 20, depth8u);
+  CannyOp op(10, 100);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_TRUE(dst.getWidth() > 0);
+  ICL_TEST_TRUE(dst.getHeight() > 0);
+}
+
+ICL_REGISTER_TEST("Filter.CannyOp.uniform_no_edges", "uniform image produces no edges") {
+  // 20x20 all-gray — no gradients, no edges
+  Img8u src(Size(20, 20), 1);
+  for(int y = 0; y < 20; ++y)
+    for(int x = 0; x < 20; ++x)
+      src(x, y, 0) = 128;
+
+  CannyOp op(10, 100);
+  Image dst = op.apply(Image(src));
+  const Img8u &d = dst.as8u();
+  // no edges expected in a uniform image
+  bool anyEdge = false;
+  for(int y = 0; y < dst.getHeight(); ++y)
+    for(int x = 0; x < dst.getWidth(); ++x)
+      if(d(x, y, 0) == 255) anyEdge = true;
+  ICL_TEST_FALSE(anyEdge);
+}
+
+ICL_REGISTER_TEST("Filter.CannyOp.strong_edge", "strong vertical edge is detected") {
+  // 20x20 image: left half black, right half white → strong vertical edge
+  Img8u src(Size(20, 20), 1);
+  for(int y = 0; y < 20; ++y)
+    for(int x = 0; x < 20; ++x)
+      src(x, y, 0) = (x < 10) ? 0 : 255;
+
+  CannyOp op(10, 50);
+  Image dst = op.apply(Image(src));
+  const Img8u &d = dst.as8u();
+  // edge pixels (value 255) should exist near column 10
+  bool hasEdge = false;
+  for(int y = 2; y < dst.getHeight()-2; ++y)
+    for(int x = 8; x <= 12 && x < dst.getWidth(); ++x)
+      if(d(x, y, 0) == 255) hasEdge = true;
+  ICL_TEST_TRUE(hasEdge);
+}
+
+ICL_REGISTER_TEST("Filter.CannyOp.no_clip_roi", "non-clipToROI preserves full image size") {
+  // 20x20 with strong vertical edge at column 10
+  Img8u src(Size(20, 20), 1);
+  for(int y = 0; y < 20; ++y)
+    for(int x = 0; x < 20; ++x)
+      src(x, y, 0) = (x < 10) ? 0 : 255;
+
+  CannyOp op(10, 50);
+  op.setClipToROI(false);
+  Image dst;
+  op.apply(Image(src), dst);
+  // non-clip: output should be full 20x20 with inner ROI
+  ICL_TEST_EQ(dst.getWidth(), 20);
+  ICL_TEST_EQ(dst.getHeight(), 20);
+  // output should still be binary (0 or 255) within ROI
+  const Img8u &d = dst.as8u();
+  Rect roi = dst.getROI();
+  for(int y = roi.y; y < roi.bottom(); ++y)
+    for(int x = roi.x; x < roi.right(); ++x) {
+      int v = d(x, y, 0);
+      ICL_TEST_TRUE(v == 0 || v == 255);
+    }
+}
+
+ICL_REGISTER_TEST("Filter.CannyOp.binary_output", "output only contains 0 and 255") {
+  Img8u src(Size(20, 20), 1);
+  for(int y = 0; y < 20; ++y)
+    for(int x = 0; x < 20; ++x)
+      src(x, y, 0) = (x + y) * 6;  // gradient pattern
+
+  CannyOp op(5, 30);
+  Image dst = op.apply(Image(src));
+  const Img8u &d = dst.as8u();
+  for(int y = 0; y < dst.getHeight(); ++y)
+    for(int x = 0; x < dst.getWidth(); ++x) {
+      int v = d(x, y, 0);
+      ICL_TEST_TRUE(v == 0 || v == 255);
+    }
 }
 
 ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces non-zero output") {
