@@ -90,7 +90,6 @@ namespace icl {
                         utils::ICLException("ColorDistanceOp::setReferenceColor: ref color needs at least 3 entries"));
       }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// internal reference color
       std::vector<double> m_refColor;

@@ -33,6 +33,7 @@
 #include <ICLUtils/SSETypes.h>
 #include <cmath>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -71,14 +72,10 @@ namespace icl {
       };
 
       template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncNoVal{
-
-        static inline void apply(const  Img<T> *src, Img<T> *dst ){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd=src->endROI(c) ; itSrc != itSrcEnd; ++itSrc, ++itDst){
-              *itDst = PixelFuncNoVal<T,OT>::apply(*itSrc);
-            }
-          }
+        static inline void apply(const Img<T> *src, Img<T> *dst){
+          visitROILinesPerChannelWith(*src, *dst, [](const T *s, T *d, int, int w) {
+            for(int i = 0; i < w; ++i) d[i] = PixelFuncNoVal<T, OT>::apply(s[i]);
+          });
         }
       };
 
@@ -87,46 +84,37 @@ namespace icl {
       // --- SSE2 specializations for icl32f (no val) ---
       template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::sqrOp>{
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            const icl32f *s = src->getROIData(c);
-            icl32f *d = dst->getROIData(c);
-            int n = src->getROISize().getDim();
+          visitROILinesPerChannelWith(*src, *dst, [](const icl32f *s, icl32f *d, int, int w) {
             int i = 0;
-            for(; i <= n-4; i += 4){
+            for(; i <= w-4; i += 4){
               __m128 v = _mm_loadu_ps(s+i);
               _mm_storeu_ps(d+i, _mm_mul_ps(v, v));
             }
-            for(; i < n; ++i) d[i] = s[i] * s[i];
-          }
+            for(; i < w; ++i) d[i] = s[i] * s[i];
+          });
         }
       };
       template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::absOp>{
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
           __m128 signMask = _mm_set1_ps(-0.0f);
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            const icl32f *s = src->getROIData(c);
-            icl32f *d = dst->getROIData(c);
-            int n = src->getROISize().getDim();
+          visitROILinesPerChannelWith(*src, *dst, [signMask](const icl32f *s, icl32f *d, int, int w) {
             int i = 0;
-            for(; i <= n-4; i += 4){
+            for(; i <= w-4; i += 4){
               _mm_storeu_ps(d+i, _mm_andnot_ps(signMask, _mm_loadu_ps(s+i)));
             }
-            for(; i < n; ++i) d[i] = fabs(s[i]);
-          }
+            for(; i < w; ++i) d[i] = fabs(s[i]);
+          });
         }
       };
       template<> struct LoopFuncNoVal<icl32f, UnaryArithmeticalOp::sqrtOp>{
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            const icl32f *s = src->getROIData(c);
-            icl32f *d = dst->getROIData(c);
-            int n = src->getROISize().getDim();
+          visitROILinesPerChannelWith(*src, *dst, [](const icl32f *s, icl32f *d, int, int w) {
             int i = 0;
-            for(; i <= n-4; i += 4){
+            for(; i <= w-4; i += 4){
               _mm_storeu_ps(d+i, _mm_sqrt_ps(_mm_loadu_ps(s+i)));
             }
-            for(; i < n; ++i) d[i] = sqrtf(s[i]);
-          }
+            for(; i < w; ++i) d[i] = sqrtf(s[i]);
+          });
         }
       };
 #endif
@@ -151,13 +139,10 @@ namespace icl {
       };
 
       template<class T, UnaryArithmeticalOp::optype OT> struct LoopFuncWithVal{
-        static inline void apply(const  Img<T> *src, Img<T> *dst, T val ){
-          for(int c=src->getChannels()-1; c >= 0; --c) {
-            ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc = src->beginROI(c),itSrcEnd = src->endROI(c) ; itSrc != itSrcEnd; ++itSrc, ++itDst){
-              *itDst = PixelFuncWithVal<T,OT>::apply(*itSrc,val);
-            }
-          }
+        static inline void apply(const Img<T> *src, Img<T> *dst, T val){
+          visitROILinesPerChannelWith(*src, *dst, [val](const T *s, T *d, int, int w) {
+            for(int i = 0; i < w; ++i) d[i] = PixelFuncWithVal<T, OT>::apply(s[i], val);
+          });
         }
       };
 
@@ -167,16 +152,13 @@ namespace icl {
       template<> struct LoopFuncWithVal<icl32f, UnaryArithmeticalOp::OPTYPE>{          \
         static inline void apply(const Img<icl32f> *src, Img<icl32f> *dst, icl32f val){   \
           __m128 vv = _mm_set1_ps(val);                                                \
-          for(int c=src->getChannels()-1; c >= 0; --c){                                \
-            const icl32f *s = src->getROIData(c);                                      \
-            icl32f *d = dst->getROIData(c);                                            \
-            int n = src->getROISize().getDim();                                        \
+          visitROILinesPerChannelWith(*src, *dst, [vv, val](const icl32f *s, icl32f *d, int, int w) { \
             int i = 0;                                                                 \
-            for(; i <= n-4; i += 4){                                                   \
+            for(; i <= w-4; i += 4){                                                   \
               _mm_storeu_ps(d+i, SSE_INSTR(_mm_loadu_ps(s+i), vv));                    \
             }                                                                          \
-            for(; i < n; ++i) d[i] = PixelFuncWithVal<icl32f, UnaryArithmeticalOp::OPTYPE>::apply(s[i], val); \
-          }                                                                            \
+            for(; i < w; ++i) d[i] = PixelFuncWithVal<icl32f, UnaryArithmeticalOp::OPTYPE>::apply(s[i], val); \
+          });                                                                          \
         }                                                                              \
       };
 

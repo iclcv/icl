@@ -29,41 +29,28 @@
 ********************************************************************/
 
 #include <ICLFilter/WeightChannelsOp.h>
-#include <ICLFilter/UnaryArithmeticalOp.h>
+#include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
 
+using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
+  namespace filter{
 
-namespace filter{
-
-    void WeightChannelsOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
-      ICLASSERT_RETURN(poSrc);
-      ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == poSrc->getChannels() );
-
-      const ImgBase *oTmpSrcImg;
-      ImgBase *oTmpDstImg;
-
-      if(!UnaryOp::prepare(ppoDst,poSrc)) return;
-
-      UnaryArithmeticalOp op = UnaryArithmeticalOp(UnaryArithmeticalOp::mulOp);
-
-      for (int c=0;c<poSrc->getChannels();c++) {
-        oTmpSrcImg = poSrc->selectChannel(c);
-        oTmpDstImg = (*ppoDst)->selectChannel(c);
-        op.setValue(m_vecWeights[c]);
-        op.apply(oTmpSrcImg, &oTmpDstImg);
-        delete oTmpSrcImg;
-        delete oTmpDstImg;
-      }
-    }
-
-    void WeightChannelsOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+    void WeightChannelsOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == src.getChannels() );
+      if(!prepare(dst, src)) return;
+      src.visitWith(dst, [this](const auto &s, auto &d) {
+        using T = typename std::remove_reference_t<decltype(s)>::type;
+        visitROILinesPerChannelWith(s, d, [this](const T *sp, T *dp, int ch, int w) {
+          icl64f wt = m_vecWeights[ch];
+          for(int i = 0; i < w; ++i) {
+            dp[i] = clipped_cast<icl64f, T>(static_cast<icl64f>(sp[i]) * wt);
+          }
+        });
+      });
     }
 
   } // namespace filter

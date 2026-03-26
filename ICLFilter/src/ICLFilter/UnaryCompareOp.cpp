@@ -31,6 +31,7 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -68,26 +69,16 @@ namespace icl {
 
     template <class T, template<typename X> class C>
     inline void fallbackCompare(const Img<T> &src, T value, Img8u &dst){
-      for(int c=src.getChannels()-1; c >= 0; --c) {
-        const ImgIterator<T> itSrc = src.beginROI(c);
-        const ImgIterator<T> itSrcEnd = src.endROI(c);
-        ImgIterator<icl8u>  itDst = dst.beginROI(c);
-        for(;itSrc != itSrcEnd; ++itSrc, ++itDst){
-          *itDst = C<T>::cmp(*itSrc,value);
-        }
-      }
+      visitROILinesPerChannelWith(src, dst, [value](const T *s, icl8u *d, int, int w) {
+        for(int i = 0; i < w; ++i) d[i] = C<T>::cmp(s[i], value);
+      });
     }
 
     template <typename T>
     inline void fallbackCompareWithTolerance(const Img<T> &src, T value, Img8u &dst, T tolerance) {
-       for(int c=src.getChannels()-1; c >= 0; --c) {
-         const ImgIterator<T> itSrc = src.beginROI(c);
-         const ImgIterator<T> itSrcEnd = src.endROI(c);
-         ImgIterator<icl8u>  itDst = dst.beginROI(c);
-         for(;itSrc != itSrcEnd; ++itSrc, ++itDst){
-           *itDst = CompareOp_eqt<T>::cmp(*itSrc,value,tolerance);
-         }
-       }
+      visitROILinesPerChannelWith(src, dst, [value, tolerance](const T *s, icl8u *d, int, int w) {
+        for(int i = 0; i < w; ++i) d[i] = CompareOp_eqt<T>::cmp(s[i], value, tolerance);
+      });
     }
 
     // --- Dispatch struct ---

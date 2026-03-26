@@ -347,59 +347,9 @@ namespace icl {
         }
       }
 
-      /// Calls f(T *data, int dim) for the given channel.
-      /** Requires Img.h to be included. */
-      template<class F>
-      auto visitChannel(int channel, F &&f) {
-        int d = getDim();
-        return visit([&](auto &img) { return f(img.begin(channel), d); });
-      }
-
-      /// const version — f(const T *data, int dim)
-      template<class F>
-      auto visitChannel(int channel, F &&f) const {
-        int d = getDim();
-        return visit([&](const auto &img) { return f(img.begin(channel), d); });
-      }
-
-      /// Calls f(T *src, T *dst, int dim) for the given channel of two images.
-      template<class F>
-      auto visitChannelWith(Image &other, int channel, F &&f) {
-        int d = getDim();
-        return visitWith(other, [&](auto &a, auto &b) {
-          return f(a.begin(channel), b.begin(channel), d);
-        });
-      }
-
-      /// Calls f(T *data, int channel, int dim) for each channel.
-      template<class F>
-      void visitChannels(F &&f) {
-        int d = getDim();
-        int nc = getChannels();
-        visit([&](auto &img) {
-          for(int c = 0; c < nc; ++c) f(img.begin(c), c, d);
-        });
-      }
-
-      /// const version
-      template<class F>
-      void visitChannels(F &&f) const {
-        int d = getDim();
-        int nc = getChannels();
-        visit([&](const auto &img) {
-          for(int c = 0; c < nc; ++c) f(img.begin(c), c, d);
-        });
-      }
-
-      /// Calls f(T *src, T *dst, int channel, int dim) for each channel of two images.
-      template<class F>
-      void visitChannelsWith(Image &other, F &&f) {
-        int d = getDim();
-        int nc = getChannels();
-        visitWith(other, [&](auto &a, auto &b) {
-          for(int c = 0; c < nc; ++c) f(a.begin(c), b.begin(c), c, d);
-        });
-      }
+      /// For ROI-aware line-based channel/pixel iteration on typed Img<T>,
+      /// see Visitors.h (visitROILines, visitROILinesPerChannelWith, etc.)
+      /// and VisitorsN.h (visitROILinesN, visitROILinesNWith).
 
     };
 

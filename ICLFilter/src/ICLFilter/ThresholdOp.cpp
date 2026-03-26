@@ -32,6 +32,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/SSETypes.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -94,82 +95,14 @@ namespace icl {
     template <typename T, class ThresholdFunc>
     inline void fallbackThreshold(const Img<T> &src, Img<T> &dst,
                                   const ThresholdFunc &threshold) {
-       for(int c=src.getChannels()-1; c >= 0; --c) {
-          const ImgIterator<T> itSrc = src.beginROI(c);
-          const ImgIterator<T> itSrcEnd = src.endROI(c);
-          ImgIterator<T> itDst = dst.beginROI(c);
-          for(;itSrc != itSrcEnd; ++itSrc, ++itDst){
-             *itDst = threshold(*itSrc);
-          }
-       }
+       visitROILinesPerChannelWith(src, dst, [&](const T *s, T *d, int, int w) {
+         for(int i = 0; i < w; ++i) d[i] = threshold(s[i]);
+       });
     }
 
     // --- SSE2/NEON SIMD helper functions ---
 
 #ifdef ICL_HAVE_SSE2
-
-    inline void sse_threshold_lt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
-                                         icl32f threshold, icl32f value){
-      __m128 vt = _mm_set1_ps(threshold);
-      __m128 vv = _mm_set1_ps(value);
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl32f *s = src.getROIData(c);
-        icl32f *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
-        int i = 0;
-        for(; i <= n-4; i += 4){
-          __m128 v = _mm_loadu_ps(s+i);
-          __m128 mask = _mm_cmplt_ps(v, vt);
-          _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
-        }
-        for(; i < n; ++i) d[i] = (s[i] < threshold) ? value : s[i];
-      }
-    }
-
-    inline void sse_threshold_gt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
-                                         icl32f threshold, icl32f value){
-      __m128 vt = _mm_set1_ps(threshold);
-      __m128 vv = _mm_set1_ps(value);
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl32f *s = src.getROIData(c);
-        icl32f *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
-        int i = 0;
-        for(; i <= n-4; i += 4){
-          __m128 v = _mm_loadu_ps(s+i);
-          __m128 mask = _mm_cmpgt_ps(v, vt);
-          _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
-        }
-        for(; i < n; ++i) d[i] = (s[i] > threshold) ? value : s[i];
-      }
-    }
-
-    inline void sse_threshold_ltgt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
-                                           icl32f tLow, icl32f vLow, icl32f tUp, icl32f vUp){
-      __m128 vtLow = _mm_set1_ps(tLow);
-      __m128 vvLow = _mm_set1_ps(vLow);
-      __m128 vtUp  = _mm_set1_ps(tUp);
-      __m128 vvUp  = _mm_set1_ps(vUp);
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl32f *s = src.getROIData(c);
-        icl32f *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
-        int i = 0;
-        for(; i <= n-4; i += 4){
-          __m128 v = _mm_loadu_ps(s+i);
-          __m128 maskLo = _mm_cmplt_ps(v, vtLow);
-          __m128 maskHi = _mm_cmpgt_ps(v, vtUp);
-          __m128 result = v;
-          result = _mm_or_ps(_mm_and_ps(maskLo, vvLow), _mm_andnot_ps(maskLo, result));
-          result = _mm_or_ps(_mm_and_ps(maskHi, vvUp),  _mm_andnot_ps(maskHi, result));
-          _mm_storeu_ps(d+i, result);
-        }
-        for(; i < n; ++i){
-          icl32f v = s[i];
-          d[i] = (v < tLow) ? vLow : (v > tUp) ? vUp : v;
-        }
-      }
-    }
 
     // Unsigned byte compare helpers (SSE2 only has signed _mm_cmpgt_epi8).
     // XOR with 0x80 maps [0,255] to [-128,127] for correct unsigned comparison.
@@ -182,42 +115,90 @@ namespace icl {
       return _mm_cmpgt_epi8(_mm_xor_si128(a, bias), _mm_xor_si128(b, bias));
     }
 
+    inline void sse_threshold_lt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
+                                         icl32f threshold, icl32f value){
+      __m128 vt = _mm_set1_ps(threshold);
+      __m128 vv = _mm_set1_ps(value);
+      visitROILinesPerChannelWith(src, dst, [vt, vv, threshold, value](const icl32f *s, icl32f *d, int, int w) {
+        int i = 0;
+        for(; i <= w-4; i += 4){
+          __m128 v = _mm_loadu_ps(s+i);
+          __m128 mask = _mm_cmplt_ps(v, vt);
+          _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
+        }
+        for(; i < w; ++i) d[i] = (s[i] < threshold) ? value : s[i];
+      });
+    }
+
+    inline void sse_threshold_gt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
+                                         icl32f threshold, icl32f value){
+      __m128 vt = _mm_set1_ps(threshold);
+      __m128 vv = _mm_set1_ps(value);
+      visitROILinesPerChannelWith(src, dst, [vt, vv, threshold, value](const icl32f *s, icl32f *d, int, int w) {
+        int i = 0;
+        for(; i <= w-4; i += 4){
+          __m128 v = _mm_loadu_ps(s+i);
+          __m128 mask = _mm_cmpgt_ps(v, vt);
+          _mm_storeu_ps(d+i, _mm_or_ps(_mm_and_ps(mask, vv), _mm_andnot_ps(mask, v)));
+        }
+        for(; i < w; ++i) d[i] = (s[i] > threshold) ? value : s[i];
+      });
+    }
+
+    inline void sse_threshold_ltgt_val_32f(const Img<icl32f> &src, Img<icl32f> &dst,
+                                           icl32f tLow, icl32f vLow, icl32f tUp, icl32f vUp){
+      __m128 vtLow = _mm_set1_ps(tLow);
+      __m128 vvLow = _mm_set1_ps(vLow);
+      __m128 vtUp  = _mm_set1_ps(tUp);
+      __m128 vvUp  = _mm_set1_ps(vUp);
+      visitROILinesPerChannelWith(src, dst, [=](const icl32f *s, icl32f *d, int, int w) {
+        int i = 0;
+        for(; i <= w-4; i += 4){
+          __m128 v = _mm_loadu_ps(s+i);
+          __m128 maskLo = _mm_cmplt_ps(v, vtLow);
+          __m128 maskHi = _mm_cmpgt_ps(v, vtUp);
+          __m128 result = v;
+          result = _mm_or_ps(_mm_and_ps(maskLo, vvLow), _mm_andnot_ps(maskLo, result));
+          result = _mm_or_ps(_mm_and_ps(maskHi, vvUp),  _mm_andnot_ps(maskHi, result));
+          _mm_storeu_ps(d+i, result);
+        }
+        for(; i < w; ++i){
+          icl32f v = s[i];
+          d[i] = (v < tLow) ? vLow : (v > tUp) ? vUp : v;
+        }
+      });
+    }
+
     inline void sse_threshold_lt_val_8u(const Img<icl8u> &src, Img<icl8u> &dst,
                                         icl8u threshold, icl8u value){
       __m128i vt = _mm_set1_epi8(static_cast<char>(threshold));
       __m128i vv = _mm_set1_epi8(static_cast<char>(value));
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl8u *s = src.getROIData(c);
-        icl8u *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
+      visitROILinesPerChannelWith(src, dst, [vt, vv, threshold, value](const icl8u *s, icl8u *d, int, int w) {
         int i = 0;
-        for(; i <= n-16; i += 16){
+        for(; i <= w-16; i += 16){
           __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(s+i));
           __m128i mask = sse_unsigned_cmplt_epu8(v, vt);
           __m128i result = _mm_or_si128(_mm_and_si128(mask, vv), _mm_andnot_si128(mask, v));
           _mm_storeu_si128(reinterpret_cast<__m128i*>(d+i), result);
         }
-        for(; i < n; ++i) d[i] = (s[i] < threshold) ? value : s[i];
-      }
+        for(; i < w; ++i) d[i] = (s[i] < threshold) ? value : s[i];
+      });
     }
 
     inline void sse_threshold_gt_val_8u(const Img<icl8u> &src, Img<icl8u> &dst,
                                         icl8u threshold, icl8u value){
       __m128i vt = _mm_set1_epi8(static_cast<char>(threshold));
       __m128i vv = _mm_set1_epi8(static_cast<char>(value));
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl8u *s = src.getROIData(c);
-        icl8u *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
+      visitROILinesPerChannelWith(src, dst, [vt, vv, threshold, value](const icl8u *s, icl8u *d, int, int w) {
         int i = 0;
-        for(; i <= n-16; i += 16){
+        for(; i <= w-16; i += 16){
           __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(s+i));
           __m128i mask = sse_unsigned_cmpgt_epu8(v, vt);
           __m128i result = _mm_or_si128(_mm_and_si128(mask, vv), _mm_andnot_si128(mask, v));
           _mm_storeu_si128(reinterpret_cast<__m128i*>(d+i), result);
         }
-        for(; i < n; ++i) d[i] = (s[i] > threshold) ? value : s[i];
-      }
+        for(; i < w; ++i) d[i] = (s[i] > threshold) ? value : s[i];
+      });
     }
 
     inline void sse_threshold_ltgt_val_8u(const Img<icl8u> &src, Img<icl8u> &dst,
@@ -226,12 +207,9 @@ namespace icl {
       __m128i vvLow = _mm_set1_epi8(static_cast<char>(vLow));
       __m128i vtUp  = _mm_set1_epi8(static_cast<char>(tUp));
       __m128i vvUp  = _mm_set1_epi8(static_cast<char>(vUp));
-      for(int c=src.getChannels()-1; c >= 0; --c){
-        const icl8u *s = src.getROIData(c);
-        icl8u *d = dst.getROIData(c);
-        int n = src.getROISize().getDim();
+      visitROILinesPerChannelWith(src, dst, [=](const icl8u *s, icl8u *d, int, int w) {
         int i = 0;
-        for(; i <= n-16; i += 16){
+        for(; i <= w-16; i += 16){
           __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(s+i));
           __m128i maskLo = sse_unsigned_cmplt_epu8(v, vtLow);
           __m128i maskHi = sse_unsigned_cmpgt_epu8(v, vtUp);
@@ -240,11 +218,11 @@ namespace icl {
           result = _mm_or_si128(_mm_and_si128(maskHi, vvUp),  _mm_andnot_si128(maskHi, result));
           _mm_storeu_si128(reinterpret_cast<__m128i*>(d+i), result);
         }
-        for(; i < n; ++i){
+        for(; i < w; ++i){
           icl8u v = s[i];
           d[i] = (v < tLow) ? vLow : (v > tUp) ? vUp : v;
         }
-      }
+      });
     }
 
 #endif // ICL_HAVE_SSE2

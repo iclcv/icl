@@ -96,7 +96,6 @@ namespace icl {
       /** @param weights new weight vector **/
       void setWeights(const std::vector<icl64f> &weights){ m_vecWeights = weights; }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// internal storage for the channel weights
       std::vector<icl64f> m_vecWeights;
