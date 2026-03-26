@@ -594,3 +594,314 @@ ICL_REGISTER_TEST("Filter.AffineOp.size_preserved", "non-adapt mode preserves si
   ICL_TEST_EQ(dst.getWidth(), 10);
   ICL_TEST_EQ(dst.getHeight(), 8);
 }
+
+ICL_REGISTER_TEST("Filter.AffineOp.scale", "scaling doubles dimensions in adapt mode") {
+  Image src = Img8u{{1, 2},
+                    {3, 4}};
+  AffineOp op;
+  op.scale(2.0, 2.0);
+  op.setAdaptResultImage(true);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getWidth(), 4);
+  ICL_TEST_EQ(dst.getHeight(), 4);
+}
+
+ICL_REGISTER_TEST("Filter.AffineOp.multichannel", "affine works on multi-channel image") {
+  Image src = Img8u{{{10, 20}, {30, 40}},
+                    {{50, 60}, {70, 80}}};
+  AffineOp op;
+  op.setAdaptResultImage(false);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getChannels(), 2);
+  ICL_TEST_TRUE((dst == src));
+}
+
+// ====================================================================
+// ChamferOp — additional pixel tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ChamferOp.two_sources", "two white pixels create correct distances") {
+  Image src = Img8u{{0, 0, 0, 0, 0, 0, 0},
+                    {0, 255, 0, 0, 0, 255, 0},
+                    {0, 0, 0, 0, 0, 0, 0}};
+  ChamferOp op(3, 4);
+  Image dst = op.apply(src);
+  const Img32s &d = dst.as<icl32s>();
+  ICL_TEST_EQ(d(1, 1, 0), 0);  // first source
+  ICL_TEST_EQ(d(5, 1, 0), 0);  // second source
+  ICL_TEST_EQ(d(3, 1, 0), 6);  // midpoint: min(2*d1 from left, 2*d1 from right)
+}
+
+ICL_REGISTER_TEST("Filter.ChamferOp.all_white", "all-white image gives all zeros") {
+  Image src = Img8u{{255, 255, 255},
+                    {255, 255, 255}};
+  ChamferOp op(3, 4);
+  Image dst = op.apply(src);
+  const Img32s &d = dst.as<icl32s>();
+  for(int y = 0; y < 2; ++y)
+    for(int x = 0; x < 3; ++x)
+      ICL_TEST_EQ(d(x, y, 0), 0);
+}
+
+ICL_REGISTER_TEST("Filter.ChamferOp.from_32f", "chamfer accepts 32f input") {
+  Image src = Img32f{{0.f, 0.f, 0.f, 0.f, 0.f},
+                     {0.f, 0.f, 0.f, 0.f, 0.f},
+                     {0.f, 0.f, 1.f, 0.f, 0.f},
+                     {0.f, 0.f, 0.f, 0.f, 0.f},
+                     {0.f, 0.f, 0.f, 0.f, 0.f}};
+  ChamferOp op(3, 4);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth32s));
+  const Img32s &d = dst.as<icl32s>();
+  ICL_TEST_EQ(d(2, 2, 0), 0);  // nonzero pixel → distance 0
+  ICL_TEST_EQ(d(2, 1, 0), 3);  // neighbor → d1
+}
+
+// ====================================================================
+// ThresholdOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ThresholdOp.ltgt", "ltgt clamps both ends") {
+  // ltgt(50,200): values < 50 → 50, values > 200 → 200, else unchanged
+  ThresholdOp op(ThresholdOp::ltgt, 50, 200);
+  Image src = Img8u{{10, 50, 100, 200, 250}};
+  Image dst = op.apply(src);
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 50);   // clamped up
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 50);   // at boundary
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 100);  // unchanged
+  ICL_TEST_EQ(static_cast<int>(d(3, 0, 0)), 200);  // at boundary
+  ICL_TEST_EQ(static_cast<int>(d(4, 0, 0)), 200);  // clamped down
+}
+
+ICL_REGISTER_TEST("Filter.ThresholdOp.multichannel_32f", "threshold on 3ch 32f image") {
+  ThresholdOp op(ThresholdOp::gt, 5.0f, 5.0f);
+  Image src = Img32f{{{1.f, 10.f}},
+                     {{3.f, 20.f}},
+                     {{7.f, 2.f}}};
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getChannels(), 3);
+  const Img32f &d = dst.as32f();
+  ICL_TEST_NEAR(d(0, 0, 0), 1.f, 1e-5f);   // ch0: 1 unchanged
+  ICL_TEST_NEAR(d(1, 0, 0), 5.f, 1e-5f);   // ch0: 10 clamped
+  ICL_TEST_NEAR(d(0, 0, 2), 5.f, 1e-5f);   // ch2: 7 clamped
+  ICL_TEST_NEAR(d(1, 0, 2), 2.f, 1e-5f);   // ch2: 2 unchanged
+}
+
+// ====================================================================
+// UnaryArithmeticalOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.sub_pixels", "subOp subtracts constant") {
+  UnaryArithmeticalOp op(UnaryArithmeticalOp::subOp, 3.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{7.f, 17.f, 27.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.div_pixels", "divOp divides by constant") {
+  UnaryArithmeticalOp op(UnaryArithmeticalOp::divOp, 2.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{5.f, 10.f, 15.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.abs_pixels", "absOp takes absolute value") {
+  UnaryArithmeticalOp op(UnaryArithmeticalOp::absOp);
+  ICL_TEST_TRUE((op.apply(Img32f{{-5.f, 0.f, 3.f}}) == Img32f{{5.f, 0.f, 3.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.sqrt_pixels", "sqrtOp takes square root") {
+  UnaryArithmeticalOp op(UnaryArithmeticalOp::sqrtOp);
+  ICL_TEST_TRUE((op.apply(Img32f{{4.f, 9.f, 16.f}}) == Img32f{{2.f, 3.f, 4.f}}));
+}
+
+// ====================================================================
+// UnaryCompareOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.UnaryCompareOp.lt_pixels", "lt comparison") {
+  UnaryCompareOp op(UnaryCompareOp::lt, 10.0);
+  Image dst = op.apply(Img32f{{5.f, 10.f, 15.f}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 255);  // 5 < 10
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 0);    // 10 not < 10
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);    // 15 not < 10
+}
+
+ICL_REGISTER_TEST("Filter.UnaryCompareOp.eq_pixels", "eq comparison") {
+  UnaryCompareOp op(UnaryCompareOp::eq, 42.0);
+  Image dst = op.apply(Img8u{{41, 42, 43}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);
+}
+
+// ====================================================================
+// UnaryLogicalOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.UnaryLogicalOp.xor_pixels", "xorOp flips bits") {
+  UnaryLogicalOp op(UnaryLogicalOp::xorOp, 0xFF);
+  ICL_TEST_TRUE((op.apply(Img8u{{0x00, 0xFF, 0xAA}}) == Img8u{{0xFF, 0x00, 0x55}}));
+}
+
+// ====================================================================
+// MirrorOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.MirrorOp.both_pixels", "axisBoth flips rows and columns") {
+  MirrorOp op(axisBoth);
+  // [1,2; 3,4] → [4,3; 2,1]
+  ICL_TEST_TRUE((op.apply(Img8u{{1,2},{3,4}}) == Img8u{{4,3},{2,1}}));
+}
+
+ICL_REGISTER_TEST("Filter.MirrorOp.single_row", "mirror single-row image") {
+  MirrorOp op(axisVert);
+  ICL_TEST_TRUE((op.apply(Img8u{{1,2,3,4,5}}) == Img8u{{5,4,3,2,1}}));
+}
+
+// ====================================================================
+// WeightChannelsOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.WeightChannelsOp.zero_weight", "zero weight zeroes channel") {
+  Image src = Img32f{{{10.f, 20.f}},
+                     {{30.f, 40.f}}};
+  WeightChannelsOp op({1.0, 0.0});
+  Image dst = op.apply(src);
+  const Img32f &d = dst.as32f();
+  ICL_TEST_NEAR(d(0, 0, 0), 10.f, 1e-5f);  // ch0 unchanged
+  ICL_TEST_NEAR(d(0, 0, 1), 0.f, 1e-5f);   // ch1 zeroed
+}
+
+// ====================================================================
+// IntegralImgOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.IntegralImgOp.uniform", "integral of uniform image") {
+  // 3x3 all ones → integral [1,2,3; 2,4,6; 3,6,9]
+  Image src = Img8u{{1, 1, 1},
+                    {1, 1, 1},
+                    {1, 1, 1}};
+  IntegralImgOp op(depth32s);
+  Image dst = op.apply(src);
+  const Img32s &d = dst.as<icl32s>();
+  ICL_TEST_EQ(d(0, 0, 0), 1);
+  ICL_TEST_EQ(d(2, 0, 0), 3);
+  ICL_TEST_EQ(d(0, 2, 0), 3);
+  ICL_TEST_EQ(d(2, 2, 0), 9);
+  ICL_TEST_EQ(d(1, 1, 0), 4);
+}
+
+// ====================================================================
+// LUTOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.LUTOp.threshold_lut", "LUT as binary threshold") {
+  std::vector<icl8u> lut(256, 0);
+  for(int i = 128; i < 256; ++i) lut[i] = 255;
+  LUTOp op(lut);
+  ICL_TEST_TRUE((op.apply(Img8u{{50, 127, 128, 200}}) == Img8u{{0, 0, 255, 255}}));
+}
+
+ICL_REGISTER_TEST("Filter.LUTOp.multichannel", "LUT works on multi-channel image") {
+  std::vector<icl8u> lut(256);
+  for(int i = 0; i < 256; ++i) lut[i] = 255 - i;
+  LUTOp op(lut);
+  Image src = Img8u{{{10, 20}}, {{30, 40}}};
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getChannels(), 2);
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 245);  // 255-10
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 1)), 225);  // 255-30
+}
+
+// ====================================================================
+// ColorDistanceOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ColorDistanceOp.output_size", "output is single-channel, matches input size") {
+  Image src = Img32f{{{1.f, 2.f, 3.f}, {4.f, 5.f, 6.f}},
+                     {{1.f, 2.f, 3.f}, {4.f, 5.f, 6.f}},
+                     {{1.f, 2.f, 3.f}, {4.f, 5.f, 6.f}}};
+  std::vector<double> ref = {0.0, 0.0, 0.0};
+  ColorDistanceOp op(ref, -1);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getChannels(), 1);
+  ICL_TEST_EQ(dst.getWidth(), 3);
+  ICL_TEST_EQ(dst.getHeight(), 2);
+}
+
+// ====================================================================
+// DitheringOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.DitheringOp.all_white", "all-white input stays white") {
+  Image src = Img8u{{255, 255, 255, 255},
+                    {255, 255, 255, 255}};
+  DitheringOp op(DitheringOp::FloydSteinberg, 2);
+  Image dst = op.apply(src);
+  const Img8u &d = dst.as8u();
+  for(int y = 0; y < 2; ++y)
+    for(int x = 0; x < 4; ++x)
+      ICL_TEST_EQ(static_cast<int>(d(x, y, 0)), 255);
+}
+
+ICL_REGISTER_TEST("Filter.DitheringOp.all_black", "all-black input stays black") {
+  Image src = Img8u{{0, 0, 0, 0},
+                    {0, 0, 0, 0}};
+  DitheringOp op(DitheringOp::FloydSteinberg, 2);
+  Image dst = op.apply(src);
+  const Img8u &d = dst.as8u();
+  for(int y = 0; y < 2; ++y)
+    for(int x = 0; x < 4; ++x)
+      ICL_TEST_EQ(static_cast<int>(d(x, y, 0)), 0);
+}
+
+// ====================================================================
+// ColorSegmentationOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ColorSegmentationOp.multi_class", "multiple classes are distinguished") {
+  ColorSegmentationOp op(0, 0, 0, formatRGB);
+  op.clearLUT(0);
+  op.lutEntry(200, 0, 0, 10, 10, 10, 1);    // red → class 1
+  op.lutEntry(0, 200, 0, 10, 10, 10, 2);    // green → class 2
+
+  Image src(Size(3, 1), depth8u, 3, formatRGB);
+  Img8u &s = src.as8u();
+  s(0,0,0)=200; s(0,0,1)=0;   s(0,0,2)=0;    // red
+  s(1,0,0)=0;   s(1,0,1)=200; s(1,0,2)=0;    // green
+  s(2,0,0)=0;   s(2,0,1)=0;   s(2,0,2)=200;  // blue (no class)
+
+  Image dst = op.apply(src);
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 1);  // red → class 1
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 2);  // green → class 2
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);  // blue → unclassified
+}
+
+// ====================================================================
+// GaborOp — additional tests
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.GaborOp.single_kernel", "single kernel gives 1 output channel") {
+  GaborOp op(Size(3, 3), {5.0f}, {0.0f}, {0.0f}, {2.0f}, {1.0f});
+  Image src = make_empty(10, 10, depth32f);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getChannels(), 1);
+}
+
+ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces non-zero output") {
+  GaborOp op(Size(3, 3), {3.0f}, {0.0f}, {0.0f}, {1.0f}, {1.0f});
+  // single bright pixel in center of dark image
+  Img32f src(Size(7, 7), 1);
+  src.clear();
+  src(3, 3, 0) = 255.f;
+  Image dst = op.apply(Image(src));
+  // the output should have some non-zero pixels (convolution with gabor kernel)
+  bool hasNonZero = false;
+  const Img32f &d = dst.as32f();
+  for(int y = 0; y < dst.getHeight() && !hasNonZero; ++y)
+    for(int x = 0; x < dst.getWidth() && !hasNonZero; ++x)
+      if(std::abs(d(x, y, 0)) > 1e-6f) hasNonZero = true;
+  ICL_TEST_TRUE(hasNonZero);
+}
