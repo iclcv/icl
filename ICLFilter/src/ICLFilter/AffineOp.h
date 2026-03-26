@@ -140,13 +140,6 @@ namespace icl{
       }
 
       private:
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-      /// array of class methods used to transform depth8u and depth32f images
-      void (AffineOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
-
-      template<typename T>
-      void affine (const core::ImgBase *poSrc, core::ImgBase *poDst);
-
       void applyT (const double p[2], double aResult[2]);
       static void useMinMax (const double aCur[2],
                              double aMin[2], double aMax[2]);

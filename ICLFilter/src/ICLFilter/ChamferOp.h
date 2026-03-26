@@ -354,8 +354,6 @@ namespace icl{
                                                      icl32s penaltyValue=0,
                                                      ChamferOp co=ChamferOp());
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-
       private:
       /// internally used variable for horizontally or vertically adjacent pixels
       icl32s m_iHorizontalAndVerticalNeighbourDistance;

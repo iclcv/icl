@@ -14,6 +14,8 @@
 #include <ICLFilter/ColorDistanceOp.h>
 #include <ICLFilter/ColorSegmentationOp.h>
 #include <ICLFilter/GaborOp.h>
+#include <ICLFilter/ChamferOp.h>
+#include <ICLFilter/AffineOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -508,4 +510,87 @@ ICL_REGISTER_TEST("Filter.Depth.compare_8u", "compareOp works on 8u input") {
   ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);
   ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 0);
   ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 255);
+}
+
+// ====================================================================
+// ChamferOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ChamferOp.output_depth", "output is always depth32s") {
+  Image src = Img8u{{0, 255, 0},
+                    {0, 0, 0}};
+  ChamferOp op;
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth32s));
+  ICL_TEST_EQ(dst.getWidth(), 3);
+  ICL_TEST_EQ(dst.getHeight(), 2);
+}
+
+ICL_REGISTER_TEST("Filter.ChamferOp.zero_at_edge", "distance is 0 at white pixels") {
+  // White pixel at (1,1), rest black
+  Image src = Img8u{{0, 0, 0},
+                    {0, 255, 0},
+                    {0, 0, 0}};
+  ChamferOp op(3, 4);  // d1=3 (horiz/vert), d2=4 (diagonal)
+  Image dst = op.apply(src);
+  const Img32s &d = dst.as<icl32s>();
+  ICL_TEST_EQ(d(1, 1, 0), 0);  // distance at white pixel is 0
+}
+
+ICL_REGISTER_TEST("Filter.ChamferOp.neighbors", "adjacent pixels get d1 distance") {
+  Image src = Img8u{{0, 0, 0, 0, 0},
+                    {0, 0, 0, 0, 0},
+                    {0, 0, 255, 0, 0},
+                    {0, 0, 0, 0, 0},
+                    {0, 0, 0, 0, 0}};
+  ChamferOp op(3, 4);
+  Image dst = op.apply(src);
+  const Img32s &d = dst.as<icl32s>();
+  ICL_TEST_EQ(d(2, 2, 0), 0);  // center white pixel
+  ICL_TEST_EQ(d(2, 1, 0), 3);  // one step up (d1)
+  ICL_TEST_EQ(d(3, 2, 0), 3);  // one step right (d1)
+  ICL_TEST_EQ(d(3, 3, 0), 4);  // one step diagonal (d2)
+}
+
+// ====================================================================
+// AffineOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.AffineOp.identity", "identity transform preserves image") {
+  Image src = Img8u{{10, 20, 30},
+                    {40, 50, 60}};
+  AffineOp op;
+  op.setAdaptResultImage(false);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getWidth(), 3);
+  ICL_TEST_EQ(dst.getHeight(), 2);
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_TRUE((dst == src));
+}
+
+ICL_REGISTER_TEST("Filter.AffineOp.translate", "translation shifts pixels") {
+  Image src = Img32f{{1.f, 2.f, 3.f},
+                     {4.f, 5.f, 6.f},
+                     {7.f, 8.f, 9.f}};
+  AffineOp op;
+  op.translate(1, 0);  // shift right by 1
+  op.setAdaptResultImage(false);
+  Image dst = op.apply(src);
+  const Img32f &d = dst.as32f();
+  // pixel at (1,0) in dst should come from (0,0) in src = 1.0
+  ICL_TEST_NEAR(d(1, 0, 0), 1.0f, 1e-5f);
+  // pixel at (2,1) in dst should come from (1,1) in src = 5.0
+  ICL_TEST_NEAR(d(2, 1, 0), 5.0f, 1e-5f);
+  // pixel at (0,0) in dst has no source → 0
+  ICL_TEST_NEAR(d(0, 0, 0), 0.0f, 1e-5f);
+}
+
+ICL_REGISTER_TEST("Filter.AffineOp.size_preserved", "non-adapt mode preserves size") {
+  Image src = make_empty(10, 8, depth32f);
+  AffineOp op;
+  op.rotate(45);
+  op.setAdaptResultImage(false);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getWidth(), 10);
+  ICL_TEST_EQ(dst.getHeight(), 8);
 }

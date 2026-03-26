@@ -92,7 +92,7 @@ bool NeighborhoodOp::prepare(Image &dst, const Image &src);
 bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d);
 ```
 
-### Fully Native Image Filters (15 done)
+### Fully Native Image Filters (17 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -111,15 +111,17 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 13. **WienerOp** — IPP-only (8u/16s/32f), `WienerImpl` dispatch struct, NeighborhoodOp::prepare
 14. **GaborOp** — composition filter (wraps ConvolutionOp), `m_vecResults` now `vector<Image>`
 15. **ColorSegmentationOp** — depth8u only, `visitROILinesNWith<3,1>`, compile-time shift templates
+16. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
+17. **AffineOp** — `AffineImpl` dispatch struct, IPP 8u/32f, C++ fallback with inverse matrix
 
-### Filters with applyImgBase Bridge (13 remaining)
+### Filters with applyImgBase Bridge (11 remaining)
 
-**With IPP acceleration (6):**
-AffineOp, CannyOp, ConvolutionOp, LocalThresholdOp, MedianOp,
+**With IPP acceleration (5):**
+CannyOp, ConvolutionOp, LocalThresholdOp, MedianOp,
 MorphologicalOp, WarpOp
 
-**Pure C++ (5):**
-BilateralFilterOp, ChamferOp,
+**Pure C++ (4):**
+BilateralFilterOp,
 FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 ### BinaryOp Filters (not started)
