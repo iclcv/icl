@@ -56,6 +56,9 @@ namespace icl{
       /// Applies the mirror transform to the images
       void apply(const core::Image &src, core::Image &dst) override;
 
+      /// Import single-arg apply from UnaryOp
+      using UnaryOp::apply;
+
       private:
       core::axis  m_eAxis;
       utils::Size  m_oSize;

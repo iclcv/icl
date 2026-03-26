@@ -115,13 +115,10 @@ namespace icl{
       /// Internally used class
       class LUT3D;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       core::format m_segFormat;       //!< format, that is used for internal segmentation
       core::Img8u m_inputBuffer;      //!< internal image in depth8u and segmentation format
-      core::Img8u m_outputBuffer;     //!< internal buffer holding the output image
       core::Img8u m_segPreview;       //!< internal buffer for providing a preview of the current segmentation
-      core::Img8u m_lastDst;          //!< last used destination image
       icl8u m_bitShifts[3];     //!< bit shifts for all 8-Bit channels
       LUT3D *m_lut;             //!< color classification lookup table
 

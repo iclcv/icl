@@ -32,6 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter{
@@ -109,6 +110,12 @@ namespace icl {
         return m_oROIOffset;
       }
       protected:
+
+      /// Image-based prepare: computes shrunk ROI for mask, then delegates to UnaryOp::prepare
+      bool prepare(core::Image &dst, const core::Image &src);
+
+      /// Image-based prepare: as above, but with explicit depth
+      bool prepare(core::Image &dst, const core::Image &src, core::depth d);
 
       /// prepare filter operation: ensure compatible image format and size
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc);

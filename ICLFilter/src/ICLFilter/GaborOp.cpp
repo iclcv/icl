@@ -30,8 +30,8 @@
 
 #include <ICLFilter/GaborOp.h>
 #include <ICLFilter/ConvolutionOp.h>
-#include <cmath>
 #include <ICLCore/Image.h>
+#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -55,11 +55,7 @@ namespace icl{
       updateKernels();
     }
 
-    GaborOp::~GaborOp(){
-      for(unsigned int i=0;i<m_vecResults.size();++i){
-        delete m_vecResults[i];
-      }
-    }
+    GaborOp::~GaborOp(){}
 
     void GaborOp::setKernelSize(const Size &size){
       m_oKernelSize = size;
@@ -75,9 +71,6 @@ namespace icl{
 
     void GaborOp::updateKernels(){
       m_vecKernels.clear();
-      for(unsigned int i=0;i<m_vecResults.size();i++){
-        delete m_vecResults[i];
-      }
       m_vecResults.clear();
 
       ICLASSERT_RETURN( m_oKernelSize != Size::null );
@@ -94,7 +87,7 @@ namespace icl{
                                          m_vecSigmas[s],
                                          m_vecGammas[g]);
                 m_vecKernels.push_back(*k);
-                m_vecResults.push_back(0);
+                m_vecResults.push_back(Image());
                 delete k;
               }
             }
@@ -103,35 +96,28 @@ namespace icl{
       }
     }
 
-    void GaborOp::applyImgBase(const ImgBase *poSrc, ImgBase **ppoDst) {
-      ICLASSERT_RETURN( poSrc );
-      ICLASSERT_RETURN( ppoDst );
-      ICLASSERT_RETURN( poSrc != *ppoDst);
+    void GaborOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
 
+      Img32f result(Size::null, 0);
 
-      if(!*ppoDst){
-        *ppoDst = new Img32f(Size::null,0);
-      }
-      ImgBase *poDst = *ppoDst;
-      poDst->setChannels(0);
-      poDst->setSize(Size::null);
-
-      for(unsigned int i=0;i<m_vecKernels.size();i++){
-        ConvolutionOp co(ConvolutionKernel(m_vecKernels[i].getData(0),m_oKernelSize, false));
+      for(unsigned int i = 0; i < m_vecKernels.size(); i++){
+        ConvolutionOp co(ConvolutionKernel(m_vecKernels[i].getData(0), m_oKernelSize, false));
         co.setCheckOnly(false);
         co.setClipToROI(true);
 
-        co.apply(poSrc,&(m_vecResults[i]));
+        co.apply(src, m_vecResults[i]);
 
-        poDst->setSize(m_vecResults[i]->getSize());
-        poDst->asImg<icl32f>()->append(m_vecResults[i]->asImg<icl32f>());
+        result.setSize(m_vecResults[i].getSize());
+        result.append(&m_vecResults[i].as32f());
       }
+
+      dst = Image(result);
     }
 
     std::vector<icl32f> GaborOp::apply(const ImgBase *poSrc, const Point &p){
       ICLASSERT_RETURN_VAL( poSrc && poSrc->getChannels() && poSrc->getSize() != Size::null, std::vector<icl32f>() );
       std::vector<icl32f> v;
-
 
       Img32f resPix(Size(1,1),poSrc->getChannels());
       ImgBase *resPixBase  = &resPix;
@@ -175,13 +161,6 @@ namespace icl{
       }
 
       return poKernelImage;
-    }
-  
-    void GaborOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter

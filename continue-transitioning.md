@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 7)
+## Current State (Session 8)
 
 ### Architecture
 
@@ -80,7 +80,19 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (12 done)
+### NeighborhoodOp Image-based prepare (NEW)
+
+NeighborhoodOp now has Image-based `prepare()` methods that compute the shrunk ROI
+(accounting for mask size), then delegate to `UnaryOp::prepare(Image, ...)`.
+This is required for migrating any NeighborhoodOp subclass (WienerOp, MedianOp,
+ConvolutionOp, MorphologicalOp, LocalThresholdOp, etc.).
+
+```cpp
+bool NeighborhoodOp::prepare(Image &dst, const Image &src);
+bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d);
+```
+
+### Fully Native Image Filters (15 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -96,16 +108,19 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 10. **LUTOp** — always 8u, converts non-8u input via buffer, IPP `reduceBits` untouched
 11. **LUTOp3Channel** — template class, `visit()` for src depth, output typed by class param
 12. **IntegralImgOp** — output 32s/32f/64f, full-image sequential algorithm, IPP disabled
+13. **WienerOp** — IPP-only (8u/16s/32f), `WienerImpl` dispatch struct, NeighborhoodOp::prepare
+14. **GaborOp** — composition filter (wraps ConvolutionOp), `m_vecResults` now `vector<Image>`
+15. **ColorSegmentationOp** — depth8u only, `visitROILinesNWith<3,1>`, compile-time shift templates
 
-### Filters with applyImgBase Bridge (16 remaining)
+### Filters with applyImgBase Bridge (13 remaining)
 
-**With IPP acceleration (7):**
+**With IPP acceleration (6):**
 AffineOp, CannyOp, ConvolutionOp, LocalThresholdOp, MedianOp,
-MorphologicalOp, WarpOp, WienerOp
+MorphologicalOp, WarpOp
 
-**Pure C++ (8):**
-BilateralFilterOp, ChamferOp, ColorSegmentationOp,
-FFTOp, GaborOp, IFFTOp, MotionSensitiveTemporalSmoothing
+**Pure C++ (5):**
+BilateralFilterOp, ChamferOp,
+FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 ### BinaryOp Filters (not started)
 

@@ -38,56 +38,87 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
 
+#ifdef ICL_HAVE_IPP
 
-  #ifdef ICL_HAVE_IPP
-
-    namespace{
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiSize, IppiPoint, float[], icl8u*)>
-      void ippiWienerCall (const Img<T> *src,
-                           Img<T> *dst,
-                           const Size &oMaskSize,
-                           const Point &oAnchor,
-                           const Point &roiOffset,
-                           std::vector<icl8u> &vBuffer,
-                           icl32f fNoise) {
-        int iBufferSize;
-        ippiFilterWienerGetBufferSize(dst->getROISize(), oMaskSize, 1, &iBufferSize);
-        vBuffer.reserve (iBufferSize);
-
-        for(int c=src->getChannels()-1; c>=0; --c) {
-          ippiFunc(src->getROIData (c, roiOffset), src->getLineStep(),
-                   dst->getROIData (c), dst->getLineStep(),
-                   dst->getROISize(), oMaskSize, oAnchor, &fNoise, &vBuffer[0]);
-        };
+    template<class T> struct WienerImpl {
+      static void apply(const Img<T> &, Img<T> &,
+                        const Size &, const Point &, const Point &,
+                        std::vector<icl8u> &, icl32f) {
+        throw ICLException("WienerOp: unsupported depth");
       }
+    };
 
-    } // end of anonymous namespace
-
-
-    void WienerOp::applyImgBase (const ImgBase *poSrc, ImgBase **ppoDst) {
-      FUNCTION_LOG("");
-      if (!prepare (ppoDst, poSrc)) return;
-
-      switch(poSrc->getDepth()){
-  #define ARGLIST(D) poSrc->asImg<icl##D>(),(*ppoDst)->asImg<icl##D>(),getMaskSize(),getAnchor(),getROIOffset(),m_vecBuffer,m_fNoise
-        case depth8u: ippiWienerCall<icl8u,ippiFilterWiener_8u_C1R>(ARGLIST(8u)); break;
-        case depth16s: ippiWienerCall<icl16s,ippiFilterWiener_16s_C1R>(ARGLIST(16s)); break;
-        case depth32f: ippiWienerCall<icl32f,ippiFilterWiener_32f_C1R>(ARGLIST(32f)); break;
-        default: ICL_INVALID_DEPTH;
-  #undef ARGLIST
+    template<>
+    struct WienerImpl<icl8u> {
+      static void apply(const Img8u &src, Img8u &dst,
+                        const Size &maskSize, const Point &anchor,
+                        const Point &roiOffset,
+                        std::vector<icl8u> &buf, icl32f noise) {
+        int bufSize;
+        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
+        buf.reserve(bufSize);
+        for(int c = src.getChannels()-1; c >= 0; --c) {
+          ippiFilterWiener_8u_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
+                                  dst.getROIData(c), dst.getLineStep(),
+                                  dst.getROISize(), maskSize, anchor,
+                                  &noise, buf.data());
+        }
       }
+    };
+
+    template<>
+    struct WienerImpl<icl16s> {
+      static void apply(const Img16s &src, Img16s &dst,
+                        const Size &maskSize, const Point &anchor,
+                        const Point &roiOffset,
+                        std::vector<icl8u> &buf, icl32f noise) {
+        int bufSize;
+        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
+        buf.reserve(bufSize);
+        for(int c = src.getChannels()-1; c >= 0; --c) {
+          ippiFilterWiener_16s_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
+                                   dst.getROIData(c), dst.getLineStep(),
+                                   dst.getROISize(), maskSize, anchor,
+                                   &noise, buf.data());
+        }
+      }
+    };
+
+    template<>
+    struct WienerImpl<icl32f> {
+      static void apply(const Img32f &src, Img32f &dst,
+                        const Size &maskSize, const Point &anchor,
+                        const Point &roiOffset,
+                        std::vector<icl8u> &buf, icl32f noise) {
+        int bufSize;
+        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
+        buf.reserve(bufSize);
+        for(int c = src.getChannels()-1; c >= 0; --c) {
+          ippiFilterWiener_32f_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
+                                   dst.getROIData(c), dst.getLineStep(),
+                                   dst.getROISize(), maskSize, anchor,
+                                   &noise, buf.data());
+        }
+      }
+    };
+
+    void WienerOp::apply(const Image &src, Image &dst) {
+      if(!prepare(dst, src)) return;
+      src.visit([&](const auto &s) {
+        using T = typename std::remove_reference_t<decltype(s)>::type;
+        auto &d = dst.as<T>();
+        WienerImpl<T>::apply(s, d, getMaskSize(), getAnchor(), getROIOffset(),
+                             m_vecBuffer, m_fNoise);
+      });
     }
 
+#else
 
-
-  #endif
-  
-    void WienerOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
+    void WienerOp::apply(const Image &, Image &) {
+      throw utils::ICLException("WienerOp requires Intel IPP");
     }
+
+#endif
 
   } // namespace filter
 }

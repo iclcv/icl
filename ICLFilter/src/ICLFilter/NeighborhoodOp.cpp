@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLFilter/NeighborhoodOp.h>
+#include <ICLCore/Image.h>
 #include <ICLUtils/Macros.h>
 #include <ICLFilter/ImageSplitter.h>
 #include <future>
@@ -39,6 +40,20 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
+
+    bool NeighborhoodOp::prepare(Image &dst, const Image &src) {
+      return prepare(dst, src, src.getDepth());
+    }
+
+    bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d) {
+      Size oROIsize;
+      if (!computeROI(src.ptr(), m_oROIOffset, oROIsize)) return false;
+      return UnaryOp::prepare(dst, d,
+                              getClipToROI() ? oROIsize : src.getSize(),
+                              src.getFormat(), src.getChannels(),
+                              Rect(getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
+                              src.getTime());
+    }
 
     bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
       return prepare(ppoDst,poSrc,poSrc->getDepth());

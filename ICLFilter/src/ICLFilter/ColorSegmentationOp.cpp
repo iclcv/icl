@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/CCFunctions.h>
+#include <ICLCore/VisitorsN.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/File.h>
 #include <ICLUtils/Uncopyable.h>
@@ -331,12 +332,16 @@ namespace icl{
 
     };
 
-   template<class SrcIterator, class DstIterator, icl8u xShift, icl8u yShift, icl8u zShift>
-    static void apply_lookup(SrcIterator a, SrcIterator b, SrcIterator c, DstIterator d, DstIterator dEnd, const ShiftedLUT3D_T<xShift,yShift,zShift> &lut){
-      while(d!=dEnd){
-        *d = lut(*a,*b,*c);
-        ++a; ++b; ++c; ++d;
-      }
+    template<icl8u xShift, icl8u yShift, icl8u zShift>
+    static void apply_lookup_lines(const Img8u &src, Img8u &dst,
+                                   const ColorSegmentationOp::LUT3D &lut) {
+      ShiftedLUT3D_T<xShift,yShift,zShift> slut(lut);
+      visitROILinesNWith<3,1>(src, dst, [&](const icl8u *a, const icl8u *b, const icl8u *c,
+                                             icl8u *d, int w) {
+        for(int i = 0; i < w; ++i) {
+          d[i] = slut(a[i], b[i], c[i]);
+        }
+      });
     }
 
     ColorSegmentationOp::ColorSegmentationOp(icl8u c0shift, icl8u c1shift, icl8u c2shift, format fmt):
@@ -350,35 +355,33 @@ namespace icl{
     }
 
 
-    void ColorSegmentationOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
-      ICLASSERT_THROW(src,ICLException("ColorSegmentationOp::apply: source must not be null"));
-      ICLASSERT_THROW(src->hasFullROI(), ICLException("ColorSegmentationOp::apply: source image has a ROI which is not supported yet!"));
+    void ColorSegmentationOp::apply(const Image &src, Image &dst) {
+      ICLASSERT_THROW(!src.isNull(),ICLException("ColorSegmentationOp::apply: source must not be null"));
+      ICLASSERT_THROW(src.hasFullROI(), ICLException("ColorSegmentationOp::apply: source image has a ROI which is not supported yet!"));
 
       // preparing destination image
-      if(!dst) dst = bpp(m_outputBuffer);
-      if(getClipToROI()){
-        bool ok = prepare(dst,depth8u,src->getROISize(),formatMatrix,1,Rect(Point::null,src->getROISize()),src->getTime());
-        ICLASSERT_THROW(ok,ICLException("ColorSegmentationOp::apply: unable to prepare destination image"));
-      }else{
-        bool ok = prepare(dst,depth8u,src->getSize(),formatMatrix,1,src->getROI(),src->getTime());
-        ICLASSERT_THROW(ok,ICLException("ColorSegmentationOp::apply: unable to prepare destination image"));
-      }
-      Img8u &dstRef = *(*dst)->asImg<icl8u>();
+      bool ok = prepare(dst, depth8u,
+                        getClipToROI() ? src.getROISize() : src.getSize(),
+                        formatMatrix, 1,
+                        Rect(Point::null, getClipToROI() ? src.getROISize() : src.getSize()),
+                        src.getTime());
+      ICLASSERT_THROW(ok, ICLException("ColorSegmentationOp::apply: unable to prepare destination image"));
+      Img8u &dstRef = dst.as8u();
 
       // preparing source image
-      if(src->getFormat() != m_segFormat || src->getDepth() != depth8u){
+      const Img8u *srcPtr;
+      if(src.getFormat() != m_segFormat || src.getDepth() != depth8u){
         m_inputBuffer.setFormat(m_segFormat);
-        cc(src,&m_inputBuffer);
-        src = &m_inputBuffer;
+        cc(src.ptr(), &m_inputBuffer);
+        srcPtr = &m_inputBuffer;
+      }else{
+        srcPtr = &src.as8u();
       }
-      const Img8u &srcRef = *src->asImg<icl8u>();
+      const Img8u &srcRef = *srcPtr;
 
-      // we use cross-instantiated templates for better performance
-  #define SHIFT_2_CASE(SH0,SH1,SH2)                                       \
-      case SH2: apply_lookup(srcRef.begin(0),srcRef.begin(1),srcRef.begin(2), \
-                             dstRef.begin(0),dstRef.end(0),ShiftedLUT3D_T<SH0,SH1,SH2>(*m_lut)); break
-
-
+      // cross-instantiated templates for compile-time shift optimization
+  #define SHIFT_2_CASE(SH0,SH1,SH2) \
+      case SH2: apply_lookup_lines<SH0,SH1,SH2>(srcRef, dstRef, *m_lut); break
 
   #define SHIFT_2(SH0,SH1)                                                \
       switch(m_bitShifts[2]){                                             \
@@ -386,17 +389,11 @@ namespace icl{
         SHIFT_2_CASE(SH0,SH1,2); SHIFT_2_CASE(SH0,SH1,3);                 \
         SHIFT_2_CASE(SH0,SH1,4); SHIFT_2_CASE(SH0,SH1,5);                 \
         SHIFT_2_CASE(SH0,SH1,6); SHIFT_2_CASE(SH0,SH1,7);                 \
-        default: apply_lookup(srcRef.begin(0),                            \
-                              srcRef.begin(1),                            \
-                              srcRef.begin(2),                            \
-                              dstRef.begin(0),                            \
-                              dstRef.end(0),                              \
-                              ShiftedLUT3D_T<SH0,SH1,8>(*m_lut));  break; \
+        default: apply_lookup_lines<SH0,SH1,8>(srcRef, dstRef, *m_lut); break; \
       }
 
   #define SHIFT_1_CASE(SH0,SH1)                   \
       case SH1: SHIFT_2(SH0,SH1) break;
-
 
   #define SHIFT_1(SH0)                                    \
         switch(m_bitShifts[1]){                           \
@@ -406,7 +403,6 @@ namespace icl{
           SHIFT_1_CASE(SH0,6);SHIFT_1_CASE(SH0,7);        \
           default: SHIFT_2(SH0,8); break;                 \
         }
-
 
       switch(m_bitShifts[0]){
   #define SHIFT_0_CASE(SH0) case SH0: SHIFT_1(SH0); break
@@ -556,12 +552,5 @@ namespace icl{
       t = m_lut->t;
     }
   
-    void ColorSegmentationOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
-    }
-
   } // namespace filter
 }

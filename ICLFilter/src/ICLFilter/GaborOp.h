@@ -202,8 +202,6 @@ namespace icl{
       /// returns all currently created kernels
       const std::vector<core::Img32f> &getKernels() const { return m_vecKernels; }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-
       private:
       std::vector<icl32f> m_vecLambdas;
       std::vector<icl32f> m_vecThetas;
@@ -212,7 +210,7 @@ namespace icl{
       std::vector<icl32f> m_vecGammas;
 
       std::vector<core::Img32f> m_vecKernels;
-      std::vector<core::ImgBase*> m_vecResults;
+      std::vector<core::Image> m_vecResults;
       utils::Size m_oKernelSize;
     };
   } // namespace filter

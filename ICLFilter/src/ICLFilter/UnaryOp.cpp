@@ -135,15 +135,21 @@ namespace icl{
     }
 
     bool UnaryOp::prepare(core::Image &dst, const core::Image &src) {
-      utils::Rect roi = getClipToROI() ? src.getROI() : utils::Rect(utils::Point::null, src.getSize());
-      return prepare(dst, src.getDepth(), getClipToROI() ? src.getROISize() : src.getSize(),
-                     src.getFormat(), src.getChannels(), roi, src.getTime());
+      utils::Size dstSize = getClipToROI() ? src.getROISize() : src.getSize();
+      utils::Rect dstROI = getClipToROI()
+        ? utils::Rect(utils::Point::null, src.getROISize())
+        : src.getROI();
+      return prepare(dst, src.getDepth(), dstSize,
+                     src.getFormat(), src.getChannels(), dstROI, src.getTime());
     }
 
     bool UnaryOp::prepare(core::Image &dst, const core::Image &src, core::depth d) {
-      utils::Rect roi = getClipToROI() ? src.getROI() : utils::Rect(utils::Point::null, src.getSize());
-      return prepare(dst, d, getClipToROI() ? src.getROISize() : src.getSize(),
-                     src.getFormat(), src.getChannels(), roi, src.getTime());
+      utils::Size dstSize = getClipToROI() ? src.getROISize() : src.getSize();
+      utils::Rect dstROI = getClipToROI()
+        ? utils::Rect(utils::Point::null, src.getROISize())
+        : src.getROI();
+      return prepare(dst, d, dstSize,
+                     src.getFormat(), src.getChannels(), dstROI, src.getTime());
     }
 
 
