@@ -265,9 +265,6 @@ namespace icl {
       }
 
 
-    
-    private:
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
     };
 
   } // namespace filter

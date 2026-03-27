@@ -17,6 +17,7 @@
 #include <ICLFilter/ChamferOp.h>
 #include <ICLFilter/AffineOp.h>
 #include <ICLFilter/CannyOp.h>
+#include <ICLFilter/MedianOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -994,4 +995,220 @@ ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces 
     for(int x = 0; x < dst.getWidth() && !hasNonZero; ++x)
       if(std::abs(d(x, y, 0)) > 1e-6f) hasNonZero = true;
   ICL_TEST_TRUE(hasNonZero);
+}
+
+// ============================================================
+// MedianOp tests
+// ============================================================
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_8u", "3x3 median picks middle value") {
+  // 5x5 src → 3x3 dst (border shrink = 1 on each side)
+  Img8u src(Size(5, 5), 1);
+  src.clear();
+  // Fill a 3x3 region centered at (2,2): values 1..9
+  icl8u vals[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++)
+      src(x, y, 0) = vals[idx++];
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // dst(1,1) maps to src center (2,2) whose 3x3 neighborhood = {3,7,1,5,9,2,8,4,6}
+  // sorted: {1,2,3,4,5,6,7,8,9} → median = 5
+  ICL_TEST_EQ(dst.as8u()(1, 1, 0), (icl8u)5);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_32f", "3x3 median on float image") {
+  Img32f src(Size(5, 5), 1);
+  src.clear();
+  icl32f vals[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++)
+      src(x, y, 0) = vals[idx++];
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.as32f()(1, 1, 0), 5.0f);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_uniform", "3x3 median preserves uniform region") {
+  Img8u src(Size(7, 7), 1);
+  for (int y = 0; y < 7; y++)
+    for (int x = 0; x < 7; x++)
+      src(x, y, 0) = 42;
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // All output should be 42
+  const Img8u &d = dst.as8u();
+  for (int y = 0; y < d.getHeight(); y++)
+    for (int x = 0; x < d.getWidth(); x++)
+      ICL_TEST_EQ(d(x, y, 0), (icl8u)42);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_removes_impulse", "3x3 median removes salt-and-pepper noise") {
+  // Uniform image with a single outlier
+  Img8u src(Size(5, 5), 1);
+  for (int y = 0; y < 5; y++)
+    for (int x = 0; x < 5; x++)
+      src(x, y, 0) = 100;
+  src(2, 2, 0) = 255;  // impulse
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // Center pixel should be 100 (median of eight 100s and one 255)
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)100);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.5x5_8u", "5x5 median on 8u image") {
+  // 9x9 src → 5x5 dst (border shrink = 2 on each side)
+  Img8u src(Size(9, 9), 1);
+  src.clear();
+  // Fill the 5x5 neighborhood of center (4,4): values 1..25
+  icl8u val = 1;
+  for (int y = 2; y <= 6; y++)
+    for (int x = 2; x <= 6; x++)
+      src(x, y, 0) = val++;
+
+  MedianOp op(Size(5, 5));
+  Image dst = op.apply(Image(src));
+  // dst(2,2) maps to src center (4,4) whose 5x5 neighborhood = 1..25, median = 13
+  ICL_TEST_EQ(dst.as8u()(2, 2, 0), (icl8u)13);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.5x5_32f", "5x5 median on 32f image") {
+  Img32f src(Size(9, 9), 1);
+  src.clear();
+  icl32f val = 1;
+  for (int y = 2; y <= 6; y++)
+    for (int x = 2; x <= 6; x++)
+      src(x, y, 0) = val++;
+
+  MedianOp op(Size(5, 5));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.as32f()(2, 2, 0), 13.0f);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.7x7_arbitrary_mask", "7x7 median (arbitrary mask path)") {
+  // Test the generic sort-based / Huang fallback
+  Img8u src(Size(11, 11), 1);
+  for (int y = 0; y < 11; y++)
+    for (int x = 0; x < 11; x++)
+      src(x, y, 0) = 50;
+  src(5, 5, 0) = 200;  // single outlier
+
+  MedianOp op(Size(7, 7));
+  Image dst = op.apply(Image(src));
+  // 7x7 = 49 pixels, 48 are 50, 1 is 200. Median = 50.
+  // Check a pixel whose mask includes the outlier
+  const Img8u &d = dst.as8u();
+  // dst size = 11-6 = 5, center of dst (2,2) maps to src (5,5)
+  ICL_TEST_EQ(d(0, 0, 0), (icl8u)50);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.multichannel", "3x3 median on multi-channel image") {
+  Img8u src(Size(5, 5), 2);
+  src.clear();
+  // Channel 0: center 3x3 = 1..9
+  // Channel 1: center 3x3 = 11..19
+  icl8u vals0[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  icl8u vals1[] = {13, 17, 11, 15, 19, 12, 18, 14, 16};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++) {
+      src(x, y, 0) = vals0[idx];
+      src(x, y, 1) = vals1[idx];
+      idx++;
+    }
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // dst(1,1) maps to src center (2,2) — full 3x3 neighborhood of set values
+  ICL_TEST_EQ(dst.as8u()(1, 1, 0), (icl8u)5);
+  ICL_TEST_EQ(dst.as8u()(1, 1, 1), (icl8u)15);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.output_size", "median output has correct shrunk size") {
+  Img32f src(Size(10, 8), 1);
+  src.clear();
+  MedianOp op3(Size(3, 3));
+  Image dst3 = op3.apply(Image(src));
+  ICL_TEST_EQ(dst3.getWidth(), 8);
+  ICL_TEST_EQ(dst3.getHeight(), 6);
+
+  MedianOp op5(Size(5, 5));
+  Image dst5 = op5.apply(Image(src));
+  ICL_TEST_EQ(dst5.getWidth(), 6);
+  ICL_TEST_EQ(dst5.getHeight(), 4);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.even_mask_rounds_up", "even mask size is rounded to odd") {
+  // MedianOp(Size(4,4)) should adapt to Size(5,5)
+  MedianOp op(Size(4, 4));
+  ICL_TEST_EQ(op.getMaskSize(), Size(5, 5));
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_16s", "3x3 median on 16s image") {
+  Img16s src(Size(5, 5), 1);
+  src.clear();
+  icl16s vals[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++)
+      src(x, y, 0) = vals[idx++];
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.as16s()(1, 1, 0), (icl16s)5);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_32s", "3x3 median on 32s image") {
+  Img32s src(Size(5, 5), 1);
+  src.clear();
+  icl32s vals[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++)
+      src(x, y, 0) = vals[idx++];
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.as32s()(1, 1, 0), (icl32s)5);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.3x3_64f", "3x3 median on 64f image") {
+  Img64f src(Size(5, 5), 1);
+  src.clear();
+  icl64f vals[] = {3, 7, 1, 5, 9, 2, 8, 4, 6};
+  int idx = 0;
+  for (int y = 1; y <= 3; y++)
+    for (int x = 1; x <= 3; x++)
+      src(x, y, 0) = vals[idx++];
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.as64f()(1, 1, 0), 5.0);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.larger_image", "3x3 median on a larger image") {
+  // 20x15 image filled with gradient, verify it runs without crash
+  Img8u src(Size(20, 15), 1);
+  for (int y = 0; y < 15; y++)
+    for (int x = 0; x < 20; x++)
+      src(x, y, 0) = (x + y * 20) % 256;
+
+  MedianOp op(Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getWidth(), 18);
+  ICL_TEST_EQ(dst.getHeight(), 13);
+
+  // Spot-check center pixel: src neighborhood at (10,7):
+  // rows 6-8, cols 9-11
+  // (9+6*20)%256=129, (10+6*20)%256=130, (11+6*20)%256=131
+  // (9+7*20)%256=149, (10+7*20)%256=150, (11+7*20)%256=151
+  // (9+8*20)%256=169, (10+8*20)%256=170, (11+8*20)%256=171
+  // sorted: 129,130,131,149,150,151,169,170,171 → median=150
+  ICL_TEST_EQ(dst.as8u()(9, 6, 0), (icl8u)150);
 }

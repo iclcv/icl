@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 9)
+## Current State (Session 10)
 
 ### Architecture
 
@@ -114,7 +114,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (18 done)
+### Fully Native Image Filters (19 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -136,11 +136,14 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 16. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
 17. **AffineOp** — `AffineImpl` dispatch struct, IPP 8u/32f, C++ fallback with inverse matrix
 18. **CannyOp** — composition (Sobel→Canny), shared `applyCannyCore`, fixed non-clipToROI stride bug
+19. **MedianOp** — `MedianImpl<T>` dispatch struct, 4 algorithms: SIMD sorting networks (3x3/5x5),
+    Huang histogram O(n) for 8u/16s arbitrary masks, generic sort for other types. Fixed pre-existing
+    bug in column-oriented `sse_median3x3` driver (didn't re-sort newly loaded row). IPP for 8u/16s.
 
-### Filters with applyImgBase Bridge (10 remaining)
+### Filters with applyImgBase Bridge (9 remaining)
 
-**With IPP acceleration (5):**
-ConvolutionOp, LocalThresholdOp, MedianOp, MorphologicalOp, WarpOp
+**With IPP acceleration (4):**
+ConvolutionOp, LocalThresholdOp, MorphologicalOp, WarpOp
 
 **Pure C++ (4):**
 BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
@@ -153,7 +156,6 @@ BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 - BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
 - FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
 - IFFTOp (hard) — same as FFTOp but reverse
-- MedianOp (hardest) — heavy ImgIterator, hand-optimized SSE2 3x3/5x5, IPP 8u/16s
 - MotionSensitiveTemporalSmoothing (hardest) — stateful, OpenCL, temporal buffers
 
 ### BinaryOp Filters (not started)
@@ -236,11 +238,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-196 tests total (tests/ directory, single icl-tests executable):
+210 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 76 filter tests covering all 18 migrated filters
+- `test-filter.cpp` — 90 filter tests covering all 19 migrated filters
 
 Test patterns using initializer list constructors:
 ```cpp
