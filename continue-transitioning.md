@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 12)
+## Current State (Session 12 — WarpOp + Backend Dispatch Framework)
 
 ### Architecture
 
@@ -283,11 +283,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-249 tests total (tests/ directory, single icl-tests executable):
+257 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 118 filter tests covering all 23 migrated filters
+- `test-filter.cpp` — 127 filter tests covering 23 migrated filters + NewThresholdOp
 
 Test patterns — prefer these concise forms:
 ```cpp
@@ -367,8 +367,46 @@ The same patterns should be used in production code where performance is not cri
 - **Use visitor patterns** — prefer `Img<T>::from`, `visitPixels`, line-based visitors
   (Visitors.h) wherever manual pixel loops exist. These are fully inlined — zero cost.
   Apply to production code (non-hot paths) and all test code.
-- **Filter dispatch architecture rework** — split each filter's backend implementations
-  into separate files (X.cpp = C++ fallback, X_Ipp.cpp, X_SSE.cpp, X_OpenCL.cpp).
-  Build a cascaded self-reflection mechanism that dispatches through priority levels
-  (OpenCL → IPP → SSE → C++ fallback), with per-type and per-sub-op granularity.
-  The current dispatch struct pattern is a stepping stone. Do after Image migration.
+- **Backend Dispatch Framework — IN PROGRESS** — `FilterDispatch.h/cpp` implements
+  a cascaded backend dispatch mechanism. Proof-of-concept: `NewThresholdOp` with
+  C++ fallback + SSE2 + IPP backends in separate files. Next steps:
+  - Port `NewUnaryCompareOp` and `NewUnaryArithmeticalOp` to validate further
+  - Consider moving `FilterDispatch.h` to ICLUtils (it's not filter-specific)
+  - Once validated, replace old filters and drop the "New" prefix
+
+### Backend Dispatch Framework (FilterDispatch.h)
+
+Key types and naming:
+```
+Backend              — enum: Cpp, Simd, Ipp, OpenCL
+BackendSelector<Sig> — typed dispatch table for one sub-op, templated on function signature
+BackendSelectorBase  — non-templated base for introspection
+Dispatching          — mixin base class, owns BackendSelectors via PIMPL storage
+ApplicabilityFn      — std::function<bool(const Image&)> for depth/ROI/etc. checks
+```
+
+Usage pattern in a filter .cpp:
+```cpp
+// Constructor:
+initDispatching("MyFilterOp");
+auto& sub = addSelector<Sig>("subOpName");  // creates + loads from registry
+sub.add(Backend::Cpp, cpp_fn);              // C++ fallback (auto-description)
+
+// apply():
+auto& sub = getSelector<Sig>("subOpName");
+sub.resolve(src)->apply(src, dst, ...);     // cascaded backend selection
+
+// Backend .cpp self-registration (no #include of filter header):
+static const int _r = registerBackend<Sig>(
+    "MyFilterOp.subOpName", Backend::Simd, simd_fn,
+    [](const Image& s) { return s.getDepth() == depth8u; },
+    "SSE2 description");
+```
+
+Testing: `forceAll(Backend::Cpp)`, `forEachCombination()` for exhaustive cross-validation.
+
+### NewThresholdOp (proof-of-concept)
+
+Files: `NewThresholdOp.h` (clean header, no dispatch internals), `.cpp` (C++ fallback + apply),
+`_Simd.cpp` (SSE2 for 8u/32f), `_Ipp.cpp` (IPP for 8u/16s/32f, conditional).
+3 sub-ops: ltVal, gtVal, ltgtVal. 9 tests including cross-validation of all backend combos.
