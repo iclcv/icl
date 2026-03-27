@@ -41,6 +41,7 @@
 #include <cmath>
 #include <algorithm>
 #include <initializer_list>
+#include <type_traits>
 
 
 namespace icl {
@@ -288,6 +289,47 @@ namespace icl {
             for (int x = 0; x < w; x++)
               img(x, y, c) = f(x, y, c);
         return img;
+      }
+
+      /// Visit each ROI pixel with an auto-detected lambda signature
+      /** Supported forms (detected at compile time via if constexpr):
+          - f(Type &val)                         — value only
+          - f(int x, int y, Type &val)           — coordinates + value
+          - f(int x, int y, int c, Type &val)    — full (coordinates, channel, value)
+
+          Not for hot paths (uses operator() per pixel). Ideal for tests,
+          initialization, and non-critical code. */
+      template<class F>
+      void visitPixels(F &&f) {
+        const int rx = getROI().x, ry = getROI().y;
+        const int rw = getROIWidth(), rh = getROIHeight();
+        for (int c = 0; c < getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++) {
+              if constexpr (std::is_invocable_v<F, Type&>)
+                f((*this)(x, y, c));
+              else if constexpr (std::is_invocable_v<F, int, int, Type&>)
+                f(x, y, (*this)(x, y, c));
+              else
+                f(x, y, c, (*this)(x, y, c));
+            }
+      }
+
+      /// const version — lambda receives const Type&
+      template<class F>
+      void visitPixels(F &&f) const {
+        const int rx = getROI().x, ry = getROI().y;
+        const int rw = getROIWidth(), rh = getROIHeight();
+        for (int c = 0; c < getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++) {
+              if constexpr (std::is_invocable_v<F, const Type&>)
+                f((*this)(x, y, c));
+              else if constexpr (std::is_invocable_v<F, int, int, const Type&>)
+                f(x, y, (*this)(x, y, c));
+              else
+                f(x, y, c, (*this)(x, y, c));
+            }
       }
 
       /// Copy constructor WARNING: Violates const concept
