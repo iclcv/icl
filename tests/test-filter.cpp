@@ -20,6 +20,7 @@
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLFilter/MorphologicalOp.h>
+#include <ICLFilter/LocalThresholdOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1050,6 +1051,49 @@ ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces 
   bool hasNonZero = false;
   dst.as32f().visitPixels([&](const icl32f &v) { if(std::abs(v) > 1e-6f) hasNonZero = true; });
   ICL_TEST_TRUE(hasNonZero);
+}
+
+// ============================================================
+// LocalThresholdOp tests
+// ============================================================
+
+ICL_REGISTER_TEST("Filter.LocalThreshold.regionMean_binary", "regionMean produces binary output") {
+  // Left half dark, right half bright
+  auto src = Img8u::from(40, 40, 1, [](int x, int, int) -> icl8u { return (x < 20) ? 30 : 200; });
+  LocalThresholdOp op(5, 0);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  // Output should be binary (0 or 255)
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0 && v != 255) ok = false; });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.LocalThreshold.tiledNN", "tiledNN algorithm works") {
+  auto src = Img8u::from(40, 40, 1, [](int x, int, int) -> icl8u { return (x < 20) ? 30 : 200; });
+  LocalThresholdOp op(LocalThresholdOp::tiledNN, 5, 0);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_TRUE(dst.getWidth() > 0);
+}
+
+ICL_REGISTER_TEST("Filter.LocalThreshold.tiledLIN", "tiledLIN algorithm works") {
+  auto src = Img8u::from(40, 40, 1, [](int x, int, int) -> icl8u { return (x < 20) ? 30 : 200; });
+  LocalThresholdOp op(LocalThresholdOp::tiledLIN, 5, 0);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_TRUE(dst.getWidth() > 0);
+}
+
+ICL_REGISTER_TEST("Filter.LocalThreshold.global", "global algorithm delegates to simple threshold") {
+  auto src = Img8u::from(20, 20, 1, [](int x, int y, int) -> icl8u { return x + y * 20; });
+  LocalThresholdOp op(LocalThresholdOp::global, 5, 100);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  // Pixels > 100 should be 255
+  ICL_TEST_EQ(dst.as8u()(10, 10, 0), (icl8u)255);  // 10+200=210 > 100
+  // Pixels <= 100 should be 0
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)0);  // 0 <= 100
 }
 
 // ============================================================

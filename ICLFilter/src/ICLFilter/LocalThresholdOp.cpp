@@ -105,8 +105,9 @@ namespace icl{
       addProperty("mask size","range:slider","[1,100]",str(maskSize));
       addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
       addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
-      addProperty("algorithm","menu","region mean,tiled linear,tiled NN,gobal",a==regionMean?"region mean":a==tiledNN?"tiled NN":"tiled linear");
+      addProperty("algorithm","menu","region mean,tiled linear,tiled NN,global",a==regionMean?"region mean":a==tiledNN?"tiled NN":a==global?"global":"tiled linear");
       addProperty("actually used mask size","info","","0");
+      addProperty("invert output","flag","",false);
     }
 
 
@@ -594,72 +595,60 @@ namespace icl{
     }
 
 
-    void LocalThresholdOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
-      ICLASSERT_RETURN( src );
-      ICLASSERT_RETURN( src->getSize() != Size::null );
-      ICLASSERT_RETURN( src->getChannels() );
-      ICLASSERT_RETURN( dst );
-      ICLASSERT_RETURN( src != *dst );
+    void LocalThresholdOp::apply(const core::Image &src, core::Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
+      ICLASSERT_RETURN(src.getChannels());
 
       if(getAlgorithm() == global){
         UnaryCompareOp cmp(">",getGlobalThreshold());
-        cmp.apply(src,dst);
+        cmp.apply(src, dst);
         return;
       }
-      const ImgBase *srcOrig = src;
+
+      const ImgBase *psrc = src.ptr();
       bool roi = false;
-      // cut the roi of src if set
-      if(!(src->hasFullROI())){
-        ensureCompatible(&m_roiBufSrc, src->getDepth(), src->getROISize(), src->getChannels(), src->getFormat());
-        src->deepCopyROI(&m_roiBufSrc);
-        src = m_roiBufSrc;
+      if(!(psrc->hasFullROI())){
+        ensureCompatible(&m_roiBufSrc, psrc->getDepth(), psrc->getROISize(), psrc->getChannels(), psrc->getFormat());
+        psrc->deepCopyROI(&m_roiBufSrc);
+        psrc = m_roiBufSrc;
         roi = true;
       }
-      ICLASSERT_RETURN(src->getWidth() > 2*static_cast<int>(getMaskSize()));
-      ICLASSERT_RETURN(src->getHeight() > 2*static_cast<int>(getMaskSize()));
+      ICLASSERT_RETURN(psrc->getWidth() > 2*static_cast<int>(getMaskSize()));
+      ICLASSERT_RETURN(psrc->getHeight() > 2*static_cast<int>(getMaskSize()));
 
-      // prepare the destination image
       depth dstDepth = getAlgorithm() == regionMean ? (getGammaSlope() ? depth32f : depth8u) : depth8u;
-      ImgBase **useDst = roi ? &m_roiBufDst : dst;
-      if(!prepare(useDst, dstDepth, src->getSize(), formatMatrix, src->getChannels(), Rect::null)){
+      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
+      ImgBase **useDst = roi ? &m_roiBufDst : &dstPtr;
+      if(!prepare(useDst, dstDepth, psrc->getSize(), formatMatrix, psrc->getChannels(), Rect::null)){
         ERROR_LOG("prepare failure [code 1]");
         return;
       }
 
       switch(getAlgorithm()){
-        case regionMean: apply_a<regionMean>(src,useDst); break;
-        case tiledNN: apply_a<tiledNN>(src,useDst); break;
-        case tiledLIN: apply_a<tiledLIN>(src,useDst); break;
+        case regionMean: apply_a<regionMean>(psrc,useDst); break;
+        case tiledNN: apply_a<tiledNN>(psrc,useDst); break;
+        case tiledLIN: apply_a<tiledLIN>(psrc,useDst); break;
         default:
           throw ICLException(std::string(__FUNCTION__)+": invalid algorithm value");
       }
 
       if(roi){
-        if(!prepare(dst, srcOrig, (*useDst)->getDepth())){
+        if(!prepare(&dstPtr, src.ptr(), (*useDst)->getDepth())){
           ERROR_LOG("prepare failure [code 2]");
           return;
         }
-        (*useDst)->deepCopyROI(dst);
+        (*useDst)->deepCopyROI(&dstPtr);
       }
-      (*dst)->setTime(src->getTime());
+      dstPtr->setTime(psrc->getTime());
+      dst = core::Image(*dstPtr);
 
       if(dstDepth == depth8u && getPropertyValue("invert output").as<bool>()){
-        Channel8u c = (*(*dst)->as8u())[0];
+        Channel8u c = (*dst.ptr()->as8u())[0];
         const int dim = c.getDim();
         for(int i=0;i<dim;++i){
           c[i] = 255-c[i];
         }
       }
-    }
-
-
-
-  
-    void LocalThresholdOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter

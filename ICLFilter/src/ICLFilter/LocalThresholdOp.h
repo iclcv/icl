@@ -230,7 +230,6 @@ namespace icl{
       /// sets internally used algorithm
       void setAlgorithm(algorithm a);
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
 
       /// internal algorithm function

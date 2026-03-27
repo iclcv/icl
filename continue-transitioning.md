@@ -114,7 +114,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (21 done)
+### Fully Native Image Filters (22 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -145,17 +145,19 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
     pointers. Compound ops (open/close/tophat/blackhat/gradient) now use Image-based apply internally.
     Fixed pre-existing bug: constructors called setMask before initializing m_eType, causing
     uninitialized-read that randomly set mask to Size(1,1) under threading.
+22. **LocalThresholdOp** — 4 algorithms (regionMean, tiledNN, tiledLIN, global). Internal ROI
+    buffering uses ImgBase* (kept for now, internal detail). Fixed pre-existing bug: algorithm
+    constructor missing "invert output" property, also fixed typo "gobal"→"global" in menu.
 
-### Filters with applyImgBase Bridge (7 remaining)
+### Filters with applyImgBase Bridge (6 remaining)
 
-**With IPP acceleration (2):**
-LocalThresholdOp, WarpOp
+**With IPP acceleration (1):**
+WarpOp
 
 **Pure C++ (4):**
 BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 **Difficulty estimates:**
-- LocalThresholdOp (medium) — 4 algorithms, IPP in tiled threshold
 - WarpOp (hard) — OpenCL path, IPP remap
 - BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
 - FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
@@ -242,11 +244,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-235 tests total (tests/ directory, single icl-tests executable):
+239 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 103 filter tests covering all 21 migrated filters
+- `test-filter.cpp` — 107 filter tests covering all 22 migrated filters
 
 Test patterns using initializer list constructors:
 ```cpp
