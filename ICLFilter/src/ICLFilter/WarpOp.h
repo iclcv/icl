@@ -57,8 +57,10 @@ namespace icl{
         conveniently and safely.
 
         \section ROI ROI-Support
-        Currently this Op does not provide ROI handling (although used
-        IPP-functions do)
+        The source ROI determines which output pixels to compute.
+        The full source image is always used as the lookup domain
+        (the warp map can reference any pixel). clipToROI and
+        non-clipToROI modes are both supported.
 
         \section IPP IPP-Support
         Support is purely optional and only defined in case of depth8u
@@ -141,7 +143,6 @@ namespace icl{
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       bool m_allowWarpMapScaling;
       core::Img32f m_warpMap;
