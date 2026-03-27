@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 10)
+## Current State (Session 11)
 
 ### Architecture
 
@@ -66,6 +66,44 @@ VisitorsN.h (includes Visitors.h + <array> + <utility>):
 
 **TODO for BinaryOp**: will need a `visitROILines2With(src1, src2, dst, f)` variant
 for two-source + one-dst patterns. Add to Visitors.h when BinaryOp migration starts.
+
+### Per-Pixel Convenience Visitors (Img<T> members)
+
+```cpp
+// Auto-detected lambda signature via if constexpr + is_invocable:
+img.visitPixels([](T &val) { ... });                    // value only
+img.visitPixels([](int x, int y, T &val) { ... });     // coordinates + value
+img.visitPixels([](int x, int y, int c, T &val) { ... }); // full
+
+// roiOnly parameter (default true):
+img.visitPixels(f);          // iterates ROI only
+img.visitPixels(f, false);   // iterates full image
+```
+
+Both mutable and const overloads. Uses `getData(c)` + direct indexing (not operator()).
+Not for hot paths — uses per-pixel indexing. Ideal for tests, initialization, non-critical code.
+
+### Img<T>::from() Static Factory
+
+```cpp
+auto img = Img8u::from(10, 10, 1, [](int x, int y, int c) -> icl8u {
+    return x + y * 10;
+});
+```
+
+Replaces the common construct + fill-loop pattern. Generator called as `f(x, y, channel)`.
+
+### Generic ROI Test Helper
+
+```cpp
+testROIHandling(UnaryOp &op, const Image &src, const Rect &roi);
+```
+
+Tests both clipToROI=true (correct size, content matches no-clip mode) and
+clipToROI=false (full-size output, ROI content matches, sentinel survives outside ROI).
+Pre-allocates dst at output depth for depth-changing filters (e.g. UnaryCompareOp).
+Works for both UnaryOp and NeighborhoodOp (mask border shrinking tested automatically).
+Note: affine ops (MirrorOp) write full image in non-clip mode — test those separately.
 
 ### UnaryOp Virtual Interface
 
@@ -250,14 +288,30 @@ src.getImageRect()                   // Rect(0,0,w,h)
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
 - `test-filter.cpp` — 107 filter tests covering all 22 migrated filters
 
-Test patterns using initializer list constructors:
+Test patterns — prefer these concise forms:
 ```cpp
-// Concise pixel-correctness test
+// Initializer list for small known images
 ICL_TEST_TRUE((op.apply(Img8u{{1,2,3}}) == Img8u{{3,2,1}}));
 
-// Multi-channel
-Image src = Img8u{{{10, 20}}, {{30, 40}}};  // 2ch
+// Img::from for computed images
+auto src = Img8u::from(20, 20, 1, [](int x, int y, int) -> icl8u { return x + y * 20; });
+
+// visitPixels for result checking
+bool ok = true;
+dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0 && v != 255) ok = false; });
+ICL_TEST_TRUE(ok);
+
+// Generic ROI test — covers clipToROI, non-clip, sentinel check
+testROIHandling(op, src, Rect(2, 2, 6, 6));
+
+// clear(-1, val) for uniform fill
+Img8u src(Size(7,7), 1); src.clear(-1, 42);
 ```
+
+**Guideline**: use `Img::from`, `visitPixels`, and `clear(-1, val)` wherever possible
+to avoid manual construct+loop and per-pixel read patterns. These are zero-cost
+abstractions (fully inlined by the compiler) and significantly reduce test boilerplate.
+The same patterns should be used in production code where performance is not critical.
 
 ## Bugs Fixed During Migration
 
@@ -269,6 +323,19 @@ Image src = Img8u{{{10, 20}}, {{30, 40}}};  // 2ch
   when clipToROI=false. Fixed by separating mag indexing (derivative stride) from dst
   indexing (dst stride via getROIData + getWidth).
 - **MirrorOp missing `using UnaryOp::apply`** — single-arg apply was hidden.
+- **MedianOp sse_median3x3 sorting bug** — column-oriented driver didn't re-sort newly
+  loaded rows in the inner loop, producing wrong medians for unsorted neighborhoods.
+  Fixed by switching 8u 3x3 to sse_for + subMedian3x3 (correct, still SIMD-accelerated).
+- **flippedCopyChannelROI infinite loop** — `getMirrorPointerOffsets` computed end sentinel
+  `e` relative to buffer start, not relative to source offset. When `srcOffset.x > 0`,
+  `s != e` never matched → infinite loop (SIGBUS). Fixed by computing `e` and `eLine`
+  relative to `s`. Affected MirrorOp with ROI at non-zero x offset.
+- **MorphologicalOp uninitialized m_eType** — all constructors called `setMask()` before
+  initializing `m_eType`. Since `setMask` checks `m_eType >= 6`, uninitialized stack memory
+  could randomly set NeighborhoodOp mask to Size(1,1) → zero border shrink. Flaky under
+  multi-threading. Fixed by setting `m_eType` before `setMask` in all constructors.
+- **LocalThresholdOp missing "invert output" property** — algorithm constructor didn't add
+  the property, causing exception when queried. Also fixed typo "gobal"→"global" in menu.
 
 ## Other TODOs
 
@@ -288,3 +355,10 @@ Image src = Img8u{{{10, 20}}, {{30, 40}}};  // 2ch
   - ConvolutionOp (fixed-kernel convolutions, e.g. 3x3 Sobel)
   - MedianOp (already has SSE2 — extend to more depths/sizes)
   - MorphologicalOp (erode/dilate with flat structuring elements)
+- **IPP cross-validation** — compile ICL in a Linux container with IPP, run both
+  IPP and C++ paths on same inputs, compare outputs for all migrated filters.
+- **MirrorOp clipToROI=false** — affine ops write full image in non-clip mode, so
+  the generic ROI sentinel test doesn't apply. Test MirrorOp ROI handling separately.
+- **Use visitor patterns** — prefer `Img<T>::from`, `visitPixels`, line-based visitors
+  (Visitors.h) wherever manual pixel loops exist. These are fully inlined — zero cost.
+  Apply to production code (non-hot paths) and all test code.
