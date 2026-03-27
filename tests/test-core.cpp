@@ -375,7 +375,7 @@ ICL_REGISTER_TEST("Img.visitPixels_xyc", "visitPixels with f(x,y,c,T&)") {
   ICL_TEST_EQ(img(1, 1, 1), (icl8u)111);
 }
 
-ICL_REGISTER_TEST("Img.visitPixels_roi", "visitPixels respects ROI") {
+ICL_REGISTER_TEST("Img.visitPixels_roi", "visitPixels respects ROI by default") {
   Img8u img(utils::Size(6, 6), 1);
   img.clear();
   img.setROI(utils::Rect(1, 1, 4, 4));
@@ -385,4 +385,15 @@ ICL_REGISTER_TEST("Img.visitPixels_roi", "visitPixels respects ROI") {
   // outside ROI: still 0
   ICL_TEST_EQ(img(0, 0, 0), (icl8u)0);
   ICL_TEST_EQ(img(5, 5, 0), (icl8u)0);
+}
+
+ICL_REGISTER_TEST("Img.visitPixels_full", "visitPixels roiOnly=false ignores ROI") {
+  Img8u img(utils::Size(6, 6), 1);
+  img.clear();
+  img.setROI(utils::Rect(1, 1, 4, 4));
+  img.visitPixels([](icl8u &v) { v = 42; }, false);
+  // ALL pixels set, including outside ROI
+  ICL_TEST_EQ(img(0, 0, 0), (icl8u)42);
+  ICL_TEST_EQ(img(5, 5, 0), (icl8u)42);
+  ICL_TEST_EQ(img(3, 3, 0), (icl8u)42);
 }

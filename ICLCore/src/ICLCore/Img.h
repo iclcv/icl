@@ -291,45 +291,54 @@ namespace icl {
         return img;
       }
 
-      /// Visit each ROI pixel with an auto-detected lambda signature
+      /// Visit each pixel with an auto-detected lambda signature
       /** Supported forms (detected at compile time via if constexpr):
           - f(Type &val)                         — value only
           - f(int x, int y, Type &val)           — coordinates + value
           - f(int x, int y, int c, Type &val)    — full (coordinates, channel, value)
+          @param roiOnly if true (default), iterate only over the ROI; if false, iterate
+                         over the full image.
 
-          Not for hot paths (uses operator() per pixel). Ideal for tests,
-          initialization, and non-critical code. */
+          Not for hot paths. Ideal for tests, initialization, and non-critical code. */
       template<class F>
-      void visitPixels(F &&f) {
-        const int rx = getROI().x, ry = getROI().y;
-        const int rw = getROIWidth(), rh = getROIHeight();
-        for (int c = 0; c < getChannels(); c++)
-          for (int y = ry; y < ry + rh; y++)
-            for (int x = rx; x < rx + rw; x++) {
+      void visitPixels(F &&f, bool roiOnly = true) {
+        const int w = getWidth();
+        const int x0 = roiOnly ? getROI().x : 0, y0 = roiOnly ? getROI().y : 0;
+        const int x1 = roiOnly ? x0 + getROIWidth() : w;
+        const int y1 = roiOnly ? y0 + getROIHeight() : getHeight();
+        for (int c = 0; c < getChannels(); c++) {
+          Type *p = getData(c);
+          for (int y = y0; y < y1; y++)
+            for (int x = x0; x < x1; x++) {
               if constexpr (std::is_invocable_v<F, Type&>)
-                f((*this)(x, y, c));
+                f(p[x + y * w]);
               else if constexpr (std::is_invocable_v<F, int, int, Type&>)
-                f(x, y, (*this)(x, y, c));
+                f(x, y, p[x + y * w]);
               else
-                f(x, y, c, (*this)(x, y, c));
+                f(x, y, c, p[x + y * w]);
             }
+        }
       }
 
       /// const version — lambda receives const Type&
       template<class F>
-      void visitPixels(F &&f) const {
-        const int rx = getROI().x, ry = getROI().y;
-        const int rw = getROIWidth(), rh = getROIHeight();
-        for (int c = 0; c < getChannels(); c++)
-          for (int y = ry; y < ry + rh; y++)
-            for (int x = rx; x < rx + rw; x++) {
+      void visitPixels(F &&f, bool roiOnly = true) const {
+        const int w = getWidth();
+        const int x0 = roiOnly ? getROI().x : 0, y0 = roiOnly ? getROI().y : 0;
+        const int x1 = roiOnly ? x0 + getROIWidth() : w;
+        const int y1 = roiOnly ? y0 + getROIHeight() : getHeight();
+        for (int c = 0; c < getChannels(); c++) {
+          const Type *p = getData(c);
+          for (int y = y0; y < y1; y++)
+            for (int x = x0; x < x1; x++) {
               if constexpr (std::is_invocable_v<F, const Type&>)
-                f((*this)(x, y, c));
+                f(p[x + y * w]);
               else if constexpr (std::is_invocable_v<F, int, int, const Type&>)
-                f(x, y, (*this)(x, y, c));
+                f(x, y, p[x + y * w]);
               else
-                f(x, y, c, (*this)(x, y, c));
+                f(x, y, c, p[x + y * w]);
             }
+        }
       }
 
       /// Copy constructor WARNING: Violates const concept
