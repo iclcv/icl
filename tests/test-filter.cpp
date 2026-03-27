@@ -465,17 +465,12 @@ static void testROIHandling(UnaryOp &op, const Image &src, const Rect &roi) {
   op.setClipToROI(true);
 }
 
-// Create a gradient test image (values 0..N wrap at 256 for 8u)
-static Image makeGradient(int w, int h, depth d, int ch = 1) {
-  Image img(Size(w, h), d, ch, formatMatrix);
-  img.visit([&](auto &typed) {
-    using T = typename std::remove_reference_t<decltype(typed)>::type;
-    for (int c = 0; c < typed.getChannels(); c++)
-      for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++)
-          typed(x, y, c) = static_cast<T>((x + y * w + c * 7) % 200 + 1);
+// Create a gradient test image — uses Img<T>::from, then wraps as Image
+template<class T>
+static Image makeGradient(int w, int h, int ch = 1) {
+  return Img<T>::from(w, h, ch, [w](int x, int y, int c) -> T {
+    return static_cast<T>((x + y * w + c * 7) % 200 + 1);
   });
-  return img;
 }
 
 // ====================================================================
@@ -484,27 +479,27 @@ static Image makeGradient(int w, int h, depth d, int ch = 1) {
 
 ICL_REGISTER_TEST("Filter.ROI.ThresholdOp", "ROI handling for ThresholdOp") {
   ThresholdOp op(ThresholdOp::gt, 100, 100);
-  Image src = makeGradient(10, 10, depth8u);
+  Image src = makeGradient<icl8u>(10, 10);
   testROIHandling(op, src, Rect(2, 2, 6, 6));  // interior
   testROIHandling(op, src, Rect(0, 0, 5, 5));  // corner
 }
 
 ICL_REGISTER_TEST("Filter.ROI.UnaryArithmeticalOp", "ROI handling for UnaryArithmeticalOp") {
   UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 5.0);
-  Image src = makeGradient(10, 10, depth32f);
+  Image src = makeGradient<icl32f>(10, 10);
   testROIHandling(op, src, Rect(2, 2, 6, 6));
   testROIHandling(op, src, Rect(0, 0, 5, 5));
 }
 
 ICL_REGISTER_TEST("Filter.ROI.UnaryCompareOp", "ROI handling for UnaryCompareOp") {
   UnaryCompareOp op(UnaryCompareOp::gt, 50.0);
-  Image src = makeGradient(10, 10, depth32f);
+  Image src = makeGradient<icl32f>(10, 10);
   testROIHandling(op, src, Rect(2, 2, 6, 6));
 }
 
 ICL_REGISTER_TEST("Filter.ROI.UnaryLogicalOp", "ROI handling for UnaryLogicalOp") {
   UnaryLogicalOp op(UnaryLogicalOp::andOp, 0xF0);
-  Image src = makeGradient(10, 10, depth8u);
+  Image src = makeGradient<icl8u>(10, 10);
   testROIHandling(op, src, Rect(1, 1, 7, 7));
 }
 
@@ -512,10 +507,7 @@ ICL_REGISTER_TEST("Filter.ROI.MirrorOp", "MirrorOp ROI clip produces correct mir
   // MirrorOp is an affine op: non-clip mode writes the full image (not just ROI),
   // so testROIHandling's sentinel check doesn't apply. Test clip mode manually.
   MirrorOp op(axisHorz);
-  Img8u src(Size(10, 10), 1);
-  for (int y = 0; y < 10; y++)
-    for (int x = 0; x < 10; x++)
-      src(x, y, 0) = x + y * 10;
+  auto src = Img8u::from(10, 10, 1, [](int x, int y, int) -> icl8u { return x + y * 10; });
   Image srcImg(src);
   srcImg.setROI(Rect(2, 2, 6, 6));
   op.setClipToROI(true);
@@ -537,14 +529,14 @@ ICL_REGISTER_TEST("Filter.ROI.MirrorOp", "MirrorOp ROI clip produces correct mir
 
 ICL_REGISTER_TEST("Filter.ROI.MedianOp", "ROI handling for MedianOp") {
   MedianOp op(Size(3, 3));
-  Image src = makeGradient(12, 12, depth8u);
+  Image src = makeGradient<icl8u>(12, 12);
   testROIHandling(op, src, Rect(2, 2, 8, 8));  // interior (no extra shrink)
   testROIHandling(op, src, Rect(0, 0, 8, 8));  // edge (shrinks further)
 }
 
 ICL_REGISTER_TEST("Filter.ROI.MedianOp_5x5", "ROI handling for MedianOp 5x5") {
   MedianOp op(Size(5, 5));
-  Image src = makeGradient(14, 14, depth32f);
+  Image src = makeGradient<icl32f>(14, 14);
   testROIHandling(op, src, Rect(3, 3, 8, 8));
 }
 

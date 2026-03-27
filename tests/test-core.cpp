@@ -326,3 +326,27 @@ ICL_REGISTER_TEST("Image.eq_null", "two null images are equal") {
   Image a, b;
   ICL_TEST_TRUE(a == b);
 }
+
+ICL_REGISTER_TEST("Img.from_single_channel", "Img::from creates image from generator") {
+  auto img = Img8u::from(4, 3, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 4;
+  });
+  ICL_TEST_EQ(img.getWidth(), 4);
+  ICL_TEST_EQ(img.getHeight(), 3);
+  ICL_TEST_EQ(img.getChannels(), 1);
+  ICL_TEST_EQ(img(0, 0, 0), (icl8u)0);
+  ICL_TEST_EQ(img(3, 0, 0), (icl8u)3);
+  ICL_TEST_EQ(img(0, 2, 0), (icl8u)8);
+  ICL_TEST_EQ(img(3, 2, 0), (icl8u)11);
+}
+
+ICL_REGISTER_TEST("Img.from_multi_channel", "Img::from with multiple channels") {
+  auto img = Img32f::from(3, 2, 2, [](int x, int y, int c) -> icl32f {
+    return (c + 1) * 10.f + x + y * 3;
+  });
+  ICL_TEST_EQ(img.getChannels(), 2);
+  ICL_TEST_EQ(img(0, 0, 0), 10.f);  // ch0: 10 + 0 + 0
+  ICL_TEST_EQ(img(2, 1, 0), 15.f);  // ch0: 10 + 2 + 3
+  ICL_TEST_EQ(img(0, 0, 1), 20.f);  // ch1: 20 + 0 + 0
+  ICL_TEST_EQ(img(2, 1, 1), 25.f);  // ch1: 20 + 2 + 3
+}

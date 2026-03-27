@@ -268,6 +268,28 @@ namespace icl {
       */
       Img(std::initializer_list<std::initializer_list<std::initializer_list<Type>>> channels);
 
+      /// Create an image from a generator function
+      /** Example:
+          \code
+          auto img = Img8u::from(10, 10, 1, [](int x, int y, int) {
+              return x + y * 10;
+          });
+          \endcode
+          @param w image width
+          @param h image height
+          @param channels number of channels
+          @param f generator called as f(x, y, channel) for each pixel
+      */
+      template<class F>
+      static Img<Type> from(int w, int h, int channels, F &&f) {
+        Img<Type> img(utils::Size(w, h), channels);
+        for (int c = 0; c < channels; c++)
+          for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+              img(x, y, c) = f(x, y, c);
+        return img;
+      }
+
       /// Copy constructor WARNING: Violates const concept
       /** Creates a flat copy of the source image. The new image will contain a
           flat copy of all channels of the source image. This constructor is only
