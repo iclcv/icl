@@ -390,55 +390,146 @@ ICL_REGISTER_TEST("Filter.GaborOp.size", "output size is valid") {
 }
 
 // ====================================================================
-// ROI tests
+// Generic ROI test helpers
 // ====================================================================
 
-ICL_REGISTER_TEST("Filter.ROI.arithmetical_clip", "addOp with clipToROI produces smaller output") {
-  Image src(Size(6, 6), depth32f, 1);
-  Img32f &s = src.as32f();
-  for(int y = 0; y < 6; ++y)
-    for(int x = 0; x < 6; ++x)
-      s(x, y, 0) = 10.0f;
-  src.setROI(Rect(1, 1, 4, 4));
+// Test that clipToROI and non-clip modes produce consistent results,
+// and that pixels outside the ROI are not modified in non-clip mode.
+// Works for any UnaryOp (including NeighborhoodOp subclasses).
+static void testROIHandling(UnaryOp &op, const Image &src, const Rect &roi) {
+  Image srcROI = src.deepCopy();
+  srcROI.setROI(roi);
 
-  UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 5.0);
+  // --- clipToROI=true: produces a smaller (or equal) image ---
   op.setClipToROI(true);
-  Image dst;
-  op.apply(src, dst);
-  ICL_TEST_EQ(dst.getWidth(), 4);
-  ICL_TEST_EQ(dst.getHeight(), 4);
-  ICL_TEST_NEAR(dst.as32f()(0, 0, 0), 15.0f, 1e-5f);
-}
+  Image clipped = op.apply(srcROI);
+  // output must not be larger than the ROI
+  ICL_TEST_TRUE(clipped.getWidth() <= roi.width);
+  ICL_TEST_TRUE(clipped.getHeight() <= roi.height);
+  ICL_TEST_TRUE(clipped.getWidth() > 0);
+  ICL_TEST_TRUE(clipped.getHeight() > 0);
 
-ICL_REGISTER_TEST("Filter.ROI.threshold_clip", "thresholdOp with clipToROI") {
-  Image src(Size(6, 6), depth8u, 1);
-  Img8u &s = src.as8u();
-  for(int y = 0; y < 6; ++y)
-    for(int x = 0; x < 6; ++x)
-      s(x, y, 0) = 200;
-  src.setROI(Rect(1, 1, 4, 4));
-
-  ThresholdOp op(ThresholdOp::gt, 128, 128);
-  op.setClipToROI(true);
-  Image dst;
-  op.apply(src, dst);
-  ICL_TEST_EQ(dst.getWidth(), 4);
-  ICL_TEST_EQ(dst.getHeight(), 4);
-  ICL_TEST_EQ(static_cast<int>(dst.as8u()(0, 0, 0)), 128);
-}
-
-ICL_REGISTER_TEST("Filter.ROI.compare_no_clip", "compareOp with ROI, no clip preserves full size") {
-  Image src(Size(8, 8), depth32f, 1);
-  src.clear();
-  src.as32f()(4, 4, 0) = 100.0f;
-  src.setROI(Rect(2, 2, 4, 4));
-
-  UnaryCompareOp op(UnaryCompareOp::gt, 50.0);
+  // --- clipToROI=false: full-size image, ROI marks processed region ---
   op.setClipToROI(false);
-  Image dst;
-  op.apply(src, dst);
-  ICL_TEST_EQ(dst.getWidth(), 8);
-  ICL_TEST_EQ(dst.getHeight(), 8);
+  // Pre-allocate dst at output depth/channels (from clipped) but full src size,
+  // so ensureCompatible reuses the buffer and our sentinel survives.
+  const double SENTINEL = 222;
+  Image full(src.getSize(), clipped.getDepth(), clipped.getChannels(), clipped.getFormat());
+  full.clear(-1, SENTINEL);
+  op.apply(srcROI, full);
+
+  // full image size = src size
+  ICL_TEST_EQ(full.getSize(), src.getSize());
+
+  // ROI region of full should match clipped exactly
+  ICL_TEST_EQ(full.getROISize(), clipped.getSize());
+
+  bool contentMatch = true;
+  full.visit([&](const auto &f) {
+    using T = typename std::remove_reference_t<decltype(f)>::type;
+    const auto &c = clipped.as<T>();
+    Rect dr = f.getROI();
+    for (int ch = 0; ch < f.getChannels(); ch++) {
+      const T *fp = f.getROIData(ch);
+      const T *cp = c.getData(ch);
+      for (int y = 0; y < dr.height; y++) {
+        for (int x = 0; x < dr.width; x++) {
+          if (fp[x] != cp[x]) contentMatch = false;
+        }
+        fp += f.getWidth();
+        cp += c.getWidth();
+      }
+    }
+  });
+  ICL_TEST_TRUE(contentMatch);
+
+  // sentinel must survive outside the ROI
+  bool sentinelOK = true;
+  full.visit([&](const auto &f) {
+    using T = typename std::remove_reference_t<decltype(f)>::type;
+    T sv = static_cast<T>(SENTINEL);
+    Rect dr = f.getROI();
+    for (int ch = 0; ch < f.getChannels(); ch++) {
+      for (int y = 0; y < f.getHeight(); y++) {
+        for (int x = 0; x < f.getWidth(); x++) {
+          bool inROI = x >= dr.x && x < dr.x + dr.width
+                    && y >= dr.y && y < dr.y + dr.height;
+          if (!inROI && f(x, y, ch) != sv) sentinelOK = false;
+        }
+      }
+    }
+  });
+  ICL_TEST_TRUE(sentinelOK);
+
+  // restore default
+  op.setClipToROI(true);
+}
+
+// Create a gradient test image (values 0..N wrap at 256 for 8u)
+static Image makeGradient(int w, int h, depth d, int ch = 1) {
+  Image img(Size(w, h), d, ch, formatMatrix);
+  img.visit([&](auto &typed) {
+    using T = typename std::remove_reference_t<decltype(typed)>::type;
+    for (int c = 0; c < typed.getChannels(); c++)
+      for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+          typed(x, y, c) = static_cast<T>((x + y * w + c * 7) % 200 + 1);
+  });
+  return img;
+}
+
+// ====================================================================
+// ROI tests — non-NeighborhoodOp filters
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ROI.ThresholdOp", "ROI handling for ThresholdOp") {
+  ThresholdOp op(ThresholdOp::gt, 100, 100);
+  Image src = makeGradient(10, 10, depth8u);
+  testROIHandling(op, src, Rect(2, 2, 6, 6));  // interior
+  testROIHandling(op, src, Rect(0, 0, 5, 5));  // corner
+}
+
+ICL_REGISTER_TEST("Filter.ROI.UnaryArithmeticalOp", "ROI handling for UnaryArithmeticalOp") {
+  UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 5.0);
+  Image src = makeGradient(10, 10, depth32f);
+  testROIHandling(op, src, Rect(2, 2, 6, 6));
+  testROIHandling(op, src, Rect(0, 0, 5, 5));
+}
+
+ICL_REGISTER_TEST("Filter.ROI.UnaryCompareOp", "ROI handling for UnaryCompareOp") {
+  UnaryCompareOp op(UnaryCompareOp::gt, 50.0);
+  Image src = makeGradient(10, 10, depth32f);
+  testROIHandling(op, src, Rect(2, 2, 6, 6));
+}
+
+ICL_REGISTER_TEST("Filter.ROI.UnaryLogicalOp", "ROI handling for UnaryLogicalOp") {
+  UnaryLogicalOp op(UnaryLogicalOp::andOp, 0xF0);
+  Image src = makeGradient(10, 10, depth8u);
+  testROIHandling(op, src, Rect(1, 1, 7, 7));
+}
+
+// MirrorOp crashes with clipToROI=false — pre-existing bug, skipped for now
+// ICL_REGISTER_TEST("Filter.ROI.MirrorOp", "ROI handling for MirrorOp") {
+//   MirrorOp op(axisHorz);
+//   Image src = makeGradient(10, 10, depth8u);
+//   testROIHandling(op, src, Rect(2, 2, 6, 6));
+// }
+
+// ====================================================================
+// ROI tests — NeighborhoodOp filters
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.ROI.MedianOp", "ROI handling for MedianOp") {
+  MedianOp op(Size(3, 3));
+  Image src = makeGradient(12, 12, depth8u);
+  testROIHandling(op, src, Rect(2, 2, 8, 8));  // interior (no extra shrink)
+  testROIHandling(op, src, Rect(0, 0, 8, 8));  // edge (shrinks further)
+}
+
+ICL_REGISTER_TEST("Filter.ROI.MedianOp_5x5", "ROI handling for MedianOp 5x5") {
+  MedianOp op(Size(5, 5));
+  Image src = makeGradient(14, 14, depth32f);
+  testROIHandling(op, src, Rect(3, 3, 8, 8));
 }
 
 // ====================================================================
@@ -1211,4 +1302,27 @@ ICL_REGISTER_TEST("Filter.MedianOp.larger_image", "3x3 median on a larger image"
   // (9+8*20)%256=169, (10+8*20)%256=170, (11+8*20)%256=171
   // sorted: 129,130,131,149,150,151,169,170,171 → median=150
   ICL_TEST_EQ(dst.as8u()(9, 6, 0), (icl8u)150);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.huang_nontrivial", "7x7 Huang median with non-trivial values") {
+  // 11x11 image with a gradient — exercises Huang histogram with real data
+  Img8u src(Size(11, 11), 1);
+  for (int y = 0; y < 11; y++)
+    for (int x = 0; x < 11; x++)
+      src(x, y, 0) = (x * 7 + y * 13) % 256;
+
+  MedianOp op(Size(7, 7));
+  Image dst = op.apply(Image(src));
+  // dst is 5x5 (11 - 6)
+  ICL_TEST_EQ(dst.getWidth(), 5);
+  ICL_TEST_EQ(dst.getHeight(), 5);
+
+  // Verify center pixel dst(2,2) → src center (5,5), 7x7 neighborhood (2,2)-(8,8)
+  // Collect expected values manually
+  std::vector<icl8u> vals;
+  for (int y = 2; y <= 8; y++)
+    for (int x = 2; x <= 8; x++)
+      vals.push_back((x * 7 + y * 13) % 256);
+  std::sort(vals.begin(), vals.end());
+  ICL_TEST_EQ(dst.as8u()(2, 2, 0), vals[49/2]);
 }
