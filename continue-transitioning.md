@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 11)
+## Current State (Session 12)
 
 ### Architecture
 
@@ -152,7 +152,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (22 done)
+### Fully Native Image Filters (23 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -186,17 +186,18 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 22. **LocalThresholdOp** — 4 algorithms (regionMean, tiledNN, tiledLIN, global). Internal ROI
     buffering uses ImgBase* (kept for now, internal detail). Fixed pre-existing bug: algorithm
     constructor missing "invert output" property, also fixed typo "gobal"→"global" in menu.
+23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f via `ippiRemap`, OpenCL 8u+LIN
+    (full-ROI only, falls back otherwise). Added ROI support: source ROI defines which output
+    pixels to compute, full source is always the lookup domain. Warp offset handles clip/non-clip
+    coordinate mapping. Fixed pre-existing bug: `interpolate_pixel_lin` had no -1 sentinel check
+    (OOB read when warp map contained out-of-bounds coordinates).
 
-### Filters with applyImgBase Bridge (6 remaining)
-
-**With IPP acceleration (1):**
-WarpOp
+### Filters with applyImgBase Bridge (5 remaining)
 
 **Pure C++ (4):**
 BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 **Difficulty estimates:**
-- WarpOp (hard) — OpenCL path, IPP remap
 - BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
 - FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
 - IFFTOp (hard) — same as FFTOp but reverse
@@ -282,11 +283,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-239 tests total (tests/ directory, single icl-tests executable):
+249 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 107 filter tests covering all 22 migrated filters
+- `test-filter.cpp` — 118 filter tests covering all 23 migrated filters
 
 Test patterns — prefer these concise forms:
 ```cpp
@@ -336,6 +337,10 @@ The same patterns should be used in production code where performance is not cri
   multi-threading. Fixed by setting `m_eType` before `setMask` in all constructors.
 - **LocalThresholdOp missing "invert output" property** — algorithm constructor didn't add
   the property, causing exception when queried. Also fixed typo "gobal"→"global" in menu.
+- **WarpOp interpolate_pixel_lin OOB read** — bilinear interpolation function had no check
+  for the -1 sentinel set by `prepare_warp_table_inplace` for out-of-bounds coordinates.
+  NN mode checked `if(x < 0) return 0` but LIN did not, causing undefined behavior when
+  warp map contained OOB entries. Fixed by adding the same sentinel check to LIN.
 
 ## Other TODOs
 
@@ -362,3 +367,8 @@ The same patterns should be used in production code where performance is not cri
 - **Use visitor patterns** — prefer `Img<T>::from`, `visitPixels`, line-based visitors
   (Visitors.h) wherever manual pixel loops exist. These are fully inlined — zero cost.
   Apply to production code (non-hot paths) and all test code.
+- **Filter dispatch architecture rework** — split each filter's backend implementations
+  into separate files (X.cpp = C++ fallback, X_Ipp.cpp, X_SSE.cpp, X_OpenCL.cpp).
+  Build a cascaded self-reflection mechanism that dispatches through priority levels
+  (OpenCL → IPP → SSE → C++ fallback), with per-type and per-sub-op granularity.
+  The current dispatch struct pattern is a stepping stone. Do after Image migration.

@@ -21,6 +21,8 @@
 #include <ICLFilter/ConvolutionOp.h>
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/LocalThresholdOp.h>
+#include <ICLFilter/WarpOp.h>
+#include <ICLFilter/NewThresholdOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1440,4 +1442,392 @@ ICL_REGISTER_TEST("Filter.MedianOp.huang_nontrivial", "7x7 Huang median with non
       vals.push_back((x * 7 + y * 13) % 256);
   std::sort(vals.begin(), vals.end());
   ICL_TEST_EQ(dst.as8u()(2, 2, 0), vals[49/2]);
+}
+
+// ============================================================
+// WarpOp tests
+// ============================================================
+
+// Helper: create an identity warp map (dst pixel maps to same src pixel)
+static Img32f makeIdentityWarpMap(int w, int h) {
+  return Img32f::from(w, h, 2, [](int x, int y, int c) -> icl32f {
+    return c == 0 ? static_cast<icl32f>(x) : static_cast<icl32f>(y);
+  });
+}
+
+// Helper: create a shift warp map (dst pixel reads from src shifted by dx,dy)
+static Img32f makeShiftWarpMap(int w, int h, float dx, float dy) {
+  return Img32f::from(w, h, 2, [dx, dy](int x, int y, int c) -> icl32f {
+    return c == 0 ? x + dx : y + dy;
+  });
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.identity_nn", "identity warp with NN preserves image") {
+  auto src = Img8u::from(10, 8, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 10;
+  });
+  Img32f wm = makeIdentityWarpMap(10, 8);
+  WarpOp op(wm, interpolateNN);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getSize(), src.getSize());
+  ICL_TEST_TRUE((dst.as8u() == src));
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.identity_lin", "identity warp with LIN preserves image") {
+  auto src = Img32f::from(10, 8, 1, [](int x, int y, int) -> icl32f {
+    return x * 1.5f + y * 3.0f;
+  });
+  Img32f wm = makeIdentityWarpMap(10, 8);
+  WarpOp op(wm, interpolateLIN);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_TRUE((dst.as32f() == src));
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.shift_nn", "integer shift warp with NN") {
+  auto src = Img8u::from(10, 10, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 10;
+  });
+  // Shift by (2, 3): dst(x,y) reads from src(x+2, y+3)
+  Img32f wm = makeShiftWarpMap(10, 10, 2, 3);
+  WarpOp op(wm, interpolateNN);
+  Image dst = op.apply(Image(src));
+  // Interior pixels should match shifted source
+  // dst(0,0) = src(2,3) = 2+3*10 = 32
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)32);
+  // dst(3,4) = src(5,7) = 5+7*10 = 75
+  ICL_TEST_EQ(dst.as8u()(3, 4, 0), (icl8u)75);
+  // Out-of-bounds: dst(8,8) = src(10,11) → out of bounds → 0
+  ICL_TEST_EQ(dst.as8u()(8, 8, 0), (icl8u)0);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.multichannel", "warp works on multi-channel images") {
+  auto src = Img8u::from(8, 8, 3, [](int x, int y, int c) -> icl8u {
+    return x + y * 8 + c * 64;
+  });
+  Img32f wm = makeIdentityWarpMap(8, 8);
+  WarpOp op(wm, interpolateNN);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getChannels(), 3);
+  ICL_TEST_TRUE((dst.as8u() == src));
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.all_depths_identity", "identity warp works for all depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  Img32f wm = makeIdentityWarpMap(8, 6);
+
+  for(auto d : depths) {
+    Image src(Size(8, 6), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>(x + y * 8);
+      });
+    });
+    WarpOp op(wm, interpolateNN);
+    Image dst = op.apply(src);
+    ICL_TEST_EQ(dst.getSize(), src.getSize());
+    ICL_TEST_EQ(dst.getDepth(), src.getDepth());
+    // Spot check: pixel (3,2) = 3+2*8 = 19
+    bool ok = false;
+    dst.visit([&](const auto &img) {
+      using T = typename std::remove_reference_t<decltype(img)>::type;
+      ok = (img(3, 2, 0) == static_cast<T>(19));
+    });
+    ICL_TEST_TRUE(ok);
+  }
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.lin_subpixel", "bilinear interpolation produces correct sub-pixel values") {
+  // 4x4 image with value = x (so we can check horizontal interpolation)
+  auto src = Img32f::from(4, 4, 1, [](int x, int, int) -> icl32f {
+    return static_cast<icl32f>(x);
+  });
+  // Warp map: shift by 0.5 in x → dst(x,y) reads from src(x+0.5, y)
+  Img32f wm = makeShiftWarpMap(4, 4, 0.5f, 0.0f);
+  WarpOp op(wm, interpolateLIN);
+  Image dst = op.apply(Image(src));
+  // dst(0,0) = src(0.5, 0) = lerp(src(0,0), src(1,0), 0.5) = (0+1)/2 = 0.5
+  ICL_TEST_EQ(dst.as32f()(0, 0, 0), 0.5f);
+  // dst(1,0) = src(1.5, 0) = lerp(1, 2, 0.5) = 1.5
+  ICL_TEST_EQ(dst.as32f()(1, 0, 0), 1.5f);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.oob_returns_zero", "out-of-bounds warp coords produce zero") {
+  Img8u src(Size(4, 4), 1);
+  src.clear(-1, 100);  // fill with 100
+  // Warp map: all coords point to (-1, -1) → out of bounds
+  auto wm = Img32f::from(4, 4, 2, [](int, int, int) -> icl32f { return -1.0f; });
+  WarpOp op(wm, interpolateNN);
+  Image dst = op.apply(Image(src));
+  bool allZero = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0) allZero = false; });
+  ICL_TEST_TRUE(allZero);
+
+  // Also test LIN
+  WarpOp opLin(wm, interpolateLIN);
+  Image dstLin = opLin.apply(Image(src));
+  bool allZeroLin = true;
+  dstLin.as8u().visitPixels([&](const icl8u &v) { if(v != 0) allZeroLin = false; });
+  ICL_TEST_TRUE(allZeroLin);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.warp_map_scaling", "warp map auto-scales to match image size") {
+  // 4x4 identity warp map, 8x8 source — scaling interpolates coordinate values,
+  // so scaled identity != identity at new resolution. Just verify it works and
+  // produces correct size output.
+  Img32f wm = makeIdentityWarpMap(4, 4);
+  auto src = Img8u::from(8, 8, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 8;
+  });
+  WarpOp op(wm, interpolateNN, true);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getSize(), src.getSize());
+  ICL_TEST_EQ(dst.getDepth(), depth8u);
+  // Corner (0,0) maps to (0,0) regardless of scaling
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), src(0, 0, 0));
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.roi_clip", "clipToROI produces correctly sized output") {
+  auto src = Img8u::from(10, 10, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 10;
+  });
+  Img32f wm = makeIdentityWarpMap(10, 10);
+  WarpOp op(wm, interpolateNN);
+  op.setClipToROI(true);
+
+  Image srcImg(src);
+  srcImg.setROI(Rect(2, 3, 5, 4));
+  Image dst = op.apply(srcImg);
+
+  // Clipped output should be ROI-sized
+  ICL_TEST_EQ(dst.getWidth(), 5);
+  ICL_TEST_EQ(dst.getHeight(), 4);
+  // dst(0,0) should be src(2,3) = 2+3*10 = 32 (identity warp, offset by ROI)
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)32);
+  // dst(4,3) should be src(6,6) = 6+6*10 = 66
+  ICL_TEST_EQ(dst.as8u()(4, 3, 0), (icl8u)66);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.roi_nonclip_sentinel", "non-clip ROI preserves sentinel outside ROI") {
+  auto src = Img8u::from(10, 10, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 10;
+  });
+  Img32f wm = makeIdentityWarpMap(10, 10);
+  WarpOp op(wm, interpolateNN);
+  op.setClipToROI(false);
+
+  Image srcImg(src);
+  srcImg.setROI(Rect(2, 2, 6, 6));
+
+  // Pre-fill dst with sentinel
+  Image dst(Size(10, 10), depth8u, 1);
+  dst.clear(-1, 222);
+  op.apply(srcImg, dst);
+
+  // dst should be full size
+  ICL_TEST_EQ(dst.getSize(), Size(10, 10));
+
+  // ROI pixels should match source (identity warp)
+  const Img8u &d = dst.as8u();
+  bool roiOK = true;
+  for(int y = 2; y < 8; ++y)
+    for(int x = 2; x < 8; ++x)
+      if(d(x, y, 0) != src(x, y, 0)) roiOK = false;
+  ICL_TEST_TRUE(roiOK);
+
+  // Sentinel should survive outside ROI
+  bool sentinelOK = true;
+  for(int y = 0; y < 10; ++y)
+    for(int x = 0; x < 10; ++x) {
+      bool inROI = x >= 2 && x < 8 && y >= 2 && y < 8;
+      if(!inROI && d(x, y, 0) != 222) sentinelOK = false;
+    }
+  ICL_TEST_TRUE(sentinelOK);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.roi_clip_nonclip_consistent", "clip and non-clip ROI produce same pixel values") {
+  auto src = Img8u::from(12, 12, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  // Use a shift warp to make it non-trivial
+  Img32f wm = makeShiftWarpMap(12, 12, 1, 2);
+  Rect roi(3, 3, 6, 6);
+
+  Image srcImg(src);
+  srcImg.setROI(roi);
+
+  WarpOp opClip(wm, interpolateNN);
+  opClip.setClipToROI(true);
+  Image clipped = opClip.apply(srcImg);
+
+  WarpOp opFull(wm, interpolateNN);
+  opFull.setClipToROI(false);
+  Image full(Size(12, 12), depth8u, 1);
+  full.clear(-1, 222);
+  opFull.apply(srcImg, full);
+
+  // clipped content should match full's ROI content
+  ICL_TEST_EQ(clipped.getSize(), Size(6, 6));
+  const Img8u &c = clipped.as8u();
+  const Img8u &f = full.as8u();
+  bool match = true;
+  for(int y = 0; y < 6; ++y)
+    for(int x = 0; x < 6; ++x)
+      if(c(x, y, 0) != f(x + 3, y + 3, 0)) match = false;
+  ICL_TEST_TRUE(match);
+}
+
+// ============================================================
+// NewThresholdOp — FilterDispatch framework proof-of-concept
+// ============================================================
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.basic_ltval", "ltVal clamps below threshold") {
+  Image src = Img8u{{10, 50, 100, 150},
+                    {200, 250, 30, 60}};
+  NewThresholdOp op(NewThresholdOp::ltVal, 100, 100, 0, 255);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.getWidth(), 4);
+  ICL_TEST_EQ(dst.getHeight(), 2);
+  // pixels < 100 should become 0
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)0);   // 10 < 100 → 0
+  ICL_TEST_EQ(dst.as8u()(1, 0, 0), (icl8u)0);   // 50 < 100 → 0
+  ICL_TEST_EQ(dst.as8u()(2, 0, 0), (icl8u)100);  // 100 not < 100 → unchanged
+  ICL_TEST_EQ(dst.as8u()(3, 0, 0), (icl8u)150);  // 150 → unchanged
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.basic_gtval", "gtVal clamps above threshold") {
+  Image src = Img8u{{10, 50, 100, 150, 200}};
+  NewThresholdOp op(NewThresholdOp::gtVal, 100, 100, 0, 255);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)10);   // unchanged
+  ICL_TEST_EQ(dst.as8u()(3, 0, 0), (icl8u)255);  // 150 > 100 → 255
+  ICL_TEST_EQ(dst.as8u()(4, 0, 0), (icl8u)255);  // 200 > 100 → 255
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.matches_old", "NewThresholdOp matches ThresholdOp output") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  ThresholdOp oldOp(ThresholdOp::ltVal, 100, 100, 42, 200);
+  NewThresholdOp newOp(NewThresholdOp::ltVal, 100, 100, 42, 200);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.matches_old_gtval", "gtVal matches old ThresholdOp") {
+  auto src = Img32f::from(10, 10, 1, [](int x, int y, int) -> icl32f {
+    return x * 10.0f + y;
+  });
+  ThresholdOp oldOp(ThresholdOp::gtVal, 50, 50, 0, 25);
+  NewThresholdOp newOp(NewThresholdOp::gtVal, 50, 50, 0, 25);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as32f() == newDst.as32f()));
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.matches_old_ltgtval", "ltgtVal matches old ThresholdOp") {
+  auto src = Img8u::from(20, 10, 1, [](int x, int y, int) -> icl8u {
+    return (x + y * 20) % 256;
+  });
+  ThresholdOp oldOp(ThresholdOp::ltgtVal, 50, 200, 10, 240);
+  NewThresholdOp newOp(NewThresholdOp::ltgtVal, 50, 200, 10, 240);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.introspection", "dispatch introspection works") {
+  NewThresholdOp op(NewThresholdOp::ltVal);
+  auto* ltVal = op.selectorByName("ltVal");
+  ICL_TEST_TRUE(ltVal != nullptr);
+
+  auto backends = ltVal->registeredBackends();
+  // Should have at least C++
+  bool hasCpp = false;
+  for(auto b : backends) if(b == Backend::Cpp) hasCpp = true;
+  ICL_TEST_TRUE(hasCpp);
+
+  // bestBackendFor should return something
+  Image src = Img8u{{1, 2, 3}};
+  Backend best = ltVal->bestBackendFor(src);
+  (void)best; // just verify it doesn't crash
+
+  // switches() should return 3
+  ICL_TEST_EQ((int)op.selectors().size(), 3);
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.force_backend", "forced backend produces same result as cascade") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  NewThresholdOp op(NewThresholdOp::ltVal, 100, 100, 42, 200);
+  Image srcImg(src);
+
+  // Default (cascade) result
+  Image cascadeDst = op.apply(srcImg);
+
+  // Force C++ fallback
+  op.forceAll(Backend::Cpp);
+  Image cppDst = op.apply(srcImg);
+  op.unforceAll();
+
+  // Both should match
+  ICL_TEST_TRUE((cascadeDst.as8u() == cppDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.cross_validate_all_combos", "all backend combos produce identical output") {
+  // Test ltgtVal — exercises all 3 switches
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  NewThresholdOp op(NewThresholdOp::ltgtVal, 50, 200, 10, 240);
+  Image srcImg(src);
+
+  // Reference: all-C++ fallback
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  // Test every cartesian product of backend combinations
+  auto combos = op.allBackendCombinations(srcImg);
+  int nCombos = 0;
+  bool allMatch = true;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as8u() == ref.as8u())) allMatch = false;
+    nCombos++;
+  });
+
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);  // at least the all-C++ combo
+}
+
+ICL_REGISTER_TEST("Filter.NewThresholdOp.cross_validate_per_depth", "all combos match for each depth") {
+  // Verify across multiple depths (8u uses SIMD, 32f uses SIMD, 16s/32s/64f use C++ only)
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(20, 15), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+
+    NewThresholdOp op(NewThresholdOp::ltVal, 100, 100, 42, 42);
+
+    op.forceAll(Backend::Cpp);
+    Image ref = op.apply(src);
+    op.unforceAll();
+
+    auto combos = op.allBackendCombinations(src);
+    bool allMatch = true;
+    op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+      Image dst = op.apply(src);
+      dst.visit([&](const auto &dImg) {
+        using T = typename std::remove_reference_t<decltype(dImg)>::type;
+        if(!(dImg == ref.as<T>())) allMatch = false;
+      });
+    });
+    ICL_TEST_TRUE(allMatch);
+  }
 }
