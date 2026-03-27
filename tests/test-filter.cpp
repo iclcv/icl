@@ -231,13 +231,9 @@ ICL_REGISTER_TEST("Filter.DitheringOp.binary_values", "with 2 levels, output is 
                     {128, 128, 128, 128}};
   DitheringOp op(DitheringOp::FloydSteinberg, 2);
   Image dst = op.apply(src);
-  const Img8u &d = dst.as8u();
-  for(int y = 0; y < 4; ++y) {
-    for(int x = 0; x < 4; ++x) {
-      int v = d(x, y, 0);
-      ICL_TEST_TRUE(v == 0 || v == 255);
-    }
-  }
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0 && v != 255) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 // ====================================================================
@@ -738,10 +734,9 @@ ICL_REGISTER_TEST("Filter.ChamferOp.all_white", "all-white image gives all zeros
                     {255, 255, 255}};
   ChamferOp op(3, 4);
   Image dst = op.apply(src);
-  const Img32s &d = dst.as<icl32s>();
-  for(int y = 0; y < 2; ++y)
-    for(int x = 0; x < 3; ++x)
-      ICL_TEST_EQ(d(x, y, 0), 0);
+  bool ok = true;
+  dst.as<icl32s>().visitPixels([&](const icl32s &v) { if(v != 0) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 ICL_REGISTER_TEST("Filter.ChamferOp.from_32f", "chamfer accepts 32f input") {
@@ -940,10 +935,9 @@ ICL_REGISTER_TEST("Filter.DitheringOp.all_white", "all-white input stays white")
                     {255, 255, 255, 255}};
   DitheringOp op(DitheringOp::FloydSteinberg, 2);
   Image dst = op.apply(src);
-  const Img8u &d = dst.as8u();
-  for(int y = 0; y < 2; ++y)
-    for(int x = 0; x < 4; ++x)
-      ICL_TEST_EQ(static_cast<int>(d(x, y, 0)), 255);
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 255) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 ICL_REGISTER_TEST("Filter.DitheringOp.all_black", "all-black input stays black") {
@@ -951,10 +945,9 @@ ICL_REGISTER_TEST("Filter.DitheringOp.all_black", "all-black input stays black")
                     {0, 0, 0, 0}};
   DitheringOp op(DitheringOp::FloydSteinberg, 2);
   Image dst = op.apply(src);
-  const Img8u &d = dst.as8u();
-  for(int y = 0; y < 2; ++y)
-    for(int x = 0; x < 4; ++x)
-      ICL_TEST_EQ(static_cast<int>(d(x, y, 0)), 0);
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 // ====================================================================
@@ -1005,94 +998,55 @@ ICL_REGISTER_TEST("Filter.CannyOp.output_depth", "output is always depth8u") {
 }
 
 ICL_REGISTER_TEST("Filter.CannyOp.uniform_no_edges", "uniform image produces no edges") {
-  // 20x20 all-gray — no gradients, no edges
-  Img8u src(Size(20, 20), 1);
-  for(int y = 0; y < 20; ++y)
-    for(int x = 0; x < 20; ++x)
-      src(x, y, 0) = 128;
-
+  auto src = Img8u::from(20, 20, 1, [](int,int,int) -> icl8u { return 128; });
   CannyOp op(10, 100);
   Image dst = op.apply(Image(src));
-  const Img8u &d = dst.as8u();
-  // no edges expected in a uniform image
   bool anyEdge = false;
-  for(int y = 0; y < dst.getHeight(); ++y)
-    for(int x = 0; x < dst.getWidth(); ++x)
-      if(d(x, y, 0) == 255) anyEdge = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v == 255) anyEdge = true; });
   ICL_TEST_FALSE(anyEdge);
 }
 
 ICL_REGISTER_TEST("Filter.CannyOp.strong_edge", "strong vertical edge is detected") {
-  // 20x20 image: left half black, right half white → strong vertical edge
-  Img8u src(Size(20, 20), 1);
-  for(int y = 0; y < 20; ++y)
-    for(int x = 0; x < 20; ++x)
-      src(x, y, 0) = (x < 10) ? 0 : 255;
-
+  auto src = Img8u::from(20, 20, 1, [](int x,int,int) -> icl8u { return (x < 10) ? 0 : 255; });
   CannyOp op(10, 50);
   Image dst = op.apply(Image(src));
-  const Img8u &d = dst.as8u();
-  // edge pixels (value 255) should exist near column 10
   bool hasEdge = false;
-  for(int y = 2; y < dst.getHeight()-2; ++y)
-    for(int x = 8; x <= 12 && x < dst.getWidth(); ++x)
-      if(d(x, y, 0) == 255) hasEdge = true;
+  dst.as8u().visitPixels([&](int x, int y, const icl8u &v) {
+    if(y >= 2 && y < dst.getHeight()-2 && x >= 8 && x <= 12 && v == 255) hasEdge = true;
+  });
   ICL_TEST_TRUE(hasEdge);
 }
 
 ICL_REGISTER_TEST("Filter.CannyOp.no_clip_roi", "non-clipToROI preserves full image size") {
-  // 20x20 with strong vertical edge at column 10
-  Img8u src(Size(20, 20), 1);
-  for(int y = 0; y < 20; ++y)
-    for(int x = 0; x < 20; ++x)
-      src(x, y, 0) = (x < 10) ? 0 : 255;
-
+  auto src = Img8u::from(20, 20, 1, [](int x,int,int) -> icl8u { return (x < 10) ? 0 : 255; });
   CannyOp op(10, 50);
   op.setClipToROI(false);
   Image dst;
   op.apply(Image(src), dst);
-  // non-clip: output should be full 20x20 with inner ROI
   ICL_TEST_EQ(dst.getWidth(), 20);
   ICL_TEST_EQ(dst.getHeight(), 20);
-  // output should still be binary (0 or 255) within ROI
-  const Img8u &d = dst.as8u();
-  Rect roi = dst.getROI();
-  for(int y = roi.y; y < roi.bottom(); ++y)
-    for(int x = roi.x; x < roi.right(); ++x) {
-      int v = d(x, y, 0);
-      ICL_TEST_TRUE(v == 0 || v == 255);
-    }
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0 && v != 255) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 ICL_REGISTER_TEST("Filter.CannyOp.binary_output", "output only contains 0 and 255") {
-  Img8u src(Size(20, 20), 1);
-  for(int y = 0; y < 20; ++y)
-    for(int x = 0; x < 20; ++x)
-      src(x, y, 0) = (x + y) * 6;  // gradient pattern
-
+  auto src = Img8u::from(20, 20, 1, [](int x, int y, int) -> icl8u { return (icl8u)((x+y)*6); });
   CannyOp op(5, 30);
   Image dst = op.apply(Image(src));
-  const Img8u &d = dst.as8u();
-  for(int y = 0; y < dst.getHeight(); ++y)
-    for(int x = 0; x < dst.getWidth(); ++x) {
-      int v = d(x, y, 0);
-      ICL_TEST_TRUE(v == 0 || v == 255);
-    }
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 0 && v != 255) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces non-zero output") {
   GaborOp op(Size(3, 3), {3.0f}, {0.0f}, {0.0f}, {1.0f}, {1.0f});
-  // single bright pixel in center of dark image
   Img32f src(Size(7, 7), 1);
   src.clear();
   src(3, 3, 0) = 255.f;
   Image dst = op.apply(Image(src));
-  // the output should have some non-zero pixels (convolution with gabor kernel)
   bool hasNonZero = false;
-  const Img32f &d = dst.as32f();
-  for(int y = 0; y < dst.getHeight() && !hasNonZero; ++y)
-    for(int x = 0; x < dst.getWidth() && !hasNonZero; ++x)
-      if(std::abs(d(x, y, 0)) > 1e-6f) hasNonZero = true;
+  dst.as32f().visitPixels([&](const icl32f &v) { if(std::abs(v) > 1e-6f) hasNonZero = true; });
   ICL_TEST_TRUE(hasNonZero);
 }
 
@@ -1134,25 +1088,17 @@ ICL_REGISTER_TEST("Filter.MedianOp.3x3_32f", "3x3 median on float image") {
 
 ICL_REGISTER_TEST("Filter.MedianOp.3x3_uniform", "3x3 median preserves uniform region") {
   Img8u src(Size(7, 7), 1);
-  for (int y = 0; y < 7; y++)
-    for (int x = 0; x < 7; x++)
-      src(x, y, 0) = 42;
-
+  src.clear(-1, 42);
   MedianOp op(Size(3, 3));
   Image dst = op.apply(Image(src));
-  // All output should be 42
-  const Img8u &d = dst.as8u();
-  for (int y = 0; y < d.getHeight(); y++)
-    for (int x = 0; x < d.getWidth(); x++)
-      ICL_TEST_EQ(d(x, y, 0), (icl8u)42);
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 42) ok = false; });
+  ICL_TEST_TRUE(ok);
 }
 
 ICL_REGISTER_TEST("Filter.MedianOp.3x3_removes_impulse", "3x3 median removes salt-and-pepper noise") {
-  // Uniform image with a single outlier
   Img8u src(Size(5, 5), 1);
-  for (int y = 0; y < 5; y++)
-    for (int x = 0; x < 5; x++)
-      src(x, y, 0) = 100;
+  src.clear(-1, 100);
   src(2, 2, 0) = 255;  // impulse
 
   MedianOp op(Size(3, 3));
@@ -1191,11 +1137,8 @@ ICL_REGISTER_TEST("Filter.MedianOp.5x5_32f", "5x5 median on 32f image") {
 }
 
 ICL_REGISTER_TEST("Filter.MedianOp.7x7_arbitrary_mask", "7x7 median (arbitrary mask path)") {
-  // Test the generic sort-based / Huang fallback
   Img8u src(Size(11, 11), 1);
-  for (int y = 0; y < 11; y++)
-    for (int x = 0; x < 11; x++)
-      src(x, y, 0) = 50;
+  src.clear(-1, 50);
   src(5, 5, 0) = 200;  // single outlier
 
   MedianOp op(Size(7, 7));
@@ -1292,11 +1235,7 @@ ICL_REGISTER_TEST("Filter.MedianOp.3x3_64f", "3x3 median on 64f image") {
 }
 
 ICL_REGISTER_TEST("Filter.MedianOp.larger_image", "3x3 median on a larger image") {
-  // 20x15 image filled with gradient, verify it runs without crash
-  Img8u src(Size(20, 15), 1);
-  for (int y = 0; y < 15; y++)
-    for (int x = 0; x < 20; x++)
-      src(x, y, 0) = (x + y * 20) % 256;
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u { return (x + y * 20) % 256; });
 
   MedianOp op(Size(3, 3));
   Image dst = op.apply(Image(src));
@@ -1313,11 +1252,7 @@ ICL_REGISTER_TEST("Filter.MedianOp.larger_image", "3x3 median on a larger image"
 }
 
 ICL_REGISTER_TEST("Filter.MedianOp.huang_nontrivial", "7x7 Huang median with non-trivial values") {
-  // 11x11 image with a gradient — exercises Huang histogram with real data
-  Img8u src(Size(11, 11), 1);
-  for (int y = 0; y < 11; y++)
-    for (int x = 0; x < 11; x++)
-      src(x, y, 0) = (x * 7 + y * 13) % 256;
+  auto src = Img8u::from(11, 11, 1, [](int x, int y, int) -> icl8u { return (x * 7 + y * 13) % 256; });
 
   MedianOp op(Size(7, 7));
   Image dst = op.apply(Image(src));
