@@ -114,7 +114,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (20 done)
+### Fully Native Image Filters (21 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -141,17 +141,20 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
     bug in column-oriented `sse_median3x3` driver (didn't re-sort newly loaded row). IPP for 8u/16s.
 20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps existing dispatch chain for IPP fixed-
     kernel specializations (Sobel, Laplace, Gauss). Rewrote generic C++ fallback to remove ImgIterator.
+21. **MorphologicalOp** — 8u/32f only, 11 optypes. C++ fallback `morph_cpp` rewritten with raw
+    pointers. Compound ops (open/close/tophat/blackhat/gradient) now use Image-based apply internally.
+    Fixed pre-existing bug: constructors called setMask before initializing m_eType, causing
+    uninitialized-read that randomly set mask to Size(1,1) under threading.
 
-### Filters with applyImgBase Bridge (8 remaining)
+### Filters with applyImgBase Bridge (7 remaining)
 
-**With IPP acceleration (3):**
-LocalThresholdOp, MorphologicalOp, WarpOp
+**With IPP acceleration (2):**
+LocalThresholdOp, WarpOp
 
 **Pure C++ (4):**
 BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 **Difficulty estimates:**
-- MorphologicalOp (medium) — IPP state management, C++ fallback with predicates
 - LocalThresholdOp (medium) — 4 algorithms, IPP in tiled threshold
 - WarpOp (hard) — OpenCL path, IPP remap
 - BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
@@ -239,11 +242,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-229 tests total (tests/ directory, single icl-tests executable):
+235 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 97 filter tests covering all 20 migrated filters
+- `test-filter.cpp` — 103 filter tests covering all 21 migrated filters
 
 Test patterns using initializer list constructors:
 ```cpp

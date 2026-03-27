@@ -172,16 +172,15 @@ namespace icl {
   #else
       using ICLMorphState = void;
       using ICLMorphAdvState = void;
-      core::ImgBase *m_openingAndClosingBuffer;
-      core::ImgBase *m_gradientBorderBuffer_1;
-      core::ImgBase *m_gradientBorderBuffer_2;
+      core::Image m_openingAndClosingBuffer;
+      core::Image m_gradientBorderBuffer_1;
+      core::Image m_gradientBorderBuffer_2;
 
     private:
       template<class T>
-      void apply_t(const core::ImgBase *src, core::ImgBase **dst);
+      void apply_t(const core::Image &src, core::Image &dst);
   #endif
     private:
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       icl8u * m_pcMask;
       utils::Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
       ICLMorphState* m_pState8u;

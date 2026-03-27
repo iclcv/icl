@@ -19,6 +19,7 @@
 #include <ICLFilter/CannyOp.h>
 #include <ICLFilter/MedianOp.h>
 #include <ICLFilter/ConvolutionOp.h>
+#include <ICLFilter/MorphologicalOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1111,6 +1112,69 @@ ICL_REGISTER_TEST("Filter.ROI.ConvolutionOp", "ROI handling for ConvolutionOp") 
   ConvolutionKernel kernel{ConvolutionKernel::gauss3x3};
   ConvolutionOp op{kernel};
   Image src = makeGradient<icl32f>(12, 12);
+  testROIHandling(op, src, Rect(2, 2, 8, 8));
+}
+
+// ============================================================
+// MorphologicalOp tests
+// ============================================================
+
+ICL_REGISTER_TEST("Filter.MorphOp.dilate_expands_white", "dilate grows bright regions") {
+  Img8u src(Size(7, 7), 1);
+  src.clear();
+  src(3, 3, 0) = 255;  // single white pixel
+  MorphologicalOp op(MorphologicalOp::dilate, Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // center and its 4-neighbors should be 255
+  ICL_TEST_EQ(dst.as8u()(2, 2, 0), (icl8u)255);  // center of dst maps to src(3,3)
+  ICL_TEST_EQ(dst.as8u()(1, 2, 0), (icl8u)255);  // left neighbor
+  ICL_TEST_EQ(dst.as8u()(3, 2, 0), (icl8u)255);  // right neighbor
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.erode_shrinks_white", "erode shrinks bright regions") {
+  Img8u src(Size(7, 7), 1);
+  src.clear(-1, 255);
+  src(0, 0, 0) = 0;  // single black pixel at corner
+  MorphologicalOp op(MorphologicalOp::erode, Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // erosion with 3x3 mask: pixels near the black corner become 0
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)0);
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.dilate_uniform", "dilate on uniform image is identity") {
+  Img8u src(Size(7, 7), 1);
+  src.clear(-1, 100);
+  MorphologicalOp op(MorphologicalOp::dilate, Size(3, 3));
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getWidth(), 5);
+  ICL_TEST_EQ(dst.getHeight(), 5);
+  // all output pixels should be 100 (max of uniform neighborhood)
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)100);
+  ICL_TEST_EQ(dst.as8u()(2, 2, 0), (icl8u)100);
+  ICL_TEST_EQ(dst.as8u()(4, 4, 0), (icl8u)100);
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.erode3x3", "erode3x3 shortcut works") {
+  Img8u src(Size(7, 7), 1);
+  src.clear(-1, 255);
+  src(3, 3, 0) = 0;
+  MorphologicalOp op(MorphologicalOp::erode3x3);
+  Image dst = op.apply(Image(src));
+  // erode3x3 should spread the 0 to neighbors
+  ICL_TEST_EQ(dst.as8u()(2, 2, 0), (icl8u)0);
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.32f", "morphological ops work on 32f") {
+  auto src = Img32f::from(7, 7, 1, [](int x, int y, int) -> icl32f { return (x == 3 && y == 3) ? 100.f : 0.f; });
+  MorphologicalOp op(MorphologicalOp::dilate, Size(3, 3));
+  Image dst = op.apply(Image(src));
+  // dilated: center region should be 100
+  ICL_TEST_EQ(dst.as32f()(2, 2, 0), 100.f);
+}
+
+ICL_REGISTER_TEST("Filter.ROI.MorphOp", "ROI handling for MorphologicalOp") {
+  MorphologicalOp op(MorphologicalOp::erode, Size(3, 3));
+  Image src = makeGradient<icl8u>(12, 12);
   testROIHandling(op, src, Rect(2, 2, 8, 8));
 }
 
