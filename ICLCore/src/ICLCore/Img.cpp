@@ -705,7 +705,7 @@ namespace icl {
           iLineWarpD = -(iDstLineLen+iCols);
           s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
           d = getPointerOffset (oDstOffset.x, oDstOffset.y + oSize.height - 1, iDstLineLen);
-          e = iRows * iSrcLineLen;
+          e = s + iRows * iSrcLineLen;
           break;
         case axisVert:
           /* .....................
@@ -722,7 +722,7 @@ namespace icl {
           iLineWarpD = iDstLineLen + iCols;
           s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
           d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y, iDstLineLen);
-          e = iRows * iSrcLineLen;
+          e = s + iRows * iSrcLineLen;
           break;
         case axisBoth:
           /* .....................
@@ -740,7 +740,7 @@ namespace icl {
           iLineWarpD = iCols - iDstLineLen;
           s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
           d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y + oSize.height - 1, iDstLineLen);
-          e = iRows * iSrcLineLen;
+          e = s + iRows * iSrcLineLen;
 
           if (bInplace && (oSize.height % 2)) { // odd ROI height
             iRows++;
@@ -748,7 +748,7 @@ namespace icl {
           }
           break;
       }
-      eLine = iCols;
+      eLine = s + iCols;
 
       return ( (iRows != 0) && (iCols != 0));
     }

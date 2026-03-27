@@ -508,12 +508,28 @@ ICL_REGISTER_TEST("Filter.ROI.UnaryLogicalOp", "ROI handling for UnaryLogicalOp"
   testROIHandling(op, src, Rect(1, 1, 7, 7));
 }
 
-// MirrorOp crashes with clipToROI=false — pre-existing bug, skipped for now
-// ICL_REGISTER_TEST("Filter.ROI.MirrorOp", "ROI handling for MirrorOp") {
-//   MirrorOp op(axisHorz);
-//   Image src = makeGradient(10, 10, depth8u);
-//   testROIHandling(op, src, Rect(2, 2, 6, 6));
-// }
+ICL_REGISTER_TEST("Filter.ROI.MirrorOp", "MirrorOp ROI clip produces correct mirrored sub-region") {
+  // MirrorOp is an affine op: non-clip mode writes the full image (not just ROI),
+  // so testROIHandling's sentinel check doesn't apply. Test clip mode manually.
+  MirrorOp op(axisHorz);
+  Img8u src(Size(10, 10), 1);
+  for (int y = 0; y < 10; y++)
+    for (int x = 0; x < 10; x++)
+      src(x, y, 0) = x + y * 10;
+  Image srcImg(src);
+  srcImg.setROI(Rect(2, 2, 6, 6));
+  op.setClipToROI(true);
+  Image dst;
+  op.apply(srcImg, dst);
+  // ROI (2,2,6,6) → dst is 6x6, horizontally flipped from the ROI region
+  ICL_TEST_EQ(dst.getWidth(), 6);
+  ICL_TEST_EQ(dst.getHeight(), 6);
+  // dst row 0 should be src ROI row 5 (= src row 7)
+  ICL_TEST_EQ(dst.as8u()(0, 0, 0), src(2, 7, 0));
+  ICL_TEST_EQ(dst.as8u()(5, 0, 0), src(7, 7, 0));
+  // dst row 5 should be src ROI row 0 (= src row 2)
+  ICL_TEST_EQ(dst.as8u()(0, 5, 0), src(2, 2, 0));
+}
 
 // ====================================================================
 // ROI tests — NeighborhoodOp filters
