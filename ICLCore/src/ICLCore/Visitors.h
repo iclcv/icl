@@ -31,6 +31,7 @@
 #pragma once
 
 #include <ICLCore/Img.h>
+#include <type_traits>
 
 /// @file Visitors.h
 /// Optimized line-based ROI visitors for Img<T>.
@@ -173,6 +174,64 @@ namespace icl {
           T *p = img.getROIData(ch);
           for(int y = 0; y < h; ++y, p += stride) f(p, ch, w);
         }
+      }
+    }
+
+    // ================================================================
+    // Per-pixel visitors — convenience over line-based visitors.
+    // Not for inner loops of performance-critical filters (use
+    // visitROILines* for those). Ideal for test code, initialization,
+    // and non-hot paths.
+    //
+    // The lambda signature is auto-detected:
+    //   f(T &val)                  — value only
+    //   f(int x, int y, T &val)   — coordinates + value
+    //   f(int x, int y, int c, T &val) — full (coordinates, channel, value)
+    //
+    // Iterates over the ROI (or full image if no ROI set).
+    // ================================================================
+
+    template<class T, class F>
+    void visitPixels(Img<T> &img, F &&f) {
+      const int rx = img.getROI().x, ry = img.getROI().y;
+      const int rw = img.getROIWidth(), rh = img.getROIHeight();
+      if constexpr (std::is_invocable_v<F, T&>) {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(img(x, y, c));
+      } else if constexpr (std::is_invocable_v<F, int, int, T&>) {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(x, y, img(x, y, c));
+      } else {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(x, y, c, img(x, y, c));
+      }
+    }
+
+    template<class T, class F>
+    void visitPixels(const Img<T> &img, F &&f) {
+      const int rx = img.getROI().x, ry = img.getROI().y;
+      const int rw = img.getROIWidth(), rh = img.getROIHeight();
+      if constexpr (std::is_invocable_v<F, const T&>) {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(img(x, y, c));
+      } else if constexpr (std::is_invocable_v<F, int, int, const T&>) {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(x, y, img(x, y, c));
+      } else {
+        for (int c = 0; c < img.getChannels(); c++)
+          for (int y = ry; y < ry + rh; y++)
+            for (int x = rx; x < rx + rw; x++)
+              f(x, y, c, img(x, y, c));
       }
     }
 

@@ -1,6 +1,7 @@
 #include <ICLUtils/Test.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Visitors.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -349,4 +350,40 @@ ICL_REGISTER_TEST("Img.from_multi_channel", "Img::from with multiple channels") 
   ICL_TEST_EQ(img(2, 1, 0), 15.f);  // ch0: 10 + 2 + 3
   ICL_TEST_EQ(img(0, 0, 1), 20.f);  // ch1: 20 + 0 + 0
   ICL_TEST_EQ(img(2, 1, 1), 25.f);  // ch1: 20 + 2 + 3
+}
+
+ICL_REGISTER_TEST("Visitors.visitPixels_value", "visitPixels with f(T&)") {
+  auto img = Img8u::from(3, 2, 1, [](int x, int y, int) -> icl8u { return x + y * 3; });
+  int sum = 0;
+  visitPixels(img, [&](const icl8u &v) { sum += v; });
+  // 0+1+2+3+4+5 = 15
+  ICL_TEST_EQ(sum, 15);
+}
+
+ICL_REGISTER_TEST("Visitors.visitPixels_xy", "visitPixels with f(x,y,T&)") {
+  auto img = Img32f::from(4, 3, 1, [](int, int, int) -> icl32f { return 0; });
+  visitPixels(img, [](int x, int y, icl32f &v) { v = x * 10.f + y; });
+  ICL_TEST_EQ(img(2, 1, 0), 21.f);
+  ICL_TEST_EQ(img(3, 2, 0), 32.f);
+}
+
+ICL_REGISTER_TEST("Visitors.visitPixels_xyc", "visitPixels with f(x,y,c,T&)") {
+  auto img = Img8u::from(2, 2, 2, [](int, int, int) -> icl8u { return 0; });
+  visitPixels(img, [](int x, int y, int c, icl8u &v) { v = c * 100 + y * 10 + x; });
+  ICL_TEST_EQ(img(0, 0, 0), (icl8u)0);
+  ICL_TEST_EQ(img(1, 1, 0), (icl8u)11);
+  ICL_TEST_EQ(img(0, 0, 1), (icl8u)100);
+  ICL_TEST_EQ(img(1, 1, 1), (icl8u)111);
+}
+
+ICL_REGISTER_TEST("Visitors.visitPixels_roi", "visitPixels respects ROI") {
+  Img8u img(utils::Size(6, 6), 1);
+  img.clear();
+  img.setROI(utils::Rect(1, 1, 4, 4));
+  visitPixels(img, [](int x, int y, icl8u &v) { v = x + y * 10; });
+  // inside ROI: set
+  ICL_TEST_EQ(img(2, 2, 0), (icl8u)22);
+  // outside ROI: still 0
+  ICL_TEST_EQ(img(0, 0, 0), (icl8u)0);
+  ICL_TEST_EQ(img(5, 5, 0), (icl8u)0);
 }
