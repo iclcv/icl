@@ -114,7 +114,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (19 done)
+### Fully Native Image Filters (20 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 
@@ -139,17 +139,18 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 19. **MedianOp** — `MedianImpl<T>` dispatch struct, 4 algorithms: SIMD sorting networks (3x3/5x5),
     Huang histogram O(n) for 8u/16s arbitrary masks, generic sort for other types. Fixed pre-existing
     bug in column-oriented `sse_median3x3` driver (didn't re-sort newly loaded row). IPP for 8u/16s.
+20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps existing dispatch chain for IPP fixed-
+    kernel specializations (Sobel, Laplace, Gauss). Rewrote generic C++ fallback to remove ImgIterator.
 
-### Filters with applyImgBase Bridge (9 remaining)
+### Filters with applyImgBase Bridge (8 remaining)
 
-**With IPP acceleration (4):**
-ConvolutionOp, LocalThresholdOp, MorphologicalOp, WarpOp
+**With IPP acceleration (3):**
+LocalThresholdOp, MorphologicalOp, WarpOp
 
 **Pure C++ (4):**
 BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
 
 **Difficulty estimates:**
-- ConvolutionOp (medium) — 20+ IPP specializations for fixed kernels, C++ fallback with 3x3 opt
 - MorphologicalOp (medium) — IPP state management, C++ fallback with predicates
 - LocalThresholdOp (medium) — 4 algorithms, IPP in tiled threshold
 - WarpOp (hard) — OpenCL path, IPP remap
@@ -238,11 +239,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-210 tests total (tests/ directory, single icl-tests executable):
+229 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 90 filter tests covering all 19 migrated filters
+- `test-filter.cpp` — 97 filter tests covering all 20 migrated filters
 
 Test patterns using initializer list constructors:
 ```cpp

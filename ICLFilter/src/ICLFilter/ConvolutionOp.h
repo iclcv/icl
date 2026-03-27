@@ -126,7 +126,6 @@ namespace icl {
       ///  returns currently used kernel (const)
       ConvolutionKernel &getKernel() { return m_kernel; }
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       ConvolutionKernel m_kernel;
       bool m_forceUnsignedOutput;

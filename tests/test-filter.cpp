@@ -18,6 +18,7 @@
 #include <ICLFilter/AffineOp.h>
 #include <ICLFilter/CannyOp.h>
 #include <ICLFilter/MedianOp.h>
+#include <ICLFilter/ConvolutionOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1048,6 +1049,69 @@ ICL_REGISTER_TEST("Filter.GaborOp.impulse_response", "gabor on impulse produces 
   bool hasNonZero = false;
   dst.as32f().visitPixels([&](const icl32f &v) { if(std::abs(v) > 1e-6f) hasNonZero = true; });
   ICL_TEST_TRUE(hasNonZero);
+}
+
+// ============================================================
+// ConvolutionOp tests
+// ============================================================
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.identity_3x3", "identity kernel preserves image") {
+  // Identity 3x3 kernel: center=1, all others=0, factor=1
+  int k[] = {0,0,0, 0,1,0, 0,0,0};
+  ConvolutionOp op(ConvolutionKernel(k, Size(3,3), 1, false));
+  auto src = Img32f::from(7, 7, 1, [](int x, int y, int) -> icl32f { return x + y * 7.f; });
+  Image dst = op.apply(Image(src));
+  // output is 5x5 (shrunk by 1), values should match src interior
+  ICL_TEST_EQ(dst.getWidth(), 5);
+  ICL_TEST_EQ(dst.getHeight(), 5);
+  ICL_TEST_EQ(dst.as32f()(0, 0, 0), src(1, 1, 0));
+  ICL_TEST_EQ(dst.as32f()(4, 4, 0), src(5, 5, 0));
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.sobelX_detects_vertical", "sobelX responds to vertical edge") {
+  auto src = Img8u::from(20, 20, 1, [](int x,int,int) -> icl8u { return (x < 10) ? 0 : 255; });
+  ConvolutionKernel kernel{ConvolutionKernel::sobelX3x3};
+  ConvolutionOp op{kernel};
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth16s));
+  ICL_TEST_TRUE(std::abs(dst.as16s()(9, 9, 0)) > 100);
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.gauss_smooths", "gauss3x3 reduces impulse") {
+  Img32f src(Size(7, 7), 1);
+  src.clear();
+  src(3, 3, 0) = 100.f;
+  ConvolutionKernel kernel{ConvolutionKernel::gauss3x3};
+  ConvolutionOp op{kernel};
+  Image dst = op.apply(Image(src));
+  ICL_TEST_TRUE(dst.as32f()(2, 2, 0) < 100.f);
+  ICL_TEST_TRUE(dst.as32f()(2, 2, 0) > 0.f);
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.force_unsigned", "forceUnsignedOutput keeps 8u depth") {
+  auto src = Img8u::from(7, 7, 1, [](int x, int y, int) -> icl8u { return (x+y) * 5; });
+  ConvolutionKernel kernel{ConvolutionKernel::sobelX3x3};
+  ConvolutionOp op{kernel, true};
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.custom_float_kernel", "custom float kernel works") {
+  // Averaging 3x3 kernel
+  float k[] = {1,1,1, 1,1,1, 1,1,1};
+  ConvolutionOp op(ConvolutionKernel(k, Size(3,3), false));
+  Img32f src(Size(5, 5), 1);
+  src.clear(-1, 9.f);
+  Image dst = op.apply(Image(src));
+  // Uniform image: average of nine 9s = 81 (no factor normalization for float kernel)
+  ICL_TEST_NEAR(dst.as32f()(0, 0, 0), 81.f, 0.01f);
+}
+
+ICL_REGISTER_TEST("Filter.ROI.ConvolutionOp", "ROI handling for ConvolutionOp") {
+  ConvolutionKernel kernel{ConvolutionKernel::gauss3x3};
+  ConvolutionOp op{kernel};
+  Image src = makeGradient<icl32f>(12, 12);
+  testROIHandling(op, src, Rect(2, 2, 8, 8));
 }
 
 // ============================================================

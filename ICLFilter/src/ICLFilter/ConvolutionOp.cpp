@@ -62,19 +62,29 @@ namespace icl{
 
       template<class KernelType, class SrcType, class DstType>
       void generic_cpp_convolution(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
-        const ImgIterator<SrcType> s(const_cast<SrcType*>(src.getData(c)), src.getWidth(),Rect(op.getROIOffset(), dst.getROISize()));
-        const ImgIterator<SrcType> sEnd = ImgIterator<SrcType>::create_end_roi_iterator(src.getData(c),src.getWidth(), Rect(op.getROIOffset(), dst.getROISize()));
-        ImgIterator<DstType>      d = dst.beginROI(c);
-        Point an = op.getAnchor();
-        Size si = op.getMaskSize();
-        int factor = op.getKernel().getFactor();
-        for(; s != sEnd; ++s){
-          const KernelType *m = k;
-          KernelType buffer = 0;
-          for(const ImgIterator<SrcType> sR (s,si,an);sR.inRegionSubROI(); ++sR, ++m){
-            buffer += (*m) * (KernelType)(*sR);
+        const int srcW = src.getWidth(), dstW = dst.getWidth();
+        const int roiW = dst.getROIWidth(), roiH = dst.getROIHeight();
+        const int maskW = op.getMaskSize().width, maskH = op.getMaskSize().height;
+        const Point anchor = op.getAnchor();
+        const Point roiOff = op.getROIOffset();
+        const int factor = op.getKernel().getFactor();
+        const SrcType *srcData = src.getData(c);
+        DstType *dstROI = dst.getROIData(c);
+
+        for(int y = 0; y < roiH; ++y){
+          DstType *dstRow = dstROI + y * dstW;
+          for(int x = 0; x < roiW; ++x){
+            const KernelType *m = k;
+            KernelType buffer = 0;
+            for(int my = 0; my < maskH; ++my){
+              const SrcType *row = srcData + (roiOff.y - anchor.y + y + my) * srcW
+                                   + (roiOff.x - anchor.x + x);
+              for(int mx = 0; mx < maskW; ++mx){
+                buffer += (*m++) * (KernelType)row[mx];
+              }
+            }
+            dstRow[x] = clipped_cast<KernelType, DstType>(buffer / factor);
           }
-          *d++ = clipped_cast<KernelType, DstType>(buffer / factor);
         }
       }
 
@@ -261,16 +271,15 @@ namespace icl{
       setKernel(kernel);
     }
 
-    void ConvolutionOp::applyImgBase(const ImgBase *src, ImgBase **dst) {
-      ICLASSERT_RETURN(src);
+    void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {
+      ICLASSERT_RETURN(!src.isNull());
       ICLASSERT_RETURN(!m_kernel.isNull());
-      if(m_forceUnsignedOutput){
-        if(!prepare(dst,src)) return;
-      }else{
-        if(!prepare(dst,src,src->getDepth()==depth8u ? depth16s : src->getDepth())) return;
-      }
 
-      if(src->getDepth() >= depth32f){
+      depth dstDepth = m_forceUnsignedOutput ? src.getDepth()
+                       : (src.getDepth() == depth8u ? depth16s : src.getDepth());
+      if(!prepare(dst, src, dstDepth)) return;
+
+      if(src.getDepth() >= depth32f){
         m_kernel.toFloat();
       }else if(m_kernel.isFloat()){
         WARNING_LOG("convolution of non-float images with float kernels is not supported\n"
@@ -279,17 +288,10 @@ namespace icl{
       }
 
       if(m_kernel.isFloat()){
-        apply_convolution<float>(*src,**dst,m_kernel.getFloatData(),*this);
+        apply_convolution<float>(*src.ptr(), *dst.ptr(), m_kernel.getFloatData(), *this);
       }else{
-        apply_convolution<int>(*src,**dst,m_kernel.getIntData(),*this);
+        apply_convolution<int>(*src.ptr(), *dst.ptr(), m_kernel.getIntData(), *this);
       }
-    }
-  
-    void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {
-      // TODO: use Image natively!
-      ImgBase *dstPtr = dst.isNull() ? nullptr : dst.ptr();
-      applyImgBase(src.ptr(), &dstPtr);
-      if(dstPtr) dst = core::Image(*dstPtr);
     }
 
   } // namespace filter
