@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 12 — WarpOp + Backend Dispatch Framework)
+## Current State (Session 13 — BackendDispatch finalization + BinaryOp migration)
 
 ### Architecture
 
@@ -152,15 +152,19 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image Filters (23 done)
+### Fully Native Image UnaryOp Filters (23 done)
 
-These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
+These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge.
 
-1. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
-2. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
-3. **ThresholdOp** — same depth, dispatch structs, all paths use `visitROILinesPerChannelWith`
-4. **UnaryArithmeticalOp** — same depth, `LoopFunc` structs, all paths use `visitROILinesPerChannelWith`
-5. **UnaryCompareOp** — output always 8u, `CmpImpl` struct, uses `visitROILinesPerChannelWith`
+**With BackendDispatch (6)** — separate _Simd.cpp/_Ipp.cpp backend files, `if constexpr`
+optype templates, `dispatchEnum<>` for runtime→compile-time dispatch:
+1. **ThresholdOp** — 3 selectors (ltVal, gtVal, ltgtVal), SSE2 8u/32f, IPP 8u/16s/32f
+2. **UnaryCompareOp** — 2 selectors (compare, compareEqTol), SSE2 8u, IPP 8u/16s/32f
+3. **UnaryArithmeticalOp** — 2 selectors (withVal, noVal), SSE2 32f, IPP stub
+
+**Without BackendDispatch (17)** — inline dispatch structs:
+4. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
+5. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
 6. **WeightChannelsOp** — same depth, per-channel multiply via `visitROILinesPerChannelWith`
 7. **WeightedSumOp** — output 32f/64f, 1 channel, `visit()` + typed dst
 8. **ColorDistanceOp** — output 8u/32f/64f, `visitROILinesNWith<3,1>`, all math in double
@@ -174,40 +178,28 @@ These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge:
 16. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
 17. **AffineOp** — `AffineImpl` dispatch struct, IPP 8u/32f, C++ fallback with inverse matrix
 18. **CannyOp** — composition (Sobel→Canny), shared `applyCannyCore`, fixed non-clipToROI stride bug
-19. **MedianOp** — `MedianImpl<T>` dispatch struct, 4 algorithms: SIMD sorting networks (3x3/5x5),
-    Huang histogram O(n) for 8u/16s arbitrary masks, generic sort for other types. Fixed pre-existing
-    bug in column-oriented `sse_median3x3` driver (didn't re-sort newly loaded row). IPP for 8u/16s.
-20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps existing dispatch chain for IPP fixed-
-    kernel specializations (Sobel, Laplace, Gauss). Rewrote generic C++ fallback to remove ImgIterator.
-21. **MorphologicalOp** — 8u/32f only, 11 optypes. C++ fallback `morph_cpp` rewritten with raw
-    pointers. Compound ops (open/close/tophat/blackhat/gradient) now use Image-based apply internally.
-    Fixed pre-existing bug: constructors called setMask before initializing m_eType, causing
-    uninitialized-read that randomly set mask to Size(1,1) under threading.
-22. **LocalThresholdOp** — 4 algorithms (regionMean, tiledNN, tiledLIN, global). Internal ROI
-    buffering uses ImgBase* (kept for now, internal detail). Fixed pre-existing bug: algorithm
-    constructor missing "invert output" property, also fixed typo "gobal"→"global" in menu.
-23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f via `ippiRemap`, OpenCL 8u+LIN
-    (full-ROI only, falls back otherwise). Added ROI support: source ROI defines which output
-    pixels to compute, full source is always the lookup domain. Warp offset handles clip/non-clip
-    coordinate mapping. Fixed pre-existing bug: `interpolate_pixel_lin` had no -1 sentinel check
-    (OOB read when warp map contained out-of-bounds coordinates).
+19. **MedianOp** — `MedianImpl<T>` dispatch struct, 4 algorithms
+20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps IPP fixed-kernel dispatch chain
+21. **MorphologicalOp** — 8u/32f only, 11 optypes
+22. **LocalThresholdOp** — 4 algorithms, internal ImgBase* ROI buffering kept
+23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f, OpenCL 8u+LIN
 
-### Filters with applyImgBase Bridge (5 remaining)
+### Fully Native Image BinaryOp Filters (3 done)
 
-**Pure C++ (4):**
-BilateralFilterOp, FFTOp, IFFTOp, MotionSensitiveTemporalSmoothing
+These override `apply(const Image&, const Image&, Image&)` with BackendDispatch:
+1. **BinaryArithmeticalOp** — 1 selector (apply), add/sub/mul/div/absSub
+2. **BinaryCompareOp** — 2 selectors (compare, compareEqTol), output always 8u
+3. **BinaryLogicalOp** — 1 selector (apply), and/or/xor, integer depths only
 
-**Difficulty estimates:**
+All use `visitROILinesPerChannel2With`, `if constexpr` optype templates,
+`dispatchEnum<>`. BinaryOp base class has Image-based `prepare()` + `check()`.
+
+### UnaryOp Filters with applyImgBase Bridge (4 remaining)
+
 - BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
 - FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
 - IFFTOp (hard) — same as FFTOp but reverse
 - MotionSensitiveTemporalSmoothing (hardest) — stateful, OpenCL, temporal buffers
-
-### BinaryOp Filters (not started)
-
-BinaryArithmeticalOp, BinaryCompareOp, BinaryLogicalOp — still override
-the ImgBase version. All three have IPP specializations.
-Need same treatment as UnaryOp filters.
 
 ## Migration Pattern — Dispatch Struct Approach
 
@@ -367,46 +359,40 @@ The same patterns should be used in production code where performance is not cri
 - **Use visitor patterns** — prefer `Img<T>::from`, `visitPixels`, line-based visitors
   (Visitors.h) wherever manual pixel loops exist. These are fully inlined — zero cost.
   Apply to production code (non-hot paths) and all test code.
-- **Backend Dispatch Framework — IN PROGRESS** — `FilterDispatch.h/cpp` implements
-  a cascaded backend dispatch mechanism. Proof-of-concept: `NewThresholdOp` with
-  C++ fallback + SSE2 + IPP backends in separate files. Next steps:
-  - Port `NewUnaryCompareOp` and `NewUnaryArithmeticalOp` to validate further
-  - Consider moving `FilterDispatch.h` to ICLUtils (it's not filter-specific)
-  - Once validated, replace old filters and drop the "New" prefix
+### Backend Dispatch Framework (ICLCore/BackendDispatch.h) — DONE
 
-### Backend Dispatch Framework (FilterDispatch.h)
+Moved from ICLFilter/FilterDispatch to ICLCore/BackendDispatch (`icl::core` namespace).
+Validated with 6 UnaryOp + 3 BinaryOp filters, old implementations replaced.
 
-Key types and naming:
+Key types:
 ```
 Backend              — enum: Cpp, Simd, Ipp, OpenCL
-BackendSelector<Sig> — typed dispatch table for one sub-op, templated on function signature
-BackendSelectorBase  — non-templated base for introspection
-Dispatching          — mixin base class, owns BackendSelectors via PIMPL storage
-ApplicabilityFn      — std::function<bool(const Image&)> for depth/ROI/etc. checks
+BackendSelector<Sig> — typed dispatch table for one sub-op
+Dispatching          — mixin base class, owns BackendSelectors
+ApplicabilityFn      — std::function<bool(const Image&)>
+applicableTo<Ts...>  — predefined depth-check (e.g. applicableTo<icl8u, icl32f>)
 ```
 
-Usage pattern in a filter .cpp:
+Usage pattern:
 ```cpp
-// Constructor:
-initDispatching("MyFilterOp");
-auto& sub = addSelector<Sig>("subOpName");  // creates + loads from registry
-sub.add(Backend::Cpp, cpp_fn);              // C++ fallback (auto-description)
+// Header: sub-op signature typedef
+using Sig = void(const Image&, Image&, double, int);
 
-// apply():
-auto& sub = getSelector<Sig>("subOpName");
-sub.resolve(src)->apply(src, dst, ...);     // cascaded backend selection
+// Constructor: register C++ fallback + auto-load backends from registry
+initDispatching("MyOp");
+auto& sel = addSelector<Sig>("subOp");
+sel.add(Backend::Cpp, cpp_fn);
 
-// Backend .cpp self-registration (no #include of filter header):
-static const int _r = registerBackend<Sig>(
-    "MyFilterOp.subOpName", Backend::Simd, simd_fn,
-    [](const Image& s) { return s.getDepth() == depth8u; },
-    "SSE2 description");
+// apply(): dispatch to best backend
+getSelector<Sig>("subOp").resolve(src)->apply(src, dst, val, ot);
+
+// Backend _Simd.cpp: self-registration with applicability check
+static const int _r = registerBackend<Op::Sig>(
+    "MyOp.subOp", Backend::Simd, simd_fn,
+    applicableTo<icl8u, icl32f>, "SSE2 description");
 ```
 
-Testing: `forceAll(Backend::Cpp)`, `forEachCombination()` for exhaustive cross-validation.
-
-### NewThresholdOp (proof-of-concept)
-
-Files: `NewThresholdOp.h` (clean header, no dispatch internals), `.cpp` (C++ fallback + apply),
-`_Simd.cpp` (SSE2 for 8u/32f), `_Ipp.cpp` (IPP for 8u/16s/32f, conditional).
-3 sub-ops: ltVal, gtVal, ltgtVal. 9 tests including cross-validation of all backend combos.
+Utilities:
+- `dispatchEnum<V1, V2, ...>(runtime, f)` — runtime→compile-time enum dispatch (ICLUtils/EnumDispatch.h)
+- `applicableTo<icl8u, icl32f>(src)` — depth predicate template (BackendDispatch.h)
+- `forceAll(Backend::Cpp)` / `forEachCombination()` — testing cross-validation
