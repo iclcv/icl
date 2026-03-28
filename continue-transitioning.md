@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 13 — BackendDispatch finalization + BinaryOp migration)
+## Current State (Session 14 — Stateful BackendDispatch + BilateralFilterOp + FFT/IFFT migration)
 
 ### Architecture
 
@@ -152,7 +152,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image UnaryOp Filters (23 done)
+### Fully Native Image UnaryOp Filters (26 done)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge.
 
@@ -182,7 +182,10 @@ optype templates, `dispatchEnum<>` for runtime→compile-time dispatch:
 20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps IPP fixed-kernel dispatch chain
 21. **MorphologicalOp** — 8u/32f only, 11 optypes
 22. **LocalThresholdOp** — 4 algorithms, internal ImgBase* ROI buffering kept
-23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f, OpenCL 8u+LIN
+23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f, OpenCL 8u+LIN via stateful backend
+24. **BilateralFilterOp** — brute-force bilateral, C++ all depths, OpenCL 8u/32f via stateful backend
+25. **FFTOp** — thin subclass of BaseFFTOp (forward), delegates to FFTUtils (IPP/MKL/C++)
+26. **IFFTOp** — thin subclass of BaseFFTOp (inverse), join + PAD_REMOVE support
 
 ### Fully Native Image BinaryOp Filters (3 done)
 
@@ -194,11 +197,18 @@ These override `apply(const Image&, const Image&, Image&)` with BackendDispatch:
 All use `visitROILinesPerChannel2With`, `if constexpr` optype templates,
 `dispatchEnum<>`. BinaryOp base class has Image-based `prepare()` + `check()`.
 
-### UnaryOp Filters with applyImgBase Bridge (4 remaining)
+### BaseFFTOp — Common Base for FFTOp/IFFTOp — DONE
 
-- BilateralFilterOp (hard) — PIMPL, OpenCL/CPU dual path
-- FFTOp (hard) — DynMatrix FFT, 5 size-adaptation modes
-- IFFTOp (hard) — same as FFTOp but reverse
+FFTOp and IFFTOp merged into a common `BaseFFTOp` base class. Unified enums
+(ResultMode with all 8 modes, SizeAdaptionMode with PAD_REMOVE added at end).
+FFTOp and IFFTOp are now thin header-only subclasses with backward-compatible
+constructors and setter aliases. Old FFTOp.cpp/IFFTOp.cpp deleted.
+
+**Known issue**: FFTUtils C++ fallback has thread-safety problems (global static
+buffers). FFT tests are flaky under parallel execution. Passes 100% with `-j 1`.
+
+### UnaryOp Filters with applyImgBase Bridge (1 remaining)
+
 - MotionSensitiveTemporalSmoothing (hardest) — stateful, OpenCL, temporal buffers
 
 ## Migration Pattern — Dispatch Struct Approach
@@ -275,11 +285,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-257 tests total (tests/ directory, single icl-tests executable):
+315 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 127 filter tests covering 23 migrated filters + NewThresholdOp
+- `test-filter.cpp` — 148 filter tests covering 26 migrated filters + NewThresholdOp
 
 Test patterns — prefer these concise forms:
 ```cpp
@@ -336,10 +346,20 @@ The same patterns should be used in production code where performance is not cri
 
 ## Other TODOs
 
+- **FFTUtils thread safety** — **IMPORTANT**: the C++ FFT/IFFT fallback in
+  `ICLMath/FFTUtils.cpp` is NOT thread-safe. Multiple FFTOp/IFFTOp instances
+  running concurrently produce corrupt results. Likely cause: global/static
+  DynMatrix buffers in the FFT implementation. Fix options:
+  (a) Add a mutex around `fft2D_cpp`/`ifft2D_cpp` (simplest, small perf cost)
+  (b) Make buffers thread-local (better for multi-threaded apps)
+  (c) Pass buffers through from BaseFFTOp (avoids global state entirely)
+  This affects the test suite — FFT tests are flaky under parallel execution.
 - **bpp()** — still used in ~30 places. Once all filters use Image natively,
   bpp() call sites can be replaced with Image-based apply, then bpp() removed.
 - **applyParallel()** — free function replacing deprecated applyMT
 - **BinaryOp filters** — same migration as UnaryOp, needs visitROILines2With
+- **KuwaharaOp** — dropped from BilateralFilterOp (different algorithm). Could be
+  its own NeighborhoodOp if there's demand.
 - **Converter::convert()** — static method replacing constructor-that-does-work
 - **Quick.h** — consider reworking to use Image instead of ImgQ (Img<icl32f>)
 - **Custom SSE2/NEON specializations** — add SIMD fast paths to filters that currently
@@ -396,3 +416,39 @@ Utilities:
 - `dispatchEnum<V1, V2, ...>(runtime, f)` — runtime→compile-time enum dispatch (ICLUtils/EnumDispatch.h)
 - `applicableTo<icl8u, icl32f>(src)` — depth predicate template (BackendDispatch.h)
 - `forceAll(Backend::Cpp)` / `forEachCombination()` — testing cross-validation
+
+### Stateful Backends (`registerStatefulBackend`) — DONE
+
+For backends that need per-instance state (OpenCL buffers, precomputed LUTs, temp
+buffers), use `registerStatefulBackend<Sig>()`. It takes a **factory** that returns a
+callable capturing its own state. The factory is called once per filter instance
+during `loadFromRegistry()`.
+
+```cpp
+// In _OpenCL.cpp backend file:
+struct CLMyState {
+    CLProgram program;
+    CLKernel kernel;
+    // ...
+    void apply(const Image& src, Image& dst, ...) { /* uses this->program etc. */ }
+};
+
+static const int _reg = registerStatefulBackend<MyOp::MySig>(
+    "MyOp.apply", Backend::OpenCL,
+    []() {  // factory — called per filter instance
+        auto state = std::make_shared<CLMyState>();
+        return [state](const Image& src, Image& dst, ...) {
+            state->apply(src, dst, ...);
+        };
+    },
+    applicableTo<icl8u, icl32f>, "OpenCL description");
+```
+
+If the factory throws (e.g. no OpenCL device), the backend is skipped silently.
+
+**Validated with**: WarpOp (OpenCL warp, 8u), BilateralFilterOp (OpenCL bilateral + C++ LUT cache).
+
+WarpOp previously used ad-hoc `#ifdef ICL_HAVE_OPENCL` + raw `CLWarp*` member +
+`m_tryUseOpenCL` flag. Now uses `Dispatching` mixin with self-registering stateful
+OpenCL backend. `setTryUseOpenCL()` removed — use `forceAll(Backend::Cpp)` to
+disable OpenCL, or let the cascade auto-select the best available backend.

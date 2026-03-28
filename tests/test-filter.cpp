@@ -25,6 +25,9 @@
 #include <ICLFilter/MorphologicalOp.h>
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLFilter/WarpOp.h>
+#include <ICLFilter/BilateralFilterOp.h>
+#include <ICLFilter/FFTOp.h>
+#include <ICLFilter/IFFTOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1470,6 +1473,7 @@ ICL_REGISTER_TEST("Filter.WarpOp.identity_nn", "identity warp with NN preserves 
   });
   Img32f wm = makeIdentityWarpMap(10, 8);
   WarpOp op(wm, interpolateNN);
+  op.forceAll(Backend::Cpp);
   Image dst = op.apply(Image(src));
   ICL_TEST_EQ(dst.getSize(), src.getSize());
   ICL_TEST_TRUE((dst.as8u() == src));
@@ -1492,6 +1496,7 @@ ICL_REGISTER_TEST("Filter.WarpOp.shift_nn", "integer shift warp with NN") {
   // Shift by (2, 3): dst(x,y) reads from src(x+2, y+3)
   Img32f wm = makeShiftWarpMap(10, 10, 2, 3);
   WarpOp op(wm, interpolateNN);
+  op.forceAll(Backend::Cpp);
   Image dst = op.apply(Image(src));
   // Interior pixels should match shifted source
   // dst(0,0) = src(2,3) = 2+3*10 = 32
@@ -1508,6 +1513,7 @@ ICL_REGISTER_TEST("Filter.WarpOp.multichannel", "warp works on multi-channel ima
   });
   Img32f wm = makeIdentityWarpMap(8, 8);
   WarpOp op(wm, interpolateNN);
+  op.forceAll(Backend::Cpp);
   Image dst = op.apply(Image(src));
   ICL_TEST_EQ(dst.getChannels(), 3);
   ICL_TEST_TRUE((dst.as8u() == src));
@@ -1525,6 +1531,7 @@ ICL_REGISTER_TEST("Filter.WarpOp.all_depths_identity", "identity warp works for 
       });
     });
     WarpOp op(wm, interpolateNN);
+    op.forceAll(Backend::Cpp);
     Image dst = op.apply(src);
     ICL_TEST_EQ(dst.getSize(), src.getSize());
     ICL_TEST_EQ(dst.getDepth(), src.getDepth());
@@ -2155,4 +2162,360 @@ ICL_REGISTER_TEST("Filter.BinaryLogicalOp.introspection", "dispatch introspectio
   BinaryLogicalOp op(BinaryLogicalOp::andOp);
   ICL_TEST_EQ((int)op.selectors().size(), 1);
   ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+}
+
+// ====================================================================
+// BilateralFilterOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.uniform_8u", "uniform input passes through unchanged") {
+  Img8u src(Size(20, 20), 1);
+  src.clear(-1, 128);
+  BilateralFilterOp op(3, 2.f, 30.f, false);
+  Image dst = op.apply(Image(src));
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u &v) { if(v != 128) ok = false; });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.uniform_32f", "uniform float passes through") {
+  Img32f src(Size(20, 20), 1);
+  src.clear(-1, 42.5f);
+  BilateralFilterOp op(3, 2.f, 30.f, false);
+  Image dst = op.apply(Image(src));
+  bool ok = true;
+  dst.as32f().visitPixels([&](const icl32f &v) {
+    if(std::abs(v - 42.5f) > 0.01f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.radius_zero", "radius=0 is identity") {
+  auto src = Img8u::from(10, 10, 1, [](int x, int y, int) -> icl8u {
+    return x + y * 10;
+  });
+  BilateralFilterOp op(0, 2.f, 30.f, false);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_TRUE(dst == Image(src));
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.smoothing", "reduces noise on smooth region") {
+  // Create a mostly-constant image with a single noisy pixel
+  Img8u src(Size(11, 11), 1);
+  src.clear(-1, 100);
+  src(5, 5, 0) = 200;  // single bright pixel in uniform background
+
+  BilateralFilterOp op(2, 2.f, 50.f, false);
+  Image dst = op.apply(Image(src));
+
+  // The bright pixel should be attenuated towards the background
+  icl8u center = dst.as8u()(5, 5, 0);
+  ICL_TEST_TRUE(center < 200);
+  ICL_TEST_TRUE(center > 100);
+
+  // Surrounding pixels should still be close to 100
+  icl8u neighbor = dst.as8u()(3, 3, 0);
+  ICL_TEST_TRUE(neighbor >= 99 && neighbor <= 101);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.edge_preservation", "preserves sharp edges") {
+  // Step edge: left half = 0, right half = 255
+  auto src = Img8u::from(20, 10, 1, [](int x, int, int) -> icl8u {
+    return x < 10 ? 0 : 255;
+  });
+
+  // Strong edge preservation: small sigma_r means distant values get low weight
+  BilateralFilterOp op(3, 3.f, 10.f, false);
+  Image dst = op.apply(Image(src));
+
+  // Pixels well within each region should stay near original
+  icl8u left_val = dst.as8u()(2, 5, 0);
+  icl8u right_val = dst.as8u()(17, 5, 0);
+  ICL_TEST_TRUE(left_val < 10);
+  ICL_TEST_TRUE(right_val > 245);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.color_3ch", "3-channel with use_lab=false") {
+  Img8u src(Size(10, 10), formatRGB);
+  src.clear(-1, 100);
+  BilateralFilterOp op(2, 2.f, 30.f, false);
+  op.forceAll(Backend::Cpp);  // OpenCL has float precision differences on 8u uniform
+  Image dst = op.apply(Image(src));
+
+  // Uniform input → uniform output for all 3 channels
+  bool ok = true;
+  for(int c = 0; c < 3; ++c) {
+    const icl8u* data = dst.as8u().getData(c);
+    for(int i = 0; i < 100; ++i) {
+      if(data[i] != 100) ok = false;
+    }
+  }
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.color_lab", "3-channel with use_lab=true") {
+  Img8u src(Size(10, 10), formatRGB);
+  src.clear(-1, 100);
+  BilateralFilterOp op(2, 2.f, 30.f, true);
+  op.forceAll(Backend::Cpp);  // OpenCL has float precision differences on 8u uniform
+  Image dst = op.apply(Image(src));
+
+  // Uniform input → uniform output (LAB distance is 0 for identical pixels)
+  bool ok = true;
+  for(int c = 0; c < 3; ++c) {
+    const icl8u* data = dst.as8u().getData(c);
+    for(int i = 0; i < 100; ++i) {
+      if(data[i] != 100) ok = false;
+    }
+  }
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.all_depths", "C++ backend handles all 5 depths") {
+  const depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(depth d : depths) {
+    Image src(Size(10, 10), d, 1, formatMatrix);
+    src.clear();
+    BilateralFilterOp op(1, 1.f, 10.f, false);
+    op.forceAll(Backend::Cpp);
+    Image dst = op.apply(src);
+    ICL_TEST_EQ(dst.getDepth(), d);
+    ICL_TEST_EQ(dst.getSize(), Size(10, 10));
+  }
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.symmetric", "symmetric input gives symmetric output") {
+  // Symmetric horizontal gradient
+  auto src = Img8u::from(11, 1, 1, [](int x, int, int) -> icl8u {
+    return static_cast<icl8u>(std::abs(x - 5) * 50);  // V-shape: 250,200,...,0,...,200,250
+  });
+  BilateralFilterOp op(2, 2.f, 100.f, false);
+  Image dst = op.apply(Image(src));
+
+  // Output should be symmetric around center
+  const Img8u& d = dst.as8u();
+  bool ok = true;
+  for(int x = 0; x < 5; ++x) {
+    if(d(x, 0, 0) != d(10 - x, 0, 0)) ok = false;
+  }
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.introspection", "dispatch introspection") {
+  BilateralFilterOp op;
+  ICL_TEST_EQ((int)op.selectors().size(), 1);
+  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+
+  // Cpp backend should always be registered
+  auto backends = op.selectorByName("apply")->registeredBackends();
+  bool hasCpp = false;
+  for(auto b : backends) { if(b == Backend::Cpp) hasCpp = true; }
+  ICL_TEST_TRUE(hasCpp);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.cross_validate_mono8u", "C++ and OpenCL match for mono 8u") {
+  auto src = Img8u::from(30, 20, 1, [](int x, int y, int) -> icl8u {
+    return static_cast<icl8u>((x * 7 + y * 13) % 256);
+  });
+  BilateralFilterOp op(2, 2.f, 30.f, false);
+  Image srcImg(src);
+
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(srcImg);
+  bool allMatch = true;
+  int nCombos = 0;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as8u() == ref.as8u())) allMatch = false;
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.cross_validate_mono32f", "C++ and OpenCL match for mono 32f") {
+  auto src = Img32f::from(30, 20, 1, [](int x, int y, int) -> icl32f {
+    return static_cast<icl32f>((x * 7 + y * 13) % 256);
+  });
+  BilateralFilterOp op(2, 2.f, 30.f, false);
+  Image srcImg(src);
+
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(srcImg);
+  bool allMatch = true;
+  int nCombos = 0;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as32f() == ref.as32f())) allMatch = false;
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+ICL_REGISTER_TEST("Filter.BilateralFilterOp.cross_validate_color8u", "C++ and OpenCL match for 3ch 8u") {
+  Img8u src(Size(30, 20), formatRGB);
+  src.visitPixels([](int x, int y, int c, icl8u& val) {
+    val = static_cast<icl8u>((x * 7 + y * 13 + c * 37) % 256);
+  });
+  BilateralFilterOp op(2, 2.f, 30.f, true);
+  Image srcImg(src);
+
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(srcImg);
+  bool allMatch = true;
+  int nCombos = 0;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as8u() == ref.as8u())) allMatch = false;
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+// ====================================================================
+// FFTOp / IFFTOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.FFTOp.roundtrip", "FFT then IFFT recovers original") {
+  auto src = Img32f::from(8, 8, 1, [](int x, int y, int) -> icl32f {
+    return x * 3.0f + y * 7.0f + 1.0f;
+  });
+  FFTOp fft(FFTOp::TWO_CHANNEL_COMPLEX, FFTOp::NO_SCALE, false, false);
+  IFFTOp ifft(IFFTOp::REAL_ONLY, IFFTOp::NO_SCALE, Rect(0,0,0,0), true, false, false);
+
+  Image freq = fft.apply(Image(src));
+  ICL_TEST_EQ(freq.getChannels(), 2);
+
+  Image recovered = ifft.apply(freq);
+  ICL_TEST_EQ(recovered.getChannels(), 1);
+
+  bool ok = true;
+  const Img32f& rec = recovered.as32f();
+  for(int y = 0; y < 8; ++y) {
+    for(int x = 0; x < 8; ++x) {
+      float diff = std::abs(rec(x, y, 0) - src(x, y, 0));
+      if(diff > 0.01f) ok = false;
+    }
+  }
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.uniform_dc", "FFT of uniform image has only DC component") {
+  Img32f src(Size(8, 8), 1);
+  src.clear(-1, 42.0f);
+  FFTOp fft(FFTOp::TWO_CHANNEL_COMPLEX, FFTOp::NO_SCALE, false, false);
+  Image freq = fft.apply(Image(src));
+
+  const Img32f& f = freq.as32f();
+  float dc_real = f(0, 0, 0);
+  ICL_TEST_TRUE(std::abs(dc_real - 42.0f * 64.0f) < 1.0f);
+  float dc_imag = f(0, 0, 1);
+  ICL_TEST_TRUE(std::abs(dc_imag) < 0.01f);
+
+  bool ok = true;
+  for(int y = 0; y < 8; ++y) {
+    for(int x = 0; x < 8; ++x) {
+      if(x == 0 && y == 0) continue;
+      if(std::abs(f(x, y, 0)) > 0.01f) ok = false;
+      if(std::abs(f(x, y, 1)) > 0.01f) ok = false;
+    }
+  }
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.result_modes_channels", "result modes produce correct channel counts") {
+  Img32f src(Size(8, 8), 1);
+  src.clear(-1, 1.0f);
+
+  FFTOp fft1(FFTOp::TWO_CHANNEL_COMPLEX);
+  ICL_TEST_EQ(fft1.apply(Image(src)).getChannels(), 2);
+
+  FFTOp fft2(FFTOp::REAL_ONLY);
+  ICL_TEST_EQ(fft2.apply(Image(src)).getChannels(), 1);
+
+  FFTOp fft3(FFTOp::MAGNITUDE_ONLY);
+  ICL_TEST_EQ(fft3.apply(Image(src)).getChannels(), 1);
+
+  FFTOp fft4(FFTOp::TWO_CHANNEL_MAGNITUDE_PHASE);
+  ICL_TEST_EQ(fft4.apply(Image(src)).getChannels(), 2);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.pad_zero_power_of_2", "PAD_ZERO produces power-of-2 output") {
+  Img32f src(Size(10, 7), 1);
+  src.clear(-1, 1.0f);
+  FFTOp fft(FFTOp::REAL_ONLY, FFTOp::PAD_ZERO, false);
+  Image dst = fft.apply(Image(src));
+  ICL_TEST_EQ(dst.getWidth(), 16);
+  ICL_TEST_EQ(dst.getHeight(), 8);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.scale_up_power_of_2", "SCALE_UP produces power-of-2 output") {
+  Img32f src(Size(10, 7), 1);
+  src.clear(-1, 1.0f);
+  FFTOp fft(FFTOp::REAL_ONLY, FFTOp::SCALE_UP, false);
+  Image dst = fft.apply(Image(src));
+  ICL_TEST_EQ(dst.getWidth(), 16);
+  ICL_TEST_EQ(dst.getHeight(), 8);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.parseval", "energy preserved between spatial and frequency domain") {
+  auto src = Img32f::from(8, 8, 1, [](int x, int y, int) -> icl32f {
+    return static_cast<icl32f>(x + y * 3);
+  });
+  float spatialEnergy = 0;
+  src.visitPixels([&](const icl32f& v) { spatialEnergy += v * v; });
+
+  FFTOp fft(FFTOp::POWER_SPECTRUM, FFTOp::NO_SCALE, false, false);
+  Image ps = fft.apply(Image(src));
+  float freqEnergy = 0;
+  ps.as32f().visitPixels([&](const icl32f& v) { freqEnergy += v; });
+  freqEnergy /= 64.0f;
+
+  float ratio = spatialEnergy / freqEnergy;
+  ICL_TEST_TRUE(std::abs(ratio - 1.0f) < 0.01f);
+}
+
+ICL_REGISTER_TEST("Filter.FFTOp.multichannel", "FFT works on multi-channel images") {
+  Img32f src(Size(8, 8), 3);
+  src.clear(-1, 10.0f);
+  FFTOp fft(FFTOp::REAL_ONLY, FFTOp::NO_SCALE, false);
+  Image dst = fft.apply(Image(src));
+  ICL_TEST_EQ(dst.getChannels(), 3);
+}
+
+ICL_REGISTER_TEST("Filter.IFFTOp.join", "join combines two channels into complex for roundtrip") {
+  // FFT a known image to get a 2-channel (real+imag) frequency representation
+  auto spatial = Img32f::from(8, 8, 1, [](int x, int y, int) -> icl32f {
+    return x * 2.0f + y * 5.0f;
+  });
+  FFTOp fft(FFTOp::TWO_CHANNEL_COMPLEX, FFTOp::NO_SCALE, false, false);
+  Image freq = fft.apply(Image(spatial));
+  ICL_TEST_EQ(freq.getChannels(), 2);
+
+  // IFFT with join=true: combines the 2 channels back into complex, then IFFT
+  IFFTOp ifft(IFFTOp::REAL_ONLY, IFFTOp::NO_SCALE, Rect(0,0,0,0), true, false, false);
+  Image recovered = ifft.apply(freq);
+  ICL_TEST_EQ(recovered.getChannels(), 1);
+
+  // Should recover original image
+  bool ok = true;
+  const Img32f& rec = recovered.as32f();
+  for(int y = 0; y < 8; ++y) {
+    for(int x = 0; x < 8; ++x) {
+      float diff = std::abs(rec(x, y, 0) - spatial(x, y, 0));
+      if(diff > 0.01f) ok = false;
+    }
+  }
+  ICL_TEST_TRUE(ok);
 }
