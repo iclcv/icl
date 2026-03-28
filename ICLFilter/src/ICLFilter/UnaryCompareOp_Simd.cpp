@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewUnaryCompareOp_Simd.cpp     **
+** File   : ICLFilter/src/ICLFilter/UnaryCompareOp_Simd.cpp     **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -31,7 +31,7 @@
 #include <ICLCore/BackendDispatch.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
-#include <ICLFilter/NewUnaryCompareOp.h>
+#include <ICLFilter/UnaryCompareOp.h>
 
 #ifdef ICL_HAVE_SSE2
 #include <ICLUtils/SSETypes.h>
@@ -53,7 +53,7 @@ namespace {
   }
 
   // --- 8u compare: mask IS the result (0xFF = 255, 0x00 = 0) ---
-  using CmpOp = icl::filter::NewUnaryCompareOp;
+  using CmpOp = icl::filter::UnaryCompareOp;
 
   void simd_compare_8u(const Img8u &src, Img8u &dst, icl8u value, int optype) {
     __m128i vv = _mm_set1_epi8(static_cast<char>(value));
@@ -96,7 +96,7 @@ namespace {
 
   // --- Self-registration ---
   static const int _reg1 = registerBackend<CmpOp::CmpSig>(
-    "NewUnaryCompareOp.compare", Backend::Simd, simd_compare,
+    "UnaryCompareOp.compare", Backend::Simd, simd_compare,
     applicableTo<icl8u>, "SSE2/NEON compare (8u)");
 
 } // anon namespace

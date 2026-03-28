@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewUnaryCompareOp_Ipp.cpp      **
+** File   : ICLFilter/src/ICLFilter/UnaryCompareOp_Ipp.cpp      **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -31,7 +31,7 @@
 #include <ICLCore/BackendDispatch.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
-#include <ICLFilter/NewUnaryCompareOp.h>
+#include <ICLFilter/UnaryCompareOp.h>
 
 #ifdef ICL_HAVE_IPP
 #include <ipp.h>
@@ -41,7 +41,7 @@ using namespace icl::core;
 
 namespace {
 
-  using CmpOp = icl::filter::NewUnaryCompareOp;
+  using CmpOp = icl::filter::UnaryCompareOp;
 
   // Map our optype enum to IPP's IppCmpOp
   static IppCmpOp toIppCmpOp(int ot) {
@@ -94,11 +94,11 @@ namespace {
 
   // --- Self-registration ---
   static const int _reg1 = registerBackend<CmpOp::CmpSig>(
-    "NewUnaryCompareOp.compare", Backend::Ipp, ipp_compare,
+    "UnaryCompareOp.compare", Backend::Ipp, ipp_compare,
     applicableTo<icl8u, icl16s, icl32f>, "IPP compare (8u/16s/32f)");
 
   static const int _reg2 = registerBackend<CmpOp::CmpEqtSig>(
-    "NewUnaryCompareOp.compareEqTol", Backend::Ipp, ipp_compare_eqt,
+    "UnaryCompareOp.compareEqTol", Backend::Ipp, ipp_compare_eqt,
     applicableTo<icl32f>, "IPP compareEqualEps (32f)");
 
 } // anon namespace

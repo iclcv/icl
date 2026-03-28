@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/UnaryCompareOp.cpp             **
+** File   : ICLFilter/src/ICLFilter/UnaryCompareOp.cpp          **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -29,123 +29,96 @@
 ********************************************************************/
 
 #include <ICLFilter/UnaryCompareOp.h>
-#include <ICLCore/Img.h>
-#include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
+#include <ICLUtils/ClippedCast.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
-  namespace filter{
+  namespace filter {
 
-  #define ICL_COMP_ZERO 0
-  #define ICL_COMP_NONZERO 255
+    // ================================================================
+    // C++ fallback implementations
+    // ================================================================
 
-    // --- C++ fallback comparators ---
-
-  #define CREATE_COMPARE_OP(NAME,OPERATOR)                              \
-    template <typename T> struct CompareOp_##NAME {                     \
-      static inline icl8u cmp(T val1, T val2){                          \
-        return val1 OPERATOR val2 ? ICL_COMP_NONZERO : ICL_COMP_ZERO;   \
-      }                                                                 \
-    }
-
-    CREATE_COMPARE_OP(eq,==);
-    CREATE_COMPARE_OP(lt,<);
-    CREATE_COMPARE_OP(lteq,<=);
-    CREATE_COMPARE_OP(gteq,>=);
-    CREATE_COMPARE_OP(gt,>);
-
-  #undef CREATE_COMPARE_OP
-
-    template <typename T> struct CompareOp_eqt {
-      static inline icl8u cmp(T val1, T val2, T tolerance){
-        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
+    namespace {
+      template<class T, class Cmp>
+      void cmpLoop(const Img<T> &src, Img8u &dst, T value, Cmp cmp) {
+        visitROILinesPerChannelWith(src, dst, [value, cmp](const T *s, icl8u *d, int, int w) {
+          for(int i = 0; i < w; ++i) d[i] = cmp(s[i], value) ? 255 : 0;
+        });
       }
-    };
 
-    // --- Fallback loops ---
-
-    template <class T, template<typename X> class C>
-    inline void fallbackCompare(const Img<T> &src, T value, Img8u &dst){
-      visitROILinesPerChannelWith(src, dst, [value](const T *s, icl8u *d, int, int w) {
-        for(int i = 0; i < w; ++i) d[i] = C<T>::cmp(s[i], value);
-      });
-    }
-
-    template <typename T>
-    inline void fallbackCompareWithTolerance(const Img<T> &src, T value, Img8u &dst, T tolerance) {
-      visitROILinesPerChannelWith(src, dst, [value, tolerance](const T *s, icl8u *d, int, int w) {
-        for(int i = 0; i < w; ++i) d[i] = CompareOp_eqt<T>::cmp(s[i], value, tolerance);
-      });
-    }
-
-    // --- Dispatch struct ---
-
-    template<class T> struct CmpImpl {
-      static void apply(const Img<T> &src, Img8u &dst, T value, T tolerance, UnaryCompareOp::optype ot) {
-        switch(ot){
-          case UnaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src,value,dst); break;
-          case UnaryCompareOp::gt: fallbackCompare<T,CompareOp_gt>(src,value,dst); break;
-          case UnaryCompareOp::lteq: fallbackCompare<T,CompareOp_lteq>(src,value,dst); break;
-          case UnaryCompareOp::gteq: fallbackCompare<T,CompareOp_gteq>(src,value,dst); break;
-          case UnaryCompareOp::eq: fallbackCompare<T,CompareOp_eq>(src,value,dst); break;
-          case UnaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src,value,dst,tolerance); break;
+      template<class T>
+      void cmpTyped(const Img<T> &src, Img8u &dst, T value, int ot) {
+        switch(ot) {
+          case UnaryCompareOp::lt:   cmpLoop(src, dst, value, [](T a, T b){ return a < b; }); break;
+          case UnaryCompareOp::lteq: cmpLoop(src, dst, value, [](T a, T b){ return a <= b; }); break;
+          case UnaryCompareOp::eq:   cmpLoop(src, dst, value, [](T a, T b){ return a == b; }); break;
+          case UnaryCompareOp::gteq: cmpLoop(src, dst, value, [](T a, T b){ return a >= b; }); break;
+          case UnaryCompareOp::gt:   cmpLoop(src, dst, value, [](T a, T b){ return a > b; }); break;
+          default: break;
         }
       }
-    };
 
-  #ifdef ICL_HAVE_IPP
-    template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,T,icl8u*,int,IppiSize,IppCmpOp)>
-    inline void ippCompareCall(const Img<T> &src, T value, Img8u &dst, UnaryCompareOp::optype cmpOp){
-      for (int c=src.getChannels()-1; c >= 0; --c) {
-        ippiFunc (src.getROIData(c), src.getLineStep(), value,
-                  dst.getROIData(c), dst.getLineStep(),
-                  dst.getROISize(), (IppCmpOp) cmpOp);
+      void cpp_compare(const Image &src, Image &dst, double value, int optype) {
+        Img8u &d = dst.as8u();
+        src.visit([&](const auto &s) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          cmpTyped(s, d, clipped_cast<double,T>(value), optype);
+        });
       }
+
+      void cpp_compare_eqt(const Image &src, Image &dst, double value, double tolerance) {
+        Img8u &d = dst.as8u();
+        src.visit([&](const auto &s) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          T v = clipped_cast<double,T>(value);
+          T t = clipped_cast<double,T>(tolerance);
+          visitROILinesPerChannelWith(s, d, [v, t](const T *sp, icl8u *dp, int, int w) {
+            for(int i = 0; i < w; ++i)
+              dp[i] = std::abs(sp[i] - v) <= t ? 255 : 0;
+          });
+        });
+      }
+    } // anon namespace
+
+    // ================================================================
+    // Constructor
+    // ================================================================
+
+    UnaryCompareOp::UnaryCompareOp(optype ot, icl64f value, icl64f tolerance)
+      : m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance)
+    {
+      initDispatching("UnaryCompareOp");
+
+      auto& cmp    = addSelector<CmpSig>("compare");
+      auto& cmpEqt = addSelector<CmpEqtSig>("compareEqTol");
+
+
+      cmp.add(Backend::Cpp, cpp_compare);
+      cmpEqt.add(Backend::Cpp, cpp_compare_eqt);
     }
 
-    template<> struct CmpImpl<icl8u> {
-      static void apply(const Img8u &src, Img8u &dst, icl8u value, icl8u tolerance, UnaryCompareOp::optype ot) {
-        if(ot == UnaryCompareOp::eqt)
-          fallbackCompareWithTolerance<icl8u>(src, value, dst, tolerance);
-        else
-          ippCompareCall<icl8u, ippiCompareC_8u_C1R>(src, value, dst, ot);
-      }
-    };
-    template<> struct CmpImpl<icl16s> {
-      static void apply(const Img16s &src, Img8u &dst, icl16s value, icl16s tolerance, UnaryCompareOp::optype ot) {
-        if(ot == UnaryCompareOp::eqt)
-          fallbackCompareWithTolerance<icl16s>(src, value, dst, tolerance);
-        else
-          ippCompareCall<icl16s, ippiCompareC_16s_C1R>(src, value, dst, ot);
-      }
-    };
-    template<> struct CmpImpl<icl32f> {
-      static void apply(const Img32f &src, Img8u &dst, icl32f value, icl32f tolerance, UnaryCompareOp::optype ot) {
-        if(ot == UnaryCompareOp::eqt){
-          for (int c=src.getChannels()-1; c >= 0; --c) {
-            ippiCompareEqualEpsC_32f_C1R(src.getROIData(c), src.getLineStep(), value,
-                                          dst.getROIData(c), dst.getLineStep(),
-                                          dst.getROISize(), tolerance);
-          }
-        }else{
-          ippCompareCall<icl32f, ippiCompareC_32f_C1R>(src, value, dst, ot);
-        }
-      }
-    };
-  #endif
+    UnaryCompareOp::UnaryCompareOp(const std::string &op, icl64f value, icl64f tolerance)
+      : UnaryCompareOp(translate_op_type(op), value, tolerance) {}
 
-    void UnaryCompareOp::apply(const core::Image &src, core::Image &dst) {
+    // ================================================================
+    // apply()
+    // ================================================================
+
+    void UnaryCompareOp::apply(const Image &src, Image &dst) {
       if(!prepare(dst, src, depth8u)) return;
-      Img8u &d = dst.as8u();
-      src.visit([&](const auto &s) {
-        using T = typename std::remove_reference_t<decltype(s)>::type;
-        CmpImpl<T>::apply(s, d, clipped_cast<icl64f,T>(m_dValue),
-                          clipped_cast<icl64f,T>(m_dTolerance), m_eOpType);
-      });
+
+      if(m_eOpType == eqt) {
+        auto& sel = getSelector<CmpEqtSig>("compareEqTol");
+        sel.resolve(src)->apply(src, dst, m_dValue, m_dTolerance);
+      } else {
+        auto& sel = getSelector<CmpSig>("compare");
+        sel.resolve(src)->apply(src, dst, m_dValue, static_cast<int>(m_eOpType));
+      }
     }
 
   } // namespace filter
-}
+} // namespace icl

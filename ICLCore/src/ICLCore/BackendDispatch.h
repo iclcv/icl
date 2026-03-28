@@ -267,8 +267,8 @@ namespace icl {
     struct ICLCore_API Dispatching {
       virtual ~Dispatching();
 
-      /// Set the scope prefix (e.g. "NewThresholdOp").
-      /// addSelector("ltVal") becomes "NewThresholdOp.ltVal" in the registry.
+      /// Set the scope prefix (e.g. "ThresholdOp").
+      /// addSelector("ltVal") becomes "ThresholdOp.ltVal" in the registry.
       void initDispatching(const std::string& className);
 
       /// Qualified name for a selector (prefix + short name)

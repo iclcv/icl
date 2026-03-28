@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewThresholdOp_Ipp.cpp         **
+** File   : ICLFilter/src/ICLFilter/ThresholdOp_Ipp.cpp         **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,7 +32,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
-#include <ICLFilter/NewThresholdOp.h>
+#include <ICLFilter/ThresholdOp.h>
 
 #ifdef ICL_HAVE_IPP
 #include <ipp.h>
@@ -113,18 +113,18 @@ namespace {
   }
 
   // --- Self-registration ---
-  using TOp = icl::filter::NewThresholdOp;
+  using TOp = icl::filter::ThresholdOp;
 
   static const int _reg1 = registerBackend<TOp::ThreshSig>(
-    "NewThresholdOp.ltVal", Backend::Ipp, ipp_ltval,
+    "ThresholdOp.ltVal", Backend::Ipp, ipp_ltval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
 
   static const int _reg2 = registerBackend<TOp::ThreshSig>(
-    "NewThresholdOp.gtVal", Backend::Ipp, ipp_gtval,
+    "ThresholdOp.gtVal", Backend::Ipp, ipp_gtval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
 
   static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
-    "NewThresholdOp.ltgtVal", Backend::Ipp, ipp_ltgtval,
+    "ThresholdOp.ltgtVal", Backend::Ipp, ipp_ltgtval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
 
 } // anon namespace

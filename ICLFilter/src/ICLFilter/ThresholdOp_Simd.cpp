@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewThresholdOp_Simd.cpp        **
+** File   : ICLFilter/src/ICLFilter/ThresholdOp_Simd.cpp        **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,7 +32,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
-#include <ICLFilter/NewThresholdOp.h>
+#include <ICLFilter/ThresholdOp.h>
 
 #ifdef ICL_HAVE_SSE2
 #include <ICLUtils/SSETypes.h>
@@ -179,18 +179,18 @@ namespace {
   }
 
   // --- Self-registration into the global registry ---
-  using TOp = icl::filter::NewThresholdOp;
+  using TOp = icl::filter::ThresholdOp;
 
   static const int _reg1 = registerBackend<TOp::ThreshSig>(
-    "NewThresholdOp.ltVal", Backend::Simd, simd_ltval,
+    "ThresholdOp.ltVal", Backend::Simd, simd_ltval,
     applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltVal (8u/32f)");
 
   static const int _reg2 = registerBackend<TOp::ThreshSig>(
-    "NewThresholdOp.gtVal", Backend::Simd, simd_gtval,
+    "ThresholdOp.gtVal", Backend::Simd, simd_gtval,
     applicableTo<icl8u, icl32f>, "SSE2/NEON threshold gtVal (8u/32f)");
 
   static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
-    "NewThresholdOp.ltgtVal", Backend::Simd, simd_ltgtval,
+    "ThresholdOp.ltgtVal", Backend::Simd, simd_ltgtval,
     applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltgtVal (8u/32f)");
 
 } // anon namespace

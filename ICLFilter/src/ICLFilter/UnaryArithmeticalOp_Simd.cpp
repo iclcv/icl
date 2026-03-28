@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewUnaryArithmeticalOp_Simd.cpp**
+** File   : ICLFilter/src/ICLFilter/UnaryArithmeticalOp_Simd.cpp**
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -31,7 +31,7 @@
 #include <ICLCore/BackendDispatch.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
-#include <ICLFilter/NewUnaryArithmeticalOp.h>
+#include <ICLFilter/UnaryArithmeticalOp.h>
 #include <ICLUtils/ClippedCast.h>
 #include <cmath>
 
@@ -44,7 +44,7 @@ using namespace icl::core;
 
 namespace {
 
-  using Op = icl::filter::NewUnaryArithmeticalOp;
+  using Op = icl::filter::UnaryArithmeticalOp;
 
   // ---- with-val: add/sub/mul/div for icl32f ----
   void simd_arith_with_val(const Image &src, Image &dst, double value, int optype) {
@@ -117,11 +117,11 @@ namespace {
 
   // --- Self-registration ---
   static const int _reg1 = registerBackend<Op::ArithValSig>(
-    "NewUnaryArithmeticalOp.withVal", Backend::Simd, simd_arith_with_val,
+    "UnaryArithmeticalOp.withVal", Backend::Simd, simd_arith_with_val,
     applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
 
   static const int _reg2 = registerBackend<Op::ArithNoValSig>(
-    "NewUnaryArithmeticalOp.noVal", Backend::Simd, simd_arith_no_val,
+    "UnaryArithmeticalOp.noVal", Backend::Simd, simd_arith_no_val,
     applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
 
 } // anon namespace
