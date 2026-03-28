@@ -31,6 +31,7 @@
 #include <ICLFilter/UnaryArithmeticalOp.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/EnumDispatch.h>
 #include <cmath>
 
 using namespace icl::utils;
@@ -52,46 +53,55 @@ namespace icl {
       template<> inline icl32f absVal(icl32f t) { return std::fabs(t); }
       template<> inline icl64f absVal(icl64f t) { return std::fabs(t); }
 
-      template<class T>
-      void arithWithVal(const Img<T> &src, Img<T> &dst, T val, int optype) {
-        visitROILinesPerChannelWith(src, dst, [val, optype](const T *s, T *d, int, int w) {
+      template<Op::optype OT, class T>
+      void arithWithVal(const Img<T> &src, Img<T> &dst, T val) {
+        visitROILinesPerChannelWith(src, dst, [val](const T *s, T *d, int, int w) {
           for(int i = 0; i < w; ++i) {
-            switch(optype) {
-              case Op::addOp: d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) + static_cast<icl64f>(val)); break;
-              case Op::subOp: d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) - static_cast<icl64f>(val)); break;
-              case Op::mulOp: d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) * static_cast<icl64f>(val)); break;
-              case Op::divOp: d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) / static_cast<icl64f>(val)); break;
-              default: break;
-            }
+            if constexpr (OT == Op::addOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) + static_cast<icl64f>(val));
+            else if constexpr (OT == Op::subOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) - static_cast<icl64f>(val));
+            else if constexpr (OT == Op::mulOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) * static_cast<icl64f>(val));
+            else if constexpr (OT == Op::divOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) / static_cast<icl64f>(val));
           }
         });
       }
 
-      template<class T>
-      void arithNoVal(const Img<T> &src, Img<T> &dst, int optype) {
-        visitROILinesPerChannelWith(src, dst, [optype](const T *s, T *d, int, int w) {
+      template<Op::optype OT, class T>
+      void arithNoVal(const Img<T> &src, Img<T> &dst) {
+        visitROILinesPerChannelWith(src, dst, [](const T *s, T *d, int, int w) {
           for(int i = 0; i < w; ++i) {
-            switch(optype) {
-              case Op::sqrOp:  d[i] = s[i] * s[i]; break;
-              case Op::sqrtOp: d[i] = clipped_cast<double,T>(std::sqrt(static_cast<double>(s[i]))); break;
-              case Op::lnOp:   d[i] = clipped_cast<double,T>(std::log(static_cast<double>(s[i]))); break;
-              case Op::expOp:  d[i] = clipped_cast<double,T>(std::exp(static_cast<double>(s[i]))); break;
-              case Op::absOp:  d[i] = absVal(s[i]); break;
-              default: break;
-            }
+            if constexpr (OT == Op::sqrOp)  d[i] = s[i] * s[i];
+            else if constexpr (OT == Op::sqrtOp) d[i] = clipped_cast<double,T>(std::sqrt(static_cast<double>(s[i])));
+            else if constexpr (OT == Op::lnOp)   d[i] = clipped_cast<double,T>(std::log(static_cast<double>(s[i])));
+            else if constexpr (OT == Op::expOp)   d[i] = clipped_cast<double,T>(std::exp(static_cast<double>(s[i])));
+            else if constexpr (OT == Op::absOp)   d[i] = absVal(s[i]);
           }
+        });
+      }
+
+      template<Op::optype OT>
+      void apply_with_val(const Image &src, Image &dst, double value) {
+        src.visitWith(dst, [&](const auto &s, auto &d) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          arithWithVal<OT>(s, d, clipped_cast<icl64f,T>(value));
+        });
+      }
+
+      template<Op::optype OT>
+      void apply_no_val(const Image &src, Image &dst) {
+        src.visitWith(dst, [&](const auto &s, auto &d) {
+          arithNoVal<OT>(s, d);
         });
       }
 
       void cpp_arith_with_val(const Image &src, Image &dst, double value, int optype) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          arithWithVal(s, d, clipped_cast<icl64f, typename std::remove_reference_t<decltype(s)>::type>(value), optype);
+        dispatchEnum<Op::addOp, Op::subOp, Op::mulOp, Op::divOp>(optype, [&](auto tag) {
+          apply_with_val<decltype(tag)::value>(src, dst, value);
         });
       }
 
       void cpp_arith_no_val(const Image &src, Image &dst, int optype) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          arithNoVal(s, d, optype);
+        dispatchEnum<Op::sqrOp, Op::sqrtOp, Op::lnOp, Op::expOp, Op::absOp>(optype, [&](auto tag) {
+          apply_no_val<decltype(tag)::value>(src, dst);
         });
       }
     } // anon namespace

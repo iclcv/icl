@@ -31,6 +31,7 @@
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/EnumDispatch.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -43,30 +44,33 @@ namespace icl {
     // ================================================================
 
     namespace {
-      template<class T, class Cmp>
-      void cmpLoop(const Img<T> &src, Img8u &dst, T value, Cmp cmp) {
-        visitROILinesPerChannelWith(src, dst, [value, cmp](const T *s, icl8u *d, int, int w) {
-          for(int i = 0; i < w; ++i) d[i] = cmp(s[i], value) ? 255 : 0;
+      using UCO = UnaryCompareOp;
+
+      template<UCO::optype OT, class T>
+      void cmpTyped(const Img<T> &src, Img8u &dst, T value) {
+        visitROILinesPerChannelWith(src, dst, [value](const T *s, icl8u *d, int, int w) {
+          for(int i = 0; i < w; ++i) {
+            if constexpr (OT == UCO::lt)   d[i] = s[i] < value ? 255 : 0;
+            else if constexpr (OT == UCO::lteq) d[i] = s[i] <= value ? 255 : 0;
+            else if constexpr (OT == UCO::eq)   d[i] = s[i] == value ? 255 : 0;
+            else if constexpr (OT == UCO::gteq) d[i] = s[i] >= value ? 255 : 0;
+            else if constexpr (OT == UCO::gt)   d[i] = s[i] > value ? 255 : 0;
+          }
         });
       }
 
-      template<class T>
-      void cmpTyped(const Img<T> &src, Img8u &dst, T value, int ot) {
-        switch(ot) {
-          case UnaryCompareOp::lt:   cmpLoop(src, dst, value, [](T a, T b){ return a < b; }); break;
-          case UnaryCompareOp::lteq: cmpLoop(src, dst, value, [](T a, T b){ return a <= b; }); break;
-          case UnaryCompareOp::eq:   cmpLoop(src, dst, value, [](T a, T b){ return a == b; }); break;
-          case UnaryCompareOp::gteq: cmpLoop(src, dst, value, [](T a, T b){ return a >= b; }); break;
-          case UnaryCompareOp::gt:   cmpLoop(src, dst, value, [](T a, T b){ return a > b; }); break;
-          default: break;
-        }
+      template<UCO::optype OT>
+      void compare_typed(const Image &src, Img8u &d, double value) {
+        src.visit([&](const auto &s) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          cmpTyped<OT>(s, d, clipped_cast<double,T>(value));
+        });
       }
 
       void cpp_compare(const Image &src, Image &dst, double value, int optype) {
         Img8u &d = dst.as8u();
-        src.visit([&](const auto &s) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          cmpTyped(s, d, clipped_cast<double,T>(value), optype);
+        dispatchEnum<UCO::lt, UCO::lteq, UCO::eq, UCO::gteq, UCO::gt>(optype, [&](auto tag) {
+          compare_typed<decltype(tag)::value>(src, d, value);
         });
       }
 
