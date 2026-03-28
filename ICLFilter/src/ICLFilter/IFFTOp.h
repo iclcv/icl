@@ -30,139 +30,52 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/BasicTypes.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLMath/FFTUtils.h>
-#include <ICLCore/Img.h>
-#include <ICLFilter/UnaryOp.h>
-#include <cmath>
-#include <complex>
-#include <ICLCore/Image.h>
+#include <ICLFilter/BaseFFTOp.h>
 
-namespace icl{
-  namespace filter{
-    /// This class implements the unary operator for the inverse fast and discrete 2D fourier transformation.
-    /** As known the ifft can only be applied if the datasize is a power of 2.
-        This implementation uses the ifft as far as it can be applied and switches to the idft,
-        so you can use it if datasize is not a power of 2 too. If MKL or IPP is available, IFFTOp tries
-        to use it if possible.*/
-    class ICLFilter_API IFFTOp : public UnaryOp{
+namespace icl {
+  namespace filter {
 
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-      private:
-      ///Forwarddeklaration.
-      class Data;
+    /// Inverse 2D FFT/DFT operator
+    /** Computes the inverse 2D Fourier transform. See BaseFFTOp for shared
+        documentation on result modes and size adaptation.
 
-      /// Class for internal params and buffers.
-      Data *m_data;
+        Extra features over FFTOp:
+        - join: combines pairs of input channels into complex values before IFFT
+        - PAD_REMOVE: crops result to a specified ROI (undoes padding from FFTOp)
+    */
+    class ICLFilter_API IFFTOp : public BaseFFTOp {
+    public:
+      using BaseFFTOp::ResultMode;
+      using BaseFFTOp::SizeAdaptionMode;
 
-      //Applies ifft/idft on all channel of sourceimage.
-      /**Called by apply. Aplies ifft/idft and resultmode.
-          Possible sourceparam is: Img<icl8u>, Img<icl16s>, Img<icl32s>,
-          Img<icl32f>, Img<icl64f>.
-          Possible destinationparam is: Img<icl32f> and Img<icl64f>.*/
-      template<class SrcT, class DstT>
-      void apply_internal(const core::Img<SrcT> &src, core::Img<DstT> &dst,
-                          math::DynMatrix<std::complex<DstT> > &buf,
-                          math::DynMatrix<std::complex<DstT> > &dstBuf);
+      /// Creates a new IFFTOp
+      /** @param rm result mode (default: REAL_ONLY)
+          @param sam size adaptation mode (default: NO_SCALE)
+          @param roi ROI for PAD_REMOVE mode
+          @param join whether to join channel pairs into complex (default: true)
+          @param ifftshift whether to apply ifftshift before computation (default: true)
+          @param forceIDFT whether to force IDFT instead of IFFT (default: false) */
+      IFFTOp(ResultMode rm = REAL_ONLY, SizeAdaptionMode sam = NO_SCALE,
+             utils::Rect roi = utils::Rect(0, 0, 0, 0), bool join = true,
+             bool ifftshift = true, bool forceIDFT = false)
+        : BaseFFTOp(true, rm, sam, ifftshift, forceIDFT) {
+        setJoinInput(join);
+        setRemovePadROI(roi);
+      }
 
-      //Adapts sourceimage before ifft/idft computation.
-      /**Called by apply. Adapts sourceimage to specified values(scaling, padding on so on).
-          Possible sourceparam is: Img<icl8u>, Img<icl16s>, Img<icl32s>,
-          Img<icl32f>, Img<icl64f>*/
-      template<class T>
-      const core::Img<T> *adapt_source(const core::Img<T> *src);
-
-      //Applies an inplace ifftshift  after computation of the ifft.
-      /** Applies inplace ifftshift on destinationimage after ifftcomputation.
-          Possible sourceparam is: Img<icl32f> and Img<icl64f>*/
-      template<typename T>
-      void apply_inplace_ifftshift(math::DynMatrix<T> &m);
-
-      public:
-
-      ///Modes how the sourceimage is to adapt before fftcomputation.
-      /**Several sizeadaptionmodes for sourceimage.*/
-      enum SizeAdaptionMode{
-        NO_SCALE,//!< sourceimage stays as is
-        PAD_REMOVE,//!< removes PAD_MIRROR,PAD_ZERO and PAD_COPY from the sourceimage(new size is given from contructorparameter roi)
-        SCALE_UP,//!< zooms to next higher power of 2 of originsize, or origanalsize if it is power of 2
-        SCALE_DOWN//!< zooms to next lower power of 2 of originsize, or origanalsize if it is power of 2
-      };
-
-
-      //Modes how the destinationimage will be created.
-      /**Several resultmodes for destinationimage.*/
-      enum ResultMode{
-        REAL_ONLY,//!< alternates real- and imaginarypart of ifftcomputation
-        IMAG_ONLY,//!< imaginarypart of ifftcomputation
-        TWO_CHANNEL_COMPLEX//!< realpart of ifftcomputation
-      };
-
-      ///Creates a new IFFTOp-object.
-      /**Constructor. Params can be changed later.
-          @param rm the resultmode
-          @param sam the sizeadaptionmode before applying IFFTOp
-          @param roi determinates the size if removing padding is needed
-          @param join wether to join to channel to one complex for the ifftcomputation or not
-          @param ifftshift undo fftshift before the isfftcomputation or not
-          @param forceIDFT wether to apply idft or ifft*/
-      IFFTOp(ResultMode rm=REAL_ONLY, SizeAdaptionMode sam=NO_SCALE,
-             utils::Rect roi=icl::utils::Rect(0,0,0,0),bool join=true,
-             bool ifftshift=true, bool forceIDFT=false);
-
-      /**Destructor*/
-      ~IFFTOp();
-
-      ///Sets if two channels shall be joined to one complex.
-      /**@param pJoin true if channels shall be joined to one complex*/
-      void setJoinMatrix(bool pJoin);
-
-      ///Returns if two channels shall be joined to one complex.
-      /**@return the current value*/
-      bool getJoinMatrix();
-
-      ///Sets the roi.
-      /**@param roi the new roi*/
-      void setROI(utils::Rect roi);
-
-      ///Returns the current roi
-      /**@return roi the current roi*/
-      icl::utils::Rect getRoi();
-
-      ///Sets the resultmode.
-      /*@param rm the resultmode to be set*/
-      void setResultMode(ResultMode rm);
-
-      ///Returns the resultmode as int.
-      /**@return the current resultmode.*/
-      int getResultMode();
-
-      ///Sets the sizeadaptionmode.
-      /**@param sam the sizeadaptionmode to be set*/
-      void setSizeAdaptionMode(SizeAdaptionMode sam);
-
-      ///Returns the sizeadaptionmode.
-      /**@return the current sizeadationmode*/
-      int getSizeAdaptionMode();
-
-      ///Returns true if the discrete inverse fourier transfarmation shall be used, else false.
-      /**@return true for idft, false for ifft*/
-      bool getForceIDFT();
-
-      ///Set wether to force the discrete inverse fourier transformation or to use the fast inverse fourier transformation
-      /**@param pForceDFT*/
-      void setForceIDFT(bool pForceDFT);
-
-      ///Call this method to start ifftcomputation.
-      /**Applies IFFTOp on src and dst.
-  	  @param *src pointer to sourceimage
-  	  @param **dst pointer to pointer to destinationimage*/
-      void apply(const core::Image &src, core::Image &dst) override;
-
-      /// Import unaryOps apply function without destination image
-      using UnaryOp::apply;
+      /// Backward-compatible alias
+      void setForceIDFT(bool f) { setForceDFT(f); }
+      /// Backward-compatible alias
+      bool getForceIDFT() { return getForceDFT(); }
+      /// Backward-compatible alias
+      void setJoinMatrix(bool j) { setJoinInput(j); }
+      /// Backward-compatible alias
+      bool getJoinMatrix() { return getJoinInput(); }
+      /// Backward-compatible alias
+      void setROI(utils::Rect r) { setRemovePadROI(r); }
+      /// Backward-compatible alias
+      utils::Rect getRoi() { return getRemovePadROI(); }
     };
+
   } // namespace filter
 }
