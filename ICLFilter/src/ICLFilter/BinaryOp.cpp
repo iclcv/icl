@@ -53,6 +53,20 @@ namespace icl{
       ICL_DELETE(m_buf);
     }
 
+    bool BinaryOp::prepare(core::Image &dst, const core::Image &src) {
+      core::ImgBase *tmp = dst.ptr();
+      bool r = m_oROIHandler.prepare(&tmp, src.ptr());
+      if(r && tmp) dst = core::Image(tmp);
+      return r;
+    }
+
+    bool BinaryOp::prepare(core::Image &dst, const core::Image &src, core::depth d) {
+      core::ImgBase *tmp = dst.ptr();
+      bool r = m_oROIHandler.prepare(&tmp, src.ptr(), d);
+      if(r && tmp) dst = core::Image(tmp);
+      return r;
+    }
+
     // Default Image apply — delegates to legacy ImgBase** for backward compat
     void BinaryOp::apply(const core::Image &src1, const core::Image &src2, core::Image &dst){
       core::ImgBase *tmp = nullptr;

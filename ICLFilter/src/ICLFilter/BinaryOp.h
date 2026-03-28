@@ -109,19 +109,37 @@ namespace icl{
       bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
 
       protected:
+
+      // ---- Image-based prepare (for migrated subclasses) ----
+
+      /// Prepare dst to match src1's params (same depth)
+      bool prepare(core::Image &dst, const core::Image &src1);
+
+      /// Prepare dst to match src1's params but with explicit depth
+      bool prepare(core::Image &dst, const core::Image &src1, core::depth d);
+
+      /// Check that two source images are compatible (same channels, ROI size, optionally depth)
+      static inline bool check(const core::Image &a, const core::Image &b, bool checkDepths = true) {
+        if(!checkDepths) {
+          return a.getChannels() == b.getChannels() && a.getROISize() == b.getROISize();
+        } else {
+          return a.getChannels() == b.getChannels() && a.getROISize() == b.getROISize()
+              && a.getDepth() == b.getDepth();
+        }
+      }
+
+      // ---- Legacy ImgBase** prepare (for unmigrated subclasses) ----
+
       bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize,
                     core::format eFormat, int nChannels, const utils::Rect& roi,
                     utils::Time timestamp=utils::Time::null){
         return m_oROIHandler.prepare(ppoDst, eDepth,imgSize,eFormat, nChannels, roi, timestamp);
       }
 
-      /// check+adapt destination image to properties of given source image
       virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) {
         return m_oROIHandler.prepare(ppoDst, poSrc);
       }
 
-      /// check+adapt destination image to properties of given source image
-      /// but use explicitly given depth
       virtual bool prepare (core::ImgBase **ppoDst,
                             const core::ImgBase *poSrc,
                             core::depth eDepth) {

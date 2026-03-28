@@ -2,6 +2,9 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/ThresholdOp.h>
+#include <ICLFilter/BinaryArithmeticalOp.h>
+#include <ICLFilter/BinaryCompareOp.h>
+#include <ICLFilter/BinaryLogicalOp.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
 #include <ICLFilter/UnaryCompareOp.h>
 #include <ICLFilter/UnaryLogicalOp.h>
@@ -2018,4 +2021,138 @@ ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.cross_validate_per_depth", "all co
     });
     ICL_TEST_TRUE(allMatch);
   }
+}
+
+// ====================================================================
+// BinaryArithmeticalOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.add", "pixel-wise addition") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32f{{1.f, 2.f, 3.f}}), Image(Img32f{{10.f, 20.f, 30.f}}))
+                 == Img32f{{11.f, 22.f, 33.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.sub", "pixel-wise subtraction") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::subOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32f{{10.f, 20.f, 30.f}}), Image(Img32f{{1.f, 2.f, 3.f}}))
+                 == Img32f{{9.f, 18.f, 27.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.mul", "pixel-wise multiplication") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::mulOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32f{{2.f, 3.f, 4.f}}), Image(Img32f{{5.f, 6.f, 7.f}}))
+                 == Img32f{{10.f, 18.f, 28.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.div", "pixel-wise division") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::divOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32f{{10.f, 20.f, 30.f}}), Image(Img32f{{2.f, 4.f, 5.f}}))
+                 == Img32f{{5.f, 5.f, 6.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.absSub", "pixel-wise abs(a-b)") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::absSubOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32f{{1.f, 5.f, 10.f}}), Image(Img32f{{3.f, 2.f, 10.f}}))
+                 == Img32f{{2.f, 3.f, 0.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.8u", "works on 8u depth") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+  ICL_TEST_TRUE((op.apply(Image(Img8u{{10, 20, 30}}), Image(Img8u{{1, 2, 3}}))
+                 == Img8u{{11, 22, 33}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.multichannel", "works with multiple channels") {
+  auto a = Img32f::from(5, 5, 2, [](int x, int y, int c) -> icl32f { return x + y + c * 10.f; });
+  auto b = Img32f::from(5, 5, 2, [](int x, int y, int) -> icl32f { return 1.f; });
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+  Image dst = op.apply(Image(a), Image(b));
+  ICL_TEST_EQ(dst.getChannels(), 2);
+  ICL_TEST_EQ(dst.as32f()(0, 0, 0), 1.f);
+  ICL_TEST_EQ(dst.as32f()(0, 0, 1), 11.f);
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.introspection", "dispatch introspection") {
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+  ICL_TEST_EQ((int)op.selectors().size(), 1);
+  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+}
+
+// ====================================================================
+// BinaryCompareOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.gt", "pixel-wise > comparison") {
+  BinaryCompareOp op(BinaryCompareOp::gt);
+  Image dst = op.apply(Image(Img32f{{5.f, 10.f, 15.f}}), Image(Img32f{{10.f, 10.f, 10.f}}));
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(0, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(1, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(2, 0, 0)), 255);
+}
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.lt", "pixel-wise < comparison") {
+  BinaryCompareOp op(BinaryCompareOp::lt);
+  Image dst = op.apply(Image(Img32f{{5.f, 10.f, 15.f}}), Image(Img32f{{10.f, 10.f, 10.f}}));
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(0, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(1, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(2, 0, 0)), 0);
+}
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.eq", "pixel-wise == comparison") {
+  BinaryCompareOp op(BinaryCompareOp::eq);
+  Image dst = op.apply(Image(Img8u{{1, 2, 3}}), Image(Img8u{{1, 5, 3}}));
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(0, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(1, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(2, 0, 0)), 255);
+}
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.eqt", "pixel-wise == with tolerance") {
+  BinaryCompareOp op(BinaryCompareOp::eqt, 2.0);
+  Image dst = op.apply(Image(Img32f{{10.f, 10.f, 10.f}}), Image(Img32f{{8.f, 11.f, 15.f}}));
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(0, 0, 0)), 255);  // |10-8|=2 <= 2
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(1, 0, 0)), 255);  // |10-11|=1 <= 2
+  ICL_TEST_EQ(static_cast<int>(dst.as8u()(2, 0, 0)), 0);    // |10-15|=5 > 2
+}
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.introspection", "dispatch introspection") {
+  BinaryCompareOp op(BinaryCompareOp::gt);
+  ICL_TEST_EQ((int)op.selectors().size(), 2);
+  ICL_TEST_TRUE(op.selectorByName("compare") != nullptr);
+  ICL_TEST_TRUE(op.selectorByName("compareEqTol") != nullptr);
+}
+
+// ====================================================================
+// BinaryLogicalOp
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.and", "pixel-wise AND") {
+  BinaryLogicalOp op(BinaryLogicalOp::andOp);
+  ICL_TEST_TRUE((op.apply(Image(Img8u{{0xFF, 0xF0, 0x0F}}), Image(Img8u{{0xFF, 0x0F, 0x0F}}))
+                 == Img8u{{0xFF, 0x00, 0x0F}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.or", "pixel-wise OR") {
+  BinaryLogicalOp op(BinaryLogicalOp::orOp);
+  ICL_TEST_TRUE((op.apply(Image(Img8u{{0xF0, 0x0F, 0x00}}), Image(Img8u{{0x0F, 0x0F, 0xFF}}))
+                 == Img8u{{0xFF, 0x0F, 0xFF}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.xor", "pixel-wise XOR") {
+  BinaryLogicalOp op(BinaryLogicalOp::xorOp);
+  ICL_TEST_TRUE((op.apply(Image(Img8u{{0xFF, 0xF0, 0x00}}), Image(Img8u{{0xFF, 0x0F, 0x00}}))
+                 == Img8u{{0x00, 0xFF, 0x00}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.32s", "works on 32s depth") {
+  BinaryLogicalOp op(BinaryLogicalOp::andOp);
+  ICL_TEST_TRUE((op.apply(Image(Img32s{{0xFF00, 0x00FF}}), Image(Img32s{{0xFFFF, 0xFFFF}}))
+                 == Img32s{{0xFF00, 0x00FF}}));
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.introspection", "dispatch introspection") {
+  BinaryLogicalOp op(BinaryLogicalOp::andOp);
+  ICL_TEST_EQ((int)op.selectors().size(), 1);
+  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
 }

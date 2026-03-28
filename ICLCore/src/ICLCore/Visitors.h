@@ -176,5 +176,36 @@ namespace icl {
       }
     }
 
+    // =================================================================
+    //  visitROILinesPerChannel2With — two sources + one dest
+    // =================================================================
+
+    /// Calls f(const S* src1, const S* src2, D* dst, int channel, int width)
+    /// for each channel, for each ROI line (or once per channel if contiguous).
+    template<class S, class D, class F>
+    void visitROILinesPerChannel2With(const Img<S> &src1, const Img<S> &src2,
+                                      Img<D> &dst, F &&f) {
+      const int nc = src1.getChannels();
+      const int w = src1.getROIWidth();
+      const int h = src1.getROIHeight();
+      if(w == src1.getWidth() && w == src2.getWidth() && w == dst.getWidth()){
+        for(int ch = 0; ch < nc; ++ch) {
+          f(src1.getROIData(ch), src2.getROIData(ch), dst.getROIData(ch), ch, w * h);
+        }
+      }else{
+        const int s1Stride = src1.getWidth();
+        const int s2Stride = src2.getWidth();
+        const int dStride = dst.getWidth();
+        for(int ch = 0; ch < nc; ++ch) {
+          const S *s1 = src1.getROIData(ch);
+          const S *s2 = src2.getROIData(ch);
+          D *d = dst.getROIData(ch);
+          for(int y = 0; y < h; ++y, s1 += s1Stride, s2 += s2Stride, d += dStride) {
+            f(s1, s2, d, ch, w);
+          }
+        }
+      }
+    }
+
   } // namespace core
 } // namespace icl

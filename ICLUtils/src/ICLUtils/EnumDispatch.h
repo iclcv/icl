@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/BinaryArithmeticalOp.h         **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Andre Justus                      **
+** File   : ICLUtils/src/ICLUtils/EnumDispatch.h                   **
+** Module : ICLUtils                                               **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,32 +30,26 @@
 
 #pragma once
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLFilter/BinaryOp.h>
-#include <ICLCore/BackendDispatch.h>
+#include <type_traits>
 
 namespace icl {
-  namespace filter {
+  namespace utils {
 
-    /// Class for arithmetic operations performed on two images. \ingroup BINARY
-    class ICLFilter_API BinaryArithmeticalOp : public BinaryOp, public core::Dispatching {
-      public:
+    /// Dispatch a runtime enum/int value to a compile-time template parameter.
+    ///
+    /// Calls f(std::integral_constant<E, V>{}) for the matching value.
+    /// Use decltype(tag)::value inside f to get the constexpr value.
+    ///
+    /// Example:
+    ///   dispatchEnum<Op::add, Op::sub, Op::mul>(optype, [&](auto tag) {
+    ///       applyTyped<decltype(tag)::value>(src, dst);
+    ///   });
+    template<auto... Values, class F>
+    void dispatchEnum(int runtime, F&& f) {
+      ((static_cast<int>(Values) == runtime
+        ? (f(std::integral_constant<decltype(Values), Values>{}), true)
+        : false) || ...);
+    }
 
-      enum optype { addOp, subOp, mulOp, divOp, absSubOp };
-
-      BinaryArithmeticalOp(optype t);
-
-      void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
-      using BinaryOp::apply;
-
-      void setOpType(optype t) { m_eOpType = t; }
-      optype getOpType() const { return m_eOpType; }
-
-      using Sig = void(const core::Image&, const core::Image&, core::Image&, int);
-
-      private:
-      optype m_eOpType;
-    };
-
-  } // namespace filter
+  } // namespace utils
 } // namespace icl

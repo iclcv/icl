@@ -28,138 +28,61 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/Img.h>
 #include <ICLFilter/BinaryArithmeticalOp.h>
+#include <ICLCore/Visitors.h>
+#include <ICLUtils/EnumDispatch.h>
 #include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
-  namespace filter{
-    namespace{
+  namespace filter {
 
-      template<class T, BinaryArithmeticalOp::optype OT> struct PixelFunc{
-        static inline T apply(const T t1, const T t2){ return t1+t2; }
-      };
-      template<class T> struct PixelFunc<T,BinaryArithmeticalOp::addOp>{
-        static inline T apply(const T t1, const T t2){ return t1+t2; }
-      };
-      template<class T> struct PixelFunc<T,BinaryArithmeticalOp::subOp>{
-        static inline T apply(const T t1, const T t2){ return t1-t2; }
-      };
-      template<class T> struct PixelFunc<T,BinaryArithmeticalOp::mulOp>{
-        static inline T apply(const T t1, const T t2){ return t1*t2; }
-      };
-      template<class T> struct PixelFunc<T,BinaryArithmeticalOp::divOp>{
-        static inline T apply(const T t1, const T t2){ return t1/t2; }
-      };
-      template<class T> struct PixelFunc<T,BinaryArithmeticalOp::absSubOp>{
-        static inline T apply(const T t1, const T t2){ return std::abs(t1-t2); }
-      };
-      template<class T, BinaryArithmeticalOp::optype OT> struct LoopFunc{
-        static inline void apply(const  Img<T> *src1, const Img<T> *src2, Img<T> *dst ){
-          for(int c=src1->getChannels()-1; c >= 0; --c) {
-            ImgIterator<T> itDst = dst->beginROI(c);
-            for(const ImgIterator<T> itSrc1 = src1->beginROI(c),itSrc2 = src2->beginROI(c),
-                itSrc1End = src1->endROI(c); itSrc1 != itSrc1End; ++itSrc1, ++itSrc2, ++itDst){
-              *itDst = PixelFunc<T,OT>::apply(*itSrc1,*itSrc2);
-            }
+    using Sig = BinaryArithmeticalOp::Sig;
+
+    namespace {
+      using Op = BinaryArithmeticalOp;
+
+      template<Op::optype OT, class T>
+      void arithOp(const Img<T> &s1, const Img<T> &s2, Img<T> &dst) {
+        visitROILinesPerChannel2With(s1, s2, dst, [](const T *a, const T *b, T *d, int, int w) {
+          for(int i = 0; i < w; ++i) {
+            if constexpr (OT == Op::addOp)    d[i] = a[i] + b[i];
+            else if constexpr (OT == Op::subOp)    d[i] = a[i] - b[i];
+            else if constexpr (OT == Op::mulOp)    d[i] = a[i] * b[i];
+            else if constexpr (OT == Op::divOp)    d[i] = a[i] / b[i];
+            else if constexpr (OT == Op::absSubOp) d[i] = std::abs(a[i] - b[i]);
           }
-        }
-      };
+        });
+      }
 
+      template<Op::optype OT>
+      void apply_typed(const Image &s1, const Image &s2, Image &dst) {
+        s1.visitWith(dst, [&](const auto &a, auto &d) {
+          using T = typename std::remove_reference_t<decltype(a)>::type;
+          arithOp<OT>(a, s2.as<T>(), d);
+        });
+      }
 
+      void cpp_apply(const Image &s1, const Image &s2, Image &dst, int ot) {
+        dispatchEnum<Op::addOp, Op::subOp, Op::mulOp, Op::divOp, Op::absSubOp>(ot, [&](auto tag) {
+          apply_typed<decltype(tag)::value>(s1, s2, dst);
+        });
+      }
+    } // anon
 
-  #ifdef ICL_HAVE_IPP
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int,const T*, int, T*, int, IppiSize)>
-      inline void ipp_call(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
-        for (int c=src1->getChannels()-1; c >= 0; --c) {
-          func (src1->getROIData (c), src1->getLineStep(),
-                src2->getROIData (c), src2->getLineStep(),
-                dst->getROIData (c), dst->getLineStep(),
-                dst->getROISize());
-        }
+    BinaryArithmeticalOp::BinaryArithmeticalOp(optype t) : m_eOpType(t) {
+      initDispatching("BinaryArithmeticalOp");
+      auto& sel = addSelector<Sig>("apply");
+      sel.add(Backend::Cpp, cpp_apply);
     }
 
-      template <typename T, IppStatus (IPP_DECL *func) (const T*, int, const T*, int, T*, int, IppiSize, int)>
-      inline void ipp_call_sfs(const Img<T> *src1,const Img<T> *src2, Img<T> *dst){
-        for (int c=src1->getChannels()-1; c >= 0; --c) {
-          func (src1->getROIData (c), src1->getLineStep(),
-                src2->getROIData (c), src2->getLineStep(),
-                dst->getROIData (c), dst->getLineStep(),
-                dst->getROISize(), 0);
-        }
-    }
-
-  #define CREATE_IPP_FUNCTIONS_FOR_OP(OP,IPPOP)                                                           \
-      template<> struct LoopFunc<icl8u, BinaryArithmeticalOp::OP##Op>{                                    \
-        static inline void apply(const  Img<icl8u> *src1,const  Img<icl8u> *src2, Img<icl8u> *dst ){      \
-          ipp_call_sfs<icl8u,ippi##IPPOP##_8u_C1RSfs>(src2,src1,dst);                                     \
-        }                                                                                                 \
-      };                                                                                                  \
-      template<> struct LoopFunc<icl16s, BinaryArithmeticalOp::OP##Op>{                                   \
-        static inline void apply(const  Img<icl16s> *src1,const  Img<icl16s> *src2, Img<icl16s> *dst ){   \
-          ipp_call_sfs<icl16s,ippi##IPPOP##_16s_C1RSfs>(src2,src1, dst);                                  \
-        }                                                                                                 \
-      };                                                                                                  \
-      template<> struct LoopFunc<icl32f, BinaryArithmeticalOp::OP##Op>{                                   \
-        static inline void apply(const  Img<icl32f> *src1,const  Img<icl32f> *src2, Img<icl32f> *dst ){   \
-          ipp_call<icl32f,ippi##IPPOP##_32f_C1R>(src2,src1, dst);                                         \
-        }                                                                                                 \
-      }
-      CREATE_IPP_FUNCTIONS_FOR_OP(add,Add);
-      CREATE_IPP_FUNCTIONS_FOR_OP(sub,Sub);
-      CREATE_IPP_FUNCTIONS_FOR_OP(mul,Mul);
-      CREATE_IPP_FUNCTIONS_FOR_OP(div,Div);
-
-      /// for absDiff only 8u and 32f all supported by the IPP
-      template<> struct LoopFunc<icl8u, BinaryArithmeticalOp::absSubOp>{
-        static inline void apply(const  Img<icl8u> *src1,const  Img<icl8u> *src2, Img<icl8u> *dst ){
-          ipp_call<icl8u,ippiAbsDiff_8u_C1R>(src2,src1,dst);
-        }
-      };
-      template<> struct LoopFunc<icl32f, BinaryArithmeticalOp::absSubOp>{
-        static inline void apply(const  Img<icl32f> *src1,const  Img<icl32f> *src2, Img<icl32f> *dst ){
-          ipp_call<icl32f,ippiAbsDiff_32f_C1R>(src2,src1,dst);
-        }
-      };
-
-  #undef CREATE_IPP_FUNCTIONS_FOR_OP
-
-
-  #endif
-
-
-      template<BinaryArithmeticalOp::optype OT>
-      void apply_op(const ImgBase *src1,const ImgBase *src2, ImgBase *dst){
-        switch(src1->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: LoopFunc<icl##D,OT>::apply(src1->asImg<icl##D>(),src2->asImg<icl##D>(), dst->asImg<icl##D>()); break;
-          ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
-        }
-      }
-
-
-    } // end of anonymous namespace
-
-    void BinaryArithmeticalOp::apply(const ImgBase *poSrc1,const ImgBase *poSrc2, ImgBase **poDst){
-      ICLASSERT_RETURN( poSrc1 );
-      ICLASSERT_RETURN( poSrc2 );
-      ICLASSERT_RETURN( poDst );
-
-      if(!BinaryOp::check(poSrc1,poSrc2) || !BinaryOp::prepare(poDst,poSrc1)){
-        ERROR_LOG("source and destination images are not compatible [operation skipped!]");
-        return;
-      }
-      switch(m_eOpType){
-        case addOp:  apply_op<addOp>(poSrc1,poSrc2,*poDst); break;
-        case mulOp:  apply_op<mulOp>(poSrc1,poSrc2,*poDst); break;
-        case divOp:  apply_op<divOp>(poSrc1,poSrc2,*poDst); break;
-        case subOp:  apply_op<subOp>(poSrc1,poSrc2,*poDst); break;
-        case absSubOp:  apply_op<absSubOp>(poSrc1,poSrc2,*poDst); break;
-      }
+    void BinaryArithmeticalOp::apply(const Image &src1, const Image &src2, Image &dst) {
+      if(!check(src1, src2)) return;
+      if(!prepare(dst, src1)) return;
+      getSelector<Sig>("apply").resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
     }
 
   } // namespace filter
-}
+} // namespace icl

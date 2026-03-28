@@ -29,149 +29,84 @@
 ********************************************************************/
 
 #include <ICLFilter/BinaryCompareOp.h>
-#include <ICLCore/Img.h>
+#include <ICLCore/Visitors.h>
+#include <ICLUtils/ClippedCast.h>
+#include <ICLUtils/EnumDispatch.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
-  namespace filter{
+  namespace filter {
 
-  #define ICL_COMP_ZERO 0
-  #define ICL_COMP_NONZERO 255
+    using CmpSig    = BinaryCompareOp::CmpSig;
+    using CmpEqtSig = BinaryCompareOp::CmpEqtSig;
 
-    namespace{
+    namespace {
+      using Op = BinaryCompareOp;
 
-  #define CREATE_COMPARE_OP(NAME,OPERATOR)                              \
-    template <typename T> struct CompareOp_##NAME {                     \
-      static inline icl8u cmp(T val1, T val2){                          \
-        return val1 OPERATOR val2 ? ICL_COMP_NONZERO : ICL_COMP_ZERO;   \
-      }                                                                 \
+      template<Op::optype OT, class T>
+      void cmpTyped(const Img<T> &s1, const Img<T> &s2, Img8u &dst) {
+        visitROILinesPerChannel2With(s1, s2, dst,
+          [](const T *a, const T *b, icl8u *d, int, int w) {
+            for(int i = 0; i < w; ++i) {
+              if constexpr (OT == Op::lt)   d[i] = a[i] < b[i] ? 255 : 0;
+              else if constexpr (OT == Op::lteq) d[i] = a[i] <= b[i] ? 255 : 0;
+              else if constexpr (OT == Op::eq)   d[i] = a[i] == b[i] ? 255 : 0;
+              else if constexpr (OT == Op::gteq) d[i] = a[i] >= b[i] ? 255 : 0;
+              else if constexpr (OT == Op::gt)   d[i] = a[i] > b[i] ? 255 : 0;
+            }
+          });
+      }
+
+      template<Op::optype OT>
+      void compare_typed(const Image &s1, const Image &s2, Img8u &d) {
+        s1.visit([&](const auto &a) {
+          using T = typename std::remove_reference_t<decltype(a)>::type;
+          cmpTyped<OT>(a, s2.as<T>(), d);
+        });
+      }
+
+      void cpp_compare(const Image &s1, const Image &s2, Image &dst, int ot) {
+        Img8u &d = dst.as8u();
+        dispatchEnum<Op::lt, Op::lteq, Op::eq, Op::gteq, Op::gt>(ot, [&](auto tag) {
+          compare_typed<decltype(tag)::value>(s1, s2, d);
+        });
+      }
+
+      void cpp_compare_eqt(const Image &s1, const Image &s2, Image &dst, double tolerance) {
+        Img8u &d = dst.as8u();
+        s1.visit([&](const auto &a) {
+          using T = typename std::remove_reference_t<decltype(a)>::type;
+          T tol = clipped_cast<double,T>(tolerance);
+          visitROILinesPerChannel2With(a, s2.as<T>(), d,
+            [tol](const T *ap, const T *bp, icl8u *dp, int, int w) {
+              for(int i = 0; i < w; ++i)
+                dp[i] = std::abs(ap[i] - bp[i]) <= tol ? 255 : 0;
+            });
+        });
+      }
+    } // anon
+
+    BinaryCompareOp::BinaryCompareOp(optype ot, icl64f tolerance)
+      : m_eOpType(ot), m_dTolerance(tolerance)
+    {
+      initDispatching("BinaryCompareOp");
+      auto& cmp    = addSelector<CmpSig>("compare");
+      auto& cmpEqt = addSelector<CmpEqtSig>("compareEqTol");
+      cmp.add(Backend::Cpp, cpp_compare);
+      cmpEqt.add(Backend::Cpp, cpp_compare_eqt);
     }
 
-    CREATE_COMPARE_OP(eq,==);
-    CREATE_COMPARE_OP(lt,<);
-    CREATE_COMPARE_OP(lteq,<=);
-    CREATE_COMPARE_OP(gteq,>=);
-    CREATE_COMPARE_OP(gt,>);
-
-  #undef CREATE_COMPARE_OP
-
-    template <typename T> struct CompareOp_eqt {
-
-      static inline icl8u cmp(T val1, T val2, T tolerance){
-        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
-      }
-    };
-
-
-    template <class T, template<typename X> class C>
-    inline void fallbackCompare(const Img<T> *src1,const Img<T> *src2,Img<icl8u> *dst){
-      for(int c=src1->getChannels()-1; c >= 0; --c) {
-        const ImgIterator<T> itSrc1 = src1->beginROI(c);
-         const ImgIterator<T> itEnd = src1->endROI(c);
-        const ImgIterator<T> itSrc2 = src2->beginROI(c);
-        ImgIterator<icl8u>  itDst = dst->beginROI(c);
-        for(;itSrc1 != itEnd ; ++itSrc1,++itSrc2, ++itDst){
-          *itDst = C<T>::cmp(*itSrc1,*itSrc2);
-        }
+    void BinaryCompareOp::apply(const Image &src1, const Image &src2, Image &dst) {
+      if(!check(src1, src2)) return;
+      if(!prepare(dst, src1, depth8u)) return;
+      if(m_eOpType == eqt) {
+        getSelector<CmpEqtSig>("compareEqTol").resolve(src1)->apply(src1, src2, dst, m_dTolerance);
+      } else {
+        getSelector<CmpSig>("compare").resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
       }
     }
-
-
-    template <typename T>
-    inline void fallbackCompareWithTolerance(const Img<T> *src1,const Img<T> *src2, Img8u *dst,T tolerance) {
-       for(int c=src1->getChannels()-1; c >= 0; --c) {
-         const ImgIterator<T> itSrc1 = src1->beginROI(c);
-         const ImgIterator<T> itEnd = src1->endROI(c);
-         const ImgIterator<T> itSrc2 = src2->beginROI(c);
-         ImgIterator<icl8u>  itDst = dst->beginROI(c);
-         for(;itSrc1 != itEnd; ++itSrc1,++itSrc2, ++itDst){
-           *itDst = CompareOp_eqt<T>::cmp(*itSrc1,*itSrc2,tolerance);
-         }
-       }
-     }
-
-    template<class T>
-    void cmp(const Img<T> *src1,const  Img<T> *src2, Img8u *dst, T tolerance, BinaryCompareOp::optype ot){
-
-       switch(ot){
-         case BinaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src1,src2,dst); break;
-         case BinaryCompareOp::gt: fallbackCompare<T,CompareOp_gt>(src1,src2,dst); break;
-         case BinaryCompareOp::lteq: fallbackCompare<T, CompareOp_lteq>(src1,src2,dst); break;
-         case BinaryCompareOp::gteq: fallbackCompare<T, CompareOp_gteq>(src1,src2,dst); break;
-         case BinaryCompareOp::eq: fallbackCompare<T, CompareOp_eq>(src1,src2,dst); break;
-         case BinaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src1,src2,dst,tolerance); break;
-       }
-     }
-
-
-
-  #ifdef ICL_HAVE_IPP
-    template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,const T*,int, icl8u*,int,IppiSize,IppCmpOp)>
-    inline void ippCall(const Img<T> *src1,const Img<T>*src2, Img8u *dst, BinaryCompareOp::optype cmpOp){
-      for (int c=src1->getChannels()-1; c >= 0; --c) {
-        ippiFunc (src1->getROIData (c), src1->getLineStep(),
-                  src2->getROIData(c), src2->getLineStep(),
-                  dst->getROIData (c), dst->getLineStep(),
-                  dst->getROISize(),(IppCmpOp) cmpOp);
-      }
-    }
-
-    template<> void cmp<icl8u>(const Img8u *src1, const Img8u *src2, Img8u *dst, icl8u tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        fallbackCompareWithTolerance<icl8u>(src1,src2,dst,tolerance);
-      }else{
-        ippCall<icl8u,ippiCompare_8u_C1R>(src1,src2,dst,ot);
-      }
-    }
-    template<> void cmp<icl16s>(const Img16s *src1,const Img16s *src2, Img8u *dst, icl16s tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        fallbackCompareWithTolerance<icl16s>(src1,src2,dst,tolerance);
-      }else{
-        ippCall<icl16s,ippiCompare_16s_C1R>(src1,src2,dst,ot);
-      }
-    }
-    template<> void cmp<icl32f>(const Img32f *src1,const Img32f *src2, Img8u *dst, icl32f tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        for (int c=src1->getChannels()-1; c >= 0; --c) {
-          ippiCompareEqualEps_32f_C1R (src1->getROIData (c), src1->getLineStep(),
-                                       src2->getROIData (c), src2->getLineStep(),
-                                       dst->getROIData (c), dst->getLineStep(),
-                                       dst->getROISize(), tolerance);
-        }
-      }else{
-        ippCall<icl32f,ippiCompare_32f_C1R>(src1,src2,dst,ot);
-      }
-    }
-  #endif
-    } // end of anonymous namespace
-
-    void BinaryCompareOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
-      ICLASSERT_RETURN( poSrc1 );
-      ICLASSERT_RETURN( poSrc2 );
-      ICLASSERT_RETURN( ppoDst );
-
-      if(!BinaryOp::check(poSrc1,poSrc2)){
-        ERROR_LOG("source images are not compatible: src 1:" << *poSrc1 << " src 2:" << *poSrc2);
-      }
-      if(!BinaryOp::prepare(ppoDst,poSrc1,depth8u)){
-        ERROR_LOG("unable to prepare the destintaion imaage to source image params and depth8u, src 1/2: " << *poSrc1);
-      }
-
-      switch (poSrc1->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                             \
-                                   cmp(poSrc1->asImg<icl##T>(),               \
-                                   poSrc2->asImg<icl##T>(),                   \
-                                    (*ppoDst)->asImg<icl8u>(),                \
-                                   clipped_cast<icl64f,icl##T>(m_dTolerance), \
-                                   m_eOpType); break;
-         ICL_INSTANTIATE_ALL_DEPTHS;
-         default: ICL_INVALID_FORMAT; break;
-  #undef ICL_INSTANTIATE_DEPTH
-       }
-     }
-
 
   } // namespace filter
-}// end of namespace icl
+} // namespace icl
