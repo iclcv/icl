@@ -238,6 +238,36 @@ namespace icl {
       });
     }
 
+    /// Stateful backend registration: factory is called once per filter instance.
+    /// Factory must return a callable matching Sig (typically a lambda capturing
+    /// a shared_ptr to its own state).
+    ///
+    /// Example:
+    ///   registerStatefulBackend<MySig>("Op.sub", Backend::OpenCL, []() {
+    ///       auto state = std::make_shared<MyOCLState>();
+    ///       return [state](const Image& src, Image& dst, ...) {
+    ///           state->apply(src, dst, ...);
+    ///       };
+    ///   }, applicableTo<icl8u, icl32f>, "OpenCL description");
+    ///
+    template<class Sig, class Factory>
+    int registerStatefulBackend(const std::string& key, Backend b, Factory&& factory,
+                                ApplicabilityFn applicability, std::string desc = "") {
+      return detail::addToRegistry(key, {
+        b, desc, applicability,
+        [factory = std::forward<Factory>(factory), applicability, desc, b]
+        (BackendSelectorBase* base) {
+          auto* sel = static_cast<BackendSelector<Sig>*>(base);
+          try {
+            auto fn = factory();
+            sel->add(b, std::move(fn), applicability, desc);
+          } catch(const std::exception&) {
+            // Backend unavailable (e.g. no OpenCL device) — skip silently
+          }
+        }
+      });
+    }
+
     /// Load all registered backends for a given key into a BackendSelector
     template<class Sig>
     void loadFromRegistry(const std::string& key, BackendSelector<Sig>& sel) {
