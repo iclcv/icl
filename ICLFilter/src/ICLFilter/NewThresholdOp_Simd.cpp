@@ -32,6 +32,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
+#include <ICLFilter/NewThresholdOp.h>
 
 #ifdef ICL_HAVE_SSE2
 #include <ICLUtils/SSETypes.h>
@@ -181,18 +182,17 @@ namespace {
   }
 
   // --- Self-registration into the global registry ---
-  using ThreshSig = void(const Image&, Image&, double, double);
-  using ThreshDualSig = void(const Image&, Image&, double, double, double, double);
+  using TOp = icl::filter::NewThresholdOp;
 
-  static const int _reg1 = registerBackend<ThreshSig>(
+  static const int _reg1 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.ltVal", Backend::Simd, simd_ltval,
     supports_8u_32f, "SSE2/NEON threshold ltVal (8u/32f)");
 
-  static const int _reg2 = registerBackend<ThreshSig>(
+  static const int _reg2 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.gtVal", Backend::Simd, simd_gtval,
     supports_8u_32f, "SSE2/NEON threshold gtVal (8u/32f)");
 
-  static const int _reg3 = registerBackend<ThreshDualSig>(
+  static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
     "NewThresholdOp.ltgtVal", Backend::Simd, simd_ltgtval,
     supports_8u_32f, "SSE2/NEON threshold ltgtVal (8u/32f)");
 

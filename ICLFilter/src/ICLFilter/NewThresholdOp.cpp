@@ -87,10 +87,6 @@ namespace icl {
     // Constructor — registers C++ fallback + loads from global registry
     // ================================================================
 
-    // Sub-op signatures (internal to this TU)
-    using ThreshSig = void(const Image&, Image&, double, double);
-    using ThreshDualSig = void(const Image&, Image&, double, double, double, double);
-
     NewThresholdOp::NewThresholdOp(optype ttype, float lowThreshold,
                                    float highThreshold, float lowVal, float highVal)
       : m_eType(ttype), m_fLowThreshold(lowThreshold),

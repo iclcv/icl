@@ -23,6 +23,8 @@
 #include <ICLFilter/LocalThresholdOp.h>
 #include <ICLFilter/WarpOp.h>
 #include <ICLFilter/NewThresholdOp.h>
+#include <ICLFilter/NewUnaryCompareOp.h>
+#include <ICLFilter/NewUnaryArithmeticalOp.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -1815,6 +1817,305 @@ ICL_REGISTER_TEST("Filter.NewThresholdOp.cross_validate_per_depth", "all combos 
 
     NewThresholdOp op(NewThresholdOp::ltVal, 100, 100, 42, 42);
 
+    op.forceAll(Backend::Cpp);
+    Image ref = op.apply(src);
+    op.unforceAll();
+
+    auto combos = op.allBackendCombinations(src);
+    bool allMatch = true;
+    op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+      Image dst = op.apply(src);
+      dst.visit([&](const auto &dImg) {
+        using T = typename std::remove_reference_t<decltype(dImg)>::type;
+        if(!(dImg == ref.as<T>())) allMatch = false;
+      });
+    });
+    ICL_TEST_TRUE(allMatch);
+  }
+}
+
+// ====================================================================
+// NewUnaryCompareOp — BackendDispatch framework
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_gt", "gt produces 0/255") {
+  Image src = Img32f{{5.0f, 15.0f, 20.0f, 25.0f}};
+  NewUnaryCompareOp op(NewUnaryCompareOp::gt, 15.0);
+  Image dst = op.apply(src);
+  ICL_TEST_EQ(static_cast<int>(dst.getDepth()), static_cast<int>(depth8u));
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(3, 0, 0)), 255);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_lt", "lt comparison") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::lt, 10.0);
+  Image dst = op.apply(Img32f{{5.f, 10.f, 15.f}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_eq", "eq comparison") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::eq, 42.0);
+  Image dst = op.apply(Img8u{{41, 42, 43}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_lteq", "lteq comparison") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::lteq, 10.0);
+  Image dst = op.apply(Img32f{{5.f, 10.f, 15.f}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 0);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_gteq", "gteq comparison") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::gteq, 10.0);
+  Image dst = op.apply(Img32f{{5.f, 10.f, 15.f}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 255);
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 255);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.basic_eqt", "eqt with tolerance") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::eqt, 10.0, 2.0);
+  Image dst = op.apply(Img32f{{7.f, 8.f, 10.f, 12.f, 13.f}});
+  const Img8u &d = dst.as8u();
+  ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 0);    // |7-10|=3 > 2
+  ICL_TEST_EQ(static_cast<int>(d(1, 0, 0)), 255);   // |8-10|=2 <= 2
+  ICL_TEST_EQ(static_cast<int>(d(2, 0, 0)), 255);   // |10-10|=0 <= 2
+  ICL_TEST_EQ(static_cast<int>(d(3, 0, 0)), 255);   // |12-10|=2 <= 2
+  ICL_TEST_EQ(static_cast<int>(d(4, 0, 0)), 0);    // |13-10|=3 > 2
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.matches_old_gt", "matches UnaryCompareOp gt") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  UnaryCompareOp oldOp(UnaryCompareOp::gt, 100);
+  NewUnaryCompareOp newOp(NewUnaryCompareOp::gt, 100);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.matches_old_lt", "matches UnaryCompareOp lt") {
+  auto src = Img32f::from(15, 10, 1, [](int x, int y, int) -> icl32f {
+    return x * 10.0f + y;
+  });
+  UnaryCompareOp oldOp(UnaryCompareOp::lt, 50);
+  NewUnaryCompareOp newOp(NewUnaryCompareOp::lt, 50);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.matches_old_all_ops", "matches old for all 5 standard ops") {
+  auto src = Img8u::from(20, 15, 2, [](int x, int y, int c) -> icl8u {
+    return (x * 7 + y * 13 + c * 37) % 256;
+  });
+  int oldOps[] = { UnaryCompareOp::lt, UnaryCompareOp::lteq, UnaryCompareOp::eq,
+                   UnaryCompareOp::gteq, UnaryCompareOp::gt };
+  int newOps[] = { NewUnaryCompareOp::lt, NewUnaryCompareOp::lteq, NewUnaryCompareOp::eq,
+                   NewUnaryCompareOp::gteq, NewUnaryCompareOp::gt };
+  for(int i = 0; i < 5; ++i) {
+    UnaryCompareOp oldOp(static_cast<UnaryCompareOp::optype>(oldOps[i]), 128);
+    NewUnaryCompareOp newOp(static_cast<NewUnaryCompareOp::optype>(newOps[i]), 128);
+    Image oldDst = oldOp.apply(Image(src));
+    Image newDst = newOp.apply(Image(src));
+    ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+  }
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.introspection", "dispatch introspection") {
+  NewUnaryCompareOp op(NewUnaryCompareOp::gt);
+  auto* cmp = op.selectorByName("compare");
+  ICL_TEST_TRUE(cmp != nullptr);
+  auto* eqt = op.selectorByName("compareEqTol");
+  ICL_TEST_TRUE(eqt != nullptr);
+  ICL_TEST_EQ((int)op.selectors().size(), 2);
+
+  auto backends = cmp->registeredBackends();
+  bool hasCpp = false;
+  for(auto b : backends) if(b == Backend::Cpp) hasCpp = true;
+  ICL_TEST_TRUE(hasCpp);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.cross_validate", "all backend combos match for gt") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  NewUnaryCompareOp op(NewUnaryCompareOp::gt, 100);
+  Image srcImg(src);
+
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(srcImg);
+  bool allMatch = true;
+  int nCombos = 0;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as8u() == ref.as8u())) allMatch = false;
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryCompareOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(20, 15), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    NewUnaryCompareOp op(NewUnaryCompareOp::lt, 100);
+    op.forceAll(Backend::Cpp);
+    Image ref = op.apply(src);
+    op.unforceAll();
+
+    auto combos = op.allBackendCombinations(src);
+    bool allMatch = true;
+    op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+      Image dst = op.apply(src);
+      if(!(dst.as8u() == ref.as8u())) allMatch = false;
+    });
+    ICL_TEST_TRUE(allMatch);
+  }
+}
+
+// ====================================================================
+// NewUnaryArithmeticalOp — BackendDispatch framework
+// ====================================================================
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_add", "addOp adds constant") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::addOp, 5.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{15.f, 25.f, 35.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_sub", "subOp subtracts constant") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::subOp, 3.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{7.f, 17.f, 27.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_mul", "mulOp multiplies") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::mulOp, 2.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{20.f, 40.f, 60.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_div", "divOp divides") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::divOp, 2.0);
+  ICL_TEST_TRUE((op.apply(Img32f{{10.f, 20.f, 30.f}}) == Img32f{{5.f, 10.f, 15.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_sqr", "sqrOp squares") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::sqrOp);
+  ICL_TEST_TRUE((op.apply(Img32f{{3.f, 4.f, 5.f}}) == Img32f{{9.f, 16.f, 25.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_sqrt", "sqrtOp takes sqrt") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::sqrtOp);
+  ICL_TEST_TRUE((op.apply(Img32f{{4.f, 9.f, 16.f}}) == Img32f{{2.f, 3.f, 4.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.basic_abs", "absOp takes abs") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::absOp);
+  ICL_TEST_TRUE((op.apply(Img32f{{-5.f, 0.f, 3.f}}) == Img32f{{5.f, 0.f, 3.f}}));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.matches_old_add", "matches UnaryArithmeticalOp add") {
+  auto src = Img32f::from(20, 15, 2, [](int x, int y, int c) -> icl32f {
+    return (x * 3.7f + y * 11.3f + c * 5.1f);
+  });
+  UnaryArithmeticalOp oldOp(UnaryArithmeticalOp::addOp, 42.5);
+  NewUnaryArithmeticalOp newOp(NewUnaryArithmeticalOp::addOp, 42.5);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as32f() == newDst.as32f()));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.matches_old_all_ops", "matches old for all 9 ops") {
+  auto src = Img32f::from(20, 15, 1, [](int x, int y, int) -> icl32f {
+    return 1.0f + (x * 7 + y * 13) % 200;  // positive values for sqrt/ln
+  });
+  int ops[] = { 0, 1, 2, 3, 10, 11, 12, 13, 14 };  // add,sub,mul,div,sqr,sqrt,ln,exp,abs
+  double vals[] = { 5, 3, 2, 4, 0, 0, 0, 0, 0 };
+  for(int i = 0; i < 9; ++i) {
+    UnaryArithmeticalOp oldOp(static_cast<UnaryArithmeticalOp::optype>(ops[i]), vals[i]);
+    NewUnaryArithmeticalOp newOp(static_cast<NewUnaryArithmeticalOp::optype>(ops[i]), vals[i]);
+    Image oldDst = oldOp.apply(Image(src));
+    Image newDst = newOp.apply(Image(src));
+    bool match = (oldDst.as32f() == newDst.as32f());
+    ICL_TEST_TRUE(match);
+  }
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.matches_old_8u", "matches old for 8u depth") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 200;
+  });
+  UnaryArithmeticalOp oldOp(UnaryArithmeticalOp::addOp, 10);
+  NewUnaryArithmeticalOp newOp(NewUnaryArithmeticalOp::addOp, 10);
+  Image oldDst = oldOp.apply(Image(src));
+  Image newDst = newOp.apply(Image(src));
+  ICL_TEST_TRUE((oldDst.as8u() == newDst.as8u()));
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.introspection", "dispatch introspection") {
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::addOp, 1);
+  ICL_TEST_EQ((int)op.selectors().size(), 2);
+  auto* wv = op.selectorByName("withVal");
+  ICL_TEST_TRUE(wv != nullptr);
+  auto* nv = op.selectorByName("noVal");
+  ICL_TEST_TRUE(nv != nullptr);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.cross_validate", "all backend combos match for add") {
+  auto src = Img32f::from(20, 15, 1, [](int x, int y, int) -> icl32f {
+    return x * 3.7f + y * 11.3f;
+  });
+  NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::addOp, 42.5);
+  Image srcImg(src);
+
+  op.forceAll(Backend::Cpp);
+  Image ref = op.apply(srcImg);
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(srcImg);
+  bool allMatch = true;
+  int nCombos = 0;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = op.apply(srcImg);
+    if(!(dst.as32f() == ref.as32f())) allMatch = false;
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+ICL_REGISTER_TEST("Filter.NewUnaryArithmeticalOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(20, 15), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>(1 + (x * 7 + y * 13) % 100);
+      });
+    });
+    NewUnaryArithmeticalOp op(NewUnaryArithmeticalOp::sqrOp);
     op.forceAll(Backend::Cpp);
     Image ref = op.apply(src);
     op.unforceAll();

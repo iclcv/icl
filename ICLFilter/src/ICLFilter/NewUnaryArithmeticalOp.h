@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/NewThresholdOp.h               **
+** File   : ICLFilter/src/ICLFilter/NewUnaryArithmeticalOp.h       **
 ** Module : ICLFilter                                              **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -38,42 +38,32 @@
 namespace icl {
   namespace filter {
 
-    /// Proof-of-concept ThresholdOp using the new FilterDispatch architecture.
-    /// Same functionality as ThresholdOp but with separate backend files
-    /// and runtime-inspectable dispatch.
-    class ICLFilter_API NewThresholdOp : public UnaryOp, public core::Dispatching {
+    /// UnaryArithmeticalOp using the BackendDispatch architecture.
+    class ICLFilter_API NewUnaryArithmeticalOp : public UnaryOp, public core::Dispatching {
       public:
 
-      enum optype { lt, gt, ltgt, ltVal, gtVal, ltgtVal };
+      enum optype {
+        addOp=0, subOp=1, mulOp=2, divOp=3,
+        sqrOp=10, sqrtOp=11, lnOp=12, expOp=13, absOp=14
+      };
 
-      NewThresholdOp(optype ttype = ltVal, float lowThreshold = 127,
-                     float highThreshold = 127, float lowVal = 0, float highVal = 255);
+      NewUnaryArithmeticalOp(optype t = addOp, icl64f val = 0);
 
       void apply(const core::Image &src, core::Image &dst) override;
       using UnaryOp::apply;
 
-      // ---- Accessors ----
-      void setType(optype t) { m_eType = t; }
-      optype getType() const { return m_eType; }
-      void setLowThreshold(float t) { m_fLowThreshold = t; }
-      void setHighThreshold(float t) { m_fHighThreshold = t; }
-      void setLowVal(float v) { m_fLowVal = v; }
-      void setHighVal(float v) { m_fHighVal = v; }
-      float getLowThreshold() const { return m_fLowThreshold; }
-      float getHighThreshold() const { return m_fHighThreshold; }
-      float getLowVal() const { return m_fLowVal; }
-      float getHighVal() const { return m_fHighVal; }
+      void setValue(icl64f value) { m_dValue = value; }
+      icl64f getValue() const { return m_dValue; }
+      void setOpType(optype t) { m_eOpType = t; }
+      optype getOpType() const { return m_eOpType; }
 
       // Sub-op signatures for backend dispatch
-      using ThreshSig     = void(const core::Image&, core::Image&, double, double);
-      using ThreshDualSig = void(const core::Image&, core::Image&, double, double, double, double);
+      using ArithValSig   = void(const core::Image&, core::Image&, double, int);
+      using ArithNoValSig = void(const core::Image&, core::Image&, int);
 
       private:
-      optype m_eType;
-      float m_fLowThreshold;
-      float m_fHighThreshold;
-      float m_fLowVal;
-      float m_fHighVal;
+      optype m_eOpType;
+      icl64f m_dValue;
     };
 
   } // namespace filter
