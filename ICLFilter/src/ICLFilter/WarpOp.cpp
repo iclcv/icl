@@ -29,10 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/WarpOp.h>
-#ifdef ICL_HAVE_OPENCL
-#include <ICLUtils/CLProgram.h>
-#endif
-#include <ICLUtils/CLIncludes.h>
 #include <ICLCore/Image.h>
 
 using namespace icl::utils;
@@ -40,91 +36,6 @@ using namespace icl::core;
 
 namespace icl{
   namespace filter{
-
-  #ifdef ICL_HAVE_OPENCL
-    struct WarpOp::CLWarp {
-      CLProgram program;
-      CLImage2D input;
-      CLImage2D output;
-      CLImage2D warpX, warpY;
-      CLKernel kernel;
-      Size mapSize;
-
-      CLWarp() {
-        static const char *k = (
-          "__kernel void warp(const unsigned int mode,                                \n"
-          "                   __read_only image2d_t warpX,                            \n"
-          "                   __read_only image2d_t warpY,                            \n"
-          "                   __read_only image2d_t in,                               \n"
-          "                   __write_only image2d_t out) {                           \n"
-          "    const int x = get_global_id(0);                                        \n"
-          "    const int y = get_global_id(1);                                        \n"
-          "    const int w = get_global_size(0);                                      \n"
-          "    const int h = get_global_size(1);                                      \n"
-          "    if(x && y && x<w-1 && y<h-1) {                                         \n"
-          "      const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE |              \n"
-          "                                CLK_ADDRESS_CLAMP |                        \n"
-          "                                CLK_FILTER_LINEAR;                         \n"
-          "      const sampler_t samplerN = CLK_NORMALIZED_COORDS_FALSE |             \n"
-          "                                 CLK_ADDRESS_CLAMP |                       \n"
-          "                                 CLK_FILTER_NEAREST;                       \n"
-          "      float4 fX = read_imagef(warpX, sampler, (int2)(x,y));                \n"
-          "      float4 fY = read_imagef(warpY, sampler, (int2)(x,y));                \n"
-          "      uint4 inPixel = read_imageui(in, samplerN, (float2)(fX.s0, fY.s0));  \n"
-          "      write_imageui(out, (int2)(x,y), inPixel.s0);                         \n"
-          "  }                                                                        \n"
-          "}                                                                          \n");
-
-        program = CLProgram("gpu", k);
-        kernel = program.createKernel("warp");
-      }
-
-      void setWarpMap(const Img32f &warpMap) {
-        mapSize = warpMap.getSize();
-        int w = warpMap.getWidth();
-        int h = warpMap.getHeight();
-        warpX = program.createImage2D("r", w, h, 3, warpMap.begin(0));
-        warpY = program.createImage2D("r", w, h, 3, warpMap.begin(1));
-      }
-
-      void setWarpMap(const Channel32f warpMap[2]) {
-        mapSize = warpMap[0].getSize();
-        int w = warpMap[0].getWidth();
-        int h = warpMap[0].getHeight();
-        warpX = program.createImage2D("r", w, h, 3, warpMap[0].begin());
-        warpY = program.createImage2D("r", w, h, 3, warpMap[1].begin());
-        std::cout << "changed" << std::endl;
-      }
-
-      void apply(const Channel32f warpMap[2], const ImgBase *src, ImgBase *dst, scalemode mode) {
-        cl_filter_mode filterMode;
-        int w = src->getWidth();
-        int h = src->getHeight();
-
-        if (mode == interpolateNN)
-          filterMode = CL_FILTER_NEAREST;
-        else if (mode == interpolateLIN)
-          filterMode = CL_FILTER_LINEAR;
-        else {
-          ERROR_LOG("region average interpolation mode does not work here!");
-          return;
-        }
-
-        if (warpMap[0].getSize() != mapSize)
-          setWarpMap(warpMap);
-
-        input = program.createImage2D("r", w, h, src->getDepth());
-        output = program.createImage2D("w", w, h, src->getDepth());
-
-        for (int i = 0; i < src->getChannels(); i++) {
-          input.write(src->getDataPtr(i));
-          kernel.setArgs(filterMode, warpX, warpY, input, output);
-          kernel.apply(w, h, 0);
-          output.read(dst->getDataPtr(i));
-        }
-      }
-    };
-  #endif
 
     namespace {
       template<class T>
@@ -245,6 +156,15 @@ namespace icl{
         }
       };
 #endif
+
+      void cpp_warp(const Image& src, Image& dst, const Channel32f* cwm,
+                    Point warpOffset, scalemode mode) {
+        src.visitWith(dst, [&](const auto &s, auto &d) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          WarpImpl<T>::apply(s, d, cwm, warpOffset, mode);
+        });
+      }
+
     } // anon namespace
 
     void prepare_warp_table_inplace(Img32f &warpMap){
@@ -263,40 +183,31 @@ namespace icl{
       }
     }
 
-
-    WarpOp::WarpOp(const Img32f &warpMap,scalemode mode, bool allowWarpMapScaling):
-      m_allowWarpMapScaling(allowWarpMapScaling),m_scaleMode(mode),m_tryUseOpenCL(false){
+    WarpOp::WarpOp(const Img32f &warpMap, scalemode mode, bool allowWarpMapScaling):
+      m_allowWarpMapScaling(allowWarpMapScaling), m_scaleMode(mode) {
       warpMap.deepCopy(&m_warpMap);
       prepare_warp_table_inplace(m_warpMap);
-  #ifdef ICL_HAVE_OPENCL
-      m_clWarp = new CLWarp();
-  #endif
+
+      initDispatching("WarpOp");
+      auto& sel = addSelector<WarpSig>("warp");
+      sel.add(Backend::Cpp, cpp_warp, "C++ warp (IPP for 8u/32f where available)");
     }
 
     WarpOp::~WarpOp() {
-  #ifdef ICL_HAVE_OPENCL
-      delete m_clWarp;
-  #endif
     }
 
     void WarpOp::setScaleMode(scalemode scaleMode){
       m_scaleMode = scaleMode;
     }
+
     void WarpOp::setWarpMap(const Img32f &warpMap){
       warpMap.deepCopy(&m_warpMap);
       prepare_warp_table_inplace(m_warpMap);
       m_scaledWarpMap = Img32f();
-  #ifdef ICL_HAVE_OPENCL
-      m_clWarp->setWarpMap(m_warpMap);
-  #endif
     }
+
     void WarpOp::setAllowWarpMapScaling(bool allow){
       m_allowWarpMapScaling = allow;
-    }
-
-
-    void WarpOp::setTryUseOpenCL(bool on){
-      m_tryUseOpenCL = on;
     }
 
     void WarpOp::apply(const Image &src, Image &dst) {
@@ -336,18 +247,12 @@ namespace icl{
       const Rect dstROI = dst.getROI();
       const Point warpOffset(srcROI.x - dstROI.x, srcROI.y - dstROI.y);
 
-#ifdef ICL_HAVE_OPENCL
-      if(m_tryUseOpenCL && src.getDepth() == depth8u
-         && m_scaleMode == interpolateLIN && src.hasFullROI()) {
-        m_clWarp->apply(cwm, src.ptr(), dst.ptr(), m_scaleMode);
+      auto* impl = getSelector<WarpSig>("warp").resolve(src);
+      if(!impl) {
+        ERROR_LOG("no applicable backend for WarpOp");
         return;
       }
-#endif
-
-      src.visitWith(dst, [&](const auto &s, auto &d) {
-        using T = typename std::remove_reference_t<decltype(s)>::type;
-        WarpImpl<T>::apply(s, d, cwm, warpOffset, m_scaleMode);
-      });
+      impl->apply(src, dst, cwm, warpOffset, m_scaleMode);
     }
 
   } // namespace filter

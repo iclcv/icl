@@ -34,6 +34,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/BackendDispatch.h>
 
 namespace icl{
   namespace filter{
@@ -92,8 +93,12 @@ namespace icl{
         </pre>
 
      */
-    class ICLFilter_API WarpOp : public UnaryOp{
+    class ICLFilter_API WarpOp : public UnaryOp, public core::Dispatching {
       public:
+
+      /// Dispatch signature: (src, dst, warpMapChannels[2], warpOffset, scalemode)
+      using WarpSig = void(const core::Image&, core::Image&,
+                           const core::Channel32f*, utils::Point, core::scalemode);
 
       /// create a new WarpOp instance
       /** This constructor has been made explicit to avoid ambiguity in case of
@@ -122,12 +127,6 @@ namespace icl{
       /** @see WarpOp(const Img32f&,scalemode,bool)*/
       void setAllowWarpMapScaling(bool allow);
 
-      /// sets wheter to use openCL internally
-      /** OpenCL is only used if ICL is compiled with OpenCL support and for
-          special image-depth and interpolation mode combinations. This
-          function is disregarded quietly if not available */
-      void setTryUseOpenCL(bool enabled);
-
       /// returns the current scalemode
       core::scalemode getScaleMode() const { return m_scaleMode; }
 
@@ -148,12 +147,6 @@ namespace icl{
       core::Img32f m_warpMap;
       core::Img32f m_scaledWarpMap;
       core::scalemode m_scaleMode;
-      bool m_tryUseOpenCL;
-
-#ifdef ICL_HAVE_OPENCL
-      struct CLWarp; // forward declaration
-      CLWarp *m_clWarp;
-#endif
     };
 
 

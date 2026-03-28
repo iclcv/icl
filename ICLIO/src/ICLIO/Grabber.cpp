@@ -179,9 +179,11 @@ namespace icl{
       const ImgBase *adapted = adaptGrabResult(acquired,useWarp ? 0 : ppoDst);
       if(useWarp){
         data->warp->setScaleMode(data->undistortionInterpolationMode);
-#ifdef ICL_HAVE_OPENCL
-        data->warp->setTryUseOpenCL(data->undistortionUseOpenCL);
-#endif
+        if(data->undistortionUseOpenCL) {
+          data->warp->unforceAll();
+        } else {
+          data->warp->forceAll(core::Backend::Cpp);
+        }
         if(ppoDst){
           data->warp->apply(adapted, ppoDst);
           return *ppoDst;
