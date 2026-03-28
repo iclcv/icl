@@ -114,18 +114,15 @@ namespace {
     });
   }
 
-  bool supports_32f(const Image& src) {
-    return src.getDepth() == depth32f;
-  }
 
   // --- Self-registration ---
   static const int _reg1 = registerBackend<Op::ArithValSig>(
     "NewUnaryArithmeticalOp.withVal", Backend::Simd, simd_arith_with_val,
-    supports_32f, "SSE2/NEON arithmetic with-val (32f)");
+    applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
 
   static const int _reg2 = registerBackend<Op::ArithNoValSig>(
     "NewUnaryArithmeticalOp.noVal", Backend::Simd, simd_arith_no_val,
-    supports_32f, "SSE2/NEON arithmetic no-val (32f)");
+    applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
 
 } // anon namespace
 

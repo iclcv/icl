@@ -89,9 +89,6 @@ namespace {
     });
   }
 
-  bool supports_8u(const Image& src) {
-    return src.getDepth() == depth8u;
-  }
 
   void simd_compare(const Image &src, Image &dst, double value, int optype) {
     simd_compare_8u(src.as8u(), dst.as8u(), static_cast<icl8u>(value), optype);
@@ -100,7 +97,7 @@ namespace {
   // --- Self-registration ---
   static const int _reg1 = registerBackend<CmpOp::CmpSig>(
     "NewUnaryCompareOp.compare", Backend::Simd, simd_compare,
-    supports_8u, "SSE2/NEON compare (8u)");
+    applicableTo<icl8u>, "SSE2/NEON compare (8u)");
 
 } // anon namespace
 

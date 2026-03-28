@@ -65,6 +65,14 @@ namespace icl {
     /// can check depth, ROI, size, channels, etc.
     using ApplicabilityFn = std::function<bool(const Image&)>;
 
+    /// Predefined applicability: matches if source depth is any of the listed types.
+    ///   applicableTo<icl8u, icl32f>  — matches depth8u or depth32f
+    template<class... Ts>
+    bool applicableTo(const Image& src) {
+      depth d = src.getDepth();
+      return ((d == getDepth<Ts>()) || ...);
+    }
+
     // ================================================================
     // BackendSelectorBase — non-templated base for introspection
     // ================================================================

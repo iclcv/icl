@@ -42,9 +42,6 @@ using namespace icl::core;
 
 namespace {
 
-  bool supports_8u_16s_32f(const Image& src) {
-    return src.getDepth() == depth8u || src.getDepth() == depth16s || src.getDepth() == depth32f;
-  }
 
   // IPP helper: call a 2-param threshold function per channel
   template<typename T, IppStatus (IPP_DECL *ippiFunc)(const T*, int, T*, int, IppiSize, T, T)>
@@ -120,15 +117,15 @@ namespace {
 
   static const int _reg1 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.ltVal", Backend::Ipp, ipp_ltval,
-    supports_8u_16s_32f, "IPP threshold ltVal (8u/16s/32f)");
+    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
 
   static const int _reg2 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.gtVal", Backend::Ipp, ipp_gtval,
-    supports_8u_16s_32f, "IPP threshold gtVal (8u/16s/32f)");
+    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
 
   static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
     "NewThresholdOp.ltgtVal", Backend::Ipp, ipp_ltgtval,
-    supports_8u_16s_32f, "IPP threshold ltgtVal (8u/16s/32f)");
+    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
 
 } // anon namespace
 

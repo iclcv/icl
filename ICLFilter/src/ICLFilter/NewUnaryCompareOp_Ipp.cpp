@@ -64,9 +64,6 @@ namespace {
     }
   }
 
-  bool supports_8u_16s_32f(const Image& src) {
-    return src.getDepth() == depth8u || src.getDepth() == depth16s || src.getDepth() == depth32f;
-  }
 
   void ipp_compare(const Image &src, Image &dst, double value, int optype) {
     Img8u &d = dst.as8u();
@@ -82,9 +79,6 @@ namespace {
     });
   }
 
-  bool supports_32f(const Image& src) {
-    return src.getDepth() == depth32f;
-  }
 
   void ipp_compare_eqt(const Image &src, Image &dst, double value, double tolerance) {
     Img8u &d = dst.as8u();
@@ -101,11 +95,11 @@ namespace {
   // --- Self-registration ---
   static const int _reg1 = registerBackend<CmpOp::CmpSig>(
     "NewUnaryCompareOp.compare", Backend::Ipp, ipp_compare,
-    supports_8u_16s_32f, "IPP compare (8u/16s/32f)");
+    applicableTo<icl8u, icl16s, icl32f>, "IPP compare (8u/16s/32f)");
 
   static const int _reg2 = registerBackend<CmpOp::CmpEqtSig>(
     "NewUnaryCompareOp.compareEqTol", Backend::Ipp, ipp_compare_eqt,
-    supports_32f, "IPP compareEqualEps (32f)");
+    applicableTo<icl32f>, "IPP compareEqualEps (32f)");
 
 } // anon namespace
 

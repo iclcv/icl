@@ -57,9 +57,6 @@ namespace {
   // These work at the Image level: visitWith dispatches on depth,
   // then if constexpr selects the SIMD path for supported types.
 
-  bool supports_8u_32f(const Image& src) {
-    return src.getDepth() == depth8u || src.getDepth() == depth32f;
-  }
 
   void simd_ltval(const Image &src, Image &dst, double threshold, double value) {
     src.visitWith(dst, [&](const auto &s, auto &d) {
@@ -186,15 +183,15 @@ namespace {
 
   static const int _reg1 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.ltVal", Backend::Simd, simd_ltval,
-    supports_8u_32f, "SSE2/NEON threshold ltVal (8u/32f)");
+    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltVal (8u/32f)");
 
   static const int _reg2 = registerBackend<TOp::ThreshSig>(
     "NewThresholdOp.gtVal", Backend::Simd, simd_gtval,
-    supports_8u_32f, "SSE2/NEON threshold gtVal (8u/32f)");
+    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold gtVal (8u/32f)");
 
   static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
     "NewThresholdOp.ltgtVal", Backend::Simd, simd_ltgtval,
-    supports_8u_32f, "SSE2/NEON threshold ltgtVal (8u/32f)");
+    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltgtVal (8u/32f)");
 
 } // anon namespace
 
