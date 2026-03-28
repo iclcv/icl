@@ -28,6 +28,7 @@
 #include <ICLFilter/BilateralFilterOp.h>
 #include <ICLFilter/FFTOp.h>
 #include <ICLFilter/IFFTOp.h>
+#include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 
 using namespace icl;
 using namespace icl::utils;
@@ -2518,4 +2519,283 @@ ICL_REGISTER_TEST("Filter.IFFTOp.join", "join combines two channels into complex
     }
   }
   ICL_TEST_TRUE(ok);
+}
+
+// === MotionSensitiveTemporalSmoothing ===
+
+ICL_REGISTER_TEST("Filter.MSTS.single_frame", "first frame returns itself") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(10);
+
+  Img8u src(Size(4, 4), 1);
+  src.clear(-1, 100);
+
+  Image dst = op.apply(Image(src));
+  ICL_TEST_TRUE(dst.as8u() == src);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.uniform_frames", "identical frames produce same output") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(10);
+
+  Img8u src(Size(4, 4), 1);
+  src.clear(-1, 42);
+
+  for(int i = 0; i < 5; i++) {
+    Image dst = op.apply(Image(src));
+    ICL_TEST_TRUE(dst.as8u() == src);
+  }
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.averaging_32f", "averages stable float frames") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(20);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 10.f);
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 12.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 14.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+  Image dst = op.apply(Image(src3));
+
+  float expected = (10.f + 12.f + 14.f) / 3.f;
+  bool ok = true;
+  dst.as32f().visitPixels([&](const icl32f& v) {
+    if(std::abs(v - expected) > 0.01f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.averaging_8u", "averages stable 8u frames") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(2);
+  op.setDifference(20);
+
+  Img8u src1(Size(4, 4), 1); src1.clear(-1, 100);
+  Img8u src2(Size(4, 4), 1); src2.clear(-1, 104);
+
+  op.apply(Image(src1));
+  Image dst = op.apply(Image(src2));
+
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u& v) {
+    if(v != 102) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.motion_detection", "motion bypasses averaging") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(5);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 10.f);
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+  Image dst = op.apply(Image(src3));
+
+  // max-min = 90 > 5 -> motion -> output current frame
+  ICL_TEST_TRUE(dst.as32f() == src3);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.null_value_exclusion", "null values excluded from averaging") {
+  MotionSensitiveTemporalSmoothing op(0, 5);  // 0.0 is null
+  op.setFilterSize(3);
+  op.setDifference(20);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 0.f);    // all null
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 14.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+  Image dst = op.apply(Image(src3));
+
+  // average of 10, 14 (null excluded) = 12
+  float expected = (10.f + 14.f) / 2.f;
+  bool ok = true;
+  dst.as32f().visitPixels([&](const icl32f& v) {
+    if(std::abs(v - expected) > 0.01f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.all_null", "all null values produce null output") {
+  MotionSensitiveTemporalSmoothing op(0, 5);
+  op.setFilterSize(3);
+  op.setDifference(10);
+
+  Img32f src(Size(2, 2), 1);
+  src.clear(-1, 0.f);
+
+  op.apply(Image(src));
+  op.apply(Image(src));
+  Image dst = op.apply(Image(src));
+
+  ICL_TEST_TRUE(dst.as32f() == src);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.null_minus_one_no_effect_8u", "nullValue=-1 means no null handling for 8u") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(2);
+  op.setDifference(20);
+
+  // Even pixel value 255 should be treated as valid with null=-1
+  Img8u src1(Size(2, 2), 1); src1.clear(-1, 250);
+  Img8u src2(Size(2, 2), 1); src2.clear(-1, 254);
+
+  op.apply(Image(src1));
+  Image dst = op.apply(Image(src2));
+
+  bool ok = true;
+  dst.as8u().visitPixels([&](const icl8u& v) {
+    if(v != 252) ok = false;  // avg(250, 254) = 252
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.multichannel", "processes each channel independently") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(2);
+  op.setDifference(20);
+
+  Img32f src1(Size(2, 2), 2);
+  src1.clear(0, 10.f);
+  src1.clear(1, 20.f);
+
+  Img32f src2(Size(2, 2), 2);
+  src2.clear(0, 14.f);
+  src2.clear(1, 24.f);
+
+  op.apply(Image(src1));
+  Image dst = op.apply(Image(src2));
+
+  bool ok = true;
+  dst.as32f().visitPixels([&](int, int, int c, const icl32f& v) {
+    float expected = (c == 0) ? 12.f : 22.f;
+    if(std::abs(v - expected) > 0.01f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.ring_buffer_wrap", "ring buffer wraps correctly") {
+  MotionSensitiveTemporalSmoothing op(-1, 3);
+  op.setFilterSize(3);
+  op.setDifference(50);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 10.f);
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 20.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 30.f);
+  Img32f src4(Size(2, 2), 1); src4.clear(-1, 24.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+  op.apply(Image(src3));
+  Image dst = op.apply(Image(src4));
+
+  // Ring buffer after 4 frames with size 3: slots contain src4(24), src2(20), src3(30)
+  // (src1 was overwritten by src4)
+  // avg(24, 20, 30) = 24.666...
+  float expected = (24.f + 20.f + 30.f) / 3.f;
+  bool ok = true;
+  dst.as32f().visitPixels([&](const icl32f& v) {
+    if(std::abs(v - expected) > 0.01f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.filter_size_change_resets", "changing filter size resets history") {
+  MotionSensitiveTemporalSmoothing op(-1, 10);
+  op.setFilterSize(3);
+  op.setDifference(50);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 10.f);
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 20.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+
+  // Change filter size — resets history
+  op.setFilterSize(5);
+
+  // First frame after reset: should return the input as-is
+  Image dst = op.apply(Image(src3));
+  ICL_TEST_TRUE(dst.as32f() == src3);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.motion_image", "motion image marks motion pixels") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(5);
+
+  Img32f src1(Size(2, 2), 1); src1.clear(-1, 10.f);
+  Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
+  Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
+
+  op.apply(Image(src1));
+  op.apply(Image(src2));
+  op.apply(Image(src3));
+
+  Img32f motion = op.getMotionImage();
+  ICL_TEST_TRUE(motion.getWidth() == 2);
+  ICL_TEST_TRUE(motion.getHeight() == 2);
+
+  bool ok = true;
+  motion.visitPixels([&](const icl32f& v) {
+    if(v != 255.f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.motion_image_static", "static scene has zero motion") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+  op.setFilterSize(3);
+  op.setDifference(10);
+
+  Img32f src(Size(4, 4), 1); src.clear(-1, 42.f);
+
+  for(int i = 0; i < 3; i++) op.apply(Image(src));
+
+  Img32f motion = op.getMotionImage();
+  bool ok = true;
+  motion.visitPixels([&](const icl32f& v) {
+    if(v != 0.f) ok = false;
+  });
+  ICL_TEST_TRUE(ok);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.depth_exception", "rejects unsupported depths") {
+  MotionSensitiveTemporalSmoothing op(-1, 5);
+
+  Img16s src(Size(4, 4), 1);
+  src.clear(-1, 0);
+
+  bool threw = false;
+  try {
+    op.apply(Image(src));
+  } catch(const ICLException&) {
+    threw = true;
+  }
+  ICL_TEST_TRUE(threw);
+}
+
+ICL_REGISTER_TEST("Filter.MSTS.getters", "getters return correct values") {
+  MotionSensitiveTemporalSmoothing op(2047, 15);
+  ICL_TEST_TRUE(op.getNullValue() == 2047);
+  ICL_TEST_TRUE(op.getMaxFilterSize() == 15);
+  ICL_TEST_TRUE(op.getFilterSize() == 7);  // max/2
+  ICL_TEST_TRUE(op.getDifference() == 10);
+
+  op.setFilterSize(5);
+  op.setDifference(3);
+  ICL_TEST_TRUE(op.getFilterSize() == 5);
+  ICL_TEST_TRUE(op.getDifference() == 3);
 }

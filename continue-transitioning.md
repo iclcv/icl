@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 14 — Stateful BackendDispatch + BilateralFilterOp + FFT/IFFT migration)
+## Current State (Session 15 — MotionSensitiveTemporalSmoothing: ALL UnaryOp filters migrated)
 
 ### Architecture
 
@@ -152,7 +152,7 @@ still override the ImgBase version.
 
 TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
 
-### Fully Native Image UnaryOp Filters (26 done)
+### Fully Native Image UnaryOp Filters (27 done — ALL COMPLETE)
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge.
 
@@ -186,6 +186,8 @@ optype templates, `dispatchEnum<>` for runtime→compile-time dispatch:
 24. **BilateralFilterOp** — brute-force bilateral, C++ all depths, OpenCL 8u/32f via stateful backend
 25. **FFTOp** — thin subclass of BaseFFTOp (forward), delegates to FFTUtils (IPP/MKL/C++)
 26. **IFFTOp** — thin subclass of BaseFFTOp (inverse), join + PAD_REMOVE support
+27. **MotionSensitiveTemporalSmoothing** — temporal filter with motion detection, ring buffer
+    per channel, template C++ implementation, 8u/32f only, no ROI support, motion image output
 
 ### Fully Native Image BinaryOp Filters (3 done)
 
@@ -207,9 +209,10 @@ constructors and setter aliases. Old FFTOp.cpp/IFFTOp.cpp deleted.
 **Known issue**: FFTUtils C++ fallback has thread-safety problems (global static
 buffers). FFT tests are flaky under parallel execution. Passes 100% with `-j 1`.
 
-### UnaryOp Filters with applyImgBase Bridge (1 remaining)
+### UnaryOp Filters with applyImgBase Bridge — NONE REMAINING
 
-- MotionSensitiveTemporalSmoothing (hardest) — stateful, OpenCL, temporal buffers
+All 27 UnaryOp filters now override `apply(const Image&, Image&)` directly.
+The `applyImgBase` bridge is no longer used by any UnaryOp subclass.
 
 ## Migration Pattern — Dispatch Struct Approach
 
@@ -285,11 +288,11 @@ src.getImageRect()                   // Rect(0,0,w,h)
 
 ## Test Infrastructure
 
-315 tests total (tests/ directory, single icl-tests executable):
+328 tests total (tests/ directory, single icl-tests executable):
 - `test-utils.cpp` — Size, Point, Rect, Range, string, random
 - `test-math.cpp` — FixedMatrix, DynMatrix
 - `test-core.cpp` — Image, Img<T> (including initializer list + equality)
-- `test-filter.cpp` — 148 filter tests covering 26 migrated filters + NewThresholdOp
+- `test-filter.cpp` — 163 filter tests covering all 27 migrated UnaryOp filters + 3 BinaryOp filters
 
 Test patterns — prefer these concise forms:
 ```cpp
@@ -357,6 +360,10 @@ The same patterns should be used in production code where performance is not cri
 - **bpp()** — still used in ~30 places. Once all filters use Image natively,
   bpp() call sites can be replaced with Image-based apply, then bpp() removed.
 - **applyParallel()** — free function replacing deprecated applyMT
+- **MSTS OpenCL backend** — MotionSensitiveTemporalSmoothing currently C++ only.
+  The OpenCL path was removed during migration (tightly coupled to TemporalSmoothingCL).
+  Could be re-added as a stateful backend, but the temporal ring buffer on GPU
+  makes the dispatch pattern awkward. Low priority unless Kinect perf is needed.
 - **BinaryOp filters** — same migration as UnaryOp, needs visitROILines2With
 - **KuwaharaOp** — dropped from BilateralFilterOp (different algorithm). Could be
   its own NeighborhoodOp if there's demand.
