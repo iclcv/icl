@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/BilateralOp.h                  **
+** File   : ICLFilter/src/ICLFilter/BilateralFilterOp.h            **
 ** Module : ICLFilter                                              **
-** Authors: Tobias Roehlig                                         **
+** Authors: Tobias Roehlig, Christof Elbrechter                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -31,99 +31,54 @@
 #pragma once
 
 #include <ICLFilter/UnaryOp.h>
-#include <ICLUtils/Uncopyable.h>
-#include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/BackendDispatch.h>
 
 namespace icl {
-
 namespace filter {
 
-/**
- * @brief BilateralFilterICL class Gaussian bilateral filtering
- * Implements the gaussian bilateral filtering like described in
- * "A Fast Approximation of the Bilateral Filter using a Signal Processing Approach"
- * (http://people.csail.mit.edu/sparis/publi/2006/tr/Paris_06_Fast_Bilateral_Filter_MIT_TR_low-res.pdf)
- * on the GPU using OpenCL (no CPU-backend at the moment).
- */
-class ICLFilter_API BilateralFilterOp : public filter::UnaryOp {
+  /// Gaussian bilateral filter — edge-preserving smoothing
+  /** The bilateral filter combines spatial Gaussian weighting with
+      range (intensity/color difference) weighting. Pixels that are
+      both spatially close and similar in value contribute more to
+      the output, preserving edges while smoothing flat regions.
 
-public:
-	BilateralFilterOp(const BilateralFilterOp&) = delete;
-	BilateralFilterOp& operator=(const BilateralFilterOp&) = delete;
+      For 3-channel images, setting use_lab=true converts to CIE LAB
+      color space for the range distance computation, which gives
+      more perceptually uniform edge preservation.
 
+      Supported depths: all (8u, 16s, 32s, 32f, 64f) via C++ backend.
+      OpenCL backend accelerates 8u (mono + 3ch) and 32f (mono).
+  */
+  class ICLFilter_API BilateralFilterOp : public UnaryOp, public core::Dispatching {
+  public:
 
-	enum Mode {BEST, GPU, CPU};
-	enum Method {GAUSS, KUWAHARA};
-	/**
-	 * @brief BilateralFilterICL Standard constructor
-	 */
-	BilateralFilterOp(Mode mode = BEST, Method method = GAUSS);
-	/**
-	 * @brief BilateralFilterICL Custom constructor to init radius, sigma_s and sigma_r
-	 * @param radius kernel radius
-	 * @param sigma_s sigma_s component
-	 * @param sigma_r sigma_r component
-	 */
-	BilateralFilterOp(int radius, float sigma_s, float sigma_r, bool _use_lab = true, Mode mode = BEST, Method method = GAUSS);
-	/// Destructor
-	virtual ~BilateralFilterOp();
+    /// Dispatch signature for backend implementations
+    using ApplySig = void(const core::Image&, core::Image&,
+                          int radius, float sigma_s, float sigma_r, bool use_lab);
 
-	// We make use of the apply functions:
-	using UnaryOp::apply;
+    /// Constructor with all parameters
+    BilateralFilterOp(int radius = 2, float sigma_s = 2.f, float sigma_r = 30.f,
+                      bool use_lab = true);
 
-	/**
-	 * Applies the bilateral filter operation. Supported are grayvalue-images, mono float images and color images like rgb.
-	 * Internally, the color images are converted to Lab-color-space for filtering if the flag use_lab is set to true. It will use
-	 * the given image format instead. The output image will
-	 * have the same size and format like the input image. There is no ROI-support at the moment.
-	 * @brief apply Applies the bilateral filter operation.
-	 * @param in Image to filter.
-	 * @param out Filter result (must be of the same size and format)
-	 */
-	void apply(const core::Image &src, core::Image &dst) override;
+    using UnaryOp::apply;
+    void apply(const core::Image &src, core::Image &dst) override;
 
-	/// Sets the kernel radius
-	void setRadius(int radius) { this->radius = radius; }
-	/// Sets the sigma_s component
-	void setSigmaS(float sigmaS) { this->sigma_s = sigmaS; }
-	/// Sets the sigma_r component
-	void setSigmaR(float sigmaR) { this->sigma_r = sigmaR; }
-	/// Sets whether to use lab-color space or rgb
-	void setUseLAB(bool _use_lab) { this->use_lab = _use_lab; }
+    void setRadius(int r) { m_radius = r; }
+    void setSigmaS(float s) { m_sigmaS = s; }
+    void setSigmaR(float r) { m_sigmaR = r; }
+    void setUseLAB(bool b) { m_useLAB = b; }
 
-	int getRadius() { return this->radius; }
-	float getSigmaS() { return this->sigma_s; }
-	float getSigmaR() { return this->sigma_r; }
+    int getRadius() const { return m_radius; }
+    float getSigmaS() const { return m_sigmaS; }
+    float getSigmaR() const { return m_sigmaR; }
+    bool getUseLAB() const { return m_useLAB; }
 
-	core::Img32f const &getSumImg();
-
-protected:
-
-	bool use_lab;
-	/// Kernel radius
-	int radius;
-	/// Spatial extent of the kernel, size of the considered neighborhood
-	float sigma_s;
-	/// “Minimum” amplitude of an edge
-	float sigma_r;
-	/// Bilateral filter method used
-	Method _method;
-
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-private:
-
-	struct Impl;	//!< internal data type
-	struct GPUImpl;	//!< internal data type derived from Impl
-	struct CPUImpl;	//!< internal data type derived from Impl
-	Impl *impl;
-
-	/**
-	 * @brief init internal initialization function
-	 */
-	void init(Mode mode, Method method);
-
-};
+  private:
+    int m_radius;
+    float m_sigmaS, m_sigmaR;
+    bool m_useLAB;
+  };
 
 } // namespace filter
 } // namespace icl
