@@ -9,7 +9,7 @@
 ** File   : ICLFilter/src/ICLFilter/MotionSensitiveTemporalSmoothi **
 **          ng.h                                                   **
 ** Module : ICLFilter                                              **
-** Authors: Andre Ueckermann                                       **
+** Authors: Andre Ueckermann, Christof Elbrechter                  **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -32,181 +32,77 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
-
-#ifdef ICL_HAVE_OPENCL
-#include <ICLUtils/CLProgram.h>
-#include <ICLUtils/CLKernel.h>
-#include <ICLUtils/CLBuffer.h>
 #include <ICLCore/Image.h>
-#endif
+#include <vector>
 
-namespace icl{
-  namespace filter{
+namespace icl {
+namespace filter {
 
-    class ICLFilter_API TemporalSmoothingCL{
-      public:
+  /// Temporal smoothing filter with motion detection.
+  ///
+  /// Maintains a ring buffer of recent frames per channel. For each pixel,
+  /// computes the temporal average across the buffer, unless the range
+  /// (max - min) exceeds a configurable threshold — in that case the
+  /// current frame value is passed through (motion detected).
+  ///
+  /// Supports depth8u and depth32f only. Full-image ROI required.
+  /// Designed for depth camera data (e.g. Kinect) where a configurable
+  /// null value indicates missing data.
+  class ICLFilter_API MotionSensitiveTemporalSmoothing : public UnaryOp {
+  public:
+    MotionSensitiveTemporalSmoothing(const MotionSensitiveTemporalSmoothing&) = delete;
+    MotionSensitiveTemporalSmoothing& operator=(const MotionSensitiveTemporalSmoothing&) = delete;
 
-      /// creates a new TemporalSmoothingCL with given parameters (implementation of the MotionSensitiveTemporalSmoothing Filter)
-      /** @param size size of the input image
-          @param depth depth of the image (32f and 8u supported)
-          @param maxFilterSize maximum size of the filter */
-      TemporalSmoothingCL(utils::Size size, core::depth depth, int iMaxFilterSize, int iNullValue);
+    /// @param nullValue pixel value indicating no data (-1 = no null values)
+    /// @param maxFilterSize maximum temporal window size (ring buffer capacity)
+    MotionSensitiveTemporalSmoothing(int nullValue, int maxFilterSize);
+    ~MotionSensitiveTemporalSmoothing();
 
-      ///Destructor
-      ~TemporalSmoothingCL();
+    void apply(const core::Image &src, core::Image &dst) override;
+    using UnaryOp::apply;
 
-      /// Execution of the temporal smoothing for float images
-      /** @param inputImage the next input image for the smoothing sequence
-          @return the smoothed image */
-      core::Img32f temporalSmoothingF(const core::Img32f &inputImage);
+    /// Enable/disable OpenCL acceleration (reserved for future use)
+    void setUseCL(bool use);
+    /// Returns whether OpenCL is currently enabled
+    bool isCLActive() const;
 
-      /// Execution of the temporal smoothing for uchar images
-      /** @param inputImage the next input image for the smoothing sequence
-          @return the smoothed image */
-      core::Img8u temporalSmoothingC(const core::Img8u &inputImage);
+    void setFilterSize(int filterSize);
+    void setDifference(int difference);
 
-      /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
-      /**        @param use enable/disable openCL */
-	    void setUseCL(bool use);
+    int getFilterSize() const { return m_filterSize; }
+    int getDifference() const { return m_difference; }
+    int getNullValue() const { return m_nullValue; }
+    int getMaxFilterSize() const { return m_maxFilterSize; }
 
-	    /// Sets the filter size (smaller than maxFilterSize in Constructor)
-	    /** @param iFilterSize the filter size */
-	    void setFilterSize(int iFilterSize);
+    /// Returns the motion image (255=motion, 0=static) for the first channel
+    core::Img32f getMotionImage() const;
+    /// Legacy alias for getMotionImage()
+    core::Img32f getMotionDisplay() { return getMotionImage(); }
 
-	    ///Sets the difference separating noise from movement (smaller=noise, bigger=movement)
-	    /**       @param iDifference the difference */
-	    void setDifference(int iDifference);
-
-	    ///Returns the motionImage (visualize the movement in the image, usable as motion detector)
-	    /**   @return the motion image */
-	    core::Img32f getMotionDisplay();
-
-	    /// Returns the openCL status (true=openCL context ready, false=no openCL context available)
-      /**        @return openCL context ready/unavailable */
-	    bool isCLReady();
-
-	    /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
-      /**        @return openCL enabled/disabled */
-	    bool isCLActive();
-
-     private:
-
-      int w,h;
-      core::depth d;
-      bool clReady;
-      bool useCL;
-
-      int imgCount;
-
-      int filterSize;
-      int currentFilterSize;
-      int maxFilterSize;
-
-      int currentDifference;
-      int nullValue;
-
-      std::vector<core::Img32f> inputImagesF;
-      core::Img32f outputImageF;
-      std::vector<core::Img8u> inputImagesC;
-      core::Img8u outputImageC;
+  private:
+    struct ChannelState {
+      std::vector<core::Img32f> historyF;
+      std::vector<core::Img8u> historyC;
       core::Img32f motionImage;
-
-    #ifdef ICL_HAVE_OPENCL
-      //OpenCL
-      float* inputImage1ArrayF;
-      float* inputImagesArrayF;
-      float* outputImageArrayF;
-
-      unsigned char* inputImage1ArrayC;
-      unsigned char* inputImagesArrayC;
-      unsigned char* outputImageArrayC;
-
-      float* motionImageArray;
-
-
-      //OpenCL
-      utils::CLProgram program;
-      utils::CLKernel kernelTemporalSmoothingFloat;
-      utils::CLKernel kernelTemporalSmoothingChar;
-      utils::CLKernel kernelCheckRANSAC;
-      utils::CLKernel kernelAssignRANSAC;
-
-      //OpenCL buffer
-      utils::CLBuffer inputImageBufferF;
-      utils::CLBuffer outputImageBufferF;
-      utils::CLBuffer inputImageBufferC;
-      utils::CLBuffer outputImageBufferC;
-      utils::CLBuffer motionImageBuffer;
-    #endif
-
+      int imgCount = 0;
     };
 
-    class ICLFilter_API MotionSensitiveTemporalSmoothing : public UnaryOp{
-      public:
-      MotionSensitiveTemporalSmoothing(const MotionSensitiveTemporalSmoothing&) = delete;
-      MotionSensitiveTemporalSmoothing& operator=(const MotionSensitiveTemporalSmoothing&) = delete;
+    void reinit(int channels, core::depth d, utils::Size size);
 
+    int m_nullValue;
+    int m_maxFilterSize;
+    int m_filterSize;
+    int m_difference;
+    bool m_useCL;
 
-      /// creates a new MotionSensitiveTemporalSmoothing filter with given parameters
-      /** @param iNullValue the value with no image information (e.g. Kinect data) -1=no nullValues
-          @param iMaxFilterSize the maximum size of the filter */
-      MotionSensitiveTemporalSmoothing(int iNullValue, int iMaxFilterSize);
+    int m_numChannels = 0;
+    utils::Size m_size;
+    core::depth m_depth = core::depth8u;
 
-      ///Destructor
-      ~MotionSensitiveTemporalSmoothing();
+    std::vector<ChannelState> m_channels;
+  };
 
-      ///applies the MotionSensitiveTemporalSmoothing
-      /**
-          @param src the source image
-          @param dst pointer to the destination image
-      */
-      void apply(const core::Image &src, core::Image &dst) override;
-
-      /// Import unaryOps apply function without destination image
-      using UnaryOp::apply;
-
-      /// Sets openCL enabled/disabled. Enabling has no effect if no openCL context is available. (default true=enabled)
-      /**        @param use enable/disable openCL */
-	    void setUseCL(bool use);
-
-	    ///Sets the filter size (smaller than maxFilterSize in Constructor)
-	    /**       @param filterSize the filter size */
-	    void setFilterSize(int filterSize);
-
-	    ///Sets the difference separating noise from movement (smaller=noise, bigger=movement)
-	    /**       @param difference the difference */
-	    void setDifference(int difference);
-
-	    ///Returns the motionImage (visualize the movement in the image, usable as motion detector)
-	    /**   @return the motion image */
-	    core::Img32f getMotionDisplay();
-
-	    /// Returns the openCL activation status (true=openCL enabled, false=openCL disabled). The status can be set by setUseCL(bool use).
-      /**        @return openCL enabled/disabled */
-	    bool isCLActive();
-
-      void applyImgBase(const core::ImgBase *, core::ImgBase **);
-     private:
-
-      void init(int iChannels, core::depth iDepth, utils::Size iSize);
-
-      bool useCL;
-
-      int currentFilterSize;
-      int currentDifference;
-
-      int nullValue;
-      int maxFilterSize;
-
-      int numChannels;
-      utils::Size size;
-      core::depth depth;
-
-      std::vector<TemporalSmoothingCL*> clPointer;
-    };
-
-  } // namespace filter
-}
+} // namespace filter
+} // namespace icl
