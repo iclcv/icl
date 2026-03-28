@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLFilter/FilterDispatch.h>
+#include <ICLCore/BackendDispatch.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
@@ -39,7 +39,6 @@
 using namespace icl;
 using namespace icl::utils;
 using namespace icl::core;
-using namespace icl::filter;
 
 namespace {
 

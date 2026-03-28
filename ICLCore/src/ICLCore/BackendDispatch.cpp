@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/FilterDispatch.cpp             **
-** Module : ICLFilter                                              **
+** File   : ICLCore/src/ICLCore/BackendDispatch.cpp                **
+** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -28,10 +28,10 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLFilter/FilterDispatch.h>
+#include <ICLCore/BackendDispatch.h>
 
 namespace icl {
-  namespace filter {
+  namespace core {
 
     // ================================================================
     // Global Registry
@@ -65,7 +65,7 @@ namespace icl {
 
     std::vector<BackendSelectorBase*> Dispatching::selectors() {
       std::vector<BackendSelectorBase*> result;
-      for(auto& sw : m_switches) result.push_back(sw.get());
+      for(auto& sel : m_selectors) result.push_back(sel.get());
       return result;
     }
 
@@ -75,20 +75,20 @@ namespace icl {
     }
 
     void Dispatching::forceAll(Backend b) {
-      for(auto& sw : m_switches) sw->force(b);
+      for(auto& sel : m_selectors) sel->force(b);
     }
 
     void Dispatching::unforceAll() {
-      for(auto& sw : m_switches) sw->unforce();
+      for(auto& sel : m_selectors) sel->unforce();
     }
 
     std::vector<std::vector<Backend>>
-    Dispatching::allBackendCombinations(const core::Image& src) {
+    Dispatching::allBackendCombinations(const Image& src) {
       std::vector<std::vector<Backend>> result;
-      for(auto& sw : m_switches)
-        result.push_back(sw->applicableBackendsFor(src));
+      for(auto& sel : m_selectors)
+        result.push_back(sel->applicableBackendsFor(src));
       return result;
     }
 
-  } // namespace filter
+  } // namespace core
 } // namespace icl

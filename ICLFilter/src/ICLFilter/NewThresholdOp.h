@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
-#include <ICLFilter/FilterDispatch.h>
+#include <ICLCore/BackendDispatch.h>
 #include <ICLCore/Image.h>
 
 namespace icl {
@@ -41,7 +41,7 @@ namespace icl {
     /// Proof-of-concept ThresholdOp using the new FilterDispatch architecture.
     /// Same functionality as ThresholdOp but with separate backend files
     /// and runtime-inspectable dispatch.
-    class ICLFilter_API NewThresholdOp : public UnaryOp, public Dispatching {
+    class ICLFilter_API NewThresholdOp : public UnaryOp, public core::Dispatching {
       public:
 
       enum optype { lt, gt, ltgt, ltVal, gtVal, ltgtVal };
