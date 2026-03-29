@@ -3,7 +3,10 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/MorphologicalOp.h>
 
-#ifdef ICL_HAVE_IPP
+// ippiMorphologyInitAlloc/ippiDilate/ippiErode_*_C1R removed from modern IPP.
+// Replaced by ippiDilate_*_C1R_L / ippiMorphInit_* (new spec-based API).
+// TODO: update to modern morphology API with spec buffers.
+#if 0 // was: ICL_HAVE_IPP — old morphology APIs removed
 
 using namespace icl;
 using namespace icl::utils;

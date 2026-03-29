@@ -3,7 +3,9 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/AffineOp.h>
 
-#ifdef ICL_HAVE_IPP
+// ippiWarpAffine API changed in modern IPP (oneAPI 2022+).
+// TODO: update to ippiWarpAffineNearest/ippiWarpAffineLinear + init spec.
+#if 0 // was: ICL_HAVE_IPP — ippiWarpAffine_*_C1R removed
 
 using namespace icl;
 using namespace icl::utils;

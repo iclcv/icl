@@ -31,6 +31,7 @@
 #include <ICLCore/ImageSerializer.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLUtils/StringUtils.h>
+#include <cstring>
 
 using namespace icl::utils;
 

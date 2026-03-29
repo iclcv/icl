@@ -2,7 +2,9 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/LUTOp.h>
 
-#ifdef ICL_HAVE_IPP
+// ippiReduceBits signature changed in modern IPP (oneAPI 2022+).
+// TODO: update to modern ippiReduceBits API (added noise parameter).
+#if 0 // was: ICL_HAVE_IPP — ippiReduceBits_8u_C1R signature changed
 
 using namespace icl;
 using namespace icl::core;

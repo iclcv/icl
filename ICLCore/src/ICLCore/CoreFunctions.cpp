@@ -937,7 +937,9 @@ namespace icl{
         }
       }
 
-  #ifdef ICL_HAVE_IPP
+  // ippiHistogramEven removed from modern IPP (oneAPI 2022+).
+  // TODO: re-add via ippiHistogram (new API) or BackendDispatch.
+  #if 0 // was: ICL_HAVE_IPP — ippiHistogramEven deprecated and removed
 
   #define COMPUTE_DEFAULT_HISTO_256_TEMPLATE(D)                                                                                \
       template<> void compute_default_histo_256<icl##D>(const Img##D &image, int c, std::vector<int> &h, bool roiOnly){             \

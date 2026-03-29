@@ -38,7 +38,9 @@ using namespace icl::core;
 
 namespace icl {
 
-#ifdef ICL_HAVE_IPP
+// ippiSqrDistanceFull/Same/Valid_Norm_* and ippiCrossCorrFull/Same/Valid_Norm_*
+// removed from modern IPP (oneAPI 2022+). TODO: update to ippiSqrDistanceNorm_*.
+#if 0 // was: ICL_HAVE_IPP — proximity Full/Same/Valid variants removed
   namespace utils{
     template<> inline std::string str(const filter::ProximityOp::optype &t){
       return (t == filter::ProximityOp::sqrDistance ? "sqrDistance" :
@@ -239,8 +241,6 @@ namespace icl {
       }
     }
 
-#endif // ICL_HAVE_IPP
+#endif // ICL_HAVE_IPP (disabled — old proximity APIs removed from modern IPP)
 
-    REGISTER_CONFIGURABLE(ProximityOp, return new ProximityOp(ProximityOp::crossCorr));
-  } // namespace filter
-}
+} // namespace icl

@@ -3,7 +3,11 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/ConvolutionOp.h>
 
-#ifdef ICL_HAVE_IPP
+// Many fixed-kernel IPP functions (ippiFilterSobelHoriz_*, ippiFilterLaplace_*,
+// ippiFilterGauss_*, ippiFilter_*) were renamed/removed in modern IPP (oneAPI 2022+).
+// The new APIs use ippiFilterSobelBorder_*, ippiFilterGaussBorder_*, etc.
+// TODO: update all 34 specializations to modern Border-based IPP APIs.
+#if 0 // was: ICL_HAVE_IPP — fixed-kernel filter APIs removed from modern IPP
 
 using namespace icl;
 using namespace icl::utils;

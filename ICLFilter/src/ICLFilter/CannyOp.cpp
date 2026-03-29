@@ -280,7 +280,9 @@ namespace icl {
 
       Img8u &d = dst.as8u();
 
-#ifdef ICL_HAVE_IPP
+// ippiCanny signature changed in modern IPP (needs IppiCannyBorderSpec).
+// TODO: update to modern ippiCanny API.
+#if 0 // was: ICL_HAVE_IPP — ippiCanny_32f8u_C1R / _16s8u_C1R signature changed
       int minSize = 0;
       ippiCannyGetSize(derivX.getSize(), &minSize);
       m_cannyBuf.resize(minSize);

@@ -33,6 +33,7 @@
 #include <ICLCore/CoreFunctions.h>
 #include <functional>
 #include <limits>
+#include <cstring>
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
@@ -1558,8 +1559,9 @@ namespace icl {
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
      Img<icl##D>*,int,const Point&,const Size&,scalemode);
 
-    /// IPP-OPTIMIZED specialization for icl8u to icl8u ROI sclaing (using ippiResize)
-  #ifdef ICL_HAVE_IPP
+    /// ippiResizeSqrPixel / ippiResize removed from modern IPP (oneAPI 2022+).
+    /// TODO: re-add via BackendDispatch with ippiResizeLinear/ippiResizeNearest.
+  #if 0 // was: ICL_HAVE_IPP — ippiResize APIs deprecated and removed
     template<> inline void
     scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                 Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,

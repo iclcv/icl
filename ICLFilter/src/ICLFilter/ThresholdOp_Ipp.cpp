@@ -37,6 +37,7 @@
 #ifdef ICL_HAVE_IPP
 #include <ipp.h>
 
+using namespace icl;
 using namespace icl::utils;
 using namespace icl::core;
 

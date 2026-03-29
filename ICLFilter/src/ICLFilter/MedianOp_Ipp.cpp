@@ -3,7 +3,10 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/MedianOp.h>
 
-#ifdef ICL_HAVE_IPP
+// ippiFilterMedian_*_C1R removed from modern IPP (oneAPI 2022+).
+// Replaced by ippiFilterMedianBorder_*_C1R (requires border type + buffer).
+// TODO: update to modern ippiFilterMedianBorder API.
+#if 0 // was: ICL_HAVE_IPP
 
 using namespace icl;
 using namespace icl::utils;

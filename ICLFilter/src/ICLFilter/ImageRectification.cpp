@@ -376,7 +376,9 @@ namespace icl{
       return buffer;
     }
 
-  #ifdef ICL_HAVE_IPP
+  // ippiWarpPerspectiveBack removed from modern IPP (oneAPI 2022+).
+  // TODO: update to modern ippiWarpPerspective API.
+  #if 0 // was: ICL_HAVE_IPP — ippiWarpPerspectiveBack_*_C1R removed
 
 
     template<class T, class IppFunc>
