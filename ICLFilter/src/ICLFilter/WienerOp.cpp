@@ -29,7 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/WienerOp.h>
-#include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
 
 using namespace icl::utils;
@@ -38,87 +37,26 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
 
-#ifdef ICL_HAVE_IPP
-
-    template<class T> struct WienerImpl {
-      static void apply(const Img<T> &, Img<T> &,
-                        const Size &, const Point &, const Point &,
-                        std::vector<icl8u> &, icl32f) {
-        throw ICLException("WienerOp: unsupported depth");
+    namespace {
+      void cpp_wiener(const Image &, Image &, const Size &, const Point &,
+                      const Point &, icl32f) {
+        throw ICLException("WienerOp: requires IPP (no C++ fallback available)");
       }
-    };
+    }
 
-    template<>
-    struct WienerImpl<icl8u> {
-      static void apply(const Img8u &src, Img8u &dst,
-                        const Size &maskSize, const Point &anchor,
-                        const Point &roiOffset,
-                        std::vector<icl8u> &buf, icl32f noise) {
-        int bufSize;
-        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
-        buf.reserve(bufSize);
-        for(int c = src.getChannels()-1; c >= 0; --c) {
-          ippiFilterWiener_8u_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
-                                  dst.getROIData(c), dst.getLineStep(),
-                                  dst.getROISize(), maskSize, anchor,
-                                  &noise, buf.data());
-        }
-      }
-    };
-
-    template<>
-    struct WienerImpl<icl16s> {
-      static void apply(const Img16s &src, Img16s &dst,
-                        const Size &maskSize, const Point &anchor,
-                        const Point &roiOffset,
-                        std::vector<icl8u> &buf, icl32f noise) {
-        int bufSize;
-        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
-        buf.reserve(bufSize);
-        for(int c = src.getChannels()-1; c >= 0; --c) {
-          ippiFilterWiener_16s_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
-                                   dst.getROIData(c), dst.getLineStep(),
-                                   dst.getROISize(), maskSize, anchor,
-                                   &noise, buf.data());
-        }
-      }
-    };
-
-    template<>
-    struct WienerImpl<icl32f> {
-      static void apply(const Img32f &src, Img32f &dst,
-                        const Size &maskSize, const Point &anchor,
-                        const Point &roiOffset,
-                        std::vector<icl8u> &buf, icl32f noise) {
-        int bufSize;
-        ippiFilterWienerGetBufferSize(dst.getROISize(), maskSize, 1, &bufSize);
-        buf.reserve(bufSize);
-        for(int c = src.getChannels()-1; c >= 0; --c) {
-          ippiFilterWiener_32f_C1R(src.getROIData(c, roiOffset), src.getLineStep(),
-                                   dst.getROIData(c), dst.getLineStep(),
-                                   dst.getROISize(), maskSize, anchor,
-                                   &noise, buf.data());
-        }
-      }
-    };
+    WienerOp::WienerOp(const Size &maskSize, icl32f noise)
+      : NeighborhoodOp(maskSize), m_fNoise(noise)
+    {
+      initDispatching("WienerOp");
+      auto& sel = addSelector<WienerSig>("apply");
+      sel.add(Backend::Cpp, cpp_wiener);
+    }
 
     void WienerOp::apply(const Image &src, Image &dst) {
       if(!prepare(dst, src)) return;
-      src.visit([&](const auto &s) {
-        using T = typename std::remove_reference_t<decltype(s)>::type;
-        auto &d = dst.as<T>();
-        WienerImpl<T>::apply(s, d, getMaskSize(), getAnchor(), getROIOffset(),
-                             m_vecBuffer, m_fNoise);
-      });
+      getSelector<WienerSig>("apply").resolve(src)->apply(
+        src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);
     }
-
-#else
-
-    void WienerOp::apply(const Image &, Image &) {
-      throw utils::ICLException("WienerOp requires Intel IPP");
-    }
-
-#endif
 
   } // namespace filter
 }
