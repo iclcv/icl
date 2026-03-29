@@ -37,10 +37,9 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
-  namespace utils{
 
 #ifdef ICL_HAVE_IPP
-
+  namespace utils{
     template<> inline std::string str(const filter::ProximityOp::optype &t){
       return (t == filter::ProximityOp::sqrDistance ? "sqrDistance" :
               t == filter::ProximityOp::crossCorr ? "crossCorr" :
@@ -85,6 +84,11 @@ namespace icl {
                   "         source image");
     }
 
+    ProximityOp::~ProximityOp(){
+      delete m_poImageBuffer;
+      delete m_poTemplateBuffer;
+    }
+
     void ProximityOp::setOpType(optype ot){
       setPropertyValue("operation type",ot);
     }
@@ -116,35 +120,11 @@ namespace icl {
 
       template<class T, ProximityOp::optype ot, ProximityOp::applymode>
       struct ProximityOpTemplate{
-
         static void apply(const Img<T> *poSrc1,const Img<T> *poSrc2, Img32f *poDst){
           (void)poSrc1; (void)poSrc2; (void)poDst;
         }
       };
 
-
-      /** Description: the following macro costructs a full template spcialization for
-          the ProximityOpTemplate class. The parameters contain all necessary information
-          for the ICL variable names as well as the IPP function name definition.
-
-          the ipp function name, inserted into the ippCall function template above,
-          is constructed as follows:
-
-          ippi<IPPOT_A><IPPAM>_<IPPOT_B>_<IPPDEPTH>_C1R(..)
-
-          where
-          -<b>IPPOT_A</b>  is the first part of operation description:
-                           "SqrDistance" or "CrossCorr"
-          -<b>IPPAM  </b>  specifies the ipp apply mode
-                           "Full", "Valid" or "Same"
-          -<b>IPPOT_B</b>  is the second part of the operation description:
-                           "Norm" or "NormLevel"
-          -<b>IPPDEPTH</b> specifies ipps depth token
-                           "32f" or "8u32f"
-
-          the other macro parameters with ICL-prefix are used the build the correct ICL
-          enum names, used the for the template specialization.
-      */
   #define CREATE_TEMPLATE(ICLDEPTH,ICLOT,ICLAM,IPPOT_A,IPPAM,IPPOT_B,IPPDEPTH)                           \
       template<> struct ProximityOpTemplate<icl##ICLDEPTH,ProximityOp::ICLOT,ProximityOp::ICLAM> {       \
         static void apply(const Img<icl##ICLDEPTH> *src1,const Img<icl##ICLDEPTH> *src2, Img32f *dst){   \
@@ -166,10 +146,8 @@ namespace icl {
       CREATE_TEMPLATE_ALL_AM(8u,crossCorrCoeff,CrossCorr,NormLevel,8u32f);
       CREATE_TEMPLATE_ALL_AM(32f,crossCorrCoeff,CrossCorr,NormLevel,32f);
 
-
   #undef CREATE_TEMPLATE
   #undef CREATE_TEMPLATE_ALL_AM
-
 
       template<class T>
       void proximity_apply(const Img<T> *poSrc1,
@@ -177,7 +155,6 @@ namespace icl {
                            Img32f *poDst,
                            ProximityOp::optype ot,
                            ProximityOp::applymode am){
-
         switch(ot){
           case ProximityOp::sqrDistance:
             switch(am){
@@ -221,47 +198,48 @@ namespace icl {
         }
       }
 
-
     }// anonymous namespace
 
-    void ProximityOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
+    void ProximityOp::apply(const Image &src1, const Image &src2, Image &dst){
+      ICLASSERT_RETURN( !src1.isNull() && !src2.isNull() );
+      ICLASSERT_RETURN( src1.getChannels() == src2.getChannels() );
+      ICLASSERT_RETURN( src1.getDepth() == src2.getDepth() );
 
-      ICLASSERT_RETURN( poSrc1 && poSrc2 );
-      ICLASSERT_RETURN( poSrc1->getChannels() == poSrc2->getChannels() );
-      ICLASSERT_RETURN( poSrc1->getDepth() == poSrc2->getDepth() );
+      const ImgBase *p1 = src1.ptr(), *p2 = src2.ptr();
 
-      if(poSrc1->getDepth() != depth8u && poSrc1->getDepth() != depth32f){
-        poSrc1 = m_poImageBuffer = poSrc1->convert(m_poImageBuffer);
-        poSrc2 = m_poTemplateBuffer = poSrc2->convert(m_poTemplateBuffer);
+      if(p1->getDepth() != depth8u && p1->getDepth() != depth32f){
+        p1 = m_poImageBuffer = p1->convert(m_poImageBuffer);
+        p2 = m_poTemplateBuffer = p2->convert(m_poTemplateBuffer);
       }
-
-
-      /// set up dst image in depth, channel count and size
-      ensureDepth(ppoDst,depth32f);
-
-      (*ppoDst)->setChannels(poSrc1->getChannels());
 
       applymode am = getPropertyValue("apply mode");
       optype ot = getPropertyValue("operation type");
+
+      Size dstSize;
       switch(am){
-        case full: (*ppoDst)->setSize(poSrc1->getSize()+poSrc2->getSize()-Size(1,1)); break;
-        case same: (*ppoDst)->setSize(poSrc1->getSize()); break;
-        case valid:(*ppoDst)->setSize(poSrc1->getSize()-poSrc2->getSize()+Size(1,1)); break;
+        case full:  dstSize = p1->getSize() + p2->getSize() - Size(1,1); break;
+        case same:  dstSize = p1->getSize(); break;
+        case valid: dstSize = p1->getSize() - p2->getSize() + Size(1,1); break;
       }
 
-      switch(poSrc1->getDepth()){
+      prepare(dst, depth32f, dstSize, formatMatrix, p1->getChannels(),
+              Rect(Point::null, dstSize));
+
+      switch(p1->getDepth()){
         case depth8u:
-          proximity_apply(poSrc1->asImg<icl8u>(),poSrc2->asImg<icl8u>(),(*ppoDst)->asImg<icl32f>(), ot, am);
+          proximity_apply(p1->asImg<icl8u>(), p2->asImg<icl8u>(),
+                          dst.ptr()->asImg<icl32f>(), ot, am);
           break;
         case depth32f:
-          proximity_apply(poSrc1->asImg<icl32f>(),poSrc2->asImg<icl32f>(),(*ppoDst)->asImg<icl32f>(), ot, am);
+          proximity_apply(p1->asImg<icl32f>(), p2->asImg<icl32f>(),
+                          dst.ptr()->asImg<icl32f>(), ot, am);
           break;
         default:
           ICL_INVALID_DEPTH;
       }
     }
 
-  #endif
+#endif // ICL_HAVE_IPP
 
     REGISTER_CONFIGURABLE(ProximityOp, return new ProximityOp(ProximityOp::crossCorr));
   } // namespace filter

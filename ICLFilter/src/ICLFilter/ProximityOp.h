@@ -31,9 +31,8 @@
 #pragma once
 
 #include <ICLFilter/BinaryOp.h>
-#include <ICLFilter/NeighborhoodOp.h>
+#include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 
 namespace icl {
@@ -140,22 +139,12 @@ namespace icl {
       ICLFilter_API ProximityOp(optype ot, applymode am=valid);
 
       /// Destructor
-      virtual ~ProximityOp(){
-        if(m_poImageBuffer) delete m_poImageBuffer;
-        if(m_poTemplateBuffer) delete m_poTemplateBuffer;
-      }
+      virtual ~ProximityOp();
 
-      /// applies the current op given source image, template and destination image
-      /** allowed input image types are icl8u and icl32f other types are converted internally
-          to float images. The destination image is adapted automatically; it depth becomes
-          depth32f.
-          @param poSrc1 source image
-          @param poSrc2 template
-          @param ppoDst destination image (apated automatically)
-      **/
-      ICLFilter_API virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
+      /// Applies the proximity operation (IPP only, 8u and 32f; other depths converted to 32f)
+      ICLFilter_API void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
 
-      /// import apply symbol from parent class
+      /// import BinaryOp apply overloads
       using BinaryOp::apply;
 
       /// sets the current optype
@@ -176,10 +165,10 @@ namespace icl {
 
       private:
 
-      /// internal used buffer for handling unsupported formats
+      /// internal buffer for converting unsupported source depths to 32f
       core::Img32f *m_poImageBuffer;
 
-      /// internal used buffer for handling unsupported formats
+      /// internal buffer for converting unsupported template depths to 32f
       core::Img32f *m_poTemplateBuffer;
     };
   } // namespace filter
