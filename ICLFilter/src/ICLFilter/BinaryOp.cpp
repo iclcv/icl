@@ -54,29 +54,51 @@ namespace icl{
     }
 
     bool BinaryOp::prepare(core::Image &dst, const core::Image &src) {
-      core::ImgBase *tmp = dst.ptr();
+      core::ImgBase *tmp = dst.isNull() ? nullptr : dst.ptr();
       bool r = m_oROIHandler.prepare(&tmp, src.ptr());
-      if(r && tmp) dst = core::Image(tmp);
+      if(r && tmp) dst = core::Image(*tmp);
       return r;
     }
 
     bool BinaryOp::prepare(core::Image &dst, const core::Image &src, core::depth d) {
-      core::ImgBase *tmp = dst.ptr();
+      core::ImgBase *tmp = dst.isNull() ? nullptr : dst.ptr();
       bool r = m_oROIHandler.prepare(&tmp, src.ptr(), d);
-      if(r && tmp) dst = core::Image(tmp);
+      if(r && tmp) dst = core::Image(*tmp);
       return r;
     }
 
-    // Default Image apply — delegates to legacy ImgBase** for backward compat
-    void BinaryOp::apply(const core::Image &src1, const core::Image &src2, core::Image &dst){
-      core::ImgBase *tmp = nullptr;
-      apply(src1.ptr(), src2.ptr(), &tmp);
-      if(tmp) dst = core::Image(tmp);
+    bool BinaryOp::prepare(core::Image &dst, core::depth d, const utils::Size &s,
+                           core::format fmt, int ch, const utils::Rect &roi,
+                           utils::Time t) {
+      core::ImgBase *tmp = dst.isNull() ? nullptr : dst.ptr();
+      bool r = m_oROIHandler.prepare(&tmp, d, s, fmt, ch, roi, t);
+      if(r && tmp) dst = core::Image(*tmp);
+      return r;
+    }
+
+    // Legacy ImgBase** apply — final bridge delegating to Image-based apply
+    void BinaryOp::apply(const core::ImgBase *src1, const core::ImgBase *src2, core::ImgBase **dst){
+      ICLASSERT_RETURN(src1);
+      ICLASSERT_RETURN(src2);
+      ICLASSERT_RETURN(dst);
+      core::Image s1(*src1), s2(*src2);
+      core::Image d;
+      if(*dst) d = core::Image(**dst);
+      apply(s1, s2, d);
+      if(!d.isNull()){
+        if(!*dst || (*dst)->getDepth() != d.getDepth()){
+          ICL_DELETE(*dst);
+          *dst = d.ptr()->shallowCopy();
+        } else {
+          d.ptr()->deepCopy(dst);
+        }
+      }
     }
 
     core::Image BinaryOp::apply(const core::ImgBase *a, const core::ImgBase *b){
-      apply(a, b, &m_buf);
-      return core::Image(m_buf->deepCopy());
+      core::Image dst;
+      apply(core::Image(*a), core::Image(*b), dst);
+      return dst;
     }
 
   } // namespace filter

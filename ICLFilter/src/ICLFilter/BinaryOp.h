@@ -56,13 +56,12 @@ namespace icl{
       virtual ~BinaryOp();
 
 
-      /// Primary apply method — subclasses should override this
-      /** Default delegates to legacy ImgBase** apply for backward compat. */
-      virtual void apply(const core::Image &src1, const core::Image &src2, core::Image &dst);
+      /// Primary apply method — all subclasses must implement this
+      virtual void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) = 0;
 
-      /// Legacy ImgBase** apply — existing subclasses override this
+      /// Legacy ImgBase** apply — final bridge to Image-based apply
       virtual void apply(const core::ImgBase *operand1, const core::ImgBase *operand2,
-                         core::ImgBase **result){}
+                         core::ImgBase **result) final;
 
       /// Single-arg apply returning Image (uses internal buffer)
       core::Image apply(const core::ImgBase *operand1, const core::ImgBase *operand2);
@@ -110,13 +109,18 @@ namespace icl{
 
       protected:
 
-      // ---- Image-based prepare (for migrated subclasses) ----
+      // ---- Image-based prepare ----
 
       /// Prepare dst to match src1's params (same depth)
       bool prepare(core::Image &dst, const core::Image &src1);
 
       /// Prepare dst to match src1's params but with explicit depth
       bool prepare(core::Image &dst, const core::Image &src1, core::depth d);
+
+      /// Prepare dst with fully explicit params
+      bool prepare(core::Image &dst, core::depth d, const utils::Size &s,
+                   core::format fmt, int ch, const utils::Rect &roi,
+                   utils::Time t = utils::Time::null);
 
       /// Check that two source images are compatible (same channels, ROI size, optionally depth)
       static inline bool check(const core::Image &a, const core::Image &b, bool checkDepths = true) {
@@ -128,7 +132,7 @@ namespace icl{
         }
       }
 
-      // ---- Legacy ImgBase** prepare (for unmigrated subclasses) ----
+      // ---- Legacy ImgBase** prepare (for internal use) ----
 
       bool prepare (core::ImgBase **ppoDst, core::depth eDepth, const utils::Size &imgSize,
                     core::format eFormat, int nChannels, const utils::Rect& roi,
