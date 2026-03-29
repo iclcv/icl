@@ -71,3 +71,20 @@ jobs:
 
     - name: Test
       run: cd build && ctest --output-on-failure
+
+  ipp-validation:
+    runs-on: ubuntu-24.04
+    name: IPP Cross-Validation (Docker)
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker build -t icl-ipp packaging/docker/noble-ipp
+
+    - name: Build and test with IPP
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/src:ro \
+          icl-ipp \
+          bash /src/packaging/docker/noble-ipp/build-and-test.sh
