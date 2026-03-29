@@ -397,6 +397,33 @@ ICL_REGISTER_TEST("Filter.GaborOp.size", "output size is valid") {
 }
 
 // ====================================================================
+// Cross-backend validation helper
+// ====================================================================
+
+// Runs applyFn with all-C++ as reference, then iterates every backend
+// combination and verifies pixel-exact identical output.
+template<class Op, class ApplyFn>
+static void crossValidateBackends(Op &op, const Image &ctx, ApplyFn &&applyFn) {
+  op.forceAll(Backend::Cpp);
+  Image ref = applyFn();
+  op.unforceAll();
+
+  auto combos = op.allBackendCombinations(ctx);
+  int nCombos = 0;
+  bool allMatch = true;
+  op.forEachCombination(combos, [&](const std::vector<Backend>&) {
+    Image dst = applyFn();
+    dst.visit([&](const auto &d) {
+      using T = typename std::remove_reference_t<decltype(d)>::type;
+      if(!(d == ref.as<T>())) allMatch = false;
+    });
+    nCombos++;
+  });
+  ICL_TEST_TRUE(allMatch);
+  ICL_TEST_TRUE(nCombos >= 1);
+}
+
+// ====================================================================
 // Generic ROI test helpers
 // ====================================================================
 
@@ -724,6 +751,31 @@ ICL_REGISTER_TEST("Filter.AffineOp.multichannel", "affine works on multi-channel
   ICL_TEST_TRUE((dst == src));
 }
 
+ICL_REGISTER_TEST("Filter.AffineOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(30, 30, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  AffineOp op(interpolateNN);
+  op.setAdaptResultImage(false);
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.AffineOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(30, 30), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    AffineOp op(interpolateNN);
+    op.setAdaptResultImage(false);
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
+}
+
 // ====================================================================
 // ChamferOp — additional pixel tests
 // ====================================================================
@@ -850,6 +902,35 @@ ICL_REGISTER_TEST("Filter.UnaryLogicalOp.xor_pixels", "xorOp flips bits") {
   ICL_TEST_TRUE((op.apply(Img8u{{0x00, 0xFF, 0xAA}}) == Img8u{{0xFF, 0x00, 0x55}}));
 }
 
+ICL_REGISTER_TEST("Filter.UnaryLogicalOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  UnaryLogicalOp op(UnaryLogicalOp::andOp, 0x0F);
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.UnaryLogicalOp.cross_validate_per_depth", "all combos match across integer depths") {
+  depth depths[] = { depth8u, depth16s, depth32s };
+  for(auto d : depths) {
+    Image src(Size(20, 15), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    UnaryLogicalOp op(UnaryLogicalOp::andOp, 0x0F);
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
+}
+
+ICL_REGISTER_TEST("Filter.UnaryLogicalOp.roi", "ROI handling") {
+  Image src = makeGradient<icl8u>(12, 12);
+  UnaryLogicalOp op(UnaryLogicalOp::andOp, 0x0F);
+  testROIHandling(op, src, Rect(2, 2, 8, 8));
+}
+
 // ====================================================================
 // MirrorOp — additional tests
 // ====================================================================
@@ -919,6 +1000,26 @@ ICL_REGISTER_TEST("Filter.LUTOp.multichannel", "LUT works on multi-channel image
   const Img8u &d = dst.as8u();
   ICL_TEST_EQ(static_cast<int>(d(0, 0, 0)), 245);  // 255-10
   ICL_TEST_EQ(static_cast<int>(d(0, 0, 1)), 225);  // 255-30
+}
+
+ICL_REGISTER_TEST("Filter.LUTOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  LUTOp op(32);
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.LUTOp.cross_validate_levels", "all combos match for various quantization levels") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  for(int levels : {4, 16, 64, 128}) {
+    LUTOp op(levels);
+    crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+  }
 }
 
 // ====================================================================
@@ -1167,6 +1268,31 @@ ICL_REGISTER_TEST("Filter.ROI.ConvolutionOp", "ROI handling for ConvolutionOp") 
   testROIHandling(op, src, Rect(2, 2, 8, 8));
 }
 
+ICL_REGISTER_TEST("Filter.ConvolutionOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(30, 20, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  ConvolutionKernel kernel{ConvolutionKernel::gauss3x3};
+    ConvolutionOp op{kernel};
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(30, 20), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    ConvolutionKernel kernel{ConvolutionKernel::gauss3x3};
+    ConvolutionOp op{kernel};
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
+}
+
 // ============================================================
 // MorphologicalOp tests
 // ============================================================
@@ -1228,6 +1354,29 @@ ICL_REGISTER_TEST("Filter.ROI.MorphOp", "ROI handling for MorphologicalOp") {
   MorphologicalOp op(MorphologicalOp::erode, Size(3, 3));
   Image src = makeGradient<icl8u>(12, 12);
   testROIHandling(op, src, Rect(2, 2, 8, 8));
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(30, 20, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  MorphologicalOp op(MorphologicalOp::dilate, Size(3, 3));
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.MorphOp.cross_validate_per_depth", "all combos match across supported depths") {
+  depth depths[] = { depth8u, depth32f };  // MorphologicalOp only supports 8u and 32f
+  for(auto d : depths) {
+    Image src(Size(30, 20), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    MorphologicalOp op(MorphologicalOp::erode, Size(3, 3));
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
 }
 
 // ============================================================
@@ -1448,6 +1597,29 @@ ICL_REGISTER_TEST("Filter.MedianOp.huang_nontrivial", "7x7 Huang median with non
       vals.push_back((x * 7 + y * 13) % 256);
   std::sort(vals.begin(), vals.end());
   ICL_TEST_EQ(dst.as8u()(2, 2, 0), vals[49/2]);
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(30, 20, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Image srcImg(src);
+  MedianOp op(Size(3, 3));
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.MedianOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(30, 20), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    MedianOp op(Size(3, 3));
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
 }
 
 // ============================================================
@@ -1684,6 +1856,31 @@ ICL_REGISTER_TEST("Filter.WarpOp.roi_clip_nonclip_consistent", "clip and non-cli
     for(int x = 0; x < 6; ++x)
       if(c(x, y, 0) != f(x + 3, y + 3, 0)) match = false;
   ICL_TEST_TRUE(match);
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.cross_validate", "all backend combos produce identical output") {
+  auto src = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u {
+    return (x * 7 + y * 13) % 256;
+  });
+  Img32f wm = makeIdentityWarpMap(20, 15);
+  Image srcImg(src);
+  WarpOp op(wm, interpolateNN);
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
+ICL_REGISTER_TEST("Filter.WarpOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src(Size(20, 15), d, 1, formatMatrix);
+    src.visit([](auto &img) {
+      img.visitPixels([](int x, int y, int, auto &val) {
+        val = static_cast<std::remove_reference_t<decltype(val)>>((x * 7 + y * 13) % 200);
+      });
+    });
+    Img32f wm = makeIdentityWarpMap(20, 15);
+    WarpOp op(wm, interpolateNN);
+    crossValidateBackends(op, src, [&]{ return op.apply(src); });
+  }
 }
 
 // ============================================================
@@ -2087,6 +2284,28 @@ ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.introspection", "dispatch introsp
   ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
 }
 
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.cross_validate", "all backend combos produce identical output") {
+  auto s1 = Img32f::from(20, 15, 1, [](int x, int y, int) -> icl32f { return x * 1.5f + y; });
+  auto s2 = Img32f::from(20, 15, 1, [](int x, int y, int) -> icl32f { return x + y * 2.0f; });
+  Image src1(s1), src2(s2);
+  BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+  crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+}
+
+ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src1(Size(20, 15), d, 1, formatMatrix);
+    Image src2(Size(20, 15), d, 1, formatMatrix);
+    src1.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 3 + y * 5) % 100); }); });
+    src2.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 7 + y * 2) % 100); }); });
+    BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
+    crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+  }
+}
+
 // ====================================================================
 // BinaryCompareOp
 // ====================================================================
@@ -2131,6 +2350,28 @@ ICL_REGISTER_TEST("Filter.BinaryCompareOp.introspection", "dispatch introspectio
   ICL_TEST_TRUE(op.selectorByName("compareEqTol") != nullptr);
 }
 
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.cross_validate", "all backend combos produce identical output") {
+  auto s1 = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u { return (x * 7 + y * 13) % 256; });
+  auto s2 = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u { return (x * 3 + y * 19) % 256; });
+  Image src1(s1), src2(s2);
+  BinaryCompareOp op(BinaryCompareOp::gt);
+  crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+}
+
+ICL_REGISTER_TEST("Filter.BinaryCompareOp.cross_validate_per_depth", "all combos match across depths") {
+  depth depths[] = { depth8u, depth16s, depth32s, depth32f, depth64f };
+  for(auto d : depths) {
+    Image src1(Size(20, 15), d, 1, formatMatrix);
+    Image src2(Size(20, 15), d, 1, formatMatrix);
+    src1.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 7 + y * 13) % 200); }); });
+    src2.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 3 + y * 19) % 200); }); });
+    BinaryCompareOp op(BinaryCompareOp::gt);
+    crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+  }
+}
+
 // ====================================================================
 // BinaryLogicalOp
 // ====================================================================
@@ -2163,6 +2404,28 @@ ICL_REGISTER_TEST("Filter.BinaryLogicalOp.introspection", "dispatch introspectio
   BinaryLogicalOp op(BinaryLogicalOp::andOp);
   ICL_TEST_EQ((int)op.selectors().size(), 1);
   ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.cross_validate", "all backend combos produce identical output") {
+  auto s1 = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u { return (x * 7 + y * 13) % 256; });
+  auto s2 = Img8u::from(20, 15, 1, [](int x, int y, int) -> icl8u { return (x * 3 + y * 19) % 256; });
+  Image src1(s1), src2(s2);
+  BinaryLogicalOp op(BinaryLogicalOp::andOp);
+  crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+}
+
+ICL_REGISTER_TEST("Filter.BinaryLogicalOp.cross_validate_per_depth", "all combos match across integer depths") {
+  depth depths[] = { depth8u, depth16s, depth32s };
+  for(auto d : depths) {
+    Image src1(Size(20, 15), d, 1, formatMatrix);
+    Image src2(Size(20, 15), d, 1, formatMatrix);
+    src1.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 7 + y * 13) % 200); }); });
+    src2.visit([](auto &img) { img.visitPixels([](int x, int y, int, auto &v) {
+      v = static_cast<std::remove_reference_t<decltype(v)>>((x * 3 + y * 19) % 200); }); });
+    BinaryLogicalOp op(BinaryLogicalOp::andOp);
+    crossValidateBackends(op, src1, [&]{ return op.apply(src1, src2); });
+  }
 }
 
 // ====================================================================

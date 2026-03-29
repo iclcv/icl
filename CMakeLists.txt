@@ -276,17 +276,17 @@ if(BUILD_WITH_IPP)
   set(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc;iomp5")
   ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
     LIBS "${IPP_REQUESTED_LIBS};ippm"
-    PATHS "/opt/intel;/opt/IPP"
-    HEADER_PATH_SUFFIXES "ipp/include"
-    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF}
+    PATHS "/opt/intel;/opt/IPP;/opt/intel/oneapi/ipp/latest"
+    HEADER_PATH_SUFFIXES "ipp/include" "include"
+    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib"
     OPTIONAL)
   if(NOT IPP_FOUND)
     message(STATUS "IPP Legacy not found. Checking for recent releases.")
     ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
       LIBS ${IPP_REQUESTED_LIBS}
-      PATHS "/opt/intel;/opt/IPP"
-      HEADER_PATH_SUFFIXES "ipp/include"
-      LIB_PATH_SUFFIXES ${_IPP_LIB_SUF})
+      PATHS "/opt/intel;/opt/IPP;/opt/intel/oneapi/ipp/latest"
+      HEADER_PATH_SUFFIXES "ipp/include" "include"
+      LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib")
   endif()
   if(IPP_FOUND)
     if(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
