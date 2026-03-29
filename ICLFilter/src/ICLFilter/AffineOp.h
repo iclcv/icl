@@ -31,91 +31,34 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/BaseAffineOp.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/BackendDispatch.h>
 
 namespace icl{
   namespace filter{
     /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
-    /** Affine operations apply transform pixel locations using affine matrix transformation.
-        To optimize performance concatenated affine transformation's matrices are pre-multiplied.
-        \section ARI Adapt Result Image
-
-        In some cases, it might make sense to automatically adapt the destinate image so
-        that it contains the whole warping result image. Consider the following example
-
-
-        <pre>
-        source image:
-                                           +
-        A---------+                   +--/---\--+
-        |         |                   |/       \|
-        |         |    -------->     /|         |\
-        |    A    |     rot(45)     + |    A'   | +
-        |         |                  \|         |/
-        |         |                   |\       /|
-        +---------+                   +--\---/--+
-                                           +
-
-        </pre>
-        But obviously, the result image's corners are cut. If the "Adapt Result Image" option is
-        set to true, the result image would be scaled to contain the whole rotated image and the
-        affine matrix's shift is adpated in order to fit the result completely into the result image.
-        If otherwise "Adpat Result Image is false, the result image's size will be identical to the
-        source images size and the corners of the rotated image are cropped.
-
-        <b>Please note:</b> this options is by default set to "true". Only the TranslateOp will set it
-        to false by default, because a pure translation is just compensated completely by the result
-        image adaption.
-
-        \section BENCH Benchmarks
-
-        example: a 300x400 rgb 8u-image was scaled by 1.001 and rotated by 1-360 degree in 3.6 degree steps
-                 We used a 2Ghz Core2Duo machine and g++ 4.3 with -O4 and -march=native flags set
-
-        With IPP:
-        * neares neighbour interpolation: 1ms
-        * linear interpolation 5ms
-
-        C++-Fallback:
-        * neares neighbour interpolation: 22ms
-        * linear interpolation 52ms
-
-    */
-    class ICLFilter_API AffineOp : public BaseAffineOp {
+    /** @see AffineOp.h for full documentation */
+    class ICLFilter_API AffineOp : public BaseAffineOp, public core::Dispatching {
       public:
       AffineOp(const AffineOp&) = delete;
       AffineOp& operator=(const AffineOp&) = delete;
 
+      /// Dispatch signature: src, dst, forward 2x3 matrix (6 doubles row-major), interpolation
+      using AffineSig = void(const core::Image&, core::Image&, const double*, core::scalemode);
+
       /// Constructor
       AffineOp (core::scalemode eInterpolate=core::interpolateLIN);
       /// resets the internal Matrix
-      /** to
-          <pre>
-          1 0 0
-          0 1 0
-          0 0
-          </pre>
-      */
       void reset  ();
-      /// adds a rotation
-      /** @param dAngle angle in degrees (clockwise)
-      */
+      /// adds a rotation (angle in degrees, clockwise)
       void rotate (double dAngle);
 
-      ///adds a traslation
-      /** @param x pixels to translate in x-direction
-          @param y pixels to translate in y-direction
-          */
+      /// adds a translation
       void translate (double x, double y) {
         m_aadT[0][2] += x; m_aadT[1][2] += y;
       }
       /// adds a scale
-      /** @param x scale-factor in x-direction
-          @param y scale-factor in y-direction
-          different values for x and y will lead to a dilation / upsetting deformation
-          */
       void scale (double x, double y) {
         m_aadT[0][0] *= x; m_aadT[1][0] *= x;
         m_aadT[0][1] *= y; m_aadT[1][1] *= y;
@@ -127,17 +70,10 @@ namespace icl{
       /// import from super-class
       using BaseAffineOp::apply;
 
-      /// sets whether the result image is is scaled and translated to contain the whole result image
-      /** @see \ref ARI */
-      inline void setAdaptResultImage(bool on){
-        m_adaptResultImage = on;
-      }
-
+      /// sets whether the result image is scaled and translated to contain the whole result image
+      inline void setAdaptResultImage(bool on){ m_adaptResultImage = on; }
       /// returns the Adapt Result image option
-      /** @see \ref ARI */
-      inline bool getAdaptResultDisplay() const{
-        return m_adaptResultImage;
-      }
+      inline bool getAdaptResultDisplay() const{ return m_adaptResultImage; }
 
       private:
       void applyT (const double p[2], double aResult[2]);
@@ -147,8 +83,6 @@ namespace icl{
                             double& xShift, double& yShift);
       double    m_aadT[2][3];
       core::scalemode m_eInterpolate;
-
-      /// internal flag
       bool m_adaptResultImage;
     };
   } // namespace filter

@@ -43,27 +43,38 @@ namespace icl{
   namespace filter{
 
     namespace {
-      template<class T>
-      struct AffineImpl {
-        static void apply(const Img<T> &src, Img<T> &dst,
-                          const double M[3][3], scalemode interp) {
-          Rect dr = dst.getROI();
-          int sx = dr.x, sy = dr.y, ex = dr.right(), ey = dr.bottom();
-          Rect r = src.getROI();
 
-          for(int ch = 0; ch < src.getChannels(); ch++) {
-            const Channel<T> srcCh = src[ch];
-            Channel<T> dstCh = dst[ch];
+      // C++ fallback: inverse-map destination pixels to source via inverse matrix
+      void cpp_affine(const Image &src, Image &dst, const double* fwd, scalemode interp) {
+        // Compute inverse of the 2x3 forward transform (extended to 3x3)
+        FixedMatrix<double,3,3> M(fwd[0], fwd[1], fwd[2],
+                                   fwd[3], fwd[4], fwd[5],
+                                   0, 0, 1);
+        M = M.inv();
+        double inv[3][3];
+        for(int i = 0; i < 3; ++i)
+          for(int j = 0; j < 3; ++j)
+            inv[i][j] = M(i,j);
+
+        src.visitWith(dst, [&](const auto &s, auto &d) {
+          using T = typename std::remove_reference_t<decltype(s)>::type;
+          Rect dr = d.getROI();
+          int sx = dr.x, sy = dr.y, ex = dr.right(), ey = dr.bottom();
+          Rect r = s.getROI();
+
+          for(int ch = 0; ch < s.getChannels(); ch++) {
+            const Channel<T> srcCh = s[ch];
+            Channel<T> dstCh = d[ch];
 
             if(interp == interpolateLIN){
               for(int x = sx; x < ex; ++x){
                 for(int y = sy; y < ey; ++y){
-                  float x2 = M[0][0]*x + M[1][0]*y + M[2][0];
-                  float y2 = M[0][1]*x + M[1][1]*y + M[2][1];
+                  float x2 = inv[0][0]*x + inv[1][0]*y + inv[2][0];
+                  float y2 = inv[0][1]*x + inv[1][1]*y + inv[2][1];
                   int x3 = round(x2);
                   int y3 = round(y2);
                   if(r.contains(x3,y3)){
-                    dstCh(x,y) = src.subPixelLIN(x2,y2,ch);
+                    dstCh(x,y) = s.subPixelLIN(x2,y2,ch);
                   }else{
                     dstCh(x,y) = 0;
                   }
@@ -72,8 +83,8 @@ namespace icl{
             }else{
               for(int x = sx; x < ex; ++x){
                 for(int y = sy; y < ey; ++y){
-                  float x2 = M[0][0]*x + M[1][0]*y + M[2][0];
-                  float y2 = M[0][1]*x + M[1][1]*y + M[2][1];
+                  float x2 = inv[0][0]*x + inv[1][0]*y + inv[2][0];
+                  float y2 = inv[0][1]*x + inv[1][1]*y + inv[2][1];
                   int x3 = round(x2);
                   int y3 = round(y2);
                   if(r.contains(x3,y3)){
@@ -85,47 +96,18 @@ namespace icl{
               }
             }
           }
-        }
-      };
+        });
+      }
 
-#ifdef ICL_HAVE_IPP
-      template<>
-      struct AffineImpl<icl8u> {
-        static void apply(const Img8u &src, Img8u &dst,
-                          const double (&aadT)[2][3], scalemode interp) {
-          // IPP uses the original 2x3 transform matrix directly
-          for(int c = 0; c < src.getChannels(); c++) {
-            ippiWarpAffine_8u_C1R(src.getData(c),
-                                  src.getSize(), src.getLineStep(),
-                                  Rect(Point::null, src.getSize()),
-                                  dst.getData(c),
-                                  dst.getLineStep(), dst.getROI(),
-                                  aadT, interp);
-          }
-        }
-      };
-
-      template<>
-      struct AffineImpl<icl32f> {
-        static void apply(const Img32f &src, Img32f &dst,
-                          const double (&aadT)[2][3], scalemode interp) {
-          for(int c = 0; c < src.getChannels(); c++) {
-            ippiWarpAffine_32f_C1R(src.getData(c),
-                                   src.getSize(), src.getLineStep(),
-                                   Rect(Point::null, src.getSize()),
-                                   dst.getData(c),
-                                   dst.getLineStep(), dst.getROI(),
-                                   aadT, interp);
-          }
-        }
-      };
-#endif
-    } // anon namespace
+    } // anonymous namespace
 
 
     AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate),
-                                                  m_adaptResultImage(true)  {
+                                                    m_adaptResultImage(true)  {
        reset ();
+       initDispatching("AffineOp");
+       auto& sel = addSelector<AffineSig>("apply");
+       sel.add(Backend::Cpp, cpp_affine);
      }
 
      void AffineOp::reset () {
@@ -191,26 +173,8 @@ namespace icl{
                    src.getFormat(), src.getChannels(),
                    Rect(Point::null, oSize), src.getTime())) return;
 
-       src.visitWith(dst, [&](const auto &s, auto &d) {
-         using T = typename std::remove_reference_t<decltype(s)>::type;
-#ifdef ICL_HAVE_IPP
-         if constexpr (std::is_same_v<T, icl8u> || std::is_same_v<T, icl32f>) {
-           AffineImpl<T>::apply(s, d, m_aadT, m_eInterpolate);
-         } else
-#endif
-         {
-           // C++ fallback: compute inverse matrix for coordinate mapping
-           FixedMatrix<double,3,3> M(m_aadT[0][0], m_aadT[0][1], m_aadT[0][2],
-                                     m_aadT[1][0], m_aadT[1][1], m_aadT[1][2],
-                                     0, 0, 1);
-           double inv[3][3];
-           M = M.inv();
-           for(int i = 0; i < 3; ++i)
-             for(int j = 0; j < 3; ++j)
-               inv[i][j] = M(i,j);
-           AffineImpl<T>::apply(s, d, inv, m_eInterpolate);
-         }
-       });
+       getSelector<AffineSig>("apply").resolve(src)->apply(
+         src, dst, &m_aadT[0][0], m_eInterpolate);
 
        if(m_adaptResultImage){
          translate(xShift, yShift);
