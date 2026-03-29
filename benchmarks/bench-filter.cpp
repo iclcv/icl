@@ -17,6 +17,8 @@
 #include <ICLFilter/BinaryArithmeticalOp.h>
 #include <ICLFilter/BinaryCompareOp.h>
 #include <ICLFilter/BinaryLogicalOp.h>
+#include <ICLFilter/WarpOp.h>
+#include <ICLFilter/BilateralFilterOp.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -314,6 +316,64 @@ namespace {
       BinaryLogicalOp op(BinaryLogicalOp::andOp);
       applyBackend(op, p.getStr("backend"));
       op.apply(Image(s1), Image(s2));
+    }
+  });
+
+  // ================================================================
+  // WarpOp benchmarks (C++ + OpenCL)
+  // ================================================================
+
+  static BenchmarkRegistrar bench_warp_nn_8u({"filter.warp.nn_8u",
+    "Warp NN on icl8u (OpenCL-accelerated)", stdParams(),
+    [](const BenchParams &p){
+      int w = p.getInt("width"), h = p.getInt("height");
+      Img8u src(Size(w,h), 1); src.fill(128);
+      Img32f wm = Img32f::from(w, h, 2, [](int x, int y, int c) -> float {
+        return c == 0 ? float(x) : float(y);
+      });
+      WarpOp op(wm, interpolateNN);
+      applyBackend(op, p.getStr("backend"));
+      op.apply(Image(src));
+    }
+  });
+
+  static BenchmarkRegistrar bench_warp_lin_8u({"filter.warp.lin_8u",
+    "Warp bilinear on icl8u (OpenCL-accelerated)", stdParams(),
+    [](const BenchParams &p){
+      int w = p.getInt("width"), h = p.getInt("height");
+      Img8u src(Size(w,h), 1); src.fill(128);
+      Img32f wm = Img32f::from(w, h, 2, [](int x, int y, int c) -> float {
+        return c == 0 ? float(x) : float(y);
+      });
+      WarpOp op(wm, interpolateLIN);
+      applyBackend(op, p.getStr("backend"));
+      op.apply(Image(src));
+    }
+  });
+
+  // ================================================================
+  // BilateralFilterOp benchmarks (C++ + OpenCL)
+  // ================================================================
+
+  static BenchmarkRegistrar bench_bilateral_8u({"filter.bilateral.mono_8u",
+    "Bilateral filter mono icl8u (OpenCL-accelerated)", stdParams(),
+    [](const BenchParams &p){
+      int w = p.getInt("width"), h = p.getInt("height");
+      Img8u src(Size(w,h), 1); src.fill(128);
+      BilateralFilterOp op(2, 2.f, 30.f, false);
+      applyBackend(op, p.getStr("backend"));
+      op.apply(Image(src));
+    }
+  });
+
+  static BenchmarkRegistrar bench_bilateral_32f({"filter.bilateral.mono_32f",
+    "Bilateral filter mono icl32f (OpenCL-accelerated)", stdParams(),
+    [](const BenchParams &p){
+      int w = p.getInt("width"), h = p.getInt("height");
+      Img32f src(Size(w,h), 1); src.fill(128.f);
+      BilateralFilterOp op(2, 2.f, 30.f, false);
+      applyBackend(op, p.getStr("backend"));
+      op.apply(Image(src));
     }
   });
 

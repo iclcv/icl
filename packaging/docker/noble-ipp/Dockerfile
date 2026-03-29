@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM --platform=linux/amd64 ubuntu:24.04
 
 LABEL description="Ubuntu 24.04 (Noble) ICL build with Intel IPP for cross-validation"
 
