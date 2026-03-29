@@ -2,6 +2,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/BinaryLogicalOp.h>
+#include <ICLUtils/EnumDispatch.h>
 
 #ifdef ICL_HAVE_SSE2
 #include <ICLUtils/SSETypes.h>
@@ -12,36 +13,41 @@ using namespace icl::core;
 
 namespace {
 
-  void simd_apply(const Image &src1, const Image &src2, Image &dst, int optype) {
+  using Op = filter::BinaryLogicalOp;
+
+  template<Op::optype OT>
+  void simd_apply_typed(const Image &src1, const Image &src2, Image &dst) {
     src1.visitWith(dst, [&](const auto &s1, auto &d) {
       using T = typename std::remove_reference_t<decltype(s1)>::type;
       if constexpr (std::is_integral_v<T>) {
         const auto &s2 = src2.as<T>();
         constexpr int step = 16 / sizeof(T);
-        visitROILinesPerChannel2With(s1, s2, d, [optype](const T *a, const T *b, T *dp, int, int w) {
+        visitROILinesPerChannel2With(s1, s2, d, [](const T *a, const T *b, T *dp, int, int w) {
           int i = 0;
           for(; i <= w - step; i += step) {
             __m128i va = _mm_loadu_si128(reinterpret_cast<const __m128i*>(a+i));
             __m128i vb = _mm_loadu_si128(reinterpret_cast<const __m128i*>(b+i));
             __m128i r;
-            switch(optype) {
-              case filter::BinaryLogicalOp::andOp: r = _mm_and_si128(va, vb); break;
-              case filter::BinaryLogicalOp::orOp:  r = _mm_or_si128(va, vb); break;
-              case filter::BinaryLogicalOp::xorOp: r = _mm_xor_si128(va, vb); break;
-              default: r = va; break;
-            }
+            if constexpr (OT == Op::andOp) r = _mm_and_si128(va, vb);
+            else if constexpr (OT == Op::orOp)  r = _mm_or_si128(va, vb);
+            else if constexpr (OT == Op::xorOp) r = _mm_xor_si128(va, vb);
+            else r = va;
             _mm_storeu_si128(reinterpret_cast<__m128i*>(dp+i), r);
           }
           for(; i < w; ++i) {
-            switch(optype) {
-              case filter::BinaryLogicalOp::andOp: dp[i] = a[i] & b[i]; break;
-              case filter::BinaryLogicalOp::orOp:  dp[i] = a[i] | b[i]; break;
-              case filter::BinaryLogicalOp::xorOp: dp[i] = a[i] ^ b[i]; break;
-              default: dp[i] = a[i]; break;
-            }
+            if constexpr (OT == Op::andOp) dp[i] = a[i] & b[i];
+            else if constexpr (OT == Op::orOp)  dp[i] = a[i] | b[i];
+            else if constexpr (OT == Op::xorOp) dp[i] = a[i] ^ b[i];
+            else dp[i] = a[i];
           }
         });
       }
+    });
+  }
+
+  void simd_apply(const Image &src1, const Image &src2, Image &dst, int optype) {
+    dispatchEnum<Op::andOp, Op::orOp, Op::xorOp>(optype, [&](auto tag) {
+      simd_apply_typed<decltype(tag)::value>(src1, src2, dst);
     });
   }
 
