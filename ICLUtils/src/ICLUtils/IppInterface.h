@@ -34,6 +34,7 @@
 
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/Uncopyable.h>
 #include <mutex>
 
 /*

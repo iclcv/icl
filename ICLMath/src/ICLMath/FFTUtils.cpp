@@ -854,7 +854,9 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
 
-#ifdef ICL_HAVE_IPP
+// Disabled: ippiFFTInitAlloc_* was removed from modern IPP (oneAPI 2022+).
+// FFT now routes through FFTDispatching with C++ backends.
+#if 0 // was: ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<T> &src,
                                                            DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
@@ -1423,10 +1425,7 @@ namespace icl{
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32c > &src,
                                                    DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
 	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef ICL_HAVE_IPP
-          buf.setBounds(src.cols(),src.rows());
-          return ipp_wrapper_function_result_fft_icl32fc(src,dst,buf);
-#endif
+          // IPP FFT wrappers disabled (ippiFFTInitAlloc removed from modern IPP)
 	}
 #ifdef ICL_HAVE_MKL
 	return mkl_wrapper_function_result_fft_icl32fc(src,dst,buf);
@@ -1667,7 +1666,8 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
 
-#ifdef ICL_HAVE_IPP
+// Disabled: ippiFFTInitAlloc_* was removed from modern IPP (oneAPI 2022+).
+#if 0 // was: ICL_HAVE_IPP
       template<typename T>
       DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<T> &src,
                                                                                        DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){

@@ -811,7 +811,9 @@ namespace icl{
     }
 
 
-  #ifdef ICL_HAVE_IPP
+  // ippm matrix add/sub/mul were removed from modern IPP (ippm module dropped).
+  // TODO: re-add via BackendDispatching framework if needed for performance.
+  #if 0 // was: ICL_HAVE_IPP (ippm functions no longer available)
     template<class T, typename func>
     DynMatrix<T> &ipp_func_t_call(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, func f){
       IppStatus status = f(src1.begin(),src1.stride1(),src1.stride2(),src1.cols(),src1.rows(),

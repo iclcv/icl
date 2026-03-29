@@ -600,35 +600,8 @@ namespace icl{
       delete [] pvalues;
     }
 
-  #ifdef ICL_HAVE_IPP
-    template<> ICLMath_API
-    void find_eigenvectors(const DynMatrix<icl32f> &a, DynMatrix<icl32f> &eigenvectors, DynMatrix<icl32f> &eigenvalues, icl32f* buffer){
-      const int n = a.cols();
-
-      icl32f * useBuffer = buffer ? buffer : new icl32f[n*n];
-      IppStatus sts = ippmEigenValuesVectorsSym_m_32f (a.begin(), n*sizeof(icl32f), sizeof(icl32f), useBuffer,
-                                                       eigenvectors.begin(), n*sizeof(icl32f), sizeof(icl32f),
-                                                       eigenvalues.begin(),n);
-      if(!buffer) delete [] useBuffer;
-
-      if(sts != ippStsNoErr){
-        throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
-      }
-    }
-    template<> ICLMath_API
-    void find_eigenvectors(const DynMatrix<icl64f> &a, DynMatrix<icl64f> &eigenvectors, DynMatrix<icl64f> &eigenvalues, icl64f* buffer){
-      const int n = a.cols();
-      icl64f * useBuffer = buffer ? buffer : new icl64f[n*n];
-      IppStatus sts = ippmEigenValuesVectorsSym_m_64f (a.begin(), n*sizeof(icl64f), sizeof(icl64f), useBuffer,
-                                                       eigenvectors.begin(), n*sizeof(icl64f), sizeof(icl64f),
-                                                       eigenvalues.begin(),n);
-      if(!buffer) delete [] useBuffer;
-
-      if(sts != ippStsNoErr){
-        throw ICLException(std::string("IPP-Error in ") + __FUNCTION__ + "\"" +ippGetStatusString(sts) +"\"");
-      }
-    }
-  #endif
+  // ippmEigenValuesVectorsSym was removed from modern IPP (ippm module dropped).
+  // Uses C++ fallback from find_eigenvectors template above.
 
     template<class T>
     void DynMatrix<T>::eigen(DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues) const{
@@ -646,49 +619,9 @@ namespace icl{
     }
 
 
-#ifdef ICL_HAVE_IPP
-  #define DYN_MATRIX_INV(T, ippFunc) \
-    template<> ICLMath_API DynMatrix<T> DynMatrix<T>::inv() const{ \
-      if(this->cols() != this->rows()){ \
-        throw InvalidMatrixDimensionException("inverse matrix can only be calculated on square matrices"); \
-      } \
-      unsigned int wh = this->cols(); \
-      DynMatrix<T> d(wh, wh, 0.0); \
-      std::vector<T> buffer(wh*wh + wh); \
-      IppStatus st = ippFunc(this->data(), wh*sizeof(T), sizeof(T), \
-                             buffer.data(), \
-                             d.data(), wh*sizeof(T), sizeof(T), \
-                             wh); \
-      if(st != ippStsNoErr){ \
-        throw SingularMatrixException("matrix is too singular"); \
-      } \
-      return d; \
-    }
-
-  #define DYN_MATRIX_DET(T, ippFunc) \
-    template<> ICLMath_API T DynMatrix<T>::det() const{ \
-      if(this->cols() != this->rows()){ \
-        throw InvalidMatrixDimensionException("matrix determinant can only be calculated on square matrices"); \
-      } \
-      unsigned int wh = this->cols(); \
-      std::vector<T> buffer(wh*wh+wh); \
-      T det(0); \
-      IppStatus st = ippFunc(this->data(),wh*sizeof(T),sizeof(T), \
-                             wh,buffer.data(),&det); \
-      if(st != ippStsNoErr){ \
-        ERROR_LOG("matrix determinant could not be calculated"); \
-      } \
-      return det; \
-    }
-
-    DYN_MATRIX_INV(float, ippmInvert_m_32f);
-    DYN_MATRIX_INV(double, ippmInvert_m_64f);
-    DYN_MATRIX_DET(float, ippmDet_m_32f);
-    DYN_MATRIX_DET(double, ippmDet_m_64f);
-
-    #undef DYN_MATRIX_INV
-    #undef DYN_MATRIX_DET
-#else
+// ippmInvert_m / ippmDet_m were removed from modern IPP (ippm module dropped).
+// Uses C++ fallback (Gauss-Jordan inv, LU det) from the generic template.
+#if 1 // was: #else branch of ICL_HAVE_IPP — now always use C++ fallback
     template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const;
     template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const;
 

@@ -1180,20 +1180,8 @@ namespace icl{
       return norm;
     }
 
-#define DYN_MATRIX_MULT_SPECIALIZE(IPPT)                                \
-    template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
-      if(cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be row(B)"); \
-      dst.setBounds(m.cols(),rows());                                   \
-      ippmMul_mm_##IPPT(data(),sizeof(Ipp##IPPT)*cols(),sizeof(Ipp##IPPT),cols(),rows(), \
-                        m.data(),sizeof(Ipp##IPPT)*m.cols(),sizeof(Ipp##IPPT),m.cols(),m.rows(), \
-                        dst.data(),m.cols()*sizeof(Ipp##IPPT),sizeof(Ipp##IPPT)); \
-      return dst;                                                       \
-    }
-
-    DYN_MATRIX_MULT_SPECIALIZE(32f)
-    DYN_MATRIX_MULT_SPECIALIZE(64f)
-#undef DYN_MATRIX_MULT_SPECIALIZE
+    // ippmMul_mm (IPP matrix module) was removed from modern IPP releases.
+    // Matrix multiply uses the C++ fallback from the generic DynMatrix::mult().
 
 
 #define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \

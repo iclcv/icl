@@ -208,6 +208,7 @@ endif()
 
 # ---- Dependency handling ----
 include(ICLFindPackage)
+include(CheckFunctionExists)
 
 if(WIN32)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
@@ -259,9 +260,15 @@ else()
 endif()
 
 if(NOT WIN32 AND NOT APPLE AND BUILD_WITH_DL)
-  ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl")
+  ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl" OPTIONAL)
   if(DL_FOUND)
     list(APPEND REQUIRED_LIBRARIES_LIST ${DL_LIBRARIES})
+  else()
+    # glibc 2.34+ integrates dl functions into libc — no separate libdl needed
+    check_function_exists(dlopen HAVE_DLOPEN_IN_LIBC)
+    if(HAVE_DLOPEN_IN_LIBC)
+      set(DL_FOUND TRUE)
+    endif()
   endif()
 endif()
 
