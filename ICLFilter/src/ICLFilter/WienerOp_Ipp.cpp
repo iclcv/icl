@@ -1,4 +1,4 @@
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/WienerOp.h>
@@ -70,7 +70,7 @@ namespace {
   using WOp = icl::filter::WienerOp;
 
   // Stateful backend: captures a reusable working buffer per instance
-  static const int _r1 = registerStatefulBackend<WOp::WienerSig>(
+  static const int _r1 = ImageBackendDispatching::registerStatefulBackend<WOp::WienerSig>(
     "WienerOp.apply", Backend::Ipp,
     []() {
       auto buf = std::make_shared<std::vector<icl8u>>();

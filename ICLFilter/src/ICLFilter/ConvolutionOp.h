@@ -35,6 +35,7 @@
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLFilter/ConvolutionKernel.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter{
@@ -94,11 +95,13 @@ namespace icl {
     in two Constructors.
     */
 
-    class ICLFilter_API ConvolutionOp : public NeighborhoodOp{
+    class ICLFilter_API ConvolutionOp : public NeighborhoodOp, public core::ImageBackendDispatching {
       public:
       ConvolutionOp(const ConvolutionOp&) = delete;
       ConvolutionOp& operator=(const ConvolutionOp&) = delete;
 
+      /// Dispatch signature: src, dst, op reference (kernel/anchor/etc. accessed from op)
+      using ConvSig = void(const core::Image&, core::Image&, ConvolutionOp&);
 
       /// Default constructor (force unsigned is set to false)
       ConvolutionOp(const ConvolutionKernel &kernel=ConvolutionKernel());

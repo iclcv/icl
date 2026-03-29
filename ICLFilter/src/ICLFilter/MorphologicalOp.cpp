@@ -41,56 +41,67 @@ using namespace icl::core;
 
 namespace icl {
   namespace filter{
-  #ifndef ICL_HAVE_IPP
-    template<class T, typename cmp_func>
-    void morph_cpp(const Img<T> &src, Img<T> &dst, MorphologicalOp &op,
-                   T init, cmp_func cmp, const icl8u *mask){
-      const int srcW = src.getWidth(), dstW = dst.getWidth();
-      const int roiW = dst.getROIWidth(), roiH = dst.getROIHeight();
-      const int maskW = op.getMaskSize().width, maskH = op.getMaskSize().height;
-      const Point anchor = op.getAnchor();
-      const Point roiOff = op.getROIOffset();
-      const T *srcData;
-      T *dstROI;
 
-      for(int c = 0; c < src.getChannels(); ++c){
-        srcData = src.getData(c);
-        dstROI = dst.getROIData(c);
-        for(int y = 0; y < roiH; ++y){
-          T *dstRow = dstROI + y * dstW;
-          for(int x = 0; x < roiW; ++x){
-            const icl8u *m = mask;
-            T best = init;
-            for(int my = 0; my < maskH; ++my){
-              const T *row = srcData + (roiOff.y - anchor.y + y + my) * srcW
-                             + (roiOff.x - anchor.x + x);
-              for(int mx = 0; mx < maskW; ++mx, ++m){
-                if(*m && cmp(row[mx], best)) best = row[mx];
+    namespace {
+
+      // ================================================================
+      // C++ morphological kernel
+      // ================================================================
+
+      template<class T, typename cmp_func>
+      void morph_cpp(const Img<T> &src, Img<T> &dst, MorphologicalOp &op,
+                     T init, cmp_func cmp, const icl8u *mask){
+        const int srcW = src.getWidth(), dstW = dst.getWidth();
+        const int roiW = dst.getROIWidth(), roiH = dst.getROIHeight();
+        const int maskW = op.getMaskSize().width, maskH = op.getMaskSize().height;
+        const Point anchor = op.getAnchor();
+        const Point roiOff = op.getROIOffset();
+        const T *srcData;
+        T *dstROI;
+
+        for(int c = 0; c < src.getChannels(); ++c){
+          srcData = src.getData(c);
+          dstROI = dst.getROIData(c);
+          for(int y = 0; y < roiH; ++y){
+            T *dstRow = dstROI + y * dstW;
+            for(int x = 0; x < roiW; ++x){
+              const icl8u *m = mask;
+              T best = init;
+              for(int my = 0; my < maskH; ++my){
+                const T *row = srcData + (roiOff.y - anchor.y + y + my) * srcW
+                               + (roiOff.x - anchor.x + x);
+                for(int mx = 0; mx < maskW; ++mx, ++m){
+                  if(*m && cmp(row[mx], best)) best = row[mx];
+                }
               }
+              dstRow[x] = best;
             }
-            dstRow[x] = best;
           }
         }
       }
-    }
 
-    static Rect shrink_roi(Rect roi, const Size &maskSize){
-      int dx = (maskSize.width-1)/2;
-      int dy = (maskSize.height-1)/2;
-      roi.x+=dx;
-      roi.y+=dy;
-      roi.width -= 2*dx;
-      roi.height -= 2*dy;
-      return roi;
-    }
+      static Rect shrink_roi(Rect roi, const Size &maskSize){
+        int dx = (maskSize.width-1)/2;
+        int dy = (maskSize.height-1)/2;
+        roi.x+=dx;
+        roi.y+=dy;
+        roi.width -= 2*dx;
+        roi.height -= 2*dy;
+        return roi;
+      }
 
-    template<class T>
-    static void rep_border(Img<T> image, const Size &maskSize){
-      Rect roi = shrink_roi(image.getImageRect(),maskSize);
-      image.setROI(roi);
-      ImgBorder::copy(&image);
-    }
+      template<class T>
+      static void rep_border(Img<T> image, const Size &maskSize){
+        Rect roi = shrink_roi(image.getImageRect(),maskSize);
+        image.setROI(roi);
+        ImgBorder::copy(&image);
+      }
 
+    } // anonymous namespace
+
+    // ================================================================
+    // C++ typed apply — basic ops + composite ops via nested instances
+    // ================================================================
 
     template<class T>
     void MorphologicalOp::apply_t(const Image &srcImg, Image &dstImg){
@@ -158,7 +169,7 @@ namespace icl {
           op.setClipToROI(getClipToROI());
           op.setCheckOnly(getCheckOnly());
           op.apply(srcImg, m_openingAndClosingBuffer);
-          op.setOptype(m_eType==openBorder ? erode : dilate);
+          op.setOptype(m_eType==openBorder ? dilate : erode);
           op.apply(m_openingAndClosingBuffer, dstImg);
           break;
         }
@@ -175,15 +186,32 @@ namespace icl {
       }
     }
 
-    MorphologicalOp::MorphologicalOp (optype eOptype, const Size &maskSize,const icl8u *pcMask){
+    void MorphologicalOp::cpp_morph(const Image &src, Image &dst, MorphologicalOp &op) {
+      switch(src.getDepth()){
+        case depth8u:  op.apply_t<icl8u>(src, dst); break;
+        case depth32f: op.apply_t<icl32f>(src, dst); break;
+        default: ICL_INVALID_DEPTH; break;
+      }
+    }
+
+    // ================================================================
+    // Constructors / Destructor
+    // ================================================================
+
+    MorphologicalOp::MorphologicalOp(optype eOptype, const Size &maskSize, const icl8u *pcMask){
       ICLASSERT_RETURN(maskSize.getDim());
       m_eType = eOptype;
       m_pcMask = 0;
-      setMask (maskSize,pcMask);
+      setMask(maskSize, pcMask);
+
+      initDispatching("MorphologicalOp");
+      auto &sel = addSelector<MorphSig>("apply");
+      sel.add(Backend::Cpp, cpp_morph);
     }
 
-    MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask){
+    MorphologicalOp::MorphologicalOp(const std::string &o, const Size &maskSize, const icl8u *pcMask){
       ICLASSERT_RETURN(maskSize.getDim());
+
 #define CHECK_OPTYPE(X) else if(o == #X) { m_eType = X; }
       if(o == "dilate") { m_eType = dilate; }
       CHECK_OPTYPE(erode)
@@ -201,285 +229,29 @@ namespace icl {
         throw ICLException("MorphologicalOp::MorphologicalOp: invalid optype string!");
       }
       m_pcMask = 0;
-      setMask (maskSize,pcMask);
-    }
+      setMask(maskSize, pcMask);
 
+      initDispatching("MorphologicalOp");
+      auto &sel = addSelector<MorphSig>("apply");
+      sel.add(Backend::Cpp, cpp_morph);
+    }
 
     MorphologicalOp::~MorphologicalOp(){
       ICL_DELETE_ARRAY(m_pcMask);
     }
 
+    // ================================================================
+    // Shared methods
+    // ================================================================
 
-
-  #else //  ICL_HAVE_IPP is defined !
-    MorphologicalOp::MorphologicalOp (optype eOptype, const Size &maskSize,const icl8u *pcMask){
-      ICLASSERT_RETURN(maskSize.getDim());
-
-      m_eType=eOptype;
-      m_pcMask = 0;
-      setMask (maskSize,pcMask);
-
-      m_bMorphState8u=false;
-      m_bMorphState32f=false;
-      m_bMorphAdvState8u=false;
-      m_bMorphAdvState32f=false;
-      m_bHas_changed=true;
-      m_bHas_changedAdv=true;
-
-      m_pState8u = 0;
-      m_pState32f = 0;
-      m_pAdvState8u = 0;
-      m_pAdvState32f = 0;
-    }
-
-    MorphologicalOp::MorphologicalOp (const std::string &o, const Size &maskSize,const icl8u *pcMask){
-      ICLASSERT_RETURN(maskSize.getDim());
-
-    m_bMorphState8u=false;
-      m_bMorphState32f=false;
-      m_bMorphAdvState8u=false;
-      m_bMorphAdvState32f=false;
-      m_bHas_changed=true;
-      m_bHas_changedAdv=true;
-
-      m_pState8u = 0;
-      m_pState32f = 0;
-      m_pAdvState8u = 0;
-      m_pAdvState32f = 0;
-
-#define CHECK_OPTYPE(X) else if(o == #X) { m_eType = X; }
-      if(o == "dilate") { m_eType = dilate; }
-      CHECK_OPTYPE(erode)
-      CHECK_OPTYPE(dilate3x3)
-      CHECK_OPTYPE(erode3x3)
-      CHECK_OPTYPE(dilateBorderReplicate)
-      CHECK_OPTYPE(erodeBorderReplicate)
-      CHECK_OPTYPE(openBorder)
-      CHECK_OPTYPE(closeBorder)
-      CHECK_OPTYPE(tophatBorder)
-      CHECK_OPTYPE(blackhatBorder)
-      CHECK_OPTYPE(gradientBorder)
-#undef CHECK_OPTYPE
-      else{
-        throw ICLException("MorphologicalOp::MorphologicalOp: invalid optype string!");
-      }
-      m_pcMask = 0;
-      setMask (maskSize,pcMask);
-    }
-
-
-
-    MorphologicalOp::~MorphologicalOp(){
-      deleteMorphStates();
-      ICL_DELETE(m_pcMask);
-    }
-
-    void MorphologicalOp::deleteMorphStates(){
-      if (m_bMorphState8u){
-        ippiMorphologyFree(m_pState8u);
-        m_bMorphState8u=false;
-      }
-      if (m_bMorphAdvState8u){
-        ippiMorphAdvFree(m_pAdvState8u);
-        m_bMorphAdvState8u=false;
-      }
-      if (m_bMorphState32f){
-        ippiMorphologyFree(m_pState32f);
-        m_bMorphState32f=false;
-      }
-      if (m_bMorphAdvState32f){
-        ippiMorphAdvFree(m_pAdvState32f);
-        m_bMorphAdvState32f=false;
-      }
-    }
-
-    void MorphologicalOp::checkMorphAdvState8u(const Size roiSize){
-      if (m_bHas_changedAdv){
-        deleteMorphStates();
-        ippiMorphAdvInitAlloc_8u_C1R(&m_pAdvState8u, roiSize, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor);
-        m_bMorphAdvState8u=true;
-        m_bHas_changedAdv=false;
-      }
-    }
-
-      void MorphologicalOp::checkMorphState8u(const Size roiSize){
-      if (m_bHas_changed){
-        deleteMorphStates();
-
-        ippiMorphologyInitAlloc_8u_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState8u);
-
-        m_bMorphState8u=true;
-        m_bHas_changed=false;
-      }
-    }
-    void MorphologicalOp::checkMorphAdvState32f(const Size roiSize){
-      if (m_bHas_changedAdv){
-        deleteMorphStates();
-        ippiMorphAdvInitAlloc_32f_C1R(&m_pAdvState32f, roiSize, m_pcMask, m_oMaskSize, m_oAnchor);
-        m_bMorphAdvState32f=true;
-        m_bHas_changedAdv=false;
-      }
-    }
-
-      void MorphologicalOp::checkMorphState32f(const Size roiSize){
-      if (m_bHas_changed){
-        deleteMorphStates();
-
-        ippiMorphologyInitAlloc_32f_C1R(roiSize.width, m_pcMask, m_oMaskSizeMorphOp, m_oAnchor,&m_pState32f);
-
-        m_bMorphState32f=true;
-        m_bHas_changed=false;
-      }
-    }
-
-    void MorphologicalOp::apply(const core::Image &src, core::Image &dst){
-      if(!prepare(dst, src)) return;
-
-      IppStatus s = ippStsNoErr;
-      switch(src.getDepth()){
-        case depth8u:{
-          const Img8u *ps = &src.as8u();
-          Img8u *pd = &dst.as8u();
-          switch (m_eType){
-            case dilate:   s=ippiMorphologicalCall<icl8u,ippiDilate_8u_C1R>(ps,pd); break;
-            case erode:    s=ippiMorphologicalCall<icl8u,ippiErode_8u_C1R>(ps,pd); break;
-            case dilate3x3: s=ippiMorphologicalCall3x3<icl8u,ippiDilate3x3_8u_C1R>(ps,pd); break;
-            case erode3x3:  s=ippiMorphologicalCall3x3<icl8u,ippiErode3x3_8u_C1R>(ps,pd); break;
-            case dilateBorderReplicate:
-              checkMorphState8u(ps->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl8u,ippiDilateBorderReplicate_8u_C1R>(ps,pd,m_pState8u); break;
-            case erodeBorderReplicate:
-              checkMorphState8u(ps->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl8u,ippiErodeBorderReplicate_8u_C1R>(ps,pd,m_pState8u); break;
-            case openBorder:
-              checkMorphAdvState8u(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphOpenBorder_8u_C1R>(ps,pd,m_pAdvState8u); break;
-            case closeBorder:
-              checkMorphAdvState8u(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphCloseBorder_8u_C1R>(ps,pd,m_pAdvState8u); break;
-            case tophatBorder:
-              checkMorphAdvState8u(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphTophatBorder_8u_C1R>(ps,pd,m_pAdvState8u); break;
-            case blackhatBorder:
-              checkMorphAdvState8u(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphBlackhatBorder_8u_C1R>(ps,pd,m_pAdvState8u); break;
-            case gradientBorder:
-              checkMorphAdvState8u(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl8u,ippiMorphGradientBorder_8u_C1R>(ps,pd,m_pAdvState8u); break;
-          }
-          break;
-        }
-        case depth32f:{
-          const Img32f *ps = &src.as32f();
-          Img32f *pd = &dst.as32f();
-          switch (m_eType){
-            case dilate:   s=ippiMorphologicalCall<icl32f,ippiDilate_32f_C1R>(ps,pd); break;
-            case erode:    s=ippiMorphologicalCall<icl32f,ippiErode_32f_C1R>(ps,pd); break;
-            case dilate3x3: s=ippiMorphologicalCall3x3<icl32f,ippiDilate3x3_32f_C1R>(ps,pd); break;
-            case erode3x3:  s=ippiMorphologicalCall3x3<icl32f,ippiErode3x3_32f_C1R>(ps,pd); break;
-            case dilateBorderReplicate:
-              checkMorphState32f(ps->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl32f,ippiDilateBorderReplicate_32f_C1R>(ps,pd,m_pState32f); break;
-            case erodeBorderReplicate:
-              checkMorphState32f(ps->getROISize());
-              s=ippiMorphologicalBorderReplicateCall<icl32f,ippiErodeBorderReplicate_32f_C1R>(ps,pd,m_pState32f); break;
-            case openBorder:
-              checkMorphAdvState32f(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphOpenBorder_32f_C1R>(ps,pd,m_pAdvState32f); break;
-            case closeBorder:
-              checkMorphAdvState32f(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphCloseBorder_32f_C1R>(ps,pd,m_pAdvState32f); break;
-            case tophatBorder:
-              checkMorphAdvState32f(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphTophatBorder_32f_C1R>(ps,pd,m_pAdvState32f); break;
-            case blackhatBorder:
-              checkMorphAdvState32f(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphBlackhatBorder_32f_C1R>(ps,pd,m_pAdvState32f); break;
-            case gradientBorder:
-              checkMorphAdvState32f(ps->getROISize());
-              s=ippiMorphologicalBorderCall<icl32f,ippiMorphGradientBorder_32f_C1R>(ps,pd,m_pAdvState32f); break;
-          }
-          break;
-        }
-        default: ICL_INVALID_DEPTH; break;
-      }
-      if(s != ippStsNoErr){
-        ERROR_LOG("IPP-Error: \"" << ippGetStatusString(s) << "\"");
-      }
-    }
-
-
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-    IppStatus MorphologicalOp::ippiMorphologicalCall (const Img<T> *src, Img<T> *dst) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize(), m_pcMask,m_oMaskSize, m_oAnchor
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-    IppStatus MorphologicalOp::ippiMorphologicalCall3x3 (const Img<T> *src, Img<T> *dst) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize()
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-    IppStatus MorphologicalOp::ippiMorphologicalBorderReplicateCall (const Img<T> *src, Img<T> *dst,IppiMorphState* state) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize(),
-                               ippBorderRepl,
-                               state
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-    template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
-    IppStatus MorphologicalOp::ippiMorphologicalBorderCall (const Img<T> *src, Img<T> *dst, IppiMorphAdvState* advState) {
-      for(int c=0; c < src->getChannels(); c++) {
-        IppStatus s = ippiFunc(src->getROIData (c, this->m_oROIOffset),
-                               src->getLineStep(),
-                               dst->getROIData (c),
-                               dst->getLineStep(),
-                               dst->getROISize(),
-                               ippBorderRepl,
-                               advState
-                               );
-        if(s != ippStsNoErr) return s;
-      }
-      return ippStsNoErr;
-    }
-
-  #endif
-
-    void MorphologicalOp::setMask (Size maskSize,const icl8u* pcMask) {
+    void MorphologicalOp::setMask(Size maskSize, const icl8u* pcMask) {
       //make maskSize odd:
       maskSize = ((maskSize/2)*2)+Size(1,1);
 
       if(m_eType >= 6){
-        NeighborhoodOp::setMask (Size(1,1));
+        NeighborhoodOp::setMask(Size(1,1));
       }else{
-        NeighborhoodOp::setMask (maskSize);
+        NeighborhoodOp::setMask(maskSize);
       }
 
       ICL_DELETE_ARRAY(m_pcMask);
@@ -490,9 +262,8 @@ namespace icl {
         std::fill(m_pcMask,m_pcMask+maskSize.getDim(),255);
       }
 
-      m_oMaskSizeMorphOp=maskSize;
-      m_bHas_changed=true;
-      m_bHas_changedAdv=true;
+      m_oMaskSizeMorphOp = maskSize;
+      ++m_maskVersion;
     }
 
     const icl8u* MorphologicalOp::getMask() const{
@@ -502,23 +273,16 @@ namespace icl {
       return m_oMaskSizeMorphOp;
     }
     void MorphologicalOp::setOptype(optype type){
-      m_eType=type;
-      setMask(m_oMaskSizeMorphOp,m_pcMask);
+      m_eType = type;
+      setMask(m_oMaskSizeMorphOp, m_pcMask);
     }
     MorphologicalOp::optype MorphologicalOp::getOptype() const{
       return m_eType;
     }
 
-
-  
     void MorphologicalOp::apply(const core::Image &src, core::Image &dst) {
       if(!prepare(dst, src)) return;
-
-      switch(src.getDepth()){
-        case depth8u:  apply_t<icl8u>(src, dst); break;
-        case depth32f: apply_t<icl32f>(src, dst); break;
-        default: ICL_INVALID_DEPTH; break;
-      }
+      getSelector<MorphSig>("apply").resolve(src)->apply(src, dst, *this);
     }
 
   } // namespace filter

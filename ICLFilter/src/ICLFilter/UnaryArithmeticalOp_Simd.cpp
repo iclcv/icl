@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
@@ -116,11 +116,11 @@ namespace {
 
 
   // --- Self-registration ---
-  static const int _reg1 = registerBackend<Op::ArithValSig>(
+  static const int _reg1 = ImageBackendDispatching::registerBackend<Op::ArithValSig>(
     "UnaryArithmeticalOp.withVal", Backend::Simd, simd_arith_with_val,
     applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
 
-  static const int _reg2 = registerBackend<Op::ArithNoValSig>(
+  static const int _reg2 = ImageBackendDispatching::registerBackend<Op::ArithNoValSig>(
     "UnaryArithmeticalOp.noVal", Backend::Simd, simd_arith_no_val,
     applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
 

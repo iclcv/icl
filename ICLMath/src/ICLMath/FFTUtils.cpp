@@ -29,7 +29,9 @@
 ********************************************************************/
 
 #include <ICLMath/FFTUtils.h>
+#include <ICLMath/FFTDispatching.h>
 #include <limits>
+#include <type_traits>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #ifdef min
@@ -781,7 +783,6 @@ namespace icl{
       DynMatrix<std::complex<icl64f> > &joinComplex(const DynMatrix<icl64f> &real,
                                                          const DynMatrix<icl64f> &im,DynMatrix<std::complex<icl64f> > &dst);
 
-      double f = 0.0;
       template<typename T1,typename T2>
       std::complex<T2>*  fft(unsigned int n, const T1* a){
 	if(n==1){
@@ -806,7 +807,7 @@ namespace icl{
           double cp = -(FFT_2_PI)/n;
           std::complex<T2> fac(0.0,0.0);
           for(unsigned int k=0;k<halfsize;++k){
-            f=cp*k;
+            double f=cp*k;
             fac = u[k]*std::complex<T2>(std::cos(f),std::sin(f));
             c[k]=g[k]+fac;
             c[k+halfsize]=g[k]-fac;
@@ -1309,16 +1310,29 @@ namespace icl{
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >& fft2D(const DynMatrix<T1> &src,
                                                DynMatrix<std::complex<T2> > &dst, DynMatrix<std::complex<T2> > &buf){
-	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef ICL_HAVE_IPP
-          buf.setBounds(src.cols(),src.rows());
-          return ipp_wrapper_function_result_fft(src,dst,buf);
-#endif
-	}
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
+        FFTContext ctx{(unsigned)src.rows(), (unsigned)src.cols()};
+
+        // Dispatch for icl32f: real input → icl32c output
+        if constexpr (std::is_same_v<T2, icl32f> && !std::is_same_v<T1, icl32c>) {
+          auto* impl = FFTDispatching::instance()
+            .getSelector<FFTFwd32fSig>("fwd32f").resolve(ctx);
+          if(impl) {
+            // Convert src to icl32f if needed, then dispatch
+            if constexpr (std::is_same_v<T1, icl32f>) {
+              return impl->apply(src, dst, buf);
+            }
+            // For other src types, let the backend handle conversion
+            // (C++ backend calls fft2D_cpp which handles all T1)
+          }
+        }
+        // Dispatch for icl32c input (complex forward FFT)
+        if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
+          auto* impl = FFTDispatching::instance()
+            .getSelector<FFTFwd32fcSig>("fwd32fc").resolve(ctx);
+          if(impl) return impl->apply(src, dst, buf);
+        }
+
+        return fft2D_cpp(src,dst,buf);
       }
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl8u> &src,
@@ -1553,7 +1567,6 @@ namespace icl{
       DynMatrix<icl32c >&  dft2D(DynMatrix<std::complex<icl64f> >& src,
                                                     DynMatrix<icl32c >& dst, DynMatrix<icl32c >& buf);
 
-      double e = 0.0;
       template<typename T1,typename T2>
       static std::complex<T2>*  ifft_(unsigned int n, const T1* a){
 	if(n==1){
@@ -1577,7 +1590,7 @@ namespace icl{
           T2 cp = FFT_2_PI/n;
           std::complex<T2> fac(0.0,0.0);
           for(unsigned int k=0;k<halfsize;++k){
-            e=cp*k;
+            double e=cp*k;
             fac = u[k]*std::complex<T2>(std::cos(e),std::sin(e));
             c[k]=g[k]+fac;
             c[k+halfsize]=g[k]-fac;
@@ -1989,16 +2002,14 @@ namespace icl{
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >& ifft2D(const DynMatrix<T1> &src,
                                                 DynMatrix<std::complex<T2> > &dst,	DynMatrix<std::complex<T2> > &buf){
-	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-#ifdef ICL_HAVE_IPP
-          buf.setBounds(src.cols(),src.rows());
-          return ipp_wrapper_function_result_ifft_icl32fc(src,dst,buf);
+        // Dispatch for icl32c → icl32c (the common inverse case)
+        if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
+          FFTContext ctx{(unsigned)src.rows(), (unsigned)src.cols()};
+          auto* impl = FFTDispatching::instance()
+            .getSelector<FFTInv32fSig>("inv32f").resolve(ctx);
+          if(impl) return impl->apply(src, dst, buf);
+        }
 
-#endif
-	}
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl32fc(src,dst,buf);
-#endif
 	return ifft2D_cpp(src,dst,buf);
       }
       template ICLMath_API

@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/BinaryLogicalOp.h              **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Andre Justus                      **
+** File   : ICLMath/src/ICLMath/FFTDispatching.h                   **
+** Module : ICLMath                                                **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -30,33 +30,43 @@
 
 #pragma once
 
+#include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
-#include <ICLFilter/BinaryOp.h>
-#include <ICLCore/ImageBackendDispatching.h>
+#include <ICLMath/DynMatrix.h>
+#include <complex>
 
 namespace icl {
-  namespace filter {
+  namespace math {
 
-    /// Class for logical operations on two images (and, or, xor). \ingroup BINARY
-    /// Only supports integer types (icl8u, icl16s, icl32s).
-    class ICLFilter_API BinaryLogicalOp : public BinaryOp, public core::ImageBackendDispatching {
-      public:
-
-      enum optype { andOp, orOp, xorOp };
-
-      BinaryLogicalOp(optype t);
-
-      void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
-      using BinaryOp::apply;
-
-      void setOpType(optype t) { m_eOpType = t; }
-      optype getOpType() const { return m_eOpType; }
-
-      using Sig = void(const core::Image&, const core::Image&, core::Image&, int);
-
-      private:
-      optype m_eOpType;
+    /// Context for FFT backend dispatch — carries problem dimensions
+    struct FFTContext {
+      unsigned rows, cols;
     };
 
-  } // namespace filter
+    /// Forward FFT: real icl32f → complex icl32c
+    using FFTFwd32fSig = DynMatrix<icl32c>&(
+      const DynMatrix<icl32f>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+
+    /// Inverse FFT: complex icl32c → complex icl32c
+    using FFTInv32fSig = DynMatrix<icl32c>&(
+      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+
+    /// Forward FFT: complex icl32c → complex icl32c (for already-complex input)
+    using FFTFwd32fcSig = DynMatrix<icl32c>&(
+      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+
+    /// Applicability: power-of-2 dimensions (required by IPP)
+    inline bool fftPowerOf2(const FFTContext& ctx) {
+      return ctx.rows > 0 && (ctx.rows & (ctx.rows - 1)) == 0
+          && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
+    }
+
+    /// Singleton dispatch holder for FFT backends.
+    /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
+    /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
+    struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
+      static FFTDispatching& instance();
+    };
+
+  } // namespace math
 } // namespace icl

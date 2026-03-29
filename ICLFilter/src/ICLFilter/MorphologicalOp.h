@@ -35,6 +35,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 
 namespace icl {
@@ -85,7 +86,7 @@ namespace icl {
         <b>left: binary image results, right: gray image results</b>
         \image html  morphologic_operator_results.png
     */
-    class ICLFilter_API MorphologicalOp : public NeighborhoodOp {
+    class ICLFilter_API MorphologicalOp : public NeighborhoodOp, public core::ImageBackendDispatching {
     public:
     MorphologicalOp(const MorphologicalOp&) = delete;
     MorphologicalOp& operator=(const MorphologicalOp&) = delete;
@@ -105,6 +106,10 @@ namespace icl {
       blackhatBorder=9,
       gradientBorder=10
     };
+
+      /// Dispatch signature: src, dst, op reference
+      using MorphSig = void(const core::Image&, core::Image&, MorphologicalOp&);
+
       /// Constructor that creates a Morphological object, with specified mask size
       /** @param t operation type if(dilate3x3 or erode3x3), further arguments can be
                    left out
@@ -128,23 +133,14 @@ namespace icl {
       void setMask (utils::Size size, const icl8u* pcMask=0);
 
       /// returns mask
-      /**
-        @return mask
-      */
       const icl8u* getMask() const;
 
       /// returns mask size
-      /**
-        @return mask size
-      */
       utils::Size getMaskSize() const;
 
       void setOptype(optype type);
 
       /// returns the type of the selected morphological operation
-      /**
-        @return optype
-      */
       optype getOptype() const;
 
       /// Performs morph of an image with given optype and mask.
@@ -153,55 +149,25 @@ namespace icl {
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
-  #ifdef ICL_HAVE_IPP
-    private:
-
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, const Ipp8u*, IppiSize, IppiPoint)>
-      IppStatus ippiMorphologicalCall (const core::Img<T> *src, core::Img<T> *dst);
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize)>
-      IppStatus ippiMorphologicalCall3x3 (const core::Img<T> *src, core::Img<T> *dst);
-
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, _IppiBorderType, IppiMorphState*)>
-      IppStatus ippiMorphologicalBorderReplicateCall (const core::Img<T> *src, core::Img<T> *dst,IppiMorphState *state);
-
-      template<typename T, IppStatus (IPP_DECL *ippiFunc) (const T*, int, T*, int, IppiSize, IppiBorderType, IppiMorphAdvState*)>
-      IppStatus ippiMorphologicalBorderCall (const core::Img<T> *src, core::Img<T> *dst, IppiMorphAdvState *advState);
-
-      using ICLMorphState = IppiMorphState;
-      using ICLMorphAdvState = IppiMorphAdvState;
-  #else
-      using ICLMorphState = void;
-      using ICLMorphAdvState = void;
-      core::Image m_openingAndClosingBuffer;
-      core::Image m_gradientBorderBuffer_1;
-      core::Image m_gradientBorderBuffer_2;
+      /// Monotonically increasing counter, incremented on mask/optype changes.
+      /// Used by backends to detect when state needs reinitialization.
+      unsigned maskVersion() const { return m_maskVersion; }
 
     private:
       template<class T>
       void apply_t(const core::Image &src, core::Image &dst);
-  #endif
-    private:
-      icl8u * m_pcMask;
-      utils::Size m_oMaskSizeMorphOp; // actually masksize of NeighborhoodOp and MorphOp may be different
-      ICLMorphState* m_pState8u;
-      ICLMorphState* m_pState32f;
-      ICLMorphAdvState* m_pAdvState8u;
-      ICLMorphAdvState* m_pAdvState32f;
-      bool m_bMorphState8u;
-      bool m_bMorphState32f;
-      bool m_bMorphAdvState8u;
-      bool m_bMorphAdvState32f;
-      bool m_bHas_changed;
-      bool m_bHas_changedAdv;
-      void deleteMorphStates();
-      void checkMorphAdvState8u(const utils::Size roiSize);
-      void checkMorphAdvState32f(const utils::Size roiSize);
-      void checkMorphState8u(const utils::Size roiSize);
-      void checkMorphState32f(const utils::Size roiSize);
 
+      static void cpp_morph(const core::Image &src, core::Image &dst, MorphologicalOp &op);
 
+      icl8u *m_pcMask;
+      utils::Size m_oMaskSizeMorphOp;
       optype m_eType;
+      unsigned m_maskVersion = 0;
 
+      // C++ composite operation buffers
+      core::Image m_openingAndClosingBuffer;
+      core::Image m_gradientBorderBuffer_1;
+      core::Image m_gradientBorderBuffer_2;
     };
   } // namespace filter
 } // namespace icl

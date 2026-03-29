@@ -33,7 +33,7 @@
 #include <ICLFilter/BilateralFilterOp.h>
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLIncludes.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLFilter/OpenCL/BilateralFilterOpKernel.h>
 
 using namespace icl::utils;
@@ -174,7 +174,7 @@ namespace {
     }
   };
 
-  static const int _reg = registerStatefulBackend<icl::filter::BilateralFilterOp::ApplySig>(
+  static const int _reg = ImageBackendDispatching::registerStatefulBackend<icl::filter::BilateralFilterOp::ApplySig>(
     "BilateralFilterOp.apply", Backend::OpenCL,
     []() {
       auto state = std::make_shared<CLBilateralState>();

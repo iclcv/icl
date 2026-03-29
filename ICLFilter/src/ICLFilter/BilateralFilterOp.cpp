@@ -259,7 +259,7 @@ namespace filter {
       });
     }
 
-    static const int _reg_cpp = registerBackend<BilateralFilterOp::ApplySig>(
+    static const int _reg_cpp = ImageBackendDispatching::registerBackend<BilateralFilterOp::ApplySig>(
       "BilateralFilterOp.apply", Backend::Cpp, cpp_bilateral,
       nullptr, "C++ bilateral filter (all depths)");
 

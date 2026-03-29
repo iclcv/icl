@@ -32,13 +32,13 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/BinaryOp.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter {
 
     /// Class for arithmetic operations performed on two images. \ingroup BINARY
-    class ICLFilter_API BinaryArithmeticalOp : public BinaryOp, public core::Dispatching {
+    class ICLFilter_API BinaryArithmeticalOp : public BinaryOp, public core::ImageBackendDispatching {
       public:
 
       enum optype { addOp, subOp, mulOp, divOp, absSubOp };

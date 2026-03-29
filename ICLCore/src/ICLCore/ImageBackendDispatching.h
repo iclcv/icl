@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/src/ICLCore/BackendDispatch.cpp                **
+** File   : ICLCore/src/ICLCore/ImageBackendDispatching.h          **
 ** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,66 +28,29 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#pragma once
+
+#include <ICLUtils/BackendDispatching.h>
+#include <ICLCore/Image.h>
 
 namespace icl {
   namespace core {
 
-    // ================================================================
-    // Global Registry
-    // ================================================================
+    // Re-export general types into core namespace
+    using utils::Backend;
+    using utils::backendPriority;
+    using utils::backendName;
 
-    namespace detail {
-      std::map<std::string, std::vector<RegistryEntry>>& globalRegistry() {
-        static std::map<std::string, std::vector<RegistryEntry>> reg;
-        return reg;
-      }
+    /// Image backend dispatching — typedef to BackendDispatching<Image>.
+    /// All nested types (BackendSelector, BackendSelectorBase,
+    /// ApplicabilityFn) are inherited from the template.
+    using ImageBackendDispatching = utils::BackendDispatching<Image>;
 
-      int addToRegistry(const std::string& key, RegistryEntry entry) {
-        globalRegistry()[key].push_back(std::move(entry));
-        return 0;
-      }
-    }
-
-    // ================================================================
-    // Dispatching
-    // ================================================================
-
-    Dispatching::~Dispatching() = default;
-
-    void Dispatching::initDispatching(const std::string& className) {
-      m_prefix = className + ".";
-    }
-
-    std::string Dispatching::qualifiedName(const std::string& shortName) const {
-      return m_prefix + shortName;
-    }
-
-    std::vector<BackendSelectorBase*> Dispatching::selectors() {
-      std::vector<BackendSelectorBase*> result;
-      for(auto& sel : m_selectors) result.push_back(sel.get());
-      return result;
-    }
-
-    BackendSelectorBase* Dispatching::selectorByName(const std::string& shortName) {
-      auto it = m_selectorByName.find(shortName);
-      return it != m_selectorByName.end() ? it->second : nullptr;
-    }
-
-    void Dispatching::forceAll(Backend b) {
-      for(auto& sel : m_selectors) sel->force(b);
-    }
-
-    void Dispatching::unforceAll() {
-      for(auto& sel : m_selectors) sel->unforce();
-    }
-
-    std::vector<std::vector<Backend>>
-    Dispatching::allBackendCombinations(const Image& src) {
-      std::vector<std::vector<Backend>> result;
-      for(auto& sel : m_selectors)
-        result.push_back(sel->applicableBackendsFor(src));
-      return result;
+    /// Predefined applicability: matches if source depth is any of the listed types.
+    template<class... Ts>
+    bool applicableTo(const Image& src) {
+      depth d = src.getDepth();
+      return ((d == getDepth<Ts>()) || ...);
     }
 
   } // namespace core

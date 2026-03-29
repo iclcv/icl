@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryCompareOp.h>
@@ -95,7 +95,7 @@ namespace {
   }
 
   // --- Self-registration ---
-  static const int _reg1 = registerBackend<CmpOp::CmpSig>(
+  static const int _reg1 = ImageBackendDispatching::registerBackend<CmpOp::CmpSig>(
     "UnaryCompareOp.compare", Backend::Simd, simd_compare,
     applicableTo<icl8u>, "SSE2/NEON compare (8u)");
 

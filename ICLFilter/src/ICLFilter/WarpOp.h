@@ -34,7 +34,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl{
   namespace filter{
@@ -93,7 +93,7 @@ namespace icl{
         </pre>
 
      */
-    class ICLFilter_API WarpOp : public UnaryOp, public core::Dispatching {
+    class ICLFilter_API WarpOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
 
       /// Dispatch signature: (src, dst, warpMapChannels[2], warpOffset, scalemode)

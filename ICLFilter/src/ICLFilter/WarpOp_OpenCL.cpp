@@ -33,7 +33,7 @@
 #include <ICLFilter/WarpOp.h>
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLIncludes.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -119,7 +119,7 @@ namespace {
     }
   };
 
-  static const int _reg = registerStatefulBackend<icl::filter::WarpOp::WarpSig>(
+  static const int _reg = ImageBackendDispatching::registerStatefulBackend<icl::filter::WarpOp::WarpSig>(
     "WarpOp.warp", Backend::OpenCL,
     []() {
       auto state = std::make_shared<CLWarpState>();

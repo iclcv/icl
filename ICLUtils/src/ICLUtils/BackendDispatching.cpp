@@ -6,9 +6,9 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/BinaryLogicalOp.h              **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Andre Justus                      **
+** File   : ICLUtils/src/ICLUtils/BackendDispatching.cpp            **
+** Module : ICLUtils                                               **
+** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
 ** GNU LESSER GENERAL PUBLIC LICENSE                               **
@@ -28,35 +28,22 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
-#include <ICLUtils/CompatMacros.h>
-#include <ICLFilter/BinaryOp.h>
-#include <ICLCore/ImageBackendDispatching.h>
+#include <ICLUtils/BackendDispatching.h>
 
 namespace icl {
-  namespace filter {
+  namespace utils {
+    namespace detail {
 
-    /// Class for logical operations on two images (and, or, xor). \ingroup BINARY
-    /// Only supports integer types (icl8u, icl16s, icl32s).
-    class ICLFilter_API BinaryLogicalOp : public BinaryOp, public core::ImageBackendDispatching {
-      public:
+      std::map<std::string, std::vector<RegistryEntry>>& globalRegistry() {
+        static std::map<std::string, std::vector<RegistryEntry>> reg;
+        return reg;
+      }
 
-      enum optype { andOp, orOp, xorOp };
+      int addToRegistry(const std::string& key, RegistryEntry entry) {
+        globalRegistry()[key].push_back(std::move(entry));
+        return 0;
+      }
 
-      BinaryLogicalOp(optype t);
-
-      void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
-      using BinaryOp::apply;
-
-      void setOpType(optype t) { m_eOpType = t; }
-      optype getOpType() const { return m_eOpType; }
-
-      using Sig = void(const core::Image&, const core::Image&, core::Image&, int);
-
-      private:
-      optype m_eOpType;
-    };
-
-  } // namespace filter
+    } // namespace detail
+  } // namespace utils
 } // namespace icl

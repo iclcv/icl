@@ -37,11 +37,28 @@ using namespace icl::core;
 namespace icl{
   namespace filter{
 
+    namespace {
+      void cpp_reduceBits(const Img8u &src, Img8u &dst, icl8u n) {
+        std::vector<icl8u> lut(256), lv(n);
+        float range = 255.0f / (n - 1);
+        for(int i = 0; i < n; i++) {
+          lv[i] = round(iclMin(i * range, 255.f));
+        }
+        for(int i = 0; i < 256; i++) {
+          float rel = i / 256.f;
+          lut[i] = lv[static_cast<int>(round(rel * (n - 1)))];
+        }
+        LUTOp::simple(&src, &dst, lut);
+      }
+    }
+
     LUTOp::LUTOp(icl8u quantizationLevels):
       m_bLevelsSet(true), m_bLutSet(false),
       m_ucQuantizationLevels(quantizationLevels),
       m_poBuffer(new Img8u()){
-
+      initDispatching("LUTOp");
+      auto &sel = addSelector<ReduceBitsSig>("reduceBits");
+      sel.add(Backend::Cpp, cpp_reduceBits);
     }
 
     LUTOp::LUTOp(const std::vector<icl8u> &lut):
@@ -49,6 +66,9 @@ namespace icl{
       m_vecLUT(lut),
       m_ucQuantizationLevels(0),
       m_poBuffer(new Img8u()){
+      initDispatching("LUTOp");
+      auto &sel = addSelector<ReduceBitsSig>("reduceBits");
+      sel.add(Backend::Cpp, cpp_reduceBits);
     }
 
     void LUTOp::setLUT(const std::vector<icl8u> &lut){
@@ -89,27 +109,20 @@ namespace icl{
     }
 
     void LUTOp::reduceBits(const Img8u *src, Img8u *dst, icl8u n){
-  #ifdef ICL_HAVE_IPP
       ICLASSERT_RETURN( src && dst );
       ICLASSERT_RETURN( src->getROISize() == dst->getROISize() );
       ICLASSERT_RETURN( src->getChannels() == dst->getChannels() );
       ICLASSERT_RETURN( n > 0 );
-      for(int c= src->getChannels()-1 ; c >= 0 ; --c){
-        ippiReduceBits_8u_C1R(src->getROIData(c),src->getLineStep(),dst->getROIData(c),dst->getLineStep(),
-                            src->getROISize(),0, ippDitherNone, n);
+      std::vector<icl8u> lut(256), lv(n);
+      float range = 255.0f / (n - 1);
+      for(int i = 0; i < n; i++) {
+        lv[i] = round(iclMin(i * range, 255.f));
       }
-  #else
-      std::vector<icl8u> lut(256),lv(n);
-      float range = 255.0/(n-1);
-      for(int i=0;i<n;i++) {
-        lv[i] = round(iclMin(i*range,255.f));
+      for(int i = 0; i < 256; i++) {
+        float rel = i / 256.f;
+        lut[i] = lv[static_cast<int>(round(rel * (n - 1)))];
       }
-      for(int i=0;i<256;i++){
-        float rel = i/256.f;
-        lut[i]=lv[static_cast<int>(round(rel * (n-1)))];
-      }
-      simple(src,dst,lut);
-  #endif
+      simple(src, dst, lut);
     }
 
     void LUTOp::apply(const Image &src, Image &dst) {
@@ -125,7 +138,8 @@ namespace icl{
       if(!prepare(dst, src, depth8u)) return;
 
       if(m_bLevelsSet){
-        reduceBits(src8u, &dst.as8u(), m_ucQuantizationLevels);
+        getSelector<ReduceBitsSig>("reduceBits").resolve(dst)->apply(
+          *src8u, dst.as8u(), m_ucQuantizationLevels);
       }else{
         simple(src8u, &dst.as8u(), m_vecLUT);
       }

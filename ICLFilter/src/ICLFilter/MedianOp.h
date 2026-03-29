@@ -34,6 +34,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter{
@@ -234,14 +235,21 @@ namespace icl {
       }
       </pre>
     */
-    class ICLFilter_API MedianOp : public NeighborhoodOp {
+    class ICLFilter_API MedianOp : public NeighborhoodOp, public core::ImageBackendDispatching {
     public:
+
+      /// Dispatch signature for fixed 3x3/5x5: src, dst, maskDim (3 or 5), roiOffset
+      using MedianFixedSig = void(const core::Image&, core::Image&, int, const utils::Point&);
+
+      /// Dispatch signature for arbitrary mask: src, dst, maskSize, roiOffset, anchor
+      using MedianGenericSig = void(const core::Image&, core::Image&, const utils::Size&,
+                                     const utils::Point&, const utils::Point&);
 
       /// Constructor that creates a median filter object, with specified mask size
       /** @param maskSize of odd width and height
           Even width or height is increased to next higher odd value.
       **/
-      MedianOp (const utils::Size &maskSize):NeighborhoodOp(adaptSize(maskSize)){}
+      MedianOp(const utils::Size &maskSize);
 
       /// applies the median operation on poSrc and stores the result in poDst
       /** The depth, channel count and size of poDst is adapted to poSrc' ROI:

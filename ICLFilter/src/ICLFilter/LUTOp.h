@@ -36,6 +36,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <vector>
 #include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter{
@@ -67,10 +68,13 @@ namespace icl {
         Yet, only the reduceBits function and therewith the according LUT-objects
         mode with given count of quantization levels is IPP optimized.
     */
-    class ICLFilter_API LUTOp : public UnaryOp{
+    class ICLFilter_API LUTOp : public UnaryOp, public core::ImageBackendDispatching {
      public:
        LUTOp(const LUTOp&) = delete;
        LUTOp& operator=(const LUTOp&) = delete;
+
+       /// Dispatch signature for reduceBits: src (8u), dst (8u), quantization levels
+       using ReduceBitsSig = void(const core::Img8u&, core::Img8u&, icl8u);
 
        /// creates a LUT object with given lut (LUT-mode)
        /** @param lut LUT-vector to use */

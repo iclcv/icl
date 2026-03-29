@@ -1,4 +1,4 @@
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryLogicalOp.h>
@@ -101,11 +101,11 @@ namespace {
   // --- Self-registration ---
   using ULOp = icl::filter::UnaryLogicalOp;
 
-  static const int _r1 = registerBackend<ULOp::WithValSig>(
+  static const int _r1 = ImageBackendDispatching::registerBackend<ULOp::WithValSig>(
     "UnaryLogicalOp.withVal", Backend::Simd, simd_withval,
     applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical and/or/xor (8u/16s/32s)");
 
-  static const int _r2 = registerBackend<ULOp::NoValSig>(
+  static const int _r2 = ImageBackendDispatching::registerBackend<ULOp::NoValSig>(
     "UnaryLogicalOp.noVal", Backend::Simd, simd_noval,
     applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical not (8u/16s/32s)");
 

@@ -32,14 +32,14 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 
 namespace icl {
   namespace filter {
 
     /// UnaryCompareOp using the BackendDispatch architecture.
-    class ICLFilter_API UnaryCompareOp : public UnaryOp, public core::Dispatching {
+    class ICLFilter_API UnaryCompareOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
 
       enum optype { lt, lteq, eq, gteq, gt, eqt };

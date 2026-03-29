@@ -1,4 +1,4 @@
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/BinaryArithmeticalOp.h>
@@ -53,7 +53,7 @@ namespace {
 
   using BAOp = icl::filter::BinaryArithmeticalOp;
 
-  static const int _r1 = registerBackend<BAOp::Sig>(
+  static const int _r1 = ImageBackendDispatching::registerBackend<BAOp::Sig>(
     "BinaryArithmeticalOp.apply", Backend::Simd, simd_apply,
     applicableTo<icl32f>, "SSE2/NEON binary arithmetic (32f)");
 

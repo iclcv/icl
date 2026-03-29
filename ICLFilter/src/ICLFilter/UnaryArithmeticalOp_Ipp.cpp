@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
 

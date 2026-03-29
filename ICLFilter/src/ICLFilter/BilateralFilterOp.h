@@ -32,7 +32,7 @@
 
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
 namespace filter {
@@ -50,7 +50,7 @@ namespace filter {
       Supported depths: all (8u, 16s, 32s, 32f, 64f) via C++ backend.
       OpenCL backend accelerates 8u (mono + 3ch) and 32f (mono).
   */
-  class ICLFilter_API BilateralFilterOp : public UnaryOp, public core::Dispatching {
+  class ICLFilter_API BilateralFilterOp : public UnaryOp, public core::ImageBackendDispatching {
   public:
 
     /// Dispatch signature for backend implementations

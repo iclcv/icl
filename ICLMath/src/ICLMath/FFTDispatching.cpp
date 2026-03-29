@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLFilter/src/ICLFilter/ThresholdOp.h               **
-** Module : ICLFilter                                              **
+** File   : ICLMath/src/ICLMath/FFTDispatching.cpp                 **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -28,53 +28,56 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
+#include <ICLMath/FFTDispatching.h>
+#include <ICLMath/FFTUtils.h>
 
-#include <ICLUtils/CompatMacros.h>
-#include <ICLFilter/UnaryOp.h>
-#include <ICLCore/ImageBackendDispatching.h>
-#include <ICLCore/Image.h>
+using namespace icl::utils;
 
 namespace icl {
-  namespace filter {
+  namespace math {
 
-    /// Proof-of-concept ThresholdOp using the new FilterDispatch architecture.
-    /// Same functionality as ThresholdOp but with separate backend files
-    /// and runtime-inspectable dispatch.
-    class ICLFilter_API ThresholdOp : public UnaryOp, public core::ImageBackendDispatching {
-      public:
+    namespace {
 
-      enum optype { lt, gt, ltgt, ltVal, gtVal, ltgtVal };
+      // C++ backend: delegates to the existing thread-safe fft2D_cpp / ifft2D_cpp
+      DynMatrix<icl32c>& cpp_fft_fwd32f(const DynMatrix<icl32f>& src,
+                                          DynMatrix<icl32c>& dst,
+                                          DynMatrix<icl32c>& buf) {
+        return fft::fft2D_cpp(src, dst, buf);
+      }
 
-      ThresholdOp(optype ttype = ltVal, float lowThreshold = 127,
-                     float highThreshold = 127, float lowVal = 0, float highVal = 255);
+      DynMatrix<icl32c>& cpp_fft_inv32f(const DynMatrix<icl32c>& src,
+                                          DynMatrix<icl32c>& dst,
+                                          DynMatrix<icl32c>& buf) {
+        return fft::ifft2D_cpp(src, dst, buf);
+      }
 
-      void apply(const core::Image &src, core::Image &dst) override;
-      using UnaryOp::apply;
+      DynMatrix<icl32c>& cpp_fft_fwd32fc(const DynMatrix<icl32c>& src,
+                                           DynMatrix<icl32c>& dst,
+                                           DynMatrix<icl32c>& buf) {
+        return fft::fft2D_cpp(src, dst, buf);
+      }
 
-      // ---- Accessors ----
-      void setType(optype t) { m_eType = t; }
-      optype getType() const { return m_eType; }
-      void setLowThreshold(float t) { m_fLowThreshold = t; }
-      void setHighThreshold(float t) { m_fHighThreshold = t; }
-      void setLowVal(float v) { m_fLowVal = v; }
-      void setHighVal(float v) { m_fHighVal = v; }
-      float getLowThreshold() const { return m_fLowThreshold; }
-      float getHighThreshold() const { return m_fHighThreshold; }
-      float getLowVal() const { return m_fLowVal; }
-      float getHighVal() const { return m_fHighVal; }
+    } // anonymous namespace
 
-      // Sub-op signatures for backend dispatch
-      using ThreshSig     = void(const core::Image&, core::Image&, double, double);
-      using ThreshDualSig = void(const core::Image&, core::Image&, double, double, double, double);
+    FFTDispatching& FFTDispatching::instance() {
+      static FFTDispatching d;
+      return d;
+    }
 
-      private:
-      optype m_eType;
-      float m_fLowThreshold;
-      float m_fHighThreshold;
-      float m_fLowVal;
-      float m_fHighVal;
-    };
+    // Static-init registration of C++ fallback backends.
+    // IPP/MKL/OpenCL backends self-register from their own .cpp files
+    // using utils::registerBackend<FFTContext, Sig>(...).
+    static const int _r1 = []() {
+      auto& d = FFTDispatching::instance();
+      d.initDispatching("FFT");
+      auto& fwd = d.addSelector<FFTFwd32fSig>("fwd32f");
+      fwd.add(Backend::Cpp, cpp_fft_fwd32f);
+      auto& inv = d.addSelector<FFTInv32fSig>("inv32f");
+      inv.add(Backend::Cpp, cpp_fft_inv32f);
+      auto& fwdc = d.addSelector<FFTFwd32fcSig>("fwd32fc");
+      fwdc.add(Backend::Cpp, cpp_fft_fwd32fc);
+      return 0;
+    }();
 
-  } // namespace filter
+  } // namespace math
 } // namespace icl

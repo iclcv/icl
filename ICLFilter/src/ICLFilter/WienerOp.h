@@ -32,13 +32,13 @@
 
 #include <ICLFilter/NeighborhoodOp.h>
 #include <ICLCore/Image.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter{
     /// Class for Wiener Filter (IPP only) \ingroup UNARY \ingroup NBH
     /** @see WienerOp.h for full Wiener filter documentation */
-    class WienerOp : public NeighborhoodOp, public core::Dispatching {
+    class WienerOp : public NeighborhoodOp, public core::ImageBackendDispatching {
      public:
 
       /// Dispatch signature: src, dst, maskSize, anchor, roiOffset, noise

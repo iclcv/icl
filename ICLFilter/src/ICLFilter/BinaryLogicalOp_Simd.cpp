@@ -1,4 +1,4 @@
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/BinaryLogicalOp.h>
@@ -47,7 +47,7 @@ namespace {
 
   using BLOp = icl::filter::BinaryLogicalOp;
 
-  static const int _r1 = registerBackend<BLOp::Sig>(
+  static const int _r1 = ImageBackendDispatching::registerBackend<BLOp::Sig>(
     "BinaryLogicalOp.apply", Backend::Simd, simd_apply,
     applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON binary logical (8u/16s/32s)");
 

@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
@@ -115,15 +115,15 @@ namespace {
   // --- Self-registration ---
   using TOp = icl::filter::ThresholdOp;
 
-  static const int _reg1 = registerBackend<TOp::ThreshSig>(
+  static const int _reg1 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
     "ThresholdOp.ltVal", Backend::Ipp, ipp_ltval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
 
-  static const int _reg2 = registerBackend<TOp::ThreshSig>(
+  static const int _reg2 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
     "ThresholdOp.gtVal", Backend::Ipp, ipp_gtval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
 
-  static const int _reg3 = registerBackend<TOp::ThreshDualSig>(
+  static const int _reg3 = ImageBackendDispatching::registerBackend<TOp::ThreshDualSig>(
     "ThresholdOp.ltgtVal", Backend::Ipp, ipp_ltgtval,
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
 

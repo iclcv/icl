@@ -28,7 +28,7 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryCompareOp.h>
@@ -93,11 +93,11 @@ namespace {
   }
 
   // --- Self-registration ---
-  static const int _reg1 = registerBackend<CmpOp::CmpSig>(
+  static const int _reg1 = ImageBackendDispatching::registerBackend<CmpOp::CmpSig>(
     "UnaryCompareOp.compare", Backend::Ipp, ipp_compare,
     applicableTo<icl8u, icl16s, icl32f>, "IPP compare (8u/16s/32f)");
 
-  static const int _reg2 = registerBackend<CmpOp::CmpEqtSig>(
+  static const int _reg2 = ImageBackendDispatching::registerBackend<CmpOp::CmpEqtSig>(
     "UnaryCompareOp.compareEqTol", Backend::Ipp, ipp_compare_eqt,
     applicableTo<icl32f>, "IPP compareEqualEps (32f)");
 

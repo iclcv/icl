@@ -1,4 +1,4 @@
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
 #include <ICLFilter/AffineOp.h>
@@ -42,7 +42,7 @@ namespace {
 
   using AOp = icl::filter::AffineOp;
 
-  static const int _r1 = registerBackend<AOp::AffineSig>(
+  static const int _r1 = ImageBackendDispatching::registerBackend<AOp::AffineSig>(
     "AffineOp.apply", Backend::Ipp, ipp_affine,
     applicableTo<icl8u, icl32f>, "IPP affine warp (8u/32f)");
 

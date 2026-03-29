@@ -39,26 +39,10 @@ using namespace icl::core;
 namespace icl{
   namespace filter{
     namespace{
-  #ifdef ICL_HAVE_IPP
-      template<class SrcType, class DstType, typename ippfunc>
-      inline void ipp_call_fixed(const Img<SrcType> &src, Img<DstType> &dst, int channel, ippfunc func, ConvolutionOp &op){
-        func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize());
-      }
-      template<class SrcType, class DstType, typename ippfunc>
-      inline void ipp_call_fixed_mask(const Img<SrcType> &src, Img<DstType> &dst, int channel, IppiMaskSize m, ippfunc func, ConvolutionOp &op){
-        func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),m);
-      }
-      template<class ImageType,typename ippfunc>
-      inline void ipp_call_filter_int(const Img<ImageType> &src, Img<ImageType> &dst, const int *kernel, int channel, ConvolutionOp &op, ippfunc func){
-        func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),dst.getROISize(),
-                kernel, op.getKernel().getSize(), op.getAnchor(), op.getKernel().getFactor() );
-      }
-      template<class ImageType,typename ippfunc>
-      inline void ipp_call_filter_float(const Img<ImageType> &src, Img<ImageType> &dst, const float *kernel, int channel, ConvolutionOp &op, ippfunc func){
-        func(src.getROIData(channel,op.getROIOffset()),src.getLineStep(),dst.getROIData(channel),dst.getLineStep(),
-                dst.getROISize(), kernel, op.getKernel().getSize(), op.getAnchor() );
-      }
-  #endif
+
+      // ================================================================
+      // C++ generic convolution implementations
+      // ================================================================
 
       template<class KernelType, class SrcType, class DstType>
       void generic_cpp_convolution(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
@@ -123,11 +107,12 @@ namespace icl{
         }
       }
 
+      // ================================================================
+      // Generic convolute template — C++ fallback for all combos
+      // ================================================================
 
       template<class KernelType, class SrcType, class DstType, ConvolutionKernel::fixedType t>
       inline void convolute(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op, int c){
-        /// here we call the generic conv method and do not implement the convolution directly to
-        /// get rid of the 4th template parameter 't' which is not regarded in this general case
         if(op.getAnchor() == Point(1,1) && op.getMaskSize() == Size(3,3)){
           generic_cpp_convolution_3x3(src,dst,k,op,c);
         }else{
@@ -135,90 +120,9 @@ namespace icl{
         }
       }
 
-
-
-  #ifdef ICL_HAVE_IPP
-      /// define specializations of convolute-template
-
-      // note: each specialization is doubled because the kernel-type template parameters is handled in the IPP
-  #define FIXED_SPEC(SD,DD,KT,IPPF)                                                                                                   \
-      template<> inline void                                                                                                          \
-      convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
-        ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
-      }                                                                                                                               \
-      template<> inline void                                                                                                          \
-      convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
-        ipp_call_fixed(src,dst,c,IPPF,op);                                                                                            \
-      }
-  #define FIXED_SPEC_M(SD,DD,KT,IPPF,MASK)                                                                                            \
-      template<> inline void                                                                                                          \
-      convolute<int,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const int*,ConvolutionOp &op, int c){      \
-        ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
-      }                                                                                                                               \
-      template<> inline void                                                                                                          \
-      convolute<float,icl##SD,icl##DD,ConvolutionKernel::KT>(const Img##SD &src,Img##DD &dst,const float*,ConvolutionOp &op, int c){  \
-        ipp_call_fixed_mask(src,dst,c,MASK,IPPF,op);                                                                                  \
-      }
-  #define CONV_SPEC(KD,ID,IPPF)                                                                                                           \
-      template<> inline void                                                                                                              \
-      convolute<KD,icl##ID,icl##ID,ConvolutionKernel::custom>(const Img##ID &src,Img##ID &dst,const KD* kernel,ConvolutionOp& op, int c){ \
-        ipp_call_filter_##KD(src,dst,kernel,c,op,IPPF);                                                                                   \
-      }
-
-      // fixed sobel y filters
-      FIXED_SPEC(8u,8u,sobelY3x3,ippiFilterSobelHoriz_8u_C1R);
-
-
-      FIXED_SPEC(16s,16s,sobelY3x3,ippiFilterSobelHoriz_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelY3x3,ippiFilterSobelHoriz_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelY3x3,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelY5x5,ippiFilterSobelHoriz_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelY5x5,ippiFilterSobelHorizMask_32f_C1R,ippMskSize5x5);
-
-      // fixed sobel x filters
-      FIXED_SPEC(8u,8u,sobelX3x3,ippiFilterSobelVert_8u_C1R);
-      FIXED_SPEC(16s,16s,sobelX3x3,ippiFilterSobelVert_16s_C1R);
-      FIXED_SPEC(32f,32f,sobelX3x3,ippiFilterSobelVert_32f_C1R);
-      FIXED_SPEC_M(8u,16s,sobelX3x3,ippiFilterSobelVert_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,sobelX5x5,ippiFilterSobelVert_8u16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,sobelX5x5,ippiFilterSobelVertMask_32f_C1R,ippMskSize5x5);
-
-
-      // fixed laplace filters
-      FIXED_SPEC_M(8u,8u,laplace3x3,ippiFilterLaplace_8u_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(16s,16s,laplace3x3,ippiFilterLaplace_16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(32f,32f,laplace3x3,ippiFilterLaplace_32f_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,16s,laplace3x3,ippiFilterLaplace_8u16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,8u,laplace5x5,ippiFilterLaplace_8u_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(16s,16s,laplace5x5,ippiFilterLaplace_16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,laplace5x5,ippiFilterLaplace_32f_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(8u,16s,laplace5x5,ippiFilterLaplace_8u16s_C1R,ippMskSize5x5);
-
-
-      // fixed gaussian filters
-      FIXED_SPEC_M(8u,8u,gauss3x3,ippiFilterGauss_8u_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(16s,16s,gauss3x3,ippiFilterGauss_16s_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(32f,32f,gauss3x3,ippiFilterGauss_32f_C1R,ippMskSize3x3);
-      FIXED_SPEC_M(8u,8u,gauss5x5,ippiFilterGauss_8u_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(16s,16s,gauss5x5,ippiFilterGauss_16s_C1R,ippMskSize5x5);
-      FIXED_SPEC_M(32f,32f,gauss5x5,ippiFilterGauss_32f_C1R,ippMskSize5x5);
-
-
-
-      CONV_SPEC(int,8u,ippiFilter_8u_C1R);
-      CONV_SPEC(int,16s,ippiFilter_16s_C1R);
-      CONV_SPEC(float,32f,ippiFilter_32f_C1R);
-
-
-      CONV_SPEC(float,8u,ippiFilter32f_8u_C1R);
-      CONV_SPEC(float,16s,ippiFilter32f_16s_C1R);
-
-  #undef FIXED_SPEC
-  #undef FIXED_SPEC_M
-  #undef CONV_SPEC
-
-  #endif //ICL_HAVE_IPP
-
+      // ================================================================
+      // Dispatch chain: KernelType → SrcDepth → DstDepth → FixedType
+      // ================================================================
 
       template<class KernelType, class SrcType, class DstType, ConvolutionKernel::fixedType t>
       inline void apply_convolution_sdt(const Img<SrcType> &src, Img<DstType> &dst,const KernelType *k, ConvolutionOp &op){
@@ -240,7 +144,6 @@ namespace icl{
         }
       }
 
-
       template<class KernelType, class SrcType>
       inline void apply_convolution_s(const Img<SrcType> &src, ImgBase &dst,const KernelType *k, ConvolutionOp &op){
         switch(dst.getDepth()){
@@ -260,15 +163,35 @@ namespace icl{
           default: ICL_INVALID_DEPTH;
         }
       }
+
+      // ================================================================
+      // C++ backend entry point
+      // ================================================================
+
+      void cpp_convolution(const Image &src, Image &dst, ConvolutionOp &op) {
+        auto &kernel = op.getKernel();
+        if(kernel.isFloat()){
+          apply_convolution<float>(*src.ptr(), *dst.ptr(), kernel.getFloatData(), op);
+        }else{
+          apply_convolution<int>(*src.ptr(), *dst.ptr(), kernel.getIntData(), op);
+        }
+      }
+
     } // end of anonymous namespace
 
     ConvolutionOp::ConvolutionOp(const ConvolutionKernel &kernel):
       NeighborhoodOp(kernel.getSize()),m_forceUnsignedOutput(false){
       setKernel(kernel);
+      initDispatching("ConvolutionOp");
+      auto &sel = addSelector<ConvSig>("apply");
+      sel.add(Backend::Cpp, cpp_convolution);
     }
     ConvolutionOp::ConvolutionOp(const ConvolutionKernel &kernel, bool forceUnsignedOutput):
       NeighborhoodOp(kernel.getSize()),m_forceUnsignedOutput(forceUnsignedOutput){
       setKernel(kernel);
+      initDispatching("ConvolutionOp");
+      auto &sel = addSelector<ConvSig>("apply");
+      sel.add(Backend::Cpp, cpp_convolution);
     }
 
     void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {
@@ -287,11 +210,7 @@ namespace icl{
         m_kernel.toInt(true);
       }
 
-      if(m_kernel.isFloat()){
-        apply_convolution<float>(*src.ptr(), *dst.ptr(), m_kernel.getFloatData(), *this);
-      }else{
-        apply_convolution<int>(*src.ptr(), *dst.ptr(), m_kernel.getIntData(), *this);
-      }
+      getSelector<ConvSig>("apply").resolve(src)->apply(src, dst, *this);
     }
 
   } // namespace filter

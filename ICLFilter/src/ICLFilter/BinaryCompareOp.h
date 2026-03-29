@@ -32,13 +32,13 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/BinaryOp.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace filter {
 
     /// Class for comparing two images pixel-wise \ingroup BINARY
-    class ICLFilter_API BinaryCompareOp : public BinaryOp, public core::Dispatching {
+    class ICLFilter_API BinaryCompareOp : public BinaryOp, public core::ImageBackendDispatching {
       public:
 
       enum optype { lt, lteq, eq, gteq, gt, eqt };

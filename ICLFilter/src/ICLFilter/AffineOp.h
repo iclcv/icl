@@ -33,13 +33,13 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/BaseAffineOp.h>
 #include <ICLCore/Image.h>
-#include <ICLCore/BackendDispatch.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl{
   namespace filter{
     /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
     /** @see AffineOp.h for full documentation */
-    class ICLFilter_API AffineOp : public BaseAffineOp, public core::Dispatching {
+    class ICLFilter_API AffineOp : public BaseAffineOp, public core::ImageBackendDispatching {
       public:
       AffineOp(const AffineOp&) = delete;
       AffineOp& operator=(const AffineOp&) = delete;

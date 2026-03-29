@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 15 — All filters migrated + BackendDispatch Wave 1-2)
+## Current State (Session 16 — BackendDispatch Wave 3 complete)
 
 ### Architecture
 
@@ -154,37 +154,36 @@ Same pattern as UnaryOp. All 4 BinaryOp subclasses are migrated.
 
 These override `apply(const Image&, Image&)` directly, no `applyImgBase` bridge.
 
-**With BackendDispatch (6)** — separate _Simd.cpp/_Ipp.cpp backend files, `if constexpr`
-optype templates, `dispatchEnum<>` for runtime→compile-time dispatch:
+**With BackendDispatch (10)** — separate _Simd.cpp/_Ipp.cpp backend files:
 1. **ThresholdOp** — 3 selectors (ltVal, gtVal, ltgtVal), SSE2 8u/32f, IPP 8u/16s/32f
 2. **UnaryCompareOp** — 2 selectors (compare, compareEqTol), SSE2 8u, IPP 8u/16s/32f
 3. **UnaryArithmeticalOp** — 2 selectors (withVal, noVal), SSE2 32f, IPP stub
+4. **UnaryLogicalOp** — 2 selectors (withVal, noVal), SSE2 all integer, IPP
+5. **AffineOp** — Dispatching + _Ipp.cpp (8u/32f)
+6. **WienerOp** — IPP-only, stateful backend (8u/16s/32f)
+7. **LUTOp** — 1 selector (reduceBits), IPP 8u
+8. **MedianOp** — 2 selectors (fixed 3x3/5x5, generic), SSE2 8u/16s/32f, IPP 8u/16s
+9. **ConvolutionOp** — 1 selector (apply), IPP 34 specializations (Sobel/Laplace/Gauss/custom)
+10. **MorphologicalOp** — 1 selector (apply), stateful IPP backend with maskVersion() change detection
+11. **WarpOp** — Dispatching + _Ipp.cpp, stateful OpenCL backend (8u+LIN)
+12. **BilateralFilterOp** — Dispatching, stateful OpenCL backend (8u/32f)
 
-**Without BackendDispatch (17)** — inline dispatch structs:
-4. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
-5. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
-6. **WeightChannelsOp** — same depth, per-channel multiply via `visitROILinesPerChannelWith`
-7. **WeightedSumOp** — output 32f/64f, 1 channel, `visit()` + typed dst
-8. **ColorDistanceOp** — output 8u/32f/64f, `visitROILinesNWith<3,1>`, all math in double
-9. **UnaryLogicalOp** — integer depths only, `if constexpr` guard, `visitROILinesPerChannelWith`
-10. **LUTOp** — always 8u, converts non-8u input via buffer, IPP `reduceBits` untouched
-11. **LUTOp3Channel** — template class, `visit()` for src depth, output typed by class param
-12. **IntegralImgOp** — output 32s/32f/64f, full-image sequential algorithm, IPP disabled
-13. **WienerOp** — IPP-only (8u/16s/32f), `WienerImpl` dispatch struct, NeighborhoodOp::prepare
-14. **GaborOp** — composition filter (wraps ConvolutionOp), `m_vecResults` now `vector<Image>`
-15. **ColorSegmentationOp** — depth8u only, `visitROILinesNWith<3,1>`, compile-time shift templates
-16. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
-17. **AffineOp** — `AffineImpl` dispatch struct, IPP 8u/32f, C++ fallback with inverse matrix
-18. **CannyOp** — composition (Sobel→Canny), shared `applyCannyCore`, fixed non-clipToROI stride bug
-19. **MedianOp** — `MedianImpl<T>` dispatch struct, 4 algorithms
-20. **ConvolutionOp** — mixed-depth (8u→16s default), keeps IPP fixed-kernel dispatch chain
-21. **MorphologicalOp** — 8u/32f only, 11 optypes
-22. **LocalThresholdOp** — 4 algorithms, internal ImgBase* ROI buffering kept
-23. **WarpOp** — `WarpImpl<T>` dispatch struct, IPP 8u/32f, OpenCL 8u+LIN via stateful backend
-24. **BilateralFilterOp** — brute-force bilateral, C++ all depths, OpenCL 8u/32f via stateful backend
-25. **FFTOp** — thin subclass of BaseFFTOp (forward), delegates to FFTUtils (IPP/MKL/C++)
-26. **IFFTOp** — thin subclass of BaseFFTOp (inverse), join + PAD_REMOVE support
-27. **MotionSensitiveTemporalSmoothing** — temporal filter with motion detection, ring buffer
+**Without BackendDispatch (15)** — no IPP/#ifdef to extract:
+1. **DitheringOp** — fixed depth (8u), uses `prepare()` + `convertTo()` + `as8u()`
+2. **MirrorOp** — same depth, uses `prepare()` + `visitWith()` for typed dispatch
+3. **WeightChannelsOp** — same depth, per-channel multiply via `visitROILinesPerChannelWith`
+4. **WeightedSumOp** — output 32f/64f, 1 channel, `visit()` + typed dst
+5. **ColorDistanceOp** — output 8u/32f/64f, `visitROILinesNWith<3,1>`, all math in double
+6. **LUTOp3Channel** — template class, `visit()` for src depth, output typed by class param
+7. **IntegralImgOp** — output 32s/32f/64f, full-image sequential algorithm, IPP disabled
+8. **GaborOp** — composition filter (wraps ConvolutionOp), `m_vecResults` now `vector<Image>`
+9. **ColorSegmentationOp** — depth8u only, `visitROILinesNWith<3,1>`, compile-time shift templates
+10. **ChamferOp** — output depth32s, `visitROILinesWith` for init, multi-pass distance propagation
+11. **CannyOp** — composition (Sobel→Canny), shared `applyCannyCore`, fixed non-clipToROI stride bug
+12. **LocalThresholdOp** — 4 algorithms, internal ImgBase* ROI buffering kept
+13. **FFTOp** — thin subclass of BaseFFTOp (forward), delegates to FFTUtils (IPP/MKL/C++)
+14. **IFFTOp** — thin subclass of BaseFFTOp (inverse), join + PAD_REMOVE support
+15. **MotionSensitiveTemporalSmoothing** — temporal filter with motion detection, ring buffer
     per channel, template C++ implementation, 8u/32f only, no ROI support, motion image output
 
 ### Fully Native Image BinaryOp Filters (4 done — ALL COMPLETE)
@@ -372,20 +371,19 @@ The same patterns should be used in production code where performance is not cri
   its own NeighborhoodOp if there's demand.
 - **Converter::convert()** — static method replacing constructor-that-does-work
 - **Quick.h** — consider reworking to use Image instead of ImgQ (Img<icl32f>)
-- **BackendDispatch conversions done** (session 15):
+- **BackendDispatch conversions done** (session 15-16):
   - UnaryLogicalOp: Dispatching + _Ipp.cpp + _Simd.cpp (SSE2 all integer depths)
   - AffineOp: Dispatching + _Ipp.cpp (8u/32f)
   - WienerOp: Dispatching + _Ipp.cpp (stateful, 8u/16s/32f)
   - BinaryArithmeticalOp: _Simd.cpp (SSE2 32f: add/sub/mul/div/absSub)
   - BinaryCompareOp: _Simd.cpp (SSE2 8u/32f: lt/lteq/eq/gteq/gt)
   - BinaryLogicalOp: _Simd.cpp (SSE2 all integer: and/or/xor)
+  - LUTOp: Dispatching + _Ipp.cpp (reduceBits 8u only)
+  - MedianOp: Dispatching + _Ipp.cpp + _Simd.cpp, 2 selectors (fixed 3x3/5x5, generic)
+  - ConvolutionOp: Dispatching + _Ipp.cpp, 34 IPP specializations (fixed+custom kernels)
+  - MorphologicalOp: Dispatching + _Ipp.cpp (stateful, maskVersion() for change detection)
   CMake: `_Ipp.cpp` excluded when `NOT IPP_FOUND`, `_OpenCL.cpp` when `NOT OPENCL_FOUND`
-- **BackendDispatch TODO** — remaining filters with inline IPP/#ifdef:
-  - MorphologicalOp: complex — IPP state objects in header, 4 call patterns, #ifdef changes class layout
-  - MedianOp: complex — SSE2/IPP/C++ deeply interleaved in algorithm selection (3x3/5x5/generic)
-  - ConvolutionOp: IPP fixed-kernel dispatch chain, many specializations
-  - LUTOp: IPP reduceBits, special case
-  These need class restructuring, not just code extraction. Defer to dedicated session.
+- **BackendDispatch COMPLETE** — all filters with IPP/#ifdef code now use BackendDispatch.
 - **IPP cross-validation** — compile ICL in a Linux container with IPP, run both
   IPP and C++ paths on same inputs, compare outputs for all migrated filters.
 - **MirrorOp clipToROI=false** — affine ops write full image in non-clip mode, so
@@ -396,7 +394,7 @@ The same patterns should be used in production code where performance is not cri
 ### Backend Dispatch Framework (ICLCore/BackendDispatch.h) — DONE
 
 Moved from ICLFilter/FilterDispatch to ICLCore/BackendDispatch (`icl::core` namespace).
-Validated with 6 UnaryOp + 3 BinaryOp filters, old implementations replaced.
+Validated with 12 UnaryOp + 3 BinaryOp filters, all IPP/#ifdef code extracted.
 
 Key types:
 ```
@@ -466,3 +464,30 @@ WarpOp previously used ad-hoc `#ifdef ICL_HAVE_OPENCL` + raw `CLWarp*` member +
 `m_tryUseOpenCL` flag. Now uses `Dispatching` mixin with self-registering stateful
 OpenCL backend. `setTryUseOpenCL()` removed — use `forceAll(Backend::Cpp)` to
 disable OpenCL, or let the cascade auto-select the best available backend.
+
+### BackendDispatch Wave 3 Details (Session 16)
+
+**LUTOp**: Single selector "reduceBits" with `ReduceBitsSig = void(const Img8u&, Img8u&, icl8u)`.
+C++ backend builds LUT and calls `simple()`. IPP backend calls `ippiReduceBits_8u_C1R`.
+Static `reduceBits()` method kept as C++-only for direct callers.
+
+**MedianOp**: Two selectors — "fixed" (3x3/5x5) and "generic" (arbitrary mask).
+Sorting network cores duplicated between .cpp and _Simd.cpp (template functions
+instantiated with different types: scalar vs icl128/icl128i8u/icl128i16s).
+Fixed selector: C++ scalar sorting networks, SIMD SSE2 sorting networks (8u/16s/32f),
+IPP ippiFilterMedianCross (8u/16s).
+Generic selector: C++ huangMedian (8u/16s) + genericMedian (all types), IPP ippiFilterMedian (8u/16s).
+
+**ConvolutionOp**: Single selector "apply" at top level. Both C++ and IPP backends
+contain the full 4-level dispatch chain (KernelType→SrcDepth→DstDepth→FixedType).
+IPP backend file includes all 34 template specializations via FIXED_SPEC/CONV_SPEC macros.
+Unsupported depth combos fall through to generic C++ convolution within the IPP backend.
+
+**MorphologicalOp**: Single selector "apply". Stateful IPP backend via `registerStatefulBackend`.
+`MorphIppState` struct manages 4 IPP state objects (IppiMorphState for 8u/32f,
+IppiMorphAdvState for 8u/32f). Change detection via `maskVersion()` — monotonically
+increasing counter incremented by `setMask()`. State lazily initialized per-depth
+per-optype category (basic vs border-replicate vs advanced-border).
+Header completely cleaned: no `#ifdef ICL_HAVE_IPP`, no IPP type aliases, no IPP state
+members. C++ composite ops (open/close/tophat/blackhat/gradient) create nested
+MorphologicalOp instances whose `apply()` naturally dispatches through BackendDispatch.
