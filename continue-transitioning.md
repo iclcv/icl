@@ -146,11 +146,9 @@ class BinaryOp {
     virtual void apply(const ImgBase *a, const ImgBase *b, ImgBase **dst); // legacy (has default)
 };
 ```
-Note: BinaryOp's Image apply has a DEFAULT implementation (not pure virtual) that
-delegates to the ImgBase version. BinaryOp filters have NOT been migrated yet — they
-still override the ImgBase version.
-
-TODO: Make BinaryOp::apply(Image) pure virtual + final on ImgBase version, same as UnaryOp.
+BinaryOp::apply(Image) is **pure virtual** — all subclasses must implement it.
+The legacy apply(ImgBase*, ImgBase*, ImgBase**) is **final** and bridges to Image.
+Same pattern as UnaryOp. All 4 BinaryOp subclasses are migrated.
 
 ### Fully Native Image UnaryOp Filters (27 done — ALL COMPLETE)
 
@@ -189,15 +187,20 @@ optype templates, `dispatchEnum<>` for runtime→compile-time dispatch:
 27. **MotionSensitiveTemporalSmoothing** — temporal filter with motion detection, ring buffer
     per channel, template C++ implementation, 8u/32f only, no ROI support, motion image output
 
-### Fully Native Image BinaryOp Filters (3 done)
+### Fully Native Image BinaryOp Filters (4 done — ALL COMPLETE)
 
-These override `apply(const Image&, const Image&, Image&)` with BackendDispatch:
+These override `apply(const Image&, const Image&, Image&)` directly:
+
+**With BackendDispatch (3):**
 1. **BinaryArithmeticalOp** — 1 selector (apply), add/sub/mul/div/absSub
 2. **BinaryCompareOp** — 2 selectors (compare, compareEqTol), output always 8u
 3. **BinaryLogicalOp** — 1 selector (apply), and/or/xor, integer depths only
 
-All use `visitROILinesPerChannel2With`, `if constexpr` optype templates,
-`dispatchEnum<>`. BinaryOp base class has Image-based `prepare()` + `check()`.
+**Without BackendDispatch (1):**
+4. **ProximityOp** — IPP-only (8u/32f), sqrDistance/crossCorr/crossCorrCoeff metrics,
+   full/same/valid applymode with computed output size, explicit prepare()
+
+BinaryOp base class has Image-based `prepare()` + `check()` + explicit `prepare(depth, Size, ...)`.
 
 ### BaseFFTOp — Common Base for FFTOp/IFFTOp — DONE
 
