@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 15 — MotionSensitiveTemporalSmoothing: ALL UnaryOp filters migrated)
+## Current State (Session 15 — All filters migrated + BackendDispatch Wave 1-2)
 
 ### Architecture
 
