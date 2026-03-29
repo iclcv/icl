@@ -34,6 +34,7 @@
 #include <ICLCore/Img.h>
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/BackendDispatch.h>
 
 namespace icl {
   namespace filter{
@@ -44,55 +45,35 @@ namespace icl {
          are only supported on integer typed images, i.e. icl8u.
      */
 
-    class ICLFilter_API UnaryLogicalOp : public UnaryOp {
+    class ICLFilter_API UnaryLogicalOp : public UnaryOp, public core::Dispatching {
       public:
       /// this enum specifiy all possible unary logical operations
       enum optype{
-        andOp=0,  /**< add a constant value to each pixel  */
-        orOp=1,  /**< substract a constant value from each pixel  */
-        xorOp=2,  /**< multiply each pixel by a constant value */
-        notOp=3  /**< divide each pixle through a constant value */
+        andOp=0,  /**< bitwise AND with constant value  */
+        orOp=1,   /**< bitwise OR with constant value  */
+        xorOp=2,  /**< bitwise XOR with constant value */
+        notOp=3   /**< bitwise NOT (no value needed) */
       };
+
+      /// Dispatch signatures
+      using WithValSig = void(const core::Image&, core::Image&, icl32s val, int optype);
+      using NoValSig   = void(const core::Image&, core::Image&);
+
       /// Constructor
-      UnaryLogicalOp(optype t, icl32s val=0):m_eOpType(t), m_dValue(val){}
+      UnaryLogicalOp(optype t, icl32s val=0);
 
       /// Destructor
       virtual ~UnaryLogicalOp(){}
 
       /// performes the logical operation, given in the constructor or by the setOpType method.
-      /**
-        @param poSrc first operand (image)
-        @param ppoDst pointer to the destination image, to store the result
-      */
       void apply(const core::Image &src, core::Image &dst) override;
 
       /// Import unaryOps apply function without destination image
       using UnaryOp::apply;
 
-      /// sets the second operand, with the source is operated with.
-      /**
-        @param value the value for the operand
-      */
       void setValue(icl32s value) { m_dValue = value; }
-
-      /// returns the value of the second operand
-      /**
-        @return  the value of the second operand
-      */
       icl32s getValue() const { return m_dValue; }
-
-      /// changes the operator type
-      /**
-        @see optype
-        @param t operator type
-      */
       void setOpType(optype t){ m_eOpType = t;}
-
-      /// returns the operator type
-      /**
-        @see optype
-        @return operator type
-      */
       optype getOpType() const { return m_eOpType; }
 
       private:
