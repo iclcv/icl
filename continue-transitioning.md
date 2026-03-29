@@ -367,21 +367,25 @@ The same patterns should be used in production code where performance is not cri
   The OpenCL path was removed during migration (tightly coupled to TemporalSmoothingCL).
   Could be re-added as a stateful backend, but the temporal ring buffer on GPU
   makes the dispatch pattern awkward. Low priority unless Kinect perf is needed.
-- **BinaryOp filters** — same migration as UnaryOp, needs visitROILines2With
+- **BinaryOp filters** — DONE: all 4 migrated with Image-based apply + BackendDispatch
 - **KuwaharaOp** — dropped from BilateralFilterOp (different algorithm). Could be
   its own NeighborhoodOp if there's demand.
 - **Converter::convert()** — static method replacing constructor-that-does-work
 - **Quick.h** — consider reworking to use Image instead of ImgQ (Img<icl32f>)
-- **Custom SSE2/NEON specializations** — add SIMD fast paths to filters that currently
-  only have IPP acceleration or pure C++ fallback. The dispatch struct pattern makes
-  this easy: just add a `#elif defined(ICL_HAVE_SSE2)` specialization block.
-  Priority candidates (high pixel throughput, simple inner loops):
-  - UnaryLogicalOp (bitwise ops — natural SIMD fit)
-  - UnaryCompareOp (compare+mask — similar to ThresholdOp SSE2 pattern)
-  - BinaryArithmeticalOp, BinaryLogicalOp, BinaryCompareOp (same patterns, two inputs)
-  - ConvolutionOp (fixed-kernel convolutions, e.g. 3x3 Sobel)
-  - MedianOp (already has SSE2 — extend to more depths/sizes)
-  - MorphologicalOp (erode/dilate with flat structuring elements)
+- **BackendDispatch conversions done** (session 15):
+  - UnaryLogicalOp: Dispatching + _Ipp.cpp + _Simd.cpp (SSE2 all integer depths)
+  - AffineOp: Dispatching + _Ipp.cpp (8u/32f)
+  - WienerOp: Dispatching + _Ipp.cpp (stateful, 8u/16s/32f)
+  - BinaryArithmeticalOp: _Simd.cpp (SSE2 32f: add/sub/mul/div/absSub)
+  - BinaryCompareOp: _Simd.cpp (SSE2 8u/32f: lt/lteq/eq/gteq/gt)
+  - BinaryLogicalOp: _Simd.cpp (SSE2 all integer: and/or/xor)
+  CMake: `_Ipp.cpp` excluded when `NOT IPP_FOUND`, `_OpenCL.cpp` when `NOT OPENCL_FOUND`
+- **BackendDispatch TODO** — remaining filters with inline IPP/#ifdef:
+  - MorphologicalOp: complex — IPP state objects in header, 4 call patterns, #ifdef changes class layout
+  - MedianOp: complex — SSE2/IPP/C++ deeply interleaved in algorithm selection (3x3/5x5/generic)
+  - ConvolutionOp: IPP fixed-kernel dispatch chain, many specializations
+  - LUTOp: IPP reduceBits, special case
+  These need class restructuring, not just code extraction. Defer to dedicated session.
 - **IPP cross-validation** — compile ICL in a Linux container with IPP, run both
   IPP and C++ paths on same inputs, compare outputs for all migrated filters.
 - **MirrorOp clipToROI=false** — affine ops write full image in non-clip mode, so
