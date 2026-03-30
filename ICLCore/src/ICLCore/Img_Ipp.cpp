@@ -238,46 +238,6 @@ namespace {
 
   // ---- Registration ----
 
-  static const int _r1 = ImgBaseBackendDispatching::registerBackend<ImgOps::MirrorSig>(
-    "Img.mirror", Backend::Ipp, ipp_mirror,
-    applicableToBase<icl8u, icl16s, icl32s, icl32f>,
-    "IPP ippiMirror (8u/16s/32s/32f)");
-
-  static const int _r2 = ImgBaseBackendDispatching::registerBackend<ImgOps::ClearChannelROISig>(
-    "Img.clearChannelROI", Backend::Ipp, ipp_clearChannelROI,
-    applicableToBase<icl8u, icl16s, icl32s, icl32f>,
-    "IPP ippiSet (8u/16s/32s/32f)");
-
-  static const int _r3 = ImgBaseBackendDispatching::registerBackend<ImgOps::LutSig>(
-    "Img.lut", Backend::Ipp, ipp_lut,
-    applicableToBase<icl8u>,
-    "IPP ippiLUTPalette (8u)");
-
-  static const int _r4 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMaxSig>(
-    "Img.getMax", Backend::Ipp, ipp_getMax,
-    applicableToBase<icl8u, icl16s, icl32f>,
-    "IPP ippiMax/MaxIndx (8u/16s/32f)");
-
-  static const int _r5 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMinSig>(
-    "Img.getMin", Backend::Ipp, ipp_getMin,
-    applicableToBase<icl8u, icl16s, icl32f>,
-    "IPP ippiMin/MinIndx (8u/16s/32f)");
-
-  static const int _r6 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMinMaxSig>(
-    "Img.getMinMax", Backend::Ipp, ipp_getMinMax,
-    applicableToBase<icl8u, icl32f>,
-    "IPP ippiMinMax/MinMaxIndx (8u/32f)");
-
-  static const int _r7 = ImgBaseBackendDispatching::registerBackend<ImgOps::NormalizeSig>(
-    "Img.normalize", Backend::Ipp, ipp_normalize,
-    applicableToBase<icl32f>,
-    "IPP ippiMulC+AddC (32f)");
-
-  static const int _r8 = ImgBaseBackendDispatching::registerBackend<ImgOps::FlippedCopySig>(
-    "Img.flippedCopy", Backend::Ipp, ipp_flippedCopy,
-    applicableToBase<icl8u, icl32f>,
-    "IPP ippiMirror (8u/32f)");
-
   // ---- channelMean ----
   icl64f ipp_channelMean(ImgBase& img, int channel, bool roiOnly) {
     const auto* data = roiOnly ? img.getROIData(channel) : img.getData(channel);
@@ -320,14 +280,20 @@ namespace {
     }
   }
 
-  static const int _r9 = ImgBaseBackendDispatching::registerBackend<ImgOps::ChannelMeanSig>(
-    "Img.channelMean", Backend::Ipp, ipp_channelMean,
-    applicableToBase<icl8u, icl16s, icl32f>,
-    "IPP ippiMean (8u/16s/32f)");
+  // ---- Direct registration into ImgOps singleton ----
 
-  static const int _r10 = ImgBaseBackendDispatching::registerBackend<ImgOps::ReplicateBorderSig>(
-    "Img.replicateBorder", Backend::Ipp, ipp_replicateBorder,
-    applicableToBase<icl8u, icl32f>,
-    "IPP ippiCopyReplicateBorder (8u/32f)");
+  static int _reg = [] {
+    using Op = ImgOps::Op;
+    auto& ops = ImgOps::instance();
+    ops.getSelector<ImgOps::MirrorSig>(Op::mirror).add(Backend::Ipp, ipp_mirror, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiMirror (8u/16s/32s/32f)");
+    ops.getSelector<ImgOps::ClearChannelROISig>(Op::clearChannelROI).add(Backend::Ipp, ipp_clearChannelROI, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiSet (8u/16s/32s/32f)");
+    ops.getSelector<ImgOps::LutSig>(Op::lut).add(Backend::Ipp, ipp_lut, applicableToBase<icl8u>, "IPP ippiLUTPalette (8u)");
+    ops.getSelector<ImgOps::GetMaxSig>(Op::getMax).add(Backend::Ipp, ipp_getMax, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMax/MaxIndx (8u/16s/32f)");
+    ops.getSelector<ImgOps::GetMinSig>(Op::getMin).add(Backend::Ipp, ipp_getMin, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMin/MinIndx (8u/16s/32f)");
+    ops.getSelector<ImgOps::GetMinMaxSig>(Op::getMinMax).add(Backend::Ipp, ipp_getMinMax, applicableToBase<icl8u, icl32f>, "IPP ippiMinMax/MinMaxIndx (8u/32f)");
+    ops.getSelector<ImgOps::NormalizeSig>(Op::normalize).add(Backend::Ipp, ipp_normalize, applicableToBase<icl32f>, "IPP ippiMulC+AddC (32f)");
+    ops.getSelector<ImgOps::FlippedCopySig>(Op::flippedCopy).add(Backend::Ipp, ipp_flippedCopy, applicableToBase<icl8u, icl32f>, "IPP ippiMirror (8u/32f)");
+    ops.getSelector<ImgOps::ChannelMeanSig>(Op::channelMean).add(Backend::Ipp, ipp_channelMean, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMean (8u/16s/32f)");
+    ops.getSelector<ImgOps::ReplicateBorderSig>(Op::replicateBorder).add(Backend::Ipp, ipp_replicateBorder, applicableToBase<icl8u, icl32f>, "IPP ippiCopyReplicateBorder (8u/32f)");
 
 } // anonymous namespace

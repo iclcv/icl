@@ -65,8 +65,9 @@ namespace icl {
 
     // ================================================================
     // Global Registry — staging area for static-init self-registration.
-    // String-keyed, type-erased. Backends register here before any
-    // singleton is constructed; singletons pull from it at init time.
+    // Used by per-instance dispatchers (filters) whose instances don't
+    // exist yet at static-init time. Singletons (ImgOps) can bypass
+    // this and register directly.
     // ================================================================
 
     namespace detail {
@@ -81,15 +82,14 @@ namespace icl {
     }
 
     // ================================================================
-    // BackendSelector<Context, Sig> — dispatch table for one operation.
-    // Stores up to NUM_BACKENDS implementations in a fixed array
-    // (indexed by Backend enum value, highest priority first on resolve).
+    // BackendSelector — dispatch table for one operation.
+    // Stores up to NUM_BACKENDS implementations in a fixed array.
+    // ImplBase objects are shared_ptr so selectors can be cloned cheaply.
     // ================================================================
 
     template<class Context>
     using ApplicabilityFn = std::function<bool(const Context&)>;
 
-    // Type-erased base for selector introspection (tests, cross-validation)
     template<class Context>
     struct BackendSelectorBase {
       virtual ~BackendSelectorBase() = default;
@@ -100,6 +100,7 @@ namespace icl {
       void force(Backend b) { forcedBackend = b; }
       void unforce() { forcedBackend = std::nullopt; }
 
+      virtual std::unique_ptr<BackendSelectorBase> clone() const = 0;
       virtual std::vector<Backend> registeredBackends() const = 0;
       virtual Backend bestBackendFor(const Context& ctx) const = 0;
       virtual std::vector<Backend> applicableBackendsFor(const Context& ctx) const = 0;
@@ -141,15 +142,15 @@ namespace icl {
         }
       };
 
-      // --- Storage: fixed array indexed by Backend enum value ---
+      // --- Storage: shared_ptr so cloning just bumps refcounts ---
 
-      std::array<std::unique_ptr<ImplBase>, NUM_BACKENDS> impls{};
+      std::array<std::shared_ptr<ImplBase>, NUM_BACKENDS> impls{};
 
       template<class F>
       void add(Backend b, F&& f, ApplicabilityFn<Context> applicability,
                std::string description = "") {
         if(description.empty()) description = std::string(backendName(b)) + " fallback";
-        impls[static_cast<int>(b)] = std::make_unique<Impl<std::decay_t<F>>>(
+        impls[static_cast<int>(b)] = std::make_shared<Impl<std::decay_t<F>>>(
           std::forward<F>(f), b, std::move(description), std::move(applicability));
       }
 
@@ -182,6 +183,15 @@ namespace icl {
         return impls[static_cast<int>(b)].get();
       }
 
+      // --- Clone: new selector sharing the same ImplBase objects ---
+
+      std::unique_ptr<BackendSelectorBase<Context>> clone() const override {
+        auto c = std::make_unique<BackendSelector>();
+        c->name = this->name;
+        c->impls = this->impls;  // copies shared_ptrs — cheap
+        return c;
+      }
+
       // --- Introspection (tests / cross-validation) ---
 
       std::vector<Backend> registeredBackends() const override {
@@ -206,15 +216,41 @@ namespace icl {
     };
 
     // ================================================================
-    // BackendDispatching<Context> — mixin for classes that own
-    // multiple BackendSelectors (one per dispatched operation).
+    // BackendDispatching<Context> — owns multiple BackendSelectors.
+    //
+    // Two construction modes:
+    //   1. Default — empty, add selectors via addSelector() (prototypes, singletons)
+    //   2. Clone   — copies selectors from a prototype, sharing ImplBase objects
+    //                but with independent forcedBackend state
     // ================================================================
 
     template<class Context>
     struct BackendDispatching {
       virtual ~BackendDispatching() = default;
 
-      // ---- Static registration (called during static init from _Cpp.cpp / _Ipp.cpp) ----
+      /// Default constructor — for prototypes and singletons
+      BackendDispatching() = default;
+
+      /// Clone constructor — creates independent selectors sharing ImplBase objects.
+      /// Use as mandatory base-class initializer in filter constructors.
+      explicit BackendDispatching(const BackendDispatching& proto)
+        : m_prefix(proto.m_prefix) {
+        for(auto& sel : proto.m_selectors) {
+          auto cloned = sel->clone();
+          auto* ptr = cloned.get();
+          // Extract short name from full qualified name
+          if(cloned->name.size() > m_prefix.size())
+            m_selectorByName[cloned->name.substr(m_prefix.size())] = ptr;
+          m_selectors.push_back(std::move(cloned));
+        }
+      }
+
+      // Disable copy-assignment (cloning is explicit via constructor)
+      BackendDispatching& operator=(const BackendDispatching&) = delete;
+      BackendDispatching(BackendDispatching&&) = default;
+      BackendDispatching& operator=(BackendDispatching&&) = default;
+
+      // ---- Static registration into global registry (for filters not yet on singletons) ----
 
       template<class Sig, class F>
       static int registerBackend(const std::string& key, Backend b, F&& f,
@@ -246,13 +282,13 @@ namespace icl {
         });
       }
 
-      // ---- Instance setup (called from singleton constructors) ----
+      // ---- Selector setup (prototypes / singletons) ----
 
       void initDispatching(const std::string& className) {
         m_prefix = className + ".";
       }
 
-      /// String-keyed addSelector (filters)
+      /// String-keyed addSelector — also loads from global registry
       template<class Sig>
       BackendSelector<Context, Sig>& addSelector(const std::string& shortName) {
         std::string fullName = m_prefix + shortName;
@@ -265,7 +301,7 @@ namespace icl {
         return *ptr;
       }
 
-      /// Enum-keyed addSelector — derives the registry name via ADL toString(K),
+      /// Enum-keyed addSelector — derives registry name via ADL toString(K),
       /// asserts enum value matches insertion index.
       template<class Sig, class K,
                typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
@@ -278,7 +314,7 @@ namespace icl {
 
       // ---- Selector lookup ----
 
-      /// String-keyed lookup (filters)
+      /// String-keyed lookup
       template<class Sig>
       BackendSelector<Context, Sig>& getSelector(const std::string& shortName) {
         return *static_cast<BackendSelector<Context, Sig>*>(m_selectorByName.at(shortName));

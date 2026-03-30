@@ -366,38 +366,20 @@ namespace {
   }
 
 
-  // ---- Registration ----
+  // ---- Direct registration into ImgOps singleton (no global registry) ----
 
-  static const int _r1 = ImgBaseBackendDispatching::registerBackend<ImgOps::MirrorSig>(
-    "Img.mirror", Backend::Cpp, cpp_mirror,
-    nullptr, "C++ swap-based mirror");
-
-  static const int _r2 = ImgBaseBackendDispatching::registerBackend<ImgOps::ClearChannelROISig>(
-    "Img.clearChannelROI", Backend::Cpp, cpp_clearChannelROI,
-    nullptr, "C++ std::fill clear");
-
-  static const int _r3 = ImgBaseBackendDispatching::registerBackend<ImgOps::LutSig>(
-    "Img.lut", Backend::Cpp, cpp_lut,
-    nullptr, "C++ per-pixel LUT");
-
-  static const int _r4 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMaxSig>(
-    "Img.getMax", Backend::Cpp, cpp_getMax,
-    nullptr, "C++ std::max_element");
-
-  static const int _r5 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMinSig>(
-    "Img.getMin", Backend::Cpp, cpp_getMin,
-    nullptr, "C++ std::min_element");
-
-  static const int _r6 = ImgBaseBackendDispatching::registerBackend<ImgOps::GetMinMaxSig>(
-    "Img.getMinMax", Backend::Cpp, cpp_getMinMax,
-    nullptr, "C++ min/max element scan");
-
-  static const int _r7 = ImgBaseBackendDispatching::registerBackend<ImgOps::NormalizeSig>(
-    "Img.normalize", Backend::Cpp, cpp_normalize,
-    nullptr, "C++ scale+shift normalize");
-
-  static const int _r8 = ImgBaseBackendDispatching::registerBackend<ImgOps::FlippedCopySig>(
-    "Img.flippedCopy", Backend::Cpp, cpp_flippedCopy,
-    nullptr, "C++ pointer-walk flipped copy");
+  static int _reg = [] {
+    using Op = ImgOps::Op;
+    auto& ops = ImgOps::instance();
+    ops.getSelector<ImgOps::MirrorSig>(Op::mirror).add(Backend::Cpp, cpp_mirror, "C++ swap-based mirror");
+    ops.getSelector<ImgOps::ClearChannelROISig>(Op::clearChannelROI).add(Backend::Cpp, cpp_clearChannelROI, "C++ std::fill clear");
+    ops.getSelector<ImgOps::LutSig>(Op::lut).add(Backend::Cpp, cpp_lut, "C++ per-pixel LUT");
+    ops.getSelector<ImgOps::GetMaxSig>(Op::getMax).add(Backend::Cpp, cpp_getMax, "C++ std::max_element");
+    ops.getSelector<ImgOps::GetMinSig>(Op::getMin).add(Backend::Cpp, cpp_getMin, "C++ std::min_element");
+    ops.getSelector<ImgOps::GetMinMaxSig>(Op::getMinMax).add(Backend::Cpp, cpp_getMinMax, "C++ min/max element scan");
+    ops.getSelector<ImgOps::NormalizeSig>(Op::normalize).add(Backend::Cpp, cpp_normalize, "C++ scale+shift normalize");
+    ops.getSelector<ImgOps::FlippedCopySig>(Op::flippedCopy).add(Backend::Cpp, cpp_flippedCopy, "C++ pointer-walk flipped copy");
+    return 0;
+  }();
 
 } // anonymous namespace

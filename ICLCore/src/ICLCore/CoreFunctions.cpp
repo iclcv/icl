@@ -769,9 +769,11 @@ namespace icl{
         }
       }
 
-      static const int _rcm = ImgBaseBackendDispatching::registerBackend<ImgOps::ChannelMeanSig>(
-        "Img.channelMean", Backend::Cpp, cpp_channel_mean,
-        nullptr, "C++ math::mean iterator");
+      static int _rcm = [] {
+        ImgOps::instance().getSelector<ImgOps::ChannelMeanSig>(ImgOps::Op::channelMean)
+          .add(Backend::Cpp, cpp_channel_mean, "C++ math::mean iterator");
+        return 0;
+      }();
     }
 
     std::vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
