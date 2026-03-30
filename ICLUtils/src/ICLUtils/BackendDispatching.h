@@ -38,6 +38,7 @@
 #include <memory>
 #include <optional>
 #include <functional>
+#include <stdexcept>
 
 namespace icl {
   namespace utils {
@@ -152,6 +153,13 @@ namespace icl {
               return it->second.get();
           }
           return nullptr;
+        }
+
+        /// Like resolve(), but throws if no applicable backend is found.
+        ImplBase* resolveOrThrow(const Context& ctx) {
+          auto* r = resolve(ctx);
+          if(!r) throw std::logic_error("no applicable backend for '" + this->name + "'");
+          return r;
         }
 
         ImplBase* get(Backend b) {

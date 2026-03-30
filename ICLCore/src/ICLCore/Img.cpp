@@ -678,7 +678,7 @@ namespace icl {
     {
       FUNCTION_LOG("");
       auto& sel = ImgOps::instance().getSelector<ImgOps::MirrorSig>("mirror");
-      sel.resolve(this)->apply(*this, eAxis, bOnlyROI);
+      sel.resolveOrThrow(this)->apply(*this, eAxis, bOnlyROI);
     }
 
     static inline int getPointerOffset (int x, int y, int iLineLen) {return (x + y*iLineLen);}
