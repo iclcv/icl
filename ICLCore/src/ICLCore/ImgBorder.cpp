@@ -263,8 +263,8 @@ namespace icl{
       }
 
       static int _rrb = [] {
-        ImgOps::instance().getSelector<ImgOps::ReplicateBorderSig>(ImgOps::Op::replicateBorder)
-          .add(Backend::Cpp, cpp_replicateBorder, "C++ border replication");
+        ImgOps::instance().addBackend<ImgOps::ReplicateBorderSig>(
+          ImgOps::Op::replicateBorder, Backend::Cpp, cpp_replicateBorder, "C++ border replication");
         return 0;
       }();
     }

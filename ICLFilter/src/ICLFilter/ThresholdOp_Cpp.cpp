@@ -53,9 +53,9 @@ namespace {
   static int _reg = [] {
     using Op = TOp::Op;
     auto& proto = TOp::prototype();
-    proto.getSelector<TOp::ThreshSig>(Op::ltVal).add(Backend::Cpp, cpp_ltval, "C++ ltVal");
-    proto.getSelector<TOp::ThreshSig>(Op::gtVal).add(Backend::Cpp, cpp_gtval, "C++ gtVal");
-    proto.getSelector<TOp::ThreshDualSig>(Op::ltgtVal).add(Backend::Cpp, cpp_ltgtval, "C++ ltgtVal");
+    proto.addBackend<TOp::ThreshSig>(Op::ltVal, Backend::Cpp, cpp_ltval, "C++ ltVal");
+    proto.addBackend<TOp::ThreshSig>(Op::gtVal, Backend::Cpp, cpp_gtval, "C++ gtVal");
+    proto.addBackend<TOp::ThreshDualSig>(Op::ltgtVal, Backend::Cpp, cpp_ltgtval, "C++ ltgtVal");
     return 0;
   }();
 

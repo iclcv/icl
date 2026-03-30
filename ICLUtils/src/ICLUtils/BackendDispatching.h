@@ -327,6 +327,20 @@ namespace icl {
         return *static_cast<BackendSelector<Context, Sig>*>(m_selectors[static_cast<size_t>(key)].get());
       }
 
+      /// Convenience: getSelector(key).add(b, f, ...) in one call
+      template<class Sig, class K, class F,
+               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      void addBackend(K key, Backend b, F&& f, ApplicabilityFn<Context> applicability,
+                      std::string description = "") {
+        getSelector<Sig>(key).add(b, std::forward<F>(f), std::move(applicability), std::move(description));
+      }
+
+      template<class Sig, class K, class F,
+               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      void addBackend(K key, Backend b, F&& f, std::string description = "") {
+        getSelector<Sig>(key).add(b, std::forward<F>(f), std::move(description));
+      }
+
       /// String-keyed lookup returning base (introspection / tests)
       BackendSelectorBase<Context>* selectorByName(const std::string& shortName) {
         auto it = m_selectorByName.find(shortName);

@@ -117,9 +117,9 @@ namespace {
 
   static int _reg = [] {
     auto& proto = TOp::prototype();
-    proto.getSelector<TOp::ThreshSig>(Op::ltVal).add(Backend::Ipp, ipp_ltval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
-    proto.getSelector<TOp::ThreshSig>(Op::gtVal).add(Backend::Ipp, ipp_gtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
-    proto.getSelector<TOp::ThreshDualSig>(Op::ltgtVal).add(Backend::Ipp, ipp_ltgtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
+    proto.addBackend<TOp::ThreshSig>(Op::ltVal, Backend::Ipp, ipp_ltval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
+    proto.addBackend<TOp::ThreshSig>(Op::gtVal, Backend::Ipp, ipp_gtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
+    proto.addBackend<TOp::ThreshDualSig>(Op::ltgtVal, Backend::Ipp, ipp_ltgtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
     return 0;
   }();
 

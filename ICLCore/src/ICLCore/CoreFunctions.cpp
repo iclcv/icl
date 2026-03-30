@@ -770,8 +770,8 @@ namespace icl{
       }
 
       static int _rcm = [] {
-        ImgOps::instance().getSelector<ImgOps::ChannelMeanSig>(ImgOps::Op::channelMean)
-          .add(Backend::Cpp, cpp_channel_mean, "C++ math::mean iterator");
+        ImgOps::instance().addBackend<ImgOps::ChannelMeanSig>(
+          ImgOps::Op::channelMean, Backend::Cpp, cpp_channel_mean, "C++ math::mean iterator");
         return 0;
       }();
     }

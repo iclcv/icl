@@ -371,14 +371,14 @@ namespace {
   static int _reg = [] {
     using Op = ImgOps::Op;
     auto& ops = ImgOps::instance();
-    ops.getSelector<ImgOps::MirrorSig>(Op::mirror).add(Backend::Cpp, cpp_mirror, "C++ swap-based mirror");
-    ops.getSelector<ImgOps::ClearChannelROISig>(Op::clearChannelROI).add(Backend::Cpp, cpp_clearChannelROI, "C++ std::fill clear");
-    ops.getSelector<ImgOps::LutSig>(Op::lut).add(Backend::Cpp, cpp_lut, "C++ per-pixel LUT");
-    ops.getSelector<ImgOps::GetMaxSig>(Op::getMax).add(Backend::Cpp, cpp_getMax, "C++ std::max_element");
-    ops.getSelector<ImgOps::GetMinSig>(Op::getMin).add(Backend::Cpp, cpp_getMin, "C++ std::min_element");
-    ops.getSelector<ImgOps::GetMinMaxSig>(Op::getMinMax).add(Backend::Cpp, cpp_getMinMax, "C++ min/max element scan");
-    ops.getSelector<ImgOps::NormalizeSig>(Op::normalize).add(Backend::Cpp, cpp_normalize, "C++ scale+shift normalize");
-    ops.getSelector<ImgOps::FlippedCopySig>(Op::flippedCopy).add(Backend::Cpp, cpp_flippedCopy, "C++ pointer-walk flipped copy");
+    ops.addBackend<ImgOps::MirrorSig>(Op::mirror, Backend::Cpp, cpp_mirror, "C++ swap-based mirror");
+    ops.addBackend<ImgOps::ClearChannelROISig>(Op::clearChannelROI, Backend::Cpp, cpp_clearChannelROI, "C++ std::fill clear");
+    ops.addBackend<ImgOps::LutSig>(Op::lut, Backend::Cpp, cpp_lut, "C++ per-pixel LUT");
+    ops.addBackend<ImgOps::GetMaxSig>(Op::getMax, Backend::Cpp, cpp_getMax, "C++ std::max_element");
+    ops.addBackend<ImgOps::GetMinSig>(Op::getMin, Backend::Cpp, cpp_getMin, "C++ std::min_element");
+    ops.addBackend<ImgOps::GetMinMaxSig>(Op::getMinMax, Backend::Cpp, cpp_getMinMax, "C++ min/max element scan");
+    ops.addBackend<ImgOps::NormalizeSig>(Op::normalize, Backend::Cpp, cpp_normalize, "C++ scale+shift normalize");
+    ops.addBackend<ImgOps::FlippedCopySig>(Op::flippedCopy, Backend::Cpp, cpp_flippedCopy, "C++ pointer-walk flipped copy");
     return 0;
   }();
 
