@@ -111,19 +111,16 @@ namespace {
     });
   }
 
-  // --- Self-registration ---
+  // --- Direct registration into prototype ---
   using TOp = icl::filter::ThresholdOp;
+  using Op = TOp::Op;
 
-  static const int _reg1 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
-    "ThresholdOp.ltVal", Backend::Ipp, ipp_ltval,
-    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
-
-  static const int _reg2 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
-    "ThresholdOp.gtVal", Backend::Ipp, ipp_gtval,
-    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
-
-  static const int _reg3 = ImageBackendDispatching::registerBackend<TOp::ThreshDualSig>(
-    "ThresholdOp.ltgtVal", Backend::Ipp, ipp_ltgtval,
-    applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
+  static int _reg = [] {
+    auto& proto = TOp::prototype();
+    proto.getSelector<TOp::ThreshSig>(Op::ltVal).add(Backend::Ipp, ipp_ltval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltVal (8u/16s/32f)");
+    proto.getSelector<TOp::ThreshSig>(Op::gtVal).add(Backend::Ipp, ipp_gtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold gtVal (8u/16s/32f)");
+    proto.getSelector<TOp::ThreshDualSig>(Op::ltgtVal).add(Backend::Ipp, ipp_ltgtval, applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
+    return 0;
+  }();
 
 } // anon namespace

@@ -29,8 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/ThresholdOp.h>
-#include <ICLCore/Visitors.h>
-#include <ICLUtils/ClippedCast.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -38,83 +36,42 @@ using namespace icl::core;
 namespace icl {
   namespace filter {
 
-    // ================================================================
-    // C++ fallback implementations
-    // ================================================================
-
-    namespace {
-      void cpp_ltval(const Image &src, Image &dst, double threshold, double value) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          T t = clipped_cast<double,T>(threshold);
-          T v = clipped_cast<double,T>(value);
-          visitROILinesPerChannelWith(s, d, [t, v](const T *sp, T *dp, int, int w) {
-            for(int i = 0; i < w; ++i) dp[i] = sp[i] < t ? v : sp[i];
-          });
-        });
+    const char* toString(ThresholdOp::Op op) {
+      switch(op) {
+        case ThresholdOp::Op::ltVal:   return "ltVal";
+        case ThresholdOp::Op::gtVal:   return "gtVal";
+        case ThresholdOp::Op::ltgtVal: return "ltgtVal";
       }
-
-      void cpp_gtval(const Image &src, Image &dst, double threshold, double value) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          T t = clipped_cast<double,T>(threshold);
-          T v = clipped_cast<double,T>(value);
-          visitROILinesPerChannelWith(s, d, [t, v](const T *sp, T *dp, int, int w) {
-            for(int i = 0; i < w; ++i) dp[i] = sp[i] > t ? v : sp[i];
-          });
-        });
-      }
-
-      void cpp_ltgtval(const Image &src, Image &dst,
-                       double tLo, double vLo, double tHi, double vHi) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          T lo = clipped_cast<double,T>(tLo);
-          T vl = clipped_cast<double,T>(vLo);
-          T hi = clipped_cast<double,T>(tHi);
-          T vh = clipped_cast<double,T>(vHi);
-          visitROILinesPerChannelWith(s, d, [lo, vl, hi, vh](const T *sp, T *dp, int, int w) {
-            for(int i = 0; i < w; ++i) {
-              T val = sp[i];
-              dp[i] = val < lo ? vl : (val > hi ? vh : val);
-            }
-          });
-        });
-      }
-    } // anon namespace
-
-    // ================================================================
-    // Constructor — registers C++ fallback + loads from global registry
-    // ================================================================
-
-    ThresholdOp::ThresholdOp(optype ttype, float lowThreshold,
-                                   float highThreshold, float lowVal, float highVal)
-      : m_eType(ttype), m_fLowThreshold(lowThreshold),
-        m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
-    {
-      initDispatching("ThresholdOp");
-
-      // Create switches (auto-loads self-registered backends from registry)
-      auto& ltVal   = addSelector<ThreshSig>("ltVal");
-      auto& gtVal   = addSelector<ThreshSig>("gtVal");
-      auto& ltgtVal = addSelector<ThreshDualSig>("ltgtVal");
-
-      // C++ fallback — always present, supports all depths
-      ltVal.add(Backend::Cpp, cpp_ltval);
-      gtVal.add(Backend::Cpp, cpp_gtval);
-      ltgtVal.add(Backend::Cpp, cpp_ltgtval);
+      return "?";
     }
 
-    // ================================================================
-    // apply() — dispatches to best backend per sub-op
-    // ================================================================
+    core::ImageBackendDispatching& ThresholdOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("ThresholdOp");
+        proto.addSelector<ThreshSig>(Op::ltVal);
+        proto.addSelector<ThreshSig>(Op::gtVal);
+        proto.addSelector<ThreshDualSig>(Op::ltgtVal);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    // Constructor — clones selectors from the class prototype
+    ThresholdOp::ThresholdOp(optype ttype, float lowThreshold,
+                                   float highThreshold, float lowVal, float highVal)
+      : ImageBackendDispatching(prototype()),
+        m_eType(ttype), m_fLowThreshold(lowThreshold),
+        m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
+    {}
 
     void ThresholdOp::apply(const Image &src, Image &dst) {
       if(!prepare(dst, src)) return;
 
-      auto& swLT   = getSelector<ThreshSig>("ltVal");
-      auto& swGT   = getSelector<ThreshSig>("gtVal");
-      auto& swLTGT = getSelector<ThreshDualSig>("ltgtVal");
+      auto& swLT   = getSelector<ThreshSig>(Op::ltVal);
+      auto& swGT   = getSelector<ThreshSig>(Op::gtVal);
+      auto& swLTGT = getSelector<ThreshDualSig>(Op::ltgtVal);
 
       switch(m_eType) {
         case lt:

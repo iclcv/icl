@@ -38,13 +38,19 @@
 namespace icl {
   namespace filter {
 
-    /// Proof-of-concept ThresholdOp using the new FilterDispatch architecture.
-    /// Same functionality as ThresholdOp but with separate backend files
-    /// and runtime-inspectable dispatch.
     class ICLFilter_API ThresholdOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
 
       enum optype { lt, gt, ltgt, ltVal, gtVal, ltgtVal };
+
+      /// Backend selector keys (3 distinct operations). Note: optype has 6 values
+      /// because lt/gt/ltgt are convenience modes that reuse the ltVal/gtVal/ltgtVal
+      /// backends with threshold == value. Values must match addSelector() order.
+      enum class Op : int { ltVal, gtVal, ltgtVal };
+
+      // Sub-op signatures for backend dispatch
+      using ThreshSig     = void(const core::Image&, core::Image&, double, double);
+      using ThreshDualSig = void(const core::Image&, core::Image&, double, double, double, double);
 
       ThresholdOp(optype ttype = ltVal, float lowThreshold = 127,
                      float highThreshold = 127, float lowVal = 0, float highVal = 255);
@@ -64,9 +70,8 @@ namespace icl {
       float getLowVal() const { return m_fLowVal; }
       float getHighVal() const { return m_fHighVal; }
 
-      // Sub-op signatures for backend dispatch
-      using ThreshSig     = void(const core::Image&, core::Image&, double, double);
-      using ThreshDualSig = void(const core::Image&, core::Image&, double, double, double, double);
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       private:
       optype m_eType;
@@ -75,6 +80,9 @@ namespace icl {
       float m_fLowVal;
       float m_fHighVal;
     };
+
+    /// ADL-visible toString for ThresholdOp::Op → registry name (defined in ThresholdOp.cpp)
+    ICLFilter_API const char* toString(ThresholdOp::Op op);
 
   } // namespace filter
 } // namespace icl
