@@ -278,4 +278,56 @@ namespace {
     applicableToBase<icl8u, icl32f>,
     "IPP ippiMirror (8u/32f)");
 
+  // ---- channelMean ----
+  icl64f ipp_channelMean(ImgBase& img, int channel, bool roiOnly) {
+    const auto* data = roiOnly ? img.getROIData(channel) : img.getData(channel);
+    int lineStep = img.getLineStep();
+    Size size = roiOnly ? img.getROISize() : img.getSize();
+    icl64f m = 0;
+    switch(img.getDepth()) {
+      case depth8u:
+        ippiMean_8u_C1R(static_cast<const Ipp8u*>(data), lineStep, size, &m);
+        break;
+      case depth16s:
+        ippiMean_16s_C1R(static_cast<const Ipp16s*>(data), lineStep, size, &m);
+        break;
+      case depth32f:
+        ippiMean_32f_C1R(static_cast<const Ipp32f*>(data), lineStep, size, &m, ippAlgHintAccurate);
+        break;
+      default: break;
+    }
+    return m;
+  }
+
+  // ---- replicateBorder ----
+  void ipp_replicateBorder(ImgBase& img) {
+    for(int c = 0; c < img.getChannels(); ++c) {
+      switch(img.getDepth()) {
+        case depth8u:
+          ippiCopyReplicateBorder_8u_C1IR(
+            img.asImg<icl8u>()->getROIData(c), img.getLineStep(),
+            img.getROISize(), img.getSize(),
+            img.getROIOffset().x, img.getROIOffset().y);
+          break;
+        case depth32f:
+          ippiCopyReplicateBorder_32f_C1IR(
+            img.asImg<icl32f>()->getROIData(c), img.getLineStep(),
+            img.getROISize(), img.getSize(),
+            img.getROIOffset().x, img.getROIOffset().y);
+          break;
+        default: break;
+      }
+    }
+  }
+
+  static const int _r9 = ImgBaseBackendDispatching::registerBackend<ImgOps::ChannelMeanSig>(
+    "Img.channelMean", Backend::Ipp, ipp_channelMean,
+    applicableToBase<icl8u, icl16s, icl32f>,
+    "IPP ippiMean (8u/16s/32f)");
+
+  static const int _r10 = ImgBaseBackendDispatching::registerBackend<ImgOps::ReplicateBorderSig>(
+    "Img.replicateBorder", Backend::Ipp, ipp_replicateBorder,
+    applicableToBase<icl8u, icl32f>,
+    "IPP ippiCopyReplicateBorder (8u/32f)");
+
 } // anonymous namespace

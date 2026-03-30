@@ -48,6 +48,8 @@ namespace icl {
         case ImgOps::Op::getMinMax:        return "getMinMax";
         case ImgOps::Op::normalize:        return "normalize";
         case ImgOps::Op::flippedCopy:      return "flippedCopy";
+        case ImgOps::Op::channelMean:      return "channelMean";
+        case ImgOps::Op::replicateBorder:  return "replicateBorder";
       }
       return "?";
     }
@@ -65,6 +67,8 @@ namespace icl {
       addSelector<GetMinMaxSig>(Op::getMinMax);
       addSelector<NormalizeSig>(Op::normalize);
       addSelector<FlippedCopySig>(Op::flippedCopy);
+      addSelector<ChannelMeanSig>(Op::channelMean);
+      addSelector<ReplicateBorderSig>(Op::replicateBorder);
     }
 
   } // namespace core

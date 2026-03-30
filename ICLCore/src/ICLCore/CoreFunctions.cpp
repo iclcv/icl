@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLCore/CoreFunctions.h>
+#include <ICLCore/ImgOps.h>
 #include <ICLMath/MathFunctions.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Img.h>
@@ -751,34 +752,26 @@ namespace icl{
 
 
   namespace{
-      template<class T>
-      double channel_mean(const Img<T> &image, int channel, bool roiOnly){
-        if(roiOnly && !image.hasFullROI()){
-          return math::mean(image.beginROI(channel),image.endROI(channel));
-        }else{
-          return math::mean(image.begin(channel),image.end(channel));
+      // C++ fallback for channel_mean — also registered as Cpp backend below
+      icl64f cpp_channel_mean(ImgBase& img, int channel, bool roiOnly) {
+        switch(img.getDepth()) {
+#define ICL_INSTANTIATE_DEPTH(D) \
+          case depth##D: { \
+            auto& im = *img.asImg<icl##D>(); \
+            if(roiOnly && !im.hasFullROI()) \
+              return math::mean(im.beginROI(channel), im.endROI(channel)); \
+            else \
+              return math::mean(im.begin(channel), im.end(channel)); \
+          }
+          ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+          default: return 0;
         }
       }
-  #ifdef ICL_HAVE_IPP
-      template<> double channel_mean<icl8u>(const Img8u &image, int channel, bool roiOnly){
-        icl64f m=0;
-        ippiMean_8u_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
-                        roiOnly ? image.getROISize() : image.getROISize(),&m);
-      return m;
-      }
-      template<> double channel_mean<icl16s>(const Img16s &image, int channel, bool roiOnly){
-        icl64f m=0;
-        ippiMean_16s_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
-                         roiOnly ? image.getROISize() : image.getROISize(),&m);
-        return m;
-      }
-      template<> double channel_mean<icl32f>(const Img32f &image, int channel, bool roiOnly){
-        icl64f m=0;
-      ippiMean_32f_C1R(roiOnly ? image.getROIData(channel) : image.getData(channel),image.getLineStep(),
-                       roiOnly ? image.getROISize() : image.getROISize(),&m, ippAlgHintAccurate);
-      return m;
-      }
-  #endif
+
+      static const int _rcm = ImgBaseBackendDispatching::registerBackend<ImgOps::ChannelMeanSig>(
+        "Img.channelMean", Backend::Cpp, cpp_channel_mean,
+        nullptr, "C++ math::mean iterator");
     }
 
     std::vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
@@ -788,16 +781,10 @@ namespace icl{
 
       int firstChannel = iChannel<0 ? 0 : iChannel;
       int lastChannel = iChannel<0 ? poImg->getChannels()-1 : firstChannel;
-
-      switch(poImg->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D)                                               \
-        case depth##D:                                                           \
-          for(int i=firstChannel;i<=lastChannel;++i){                            \
-            vecMean.push_back(channel_mean(*poImg->asImg<icl##D>(),i,roiOnly));  \
-          }                                                                      \
-          break;
-        ICL_INSTANTIATE_ALL_DEPTHS;
-  #undef ICL_INSTANTIATE_DEPTH
+      ImgBase* self = const_cast<ImgBase*>(poImg);
+      auto& sel = ImgOps::instance().getSelector<ImgOps::ChannelMeanSig>(ImgOps::Op::channelMean);
+      for(int i=firstChannel;i<=lastChannel;++i){
+        vecMean.push_back(sel.resolveOrThrow(self)->apply(*self, i, roiOnly));
       }
       return vecMean;
     }

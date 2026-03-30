@@ -29,6 +29,7 @@
 ********************************************************************/
 
 #include <ICLCore/ImgBorder.h>
+#include <ICLCore/ImgOps.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -166,34 +167,8 @@ namespace icl{
 
 
 
-      switch (poImage->getDepth()){
-        case depth8u:
-  #ifdef ICL_HAVE_IPP
-          for(int c=0;c<poImage->getChannels();c++){
-            ippiCopyReplicateBorder_8u_C1IR(poImage->asImg<icl8u>()->getROIData(c),poImage->getLineStep(),
-                                          poImage->getROISize(),poImage->getSize(),
-                                          poImage->getROIOffset().x,poImage->getROIOffset().y);
-          }
-  #else
-          _copy_border(poImage->asImg<icl8u>());
-  #endif
-          break;
-        case depth32f:
-  #ifdef ICL_HAVE_IPP
-          for(int c=0;c<poImage->getChannels();c++){ /// icl32f-case using Ipp32s method
-            ippiCopyReplicateBorder_32f_C1IR(poImage->asImg<icl32f>()->getROIData(c),poImage->getLineStep(),
-                                           poImage->getROISize(),poImage->getSize(),
-                                           poImage->getROIOffset().x,poImage->getROIOffset().y);
-          }
-  #else
-          _copy_border(poImage->asImg<icl32f>());
-  #endif
-          break;
-
-        default:
-          ICL_INVALID_FORMAT;
-          break;
-      }
+      auto& sel = ImgOps::instance().getSelector<ImgOps::ReplicateBorderSig>(ImgOps::Op::replicateBorder);
+      sel.resolveOrThrow(poImage)->apply(*poImage);
     }
 
 
@@ -274,6 +249,23 @@ namespace icl{
       }
     }
 
+
+    // C++ backend for replicateBorder — registered locally so _copy_border stays file-local
+    namespace {
+      void cpp_replicateBorder(ImgBase& img) {
+        switch(img.getDepth()) {
+#define ICL_INSTANTIATE_DEPTH(D) \
+          case depth##D: _copy_border(img.asImg<icl##D>()); break;
+          ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+          default: break;
+        }
+      }
+
+      static const int _rrb = ImgBaseBackendDispatching::registerBackend<ImgOps::ReplicateBorderSig>(
+        "Img.replicateBorder", Backend::Cpp, cpp_replicateBorder,
+        nullptr, "C++ border replication");
+    }
 
   } // namespace core
 }

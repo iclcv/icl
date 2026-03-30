@@ -44,7 +44,8 @@ namespace icl {
     public:
       /// Operation keys — values must match addSelector() insertion order.
       enum class Op : int {
-        mirror, clearChannelROI, lut, getMax, getMin, getMinMax, normalize, flippedCopy
+        mirror, clearChannelROI, lut, getMax, getMin, getMinMax, normalize, flippedCopy,
+        channelMean, replicateBorder
       };
 
       // ---- Dispatch signatures (ImgBase& + operation args) ----
@@ -64,6 +65,8 @@ namespace icl {
                                   const utils::Point& srcOffs, const utils::Size& srcSize,
                                   ImgBase& dst, int dstC,
                                   const utils::Point& dstOffs, const utils::Size& dstSize);
+      using ChannelMeanSig = icl64f(ImgBase&, int channel, bool roiOnly);
+      using ReplicateBorderSig = void(ImgBase&);
 
       /// Access the singleton instance (lazy-init, thread-safe)
       static ImgOps& instance();
