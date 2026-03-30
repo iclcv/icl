@@ -174,24 +174,31 @@ namespace {
     }
   };
 
-  static const int _reg = ImageBackendDispatching::registerStatefulBackend<icl::filter::BilateralFilterOp::ApplySig>(
-    "BilateralFilterOp.apply", Backend::OpenCL,
-    []() {
-      auto state = std::make_shared<CLBilateralState>();
-      return [state](const Image& src, Image& dst,
-                     int radius, float sigma_s, float sigma_r, bool use_lab) {
+  using BOp = icl::filter::BilateralFilterOp;
+
+  // Direct registration into the class prototype
+  static int _reg = [] {
+    using Op = BOp::Op;
+    auto& proto = BOp::prototype();
+    // Create stateful backend inline: factory produces a lambda capturing shared state
+    auto state = std::make_shared<CLBilateralState>();
+    proto.addBackend<BOp::ApplySig>(
+      Op::apply, Backend::OpenCL,
+      [state](const Image& src, Image& dst,
+              int radius, float sigma_s, float sigma_r, bool use_lab) {
         state->apply(src, dst, radius, sigma_s, sigma_r, use_lab);
-      };
-    },
-    [](const Image& src) {
-      depth d = src.getDepth();
-      int ch = src.getChannels();
-      return src.hasFullROI()
-          && ((d == depth8u && (ch == 1 || ch == 3))
-              || (d == depth32f && ch == 1));
-    },
-    "OpenCL bilateral filter (8u mono/3ch, 32f mono)"
-  );
+      },
+      [](const Image& src) {
+        depth d = src.getDepth();
+        int ch = src.getChannels();
+        return src.hasFullROI()
+            && ((d == depth8u && (ch == 1 || ch == 3))
+                || (d == depth32f && ch == 1));
+      },
+      "OpenCL bilateral filter (8u mono/3ch, 32f mono)"
+    );
+    return 0;
+  }();
 
 } // anon namespace
 

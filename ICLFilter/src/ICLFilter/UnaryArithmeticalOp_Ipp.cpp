@@ -30,6 +30,14 @@
 
 #include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
+#include <ICLCore/Visitors.h>
+#include <ICLUtils/ClippedCast.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
 
 // IPP backends to be added when building on a platform with IPP
+// Registration pattern:
+//   using UAOp = icl::filter::UnaryArithmeticalOp;
+//   using Op = UAOp::Op;
+//   auto& proto = UAOp::prototype();
+//   proto.addBackend<UAOp::ArithValSig>(Op::withVal, Backend::Ipp, ipp_fn, applicableTo<...>, "...");
+//   proto.addBackend<UAOp::ArithNoValSig>(Op::noVal, Backend::Ipp, ipp_fn, applicableTo<...>, "...");

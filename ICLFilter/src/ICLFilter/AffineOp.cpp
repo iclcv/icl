@@ -33,81 +33,36 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
 #include <cstring>
-#include <ICLMath/FixedMatrix.h>
 
 using namespace icl::utils;
-using namespace icl::math;
 using namespace icl::core;
 
 namespace icl{
   namespace filter{
 
-    namespace {
-
-      // C++ fallback: inverse-map destination pixels to source via inverse matrix
-      void cpp_affine(const Image &src, Image &dst, const double* fwd, scalemode interp) {
-        // Compute inverse of the 2x3 forward transform (extended to 3x3)
-        FixedMatrix<double,3,3> M(fwd[0], fwd[1], fwd[2],
-                                   fwd[3], fwd[4], fwd[5],
-                                   0, 0, 1);
-        M = M.inv();
-        double inv[3][3];
-        for(int i = 0; i < 3; ++i)
-          for(int j = 0; j < 3; ++j)
-            inv[i][j] = M(i,j);
-
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          Rect dr = d.getROI();
-          int sx = dr.x, sy = dr.y, ex = dr.right(), ey = dr.bottom();
-          Rect r = s.getROI();
-
-          for(int ch = 0; ch < s.getChannels(); ch++) {
-            const Channel<T> srcCh = s[ch];
-            Channel<T> dstCh = d[ch];
-
-            if(interp == interpolateLIN){
-              for(int x = sx; x < ex; ++x){
-                for(int y = sy; y < ey; ++y){
-                  float x2 = inv[0][0]*x + inv[1][0]*y + inv[2][0];
-                  float y2 = inv[0][1]*x + inv[1][1]*y + inv[2][1];
-                  int x3 = round(x2);
-                  int y3 = round(y2);
-                  if(r.contains(x3,y3)){
-                    dstCh(x,y) = s.subPixelLIN(x2,y2,ch);
-                  }else{
-                    dstCh(x,y) = 0;
-                  }
-                }
-              }
-            }else{
-              for(int x = sx; x < ex; ++x){
-                for(int y = sy; y < ey; ++y){
-                  float x2 = inv[0][0]*x + inv[1][0]*y + inv[2][0];
-                  float y2 = inv[0][1]*x + inv[1][1]*y + inv[2][1];
-                  int x3 = round(x2);
-                  int y3 = round(y2);
-                  if(r.contains(x3,y3)){
-                    dstCh(x,y) = srcCh(x3,y3);
-                  }else{
-                    dstCh(x,y) = 0;
-                  }
-                }
-              }
-            }
-          }
-        });
+    const char* toString(AffineOp::Op op) {
+      switch(op) {
+        case AffineOp::Op::apply: return "apply";
       }
+      return "?";
+    }
 
-    } // anonymous namespace
+    core::ImageBackendDispatching& AffineOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("AffineOp");
+        proto.addSelector<AffineSig>(Op::apply);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
 
-
-    AffineOp::AffineOp (scalemode eInterpolate) : m_eInterpolate (eInterpolate),
-                                                    m_adaptResultImage(true)  {
+    AffineOp::AffineOp (scalemode eInterpolate)
+      : m_eInterpolate(eInterpolate),
+        ImageBackendDispatching(prototype()),
+        m_adaptResultImage(true) {
        reset ();
-       initDispatching("AffineOp");
-       auto& sel = addSelector<AffineSig>("apply");
-       sel.add(Backend::Cpp, cpp_affine);
      }
 
      void AffineOp::reset () {
@@ -173,7 +128,7 @@ namespace icl{
                    src.getFormat(), src.getChannels(),
                    Rect(Point::null, oSize), src.getTime())) return;
 
-       getSelector<AffineSig>("apply").resolve(src)->apply(
+       getSelector<AffineSig>(Op::apply).resolve(src)->apply(
          src, dst, &m_aadT[0][0], m_eInterpolate);
 
        if(m_adaptResultImage){

@@ -43,6 +43,9 @@ namespace icl {
 
       enum optype { addOp, subOp, mulOp, divOp, absSubOp };
 
+      /// Backend selector key (single operation dispatched by optype argument)
+      enum class Op : int { apply };
+
       BinaryArithmeticalOp(optype t);
 
       void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
@@ -53,9 +56,15 @@ namespace icl {
 
       using Sig = void(const core::Image&, const core::Image&, core::Image&, int);
 
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
+
       private:
       optype m_eOpType;
     };
+
+    /// ADL-visible toString for BinaryArithmeticalOp::Op → registry name
+    ICLFilter_API const char* toString(BinaryArithmeticalOp::Op op);
 
   } // namespace filter
 } // namespace icl

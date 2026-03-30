@@ -44,7 +44,7 @@ using namespace icl::core;
 
 namespace {
 
-  using Op = icl::filter::UnaryArithmeticalOp;
+  using UAOp = icl::filter::UnaryArithmeticalOp;
 
   // ---- with-val: add/sub/mul/div for icl32f ----
   void simd_arith_with_val(const Image &src, Image &dst, double value, int optype) {
@@ -59,20 +59,20 @@ namespace {
         __m128 v = _mm_loadu_ps(sp+i);
         __m128 r;
         switch(optype) {
-          case Op::addOp: r = _mm_add_ps(v, vv); break;
-          case Op::subOp: r = _mm_sub_ps(v, vv); break;
-          case Op::mulOp: r = _mm_mul_ps(v, vv); break;
-          case Op::divOp: r = _mm_div_ps(v, vv); break;
+          case UAOp::addOp: r = _mm_add_ps(v, vv); break;
+          case UAOp::subOp: r = _mm_sub_ps(v, vv); break;
+          case UAOp::mulOp: r = _mm_mul_ps(v, vv); break;
+          case UAOp::divOp: r = _mm_div_ps(v, vv); break;
           default: r = v; break;
         }
         _mm_storeu_ps(dp+i, r);
       }
       for(; i < w; ++i) {
         switch(optype) {
-          case Op::addOp: dp[i] = sp[i] + val; break;
-          case Op::subOp: dp[i] = sp[i] - val; break;
-          case Op::mulOp: dp[i] = sp[i] * val; break;
-          case Op::divOp: dp[i] = sp[i] / val; break;
+          case UAOp::addOp: dp[i] = sp[i] + val; break;
+          case UAOp::subOp: dp[i] = sp[i] - val; break;
+          case UAOp::mulOp: dp[i] = sp[i] * val; break;
+          case UAOp::divOp: dp[i] = sp[i] / val; break;
           default: break;
         }
       }
@@ -84,7 +84,7 @@ namespace {
     const Img32f &s = src.as32f();
     Img32f &d = dst.as32f();
     __m128 signMask = _mm_set1_ps(-0.0f);
-    bool hasSimd = (optype == Op::sqrOp || optype == Op::absOp || optype == Op::sqrtOp);
+    bool hasSimd = (optype == UAOp::sqrOp || optype == UAOp::absOp || optype == UAOp::sqrtOp);
 
     visitROILinesPerChannelWith(s, d, [&](const icl32f *sp, icl32f *dp, int, int w) {
       int i = 0;
@@ -93,9 +93,9 @@ namespace {
           __m128 v = _mm_loadu_ps(sp+i);
           __m128 r;
           switch(optype) {
-            case Op::sqrOp:  r = _mm_mul_ps(v, v); break;
-            case Op::absOp:  r = _mm_andnot_ps(signMask, v); break;
-            case Op::sqrtOp: r = _mm_sqrt_ps(v); break;
+            case UAOp::sqrOp:  r = _mm_mul_ps(v, v); break;
+            case UAOp::absOp:  r = _mm_andnot_ps(signMask, v); break;
+            case UAOp::sqrtOp: r = _mm_sqrt_ps(v); break;
             default: r = v; break;
           }
           _mm_storeu_ps(dp+i, r);
@@ -103,11 +103,11 @@ namespace {
       }
       for(; i < w; ++i) {
         switch(optype) {
-          case Op::sqrOp:  dp[i] = sp[i] * sp[i]; break;
-          case Op::absOp:  dp[i] = std::fabs(sp[i]); break;
-          case Op::sqrtOp: dp[i] = clipped_cast<double,icl32f>(std::sqrt(static_cast<double>(sp[i]))); break;
-          case Op::lnOp:   dp[i] = clipped_cast<double,icl32f>(std::log(static_cast<double>(sp[i]))); break;
-          case Op::expOp:  dp[i] = clipped_cast<double,icl32f>(std::exp(static_cast<double>(sp[i]))); break;
+          case UAOp::sqrOp:  dp[i] = sp[i] * sp[i]; break;
+          case UAOp::absOp:  dp[i] = std::fabs(sp[i]); break;
+          case UAOp::sqrtOp: dp[i] = clipped_cast<double,icl32f>(std::sqrt(static_cast<double>(sp[i]))); break;
+          case UAOp::lnOp:   dp[i] = clipped_cast<double,icl32f>(std::log(static_cast<double>(sp[i]))); break;
+          case UAOp::expOp:  dp[i] = clipped_cast<double,icl32f>(std::exp(static_cast<double>(sp[i]))); break;
           default: break;
         }
       }
@@ -115,14 +115,17 @@ namespace {
   }
 
 
-  // --- Self-registration ---
-  static const int _reg1 = ImageBackendDispatching::registerBackend<Op::ArithValSig>(
-    "UnaryArithmeticalOp.withVal", Backend::Simd, simd_arith_with_val,
-    applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
+  // --- Direct registration into prototype ---
+  using Op = UAOp::Op;
 
-  static const int _reg2 = ImageBackendDispatching::registerBackend<Op::ArithNoValSig>(
-    "UnaryArithmeticalOp.noVal", Backend::Simd, simd_arith_no_val,
-    applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
+  static int _reg = [] {
+    auto& proto = UAOp::prototype();
+    proto.addBackend<UAOp::ArithValSig>(Op::withVal, Backend::Simd, simd_arith_with_val,
+      applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
+    proto.addBackend<UAOp::ArithNoValSig>(Op::noVal, Backend::Simd, simd_arith_no_val,
+      applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
+    return 0;
+  }();
 
 } // anon namespace
 

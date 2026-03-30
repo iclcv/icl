@@ -37,24 +37,32 @@ using namespace icl::core;
 namespace icl {
   namespace filter{
 
-    namespace {
-      void cpp_wiener(const Image &, Image &, const Size &, const Point &,
-                      const Point &, icl32f) {
-        throw ICLException("WienerOp: requires IPP (no C++ fallback available)");
+    const char* toString(WienerOp::Op op) {
+      switch(op) {
+        case WienerOp::Op::apply: return "apply";
       }
+      return "?";
+    }
+
+    core::ImageBackendDispatching& WienerOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("WienerOp");
+        proto.addSelector<WienerSig>(Op::apply);
+        return true;
+      }();
+      (void)init;
+      return proto;
     }
 
     WienerOp::WienerOp(const Size &maskSize, icl32f noise)
-      : NeighborhoodOp(maskSize), m_fNoise(noise)
-    {
-      initDispatching("WienerOp");
-      auto& sel = addSelector<WienerSig>("apply");
-      sel.add(Backend::Cpp, cpp_wiener);
-    }
+      : NeighborhoodOp(maskSize), ImageBackendDispatching(prototype()),
+        m_fNoise(noise)
+    {}
 
     void WienerOp::apply(const Image &src, Image &dst) {
       if(!prepare(dst, src)) return;
-      getSelector<WienerSig>("apply").resolve(src)->apply(
+      getSelector<WienerSig>(Op::apply).resolve(src)->apply(
         src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);
     }
 

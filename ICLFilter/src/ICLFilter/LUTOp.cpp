@@ -37,39 +37,38 @@ using namespace icl::core;
 namespace icl{
   namespace filter{
 
-    namespace {
-      void cpp_reduceBits(const Img8u &src, Img8u &dst, icl8u n) {
-        std::vector<icl8u> lut(256), lv(n);
-        float range = 255.0f / (n - 1);
-        for(int i = 0; i < n; i++) {
-          lv[i] = round(iclMin(i * range, 255.f));
-        }
-        for(int i = 0; i < 256; i++) {
-          float rel = i / 256.f;
-          lut[i] = lv[static_cast<int>(round(rel * (n - 1)))];
-        }
-        LUTOp::simple(&src, &dst, lut);
+    const char* toString(LUTOp::Op op) {
+      switch(op) {
+        case LUTOp::Op::reduceBits: return "reduceBits";
       }
+      return "?";
+    }
+
+    core::ImageBackendDispatching& LUTOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("LUTOp");
+        proto.addSelector<ReduceBitsSig>(Op::reduceBits);
+        return true;
+      }();
+      (void)init;
+      return proto;
     }
 
     LUTOp::LUTOp(icl8u quantizationLevels):
+      ImageBackendDispatching(prototype()),
       m_bLevelsSet(true), m_bLutSet(false),
       m_ucQuantizationLevels(quantizationLevels),
-      m_poBuffer(new Img8u()){
-      initDispatching("LUTOp");
-      auto &sel = addSelector<ReduceBitsSig>("reduceBits");
-      sel.add(Backend::Cpp, cpp_reduceBits);
-    }
+      m_poBuffer(new Img8u())
+    {}
 
     LUTOp::LUTOp(const std::vector<icl8u> &lut):
+      ImageBackendDispatching(prototype()),
       m_bLevelsSet(false), m_bLutSet(true),
       m_vecLUT(lut),
       m_ucQuantizationLevels(0),
-      m_poBuffer(new Img8u()){
-      initDispatching("LUTOp");
-      auto &sel = addSelector<ReduceBitsSig>("reduceBits");
-      sel.add(Backend::Cpp, cpp_reduceBits);
-    }
+      m_poBuffer(new Img8u())
+    {}
 
     void LUTOp::setLUT(const std::vector<icl8u> &lut){
       m_vecLUT = lut;
@@ -138,7 +137,7 @@ namespace icl{
       if(!prepare(dst, src, depth8u)) return;
 
       if(m_bLevelsSet){
-        getSelector<ReduceBitsSig>("reduceBits").resolve(dst)->apply(
+        getSelector<ReduceBitsSig>(Op::reduceBits).resolve(dst)->apply(
           *src8u, dst.as8u(), m_ucQuantizationLevels);
       }else{
         simple(src8u, &dst.as8u(), m_vecLUT);

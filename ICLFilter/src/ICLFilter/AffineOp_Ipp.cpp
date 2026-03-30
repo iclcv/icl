@@ -44,9 +44,13 @@ namespace {
 
   using AOp = icl::filter::AffineOp;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<AOp::AffineSig>(
-    "AffineOp.apply", Backend::Ipp, ipp_affine,
-    applicableTo<icl8u, icl32f>, "IPP affine warp (8u/32f)");
+  static int _reg = [] {
+    using Op = AOp::Op;
+    auto& proto = AOp::prototype();
+    proto.addBackend<AOp::AffineSig>(Op::apply, Backend::Ipp, ipp_affine,
+      applicableTo<icl8u, icl32f>, "IPP affine warp (8u/32f)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

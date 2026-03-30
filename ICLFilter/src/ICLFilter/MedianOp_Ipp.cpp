@@ -89,18 +89,20 @@ namespace {
   }
 
   // ================================================================
-  // Registration
+  // Registration into the class prototype
   // ================================================================
 
   using MOp = icl::filter::MedianOp;
+  using Op = MOp::Op;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<MOp::MedianFixedSig>(
-    "MedianOp.fixed", Backend::Ipp, ipp_median_fixed,
-    applicableTo<icl8u, icl16s>, "IPP median fixed 3x3/5x5 (8u/16s)");
-
-  static const int _r2 = ImageBackendDispatching::registerBackend<MOp::MedianGenericSig>(
-    "MedianOp.generic", Backend::Ipp, ipp_median_generic,
-    applicableTo<icl8u, icl16s>, "IPP median generic (8u/16s)");
+  static int _reg = [] {
+    auto& proto = MOp::prototype();
+    proto.addBackend<MOp::MedianFixedSig>(Op::fixed, Backend::Ipp, ipp_median_fixed,
+      applicableTo<icl8u, icl16s>, "IPP median fixed 3x3/5x5 (8u/16s)");
+    proto.addBackend<MOp::MedianGenericSig>(Op::generic, Backend::Ipp, ipp_median_generic,
+      applicableTo<icl8u, icl16s>, "IPP median generic (8u/16s)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

@@ -238,12 +238,18 @@ namespace icl {
     class ICLFilter_API MedianOp : public NeighborhoodOp, public core::ImageBackendDispatching {
     public:
 
+      /// Backend selector keys. Values must match addSelector() order in prototype().
+      enum class Op : int { fixed, generic };
+
       /// Dispatch signature for fixed 3x3/5x5: src, dst, maskDim (3 or 5), roiOffset
       using MedianFixedSig = void(const core::Image&, core::Image&, int, const utils::Point&);
 
       /// Dispatch signature for arbitrary mask: src, dst, maskSize, roiOffset, anchor
       using MedianGenericSig = void(const core::Image&, core::Image&, const utils::Size&,
                                      const utils::Point&, const utils::Point&);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// Constructor that creates a median filter object, with specified mask size
       /** @param maskSize of odd width and height
@@ -274,6 +280,9 @@ namespace icl {
 
 
     };
+
+    /// ADL-visible toString for MedianOp::Op → registry name (defined in MedianOp.cpp)
+    ICLFilter_API const char* toString(MedianOp::Op op);
 
   } // namespace filter
 }

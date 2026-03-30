@@ -73,8 +73,14 @@ namespace icl {
        LUTOp(const LUTOp&) = delete;
        LUTOp& operator=(const LUTOp&) = delete;
 
+       /// Backend selector keys
+       enum class Op : int { reduceBits };
+
        /// Dispatch signature for reduceBits: src (8u), dst (8u), quantization levels
        using ReduceBitsSig = void(const core::Img8u&, core::Img8u&, icl8u);
+
+       /// Class-level prototype — owns selectors, populated during static init
+       static core::ImageBackendDispatching& prototype();
 
        /// creates a LUT object with given lut (LUT-mode)
        /** @param lut LUT-vector to use */
@@ -138,5 +144,9 @@ namespace icl {
        core::Img8u *m_poBuffer;
 
      };
+
+    /// ADL-visible toString for LUTOp::Op (defined in LUTOp.cpp)
+    ICLFilter_API const char* toString(LUTOp::Op op);
+
   } // namespace filter
 } // namespace icl

@@ -21,9 +21,13 @@ namespace {
 
   using LOp = icl::filter::LUTOp;
 
-  static const int _r = ImageBackendDispatching::registerBackend<LOp::ReduceBitsSig>(
-    "LUTOp.reduceBits", Backend::Ipp, ipp_reduceBits,
-    applicableTo<icl8u>, "IPP reduceBits (8u)");
+  static int _reg = [] {
+    using Op = LOp::Op;
+    auto& proto = LOp::prototype();
+    proto.addBackend<LOp::ReduceBitsSig>(Op::reduceBits, Backend::Ipp, ipp_reduceBits,
+      applicableTo<icl8u>, "IPP reduceBits (8u)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

@@ -96,9 +96,15 @@ namespace icl{
     class ICLFilter_API WarpOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
 
+      /// Backend selector keys. Values must match addSelector() order.
+      enum class Op : int { warp };
+
       /// Dispatch signature: (src, dst, warpMapChannels[2], warpOffset, scalemode)
       using WarpSig = void(const core::Image&, core::Image&,
                            const core::Channel32f*, utils::Point, core::scalemode);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// create a new WarpOp instance
       /** This constructor has been made explicit to avoid ambiguity in case of
@@ -149,6 +155,9 @@ namespace icl{
       core::scalemode m_scaleMode;
     };
 
+
+    /// ADL-visible toString for WarpOp::Op → registry name (defined in WarpOp.cpp)
+    ICLFilter_API const char* toString(WarpOp::Op op);
 
   } // namespace filter
 }

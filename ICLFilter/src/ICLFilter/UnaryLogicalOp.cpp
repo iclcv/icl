@@ -29,77 +29,47 @@
 ********************************************************************/
 
 #include <ICLFilter/UnaryLogicalOp.h>
-#include <ICLCore/Img.h>
-#include <ICLCore/Image.h>
-#include <ICLCore/Visitors.h>
-#include <type_traits>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl {
   namespace filter{
-    namespace{
 
-      // --- C++ fallback implementations ---
-
-      void cpp_withval(const Image &src, Image &dst, icl32s val, int optype) {
-        src.visitWith(dst, [val, optype](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          if constexpr (std::is_integral_v<T>) {
-            T v = clipped_cast<icl32s,T>(val);
-            switch(optype) {
-              case UnaryLogicalOp::andOp:
-                visitROILinesPerChannelWith(s, d, [v](const T *sp, T *dp, int, int w) {
-                  for(int i = 0; i < w; ++i) dp[i] = sp[i] & v;
-                }); break;
-              case UnaryLogicalOp::orOp:
-                visitROILinesPerChannelWith(s, d, [v](const T *sp, T *dp, int, int w) {
-                  for(int i = 0; i < w; ++i) dp[i] = sp[i] | v;
-                }); break;
-              case UnaryLogicalOp::xorOp:
-                visitROILinesPerChannelWith(s, d, [v](const T *sp, T *dp, int, int w) {
-                  for(int i = 0; i < w; ++i) dp[i] = sp[i] ^ v;
-                }); break;
-              default: break;
-            }
-          }
-        });
+    const char* toString(UnaryLogicalOp::Op op) {
+      switch(op) {
+        case UnaryLogicalOp::Op::withVal: return "withVal";
+        case UnaryLogicalOp::Op::noVal: return "noVal";
       }
-
-      void cpp_noval(const Image &src, Image &dst) {
-        src.visitWith(dst, [](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          if constexpr (std::is_integral_v<T>) {
-            visitROILinesPerChannelWith(s, d, [](const T *sp, T *dp, int, int w) {
-              for(int i = 0; i < w; ++i) dp[i] = ~sp[i];
-            });
-          }
-        });
-      }
-
-    } // anonymous namespace
-
-    UnaryLogicalOp::UnaryLogicalOp(optype t, icl32s val)
-      : m_eOpType(t), m_dValue(val)
-    {
-      initDispatching("UnaryLogicalOp");
-
-      auto& wv = addSelector<WithValSig>("withVal");
-      auto& nv = addSelector<NoValSig>("noVal");
-
-      wv.add(Backend::Cpp, cpp_withval);
-      nv.add(Backend::Cpp, cpp_noval);
+      return "?";
     }
+
+    core::ImageBackendDispatching& UnaryLogicalOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("UnaryLogicalOp");
+        proto.addSelector<WithValSig>(Op::withVal);
+        proto.addSelector<NoValSig>(Op::noVal);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    // Constructor — clones selectors from the class prototype
+    UnaryLogicalOp::UnaryLogicalOp(optype t, icl32s val)
+      : ImageBackendDispatching(prototype()),
+        m_eOpType(t), m_dValue(val)
+    {}
 
     void UnaryLogicalOp::apply(const Image &src, Image &dst) {
       ICLASSERT_RETURN(src.getDepth() == depth8u || src.getDepth() == depth16s || src.getDepth() == depth32s);
       if(!prepare(dst, src)) return;
 
       if(m_eOpType == notOp) {
-        getSelector<NoValSig>("noVal").resolve(src)->apply(src, dst);
+        getSelector<NoValSig>(Op::noVal).resolve(src)->apply(src, dst);
       } else {
-        getSelector<WithValSig>("withVal").resolve(src)->apply(src, dst, m_dValue, (int)m_eOpType);
+        getSelector<WithValSig>(Op::withVal).resolve(src)->apply(src, dst, m_dValue, (int)m_eOpType);
       }
     }
 

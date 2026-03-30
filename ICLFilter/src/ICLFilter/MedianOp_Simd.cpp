@@ -215,10 +215,14 @@ namespace {
   }
 
   using MOp = icl::filter::MedianOp;
+  using Op = MOp::Op;
 
-  static const int _r = ImageBackendDispatching::registerBackend<MOp::MedianFixedSig>(
-    "MedianOp.fixed", Backend::Simd, simd_median_fixed,
-    applicableTo<icl8u, icl16s, icl32f>, "SSE2/NEON median 3x3/5x5");
+  static int _reg = [] {
+    auto& proto = MOp::prototype();
+    proto.addBackend<MOp::MedianFixedSig>(Op::fixed, Backend::Simd, simd_median_fixed,
+      applicableTo<icl8u, icl16s, icl32f>, "SSE2/NEON median 3x3/5x5");
+    return 0;
+  }();
 
 } // anonymous namespace
 

@@ -206,18 +206,20 @@ namespace {
   };
 
   // ================================================================
-  // Registration as stateful backend
+  // Registration into prototype
   // ================================================================
 
-  static const int _r = ImageBackendDispatching::registerStatefulBackend<MOp::MorphSig>(
-    "MorphologicalOp.apply", Backend::Ipp,
-    []() {
-      auto state = std::make_shared<MorphIppState>();
-      return [state](const Image &src, Image &dst, MOp &op) {
+  static int _reg = [] {
+    using Op = MOp::Op;
+    auto& proto = MOp::prototype();
+    auto state = std::make_shared<MorphIppState>();
+    proto.addBackend<MOp::MorphSig>(Op::apply, Backend::Ipp,
+      [state](const Image &src, Image &dst, MOp &op) {
         state->apply(src, dst, op);
-      };
-    },
-    applicableTo<icl8u, icl32f>, "IPP morphological ops (8u/32f)");
+      },
+      applicableTo<icl8u, icl32f>, "IPP morphological ops (8u/32f)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

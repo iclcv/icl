@@ -17,11 +17,9 @@ list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/UnaryOpWork.h
 # Convention: *_Ipp.cpp = IPP-only, *_OpenCL.cpp = OpenCL-only, *_Simd.cpp = always built.
 if(NOT IPP_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
-  # These filters are IPP-only (no C++ fallback):
-  list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/WienerOp.cpp
-                           ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ProximityOp.cpp)
-  list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/WienerOp.h
-                           ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ProximityOp.h)
+  # ProximityOp is IPP-only (no C++ fallback):
+  list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ProximityOp.cpp)
+  list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/ProximityOp.h)
 endif()
 if(NOT OPENCL_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_OpenCL\\.cpp$")

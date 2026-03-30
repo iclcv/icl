@@ -13,9 +13,10 @@ using namespace icl::core;
 
 namespace {
 
-  using Op = filter::BinaryArithmeticalOp;
+  using BOp = filter::BinaryArithmeticalOp;
+  using Op = BOp::Op;
 
-  template<Op::optype OT>
+  template<BOp::optype OT>
   void simd_apply_typed(const Image &src1, const Image &src2, Image &dst) {
     src1.visitWith(dst, [&](const auto &s1, auto &d) {
       using T = typename std::remove_reference_t<decltype(s1)>::type;
@@ -29,20 +30,20 @@ namespace {
               __m128 va = _mm_loadu_ps(a+i);
               __m128 vb = _mm_loadu_ps(b+i);
               __m128 r;
-              if constexpr (OT == Op::addOp)    r = _mm_add_ps(va, vb);
-              else if constexpr (OT == Op::subOp)    r = _mm_sub_ps(va, vb);
-              else if constexpr (OT == Op::mulOp)    r = _mm_mul_ps(va, vb);
-              else if constexpr (OT == Op::divOp)    r = _mm_div_ps(va, vb);
-              else if constexpr (OT == Op::absSubOp) r = _mm_and_ps(_mm_sub_ps(va, vb), absMask);
+              if constexpr (OT == BOp::addOp)    r = _mm_add_ps(va, vb);
+              else if constexpr (OT == BOp::subOp)    r = _mm_sub_ps(va, vb);
+              else if constexpr (OT == BOp::mulOp)    r = _mm_mul_ps(va, vb);
+              else if constexpr (OT == BOp::divOp)    r = _mm_div_ps(va, vb);
+              else if constexpr (OT == BOp::absSubOp) r = _mm_and_ps(_mm_sub_ps(va, vb), absMask);
               else r = va;
               _mm_storeu_ps(dp+i, r);
             }
             for(; i < w; ++i) {
-              if constexpr (OT == Op::addOp)    dp[i] = a[i] + b[i];
-              else if constexpr (OT == Op::subOp)    dp[i] = a[i] - b[i];
-              else if constexpr (OT == Op::mulOp)    dp[i] = a[i] * b[i];
-              else if constexpr (OT == Op::divOp)    dp[i] = a[i] / b[i];
-              else if constexpr (OT == Op::absSubOp) dp[i] = std::abs(a[i] - b[i]);
+              if constexpr (OT == BOp::addOp)    dp[i] = a[i] + b[i];
+              else if constexpr (OT == BOp::subOp)    dp[i] = a[i] - b[i];
+              else if constexpr (OT == BOp::mulOp)    dp[i] = a[i] * b[i];
+              else if constexpr (OT == BOp::divOp)    dp[i] = a[i] / b[i];
+              else if constexpr (OT == BOp::absSubOp) dp[i] = std::abs(a[i] - b[i]);
               else dp[i] = a[i];
             }
           });
@@ -51,16 +52,16 @@ namespace {
   }
 
   void simd_apply(const Image &src1, const Image &src2, Image &dst, int optype) {
-    dispatchEnum<Op::addOp, Op::subOp, Op::mulOp, Op::divOp, Op::absSubOp>(optype, [&](auto tag) {
+    dispatchEnum<BOp::addOp, BOp::subOp, BOp::mulOp, BOp::divOp, BOp::absSubOp>(optype, [&](auto tag) {
       simd_apply_typed<decltype(tag)::value>(src1, src2, dst);
     });
   }
 
-  using BAOp = icl::filter::BinaryArithmeticalOp;
-
-  static const int _r1 = ImageBackendDispatching::registerBackend<BAOp::Sig>(
-    "BinaryArithmeticalOp.apply", Backend::Simd, simd_apply,
-    applicableTo<icl32f>, "SSE2/NEON binary arithmetic (32f)");
+  static int _reg = [] {
+    BOp::prototype().addBackend<BOp::Sig>(Op::apply, Backend::Simd, simd_apply,
+      applicableTo<icl32f>, "SSE2/NEON binary arithmetic (32f)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

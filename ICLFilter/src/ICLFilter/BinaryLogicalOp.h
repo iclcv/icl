@@ -44,6 +44,9 @@ namespace icl {
 
       enum optype { andOp, orOp, xorOp };
 
+      /// Backend selector keys. Values must match addSelector() order.
+      enum class Op : int { apply };
+
       BinaryLogicalOp(optype t);
 
       void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
@@ -54,9 +57,15 @@ namespace icl {
 
       using Sig = void(const core::Image&, const core::Image&, core::Image&, int);
 
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
+
       private:
       optype m_eOpType;
     };
+
+    /// ADL-visible toString for BinaryLogicalOp::Op → registry name (defined in BinaryLogicalOp.cpp)
+    ICLFilter_API const char* toString(BinaryLogicalOp::Op op);
 
   } // namespace filter
 } // namespace icl

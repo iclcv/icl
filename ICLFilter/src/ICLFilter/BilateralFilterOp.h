@@ -53,6 +53,9 @@ namespace filter {
   class ICLFilter_API BilateralFilterOp : public UnaryOp, public core::ImageBackendDispatching {
   public:
 
+    /// Backend selector keys
+    enum class Op : int { apply };
+
     /// Dispatch signature for backend implementations
     using ApplySig = void(const core::Image&, core::Image&,
                           int radius, float sigma_s, float sigma_r, bool use_lab);
@@ -60,6 +63,9 @@ namespace filter {
     /// Constructor with all parameters
     BilateralFilterOp(int radius = 2, float sigma_s = 2.f, float sigma_r = 30.f,
                       bool use_lab = true);
+
+    /// Class-level prototype — owns selectors, populated during static init
+    static core::ImageBackendDispatching& prototype();
 
     using UnaryOp::apply;
     void apply(const core::Image &src, core::Image &dst) override;
@@ -79,6 +85,9 @@ namespace filter {
     float m_sigmaS, m_sigmaR;
     bool m_useLAB;
   };
+
+  /// ADL-visible toString for BilateralFilterOp::Op → registry name (defined in BilateralFilterOp.cpp)
+  ICLFilter_API const char* toString(BilateralFilterOp::Op op);
 
 } // namespace filter
 } // namespace icl

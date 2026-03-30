@@ -47,6 +47,9 @@ namespace icl {
         sqrOp=10, sqrtOp=11, lnOp=12, expOp=13, absOp=14
       };
 
+      /// Backend selector keys. Values must match addSelector() order in prototype().
+      enum class Op : int { withVal = 0, noVal = 1 };
+
       UnaryArithmeticalOp(optype t = addOp, icl64f val = 0);
 
       void apply(const core::Image &src, core::Image &dst) override;
@@ -61,10 +64,16 @@ namespace icl {
       using ArithValSig   = void(const core::Image&, core::Image&, double, int);
       using ArithNoValSig = void(const core::Image&, core::Image&, int);
 
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
+
       private:
       optype m_eOpType;
       icl64f m_dValue;
     };
+
+    /// ADL-visible toString for UnaryArithmeticalOp::Op (defined in UnaryArithmeticalOp.cpp)
+    ICLFilter_API const char* toString(UnaryArithmeticalOp::Op op);
 
   } // namespace filter
 } // namespace icl

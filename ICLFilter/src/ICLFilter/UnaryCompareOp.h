@@ -44,6 +44,9 @@ namespace icl {
 
       enum optype { lt, lteq, eq, gteq, gt, eqt };
 
+      /// Backend selector keys (2 distinct operations). Values must match addSelector() order.
+      enum class Op : int { compare, compareEqTol };
+
       /// Translate a string relation to an optype
       static optype translate_op_type(const std::string &s) {
         if(s == "<") return lt;
@@ -76,11 +79,17 @@ namespace icl {
       using CmpSig    = void(const core::Image&, core::Image&, double, int);
       using CmpEqtSig = void(const core::Image&, core::Image&, double, double);
 
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
+
       private:
       optype m_eOpType;
       icl64f m_dValue;
       icl64f m_dTolerance;
     };
+
+    /// ADL-visible toString for UnaryCompareOp::Op → registry name (defined in UnaryCompareOp.cpp)
+    ICLFilter_API const char* toString(UnaryCompareOp::Op op);
 
   } // namespace filter
 } // namespace icl

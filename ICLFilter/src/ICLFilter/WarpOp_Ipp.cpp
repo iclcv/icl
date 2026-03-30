@@ -49,10 +49,13 @@ namespace {
   }
 
   using WOp = icl::filter::WarpOp;
+  using Op = WOp::Op;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<WOp::WarpSig>(
-    "WarpOp.warp", Backend::Ipp,
-    ipp_warp,
-    applicableTo<icl8u, icl32f>, "IPP ippiRemap (8u/32f)");
+  static int _reg = [] {
+    auto& proto = WOp::prototype();
+    proto.addBackend<WOp::WarpSig>(Op::warp, Backend::Ipp, ipp_warp,
+                                   applicableTo<icl8u, icl32f>, "IPP ippiRemap (8u/32f)");
+    return 0;
+  }();
 
 } // anonymous namespace

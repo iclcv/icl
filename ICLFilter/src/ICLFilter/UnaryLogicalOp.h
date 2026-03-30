@@ -55,6 +55,9 @@ namespace icl {
         notOp=3   /**< bitwise NOT (no value needed) */
       };
 
+      /// Backend selector keys. Values must match addSelector() order.
+      enum class Op : int { withVal, noVal };
+
       /// Dispatch signatures
       using WithValSig = void(const core::Image&, core::Image&, icl32s val, int optype);
       using NoValSig   = void(const core::Image&, core::Image&);
@@ -76,9 +79,16 @@ namespace icl {
       void setOpType(optype t){ m_eOpType = t;}
       optype getOpType() const { return m_eOpType; }
 
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
+
       private:
       optype m_eOpType;
       icl32s m_dValue;
     };
+
+    /// ADL-visible toString for UnaryLogicalOp::Op → registry name (defined in UnaryLogicalOp.cpp)
+    ICLFilter_API const char* toString(UnaryLogicalOp::Op op);
+
   } // namespace filter
 } // namespace icl

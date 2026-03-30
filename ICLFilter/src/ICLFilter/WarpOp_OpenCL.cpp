@@ -119,20 +119,23 @@ namespace {
     }
   };
 
-  static const int _reg = ImageBackendDispatching::registerStatefulBackend<icl::filter::WarpOp::WarpSig>(
-    "WarpOp.warp", Backend::OpenCL,
-    []() {
-      auto state = std::make_shared<CLWarpState>();
-      return [state](const Image& src, Image& dst, const Channel32f* cwm,
-                     Point warpOffset, scalemode mode) {
-        state->apply(src, dst, cwm, warpOffset, mode);
-      };
-    },
-    [](const Image& src) {
-      return src.getDepth() == depth8u && src.hasFullROI();
-    },
-    "OpenCL warp (8u only)"
-  );
+  using WOp = icl::filter::WarpOp;
+  using Op = WOp::Op;
+
+  static int _reg = [] {
+    auto state = std::make_shared<CLWarpState>();
+    auto fn = [state](const Image& src, Image& dst, const Channel32f* cwm,
+                      Point warpOffset, scalemode mode) {
+      state->apply(src, dst, cwm, warpOffset, mode);
+    };
+    WOp::prototype().addBackend<WOp::WarpSig>(
+      Op::warp, Backend::OpenCL, std::move(fn),
+      [](const Image& src) {
+        return src.getDepth() == depth8u && src.hasFullROI();
+      },
+      "OpenCL warp (8u only)");
+    return 0;
+  }();
 
 } // anon namespace
 

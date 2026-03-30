@@ -94,10 +94,14 @@ namespace {
     simd_compare_8u(src.as8u(), dst.as8u(), static_cast<icl8u>(value), optype);
   }
 
-  // --- Self-registration ---
-  static const int _reg1 = ImageBackendDispatching::registerBackend<CmpOp::CmpSig>(
-    "UnaryCompareOp.compare", Backend::Simd, simd_compare,
-    applicableTo<icl8u>, "SSE2/NEON compare (8u)");
+  // --- Direct registration into prototype ---
+  using Op = CmpOp::Op;
+
+  static int _reg = [] {
+    auto& proto = CmpOp::prototype();
+    proto.addBackend<CmpOp::CmpSig>(Op::compare, Backend::Simd, simd_compare, applicableTo<icl8u>, "SSE2/NEON compare (8u)");
+    return 0;
+  }();
 
 } // anon namespace
 

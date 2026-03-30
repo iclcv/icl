@@ -98,16 +98,16 @@ namespace {
     });
   }
 
-  // --- Self-registration ---
+  // --- Direct registration into prototype ---
   using ULOp = icl::filter::UnaryLogicalOp;
+  using Op = ULOp::Op;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<ULOp::WithValSig>(
-    "UnaryLogicalOp.withVal", Backend::Simd, simd_withval,
-    applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical and/or/xor (8u/16s/32s)");
-
-  static const int _r2 = ImageBackendDispatching::registerBackend<ULOp::NoValSig>(
-    "UnaryLogicalOp.noVal", Backend::Simd, simd_noval,
-    applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical not (8u/16s/32s)");
+  static int _reg = [] {
+    auto& proto = ULOp::prototype();
+    proto.addBackend<ULOp::WithValSig>(Op::withVal, Backend::Simd, simd_withval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical and/or/xor (8u/16s/32s)");
+    proto.addBackend<ULOp::NoValSig>(Op::noVal, Backend::Simd, simd_noval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical not (8u/16s/32s)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

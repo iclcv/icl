@@ -29,9 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/BinaryCompareOp.h>
-#include <ICLCore/Visitors.h>
-#include <ICLUtils/ClippedCast.h>
-#include <ICLUtils/EnumDispatch.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -39,72 +36,39 @@ using namespace icl::core;
 namespace icl {
   namespace filter {
 
-    using CmpSig    = BinaryCompareOp::CmpSig;
-    using CmpEqtSig = BinaryCompareOp::CmpEqtSig;
-
-    namespace {
-      using Op = BinaryCompareOp;
-
-      template<Op::optype OT, class T>
-      void cmpTyped(const Img<T> &s1, const Img<T> &s2, Img8u &dst) {
-        visitROILinesPerChannel2With(s1, s2, dst,
-          [](const T *a, const T *b, icl8u *d, int, int w) {
-            for(int i = 0; i < w; ++i) {
-              if constexpr (OT == Op::lt)   d[i] = a[i] < b[i] ? 255 : 0;
-              else if constexpr (OT == Op::lteq) d[i] = a[i] <= b[i] ? 255 : 0;
-              else if constexpr (OT == Op::eq)   d[i] = a[i] == b[i] ? 255 : 0;
-              else if constexpr (OT == Op::gteq) d[i] = a[i] >= b[i] ? 255 : 0;
-              else if constexpr (OT == Op::gt)   d[i] = a[i] > b[i] ? 255 : 0;
-            }
-          });
+    const char* toString(BinaryCompareOp::Op op) {
+      switch(op) {
+        case BinaryCompareOp::Op::compare: return "compare";
+        case BinaryCompareOp::Op::compareEqTol: return "compareEqTol";
       }
-
-      template<Op::optype OT>
-      void compare_typed(const Image &s1, const Image &s2, Img8u &d) {
-        s1.visit([&](const auto &a) {
-          using T = typename std::remove_reference_t<decltype(a)>::type;
-          cmpTyped<OT>(a, s2.as<T>(), d);
-        });
-      }
-
-      void cpp_compare(const Image &s1, const Image &s2, Image &dst, int ot) {
-        Img8u &d = dst.as8u();
-        dispatchEnum<Op::lt, Op::lteq, Op::eq, Op::gteq, Op::gt>(ot, [&](auto tag) {
-          compare_typed<decltype(tag)::value>(s1, s2, d);
-        });
-      }
-
-      void cpp_compare_eqt(const Image &s1, const Image &s2, Image &dst, double tolerance) {
-        Img8u &d = dst.as8u();
-        s1.visit([&](const auto &a) {
-          using T = typename std::remove_reference_t<decltype(a)>::type;
-          T tol = clipped_cast<double,T>(tolerance);
-          visitROILinesPerChannel2With(a, s2.as<T>(), d,
-            [tol](const T *ap, const T *bp, icl8u *dp, int, int w) {
-              for(int i = 0; i < w; ++i)
-                dp[i] = std::abs(ap[i] - bp[i]) <= tol ? 255 : 0;
-            });
-        });
-      }
-    } // anon
-
-    BinaryCompareOp::BinaryCompareOp(optype ot, icl64f tolerance)
-      : m_eOpType(ot), m_dTolerance(tolerance)
-    {
-      initDispatching("BinaryCompareOp");
-      auto& cmp    = addSelector<CmpSig>("compare");
-      auto& cmpEqt = addSelector<CmpEqtSig>("compareEqTol");
-      cmp.add(Backend::Cpp, cpp_compare);
-      cmpEqt.add(Backend::Cpp, cpp_compare_eqt);
+      return "?";
     }
+
+    core::ImageBackendDispatching& BinaryCompareOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("BinaryCompareOp");
+        proto.addSelector<CmpSig>(Op::compare);
+        proto.addSelector<CmpEqtSig>(Op::compareEqTol);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    // Constructor — clones selectors from the class prototype
+    BinaryCompareOp::BinaryCompareOp(optype ot, icl64f tolerance)
+      : ImageBackendDispatching(prototype()),
+        m_eOpType(ot), m_dTolerance(tolerance)
+    {}
 
     void BinaryCompareOp::apply(const Image &src1, const Image &src2, Image &dst) {
       if(!check(src1, src2)) return;
       if(!prepare(dst, src1, depth8u)) return;
       if(m_eOpType == eqt) {
-        getSelector<CmpEqtSig>("compareEqTol").resolve(src1)->apply(src1, src2, dst, m_dTolerance);
+        getSelector<CmpEqtSig>(Op::compareEqTol).resolve(src1)->apply(src1, src2, dst, m_dTolerance);
       } else {
-        getSelector<CmpSig>("compare").resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
+        getSelector<CmpSig>(Op::compare).resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
       }
     }
 

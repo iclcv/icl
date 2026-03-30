@@ -62,15 +62,15 @@ namespace {
     });
   }
 
-  // --- Self-registration ---
+  // --- Direct registration into prototype ---
   using ULOp = icl::filter::UnaryLogicalOp;
+  using Op = ULOp::Op;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<ULOp::WithValSig>(
-    "UnaryLogicalOp.withVal", Backend::Ipp, ipp_withval,
-    applicableTo<icl8u, icl32s>, "IPP logical and/or/xor (8u/32s)");
-
-  static const int _r2 = ImageBackendDispatching::registerBackend<ULOp::NoValSig>(
-    "UnaryLogicalOp.noVal", Backend::Ipp, ipp_noval,
-    applicableTo<icl8u>, "IPP logical not (8u)");
+  static int _reg = [] {
+    auto& proto = ULOp::prototype();
+    proto.addBackend<ULOp::WithValSig>(Op::withVal, Backend::Ipp, ipp_withval, applicableTo<icl8u, icl32s>, "IPP logical and/or/xor (8u/32s)");
+    proto.addBackend<ULOp::NoValSig>(Op::noVal, Backend::Ipp, ipp_noval, applicableTo<icl8u>, "IPP logical not (8u)");
+    return 0;
+  }();
 
 } // anonymous namespace

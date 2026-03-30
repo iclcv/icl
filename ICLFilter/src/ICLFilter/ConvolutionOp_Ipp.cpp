@@ -247,9 +247,13 @@ namespace {
 
   using COp = filter::ConvolutionOp;
 
-  static const int _r = ImageBackendDispatching::registerBackend<COp::ConvSig>(
-    "ConvolutionOp.apply", Backend::Ipp, ipp_convolution,
-    applicableTo<icl8u, icl16s, icl32f>, "IPP convolution (fixed+custom kernels)");
+  static int _reg = [] {
+    using Op = COp::Op;
+    auto& proto = COp::prototype();
+    proto.addBackend<COp::ConvSig>(Op::apply, Backend::Ipp, ipp_convolution,
+      applicableTo<icl8u, icl16s, icl32f>, "IPP convolution (fixed+custom kernels)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

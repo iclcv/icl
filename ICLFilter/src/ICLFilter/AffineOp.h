@@ -44,8 +44,14 @@ namespace icl{
       AffineOp(const AffineOp&) = delete;
       AffineOp& operator=(const AffineOp&) = delete;
 
+      /// Backend selector keys
+      enum class Op : int { apply };
+
       /// Dispatch signature: src, dst, forward 2x3 matrix (6 doubles row-major), interpolation
       using AffineSig = void(const core::Image&, core::Image&, const double*, core::scalemode);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// Constructor
       AffineOp (core::scalemode eInterpolate=core::interpolateLIN);
@@ -85,5 +91,9 @@ namespace icl{
       core::scalemode m_eInterpolate;
       bool m_adaptResultImage;
     };
+
+    /// ADL-visible toString for AffineOp::Op (defined in AffineOp.cpp)
+    ICLFilter_API const char* toString(AffineOp::Op op);
+
   } // namespace filter
 }

@@ -98,9 +98,13 @@ namespace {
 
   using BCOp = icl::filter::BinaryCompareOp;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<BCOp::CmpSig>(
-    "BinaryCompareOp.compare", Backend::Simd, simd_compare,
-    applicableTo<icl8u, icl32f>, "SSE2/NEON binary compare (8u/32f)");
+  static int _reg = [] {
+    using Op = BCOp::Op;
+    auto& proto = BCOp::prototype();
+    proto.addBackend<BCOp::CmpSig>(Op::compare, Backend::Simd, simd_compare,
+      applicableTo<icl8u, icl32f>, "SSE2/NEON binary compare (8u/32f)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

@@ -41,10 +41,16 @@ namespace icl {
     class WienerOp : public NeighborhoodOp, public core::ImageBackendDispatching {
      public:
 
+      /// Backend selector keys
+      enum class Op : int { apply };
+
       /// Dispatch signature: src, dst, maskSize, anchor, roiOffset, noise
       using WienerSig = void(const core::Image&, core::Image&,
                               const utils::Size&, const utils::Point&,
                               const utils::Point&, icl32f);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// Constructor
       WienerOp (const utils::Size &maskSize, icl32f noise=0);
@@ -61,5 +67,9 @@ namespace icl {
       private:
       icl32f m_fNoise;
     };
+
+    /// ADL-visible toString for WienerOp::Op (defined in WienerOp.cpp)
+    ICLFilter_API const char* toString(WienerOp::Op op);
+
   } // namespace filter
 } // namespace icl

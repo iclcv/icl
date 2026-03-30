@@ -29,9 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/BinaryArithmeticalOp.h>
-#include <ICLCore/Visitors.h>
-#include <ICLUtils/EnumDispatch.h>
-#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -39,49 +36,34 @@ using namespace icl::core;
 namespace icl {
   namespace filter {
 
-    using Sig = BinaryArithmeticalOp::Sig;
-
-    namespace {
-      using Op = BinaryArithmeticalOp;
-
-      template<Op::optype OT, class T>
-      void arithOp(const Img<T> &s1, const Img<T> &s2, Img<T> &dst) {
-        visitROILinesPerChannel2With(s1, s2, dst, [](const T *a, const T *b, T *d, int, int w) {
-          for(int i = 0; i < w; ++i) {
-            if constexpr (OT == Op::addOp)    d[i] = a[i] + b[i];
-            else if constexpr (OT == Op::subOp)    d[i] = a[i] - b[i];
-            else if constexpr (OT == Op::mulOp)    d[i] = a[i] * b[i];
-            else if constexpr (OT == Op::divOp)    d[i] = a[i] / b[i];
-            else if constexpr (OT == Op::absSubOp) d[i] = std::abs(a[i] - b[i]);
-          }
-        });
+    const char* toString(BinaryArithmeticalOp::Op op) {
+      switch(op) {
+        case BinaryArithmeticalOp::Op::apply: return "apply";
       }
-
-      template<Op::optype OT>
-      void apply_typed(const Image &s1, const Image &s2, Image &dst) {
-        s1.visitWith(dst, [&](const auto &a, auto &d) {
-          using T = typename std::remove_reference_t<decltype(a)>::type;
-          arithOp<OT>(a, s2.as<T>(), d);
-        });
-      }
-
-      void cpp_apply(const Image &s1, const Image &s2, Image &dst, int ot) {
-        dispatchEnum<Op::addOp, Op::subOp, Op::mulOp, Op::divOp, Op::absSubOp>(ot, [&](auto tag) {
-          apply_typed<decltype(tag)::value>(s1, s2, dst);
-        });
-      }
-    } // anon
-
-    BinaryArithmeticalOp::BinaryArithmeticalOp(optype t) : m_eOpType(t) {
-      initDispatching("BinaryArithmeticalOp");
-      auto& sel = addSelector<Sig>("apply");
-      sel.add(Backend::Cpp, cpp_apply);
+      return "?";
     }
+
+    core::ImageBackendDispatching& BinaryArithmeticalOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("BinaryArithmeticalOp");
+        proto.addSelector<Sig>(Op::apply);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    // Constructor — clones selectors from the class prototype
+    BinaryArithmeticalOp::BinaryArithmeticalOp(optype t)
+      : ImageBackendDispatching(prototype()),
+        m_eOpType(t)
+    {}
 
     void BinaryArithmeticalOp::apply(const Image &src1, const Image &src2, Image &dst) {
       if(!check(src1, src2)) return;
       if(!prepare(dst, src1)) return;
-      getSelector<Sig>("apply").resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
+      getSelector<Sig>(Op::apply).resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
     }
 
   } // namespace filter

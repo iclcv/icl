@@ -29,10 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/UnaryArithmeticalOp.h>
-#include <ICLCore/Visitors.h>
-#include <ICLUtils/ClippedCast.h>
-#include <ICLUtils/EnumDispatch.h>
-#include <cmath>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -40,87 +36,31 @@ using namespace icl::core;
 namespace icl {
   namespace filter {
 
-    // ================================================================
-    // C++ fallback implementations
-    // ================================================================
-
-    namespace {
-      using Op = UnaryArithmeticalOp;
-
-      template<class T>
-      inline T absVal(T t) { return std::abs(t); }
-      template<> inline icl8u absVal(icl8u t) { return t; }
-      template<> inline icl32f absVal(icl32f t) { return std::fabs(t); }
-      template<> inline icl64f absVal(icl64f t) { return std::fabs(t); }
-
-      template<Op::optype OT, class T>
-      void arithWithVal(const Img<T> &src, Img<T> &dst, T val) {
-        visitROILinesPerChannelWith(src, dst, [val](const T *s, T *d, int, int w) {
-          for(int i = 0; i < w; ++i) {
-            if constexpr (OT == Op::addOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) + static_cast<icl64f>(val));
-            else if constexpr (OT == Op::subOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) - static_cast<icl64f>(val));
-            else if constexpr (OT == Op::mulOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) * static_cast<icl64f>(val));
-            else if constexpr (OT == Op::divOp) d[i] = clipped_cast<icl64f,T>(static_cast<icl64f>(s[i]) / static_cast<icl64f>(val));
-          }
-        });
+    const char* toString(UnaryArithmeticalOp::Op op) {
+      switch(op) {
+        case UnaryArithmeticalOp::Op::withVal: return "withVal";
+        case UnaryArithmeticalOp::Op::noVal: return "noVal";
       }
-
-      template<Op::optype OT, class T>
-      void arithNoVal(const Img<T> &src, Img<T> &dst) {
-        visitROILinesPerChannelWith(src, dst, [](const T *s, T *d, int, int w) {
-          for(int i = 0; i < w; ++i) {
-            if constexpr (OT == Op::sqrOp)  d[i] = s[i] * s[i];
-            else if constexpr (OT == Op::sqrtOp) d[i] = clipped_cast<double,T>(std::sqrt(static_cast<double>(s[i])));
-            else if constexpr (OT == Op::lnOp)   d[i] = clipped_cast<double,T>(std::log(static_cast<double>(s[i])));
-            else if constexpr (OT == Op::expOp)   d[i] = clipped_cast<double,T>(std::exp(static_cast<double>(s[i])));
-            else if constexpr (OT == Op::absOp)   d[i] = absVal(s[i]);
-          }
-        });
-      }
-
-      template<Op::optype OT>
-      void apply_with_val(const Image &src, Image &dst, double value) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          arithWithVal<OT>(s, d, clipped_cast<icl64f,T>(value));
-        });
-      }
-
-      template<Op::optype OT>
-      void apply_no_val(const Image &src, Image &dst) {
-        src.visitWith(dst, [&](const auto &s, auto &d) {
-          arithNoVal<OT>(s, d);
-        });
-      }
-
-      void cpp_arith_with_val(const Image &src, Image &dst, double value, int optype) {
-        dispatchEnum<Op::addOp, Op::subOp, Op::mulOp, Op::divOp>(optype, [&](auto tag) {
-          apply_with_val<decltype(tag)::value>(src, dst, value);
-        });
-      }
-
-      void cpp_arith_no_val(const Image &src, Image &dst, int optype) {
-        dispatchEnum<Op::sqrOp, Op::sqrtOp, Op::lnOp, Op::expOp, Op::absOp>(optype, [&](auto tag) {
-          apply_no_val<decltype(tag)::value>(src, dst);
-        });
-      }
-    } // anon namespace
-
-    // ================================================================
-    // Constructor
-    // ================================================================
-
-    UnaryArithmeticalOp::UnaryArithmeticalOp(optype t, icl64f val)
-      : m_eOpType(t), m_dValue(val)
-    {
-      initDispatching("UnaryArithmeticalOp");
-
-      auto& withVal = addSelector<ArithValSig>("withVal");
-      auto& noVal   = addSelector<ArithNoValSig>("noVal");
-
-      withVal.add(Backend::Cpp, cpp_arith_with_val);
-      noVal.add(Backend::Cpp, cpp_arith_no_val);
+      return "?";
     }
+
+    core::ImageBackendDispatching& UnaryArithmeticalOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("UnaryArithmeticalOp");
+        proto.addSelector<ArithValSig>(Op::withVal);
+        proto.addSelector<ArithNoValSig>(Op::noVal);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    // Constructor — clones selectors from the class prototype
+    UnaryArithmeticalOp::UnaryArithmeticalOp(optype t, icl64f val)
+      : ImageBackendDispatching(prototype()),
+        m_eOpType(t), m_dValue(val)
+    {}
 
     // ================================================================
     // apply()
@@ -131,12 +71,12 @@ namespace icl {
 
       switch(m_eOpType) {
         case addOp: case subOp: case mulOp: case divOp: {
-          auto& sel = getSelector<ArithValSig>("withVal");
+          auto& sel = getSelector<ArithValSig>(Op::withVal);
           sel.resolve(src)->apply(src, dst, m_dValue, static_cast<int>(m_eOpType));
           break;
         }
         default: {
-          auto& sel = getSelector<ArithNoValSig>("noVal");
+          auto& sel = getSelector<ArithNoValSig>(Op::noVal);
           sel.resolve(src)->apply(src, dst, static_cast<int>(m_eOpType));
           break;
         }

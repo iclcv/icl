@@ -53,9 +53,13 @@ namespace {
 
   using BLOp = icl::filter::BinaryLogicalOp;
 
-  static const int _r1 = ImageBackendDispatching::registerBackend<BLOp::Sig>(
-    "BinaryLogicalOp.apply", Backend::Simd, simd_apply,
-    applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON binary logical (8u/16s/32s)");
+  static int _reg = [] {
+    using Op = BLOp::Op;
+    auto& proto = BLOp::prototype();
+    proto.addBackend<BLOp::Sig>(Op::apply, Backend::Simd, simd_apply,
+      applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON binary logical (8u/16s/32s)");
+    return 0;
+  }();
 
 } // anonymous namespace
 

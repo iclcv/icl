@@ -1,6 +1,106 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 19 — Full ImgOps Dispatch Migration)
+## Current State (Session 20 — All Filters Migrated to Prototype+Clone)
+
+### Session 20 Summary
+
+**All 15 filters now use the prototype+clone pattern.** The global string
+registry is no longer needed for filter dispatch.
+
+Migrated the remaining 14 filters (ThresholdOp was already done in session 19):
+
+| Filter | Selectors | Backend Files | Notes |
+|---|---|---|---|
+| WienerOp | apply | _Cpp, _Ipp | Now always built (removed IPP-only exclusion from CMakeLists) |
+| LUTOp | reduceBits | _Cpp, _Ipp | Two constructors, both clone from prototype |
+| AffineOp | apply | _Cpp, _Ipp | C++ uses FixedMatrix for inverse transform |
+| ConvolutionOp | apply | _Cpp, _Ipp | Large dispatch chain moved to _Cpp.cpp |
+| MorphologicalOp | apply | _Cpp, _Ipp | Buffer accessors added for _Cpp.cpp access |
+| BilateralFilterOp | apply | _Cpp, _OpenCL | C++ bilateral filter (all depths) |
+| BinaryLogicalOp | apply | _Cpp, _Simd | dispatchEnum pattern preserved |
+| BinaryArithmeticalOp | apply | _Cpp, _Simd | dispatchEnum pattern preserved |
+| BinaryCompareOp | compare, compareEqTol | _Cpp, _Simd | 2 selectors |
+| WarpOp | warp | _Cpp, _Ipp, _OpenCL | 3 backend files |
+| MedianOp | fixed, generic | _Cpp, _Ipp, _Simd | Sorting networks + Huang median in _Cpp |
+| UnaryArithmeticalOp | withVal, noVal | _Cpp, _Ipp, _Simd | 2 selectors |
+| UnaryLogicalOp | withVal, noVal | _Cpp, _Ipp, _Simd | 2 selectors |
+| UnaryCompareOp | compare, compareEqTol | _Cpp, _Ipp, _Simd | 2 selectors |
+
+**Pattern for each migrated filter:**
+1. **Header** — `enum class Op : int { ... }`, `static prototype()`,
+   `toString(Op)` declaration with `ICLFilter_API`
+2. **_Cpp.cpp** — C++ backend implementations, registers via
+   `prototype().addBackend<Sig>(Op::x, Backend::Cpp, fn, desc)`
+3. **_Ipp/_Simd/_OpenCL.cpp** — same registration pattern into prototype
+4. **.cpp** — constructor is `ImageBackendDispatching(prototype())`,
+   `apply()` uses `getSelector<Sig>(Op::x)` (enum-indexed, O(1))
+5. `toString(Op)` free function for ADL (used by `addSelector(K)`)
+
+**CMake change:** WienerOp is no longer excluded when `!IPP_FOUND`. Its C++
+backend throws an exception (IPP required), but the class is always available.
+
+**MorphologicalOp special handling:** The C++ backend accesses private
+composite-operation buffers. Added public buffer accessors
+(`openingBuffer()`, `gradientBuffer1()`, `gradientBuffer2()`) so the free
+function in `_Cpp.cpp` can use them via the `MorphologicalOp&` parameter.
+
+**14 new _Cpp.cpp files created:**
+```
+ICLFilter/src/ICLFilter/WienerOp_Cpp.cpp
+ICLFilter/src/ICLFilter/LUTOp_Cpp.cpp
+ICLFilter/src/ICLFilter/AffineOp_Cpp.cpp
+ICLFilter/src/ICLFilter/ConvolutionOp_Cpp.cpp
+ICLFilter/src/ICLFilter/MorphologicalOp_Cpp.cpp
+ICLFilter/src/ICLFilter/BilateralFilterOp_Cpp.cpp
+ICLFilter/src/ICLFilter/BinaryLogicalOp_Cpp.cpp
+ICLFilter/src/ICLFilter/BinaryArithmeticalOp_Cpp.cpp
+ICLFilter/src/ICLFilter/BinaryCompareOp_Cpp.cpp
+ICLFilter/src/ICLFilter/WarpOp_Cpp.cpp
+ICLFilter/src/ICLFilter/MedianOp_Cpp.cpp
+ICLFilter/src/ICLFilter/UnaryArithmeticalOp_Cpp.cpp
+ICLFilter/src/ICLFilter/UnaryLogicalOp_Cpp.cpp
+ICLFilter/src/ICLFilter/UnaryCompareOp_Cpp.cpp
+```
+
+**Test results:** 349/349 pass (single-threaded). Multi-threaded test crash
+is a **pre-existing bug** in the AffineOp test: heap-buffer-overflow in
+`Img<icl8u>::subPixelLIN()` when bilinear-interpolating a 2×2 image
+(ASAN confirmed at `AffineOp_Cpp.cpp:45`, `test-filter.cpp:745`).
+
+### Known Issue: Stateful Backend Sharing
+
+With the prototype+clone pattern, `ImplBase` objects are shared across all
+instances via `shared_ptr`. This is correct for stateless backends (free
+functions), but **stateful backends share mutable state** across instances:
+
+| Backend | Shared State | Impact |
+|---|---|---|
+| WienerOp_Ipp.cpp | IPP scratch buffer (`vector<icl8u>`) | Concurrent calls corrupt buffer |
+| WarpOp_OpenCL.cpp | `CLWarpState` (GPU buffers/kernels) | Concurrent calls corrupt GPU state |
+| BilateralFilterOp_OpenCL.cpp | `CLBilateralState` | Same |
+| MorphologicalOp_Ipp.cpp | `MorphIppState` (IPP state objects) | Same |
+
+**Fix needed:** Add a factory/creator pattern to `ImplBase` so that stateful
+backends can create fresh state per clone. The `BackendSelector::clone()`
+should call `impl->cloneImpl()` instead of copying the `shared_ptr`:
+
+```
+Option A: virtual cloneImpl() on ImplBase
+  - Stateless impls: return shared_from_this() (share as before)
+  - Stateful impls: call factory, return new Impl with fresh state
+
+Option B: Store optional factory lambda on ImplBase
+  - add() takes optional Factory parameter
+  - clone() calls factory if present, else shares shared_ptr
+  - Backends register: proto.addStatefulBackend<Sig>(key, backend,
+      factory, applicability, desc)
+  - The factory lambda creates fresh state each time
+```
+
+**Important:** If the state contains `Image` or `Img<T>` members, the factory
+must `deepCopy()` them — ICL images use shallow copy by default.
+
+## Previous State (Session 19 — Full ImgOps Dispatch Migration)
 
 ### Session 19 Summary
 
@@ -228,12 +328,16 @@ ImgOps singleton                      — ICLCore
   Owns selectors for: mirror (more to come)
   Backends registered from: Img_Cpp.cpp, Img_Ipp.cpp
 
+Filter prototype+clone pattern        — all 15 ICLFilter ops
+  Static prototype() holds selectors + ImplBase objects
+  Constructor clones: ImageBackendDispatching(prototype())
+  enum class Op indexes selectors at O(1)
+  _Cpp.cpp / _Ipp.cpp / _Simd.cpp / _OpenCL.cpp register into prototype()
+  via: proto.addBackend<Sig>(Op::x, Backend::Xxx, fn, applicability, desc)
+
 Backend enum: Cpp, Simd, Ipp, OpenCL  — ICLUtils
 Priority: OpenCL > Ipp > Simd > Cpp
 
-Self-registration from _Cpp.cpp, _Ipp.cpp, _Simd.cpp, _OpenCL.cpp, _Mkl.cpp files
-  registerBackend<Sig>(key, backend, fn, applicability, desc)
-  registerStatefulBackend<Sig>(key, backend, factory, applicability, desc)
 CMake: _Ipp.cpp excluded when !IPP_FOUND, _OpenCL.cpp when !OPENCL_FOUND
        _Cpp.cpp always built
 ```
@@ -275,13 +379,17 @@ docker run --platform linux/amd64 --rm -e JOBS=16 -e BUILD_DIR=/build-cache \
 ### Key Files
 
 ```
-ICLUtils/src/ICLUtils/BackendDispatching.h     — framework template (resolveOrThrow added)
+ICLUtils/src/ICLUtils/BackendDispatching.h     — framework template (prototype+clone)
 ICLUtils/src/ICLUtils/EnumDispatch.h           — dispatchEnum utility
 ICLCore/src/ICLCore/ImageBackendDispatching.h  — Image + ImgBase* typedefs
 ICLCore/src/ICLCore/ImgOps.h                   — singleton header, dispatch signatures
 ICLCore/src/ICLCore/ImgOps.cpp                 — singleton impl, creates selectors
 ICLCore/src/ICLCore/Img_Cpp.cpp                — C++ backends (8 ops + mirror helpers)
 ICLCore/src/ICLCore/Img_Ipp.cpp                — IPP backends (8 ops)
+ICLFilter/src/ICLFilter/*_Cpp.cpp              — 15 C++ backend files (one per filter)
+ICLFilter/src/ICLFilter/*_Ipp.cpp              — IPP backends (excluded when !IPP_FOUND)
+ICLFilter/src/ICLFilter/*_Simd.cpp             — SIMD backends (always built)
+ICLFilter/src/ICLFilter/*_OpenCL.cpp           — OpenCL backends (excluded when !OPENCL_FOUND)
 tests/test-filter.cpp                          — 349 tests
 benchmarks/bench-filter.cpp                    — 25 filter benchmarks
 packaging/docker/noble-ipp/                    — Docker IPP build
@@ -290,45 +398,55 @@ packaging/docker/noble-ipp/                    — Docker IPP build
 
 ### Next Steps
 
-#### A. Migrate all 14 remaining filters to prototype+clone pattern
+#### A. ~~Migrate all 14 remaining filters to prototype+clone pattern~~ **DONE** (Session 20)
 
-**Proof of concept done: ThresholdOp.** Pattern for each filter:
+All 15 filters now use prototype+clone. See Session 20 summary above.
 
-1. **Header** — add `enum class Op`, add `static proto_type& prototype()`,
-   move signature `using` aliases above `Op` if not already
-2. **New _Cpp.cpp** — move C++ backends from constructor, register into `prototype()`
-3. **Update _Ipp.cpp / _Simd.cpp / _OpenCL.cpp** — change from
-   `registerBackend("Key", ...)` to `prototype().getSelector<Sig>(Op::x).add(...)`
-4. **Update .cpp** — constructor becomes `ImageBackendDispatching(prototype())`,
-   no `initDispatching`/`addSelector`/inline `add()` calls.
-   `apply()` changes `getSelector<Sig>("name")` → `getSelector<Sig>(Op::name)`.
-   Add `toString(Op)` free function.
-5. **Reconfigure CMake** after adding _Cpp.cpp files.
+#### A2. Remove global string registry + add stateful backend cloning
 
-**Filters to migrate (14 remaining, by complexity):**
-
-| Filter | Selectors | Backend files | Notes |
-|---|---|---|---|
-| WienerOp | apply | _Ipp | 1 selector, simple |
-| LUTOp | reduceBits | _Ipp | 1 selector, simple |
-| AffineOp | apply | _Ipp | 1 selector, simple |
-| ConvolutionOp | apply | _Ipp | 1 selector, simple |
-| MorphologicalOp | apply | _Ipp | 1 selector, simple |
-| BilateralFilterOp | apply | _OpenCL | 1 selector, uses registerStatefulBackend |
-| BinaryLogicalOp | apply | _Simd | 1 selector |
-| BinaryArithmeticalOp | apply | _Simd | 1 selector |
-| BinaryCompareOp | compare, compareEqTol | _Simd | 2 selectors |
-| WarpOp | warp | _Ipp, _OpenCL | 1 selector, 2 backend files |
-| MedianOp | fixed, generic | _Ipp, _Simd | 2 selectors, 2 backend files |
-| UnaryArithmeticalOp | withVal, noVal | _Ipp, _Simd | 2 selectors, 2 backend files |
-| UnaryLogicalOp | withVal, noVal | _Ipp, _Simd | 2 selectors, 2 backend files |
-| UnaryCompareOp | compare, compareEqTol | _Ipp, _Simd | 2 selectors, 2 backend files |
-
-**After all filters are migrated:**
-- The global string registry (`detail::globalRegistry`) can be removed entirely
-- `registerBackend` / `registerStatefulBackend` / `loadFromRegistry` can be removed
-- `m_selectorByName` map can be removed (all lookups are enum-indexed)
+**Phase 1 — Remove global string registry:**
+- Remove `detail::globalRegistry()`, `detail::addToRegistry()` from BackendDispatching.h
+- Remove `registerBackend()`, `registerStatefulBackend()` static methods
+- Remove `loadFromRegistry()` private method
+- Remove `m_selectorByName` map (all lookups are now enum-indexed via `m_selectors[int(key)]`)
+- Remove string-keyed `addSelector(string)` and `getSelector(string)` overloads
 - `BackendDispatching` simplifies to: clone constructor + vector of selectors + enum getSelector
+- Remove `BackendDispatching.cpp` if it only contains the global registry impl
+
+**Phase 2 — Add stateful backend cloning (factory pattern):**
+
+The factory is called **once per filter instance** (during clone constructor),
+not per `apply()` call. The created state lives on the instance and is reused
+across all `apply()` calls on that instance. This avoids re-allocating scratch
+buffers, IPP state objects, or OpenCL contexts on every execution.
+
+Design:
+- `ImplBase` gets an optional `Factory` (state-creator lambda)
+- `BackendSelector::clone()`: if impl has a factory, call it to create a new
+  `Impl` with fresh state. Otherwise share the `shared_ptr` as before
+  (stateless backends stay shared — zero overhead)
+- `addStatefulBackend<Sig>(key, backend, factory, applicability, desc)`:
+  calls factory immediately for the prototype instance, stores the factory
+  for future clones
+- The factory returns a callable (lambda capturing its own state).
+  Example for WienerOp:
+  ```cpp
+  proto.addStatefulBackend<WOp::WienerSig>(Op::apply, Backend::Ipp,
+    []() {  // factory — called once per filter instance
+      auto buf = std::make_shared<std::vector<icl8u>>();
+      return [buf](const Image &src, ...) { /* uses buf */ };
+    },
+    applicableTo<icl8u, icl16s, icl32f>, "IPP Wiener filter");
+  ```
+- Important: if the captured state contains `Image`/`Img<T>`, the factory
+  must create them fresh (ICL images default to shallow copy)
+- Migrate: WienerOp_Ipp, WarpOp_OpenCL, BilateralFilterOp_OpenCL,
+  MorphologicalOp_Ipp
+
+**Phase 3 — Fix pre-existing AffineOp test bug:**
+- `test-filter.cpp:745`: heap-buffer-overflow in `subPixelLIN()` on 2×2 image
+- Bilinear interpolation reads 1 byte past allocation
+- Causes SIGTRAP under multi-threaded test execution (ASAN confirmed)
 
 #### B. Remaining ICLCore IPP blocks
 

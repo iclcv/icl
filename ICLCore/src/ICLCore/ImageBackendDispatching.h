@@ -61,6 +61,5 @@ namespace icl {
       depth d = p->getDepth();
       return ((d == getDepth<Ts>()) || ...);
     }
-
   } // namespace core
 } // namespace icl

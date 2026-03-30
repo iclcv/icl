@@ -107,8 +107,14 @@ namespace icl {
       gradientBorder=10
     };
 
+      /// Backend selector keys
+      enum class Op : int { apply };
+
       /// Dispatch signature: src, dst, op reference
       using MorphSig = void(const core::Image&, core::Image&, MorphologicalOp&);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// Constructor that creates a Morphological object, with specified mask size
       /** @param t operation type if(dilate3x3 or erode3x3), further arguments can be
@@ -153,12 +159,12 @@ namespace icl {
       /// Used by backends to detect when state needs reinitialization.
       unsigned maskVersion() const { return m_maskVersion; }
 
+      // Internal buffer access for backend files
+      core::Image& openingBuffer() { return m_openingAndClosingBuffer; }
+      core::Image& gradientBuffer1() { return m_gradientBorderBuffer_1; }
+      core::Image& gradientBuffer2() { return m_gradientBorderBuffer_2; }
+
     private:
-      template<class T>
-      void apply_t(const core::Image &src, core::Image &dst);
-
-      static void cpp_morph(const core::Image &src, core::Image &dst, MorphologicalOp &op);
-
       icl8u *m_pcMask;
       utils::Size m_oMaskSizeMorphOp;
       optype m_eType;
@@ -169,5 +175,9 @@ namespace icl {
       core::Image m_gradientBorderBuffer_1;
       core::Image m_gradientBorderBuffer_2;
     };
+
+    /// ADL-visible toString for MorphologicalOp::Op (defined in MorphologicalOp.cpp)
+    ICLFilter_API const char* toString(MorphologicalOp::Op op);
+
   } // namespace filter
 } // namespace icl

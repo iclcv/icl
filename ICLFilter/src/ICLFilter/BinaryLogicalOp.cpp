@@ -29,8 +29,6 @@
 ********************************************************************/
 
 #include <ICLFilter/BinaryLogicalOp.h>
-#include <ICLCore/Visitors.h>
-#include <ICLUtils/EnumDispatch.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -38,49 +36,33 @@ using namespace icl::core;
 namespace icl {
   namespace filter {
 
-    using Sig = BinaryLogicalOp::Sig;
-
-    namespace {
-      using Op = BinaryLogicalOp;
-
-      template<Op::optype OT, class T>
-      void logicalOp(const Img<T> &s1, const Img<T> &s2, Img<T> &dst) {
-        visitROILinesPerChannel2With(s1, s2, dst, [](const T *a, const T *b, T *d, int, int w) {
-          for(int i = 0; i < w; ++i) {
-            if constexpr (OT == Op::andOp) d[i] = a[i] & b[i];
-            else if constexpr (OT == Op::orOp)  d[i] = a[i] | b[i];
-            else if constexpr (OT == Op::xorOp) d[i] = a[i] ^ b[i];
-          }
-        });
+    const char* toString(BinaryLogicalOp::Op op) {
+      switch(op) {
+        case BinaryLogicalOp::Op::apply: return "apply";
       }
-
-      template<Op::optype OT>
-      void apply_typed(const Image &s1, const Image &s2, Image &dst) {
-        s1.visitWith(dst, [&](const auto &a, auto &d) {
-          using T = typename std::remove_reference_t<decltype(a)>::type;
-          if constexpr (std::is_integral_v<T>) {
-            logicalOp<OT>(a, s2.as<T>(), d);
-          }
-        });
-      }
-
-      void cpp_apply(const Image &s1, const Image &s2, Image &dst, int ot) {
-        dispatchEnum<Op::andOp, Op::orOp, Op::xorOp>(ot, [&](auto tag) {
-          apply_typed<decltype(tag)::value>(s1, s2, dst);
-        });
-      }
-    } // anon
-
-    BinaryLogicalOp::BinaryLogicalOp(optype t) : m_eOpType(t) {
-      initDispatching("BinaryLogicalOp");
-      auto& sel = addSelector<Sig>("apply");
-      sel.add(Backend::Cpp, cpp_apply);
+      return "?";
     }
+
+    core::ImageBackendDispatching& BinaryLogicalOp::prototype() {
+      static core::ImageBackendDispatching proto;
+      static bool init = [&] {
+        proto.initDispatching("BinaryLogicalOp");
+        proto.addSelector<Sig>(Op::apply);
+        return true;
+      }();
+      (void)init;
+      return proto;
+    }
+
+    BinaryLogicalOp::BinaryLogicalOp(optype t)
+      : ImageBackendDispatching(prototype()),
+        m_eOpType(t)
+    {}
 
     void BinaryLogicalOp::apply(const Image &src1, const Image &src2, Image &dst) {
       if(!check(src1, src2)) return;
       if(!prepare(dst, src1)) return;
-      getSelector<Sig>("apply").resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
+      getSelector<Sig>(Op::apply).resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
     }
 
   } // namespace filter

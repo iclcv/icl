@@ -100,8 +100,14 @@ namespace icl {
       ConvolutionOp(const ConvolutionOp&) = delete;
       ConvolutionOp& operator=(const ConvolutionOp&) = delete;
 
+      /// Backend selector keys
+      enum class Op : int { apply };
+
       /// Dispatch signature: src, dst, op reference (kernel/anchor/etc. accessed from op)
       using ConvSig = void(const core::Image&, core::Image&, ConvolutionOp&);
+
+      /// Class-level prototype — owns selectors, populated during static init
+      static core::ImageBackendDispatching& prototype();
 
       /// Default constructor (force unsigned is set to false)
       ConvolutionOp(const ConvolutionKernel &kernel=ConvolutionKernel());
@@ -133,6 +139,9 @@ namespace icl {
       ConvolutionKernel m_kernel;
       bool m_forceUnsignedOutput;
     };
+
+    /// ADL-visible toString for ConvolutionOp::Op (defined in ConvolutionOp.cpp)
+    ICLFilter_API const char* toString(ConvolutionOp::Op op);
 
   } // namespace filter
 }
