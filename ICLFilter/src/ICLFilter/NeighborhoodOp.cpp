@@ -79,10 +79,9 @@ namespace icl {
       oROIsize = newROI.getSize();
 
 
-  #ifdef ICL_HAVE_IPP // workaround for IPP bug (anchor not correctly handled)
+      // Shrink ROI by 1 pixel for even-sized masks (workaround for anchor handling)
       if (m_oMaskSize.width % 2 == 0) oROIsize.width--;
       if (m_oMaskSize.height % 2 == 0) oROIsize.height--;
-  #endif
       //    ERROR_LOG("params: x:" << oROIoffset.x << ",y:" << oROIoffset.y << ",w:" << oROIsize.width << ",h:" << oROIsize.height);
       return !!oROIsize.getDim();
       // TODO

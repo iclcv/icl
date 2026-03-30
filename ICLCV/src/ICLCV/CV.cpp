@@ -32,9 +32,6 @@
 #include <ICLFilter/ProximityOp.h>
 #include <ICLCV/CV.h>
 #include <ICLFilter/BinaryLogicalOp.h>
-#ifdef ICL_HAVE_IPP
-#include <ippi.h>
-#endif
 #include <ICLCore/Img.h>
 //#include <ICLQt/Quick.h>
 
@@ -123,25 +120,9 @@ namespace icl{
         useBuffer->setROI(Rect(bufOffs,bufSize));
       }
       for(int i=0;i<src.getChannels();i++){
-  #ifdef ICL_HAVE_IPP
-        if(useCrossCorrCoeffInsteadOfSqrDistance){
-          ippiCrossCorrValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
-                                            src.getROISize(), templ.getROIData(i),
-                                            templ.getLineStep(),templ.getROISize(),
-                                            useBuffer->getROIData(i),
-                                            useBuffer->getLineStep(),-8);
-        }else{
-          ippiSqrDistanceValid_Norm_8u_C1RSfs(src.getROIData(i),src.getLineStep(),
-                                              src.getROISize(), templ.getROIData(i),
-                                              templ.getLineStep(),templ.getROISize(),
-                                              useBuffer->getROIData(i),
-                                              useBuffer->getLineStep(),-8);
-        }
-  #else
-
-
-    ERROR_LOG("not supported without IPP");
-  #endif
+        // ippiCrossCorrValid_Norm / ippiSqrDistanceValid_Norm removed in modern oneAPI IPP
+        // TODO: implement C++ fallback or use modern ippiSqrDistanceNorm API
+        ERROR_LOG("proximity matching not yet supported (deprecated IPP API removed)");
       }
 
       Img8u &m = *useBuffer;

@@ -34,6 +34,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/SSEUtils.h>
 
+#include <cstring>
 #include <vector>
 
 using namespace icl::utils;

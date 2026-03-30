@@ -1,8 +1,35 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 17 — Tests, Benchmarks, Docker IPP Build)
+## Current State (Session 18 — Docker IPP Green, ICLFilter IPP Migration)
 
-### Session 17 Summary
+### Session 18 Summary
+
+**Docker IPP build — now green:**
+- Fixed `ContourDetector.cpp` missing `#include <cstring>`
+- Fixed `CornerDetectorCSS.cpp` removed `ippsConv_32f` (deprecated, use C++ fallback)
+- Fixed `CV.cpp` removed `ippiCrossCorrValid_Norm` / `ippiSqrDistanceValid_Norm` (deprecated)
+- Fixed `TemplateTracker.h` missing `#include <ICLUtils/Point32f.h>`
+- Fixed `DataSegment.h` missing `#include <cstring>`
+- Fixed `ICLMarkers/CMakeLists.txt` spurious Qt PCH headers
+- Fixed `FiducialDetectorPluginART.cpp` dead `Quick.h` include
+- Fixed `FiducialDetectorPluginICL1.cpp` guarded `Quick.h`, added proper includes
+- Fixed `ProximityOp.cpp` — provided stub implementations (was entirely inside `#if 0`)
+- All modules compile and tests pass on Linux/IPP (Docker) and macOS
+
+**Incremental Docker builds:**
+- `build-and-test.sh` now uses `rsync` (preserves timestamps) instead of `cp -a`
+- Use named Docker volume for persistent build cache: `-v icl-ipp-build:/build-cache -e BUILD_DIR=/build-cache`
+- Dockerfile adds `rsync` package
+
+**ICLFilter IPP migration — complete:**
+- Extracted `WarpOp` inline IPP (`ippiRemap_8u/32f_C1R`) to `WarpOp_Ipp.cpp` as `Backend::Ipp`
+- Removed `#ifdef ICL_HAVE_IPP` from NeighborhoodOp.cpp (anchor workaround now always-on)
+- Removed `#ifdef ICL_HAVE_IPP` from LocalThresholdOp.cpp (C++ path is both faster and higher quality)
+- Removed `#ifdef ICL_HAVE_IPP` from UnaryOp.cpp (Canny creator — works without IPP now)
+- Removed redundant `#ifdef ICL_HAVE_IPP` guards from all `_Ipp.cpp` files (CMake already excludes them)
+- ICLFilter now has zero active `#ifdef ICL_HAVE_IPP` in non-backend files
+
+### Previous Session Summary (Session 17)
 
 **BackendDispatching refactoring:**
 - Nested `BackendSelectorBase`, `BackendSelector<Sig>`, `ApplicabilityFn` inside `BackendDispatching<Context>`
@@ -169,11 +196,45 @@ packaging/docker/noble-ipp/                  — Docker IPP build
 filter-benchmarks-and-tests-plan.md          — detailed plan with progress
 ```
 
+### Docker Build Commands
+
+```bash
+# First run (full build with persistent volume):
+docker build --platform linux/amd64 -t icl-ipp packaging/docker/noble-ipp
+docker run --platform linux/amd64 --rm -e JOBS=16 -e BUILD_DIR=/build-cache \
+  -v $(pwd):/src:ro -v icl-ipp-build:/build-cache \
+  icl-ipp bash /src/packaging/docker/noble-ipp/build-and-test.sh
+
+# Subsequent runs (incremental — only recompiles changed files):
+# Same command — volume "icl-ipp-build" persists CMake state + object files
+```
+
+### Remaining Inline `#ifdef ICL_HAVE_IPP` Blocks (non-filter)
+
+**ICLCore (highest volume):**
+- `Img.h` — `ippiSet_*` (clearChannelROI specializations, 3 depths)
+- `Img.cpp` — lut, mirror, min/max, normalize, flippedCopy (6 blocks)
+- `CoreFunctions.cpp` — channel_mean specializations (4 depths)
+- `ImgBorder.cpp` — border replication (8u, 32f)
+- `CCFunctions.cpp` — planarToInterleaved/interleavedToPlanar macros
+- `BayerConverter.h/.cpp` — Bayer pattern conversion
+- `Types.h` — conditional enum definitions
+
+**ICLMath:**
+- `DynMatrix.h` — `ippsNormDiff_L2_*` (distance)
+- `MathFunctions.h` — `ippsMean_*`
+- `DynMatrixUtils.cpp` — mean/stddev/meanstddev, unary math functions
+
+**ICLIO:**
+- `DC.cpp` — `ippiRGBToGray_8u_C3C1R`
+- `ColorFormatDecoder.cpp` — `ippiYUVToRGB_8u_C3R`
+- `PylonColorConverter.cpp/.h` — YUV conversion classes
+
 ### Next Steps
 
-1. **Verify Docker IPP build is green** — run the Docker command above
-2. **Run tests inside Docker** — confirm IPP backends produce same output as C++
-3. **Migrate remaining inline `#ifdef ICL_HAVE_IPP` blocks** to `_Ipp.cpp` backend files
+1. **Migrate ICLCore inline IPP blocks** — extract to `_Ipp.cpp` files (need `BackendDispatching` for utility functions or simpler function-pointer dispatch)
+2. **Migrate ICLMath inline IPP blocks** — matrix/mean functions
+3. **Migrate ICLIO inline IPP blocks** — color conversion
 4. **Update disabled IPP backends** to modern oneAPI APIs (ConvolutionOp, MorphologicalOp, AffineOp — highest priority)
 5. **Add MKL as a backend** — `Backend::Mkl`, `_Mkl.cpp` files for FFT and matrix ops
 6. **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison

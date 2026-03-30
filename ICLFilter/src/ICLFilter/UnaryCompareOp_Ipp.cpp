@@ -32,8 +32,6 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryCompareOp.h>
-
-#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 
 using namespace icl;
@@ -103,5 +101,3 @@ namespace {
     applicableTo<icl32f>, "IPP compareEqualEps (32f)");
 
 } // anon namespace
-
-#endif // ICL_HAVE_IPP

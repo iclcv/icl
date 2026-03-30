@@ -16,5 +16,4 @@ icl_add_module(ICLMarkers
     <ICLUtils/StringUtils.h>
     <ICLUtils/Macros.h>
     <ICLCore/Img.h>
-    <ICLCore/ImgBase.h>
-    <QWidget> <QString> <QObject> <QOpenGLWidget>)
+    <ICLCore/ImgBase.h>)

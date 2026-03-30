@@ -385,31 +385,6 @@ namespace icl{
           NEW (no IPP involved) 2.7ms
           */
 
-#ifdef ICL_HAVE_IPP
-      int bw = w/ts;
-      // Time tt = tt2;
-
-      for(int c=s.getChannels()-1;c>=0;--c){
-        S *pbuf1 = buf1.begin(c);
-        const Channel<S> chan = s[c];
-        for(int y=0;y<NY;++y){
-          r.y = ts*y;
-          for(int x=0;x<NX;++x){
-            r.x = ts*x;
-            pbuf1[x+bw*y] = roi_mean(chan,dim,r)+threshold;
-          }
-        }
-      }
-
-      //tt.printAge("roi-mean-downscaling");
-      //tt = Time::now();
-      buf1.scaledCopy(&buf2,lin?interpolateLIN:interpolateNN);
-      //tt.printAge("scaled copy");
-      //tt = Time::now();
-      cmp->apply(&s,&buf2,bpp(dst));
-      //tt.printAge("compare");
-
-#else
       for(int c=s.getChannels()-1;c>=0;--c){
         //S *pbuf1 = buf1.begin(c);
         const Channel<S> srcChan = s[c];
@@ -518,7 +493,6 @@ namespace icl{
           }
         }
       }
-#endif
     }
 
     inline bool is_int(float x){

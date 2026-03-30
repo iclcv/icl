@@ -32,6 +32,7 @@
 
 #include <ICLUtils/Configurable.h>
 #include <ICLUtils/Uncopyable.h>
+#include <ICLUtils/Point32f.h>
 #include <ICLCore/Img.h>
 namespace icl{
   namespace cv{

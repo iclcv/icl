@@ -6,7 +6,7 @@ LABEL description="Ubuntu 24.04 (Noble) ICL build with Intel IPP for cross-valid
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential git cmake clang ca-certificates \
     libjpeg-dev libpng-dev libmagick++-dev libpugixml-dev \
-    gnupg2 wget \
+    gnupg2 wget rsync \
     && rm -rf /var/lib/apt/lists/*
 
 # Intel oneAPI IPP via APT

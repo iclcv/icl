@@ -4,8 +4,6 @@
 #include <ICLFilter/WienerOp.h>
 #include <vector>
 
-#ifdef ICL_HAVE_IPP
-
 using namespace icl;
 using namespace icl::utils;
 using namespace icl::core;
@@ -86,5 +84,3 @@ namespace {
     applicableTo<icl8u, icl16s, icl32f>, "IPP Wiener filter (8u/16s/32f)");
 
 } // anonymous namespace
-
-#endif // ICL_HAVE_IPP

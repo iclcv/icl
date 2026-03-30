@@ -33,8 +33,6 @@
 #include <ICLCore/Visitors.h>
 #include <ICLUtils/ClippedCast.h>
 #include <ICLFilter/ThresholdOp.h>
-
-#ifdef ICL_HAVE_IPP
 #include <ipp.h>
 
 using namespace icl;
@@ -129,5 +127,3 @@ namespace {
     applicableTo<icl8u, icl16s, icl32f>, "IPP threshold ltgtVal (8u/16s/32f)");
 
 } // anon namespace
-
-#endif // ICL_HAVE_IPP

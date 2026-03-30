@@ -32,8 +32,19 @@
 #include <ICLMarkers/FiducialDetectorPluginICL1.h>
 #include <ICLMarkers/MarkerMetricsICL1.h>
 #include <ICLUtils/Range.h>
+#include <ICLUtils/Point32f.h>
+#include <ICLCore/Img.h>
+#include <ICLCV/ImageRegion.h>
+#include <ICLGeom/GeomDefs.h>
 
+#ifdef ICL_HAVE_QT
 #include <ICLQt/Quick.h>
+#endif
+
+using namespace icl::utils;
+using namespace icl::core;
+using namespace icl::cv;
+using namespace icl::geom;
 
 namespace icl{
   namespace markers{

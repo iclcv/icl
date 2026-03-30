@@ -4,12 +4,15 @@ set -e
 # Source oneAPI environment (sets IPP paths)
 source /opt/intel/oneapi/setvars.sh --force 2>/dev/null || true
 
-# Copy source to writable location (CMake generates files in-tree)
-echo "=== Copying source ==="
-cp -a /src /icl-src
+# Sync source to writable location (preserves timestamps for incremental builds)
+echo "=== Syncing source ==="
+rsync -a --delete --exclude=build/ --exclude=.git/ /src/ /icl-src/
+
+# Use /build-cache if mounted (persistent volume), otherwise /build (ephemeral)
+BUILD_DIR="${BUILD_DIR:-/build}"
 
 echo "=== Configuring ICL with IPP ==="
-cmake -S /icl-src -B /build \
+cmake -S /icl-src -B "$BUILD_DIR" \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_BUILD_TYPE=Release \
@@ -24,7 +27,7 @@ cmake -S /icl-src -B /build \
 
 JOBS=${JOBS:-$(nproc)}
 echo "=== Building ($JOBS threads) ==="
-cmake --build /build -j$JOBS
+cmake --build "$BUILD_DIR" -j$JOBS
 
 echo "=== Running tests ==="
-cd /build && ctest --output-on-failure
+cd "$BUILD_DIR" && ctest --output-on-failure

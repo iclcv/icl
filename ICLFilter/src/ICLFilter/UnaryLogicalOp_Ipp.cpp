@@ -4,8 +4,6 @@
 #include <ICLCore/Visitors.h>
 #include <ICLFilter/UnaryLogicalOp.h>
 
-#ifdef ICL_HAVE_IPP
-
 using namespace icl;
 using namespace icl::utils;
 using namespace icl::core;
@@ -76,5 +74,3 @@ namespace {
     applicableTo<icl8u>, "IPP logical not (8u)");
 
 } // anonymous namespace
-
-#endif // ICL_HAVE_IPP

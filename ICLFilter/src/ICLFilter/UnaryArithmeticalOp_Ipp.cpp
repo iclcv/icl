@@ -32,6 +32,4 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/UnaryArithmeticalOp.h>
 
-#ifdef ICL_HAVE_IPP
 // IPP backends to be added when building on a platform with IPP
-#endif // ICL_HAVE_IPP

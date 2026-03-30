@@ -35,6 +35,7 @@
 #include <ICLCore/Types.h>
 #include <ICLCore/DataSegmentBase.h>
 #include <ICLUtils/ClippedCast.h>
+#include <cstring>
 
 namespace icl{
   namespace core{
