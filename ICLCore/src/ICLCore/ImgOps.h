@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/src/ICLCore/ImageBackendDispatching.h          **
+** File   : ICLCore/src/ICLCore/ImgOps.h                           **
 ** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -30,38 +30,27 @@
 
 #pragma once
 
-#include <ICLUtils/BackendDispatching.h>
-#include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
 namespace icl {
   namespace core {
 
-    // Re-export general types into core namespace
-    using utils::Backend;
-    using utils::backendPriority;
-    using utils::backendName;
+    /// Singleton that owns BackendSelectors for Img utility operations
+    /// (mirror, min, max, lut, etc.). Uses ImgBase* as dispatch context
+    /// so Img<T> methods can dispatch directly via `this`.
+    ///
+    /// Backends self-register from _Cpp.cpp / _Ipp.cpp / _Mkl.cpp files.
+    class ICLCore_API ImgOps : public ImgBaseBackendDispatching {
+    public:
+      // ---- Dispatch signatures (ImgBase& + operation args) ----
+      using MirrorSig = void(ImgBase&, axis, bool roiOnly);
 
-    /// Image backend dispatching — typedef to BackendDispatching<Image>.
-    /// Used by filter operations (UnaryOp, BinaryOp) that work with Image values.
-    using ImageBackendDispatching = utils::BackendDispatching<Image>;
+      /// Access the singleton instance (lazy-init, thread-safe)
+      static ImgOps& instance();
 
-    /// ImgBase* backend dispatching — for Img<T> member functions that
-    /// dispatch on `this`. Avoids the overhead of constructing an Image wrapper.
-    using ImgBaseBackendDispatching = utils::BackendDispatching<ImgBase*>;
-
-    /// Predefined applicability for Image context.
-    template<class... Ts>
-    bool applicableTo(const Image& src) {
-      depth d = src.getDepth();
-      return ((d == getDepth<Ts>()) || ...);
-    }
-
-    /// Predefined applicability for ImgBase* context.
-    template<class... Ts>
-    bool applicableToBase(ImgBase* const& p) {
-      depth d = p->getDepth();
-      return ((d == getDepth<Ts>()) || ...);
-    }
+    private:
+      ImgOps();
+    };
 
   } // namespace core
 } // namespace icl

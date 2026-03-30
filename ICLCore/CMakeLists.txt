@@ -1,6 +1,11 @@
 file(GLOB SOURCES src/ICLCore/*.cpp)
 file(GLOB HEADERS src/ICLCore/*.h)
 
+# Convention: *_Ipp.cpp = IPP-only, *_OpenCL.cpp = OpenCL-only, *_Simd.cpp = always built.
+if(NOT IPP_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
+endif()
+
 if(NOT OpenCV_FOUND)
   list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLCore/OpenCV.cpp)
   list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLCore/OpenCV.h)

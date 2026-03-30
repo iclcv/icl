@@ -136,6 +136,7 @@ namespace icl {
 
       /* }}} */
 
+    public:
       /** @{ @name basic image manipulation */
       /* {{{ open */
 

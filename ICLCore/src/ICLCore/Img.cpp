@@ -30,6 +30,7 @@
 ********************************************************************/
 
 #include <ICLCore/Img.h>
+#include <ICLCore/ImgOps.h>
 #include <ICLCore/CoreFunctions.h>
 #include <functional>
 #include <limits>
@@ -676,11 +677,8 @@ namespace icl {
     Img<Type>::mirror(axis eAxis, bool bOnlyROI)
     {
       FUNCTION_LOG("");
-      const Point& oOffset = bOnlyROI ? getROIOffset() : Point::null;
-      const Size&  oSize   = bOnlyROI ? getROISize() : getSize();
-      for (int c=0; c < getChannels(); ++c) {
-        this->mirror (eAxis, c, oOffset, oSize);
-      }
+      auto& sel = ImgOps::instance().getSelector<ImgOps::MirrorSig>("mirror");
+      sel.resolve(this)->apply(*this, eAxis, bOnlyROI);
     }
 
     static inline int getPointerOffset (int x, int y, int iLineLen) {return (x + y*iLineLen);}
@@ -814,24 +812,6 @@ namespace icl {
     }
 
 
-  #ifdef ICL_HAVE_IPP
-    template <>
-    void Img<icl8u>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_8u_C1IR(getROIData(iChannel,oOffset),getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
-    }
-    template <>
-    void Img<icl16s>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_16u_C1IR(reinterpret_cast<Ipp16u*>(getROIData(iChannel,oOffset)), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
-    }
-    template <>
-    void Img<icl32s>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_32s_C1IR( getROIData(iChannel,oOffset), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
-    }
-    template <>
-    void Img<icl32f>::mirror(axis eAxis, int iChannel, const Point &oOffset, const Size &oSize) {
-      ippiMirror_32s_C1IR(reinterpret_cast<Ipp32s*>(getROIData(iChannel,oOffset)), getLineStep(), oSize, static_cast<IppiAxis>(eAxis));
-    }
-  #endif
 
 
 

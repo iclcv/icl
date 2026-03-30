@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLCore/src/ICLCore/ImageBackendDispatching.h          **
+** File   : ICLCore/src/ICLCore/ImgOps.cpp                         **
 ** Module : ICLCore                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,39 +28,21 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
-#include <ICLUtils/BackendDispatching.h>
-#include <ICLCore/Image.h>
+#include <ICLCore/ImgOps.h>
 
 namespace icl {
   namespace core {
 
-    // Re-export general types into core namespace
-    using utils::Backend;
-    using utils::backendPriority;
-    using utils::backendName;
-
-    /// Image backend dispatching — typedef to BackendDispatching<Image>.
-    /// Used by filter operations (UnaryOp, BinaryOp) that work with Image values.
-    using ImageBackendDispatching = utils::BackendDispatching<Image>;
-
-    /// ImgBase* backend dispatching — for Img<T> member functions that
-    /// dispatch on `this`. Avoids the overhead of constructing an Image wrapper.
-    using ImgBaseBackendDispatching = utils::BackendDispatching<ImgBase*>;
-
-    /// Predefined applicability for Image context.
-    template<class... Ts>
-    bool applicableTo(const Image& src) {
-      depth d = src.getDepth();
-      return ((d == getDepth<Ts>()) || ...);
+    ImgOps& ImgOps::instance() {
+      static ImgOps ops;
+      return ops;
     }
 
-    /// Predefined applicability for ImgBase* context.
-    template<class... Ts>
-    bool applicableToBase(ImgBase* const& p) {
-      depth d = p->getDepth();
-      return ((d == getDepth<Ts>()) || ...);
+    ImgOps::ImgOps() {
+      initDispatching("Img");
+
+      // Selectors — backends registered from _Cpp.cpp and _Ipp.cpp
+      addSelector<MirrorSig>("mirror");
     }
 
   } // namespace core
