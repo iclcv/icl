@@ -34,8 +34,8 @@ namespace icl {
   namespace utils {
     namespace detail {
 
-      std::map<std::string, std::vector<RegistryEntry>>& globalRegistry() {
-        static std::map<std::string, std::vector<RegistryEntry>> reg;
+      std::unordered_map<std::string, std::vector<RegistryEntry>>& globalRegistry() {
+        static std::unordered_map<std::string, std::vector<RegistryEntry>> reg;
         return reg;
       }
 

@@ -42,8 +42,28 @@ namespace icl {
     /// Backends self-register from _Cpp.cpp / _Ipp.cpp / _Mkl.cpp files.
     class ICLCore_API ImgOps : public ImgBaseBackendDispatching {
     public:
+      /// Operation keys — values must match addSelector() insertion order.
+      enum class Op : int {
+        mirror, clearChannelROI, lut, getMax, getMin, getMinMax, normalize, flippedCopy
+      };
+
       // ---- Dispatch signatures (ImgBase& + operation args) ----
       using MirrorSig = void(ImgBase&, axis, bool roiOnly);
+      using ClearChannelROISig = void(ImgBase&, int ch, icl64f val,
+                                      const utils::Point& offs, const utils::Size& size);
+      using LutSig = void(ImgBase& src, const void* lut, ImgBase& dst, int bits);
+      using GetMaxSig = icl64f(ImgBase&, int ch, utils::Point* coords);
+      using GetMinSig = icl64f(ImgBase&, int ch, utils::Point* coords);
+      using GetMinMaxSig = void(ImgBase&, int ch,
+                                icl64f* minVal, icl64f* maxVal,
+                                utils::Point* minCoords, utils::Point* maxCoords);
+      using NormalizeSig = void(ImgBase&, int ch,
+                                icl64f srcMin, icl64f srcMax,
+                                icl64f dstMin, icl64f dstMax);
+      using FlippedCopySig = void(axis, ImgBase& src, int srcC,
+                                  const utils::Point& srcOffs, const utils::Size& srcSize,
+                                  ImgBase& dst, int dstC,
+                                  const utils::Point& dstOffs, const utils::Size& dstSize);
 
       /// Access the singleton instance (lazy-init, thread-safe)
       static ImgOps& instance();
@@ -51,6 +71,9 @@ namespace icl {
     private:
       ImgOps();
     };
+
+    /// ADL-visible toString for ImgOps::Op → registry name (defined in ImgOps.cpp)
+    ICLCore_API const char* toString(ImgOps::Op op);
 
   } // namespace core
 } // namespace icl

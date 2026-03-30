@@ -38,11 +38,33 @@ namespace icl {
       return ops;
     }
 
+    const char* toString(ImgOps::Op op) {
+      switch(op) {
+        case ImgOps::Op::mirror:           return "mirror";
+        case ImgOps::Op::clearChannelROI:  return "clearChannelROI";
+        case ImgOps::Op::lut:              return "lut";
+        case ImgOps::Op::getMax:           return "getMax";
+        case ImgOps::Op::getMin:           return "getMin";
+        case ImgOps::Op::getMinMax:        return "getMinMax";
+        case ImgOps::Op::normalize:        return "normalize";
+        case ImgOps::Op::flippedCopy:      return "flippedCopy";
+      }
+      return "?";
+    }
+
     ImgOps::ImgOps() {
       initDispatching("Img");
 
-      // Selectors — backends registered from _Cpp.cpp and _Ipp.cpp
-      addSelector<MirrorSig>("mirror");
+      // Enum values must match insertion order (asserted at runtime).
+      // Registry names derived from toString(Op) via ADL.
+      addSelector<MirrorSig>(Op::mirror);
+      addSelector<ClearChannelROISig>(Op::clearChannelROI);
+      addSelector<LutSig>(Op::lut);
+      addSelector<GetMaxSig>(Op::getMax);
+      addSelector<GetMinSig>(Op::getMin);
+      addSelector<GetMinMaxSig>(Op::getMinMax);
+      addSelector<NormalizeSig>(Op::normalize);
+      addSelector<FlippedCopySig>(Op::flippedCopy);
     }
 
   } // namespace core

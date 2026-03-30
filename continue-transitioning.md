@@ -1,8 +1,58 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 18 — Docker IPP Green, Backend Dispatch for Img Utilities)
+## Current State (Session 19 — Full ImgOps Dispatch Migration)
 
-### Session 18 Summary
+### Session 19 Summary
+
+**Img.cpp + Img.h now have zero `#ifdef ICL_HAVE_IPP` blocks.**
+
+Migrated all 7 remaining IPP-guarded operations in Img.cpp/Img.h to the
+ImgOps BackendDispatch framework (Img_Cpp.cpp / Img_Ipp.cpp):
+
+| Operation | IPP Functions | Depths |
+|---|---|---|
+| clearChannelROI | `ippiSet_*_C1R` | 8u, 16s, 32s, 32f |
+| lut | `ippiLUTPalette_8u_C1R` | 8u |
+| getMax | `ippiMax/MaxIndx_*_C1R` | 8u, 16s, 32f |
+| getMin | `ippiMin/MinIndx_*_C1R` | 8u, 16s, 32f |
+| getMinMax | `ippiMinMax/MinMaxIndx_*_C1R` | 8u, 32f |
+| normalize | `ippiMulC/AddC_32f_C1IR` | 32f |
+| flippedCopyChannelROI | `ippiMirror_*_C1R` | 8u, 32f |
+
+**Key design details:**
+- **Type-erased dispatch signatures** — operations that return typed values
+  (getMax, getMin) use `icl64f` return through dispatch, cast back at call site
+- **const methods** — `getMax`/`getMin`/`getMinMax`/`lut` use `const_cast` to
+  pass `const ImgBase*` through `ImgBase*` dispatch context (safe: resolve
+  only checks depth, backends don't modify source)
+- **clearChannelROI** — dispatch at `Img<T>::clear()` level, not in the header
+  template itself (avoids circular include: Img.h→ImgOps.h→Image.h→Img.h).
+  Direct callers of `clearChannelROI<T>()` get the C++ path.
+- **Mirror helpers moved to Img_Cpp.cpp** — `getPointerOffset`,
+  `getMirrorPointerOffsets`, `getMirrorPointers`, plus the per-channel
+  `Img<T>::mirror(axis, int, Point, Size)` definition (with explicit
+  instantiations). These were only used by mirror and flippedCopy.
+- **scaledCopyChannelROI** `#if 0` dead code cleaned up — just uses
+  `ICL_INSTANTIATE_ALL_DEPTHS` now (IPP APIs deprecated, TODO for future)
+- **`getStartIndex`/`getEndIndex`** are protected on `Img<T>` — backends
+  inline the logic: `startC = ch < 0 ? 0 : ch`
+
+**New dispatch signatures in ImgOps:**
+```
+ClearChannelROISig  = void(ImgBase&, int ch, icl64f val, const Point& offs, const Size& size)
+LutSig             = void(ImgBase& src, const void* lut, ImgBase& dst, int bits)
+GetMaxSig          = icl64f(ImgBase&, int ch, Point* coords)
+GetMinSig          = icl64f(ImgBase&, int ch, Point* coords)
+GetMinMaxSig       = void(ImgBase&, int ch, icl64f* minVal, icl64f* maxVal, Point* minCoords, Point* maxCoords)
+NormalizeSig       = void(ImgBase&, int ch, icl64f srcMin, icl64f srcMax, icl64f dstMin, icl64f dstMax)
+FlippedCopySig     = void(axis, ImgBase& src, int srcC, const Point& srcOffs, const Size& srcSize,
+                          ImgBase& dst, int dstC, const Point& dstOffs, const Size& dstSize)
+```
+
+**CMake note:** `FILE(GLOB)` is evaluated at configure time. After adding new
+`_Cpp.cpp` / `_Ipp.cpp` files, re-run `cmake ..` to pick them up.
+
+### Previous Session Summary (Session 18)
 
 **Docker IPP build — now green:**
 - Fixed `ContourDetector.cpp` missing `#include <cstring>`
@@ -176,17 +226,14 @@ CMake: _Ipp.cpp excluded when !IPP_FOUND, _OpenCL.cpp when !OPENCL_FOUND
 
 ### Remaining Inline `#ifdef ICL_HAVE_IPP` Blocks to Migrate
 
-**ICLCore — via ImgOps singleton (pattern established, mirror done):**
-- `Img.h` — `ippiSet_*` (clearChannelROI specializations, 4 depths)
-- `Img.cpp` — lut, min/max, normalize, flippedCopyChannelROI (5 remaining blocks)
+**ICLCore — Img.cpp and Img.h are DONE (zero `#ifdef ICL_HAVE_IPP`).**
+
+Remaining ICLCore files:
 - `CoreFunctions.cpp` — channel_mean specializations (4 depths)
 - `ImgBorder.cpp` — border replication (8u, 32f)
 - `CCFunctions.cpp` — planarToInterleaved/interleavedToPlanar macros
 - `BayerConverter.h/.cpp` — Bayer pattern conversion
 - `Types.h` — conditional enum definitions (compile-time, may stay)
-
-Note: once `flippedCopyChannelROI` is migrated, the `getMirrorPointers` helper
-functions can move from `Img.cpp` to `Img_Cpp.cpp`.
 
 **ICLMath — needs own dispatch singleton (similar pattern):**
 - `DynMatrix.h` — `ippsNormDiff_L2_*`, `ippsDiv_*`, `ippsMulC_*`, `ippsNorm_*`
@@ -219,8 +266,8 @@ ICLUtils/src/ICLUtils/EnumDispatch.h           — dispatchEnum utility
 ICLCore/src/ICLCore/ImageBackendDispatching.h  — Image + ImgBase* typedefs
 ICLCore/src/ICLCore/ImgOps.h                   — singleton header, dispatch signatures
 ICLCore/src/ICLCore/ImgOps.cpp                 — singleton impl, creates selectors
-ICLCore/src/ICLCore/Img_Cpp.cpp                — C++ backends (mirror)
-ICLCore/src/ICLCore/Img_Ipp.cpp                — IPP backends (mirror)
+ICLCore/src/ICLCore/Img_Cpp.cpp                — C++ backends (8 ops + mirror helpers)
+ICLCore/src/ICLCore/Img_Ipp.cpp                — IPP backends (8 ops)
 tests/test-filter.cpp                          — 349 tests
 benchmarks/bench-filter.cpp                    — 25 filter benchmarks
 packaging/docker/noble-ipp/                    — Docker IPP build
@@ -229,10 +276,8 @@ packaging/docker/noble-ipp/                    — Docker IPP build
 
 ### Next Steps
 
-1. **Continue ICLCore ImgOps migration** — add more ops to ImgOps singleton:
-   lut, min/max, normalize, clearChannelROI, flippedCopyChannelROI.
-   Each gets a `MirrorSig`-style typedef, a selector in `ImgOps()`, and
-   implementations in `Img_Cpp.cpp` + `Img_Ipp.cpp`.
+1. ~~**Continue ICLCore ImgOps migration**~~ — **DONE** (Session 19).
+   All Img.cpp/Img.h IPP blocks migrated to ImgOps dispatch.
 
 2. **Migrate ICLCore non-Img IPP blocks** — CoreFunctions (channel_mean),
    ImgBorder (border replication), CCFunctions (planar↔interleaved),
@@ -250,3 +295,12 @@ packaging/docker/noble-ipp/                    — Docker IPP build
 6. **Add `Backend::Mkl`** — enum value, `_Mkl.cpp` files for FFT and matrix ops
 
 7. **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
+
+8. **Add ImgOps tests/benchmarks** — cross-validate IPP vs C++ for the new
+   dispatched operations (getMax, getMin, getMinMax, normalize, lut,
+   clearChannelROI, flippedCopy)
+
+9. **Migrate filter dispatch to enum keys** — each filter class defines its own
+   `enum class` for selector keys (e.g., `enum class ThresholdSel { ltVal, gtVal, ... }`)
+   and uses the index-based `getSelector<Sig>(enumVal)` overload for O(1) lookup
+   instead of string-keyed lookup. Same pattern as `ImgOp` enum.

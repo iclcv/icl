@@ -38,8 +38,6 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/StringUtils.h>
 
-#define IPP_USE_DEPRICATED_RESIZE 0
-
 using namespace icl::utils;
 using namespace icl::math;
 
@@ -621,42 +619,12 @@ namespace icl {
       }
       dst->setTime(getTime());
       dst->setMetaData(getMetaData());
-      const int shift = 8-bits;
 
-      for(int c=getChannels()-1; c >= 0; --c) {
-        const ImgIterator<Type> itSrc = beginROI(c);
-        const ImgIterator<Type> itSrcEnd = endROI(c);
-        ImgIterator<Type> itDst = dst->beginROI(c);
-        for(;itSrc != itSrcEnd ; ++itSrc, ++itDst){
-          *itDst = lut[ (static_cast<int>(*itSrc)) >> shift];
-        }
-      }
+      ImgBase* self = const_cast<ImgBase*>(static_cast<const ImgBase*>(this));
+      auto& sel = ImgOps::instance().getSelector<ImgOps::LutSig>(ImgOps::Op::lut);
+      sel.resolveOrThrow(self)->apply(*self, static_cast<const void*>(lut), *dst, bits);
       return dst;
     }
-
-  #ifdef ICL_HAVE_IPP
-    template<> ICLCore_API
-    Img<icl8u> *Img<icl8u>::lut(const icl8u *lut, Img<icl8u> *dst, int bits) const{
-      if(!dst){
-        dst = new Img<icl8u>(getSize(),getChannels(),getFormat());
-        dst->setROI(getROI());
-      }else{
-        dst->setSize(getSize());
-        dst->setChannels(getChannels());
-        dst->setFormat(getFormat());
-        if(dst->getROISize() != getROISize()) throw ICLException("Img<T>::lut source and destination ROI sizes differ");
-      }
-      dst->setTime(getTime());
-      dst->setMetaData(getMetaData());
-
-      for(int c=getChannels()-1; c >= 0; --c) {
-        ippiLUTPalette_8u_C1R(getROIData(c),getLineStep(),
-                              dst->getROIData(c),dst->getLineStep(),
-                              getROISize(),lut,bits);
-      }
-      return dst;
-    }
-  #endif
 
     template<class Type> void
     Img<Type>::scale(const Size &size, scalemode eScaleMode){
@@ -677,139 +645,12 @@ namespace icl {
     Img<Type>::mirror(axis eAxis, bool bOnlyROI)
     {
       FUNCTION_LOG("");
-      auto& sel = ImgOps::instance().getSelector<ImgOps::MirrorSig>("mirror");
+      auto& sel = ImgOps::instance().getSelector<ImgOps::MirrorSig>(ImgOps::Op::mirror);
       sel.resolveOrThrow(this)->apply(*this, eAxis, bOnlyROI);
     }
 
-    static inline int getPointerOffset (int x, int y, int iLineLen) {return (x + y*iLineLen);}
-    static bool getMirrorPointerOffsets (axis eAxis, bool bInplace,
-                                         const Point& oSrcOffset, const int iSrcLineLen,
-                                         const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
-                                         int& s, int& d, int& e, int& eLine, int& iLineWarpS, int& iLineWarpD) {
-      int iRows=0, iCols=0;
-      switch (eAxis) {
-        case axisHorz:
-          /* .....................
-              ....s->++++++++++l...
-              ....+++++++++++++....
-              ....e------------....
-              ....*************....
-              ....d->**********....
-              .....................
-              */
-
-          iRows = bInplace ? oSize.height/2 : oSize.height;
-          iCols = oSize.width;
-          iLineWarpS = iSrcLineLen - iCols;
-          iLineWarpD = -(iDstLineLen+iCols);
-          s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
-          d = getPointerOffset (oDstOffset.x, oDstOffset.y + oSize.height - 1, iDstLineLen);
-          e = s + iRows * iSrcLineLen;
-          break;
-        case axisVert:
-          /* .....................
-              ....s->++++|l*<-d....
-              ....+++++++|*****....
-              ....+++++++|*****....
-              ....+++++++|*****....
-              ....+++++++|*****....
-              ....e................
-              */
-          iRows = oSize.height;
-          iCols = bInplace ? oSize.width/2 : oSize.width;
-          iLineWarpS = iSrcLineLen - iCols;
-          iLineWarpD = iDstLineLen + iCols;
-          s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
-          d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y, iDstLineLen);
-          e = s + iRows * iSrcLineLen;
-          break;
-        case axisBoth:
-          /* .....................
-              ....s->++++++++++l...
-              ....+++++++++++++....
-              ....+++++++e*****....
-              ....*************....
-              ....**********<-d....
-              .....................
-              */
-
-          iRows = bInplace ? oSize.height/2 : oSize.height;
-          iCols = oSize.width;
-          iLineWarpS = iSrcLineLen - iCols;
-          iLineWarpD = iCols - iDstLineLen;
-          s = getPointerOffset (oSrcOffset.x, oSrcOffset.y, iSrcLineLen);
-          d = getPointerOffset (oDstOffset.x + oSize.width - 1, oDstOffset.y + oSize.height - 1, iDstLineLen);
-          e = s + iRows * iSrcLineLen;
-
-          if (bInplace && (oSize.height % 2)) { // odd ROI height
-            iRows++;
-            e += oSize.width/2;
-          }
-          break;
-      }
-      eLine = s + iCols;
-
-      return ( (iRows != 0) && (iCols != 0));
-    }
-
-    template <typename Type>
-    static inline bool getMirrorPointers (axis eAxis, bool bInplace,
-                                          const Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen,
-                                          Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
-                                          const Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
-      int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
-      if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
-                                    deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
-        return false;
-      s = srcBegin + deltaSrc;
-      d = dstBegin + deltaDst;
-      e = srcBegin + deltaEnd;
-      eLine = srcBegin + deltaLineEnd;
-      return true;
-    }
-    template <typename Type>
-    static inline bool getMirrorPointers (axis eAxis, bool bInplace,
-                                          Type* const srcBegin, const Point& oSrcOffset, const int iSrcLineLen,
-                                          Type* const dstBegin, const Point& oDstOffset, const int iDstLineLen, const Size& oSize,
-                                          Type*& s, Type*& d, const Type*& e, const Type*& eLine, int& iLineWarpS, int& iLineWarpD) {
-      int deltaSrc, deltaDst, deltaEnd, deltaLineEnd;
-      if (!getMirrorPointerOffsets (eAxis, bInplace, oSrcOffset, iSrcLineLen, oDstOffset, iDstLineLen, oSize,
-                                    deltaSrc, deltaDst, deltaEnd, deltaLineEnd, iLineWarpS, iLineWarpD))
-        return false;
-      s = srcBegin + deltaSrc;
-      d = dstBegin + deltaDst;
-      e = srcBegin + deltaEnd;
-      eLine = srcBegin + deltaLineEnd;
-      return true;
-    }
-
-    template<class Type> void
-    Img<Type>::mirror(axis eAxis, int iChannel,
-                      const Point& oOffset, const Size& oSize){
-
-      FUNCTION_LOG("");
-
-      static const int aiDstStep[] = {1,-1,-1};
-      int      iLineWarpS, iLineWarpD;
-      const Type *e=0, *eLine=0; /* end pointer, line end pointer */
-      Type *s=0, *d=0; /* source pointer, destination pointer */
-
-      if (!getMirrorPointers (eAxis, true,
-                              getData(iChannel), oOffset, getWidth(),
-                              getData(iChannel), oOffset, getWidth(), oSize,
-                              s, d, e, eLine, iLineWarpS, iLineWarpD)) return;
-
-      int dir = aiDstStep[eAxis];
-      do {
-        std::swap (*s, *d);
-        ++s; d += dir;
-        if (s == eLine) {
-          eLine += getWidth(); // end of line pointer jumps whole image width
-          s += iLineWarpS;     // source pointer jumps iLineWarpS
-          d += iLineWarpD;
-        }
-      } while (s != e);
-    }
+    // Mirror helpers (getPointerOffset, getMirrorPointerOffsets, getMirrorPointers)
+    // and Img<T>::mirror(axis, int, Point, Size) moved to Img_Cpp.cpp
 
 
 
@@ -872,41 +713,15 @@ namespace icl {
       return tMax;
     }
 
-    // fallback for all types
     template<class Type> Type
     Img<Type>::getMax(int channel, Point *coords) const {
       FUNCTION_LOG("iChannel: " << channel);
       ICLASSERT_RETURN_VAL( validChannel(channel), 0 );
       ICLASSERT_RETURN_VAL( getROISize().getDim(), 0 );
-      if(hasFullROI()){
-        const_iterator it = std::max_element(begin(channel),end(channel));
-        if(coords)*coords = getLocation(it,channel);
-        return *it;
-      }else{
-        const_roi_iterator it = std::max_element(beginROI(channel),endROI(channel));
-        if(coords)*coords = getLocation(&*it,channel);
-        return *it;
-      }
+      ImgBase* self = const_cast<ImgBase*>(static_cast<const ImgBase*>(this));
+      auto& sel = ImgOps::instance().getSelector<ImgOps::GetMaxSig>(ImgOps::Op::getMax);
+      return clipped_cast<icl64f, Type>(sel.resolveOrThrow(self)->apply(*self, channel, coords));
     }
-  #ifdef ICL_HAVE_IPP
-  #define ICL_INSTANTIATE_DEPTH(T)                                        \
-    template<> icl ## T                                                   \
-    Img<icl ## T>::getMax(int iChannel,Point *coords) const {             \
-      ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                  \
-      icl ## T vMax = 0;                                                  \
-      if(coords){                                                         \
-        ippiMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax,&coords->x,&coords->y); \
-      }else{                                                              \
-        ippiMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMax); \
-      }                                                                   \
-      return vMax;                                                        \
-    }
-
-    ICL_INSTANTIATE_DEPTH(8u)
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32f)
-  #undef ICL_INSTANTIATE_DEPTH
-  #endif
 
 
 
@@ -921,41 +736,15 @@ namespace icl {
       return tMin;
     }
 
-    // fallback for all types
     template<class Type> Type
     Img<Type>::getMin(int channel, Point *coords) const {
       FUNCTION_LOG("iChannel: " << channel);
       ICLASSERT_RETURN_VAL( validChannel(channel), 0 );
       ICLASSERT_RETURN_VAL( getROISize().getDim(), 0 );
-      if(hasFullROI()){
-        const_iterator it = std::min_element(begin(channel),end(channel));
-        if(coords)*coords = getLocation(it,channel);
-        return *it;
-      }else{
-        const_roi_iterator it = std::min_element(beginROI(channel),endROI(channel));
-        if(coords)*coords = getLocation(&*it,channel);
-        return *it;
-      }
+      ImgBase* self = const_cast<ImgBase*>(static_cast<const ImgBase*>(this));
+      auto& sel = ImgOps::instance().getSelector<ImgOps::GetMinSig>(ImgOps::Op::getMin);
+      return clipped_cast<icl64f, Type>(sel.resolveOrThrow(self)->apply(*self, channel, coords));
     }
-  #ifdef ICL_HAVE_IPP
-  #define ICL_INSTANTIATE_DEPTH(T)                                        \
-    template<> icl##T                                                     \
-    Img<icl ## T>::getMin(int iChannel, Point *coords) const {            \
-      ICLASSERT_RETURN_VAL( validChannel(iChannel), 0 );                  \
-      icl##T vMin = 0;                                                    \
-      if(coords){                                                         \
-        ippiMinIndx_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin,&coords->x,&coords->y); \
-      }else{                                                              \
-        ippiMin_##T##_C1R (getROIData(iChannel),getLineStep(),getROISize(),&vMin); \
-      }                                                                   \
-      return vMin; }
-
-
-    ICL_INSTANTIATE_DEPTH(8u)
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32f)
-  #undef ICL_INSTANTIATE_DEPTH
-  #endif
 
 
 
@@ -977,70 +766,22 @@ namespace icl {
       return r;
     }
 
-    template<class iterator>
-    std::pair<iterator,iterator> get_min_and_max_element_util(iterator begin, iterator end){
-      std::pair<iterator,iterator> mm;
-      if(begin == end) return mm;
-      mm.first = begin;
-      mm.second = begin;
-      for(++begin; begin != end; ++begin){
-        if(*begin < *mm.first) mm.first = begin;
-        if(*begin > *mm.second) mm.second = begin;
-      }
-      return mm;
-    }
+    // get_min_and_max_element_util moved to Img_Cpp.cpp
 
-    // fallback for all types
     template<class Type> const Range<Type>
     Img<Type>::getMinMax(int channel, Point *minCoords, Point *maxCoords) const {
       ICLASSERT_RETURN_VAL( validChannel(channel), Range<Type>() );
       ICLASSERT_RETURN_VAL( getROISize().getDim(), Range<Type>() );
-      if(hasFullROI()){
-        std::pair<const_iterator,const_iterator> its = get_min_and_max_element_util(begin(channel),end(channel));
-        if(minCoords){
-          *minCoords = getLocation(its.first,channel);
-          *maxCoords = getLocation(its.second,channel);
-        }
-        return Range<Type>(*its.first,*its.second);
-      }else{
-        std::pair<const_roi_iterator,const_roi_iterator> its = get_min_and_max_element_util(beginROI(channel),endROI(channel));
-        if(minCoords){
-          *minCoords = getLocation(&*its.first,channel);
-          *maxCoords = getLocation(&*its.second,channel);
-        }
-        return Range<Type>(*its.first,*its.second);
+      if((minCoords && !maxCoords) || (maxCoords && !minCoords)){
+        ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning (0,0))");
+        return Range<Type>(0,0);
       }
-
+      ImgBase* self = const_cast<ImgBase*>(static_cast<const ImgBase*>(this));
+      auto& sel = ImgOps::instance().getSelector<ImgOps::GetMinMaxSig>(ImgOps::Op::getMinMax);
+      icl64f mn, mx;
+      sel.resolveOrThrow(self)->apply(*self, channel, &mn, &mx, minCoords, maxCoords);
+      return Range<Type>(clipped_cast<icl64f, Type>(mn), clipped_cast<icl64f, Type>(mx));
     }
-
-  #ifdef ICL_HAVE_IPP
-
-  #define ICL_INSTANTIATE_DEPTH(T)                                        \
-    template<> ICLCore_API const Range<icl##T>                                        \
-    Img<icl ## T>::getMinMax(int iChannel,Point *minCoords, Point *maxCoords) const { \
-      ICLASSERT_RETURN_VAL( validChannel(iChannel) ,Range<icl##T>());     \
-      if((minCoords && !maxCoords) || (maxCoords && !minCoords)){         \
-        ERROR_LOG("please define minCoords AND maxCoords or do not define BOTH (returning (0,0))"); \
-        return Range<icl##T>(0,0);                                        \
-      }                                                                   \
-      if(minCoords){                                                      \
-        Range<icl32f> r;                                                  \
-        ippiMinMaxIndx_ ## T ## _C1R (getROIData(iChannel),getLineStep(), \
-                                      getROISize(), &(r.minVal), &(r.maxVal), \
-                                      minCoords,maxCoords);               \
-        return r.castTo<icl##T>();                                        \
-      }else{                                                              \
-        Range<icl##T> r;                                                  \
-        ippiMinMax_ ## T ## _C1R (getROIData(iChannel),getLineStep(),     \
-                                  getROISize(), &(r.minVal), &(r.maxVal)); \
-        return r;                                                         \
-      }                                                                   \
-    }
-
-    ICL_INSTANTIATE_DEPTH(8u)
-    ICL_INSTANTIATE_DEPTH(32f)
-  #undef ICL_INSTANTIATE_DEPTH
-  #endif
 
 
 
@@ -1212,32 +953,11 @@ namespace icl {
     template <class Type> void
     Img<Type>::normalize(int iChannel, const Range<Type> &srcRange, const Range<Type> &dstRange){
       FUNCTION_LOG("");
-      for(int c = getStartIndex(iChannel);c<getEndIndex(iChannel);c++){
-        icl64f fScale  = static_cast<icl64f>(dstRange.getLength()) / static_cast<icl64f>(srcRange.getLength());
-        icl64f fShift  = static_cast<icl64f>(srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal) / srcRange.getLength();
-        const_roi_iterator e = endROI(c);
-        for(roi_iterator p=beginROI(c);p!=e; ++p) {
-          *p = clipped_cast<icl64f,Type>( icl::utils::clip( fShift + static_cast<icl64f>(*p) * fScale, icl64f(dstRange.minVal),icl64f(dstRange.maxVal) ) );
-        }
-      }
+      auto& sel = ImgOps::instance().getSelector<ImgOps::NormalizeSig>(ImgOps::Op::normalize);
+      sel.resolveOrThrow(this)->apply(*this, iChannel,
+        static_cast<icl64f>(srcRange.minVal), static_cast<icl64f>(srcRange.maxVal),
+        static_cast<icl64f>(dstRange.minVal), static_cast<icl64f>(dstRange.maxVal));
     }
-
-  #ifdef ICL_HAVE_IPP
-    template <> void
-    Img<icl32f>::normalize(int iChannel, const Range<icl32f> &srcRange, const Range<icl32f> &dstRange){
-      FUNCTION_LOG("");
-      for(int c = getStartIndex(iChannel);c<getEndIndex(iChannel);c++){
-        icl32f fScale  = dstRange.getLength()/srcRange.getLength();
-        icl32f fShift  = (srcRange.maxVal * dstRange.minVal - srcRange.minVal * dstRange.maxVal)/srcRange.getLength();
-
-        ippiMulC_32f_C1IR (fScale, getROIData(c), getLineStep(),getROISize());
-
-        if (fShift != 0) {
-          ippiAddC_32f_C1IR (fShift, getROIData(c), getLineStep(),getROISize());
-        }
-      }
-    }
-  #endif
 
 
     template<class Type>
@@ -1249,8 +969,9 @@ namespace icl {
 
       Point offs = bROIOnly ? getROIOffset() : Point::null;
       Size size = bROIOnly ? getROISize() : getSize();
+      auto& sel = ImgOps::instance().getSelector<ImgOps::ClearChannelROISig>(ImgOps::Op::clearChannelROI);
       for(int i=getStartIndex(iIndex),iEnd=getEndIndex(iIndex);i<iEnd;i++){
-        clearChannelROI(this,i,tValue,offs,size);
+        sel.resolveOrThrow(this)->apply(*this, i, static_cast<icl64f>(tValue), offs, size);
       }
     }
 
@@ -1539,203 +1260,33 @@ namespace icl {
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
      Img<icl##D>*,int,const Point&,const Size&,scalemode);
 
-    /// ippiResizeSqrPixel / ippiResize removed from modern IPP (oneAPI 2022+).
-    /// TODO: re-add via BackendDispatch with ippiResizeLinear/ippiResizeNearest.
-  #if 0 // was: ICL_HAVE_IPP — ippiResize APIs deprecated and removed
-    template<> inline void
-    scaledCopyChannelROI<icl8u>(const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                                scalemode eScaleMode)
-
-    {
-      CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-  #if IPP_USE_DEPRICATED_RESIZE
-    #if WIN32
-      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
-    #else
-      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
-    #endif
-      //NOTE: this function has become deprecated
-      // attention: for source image IPP wants indeed the *image* origin
-      ippiResize_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                        static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width),
-                        static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height),static_cast<int>(eScaleMode));
-  #else
-      int bufSize=0;
-      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, static_cast<int>(eScaleMode), &bufSize);
-
-      if(s2 != ippStsNoErr){
-        throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s2)));
-      }
-
-
-      std::vector<icl8u> buf(bufSize);
-
-      float fx = static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width), fy = static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height);
-      float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
-
-      // attention: for source image IPP wants indeed the *image* origin
-      IppStatus s = ippiResizeSqrPixel_8u_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                                              dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                                              fx,fy,tx,ty,static_cast<int>(eScaleMode),buf.data());
-      if(s != ippStsNoErr){
-        throw ICLException("error in scaledCopyChannelROI<icl8u>: " + str(ippGetStatusString(s)));
-      }
-  #endif
-    }
-
-
-    /// IPP-OPTIMIZED specialization for icl32f to icl32f ROI sclaing (using ippiResize)
-    template<> inline void
-    scaledCopyChannelROI<icl32f>(const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                 Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
-                                 scalemode eScaleMode)
-
-    {
-      FUNCTION_LOG("");
-      CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-  #if IPP_USE_DEPRICATED_RESIZE
-    #if WIN32
-      #pragma WARNING("we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation")
-    #else
-      #warning "we are aware of the fact that ippiResize is deprecated, however the replacement seems to be buggy in case of LIN interpolation"
-    #endif
-      //NOTE: this function has become deprecated
-      // attention: for source image IPP wants indeed the *image* origin
-      ippiResize_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                         dst->getROIData(dstC,dstOffs),dst->getLineStep(),dstSize,
-                         static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width),
-                         static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height),static_cast<int>(eScaleMode));
-  #else
-      int bufSize=0;
-      IppStatus s2 = ippiResizeGetBufSize(Rect(srcOffs,srcSize), Rect(dstOffs, dstSize), 1, static_cast<int>(eScaleMode), &bufSize);
-
-      if(s2 != ippStsNoErr){
-        throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s2)));
-      }
-
-      std::vector<icl8u> buf(bufSize);
-
-
-      float fx = static_cast<float>(dstSize.width)/static_cast<float>(srcSize.width), fy = static_cast<float>(dstSize.height)/static_cast<float>(srcSize.height);
-      float tx = -fx*srcOffs.x, ty = -fy*srcOffs.y;
-
-      // attention: for source image IPP wants indeed the *image* origin
-      IppStatus s = ippiResizeSqrPixel_32f_C1R(src->getData(srcC),src->getSize(),src->getLineStep(),Rect(srcOffs,srcSize),
-                                               dst->getROIData(dstC,dstOffs),dst->getLineStep(), Rect(dstOffs, dstSize),
-                                               fx,fy,tx,ty,static_cast<int>(eScaleMode) ,buf.data());
-      if(s != ippStsNoErr){
-        throw ICLException("error in scaledCopyChannelROI: " + str(ippGetStatusString(s)));
-      }
-
-  #endif
-    }
-
-
-    // ipp case: do not instantiate the already specialized functions 8u and 32f
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32s)
-    ICL_INSTANTIATE_DEPTH(64f)
-  #else
-    // no-ipp case instantiate all functions
+    // IPP resize specializations (ippiResizeSqrPixel) removed — deprecated in oneAPI 2022+.
+    // TODO: re-add via BackendDispatch with ippiResizeLinear/ippiResizeNearest.
     ICL_INSTANTIATE_ALL_DEPTHS
-  #endif
 
   #undef ICL_INSTANTIATE_DEPTH
 
 
 
 
-    // mirror copy ROI of one image to the ROI of the other (for selected channel)
+    // Dispatch wrapper — C++ implementation in Img_Cpp.cpp, IPP in Img_Ipp.cpp
     template<class T>
     void flippedCopyChannelROI(axis eAxis,
                                const Img<T> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                                Img<T> *dst, int dstC, const Point &dstOffs, const Size &dstSize){
-
       FUNCTION_LOG("");
       CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-      static const int aiDstStep[] = {1,-1,-1};
-      int      iLineWarpS, iLineWarpD;
-      const T *s=0, *e=0, *eLine=0; /* source pointer, end pointer, line end pointer */
-      T *d=0; /* destination pointer */
-
-      if (!getMirrorPointers (eAxis, false,
-                              src->getData(srcC), srcOffs, src->getWidth(),
-                              dst->getData(dstC), dstOffs, dst->getWidth(), srcSize,
-                              s, d, e, eLine, iLineWarpS, iLineWarpD)) return;
-
-      if (eAxis == axisHorz) {
-        int iSrcStep = src->getSize().width, iDstStep = dst->getSize().width;
-        //     int nBytes = sizeof(T) * srcSize.width;
-        // line-wise memcpy is possible
-        for (; s != e; s += iSrcStep, d -= iDstStep)
-          icl::core::copy<T>(s,s+srcSize.width,d);//memcpy (d, s, nBytes);
-        return;
-      }
-
-      int dir = aiDstStep[eAxis];
-      do {
-        *d = *s;
-        ++s; d += dir;
-        if (s == eLine) {
-          eLine += src->getSize().width; // end of line pointer jumps whole image width
-          s += iLineWarpS;               // source pointer jumps iLineWarpS
-          d += iLineWarpD;
-        }
-      } while (s != e);
+      ImgBase* srcPtr = const_cast<ImgBase*>(static_cast<const ImgBase*>(src));
+      auto& sel = ImgOps::instance().getSelector<ImgOps::FlippedCopySig>(ImgOps::Op::flippedCopy);
+      sel.resolveOrThrow(static_cast<ImgBase*>(dst))
+        ->apply(eAxis, *srcPtr, srcC, srcOffs, srcSize,
+                *static_cast<ImgBase*>(dst), dstC, dstOffs, dstSize);
     }
-
-
 
   #define ICL_INSTANTIATE_DEPTH(D) template ICLCore_API void flippedCopyChannelROI<icl##D>(axis eAxis, \
                           const Img<icl##D> *src, int srcC, const Point &srcOffs, const Size &srcSize, \
                           Img<icl##D> *dst, int dstC, const Point &dstOffs, const Size &dstSize);
-
-  #ifdef ICL_HAVE_IPP
-    /// IPP-OPTIMIZED specialization for icl8u image flipping
-    template <>
-    ICLCore_API void flippedCopyChannelROI<icl8u>(axis eAxis,
-                                      const Img<icl8u> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                      Img<icl8u> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
-
-      CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-      ippiMirror_8u_C1R(src->getROIData(srcC,srcOffs),src->getLineStep(),
-                        dst->getROIData(dstC,dstOffs),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
-    }
-
-
-    /// IPP-OPTIMIZED specialization for icl8u image flipping
-    template <>
-    ICLCore_API void flippedCopyChannelROI<icl32f>(axis eAxis,
-                                       const Img<icl32f> *src, int srcC, const Point &srcOffs, const Size &srcSize,
-                                       Img<icl32f> *dst, int dstC, const Point &dstOffs, const Size &dstSize) {
-
-      CHECK_VALUES(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-      ippiMirror_32s_C1R(reinterpret_cast<const Ipp32s*>(src->getROIData(srcC,srcOffs)),src->getLineStep(),
-                         reinterpret_cast<Ipp32s*>(dst->getROIData(dstC,dstOffs)),dst->getLineStep(),srcSize,static_cast<IppiAxis>(eAxis));
-    }
-
-    // OLD version ...
-    // ipp case: do not instantiate the already specialized functions 8u and 32f
-    ICL_INSTANTIATE_DEPTH(16s)
-    ICL_INSTANTIATE_DEPTH(32s)
-    ICL_INSTANTIATE_DEPTH(64f)
-    // NEW version ...
-    // does not work in Windows
-    //  ICL_INSTANTIATE_ALL_DEPTHS
-  #else
-
-    // now, we instantiate all functions
-    // no-ipp case instantiate all functions
     ICL_INSTANTIATE_ALL_DEPTHS
-  #endif
-
   #undef ICL_INSTANTIATE_DEPTH
 
 

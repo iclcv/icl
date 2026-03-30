@@ -38,7 +38,6 @@ namespace icl {
 
     // Re-export general types into core namespace
     using utils::Backend;
-    using utils::backendPriority;
     using utils::backendName;
 
     /// Image backend dispatching — typedef to BackendDispatching<Image>.

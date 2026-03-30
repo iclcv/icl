@@ -1756,42 +1756,9 @@ namespace icl {
       std::fill(it,itEnd,clearVal);
     }
 
-    /** \cond */
-#ifdef ICL_HAVE_IPP
-    /// IPP-OPTIMIZED specialization for icl8u clearing (using ippiSet)
-    template <>
-    inline void clearChannelROI(Img<icl8u> *im, int c, icl8u clearVal, const utils::Point &offs,
-                                const utils::Size &size){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( im );
-      ippiSet_8u_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
-    }
-    /// IPP-OPTIMIZED specialization for icl16s clearing (using ippiSet)
-    template <>
-    inline void clearChannelROI(Img<icl16s> *im, int c, icl16s clearVal, const utils::Point &offs,
-                                const utils::Size &size){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( im );
-      ippiSet_16s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
-    }
-    /// IPP-OPTIMIZED specialization for icl32s clearing (using ippiSet)
-    template <>
-    inline void clearChannelROI(Img<icl32s> *im, int c, icl32s clearVal,
-                                const utils::Point &offs, const utils::Size &size){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( im );
-      ippiSet_32s_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
-    }
-    /// IPP-OPTIMIZED specialization for icl32f clearing (using ippiSet)
-    template <>
-    inline void clearChannelROI(Img<icl32f> *im, int c, icl32f clearVal,
-                                const utils::Point &offs, const utils::Size &size){
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( im );
-      ippiSet_32f_C1R(clearVal,im->getROIData(c,offs),im->getLineStep(),size);
-    }
-#endif
-    /** \endcond */
+    // IPP specializations for clearChannelROI moved to Img_Ipp.cpp via
+    // BackendDispatch (ClearChannelROISig). Img<T>::clear() dispatches
+    // through ImgOps; direct callers of this template get the C++ path.
 
     /* }}} */
 

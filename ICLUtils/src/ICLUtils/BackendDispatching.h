@@ -32,26 +32,26 @@
 
 #include <ICLUtils/CompatMacros.h>
 
-#include <map>
+#include <array>
+#include <unordered_map>
 #include <vector>
 #include <string>
 #include <memory>
 #include <optional>
 #include <functional>
 #include <stdexcept>
+#include <type_traits>
 
 namespace icl {
   namespace utils {
 
     // ================================================================
-    // Backend enum and priority — shared by all Context types
+    // Backend enum — values encode priority (higher = preferred)
     // ================================================================
 
     enum class Backend : int { Cpp = 0, Simd = 1, Ipp = 2, OpenCL = 3 };
 
-    inline const Backend backendPriority[] = {
-      Backend::OpenCL, Backend::Ipp, Backend::Simd, Backend::Cpp
-    };
+    inline constexpr int NUM_BACKENDS = 4;
 
     inline const char* backendName(Backend b) {
       switch(b) {
@@ -64,7 +64,9 @@ namespace icl {
     }
 
     // ================================================================
-    // Global Registry — type-erased, shared by all Context types
+    // Global Registry — staging area for static-init self-registration.
+    // String-keyed, type-erased. Backends register here before any
+    // singleton is constructed; singletons pull from it at init time.
     // ================================================================
 
     namespace detail {
@@ -74,149 +76,154 @@ namespace icl {
         std::function<void(void*)> registerInto;
       };
 
-      ICLUtils_API std::map<std::string, std::vector<RegistryEntry>>& globalRegistry();
+      ICLUtils_API std::unordered_map<std::string, std::vector<RegistryEntry>>& globalRegistry();
       ICLUtils_API int addToRegistry(const std::string& key, RegistryEntry entry);
     }
 
     // ================================================================
-    // BackendDispatching<Context> — mixin for classes with
-    // backend-dispatched sub-operations.  All dispatch types
-    // (BackendSelectorBase, BackendSelector, ApplicabilityFn)
-    // are nested inside this template.
+    // BackendSelector<Context, Sig> — dispatch table for one operation.
+    // Stores up to NUM_BACKENDS implementations in a fixed array
+    // (indexed by Backend enum value, highest priority first on resolve).
+    // ================================================================
+
+    template<class Context>
+    using ApplicabilityFn = std::function<bool(const Context&)>;
+
+    // Type-erased base for selector introspection (tests, cross-validation)
+    template<class Context>
+    struct BackendSelectorBase {
+      virtual ~BackendSelectorBase() = default;
+
+      std::string name;
+      std::optional<Backend> forcedBackend;
+
+      void force(Backend b) { forcedBackend = b; }
+      void unforce() { forcedBackend = std::nullopt; }
+
+      virtual std::vector<Backend> registeredBackends() const = 0;
+      virtual Backend bestBackendFor(const Context& ctx) const = 0;
+      virtual std::vector<Backend> applicableBackendsFor(const Context& ctx) const = 0;
+    };
+
+    // Primary template declared so the partial specialization below can
+    // decompose Sig = R(Args...) into its return type and argument types.
+    template<class Context, class Sig> struct BackendSelector;
+
+    template<class Context, class R, class... Args>
+    struct BackendSelector<Context, R(Args...)> : BackendSelectorBase<Context> {
+
+      // --- Per-backend implementation (type-erased callable) ---
+
+      struct ImplBase {
+        Backend backend;
+        std::string description;
+        ApplicabilityFn<Context> applicabilityFn;
+
+        ImplBase(Backend b, std::string desc, ApplicabilityFn<Context> app)
+          : backend(b), description(std::move(desc)), applicabilityFn(std::move(app)) {}
+        virtual ~ImplBase() = default;
+
+        virtual R apply(Args... args) = 0;
+
+        bool applicableTo(const Context& ctx) const {
+          return !applicabilityFn || applicabilityFn(ctx);
+        }
+      };
+
+      template<class F>
+      struct Impl : ImplBase {
+        F f;
+        Impl(F f, Backend b, std::string desc, ApplicabilityFn<Context> app)
+          : ImplBase(b, std::move(desc), std::move(app)), f(std::move(f)) {}
+
+        R apply(Args... args) override {
+          return f(std::forward<Args>(args)...);
+        }
+      };
+
+      // --- Storage: fixed array indexed by Backend enum value ---
+
+      std::array<std::unique_ptr<ImplBase>, NUM_BACKENDS> impls{};
+
+      template<class F>
+      void add(Backend b, F&& f, ApplicabilityFn<Context> applicability,
+               std::string description = "") {
+        if(description.empty()) description = std::string(backendName(b)) + " fallback";
+        impls[static_cast<int>(b)] = std::make_unique<Impl<std::decay_t<F>>>(
+          std::forward<F>(f), b, std::move(description), std::move(applicability));
+      }
+
+      template<class F>
+      void add(Backend b, F&& f, std::string description = "") {
+        add(b, std::forward<F>(f), nullptr, std::move(description));
+      }
+
+      // --- Resolution: iterate highest-priority first ---
+
+      ImplBase* resolve(const Context& ctx) const {
+        if(this->forcedBackend) {
+          auto* p = impls[static_cast<int>(*this->forcedBackend)].get();
+          if(p) return p;
+        }
+        for(int i = NUM_BACKENDS - 1; i >= 0; --i) {
+          auto* p = impls[i].get();
+          if(p && p->applicableTo(ctx)) return p;
+        }
+        return nullptr;
+      }
+
+      ImplBase* resolveOrThrow(const Context& ctx) const {
+        auto* r = resolve(ctx);
+        if(!r) throw std::logic_error("no applicable backend for '" + this->name + "'");
+        return r;
+      }
+
+      ImplBase* get(Backend b) const {
+        return impls[static_cast<int>(b)].get();
+      }
+
+      // --- Introspection (tests / cross-validation) ---
+
+      std::vector<Backend> registeredBackends() const override {
+        std::vector<Backend> r;
+        for(int i = 0; i < NUM_BACKENDS; ++i)
+          if(impls[i]) r.push_back(static_cast<Backend>(i));
+        return r;
+      }
+
+      Backend bestBackendFor(const Context& ctx) const override {
+        auto* r = resolve(ctx);
+        return r ? r->backend : Backend::Cpp;
+      }
+
+      std::vector<Backend> applicableBackendsFor(const Context& ctx) const override {
+        std::vector<Backend> r;
+        for(int i = 0; i < NUM_BACKENDS; ++i)
+          if(impls[i] && impls[i]->applicableTo(ctx))
+            r.push_back(static_cast<Backend>(i));
+        return r;
+      }
+    };
+
+    // ================================================================
+    // BackendDispatching<Context> — mixin for classes that own
+    // multiple BackendSelectors (one per dispatched operation).
     // ================================================================
 
     template<class Context>
     struct BackendDispatching {
       virtual ~BackendDispatching() = default;
 
-      // ---- Nested types ----
-
-      using ApplicabilityFn = std::function<bool(const Context&)>;
-
-      struct BackendSelectorBase {
-        virtual ~BackendSelectorBase() = default;
-
-        std::string name;
-
-        virtual std::vector<Backend> registeredBackends() const = 0;
-        virtual Backend bestBackendFor(const Context& ctx) const = 0;
-        virtual std::vector<Backend> applicableBackendsFor(const Context& ctx) const = 0;
-
-        std::optional<Backend> forcedBackend;
-        void force(Backend b) { forcedBackend = b; }
-        void unforce() { forcedBackend = std::nullopt; }
-      };
-
-      template<class Sig> struct BackendSelector;
-
-      template<class R, class... Args>
-      struct BackendSelector<R(Args...)> : BackendSelectorBase {
-
-        struct ImplBase {
-          Backend backend;
-          std::string description;
-          ApplicabilityFn applicabilityFn;
-
-          virtual R apply(Args... args) = 0;
-          virtual ~ImplBase() = default;
-
-          bool applicableTo(const Context& ctx) const {
-            return applicabilityFn ? applicabilityFn(ctx) : true;
-          }
-        };
-
-        template<class F>
-        struct Impl : ImplBase {
-          F f;
-          Impl(F f, Backend b, std::string desc, ApplicabilityFn app)
-            : f(std::move(f)) {
-            this->backend = b;
-            this->description = std::move(desc);
-            this->applicabilityFn = std::move(app);
-          }
-          R apply(Args... args) override {
-            return f(std::forward<Args>(args)...);
-          }
-        };
-
-        using ImplPtr = std::unique_ptr<ImplBase>;
-        std::map<Backend, ImplPtr> impls;
-
-        ImplBase* resolve(const Context& ctx) {
-          if(this->forcedBackend) {
-            auto it = impls.find(*this->forcedBackend);
-            if(it != impls.end()) return it->second.get();
-          }
-          for(Backend b : backendPriority) {
-            auto it = impls.find(b);
-            if(it != impls.end() && it->second->applicableTo(ctx))
-              return it->second.get();
-          }
-          return nullptr;
-        }
-
-        /// Like resolve(), but throws if no applicable backend is found.
-        ImplBase* resolveOrThrow(const Context& ctx) {
-          auto* r = resolve(ctx);
-          if(!r) throw std::logic_error("no applicable backend for '" + this->name + "'");
-          return r;
-        }
-
-        ImplBase* get(Backend b) {
-          auto it = impls.find(b);
-          return it != impls.end() ? it->second.get() : nullptr;
-        }
-
-        R callWith(Backend b, Args... args) {
-          return impls.at(b)->apply(std::forward<Args>(args)...);
-        }
-
-        template<class F>
-        void add(Backend b, F&& f, ApplicabilityFn applicability, std::string description = "") {
-          if(description.empty()) description = std::string(backendName(b)) + " fallback";
-          impls[b] = std::make_unique<Impl<std::decay_t<F>>>(
-            std::forward<F>(f), b, std::move(description), std::move(applicability));
-        }
-
-        template<class F>
-        void add(Backend b, F&& f, std::string description = "") {
-          add(b, std::forward<F>(f), nullptr, std::move(description));
-        }
-
-        std::vector<Backend> registeredBackends() const override {
-          std::vector<Backend> r;
-          for(auto& [b, _] : impls) r.push_back(b);
-          return r;
-        }
-
-        Backend bestBackendFor(const Context& ctx) const override {
-          if(this->forcedBackend && impls.count(*this->forcedBackend)) return *this->forcedBackend;
-          for(Backend b : backendPriority) {
-            auto it = impls.find(b);
-            if(it != impls.end() && it->second->applicableTo(ctx))
-              return b;
-          }
-          return Backend::Cpp;
-        }
-
-        std::vector<Backend> applicableBackendsFor(const Context& ctx) const override {
-          std::vector<Backend> r;
-          for(auto& [b, impl] : impls)
-            if(impl->applicableTo(ctx)) r.push_back(b);
-          return r;
-        }
-      };
-
-      // ---- Static registration helpers ----
+      // ---- Static registration (called during static init from _Cpp.cpp / _Ipp.cpp) ----
 
       template<class Sig, class F>
       static int registerBackend(const std::string& key, Backend b, F&& f,
-                                  ApplicabilityFn applicability,
+                                  ApplicabilityFn<Context> applicability,
                                   std::string desc = "") {
         return detail::addToRegistry(key, {
           b, desc,
           [f = std::forward<F>(f), applicability, desc, b](void* base) mutable {
-            auto* sel = static_cast<BackendSelector<Sig>*>(base);
+            auto* sel = static_cast<BackendSelector<Context, Sig>*>(base);
             sel->add(b, std::move(f), applicability, desc);
           }
         });
@@ -224,13 +231,13 @@ namespace icl {
 
       template<class Sig, class Factory>
       static int registerStatefulBackend(const std::string& key, Backend b, Factory&& factory,
-                                          ApplicabilityFn applicability,
+                                          ApplicabilityFn<Context> applicability,
                                           std::string desc = "") {
         return detail::addToRegistry(key, {
           b, desc,
           [factory = std::forward<Factory>(factory), applicability, desc, b]
           (void* base) {
-            auto* sel = static_cast<BackendSelector<Sig>*>(base);
+            auto* sel = static_cast<BackendSelector<Context, Sig>*>(base);
             try {
               auto fn = factory();
               sel->add(b, std::move(fn), applicability, desc);
@@ -239,36 +246,63 @@ namespace icl {
         });
       }
 
-      template<class Sig>
-      static void loadFromRegistry(const std::string& key, BackendSelector<Sig>& sel) {
-        if(sel.name.empty()) sel.name = key;
-        auto it = detail::globalRegistry().find(key);
-        if(it != detail::globalRegistry().end()) {
-          for(auto& entry : it->second) {
-            entry.registerInto(&sel);
-          }
-        }
-      }
-
-      // ---- Instance methods ----
+      // ---- Instance setup (called from singleton constructors) ----
 
       void initDispatching(const std::string& className) {
         m_prefix = className + ".";
       }
 
-      std::string qualifiedName(const std::string& shortName) const {
-        return m_prefix + shortName;
+      /// String-keyed addSelector (filters)
+      template<class Sig>
+      BackendSelector<Context, Sig>& addSelector(const std::string& shortName) {
+        std::string fullName = m_prefix + shortName;
+        auto sel = std::make_unique<BackendSelector<Context, Sig>>();
+        sel->name = fullName;
+        auto* ptr = sel.get();
+        m_selectorByName[shortName] = ptr;
+        m_selectors.push_back(std::move(sel));
+        loadFromRegistry<Sig>(fullName, *ptr);
+        return *ptr;
       }
 
-      std::vector<BackendSelectorBase*> selectors() {
-        std::vector<BackendSelectorBase*> result;
-        for(auto& sel : m_selectors) result.push_back(sel.get());
-        return result;
+      /// Enum-keyed addSelector — derives the registry name via ADL toString(K),
+      /// asserts enum value matches insertion index.
+      template<class Sig, class K,
+               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      BackendSelector<Context, Sig>& addSelector(K key) {
+        if(static_cast<size_t>(key) != m_selectors.size())
+          throw std::logic_error("addSelector: enum value " + std::to_string(static_cast<int>(key))
+            + " does not match insertion index " + std::to_string(m_selectors.size()));
+        return addSelector<Sig>(std::string(toString(key)));
       }
 
-      BackendSelectorBase* selectorByName(const std::string& shortName) {
+      // ---- Selector lookup ----
+
+      /// String-keyed lookup (filters)
+      template<class Sig>
+      BackendSelector<Context, Sig>& getSelector(const std::string& shortName) {
+        return *static_cast<BackendSelector<Context, Sig>*>(m_selectorByName.at(shortName));
+      }
+
+      /// Index-based O(1) lookup — use with enum keys matching addSelector() order
+      template<class Sig, class K,
+               typename std::enable_if<std::is_enum<K>::value || std::is_integral<K>::value, int>::type = 0>
+      BackendSelector<Context, Sig>& getSelector(K key) {
+        return *static_cast<BackendSelector<Context, Sig>*>(m_selectors[static_cast<size_t>(key)].get());
+      }
+
+      /// String-keyed lookup returning base (introspection / tests)
+      BackendSelectorBase<Context>* selectorByName(const std::string& shortName) {
         auto it = m_selectorByName.find(shortName);
         return it != m_selectorByName.end() ? it->second : nullptr;
+      }
+
+      // ---- Bulk operations (tests / cross-validation) ----
+
+      std::vector<BackendSelectorBase<Context>*> selectors() {
+        std::vector<BackendSelectorBase<Context>*> result;
+        for(auto& sel : m_selectors) result.push_back(sel.get());
+        return result;
       }
 
       void forceAll(Backend b) {
@@ -306,27 +340,20 @@ namespace icl {
         for(auto* sel : sels) sel->unforce();
       }
 
-      template<class Sig>
-      BackendSelector<Sig>& addSelector(const std::string& shortName) {
-        std::string fullName = m_prefix + shortName;
-        auto sel = std::make_unique<BackendSelector<Sig>>();
-        sel->name = fullName;
-        auto* ptr = sel.get();
-        m_selectorByName[shortName] = ptr;
-        m_selectors.push_back(std::move(sel));
-        loadFromRegistry<Sig>(fullName, *ptr);
-        return *ptr;
-      }
-
-      template<class Sig>
-      BackendSelector<Sig>& getSelector(const std::string& shortName) {
-        return *static_cast<BackendSelector<Sig>*>(m_selectorByName.at(shortName));
-      }
-
     private:
+      template<class Sig>
+      static void loadFromRegistry(const std::string& key, BackendSelector<Context, Sig>& sel) {
+        if(sel.name.empty()) sel.name = key;
+        auto it = detail::globalRegistry().find(key);
+        if(it != detail::globalRegistry().end()) {
+          for(auto& entry : it->second)
+            entry.registerInto(&sel);
+        }
+      }
+
       std::string m_prefix;
-      std::vector<std::unique_ptr<BackendSelectorBase>> m_selectors;
-      std::map<std::string, BackendSelectorBase*> m_selectorByName;
+      std::vector<std::unique_ptr<BackendSelectorBase<Context>>> m_selectors;
+      std::unordered_map<std::string, BackendSelectorBase<Context>*> m_selectorByName;
     };
 
   } // namespace utils
