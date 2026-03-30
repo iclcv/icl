@@ -49,6 +49,20 @@ FlippedCopySig     = void(axis, ImgBase& src, int srcC, const Point& srcOffs, co
                           ImgBase& dst, int dstC, const Point& dstOffs, const Size& dstSize)
 ```
 
+**BackendDispatching rewrite (also this session):**
+- `map<Backend,ImplPtr>` → `array<shared_ptr<ImplBase>, 4>` (fixed array, shared for cloning)
+- Removed `backendPriority[]` — reverse iteration over enum values
+- `BackendSelector` un-nested from `BackendDispatching` (standalone template)
+- `resolve`/`resolveOrThrow`/`get` now const
+- Added `virtual clone()` + clone constructor for per-instance dispatch
+- Enum-keyed `addSelector(K)` with index assertion + ADL `toString(K)`
+- Enum-keyed `getSelector<Sig>(K)` — O(1) vector index
+- ImgOps backends register directly into singleton (no global registry)
+- ThresholdOp migrated as proof of concept for prototype+clone pattern:
+  all backends in `_Cpp.cpp` / `_Ipp.cpp`, constructor just clones prototype
+- Removed dead code (`callWith`, `qualifiedName`, `backendPriority[]`)
+- CoreFunctions `channel_mean` + ImgBorder `replicateBorder` migrated to ImgOps
+
 **CMake note:** `FILE(GLOB)` is evaluated at configure time. After adding new
 `_Cpp.cpp` / `_Ipp.cpp` files, re-run `cmake ..` to pick them up.
 
@@ -276,31 +290,58 @@ packaging/docker/noble-ipp/                    — Docker IPP build
 
 ### Next Steps
 
-1. ~~**Continue ICLCore ImgOps migration**~~ — **DONE** (Session 19).
-   All Img.cpp/Img.h IPP blocks migrated to ImgOps dispatch.
+#### A. Migrate all 14 remaining filters to prototype+clone pattern
 
-2. **Migrate ICLCore non-Img IPP blocks** — CoreFunctions (channel_mean),
-   ImgBorder (border replication), CCFunctions (planar↔interleaved),
-   BayerConverter. These may need their own dispatch singletons or extend ImgOps.
+**Proof of concept done: ThresholdOp.** Pattern for each filter:
 
-3. **Migrate ICLMath IPP blocks** — DynMatrix, DynMatrixUtils, MathFunctions.
-   Needs a `MathOps` singleton with `BackendDispatching<DynMatrixBase*>` or similar.
-   Same pattern applies to MKL (`_Mkl.cpp`).
+1. **Header** — add `enum class Op`, add `static proto_type& prototype()`,
+   move signature `using` aliases above `Op` if not already
+2. **New _Cpp.cpp** — move C++ backends from constructor, register into `prototype()`
+3. **Update _Ipp.cpp / _Simd.cpp / _OpenCL.cpp** — change from
+   `registerBackend("Key", ...)` to `prototype().getSelector<Sig>(Op::x).add(...)`
+4. **Update .cpp** — constructor becomes `ImageBackendDispatching(prototype())`,
+   no `initDispatching`/`addSelector`/inline `add()` calls.
+   `apply()` changes `getSelector<Sig>("name")` → `getSelector<Sig>(Op::name)`.
+   Add `toString(Op)` free function.
+5. **Reconfigure CMake** after adding _Cpp.cpp files.
 
-4. **Migrate ICLIO IPP blocks** — DC.cpp, ColorFormatDecoder.cpp, PylonColorConverter.
+**Filters to migrate (14 remaining, by complexity):**
 
-5. **Update disabled IPP backends** to modern oneAPI APIs
-   (ConvolutionOp, MorphologicalOp, AffineOp — highest priority)
+| Filter | Selectors | Backend files | Notes |
+|---|---|---|---|
+| WienerOp | apply | _Ipp | 1 selector, simple |
+| LUTOp | reduceBits | _Ipp | 1 selector, simple |
+| AffineOp | apply | _Ipp | 1 selector, simple |
+| ConvolutionOp | apply | _Ipp | 1 selector, simple |
+| MorphologicalOp | apply | _Ipp | 1 selector, simple |
+| BilateralFilterOp | apply | _OpenCL | 1 selector, uses registerStatefulBackend |
+| BinaryLogicalOp | apply | _Simd | 1 selector |
+| BinaryArithmeticalOp | apply | _Simd | 1 selector |
+| BinaryCompareOp | compare, compareEqTol | _Simd | 2 selectors |
+| WarpOp | warp | _Ipp, _OpenCL | 1 selector, 2 backend files |
+| MedianOp | fixed, generic | _Ipp, _Simd | 2 selectors, 2 backend files |
+| UnaryArithmeticalOp | withVal, noVal | _Ipp, _Simd | 2 selectors, 2 backend files |
+| UnaryLogicalOp | withVal, noVal | _Ipp, _Simd | 2 selectors, 2 backend files |
+| UnaryCompareOp | compare, compareEqTol | _Ipp, _Simd | 2 selectors, 2 backend files |
 
-6. **Add `Backend::Mkl`** — enum value, `_Mkl.cpp` files for FFT and matrix ops
+**After all filters are migrated:**
+- The global string registry (`detail::globalRegistry`) can be removed entirely
+- `registerBackend` / `registerStatefulBackend` / `loadFromRegistry` can be removed
+- `m_selectorByName` map can be removed (all lookups are enum-indexed)
+- `BackendDispatching` simplifies to: clone constructor + vector of selectors + enum getSelector
 
-7. **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
+#### B. Remaining ICLCore IPP blocks
 
-8. **Add ImgOps tests/benchmarks** — cross-validate IPP vs C++ for the new
-   dispatched operations (getMax, getMin, getMinMax, normalize, lut,
-   clearChannelROI, flippedCopy)
+- ~~CoreFunctions.cpp — channel_mean~~ **DONE** (Session 19)
+- ~~ImgBorder.cpp — border replication~~ **DONE** (Session 19)
+- CCFunctions.cpp — planarToInterleaved/interleavedToPlanar (4 depths × 2 directions)
+- BayerConverter.h/.cpp — conditional member vars + IPP method (needs restructure)
+- Types.h — enum value definitions (compile-time, deferred)
 
-9. **Migrate filter dispatch to enum keys** — each filter class defines its own
-   `enum class` for selector keys (e.g., `enum class ThresholdSel { ltVal, gtVal, ... }`)
-   and uses the index-based `getSelector<Sig>(enumVal)` overload for O(1) lookup
-   instead of string-keyed lookup. Same pattern as `ImgOp` enum.
+#### C. Other modules
+
+- **ICLMath** — DynMatrix, DynMatrixUtils, MathFunctions (needs MathOps singleton)
+- **ICLIO** — DC.cpp, ColorFormatDecoder.cpp, PylonColorConverter
+- **Update disabled IPP backends** to modern oneAPI APIs
+- **Add `Backend::Mkl`** — `_Mkl.cpp` files for FFT and matrix ops
+- **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
