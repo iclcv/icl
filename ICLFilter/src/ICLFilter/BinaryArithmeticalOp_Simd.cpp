@@ -58,7 +58,8 @@ namespace {
   }
 
   static int _reg = [] {
-    BOp::prototype().addBackend<BOp::Sig>(Op::apply, Backend::Simd, simd_apply,
+    auto simd = BOp::prototype().backends(Backend::Simd);
+    simd.add<BOp::Sig>(Op::apply, simd_apply,
       applicableTo<icl32f>, "SSE2/NEON binary arithmetic (32f)");
     return 0;
   }();

@@ -176,17 +176,17 @@ namespace {
 
   using BOp = icl::filter::BilateralFilterOp;
 
-  // Direct registration into the class prototype
   static int _reg = [] {
     using Op = BOp::Op;
-    auto& proto = BOp::prototype();
-    // Create stateful backend inline: factory produces a lambda capturing shared state
-    auto state = std::make_shared<CLBilateralState>();
-    proto.addBackend<BOp::ApplySig>(
-      Op::apply, Backend::OpenCL,
-      [state](const Image& src, Image& dst,
-              int radius, float sigma_s, float sigma_r, bool use_lab) {
-        state->apply(src, dst, radius, sigma_s, sigma_r, use_lab);
+    auto ocl = BOp::prototype().backends(Backend::OpenCL);
+    ocl.addStateful<BOp::ApplySig>(
+      Op::apply,
+      []() {
+        auto state = std::make_shared<CLBilateralState>();
+        return [state](const Image& src, Image& dst,
+                       int radius, float sigma_s, float sigma_r, bool use_lab) {
+          state->apply(src, dst, radius, sigma_s, sigma_r, use_lab);
+        };
       },
       [](const Image& src) {
         depth d = src.getDepth();

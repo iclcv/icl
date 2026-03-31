@@ -46,7 +46,6 @@ namespace filter {
   core::ImageBackendDispatching& BilateralFilterOp::prototype() {
     static core::ImageBackendDispatching proto;
     static bool init = [&] {
-      proto.initDispatching("BilateralFilterOp");
       proto.addSelector<ApplySig>(Op::apply);
       return true;
     }();

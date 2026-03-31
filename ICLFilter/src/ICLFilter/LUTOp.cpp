@@ -47,7 +47,6 @@ namespace icl{
     core::ImageBackendDispatching& LUTOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("LUTOp");
         proto.addSelector<ReduceBitsSig>(Op::reduceBits);
         return true;
       }();

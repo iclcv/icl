@@ -48,9 +48,9 @@ namespace {
 
   // Direct registration into the class prototype
   static int _reg = [] {
-    auto& proto = ULOp::prototype();
-    proto.addBackend<ULOp::WithValSig>(Op::withVal, Backend::Cpp, cpp_withval, "C++ logical and/or/xor");
-    proto.addBackend<ULOp::NoValSig>(Op::noVal, Backend::Cpp, cpp_noval, "C++ logical not");
+    auto cpp = ULOp::prototype().backends(Backend::Cpp);
+    cpp.add<ULOp::WithValSig>(Op::withVal, cpp_withval, "C++ logical and/or/xor");
+    cpp.add<ULOp::NoValSig>(Op::noVal, cpp_noval, "C++ logical not");
     return 0;
   }();
 

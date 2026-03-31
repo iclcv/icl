@@ -95,9 +95,9 @@ namespace {
   using Op = CmpOp::Op;
 
   static int _reg = [] {
-    auto& proto = CmpOp::prototype();
-    proto.addBackend<CmpOp::CmpSig>(Op::compare, Backend::Ipp, ipp_compare, applicableTo<icl8u, icl16s, icl32f>, "IPP compare (8u/16s/32f)");
-    proto.addBackend<CmpOp::CmpEqtSig>(Op::compareEqTol, Backend::Ipp, ipp_compare_eqt, applicableTo<icl32f>, "IPP compareEqualEps (32f)");
+    auto ipp = CmpOp::prototype().backends(Backend::Ipp);
+    ipp.add<CmpOp::CmpSig>(Op::compare, ipp_compare, applicableTo<icl8u, icl16s, icl32f>, "IPP compare (8u/16s/32f)");
+    ipp.add<CmpOp::CmpEqtSig>(Op::compareEqTol, ipp_compare_eqt, applicableTo<icl32f>, "IPP compareEqualEps (32f)");
     return 0;
   }();
 

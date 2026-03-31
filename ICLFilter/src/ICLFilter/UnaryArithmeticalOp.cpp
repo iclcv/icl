@@ -47,7 +47,6 @@ namespace icl {
     core::ImageBackendDispatching& UnaryArithmeticalOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("UnaryArithmeticalOp");
         proto.addSelector<ArithValSig>(Op::withVal);
         proto.addSelector<ArithNoValSig>(Op::noVal);
         return true;

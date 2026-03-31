@@ -25,9 +25,8 @@ namespace {
 
   static int _reg = [] {
     using Op = LOp::Op;
-    auto& proto = LOp::prototype();
-    proto.addBackend<LOp::ReduceBitsSig>(Op::reduceBits, Backend::Cpp, cpp_reduceBits,
-                                          "C++ reduceBits");
+    auto cpp = LOp::prototype().backends(Backend::Cpp);
+    cpp.add<LOp::ReduceBitsSig>(Op::reduceBits, cpp_reduceBits, "C++ reduceBits");
     return 0;
   }();
 

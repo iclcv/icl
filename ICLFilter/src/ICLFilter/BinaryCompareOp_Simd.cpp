@@ -100,8 +100,8 @@ namespace {
 
   static int _reg = [] {
     using Op = BCOp::Op;
-    auto& proto = BCOp::prototype();
-    proto.addBackend<BCOp::CmpSig>(Op::compare, Backend::Simd, simd_compare,
+    auto simd = BCOp::prototype().backends(Backend::Simd);
+    simd.add<BCOp::CmpSig>(Op::compare, simd_compare,
       applicableTo<icl8u, icl32f>, "SSE2/NEON binary compare (8u/32f)");
     return 0;
   }();

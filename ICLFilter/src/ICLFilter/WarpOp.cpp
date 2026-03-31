@@ -47,7 +47,6 @@ namespace icl{
     core::ImageBackendDispatching& WarpOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("WarpOp");
         proto.addSelector<WarpSig>(Op::warp);
         return true;
       }();

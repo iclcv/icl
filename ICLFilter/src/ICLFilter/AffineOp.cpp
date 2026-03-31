@@ -50,7 +50,6 @@ namespace icl{
     core::ImageBackendDispatching& AffineOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("AffineOp");
         proto.addSelector<AffineSig>(Op::apply);
         return true;
       }();

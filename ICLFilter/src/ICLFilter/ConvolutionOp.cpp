@@ -48,7 +48,6 @@ namespace icl{
     core::ImageBackendDispatching& ConvolutionOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("ConvolutionOp");
         proto.addSelector<ConvSig>(Op::apply);
         return true;
       }();

@@ -47,7 +47,6 @@ namespace icl {
     core::ImageBackendDispatching& WienerOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("WienerOp");
         proto.addSelector<WienerSig>(Op::apply);
         return true;
       }();

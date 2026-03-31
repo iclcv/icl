@@ -262,9 +262,9 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = BOp::Op;
-    auto& proto = BOp::prototype();
-    proto.addBackend<BOp::ApplySig>(Op::apply, Backend::Cpp, cpp_bilateral,
-                                    "C++ bilateral filter (all depths)");
+    auto cpp = BOp::prototype().backends(Backend::Cpp);
+    cpp.add<BOp::ApplySig>(Op::apply, cpp_bilateral,
+                           "C++ bilateral filter (all depths)");
     return 0;
   }();
 

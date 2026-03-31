@@ -47,7 +47,6 @@ namespace icl {
     core::ImageBackendDispatching& UnaryLogicalOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("UnaryLogicalOp");
         proto.addSelector<WithValSig>(Op::withVal);
         proto.addSelector<NoValSig>(Op::noVal);
         return true;

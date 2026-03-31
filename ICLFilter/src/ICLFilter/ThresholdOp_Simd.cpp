@@ -178,20 +178,20 @@ namespace {
     });
   }
 
-  // --- Self-registration into the global registry ---
+  // --- Direct registration into the class prototype ---
   using TOp = icl::filter::ThresholdOp;
+  using Op = TOp::Op;
 
-  static const int _reg1 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
-    "ThresholdOp.ltVal", Backend::Simd, simd_ltval,
-    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltVal (8u/32f)");
-
-  static const int _reg2 = ImageBackendDispatching::registerBackend<TOp::ThreshSig>(
-    "ThresholdOp.gtVal", Backend::Simd, simd_gtval,
-    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold gtVal (8u/32f)");
-
-  static const int _reg3 = ImageBackendDispatching::registerBackend<TOp::ThreshDualSig>(
-    "ThresholdOp.ltgtVal", Backend::Simd, simd_ltgtval,
-    applicableTo<icl8u, icl32f>, "SSE2/NEON threshold ltgtVal (8u/32f)");
+  static int _reg = [] {
+    auto simd = TOp::prototype().backends(Backend::Simd);
+    simd.add<TOp::ThreshSig>(Op::ltVal, simd_ltval,
+      applicableTo<icl8u, icl32f>, "SSE2 threshold ltVal (8u/32f)");
+    simd.add<TOp::ThreshSig>(Op::gtVal, simd_gtval,
+      applicableTo<icl8u, icl32f>, "SSE2 threshold gtVal (8u/32f)");
+    simd.add<TOp::ThreshDualSig>(Op::ltgtVal, simd_ltgtval,
+      applicableTo<icl8u, icl32f>, "SSE2 threshold ltgtVal (8u/32f)");
+    return 0;
+  }();
 
 } // anon namespace
 

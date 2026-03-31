@@ -16,9 +16,9 @@ namespace {
 
   static int _reg = [] {
     using Op = WOp::Op;
-    auto& proto = WOp::prototype();
-    proto.addBackend<WOp::WienerSig>(Op::apply, Backend::Cpp, cpp_wiener,
-                                      "C++ Wiener (throws — IPP required)");
+    auto cpp = WOp::prototype().backends(Backend::Cpp);
+    cpp.add<WOp::WienerSig>(Op::apply, cpp_wiener,
+                             "C++ Wiener (throws — IPP required)");
     return 0;
   }();
 

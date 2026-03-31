@@ -33,7 +33,6 @@
 #include <ICLUtils/CompatMacros.h>
 
 #include <array>
-#include <unordered_map>
 #include <vector>
 #include <string>
 #include <memory>
@@ -61,24 +60,6 @@ namespace icl {
         case Backend::Cpp:    return "C++";
       }
       return "?";
-    }
-
-    // ================================================================
-    // Global Registry — staging area for static-init self-registration.
-    // Used by per-instance dispatchers (filters) whose instances don't
-    // exist yet at static-init time. Singletons (ImgOps) can bypass
-    // this and register directly.
-    // ================================================================
-
-    namespace detail {
-      struct RegistryEntry {
-        Backend backend;
-        std::string description;
-        std::function<void(void*)> registerInto;
-      };
-
-      ICLUtils_API std::unordered_map<std::string, std::vector<RegistryEntry>>& globalRegistry();
-      ICLUtils_API int addToRegistry(const std::string& key, RegistryEntry entry);
     }
 
     // ================================================================
@@ -119,6 +100,7 @@ namespace icl {
         Backend backend;
         std::string description;
         ApplicabilityFn<Context> applicabilityFn;
+        std::function<std::shared_ptr<ImplBase>()> cloneFn;  // set for stateful backends
 
         ImplBase(Backend b, std::string desc, ApplicabilityFn<Context> app)
           : backend(b), description(std::move(desc)), applicabilityFn(std::move(app)) {}
@@ -159,6 +141,25 @@ namespace icl {
         add(b, std::forward<F>(f), nullptr, std::move(description));
       }
 
+      /// Add a stateful backend. Factory is called once per clone to create fresh state.
+      /// Factory signature: () -> callable(Args...) -> R
+      template<class Factory>
+      void addStateful(Backend b, Factory&& factory,
+                       ApplicabilityFn<Context> applicability,
+                       std::string description = "") {
+        if(description.empty()) description = std::string(backendName(b)) + " fallback";
+        auto fn = factory();
+        auto impl = std::make_shared<Impl<std::decay_t<decltype(fn)>>>(
+          std::move(fn), b, description, applicability);
+        impl->cloneFn = [factory = std::decay_t<Factory>(std::forward<Factory>(factory)),
+                         b, description, applicability]() -> std::shared_ptr<ImplBase> {
+          auto fn = factory();
+          return std::make_shared<Impl<std::decay_t<decltype(fn)>>>(
+            std::move(fn), b, description, applicability);
+        };
+        impls[static_cast<int>(b)] = std::move(impl);
+      }
+
       // --- Resolution: iterate highest-priority first ---
 
       ImplBase* resolve(const Context& ctx) const {
@@ -183,12 +184,16 @@ namespace icl {
         return impls[static_cast<int>(b)].get();
       }
 
-      // --- Clone: new selector sharing the same ImplBase objects ---
+      // --- Clone: stateful backends get fresh state, stateless share ImplBase ---
 
       std::unique_ptr<BackendSelectorBase<Context>> clone() const override {
         auto c = std::make_unique<BackendSelector>();
         c->name = this->name;
-        c->impls = this->impls;  // copies shared_ptrs — cheap
+        for(int i = 0; i < NUM_BACKENDS; ++i) {
+          if(impls[i]) {
+            c->impls[i] = impls[i]->cloneFn ? impls[i]->cloneFn() : impls[i];
+          }
+        }
         return c;
       }
 
@@ -233,15 +238,9 @@ namespace icl {
 
       /// Clone constructor — creates independent selectors sharing ImplBase objects.
       /// Use as mandatory base-class initializer in filter constructors.
-      explicit BackendDispatching(const BackendDispatching& proto)
-        : m_prefix(proto.m_prefix) {
+      explicit BackendDispatching(const BackendDispatching& proto) {
         for(auto& sel : proto.m_selectors) {
-          auto cloned = sel->clone();
-          auto* ptr = cloned.get();
-          // Extract short name from full qualified name
-          if(cloned->name.size() > m_prefix.size())
-            m_selectorByName[cloned->name.substr(m_prefix.size())] = ptr;
-          m_selectors.push_back(std::move(cloned));
+          m_selectors.push_back(sel->clone());
         }
       }
 
@@ -250,101 +249,69 @@ namespace icl {
       BackendDispatching(BackendDispatching&&) = default;
       BackendDispatching& operator=(BackendDispatching&&) = default;
 
-      // ---- Static registration into global registry (for filters not yet on singletons) ----
-
-      template<class Sig, class F>
-      static int registerBackend(const std::string& key, Backend b, F&& f,
-                                  ApplicabilityFn<Context> applicability,
-                                  std::string desc = "") {
-        return detail::addToRegistry(key, {
-          b, desc,
-          [f = std::forward<F>(f), applicability, desc, b](void* base) mutable {
-            auto* sel = static_cast<BackendSelector<Context, Sig>*>(base);
-            sel->add(b, std::move(f), applicability, desc);
-          }
-        });
-      }
-
-      template<class Sig, class Factory>
-      static int registerStatefulBackend(const std::string& key, Backend b, Factory&& factory,
-                                          ApplicabilityFn<Context> applicability,
-                                          std::string desc = "") {
-        return detail::addToRegistry(key, {
-          b, desc,
-          [factory = std::forward<Factory>(factory), applicability, desc, b]
-          (void* base) {
-            auto* sel = static_cast<BackendSelector<Context, Sig>*>(base);
-            try {
-              auto fn = factory();
-              sel->add(b, std::move(fn), applicability, desc);
-            } catch(const std::exception&) {}
-          }
-        });
-      }
-
       // ---- Selector setup (prototypes / singletons) ----
 
-      void initDispatching(const std::string& className) {
-        m_prefix = className + ".";
-      }
-
-      /// String-keyed addSelector — also loads from global registry
-      template<class Sig>
-      BackendSelector<Context, Sig>& addSelector(const std::string& shortName) {
-        std::string fullName = m_prefix + shortName;
-        auto sel = std::make_unique<BackendSelector<Context, Sig>>();
-        sel->name = fullName;
-        auto* ptr = sel.get();
-        m_selectorByName[shortName] = ptr;
-        m_selectors.push_back(std::move(sel));
-        loadFromRegistry<Sig>(fullName, *ptr);
-        return *ptr;
-      }
-
-      /// Enum-keyed addSelector — derives registry name via ADL toString(K),
-      /// asserts enum value matches insertion index.
+      /// Enum-keyed addSelector — asserts enum value matches insertion index.
+      /// Selector name derived via ADL toString(K) for error messages.
       template<class Sig, class K,
                typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
       BackendSelector<Context, Sig>& addSelector(K key) {
         if(static_cast<size_t>(key) != m_selectors.size())
           throw std::logic_error("addSelector: enum value " + std::to_string(static_cast<int>(key))
             + " does not match insertion index " + std::to_string(m_selectors.size()));
-        return addSelector<Sig>(std::string(toString(key)));
+        auto sel = std::make_unique<BackendSelector<Context, Sig>>();
+        sel->name = toString(key);
+        auto* ptr = sel.get();
+        m_selectors.push_back(std::move(sel));
+        return *ptr;
       }
 
       // ---- Selector lookup ----
 
-      /// String-keyed lookup
-      template<class Sig>
-      BackendSelector<Context, Sig>& getSelector(const std::string& shortName) {
-        return *static_cast<BackendSelector<Context, Sig>*>(m_selectorByName.at(shortName));
-      }
-
-      /// Index-based O(1) lookup — use with enum keys matching addSelector() order
+      /// Enum/index-based O(1) lookup
       template<class Sig, class K,
                typename std::enable_if<std::is_enum<K>::value || std::is_integral<K>::value, int>::type = 0>
       BackendSelector<Context, Sig>& getSelector(K key) {
         return *static_cast<BackendSelector<Context, Sig>*>(m_selectors[static_cast<size_t>(key)].get());
       }
 
-      /// Convenience: getSelector(key).add(b, f, ...) in one call
-      template<class Sig, class K, class F,
-               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
-      void addBackend(K key, Backend b, F&& f, ApplicabilityFn<Context> applicability,
-                      std::string description = "") {
-        getSelector<Sig>(key).add(b, std::forward<F>(f), std::move(applicability), std::move(description));
-      }
+      /// Backend proxy — binds a Backend enum so registration calls don't repeat it.
+      /// Usage: auto cpp = proto.backends(Backend::Cpp); cpp.add<Sig>(Op::x, fn, ...);
+      struct BackendProxy {
+        BackendDispatching* self;
+        Backend backend;
 
-      template<class Sig, class K, class F,
-               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
-      void addBackend(K key, Backend b, F&& f, std::string description = "") {
-        getSelector<Sig>(key).add(b, std::forward<F>(f), std::move(description));
-      }
+        template<class Sig, class K, class F,
+                 typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+        void add(K key, F&& f, ApplicabilityFn<Context> applicability,
+                 std::string description = "") {
+          self->template getSelector<Sig>(key).add(backend, std::forward<F>(f),
+                                                   std::move(applicability), std::move(description));
+        }
 
-      /// String-keyed lookup returning base (introspection / tests)
-      BackendSelectorBase<Context>* selectorByName(const std::string& shortName) {
-        auto it = m_selectorByName.find(shortName);
-        return it != m_selectorByName.end() ? it->second : nullptr;
+        template<class Sig, class K, class F,
+                 typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+        void add(K key, F&& f, std::string description = "") {
+          self->template getSelector<Sig>(key).add(backend, std::forward<F>(f), std::move(description));
+        }
+
+        template<class Sig, class K, class Factory,
+                 typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+        void addStateful(K key, Factory&& factory,
+                         ApplicabilityFn<Context> applicability,
+                         std::string description = "") {
+          self->template getSelector<Sig>(key).addStateful(backend, std::forward<Factory>(factory),
+                                                           std::move(applicability), std::move(description));
+        }
+      };
+
+      BackendProxy backends(Backend b) { return {this, b}; }
+
+      /// Enum-keyed lookup returning base (introspection / tests)
+      template<class K,
+               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      BackendSelectorBase<Context>* selector(K key) {
+        return m_selectors[static_cast<size_t>(key)].get();
       }
 
       // ---- Bulk operations (tests / cross-validation) ----
@@ -391,19 +358,7 @@ namespace icl {
       }
 
     private:
-      template<class Sig>
-      static void loadFromRegistry(const std::string& key, BackendSelector<Context, Sig>& sel) {
-        if(sel.name.empty()) sel.name = key;
-        auto it = detail::globalRegistry().find(key);
-        if(it != detail::globalRegistry().end()) {
-          for(auto& entry : it->second)
-            entry.registerInto(&sel);
-        }
-      }
-
-      std::string m_prefix;
       std::vector<std::unique_ptr<BackendSelectorBase<Context>>> m_selectors;
-      std::unordered_map<std::string, BackendSelectorBase<Context>*> m_selectorByName;
     };
 
   } // namespace utils

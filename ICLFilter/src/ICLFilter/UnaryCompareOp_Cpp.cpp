@@ -55,9 +55,9 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = UCO::Op;
-    auto& proto = UCO::prototype();
-    proto.addBackend<UCO::CmpSig>(Op::compare, Backend::Cpp, cpp_compare, "C++ compare");
-    proto.addBackend<UCO::CmpEqtSig>(Op::compareEqTol, Backend::Cpp, cpp_compare_eqt, "C++ compareEqTol");
+    auto cpp = UCO::prototype().backends(Backend::Cpp);
+    cpp.add<UCO::CmpSig>(Op::compare, cpp_compare, "C++ compare");
+    cpp.add<UCO::CmpEqtSig>(Op::compareEqTol, cpp_compare_eqt, "C++ compareEqTol");
     return 0;
   }();
 

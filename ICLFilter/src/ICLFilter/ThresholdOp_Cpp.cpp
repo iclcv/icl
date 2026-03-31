@@ -52,10 +52,10 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = TOp::Op;
-    auto& proto = TOp::prototype();
-    proto.addBackend<TOp::ThreshSig>(Op::ltVal, Backend::Cpp, cpp_ltval, "C++ ltVal");
-    proto.addBackend<TOp::ThreshSig>(Op::gtVal, Backend::Cpp, cpp_gtval, "C++ gtVal");
-    proto.addBackend<TOp::ThreshDualSig>(Op::ltgtVal, Backend::Cpp, cpp_ltgtval, "C++ ltgtVal");
+    auto cpp = TOp::prototype().backends(Backend::Cpp);
+    cpp.add<TOp::ThreshSig>(Op::ltVal, cpp_ltval, "C++ ltVal");
+    cpp.add<TOp::ThreshSig>(Op::gtVal, cpp_gtval, "C++ gtVal");
+    cpp.add<TOp::ThreshDualSig>(Op::ltgtVal, cpp_ltgtval, "C++ ltgtVal");
     return 0;
   }();
 

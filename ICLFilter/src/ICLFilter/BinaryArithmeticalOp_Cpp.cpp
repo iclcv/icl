@@ -41,8 +41,8 @@ namespace {
 
   // Direct registration into the class prototype
   static int _reg = [] {
-    auto& proto = BOp::prototype();
-    proto.addBackend<BOp::Sig>(Op::apply, Backend::Cpp, cpp_apply, "C++ binary arithmetic");
+    auto cpp = BOp::prototype().backends(Backend::Cpp);
+    cpp.add<BOp::Sig>(Op::apply, cpp_apply, "C++ binary arithmetic");
     return 0;
   }();
 

@@ -148,8 +148,8 @@ namespace {
 
   static int _reg = [] {
     using Op = COp::Op;
-    auto& proto = COp::prototype();
-    proto.addBackend<COp::ConvSig>(Op::apply, Backend::Cpp, cpp_convolution, "C++ convolution");
+    auto cpp = COp::prototype().backends(Backend::Cpp);
+    cpp.add<COp::ConvSig>(Op::apply, cpp_convolution, "C++ convolution");
     return 0;
   }();
 

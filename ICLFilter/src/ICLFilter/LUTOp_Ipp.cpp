@@ -23,8 +23,8 @@ namespace {
 
   static int _reg = [] {
     using Op = LOp::Op;
-    auto& proto = LOp::prototype();
-    proto.addBackend<LOp::ReduceBitsSig>(Op::reduceBits, Backend::Ipp, ipp_reduceBits,
+    auto ipp = LOp::prototype().backends(Backend::Ipp);
+    ipp.add<LOp::ReduceBitsSig>(Op::reduceBits, ipp_reduceBits,
       applicableTo<icl8u>, "IPP reduceBits (8u)");
     return 0;
   }();

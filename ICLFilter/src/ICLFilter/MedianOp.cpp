@@ -48,7 +48,6 @@ namespace icl {
     core::ImageBackendDispatching& MedianOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("MedianOp");
         proto.addSelector<MedianFixedSig>(Op::fixed);
         proto.addSelector<MedianGenericSig>(Op::generic);
         return true;

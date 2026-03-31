@@ -67,9 +67,9 @@ namespace {
   using Op = ULOp::Op;
 
   static int _reg = [] {
-    auto& proto = ULOp::prototype();
-    proto.addBackend<ULOp::WithValSig>(Op::withVal, Backend::Ipp, ipp_withval, applicableTo<icl8u, icl32s>, "IPP logical and/or/xor (8u/32s)");
-    proto.addBackend<ULOp::NoValSig>(Op::noVal, Backend::Ipp, ipp_noval, applicableTo<icl8u>, "IPP logical not (8u)");
+    auto ipp = ULOp::prototype().backends(Backend::Ipp);
+    ipp.add<ULOp::WithValSig>(Op::withVal, ipp_withval, applicableTo<icl8u, icl32s>, "IPP logical and/or/xor (8u/32s)");
+    ipp.add<ULOp::NoValSig>(Op::noVal, ipp_noval, applicableTo<icl8u>, "IPP logical not (8u)");
     return 0;
   }();
 

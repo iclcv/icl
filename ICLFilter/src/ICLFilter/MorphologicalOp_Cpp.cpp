@@ -167,9 +167,8 @@ namespace {
 
   static int _reg = [] {
     using Op = MOp::Op;
-    auto& proto = MOp::prototype();
-    proto.addBackend<MOp::MorphSig>(Op::apply, Backend::Cpp, cpp_morph,
-                                     "C++ morphological ops");
+    auto cpp = MOp::prototype().backends(Backend::Cpp);
+    cpp.add<MOp::MorphSig>(Op::apply, cpp_morph, "C++ morphological ops");
     return 0;
   }();
 

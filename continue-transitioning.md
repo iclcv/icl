@@ -1,6 +1,55 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 20 — All Filters Migrated to Prototype+Clone)
+## Current State (Session 21 — A2 Complete: Registry Removed + Stateful Cloning + AffineOp Fix)
+
+### Session 21 Summary
+
+**A2 is complete.** All three phases done:
+
+**Phase 1 — Global string registry removed:**
+- Deleted `detail::RegistryEntry`, `detail::globalRegistry()`, `detail::addToRegistry()`
+- Deleted `registerBackend()`, `registerStatefulBackend()` static methods
+- Deleted `loadFromRegistry()` private method
+- Deleted `BackendDispatching.cpp` (only contained the registry impl)
+- Removed `m_selectorByName` map and `m_prefix` string member
+- Removed `initDispatching()` — all 15 filters, ImgOps, FFTDispatching updated
+- Removed string-keyed `addSelector(string)`, `getSelector(string)`, `selectorByName(string)`
+- Enum-keyed `addSelector(K)` is now standalone (no delegation to string version)
+- Added `selector(K)` returning `BackendSelectorBase*` (replaces `selectorByName` for tests)
+- Fixed `ThresholdOp_Simd.cpp` — switched from global registry to prototype direct registration
+
+**Phase 2 — Stateful backend cloning (factory pattern):**
+- `ImplBase` now has `std::function<shared_ptr<ImplBase>()> cloneFn` (null for stateless)
+- `BackendSelector::clone()`: calls `cloneFn()` for stateful backends, shares `shared_ptr` for stateless
+- `BackendSelector::addStateful(b, factory, applicability, desc)` — factory called per clone
+- `BackendDispatching::addStatefulBackend<Sig>(key, b, factory, app, desc)` — convenience
+- Migrated 4 stateful backends:
+  - `WienerOp_Ipp.cpp` — IPP scratch buffer now per-instance
+  - `WarpOp_OpenCL.cpp` — CLWarpState (GPU buffers/kernels) now per-instance
+  - `BilateralFilterOp_OpenCL.cpp` — CLBilateralState now per-instance
+  - `MorphologicalOp_Ipp.cpp` — MorphIppState (IPP state objects) now per-instance
+
+**Phase 3 — AffineOp test bug fixed:**
+- `AffineOp_Cpp.cpp`: bilinear interpolation bounds check now correctly validates
+  the full 2x2 neighborhood (`x2 < width-1, y2 < height-1`)
+- Edge pixels outside the safe bilinear zone fall back to nearest-neighbor
+- **349/349 tests pass both single-threaded AND multi-threaded** (SIGTRAP eliminated)
+
+**FFTDispatching migrated to enum pattern:**
+- Added `enum class FFTOp : int { fwd32f, inv32f, fwd32fc }` with `toString()`
+- Selector setup moved to `FFTDispatching()` constructor
+- `FFTUtils.cpp` now uses `getSelector<Sig>(FFTOp::xxx)` (enum-keyed O(1))
+
+**Test changes:**
+- All `selectorByName("name")` calls replaced with `selector(FilterOp::Op::name)`
+
+**BackendProxy for terser registration:**
+- Added `BackendProxy` struct + `backends(Backend b)` method on `BackendDispatching`
+- All ~65 `addBackend`/`addStatefulBackend` call sites across _Cpp/_Ipp/_Simd/_OpenCL files
+  migrated to use the proxy: `auto cpp = proto.backends(Backend::Cpp); cpp.add<Sig>(...);`
+- `addBackend`/`addStatefulBackend` methods remain as internal implementation for the proxy
+
+## Previous State (Session 20 — All Filters Migrated to Prototype+Clone)
 
 ### Session 20 Summary
 
@@ -307,33 +356,36 @@ Changes:
 ### Backend Dispatch Framework
 
 ```
-BackendDispatching<Context>           — ICLUtils (template, header-only)
-  ::BackendSelectorBase               — abstract per-selector base
-  ::BackendSelector<Sig>              — typed dispatch table
+BackendDispatching<Context>           — ICLUtils (header-only, no .cpp)
+  BackendSelectorBase<Context>        — abstract per-selector base
+  BackendSelector<Context, Sig>       — typed dispatch table
+    .add(b, f, applicability, desc)   — register stateless backend
+    .addStateful(b, factory, app, d)  — register stateful backend (factory per clone)
     .resolve(ctx) → ImplBase*         — returns nullptr if no match
     .resolveOrThrow(ctx) → ImplBase*  — throws logic_error if no match
-  ::ApplicabilityFn                   — std::function<bool(const Context&)>
+    .clone()                          — stateful: calls cloneFn(); stateless: shares shared_ptr
+  ApplicabilityFn<Context>            — std::function<bool(const Context&)>
+  ImplBase::cloneFn                   — optional factory for stateful backends
+
+API on BackendDispatching<Context>:
+  addSelector<Sig>(K key)             — enum-keyed only (no string overloads)
+  getSelector<Sig>(K key)             — O(1) vector index
+  selector(K key)                     — returns BackendSelectorBase* (introspection/tests)
+  addBackend<Sig>(K, b, f, app, desc) — convenience for getSelector().add()
+  addStatefulBackend<Sig>(K, b, factory, app, desc) — convenience for getSelector().addStateful()
 
 Two context types:
   ImageBackendDispatching             — BackendDispatching<Image>
-    Used by: filter operations (UnaryOp, BinaryOp subclasses)
-    Applicability: applicableTo<Ts...>(const Image&)
-
   ImgBaseBackendDispatching           — BackendDispatching<ImgBase*>
-    Used by: ImgOps singleton for Img<T> utility methods
-    Applicability: applicableToBase<Ts...>(ImgBase* const&)
 
-ImgOps singleton                      — ICLCore
-  Inherits ImgBaseBackendDispatching
-  Owns selectors for: mirror (more to come)
-  Backends registered from: Img_Cpp.cpp, Img_Ipp.cpp
+ImgOps singleton                      — ICLCore (enum class Op, 10 selectors)
+FFTDispatching singleton              — ICLMath (enum class FFTOp, 3 selectors)
 
 Filter prototype+clone pattern        — all 15 ICLFilter ops
   Static prototype() holds selectors + ImplBase objects
   Constructor clones: ImageBackendDispatching(prototype())
-  enum class Op indexes selectors at O(1)
+  Stateful backends get fresh state per instance via factory cloneFn
   _Cpp.cpp / _Ipp.cpp / _Simd.cpp / _OpenCL.cpp register into prototype()
-  via: proto.addBackend<Sig>(Op::x, Backend::Xxx, fn, applicability, desc)
 
 Backend enum: Cpp, Simd, Ipp, OpenCL  — ICLUtils
 Priority: OpenCL > Ipp > Simd > Cpp
@@ -379,13 +431,15 @@ docker run --platform linux/amd64 --rm -e JOBS=16 -e BUILD_DIR=/build-cache \
 ### Key Files
 
 ```
-ICLUtils/src/ICLUtils/BackendDispatching.h     — framework template (prototype+clone)
+ICLUtils/src/ICLUtils/BackendDispatching.h     — framework template (header-only, no .cpp)
 ICLUtils/src/ICLUtils/EnumDispatch.h           — dispatchEnum utility
 ICLCore/src/ICLCore/ImageBackendDispatching.h  — Image + ImgBase* typedefs
 ICLCore/src/ICLCore/ImgOps.h                   — singleton header, dispatch signatures
 ICLCore/src/ICLCore/ImgOps.cpp                 — singleton impl, creates selectors
 ICLCore/src/ICLCore/Img_Cpp.cpp                — C++ backends (8 ops + mirror helpers)
 ICLCore/src/ICLCore/Img_Ipp.cpp                — IPP backends (8 ops)
+ICLMath/src/ICLMath/FFTDispatching.h           — FFTOp enum, FFTDispatching singleton
+ICLMath/src/ICLMath/FFTDispatching.cpp         — FFT C++ backends
 ICLFilter/src/ICLFilter/*_Cpp.cpp              — 15 C++ backend files (one per filter)
 ICLFilter/src/ICLFilter/*_Ipp.cpp              — IPP backends (excluded when !IPP_FOUND)
 ICLFilter/src/ICLFilter/*_Simd.cpp             — SIMD backends (always built)
@@ -402,51 +456,9 @@ packaging/docker/noble-ipp/                    — Docker IPP build
 
 All 15 filters now use prototype+clone. See Session 20 summary above.
 
-#### A2. Remove global string registry + add stateful backend cloning
+#### A2. ~~Remove global string registry + add stateful backend cloning~~ **DONE** (Session 21)
 
-**Phase 1 — Remove global string registry:**
-- Remove `detail::globalRegistry()`, `detail::addToRegistry()` from BackendDispatching.h
-- Remove `registerBackend()`, `registerStatefulBackend()` static methods
-- Remove `loadFromRegistry()` private method
-- Remove `m_selectorByName` map (all lookups are now enum-indexed via `m_selectors[int(key)]`)
-- Remove string-keyed `addSelector(string)` and `getSelector(string)` overloads
-- `BackendDispatching` simplifies to: clone constructor + vector of selectors + enum getSelector
-- Remove `BackendDispatching.cpp` if it only contains the global registry impl
-
-**Phase 2 — Add stateful backend cloning (factory pattern):**
-
-The factory is called **once per filter instance** (during clone constructor),
-not per `apply()` call. The created state lives on the instance and is reused
-across all `apply()` calls on that instance. This avoids re-allocating scratch
-buffers, IPP state objects, or OpenCL contexts on every execution.
-
-Design:
-- `ImplBase` gets an optional `Factory` (state-creator lambda)
-- `BackendSelector::clone()`: if impl has a factory, call it to create a new
-  `Impl` with fresh state. Otherwise share the `shared_ptr` as before
-  (stateless backends stay shared — zero overhead)
-- `addStatefulBackend<Sig>(key, backend, factory, applicability, desc)`:
-  calls factory immediately for the prototype instance, stores the factory
-  for future clones
-- The factory returns a callable (lambda capturing its own state).
-  Example for WienerOp:
-  ```cpp
-  proto.addStatefulBackend<WOp::WienerSig>(Op::apply, Backend::Ipp,
-    []() {  // factory — called once per filter instance
-      auto buf = std::make_shared<std::vector<icl8u>>();
-      return [buf](const Image &src, ...) { /* uses buf */ };
-    },
-    applicableTo<icl8u, icl16s, icl32f>, "IPP Wiener filter");
-  ```
-- Important: if the captured state contains `Image`/`Img<T>`, the factory
-  must create them fresh (ICL images default to shallow copy)
-- Migrate: WienerOp_Ipp, WarpOp_OpenCL, BilateralFilterOp_OpenCL,
-  MorphologicalOp_Ipp
-
-**Phase 3 — Fix pre-existing AffineOp test bug:**
-- `test-filter.cpp:745`: heap-buffer-overflow in `subPixelLIN()` on 2×2 image
-- Bilinear interpolation reads 1 byte past allocation
-- Causes SIGTRAP under multi-threaded test execution (ASAN confirmed)
+See Session 21 summary above. All three phases complete.
 
 #### B. Remaining ICLCore IPP blocks
 

@@ -56,9 +56,9 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = BCOp::Op;
-    auto& proto = BCOp::prototype();
-    proto.addBackend<BCOp::CmpSig>(Op::compare, Backend::Cpp, cpp_compare, "C++ compare");
-    proto.addBackend<BCOp::CmpEqtSig>(Op::compareEqTol, Backend::Cpp, cpp_compare_eqt, "C++ compareEqTol");
+    auto cpp = BCOp::prototype().backends(Backend::Cpp);
+    cpp.add<BCOp::CmpSig>(Op::compare, cpp_compare, "C++ compare");
+    cpp.add<BCOp::CmpEqtSig>(Op::compareEqTol, cpp_compare_eqt, "C++ compareEqTol");
     return 0;
   }();
 

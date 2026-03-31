@@ -69,16 +69,18 @@ namespace {
 
   static int _reg = [] {
     using Op = WOp::Op;
-    auto& proto = WOp::prototype();
-    auto buf = std::make_shared<std::vector<icl8u>>();
-    proto.addBackend<WOp::WienerSig>(Op::apply, Backend::Ipp,
-      [buf](const Image &src, Image &dst, const Size &maskSize,
-            const Point &anchor, const Point &roiOffset, icl32f noise) {
-        src.visit([&](const auto &s) {
-          using T = typename std::remove_reference_t<decltype(s)>::type;
-          auto &d = dst.as<T>();
-          WienerImpl<T>::apply(s, d, maskSize, anchor, roiOffset, *buf, noise);
-        });
+    auto ipp = WOp::prototype().backends(Backend::Ipp);
+    ipp.addStateful<WOp::WienerSig>(Op::apply,
+      []() {
+        auto buf = std::make_shared<std::vector<icl8u>>();
+        return [buf](const Image &src, Image &dst, const Size &maskSize,
+                     const Point &anchor, const Point &roiOffset, icl32f noise) {
+          src.visit([&](const auto &s) {
+            using T = typename std::remove_reference_t<decltype(s)>::type;
+            auto &d = dst.as<T>();
+            WienerImpl<T>::apply(s, d, maskSize, anchor, roiOffset, *buf, noise);
+          });
+        };
       },
       applicableTo<icl8u, icl16s, icl32f>, "IPP Wiener filter (8u/16s/32f)");
     return 0;

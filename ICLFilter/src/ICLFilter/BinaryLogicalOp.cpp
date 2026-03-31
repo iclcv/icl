@@ -46,7 +46,6 @@ namespace icl {
     core::ImageBackendDispatching& BinaryLogicalOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("BinaryLogicalOp");
         proto.addSelector<Sig>(Op::apply);
         return true;
       }();

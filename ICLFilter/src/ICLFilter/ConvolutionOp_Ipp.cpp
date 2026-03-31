@@ -249,8 +249,8 @@ namespace {
 
   static int _reg = [] {
     using Op = COp::Op;
-    auto& proto = COp::prototype();
-    proto.addBackend<COp::ConvSig>(Op::apply, Backend::Ipp, ipp_convolution,
+    auto ipp = COp::prototype().backends(Backend::Ipp);
+    ipp.add<COp::ConvSig>(Op::apply, ipp_convolution,
       applicableTo<icl8u, icl16s, icl32f>, "IPP convolution (fixed+custom kernels)");
     return 0;
   }();

@@ -76,8 +76,8 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = WOp::Op;
-    auto& proto = WOp::prototype();
-    proto.addBackend<WOp::WarpSig>(Op::warp, Backend::Cpp, cpp_warp, "C++ warp");
+    auto cpp = WOp::prototype().backends(Backend::Cpp);
+    cpp.add<WOp::WarpSig>(Op::warp, cpp_warp, "C++ warp");
     return 0;
   }();
 

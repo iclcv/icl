@@ -103,9 +103,9 @@ namespace {
   using Op = ULOp::Op;
 
   static int _reg = [] {
-    auto& proto = ULOp::prototype();
-    proto.addBackend<ULOp::WithValSig>(Op::withVal, Backend::Simd, simd_withval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical and/or/xor (8u/16s/32s)");
-    proto.addBackend<ULOp::NoValSig>(Op::noVal, Backend::Simd, simd_noval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical not (8u/16s/32s)");
+    auto simd = ULOp::prototype().backends(Backend::Simd);
+    simd.add<ULOp::WithValSig>(Op::withVal, simd_withval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical and/or/xor (8u/16s/32s)");
+    simd.add<ULOp::NoValSig>(Op::noVal, simd_noval, applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON logical not (8u/16s/32s)");
     return 0;
   }();
 

@@ -51,7 +51,6 @@ namespace icl {
     core::ImageBackendDispatching& MorphologicalOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("MorphologicalOp");
         proto.addSelector<MorphSig>(Op::apply);
         return true;
       }();

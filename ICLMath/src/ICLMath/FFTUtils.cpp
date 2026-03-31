@@ -1317,7 +1317,7 @@ namespace icl{
         // Dispatch for icl32f: real input → icl32c output
         if constexpr (std::is_same_v<T2, icl32f> && !std::is_same_v<T1, icl32c>) {
           auto* impl = FFTDispatching::instance()
-            .getSelector<FFTFwd32fSig>("fwd32f").resolve(ctx);
+            .getSelector<FFTFwd32fSig>(FFTOp::fwd32f).resolve(ctx);
           if(impl) {
             // Convert src to icl32f if needed, then dispatch
             if constexpr (std::is_same_v<T1, icl32f>) {
@@ -1330,7 +1330,7 @@ namespace icl{
         // Dispatch for icl32c input (complex forward FFT)
         if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
           auto* impl = FFTDispatching::instance()
-            .getSelector<FFTFwd32fcSig>("fwd32fc").resolve(ctx);
+            .getSelector<FFTFwd32fcSig>(FFTOp::fwd32fc).resolve(ctx);
           if(impl) return impl->apply(src, dst, buf);
         }
 
@@ -2006,7 +2006,7 @@ namespace icl{
         if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
           FFTContext ctx{(unsigned)src.rows(), (unsigned)src.cols()};
           auto* impl = FFTDispatching::instance()
-            .getSelector<FFTInv32fSig>("inv32f").resolve(ctx);
+            .getSelector<FFTInv32fSig>(FFTOp::inv32f).resolve(ctx);
           if(impl) return impl->apply(src, dst, buf);
         }
 

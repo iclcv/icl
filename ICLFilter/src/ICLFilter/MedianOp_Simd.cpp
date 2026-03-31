@@ -218,8 +218,8 @@ namespace {
   using Op = MOp::Op;
 
   static int _reg = [] {
-    auto& proto = MOp::prototype();
-    proto.addBackend<MOp::MedianFixedSig>(Op::fixed, Backend::Simd, simd_median_fixed,
+    auto simd = MOp::prototype().backends(Backend::Simd);
+    simd.add<MOp::MedianFixedSig>(Op::fixed, simd_median_fixed,
       applicableTo<icl8u, icl16s, icl32f>, "SSE2/NEON median 3x3/5x5");
     return 0;
   }();

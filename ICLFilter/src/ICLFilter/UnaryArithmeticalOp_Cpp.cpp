@@ -73,9 +73,9 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = UAOp::Op;
-    auto& proto = UAOp::prototype();
-    proto.addBackend<UAOp::ArithValSig>(Op::withVal, Backend::Cpp, cpp_arith_with_val, "C++ arithmetic with-val");
-    proto.addBackend<UAOp::ArithNoValSig>(Op::noVal, Backend::Cpp, cpp_arith_no_val, "C++ arithmetic no-val");
+    auto cpp = UAOp::prototype().backends(Backend::Cpp);
+    cpp.add<UAOp::ArithValSig>(Op::withVal, cpp_arith_with_val, "C++ arithmetic with-val");
+    cpp.add<UAOp::ArithNoValSig>(Op::noVal, cpp_arith_no_val, "C++ arithmetic no-val");
     return 0;
   }();
 

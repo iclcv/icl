@@ -96,10 +96,10 @@ namespace {
   using Op = MOp::Op;
 
   static int _reg = [] {
-    auto& proto = MOp::prototype();
-    proto.addBackend<MOp::MedianFixedSig>(Op::fixed, Backend::Ipp, ipp_median_fixed,
+    auto ipp = MOp::prototype().backends(Backend::Ipp);
+    ipp.add<MOp::MedianFixedSig>(Op::fixed, ipp_median_fixed,
       applicableTo<icl8u, icl16s>, "IPP median fixed 3x3/5x5 (8u/16s)");
-    proto.addBackend<MOp::MedianGenericSig>(Op::generic, Backend::Ipp, ipp_median_generic,
+    ipp.add<MOp::MedianGenericSig>(Op::generic, ipp_median_generic,
       applicableTo<icl8u, icl16s>, "IPP median generic (8u/16s)");
     return 0;
   }();

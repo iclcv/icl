@@ -59,23 +59,31 @@ namespace icl {
 
     } // anonymous namespace
 
+    const char* toString(FFTOp op) {
+      switch(op) {
+        case FFTOp::fwd32f:  return "fwd32f";
+        case FFTOp::inv32f:  return "inv32f";
+        case FFTOp::fwd32fc: return "fwd32fc";
+      }
+      return "?";
+    }
+
+    FFTDispatching::FFTDispatching() {
+      addSelector<FFTFwd32fSig>(FFTOp::fwd32f);
+      addSelector<FFTInv32fSig>(FFTOp::inv32f);
+      addSelector<FFTFwd32fcSig>(FFTOp::fwd32fc);
+    }
+
     FFTDispatching& FFTDispatching::instance() {
       static FFTDispatching d;
       return d;
     }
 
-    // Static-init registration of C++ fallback backends.
-    // IPP/MKL/OpenCL backends self-register from their own .cpp files
-    // using utils::registerBackend<FFTContext, Sig>(...).
     static const int _r1 = []() {
-      auto& d = FFTDispatching::instance();
-      d.initDispatching("FFT");
-      auto& fwd = d.addSelector<FFTFwd32fSig>("fwd32f");
-      fwd.add(Backend::Cpp, cpp_fft_fwd32f);
-      auto& inv = d.addSelector<FFTInv32fSig>("inv32f");
-      inv.add(Backend::Cpp, cpp_fft_inv32f);
-      auto& fwdc = d.addSelector<FFTFwd32fcSig>("fwd32fc");
-      fwdc.add(Backend::Cpp, cpp_fft_fwd32fc);
+      auto cpp = FFTDispatching::instance().backends(Backend::Cpp);
+      cpp.add<FFTFwd32fSig>(FFTOp::fwd32f, cpp_fft_fwd32f);
+      cpp.add<FFTInv32fSig>(FFTOp::inv32f, cpp_fft_inv32f);
+      cpp.add<FFTFwd32fcSig>(FFTOp::fwd32fc, cpp_fft_fwd32fc);
       return 0;
     }();
 

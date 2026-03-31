@@ -98,8 +98,8 @@ namespace {
   using Op = CmpOp::Op;
 
   static int _reg = [] {
-    auto& proto = CmpOp::prototype();
-    proto.addBackend<CmpOp::CmpSig>(Op::compare, Backend::Simd, simd_compare, applicableTo<icl8u>, "SSE2/NEON compare (8u)");
+    auto simd = CmpOp::prototype().backends(Backend::Simd);
+    simd.add<CmpOp::CmpSig>(Op::compare, simd_compare, applicableTo<icl8u>, "SSE2/NEON compare (8u)");
     return 0;
   }();
 

@@ -55,7 +55,6 @@ namespace icl {
     }
 
     ImgOps::ImgOps() {
-      initDispatching("Img");
 
       // Enum values must match insertion order (asserted at runtime).
       // Registry names derived from toString(Op) via ADL.

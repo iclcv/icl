@@ -47,7 +47,6 @@ namespace icl {
     core::ImageBackendDispatching& BinaryCompareOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("BinaryCompareOp");
         proto.addSelector<CmpSig>(Op::compare);
         proto.addSelector<CmpEqtSig>(Op::compareEqTol);
         return true;

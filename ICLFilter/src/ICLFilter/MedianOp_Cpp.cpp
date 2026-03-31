@@ -321,9 +321,9 @@ namespace {
 
   static int _reg = [] {
     using Op = MOp::Op;
-    auto& proto = MOp::prototype();
-    proto.addBackend<MOp::MedianFixedSig>(Op::fixed, Backend::Cpp, cpp_median_fixed, "C++ median fixed 3x3/5x5");
-    proto.addBackend<MOp::MedianGenericSig>(Op::generic, Backend::Cpp, cpp_median_generic, "C++ median generic");
+    auto cpp = MOp::prototype().backends(Backend::Cpp);
+    cpp.add<MOp::MedianFixedSig>(Op::fixed, cpp_median_fixed, "C++ median fixed 3x3/5x5");
+    cpp.add<MOp::MedianGenericSig>(Op::generic, cpp_median_generic, "C++ median generic");
     return 0;
   }();
 

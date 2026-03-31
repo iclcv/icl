@@ -55,8 +55,8 @@ namespace {
 
   static int _reg = [] {
     using Op = BLOp::Op;
-    auto& proto = BLOp::prototype();
-    proto.addBackend<BLOp::Sig>(Op::apply, Backend::Simd, simd_apply,
+    auto simd = BLOp::prototype().backends(Backend::Simd);
+    simd.add<BLOp::Sig>(Op::apply, simd_apply,
       applicableTo<icl8u, icl16s, icl32s>, "SSE2/NEON binary logical (8u/16s/32s)");
     return 0;
   }();

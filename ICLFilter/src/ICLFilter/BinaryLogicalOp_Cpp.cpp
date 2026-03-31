@@ -40,8 +40,8 @@ namespace {
   // Direct registration into the class prototype
   static int _reg = [] {
     using Op = BLOp::Op;
-    auto& proto = BLOp::prototype();
-    proto.addBackend<BLOp::Sig>(Op::apply, Backend::Cpp, cpp_apply, "C++ binary logical");
+    auto cpp = BLOp::prototype().backends(Backend::Cpp);
+    cpp.add<BLOp::Sig>(Op::apply, cpp_apply, "C++ binary logical");
     return 0;
   }();
 

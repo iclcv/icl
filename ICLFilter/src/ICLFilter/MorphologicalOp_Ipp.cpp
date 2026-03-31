@@ -211,11 +211,13 @@ namespace {
 
   static int _reg = [] {
     using Op = MOp::Op;
-    auto& proto = MOp::prototype();
-    auto state = std::make_shared<MorphIppState>();
-    proto.addBackend<MOp::MorphSig>(Op::apply, Backend::Ipp,
-      [state](const Image &src, Image &dst, MOp &op) {
-        state->apply(src, dst, op);
+    auto ipp = MOp::prototype().backends(Backend::Ipp);
+    ipp.addStateful<MOp::MorphSig>(Op::apply,
+      []() {
+        auto state = std::make_shared<MorphIppState>();
+        return [state](const Image &src, Image &dst, MOp &op) {
+          state->apply(src, dst, op);
+        };
       },
       applicableTo<icl8u, icl32f>, "IPP morphological ops (8u/32f)");
     return 0;

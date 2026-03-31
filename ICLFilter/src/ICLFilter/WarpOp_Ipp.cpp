@@ -52,9 +52,9 @@ namespace {
   using Op = WOp::Op;
 
   static int _reg = [] {
-    auto& proto = WOp::prototype();
-    proto.addBackend<WOp::WarpSig>(Op::warp, Backend::Ipp, ipp_warp,
-                                   applicableTo<icl8u, icl32f>, "IPP ippiRemap (8u/32f)");
+    auto ipp = WOp::prototype().backends(Backend::Ipp);
+    ipp.add<WOp::WarpSig>(Op::warp, ipp_warp,
+                           applicableTo<icl8u, icl32f>, "IPP ippiRemap (8u/32f)");
     return 0;
   }();
 

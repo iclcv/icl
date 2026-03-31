@@ -46,7 +46,6 @@ namespace icl {
     core::ImageBackendDispatching& BinaryArithmeticalOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("BinaryArithmeticalOp");
         proto.addSelector<Sig>(Op::apply);
         return true;
       }();

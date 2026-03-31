@@ -1912,7 +1912,7 @@ ICL_REGISTER_TEST("Filter.ThresholdOp.basic_gtval", "gtVal clamps above threshol
 
 ICL_REGISTER_TEST("Filter.ThresholdOp.introspection", "dispatch introspection works") {
   ThresholdOp op(ThresholdOp::ltVal);
-  auto* ltVal = op.selectorByName("ltVal");
+  auto* ltVal = op.selector(ThresholdOp::Op::ltVal);
   ICL_TEST_TRUE(ltVal != nullptr);
 
   auto backends = ltVal->registeredBackends();
@@ -2071,9 +2071,9 @@ ICL_REGISTER_TEST("Filter.UnaryCompareOp.basic_eqt", "eqt with tolerance") {
 
 ICL_REGISTER_TEST("Filter.UnaryCompareOp.introspection", "dispatch introspection") {
   UnaryCompareOp op(UnaryCompareOp::gt);
-  auto* cmp = op.selectorByName("compare");
+  auto* cmp = op.selector(UnaryCompareOp::Op::compare);
   ICL_TEST_TRUE(cmp != nullptr);
-  auto* eqt = op.selectorByName("compareEqTol");
+  auto* eqt = op.selector(UnaryCompareOp::Op::compareEqTol);
   ICL_TEST_TRUE(eqt != nullptr);
   ICL_TEST_EQ((int)op.selectors().size(), 2);
 
@@ -2172,9 +2172,9 @@ ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.basic_abs", "absOp takes abs") {
 ICL_REGISTER_TEST("Filter.UnaryArithmeticalOp.introspection", "dispatch introspection") {
   UnaryArithmeticalOp op(UnaryArithmeticalOp::addOp, 1);
   ICL_TEST_EQ((int)op.selectors().size(), 2);
-  auto* wv = op.selectorByName("withVal");
+  auto* wv = op.selector(UnaryArithmeticalOp::Op::withVal);
   ICL_TEST_TRUE(wv != nullptr);
-  auto* nv = op.selectorByName("noVal");
+  auto* nv = op.selector(UnaryArithmeticalOp::Op::noVal);
   ICL_TEST_TRUE(nv != nullptr);
 }
 
@@ -2281,7 +2281,7 @@ ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.multichannel", "works with multip
 ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.introspection", "dispatch introspection") {
   BinaryArithmeticalOp op(BinaryArithmeticalOp::addOp);
   ICL_TEST_EQ((int)op.selectors().size(), 1);
-  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+  ICL_TEST_TRUE(op.selector(BinaryArithmeticalOp::Op::apply) != nullptr);
 }
 
 ICL_REGISTER_TEST("Filter.BinaryArithmeticalOp.cross_validate", "all backend combos produce identical output") {
@@ -2346,8 +2346,8 @@ ICL_REGISTER_TEST("Filter.BinaryCompareOp.eqt", "pixel-wise == with tolerance") 
 ICL_REGISTER_TEST("Filter.BinaryCompareOp.introspection", "dispatch introspection") {
   BinaryCompareOp op(BinaryCompareOp::gt);
   ICL_TEST_EQ((int)op.selectors().size(), 2);
-  ICL_TEST_TRUE(op.selectorByName("compare") != nullptr);
-  ICL_TEST_TRUE(op.selectorByName("compareEqTol") != nullptr);
+  ICL_TEST_TRUE(op.selector(BinaryCompareOp::Op::compare) != nullptr);
+  ICL_TEST_TRUE(op.selector(BinaryCompareOp::Op::compareEqTol) != nullptr);
 }
 
 ICL_REGISTER_TEST("Filter.BinaryCompareOp.cross_validate", "all backend combos produce identical output") {
@@ -2403,7 +2403,7 @@ ICL_REGISTER_TEST("Filter.BinaryLogicalOp.32s", "works on 32s depth") {
 ICL_REGISTER_TEST("Filter.BinaryLogicalOp.introspection", "dispatch introspection") {
   BinaryLogicalOp op(BinaryLogicalOp::andOp);
   ICL_TEST_EQ((int)op.selectors().size(), 1);
-  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+  ICL_TEST_TRUE(op.selector(BinaryLogicalOp::Op::apply) != nullptr);
 }
 
 ICL_REGISTER_TEST("Filter.BinaryLogicalOp.cross_validate", "all backend combos produce identical output") {
@@ -2568,10 +2568,10 @@ ICL_REGISTER_TEST("Filter.BilateralFilterOp.symmetric", "symmetric input gives s
 ICL_REGISTER_TEST("Filter.BilateralFilterOp.introspection", "dispatch introspection") {
   BilateralFilterOp op;
   ICL_TEST_EQ((int)op.selectors().size(), 1);
-  ICL_TEST_TRUE(op.selectorByName("apply") != nullptr);
+  ICL_TEST_TRUE(op.selector(BilateralFilterOp::Op::apply) != nullptr);
 
   // Cpp backend should always be registered
-  auto backends = op.selectorByName("apply")->registeredBackends();
+  auto backends = op.selector(BilateralFilterOp::Op::apply)->registeredBackends();
   bool hasCpp = false;
   for(auto b : backends) { if(b == Backend::Cpp) hasCpp = true; }
   ICL_TEST_TRUE(hasCpp);

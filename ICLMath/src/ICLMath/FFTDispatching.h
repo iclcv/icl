@@ -61,10 +61,15 @@ namespace icl {
           && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
     }
 
+    /// Selector keys for FFT dispatch
+    enum class FFTOp : int { fwd32f, inv32f, fwd32fc };
+    ICLMath_API const char* toString(FFTOp op);
+
     /// Singleton dispatch holder for FFT backends.
     /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
     /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
     struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
+      FFTDispatching();
       static FFTDispatching& instance();
     };
 

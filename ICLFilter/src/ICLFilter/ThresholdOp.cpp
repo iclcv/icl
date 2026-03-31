@@ -48,7 +48,6 @@ namespace icl {
     core::ImageBackendDispatching& ThresholdOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("ThresholdOp");
         proto.addSelector<ThreshSig>(Op::ltVal);
         proto.addSelector<ThreshSig>(Op::gtVal);
         proto.addSelector<ThreshDualSig>(Op::ltgtVal);

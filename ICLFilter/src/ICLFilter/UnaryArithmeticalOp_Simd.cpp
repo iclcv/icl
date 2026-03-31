@@ -119,10 +119,10 @@ namespace {
   using Op = UAOp::Op;
 
   static int _reg = [] {
-    auto& proto = UAOp::prototype();
-    proto.addBackend<UAOp::ArithValSig>(Op::withVal, Backend::Simd, simd_arith_with_val,
+    auto simd = UAOp::prototype().backends(Backend::Simd);
+    simd.add<UAOp::ArithValSig>(Op::withVal, simd_arith_with_val,
       applicableTo<icl32f>, "SSE2/NEON arithmetic with-val (32f)");
-    proto.addBackend<UAOp::ArithNoValSig>(Op::noVal, Backend::Simd, simd_arith_no_val,
+    simd.add<UAOp::ArithNoValSig>(Op::noVal, simd_arith_no_val,
       applicableTo<icl32f>, "SSE2/NEON arithmetic no-val (32f)");
     return 0;
   }();

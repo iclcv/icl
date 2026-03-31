@@ -284,16 +284,16 @@ namespace {
 
   static int _reg = [] {
     using Op = ImgOps::Op;
-    auto& ops = ImgOps::instance();
-    ops.addBackend<ImgOps::MirrorSig>(Op::mirror, Backend::Ipp, ipp_mirror, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiMirror (8u/16s/32s/32f)");
-    ops.addBackend<ImgOps::ClearChannelROISig>(Op::clearChannelROI, Backend::Ipp, ipp_clearChannelROI, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiSet (8u/16s/32s/32f)");
-    ops.addBackend<ImgOps::LutSig>(Op::lut, Backend::Ipp, ipp_lut, applicableToBase<icl8u>, "IPP ippiLUTPalette (8u)");
-    ops.addBackend<ImgOps::GetMaxSig>(Op::getMax, Backend::Ipp, ipp_getMax, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMax/MaxIndx (8u/16s/32f)");
-    ops.addBackend<ImgOps::GetMinSig>(Op::getMin, Backend::Ipp, ipp_getMin, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMin/MinIndx (8u/16s/32f)");
-    ops.addBackend<ImgOps::GetMinMaxSig>(Op::getMinMax, Backend::Ipp, ipp_getMinMax, applicableToBase<icl8u, icl32f>, "IPP ippiMinMax/MinMaxIndx (8u/32f)");
-    ops.addBackend<ImgOps::NormalizeSig>(Op::normalize, Backend::Ipp, ipp_normalize, applicableToBase<icl32f>, "IPP ippiMulC+AddC (32f)");
-    ops.addBackend<ImgOps::FlippedCopySig>(Op::flippedCopy, Backend::Ipp, ipp_flippedCopy, applicableToBase<icl8u, icl32f>, "IPP ippiMirror (8u/32f)");
-    ops.addBackend<ImgOps::ChannelMeanSig>(Op::channelMean, Backend::Ipp, ipp_channelMean, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMean (8u/16s/32f)");
-    ops.addBackend<ImgOps::ReplicateBorderSig>(Op::replicateBorder, Backend::Ipp, ipp_replicateBorder, applicableToBase<icl8u, icl32f>, "IPP ippiCopyReplicateBorder (8u/32f)");
+    auto ipp = ImgOps::instance().backends(Backend::Ipp);
+    ipp.add<ImgOps::MirrorSig>(Op::mirror, ipp_mirror, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiMirror (8u/16s/32s/32f)");
+    ipp.add<ImgOps::ClearChannelROISig>(Op::clearChannelROI, ipp_clearChannelROI, applicableToBase<icl8u, icl16s, icl32s, icl32f>, "IPP ippiSet (8u/16s/32s/32f)");
+    ipp.add<ImgOps::LutSig>(Op::lut, ipp_lut, applicableToBase<icl8u>, "IPP ippiLUTPalette (8u)");
+    ipp.add<ImgOps::GetMaxSig>(Op::getMax, ipp_getMax, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMax/MaxIndx (8u/16s/32f)");
+    ipp.add<ImgOps::GetMinSig>(Op::getMin, ipp_getMin, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMin/MinIndx (8u/16s/32f)");
+    ipp.add<ImgOps::GetMinMaxSig>(Op::getMinMax, ipp_getMinMax, applicableToBase<icl8u, icl32f>, "IPP ippiMinMax/MinMaxIndx (8u/32f)");
+    ipp.add<ImgOps::NormalizeSig>(Op::normalize, ipp_normalize, applicableToBase<icl32f>, "IPP ippiMulC+AddC (32f)");
+    ipp.add<ImgOps::FlippedCopySig>(Op::flippedCopy, ipp_flippedCopy, applicableToBase<icl8u, icl32f>, "IPP ippiMirror (8u/32f)");
+    ipp.add<ImgOps::ChannelMeanSig>(Op::channelMean, ipp_channelMean, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMean (8u/16s/32f)");
+    ipp.add<ImgOps::ReplicateBorderSig>(Op::replicateBorder, ipp_replicateBorder, applicableToBase<icl8u, icl32f>, "IPP ippiCopyReplicateBorder (8u/32f)");
 
 } // anonymous namespace

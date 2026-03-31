@@ -35,16 +35,22 @@ namespace {
         Channel<T> dstCh = d[ch];
 
         if(interp == interpolateLIN){
+          // subPixelLIN reads a 2x2 neighborhood starting at (floor(x2), floor(y2)),
+          // so we need floor(x2)+1 < width and floor(y2)+1 < height.
+          // Edge pixels that are in-bounds but outside the safe bilinear zone
+          // fall back to nearest-neighbor.
+          float maxX = s.getWidth() - 1;
+          float maxY = s.getHeight() - 1;
           for(int x = sx; x < ex; ++x){
             for(int y = sy; y < ey; ++y){
               float x2 = inv[0][0]*x + inv[1][0]*y + inv[2][0];
               float y2 = inv[0][1]*x + inv[1][1]*y + inv[2][1];
-              int x3 = round(x2);
-              int y3 = round(y2);
-              if(r.contains(x3,y3)){
+              if(x2 >= 0 && x2 < maxX && y2 >= 0 && y2 < maxY){
                 dstCh(x,y) = s.subPixelLIN(x2,y2,ch);
               }else{
-                dstCh(x,y) = 0;
+                int x3 = round(x2);
+                int y3 = round(y2);
+                dstCh(x,y) = r.contains(x3,y3) ? srcCh(x3,y3) : T(0);
               }
             }
           }
@@ -69,8 +75,8 @@ namespace {
 
   static int _reg = [] {
     using Op = AOp::Op;
-    auto& proto = AOp::prototype();
-    proto.addBackend<AOp::AffineSig>(Op::apply, Backend::Cpp, cpp_affine, "C++ affine warp");
+    auto cpp = AOp::prototype().backends(Backend::Cpp);
+    cpp.add<AOp::AffineSig>(Op::apply, cpp_affine, "C++ affine warp");
     return 0;
   }();
 

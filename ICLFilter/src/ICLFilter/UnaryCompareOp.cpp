@@ -47,7 +47,6 @@ namespace icl {
     core::ImageBackendDispatching& UnaryCompareOp::prototype() {
       static core::ImageBackendDispatching proto;
       static bool init = [&] {
-        proto.initDispatching("UnaryCompareOp");
         proto.addSelector<CmpSig>(Op::compare);
         proto.addSelector<CmpEqtSig>(Op::compareEqTol);
         return true;
