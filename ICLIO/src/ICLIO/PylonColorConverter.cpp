@@ -146,21 +146,15 @@ void PylonColorConverter::resetConversion(
 
 
     case PixelType_YUV422packed:
-    #ifdef ICL_HAVE_IPP
-      m_Converter = new Yuv422ToRgb8Icl(width, height);
-    #else
+      // TODO: add IPP-accelerated Yuv422ToRgb8 converter
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
                                           pixel_size_bits, buffer_size);
-    #endif
       break;
 
     case PixelType_YUV422_YUYV_Packed:
-    #ifdef ICL_HAVE_IPP
-      m_Converter = new Yuv422YUYVToRgb8Icl(width, height);
-    #else
+      // TODO: add IPP-accelerated Yuv422YUYVToRgb8 converter
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
                                           pixel_size_bits, buffer_size);
-    #endif
       break;
 
     case PixelType_RGB8packed:
@@ -463,66 +457,3 @@ void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   m_Conv.apply(&tmp, &(b -> m_Image));
 }
 
-#ifdef ICL_HAVE_IPP
-// Constructor initializes conversion
-Yuv422ToRgb8Icl::Yuv422ToRgb8Icl(int width, int height)
-  : m_Size(width, height)
-{
-  m_ConvBuffer = new icl8u[m_Size.getDim() * 3];
-}
-
-// frees allocated ressources
-Yuv422ToRgb8Icl::~Yuv422ToRgb8Icl(){
-  ICL_DELETE_ARRAY(m_ConvBuffer);
-}
-
-// initializes buffers in b as needed for color conversion.
-void Yuv422ToRgb8Icl::initBuffers(ConvBuffers* b){
-  // just an rgb image
-  b -> m_Image = new Img8u(m_Size, core::formatRGB);
-}
-
-// writes image from imgBuffer to b using appropriate conversion.
-void Yuv422ToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
-  // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiCbYCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
-                           m_Size.width*2,
-                           m_ConvBuffer,
-                           m_Size.width*3,
-                           m_Size
-  );
-  // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
-}
-
-// Constructor initializes conversion
-Yuv422YUYVToRgb8Icl::Yuv422YUYVToRgb8Icl(int width, int height)
-  : m_Size(width, height)
-{
-  m_ConvBuffer = new icl8u[m_Size.getDim() * 3];
-}
-
-// frees allocated ressources
-Yuv422YUYVToRgb8Icl::~Yuv422YUYVToRgb8Icl(){
-  ICL_DELETE_ARRAY(m_ConvBuffer);
-}
-
-// initializes buffers in b as needed for color conversion.
-void Yuv422YUYVToRgb8Icl::initBuffers(ConvBuffers* b){
-  // just an rgb image
-  b -> m_Image = new Img8u(m_Size, core::formatRGB);
-}
-
-// writes image from imgBuffer to b using appropriate conversion.
-void Yuv422YUYVToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
-  // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiYCbCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
-                           m_Size.width*2,
-                           m_ConvBuffer,
-                           m_Size.width*3,
-                           m_Size
-  );
-  // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
-}
-#endif

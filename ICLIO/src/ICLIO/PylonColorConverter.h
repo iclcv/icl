@@ -211,39 +211,8 @@ namespace icl {
           utils::Size m_Size;
       };
 
-  #ifdef ICL_HAVE_IPP
-      /// This ColorConverter uses the icl Yuv422 to Rgb conversion.
-      class ICLIO_API Yuv422ToRgb8Icl : public ColorConverter{
-        public:
-          /// Constructor initializes conversion
-          Yuv422ToRgb8Icl(int width, int height);
-          /// frees allocated ressources
-          ~Yuv422ToRgb8Icl();
-          /// initializes buffers in b as needed for color conversion.
-          void initBuffers(ConvBuffers* b);
-          /// writes image from imgBuffer to b using appropriate conversion.
-          void convert(const void *imgBuffer, ConvBuffers* b);
-        private:
-          utils::Size m_Size;
-          icl8u* m_ConvBuffer;
-      };
-
-      /// This ColorConverter uses the icl Yuv422YUYV to Rgb conversion.
-      class ICLIO_API Yuv422YUYVToRgb8Icl : public ColorConverter{
-        public:
-          /// Constructor initializes conversion
-          Yuv422YUYVToRgb8Icl(int width, int height);
-          /// frees allocated ressources
-          ~Yuv422YUYVToRgb8Icl();
-          /// initializes buffers in b as needed for color conversion.
-          void initBuffers(ConvBuffers* b);
-          /// writes image from imgBuffer to b using appropriate conversion.
-          void convert(const void *imgBuffer, ConvBuffers* b);
-        private:
-          utils::Size m_Size;
-          icl8u* m_ConvBuffer;
-      };
-  #endif
+      // TODO: add IPP-accelerated Yuv422ToRgb8 / Yuv422YUYVToRgb8 converters
+      //       via ippiYUV422ToRGB_8u_C2C3R / ippiCbYCr422ToRGB_8u_C2C3R
 
     } //namespace
   } // namespace io

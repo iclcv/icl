@@ -388,16 +388,10 @@ namespace icl{
       namespace{
         void rgb_to_gray_util(const icl8u *src, icl8u *dst, const icl8u *dstEnd, const Size &frameSize){
 
-  #ifdef ICL_HAVE_IPP
-          int step = frameSize.width*sizeof(icl8u);
-          ippiRGBToGray_8u_C3C1R(src,step*3,dst,step,frameSize);
-  #else
+          // TODO: add IPP backend via ippiRGBToGray_8u_C3C1R
           for(;dst < dstEnd; src+=3, ++dst){
-            // we took this conversion from the IPP-manual for compability with IPP
-            // function
             *dst = clipped_cast<float,icl8u>(0.299*src[0]+0.587*src[1]+0.114*src[2]);
           }
-  #endif
         }
 
         void convert_YUV411_to_gray8(uint8_t *restrict src, uint8_t *restrict dest, uint32_t width, uint32_t height){

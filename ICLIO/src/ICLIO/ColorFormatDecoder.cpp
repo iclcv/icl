@@ -91,14 +91,7 @@ namespace icl{
         ensureCompatible(dst,depth8u,size,formatRGB);
         Img8u &image = *(*dst)->as8u();
 
-  #ifdef ICL_HAVE_IPP
-        if(buffer){
-          buffer->resize(size.getDim()*3);
-          ippiYUVToRGB_8u_C3R(rawData,3*size.width,buffer->data(),3*size.width,size);
-          interleavedToPlanar(buffer->data(),&image);
-          return;
-        }
-  #endif
+        // TODO: add IPP backend via ippiYUVToRGB_8u_C3R (faster for buffered path)
 
         icl8u *dstR = image.begin(0);
         icl8u *dstG = image.begin(1);
@@ -120,17 +113,7 @@ namespace icl{
       void yuyv(const icl8u* yuyv, const Size &size, ImgBase **dst, std::vector<icl8u> *buf=0){
         ensureCompatible(dst,depth8u,size,formatRGB);
         Img8u &image = *(*dst)->as8u();
-        /*
-  #ifdef ICL_HAVE_IPP
-        if(buf){
-          // 3Times faster on -O4
-          buf->resize(size.getDim()*3);
-          ippiCbYCr422ToRGB_8u_C2C3R(yuyv,2*size.width, buf->data(),3*size.width, size);
-          interleavedToPlanar(buf->data(),&image);
-          return;
-        }
-  #endif
-            */
+        // TODO: add IPP backend via ippiCbYCr422ToRGB_8u_C2C3R (3x faster)
         // interleaved order yuyv
         icl8u *r = image.begin(0), *g = image.begin(1), *b=image.begin(2);
         const int dim = image.getDim()/2;

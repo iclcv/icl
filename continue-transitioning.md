@@ -480,8 +480,11 @@ See Session 21 summary above. All three phases complete.
 
 #### C. Other modules
 
-- **ICLMath** — DynMatrix, DynMatrixUtils, MathFunctions (needs MathOps singleton)
-- **ICLIO** — DC.cpp, ColorFormatDecoder.cpp, PylonColorConverter
+- ~~**ICLMath IPP**~~ **DONE** (Session 21) — MathOps<T> singletons, all `ICL_HAVE_IPP` removed
+  from headers + DynMatrixUtils.cpp. CMake `_Ipp.cpp`/`_Mkl.cpp` exclusion added.
+- **ICLMath MKL** — 27+ `#ifdef ICL_HAVE_MKL` blocks remain (DynMatrix, DynMatrixUtils,
+  FFTUtils). Need `_Mkl.cpp` files + `Backend::Mkl` enum value. Deferred.
+- ~~**ICLIO**~~ **DONE** (Session 21) — DC.cpp, ColorFormatDecoder.cpp, PylonColorConverter
+  IPP guards removed, C++ fallbacks always used, TODOs added
 - **Update disabled IPP backends** to modern oneAPI APIs
-- **Add `Backend::Mkl`** — `_Mkl.cpp` files for FFT and matrix ops
 - **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
