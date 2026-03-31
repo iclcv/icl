@@ -1,10 +1,14 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 21 — A2 Complete: Registry Removed + Stateful Cloning + AffineOp Fix)
+## Current State (Session 21 — A2 + B + C/IPP Complete)
 
 ### Session 21 Summary
 
-**A2 is complete.** All three phases done:
+**A2 complete, B complete, C/IPP complete for all modules.** All active
+`#ifdef ICL_HAVE_IPP` operational code across ICLUtils/ICLCore/ICLMath/
+ICLFilter/ICLIO has been migrated to dispatch or removed with TODOs.
+
+**A2 — all three phases:**
 
 **Phase 1 — Global string registry removed:**
 - Deleted `detail::RegistryEntry`, `detail::globalRegistry()`, `detail::addToRegistry()`
@@ -57,7 +61,67 @@
 - Added `BackendProxy` struct + `backends(Backend b)` method on `BackendDispatching`
 - All ~65 `addBackend`/`addStatefulBackend` call sites across _Cpp/_Ipp/_Simd/_OpenCL files
   migrated to use the proxy: `auto cpp = proto.backends(Backend::Cpp); cpp.add<Sig>(...);`
-- `addBackend`/`addStatefulBackend` methods remain as internal implementation for the proxy
+- Removed `addBackend`/`addStatefulBackend` as public API — proxy calls getSelector().add() directly
+
+**C/ICLMath — MathOps dispatch framework + all IPP removed:**
+- Created `MathOps<T>` template singletons (`MathOps<float>`, `MathOps<double>`)
+  using `BackendDispatching<int>` (dummy context, no applicability checks)
+- `enum class MathOp` with 11 selectors: mean, var, meanvar, min, max, minmax,
+  unaryInplace, unaryCopy, unaryConstInplace, unaryConstCopy, binaryCopy
+- Sub-operation enums: `UnaryMathFunc` (12 ops), `UnaryConstFunc` (5 ops), `BinaryMathFunc` (6 ops)
+- `DynMatrixUtils.cpp`: entire `#ifdef ICL_HAVE_IPP` block (lines 80-548) replaced with
+  MathOps dispatch + C++ backend registration
+- `DynMatrix.h`: removed IPP specializations (sqrDistanceTo, distanceTo, elementwise_div,
+  mult-by-scalar, norm), added TODO
+- `MathFunctions.h`: removed IPP mean specializations, added TODO
+- `FixedMatrix.h`: removed unused `#include <ipp.h>`
+- `CMakeLists.txt`: added `_Ipp.cpp`/`_Mkl.cpp` exclusion patterns
+
+**C/ICLIO — all IPP removed:**
+- `DC.cpp`: removed `ippiRGBToGray_8u_C3C1R`, always use weighted-sum loop
+- `ColorFormatDecoder.cpp`: removed `ippiYUVToRGB_8u_C3R` + `ippiCbYCr422ToRGB_8u_C2C3R`
+- `PylonColorConverter.h/.cpp`: removed `Yuv422ToRgb8Icl` and `Yuv422YUYVToRgb8Icl`
+  IPP-only classes, always use PylonColorToRgb fallback
+- TODOs added at every removal site
+
+### Remaining `ICL_HAVE_IPP` References
+
+Only these remain in the codebase:
+
+| Category | Files | Status |
+|---|---|---|
+| Type definitions | BasicTypes.h, Size.h, Point.h, Rect.h, Types.h | Compile-time aliases, must stay |
+| `#if 0` dead code | *_Ipp.cpp files, FFTUtils, CannyOp, ImageRectification, etc. | Disabled, contains code for future re-enablement |
+| IPP bug workaround | NeighborhoodOp.cpp (2 blocks) | Minor, stays |
+| Qt GPU upload | GLImg.cpp (1 block) | ICLQt, deferred |
+| Comments | CCFunctions.cpp (2 blocks inside `/* */`) | Dead |
+
+### Future IPP Optimization Opportunities (TODOs in code)
+
+| Location | IPP Function | What It Accelerates |
+|---|---|---|
+| BayerConverter.cpp | `ippiCFAToRGB_8u_C1C3R` | Bayer → RGB nearest-neighbor |
+| DynMatrix.h | `ippsNormDiff_L2`, `ippsDiv`, `ippsMulC`, `ippsNorm_L1/L2` | Matrix distance, element-wise div, scalar mult, norms |
+| MathFunctions.h | `ippsMean_32f/64f` | Scalar mean over float/double arrays |
+| DynMatrixUtils.cpp | All math ops already dispatched | Re-enable via `DynMatrixUtils_Ipp.cpp` |
+| DC.cpp | `ippiRGBToGray_8u_C3C1R` | RGB → grayscale conversion |
+| ColorFormatDecoder.cpp | `ippiYUVToRGB_8u_C3R`, `ippiCbYCr422ToRGB_8u_C2C3R` | YUV → RGB color conversion |
+| PylonColorConverter.cpp | `ippiCbYCr422ToRGB_8u_C2C3R`, `ippiYCbCr422ToRGB_8u_C2C3R` | Pylon YUV422 → RGB |
+| ConvolutionOp_Ipp.cpp | `ippiFilterSobelBorder_*`, `ippiFilterGaussBorder_*` | 34 Sobel/Gauss/Laplace specializations |
+| MorphologicalOp_Ipp.cpp | `ippiDilate/Erode_*_C1R_L` + spec | Modern morphology with border |
+| AffineOp_Ipp.cpp | `ippiWarpAffineNearest/Linear_*` + spec | Affine warp |
+| MedianOp_Ipp.cpp | `ippiFilterMedianBorder_*_C1R` | Median filter with border |
+| LUTOp_Ipp.cpp | `ippiReduceBits` (new signature) | Bit reduction |
+| CannyOp.cpp | Modern `ippiCanny` with border spec | Canny edge detection |
+
+### Next Steps
+
+- **ICLMath MKL** — 27+ `#ifdef ICL_HAVE_MKL` blocks (DynMatrix, DynMatrixUtils, FFTUtils).
+  Need `_Mkl.cpp` files. Consider `Backend::Mkl` enum value.
+- **Re-enable disabled IPP backends** — update to modern oneAPI APIs (see table above)
+- **GLImg.cpp** — 1 remaining `ICL_HAVE_IPP` block in ICLQt
+- **NeighborhoodOp.cpp** — 2 IPP bug workaround blocks (minor)
+- **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
 
 ## Previous State (Session 20 — All Filters Migrated to Prototype+Clone)
 
