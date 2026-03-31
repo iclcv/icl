@@ -43,6 +43,16 @@
 **Test changes:**
 - All `selectorByName("name")` calls replaced with `selector(FilterOp::Op::name)`
 
+**B: ICLCore IPP blocks — all active blocks migrated:**
+- `CCFunctions.cpp`: `planarToInterleaved`/`interleavedToPlanar` IPP specializations
+  extracted to `Img_Ipp.cpp` as ImgOps selectors. Generic template now dispatches
+  through ImgOps for same-type cases (S==D), falling back to `_Generic` if no backend.
+  The `#ifdef` block + conditional instantiations removed. Two new `ImgOps::Op` values added.
+- `BayerConverter.h/.cpp`: Removed dead IPP code. `nnInterpolationIpp()` was defined but
+  never called (the `apply()` method always calls `nnInterpolation()` instead).
+  `m_IppBayerPattern` member and constructor switch statements removed.
+- Only `Types.h` retains compile-time `ICL_HAVE_IPP` guards (enum definitions, stays).
+
 **BackendProxy for terser registration:**
 - Added `BackendProxy` struct + `backends(Backend b)` method on `BackendDispatching`
 - All ~65 `addBackend`/`addStatefulBackend` call sites across _Cpp/_Ipp/_Simd/_OpenCL files
@@ -460,13 +470,13 @@ All 15 filters now use prototype+clone. See Session 20 summary above.
 
 See Session 21 summary above. All three phases complete.
 
-#### B. Remaining ICLCore IPP blocks
+#### B. ~~Remaining ICLCore IPP blocks~~ **DONE** (Session 21)
 
 - ~~CoreFunctions.cpp — channel_mean~~ **DONE** (Session 19)
 - ~~ImgBorder.cpp — border replication~~ **DONE** (Session 19)
-- CCFunctions.cpp — planarToInterleaved/interleavedToPlanar (4 depths × 2 directions)
-- BayerConverter.h/.cpp — conditional member vars + IPP method (needs restructure)
-- Types.h — enum value definitions (compile-time, deferred)
+- ~~CCFunctions.cpp — planarToInterleaved/interleavedToPlanar~~ **DONE** (Session 21, added to ImgOps)
+- ~~BayerConverter.h/.cpp~~ **DONE** (Session 21, removed dead IPP code — `nnInterpolationIpp` was never called)
+- Types.h — enum value definitions (compile-time, stays as-is)
 
 #### C. Other modules
 

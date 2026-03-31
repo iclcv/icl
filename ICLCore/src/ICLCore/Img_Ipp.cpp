@@ -280,6 +280,62 @@ namespace {
     }
   }
 
+  // ---- planarToInterleaved (3ch/4ch, 4 depths) ----
+  void ipp_planarToInterleaved(ImgBase& src, void* dst, int dstLineStep) {
+    int c = src.getChannels();
+    if(dstLineStep == -1) dstLineStep = src.getLineStep() * c;
+    switch(src.getDepth()) {
+      #define P2I_CASE(D, DEPTH)                                                     \
+        case depth##D: {                                                              \
+          auto& s = *src.as##D();                                                     \
+          auto* d = static_cast<icl##D*>(dst);                                        \
+          if(c == 3) {                                                                \
+            const icl##D* ch[3] = {s.getROIData(0), s.getROIData(1), s.getROIData(2)};\
+            ippiCopy_##D##_P3C3R(ch, s.getLineStep(), d, dstLineStep, s.getROISize());\
+          } else if(c == 4) {                                                         \
+            const icl##D* ch[4] = {s.getROIData(0), s.getROIData(1), s.getROIData(2), s.getROIData(3)};\
+            ippiCopy_##D##_P4C4R(ch, s.getLineStep(), d, dstLineStep, s.getROISize());\
+          }                                                                           \
+          break;                                                                      \
+        }
+      P2I_CASE(8u, 8u)
+      P2I_CASE(16s, 16s)
+      P2I_CASE(32s, 32s)
+      P2I_CASE(32f, 32f)
+      #undef P2I_CASE
+      default: break;
+    }
+  }
+
+  // ---- interleavedToPlanar (3ch/4ch, 4 depths) ----
+  void ipp_interleavedToPlanar(const void* src, ImgBase& dst, int srcLineStep) {
+    int c = dst.getChannels();
+    Size s = dst.getROISize();
+    int dstStep = dst.getLineStep();
+    switch(dst.getDepth()) {
+      #define I2P_CASE(D)                                                             \
+        case depth##D: {                                                              \
+          auto& d = *dst.as##D();                                                     \
+          auto* sp = static_cast<const icl##D*>(src);                                 \
+          int srcStep = (srcLineStep == -1) ? c * s.width * (int)sizeof(icl##D) : srcLineStep;\
+          if(c == 3) {                                                                \
+            icl##D* ch[3] = {d.getROIData(0), d.getROIData(1), d.getROIData(2)};     \
+            ippiCopy_##D##_C3P3R(sp, srcStep, ch, dstStep, s);                        \
+          } else if(c == 4) {                                                         \
+            icl##D* ch[4] = {d.getROIData(0), d.getROIData(1), d.getROIData(2), d.getROIData(3)};\
+            ippiCopy_##D##_C4P4R(sp, srcStep, ch, dstStep, s);                        \
+          }                                                                           \
+          break;                                                                      \
+        }
+      I2P_CASE(8u)
+      I2P_CASE(16s)
+      I2P_CASE(32s)
+      I2P_CASE(32f)
+      #undef I2P_CASE
+      default: break;
+    }
+  }
+
   // ---- Direct registration into ImgOps singleton ----
 
   static int _reg = [] {
@@ -295,5 +351,11 @@ namespace {
     ipp.add<ImgOps::FlippedCopySig>(Op::flippedCopy, ipp_flippedCopy, applicableToBase<icl8u, icl32f>, "IPP ippiMirror (8u/32f)");
     ipp.add<ImgOps::ChannelMeanSig>(Op::channelMean, ipp_channelMean, applicableToBase<icl8u, icl16s, icl32f>, "IPP ippiMean (8u/16s/32f)");
     ipp.add<ImgOps::ReplicateBorderSig>(Op::replicateBorder, ipp_replicateBorder, applicableToBase<icl8u, icl32f>, "IPP ippiCopyReplicateBorder (8u/32f)");
+    ipp.add<ImgOps::PlanarToInterleavedSig>(Op::planarToInterleaved, ipp_planarToInterleaved,
+      [](ImgBase* const& img) { return img && (img->getChannels() == 3 || img->getChannels() == 4); },
+      "IPP ippiCopy P3C3/P4C4 (8u/16s/32s/32f)");
+    ipp.add<ImgOps::InterleavedToPlanarSig>(Op::interleavedToPlanar, ipp_interleavedToPlanar,
+      [](ImgBase* const& img) { return img && (img->getChannels() == 3 || img->getChannels() == 4); },
+      "IPP ippiCopy C3P3/C4P4 (8u/16s/32s/32f)");
 
 } // anonymous namespace

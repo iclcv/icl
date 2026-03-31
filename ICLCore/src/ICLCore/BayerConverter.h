@@ -119,19 +119,12 @@ namespace icl {
 
       bayerConverterMethod m_eConvMethod;
       bayerPattern m_eBayerPattern;
-      #ifdef ICL_HAVE_IPP
-        IppiBayerGrid m_IppBayerPattern;
-      #endif
-
       // Interpolation methods
       void nnInterpolation(const Img8u *poBayerImg);
       void bilinearInterpolation(const Img8u *poBayerImg);
       void hqLinearInterpolation(const Img8u *poBayerImg);
       void edgeSenseInterpolation(const Img8u *poBayerImg);
       void simpleInterpolation(const Img8u *poBayerImg);
-      #ifdef ICL_HAVE_IPP
-        void nnInterpolationIpp(const Img8u *poBayerImg);
-      #endif
 
       // Utility functions
       void clearBorders(icl8u *rgb, int sx, int sy, int w);

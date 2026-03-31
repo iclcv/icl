@@ -41,25 +41,6 @@ namespace icl {
     BayerConverter::BayerConverter(const std::string &pattern, const std::string &method){
       m_eBayerPattern = translateBayerPattern(pattern);
       m_eConvMethod = translateBayerConverterMethod(method);
-#ifdef ICL_HAVE_IPP
-      switch(m_eBayerPattern){
-        case BayerConverter::bayerPattern_BGGR:
-          m_IppBayerPattern = ippiBayerBGGR;
-          break;
-        case BayerConverter::bayerPattern_GBRG:
-          m_IppBayerPattern = ippiBayerGBRG;
-          break;
-        case BayerConverter::bayerPattern_GRBG:
-          m_IppBayerPattern = ippiBayerGRBG;
-          break;
-        case BayerConverter::bayerPattern_RGGB:
-          m_IppBayerPattern = ippiBayerRGGB;
-          break;
-        default:
-          ERROR_LOG("bayerPattern: " << m_eBayerPattern << " not defined.");
-          break;
-      }
-#endif
     }
 
     BayerConverter::BayerConverter(bayerPattern eBayerPattern,
@@ -68,25 +49,6 @@ namespace icl {
       m_eBayerPattern = eBayerPattern;
       m_eConvMethod = eConvMethod;
       m_buffer.resize(s.getDim()*3);
-#ifdef ICL_HAVE_IPP
-      switch(eBayerPattern){
-        case BayerConverter::bayerPattern_BGGR:
-          m_IppBayerPattern = ippiBayerBGGR;
-          break;
-        case BayerConverter::bayerPattern_GBRG:
-          m_IppBayerPattern = ippiBayerGBRG;
-          break;
-        case BayerConverter::bayerPattern_GRBG:
-          m_IppBayerPattern = ippiBayerGRBG;
-          break;
-        case BayerConverter::bayerPattern_RGGB:
-          m_IppBayerPattern = ippiBayerRGGB;
-          break;
-        default:
-          ERROR_LOG("bayerPattern: " << eBayerPattern << " not defined.");
-          break;
-      }
-#endif
     }
 
 
@@ -129,6 +91,7 @@ namespace icl {
 
       interleavedToPlanar(m_buffer.data(), (*dst)->asImg<icl8u>());
     }
+    // TODO: add IPP backend via ippiCFAToRGB_8u_C1C3R (available in modern oneAPI IPP)
     void BayerConverter::nnInterpolation(const Img<icl8u> *poBayerImg) {
       int iWidth = poBayerImg->getWidth();
       int iHeight = poBayerImg->getHeight();
@@ -851,23 +814,6 @@ namespace icl {
         start_with_green = !start_with_green;
       }
     }
-  #ifdef ICL_HAVE_IPP
-    void BayerConverter::nnInterpolationIpp(const Img<icl8u> *poBayerImg) {
-      int n = 0;
-      ippGetNumThreads(&n);
-      ippSetNumThreads(1);
-      ippiCFAToRGB_8u_C1C3R(poBayerImg -> getData(0),
-                            Rect(0,0,poBayerImg->getWidth(),
-                                 poBayerImg->getHeight()),
-                            poBayerImg->getSize(),
-                            poBayerImg->getWidth(),
-                            m_buffer.data(),
-                            poBayerImg->getWidth()*3,
-                            m_IppBayerPattern, 0);
-      ippSetNumThreads(n);
-    }
-
-  #endif
 
     void BayerConverter::clearBorders(icl8u *rgb, int iWidth, int iHeight, int w) {
       int i, j;

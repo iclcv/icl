@@ -45,7 +45,7 @@ namespace icl {
       /// Operation keys — values must match addSelector() insertion order.
       enum class Op : int {
         mirror, clearChannelROI, lut, getMax, getMin, getMinMax, normalize, flippedCopy,
-        channelMean, replicateBorder
+        channelMean, replicateBorder, planarToInterleaved, interleavedToPlanar
       };
 
       // ---- Dispatch signatures (ImgBase& + operation args) ----
@@ -67,6 +67,8 @@ namespace icl {
                                   const utils::Point& dstOffs, const utils::Size& dstSize);
       using ChannelMeanSig = icl64f(ImgBase&, int channel, bool roiOnly);
       using ReplicateBorderSig = void(ImgBase&);
+      using PlanarToInterleavedSig = void(ImgBase& src, void* dst, int dstLineStep);
+      using InterleavedToPlanarSig = void(const void* src, ImgBase& dst, int srcLineStep);
 
       /// Access the singleton instance (lazy-init, thread-safe)
       static ImgOps& instance();

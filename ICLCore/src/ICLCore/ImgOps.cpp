@@ -50,6 +50,8 @@ namespace icl {
         case ImgOps::Op::flippedCopy:      return "flippedCopy";
         case ImgOps::Op::channelMean:      return "channelMean";
         case ImgOps::Op::replicateBorder:  return "replicateBorder";
+        case ImgOps::Op::planarToInterleaved: return "planarToInterleaved";
+        case ImgOps::Op::interleavedToPlanar: return "interleavedToPlanar";
       }
       return "?";
     }
@@ -68,6 +70,8 @@ namespace icl {
       addSelector<FlippedCopySig>(Op::flippedCopy);
       addSelector<ChannelMeanSig>(Op::channelMean);
       addSelector<ReplicateBorderSig>(Op::replicateBorder);
+      addSelector<PlanarToInterleavedSig>(Op::planarToInterleaved);
+      addSelector<InterleavedToPlanarSig>(Op::interleavedToPlanar);
     }
 
   } // namespace core
