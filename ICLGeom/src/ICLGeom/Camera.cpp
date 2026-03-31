@@ -510,11 +510,7 @@ namespace icl {
                              float focalLength,
                              bool performLMAbasedOptimiziation) {
 
-      //  #ifndef ICL_HAVE_MKL
-      // 	return calibrate_pinv(Xws,xis,focalLength);
-      //#else
       // TODO: normalize points
-      // TODO: check whether we have svd (IPP) available
       checkAndFixPoints(Xws,xis);
 
       unsigned int n = Xws.size();

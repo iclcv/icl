@@ -1,6 +1,70 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 21 — A2 + B + C/IPP Complete)
+## Current State (Session 22 — BlasOps/FFTOps + BackendDispatching Refactor)
+
+### Session 22 Summary
+
+**New BLAS/FFT abstraction layer + BackendDispatching refactor.**
+
+**BackendDispatching refactored: array → sorted vector:**
+- `std::array<ImplPtr, NUM_BACKENDS>` replaced with sorted `std::vector<Entry>`
+- Backends sorted by priority descending (highest first); only registered backends occupy space
+- `NUM_BACKENDS` constant removed entirely — enum can grow freely
+- New `resolve()` / `resolveOrThrow()` no-arg overloads for dummy-context singletons
+- New `Entry` struct: `{ Backend backend; shared_ptr<ImplBase> impl; }`
+- `setImpl()` private helper maintains sorted order on insertion
+
+**Backend enum expanded (values encode priority):**
+```
+Cpp=0, Simd=1, OpenBlas=2, Ipp=3, FFTW=4, Accelerate=5, Mkl=6, OpenCL=7
+```
+
+**BlasOps\<T\> — BLAS/LAPACK abstraction (new):**
+- `BlasOps.h` — singleton template, `enum class BlasOp { gemm, gesdd }`
+- `BlasOps.cpp` — constructor (addSelector), instance(), toString()
+- `BlasOps_Cpp.cpp` — C++ fallback: naive GEMM + SVD via existing `svd_dyn`
+- `BlasOps_Mkl.cpp` — MKL backend: `cblas_sgemm/dgemm` + `sgesdd/dgesdd`
+- Raw pointer interface (no DynMatrix dependency in signatures)
+- Consumer code will use `resolveOrThrow()` — C++ fallback always available
+
+**FFTOps\<T\> — FFT abstraction (new, replaces FFTDispatching):**
+- `FFTOps.h` — singleton template, `enum class FFTOp { r2c, c2c, inv_c2c }`
+- `FFTOps.cpp` — constructor, instance(), toString()
+- `FFTOps_Cpp.cpp` — C++ fallback via existing `fft2D_cpp` / `ifft2D_cpp`
+- `FFTOps_Mkl.cpp` — MKL DFTI backend (forward/inverse, real/complex)
+- Raw pointer interface; DynMatrix wrapping stays in consumers
+- `FFTOps<float>` + `FFTOps<double>` — separate singletons per precision
+
+**FFTDispatching transitional rename:**
+- `FFTOp` enum → `LegacyFFTOp` to avoid conflict with FFTOps
+- FFTDispatching struct kept temporarily until FFTUtils.cpp is rewired
+- Will be deleted once FFTUtils.cpp uses FFTOps directly
+
+**Convention: C++ fallbacks in `_Cpp.cpp` files:**
+- All backend implementations (including C++ fallback) go in `_<Backend>.cpp` files
+- The `.cpp` file (e.g., `BlasOps.cpp`) only contains constructor, instance(), toString()
+- Pattern: `BlasOps_Cpp.cpp`, `BlasOps_Mkl.cpp`, `FFTOps_Cpp.cpp`, `FFTOps_Mkl.cpp`
+
+**CMake: new exclusion patterns in ICLMath/CMakeLists.txt:**
+- `_FFTW.cpp` excluded when `!FFTW_FOUND`
+- `_Accelerate.cpp` excluded when `!ACCELERATE_FOUND`
+- `_OpenBlas.cpp` excluded when `!OPENBLAS_FOUND`
+
+**Tests: 349/349 pass.** Build clean on macOS.
+
+### Next Steps
+
+- **Wire consumers** — Replace `#ifdef ICL_HAVE_MKL` in DynMatrix.cpp,
+  DynMatrixUtils.cpp, and FFTUtils.cpp with BlasOps/FFTOps dispatch calls.
+  Remove MKL includes from consumer files. Delete FFTDispatching.h/.cpp.
+- **GLImg.cpp** — 1 remaining `#ifdef ICL_HAVE_IPP` block in ICLQt
+- **Camera.cpp** — Remove dead MKL comment
+- **Add Accelerate backend** — `BlasOps_Accelerate.cpp` for macOS
+  (cblas_sgemm/dgemm + dgesdd via Accelerate framework)
+- **Add FFTW backend** — `FFTOps_FFTW.cpp` for cross-platform FFT
+- **ICLMath MKL** — 27 `#ifdef ICL_HAVE_MKL` blocks remain until consumers are wired
+
+## Previous State (Session 21 — A2 + B + C/IPP Complete)
 
 ### Session 21 Summary
 
@@ -91,10 +155,12 @@ Only these remain in the codebase:
 | Category | Files | Status |
 |---|---|---|
 | Type definitions | BasicTypes.h, Size.h, Point.h, Rect.h, Types.h | Compile-time aliases, must stay |
-| `#if 0` dead code | *_Ipp.cpp files, FFTUtils, CannyOp, ImageRectification, etc. | Disabled, contains code for future re-enablement |
+| `#if 0` dead code | 5 *_Ipp.cpp files, FFTUtils (2), CannyOp, ImageRectification, CoreFunctions.cpp (histogramEven), DynMatrixUtils.cpp (ippm matrix ops) | Disabled, contains code for future re-enablement |
 | IPP bug workaround | NeighborhoodOp.cpp (2 blocks) | Minor, stays |
 | Qt GPU upload | GLImg.cpp (1 block) | ICLQt, deferred |
-| Comments | CCFunctions.cpp (2 blocks inside `/* */`) | Dead |
+| Comments | CCFunctions.cpp (2 `/* */` blocks), DynMatrix.cpp (`#if 1 // was:`), DynMatrixUtils.cpp (SVD comment), IntegralImgOp.cpp (`ICL_HAVE_IPP_DEACTIVATED_...`) | Dead |
+| CMake / config | CMakeLists.txt, ICLConfig.h.in, doxyfile.in | Build system definitions |
+| Dead (nested `#if 0`) | PThreadFix.h | Inside outer `#if 0`, unreachable |
 
 ### Future IPP Optimization Opportunities (TODOs in code)
 
@@ -116,12 +182,31 @@ Only these remain in the codebase:
 
 ### Next Steps
 
-- **ICLMath MKL** — 27+ `#ifdef ICL_HAVE_MKL` blocks (DynMatrix, DynMatrixUtils, FFTUtils).
-  Need `_Mkl.cpp` files. Consider `Backend::Mkl` enum value.
+- **Wire consumers to BlasOps/FFTOps** — Replace 27 `#ifdef ICL_HAVE_MKL` blocks
+  in DynMatrix.cpp, DynMatrixUtils.cpp, FFTUtils.cpp with BlasOps/FFTOps dispatch.
+  Remove MKL includes, delete FFTDispatching.h/.cpp and LegacyFFTOp.
+- **Add Accelerate backend** — `BlasOps_Accelerate.cpp` + `FFTOps_Accelerate.cpp`
+  for macOS (cblas via Accelerate framework, vDSP FFT)
 - **Re-enable disabled IPP backends** — update to modern oneAPI APIs (see table above)
 - **GLImg.cpp** — 1 remaining `ICL_HAVE_IPP` block in ICLQt
 - **NeighborhoodOp.cpp** — 2 IPP bug workaround blocks (minor)
-- **Expand benchmarks on Linux** — IPP vs C++ vs SIMD comparison
+- **Expand benchmarks on Linux** — IPP vs C++ vs SIMD vs MKL comparison
+
+### Key Files (Updated)
+
+```
+ICLUtils/src/ICLUtils/BackendDispatching.h     — framework (sorted vector storage)
+ICLMath/src/ICLMath/BlasOps.h                  — BLAS/LAPACK dispatch singleton
+ICLMath/src/ICLMath/BlasOps.cpp                — constructor, instance, toString
+ICLMath/src/ICLMath/BlasOps_Cpp.cpp            — C++ fallback (naive GEMM + svd_dyn SVD)
+ICLMath/src/ICLMath/BlasOps_Mkl.cpp            — MKL backend (cblas_xgemm + xgesdd)
+ICLMath/src/ICLMath/FFTOps.h                   — FFT dispatch singleton
+ICLMath/src/ICLMath/FFTOps.cpp                 — constructor, instance, toString
+ICLMath/src/ICLMath/FFTOps_Cpp.cpp             — C++ fallback (row-column FFT)
+ICLMath/src/ICLMath/FFTOps_Mkl.cpp             — MKL DFTI backend
+ICLMath/src/ICLMath/FFTDispatching.h           — TRANSITIONAL (LegacyFFTOp, delete after wiring)
+ICLMath/src/ICLMath/FFTDispatching.cpp         — TRANSITIONAL (delete after wiring)
+```
 
 ## Previous State (Session 20 — All Filters Migrated to Prototype+Clone)
 

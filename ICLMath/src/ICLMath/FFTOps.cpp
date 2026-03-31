@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.h                   **
+** File   : ICLMath/src/ICLMath/FFTOps.cpp                         **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,56 +28,35 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
-
-#include <ICLUtils/BackendDispatching.h>
-#include <ICLUtils/CompatMacros.h>
-#include <ICLMath/DynMatrix.h>
 #include <ICLMath/FFTOps.h>
-#include <complex>
 
 namespace icl {
   namespace math {
 
-    /// Context for FFT backend dispatch — carries problem dimensions
-    struct FFTContext {
-      unsigned rows, cols;
-    };
-
-    /// Forward FFT: real icl32f → complex icl32c
-    using FFTFwd32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32f>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
-
-    /// Inverse FFT: complex icl32c → complex icl32c
-    using FFTInv32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
-
-    /// Forward FFT: complex icl32c → complex icl32c (for already-complex input)
-    using FFTFwd32fcSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
-
-    /// Applicability: power-of-2 dimensions (required by IPP)
-    inline bool fftPowerOf2(const FFTContext& ctx) {
-      return ctx.rows > 0 && (ctx.rows & (ctx.rows - 1)) == 0
-          && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
+    const char* toString(FFTOp op) {
+      switch(op) {
+        case FFTOp::r2c:     return "r2c";
+        case FFTOp::c2c:     return "c2c";
+        case FFTOp::inv_c2c: return "inv_c2c";
+      }
+      return "?";
     }
 
-    // FFTOp enum and toString(FFTOp) are now in FFTOps.h.
-    // Legacy selectors below use the old fwd32f/inv32f/fwd32fc naming
-    // but the FFTOp enum values are r2c/c2c/inv_c2c. These will be
-    // removed once FFTUtils.cpp migrates to FFTOps.
+    template<class T>
+    FFTOps<T>::FFTOps() {
+      addSelector<R2CSig>(FFTOp::r2c);
+      addSelector<C2CSig>(FFTOp::c2c);
+      addSelector<InvC2CSig>(FFTOp::inv_c2c);
+    }
 
-    /// Selector keys for legacy FFT dispatch (transitional)
-    enum class LegacyFFTOp : int { fwd32f, inv32f, fwd32fc };
-    ICLMath_API const char* toString(LegacyFFTOp op);
+    template<class T>
+    FFTOps<T>& FFTOps<T>::instance() {
+      static FFTOps<T> ops;
+      return ops;
+    }
 
-    /// Singleton dispatch holder for FFT backends (legacy — use FFTOps instead).
-    /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
-    /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
-    struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
-      FFTDispatching();
-      static FFTDispatching& instance();
-    };
+    template struct FFTOps<float>;
+    template struct FFTOps<double>;
 
   } // namespace math
 } // namespace icl

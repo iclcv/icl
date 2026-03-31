@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.cpp                 **
+** File   : ICLMath/src/ICLMath/FFTOps_Cpp.cpp                     **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,7 +28,10 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLMath/FFTDispatching.h>
+// C++ fallback backends for FFT operations.
+// Delegates to existing fft2D_cpp / ifft2D_cpp via non-owning DynMatrix wrappers.
+
+#include <ICLMath/FFTOps.h>
 #include <ICLMath/FFTUtils.h>
 
 using namespace icl::utils;
@@ -38,52 +41,43 @@ namespace icl {
 
     namespace {
 
-      // C++ backend: delegates to the existing thread-safe fft2D_cpp / ifft2D_cpp
-      DynMatrix<icl32c>& cpp_fft_fwd32f(const DynMatrix<icl32f>& src,
-                                          DynMatrix<icl32c>& dst,
-                                          DynMatrix<icl32c>& buf) {
-        return fft::fft2D_cpp(src, dst, buf);
+      template<class T>
+      void cpp_fft_r2c(const T* src, int rows, int cols, std::complex<T>* dst) {
+        DynMatrix<T> srcMat(cols, rows, const_cast<T*>(src), false);
+        DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+        DynMatrix<std::complex<T>> buf;
+        fft::fft2D_cpp(srcMat, dstMat, buf);
       }
 
-      DynMatrix<icl32c>& cpp_fft_inv32f(const DynMatrix<icl32c>& src,
-                                          DynMatrix<icl32c>& dst,
-                                          DynMatrix<icl32c>& buf) {
-        return fft::ifft2D_cpp(src, dst, buf);
+      template<class T>
+      void cpp_fft_c2c(const std::complex<T>* src, int rows, int cols, std::complex<T>* dst) {
+        DynMatrix<std::complex<T>> srcMat(cols, rows, const_cast<std::complex<T>*>(src), false);
+        DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+        DynMatrix<std::complex<T>> buf;
+        fft::fft2D_cpp(srcMat, dstMat, buf);
       }
 
-      DynMatrix<icl32c>& cpp_fft_fwd32fc(const DynMatrix<icl32c>& src,
-                                           DynMatrix<icl32c>& dst,
-                                           DynMatrix<icl32c>& buf) {
-        return fft::fft2D_cpp(src, dst, buf);
+      template<class T>
+      void cpp_ifft_c2c(const std::complex<T>* src, int rows, int cols, std::complex<T>* dst) {
+        DynMatrix<std::complex<T>> srcMat(cols, rows, const_cast<std::complex<T>*>(src), false);
+        DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+        DynMatrix<std::complex<T>> buf;
+        fft::ifft2D_cpp(srcMat, dstMat, buf);
       }
 
     } // anonymous namespace
 
-    const char* toString(LegacyFFTOp op) {
-      switch(op) {
-        case LegacyFFTOp::fwd32f:  return "fwd32f";
-        case LegacyFFTOp::inv32f:  return "inv32f";
-        case LegacyFFTOp::fwd32fc: return "fwd32fc";
-      }
-      return "?";
-    }
+    static const int _cpp_fft_reg = []() {
+      auto cpp_f = FFTOps<float>::instance().backends(Backend::Cpp);
+      cpp_f.add<FFTOps<float>::R2CSig>(FFTOp::r2c, cpp_fft_r2c<float>, "C++ row-column FFT");
+      cpp_f.add<FFTOps<float>::C2CSig>(FFTOp::c2c, cpp_fft_c2c<float>, "C++ row-column FFT");
+      cpp_f.add<FFTOps<float>::InvC2CSig>(FFTOp::inv_c2c, cpp_ifft_c2c<float>, "C++ row-column IFFT");
 
-    FFTDispatching::FFTDispatching() {
-      addSelector<FFTFwd32fSig>(LegacyFFTOp::fwd32f);
-      addSelector<FFTInv32fSig>(LegacyFFTOp::inv32f);
-      addSelector<FFTFwd32fcSig>(LegacyFFTOp::fwd32fc);
-    }
+      auto cpp_d = FFTOps<double>::instance().backends(Backend::Cpp);
+      cpp_d.add<FFTOps<double>::R2CSig>(FFTOp::r2c, cpp_fft_r2c<double>, "C++ row-column FFT");
+      cpp_d.add<FFTOps<double>::C2CSig>(FFTOp::c2c, cpp_fft_c2c<double>, "C++ row-column FFT");
+      cpp_d.add<FFTOps<double>::InvC2CSig>(FFTOp::inv_c2c, cpp_ifft_c2c<double>, "C++ row-column IFFT");
 
-    FFTDispatching& FFTDispatching::instance() {
-      static FFTDispatching d;
-      return d;
-    }
-
-    static const int _r1 = []() {
-      auto cpp = FFTDispatching::instance().backends(Backend::Cpp);
-      cpp.add<FFTFwd32fSig>(LegacyFFTOp::fwd32f, cpp_fft_fwd32f);
-      cpp.add<FFTInv32fSig>(LegacyFFTOp::inv32f, cpp_fft_inv32f);
-      cpp.add<FFTFwd32fcSig>(LegacyFFTOp::fwd32fc, cpp_fft_fwd32fc);
       return 0;
     }();
 

@@ -32,7 +32,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 
-#include <array>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <memory>
@@ -45,27 +45,40 @@ namespace icl {
   namespace utils {
 
     // ================================================================
-    // Backend enum — values encode priority (higher = preferred)
+    // Backend enum — values encode priority (higher = preferred).
+    // Storage is a sorted vector, so the enum can grow freely without
+    // affecting selectors that don't use a given backend.
     // ================================================================
 
-    enum class Backend : int { Cpp = 0, Simd = 1, Ipp = 2, OpenCL = 3 };
-
-    inline constexpr int NUM_BACKENDS = 4;
+    enum class Backend : int {
+      Cpp        = 0,   // C++ fallback (always available)
+      Simd       = 1,   // SSE2 / NEON
+      OpenBlas   = 2,   // OpenBLAS (CBLAS/LAPACK)
+      Ipp        = 3,   // Intel IPP (image operations)
+      FFTW       = 4,   // FFTW (FFT)
+      Accelerate = 5,   // Apple Accelerate (BLAS + vDSP)
+      Mkl        = 6,   // Intel MKL (BLAS + FFT)
+      OpenCL     = 7,   // GPU compute
+    };
 
     inline const char* backendName(Backend b) {
       switch(b) {
-        case Backend::OpenCL: return "OpenCL";
-        case Backend::Ipp:    return "IPP";
-        case Backend::Simd:   return "SSE2/NEON";
-        case Backend::Cpp:    return "C++";
+        case Backend::OpenCL:     return "OpenCL";
+        case Backend::Mkl:        return "MKL";
+        case Backend::Accelerate: return "Accelerate";
+        case Backend::FFTW:       return "FFTW";
+        case Backend::Ipp:        return "IPP";
+        case Backend::OpenBlas:   return "OpenBLAS";
+        case Backend::Simd:       return "SSE2/NEON";
+        case Backend::Cpp:        return "C++";
       }
       return "?";
     }
 
     // ================================================================
     // BackendSelector — dispatch table for one operation.
-    // Stores up to NUM_BACKENDS implementations in a fixed array.
-    // ImplBase objects are shared_ptr so selectors can be cloned cheaply.
+    // Stores registered backends in a sorted vector (highest priority
+    // first). Only backends that are actually registered occupy space.
     // ================================================================
 
     template<class Context>
@@ -124,16 +137,23 @@ namespace icl {
         }
       };
 
-      // --- Storage: shared_ptr so cloning just bumps refcounts ---
+      // --- Storage: sorted vector of (backend, impl) pairs ---
+      // Sorted by backend priority descending (highest first).
 
-      std::array<std::shared_ptr<ImplBase>, NUM_BACKENDS> impls{};
+      struct Entry {
+        Backend backend;
+        std::shared_ptr<ImplBase> impl;
+      };
+
+      std::vector<Entry> impls;
 
       template<class F>
       void add(Backend b, F&& f, ApplicabilityFn<Context> applicability,
                std::string description = "") {
         if(description.empty()) description = std::string(backendName(b)) + " fallback";
-        impls[static_cast<int>(b)] = std::make_shared<Impl<std::decay_t<F>>>(
+        auto impl = std::make_shared<Impl<std::decay_t<F>>>(
           std::forward<F>(f), b, std::move(description), std::move(applicability));
+        setImpl(b, std::move(impl));
       }
 
       template<class F>
@@ -157,19 +177,17 @@ namespace icl {
           return std::make_shared<Impl<std::decay_t<decltype(fn)>>>(
             std::move(fn), b, description, applicability);
         };
-        impls[static_cast<int>(b)] = std::move(impl);
+        setImpl(b, std::move(impl));
       }
 
       // --- Resolution: iterate highest-priority first ---
 
       ImplBase* resolve(const Context& ctx) const {
         if(this->forcedBackend) {
-          auto* p = impls[static_cast<int>(*this->forcedBackend)].get();
-          if(p) return p;
+          if(auto* p = get(*this->forcedBackend)) return p;
         }
-        for(int i = NUM_BACKENDS - 1; i >= 0; --i) {
-          auto* p = impls[i].get();
-          if(p && p->applicableTo(ctx)) return p;
+        for(auto& e : impls) {
+          if(e.impl->applicableTo(ctx)) return e.impl.get();
         }
         return nullptr;
       }
@@ -180,8 +198,16 @@ namespace icl {
         return r;
       }
 
+      /// Convenience: resolve with default-constructed context.
+      /// Use when context is a dummy type (e.g. int for singletons without applicability).
+      ImplBase* resolve() const { return resolve(Context{}); }
+      ImplBase* resolveOrThrow() const { return resolveOrThrow(Context{}); }
+
       ImplBase* get(Backend b) const {
-        return impls[static_cast<int>(b)].get();
+        for(auto& e : impls) {
+          if(e.backend == b) return e.impl.get();
+        }
+        return nullptr;
       }
 
       // --- Clone: stateful backends get fresh state, stateless share ImplBase ---
@@ -189,10 +215,8 @@ namespace icl {
       std::unique_ptr<BackendSelectorBase<Context>> clone() const override {
         auto c = std::make_unique<BackendSelector>();
         c->name = this->name;
-        for(int i = 0; i < NUM_BACKENDS; ++i) {
-          if(impls[i]) {
-            c->impls[i] = impls[i]->cloneFn ? impls[i]->cloneFn() : impls[i];
-          }
+        for(auto& e : impls) {
+          c->impls.push_back({e.backend, e.impl->cloneFn ? e.impl->cloneFn() : e.impl});
         }
         return c;
       }
@@ -201,8 +225,7 @@ namespace icl {
 
       std::vector<Backend> registeredBackends() const override {
         std::vector<Backend> r;
-        for(int i = 0; i < NUM_BACKENDS; ++i)
-          if(impls[i]) r.push_back(static_cast<Backend>(i));
+        for(auto& e : impls) r.push_back(e.backend);
         return r;
       }
 
@@ -213,10 +236,23 @@ namespace icl {
 
       std::vector<Backend> applicableBackendsFor(const Context& ctx) const override {
         std::vector<Backend> r;
-        for(int i = 0; i < NUM_BACKENDS; ++i)
-          if(impls[i] && impls[i]->applicableTo(ctx))
-            r.push_back(static_cast<Backend>(i));
+        for(auto& e : impls)
+          if(e.impl->applicableTo(ctx))
+            r.push_back(e.backend);
         return r;
+      }
+
+    private:
+      /// Insert or replace an impl, maintaining descending priority order.
+      void setImpl(Backend b, std::shared_ptr<ImplBase> impl) {
+        for(auto& e : impls) {
+          if(e.backend == b) { e.impl = std::move(impl); return; }
+        }
+        impls.push_back({b, std::move(impl)});
+        std::sort(impls.begin(), impls.end(),
+                  [](const Entry& a, const Entry& b) {
+                    return static_cast<int>(a.backend) > static_cast<int>(b.backend);
+                  });
       }
     };
 

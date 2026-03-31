@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.h                   **
+** File   : ICLMath/src/ICLMath/BlasOps.h                          **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,51 +32,40 @@
 
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLMath/FFTOps.h>
-#include <complex>
 
 namespace icl {
   namespace math {
 
-    /// Context for FFT backend dispatch — carries problem dimensions
-    struct FFTContext {
-      unsigned rows, cols;
-    };
+    /// Selector keys for BLAS/LAPACK backend dispatch.
+    enum class BlasOp : int { gemm, gesdd };
 
-    /// Forward FFT: real icl32f → complex icl32c
-    using FFTFwd32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32f>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+    ICLMath_API const char* toString(BlasOp op);
 
-    /// Inverse FFT: complex icl32c → complex icl32c
-    using FFTInv32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+    /// BLAS/LAPACK dispatch — parameterized on scalar type (float or double).
+    /// Operates on raw data pointers. Higher-level DynMatrix wrapping stays
+    /// in consumer code (DynMatrix.cpp, DynMatrixUtils.cpp).
+    ///
+    /// Backends: C++ fallback (always), MKL, Accelerate, OpenBLAS.
+    /// Context is int (unused — no applicability checks needed).
+    template<class T>
+    struct ICLMath_API BlasOps : utils::BackendDispatching<int> {
 
-    /// Forward FFT: complex icl32c → complex icl32c (for already-complex input)
-    using FFTFwd32fcSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+      /// General matrix multiply: C = alpha * op(A) * op(B) + beta * C
+      /// transA/transB: false = no transpose, true = transpose
+      /// M = rows of op(A), N = cols of op(B), K = cols of op(A) = rows of op(B)
+      using GemmSig = void(bool transA, bool transB,
+                            int M, int N, int K, T alpha,
+                            const T* A, int lda, const T* B, int ldb,
+                            T beta, T* C, int ldc);
 
-    /// Applicability: power-of-2 dimensions (required by IPP)
-    inline bool fftPowerOf2(const FFTContext& ctx) {
-      return ctx.rows > 0 && (ctx.rows & (ctx.rows - 1)) == 0
-          && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
-    }
+      /// SVD via divide-and-conquer: A = U * diag(S) * Vt
+      /// Manages work buffers internally. Returns info (0 = success).
+      /// jobz: 'S' = economy, 'A' = full, 'N' = no vectors
+      using GesddSig = int(char jobz, int M, int N, T* A, int lda,
+                            T* S, T* U, int ldu, T* Vt, int ldvt);
 
-    // FFTOp enum and toString(FFTOp) are now in FFTOps.h.
-    // Legacy selectors below use the old fwd32f/inv32f/fwd32fc naming
-    // but the FFTOp enum values are r2c/c2c/inv_c2c. These will be
-    // removed once FFTUtils.cpp migrates to FFTOps.
-
-    /// Selector keys for legacy FFT dispatch (transitional)
-    enum class LegacyFFTOp : int { fwd32f, inv32f, fwd32fc };
-    ICLMath_API const char* toString(LegacyFFTOp op);
-
-    /// Singleton dispatch holder for FFT backends (legacy — use FFTOps instead).
-    /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
-    /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
-    struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
-      FFTDispatching();
-      static FFTDispatching& instance();
+      BlasOps();
+      static BlasOps& instance();
     };
 
   } // namespace math

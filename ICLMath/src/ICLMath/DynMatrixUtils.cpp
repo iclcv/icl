@@ -35,10 +35,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <cmath>
 
-#ifdef ICL_HAVE_MKL
-  #include "mkl_types.h"
-  #include "mkl_cblas.h"
-#endif
+#include <ICLMath/BlasOps.h>
 
 
 #ifdef ICL_HAVE_EIGEN3
@@ -638,7 +635,19 @@ namespace icl{
 
     template<class T>
     DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef){
-      return matrix_mult_t( src1, src2, dst, transpDef );
+      auto* impl = BlasOps<T>::instance()
+          .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+          .resolveOrThrow();
+      bool tA = (transpDef == SRC1_T || transpDef == BOTH_T);
+      bool tB = (transpDef == SRC2_T || transpDef == BOTH_T);
+      int M = tA ? src1.cols() : src1.rows();
+      int N = tB ? src2.rows() : src2.cols();
+      int K = tA ? src1.rows() : src1.cols();
+      dst.setBounds(N, M);
+      impl->apply(tA, tB, M, N, K, T(1),
+                   src1.begin(), src1.cols(), src2.begin(), src2.cols(),
+                   T(0), dst.begin(), N);
+      return dst;
     }
 
     template<class T>
@@ -845,70 +854,8 @@ namespace icl{
   #endif // ICL_HAVE_IPP
 
 
-    // optimized specialization only if MKL was found
-  #ifdef ICL_HAVE_MKL
-    template<> ICLMath_API DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef){
-      switch(transpDef){
-        case NONE_T:
-          CHECK_DIM_CR(src1,src2,dst);
-          dst.setBounds(src2.cols(),src1.rows());
-          cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
-          return dst;
-        case SRC1_T:
-          CHECK_DIM_RR(src1,src2,dst);
-          dst.setBounds(src2.cols(),src1.cols());
-          cblas_sgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
-          return dst;
-        case SRC2_T:
-          CHECK_DIM_CC(src1,src2,dst);
-          dst.setBounds(src2.rows(),src1.rows());
-          cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
-          return dst;
-        case BOTH_T:
-          CHECK_DIM_RC(src1,src2,dst);
-          dst.setBounds(src2.rows(),src1.cols());
-          cblas_sgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
-          return dst;
-        default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
-      }
-      return dst;
-    }
-    template<> ICLMath_API DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef){
-      switch(transpDef){
-        case NONE_T:
-          CHECK_DIM_CR(src1,src2,dst);
-          dst.setBounds(src2.cols(),src1.rows());
-          cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, src1.rows(), src2.cols(), src1.cols(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
-          return dst;
-        case SRC1_T:
-          CHECK_DIM_RR(src1,src2,dst);
-          dst.setBounds(src2.cols(),src1.cols());
-          cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, src1.cols(), src2.cols(), src1.rows(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.cols());
-          return dst;
-        case SRC2_T:
-          CHECK_DIM_CC(src1,src2,dst);
-          dst.setBounds(src2.rows(),src1.rows());
-          cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, src1.rows(), src2.rows(), src1.cols(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
-          return dst;
-        case BOTH_T:
-          CHECK_DIM_RC(src1,src2,dst);
-          dst.setBounds(src2.rows(),src1.cols());
-          cblas_dgemm(CblasRowMajor, CblasTrans, CblasTrans, src1.cols(), src2.rows(), src1.rows(), 1.0, src1.begin(), src1.cols(),
-                      src2.begin(), src2.cols(), 0.0, dst.begin(), src2.rows());
-          return dst;
-        default: ERROR_LOG("undefined definition of transposed matrices: "<< transpDef);
-      }
-      return dst;
-    }
-
-  #endif
+    // MKL cblas_xgemm specializations removed — now dispatched via BlasOps<T>::gemm
+    // (BlasOps_Mkl.cpp registers the MKL backend, BlasOps_Cpp.cpp the C++ fallback)
 
 
     template ICLMath_API DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int);

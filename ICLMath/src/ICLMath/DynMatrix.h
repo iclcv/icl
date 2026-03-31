@@ -40,10 +40,6 @@
 #include <vector>
 #include <cmath>
 
-// Intel Math Kernel Library
-#ifdef ICL_HAVE_MKL
-#include "mkl_cblas.h"
-#endif
 
 namespace icl{
   namespace math{
@@ -960,12 +956,6 @@ namespace icl{
       * @return pseudo inverse
       */
       DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const;
-
-  #ifdef ICL_HAVE_MKL
-      using GESDD = void(*)(const char*, const int*, const int*, T*, const int*, T*, T*, const int*, T*, const int*, T*, const int*, int*, int*);
-      using CBLAS_GEMM = void(*)(CBLAS_ORDER,CBLAS_TRANSPOSE,CBLAS_TRANSPOSE,int,int,int,T,const T*,int,const T*,int,T,T*,int);
-      DynMatrix big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const;
-  #endif
 
       /// matrix determinant (only for icl32f and icl64f)
       T det() const;

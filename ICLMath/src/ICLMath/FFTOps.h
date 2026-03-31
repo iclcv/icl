@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.h                   **
+** File   : ICLMath/src/ICLMath/FFTOps.h                           **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -32,51 +32,42 @@
 
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLMath/FFTOps.h>
 #include <complex>
 
 namespace icl {
   namespace math {
 
-    /// Context for FFT backend dispatch — carries problem dimensions
-    struct FFTContext {
-      unsigned rows, cols;
-    };
+    /// Selector keys for FFT backend dispatch.
+    enum class FFTOp : int { r2c, c2c, inv_c2c };
 
-    /// Forward FFT: real icl32f → complex icl32c
-    using FFTFwd32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32f>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+    ICLMath_API const char* toString(FFTOp op);
 
-    /// Inverse FFT: complex icl32c → complex icl32c
-    using FFTInv32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+    /// FFT dispatch — parameterized on scalar type (float or double).
+    /// Operates on raw data pointers. DynMatrix wrapping stays in FFTUtils.
+    ///
+    /// All operations work on row-major 2D data of size rows x cols.
+    /// Output must be pre-allocated by the caller (rows * cols complex values).
+    ///
+    /// Backends: C++ fallback (always), MKL DFTI, FFTW, Accelerate vDSP.
+    /// Context is int (unused — no applicability checks needed).
+    template<class T>
+    struct ICLMath_API FFTOps : utils::BackendDispatching<int> {
+      using C = std::complex<T>;
 
-    /// Forward FFT: complex icl32c → complex icl32c (for already-complex input)
-    using FFTFwd32fcSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+      /// Real-to-complex 2D forward FFT.
+      /// src: row-major T[rows*cols], dst: pre-allocated C[rows*cols]
+      using R2CSig = void(const T* src, int rows, int cols, C* dst);
 
-    /// Applicability: power-of-2 dimensions (required by IPP)
-    inline bool fftPowerOf2(const FFTContext& ctx) {
-      return ctx.rows > 0 && (ctx.rows & (ctx.rows - 1)) == 0
-          && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
-    }
+      /// Complex-to-complex 2D forward FFT.
+      /// src: row-major C[rows*cols], dst: pre-allocated C[rows*cols]
+      using C2CSig = void(const C* src, int rows, int cols, C* dst);
 
-    // FFTOp enum and toString(FFTOp) are now in FFTOps.h.
-    // Legacy selectors below use the old fwd32f/inv32f/fwd32fc naming
-    // but the FFTOp enum values are r2c/c2c/inv_c2c. These will be
-    // removed once FFTUtils.cpp migrates to FFTOps.
+      /// Complex-to-complex 2D inverse FFT (includes 1/(rows*cols) normalization).
+      /// src: row-major C[rows*cols], dst: pre-allocated C[rows*cols]
+      using InvC2CSig = void(const C* src, int rows, int cols, C* dst);
 
-    /// Selector keys for legacy FFT dispatch (transitional)
-    enum class LegacyFFTOp : int { fwd32f, inv32f, fwd32fc };
-    ICLMath_API const char* toString(LegacyFFTOp op);
-
-    /// Singleton dispatch holder for FFT backends (legacy — use FFTOps instead).
-    /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
-    /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
-    struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
-      FFTDispatching();
-      static FFTDispatching& instance();
+      FFTOps();
+      static FFTOps& instance();
     };
 
   } // namespace math

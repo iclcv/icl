@@ -34,11 +34,7 @@
 #include <algorithm>
 #include <fstream>
 
-// Intel Math Kernel Library
-#ifdef ICL_HAVE_MKL
-#include "mkl_types.h"
-#include "mkl_lapack.h"
-#endif
+#include <ICLMath/BlasOps.h>
 
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/StringUtils.h>
@@ -344,79 +340,45 @@ namespace icl{
     }
 
 
-    // fallback
     template<class T>
     DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const{
-      return pinv( true, zeroThreshold );
-    }
+      auto* svdImpl = BlasOps<T>::instance()
+          .template getSelector<typename BlasOps<T>::GesddSig>(BlasOp::gesdd)
+          .resolveOrThrow();
+      auto* gemmImpl = BlasOps<T>::instance()
+          .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+          .resolveOrThrow();
 
-  #ifdef ICL_HAVE_MKL
-    template<class T>
-      DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold, GESDD gesdd, CBLAS_GEMM cblas_gemm) const{
-
-      // create a copy of source matrix, because GESDD is destroying the input matrix
-      DynMatrix<T> matrixCopy( *this );
-
-      // matrix dimensions
       int r = rows();
       int c = cols();
+      int mn = std::min(r, c);
 
-      // calculate SVD
-      DynMatrix<T> Vt, s, U;
-      Vt.setBounds( c, c );
-      s.setBounds( 1, c );
-      U.setBounds( c, r );
-      char jobz = 'S';
+      DynMatrix<T> matrixCopy(*this);
+      std::vector<T> S(mn);
+      DynMatrix<T> U(mn, r);
+      DynMatrix<T> Vt(c, mn);
 
-      // success message
-      int info;
+      int info = svdImpl->apply('S', r, c, matrixCopy.begin(), c,
+                                 S.data(), U.begin(), mn, Vt.begin(), c);
+      ICLASSERT_THROW(info == 0, ICLException("SVD failed in big_matrix_pinv"));
 
-      // integer work buffer
-      std::vector<int> iwork( std::max( 1, 8 * std::min( c, r ) ) );
+      DynMatrix<T> Sinv(mn, mn, T(0));
+      for(int i = 0; i < mn; ++i)
+        Sinv(i, i) = (std::fabs(S[i]) > zeroThreshold) ? T(1) / S[i] : T(0);
 
-      // work buffer of size 1 to retrieve correct buffer size from first run of GESDD
-      std::vector<T> work( 1 );
-      int lwork  = -1;
-      gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
-             &c, U.begin(), &c, work.data(), &lwork, iwork.data(), &info );
-      ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
-      lwork = static_cast<int>(work[0]);
+      // pseudoInverse = Vt^T * Sinv * U^T
+      DynMatrix<T> temp(mn, c);
+      gemmImpl->apply(true, false, c, mn, mn, T(1),
+                       Vt.begin(), c, Sinv.begin(), mn,
+                       T(0), temp.begin(), mn);
 
-      // resize work buffer to correct size
-      work.resize( lwork );
-
-      // compute singular value decomposition of a general rectangular matrix
-      // using a divide and conquer method.
-      gesdd( &jobz, &c, &r, matrixCopy.begin(), &c, s.begin(), Vt.begin(),
-             &c, U.begin(), &c, work.data(), &lwork, iwork.data(), &info );
-      ICLASSERT_THROW( info == 0, ICLException("GESDD failed!") );
-
-      // prepare matrix S and check if singular values are below zero threshold
-      DynMatrix<T> S( c, c, 0.0 );
-      for ( int i(0); i < c; ++i )
-          S( i, i ) = ( fabs( s[i] ) > zeroThreshold ) ? 1.0 / s[i] : 0.0;
-
-      // dst = Vt.transp() * S * U.transp();
-      DynMatrix<T> temp( c, c );
-      cblas_gemm( CblasRowMajor, CblasTrans, CblasNoTrans, c, c, c, 1.0, Vt.begin(), c,
-                  S.begin(), c, 0.0, temp.begin(), c );
-
-      DynMatrix<T> pseudoInverse( r, c );
-      cblas_gemm( CblasRowMajor, CblasNoTrans, CblasTrans, c, r, c, 1.0, temp.begin(), c,
-                  U.begin(), c, 0.0, pseudoInverse.begin(), r );
+      DynMatrix<T> pseudoInverse(r, c);
+      gemmImpl->apply(false, true, c, r, mn, T(1),
+                       temp.begin(), mn, U.begin(), mn,
+                       T(0), pseudoInverse.begin(), r);
 
       return pseudoInverse;
     }
-
-    template<>
-    ICLMath_API DynMatrix<float> DynMatrix<float>::big_matrix_pinv(float zeroThreshold) const{
-      return big_matrix_pinv(zeroThreshold,sgesdd,cblas_sgemm);
-    }
-    template<>
-    ICLMath_API DynMatrix<double> DynMatrix<double>::big_matrix_pinv(double zeroThreshold) const{
-      return big_matrix_pinv(zeroThreshold,dgesdd,cblas_dgemm);
-    }
-  #endif
 
 
     // This function was taken from VTK Version 5.6.0
