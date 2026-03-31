@@ -40,10 +40,6 @@
 #include <vector>
 #include <cmath>
 
-#ifdef ICL_HAVE_IPP
-#include <ipp.h>
-#endif
-
 // Intel Math Kernel Library
 #ifdef ICL_HAVE_MKL
 #include "mkl_cblas.h"
@@ -1146,105 +1142,9 @@ namespace icl{
     std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
 
 
-#ifdef ICL_HAVE_IPP
-    /** \cond */
-    template<>
-    inline float DynMatrix<float>::sqrDistanceTo(const DynMatrix<float> &other) const{
-      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
-      float norm = 0 ;
-      ippsNormDiff_L2_32f(begin(), other.begin(), dim(), &norm);
-      return norm*norm;
-    }
-
-    template<>
-    inline double DynMatrix<double>::sqrDistanceTo(const DynMatrix<double> &other) const{
-      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
-      double norm = 0 ;
-      ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
-      return norm*norm;
-    }
-
-    template<>
-    inline float DynMatrix<float>::distanceTo(const DynMatrix<float> &other) const{
-      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
-      float norm = 0 ;
-      ippsNormDiff_L2_32f(begin(), other.begin(), dim(), &norm);
-      return norm;
-    }
-
-    template<>
-    inline double DynMatrix<double>::distanceTo(const DynMatrix<double> &other) const{
-      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::distanceTo: dimension missmatch"));
-      double norm = 0 ;
-      ippsNormDiff_L2_64f(begin(), other.begin(), dim(), &norm);
-      return norm;
-    }
-
-    // ippmMul_mm (IPP matrix module) was removed from modern IPP releases.
-    // Matrix multiply uses the C++ fallback from the generic DynMatrix::mult().
-
-
-#define DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(IPPT)                    \
-    template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::elementwise_div(const DynMatrix<Ipp##IPPT> &m, DynMatrix<Ipp##IPPT> &dst) const{ \
-      if((m.cols() != cols()) || (m.rows() != rows())){                 \
-        throw IncompatibleMatrixDimensionException("A./B dimension mismatch"); \
-      }                                                                 \
-      dst.setBounds(cols(),rows());                                     \
-      ippsDiv_##IPPT(data(),m.data(),dst.data(),dim());                 \
-      return dst;                                                       \
-    }
-
-    DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(32f)
-    DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE(64f)
-
-#undef DYN_MATRIX_ELEMENT_WISE_DIV_SPECIALIZE
-
-
-
-
-
-
-#define DYN_MATRIX_MULT_BY_CONSTANT(IPPT)                               \
-    template<>                                                          \
-    inline DynMatrix<Ipp##IPPT> &DynMatrix<Ipp##IPPT>::mult(Ipp##IPPT f, DynMatrix<Ipp##IPPT> &dst) const{ \
-      dst.setBounds(cols(),rows());                                     \
-      ippsMulC_##IPPT(data(),f, dst.data(),dim());                      \
-      return dst;                                                       \
-    }
-
-    DYN_MATRIX_MULT_BY_CONSTANT(32f)
-    DYN_MATRIX_MULT_BY_CONSTANT(64f)
-
-#undef DYN_MATRIX_MULT_BY_CONSTANT
-
-#define DYN_MATRIX_NORM_SPECIALZE(T,IPPT)               \
-    template<>                                          \
-    inline T DynMatrix<T> ::norm(double l) const{       \
-      if(l==1){                                         \
-        T val;                                          \
-        ippsNorm_L1_##IPPT(m_data,dim(),&val);          \
-        return val;                                     \
-      }else if(l==2){                                   \
-        T val;                                          \
-        ippsNorm_L2_##IPPT(m_data,dim(),&val);          \
-        return val;                                     \
-      }                                                 \
-      double accu = 0;                                  \
-      for(unsigned int i=0;i<dim();++i){                \
-        accu += ::pow(double(m_data[i]),l);             \
-      }                                                 \
-      return ::pow(accu,1.0/l);                         \
-    }
-
-    DYN_MATRIX_NORM_SPECIALZE(float,32f)
-    // DYN_MATRIX_NORM_SPECIALZE(double,64f)
-
-#undef DYN_MATRIX_NORM_SPECIALZE
-
-    /** \endcond */
-
-#endif // ICL_HAVE_IPP
+    // TODO: add IPP backends for sqrDistanceTo/distanceTo (ippsNormDiff_L2),
+    //       elementwise_div (ippsDiv), mult-by-scalar (ippsMulC),
+    //       norm (ippsNorm_L1/L2) via MathOps dispatch
 
     /// vertical concatenation of matrices
     /** missing elementes are padded with 0 */

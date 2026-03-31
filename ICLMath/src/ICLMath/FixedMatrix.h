@@ -46,10 +46,7 @@
 #include <vector>
 #include <cmath>
 
-#ifdef ICL_HAVE_IPP
-#include <ipp.h>
 // Note: ippm.h (IPP matrix module) was removed from modern IPP (oneAPI 2022+)
-#endif
 
 namespace icl{
   namespace math{

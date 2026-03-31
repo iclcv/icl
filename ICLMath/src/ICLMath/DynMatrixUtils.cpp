@@ -31,6 +31,7 @@
 
 #include <ICLUtils/Macros.h>
 #include <ICLMath/DynMatrixUtils.h>
+#include <ICLMath/MathOps.h>
 #include <ICLUtils/StringUtils.h>
 #include <cmath>
 
@@ -77,501 +78,384 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
 
-  #ifdef ICL_HAVE_IPP
-
     ///////////////////////////////////////////////////////////////////////////
-    // Unary functions ////////////////////////////////////////////////////////
+    // C++ backend implementations for MathOps dispatch                    //
     ///////////////////////////////////////////////////////////////////////////
 
-    double reciprocal(const double x) { return 1.0/x; }
+    // --- Helpers ---
 
-  #ifdef WIN32
-    float reciprocal(const float x) { return 1.0 / x; }
+    static inline double reciprocal_helper(double x) { return x ? 1.0/x : 0; }
+    static inline float reciprocal_helper(float x) { return x ? 1.0f/x : 0; }
 
-    #define ICL_UNARY_HELP_FUNC(name,func)                                    \
-      IppStatus ipps##name##_32f_I(float *p, int len){                        \
-        std::transform(p,p+len,p,static_cast<float(*)(const float)>(func));   \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_64f_I(double *p, int len){                       \
-        std::transform(p,p+len,p,static_cast<double(*)(const double)>(func)); \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_32f(const float *s, float *d, int len){          \
-        std::transform(s,s+len,d,static_cast<float(*)(const float)>(func));   \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_64f(const double *s, double *d, int len){        \
-        std::transform(s,s+len,d,static_cast<double(*)(const double)>(func)); \
-        return ippStsNoErr;                                                   \
+    // --- Stats backends ---
+
+    static float cpp_mean_f(const float* data, int len) {
+      return std::accumulate(data, data+len, 0.0f) / len;
     }
-  #else
-    #define ICL_UNARY_HELP_FUNC(name,func)                                    \
-      IppStatus ipps##name##_32f_I(float *p, int len){                        \
-        std::transform(p,p+len,p,func);                                       \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_64f_I(double *p, int len){                       \
-        std::transform(p,p+len,p,func);                                       \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_32f(const float *s, float *d, int len){          \
-        std::transform(s,s+len,d,func);                                       \
-        return ippStsNoErr;                                                   \
-      }                                                                       \
-      IppStatus ipps##name##_64f(const double *s, double *d, int len){        \
-        std::transform(s,s+len,d,func);                                       \
-        return ippStsNoErr;                                                   \
-    }
-  #endif
-
-    ICL_UNARY_HELP_FUNC(Sin_icl,::sin)
-    ICL_UNARY_HELP_FUNC(Cos_icl,::cos)
-    ICL_UNARY_HELP_FUNC(Tan_icl,::tan)
-    ICL_UNARY_HELP_FUNC(Arcsin_icl,::asin)
-    ICL_UNARY_HELP_FUNC(Arccos_icl,::acos)
-    ICL_UNARY_HELP_FUNC(Reciprocal_icl,icl::math::reciprocal)
-
-  #undef ICL_UNARY_HELP_FUNC
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                              \
-    template<class T>                                                                                          \
-    DynMatrix<T> &matrix_##op(DynMatrix<T> &m){                                                                \
-      ERROR_LOG("not implemented for this type!");                                                             \
-      return m;                                                                                                \
-    }                                                                                                          \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m){                                 \
-      ipps##func##_32f_I(m.begin(), m.dim());                                                                  \
-      return m;                                                                                                \
-    }                                                                                                          \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m){                               \
-      ipps##func##_64f_I(m.begin(), m.dim());                                                                  \
-      return m;                                                                                                \
-    }                                                                                                          \
-    template<class T>                                                                                          \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, DynMatrix<T> &dst){                                       \
-      ERROR_LOG("not implemented for this type!");                                                             \
-      return dst;                                                                                              \
-    }                                                                                                          \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m, DynMatrix<float> &dst){    \
-      dst.setBounds(m.cols(),m.rows());                                                                        \
-      ipps##func##_32f(m.begin(), dst.begin(), m.dim());                                                       \
-      return dst;                                                                                              \
-    }                                                                                                          \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &m, DynMatrix<double> &dst){ \
-      dst.setBounds(m.cols(),m.rows());                                                                        \
-      ipps##func##_64f(m.begin(), dst.begin(), m.dim());                                                       \
-      return dst;                                                                                              \
+    static double cpp_mean_d(const double* data, int len) {
+      return std::accumulate(data, data+len, 0.0) / len;
     }
 
-    INSTANTIATE_DYN_MATRIX_MATH_OP(abs,Abs)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(log,Ln)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(exp,Exp)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sqrt,Sqrt)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,Sqr)
+    static float cpp_var_f(const float* data, int len) {
+      if(len < 2) return 0;
+      float m = cpp_mean_f(data, len);
+      float accu = 0;
+      for(int i = 0; i < len; ++i) { float d = m - data[i]; accu += d*d; }
+      return accu / (len - 1);
+    }
+    static double cpp_var_d(const double* data, int len) {
+      if(len < 2) return 0;
+      double m = cpp_mean_d(data, len);
+      double accu = 0;
+      for(int i = 0; i < len; ++i) { double d = m - data[i]; accu += d*d; }
+      return accu / (len - 1);
+    }
 
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sin,Sin_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(cos,Cos_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(tan,Tan_icl)
-
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arcsin,Arcsin_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arccos,Arccos_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan,Arctan)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(reciprocal,Reciprocal_icl)
-
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
-
-    template<class T> struct pow_functor{
-      const T val;
-      inline pow_functor(const T val):val(val){}
-      inline double operator()(const T &x) const{
-        return pow(x,val);
+    static void cpp_meanvar_f(const float* data, int len, float* mean, float* var) {
+      float m = cpp_mean_f(data, len);
+      if(mean) *mean = m;
+      if(var) {
+        float accu = 0;
+        for(int i = 0; i < len; ++i) { float d = m - data[i]; accu += d*d; }
+        *var = (len > 1) ? accu / (len - 1) : 0.0f;
       }
-    };
-
-    IppStatus ippsPow_icl_32f_I(float e, float *p, int len){
-      std::transform(p,p+len,p,pow_functor<float>(e));
-      return ippStsNoErr;
     }
-    IppStatus ippsPow_icl_64f_I(double e, double *p, int len){
-      std::transform(p,p+len,p,pow_functor<double>(e));
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_32f(const float *s,float e, float *d, int len){
-      std::transform(s,s+len,d,pow_functor<float>(e));
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_64f(const double *s,double e, double *d, int len){
-      std::transform(s,s+len,d,pow_functor<double>(e));
-      return ippStsNoErr;
+    static void cpp_meanvar_d(const double* data, int len, double* mean, double* var) {
+      double m = cpp_mean_d(data, len);
+      if(mean) *mean = m;
+      if(var) {
+        double accu = 0;
+        for(int i = 0; i < len; ++i) { double d = m - data[i]; accu += d*d; }
+        *var = (len > 1) ? accu / (len - 1) : 0.0;
+      }
     }
 
+    // --- Min/Max/MinMax backends ---
 
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                         \
-    template<class T> DynMatrix<T> &matrix_##op(DynMatrix<T> &m, T val){                                                  \
-      ERROR_LOG("not implemented for this type!");                                                                        \
-      return m;                                                                                                           \
-    }                                                                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m, float val){                                 \
-      ipps##func##_32f_I(val,m.begin(),m.dim());                                                                          \
-      return m;                                                                                                           \
-    }                                                                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m, double val){                              \
-      ipps##func##_64f_I(val,m.begin(),m.dim());                                                                          \
-      return m;                                                                                                           \
-    }                                                                                                                     \
-    template<class T> DynMatrix<T> &matrix_##op(const DynMatrix<T> &,T, DynMatrix<T> &m){                                 \
-      ERROR_LOG("not implemented for this type!");                                                                        \
-      return m;                                                                                                           \
-    }                                                                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &m,float val, DynMatrix<float> &dst){     \
-      dst.setBounds(m.cols(),m.rows());                                                                                   \
-      ipps##func##_32f(m.begin(), val, dst.begin(), m.dim());                                                             \
-      return dst;                                                                                                         \
-    }                                                                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &m,double val, DynMatrix<double> &dst){ \
-      dst.setBounds(m.cols(),m.rows());                                                                                   \
-      ipps##func##_64f(m.begin(), val, dst.begin(), m.dim());                                                             \
-      return dst;                                                                                                         \
+    static float cpp_min_f(const float* data, int len, int cols, int* x, int* y) {
+      const float* a = std::min_element(data, data+len);
+      int idx = static_cast<int>(a - data);
+      if(x) *x = idx % cols;
+      if(y) *y = idx / cols;
+      return *a;
+    }
+    static double cpp_min_d(const double* data, int len, int cols, int* x, int* y) {
+      const double* a = std::min_element(data, data+len);
+      int idx = static_cast<int>(a - data);
+      if(x) *x = idx % cols;
+      if(y) *y = idx / cols;
+      return *a;
     }
 
-    INSTANTIATE_DYN_MATRIX_MATH_OP(powc,Pow_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(addc,AddC)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(subc,SubC)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mulc,MulC)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(divc,DivC)
+    static float cpp_max_f(const float* data, int len, int cols, int* x, int* y) {
+      const float* a = std::max_element(data, data+len);
+      int idx = static_cast<int>(a - data);
+      if(x) *x = idx % cols;
+      if(y) *y = idx / cols;
+      return *a;
+    }
+    static double cpp_max_d(const double* data, int len, int cols, int* x, int* y) {
+      const double* a = std::max_element(data, data+len);
+      int idx = static_cast<int>(a - data);
+      if(x) *x = idx % cols;
+      if(y) *y = idx / cols;
+      return *a;
+    }
 
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
+    static void cpp_minmax_f(const float* data, int len, int cols, float* dst,
+                             int* minx, int* miny, int* maxx, int* maxy) {
+      dst[0] = cpp_min_f(data, len, cols, minx, miny);
+      dst[1] = cpp_max_f(data, len, cols, maxx, maxy);
+    }
+    static void cpp_minmax_d(const double* data, int len, int cols, double* dst,
+                             int* minx, int* miny, int* maxx, int* maxy) {
+      dst[0] = cpp_min_d(data, len, cols, minx, miny);
+      dst[1] = cpp_max_d(data, len, cols, maxx, maxy);
+    }
+
+    // --- Unary element-wise backends ---
+
+    template<class T>
+    static void cpp_unaryInplace(UnaryMathFunc func, T* data, int len) {
+      switch(func) {
+        case UnaryMathFunc::abs:        std::for_each(data, data+len, [](T& v){ v = std::fabs(v); }); break;
+        case UnaryMathFunc::log:        std::for_each(data, data+len, [](T& v){ v = std::log(v); }); break;
+        case UnaryMathFunc::exp:        std::for_each(data, data+len, [](T& v){ v = std::exp(v); }); break;
+        case UnaryMathFunc::sqrt:       std::for_each(data, data+len, [](T& v){ v = std::sqrt(v); }); break;
+        case UnaryMathFunc::sqr:        std::for_each(data, data+len, [](T& v){ v = v*v; }); break;
+        case UnaryMathFunc::sin:        std::for_each(data, data+len, [](T& v){ v = std::sin(v); }); break;
+        case UnaryMathFunc::cos:        std::for_each(data, data+len, [](T& v){ v = std::cos(v); }); break;
+        case UnaryMathFunc::tan:        std::for_each(data, data+len, [](T& v){ v = std::tan(v); }); break;
+        case UnaryMathFunc::arcsin:     std::for_each(data, data+len, [](T& v){ v = std::asin(v); }); break;
+        case UnaryMathFunc::arccos:     std::for_each(data, data+len, [](T& v){ v = std::acos(v); }); break;
+        case UnaryMathFunc::arctan:     std::for_each(data, data+len, [](T& v){ v = std::atan(v); }); break;
+        case UnaryMathFunc::reciprocal: std::for_each(data, data+len, [](T& v){ v = reciprocal_helper(v); }); break;
+      }
+    }
+    static void cpp_unaryInplace_f(UnaryMathFunc func, float* data, int len) {
+      cpp_unaryInplace<float>(func, data, len);
+    }
+    static void cpp_unaryInplace_d(UnaryMathFunc func, double* data, int len) {
+      cpp_unaryInplace<double>(func, data, len);
+    }
+
+    template<class T>
+    static void cpp_unaryCopy(UnaryMathFunc func, const T* src, T* dst, int len) {
+      switch(func) {
+        case UnaryMathFunc::abs:        std::transform(src, src+len, dst, [](T v){ return std::fabs(v); }); break;
+        case UnaryMathFunc::log:        std::transform(src, src+len, dst, [](T v){ return std::log(v); }); break;
+        case UnaryMathFunc::exp:        std::transform(src, src+len, dst, [](T v){ return std::exp(v); }); break;
+        case UnaryMathFunc::sqrt:       std::transform(src, src+len, dst, [](T v){ return std::sqrt(v); }); break;
+        case UnaryMathFunc::sqr:        std::transform(src, src+len, dst, [](T v){ return v*v; }); break;
+        case UnaryMathFunc::sin:        std::transform(src, src+len, dst, [](T v){ return std::sin(v); }); break;
+        case UnaryMathFunc::cos:        std::transform(src, src+len, dst, [](T v){ return std::cos(v); }); break;
+        case UnaryMathFunc::tan:        std::transform(src, src+len, dst, [](T v){ return std::tan(v); }); break;
+        case UnaryMathFunc::arcsin:     std::transform(src, src+len, dst, [](T v){ return std::asin(v); }); break;
+        case UnaryMathFunc::arccos:     std::transform(src, src+len, dst, [](T v){ return std::acos(v); }); break;
+        case UnaryMathFunc::arctan:     std::transform(src, src+len, dst, [](T v){ return std::atan(v); }); break;
+        case UnaryMathFunc::reciprocal: std::transform(src, src+len, dst, [](T v){ return reciprocal_helper(v); }); break;
+      }
+    }
+    static void cpp_unaryCopy_f(UnaryMathFunc func, const float* src, float* dst, int len) {
+      cpp_unaryCopy<float>(func, src, dst, len);
+    }
+    static void cpp_unaryCopy_d(UnaryMathFunc func, const double* src, double* dst, int len) {
+      cpp_unaryCopy<double>(func, src, dst, len);
+    }
+
+    // --- Unary-const backends ---
+
+    template<class T>
+    static void cpp_unaryConstInplace(UnaryConstFunc func, T* data, T val, int len) {
+      switch(func) {
+        case UnaryConstFunc::powc: std::for_each(data, data+len, [val](T& v){ v = std::pow(v, val); }); break;
+        case UnaryConstFunc::addc: std::for_each(data, data+len, [val](T& v){ v = v + val; }); break;
+        case UnaryConstFunc::subc: std::for_each(data, data+len, [val](T& v){ v = v - val; }); break;
+        case UnaryConstFunc::mulc: std::for_each(data, data+len, [val](T& v){ v = v * val; }); break;
+        case UnaryConstFunc::divc: std::for_each(data, data+len, [val](T& v){ v = v / val; }); break;
+      }
+    }
+    static void cpp_unaryConstInplace_f(UnaryConstFunc func, float* data, float val, int len) {
+      cpp_unaryConstInplace<float>(func, data, val, len);
+    }
+    static void cpp_unaryConstInplace_d(UnaryConstFunc func, double* data, double val, int len) {
+      cpp_unaryConstInplace<double>(func, data, val, len);
+    }
+
+    template<class T>
+    static void cpp_unaryConstCopy(UnaryConstFunc func, const T* src, T val, T* dst, int len) {
+      switch(func) {
+        case UnaryConstFunc::powc: std::transform(src, src+len, dst, [val](T v){ return std::pow(v, val); }); break;
+        case UnaryConstFunc::addc: std::transform(src, src+len, dst, [val](T v){ return v + val; }); break;
+        case UnaryConstFunc::subc: std::transform(src, src+len, dst, [val](T v){ return v - val; }); break;
+        case UnaryConstFunc::mulc: std::transform(src, src+len, dst, [val](T v){ return v * val; }); break;
+        case UnaryConstFunc::divc: std::transform(src, src+len, dst, [val](T v){ return v / val; }); break;
+      }
+    }
+    static void cpp_unaryConstCopy_f(UnaryConstFunc func, const float* src, float val, float* dst, int len) {
+      cpp_unaryConstCopy<float>(func, src, val, dst, len);
+    }
+    static void cpp_unaryConstCopy_d(UnaryConstFunc func, const double* src, double val, double* dst, int len) {
+      cpp_unaryConstCopy<double>(func, src, val, dst, len);
+    }
+
+    // --- Binary element-wise backends ---
+
+    template<class T>
+    static void cpp_binaryCopy(BinaryMathFunc func, const T* a, const T* b, T* dst, int len) {
+      switch(func) {
+        case BinaryMathFunc::add:     std::transform(a, a+len, b, dst, [](T x, T y){ return x + y; }); break;
+        case BinaryMathFunc::sub:     std::transform(a, a+len, b, dst, [](T x, T y){ return x - y; }); break;
+        case BinaryMathFunc::mul:     std::transform(a, a+len, b, dst, [](T x, T y){ return x * y; }); break;
+        case BinaryMathFunc::div:     std::transform(a, a+len, b, dst, [](T x, T y){ return x / y; }); break;
+        case BinaryMathFunc::pow:     std::transform(a, a+len, b, dst, [](T x, T y){ return std::pow(x, y); }); break;
+        case BinaryMathFunc::arctan2: std::transform(a, a+len, b, dst, [](T x, T y){ return std::atan2(x, y); }); break;
+      }
+    }
+    static void cpp_binaryCopy_f(BinaryMathFunc func, const float* a, const float* b, float* dst, int len) {
+      cpp_binaryCopy<float>(func, a, b, dst, len);
+    }
+    static void cpp_binaryCopy_d(BinaryMathFunc func, const double* a, const double* b, double* dst, int len) {
+      cpp_binaryCopy<double>(func, a, b, dst, len);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Binary functions ///////////////////////////////////////////////////////
+    // Backend registration via static init                                  //
     ///////////////////////////////////////////////////////////////////////////
 
-  #ifdef WIN32
-    IppStatus ippsArctan2_icl_32f(const float *a, const float *b, float *dst, int len){
-      std::transform(b,b+len,a,dst,static_cast<float(*)(const float, const float)>(::atan2));
-      return ippStsNoErr;
-    }
-    IppStatus ippsArctan2_icl_64f(const double *a, const double *b, double *dst, int len){
-      std::transform(b,b+len,a,dst,static_cast<double(*)(const double, const double)>(::atan2));
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_32f(const float *a, const float *b, float *dst, int len){
-      std::transform(a,a+len,b,dst,static_cast<float(*)(const float, const float)>(::pow));
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_64f(const double *a, const double *b, double *dst, int len){
-      std::transform(a,a+len,b,dst,static_cast<double(*)(const double, const double)>(::pow));
-      return ippStsNoErr;
-    }
-  #else
-    IppStatus ippsArctan2_icl_32f(const float *a, const float *b, float *dst, int len){
-      std::transform(b,b+len,a,dst,::atan2);
-      return ippStsNoErr;
-    }
-    IppStatus ippsArctan2_icl_64f(const double *a, const double *b, double *dst, int len){
-      std::transform(b,b+len,a,dst,::atan2);
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_32f(const float *a, const float *b, float *dst, int len){
-      std::transform(a,a+len,b,dst,::pow);
-      return ippStsNoErr;
-    }
-    IppStatus ippsPow_icl_64f(const double *a, const double *b, double *dst, int len){
-      std::transform(a,a+len,b,dst,::pow);
-      return ippStsNoErr;
-    }
-  #endif
+    static int _mathops_reg = [] {
+      using namespace icl::utils;
 
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                                                                                         \
-    template<class T>                                                                                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst)                                            \
-    {                                                                                       \
-      ERROR_LOG("not implemented for this type!");                                                                                        \
-      return dst;                                                                                                                         \
-    }                                                                                                                                     \
-    template<> ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float> &a, const DynMatrix<float> &b, DynMatrix<float> &dst)     \
-    {                                                                                       \
-      CHECK_DIM(a,b,dst);                                                                                                                 \
-      dst.setBounds(a.cols(), a.rows());                                                                                                  \
-      ipps##func##_32f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
-      return dst;                                                                                                                         \
-    }                                                                                                                                     \
-    template<> ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double> &a, const DynMatrix<double> &b, DynMatrix<double> &dst) \
-    {                                                                                       \
-      CHECK_DIM(a,b,dst);                                                                                                                 \
-      dst.setBounds(a.cols(), a.rows());                                                                                                  \
-      ipps##func##_64f(b.begin(), a.begin(), dst.begin(), a.dim());                                                                       \
-      return dst;                                                                                                                         \
-    }
+      // --- float ---
+      auto cpp_f = MathOps<float>::instance().backends(Backend::Cpp);
+      cpp_f.add<MathOps<float>::MeanSig>(MathOp::mean, cpp_mean_f);
+      cpp_f.add<MathOps<float>::VarSig>(MathOp::var, cpp_var_f);
+      cpp_f.add<MathOps<float>::MeanVarSig>(MathOp::meanvar, cpp_meanvar_f);
+      cpp_f.add<MathOps<float>::MinSig>(MathOp::min, cpp_min_f);
+      cpp_f.add<MathOps<float>::MaxSig>(MathOp::max, cpp_max_f);
+      cpp_f.add<MathOps<float>::MinMaxSig>(MathOp::minmax, cpp_minmax_f);
+      cpp_f.add<MathOps<float>::UnaryInplaceSig>(MathOp::unaryInplace, cpp_unaryInplace_f);
+      cpp_f.add<MathOps<float>::UnaryCopySig>(MathOp::unaryCopy, cpp_unaryCopy_f);
+      cpp_f.add<MathOps<float>::UnaryConstInplaceSig>(MathOp::unaryConstInplace, cpp_unaryConstInplace_f);
+      cpp_f.add<MathOps<float>::UnaryConstCopySig>(MathOp::unaryConstCopy, cpp_unaryConstCopy_f);
+      cpp_f.add<MathOps<float>::BinaryCopySig>(MathOp::binaryCopy, cpp_binaryCopy_f);
 
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2,Arctan2_icl)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(add,Add)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sub,Sub)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mul,Mul)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(div,Div)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(pow,Pow_icl)
+      // --- double ---
+      auto cpp_d = MathOps<double>::instance().backends(Backend::Cpp);
+      cpp_d.add<MathOps<double>::MeanSig>(MathOp::mean, cpp_mean_d);
+      cpp_d.add<MathOps<double>::VarSig>(MathOp::var, cpp_var_d);
+      cpp_d.add<MathOps<double>::MeanVarSig>(MathOp::meanvar, cpp_meanvar_d);
+      cpp_d.add<MathOps<double>::MinSig>(MathOp::min, cpp_min_d);
+      cpp_d.add<MathOps<double>::MaxSig>(MathOp::max, cpp_max_d);
+      cpp_d.add<MathOps<double>::MinMaxSig>(MathOp::minmax, cpp_minmax_d);
+      cpp_d.add<MathOps<double>::UnaryInplaceSig>(MathOp::unaryInplace, cpp_unaryInplace_d);
+      cpp_d.add<MathOps<double>::UnaryCopySig>(MathOp::unaryCopy, cpp_unaryCopy_d);
+      cpp_d.add<MathOps<double>::UnaryConstInplaceSig>(MathOp::unaryConstInplace, cpp_unaryConstInplace_d);
+      cpp_d.add<MathOps<double>::UnaryConstCopySig>(MathOp::unaryConstCopy, cpp_unaryConstCopy_d);
+      cpp_d.add<MathOps<double>::BinaryCopySig>(MathOp::binaryCopy, cpp_binaryCopy_d);
 
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
+      return 0;
+    }();
+
     ///////////////////////////////////////////////////////////////////////////
-    // Other functions ////////////////////////////////////////////////////////
+    // Dispatch functions: unary element-wise                                //
+    ///////////////////////////////////////////////////////////////////////////
+
+#define MATH_UNARY_OP(name, func_enum)                                              \
+    template<class T> DynMatrix<T>& matrix_##name(DynMatrix<T> &m) {                \
+        MathOps<T>::instance()                                                       \
+            .template getSelector<typename MathOps<T>::UnaryInplaceSig>(MathOp::unaryInplace) \
+            .resolveOrThrow(0)->apply(UnaryMathFunc::func_enum, m.begin(), m.dim()); \
+        return m;                                                                    \
+    }                                                                                \
+    template<class T> DynMatrix<T>& matrix_##name(const DynMatrix<T> &m, DynMatrix<T> &dst) { \
+        dst.setBounds(m.cols(), m.rows());                                           \
+        MathOps<T>::instance()                                                       \
+            .template getSelector<typename MathOps<T>::UnaryCopySig>(MathOp::unaryCopy) \
+            .resolveOrThrow(0)->apply(UnaryMathFunc::func_enum, m.begin(), dst.begin(), m.dim()); \
+        return dst;                                                                  \
+    }                                                                                \
+    template ICLMath_API DynMatrix<float>& matrix_##name(DynMatrix<float>&);         \
+    template ICLMath_API DynMatrix<double>& matrix_##name(DynMatrix<double>&);       \
+    template ICLMath_API DynMatrix<float>& matrix_##name(const DynMatrix<float>&, DynMatrix<float>&); \
+    template ICLMath_API DynMatrix<double>& matrix_##name(const DynMatrix<double>&, DynMatrix<double>&);
+
+    MATH_UNARY_OP(abs, abs)
+    MATH_UNARY_OP(log, log)
+    MATH_UNARY_OP(exp, exp)
+    MATH_UNARY_OP(sqrt, sqrt)
+    MATH_UNARY_OP(sqr, sqr)
+    MATH_UNARY_OP(sin, sin)
+    MATH_UNARY_OP(cos, cos)
+    MATH_UNARY_OP(tan, tan)
+    MATH_UNARY_OP(arcsin, arcsin)
+    MATH_UNARY_OP(arccos, arccos)
+    MATH_UNARY_OP(arctan, arctan)
+    MATH_UNARY_OP(reciprocal, reciprocal)
+#undef MATH_UNARY_OP
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Dispatch functions: unary-const ops                                   //
+    ///////////////////////////////////////////////////////////////////////////
+
+#define MATH_UNARY_CONST_OP(name, func_enum)                                        \
+    template<class T> DynMatrix<T>& matrix_##name(DynMatrix<T> &m, T val) {         \
+        MathOps<T>::instance()                                                       \
+            .template getSelector<typename MathOps<T>::UnaryConstInplaceSig>(MathOp::unaryConstInplace) \
+            .resolveOrThrow(0)->apply(UnaryConstFunc::func_enum, m.begin(), val, m.dim()); \
+        return m;                                                                    \
+    }                                                                                \
+    template<class T> DynMatrix<T>& matrix_##name(const DynMatrix<T> &m, T val, DynMatrix<T> &dst) { \
+        dst.setBounds(m.cols(), m.rows());                                           \
+        MathOps<T>::instance()                                                       \
+            .template getSelector<typename MathOps<T>::UnaryConstCopySig>(MathOp::unaryConstCopy) \
+            .resolveOrThrow(0)->apply(UnaryConstFunc::func_enum, m.begin(), val, dst.begin(), m.dim()); \
+        return dst;                                                                  \
+    }                                                                                \
+    template ICLMath_API DynMatrix<float>& matrix_##name(DynMatrix<float>&, float);  \
+    template ICLMath_API DynMatrix<double>& matrix_##name(DynMatrix<double>&, double); \
+    template ICLMath_API DynMatrix<float>& matrix_##name(const DynMatrix<float>&, float, DynMatrix<float>&); \
+    template ICLMath_API DynMatrix<double>& matrix_##name(const DynMatrix<double>&, double, DynMatrix<double>&);
+
+    MATH_UNARY_CONST_OP(powc, powc)
+    MATH_UNARY_CONST_OP(addc, addc)
+    MATH_UNARY_CONST_OP(subc, subc)
+    MATH_UNARY_CONST_OP(mulc, mulc)
+    MATH_UNARY_CONST_OP(divc, divc)
+#undef MATH_UNARY_CONST_OP
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Dispatch functions: binary element-wise                               //
+    ///////////////////////////////////////////////////////////////////////////
+
+#define MATH_BINARY_OP(name, func_enum)                                             \
+    template<class T>                                                               \
+    DynMatrix<T>& matrix_##name(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) { \
+        CHECK_DIM(a, b, dst);                                                       \
+        dst.setBounds(a.cols(), a.rows());                                           \
+        MathOps<T>::instance()                                                       \
+            .template getSelector<typename MathOps<T>::BinaryCopySig>(MathOp::binaryCopy) \
+            .resolveOrThrow(0)->apply(BinaryMathFunc::func_enum, a.begin(), b.begin(), dst.begin(), a.dim()); \
+        return dst;                                                                  \
+    }                                                                                \
+    template ICLMath_API DynMatrix<float>& matrix_##name(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&); \
+    template ICLMath_API DynMatrix<double>& matrix_##name(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&);
+
+    MATH_BINARY_OP(add, add)
+    MATH_BINARY_OP(sub, sub)
+    MATH_BINARY_OP(mul, mul)
+    MATH_BINARY_OP(div, div)
+    MATH_BINARY_OP(pow, pow)
+    MATH_BINARY_OP(arctan2, arctan2)
+#undef MATH_BINARY_OP
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Dispatch functions: min / max / minmax                                //
     ///////////////////////////////////////////////////////////////////////////
 
     template<class T>
-    T matrix_min(const DynMatrix<T> &m, int *x, int *y){
-      ERROR_LOG("not implemented for this type!");
-      return 0;
+    T matrix_min(const DynMatrix<T> &m, int *x, int *y) {
+      ICLASSERT_RETURN_VAL(m.cols(), 0);
+      return MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::MinSig>(MathOp::min)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim(), m.cols(), x, y);
     }
+    template ICLMath_API float matrix_min(const DynMatrix<float>&, int*, int*);
+    template ICLMath_API double matrix_min(const DynMatrix<double>&, int*, int*);
+
     template<class T>
-    T matrix_max(const DynMatrix<T> &m, int *x, int *y){
-      ERROR_LOG("not implemented for this type!");
-      return 0;
+    T matrix_max(const DynMatrix<T> &m, int *x, int *y) {
+      ICLASSERT_RETURN_VAL(m.cols(), 0);
+      return MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::MaxSig>(MathOp::max)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim(), m.cols(), x, y);
     }
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,type,suffix,ippf)             \
-    template<> ICLMath_API type matrix_##op(const DynMatrix<type> &m, int *x, int *y){ \
-      type mVal = 0;                                                      \
-      if(x || y){                                                         \
-        int mIdx = 0;                                                     \
-        ipps##ippf##Indx_##suffix(m.begin(),m.dim(),&mVal,&mIdx);         \
-        if(x) *x = mIdx%m.cols();                                         \
-        if(y) *y = mIdx/m.cols();                                         \
-      }else{                                                              \
-        ipps##ippf##_##suffix(m.begin(),m.dim(),&mVal);                   \
-      }                                                                   \
-      return mVal;                                                        \
-    }
-    INSTANTIATE_DYN_MATRIX_MATH_OP(min,float,32f,Min)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(max,float,32f,Max)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(min,double,64f,Min)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(max,double,64f,Max)
-
-
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
+    template ICLMath_API float matrix_max(const DynMatrix<float>&, int*, int*);
+    template ICLMath_API double matrix_max(const DynMatrix<double>&, int*, int*);
 
     template<class T>
     void matrix_minmax(const DynMatrix<T> &m, T dst[2],
                        int *minx, int *miny,
-                       int *maxx, int *maxy){
-      ERROR_LOG("not implemented for this type!");
+                       int *maxx, int *maxy) {
+      MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::MinMaxSig>(MathOp::minmax)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim(), m.cols(), dst, minx, miny, maxx, maxy);
     }
-    template<> ICLMath_API void matrix_minmax(const DynMatrix<float> &m, float dst[2],
-                                  int *minx, int *miny,
-                                  int *maxx, int *maxy){
-      if(minx || miny || maxx || maxy){
-        int minIdx = 0;
-        int maxIdx = 0;
-        ippsMinMaxIndx_32f(m.begin(),m.dim(),dst+0,&minIdx,dst+1,&maxIdx);
-        if(minx) *minx = minIdx%m.cols();
-        if(miny) *miny = minIdx/m.cols();
-        if(maxx) *maxx = maxIdx%m.cols();
-        if(maxy) *maxy = maxIdx/m.cols();
-      }else{
-        ippsMinMax_32f(m.begin(),m.dim(),dst+0,dst+1);
-      }
+    template ICLMath_API void matrix_minmax(const DynMatrix<float>&, float[2], int*, int*, int*, int*);
+    template ICLMath_API void matrix_minmax(const DynMatrix<double>&, double[2], int*, int*, int*, int*);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Dispatch functions: mean / var / meanvar                              //
+    ///////////////////////////////////////////////////////////////////////////
+
+    template<class T> T matrix_mean(const DynMatrix<T> &m) {
+      return MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::MeanSig>(MathOp::mean)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim());
     }
-    template<> ICLMath_API void matrix_minmax(const DynMatrix<double> &m, double dst[2],
-                                  int *minx, int *miny,
-                                  int *maxx, int *maxy){
-      if(minx || miny || maxx || maxy){
-        int minIdx = 0;
-        int maxIdx = 0;
-        ippsMinMaxIndx_64f(m.begin(),m.dim(),dst+0,&minIdx,dst+1,&maxIdx);
-        if(minx) *minx = minIdx%m.cols();
-        if(miny) *miny = minIdx/m.cols();
-        if(maxx) *maxx = maxIdx%m.cols();
-        if(maxy) *maxy = maxIdx/m.cols();
-      }else{
-        ippsMinMax_64f(m.begin(),m.dim(),dst+0,dst+1);
-      }
-    }
-
-
-
-
-
-
-  #else
-    // **************************************************************************
-    // No IPP fallbacks
-    // **************************************************************************
-
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T>                                                     \
-    void elem_i_##op(T &t){                                               \
-      t = func(t);                                                        \
-    }                                                                     \
-    template<class T>                                                     \
-    T elem_##op(const T &t){                                              \
-      return func(t);                                                     \
-    }                                                                     \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(DynMatrix<T> &m){                           \
-      std::for_each(m.begin(),m.end(),elem_i_##op<T>);                    \
-      return m;                                                           \
-    }                                                                     \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, DynMatrix<T> &dst){  \
-      dst.setBounds(m.cols(),m.rows());                                   \
-      std::transform(m.begin(),m.end(),dst.begin(),elem_##op<T>);         \
-      return dst;                                                         \
-    }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float> &m);          \
-    template ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double> &m);
-
-    static inline double sqr(double x) { return x*x; }
-    static inline double reciprocal(double x) { return x ? 1.0/x : 0 ; }
-
-    INSTANTIATE_DYN_MATRIX_MATH_OP(abs,::fabs)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(log,::log)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(exp,::exp)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sqrt,::sqrt)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sqr,icl::math::sqr)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(reciprocal,icl::math::reciprocal)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sin,::sin)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(cos,::cos)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(tan,::tan)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arcsin,::asin)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arccos,::acos)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan,::atan)
-
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
-
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T> struct op##_inplace_functor{                        \
-      const T val;                                                        \
-      inline op##_inplace_functor(const T &val):val(val){}                \
-      inline void operator()(T &x) const{                                 \
-        x = func(x,val);                                                  \
-      }                                                                   \
-    };                                                                    \
-    template<class T> struct op##_functor{                                \
-      const T val;                                                        \
-      inline op##_functor(const T val):val(val){}                         \
-      inline double operator()(const T &x) const{                         \
-        return func(x,val);                                               \
-      }                                                                   \
-    };                                                                    \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(DynMatrix<T> &m, T val){                    \
-      std::for_each(m.begin(),m.end(),op##_inplace_functor<T>(val));      \
-      return m;                                                           \
-    }                                                                     \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &m, T val, DynMatrix<T> &dst){ \
-      std::transform(m.begin(),m.end(),dst.begin(),op##_functor<T>(val)); \
-      return dst;                                                         \
-    }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(DynMatrix<float>&, float);     \
-    template ICLMath_API DynMatrix<double> &matrix_##op(DynMatrix<double>&, double);  \
-    template ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float>&, float, DynMatrix<float>&); \
-    template ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double>&, double, DynMatrix<double>&);
-
-    template <class T> static inline T addc(const T &a, const T &b){ return a+b; }
-    template <class T> static inline T subc(const T &a, const T &b){ return a-b; }
-    template <class T> static inline T divc(const T &a, const T &b){ return a/b; }
-    template <class T> static inline T mulc(const T &a, const T &b){ return a*b; }
-
-    INSTANTIATE_DYN_MATRIX_MATH_OP(powc,::pow)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(addc,icl::math::addc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(subc,icl::math::subc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mulc,icl::math::mulc)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(divc,icl::math::divc)
-
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
-
-
-  // binary functions
-  #define INSTANTIATE_DYN_MATRIX_MATH_OP(op,func)                         \
-    template<class T>                                                     \
-    DynMatrix<T> &matrix_##op(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) \
-    {                       \
-      CHECK_DIM(a,b,dst);                                                 \
-      dst.setBounds(a.cols(),a.rows());                                   \
-      std::transform(a.begin(),a.end(),b.begin(),dst.begin(),func);       \
-      return dst;                                                         \
-    }                                                                     \
-    template ICLMath_API DynMatrix<float> &matrix_##op(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&);    \
-    template ICLMath_API DynMatrix<double> &matrix_##op(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&);
-
-    INSTANTIATE_DYN_MATRIX_MATH_OP(add,icl::math::addc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(sub,icl::math::subc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(mul,icl::math::mulc<T>)
-    INSTANTIATE_DYN_MATRIX_MATH_OP(div,icl::math::divc<T>)
-
-    INSTANTIATE_DYN_MATRIX_MATH_OP(pow, static_cast<T(*)(T, T)>(std::pow))
-    INSTANTIATE_DYN_MATRIX_MATH_OP(arctan2, static_cast<T(*)(T, T)>(std::atan2))
-  #undef INSTANTIATE_DYN_MATRIX_MATH_OP
-
-    // others
-
-    template<class T>
-    T matrix_min(const DynMatrix<T> &m, int *x, int *y){
-      ICLASSERT_RETURN_VAL(m.cols(),0);
-      const T *a = std::min_element(m.begin(),m.end());
-      int idx = static_cast<int>(a-m.begin());
-      if(x) *x = idx%m.cols();
-      if(y) *y = idx/m.cols();
-      return *a;
-    }
-
-    template ICLMath_API float matrix_min(const DynMatrix<float> &m, int *x, int *y);
-    template ICLMath_API double matrix_min(const DynMatrix<double> &m, int *x, int *y);
-
-    template<class T>
-    T matrix_max(const DynMatrix<T> &m, int *x, int *y){
-      ICLASSERT_RETURN_VAL(m.cols(),0);
-      const T *a = std::max_element(m.begin(),m.end());
-      int idx = static_cast<int>(a-m.begin());
-      if(x) *x = idx%m.cols();
-      if(y) *y = idx/m.cols();
-      return *a;
-    }
-
-    template ICLMath_API float matrix_max(const DynMatrix<float> &m, int *x, int *y);
-    template ICLMath_API double matrix_max(const DynMatrix<double> &m, int *x, int *y);
-
-
-    template<class T>
-    void matrix_minmax(const DynMatrix<T> &m, T dst[2],
-                       int *minx, int *miny,
-                       int *maxx, int *maxy){
-      dst[0] = matrix_min(m,minx,miny);
-      dst[1] = matrix_max(m,maxx,maxy);
-    }
-
-    template ICLMath_API void matrix_minmax(const DynMatrix<float> &m, float dst[2], int*, int*, int*, int*);
-    template ICLMath_API void matrix_minmax(const DynMatrix<double> &m, double dst[2], int*, int*, int*, int*);
-
-
-  #endif //ICL_HAVE_IPP
-
-
-    /// ------------------------------------------------------------
-    /// ipp and non-ipp mixed ...
-    /// ------------------------------------------------------------
-
-
-    // MEAN ***************************
-    template<class T> T matrix_mean(const DynMatrix<T> &m){
-      return std::accumulate(m.begin(),m.end(),T(0))/m.dim();
-    }
-
-  #ifdef ICL_HAVE_IPP
-    template<> ICLMath_API float matrix_mean(const DynMatrix<float> &m){
-      float v=0; ippsMean_32f(m.begin(),m.dim(),&v,ippAlgHintNone);  return v;
-    }
-
-    template<> ICLMath_API double matrix_mean(const DynMatrix<double> &m){
-      double v=0; ippsMean_64f(m.begin(),m.dim(),&v); return v;
-    }
-  #else
     template ICLMath_API float matrix_mean(const DynMatrix<float>&);
     template ICLMath_API double matrix_mean(const DynMatrix<double>&);
-  #endif
 
-    // VAR ***************************
     template<class T> struct var_functor{
       T mean,&accu;
       static inline T util_sqr(const T &t){ return t*t; }
@@ -579,27 +463,15 @@ namespace icl{
       void operator()(const T&x) const { accu += util_sqr(mean-x); }
     };
 
-    template<class T>
-    T matrix_var(const DynMatrix<T> &m){
-      if(m.dim()<2){ return 0; }
-      T var = 0;
-      std::for_each(m.begin(),m.end(),var_functor<T>(matrix_mean(m),var));
-      return var/(m.dim()-1);
+    template<class T> T matrix_var(const DynMatrix<T> &m) {
+      return MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::VarSig>(MathOp::var)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim());
     }
-
-  #ifdef ICL_HAVE_IPP
-    template<> ICLMath_API float matrix_var(const DynMatrix<float> &m){
-      float v=0; ippsStdDev_32f(m.begin(),m.dim(),&v,ippAlgHintNone); return v*v;
-    }
-    template<> ICLMath_API double matrix_var(const DynMatrix<double> &m){
-      double v=0; ippsStdDev_64f(m.begin(),m.dim(),&v); return v*v;
-    }
-  #else
     template ICLMath_API float matrix_var(const DynMatrix<float>&);
     template ICLMath_API double matrix_var(const DynMatrix<double>&);
-  #endif // ICL_HAVE_IPP
 
-     // VAR (2)***************************
+    // VAR (2) -- plain template, not dispatched (no IPP version exists)
     template<class T>
     T matrix_var(const DynMatrix<T> &m, T mean, bool empiricalMean){
       if(m.dim()<2){ return 0; }
@@ -611,31 +483,14 @@ namespace icl{
     template ICLMath_API float matrix_var(const DynMatrix<float>&, float, bool);
     template ICLMath_API double matrix_var(const DynMatrix<double>&, double, bool);
 
-
-    // MEANVAR ***************************
     template<class T>
-    void matrix_meanvar(const DynMatrix<T> &m, T *mean, T*var){
-      T meanVal = matrix_mean(m);
-      T varVal = matrix_var(m,meanVal,true);
-      if(mean) *mean=meanVal;
-      if(var) *var=varVal;
+    void matrix_meanvar(const DynMatrix<T> &m, T *mean, T *var) {
+      MathOps<T>::instance()
+          .template getSelector<typename MathOps<T>::MeanVarSig>(MathOp::meanvar)
+          .resolveOrThrow(0)->apply(m.begin(), m.dim(), mean, var);
     }
-
-  #ifdef ICL_HAVE_IPP
-    template<> ICLMath_API void matrix_meanvar(const DynMatrix<float> &m, float *mean, float *var){
-      ICLASSERT_RETURN(mean && var);
-      ippsMeanStdDev_32f(m.begin(),m.dim(),mean,var,ippAlgHintNone);
-      *var = (*var)*(*var);
-    }
-    template<> ICLMath_API void matrix_meanvar(const DynMatrix<double> &m, double *mean, double*var){
-      ICLASSERT_RETURN(mean && var);
-      ippsMeanStdDev_64f(m.begin(),m.dim(),mean,var);
-      *var = (*var)*(*var);
-    }
-  #else
     template ICLMath_API void matrix_meanvar(const DynMatrix<float>&, float*, float*);
     template ICLMath_API void matrix_meanvar(const DynMatrix<double>&, double*, double*);
-  #endif // ICL_HAVE_IPP
 
 
     // STDDEV ***************************

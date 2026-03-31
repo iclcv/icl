@@ -36,10 +36,6 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#ifdef ICL_HAVE_IPP
-#include <ipps.h>
-#endif
-
 namespace icl {
   namespace math{
     /// Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
@@ -86,20 +82,8 @@ namespace icl {
       return sum / num;
     }
 
-    /** \cond */
-#ifdef ICL_HAVE_IPP
-    template<> inline double mean<const icl32f*>(const icl32f *begin,const icl32f *end){
-      icl32f m = 0;
-      ippsMean_32f(begin,end-begin,&m,ippAlgHintAccurate);
-      return m;
-    }
-    template<> inline double mean<const icl64f*>(const icl64f *begin,const icl64f *end){
-      icl64f m = 0;
-      ippsMean_64f(begin,end-begin,&m);
-      return m;
-    }
-#endif
-    /** \endcond */
+    // TODO: add IPP backend for mean<const icl32f*> (ippsMean_32f) and
+    //       mean<const icl64f*> (ippsMean_64f) via MathOps dispatch
 
 
 

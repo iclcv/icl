@@ -1,6 +1,14 @@
 file(GLOB SOURCES src/ICLMath/*.cpp)
 file(GLOB HEADERS src/ICLMath/*.h)
 
+# Convention: *_Ipp.cpp = IPP-only, *_Mkl.cpp = MKL-only
+if(NOT IPP_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
+endif()
+if(NOT MKL_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Mkl\\.cpp$")
+endif()
+
 icl_add_module(ICLMath
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}
