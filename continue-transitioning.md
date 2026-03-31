@@ -1,8 +1,8 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 22 — BlasOps/FFTOps + BackendDispatching Refactor)
+## Current State (Session 22 — BlasOps/FFTOps + BackendDispatching Refactor + BLAS Consumer Wiring)
 
-### Session 22 Summary
+### Session 22 Summary (continued)
 
 **New BLAS/FFT abstraction layer + BackendDispatching refactor.**
 
@@ -50,19 +50,60 @@ Cpp=0, Simd=1, OpenBlas=2, Ipp=3, FFTW=4, Accelerate=5, Mkl=6, OpenCL=7
 - `_Accelerate.cpp` excluded when `!ACCELERATE_FOUND`
 - `_OpenBlas.cpp` excluded when `!OPENBLAS_FOUND`
 
+**BLAS consumers wired (DynMatrix + DynMatrixUtils):**
+- `DynMatrix.cpp`: `big_matrix_pinv` now uses `BlasOps<T>::gesdd` + `gemm` via
+  `resolveOrThrow()`. No fallback logic — C++ backend always available.
+- `DynMatrixUtils.cpp`: `big_matrix_mult_t` now uses `BlasOps<T>::gemm` via
+  `resolveOrThrow()`. MKL explicit specializations removed.
+- All `#ifdef ICL_HAVE_MKL` removed from DynMatrix.h, DynMatrix.cpp, DynMatrixUtils.cpp (6 blocks).
+- `BlasOps_Cpp.cpp` GEMM optimized: compile-time dispatch of transA/transB/alpha/beta
+  via template specialization + `if constexpr` (eliminates inner-loop conditionals).
+  Epsilon-based `isZero()`/`isOne()` for float-safe alpha/beta comparison.
+- `BlasOps_Cpp.cpp` SVD: full Golub-Kahan bidiagonalization (`svd_bidiag`) moved here
+  from DynMatrixUtils.cpp. C++ GESDD backend always works (no more stub returning -1).
+
+**FFT consumer wiring attempted but reverted (segfault):**
+- Rewrote `fft2D<T1,T2>` and `ifft2D<T1,T2>` generic templates to use FFTOps dispatch.
+  All 19 explicit specializations with `#ifdef ICL_HAVE_MKL` eliminated (replaced by
+  template instantiations). The generic template handles type conversion + dispatch.
+- **Segfault in multi-threaded tests.** Root cause: `FFTOps_Cpp.cpp` wraps raw pointers
+  in non-owning `DynMatrix(cols, rows, ptr, false)` and passes to `fft2D_cpp`. The FFT
+  row-column decomposition writes to `dst` with transposed dimensions — the non-owning
+  wrapper's buffer may be too small or have wrong stride. Fix: use owned DynMatrix
+  intermediates in the C++ backend, copy result back to raw pointer at the end.
+- **Changes reverted** to keep branch green. FFTUtils.cpp still has 21 MKL blocks.
+
+**Remaining `ICL_HAVE_MKL` references:**
+- FFTUtils.cpp: 21 blocks (2 wrapper blocks + 19 specialization blocks, all still active)
+- Camera.cpp: 1 (dead comment)
+- PThreadFix.h: 1 (dead, inside `#if 0`)
+- ICLConfig.h.in / doxyfile.in: build system definitions (must stay)
+
 **Tests: 349/349 pass.** Build clean on macOS.
 
 ### Next Steps
 
-- **Wire consumers** — Replace `#ifdef ICL_HAVE_MKL` in DynMatrix.cpp,
-  DynMatrixUtils.cpp, and FFTUtils.cpp with BlasOps/FFTOps dispatch calls.
-  Remove MKL includes from consumer files. Delete FFTDispatching.h/.cpp.
-- **GLImg.cpp** — 1 remaining `#ifdef ICL_HAVE_IPP` block in ICLQt
-- **Camera.cpp** — Remove dead MKL comment
-- **Add Accelerate backend** — `BlasOps_Accelerate.cpp` for macOS
-  (cblas_sgemm/dgemm + dgesdd via Accelerate framework)
-- **Add FFTW backend** — `FFTOps_FFTW.cpp` for cross-platform FFT
-- **ICLMath MKL** — 27 `#ifdef ICL_HAVE_MKL` blocks remain until consumers are wired
+- **Fix FFTOps_Cpp.cpp segfault** — Use owned DynMatrix in C++ FFT backend instead of
+  non-owning wrappers. The issue is `fft2D_cpp`'s row-column decomposition writes `dst`
+  with transposed buffer layout. Either: (a) allocate an owned DynMatrix, call fft2D_cpp,
+  copy result to raw pointer; or (b) rewrite the C++ FFT backend to work directly on
+  raw pointers without going through fft2D_cpp.
+- **Wire FFTUtils.cpp to FFTOps** — The generic template rewrite is ready (tested
+  single-threaded), just needs the C++ backend fix above. Once fixed, 21 MKL blocks
+  disappear and FFTDispatching.h/.cpp can be deleted.
+- **Deduplicate SVD** — `svd_internal` now lives in both `BlasOps_Cpp.cpp` and
+  `DynMatrixUtils.cpp`. Wire `svd_dyn()` to dispatch through `BlasOps<T>::gesdd`,
+  then remove the old copy from DynMatrixUtils.cpp.
+- **Camera.cpp** — Remove dead MKL comment (trivial)
+- **GLImg.cpp** — Last active `#ifdef ICL_HAVE_IPP` block (min/max, could use ImgOps)
+- **Add Accelerate backend** — `BlasOps_Accelerate.cpp` + `FFTOps_Accelerate.cpp`
+  for macOS (cblas via Accelerate framework, vDSP FFT)
+- **Consider LapackOps** — Separate dispatch for LAPACK operations (eigenvalue
+  decomposition, Cholesky, LU, etc.) beyond just GESDD
+- **FixedMatrix BLAS** — For small matrices (commonly 4x4), BlasOps dispatch overhead
+  is too high. Keep inlined implementations. IPP's `ippm` module (small matrix ops) was
+  dropped from modern IPP. Best choice for small matrices: compiler auto-vectorization
+  of the inlined code, or hand-written SIMD for the hot 4x4 case.
 
 ## Previous State (Session 21 — A2 + B + C/IPP Complete)
 
