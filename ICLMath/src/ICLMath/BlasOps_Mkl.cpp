@@ -68,62 +68,14 @@ namespace icl {
                     M, N, K, alpha, A, lda, B, ldb, beta, C, ldc);
       }
 
-      // ---- GESDD (SVD) ----
-
-      int mkl_gesdd_f(char jobz, int M, int N, float* A, int lda,
-                      float* S, float* U, int ldu, float* Vt, int ldvt) {
-        int info;
-        int mn = std::min(M, N);
-        std::vector<int> iwork(std::max(1, 8 * mn));
-
-        // Query optimal workspace
-        float work_query;
-        int lwork = -1;
-        sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               &work_query, &lwork, iwork.data(), &info);
-        if(info != 0) return info;
-
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
-
-        // Compute SVD
-        sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               work.data(), &lwork, iwork.data(), &info);
-        return info;
-      }
-
-      int mkl_gesdd_d(char jobz, int M, int N, double* A, int lda,
-                      double* S, double* U, int ldu, double* Vt, int ldvt) {
-        int info;
-        int mn = std::min(M, N);
-        std::vector<int> iwork(std::max(1, 8 * mn));
-
-        // Query optimal workspace
-        double work_query;
-        int lwork = -1;
-        dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               &work_query, &lwork, iwork.data(), &info);
-        if(info != 0) return info;
-
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
-
-        // Compute SVD
-        dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               work.data(), &lwork, iwork.data(), &info);
-        return info;
-      }
-
     } // anonymous namespace
 
     static const int _mkl_blas_reg = []() {
       auto mkl_f = BlasOps<float>::instance().backends(Backend::Mkl);
       mkl_f.add<BlasOps<float>::GemmSig>(BlasOp::gemm, mkl_gemm_f, "MKL cblas_sgemm");
-      mkl_f.add<BlasOps<float>::GesddSig>(BlasOp::gesdd, mkl_gesdd_f, "MKL sgesdd");
 
       auto mkl_d = BlasOps<double>::instance().backends(Backend::Mkl);
       mkl_d.add<BlasOps<double>::GemmSig>(BlasOp::gemm, mkl_gemm_d, "MKL cblas_dgemm");
-      mkl_d.add<BlasOps<double>::GesddSig>(BlasOp::gesdd, mkl_gesdd_d, "MKL dgesdd");
 
       return 0;
     }();

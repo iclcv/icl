@@ -29,9 +29,11 @@
 ********************************************************************/
 
 #include <ICLMath/FFTUtils.h>
-#include <ICLMath/FFTDispatching.h>
+#include <ICLMath/FFTOps.h>
 #include <limits>
 #include <type_traits>
+#include <algorithm>
+#include <vector>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #ifdef min
@@ -211,17 +213,7 @@ namespace icl{
 	return p;
       }
 
-      static bool  isPowerOfTwo(int n){
-	int p = 1;
-	while(p<n){
-          p*=2;
-	}
-	if(p==n){
-          return true;
-	} else {
-          return false;
-	}
-      }
+
 
       template<typename T>
       DynMatrix<T>&  logpowerspectrum(const DynMatrix<std::complex<T> > &src,
@@ -854,373 +846,6 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  fft(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  fft(unsigned int n, const std::complex<icl64f>* a);
 
-// Disabled: ippiFFTInitAlloc_* was removed from modern IPP (oneAPI 2022+).
-// FFT now routes through FFTDispatching with C++ backends.
-#if 0 // was: ICL_HAVE_IPP
-      template<typename T>
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<T> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-	FFT_DEBUG("using ipp fft");
-	IppiFFTSpec_R_32f *spec = 0;
-	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_R_32f(&spec,log2(src.cols()),log2(src.rows()),
-                                                  IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	int dim = src.cols()*src.rows();
-
-	int minBufSize = 0;
-	ippiFFTGetBufSize_R_32f(spec,&minBufSize);
-
-	int currBufSize  = buf.cols()*buf.rows()*sizeof(icl32c)*sizeof(icl32c);
-	Ipp8u *buffer=0;
-	if(currBufSize >= minBufSize){
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}else{
-          buf.setBounds(src.cols(),src.rows());
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}
-	//needed for type conversation
-	Ipp32f *srcbuf= new Ipp32f[dim];
-	for(int i=0;i<dim;++i){
-          srcbuf[i]=Ipp32f(src.data()[i]);
-	}
-	Ipp32f *dstbuf = new Ipp32f[dim];
-	int srcStep = src.cols()*sizeof(Ipp32f);
-	status = ippiFFTFwd_RToPack_32f_C1R(srcbuf, srcStep,
-                                            dstbuf, srcStep, spec,buffer);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	status = ippiFFTFree_R_32f(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	IppiSize size;
-	size.width = src.cols();
-	size.height = src.rows();
-	status = ippiPackToCplxExtend_32f32fc_C1R(dstbuf, size,srcStep,
-                                                  reinterpret_cast<Ipp32fc*>(dst.data()),src.cols()*sizeof(Ipp32fc));
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	delete[] srcbuf;
-	delete[] dstbuf;
-	return dst;
-      }
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                           DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_fft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                   DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-
-	IppiFFTSpec_C_32fc *spec = 0;
-	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
-                                                   IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	int minBufSize = 0;
-	ippiFFTGetBufSize_C_32fc(spec,&minBufSize);
-
-	int currBufSize  = buf.cols()*buf.rows()*sizeof(icl32c)*sizeof(icl32c);
-	Ipp8u *buffer=0;
-	if(currBufSize >= minBufSize){
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}else{
-          buf.setBounds(src.cols(),src.rows());
-          buffer = reinterpret_cast<Ipp8u*>(buf.data());
-	}
-
-	int srcStep = src.cols()*sizeof(Ipp32fc);
-	status = ippiFFTFwd_CToC_32fc_C1R(reinterpret_cast<const Ipp32fc*>(src.data()), srcStep,
-                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, buffer);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	status = ippiFFTFree_C_32fc(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	return dst;
-      }
-#endif
-
-#ifdef ICL_HAVE_MKL
-#include <mkl_dfti.h>
-      template<typename T>
-      void unpack_mkl_fft(T *src,std::complex<T> *dst, unsigned int cols, unsigned int rows){
-
-	unsigned int dim = cols*rows;
-	T re = 0.0;
-	T im = 0.0;
-	//first element
-	dst[0]=std::complex<T>(src[0],0);
-	unsigned int j=1;
-	unsigned int offrow = cols*rows/2;
-	//first row
-	for(unsigned int i=1;i<cols-1;i+=2){
-          re =src[i];
-          im = src[i+1];
-          dst[j] = std::complex<T>(re,im);
-          dst[cols-j] = std::complex<T>(re,-im);
-          ++j;
-	}
-	if(rows%2 ==0){
-          dst[offrow]=std::complex<T>(src[dim-cols],0);
-	}
-	if(cols%2 ==0){
-          dst[cols/2]=std::complex<T>(src[cols-1],0);
-	}
-	if(cols%2==0 && rows%2==0){
-          dst[offrow+cols/2]=std::complex<T>(src[dim-1],0);
-	}
-	j=cols;
-	unsigned int offcol = cols/2;
-
-	for(unsigned int i=cols;i<dim-cols-1;i+=2*cols){
-          re =src[i];
-          im = src[i+cols];
-          dst[j] = std::complex<T>(re,im);
-          dst[dim-j] = std::complex<T>(re,-im);
-          if(cols%2==0 ){
-            re =src[i+cols-1];
-            im = src[i+2*cols-1];
-            dst[j+offcol] = std::complex<T>(re,im);
-            dst[dim-j+offcol] = std::complex<T>(re,-im);
-          }
-          j+=cols;
-	}
-	unsigned int a = cols/2;
-	if(cols%2==1){
-          a=cols/2+1;
-	}
-	unsigned int cindex=1;
-	for(unsigned int r=1;r<a;++r){
-          j=cols+r;
-          for(unsigned int i=cols+cindex;i<dim;i+=cols){
-            re =src[i];
-            im = src[i+1];
-            dst[j] = std::complex<T>(re,im);
-            dst[dim-j+cols] = std::complex<T>(re,-im);
-            j+=cols;
-          }
-          cindex+=2;
-	}
-      }
-
-      template
-      void  unpack_mkl_fft(float *src, std::complex<float> *dst, unsigned int cols,
-                           unsigned int rows);
-      template
-      void  unpack_mkl_fft(double *src, std::complex<double> *dst, unsigned int cols,
-                           unsigned int rows);
-
-      template<class T2> DFTI_CONFIG_VALUE getMKLDftiType(){ return DFTI_DOUBLE; }
-      template<> DFTI_CONFIG_VALUE getMKLDftiType<float>() { return DFTI_SINGLE; }
-
-      template<typename T1,typename T2>
-      DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_fft(
-                                                                          const DynMatrix<T1> &src, DynMatrix<std::complex<T2> > &dst,
-                                                                          DynMatrix<std::complex<T2> > &buffer){
-	FFT_DEBUG("using mkl fft2d");
-	unsigned int dimx = src.cols();
-	unsigned int dimy = src.rows();
-	T2 *srcbuf = new T2[dimy*dimx];
-	for(unsigned int i=0;i<src.rows()*src.cols();++i){
-          srcbuf[i] =T2(src.data()[i]);
-	}
-	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
-	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
-	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_REAL, 2,l);
-	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_PACKED_FORMAT, DFTI_PACK_FORMAT);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_INPUT_STRIDES,strides_in);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_OUTPUT_STRIDES,strides_out);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiCommitDescriptor( my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiCommitDescriptorError");
-	}
-	T2 *buf = reinterpret_cast<T2*>(buffer.data());
-	status = DftiComputeForward( my_desc1_handle, srcbuf, buf);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiComputeForwardError");
-	}
-	status = DftiFreeDescriptor(&my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftifreeDescriptorError");
-	}
-	unpack_mkl_fft(buf,dst.data(),dimx,dimy);
-	delete[] srcbuf;
-	return dst;
-      }
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl8u> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16u> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32u> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl16s> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32s> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl32f> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
-                                                                              DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_fft(const DynMatrix<icl64f> &src,
-                                                                              DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-
-      template<typename T1,typename T2>
-      void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,T1 *src,
-                                                   std::complex<T2>*dst, std::complex<T2> *buffer, unsigned int dimx, unsigned int dimy){
-	FFT_DEBUG("using mkl fft2d_complex");
-
-	MKL_LONG status;
-	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_INPUT_STRIDES,strides_in);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_OUTPUT_STRIDES,strides_out);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiCommitDescriptor( my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiCommitDescriptorError");
-	}
-	status = DftiComputeForward( my_desc1_handle, src, reinterpret_cast<T1*>(dst));
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiComputeForwardError");
-	}
-	status = DftiFreeDescriptor(&my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiFreeDescriptorError");
-	}
-      }
-      template
-      void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,_MKL_Complex8 *src,
-                                                   icl32c *dst, icl32c *buffer,unsigned int dimx, unsigned int dimy);
-      template
-      void mkl_wrapper_function_result_fft_complex(DFTI_DESCRIPTOR_HANDLE &my_desc1_handle,_MKL_Complex16 *src,
-                                                   std::complex<icl64f> *dst, std::complex<icl64f> *buffer,unsigned int dimx, unsigned int dimy);
-
-
-      DynMatrix<icl32c >& mkl_wrapper_function_result_fft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                     DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer){
-	unsigned int dimx = src.cols();
-	unsigned int dimy = src.rows();
-	_MKL_Complex8 *srcbuf = new _MKL_Complex8[dimy*dimx];
-	for(unsigned int i=0;i<src.rows()*src.cols();++i){
-          srcbuf[i] =*(reinterpret_cast<const _MKL_Complex8*>(&(src.data()[i])));
-	}
-	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
-	DFTI_DESCRIPTOR_HANDLE my_desc1_handle;
-	status = DftiCreateDescriptor( &my_desc1_handle, DFTI_SINGLE, DFTI_COMPLEX, 2,l);
-        (void)status;
-	mkl_wrapper_function_result_fft_complex(my_desc1_handle,srcbuf,dst.data(),buffer.data(),dimx,dimy);
-	delete[] srcbuf;
-	return dst;
-      }
-
-      DynMatrix<std::complex<icl64f> >& mkl_wrapper_function_result_fft_icl64fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer){
-	unsigned int dimx = src.cols();
-	unsigned int dimy = src.rows();
-	_MKL_Complex16 *srcbuf = new _MKL_Complex16[dimy*dimx];
-	for(unsigned int i=0;i<src.rows()*src.cols();++i){
-          srcbuf[i] =*(reinterpret_cast<const _MKL_Complex16*>(&(src.data()[i])));
-	}
-	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
-	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
-	status = DftiCreateDescriptor( &my_desc1_handle, DFTI_DOUBLE, DFTI_COMPLEX, 2,l);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiCreateDescriptorError");
-	}
-	mkl_wrapper_function_result_fft_complex(my_desc1_handle,srcbuf,dst.data(),buffer.data(),dimx,dimy);
-	delete[] srcbuf;
-	return dst;
-      }
-#endif
 
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >& fft2D_cpp(const DynMatrix<T1> &src,DynMatrix<std::complex<T2> > &dst,
@@ -1228,8 +853,7 @@ namespace icl{
 	FFT_DEBUG("fft2D_cpp");
 	//check buffer
 	if(buf.isNull() || buf.cols() != src.rows() || buf.rows() != src.cols()){
-          //always wrong, but in this case really right!!!
-          buf(src.rows(),src.cols());
+          buf.setBounds(src.rows(),src.cols());
 	}
 	unsigned int cols = src.cols();
 	unsigned int rows = src.rows();
@@ -1309,147 +933,103 @@ namespace icl{
       DynMatrix<icl32c >& fft2D_cpp(const DynMatrix<std::complex<icl64f> > &src,
                                                        DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
 
+      // Helper: is T a std::complex type?
+      template<class T> struct is_complex_t : std::false_type {};
+      template<class T> struct is_complex_t<std::complex<T>> : std::true_type {};
+
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >& fft2D(const DynMatrix<T1> &src,
-                                               DynMatrix<std::complex<T2> > &dst, DynMatrix<std::complex<T2> > &buf){
-        FFTContext ctx{(unsigned)src.rows(), (unsigned)src.cols()};
+                                           DynMatrix<std::complex<T2> > &dst, DynMatrix<std::complex<T2> > &buf){
+        unsigned int rows = src.rows();
+        unsigned int cols = src.cols();
+        if(dst.isNull() || dst.cols() != cols || dst.rows() != rows) {
+          dst.setBounds(cols, rows);
+        }
 
-        // Dispatch for icl32f: real input → icl32c output
-        if constexpr (std::is_same_v<T2, icl32f> && !std::is_same_v<T1, icl32c>) {
-          auto* impl = FFTDispatching::instance()
-            .getSelector<FFTFwd32fSig>(LegacyFFTOp::fwd32f).resolve(ctx);
-          if(impl) {
-            // Convert src to icl32f if needed, then dispatch
-            if constexpr (std::is_same_v<T1, icl32f>) {
-              return impl->apply(src, dst, buf);
-            }
-            // For other src types, let the backend handle conversion
-            // (C++ backend calls fft2D_cpp which handles all T1)
+        auto& ops = FFTOps<T2>::instance();
+
+        if constexpr (is_complex_t<T1>::value) {
+          // Complex-to-complex forward FFT
+          using IS = typename T1::value_type;
+          auto* impl = ops.template getSelector<typename FFTOps<T2>::C2CSig>(FFTOp::c2c).resolveOrThrow();
+          if constexpr (std::is_same_v<IS, T2>) {
+            impl->apply(reinterpret_cast<const std::complex<T2>*>(src.data()), rows, cols, dst.data());
+          } else {
+            std::vector<std::complex<T2>> conv(rows * cols);
+            const T1* s = src.data();
+            for(unsigned int i = 0; i < rows * cols; ++i) conv[i] = std::complex<T2>(T2(s[i].real()), T2(s[i].imag()));
+            impl->apply(conv.data(), rows, cols, dst.data());
+          }
+        } else {
+          // Real-to-complex forward FFT
+          auto* impl = ops.template getSelector<typename FFTOps<T2>::R2CSig>(FFTOp::r2c).resolveOrThrow();
+          if constexpr (std::is_same_v<T1, T2>) {
+            impl->apply(src.data(), rows, cols, dst.data());
+          } else {
+            std::vector<T2> conv(rows * cols);
+            const T1* s = src.data();
+            for(unsigned int i = 0; i < rows * cols; ++i) conv[i] = T2(s[i]);
+            impl->apply(conv.data(), rows, cols, dst.data());
           }
         }
-        // Dispatch for icl32c input (complex forward FFT)
-        if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
-          auto* impl = FFTDispatching::instance()
-            .getSelector<FFTFwd32fcSig>(LegacyFFTOp::fwd32fc).resolve(ctx);
-          if(impl) return impl->apply(src, dst, buf);
-        }
-
-        return fft2D_cpp(src,dst,buf);
+        return dst;
       }
+      // icl32f output
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl8u> &src,
-                                                   DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl16u> &src,
-                                                   DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32u> &src,
-                                                   DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl16s> &src,
-                                                   DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32s> &src,
-                                                   DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32f> &src,
-                                                   DynMatrix<icl32c > &dst,	DynMatrix<icl32c > &buf);
-
-      //double
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl8u> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16u> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32u> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl16s> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32s> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl32f> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  fft2D(const DynMatrix<icl64f> &src,
-                                                    DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<icl32c >&  fft2D(const DynMatrix<icl64f> &src,
-                                                    DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      //complex
-      template<> ICLMath_API
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+      template ICLMath_API
       DynMatrix<icl32c >& fft2D(const DynMatrix<icl32c > &src,
-                                                   DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-	if(isPowerOfTwo(src.cols()) && isPowerOfTwo(src.rows())){
-          // IPP FFT wrappers disabled (ippiFFTInitAlloc removed from modern IPP)
-	}
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft_icl32fc(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+      template ICLMath_API
+      DynMatrix<icl32c >& fft2D(const DynMatrix<icl64f> &src,
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+      template ICLMath_API
+      DynMatrix<icl32c >& fft2D(const DynMatrix<std::complex<icl64f> > &src,
+                                 DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+      // icl64f output
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl8u> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl16u> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32u> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl16s> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32s> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32f> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl64f> &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32c > &src,
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
       DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<std::complex<icl64f> > &src,
-                                                   DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_fft_icl64fc(src,dst,buf);
-#endif
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >& fft2D(const DynMatrix<icl32c > &src,DynMatrix<std::complex<icl64f> > &dst,
-                                                   DynMatrix<std::complex<icl64f> > &buf){
-	return fft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<icl32c >& fft2D(const DynMatrix<std::complex<icl64f> > &src,DynMatrix<icl32c > &dst,
-                                                   DynMatrix<icl32c > &buf){
-	return fft2D_cpp(src,dst,buf);
-      }
+                                               DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
 
       template<typename T1, typename T2>
       std::complex<T2>*  dft(unsigned int n, T1* src){
@@ -1666,258 +1246,8 @@ namespace icl{
       template ICLMath_API std::complex<icl64f>*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
       template ICLMath_API icl32c*  ifft_cpp(unsigned int n, const std::complex<icl64f>* a);
 
-// Disabled: ippiFFTInitAlloc_* was removed from modern IPP (oneAPI 2022+).
-#if 0 // was: ICL_HAVE_IPP
-      template<typename T>
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<T> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf){
-	FFT_DEBUG("using ipp ifft fc");
-	int dim = src.cols()*src.rows();
-	IppiFFTSpec_C_32fc *spec = 0;
-	//IppHintAlgorithm hint;
-	IppStatus status = ippiFFTInitAlloc_C_32fc(&spec,log2(src.cols()),log2(src.rows()),
-                                                   IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate); //or use ippAlgHintNone
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	int minBufSize = 0;
-	ippiFFTGetBufSize_C_32fc(spec,&minBufSize);
-	int currBufSize = dim*sizeof(icl32c)*sizeof(icl32c);
-	Ipp8u *buffer=0;
-	if(currBufSize<minBufSize){
-          buf.setBounds(src.cols(),src.rows());
-	}
-	buffer = reinterpret_cast<Ipp8u*>(buf.data());
-
-	Ipp32fc *srcbuf = new Ipp32fc[dim];
-	const T *srcdata = src.data();
-	icl32c t(0,0);
-	for(int i=0;i<dim;++i){
-          t = CreateComplex<T,icl32f>::create_complex(srcdata[i]);
-          Ipp32fc f={t.real(),t.imag()};
-          srcbuf[i]=f;
-	}
-	int srcStep = src.cols()*sizeof(Ipp32fc);
-	status = ippiFFTInv_CToC_32fc_C1R(srcbuf, srcStep,
-                                          reinterpret_cast<Ipp32fc*>(dst.data()), srcStep, spec, buffer);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	status = ippiFFTFree_C_32fc(spec);
-	if(status != ippStsOk){
-          std::string msg = "Error in IPP call!:";
-          msg +=ippGetStatusString(status);
-          throw FFTException(msg);
-	}
-	return dst;
-      }
-
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-      template
-      DynMatrix<icl32c >&  ipp_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
-#endif
-
-#ifdef ICL_HAVE_MKL
-      template<typename T1,typename T2>
-      DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<T1> &src,
-                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer){
-	FFT_DEBUG("using mkl ifft2d fc");
-	int dim = src.cols()*src.rows();
-	unsigned int dimx = src.cols();
-	unsigned int dimy = src.rows();
-	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
-	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
-	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_COMPLEX, 2,l);
-	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_PACKED_FORMAT, DFTI_PACK_FORMAT);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_INPUT_STRIDES,strides_in);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_OUTPUT_STRIDES,strides_out);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	T2 scale = 1.0/(T2)(dimx*dimy);
-	status = DftiSetValue(my_desc1_handle, DFTI_BACKWARD_SCALE, scale);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiCommitDescriptor( my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiCommitDescriptorError");
-	}
-	_MKL_Complex8 *srcbuf = new _MKL_Complex8[dim];
-	std::complex<T2> t(0,0);
-	for(int i=0;i<dim;++i){
-          t = CreateComplex<T1,T2>::create_complex(src.data()[i]);
-          _MKL_Complex8 temp;
-          temp.real = T2(t.real());
-          temp.imag = T2(t.imag());
-          srcbuf[i] = temp;
-	}
-	status = DftiComputeBackward( my_desc1_handle, srcbuf,
-                                      reinterpret_cast<_MKL_Complex8*>(dst.data()));
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiComputeBackwardError");
-	}
-	status = DftiFreeDescriptor(&my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiFreeDescriptorError");
-	}
-	delete[] srcbuf;
-	return dst;
-      }
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-      template
-      DynMatrix<icl32c >&  mkl_wrapper_function_result_ifft_icl32fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buffer);
-
-      template<typename T1,typename T2>
-      DynMatrix<std::complex<T2> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<T1> &src,
-                                                                                   DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buffer){
-	FFT_DEBUG("using mkl ifft2dfc");
-	int dim = src.cols()*src.rows();
-	unsigned int dimx = src.cols();
-	unsigned int dimy = src.rows();
-	MKL_LONG status, l[2]={(MKL_LONG )dimy,(MKL_LONG )dimx};
-	DFTI_DESCRIPTOR_HANDLE my_desc1_handle=0;
-	status = DftiCreateDescriptor( &my_desc1_handle, getMKLDftiType<T2>(), DFTI_COMPLEX, 2,l);
-	MKL_LONG strides_in[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	MKL_LONG strides_out[3]={(MKL_LONG )0,(MKL_LONG )dimx,(MKL_LONG )1};
-	status = DftiSetValue(my_desc1_handle,DFTI_PLACEMENT, DFTI_NOT_INPLACE);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_PACKED_FORMAT, DFTI_PACK_FORMAT);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_INPUT_STRIDES,strides_in);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiSetValue(my_desc1_handle,DFTI_OUTPUT_STRIDES,strides_out);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	T2 scale = 1.0/(T2)(dimx*dimy);
-	status = DftiSetValue(my_desc1_handle, DFTI_BACKWARD_SCALE, scale);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiSetValueError");
-	}
-	status = DftiCommitDescriptor( my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiCommitDescriptorError");
-	}
-	_MKL_Complex16 *srcbuf = new _MKL_Complex16[dim];
-	std::complex<T2> t(0,0);
-	for(int i=0;i<dim;++i){
-          t = CreateComplex<T1,T2>::create_complex(src.data()[i]);
-          _MKL_Complex16 temp;
-          temp.real = T2(t.real());
-          temp.imag = T2(t.imag());
-          srcbuf[i] = temp;
-	}
-	status = DftiComputeBackward( my_desc1_handle, srcbuf,
-                                      reinterpret_cast<_MKL_Complex16*>(dst.data()));
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiComputeBackwardError");
-	}
-	status = DftiFreeDescriptor(&my_desc1_handle);
-	if(!DftiErrorClass(status,DFTI_NO_ERROR)){
-          throw FFTException("FFTException DftiFreeDescriptorError");
-	}
-	delete[] srcbuf;
-	return dst;
-      }
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl8u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32u> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl16s> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32s> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32f> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl64f> &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<icl32c > &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-      template
-      DynMatrix<std::complex<icl64f> >&  mkl_wrapper_function_result_ifft_icl64fc(const DynMatrix<std::complex<icl64f> > &src,
-                                                                                       DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buffer);
-#endif
+// IPP IFFT wrappers removed — ippiFFTInitAlloc_* dropped from modern IPP.
+// MKL IFFT wrappers removed — dispatch now goes through FFTOps<T>.
 
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >&   ifft2D_cpp(const DynMatrix<T1> &src,DynMatrix<std::complex<T2> > &dst,DynMatrix<std::complex<T2> > &buf){
@@ -2001,119 +1331,91 @@ namespace icl{
 
       template<typename T1, typename T2>
       DynMatrix<std::complex<T2> >& ifft2D(const DynMatrix<T1> &src,
-                                                DynMatrix<std::complex<T2> > &dst,	DynMatrix<std::complex<T2> > &buf){
-        // Dispatch for icl32c → icl32c (the common inverse case)
-        if constexpr (std::is_same_v<T1, icl32c> && std::is_same_v<T2, icl32f>) {
-          FFTContext ctx{(unsigned)src.rows(), (unsigned)src.cols()};
-          auto* impl = FFTDispatching::instance()
-            .getSelector<FFTInv32fSig>(LegacyFFTOp::inv32f).resolve(ctx);
-          if(impl) return impl->apply(src, dst, buf);
+                                            DynMatrix<std::complex<T2> > &dst, DynMatrix<std::complex<T2> > &buf){
+        unsigned int rows = src.rows();
+        unsigned int cols = src.cols();
+        if(dst.isNull() || dst.cols() != cols || dst.rows() != rows) {
+          dst.setBounds(cols, rows);
         }
 
-	return ifft2D_cpp(src,dst,buf);
+        auto& ops = FFTOps<T2>::instance();
+        auto* impl = ops.template getSelector<typename FFTOps<T2>::InvC2CSig>(FFTOp::inv_c2c).resolveOrThrow();
+
+        if constexpr (is_complex_t<T1>::value) {
+          using IS = typename T1::value_type;
+          if constexpr (std::is_same_v<IS, T2>) {
+            impl->apply(reinterpret_cast<const std::complex<T2>*>(src.data()), rows, cols, dst.data());
+          } else {
+            std::vector<std::complex<T2>> conv(rows * cols);
+            const T1* s = src.data();
+            for(unsigned int i = 0; i < rows * cols; ++i) conv[i] = std::complex<T2>(T2(s[i].real()), T2(s[i].imag()));
+            impl->apply(conv.data(), rows, cols, dst.data());
+          }
+        } else {
+          // Real input → convert to complex<T2>, then inverse FFT
+          std::vector<std::complex<T2>> conv(rows * cols);
+          const T1* s = src.data();
+          for(unsigned int i = 0; i < rows * cols; ++i) conv[i] = std::complex<T2>(T2(s[i]), T2(0));
+          impl->apply(conv.data(), rows, cols, dst.data());
+        }
+        return dst;
       }
+      // icl32f output
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl8u> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl16u> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32u> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl16s> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32s> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32f> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl64f> &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<icl32c > &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
       template ICLMath_API
       DynMatrix<icl32c >& ifft2D(const DynMatrix<std::complex<icl64f> > &src,
-                                                    DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
-      //double
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl8u> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16u> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32u> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl16s> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32s> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32f> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl64f> &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-
-      //complex
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<icl32c > &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
-      template<> ICLMath_API
-      DynMatrix<std::complex<icl64f> >&  ifft2D(const DynMatrix<std::complex<icl64f> > &src,
-                                                     DynMatrix<std::complex<icl64f> > &dst,DynMatrix<std::complex<icl64f> > &buf){
-#ifdef ICL_HAVE_MKL
-	return mkl_wrapper_function_result_ifft_icl64fc(src,dst,buf);
-#endif
-	return ifft2D_cpp(src,dst,buf);
-      }
+                                  DynMatrix<icl32c > &dst, DynMatrix<icl32c > &buf);
+      // icl64f output
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl8u> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl16u> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl32u> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl16s> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl32s> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl32f> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl64f> &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<icl32c > &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
+      template ICLMath_API
+      DynMatrix<std::complex<icl64f> >& ifft2D(const DynMatrix<std::complex<icl64f> > &src,
+                                                DynMatrix<std::complex<icl64f> > &dst, DynMatrix<std::complex<icl64f> > &buf);
 
       template<typename T1,typename T2>
       std::complex<T2>*  idft(unsigned int n, T1* src){

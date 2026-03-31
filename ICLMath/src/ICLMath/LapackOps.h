@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.cpp                 **
+** File   : ICLMath/src/ICLMath/LapackOps.h                        **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,64 +28,50 @@
 **                                                                 **
 ********************************************************************/
 
-#include <ICLMath/FFTDispatching.h>
-#include <ICLMath/FFTUtils.h>
+#pragma once
 
-using namespace icl::utils;
+#include <ICLUtils/BackendDispatching.h>
+#include <ICLUtils/CompatMacros.h>
 
 namespace icl {
   namespace math {
 
-    namespace {
+    /// Selector keys for LAPACK backend dispatch.
+    enum class LapackOp : int { gesdd, syev, getrf, getri };
 
-      // C++ backend: delegates to the existing thread-safe fft2D_cpp / ifft2D_cpp
-      DynMatrix<icl32c>& cpp_fft_fwd32f(const DynMatrix<icl32f>& src,
-                                          DynMatrix<icl32c>& dst,
-                                          DynMatrix<icl32c>& buf) {
-        return fft::fft2D_cpp(src, dst, buf);
-      }
+    ICLMath_API const char* toString(LapackOp op);
 
-      DynMatrix<icl32c>& cpp_fft_inv32f(const DynMatrix<icl32c>& src,
-                                          DynMatrix<icl32c>& dst,
-                                          DynMatrix<icl32c>& buf) {
-        return fft::ifft2D_cpp(src, dst, buf);
-      }
+    /// LAPACK dispatch — parameterized on scalar type (float or double).
+    /// Operates on raw data pointers. Higher-level DynMatrix wrapping stays
+    /// in consumer code (DynMatrix.cpp, DynMatrixUtils.cpp).
+    ///
+    /// Backends: C++ fallback (always), MKL, Accelerate, OpenBLAS.
+    /// Context is int (unused — no applicability checks needed).
+    template<class T>
+    struct ICLMath_API LapackOps : utils::BackendDispatching<int> {
 
-      DynMatrix<icl32c>& cpp_fft_fwd32fc(const DynMatrix<icl32c>& src,
-                                           DynMatrix<icl32c>& dst,
-                                           DynMatrix<icl32c>& buf) {
-        return fft::fft2D_cpp(src, dst, buf);
-      }
+      /// SVD via divide-and-conquer: A = U * diag(S) * Vt
+      using GesddSig = int(char jobz, int M, int N, T* A, int lda,
+                            T* S, T* U, int ldu, T* Vt, int ldvt);
 
-    } // anonymous namespace
+      /// Symmetric eigenvalue decomposition: A = V * diag(W) * V^T
+      using SyevSig = int(char jobz, int N, T* A, int lda, T* W);
 
-    const char* toString(LegacyFFTOp op) {
-      switch(op) {
-        case LegacyFFTOp::fwd32f:  return "fwd32f";
-        case LegacyFFTOp::inv32f:  return "inv32f";
-        case LegacyFFTOp::fwd32fc: return "fwd32fc";
-      }
-      return "?";
-    }
+      /// LU factorization with partial pivoting: A = P * L * U
+      /// A is M×N, overwritten with L (unit lower) and U (upper).
+      /// ipiv[min(M,N)] receives 1-based pivot indices.
+      /// Returns info (0 = success, >0 = singular).
+      using GetrfSig = int(int M, int N, T* A, int lda, int* ipiv);
 
-    FFTDispatching::FFTDispatching() {
-      addSelector<FFTFwd32fSig>(LegacyFFTOp::fwd32f);
-      addSelector<FFTInv32fSig>(LegacyFFTOp::inv32f);
-      addSelector<FFTFwd32fcSig>(LegacyFFTOp::fwd32fc);
-    }
+      /// Matrix inverse from LU factorization (getrf output).
+      /// A is N×N (LU from getrf), overwritten with A^{-1}.
+      /// ipiv from getrf.
+      /// Returns info (0 = success).
+      using GetriSig = int(int N, T* A, int lda, const int* ipiv);
 
-    FFTDispatching& FFTDispatching::instance() {
-      static FFTDispatching d;
-      return d;
-    }
-
-    static const int _r1 = []() {
-      auto cpp = FFTDispatching::instance().backends(Backend::Cpp);
-      cpp.add<FFTFwd32fSig>(LegacyFFTOp::fwd32f, cpp_fft_fwd32f);
-      cpp.add<FFTInv32fSig>(LegacyFFTOp::inv32f, cpp_fft_inv32f);
-      cpp.add<FFTFwd32fcSig>(LegacyFFTOp::fwd32fc, cpp_fft_fwd32fc);
-      return 0;
-    }();
+      LapackOps();
+      static LapackOps& instance();
+    };
 
   } // namespace math
 } // namespace icl

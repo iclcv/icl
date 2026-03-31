@@ -250,7 +250,8 @@ namespace icl{
     }
 
 
-    // C++ backend for replicateBorder — registered locally so _copy_border stays file-local
+    // C++ backend for replicateBorder — registered here (not Img_Cpp.cpp) because
+    // it depends on file-local _copy_border template
     namespace {
       void cpp_replicateBorder(ImgBase& img) {
         switch(img.getDepth()) {

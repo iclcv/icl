@@ -54,11 +54,12 @@ namespace icl {
       Cpp        = 0,   // C++ fallback (always available)
       Simd       = 1,   // SSE2 / NEON
       OpenBlas   = 2,   // OpenBLAS (CBLAS/LAPACK)
-      Ipp        = 3,   // Intel IPP (image operations)
-      FFTW       = 4,   // FFTW (FFT)
-      Accelerate = 5,   // Apple Accelerate (BLAS + vDSP)
-      Mkl        = 6,   // Intel MKL (BLAS + FFT)
-      OpenCL     = 7,   // GPU compute
+      Eigen      = 3,   // Eigen (header-only linear algebra)
+      Ipp        = 4,   // Intel IPP (image operations)
+      FFTW       = 5,   // FFTW (FFT)
+      Accelerate = 6,   // Apple Accelerate (BLAS + vDSP)
+      Mkl        = 7,   // Intel MKL (BLAS + FFT)
+      OpenCL     = 8,   // GPU compute
     };
 
     inline const char* backendName(Backend b) {
@@ -68,6 +69,7 @@ namespace icl {
         case Backend::Accelerate: return "Accelerate";
         case Backend::FFTW:       return "FFTW";
         case Backend::Ipp:        return "IPP";
+        case Backend::Eigen:      return "Eigen";
         case Backend::OpenBlas:   return "OpenBLAS";
         case Backend::Simd:       return "SSE2/NEON";
         case Backend::Cpp:        return "C++";

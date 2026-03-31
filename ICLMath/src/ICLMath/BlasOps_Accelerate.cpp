@@ -6,7 +6,7 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLMath/src/ICLMath/FFTDispatching.h                   **
+** File   : ICLMath/src/ICLMath/BlasOps_Accelerate.cpp             **
 ** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
@@ -28,56 +28,54 @@
 **                                                                 **
 ********************************************************************/
 
-#pragma once
+// Apple Accelerate backend for BLAS/LAPACK operations.
+// This file is excluded from the build when Accelerate is not found.
 
-#include <ICLUtils/BackendDispatching.h>
-#include <ICLUtils/CompatMacros.h>
-#include <ICLMath/DynMatrix.h>
-#include <ICLMath/FFTOps.h>
-#include <complex>
+#include <ICLMath/BlasOps.h>
+#include <Accelerate/Accelerate.h>
+#include <vector>
+#include <algorithm>
+
+using namespace icl::utils;
 
 namespace icl {
   namespace math {
 
-    /// Context for FFT backend dispatch — carries problem dimensions
-    struct FFTContext {
-      unsigned rows, cols;
-    };
+    namespace {
 
-    /// Forward FFT: real icl32f → complex icl32c
-    using FFTFwd32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32f>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+      // ---- GEMM (identical CBLAS interface) ----
 
-    /// Inverse FFT: complex icl32c → complex icl32c
-    using FFTInv32fSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+      void acc_gemm_f(bool transA, bool transB,
+                      int M, int N, int K, float alpha,
+                      const float* A, int lda, const float* B, int ldb,
+                      float beta, float* C, int ldc) {
+        cblas_sgemm(CblasRowMajor,
+                    transA ? CblasTrans : CblasNoTrans,
+                    transB ? CblasTrans : CblasNoTrans,
+                    M, N, K, alpha, A, lda, B, ldb, beta, C, ldc);
+      }
 
-    /// Forward FFT: complex icl32c → complex icl32c (for already-complex input)
-    using FFTFwd32fcSig = DynMatrix<icl32c>&(
-      const DynMatrix<icl32c>&, DynMatrix<icl32c>&, DynMatrix<icl32c>&);
+      void acc_gemm_d(bool transA, bool transB,
+                      int M, int N, int K, double alpha,
+                      const double* A, int lda, const double* B, int ldb,
+                      double beta, double* C, int ldc) {
+        cblas_dgemm(CblasRowMajor,
+                    transA ? CblasTrans : CblasNoTrans,
+                    transB ? CblasTrans : CblasNoTrans,
+                    M, N, K, alpha, A, lda, B, ldb, beta, C, ldc);
+      }
 
-    /// Applicability: power-of-2 dimensions (required by IPP)
-    inline bool fftPowerOf2(const FFTContext& ctx) {
-      return ctx.rows > 0 && (ctx.rows & (ctx.rows - 1)) == 0
-          && ctx.cols > 0 && (ctx.cols & (ctx.cols - 1)) == 0;
-    }
+    } // anonymous namespace
 
-    // FFTOp enum and toString(FFTOp) are now in FFTOps.h.
-    // Legacy selectors below use the old fwd32f/inv32f/fwd32fc naming
-    // but the FFTOp enum values are r2c/c2c/inv_c2c. These will be
-    // removed once FFTUtils.cpp migrates to FFTOps.
+    static const int _acc_blas_reg = []() {
+      auto acc_f = BlasOps<float>::instance().backends(Backend::Accelerate);
+      acc_f.add<BlasOps<float>::GemmSig>(BlasOp::gemm, acc_gemm_f, "Accelerate cblas_sgemm");
 
-    /// Selector keys for legacy FFT dispatch (transitional)
-    enum class LegacyFFTOp : int { fwd32f, inv32f, fwd32fc };
-    ICLMath_API const char* toString(LegacyFFTOp op);
+      auto acc_d = BlasOps<double>::instance().backends(Backend::Accelerate);
+      acc_d.add<BlasOps<double>::GemmSig>(BlasOp::gemm, acc_gemm_d, "Accelerate cblas_dgemm");
 
-    /// Singleton dispatch holder for FFT backends (legacy — use FFTOps instead).
-    /// C++ backends are registered here; IPP/MKL/OpenCL backends self-register
-    /// from their respective _Ipp.cpp / _Mkl.cpp / _OpenCL.cpp files.
-    struct ICLMath_API FFTDispatching : utils::BackendDispatching<FFTContext> {
-      FFTDispatching();
-      static FFTDispatching& instance();
-    };
+      return 0;
+    }();
 
   } // namespace math
 } // namespace icl

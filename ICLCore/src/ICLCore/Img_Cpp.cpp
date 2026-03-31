@@ -1,6 +1,7 @@
 #include <ICLCore/ImgOps.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/ClippedCast.h>
+#include <ICLMath/MathFunctions.h>
 #include <algorithm>
 
 using namespace icl;
@@ -379,6 +380,21 @@ namespace {
     cpp.add<ImgOps::GetMinMaxSig>(Op::getMinMax, cpp_getMinMax, "C++ min/max element scan");
     cpp.add<ImgOps::NormalizeSig>(Op::normalize, cpp_normalize, "C++ scale+shift normalize");
     cpp.add<ImgOps::FlippedCopySig>(Op::flippedCopy, cpp_flippedCopy, "C++ pointer-walk flipped copy");
+    cpp.add<ImgOps::ChannelMeanSig>(Op::channelMean, [](ImgBase& img, int channel, bool roiOnly) -> icl64f {
+      switch(img.getDepth()) {
+#define ICL_INSTANTIATE_DEPTH(D) \
+        case depth##D: { \
+          auto& im = *img.asImg<icl##D>(); \
+          if(roiOnly && !im.hasFullROI()) \
+            return math::mean(im.beginROI(channel), im.endROI(channel)); \
+          else \
+            return math::mean(im.begin(channel), im.end(channel)); \
+        }
+        ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+        default: return 0;
+      }
+    }, "C++ math::mean iterator");
     return 0;
   }();
 

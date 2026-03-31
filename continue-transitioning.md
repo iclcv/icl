@@ -1,6 +1,81 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 22 — BlasOps/FFTOps + BackendDispatching Refactor + BLAS Consumer Wiring)
+## Current State (Session 23 — Full Backend Dispatch Architecture)
+
+### Session 23 Summary
+
+**FFTOps_Cpp.cpp segfault fixed:**
+- Root cause: bug in `fft2D_cpp` — `buf(src.rows(),src.cols())` was element access
+  (operator()) on a null pointer, not resize. Fix: one-liner → `buf.setBounds(...)`.
+- FFTOps_Cpp.cpp keeps non-owning wrappers for src/dst (zero-copy, no overhead).
+
+**FFTUtils.cpp fully wired to FFTOps — 21 MKL blocks eliminated:**
+- Generic `fft2D`/`ifft2D` templates dispatch through FFTOps with type conversion.
+- FFTDispatching.h/.cpp deleted. All explicit MKL specializations removed.
+
+**SVD deduplicated — svd_dyn dispatches through LapackOps:**
+- Single generic `svd_dyn<T>` template, no float/double specializations.
+- Handles LAPACK Vt → ICL V convention via post-dispatch transpose.
+
+**GLImg.cpp — last active IPP block removed.**
+
+**Dead code cleanup — ~1,600 lines removed total:**
+- `#if 0` blocks in FFTUtils.cpp, DynMatrixUtils.cpp, DynMatrix.cpp deleted.
+- PThreadFix.h stripped to empty header.
+- `jacobi_iterate_vtk` + `find_eigenvectors` removed from DynMatrix.cpp (moved to
+  LapackOps_Cpp.cpp as `cpp_syev`).
+- `get_minor_matrix` removed (inv() no longer uses cofactor expansion).
+
+**Apple Accelerate backend:**
+- CMake auto-detects on macOS via `find_library(Accelerate)`.
+- `BlasOps_Accelerate.cpp`: cblas_sgemm/dgemm.
+- `FFTOps_Accelerate.cpp`: vDSP_DFT row-column decomposition (arbitrary sizes).
+- `LapackOps_Accelerate.cpp`: sgesdd/dgesdd, ssyev/dsyev, sgetrf/dgetrf, sgetri/dgetri.
+
+**LapackOps dispatcher — clean BLAS/LAPACK separation:**
+- `LapackOps.h`: `enum LapackOp { gesdd, syev, getrf, getri }`.
+- `LapackOps.cpp`: constructor, instance(), toString().
+- gesdd moved from BlasOps to LapackOps (all backends updated, all consumers rewired).
+- BlasOps now contains only GEMM.
+
+**LapackOps backends:**
+- `LapackOps_Cpp.cpp`: gesdd (Golub-Kahan), syev (Jacobi), getrf (LU), getri (LU inverse).
+- `LapackOps_Accelerate.cpp`: gesdd, syev, getrf, getri via Apple LAPACK.
+- `LapackOps_Mkl.cpp`: gesdd, syev via MKL LAPACK.
+- `LapackOps_Eigen.cpp`: gesdd (JacobiSVD), syev (SelfAdjointEigenSolver) via Eigen3.
+
+**Backend enum expanded:**
+- Added `Backend::Eigen = 3` between OpenBlas and Ipp.
+- Priority order: Cpp(0) < Simd(1) < OpenBlas(2) < Eigen(3) < Ipp(4) < FFTW(5)
+  < Accelerate(6) < Mkl(7) < OpenCL(8).
+
+**Consumer wiring:**
+- `svd_dyn()` → `LapackOps<T>::gesdd`
+- `big_matrix_pinv()` → `LapackOps<T>::gesdd` + `BlasOps<T>::gemm`
+- `DynMatrix::eigen()` → `LapackOps<T>::syev` (resolveOrThrow, C++ fallback always available)
+- `DynMatrix::inv()` → `LapackOps<T>::getrf` + `getri` (O(n³) LU, replaces O(n!) cofactor)
+- `DynMatrix::det()` for n>4 → `LapackOps<T>::getrf` (product of U diagonal, replaces O(n!) cofactor)
+
+**C++ fallback convention enforced:**
+- All C++ backend registrations now in `_Cpp.cpp` files.
+- MathOps C++ backends moved from DynMatrixUtils.cpp → `MathOps_Cpp.cpp`.
+- ImgOps channelMean moved from CoreFunctions.cpp → `Img_Cpp.cpp`.
+- Only exception: ImgBorder.cpp (depends on file-local `_copy_border`, documented).
+
+**Design decisions:**
+- BlasOps for GEMM only; element-wise ops stay inlined (bandwidth-bound).
+- FixedMatrix (4x4): keep inlined, IPP ippm dropped, compiler auto-vectorization sufficient.
+- det() keeps special cases for 1x1–4x4 (zero overhead); n>4 uses LU.
+
+**Tests: 349/349 pass.** Build clean on macOS.
+
+### Next Steps
+
+- **Add more LapackOps** — geqrf (QR factorization) to accelerate decompose_QR(), solve()
+- **Investigate legacy test stubs** — Per-module test executables compile to 0 tests
+- **NeighborhoodOp.cpp** — Two `#ifdef ICL_HAVE_IPP` workaround blocks (anchor bug)
+
+## Previous State (Session 22 — BlasOps/FFTOps + BackendDispatching Refactor + BLAS Consumer Wiring)
 
 ### Session 22 Summary (continued)
 

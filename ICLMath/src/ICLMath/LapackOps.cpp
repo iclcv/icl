@@ -6,8 +6,8 @@
 ** Website: www.iclcv.org and                                      **
 **          http://opensource.cit-ec.de/projects/icl               **
 **                                                                 **
-** File   : ICLUtils/src/ICLUtils/PThreadFix.h                     **
-** Module : ICLUtils                                               **
+** File   : ICLMath/src/ICLMath/LapackOps.cpp                      **
+** Module : ICLMath                                                **
 ** Authors: Christof Elbrechter                                    **
 **                                                                 **
 **                                                                 **
@@ -28,8 +28,39 @@
 **                                                                 **
 ********************************************************************/
 
+#include <ICLMath/LapackOps.h>
 
-#pragma once
+using namespace icl::utils;
 
-// This header is kept for backward compatibility but is now empty.
-// The old IPP/MKL pthread_atfork workaround is no longer needed.
+namespace icl {
+  namespace math {
+
+    const char* toString(LapackOp op) {
+      switch(op) {
+        case LapackOp::gesdd: return "gesdd";
+        case LapackOp::syev:  return "syev";
+        case LapackOp::getrf: return "getrf";
+        case LapackOp::getri: return "getri";
+      }
+      return "?";
+    }
+
+    template<class T>
+    LapackOps<T>::LapackOps() {
+      addSelector<GesddSig>(LapackOp::gesdd);
+      addSelector<SyevSig>(LapackOp::syev);
+      addSelector<GetrfSig>(LapackOp::getrf);
+      addSelector<GetriSig>(LapackOp::getri);
+    }
+
+    template<class T>
+    LapackOps<T>& LapackOps<T>::instance() {
+      static LapackOps<T> ops;
+      return ops;
+    }
+
+    template struct LapackOps<float>;
+    template struct LapackOps<double>;
+
+  } // namespace math
+} // namespace icl

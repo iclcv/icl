@@ -17,6 +17,9 @@ endif()
 if(NOT OPENBLAS_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_OpenBlas\\.cpp$")
 endif()
+if(NOT EIGEN3_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Eigen\\.cpp$")
+endif()
 
 icl_add_module(ICLMath
   SOURCES ${SOURCES}

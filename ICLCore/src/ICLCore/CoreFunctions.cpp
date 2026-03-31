@@ -751,30 +751,7 @@ namespace icl{
 
 
 
-  namespace{
-      // C++ fallback for channel_mean — also registered as Cpp backend below
-      icl64f cpp_channel_mean(ImgBase& img, int channel, bool roiOnly) {
-        switch(img.getDepth()) {
-#define ICL_INSTANTIATE_DEPTH(D) \
-          case depth##D: { \
-            auto& im = *img.asImg<icl##D>(); \
-            if(roiOnly && !im.hasFullROI()) \
-              return math::mean(im.beginROI(channel), im.endROI(channel)); \
-            else \
-              return math::mean(im.begin(channel), im.end(channel)); \
-          }
-          ICL_INSTANTIATE_ALL_DEPTHS;
-#undef ICL_INSTANTIATE_DEPTH
-          default: return 0;
-        }
-      }
-
-      static int _rcm = [] {
-        ImgOps::instance().backends(Backend::Cpp)
-          .add<ImgOps::ChannelMeanSig>(ImgOps::Op::channelMean, cpp_channel_mean, "C++ math::mean iterator");
-        return 0;
-      }();
-    }
+  // channelMean C++ backend moved to Img_Cpp.cpp
 
     std::vector<double> mean(const ImgBase *poImg, int iChannel, bool roiOnly){
       FUNCTION_LOG("");

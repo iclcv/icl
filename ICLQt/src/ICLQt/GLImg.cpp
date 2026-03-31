@@ -127,78 +127,7 @@ namespace icl{
     typedef std::shared_ptr<TextureElement> TextureElementPtr;
 
 
-  #ifdef ICL_HAVE_IPP
-
-    // ipp optimization for 1 channel data
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,1>() const{
-      icl8u mm[2];
-      ippiMinMax_8u_C1R(data.data(), size.width, size, mm, mm+1);
-      return std::vector<Range64f>(1,Range64f(mm[0],mm[1]));
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl16s,1>() const{
-      icl16s mm[2];
-      ippiMinMax_16s_C1R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s), size, mm, mm+1);
-      return std::vector<Range64f>(1,Range64f(mm[0],mm[1]));
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl32f,1>() const{
-      icl32f mm[2];
-      ippiMinMax_32f_C1R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f), size, mm, mm+1);
-      return std::vector<Range64f>(1,Range64f(mm[0],mm[1]));
-    }
-
-    /// ipp optimization for 3 channel data
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,3>() const{
-      icl8u mins[3],maxs[3];
-      ippiMinMax_8u_C3R(data.data(), size.width*3, size, mins, maxs);
-      std::vector<Range64f> r(3);
-      for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl16s,3>() const{
-      icl16s mins[3],maxs[3];
-      ippiMinMax_16s_C3R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s)*3, size, mins, maxs);
-      std::vector<Range64f> r(3);
-      for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl32f,3>() const{
-      icl32f mins[3],maxs[3];
-      ippiMinMax_32f_C3R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f)*3, size, mins, maxs);
-      std::vector<Range64f> r(3);
-      for(int i=0;i<3;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-    /// ipp optimization for 4 channel data
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl8u,4>() const{
-      icl8u mins[4],maxs[4];
-      ippiMinMax_8u_C4R(data.data(), size.width*4, size, mins, maxs);
-      std::vector<Range64f> r(4);
-      for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl16s,4>() const{
-      icl16s mins[4],maxs[4];
-      ippiMinMax_16s_C4R(reinterpret_cast<const icl16s*>(data.data()), size.width*sizeof(icl16s)*4, size, mins, maxs);
-      std::vector<Range64f> r(4);
-      for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-    template<> std::vector<Range64f> TextureElement::findMinMax<icl32f,4>() const{
-      icl32f mins[4],maxs[4];
-      ippiMinMax_32f_C4R(reinterpret_cast<const icl32f*>(data.data()), size.width*sizeof(icl32f)*4, size, mins, maxs);
-      std::vector<Range64f> r(4);
-      for(int i=0;i<4;++i) { r[i].minVal = mins[i]; r[i].maxVal = maxs[i]; }
-      return r;
-    }
-
-#endif
+  // IPP findMinMax specializations removed — generic template handles all cases.
 
     template<class T>
     static inline void histo_entry(T v, double m, std::vector<int> &h, unsigned int n, double r){

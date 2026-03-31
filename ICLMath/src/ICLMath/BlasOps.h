@@ -36,17 +36,19 @@
 namespace icl {
   namespace math {
 
-    /// Selector keys for BLAS/LAPACK backend dispatch.
-    enum class BlasOp : int { gemm, gesdd };
+    /// Selector keys for BLAS backend dispatch.
+    enum class BlasOp : int { gemm };
 
     ICLMath_API const char* toString(BlasOp op);
 
-    /// BLAS/LAPACK dispatch — parameterized on scalar type (float or double).
+    /// BLAS dispatch — parameterized on scalar type (float or double).
     /// Operates on raw data pointers. Higher-level DynMatrix wrapping stays
     /// in consumer code (DynMatrix.cpp, DynMatrixUtils.cpp).
     ///
     /// Backends: C++ fallback (always), MKL, Accelerate, OpenBLAS.
     /// Context is int (unused — no applicability checks needed).
+    ///
+    /// Note: LAPACK operations (gesdd, syev, etc.) are in LapackOps.
     template<class T>
     struct ICLMath_API BlasOps : utils::BackendDispatching<int> {
 
@@ -57,12 +59,6 @@ namespace icl {
                             int M, int N, int K, T alpha,
                             const T* A, int lda, const T* B, int ldb,
                             T beta, T* C, int ldc);
-
-      /// SVD via divide-and-conquer: A = U * diag(S) * Vt
-      /// Manages work buffers internally. Returns info (0 = success).
-      /// jobz: 'S' = economy, 'A' = full, 'N' = no vectors
-      using GesddSig = int(char jobz, int M, int N, T* A, int lda,
-                            T* S, T* U, int ldu, T* Vt, int ldvt);
 
       BlasOps();
       static BlasOps& instance();

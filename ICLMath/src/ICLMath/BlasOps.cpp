@@ -38,7 +38,6 @@ namespace icl {
     const char* toString(BlasOp op) {
       switch(op) {
         case BlasOp::gemm:  return "gemm";
-        case BlasOp::gesdd: return "gesdd";
       }
       return "?";
     }
@@ -46,7 +45,6 @@ namespace icl {
     template<class T>
     BlasOps<T>::BlasOps() {
       addSelector<GemmSig>(BlasOp::gemm);
-      addSelector<GesddSig>(BlasOp::gesdd);
     }
 
     template<class T>

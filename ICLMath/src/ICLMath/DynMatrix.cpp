@@ -35,6 +35,7 @@
 #include <fstream>
 
 #include <ICLMath/BlasOps.h>
+#include <ICLMath/LapackOps.h>
 
 #include <ICLMath/DynMatrixUtils.h>
 #include <ICLUtils/StringUtils.h>
@@ -56,45 +57,30 @@ namespace icl{
 
 
 
-    /// strikes out certain row and column -> optimization: Use a boolean array for that
-    template<class T>
-    static void get_minor_matrix(const DynMatrix<T> &M,int col, int row, DynMatrix<T> &D){
-      /// we assert M is squared here, and D has size M.size()-Size(1,1)
-
-      int nextCol=0,nextRow=0;
-      const unsigned int dim = M.cols();
-      for(unsigned int i=0;i<dim;++i){
-        if(static_cast<int>(i)!=row){
-          nextCol = 0;
-          for(unsigned int j=0;j<dim;j++){
-            if(static_cast<int>(j)!=col){
-              D(nextCol++,nextRow) = M(j,i);
-            }
-          }
-          nextRow++;
-        }
-      }
-    }
-
-
     template<class T>
     DynMatrix<T> DynMatrix<T>::inv() const{
-      double detVal = det();
-      if(!detVal) throw SingularMatrixException("Determinant was 0 -> (matrix is singular to machine precision)");
-      detVal = 1.0/detVal;
+      unsigned int n = cols();
+      ICLASSERT_THROW(n == rows(), InvalidMatrixDimensionException("inv() requires square matrix"));
 
-      DynMatrix M(cols()-1,cols()-1),I(cols(),cols());
+      // Use LU factorization (O(n³)) via LapackOps
+      auto* getrfImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GetrfSig>(LapackOp::getrf)
+          .resolveOrThrow();
+      auto* getriImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GetriSig>(LapackOp::getri)
+          .resolveOrThrow();
 
-      for(unsigned int i=0;i<cols();i++){
-        for(unsigned int j=0;j<cols();j++){
-          get_minor_matrix(*this,i,j,M);
-          I(j,i) = detVal * M.det();
-          if((i+j)%2){
-            I(j,i) *= -1;
-          }
-        }
-      }
-      return I;
+      DynMatrix<T> A(n, n);
+      std::copy(begin(), end(), A.begin());
+      std::vector<int> ipiv(n);
+
+      int info = getrfImpl->apply(n, n, A.data(), n, ipiv.data());
+      if(info != 0) throw SingularMatrixException("Matrix is singular (getrf info=" + str(info) + ")");
+
+      info = getriImpl->apply(n, A.data(), n, ipiv.data());
+      if(info != 0) throw SingularMatrixException("Matrix inverse failed (getri info=" + str(info) + ")");
+
+      return A;
     }
 
     template<class T>
@@ -128,14 +114,24 @@ namespace icl{
           m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
         }
         default:{
-          // the determinant value
-          T det = 0;
-          DynMatrix<T> D(order-1,order-1);
-          for(unsigned int i=0;i<order;++i){
-            get_minor_matrix(*this,i,0,D);
-            det += ::pow(-1.0,static_cast<int>(i)) * (*this)(i,0) * D.det();
+          // LU factorization: det = product of U diagonal * sign of permutation
+          auto* getrfImpl = LapackOps<T>::instance()
+              .template getSelector<typename LapackOps<T>::GetrfSig>(LapackOp::getrf)
+              .resolveOrThrow();
+
+          DynMatrix<T> A(order, order);
+          std::copy(begin(), end(), A.begin());
+          std::vector<int> ipiv(order);
+
+          int info = getrfImpl->apply(order, order, A.data(), order, ipiv.data());
+          if(info > 0) return T(0); // singular
+
+          T d = T(1);
+          for(unsigned int i = 0; i < order; i++) {
+            d *= A(i, i); // diagonal of U
+            if(ipiv[i] != (int)(i + 1)) d = -d; // permutation sign
           }
-          return det;
+          return d;
         }
       }
     }
@@ -342,8 +338,8 @@ namespace icl{
 
     template<class T>
     DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const{
-      auto* svdImpl = BlasOps<T>::instance()
-          .template getSelector<typename BlasOps<T>::GesddSig>(BlasOp::gesdd)
+      auto* svdImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GesddSig>(LapackOp::gesdd)
           .resolveOrThrow();
       auto* gemmImpl = BlasOps<T>::instance()
           .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
@@ -381,189 +377,8 @@ namespace icl{
     }
 
 
-    // This function was taken from VTK Version 5.6.0
-    // Jacobi iteration for the solution of eigenvectors/eigenvalues of a nxn
-    // real symmetric matrix. Square nxn matrix a; size of matrix in n;
-    // output eigenvalues in w; and output eigenvectors in v. Resulting
-    // eigenvalues/vectors are sorted in decreasing order; eigenvectors are
-    // normalized.
-    template<class T>
-    int jacobi_iterate_vtk(T **a, int n, T *w, T **v){
-      int i, j, k, iq, ip, numPos;
-      T tresh, theta, tau, t, sm, s, h, g, c, tmp;
-      T bspace[4], zspace[4];
-      T *b = bspace;
-      T *z = zspace;
-
-      // only allocate memory if the matrix is large
-      if (n > 4){
-        b = new T[n];
-        z = new T[n];
-      }
-
-      // initialize
-      for (ip=0; ip<n; ip++){
-        for (iq=0; iq<n; iq++){
-          v[ip][iq] = 0.0;
-        }
-        v[ip][ip] = 1.0;
-      }
-      for (ip=0; ip<n; ip++){
-        b[ip] = w[ip] = a[ip][ip];
-        z[ip] = 0.0;
-      }
-
-      static const int MAX_ROTATIONS = 30;
-
-      // begin rotation sequence
-      for (i=0; i<MAX_ROTATIONS; i++){
-        sm = 0.0;
-        for (ip=0; ip<n-1; ip++){
-          for (iq=ip+1; iq<n; iq++){
-            sm += fabs(a[ip][iq]);
-          }
-        }
-        if (sm == 0.0){
-          break;
-        }
-
-        if (i < 3){                                // first 3 sweeps
-          tresh = 0.2*sm/(n*n);
-        }
-        else{
-          tresh = 0.0;
-        }
-        for (ip=0; ip<n-1; ip++){
-          for (iq=ip+1; iq<n; iq++){
-            g = 100.0*fabs(a[ip][iq]);
-            // after 4 sweeps
-            if (i > 3 && (fabs(w[ip])+g) == fabs(w[ip]) && (fabs(w[iq])+g) == fabs(w[iq])){
-              a[ip][iq] = 0.0;
-            }else if (fabs(a[ip][iq]) > tresh) {
-              h = w[iq] - w[ip];
-              if ( (fabs(h)+g) == fabs(h)){
-                t = (a[ip][iq]) / h;
-              }else {
-                theta = 0.5*h / (a[ip][iq]);
-                t = 1.0 / (fabs(theta)+sqrt(1.0+theta*theta));
-                if (theta < 0.0){
-                  t = -t;
-                }
-              }
-              c = 1.0 / sqrt(1+t*t);
-              s = t*c;
-              tau = s/(1.0+c);
-              h = t*a[ip][iq];
-              z[ip] -= h;
-              z[iq] += h;
-              w[ip] -= h;
-              w[iq] += h;
-              a[ip][iq]=0.0;
-
-  #define ROTATE(a,i,j,k,l) g=a[i][j];h=a[k][l];a[i][j]=g-s*(h+g*tau);    \
-              a[k][l]=h+s*(g-h*tau)
-
-              // ip already shifted left by 1 unit
-              for (j = 0;j <= ip-1;j++){
-                ROTATE(a,j,ip,j,iq);
-              }
-              // ip and iq already shifted left by 1 unit
-              for (j = ip+1;j <= iq-1;j++){
-                ROTATE(a,ip,j,j,iq);
-              }
-              // iq already shifted left by 1 unit
-              for (j=iq+1; j<n; j++){
-                ROTATE(a,ip,j,iq,j);
-              }
-              for (j=0; j<n; j++){
-                ROTATE(v,j,ip,j,iq);
-              }
-  #undef ROTATE
-            }
-          }
-        }
-
-        for (ip=0; ip<n; ip++) {
-          b[ip] += z[ip];
-          w[ip] = b[ip];
-          z[ip] = 0.0;
-        }
-      }
-
-      // sort eigenfunctions                 these changes do not affect accuracy
-      for (j=0; j<n-1; j++){                  // boundary incorrect
-        k = j;
-        tmp = w[k];
-        for (i=j+1; i<n; i++){                // boundary incorrect, shifted already
-          if (w[i] >= tmp){                   // why exchage if same?
-            k = i;
-            tmp = w[k];
-          }
-        }
-        if (k != j) {
-          w[k] = w[j];
-          w[j] = tmp;
-          for (i=0; i<n; i++) {
-            tmp = v[i][j];
-            v[i][j] = v[i][k];
-            v[i][k] = tmp;
-          }
-        }
-      }
-      // insure eigenvector consistency (i.e., Jacobi can compute vectors that
-      // are negative of one another (.707,.707,0) and (-.707,-.707,0). This can
-      // reek havoc in hyperstreamline/other stuff. We will select the most
-      // positive eigenvector.
-      int ceil_half_n = (n >> 1) + (n & 1);
-      for (j=0; j<n; j++){
-        for (numPos=0, i=0; i<n; i++){
-          if ( v[i][j] >= 0.0 ){
-            numPos++;
-          }
-        }
-        //    if ( numPos < ceil(double(n)/double(2.0)) )
-      if ( numPos < ceil_half_n){
-        for(i=0; i<n; i++){
-          v[i][j] *= -1.0;
-        }
-      }
-      }
-      if (n > 4){
-        delete [] b;
-        delete [] z;
-      }
-      return 1;
-    }
-
-
-
-    template<class T>
-    void find_eigenvectors(const DynMatrix<T> &a, DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues, T *buffer = 0){
-      const int n = a.cols();
-      T ** pa = new T*[n], *pvalues=new T[n], **pvectors=new T*[n];
-      for(int i=0;i<n;++i){
-        pa[i] = new T[n];
-        for(int j=0;j<n;++j){
-          pa[i][j] = a(j,i); // maybe (j,i) !!
-        }
-        pvectors[i] = new T[n];
-      }
-      jacobi_iterate_vtk<T>(pa,n,pvalues,pvectors);
-
-      for(int i=0;i<n;++i){
-        for(int j=0;j<n;++j){
-          eigenvectors(j,i) = pvectors[i][j];
-        }
-        eigenvalues[i] = pvalues[i];
-
-        delete [] pa[i];
-        delete [] pvectors[i];
-      }
-      delete [] pvalues;
-    }
-
-  // ippmEigenValuesVectorsSym was removed from modern IPP (ippm module dropped).
-  // Uses C++ fallback from find_eigenvectors template above.
+    // Jacobi eigenvalue iteration moved to LapackOps_Cpp.cpp (cpp_syev).
+    // Old jacobi_iterate_vtk + find_eigenvectors removed — see git history.
 
     template<class T>
     void DynMatrix<T>::eigen(DynMatrix<T> &eigenvectors, DynMatrix<T> &eigenvalues) const{
@@ -572,7 +387,23 @@ namespace icl{
       eigenvalues.setBounds(1,n);
       eigenvectors.setBounds(n,n);
 
-      find_eigenvectors<T>(*this,eigenvectors,eigenvalues,0);
+      auto* impl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::SyevSig>(LapackOp::syev)
+          .resolveOrThrow();
+
+      // syev overwrites A with eigenvectors — copy input
+      DynMatrix<T> A(n, n);
+      std::copy(begin(), end(), A.begin());
+      int info = impl->apply('V', n, A.data(), n, eigenvalues.begin());
+      if(info != 0) {
+        throw ICLException("eigenvalue decomposition failed (info=" + str(info) + ")");
+      }
+
+      // Copy eigenvectors from A to output
+      // (C++ backend stores them as pv[i][j] → A[i*lda+j], matching DynMatrix layout)
+      for(int i = 0; i < n; ++i)
+        for(int j = 0; j < n; ++j)
+          eigenvectors(j, i) = A(i, j);
     }
 
     template<class T>
