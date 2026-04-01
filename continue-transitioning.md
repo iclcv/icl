@@ -1,6 +1,6 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 25 — NeighborhoodOp fix, dead code cleanup)
+## Current State (Session 25 — NeighborhoodOp fix, dead IPP cleanup, Accelerate mapping)
 
 ### Session 25 Summary
 
@@ -18,10 +18,33 @@
   (~67 lines). No module called it — tests migrated to centralized `tests/`
   directory in session 19. The per-module test stubs no longer exist.
 
-**Tests: 367/367 pass (3 new).** Build clean, zero warnings on macOS.
+**Dead `#if 0` IPP blocks removed (~1,000 lines):**
+- 5 _Ipp.cpp files cleaned to TODO stubs with modern API + Accelerate notes:
+  AffineOp_Ipp.cpp (57→16 lines), ConvolutionOp_Ipp.cpp (261→17),
+  LUTOp_Ipp.cpp (35→14), MedianOp_Ipp.cpp (110→16), MorphologicalOp_Ipp.cpp (229→19)
+- CannyOp.cpp: removed 22-line `#if 0` IPP block, kept C++ fallback
+- IntegralImgOp.cpp: removed 40-line `ICL_HAVE_IPP_DEACTIVATED` block
+  (C++ loop-unrolled version was already faster)
+- CoreFunctions.cpp: removed 448-line SSE block (moved to PixelOps.cpp)
+  and 45-line dead IPP histogram block
+
+**NeighborhoodOp.h cleanup:**
+- Removed stale `TODO:: check!!` and `TODO: later private` comments
+- Fixed typos in class documentation (shrinked→shrunk, adaptROI→computeROI)
+
+**Accelerate-IPP mapping reference created:**
+- `claude.insights/accelerate-ipp-mapping.md` documents which IPP operations
+  have Apple Accelerate (vImage) equivalents, with function names and limitations
+- Good coverage: affine warp, convolution, histogram, basic morphology
+- Gaps: no median filter, no Canny, no integral image in vImage
+
+**Tests: 367/367 pass.** Build clean, zero warnings on macOS.
 
 ### Next Steps
 
+- **Implement Accelerate backends** for filters with vImage equivalents —
+  priority: convolution, morphology (erode/dilate), affine warp, histogram
+  (see `claude.insights/accelerate-ipp-mapping.md`)
 - **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
   re-add even-mask workaround conditionally in IPP convolution path
 - **Consider DynMatrixBase for non-float/double users** — GraphCutter (bool),

@@ -90,47 +90,6 @@ namespace icl{
       }
     }
 
-  #ifdef ICL_HAVE_IPP_DEACTIVATED_BECAUSE_IT_IS_MUCH_SLOWER
-
-    template<class S, class D, class B, class IPP_FUNC>
-    void create_integral_image_ipp(const Img<S> &src, Img<D> &dst, ImgBase **buf,  IPP_FUNC ippfunc){
-
-      ensureCompatible(buf,getDepth<B>(), src.getSize()+Size(1,1), 1, formatMatrix, Rect::null);
-      Img<B> &dbuf = *(*buf)->asImg<B>();
-
-      for(int c=src.getChannels()-1;c>=0;--c){
-        IppStatus s = ippfunc(src.begin(c),src.getLineStep(),dbuf.begin(0),dbuf.getLineStep(), src.getSize(), 0);
-        if(s != ippStsNoErr) throw ICLException("error in ippiIntegral_8u32s_C1R in " +std::string(__FUNCTION__) + ":" +std::string(ippGetStatusString(s)));
-        dbuf.setROI(Rect(Point(1,1),src.getSize()));
-        TODO_LOG("this does not work in case of N>1 channel-images!!");
-        if(dst.getDepth() == dbuf.getDepth()){ // i really wonder why this lasts 2 msec??
-          dbuf.deepCopyROI(bpp(dst));
-        }else{
-          dbuf.convertROI(&dst);
-        }
-        dbuf.setFullROI();
-      }
-    }
-
-
-    template<> void create_integral_image_sd<icl8u,icl32s>(const Img<icl8u> &src, Img<icl32s> &dst, ImgBase **buf){
-
-      create_integral_image_ipp<icl8u,icl32s,icl32s>(src,dst, buf, ippiIntegral_8u32s_C1R);
-    }
-
-    template<> void create_integral_image_sd<icl8u,icl32f>(const Img<icl8u> &src, Img<icl32f> &dst, ImgBase **buf){
-
-      create_integral_image_ipp<icl8u,icl32f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
-    }
-
-    template<> void create_integral_image_sd<icl8u,icl64f>(const Img<icl8u> &src, Img<icl64f> &dst, ImgBase **buf){
-
-      create_integral_image_ipp<icl8u,icl64f,icl32f>(src,dst, buf, ippiIntegral_8u32f_C1R);
-    }
-
-
-  #endif
-
     template<class D>
     static void create_integral_image_xd(const ImgBase *src, Img<D> &dst, ImgBase **buf){
 

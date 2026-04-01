@@ -11,8 +11,7 @@
 namespace icl {
   namespace filter{
     /// unary operators that work on each pixels neighborhood \ingroup UNARY \ingroup NBH
-    /** TODO:: check!!
-        The NeighborhoodOp class builds a base class for unary operations employing
+    /** The NeighborhoodOp class builds a base class for unary operations employing
         a filter mask which is moved over the ROI of the source image(s),
         e.g. convolution filters use some convolution masks.
         To this end the class provides members to store the size and anchor
@@ -23,10 +22,10 @@ namespace icl {
         might access undefined pixel values outside the image, actually causing
         a segfault in most cases.
 
-        Hence, the used ROI size of the source image is <em> shrinked </em> if
-        neccessary, such that the filter mask always fits into the image, when
-        moved over the ROI. For this purpose the method adaptROI is provided,
-        which computes the to-be-used ROI. The ROI of the source image is not
+        Hence, the used ROI size of the source image is shrunk if necessary,
+        such that the filter mask always fits into the image, when moved over
+        the ROI. For this purpose the method computeROI is provided, which
+        computes the to-be-used ROI. The ROI of the source image is not
         actually changed, which makes the filter operation thread safe, because
         simultaneous operations running on the source image within different
         threads do not interfere.
@@ -107,7 +106,6 @@ namespace icl {
       virtual utils::Size adaptSize(const utils::Size &size){ return size; }
 
       protected:
-       ///TODO: later private with getter and setter functions
       utils::Size  m_oMaskSize;  ///< size of filter mask
       utils::Point m_oAnchor;    ///< anchor of filter mask
       utils::Point m_oROIOffset; ///< to-be-used ROI offset for source image

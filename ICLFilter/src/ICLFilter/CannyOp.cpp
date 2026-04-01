@@ -254,30 +254,6 @@ namespace icl {
 
       Img8u &d = dst.as8u();
 
-// ippiCanny signature changed in modern IPP (needs IppiCannyBorderSpec).
-// TODO: update to modern ippiCanny API.
-#if 0 // was: ICL_HAVE_IPP — ippiCanny_32f8u_C1R / _16s8u_C1R signature changed
-      int minSize = 0;
-      ippiCannyGetSize(derivX.getSize(), &minSize);
-      m_cannyBuf.resize(minSize);
-      for(int c = derivX.getChannels()-1; c >= 0; --c) {
-        switch(derivX.getDepth()) {
-          case depth32f:
-            ippiCanny_32f8u_C1R(derivX.as32f().getROIData(c), derivX.as32f().getLineStep(),
-                                derivY.as32f().getROIData(c), derivY.as32f().getLineStep(),
-                                d.getROIData(c), d.getLineStep(),
-                                d.getROISize(), m_lowT, m_highT, m_cannyBuf.data());
-            break;
-          case depth16s:
-            ippiCanny_16s8u_C1R(derivX.as16s().getROIData(c), derivX.as16s().getLineStep(),
-                                derivY.as16s().getROIData(c), derivY.as16s().getLineStep(),
-                                d.getROIData(c), d.getLineStep(),
-                                d.getROISize(), m_lowT, m_highT, m_cannyBuf.data());
-            break;
-          default: ICL_INVALID_DEPTH;
-        }
-      }
-#else
       for(int c = derivX.getChannels()-1; c >= 0; --c) {
         switch(derivX.getDepth()) {
           case depth32f:
@@ -289,7 +265,6 @@ namespace icl {
           default: ICL_INVALID_DEPTH;
         }
       }
-#endif
     }
 
     void CannyOp::apply(const Image &src, Image &dst) {

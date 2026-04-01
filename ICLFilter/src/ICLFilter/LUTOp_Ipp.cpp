@@ -1,34 +1,15 @@
-#include <ICLCore/ImageBackendDispatching.h>
-#include <ICLCore/Img.h>
-#include <ICLFilter/LUTOp.h>
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
-// ippiReduceBits signature changed in modern IPP (oneAPI 2022+).
-// TODO: update to modern ippiReduceBits API (added noise parameter).
-#if 0 // was: ICL_HAVE_IPP — ippiReduceBits_8u_C1R signature changed
-
-using namespace icl;
-using namespace icl::core;
-
-namespace {
-
-  void ipp_reduceBits(const Img8u &src, Img8u &dst, icl8u n) {
-    for(int c = src.getChannels() - 1; c >= 0; --c) {
-      ippiReduceBits_8u_C1R(src.getROIData(c), src.getLineStep(),
-                             dst.getROIData(c), dst.getLineStep(),
-                             src.getROISize(), 0, ippDitherNone, n);
-    }
-  }
-
-  using LOp = icl::filter::LUTOp;
-
-  static int _reg = [] {
-    using Op = LOp::Op;
-    auto ipp = LOp::prototype().backends(Backend::Ipp);
-    ipp.add<LOp::ReduceBitsSig>(Op::reduceBits, ipp_reduceBits,
-      applicableTo<icl8u>, "IPP reduceBits (8u)");
-    return 0;
-  }();
-
-} // anonymous namespace
-
-#endif // ICL_HAVE_IPP
+// IPP backend for LUTOp — currently disabled.
+//
+// Old API (signature changed in oneAPI 2022+):
+//   ippiReduceBits_8u_C1R (added noise parameter)
+//
+// Modern IPP replacement:
+//   ippiReduceBits_8u_C1R with updated signature (noise param added)
+//
+// Accelerate alternative:
+//   Partial — vImageConvert_*_dithered (dithering only, not general LUT)
+//   (see claude.insights/accelerate-ipp-mapping.md)
