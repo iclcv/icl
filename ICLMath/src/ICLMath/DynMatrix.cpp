@@ -610,6 +610,77 @@ namespace icl{
       return M;
     }
 
+    // ================================================================
+    // DynMatrix(DynMatrixColumn) constructor + DynMatrixColumn methods
+    // ================================================================
+
+    template<class T>
+    DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
+    DynMatrixBase<T>(1, column.dim()){
+      std::copy(column.begin(), column.end(), this->begin());
+    }
+
+    template<class T>
+    DynMatrix<T>& DynMatrix<T>::operator=(const typename DynMatrix<T>::DynMatrixColumn &col){
+      ICLASSERT_THROW(dim() == col.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::copy(col.begin(), col.end(), begin());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator=(const DynMatrixColumn &c){
+      ICLASSERT_THROW(dim() == c.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::copy(c.begin(), c.end(), begin());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator=(const DynMatrix &src){
+      ICLASSERT_THROW(dim() == src.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::copy(src.begin(), src.end(), begin());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator+=(const DynMatrixColumn &c){
+      ICLASSERT_THROW(dim() == c.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::transform(c.begin(), c.end(), begin(), begin(), std::plus<T>());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator-=(const DynMatrixColumn &c){
+      ICLASSERT_THROW(dim() == c.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::transform(c.begin(), c.end(), begin(), begin(), std::minus<T>());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator+=(const DynMatrix &m){
+      ICLASSERT_THROW(dim() == m.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::transform(m.begin(), m.end(), begin(), begin(), std::plus<T>());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator-=(const DynMatrix &m){
+      ICLASSERT_THROW(dim() == m.dim(), InvalidMatrixDimensionException("dimension mismatch"));
+      std::transform(m.begin(), m.end(), begin(), begin(), std::minus<T>());
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator*=(const T &val){
+      std::for_each(begin(), end(), [val](T &v){ v *= val; });
+      return *this;
+    }
+
+    template<class T>
+    typename DynMatrix<T>::DynMatrixColumn& DynMatrix<T>::DynMatrixColumn::operator/=(const T &val){
+      std::for_each(begin(), end(), [val](T &v){ v /= val; });
+      return *this;
+    }
+
     // Whole-class explicit instantiation for float and double.
     // Covers all out-of-line member functions (arithmetic, linalg, norms, etc.)
     template class ICLMath_API DynMatrix<float>;

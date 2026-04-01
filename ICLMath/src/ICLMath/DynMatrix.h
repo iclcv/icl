@@ -33,7 +33,6 @@
 #include <ICLMath/DynMatrixBase.h>
 #include <ICLUtils/CompatMacros.h>
 #include <iterator>
-#include <functional>
 
 namespace icl{
   namespace math{
@@ -163,53 +162,17 @@ namespace icl{
         inline const col_iterator end() const { return matrix->col_end(column); }
         inline unsigned int dim() const { return matrix->rows(); }
 
-        inline DynMatrixColumn &operator=(const DynMatrixColumn &c){
-          DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
-          std::copy(c.begin(),c.end(),begin());
-          return *this;
-        }
-        inline DynMatrixColumn &operator=(const DynMatrix &src){
-          DYN_MATRIX_COLUMN_CHECK(dim() != src.dim(),"dimension missmatch");
-          std::copy(src.begin(),src.end(),begin());
-          return *this;
-        }
-        inline DynMatrixColumn &operator+=(const DynMatrixColumn &c){
-          DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
-          std::transform(c.begin(),c.end(),begin(),begin(),std::plus<T>());
-          return *this;
-        }
-        inline DynMatrixColumn &operator-=(const DynMatrixColumn &c){
-          DYN_MATRIX_COLUMN_CHECK(dim() != c.dim(),"dimension missmatch");
-          std::transform(c.begin(),c.end(),begin(),begin(),std::minus<T>());
-          return *this;
-        }
-        inline DynMatrixColumn &operator+=(const DynMatrix &m){
-          DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
-          std::transform(m.begin(),m.end(),begin(),begin(),std::plus<T>());
-          return *this;
-        }
-        inline DynMatrixColumn &operator-=(const DynMatrix &m){
-          DYN_MATRIX_COLUMN_CHECK(dim() != m.dim(),"dimension missmatch");
-          std::transform(m.begin(),m.end(),begin(),begin(),std::minus<T>());
-          return *this;
-        }
-        inline DynMatrixColumn &operator*=(const T&val){
-          std::for_each(begin(),end(),[val](T &v){ v *= val; });
-          return *this;
-        }
-        inline DynMatrixColumn &operator/=(const T&val){
-          std::for_each(begin(),end(),[val](T &v){ v /= val; });
-          return *this;
-        }
+        DynMatrixColumn &operator=(const DynMatrixColumn &c);
+        DynMatrixColumn &operator=(const DynMatrix &src);
+        DynMatrixColumn &operator+=(const DynMatrixColumn &c);
+        DynMatrixColumn &operator-=(const DynMatrixColumn &c);
+        DynMatrixColumn &operator+=(const DynMatrix &m);
+        DynMatrixColumn &operator-=(const DynMatrix &m);
+        DynMatrixColumn &operator*=(const T&val);
+        DynMatrixColumn &operator/=(const T&val);
       };
 
-      inline DynMatrix &operator=(const DynMatrixColumn &col){
-  #ifdef DYN_MATRIX_INDEX_CHECK
-        if(dim() != col.dim()) ERROR_LOG("dimension missmatch");
-  #endif
-        std::copy(col.begin(),col.end(),begin());
-        return *this;
-      }
+      DynMatrix &operator=(const DynMatrixColumn &col);
 
   #undef DYN_MATRIX_COLUMN_CHECK
 
@@ -382,14 +345,7 @@ namespace icl{
       T det() const;
     };
 
-    /** \cond */
-    /// creates a dyn-matrix from given matrix column
-    template<class T>
-    DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
-    DynMatrixBase<T>(1, column.dim()){
-      std::copy(column.begin(),column.end(),this->begin());
-    }
-    /** \endcond */
+    // DynMatrix(DynMatrixColumn) constructor defined in DynMatrix.cpp
 
     // operator<< and operator>> are declared in DynMatrixBase.h
 
