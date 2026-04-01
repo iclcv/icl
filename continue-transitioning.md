@@ -38,12 +38,21 @@
 - Good coverage: affine warp, convolution, histogram, basic morphology
 - Gaps: no median filter, no Canny, no integral image in vImage
 
+**First Accelerate filter backend — ConvolutionOp:**
+- `ConvolutionOp_Accelerate.cpp` using `vImageConvolve_PlanarF` for icl32f
+- Registered as `Backend::Accelerate` (priority 6, above C++ fallback)
+- Handles even-sized kernels by padding to odd dimensions (vImage requires odd)
+  — zero-padded row/column contributes nothing; anchor position unchanged
+- Accelerate header included before ICL to avoid macOS Point/Size name conflicts
+- ICLFilter CMakeLists.txt updated: `_Accelerate.cpp` excluded when
+  `NOT ACCELERATE_FOUND`; Accelerate framework linked via 3RDPARTY_LIBS
+- Cross-validated against C++ backend across all test kernels
+
 **Tests: 367/367 pass.** Build clean, zero warnings on macOS.
 
 ### Next Steps
 
-- **Implement Accelerate backends** for filters with vImage equivalents —
-  priority: convolution, morphology (erode/dilate), affine warp, histogram
+- **More Accelerate backends** — morphology (erode/dilate), affine warp, histogram
   (see `claude.insights/accelerate-ipp-mapping.md`)
 - **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
   re-add even-mask workaround conditionally in IPP convolution path

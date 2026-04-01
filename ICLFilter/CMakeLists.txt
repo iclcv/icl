@@ -14,7 +14,8 @@ endforeach()
 list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLFilter/UnaryOpWork.h)
 
 # Conditionally exclude backend files when their dependency is unavailable.
-# Convention: *_Ipp.cpp = IPP-only, *_OpenCL.cpp = OpenCL-only, *_Simd.cpp = always built.
+# Convention: *_Ipp.cpp = IPP-only, *_OpenCL.cpp = OpenCL-only,
+#             *_Accelerate.cpp = Apple Accelerate, *_Simd.cpp = always built.
 if(NOT IPP_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
   # ProximityOp is IPP-only (no C++ fallback):
@@ -24,11 +25,15 @@ endif()
 if(NOT OPENCL_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_OpenCL\\.cpp$")
 endif()
+if(NOT ACCELERATE_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Accelerate\\.cpp$")
+endif()
 
 icl_add_module(ICLFilter
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}
   ICL_DEPS ICLCore
+  3RDPARTY_LIBS ${ICLFilter_3RDPARTY_LIBRARIES}
   EXTRA_SOURCES ${KERNEL}
   PKGCONFIG_DEPS ICLCore-${SO_VERSION}
   HAS_DEMOS HAS_APPS
