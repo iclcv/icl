@@ -220,7 +220,7 @@ namespace icl{
           }
 
           // Creating Mx = b to solve
-          Params pSolved = H.solve(dst,"svd");
+          Params pSolved = H.solve(dst);
 
           pSolved *= -1.0f;
           params_new = params + pSolved;
@@ -377,7 +377,7 @@ namespace icl{
           }
 
           // Creating Mx = b to solve
-          Params pSolved = H.solve(dst,"svd");
+          Params pSolved = H.solve(dst);
 
           pSolved *= -1.0f;
           params_new = params + pSolved;

@@ -423,21 +423,6 @@ namespace icl{
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
 
-    /// applies matrix mutliplication on optionally transposed matrices (specialized for big matrices) \ingroup LINALG
-    /** sometimes, it might be more efficient to call matrix multiplication on imaginary transposed source matrices, to
-        avoid having to apply an additional transposing step.
-
-        This function is accelerated using Intel MKL. Please make sure, that libguide.so and libiomp5.so are linked to.
-        Otherwise, wrong results might occure. This can be set using CMake or the ICL configure script.
-        If Intel MKL is not available, function matrix_mult_t is used as fallback.
-        @param src1 left operand
-        @param src2 right operand
-        @param dst destination matrix (adapted on demand)
-        @param transpDef or-ed list of transposedDef values e.g. (SRC1_T | SRC2_T) mean both matrices are transposed.
-    */
-    template<class T> ICLMath_IMP
-    DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
-
     /// applies matrix addition on optionally transposed matrices \ingroup LINALG
     template<class T> ICLMath_IMP
     DynMatrix<T> &matrix_add_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef);
@@ -457,34 +442,6 @@ namespace icl{
     */
     template<class T> ICLMath_IMP
     void svd_dyn(const DynMatrix<T> &A, DynMatrix<T> &U, DynMatrix<T> &S, DynMatrix<T> &V);
-
-
-  #if 0
-      U.setBounds(A.cols(), A.rows());
-      V.setBounds(A.cols(), A.cols());
-      s.setBounds(1,A.cols());
-      DynMatrix<icl64f> A64f(A.cols(),A.rows()),U64f(U.cols(),U.rows()),s64f(1,s.rows()),V64f(V.cols(),V.rows());
-      std::copy(A.begin(),A.end(),A64f.begin());
-
-      svd_cpp_64f(A64f,U64f,s64f,V64f);
-
-      std::copy(U64f.begin(),U64f.end(),U.begin());
-      std::copy(V64f.begin(),V64f.end(),V.begin());
-      std::copy(s64f.begin(),s64f.end(),s.begin());
-    }
-
-    /** \cond */
-    // SVD specialization for direct call to 64f function in order to avoid unnecessary double to double conversion before hand
-    template<> inline void svd_dyn<icl64f>(const DynMatrix<icl64f> &A, DynMatrix<icl64f> &U, DynMatrix<icl64f> &s, DynMatrix<icl64f> &V) {
-      U.setBounds(A.cols(), A.rows());
-      V.setBounds(A.cols(), A.cols());
-      s.setBounds(1,A.cols());
-
-      svd_cpp_64f(A,U,s,V);
-    }
-    /** \endcond */
-
-  #endif
 
     /** @}*/
 

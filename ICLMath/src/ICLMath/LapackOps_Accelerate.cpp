@@ -124,55 +124,246 @@ namespace icl {
         return info;
       }
 
+      // ================================================================
+      // Row-major ↔ column-major:
+      // LAPACK expects column-major; our raw pointer interface is row-major.
+      // For gesdd/syev the transposition is handled via dimension/argument
+      // swaps. For getrf/getri/geqrf/orgqr we transpose explicitly so that
+      // the packed output (L/U, Householder reflectors) matches the C++
+      // backend convention.
+      // ================================================================
+
       // ---- GETRF (LU factorization) ----
 
       int acc_getrf_f(int M, int N, float* A, int lda, int* ipiv) {
-        __LAPACK_int info, m = M, n = N, _lda = lda;
-        std::vector<__LAPACK_int> lipiv(std::min(M, N));
-        sgetrf_(&n, &m, A, &_lda, lipiv.data(), &info);
-        for(int i = 0; i < std::min(M, N); i++) ipiv[i] = lipiv[i];
+        int mn = std::min(M, N);
+        std::vector<float> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, _lda = M;
+        std::vector<__LAPACK_int> lipiv(mn);
+        sgetrf_(&m, &n, AT.data(), &_lda, lipiv.data(), &info);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        for(int i = 0; i < mn; i++) ipiv[i] = lipiv[i];
         return info;
       }
 
       int acc_getrf_d(int M, int N, double* A, int lda, int* ipiv) {
-        __LAPACK_int info, m = M, n = N, _lda = lda;
-        std::vector<__LAPACK_int> lipiv(std::min(M, N));
-        dgetrf_(&n, &m, A, &_lda, lipiv.data(), &info);
-        for(int i = 0; i < std::min(M, N); i++) ipiv[i] = lipiv[i];
+        int mn = std::min(M, N);
+        std::vector<double> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, _lda = M;
+        std::vector<__LAPACK_int> lipiv(mn);
+        dgetrf_(&m, &n, AT.data(), &_lda, lipiv.data(), &info);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        for(int i = 0; i < mn; i++) ipiv[i] = lipiv[i];
         return info;
       }
 
       // ---- GETRI (inverse from LU) ----
 
       int acc_getri_f(int N, float* A, int lda, const int* ipiv) {
-        __LAPACK_int info, n = N, _lda = lda;
+        std::vector<float> AT(N * N);
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * N + i] = A[i * lda + j];
+        __LAPACK_int info, n = N, _lda = N;
         std::vector<__LAPACK_int> lipiv(N);
         for(int i = 0; i < N; i++) lipiv[i] = ipiv[i];
-
         float work_query;
         __LAPACK_int lwork = -1;
-        sgetri_(&n, A, &_lda, lipiv.data(), &work_query, &lwork, &info);
+        sgetri_(&n, AT.data(), &_lda, lipiv.data(), &work_query, &lwork, &info);
         if(info != 0) return info;
-
         lwork = static_cast<__LAPACK_int>(work_query);
         std::vector<float> work(lwork);
-        sgetri_(&n, A, &_lda, lipiv.data(), work.data(), &lwork, &info);
-        return info;
+        sgetri_(&n, AT.data(), &_lda, lipiv.data(), work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * N + i];
+        return 0;
       }
 
       int acc_getri_d(int N, double* A, int lda, const int* ipiv) {
-        __LAPACK_int info, n = N, _lda = lda;
+        std::vector<double> AT(N * N);
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * N + i] = A[i * lda + j];
+        __LAPACK_int info, n = N, _lda = N;
         std::vector<__LAPACK_int> lipiv(N);
         for(int i = 0; i < N; i++) lipiv[i] = ipiv[i];
-
         double work_query;
         __LAPACK_int lwork = -1;
-        dgetri_(&n, A, &_lda, lipiv.data(), &work_query, &lwork, &info);
+        dgetri_(&n, AT.data(), &_lda, lipiv.data(), &work_query, &lwork, &info);
         if(info != 0) return info;
-
         lwork = static_cast<__LAPACK_int>(work_query);
         std::vector<double> work(lwork);
-        dgetri_(&n, A, &_lda, lipiv.data(), work.data(), &lwork, &info);
+        dgetri_(&n, AT.data(), &_lda, lipiv.data(), work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * N + i];
+        return 0;
+      }
+
+      // ---- GEQRF (QR factorization) ----
+
+      int acc_geqrf_f(int M, int N, float* A, int lda, float* tau) {
+        std::vector<float> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, _lda = M;
+        float work_query;
+        __LAPACK_int lwork = -1;
+        sgeqrf_(&m, &n, AT.data(), &_lda, tau, &work_query, &lwork, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<float> work(lwork);
+        sgeqrf_(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        return 0;
+      }
+
+      int acc_geqrf_d(int M, int N, double* A, int lda, double* tau) {
+        std::vector<double> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, _lda = M;
+        double work_query;
+        __LAPACK_int lwork = -1;
+        dgeqrf_(&m, &n, AT.data(), &_lda, tau, &work_query, &lwork, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<double> work(lwork);
+        dgeqrf_(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        return 0;
+      }
+
+      // ---- ORGQR (form Q from Householder reflectors) ----
+
+      int acc_orgqr_f(int M, int N, int K, float* A, int lda, const float* tau) {
+        std::vector<float> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, k = K, _lda = M;
+        std::vector<float> tau_copy(tau, tau + K);
+        float work_query;
+        __LAPACK_int lwork = -1;
+        sorgqr_(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), &work_query, &lwork, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<float> work(lwork);
+        sorgqr_(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        return 0;
+      }
+
+      int acc_orgqr_d(int M, int N, int K, double* A, int lda, const double* tau) {
+        std::vector<double> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        __LAPACK_int info, m = M, n = N, k = K, _lda = M;
+        std::vector<double> tau_copy(tau, tau + K);
+        double work_query;
+        __LAPACK_int lwork = -1;
+        dorgqr_(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), &work_query, &lwork, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<double> work(lwork);
+        dorgqr_(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
+        if(info != 0) return info;
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            A[i * lda + j] = AT[j * M + i];
+        return 0;
+      }
+
+      // ---- GELSD (least-squares solve via SVD) ----
+
+      int acc_gelsd_f(int M, int N, int NRHS, float* A, int lda,
+                      float* B, int ldb, float* S, float rcond, int* rank) {
+        int mx = std::max(M, N);
+        std::vector<float> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        // B is max(M,N)×NRHS row-major → transpose to column-major max(M,N)×NRHS
+        std::vector<float> BT(mx * NRHS);
+        for(int i = 0; i < mx; i++)
+          for(int j = 0; j < NRHS; j++)
+            BT[j * mx + i] = B[i * ldb + j];
+        __LAPACK_int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
+        __LAPACK_int mn = std::min(M, N);
+        __LAPACK_int lrank;
+        float work_query;
+        __LAPACK_int lwork = -1;
+        __LAPACK_int iwork_query;
+        sgelsd_(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+                S, &rcond, &lrank, &work_query, &lwork, &iwork_query, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<float> work(lwork);
+        std::vector<__LAPACK_int> iwork(iwork_query);
+        sgelsd_(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+                S, &rcond, &lrank, work.data(), &lwork, iwork.data(), &info);
+        *rank = lrank;
+        // Transpose solution back: first N rows of BT (column-major) → B (row-major)
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < NRHS; j++)
+            B[i * ldb + j] = BT[j * mx + i];
+        return info;
+      }
+
+      int acc_gelsd_d(int M, int N, int NRHS, double* A, int lda,
+                      double* B, int ldb, double* S, double rcond, int* rank) {
+        int mx = std::max(M, N);
+        std::vector<double> AT(M * N);
+        for(int i = 0; i < M; i++)
+          for(int j = 0; j < N; j++)
+            AT[j * M + i] = A[i * lda + j];
+        std::vector<double> BT(mx * NRHS);
+        for(int i = 0; i < mx; i++)
+          for(int j = 0; j < NRHS; j++)
+            BT[j * mx + i] = B[i * ldb + j];
+        __LAPACK_int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
+        __LAPACK_int mn = std::min(M, N);
+        __LAPACK_int lrank;
+        double work_query;
+        __LAPACK_int lwork = -1;
+        __LAPACK_int iwork_query;
+        dgelsd_(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+                S, &rcond, &lrank, &work_query, &lwork, &iwork_query, &info);
+        if(info != 0) return info;
+        lwork = static_cast<__LAPACK_int>(work_query);
+        std::vector<double> work(lwork);
+        std::vector<__LAPACK_int> iwork(iwork_query);
+        dgelsd_(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+                S, &rcond, &lrank, work.data(), &lwork, iwork.data(), &info);
+        *rank = lrank;
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < NRHS; j++)
+            B[i * ldb + j] = BT[j * mx + i];
         return info;
       }
 
@@ -184,12 +375,18 @@ namespace icl {
       acc_f.add<LapackOps<float>::SyevSig>(LapackOp::syev, acc_syev_f, "Accelerate ssyev");
       acc_f.add<LapackOps<float>::GetrfSig>(LapackOp::getrf, acc_getrf_f, "Accelerate sgetrf");
       acc_f.add<LapackOps<float>::GetriSig>(LapackOp::getri, acc_getri_f, "Accelerate sgetri");
+      acc_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, acc_geqrf_f, "Accelerate sgeqrf");
+      acc_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, acc_orgqr_f, "Accelerate sorgqr");
+      acc_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, acc_gelsd_f, "Accelerate sgelsd");
 
       auto acc_d = LapackOps<double>::instance().backends(Backend::Accelerate);
       acc_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, acc_gesdd_d, "Accelerate dgesdd");
       acc_d.add<LapackOps<double>::SyevSig>(LapackOp::syev, acc_syev_d, "Accelerate dsyev");
       acc_d.add<LapackOps<double>::GetrfSig>(LapackOp::getrf, acc_getrf_d, "Accelerate dgetrf");
       acc_d.add<LapackOps<double>::GetriSig>(LapackOp::getri, acc_getri_d, "Accelerate dgetri");
+      acc_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, acc_geqrf_d, "Accelerate dgeqrf");
+      acc_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, acc_orgqr_d, "Accelerate dorgqr");
+      acc_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, acc_gelsd_d, "Accelerate dgelsd");
 
       return 0;
     }();

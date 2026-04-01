@@ -247,17 +247,9 @@ namespace icl{
         return this->operator*=(1/f);
       }
 
-      /// Matrix multiplication (in source destination fashion) [IPP-Supported]
-      inline DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const{
-        if( cols() != m.rows() ) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
-        dst.setBounds(m.cols(),rows());
-        for(unsigned int c=0;c<dst.cols();++c){
-          for(unsigned int r=0;r<dst.rows();++r){
-            dst(c,r) = std::inner_product(row_begin(r),row_end(r),m.col_begin(c),T(0));
-          }
-        }
-        return dst;
-      }
+      /// Matrix multiplication (in source destination fashion)
+      /// Dispatches to BLAS gemm for icl32f/icl64f, falls back to loop for other types.
+      DynMatrix &mult(const DynMatrix &m, DynMatrix &dst) const;
 
       /// Elementwise matrix multiplication (in source destination fashion) [IPP-Supported]
       inline DynMatrix &elementwise_mult(const DynMatrix &m, DynMatrix &dst) const{
@@ -841,55 +833,13 @@ namespace icl{
       /// solves Mx=b for M=*this (only if M is a squared lower triangular matrix) (only for icl32f and icl64f)
       DynMatrix solve_lower_triangular(const DynMatrix &b) const;
 
-      /// solves Mx=b for M=*this (only for icl32f and icl64f)
-      /** solves Mx=b using one of the following algorithms
-          @param b
-          @param method "lu" (default) using LU-decomposition
-                        "svd" (using svd-based pseudo-inverse)
-                        "qr" (using QR-decomposition based pseudo-inverse)
-                        "inv" (using matrix inverse)
-
-          \section BENCHM Benchmarks
-          While LU decomposition based solving provides the worst results, it is also
-          the fastest method in general. Only in case of having very small matrices (e.g. 4x4),
-          other methods are faster. A double precision random N by N system is solved up to
-          an accuracy of about 10e-5 if LU decomposition is used. All other methods provide
-          accuracies of about 10e-14 in case of double precision.
-
-          Here are some benchmarks for double precision:
-          * 10.000 times 4x4 matrix:
-            * inv 16.2 ms
-            * lu 26.7 ms
-            * qr 105 ms
-            * svd 142 ms
-          * 10.000 times 5x5 matrix:
-            * inv 20.2 ms
-            * lu 30.2 ms
-            * qr 148 ms
-            * svd 131 ms
-          * 10.000 times 6x6 matrix:
-            * inv 26.9 ms
-            * lu 35.6 ms
-            * qr 206 ms
-            * svd 192 ms
-          * 10.000 times 4x4 matrix:
-            * inv 448 ms
-            * lu 42 ms
-            * qr 642 ms
-            * svd 237 ms
-          * 10.000 times 10x10 matrix:
-            * inv 2200 ms
-            * lu 75 ms
-            * qr 3000 ms
-            * svd 495 ms
-          * 10 times 50x50 matrix: <b>note: here we have inv and qr in seconds and only 10 trials!</b>
-            * inv 5.7 s
-            * lu 2.5 ms
-            * qr 4.6 s
-            * svd 23.4 ms
-          @param zeroThreshold
+      /// solves Mx=b for M=*this via SVD least-squares (only for icl32f and icl64f)
+      /** Uses LAPACK gelsd (SVD-based least-squares solve) internally.
+          Handles square, overdetermined, underdetermined, and rank-deficient systems.
+          @param b right-hand side vector/matrix
+          @param zeroThreshold singular values below this threshold (relative to max) are treated as zero
       */
-      DynMatrix solve(const DynMatrix &b, const std::string &method = "lu", T zeroThreshold = T(1E-16));
+      DynMatrix solve(const DynMatrix &b, T zeroThreshold = T(1E-16));
 
 
       /// invert the matrix (only for icl32f and icl64f)
@@ -922,40 +872,11 @@ namespace icl{
       void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
 
       /// calculates the Moore-Penrose pseudo-inverse (only implemented for icl32f and icl64f)
-      /** Internally, this functions can use either a QR-decomposition based approach, or it can use
-          SVD.
-          QR-Decomposition is already much more stable than
-          the naiv approach pinv(X) = X*(X*X')^(-1)
-          \code
-          DynMatrix Q,R;
-          decompose_QR(Q,R);
-          return R.inv() * Q.transp();
-          \endcode
-          The QR-decomposition based approach does not use the zeroThreshold variable.
-
-          If useSVD is set to true, internally an SVD based approach is used:
-
-          <code>
-          DynMatrix S,v,D;
-          svd_dyn(*this,U,s,V);
-
-          DynMatrix S(s.rows(),s.rows(),0.0f);
-          for(unsigned int i=0;i<s.rows();++i){
-            S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0;
-          }
-          return V * S * U.transp();
-          </code>
+      /** Uses SVD-based approach with reduced SVD (jobz='S') and BLAS gemm
+          for efficient reconstruction. Singular values below zeroThreshold
+          are set to zero.
       */
-      DynMatrix pinv(bool useSVD = false, T zeroThreshold = T(1E-16)) const;
-
-      /// calculates the Moore-Penrose pseudo-inverse (specialized for big matrices)
-      /**
-      * Calculate pseudo inverse of given matrix using Intel MKL if possible.
-      * Based on singular value decomposition (SVD) and divide & conquer.
-      * @param zeroThreshold singular values below threshold are set to zero
-      * @return pseudo inverse
-      */
-      DynMatrix big_matrix_pinv(T zeroThreshold = T(1E-16)) const;
+      DynMatrix pinv(T zeroThreshold = T(1E-16)) const;
 
       /// matrix determinant (only for icl32f and icl64f)
       T det() const;

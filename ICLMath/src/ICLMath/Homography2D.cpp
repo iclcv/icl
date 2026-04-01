@@ -49,7 +49,7 @@ namespace icl{
           Y(i,1) = y[i].y;
           Y(i,2) = 1;
         }
-        DynMatrix<T> H = X*Y.pinv(true); // A * B.pinv()
+        DynMatrix<T> H = X*Y.pinv(); // A * B.pinv()
 
         std::copy(H.begin(),H.end(),Super::begin());
       }else{
@@ -80,7 +80,7 @@ namespace icl{
 
 
 
-        DynMatrix<T> h  = M.solve(r,"svd");
+        DynMatrix<T> h  = M.solve(r);
 
 
         std::copy(h.begin(),h.end(),Super::begin());

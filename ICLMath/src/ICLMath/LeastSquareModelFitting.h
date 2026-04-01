@@ -204,7 +204,7 @@ namespace icl{
         try{
           Si = m_C ? m_S.inv()* (*m_C) : m_S.inv();
         }catch(SingularMatrixException &){
-          Si = m_C ? m_S.pinv(true)* (*m_C) : m_S.pinv(true);
+          Si = m_C ? m_S.pinv()* (*m_C) : m_S.pinv();
         }
 
 

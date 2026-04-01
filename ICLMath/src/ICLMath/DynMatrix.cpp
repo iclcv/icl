@@ -45,6 +45,55 @@ using namespace icl::utils;
 namespace icl{
   namespace math{
 
+    // ---- Matrix multiplication via BLAS gemm ----
+
+    namespace {
+      // Generic fallback: inner_product loop (for integer types etc.)
+      template<class T>
+      void mult_generic(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) {
+        for(unsigned int c = 0; c < dst.cols(); ++c)
+          for(unsigned int r = 0; r < dst.rows(); ++r)
+            dst(c, r) = std::inner_product(a.row_begin(r), a.row_end(r), b.col_begin(c), T(0));
+      }
+
+      // BLAS gemm path for float/double
+      template<class T>
+      void mult_gemm(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) {
+        auto* impl = BlasOps<T>::instance()
+            .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+            .resolveOrThrow();
+        int M = a.rows(), N = b.cols(), K = a.cols();
+        impl->apply(false, false, M, N, K, T(1),
+                     a.begin(), a.cols(), b.begin(), b.cols(),
+                     T(0), dst.begin(), N);
+      }
+    }
+
+    template<class T>
+    DynMatrix<T>& DynMatrix<T>::mult(const DynMatrix<T> &m, DynMatrix<T> &dst) const {
+      if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
+      dst.setBounds(m.cols(), rows());
+      mult_generic(*this, m, dst);
+      return dst;
+    }
+
+    // Specializations for float/double: use BLAS gemm
+    template<>
+    DynMatrix<float>& DynMatrix<float>::mult(const DynMatrix<float> &m, DynMatrix<float> &dst) const {
+      if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
+      dst.setBounds(m.cols(), rows());
+      mult_gemm(*this, m, dst);
+      return dst;
+    }
+
+    template<>
+    DynMatrix<double>& DynMatrix<double>::mult(const DynMatrix<double> &m, DynMatrix<double> &dst) const {
+      if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
+      dst.setBounds(m.cols(), rows());
+      mult_gemm(*this, m, dst);
+      return dst;
+    }
+
     template<class T>
     static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
       ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
@@ -138,32 +187,37 @@ namespace icl{
 
     template<class T>
     void DynMatrix<T>::decompose_QR(DynMatrix<T> &Q, DynMatrix<T> &R) const {
-      DynMatrix<T> A = *this; // Working copy
-      DynMatrix<T> a(1,rows()), q(1,rows());
+      int m = rows(), n = cols();
+      int mn = std::min(m, n);
 
-      Q.setBounds(cols(),rows());
-      R.setBounds(cols(),cols());
+      auto* geqrfImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GeqrfSig>(LapackOp::geqrf)
+          .resolveOrThrow();
+      auto* orgqrImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::OrgqrSig>(LapackOp::orgqr)
+          .resolveOrThrow();
 
-      std::fill(R.begin(),R.end(),0.0);
+      // Copy input to working buffer (row-major, lda = n)
+      DynMatrix<T> A(n, m);
+      std::copy(begin(), end(), A.begin());
+      std::vector<T> tau(mn);
 
-      for (unsigned int i=0;i<cols();i++) {
-        a = A.col(i);
-        R(i,i) = a.norm();
-        if(!R(i,i)){
-          //throw QRDecompException("Error in QR-decomposition");
-          q = a;          // No Normalization in case of R(i,i)=0
-        }else{
-          q = a/R(i,i);   // Normalization.
-        }
+      int info = geqrfImpl->apply(m, n, A.data(), n, tau.data());
+      if(info != 0) throw ICLException("QR factorization failed (geqrf info=" + str(info) + ")");
 
-        Q.col(i) = q;
-        // remove components parallel to q(*,i)
-        for (unsigned int j=i+1;j<cols();j++) {
-          a = A.col(j);
-          R(j,i) = icl::math::dot(q, a);
-          A.col(j) = a - q * R(j,i);
-        }
-      }
+      // Extract R (upper triangle of A, n×n)
+      R.setBounds(n, n);
+      std::fill(R.begin(), R.end(), T(0));
+      for(int i = 0; i < mn; i++)
+        for(int j = i; j < n; j++)
+          R(j, i) = A(j, i);
+
+      // Form Q from Householder reflectors (m×n)
+      info = orgqrImpl->apply(m, n, mn, A.data(), n, tau.data());
+      if(info != 0) throw ICLException("Q formation failed (orgqr info=" + str(info) + ")");
+
+      Q.setBounds(n, m);
+      std::copy(A.begin(), A.begin() + m * n, Q.begin());
     }
 
     template<class T>
@@ -224,41 +278,36 @@ namespace icl{
 
     template<class T>
     void DynMatrix<T>::decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold) const{
-      const DynMatrix &A = *this;
-      unsigned int m = A.rows();
-      unsigned int n = A.cols();
-      U = A;
-      L = DynMatrix<T>(m,m);
-      for(unsigned int i=0;i<m;++i) L(i,i) = 1;
-      DynMatrix<T> p(1,m);
-      for(unsigned int i=0;i<m;++i) p[i] = i;
+      int m = rows();
+      int n = cols();
+      int mn = std::min(m, n);
 
-      for(unsigned int i=0;i<m-1;++i){
-        if(is_close_to_zero(U(i,i))){ // here, we need an epsilon
-          int k = find_non_zero_in_col(U,i,m);
-          if(k != -1){
-            //swap rows i and k
-            std::swap(p[i],p[k]);
-            swap_range(U.row_begin(i),U.row_end(i),U.row_begin(k));
-            swap_range(L.row_begin(i),L.row_begin(i)+i,L.row_begin(k));
-          }
-        }else{
-          T pivot = U(i,i);
-          for(unsigned int k=i+1;k<m;++k){
-            T m = U(i,k)/pivot;
-            for(unsigned int j=0;j<n;++j){
-              U(j,k) += -m * U(j,i);
-            }
-            L(i,k) = m;
-          }
-        }
+      auto* getrfImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GetrfSig>(LapackOp::getrf)
+          .resolveOrThrow();
+
+      // Copy input (getrf overwrites)
+      DynMatrix<T> A(n, m);
+      std::copy(begin(), end(), A.begin());
+      std::vector<int> ipiv(mn);
+
+      getrfImpl->apply(m, n, A.data(), n, ipiv.data());
+
+      // Extract L (unit lower triangular, m×m): P*A = L*U
+      L.setBounds(m, m);
+      std::fill(L.begin(), L.end(), T(0));
+      for(int i = 0; i < m; i++) {
+        L(i, i) = T(1);
+        for(int j = 0; j < std::min(i, mn); j++)
+          L(j, i) = A(j, i);
       }
 
-      DynMatrix<T> L2 = L;
-      for(unsigned int i=0;i<m;++i){
-        int j = p[i];
-        std::copy(L2.row_begin(i),L2.row_end(i),L.row_begin(j));
-      }
+      // Extract U (upper triangular, m×n)
+      U.setBounds(n, m);
+      std::fill(U.begin(), U.end(), T(0));
+      for(int i = 0; i < mn; i++)
+        for(int j = i; j < n; j++)
+          U(j, i) = A(j, i);
     }
 
     template<class T>
@@ -290,54 +339,48 @@ namespace icl{
     }
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, const std::string &method ,T zeroThreshold){
-      ICLASSERT_THROW(rows() == b.rows(), InvalidMatrixDimensionException("DynMatrix::solve (Mx=b -> x=M^(-1)b needs M.rows == b.rows)"));
-      if(method == "lu"){
-        DynMatrix<T> L,U;
-        decompose_LU(L,U);
-        return U.solve_upper_triangular(L.solve_lower_triangular(b));
-      }else if(method == "svd"){
-        return pinv(true) * b;
-      }else if(method == "qr"){
-        return pinv(false) * b;
-      }else if(method == "inv"){
-        return inv() * b;
-      }
-      throw ICLException("DynMatrix::solve: invalid solve-method");
-      return DynMatrix<T>(0,0);
+    DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, T zeroThreshold){
+      int m = rows(), n = cols(), nrhs = b.cols();
+      ICLASSERT_THROW(m == (int)b.rows(), InvalidMatrixDimensionException("DynMatrix::solve: M.rows != b.rows"));
+
+      auto* gelsdImpl = LapackOps<T>::instance()
+          .template getSelector<typename LapackOps<T>::GelsdSig>(LapackOp::gelsd)
+          .resolveOrThrow();
+
+      // Copy A (gelsd overwrites)
+      DynMatrix<T> A(n, m);
+      std::copy(begin(), end(), A.begin());
+
+      // B must be max(M,N)×NRHS; copy b into it
+      int mx = std::max(m, n);
+      DynMatrix<T> B(nrhs, mx, T(0));
+      for(int i = 0; i < m; i++)
+        for(int j = 0; j < nrhs; j++)
+          B(j, i) = b(j, i);
+
+      std::vector<T> S(std::min(m, n));
+      int rank;
+      T rcond = (zeroThreshold > T(0)) ? zeroThreshold : T(-1);
+
+      int info = gelsdImpl->apply(m, n, nrhs, A.data(), n,
+                                   B.data(), nrhs, S.data(), rcond, &rank);
+      ICLASSERT_THROW(info == 0, ICLException("solve failed (gelsd info=" + str(info) + ")"));
+
+      // Solution is in first N rows of B
+      DynMatrix<T> x(nrhs, n);
+      for(int i = 0; i < n; i++)
+        for(int j = 0; j < nrhs; j++)
+          x(j, i) = B(j, i);
+
+      return x;
     }
 
 
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::pinv(bool useSVD, T zeroThreshold) const{
-      if(useSVD){
-        DynMatrix<T> U,s,V;
-        try{
-          svd_dyn(*this,U,s,V);
-        }catch(const ICLException &){
-          return pinv(false,zeroThreshold);
-        }
-        DynMatrix S(U.cols(), V.rows(),0.0f);
-        for(unsigned int i=0;i<s.rows();++i){
-          S(i,i) = (fabs(s[i]) > zeroThreshold) ? 1.0/s[i] : 0;
-        }
-        return V * S * U.transp();
-      }else{
-        DynMatrix<T> Q,R;
-        if(cols() > rows()){
-          transp().decompose_QR(Q,R);
-          return (R.inv() * Q.transp()).transp();
-        }else{
-          decompose_QR(Q,R);
-          return R.inv() * Q.transp();
-        }
-      }
-    }
-
-
-    template<class T>
-    DynMatrix<T> DynMatrix<T>::big_matrix_pinv(T zeroThreshold) const{
+    DynMatrix<T> DynMatrix<T>::pinv(T zeroThreshold) const{
+      // Reduced SVD (jobz='S') + BLAS gemm for efficient pseudo-inverse.
+      // Uses O(min(m,n)) memory for U/Vt instead of O(m²+n²).
       auto* svdImpl = LapackOps<T>::instance()
           .template getSelector<typename LapackOps<T>::GesddSig>(LapackOp::gesdd)
           .resolveOrThrow();
@@ -356,7 +399,7 @@ namespace icl{
 
       int info = svdImpl->apply('S', r, c, matrixCopy.begin(), c,
                                  S.data(), U.begin(), mn, Vt.begin(), c);
-      ICLASSERT_THROW(info == 0, ICLException("SVD failed in big_matrix_pinv"));
+      ICLASSERT_THROW(info == 0, ICLException("SVD failed in pinv (info=" + str(info) + ")"));
 
       DynMatrix<T> Sinv(mn, mn, T(0));
       for(int i = 0; i < mn; ++i)
@@ -444,12 +487,12 @@ namespace icl{
     template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) const;
     template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) const;
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, const std::string &method, float zeroThreshold);
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, const std::string &method, double zeroThreshold);
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, float zeroThreshold);
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, double zeroThreshold);
 
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(bool, float) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(bool, double) const;
+    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(float) const;
+    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(double) const;
 
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){

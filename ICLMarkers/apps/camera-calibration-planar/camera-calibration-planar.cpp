@@ -70,7 +70,7 @@ Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector
     }
   }
   dT *= 1./n;
-  DynMatrix<float> Rrel = Rs.pinv(true) * Rd;
+  DynMatrix<float> Rrel = Rs.pinv() * Rd;
   Mat D(Rrel(0,0), Rrel(1,0), Rrel(2,0), dT[0],
         Rrel(0,1), Rrel(1,1), Rrel(2,1), dT[1],
         Rrel(0,2), Rrel(1,2), Rrel(2,2), dT[2],

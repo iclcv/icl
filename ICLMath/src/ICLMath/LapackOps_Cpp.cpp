@@ -29,9 +29,9 @@
 ********************************************************************/
 
 // C++ fallback backends for LAPACK operations.
-// Contains Golub-Kahan bidiagonalization SVD (gesdd).
 
 #include <ICLMath/LapackOps.h>
+#include <ICLMath/BlasOps.h>
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/BasicTypes.h>
 
@@ -474,6 +474,175 @@ namespace icl {
         return 0;
       }
 
+      // ================================================================
+      // GEQRF: Householder QR factorization
+      // A (M×N, M >= N) is overwritten: R in upper triangle,
+      // Householder reflectors v below diagonal (v[0]=1 implicit).
+      // tau[min(M,N)] receives scalar factors.
+      // ================================================================
+
+      template<class T>
+      int cpp_geqrf(int M, int N, T* A, int lda, T* tau) {
+        int mn = std::min(M, N);
+        std::vector<T> v(M);
+
+        for(int k = 0; k < mn; k++) {
+          // Compute Householder reflector for column k, rows k..M-1
+          T norm2 = T(0);
+          for(int i = k + 1; i < M; i++) {
+            T val = A[i * lda + k];
+            norm2 += val * val;
+          }
+
+          if(norm2 == T(0) && A[k * lda + k] >= T(0)) {
+            tau[k] = T(0);
+            continue;
+          }
+
+          T xk = A[k * lda + k];
+          T alpha = std::sqrt(xk * xk + norm2);
+          if(xk >= T(0)) alpha = -alpha;
+
+          tau[k] = (alpha - xk) / alpha;
+          T scale = T(1) / (xk - alpha);
+          for(int i = k + 1; i < M; i++)
+            A[i * lda + k] *= scale;
+          A[k * lda + k] = alpha;
+
+          // Apply reflector to trailing columns: A[k:M, k+1:N]
+          // H = I - tau * v * v^T, where v = [1; A[k+1:M, k]]
+          for(int j = k + 1; j < N; j++) {
+            T dot = A[k * lda + j];
+            for(int i = k + 1; i < M; i++)
+              dot += A[i * lda + k] * A[i * lda + j];
+            dot *= tau[k];
+            A[k * lda + j] -= dot;
+            for(int i = k + 1; i < M; i++)
+              A[i * lda + j] -= dot * A[i * lda + k];
+          }
+        }
+        return 0;
+      }
+
+      // ================================================================
+      // ORGQR: Form Q from Householder reflectors (geqrf output).
+      // A is M×N, reflectors in columns 0..K-1.
+      // On exit, A is overwritten with the first N columns of Q.
+      // ================================================================
+
+      template<class T>
+      int cpp_orgqr(int M, int N, int K, T* A, int lda, const T* tau) {
+        // Initialize columns K..N-1 to identity
+        for(int j = K; j < N; j++) {
+          for(int i = 0; i < M; i++)
+            A[i * lda + j] = T(0);
+          if(j < M) A[j * lda + j] = T(1);
+        }
+
+        // Accumulate reflectors from right to left
+        for(int k = K - 1; k >= 0; k--) {
+          // Apply H_k = I - tau[k] * v * v^T to A[k:M, k:N]
+          // where v = [1; A[k+1:M, k]]
+
+          // First, set column k above the reflector to identity
+          if(tau[k] != T(0)) {
+            // Apply to trailing columns k+1..N-1 first
+            for(int j = k + 1; j < N; j++) {
+              T dot = A[k * lda + j];
+              for(int i = k + 1; i < M; i++)
+                dot += A[i * lda + k] * A[i * lda + j];
+              dot *= tau[k];
+              A[k * lda + j] -= dot;
+              for(int i = k + 1; i < M; i++)
+                A[i * lda + j] -= dot * A[i * lda + k];
+            }
+
+            // Apply to column k itself: v * (1 - tau) ... build e_k column
+            for(int i = k + 1; i < M; i++)
+              A[i * lda + k] *= -tau[k];
+          } else {
+            for(int i = k + 1; i < M; i++)
+              A[i * lda + k] = T(0);
+          }
+          A[k * lda + k] = T(1) - tau[k];
+
+          // Zero above k
+          for(int i = 0; i < k; i++)
+            A[i * lda + k] = T(0);
+        }
+        return 0;
+      }
+
+      // ================================================================
+      // GELSD: Least-squares solve via SVD.
+      // C++ fallback: uses gesdd (reduced) + gemm to compute pinv * B.
+      // ================================================================
+
+      template<class T>
+      int cpp_gelsd(int M, int N, int NRHS, T* A, int lda,
+                    T* B, int ldb, T* S, T rcond, int* rank) {
+        int mn = std::min(M, N);
+        int mx = std::max(M, N);
+
+        // Resolve gesdd and gemm backends
+        auto* svdImpl = LapackOps<T>::instance()
+            .template getSelector<typename LapackOps<T>::GesddSig>(LapackOp::gesdd)
+            .resolveOrThrow();
+        auto* gemmImpl = BlasOps<T>::instance()
+            .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+            .resolveOrThrow();
+
+        // Reduced SVD: A = U * diag(S) * Vt
+        std::vector<T> Adata(M * N);
+        std::copy(A, A + M * N, Adata.data());
+        std::vector<T> U(M * mn), Vt(mn * N);
+
+        int info = svdImpl->apply('S', M, N, Adata.data(), N,
+                                   S, U.data(), mn, Vt.data(), N);
+        if(info != 0) return info;
+
+        // Determine effective rank
+        T threshold = rcond;
+        if(threshold < T(0)) threshold = std::numeric_limits<T>::epsilon() * mx * S[0];
+        else threshold *= S[0];
+        int r = 0;
+        for(int i = 0; i < mn; i++)
+          if(S[i] > threshold) r++;
+        *rank = r;
+
+        // Build Sinv (r × r diagonal, zero the rest)
+        std::vector<T> Sinv(mn * mn, T(0));
+        for(int i = 0; i < r; i++)
+          Sinv[i * mn + i] = T(1) / S[i];
+
+        // pinv(A) * B = Vt^T * Sinv * U^T * B
+        // Step 1: temp1 = U^T * B (mn × NRHS)
+        std::vector<T> temp1(mn * NRHS);
+        gemmImpl->apply(true, false, mn, NRHS, M, T(1),
+                         U.data(), mn, B, ldb,
+                         T(0), temp1.data(), NRHS);
+
+        // Step 2: temp2 = Sinv * temp1 (mn × NRHS)
+        std::vector<T> temp2(mn * NRHS);
+        gemmImpl->apply(false, false, mn, NRHS, mn, T(1),
+                         Sinv.data(), mn, temp1.data(), NRHS,
+                         T(0), temp2.data(), NRHS);
+
+        // Step 3: X = Vt^T * temp2 (N × NRHS) — write into B
+        // B must be max(M,N) × NRHS; solution goes in first N rows
+        std::vector<T> X(N * NRHS);
+        gemmImpl->apply(true, false, N, NRHS, mn, T(1),
+                         Vt.data(), N, temp2.data(), NRHS,
+                         T(0), X.data(), NRHS);
+
+        // Copy solution into B (first N rows)
+        for(int i = 0; i < N; i++)
+          for(int j = 0; j < NRHS; j++)
+            B[i * ldb + j] = X[i * NRHS + j];
+
+        return 0;
+      }
+
     } // anonymous namespace
 
     static const int _cpp_lapack_reg = []() {
@@ -482,12 +651,18 @@ namespace icl {
       cpp_f.add<LapackOps<float>::SyevSig>(LapackOp::syev, cpp_syev<float>, "C++ Jacobi eigenvalue");
       cpp_f.add<LapackOps<float>::GetrfSig>(LapackOp::getrf, cpp_getrf<float>, "C++ LU factorization");
       cpp_f.add<LapackOps<float>::GetriSig>(LapackOp::getri, cpp_getri<float>, "C++ LU inverse");
+      cpp_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, cpp_geqrf<float>, "C++ Householder QR");
+      cpp_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, cpp_orgqr<float>, "C++ form Q");
+      cpp_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, cpp_gelsd<float>, "C++ SVD least-squares");
 
       auto cpp_d = LapackOps<double>::instance().backends(Backend::Cpp);
       cpp_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, cpp_gesdd<double>, "C++ Golub-Kahan SVD");
       cpp_d.add<LapackOps<double>::SyevSig>(LapackOp::syev, cpp_syev<double>, "C++ Jacobi eigenvalue");
       cpp_d.add<LapackOps<double>::GetrfSig>(LapackOp::getrf, cpp_getrf<double>, "C++ LU factorization");
       cpp_d.add<LapackOps<double>::GetriSig>(LapackOp::getri, cpp_getri<double>, "C++ LU inverse");
+      cpp_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, cpp_geqrf<double>, "C++ Householder QR");
+      cpp_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, cpp_orgqr<double>, "C++ form Q");
+      cpp_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, cpp_gelsd<double>, "C++ SVD least-squares");
 
       return 0;
     }();

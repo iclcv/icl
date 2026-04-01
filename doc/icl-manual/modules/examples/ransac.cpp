@@ -21,7 +21,7 @@ Line fit_line(const std::vector<Point32f> &pts){
     xs(i,1) = pts[i].x;
     ys(i,0) = pts[i].y;
   }
-  DynMatrix<float> fit = ys * xs.pinv(true);
+  DynMatrix<float> fit = ys * xs.pinv();
   return Line(fit[0],fit[1]);
 }
 

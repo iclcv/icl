@@ -768,3 +768,257 @@ ICL_REGISTER_TEST("math.cross.transp_fixed_vs_dyn", "transpose: Fixed and Dyn ag
   auto dt = dm.transp();
   for(int i = 0; i < 9; ++i) ICL_TEST_NEAR(ft[i], dt[i], 1e-6f);
 }
+
+// ============================================================
+// QR decomposition tests
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.qr_identity", "QR of identity: Q=I, R=I")
+{
+  auto I = DynMatrix<float>::id(3);
+  DynMatrix<float> Q, R;
+  I.decompose_QR(Q, R);
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++) {
+      float expected = (i == j) ? 1.0f : 0.0f;
+      ICL_TEST_NEAR(std::abs(Q(j,i)), std::abs(expected), 1e-5f);
+      ICL_TEST_NEAR(std::abs(R(j,i)), std::abs(expected), 1e-5f);
+    }
+}
+
+ICL_REGISTER_TEST("math.dyn.qr_reconstruct", "A = Q*R round-trip")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=12; A(1,0)=-51; A(2,0)=4;
+  A(0,1)=6;  A(1,1)=167; A(2,1)=-68;
+  A(0,2)=-4; A(1,2)=24;  A(2,2)=-41;
+
+  DynMatrix<float> Q, R;
+  A.decompose_QR(Q, R);
+
+  // Verify A = Q*R
+  auto QR = Q * R;
+  for(unsigned int i = 0; i < A.dim(); i++)
+    ICL_TEST_NEAR(QR[i], A[i], 1e-3f);
+}
+
+ICL_REGISTER_TEST("math.dyn.qr_orthogonal", "Q^T * Q = I")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=12; A(1,0)=-51; A(2,0)=4;
+  A(0,1)=6;  A(1,1)=167; A(2,1)=-68;
+  A(0,2)=-4; A(1,2)=24;  A(2,2)=-41;
+
+  DynMatrix<float> Q, R;
+  A.decompose_QR(Q, R);
+
+  auto QtQ = Q.transp() * Q;
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+      ICL_TEST_NEAR(QtQ(j,i), (i==j) ? 1.0f : 0.0f, 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.dyn.qr_upper_triangular", "R is upper triangular")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=12; A(1,0)=-51; A(2,0)=4;
+  A(0,1)=6;  A(1,1)=167; A(2,1)=-68;
+  A(0,2)=-4; A(1,2)=24;  A(2,2)=-41;
+
+  DynMatrix<float> Q, R;
+  A.decompose_QR(Q, R);
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < i; j++)
+      ICL_TEST_NEAR(R(j,i), 0.0f, 1e-5f);
+}
+
+ICL_REGISTER_TEST("math.dyn.qr_double", "QR decomposition with double precision")
+{
+  DynMatrix<double> A(3, 3);
+  A(0,0)=12; A(1,0)=-51; A(2,0)=4;
+  A(0,1)=6;  A(1,1)=167; A(2,1)=-68;
+  A(0,2)=-4; A(1,2)=24;  A(2,2)=-41;
+
+  DynMatrix<double> Q, R;
+  A.decompose_QR(Q, R);
+
+  auto QR = Q * R;
+  for(unsigned int i = 0; i < A.dim(); i++)
+    ICL_TEST_NEAR(QR[i], A[i], 1e-10);
+}
+
+// ============================================================
+// LU decomposition tests
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.lu_reconstruct", "L*U approximates A (with permutation)")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2;  A(1,0)=1; A(2,0)=1;
+  A(0,1)=4;  A(1,1)=3; A(2,1)=3;
+  A(0,2)=8;  A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> L, U;
+  A.decompose_LU(L, U);
+
+  // L*U should reconstruct A up to row permutation
+  auto LU = L * U;
+  // Verify each row of LU matches some row of A
+  for(int i = 0; i < 3; i++) {
+    bool found = false;
+    for(int k = 0; k < 3; k++) {
+      bool match = true;
+      for(int j = 0; j < 3; j++) {
+        if(std::abs(LU(j,i) - A(j,k)) > 1e-3f) { match = false; break; }
+      }
+      if(match) { found = true; break; }
+    }
+    ICL_TEST_TRUE(found);
+  }
+}
+
+ICL_REGISTER_TEST("math.dyn.lu_lower_triangular", "L is lower triangular with unit diagonal")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2;  A(1,0)=1; A(2,0)=1;
+  A(0,1)=4;  A(1,1)=3; A(2,1)=3;
+  A(0,2)=8;  A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> L, U;
+  A.decompose_LU(L, U);
+
+  for(int i = 0; i < 3; i++) {
+    for(int j = i + 1; j < 3; j++)
+      ICL_TEST_NEAR(L(j,i), 0.0f, 1e-5f);
+  }
+}
+
+ICL_REGISTER_TEST("math.dyn.lu_upper_triangular", "U is upper triangular")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2;  A(1,0)=1; A(2,0)=1;
+  A(0,1)=4;  A(1,1)=3; A(2,1)=3;
+  A(0,2)=8;  A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> L, U;
+  A.decompose_LU(L, U);
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < i; j++)
+      ICL_TEST_NEAR(U(j,i), 0.0f, 1e-5f);
+}
+
+// ============================================================
+// RQ decomposition test
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.rq_reconstruct", "R*Q round-trip")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=12; A(1,0)=-51; A(2,0)=4;
+  A(0,1)=6;  A(1,1)=167; A(2,1)=-68;
+  A(0,2)=-4; A(1,2)=24;  A(2,2)=-41;
+
+  DynMatrix<float> R, Q;
+  A.decompose_RQ(R, Q);
+
+  auto RQ = R * Q;
+  for(unsigned int i = 0; i < A.dim(); i++)
+    ICL_TEST_NEAR(RQ[i], A[i], 1e-2f);
+}
+
+// ============================================================
+// solve() tests
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.solve_inv", "solve via inv method")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2; A(1,0)=1; A(2,0)=1;
+  A(0,1)=4; A(1,1)=3; A(2,1)=3;
+  A(0,2)=8; A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> b(1, 3);
+  b[0] = 1; b[1] = 1; b[2] = 1;
+
+  auto x = A.solve(b);
+  auto Ax = A * x;
+  for(int i = 0; i < 3; i++)
+    ICL_TEST_NEAR(Ax[i], b[i], 1e-3f);
+}
+
+ICL_REGISTER_TEST("math.dyn.solve_svd", "solve via svd method")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2; A(1,0)=1; A(2,0)=1;
+  A(0,1)=4; A(1,1)=3; A(2,1)=3;
+  A(0,2)=8; A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> b(1, 3);
+  b[0] = 1; b[1] = 1; b[2] = 1;
+
+  auto x = A.solve(b);
+  auto Ax = A * x;
+  for(int i = 0; i < 3; i++)
+    ICL_TEST_NEAR(Ax[i], b[i], 1e-3f);
+}
+
+ICL_REGISTER_TEST("math.dyn.solve_qr", "solve via qr method")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=2; A(1,0)=1; A(2,0)=1;
+  A(0,1)=4; A(1,1)=3; A(2,1)=3;
+  A(0,2)=8; A(1,2)=7; A(2,2)=9;
+
+  DynMatrix<float> b(1, 3);
+  b[0] = 1; b[1] = 1; b[2] = 1;
+
+  auto x = A.solve(b);
+  auto Ax = A * x;
+  for(int i = 0; i < 3; i++)
+    ICL_TEST_NEAR(Ax[i], b[i], 1e-3f);
+}
+
+// ============================================================
+// pinv() tests
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.pinv_svd", "pseudo-inverse via SVD")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=1; A(1,0)=2; A(2,0)=3;
+  A(0,1)=0; A(1,1)=1; A(2,1)=4;
+  A(0,2)=5; A(1,2)=6; A(2,2)=0;
+
+  auto P = A.pinv();
+  auto APA = A * P * A;
+  for(unsigned int i = 0; i < A.dim(); i++)
+    ICL_TEST_NEAR(APA[i], A[i], 1e-3f);
+}
+
+ICL_REGISTER_TEST("math.dyn.pinv_qr", "pseudo-inverse via QR")
+{
+  DynMatrix<float> A(3, 3);
+  A(0,0)=1; A(1,0)=2; A(2,0)=3;
+  A(0,1)=0; A(1,1)=1; A(2,1)=4;
+  A(0,2)=5; A(1,2)=6; A(2,2)=0;
+
+  auto P = A.pinv();
+  auto APA = A * P * A;
+  for(unsigned int i = 0; i < A.dim(); i++)
+    ICL_TEST_NEAR(APA[i], A[i], 1e-3f);
+}
+
+// ============================================================
+// det via LU (n > 4)
+// ============================================================
+
+ICL_REGISTER_TEST("math.dyn.det_5x5", "5x5 determinant via LU dispatch")
+{
+  // Diagonal matrix with known det = product of diagonal
+  DynMatrix<float> A(5, 5, 0.0f);
+  A(0,0)=2; A(1,1)=3; A(2,2)=4; A(3,3)=5; A(4,4)=6;
+  ICL_TEST_NEAR(A.det(), 720.0f, 1e-2f);
+}

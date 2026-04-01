@@ -135,7 +135,7 @@ namespace icl {
       // (P*T).inv = T.inv * P.inv
       Mat Tinv = getInvCSTransformationMatrix();
       Mat P = getProjectionMatrix();
-      Mat II = Tinv * P.pinv(true, std::numeric_limits<icl32f>::epsilon());
+      Mat II = Tinv * P.pinv(std::numeric_limits<icl32f>::epsilon());
       return FixedMatrix<icl32f,3,4> (II(0,0),II(1,0),II(3,0),
                                       II(0,1),II(1,1),II(3,1),
                                       II(0,2),II(1,2),II(3,2),
@@ -493,7 +493,7 @@ namespace icl {
         std::copy(r2,r2+11,B.row_begin(2*i+1));
       }
 
-      DynMatrix<double> Cv = B.pinv(true) * U;
+      DynMatrix<double> Cv = B.pinv() * U;
       FixedMatrix<float,4,3> Q(Cv[0],Cv[1],Cv[2],Cv[3],
                                Cv[4],Cv[5],Cv[6],Cv[7],
                                Cv[8],Cv[9],Cv[10],1);

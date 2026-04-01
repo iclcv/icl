@@ -85,7 +85,7 @@ namespace icl{
         Kinv[8] = 1.0;
 
         //Kinv = Kinv.inv();
-        Kinv = Kinv.pinv(true);
+        Kinv = Kinv.pinv();
       }
       virtual size_t getNumParams() const { return 10; }
       virtual Point32f undistort(const Point32f &point) const{

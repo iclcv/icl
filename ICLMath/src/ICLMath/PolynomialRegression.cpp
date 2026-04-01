@@ -202,7 +202,7 @@ namespace icl{
     template<class T>
     const typename PolynomialRegression<T>::Result &
     PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs,
-                                   const typename PolynomialRegression<T>::Matrix &ys,bool useSVD){
+                                   const typename PolynomialRegression<T>::Matrix &ys){
       ICLASSERT_THROW(xs.rows() == ys.rows(),ICLException("PolynomialRegression::apply: xs.rows() must be equal to ys.rows()"));
       const int &M  = m_result.m_attribMaxIndex;
       ICLASSERT_THROW(static_cast<int>(xs.cols()) > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
@@ -212,7 +212,7 @@ namespace icl{
         apply_params(m_result.m_attribs, xs.row_begin(i), m_buf.row_begin(i));
       }
 
-      m_buf.pinv(useSVD).mult(ys, m_result.m_params);
+      m_buf.pinv().mult(ys, m_result.m_params);
       //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
 
       return m_result;

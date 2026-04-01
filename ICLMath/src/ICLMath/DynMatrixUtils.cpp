@@ -384,6 +384,7 @@ namespace icl{
 
     template<class T>
     DynMatrix<T> &matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef){
+      // Generic fallback: explicit transpose + loop-based mult
       switch(transpDef){
         case NONE_T: return src1.mult(src2,dst);
         case SRC1_T: return src1.transp().mult(src2,dst);
@@ -394,21 +395,33 @@ namespace icl{
       return dst;
     }
 
-    template<class T>
-    DynMatrix<T> &big_matrix_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef){
-      auto* impl = BlasOps<T>::instance()
-          .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
-          .resolveOrThrow();
-      bool tA = (transpDef == SRC1_T || transpDef == BOTH_T);
-      bool tB = (transpDef == SRC2_T || transpDef == BOTH_T);
-      int M = tA ? src1.cols() : src1.rows();
-      int N = tB ? src2.rows() : src2.cols();
-      int K = tA ? src1.rows() : src1.cols();
-      dst.setBounds(N, M);
-      impl->apply(tA, tB, M, N, K, T(1),
-                   src1.begin(), src1.cols(), src2.begin(), src2.cols(),
-                   T(0), dst.begin(), N);
-      return dst;
+    // float/double: use gemm transpose flags directly (no temporary copies)
+    namespace {
+      template<class T>
+      DynMatrix<T> &gemm_mult_t(const DynMatrix<T> &src1, const DynMatrix<T> &src2, DynMatrix<T> &dst, int transpDef){
+        auto* impl = BlasOps<T>::instance()
+            .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+            .resolveOrThrow();
+        bool tA = (transpDef == SRC1_T || transpDef == BOTH_T);
+        bool tB = (transpDef == SRC2_T || transpDef == BOTH_T);
+        int M = tA ? src1.cols() : src1.rows();
+        int N = tB ? src2.rows() : src2.cols();
+        int K = tA ? src1.rows() : src1.cols();
+        dst.setBounds(N, M);
+        impl->apply(tA, tB, M, N, K, T(1),
+                     src1.begin(), src1.cols(), src2.begin(), src2.cols(),
+                     T(0), dst.begin(), N);
+        return dst;
+      }
+    }
+
+    template<>
+    DynMatrix<float> &matrix_mult_t(const DynMatrix<float> &src1, const DynMatrix<float> &src2, DynMatrix<float> &dst, int transpDef){
+      return gemm_mult_t(src1, src2, dst, transpDef);
+    }
+    template<>
+    DynMatrix<double> &matrix_mult_t(const DynMatrix<double> &src1, const DynMatrix<double> &src2, DynMatrix<double> &dst, int transpDef){
+      return gemm_mult_t(src1, src2, dst, transpDef);
     }
 
     template<class T>
@@ -448,8 +461,6 @@ namespace icl{
     // (BlasOps_Mkl.cpp registers the MKL backend, BlasOps_Cpp.cpp the C++ fallback)
 
 
-    template ICLMath_API DynMatrix<double> &big_matrix_mult_t(const DynMatrix<double>&, const DynMatrix<double>&, DynMatrix<double>&, int);
-    template ICLMath_API DynMatrix<float> &big_matrix_mult_t(const DynMatrix<float>&, const DynMatrix<float>&, DynMatrix<float>&, int);
 
 
   // undefine macros

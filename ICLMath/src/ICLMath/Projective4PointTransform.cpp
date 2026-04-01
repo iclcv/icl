@@ -52,7 +52,7 @@ namespace icl{
         B[1] = d.y;
         B[2] = 1;
 
-        DynMatrix<float> x = M.solve(B,"svd");
+        DynMatrix<float> x = M.solve(B);
 
         const float &l1 = x[0], &l2 = x[1], &l3 = x[2];
         return Mat3(l1*a.x,l2*b.x,l3*c.x,

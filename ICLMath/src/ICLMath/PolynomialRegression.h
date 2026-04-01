@@ -179,11 +179,10 @@ namespace icl{
           defines a single input/output pair that is used for the internal
           least-square based optimization
 
-          Optionally, the internally computed pseudo inverse that solves p(xs) a = ys,
-          which is p(xs).pinv() can be computed using an SVD-based approach. This
-          is usually slower, but more stable and less prone to singular-matrix-exceptions.
+          The internally computed pseudo inverse that solves p(xs) a = ys
+          uses an SVD-based approach.
       */
-      const Result &apply(const Matrix &xs, const Matrix &ys, bool useSVD=false);
+      const Result &apply(const Matrix &xs, const Matrix &ys);
 
       /// returns the interpreted function string
       std::string getFunctionString() const;

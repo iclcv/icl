@@ -41,6 +41,9 @@ namespace icl {
         case LapackOp::syev:  return "syev";
         case LapackOp::getrf: return "getrf";
         case LapackOp::getri: return "getri";
+        case LapackOp::geqrf: return "geqrf";
+        case LapackOp::orgqr: return "orgqr";
+        case LapackOp::gelsd: return "gelsd";
       }
       return "?";
     }
@@ -51,6 +54,9 @@ namespace icl {
       addSelector<SyevSig>(LapackOp::syev);
       addSelector<GetrfSig>(LapackOp::getrf);
       addSelector<GetriSig>(LapackOp::getri);
+      addSelector<GeqrfSig>(LapackOp::geqrf);
+      addSelector<OrgqrSig>(LapackOp::orgqr);
+      addSelector<GelsdSig>(LapackOp::gelsd);
     }
 
     template<class T>

@@ -83,7 +83,7 @@ ImgQ approx(const ImgQ &image){
       }
     }
 
-    const Reg::Result &result = reg->apply(xs,ys,gui["use svd"]);
+    const Reg::Result &result = reg->apply(xs,ys);
 
     const Matrix &z = result(xs);
 

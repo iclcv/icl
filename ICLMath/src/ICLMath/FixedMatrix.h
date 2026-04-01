@@ -910,9 +910,9 @@ namespace icl{
       }
 
       /// Computes the Matrix's pseudo-inverse
-      /** internally a DynMatrix wrapper is used. If useSVD is false, a QR-decomposition based approach is used  */
-      FixedMatrix<T,ROWS,COLS> pinv(bool useSVD=0, float zeroThreshold=0.00000000000000001) const {
-        return FixedMatrix<T,ROWS,COLS>(dyn().pinv(useSVD,zeroThreshold).begin());
+      /** internally a DynMatrix wrapper is used */
+      FixedMatrix<T,ROWS,COLS> pinv(float zeroThreshold=0.00000000000000001) const {
+        return FixedMatrix<T,ROWS,COLS>(dyn().pinv(zeroThreshold).begin());
       }
 
       /// Extracts the matrix's eigenvalues and eigenvectors
