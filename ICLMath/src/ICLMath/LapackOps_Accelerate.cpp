@@ -314,7 +314,6 @@ namespace icl {
           for(int j = 0; j < NRHS; j++)
             BT[j * mx + i] = B[i * ldb + j];
         __LAPACK_int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
-        __LAPACK_int mn = std::min(M, N);
         __LAPACK_int lrank;
         float work_query;
         __LAPACK_int lwork = -1;
@@ -347,7 +346,6 @@ namespace icl {
           for(int j = 0; j < NRHS; j++)
             BT[j * mx + i] = B[i * ldb + j];
         __LAPACK_int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
-        __LAPACK_int mn = std::min(M, N);
         __LAPACK_int lrank;
         double work_query;
         __LAPACK_int lwork = -1;
