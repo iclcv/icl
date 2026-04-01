@@ -49,50 +49,17 @@ namespace icl{
 
     // ---- Matrix multiplication via BLAS gemm ----
 
-    namespace {
-      // Generic fallback: inner_product loop (for integer types etc.)
-      template<class T>
-      void mult_generic(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) {
-        for(unsigned int c = 0; c < dst.cols(); ++c)
-          for(unsigned int r = 0; r < dst.rows(); ++r)
-            dst(c, r) = std::inner_product(a.row_begin(r), a.row_end(r), b.col_begin(c), T(0));
-      }
-
-      // BLAS gemm path for float/double
-      template<class T>
-      void mult_gemm(const DynMatrix<T> &a, const DynMatrix<T> &b, DynMatrix<T> &dst) {
-        auto* impl = BlasOps<T>::instance()
-            .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
-            .resolveOrThrow();
-        int M = a.rows(), N = b.cols(), K = a.cols();
-        impl->apply(false, false, M, N, K, T(1),
-                     a.begin(), a.cols(), b.begin(), b.cols(),
-                     T(0), dst.begin(), N);
-      }
-    }
-
     template<class T>
     DynMatrix<T>& DynMatrix<T>::mult(const DynMatrix<T> &m, DynMatrix<T> &dst) const {
       if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
       dst.setBounds(m.cols(), rows());
-      mult_generic(*this, m, dst);
-      return dst;
-    }
-
-    // Specializations for float/double: use BLAS gemm
-    template<>
-    DynMatrix<float>& DynMatrix<float>::mult(const DynMatrix<float> &m, DynMatrix<float> &dst) const {
-      if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
-      dst.setBounds(m.cols(), rows());
-      mult_gemm(*this, m, dst);
-      return dst;
-    }
-
-    template<>
-    DynMatrix<double>& DynMatrix<double>::mult(const DynMatrix<double> &m, DynMatrix<double> &dst) const {
-      if(cols() != m.rows()) throw IncompatibleMatrixDimensionException("A*B : cols(A) must be rows(B)");
-      dst.setBounds(m.cols(), rows());
-      mult_gemm(*this, m, dst);
+      auto* impl = BlasOps<T>::instance()
+          .template getSelector<typename BlasOps<T>::GemmSig>(BlasOp::gemm)
+          .resolveOrThrow();
+      int M = rows(), N = m.cols(), K = cols();
+      impl->apply(false, false, M, N, K, T(1),
+                   begin(), cols(), m.begin(), m.cols(),
+                   T(0), dst.begin(), N);
       return dst;
     }
 
@@ -312,6 +279,7 @@ namespace icl{
     // ================================================================
 
   #define INST_ARITH(T) \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::mult(const DynMatrix<T>&, DynMatrix<T>&) const; \
     template ICLMath_API DynMatrix<T> DynMatrix<T>::operator*(T) const; \
     template ICLMath_API DynMatrix<T> &DynMatrix<T>::mult(T, DynMatrix<T>&) const; \
     template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator*=(T); \
