@@ -1,14 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-**                                                                 **
-** File   : ICLCore/src/ICLCore/PixelOps.cpp                       **
-** Module : ICLCore                                                **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLCore/PixelOps.h>
 #include <ICLUtils/ClippedCast.h>

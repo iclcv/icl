@@ -1,6 +1,5 @@
-/********************************************************************
-**  ICL Core Benchmarks — type conversion, color conversion        **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/Benchmark.h>
 #include <ICLCore/Img.h>

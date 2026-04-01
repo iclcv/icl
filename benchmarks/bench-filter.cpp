@@ -1,8 +1,5 @@
-/********************************************************************
-**  ICL Filter Benchmarks                                          **
-**  All benchmarks use 1000x1000 (1M pixels) as default baseline.  **
-**  Use -p backend=cpp or -p backend=simd to compare backends.     **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/Benchmark.h>
 #include <ICLCore/Img.h>

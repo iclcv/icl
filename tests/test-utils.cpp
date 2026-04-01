@@ -1,7 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**  Tests for ICLUtils                                             **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/Test.h>
 #include <ICLUtils/Size.h>

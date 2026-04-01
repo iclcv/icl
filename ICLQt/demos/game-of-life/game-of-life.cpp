@@ -1,14 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** File   : ICLQt/demos/game-of-life/game-of-life.cpp             **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** Interactive Conway's Game of Life with OpenCL GPU acceleration   **
-** and CPU fallback. Left-click to draw/place patterns, right-     **
-** click to erase. Cell age is visualized as a color gradient.     **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/Img.h>

@@ -1,17 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/QtCameraGrabber.h                      **
-** Module : ICLQt                                                  **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
 

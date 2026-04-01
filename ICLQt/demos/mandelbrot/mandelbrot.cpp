@@ -1,14 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** File   : ICLQt/demos/mandelbrot/mandelbrot.cpp                  **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** Interactive fractal explorer with OpenCL GPU acceleration and    **
-** CPU fallback. Supports Mandelbrot, Julia, Burning Ship, and     **
-** Tricorn fractals. Drag rectangles to zoom, right-click to undo. **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/Img.h>

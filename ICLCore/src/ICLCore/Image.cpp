@@ -1,25 +1,5 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCore/src/ICLCore/Image.cpp                          **
-** Module : ICLCore                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLCore/Image.h>
 #include <ICLCore/ImgBase.h>
