@@ -1,80 +1,117 @@
-# Apple Accelerate Equivalents for IPP Image Operations
+# Apple Accelerate Opportunities for ICL
 
-Reference for future backend implementation. ICL uses planar image storage
+Reference for backend implementation. ICL uses planar image storage
 (each channel contiguous), which maps well to vImage's `Planar8`/`PlanarF` types.
 
-## Summary
+## Already Implemented
 
-| Operation | Accelerate? | vImage function(s) | Types | Notes |
-|---|---|---|---|---|
-| Affine warp | YES | `vImageAffineWarp_Planar8`, `vImageAffineWarp_PlanarF` | 8u, 32f | Lanczos3/5 resampling; kvImageEdgeExtend/BackgroundColorFill |
-| Convolution | YES | `vImageConvolve_PlanarF`, `vImageConvolve_Planar8` | 8u, 32f | Separable variants available (row/column); border modes supported |
-| LUT / bit reduction | PARTIAL | `vImageConvert_*_dithered` | 8u/16u/32f→8u | Dithering (ordered/none) only, not general LUT mapping |
-| Median filter | NO | — | — | No vImage equivalent; keep C++ impl |
-| Morphology (erode/dilate) | PARTIAL | `vImageErode_Planar8/PlanarF`, `vImageDilate_Planar8/PlanarF` | 8u, 32f | Basic erode/dilate only; no open/close/gradient/tophat/blackhat |
-| Canny edge detection | NO | — | — | No vImage equivalent; Core Image has CIEdges but different API |
-| Integral image | NO | — | — | C++ loop-unrolled version already faster than IPP was |
-| Histogram | YES | `vImageHistogramCalculation_Planar8`, `vImageHistogramCalculation_PlanarF` | 8u, 32f | Fixed 256-bin for 8u; equalization also available |
+| Operation | Backend file | vImage/vDSP function | Types |
+|---|---|---|---|
+| Convolution | `ConvolutionOp_Accelerate.cpp` | `vImageConvolve_PlanarF` | 32f |
+| Morphology | `MorphologicalOp_Accelerate.cpp` | `vImageDilate/Erode_Planar8/PlanarF` | 8u, 32f |
+| Affine warp | `AffineOp_Accelerate.cpp` | `vImageAffineWarp_Planar8/PlanarF` | 8u, 32f |
+| FFT | `FFTOps_Accelerate.cpp` | `vDSP_DFT_Execute` | float, double |
+| BLAS gemm | `BlasOps_Accelerate.cpp` | `cblas_sgemm/dgemm` | float, double |
+| LAPACK | `LapackOps_Accelerate.cpp` | `sgesdd_/dgesdd_` etc. | float, double |
 
-## Detailed Notes
+## Tier 1 — High Impact, Straightforward
 
-### Affine Warp (AffineOp)
-- IPP (old): `ippiWarpAffine_8u_C1R`, `ippiWarpAffine_32f_C1R`
-- IPP (modern): `ippiWarpAffineNearest` / `ippiWarpAffineLinear` + spec init
-- Accelerate: `vImageAffineWarp_Planar8`, `vImageAffineWarp_PlanarF`
-- Uses `vImage_AffineTransform` struct (3x2 matrix)
-- Edge modes: `kvImageEdgeExtend`, `kvImageBackgroundColorFill`
-- Resampling: Lanczos3, Lanczos5
+### Image Scaling (scaledCopyChannelROI)
+- **ICL file:** `ICLCore/src/ICLCore/Img.cpp` lines 1050-1240
+- **Current:** Plain C++ NN/bilinear/rect-avg, no backend dispatch, IPP TODO
+- **Accelerate:** `vImageScale_Planar8`, `vImageScale_PlanarF` (Lanczos resampling)
+- **Impact:** 2-4x speedup, heavily used in image pipelines
 
-### Convolution (ConvolutionOp)
-- IPP (old): `ippiFilterSobelHoriz/Vert_*`, `ippiFilterLaplace_*`, `ippiFilterGauss_*`, `ippiFilter_*` (34 specializations)
-- IPP (modern): `ippiFilterSobelBorder_*`, `ippiFilterGaussBorder_*`, etc.
-- Accelerate: `vImageConvolve_PlanarF` (arbitrary kernel), `vImageConvolve_Planar8`
-- Separable: row/column variants for performance
-- Good fit for ICL's generic convolution path; fixed kernels (Sobel, Gauss) use same API
+### Unary Arithmetic (add/sub/mul/div/sqr/sqrt/abs with scalar)
+- **ICL file:** `ICLFilter/src/ICLFilter/UnaryArithmeticalOp_Cpp.cpp` + `_Simd.cpp`
+- **Current:** SSE2 for 32f (4 pixels/iter), C++ scalar fallback for other depths
+- **Accelerate:** `vDSP_vsadd`, `vDSP_vsmul`, `vDSP_vsdiv`, `vDSP_vsqrt`, `vDSP_vabs`
+- **Has backend dispatch:** YES
+- **Impact:** 2-3x for 32f, replaces SSE2 with native ARM-optimized
 
-### LUT / Bit Reduction (LUTOp)
-- IPP (old): `ippiReduceBits_8u_C1R` (signature changed, added noise param)
-- Accelerate: `vImageConvert_ARGBFFFFtoARGB8888_dithered` and similar
-- Limited: dithering modes (none, ordered) but not general LUT table mapping
-- ICL's LUTOp does arbitrary lookup tables, not just bit reduction
+### Binary Arithmetic (pixel-wise add/sub/mul/div/absSub)
+- **ICL file:** `ICLFilter/src/ICLFilter/BinaryArithmeticalOp_Cpp.cpp` + `_Simd.cpp`
+- **Current:** SSE2 for 32f, C++ scalar fallback
+- **Accelerate:** `vDSP_vadd`, `vDSP_vsub`, `vDSP_vmul`, `vDSP_vdiv`
+- **Has backend dispatch:** YES
+- **Impact:** 2-3x
 
-### Median Filter (MedianOp)
-- IPP (old): `ippiFilterMedianCross_*`, `ippiFilterMedian_*`
-- IPP (modern): `ippiFilterMedianBorder_*` with border type + buffer management
-- Accelerate: **none** — no median filter in vImage
-- Keep C++ implementation as primary backend
+### Threshold / Clamp
+- **ICL file:** `ICLFilter/src/ICLFilter/ThresholdOp_Cpp.cpp` + `_Simd.cpp`
+- **Current:** SSE2 for some depths, C++ scalar
+- **Accelerate:** `vDSP_vclip` (clamp to [lo,hi]), `vDSP_vthr` (threshold)
+- **Has backend dispatch:** YES
+- **Impact:** 2-3x
 
-### Morphology (MorphologicalOp)
-- IPP (old): `ippiMorphologyInitAlloc`, `ippiDilate/Erode_*`, `ippiMorphOpenBorder_*`, etc.
-- IPP (modern): spec-based init with `ippiMorphInit`
-- Accelerate: `vImageErode_Planar8`, `vImageErode_PlanarF`, `vImageDilate_Planar8`, `vImageDilate_PlanarF`
-- Custom structuring elements supported
-- **Gap**: no composite operations (open = erode+dilate, close = dilate+erode, etc.)
-  - Could compose from erode/dilate but needs two-pass with temp buffer
-  - Gradient, tophat, blackhat would need manual composition
+### Statistical Operations (mean, variance, min/max)
+- **ICL file:** `ICLCore/src/ICLCore/CoreFunctions.cpp`
+- **Current:** Plain C++ iteration, no backend dispatch
+- **Accelerate:** `vDSP_meanv`, `vDSP_sve` (sum), `vDSP_maxv`/`vDSP_minv`, `vDSP_measqv` (mean of squares for variance)
+- **Impact:** 3-5x for large images
 
-### Canny Edge Detection (CannyOp)
-- IPP (old): `ippiCanny_32f8u_C1R`, `ippiCanny_16s8u_C1R`
-- IPP (modern): spec-based `ippiCanny` with `IppiCannyBorderSpec`
-- Accelerate: **none** — no edge detection in vImage
-- ICL has full C++ implementation with SSE optimizations (non-max suppression + hysteresis)
+## Tier 2 — Good Gains, Moderate Effort
 
-### Integral Image (IntegralImgOp)
-- IPP: `ippiIntegral_8u32s_C1R`, `ippiIntegral_8u32f_C1R`
-- Accelerate: **none**
-- ICL's C++ loop-unrolled implementation was already faster than IPP — permanently dead
+### Color Space Conversion
+- **ICL file:** `ICLCore/src/ICLCore/CCFunctions.cpp` (massive, ~82K tokens)
+- **Current:** Fixed-point arithmetic + CCLUT lookup tables
+- **Accelerate:** vImage `vImageConvert_*` for YCbCr/YpCbCr conversions;
+  `vImageMatrixMultiply_*` for linear color transforms (RGB↔XYZ)
+- **Impact:** 2-3x, but complex integration (many color spaces)
 
-### Histogram (CoreFunctions)
-- IPP (old): `ippiHistogramEven_8u_C1R`, `ippiHistogramEven_16s_C1R`
-- IPP (modern): `ippiHistogram` (different semantics)
-- Accelerate: `vImageHistogramCalculation_Planar8` (256 bins), `vImageHistogramCalculation_PlanarF`
-- Also: `vImageEqualization_Planar8` for histogram equalization
+### Pixel Type Conversion (depth conversion)
+- **ICL file:** `ICLCore/src/ICLCore/PixelOps.cpp`
+- **Current:** SSE2 specializations for 8u↔32f, 16s↔32f, etc.
+- **Accelerate:** `vDSP_vflt8/vflt16/vflt32` (int→float), `vDSP_vfix8/vfix16` (float→int);
+  vImage `vImageConvert_Planar8toPlanarF` / `vImageConvert_PlanarFtoPlanar8`
+- **Impact:** 1.5-2x (already SSE2, but native ARM would be cleaner)
 
-## Priority for Accelerate Backend Implementation
+### Image Comparison Operations
+- **ICL file:** `ICLFilter/src/ICLFilter/UnaryCompareOp_Cpp.cpp`, `BinaryCompareOp_Cpp.cpp`
+- **Current:** Plain C++ scalar, SIMD variant
+- **Has backend dispatch:** YES
+- **Accelerate:** No direct vector compare in vDSP; could use vDSP_vthr + arithmetic
+- **Impact:** 2x
 
-1. **Convolution** — highest impact, most frequently used filter
-2. **Morphology** (erode/dilate) — good fit for basic ops, compose the rest
-3. **Affine warp** — clean API match
-4. **Histogram** — straightforward mapping
-5. **LUT** — limited benefit (partial match only)
+### Mirror/Flip/Rotate90
+- **ICL file:** `ICLFilter/src/ICLFilter/MirrorOp.cpp`
+- **Current:** Plain C++ memcpy/reverse
+- **Accelerate:** `vImageHorizontalReflect_*`, `vImageVerticalReflect_*`,
+  `vImageRotate90_*` (all in vImage)
+- **Has backend dispatch:** NO (would need to add)
+- **Impact:** 2-3x for large images
+
+### Histogram
+- **ICL file:** `ICLCore/src/ICLCore/CoreFunctions.cpp`
+- **Current:** Plain C++ iteration, no backend dispatch
+- **Accelerate:** `vImageHistogramCalculation_Planar8/PlanarF`,
+  `vImageEqualization_Planar8` (equalization)
+- **Impact:** 2-3x
+
+## Tier 3 — Niche / Lower Priority
+
+### Integral Image
+- `ICLFilter/src/ICLFilter/IntegralImgOp.cpp` — C++ loop-unrolled already fast
+
+### Median Filter
+- `ICLFilter/src/ICLFilter/MedianOp_Simd.cpp` — already has SIMD backend
+
+### Logical Operations (AND/OR/XOR/NOT)
+- Already fast with bitwise ops; minimal Accelerate benefit
+
+### Wiener Filter
+- `ICLFilter/src/ICLFilter/WienerOp_Cpp.cpp` — currently throws (IPP-only)
+- Would need vImage convolution + statistics; complex
+
+### Warp (arbitrary map)
+- `ICLFilter/src/ICLFilter/WarpOp_Cpp.cpp` — no vImage equivalent for general warp
+
+## New Capabilities (not in ICL today)
+
+| Capability | Accelerate API | Notes |
+|---|---|---|
+| Perspective warp | `vImagePerspectiveWarp_*` | 4-point homography mapping |
+| Histogram equalization | `vImageEqualization_Planar8` | Contrast enhancement |
+| Histogram specification | `vImageHistogramSpecification_*` | Match target histogram |
+| Planar↔interleaved convert | `vImageConvert_PlanarToChunky/ChunkyToPlanar` | Critical for external lib interop |
+| vForce transcendentals | `vvsinf`, `vvcosf`, `vvexpf`, `vvlogf` | Vectorized sin/cos/exp/log on arrays |
+| Biquad (IIR) filtering | `vDSP_biquad` | Temporal smoothing for tracking |
