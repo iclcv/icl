@@ -94,10 +94,10 @@ namespace icl{
     }
 
     // Whole-class explicit instantiation
-    template class ICLMath_API DynColVector<float>;
-    template class ICLMath_API DynColVector<double>;
-    template class ICLMath_API DynRowVector<float>;
-    template class ICLMath_API DynRowVector<double>;
+    template struct ICLMath_API DynColVector<float>;
+    template struct ICLMath_API DynColVector<double>;
+    template struct ICLMath_API DynRowVector<float>;
+    template struct ICLMath_API DynRowVector<double>;
 
   } // namespace math
 }

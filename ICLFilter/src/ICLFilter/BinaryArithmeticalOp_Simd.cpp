@@ -22,9 +22,8 @@ namespace {
       using T = typename std::remove_reference_t<decltype(s1)>::type;
       if constexpr (std::is_same_v<T, icl32f>) {
         const auto &s2 = src2.as<T>();
-        __m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF));
         visitROILinesPerChannel2With(s1, s2, d,
-          [absMask](const icl32f *a, const icl32f *b, icl32f *dp, int, int w) {
+          [](const icl32f *a, const icl32f *b, icl32f *dp, int, int w) {
             int i = 0;
             for(; i <= w - 4; i += 4) {
               __m128 va = _mm_loadu_ps(a+i);
@@ -34,7 +33,10 @@ namespace {
               else if constexpr (OT == BOp::subOp)    r = _mm_sub_ps(va, vb);
               else if constexpr (OT == BOp::mulOp)    r = _mm_mul_ps(va, vb);
               else if constexpr (OT == BOp::divOp)    r = _mm_div_ps(va, vb);
-              else if constexpr (OT == BOp::absSubOp) r = _mm_and_ps(_mm_sub_ps(va, vb), absMask);
+              else if constexpr (OT == BOp::absSubOp) {
+                __m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF));
+                r = _mm_and_ps(_mm_sub_ps(va, vb), absMask);
+              }
               else r = va;
               _mm_storeu_ps(dp+i, r);
             }

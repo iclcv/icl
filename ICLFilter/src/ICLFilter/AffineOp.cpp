@@ -32,8 +32,8 @@ namespace icl{
     }
 
     AffineOp::AffineOp (scalemode eInterpolate)
-      : m_eInterpolate(eInterpolate),
-        ImageBackendDispatching(prototype()),
+      : ImageBackendDispatching(prototype()),
+        m_eInterpolate(eInterpolate),
         m_adaptResultImage(true) {
        reset ();
      }
