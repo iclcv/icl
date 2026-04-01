@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
+#include <numeric>
+#include <functional>
 #include <fstream>
 
 #include <ICLMath/BlasOps.h>
@@ -94,17 +96,261 @@ namespace icl{
       return dst;
     }
 
+    // ================================================================
+    // Scalar arithmetic
+    // ================================================================
+
     template<class T>
-    static double dot(const DynMatrix<T> &a, const DynMatrix<T> &b){
-      ICLASSERT_RETURN_VAL(a.dim() == b.dim(),0.0);
-      double s = 0;
-      for(unsigned int i=0;i<a.dim();++i){
-        s += a[i] * b[i];
-      }
-      return s;
+    DynMatrix<T> DynMatrix<T>::operator*(T f) const{
+      DynMatrix dst(cols(),rows());
+      return mult(f,dst);
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::mult(T f, DynMatrix &dst) const{
+      dst.setBounds(cols(),rows());
+      std::transform(begin(),end(),dst.begin(),[f](const T &v){ return v * f; });
+      return dst;
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator*=(T f){
+      std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
+      return *this;
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator/(T f) const{ return this->operator*(T(1)/f); }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator/=(T f){ return this->operator*=(T(1)/f); }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator+(const T &t) const{
+      DynMatrix d(cols(),rows());
+      std::transform(begin(),end(),d.begin(),[t](const T &v){ return v + t; });
+      return d;
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator-(const T &t) const{
+      DynMatrix d(cols(),rows());
+      std::transform(begin(),end(),d.begin(),[t](const T &v){ return v - t; });
+      return d;
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator+=(const T &t){
+      std::transform(begin(),end(),begin(),[t](const T &v){ return v + t; });
+      return *this;
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator-=(const T &t){
+      std::transform(begin(),end(),begin(),[t](const T &v){ return v - t; });
+      return *this;
     }
 
+    // ================================================================
+    // Matrix arithmetic
+    // ================================================================
 
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator*(const DynMatrix &m) const{
+      DynMatrix d(m.cols(),rows());
+      return mult(m,d);
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator*=(const DynMatrix &m){
+      return *this=((*this)*m);
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator/(const DynMatrix &m) const{
+      return this->operator*(m.inv());
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator/=(const DynMatrix &m){
+      return *this = this->operator*(m.inv());
+    }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator+(const DynMatrix &m) const{
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
+      DynMatrix d(cols(),rows());
+      std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
+      return d;
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::operator-(const DynMatrix &m) const{
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A-B size(A) must be size(B)");
+      DynMatrix d(cols(),rows());
+      std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
+      return d;
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator+=(const DynMatrix &m){
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+=B size(A) must be size(B)");
+      std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
+      return *this;
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::operator-=(const DynMatrix &m){
+      if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A-=B size(A) must be size(B)");
+      std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
+      return *this;
+    }
+
+    // ================================================================
+    // Elementwise ops
+    // ================================================================
+
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::elementwise_mult(const DynMatrix &m, DynMatrix &dst) const{
+      if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
+      dst.setBounds(cols(),rows());
+      for(unsigned int i=0;i<dim();++i) dst[i] = m_data[i] * m[i];
+      return dst;
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::elementwise_mult(const DynMatrix &m) const{
+      DynMatrix dst(cols(),rows());
+      return elementwise_mult(m,dst);
+    }
+    template<class T>
+    DynMatrix<T> &DynMatrix<T>::elementwise_div(const DynMatrix &m, DynMatrix &dst) const{
+      if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
+      dst.setBounds(cols(),rows());
+      for(unsigned int i=0;i<dim();++i) dst[i] = m_data[i] / m[i];
+      return dst;
+    }
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::elementwise_div(const DynMatrix &m) const{
+      DynMatrix dst(cols(),rows());
+      return elementwise_div(m,dst);
+    }
+
+    // ================================================================
+    // Norms, distances, transpose, properties
+    // ================================================================
+
+    template<class T>
+    T DynMatrix<T>::norm(double l) const{
+      double accu = 0;
+      for(unsigned int i=0;i<dim();++i) accu += ::pow(double(m_data[i]),l);
+      return ::pow(accu,1.0/l);
+    }
+
+    template<class T>
+    T DynMatrix<T>::sqrDistanceTo(const DynMatrix &other) const{
+      ICLASSERT_THROW(dim() == other.dim(), InvalidMatrixDimensionException("DynMatrix::sqrDistanceTo: dimension missmatch"));
+      T accu = T(0);
+      for(unsigned int i=0;i<dim();++i){ T d = m_data[i]-other[i]; accu += d*d; }
+      return accu;
+    }
+    template<class T>
+    T DynMatrix<T>::distanceTo(const DynMatrix &other) const{
+      return ::sqrt(sqrDistanceTo(other));
+    }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::transp() const{
+      DynMatrix d(rows(),cols());
+      for(unsigned int x=0;x<cols();++x)
+        for(unsigned int y=0;y<rows();++y)
+          d(y,x) = (*this)(x,y);
+      return d;
+    }
+
+    template<class T>
+    T DynMatrix<T>::element_wise_inner_product(const DynMatrix<T> &other) const {
+      return std::inner_product(begin(),end(),other.begin(),T(0));
+    }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::dot(const DynMatrix<T> &M) const{
+      return this->transp() * M;
+    }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::diag() const{
+      ICLASSERT_RETURN_VAL(cols()==rows(),DynMatrix<T>());
+      DynMatrix<T> d(1,rows());
+      for(unsigned int i=0;i<rows();++i) d[i] = (*this)(i,i);
+      return d;
+    }
+
+    template<class T>
+    T DynMatrix<T>::trace() const{
+      ICLASSERT_RETURN_VAL(cols()==rows(),0);
+      double accu = 0;
+      for(unsigned int i=0;i<dim();i+=cols()+1) accu += m_data[i];
+      return accu;
+    }
+
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::cross(const DynMatrix<T> &x, const DynMatrix<T> &y){
+      if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
+        DynMatrix<T> r(1,x.rows());
+        r(0,0) = x(0,1)*y(0,2)-x(0,2)*y(0,1);
+        r(0,1) = x(0,2)*y(0,0)-x(0,0)*y(0,2);
+        r(0,2) = x(0,0)*y(0,1)-x(0,1)*y(0,0);
+        return r;
+      }else{
+        ICLASSERT_RETURN_VAL(x.rows() == 3 && y.rows() == 3,DynMatrix<T>());
+        return DynMatrix<T>();
+      }
+    }
+
+    template<class T>
+    T DynMatrix<T>::cond(const double p) const {
+      if(cols() == 3 && rows() == 3){
+        DynMatrix<T> M_inv = (*this).inv();
+        return (*this).norm(p) * M_inv.norm(p);
+      } else {
+        DynMatrix<T> U,S,V;
+        (*this).svd(U,S,V);
+        if(S[S.rows()-1]) return S[0]/S[S.rows()-1];
+        else return S[0];
+      }
+    }
+
+    // ================================================================
+    // Explicit instantiations: arithmetic/norms/properties (float+double)
+    // ================================================================
+
+  #define INST_ARITH(T) \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator*(T) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::mult(T, DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator*=(T); \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator/(T) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator/=(T); \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator+(const T&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator-(const T&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator+=(const T&); \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator-=(const T&); \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator*(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator*=(const DynMatrix<T>&); \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator/(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator/=(const DynMatrix<T>&); \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator+(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator-(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator+=(const DynMatrix<T>&); \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator-=(const DynMatrix<T>&); \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::elementwise_mult(const DynMatrix<T>&, DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::elementwise_mult(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> &DynMatrix<T>::elementwise_div(const DynMatrix<T>&, DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::elementwise_div(const DynMatrix<T>&) const; \
+    template ICLMath_API T DynMatrix<T>::norm(double) const; \
+    template ICLMath_API T DynMatrix<T>::sqrDistanceTo(const DynMatrix<T>&) const; \
+    template ICLMath_API T DynMatrix<T>::distanceTo(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::transp() const; \
+    template ICLMath_API T DynMatrix<T>::element_wise_inner_product(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::dot(const DynMatrix<T>&) const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::diag() const; \
+    template ICLMath_API T DynMatrix<T>::trace() const; \
+    template ICLMath_API DynMatrix<T> DynMatrix<T>::cross(const DynMatrix<T>&, const DynMatrix<T>&); \
+    template ICLMath_API T DynMatrix<T>::cond(double) const;
+
+    INST_ARITH(float)
+    INST_ARITH(double)
+  #undef INST_ARITH
+
+    // ================================================================
+    // Linear algebra (already defined above, instantiate here)
+    // ================================================================
 
     template<class T>
     DynMatrix<T> DynMatrix<T>::inv() const{
@@ -427,15 +673,11 @@ namespace icl{
     }
 
 
-// ippmInvert_m / ippmDet_m were removed from modern IPP (ippm module dropped).
-// Uses C++ fallback (Gauss-Jordan inv, LU det) from the generic template.
-#if 1 // was: #else branch of ICL_HAVE_IPP — now always use C++ fallback
     template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const;
     template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const;
 
     template ICLMath_API float DynMatrix<float>::det()const;
     template ICLMath_API double DynMatrix<double>::det()const;
-#endif
 
 
     template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const;

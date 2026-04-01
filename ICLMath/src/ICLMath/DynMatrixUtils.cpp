@@ -34,6 +34,7 @@
 #include <ICLMath/MathOps.h>
 #include <ICLUtils/StringUtils.h>
 #include <cmath>
+#include <numeric>
 
 #include <ICLMath/BlasOps.h>
 #include <ICLMath/LapackOps.h>
