@@ -32,8 +32,10 @@
 
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
+#include <ICLUtils/CompatMacros.h>
 #include <algorithm>
 #include <cmath>
+#include <iosfwd>
 
 namespace icl{
   namespace math{
@@ -326,6 +328,14 @@ namespace icl{
       T *m_data;
       bool m_ownData;
     };
+
+    /// ostream operator for DynMatrixBase (and DynMatrix via inheritance) \ingroup LINALG
+    template<class T> ICLMath_IMP
+    std::ostream &operator<<(std::ostream &s, const DynMatrixBase<T> &m);
+
+    /// istream operator for DynMatrixBase (and DynMatrix via inheritance) \ingroup LINALG
+    template<class T> ICLMath_IMP
+    std::istream &operator>>(std::istream &s, DynMatrixBase<T> &m);
 
   } // namespace math
 }

@@ -614,7 +614,7 @@ namespace icl{
     // ================================================================
 
     template<class T>
-    std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
+    std::ostream &operator<<(std::ostream &s,const DynMatrixBase<T> &m){
       for(unsigned int i=0;i<m.rows();++i){
         s << "| ";
         for(unsigned int j=0;j<m.cols();++j){
@@ -629,7 +629,7 @@ namespace icl{
     }
 
     template<class T>
-    std::istream &operator>>(std::istream &s,DynMatrix<T> &m){
+    std::istream &operator>>(std::istream &s,DynMatrixBase<T> &m){
       char c;
       for(unsigned int i=0;i<m.rows();++i){
         s >> c; // trailing '|'
@@ -650,8 +650,8 @@ namespace icl{
     }
 
   #define X(T)                                                            \
-    template ICLMath_API std::ostream &operator<<(std::ostream&,const DynMatrix<T >&); \
-    template ICLMath_API std::istream &operator>>(std::istream&,DynMatrix<T >&)
+    template ICLMath_API std::ostream &operator<<(std::ostream&,const DynMatrixBase<T >&); \
+    template ICLMath_API std::istream &operator>>(std::istream&,DynMatrixBase<T >&)
 
     X(uint8_t);
     X(int16_t);

@@ -395,13 +395,7 @@ namespace icl{
     }
     /** \endcond */
 
-    /// ostream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T> ICLMath_IMP
-    std::ostream &operator<<(std::ostream &s, const DynMatrix<T> &m);
-
-    /// istream operator implemented for uchar, short, int, float and double matrices  \ingroup LINALG
-    template<class T> ICLMath_IMP
-    std::istream &operator>>(std::istream &s, DynMatrix<T> &m);
+    // operator<< and operator>> are declared in DynMatrixBase.h
 
 
     /// horizontal concatenation of matrices (missing elements padded with 0)
