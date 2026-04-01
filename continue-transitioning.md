@@ -1,6 +1,33 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 24 — LapackOps expansion, API cleanup, DynMatrixBase split)
+## Current State (Session 25 — NeighborhoodOp fix, dead code cleanup)
+
+### Session 25 Summary
+
+**NeighborhoodOp even-mask IPP workaround removed:**
+- `computeROI()` unconditionally shrunk output ROI by 1px for even-sized masks —
+  this was an IPP-specific workaround (`#ifdef ICL_HAVE_IPP`) that had been
+  applied unconditionally in the rewritten "NEW Code" path. The C++ backend
+  has no anchor bug, so the shrink was incorrect (lost a valid row/column).
+- Removed the workaround and cleaned up dead commented-out old code block.
+- Added 3 even-kernel tests: 4x4 identity (verifies 7x7 output from 10x10),
+  2x2 sum (verifies 7x7 from 8x8), 4x4 cross-validate across backends.
+
+**Dead CONFIGURE_GTEST macro removed:**
+- Removed the unused `CONFIGURE_GTEST` function from ICLHelperMacros.cmake
+  (~67 lines). No module called it — tests migrated to centralized `tests/`
+  directory in session 19. The per-module test stubs no longer exist.
+
+**Tests: 367/367 pass (3 new).** Build clean, zero warnings on macOS.
+
+### Next Steps
+
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
+  re-add even-mask workaround conditionally in IPP convolution path
+- **Consider DynMatrixBase for non-float/double users** — GraphCutter (bool),
+  masks (unsigned char) could use DynMatrixBase directly instead of DynMatrix
+
+## Previous State (Session 24 — LapackOps expansion, API cleanup, DynMatrixBase split)
 
 ### Session 24 Summary
 
@@ -73,14 +100,6 @@ DynMatrix.cpp     — all method bodies + whole-class instantiation float/double
 DynVector.h       — DynColVector/DynRowVector declarations
 DynVector.cpp     — all method bodies + whole-class instantiation float/double
 ```
-
-### Next Steps
-
-- **Investigate legacy test stubs** — per-module test executables compile to 0 tests
-- **NeighborhoodOp.cpp** — 2 `#ifdef ICL_HAVE_IPP` workaround blocks (anchor bug)
-- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
-- **Consider DynMatrixBase for non-float/double users** — GraphCutter (bool),
-  masks (unsigned char) could use DynMatrixBase directly instead of DynMatrix
 
 ## Previous State (Session 23 — Full Backend Dispatch Architecture)
 

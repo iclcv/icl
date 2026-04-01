@@ -1293,6 +1293,44 @@ ICL_REGISTER_TEST("Filter.ConvolutionOp.cross_validate_per_depth", "all combos m
   }
 }
 
+ICL_REGISTER_TEST("Filter.ConvolutionOp.even_4x4_identity", "4x4 identity kernel output size and values") {
+  // 4x4 kernel with identity at anchor (2,2): only element at (2,2)=1
+  int k[] = {0,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,0};
+  ConvolutionOp op(ConvolutionKernel(k, Size(4,4), 1, false));
+  auto src = Img32f::from(10, 10, 1, [](int x, int y, int) -> icl32f { return x + y * 10.f; });
+  Image dst = op.apply(Image(src));
+  // 4x4 mask, anchor (2,2): left/top border=2, right/bottom border=1 → 7x7 output
+  ICL_TEST_EQ(dst.getWidth(), 7);
+  ICL_TEST_EQ(dst.getHeight(), 7);
+  // dst(0,0) ← src(2,2), dst(6,6) ← src(8,8)
+  ICL_TEST_EQ(dst.as32f()(0, 0, 0), src(2, 2, 0));
+  ICL_TEST_EQ(dst.as32f()(6, 6, 0), src(8, 8, 0));
+  ICL_TEST_EQ(dst.as32f()(3, 3, 0), src(5, 5, 0));
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.even_2x2_sum", "2x2 sum kernel output size") {
+  int k[] = {1,1, 1,1};
+  ConvolutionOp op(ConvolutionKernel(k, Size(2,2), 1, false));
+  auto src = Img32f::from(8, 8, 1, [](int x, int y, int) -> icl32f { return 1.f; });
+  Image dst = op.apply(Image(src));
+  // 2x2 mask, anchor (1,1): left/top border=1, right/bottom border=0 → 7x7 output
+  ICL_TEST_EQ(dst.getWidth(), 7);
+  ICL_TEST_EQ(dst.getHeight(), 7);
+  // sum of four 1.0s = 4.0
+  ICL_TEST_NEAR(dst.as32f()(0, 0, 0), 4.f, 0.01f);
+  ICL_TEST_NEAR(dst.as32f()(6, 6, 0), 4.f, 0.01f);
+}
+
+ICL_REGISTER_TEST("Filter.ConvolutionOp.even_4x4_cross_validate", "even kernel backends match") {
+  auto src = Img32f::from(20, 15, 1, [](int x, int y, int) -> icl32f {
+    return static_cast<icl32f>((x * 7 + y * 13) % 200);
+  });
+  Image srcImg(src);
+  float k[] = {1,2,1,0, 2,4,2,0, 1,2,1,0, 0,0,0,0};
+  ConvolutionOp op(ConvolutionKernel(k, Size(4,4), false));
+  crossValidateBackends(op, srcImg, [&]{ return op.apply(srcImg); });
+}
+
 // ============================================================
 // MorphologicalOp tests
 // ============================================================
