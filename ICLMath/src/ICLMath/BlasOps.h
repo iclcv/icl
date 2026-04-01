@@ -11,7 +11,15 @@ namespace icl {
   namespace math {
 
     /// Selector keys for BLAS backend dispatch.
-    enum class BlasOp : int { gemm };
+    enum class BlasOp : int {
+      gemm,   ///< Level 3: general matrix multiply
+      vadd,   ///< Level 1: dst[i] = a[i] + b[i]
+      vsub,   ///< Level 1: dst[i] = a[i] - b[i]
+      vmul,   ///< Level 1: dst[i] = a[i] * b[i]
+      vdiv,   ///< Level 1: dst[i] = a[i] / b[i]
+      vsadd,  ///< Level 1: dst[i] = src[i] + scalar
+      vsmul,  ///< Level 1: dst[i] = src[i] * scalar
+    };
 
     ICLMath_API const char* toString(BlasOp op);
 
@@ -26,13 +34,17 @@ namespace icl {
     template<class T>
     struct ICLMath_API BlasOps : utils::BackendDispatching<int> {
 
-      /// General matrix multiply: C = alpha * op(A) * op(B) + beta * C
-      /// transA/transB: false = no transpose, true = transpose
-      /// M = rows of op(A), N = cols of op(B), K = cols of op(A) = rows of op(B)
+      /// Level 3: C = alpha * op(A) * op(B) + beta * C
       using GemmSig = void(bool transA, bool transB,
                             int M, int N, int K, T alpha,
                             const T* A, int lda, const T* B, int ldb,
                             T beta, T* C, int ldc);
+
+      /// Level 1 binary: dst = a OP b (element-wise, n elements)
+      using VecBinarySig = void(const T* a, const T* b, T* dst, int n);
+
+      /// Level 1 scalar: dst[i] = src[i] OP scalar (n elements)
+      using VecScalarSig = void(const T* src, T scalar, T* dst, int n);
 
       BlasOps();
       static BlasOps& instance();

@@ -49,12 +49,14 @@ namespace icl{
     template<class T>
     DynMatrix<T> &DynMatrix<T>::mult(T f, DynMatrix &dst) const{
       dst.setBounds(cols(),rows());
-      std::transform(begin(),end(),dst.begin(),[f](const T &v){ return v * f; });
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsmul)
+        .resolveOrThrow()->apply(begin(), f, dst.begin(), dim());
       return dst;
     }
     template<class T>
     DynMatrix<T> &DynMatrix<T>::operator*=(T f){
-      std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsmul)
+        .resolveOrThrow()->apply(begin(), f, begin(), dim());
       return *this;
     }
     template<class T>
@@ -65,23 +67,29 @@ namespace icl{
     template<class T>
     DynMatrix<T> DynMatrix<T>::operator+(const T &t) const{
       DynMatrix d(cols(),rows());
-      std::transform(begin(),end(),d.begin(),[t](const T &v){ return v + t; });
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd)
+        .resolveOrThrow()->apply(begin(), t, d.begin(), dim());
       return d;
     }
     template<class T>
     DynMatrix<T> DynMatrix<T>::operator-(const T &t) const{
       DynMatrix d(cols(),rows());
-      std::transform(begin(),end(),d.begin(),[t](const T &v){ return v - t; });
+      T neg = -t;
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd)
+        .resolveOrThrow()->apply(begin(), neg, d.begin(), dim());
       return d;
     }
     template<class T>
     DynMatrix<T> &DynMatrix<T>::operator+=(const T &t){
-      std::transform(begin(),end(),begin(),[t](const T &v){ return v + t; });
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd)
+        .resolveOrThrow()->apply(begin(), t, begin(), dim());
       return *this;
     }
     template<class T>
     DynMatrix<T> &DynMatrix<T>::operator-=(const T &t){
-      std::transform(begin(),end(),begin(),[t](const T &v){ return v - t; });
+      T neg = -t;
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd)
+        .resolveOrThrow()->apply(begin(), neg, begin(), dim());
       return *this;
     }
 
@@ -111,26 +119,30 @@ namespace icl{
     DynMatrix<T> DynMatrix<T>::operator+(const DynMatrix &m) const{
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
-      std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vadd)
+        .resolveOrThrow()->apply(begin(), m.begin(), d.begin(), dim());
       return d;
     }
     template<class T>
     DynMatrix<T> DynMatrix<T>::operator-(const DynMatrix &m) const{
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A-B size(A) must be size(B)");
       DynMatrix d(cols(),rows());
-      std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vsub)
+        .resolveOrThrow()->apply(begin(), m.begin(), d.begin(), dim());
       return d;
     }
     template<class T>
     DynMatrix<T> &DynMatrix<T>::operator+=(const DynMatrix &m){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+=B size(A) must be size(B)");
-      std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vadd)
+        .resolveOrThrow()->apply(begin(), m.begin(), begin(), dim());
       return *this;
     }
     template<class T>
     DynMatrix<T> &DynMatrix<T>::operator-=(const DynMatrix &m){
       if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A-=B size(A) must be size(B)");
-      std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vsub)
+        .resolveOrThrow()->apply(begin(), m.begin(), begin(), dim());
       return *this;
     }
 
@@ -142,7 +154,8 @@ namespace icl{
     DynMatrix<T> &DynMatrix<T>::elementwise_mult(const DynMatrix &m, DynMatrix &dst) const{
       if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A.*B dimension mismatch");
       dst.setBounds(cols(),rows());
-      for(unsigned int i=0;i<dim();++i) dst[i] = m_data[i] * m[i];
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vmul)
+        .resolveOrThrow()->apply(begin(), m.begin(), dst.begin(), dim());
       return dst;
     }
     template<class T>
@@ -154,7 +167,8 @@ namespace icl{
     DynMatrix<T> &DynMatrix<T>::elementwise_div(const DynMatrix &m, DynMatrix &dst) const{
       if((m.cols() != cols()) || (m.rows() != rows())) throw IncompatibleMatrixDimensionException("A./B dimension mismatch");
       dst.setBounds(cols(),rows());
-      for(unsigned int i=0;i<dim();++i) dst[i] = m_data[i] / m[i];
+      BlasOps<T>::instance().template getSelector<typename BlasOps<T>::VecBinarySig>(BlasOp::vdiv)
+        .resolveOrThrow()->apply(begin(), m.begin(), dst.begin(), dim());
       return dst;
     }
     template<class T>

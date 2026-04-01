@@ -12,6 +12,12 @@ namespace icl {
     const char* toString(BlasOp op) {
       switch(op) {
         case BlasOp::gemm:  return "gemm";
+        case BlasOp::vadd:  return "vadd";
+        case BlasOp::vsub:  return "vsub";
+        case BlasOp::vmul:  return "vmul";
+        case BlasOp::vdiv:  return "vdiv";
+        case BlasOp::vsadd: return "vsadd";
+        case BlasOp::vsmul: return "vsmul";
       }
       return "?";
     }
@@ -19,6 +25,12 @@ namespace icl {
     template<class T>
     BlasOps<T>::BlasOps() {
       addSelector<GemmSig>(BlasOp::gemm);
+      addSelector<VecBinarySig>(BlasOp::vadd);
+      addSelector<VecBinarySig>(BlasOp::vsub);
+      addSelector<VecBinarySig>(BlasOp::vmul);
+      addSelector<VecBinarySig>(BlasOp::vdiv);
+      addSelector<VecScalarSig>(BlasOp::vsadd);
+      addSelector<VecScalarSig>(BlasOp::vsmul);
     }
 
     template<class T>

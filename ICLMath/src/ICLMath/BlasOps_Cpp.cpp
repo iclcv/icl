@@ -97,12 +97,37 @@ namespace icl {
 
     } // anonymous namespace
 
+    // ================================================================
+    // Level 1: element-wise vector operations
+    // ================================================================
+
+    template<class T> void cpp_vadd(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]+b[i]; }
+    template<class T> void cpp_vsub(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]-b[i]; }
+    template<class T> void cpp_vmul(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]*b[i]; }
+    template<class T> void cpp_vdiv(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]/b[i]; }
+    template<class T> void cpp_vsadd(const T* s, T v, T* d, int n) { for(int i=0;i<n;++i) d[i]=s[i]+v; }
+    template<class T> void cpp_vsmul(const T* s, T v, T* d, int n) { for(int i=0;i<n;++i) d[i]=s[i]*v; }
+
+    template<class T>
+    void register_level1(Backend b = Backend::Cpp) {
+      auto proxy = BlasOps<T>::instance().backends(b);
+      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vadd, cpp_vadd<T>, "C++ vadd");
+      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vsub, cpp_vsub<T>, "C++ vsub");
+      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vmul, cpp_vmul<T>, "C++ vmul");
+      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vdiv, cpp_vdiv<T>, "C++ vdiv");
+      proxy.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd, cpp_vsadd<T>, "C++ vsadd");
+      proxy.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsmul, cpp_vsmul<T>, "C++ vsmul");
+    }
+
     static const int _cpp_blas_reg = []() {
       auto cpp_f = BlasOps<float>::instance().backends(Backend::Cpp);
       cpp_f.add<BlasOps<float>::GemmSig>(BlasOp::gemm, cpp_gemm<float>, "C++ naive GEMM");
 
       auto cpp_d = BlasOps<double>::instance().backends(Backend::Cpp);
       cpp_d.add<BlasOps<double>::GemmSig>(BlasOp::gemm, cpp_gemm<double>, "C++ naive GEMM");
+
+      register_level1<float>();
+      register_level1<double>();
 
       return 0;
     }();
