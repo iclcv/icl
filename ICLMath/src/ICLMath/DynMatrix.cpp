@@ -311,34 +311,6 @@ namespace icl{
     }
 
     template<class T>
-    DynMatrix<T> DynMatrix<T>::solve_upper_triangular(const DynMatrix &b) const{
-      const DynMatrix &M = *this;
-      ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_upper_triangular only works for squared matrices"));
-      int m = M.cols();
-      DynMatrix<T> x(1,m);
-      for(int i=m-1;i>=0;--i){
-        float r = b[i];
-        for(int j=m-1;j>i;--j) r -= M(j,i) * x[j];
-        x[i] = r/M(i,i);
-      }
-      return x;
-    }
-
-    template<class T>
-    DynMatrix<T> DynMatrix<T>::solve_lower_triangular(const DynMatrix &b) const{
-      const DynMatrix &M = *this;
-      ICLASSERT_THROW(M.cols() == M.rows(), ICLException("solve_lower_triangular: only works for squared matrices"));
-      int m = M.cols();
-      DynMatrix<T> x(1,m);
-      for(int i=0;i<m;++i){
-        float r = b[i];
-        for(int j=0;j<i;++j) r -= M(j,i) * x[j];
-        x[i] = r/M(i,i);
-      }
-      return x;
-    }
-
-    template<class T>
     DynMatrix<T> DynMatrix<T>::solve(const DynMatrix &b, T zeroThreshold){
       int m = rows(), n = cols(), nrhs = b.cols();
       ICLASSERT_THROW(m == (int)b.rows(), InvalidMatrixDimensionException("DynMatrix::solve: M.rows != b.rows"));
@@ -480,12 +452,6 @@ namespace icl{
 
     template ICLMath_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
     template ICLMath_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
-
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_upper_triangular(const DynMatrix<float> &b) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_upper_triangular(const DynMatrix<double> &b) const;
-
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve_lower_triangular(const DynMatrix<float> &b) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve_lower_triangular(const DynMatrix<double> &b) const;
 
     template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, float zeroThreshold);
     template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, double zeroThreshold);

@@ -827,12 +827,6 @@ namespace icl{
           apply this function on non-sqared matrices */
       void decompose_LU(DynMatrix &L, DynMatrix &U, T zeroThreshold = T(1E-16)) const;
 
-      /// solves Mx=b for M=*this (only if M is a squared upper triangular matrix) (only for icl32f and icl64f)
-      DynMatrix solve_upper_triangular(const DynMatrix &b) const;
-
-      /// solves Mx=b for M=*this (only if M is a squared lower triangular matrix) (only for icl32f and icl64f)
-      DynMatrix solve_lower_triangular(const DynMatrix &b) const;
-
       /// solves Mx=b for M=*this via SVD least-squares (only for icl32f and icl64f)
       /** Uses LAPACK gelsd (SVD-based least-squares solve) internally.
           Handles square, overdetermined, underdetermined, and rank-deficient systems.
