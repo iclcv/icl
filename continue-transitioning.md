@@ -73,12 +73,29 @@
 - DynMatrixBase<bool> is the correct type: fully header-only, all operations available
 - Files: GraphCutter.h/.cpp, 12 ICLGeom segmentation files, PhysicsWorld.cpp
 
-**Tests: 367/367 pass.** Build clean, zero warnings on macOS.
+**SmartArray<T> replaced with std::shared_ptr<T[]>:**
+- C++17 `shared_ptr<T[]>` provides native array semantics (operator[], delete[])
+- Replaced all 38 SmartArray usage sites across 10 files
+- Owning: `shared_ptr<T[]>(ptr)`. Non-owning: `shared_ptr<T[]>(ptr, [](T*){})`
+- PlotWidget::Buffer changed from inheritance to composition (can't inherit shared_ptr)
+- `SmartArray.h` deleted — zero remaining consumers
+- Key files: Img.h/cpp (channel storage), Array2D.h, SOM.h, Scene.h, PlotWidget/LowLevelPlotWidget
+
+**Debug-mode warnings fixed (zero remaining):**
+- AffineOp.cpp: member initializer order
+- BinaryArithmeticalOp_Simd.cpp: unused lambda capture
+- DynVector.cpp: struct/class mismatch in explicit instantiation
+
+**Tests: 367/367 pass.** Build clean, zero warnings in Debug mode on macOS.
 
 ### Next Steps
 
-- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
-  re-add even-mask workaround conditionally in IPP convolution path
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **C++17 source pass** — std::filesystem, std::string_view, structured bindings
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
 
 ## Previous State (Session 24 — LapackOps expansion, API cleanup, DynMatrixBase split)
 
