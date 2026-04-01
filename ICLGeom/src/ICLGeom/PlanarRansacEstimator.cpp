@@ -200,7 +200,7 @@ namespace icl{
 
 
     math::DynMatrix<PlanarRansacEstimator::Result> PlanarRansacEstimator::apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &pointIDs, math::DynMatrix<bool> &testMatrix, float threshold,
+                std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix, float threshold,
                 int passes, int tolerance, int optimization, core::Img32s labelImage){
 
       std::vector<std::vector<Vec> > n0Pre(testMatrix.rows(), std::vector<Vec>(passes));
@@ -268,7 +268,7 @@ namespace icl{
     }
 
 
-    void PlanarRansacEstimator::calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrix<bool> &testMatrix, float threshold, int passes,
+    void PlanarRansacEstimator::calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrixBase<bool> &testMatrix, float threshold, int passes,
                     std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                     std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end){
       #ifdef ICL_HAVE_OPENCL
@@ -512,7 +512,7 @@ namespace icl{
     }
 
 
-    void PlanarRansacEstimator::calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrix<bool> &testMatrix,
+    void PlanarRansacEstimator::calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix,
                     float threshold, int passes, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre, std::vector<int> &cAbove,
                     std::vector<int> &cBelow, std::vector<int> &cOn, std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end){
       for(size_t i=0; i<testMatrix.rows(); i++){
@@ -913,7 +913,7 @@ namespace icl{
     }
 
 
-    math::DynMatrix<PlanarRansacEstimator::Result> PlanarRansacEstimator::createResultMatrix(math::DynMatrix<bool> &testMatrix, std::vector<int> &start,
+    math::DynMatrix<PlanarRansacEstimator::Result> PlanarRansacEstimator::createResultMatrix(math::DynMatrixBase<bool> &testMatrix, std::vector<int> &start,
                    std::vector<int> &end, std::vector<int> &adjs, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                    std::vector<std::vector<int> > &pointIDs, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre,
                    float threshold, int passes, int tolerance, int optimization){

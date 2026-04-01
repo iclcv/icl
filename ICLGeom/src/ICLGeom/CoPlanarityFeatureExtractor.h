@@ -28,7 +28,7 @@ namespace icl{
           @param triangles number of combined surface tests
           @param scanlines number of occlusion tests
           @return the boolean coplanarity matrix */
-        static math::DynMatrix<bool> apply(math::DynMatrix<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
+        static math::DynMatrixBase<bool> apply(math::DynMatrixBase<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                           const core::Img32f &depthImage, std::vector<std::vector<int> > &surfaces, float maxAngle=30,
                           float distanceTolerance=3, float outlierTolerance=5, int triangles=50, int scanlines=9);
 

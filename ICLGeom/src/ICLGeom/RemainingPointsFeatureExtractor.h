@@ -57,7 +57,7 @@ namespace icl{
           @param radius the radius for local minima separation
           @param assignEuclideanDistance the euclidean distance for assigning to neighbouring surfaces
           @return the connectivity matrix*/
-        static math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
+        static math::DynMatrixBase<bool> apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
                           std::vector<std::vector<int> > &surfaces, int minSize=10, float euclideanDistance=5., int radius=6, float assignEuclideanDistance=5.);
 
         /// Calculates the remaining points segments and creates a connectivity matrix (excluding local minima separation).
@@ -69,7 +69,7 @@ namespace icl{
           @param euclideanDistance the euclidean distance for clustering
           @param assignEuclideanDistance the euclidean distance for assigning to neighbouring surfaces
           @return the connectivity matrix */
-        static math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage,
+        static math::DynMatrixBase<bool> apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage,
                           std::vector<std::vector<int> > &surfaces, int minSize=10, float euclideanDistance=5., float assignEuclideanDistance=5.);
 
       private:

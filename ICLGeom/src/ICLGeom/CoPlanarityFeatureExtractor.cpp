@@ -8,10 +8,10 @@
 namespace icl{
   namespace geom{
 
-    math::DynMatrix<bool> CoPlanarityFeatureExtractor::apply(math::DynMatrix<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
+    math::DynMatrixBase<bool> CoPlanarityFeatureExtractor::apply(math::DynMatrixBase<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                           const core::Img32f &depthImage, std::vector<std::vector<int> > &surfaces, float maxAngle,
                           float distanceTolerance, float outlierTolerance, int triangles, int scanlines){
-      math::DynMatrix<bool> coplanar = math::DynMatrix<bool>(initialMatrix.rows(),initialMatrix.rows(), true);//result matrix
+      math::DynMatrixBase<bool> coplanar = math::DynMatrixBase<bool>(initialMatrix.rows(),initialMatrix.rows(), true);//result matrix
       //initialize
       for(size_t i=0; i<initialMatrix.rows(); i++){
         for(size_t j=0; j<initialMatrix.rows(); j++){

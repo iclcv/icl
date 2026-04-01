@@ -70,7 +70,7 @@ namespace icl{
             @param numSurfaces the number of surfaces/segments in the label image
             @return the adjacency matrix.
         */
-        math::DynMatrix<bool> calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+        math::DynMatrixBase<bool> calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces);
 
         /// Assigns the edge points to the surfaces. Use edgePointAssignmentAndAdjacencyMatrix(...) if adjacency matrix is needed as well.
@@ -93,7 +93,7 @@ namespace icl{
             @param numSurfaces the number of surfaces/segments in the label image
             @return the adjacency matrix.
         */
-        math::DynMatrix<bool> edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+        math::DynMatrixBase<bool> edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces);
 
         /// Extracts the segments from a label image.
@@ -136,10 +136,10 @@ namespace icl{
 
         std::vector<int> calculateLabelReassignment(int countCur, int countLast, core::Channel32s &labelImageC, core::Channel32s &lastLabelImageC, utils::Size size);
 
-        math::DynMatrix<bool> edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+        math::DynMatrixBase<bool> edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment);
 
-        math::DynMatrix<bool> edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+        math::DynMatrixBase<bool> edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment);
 
         static float dist3(const Vec &a, const Vec &b){

@@ -122,7 +122,7 @@ namespace icl{
 
       /// Returns the boolean neighbourhood matrix.
       /**       @return the neighbourhood/adjacency matrix */
-      math::DynMatrix<bool> getNeigboursMatrix();
+      math::DynMatrixBase<bool> getNeigboursMatrix();
 
       /// Returns the probability matrix.
       /**      @return returns the probability matrix for cluster composition */
@@ -196,8 +196,8 @@ namespace icl{
       int RANSACsubset;
       int BLOBSeuclDistance;
 
-      math::DynMatrix<bool> neighbours;
-      math::DynMatrix<bool> cutfree;
+      math::DynMatrixBase<bool> neighbours;
+      math::DynMatrixBase<bool> cutfree;
       math::DynMatrix<float> probabilities;
 
       cv::RegionDetector* region;

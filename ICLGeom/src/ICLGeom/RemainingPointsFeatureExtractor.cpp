@@ -30,14 +30,14 @@ namespace icl{
     }
 
 
-    math::DynMatrix<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
+    math::DynMatrixBase<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
                       std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance, int radius, float assignEuclideanDistance){
       calculateLocalMinima(depthImage, maskImage, radius);
       return apply(xyz, labelImage, maskImage, surfaces, minSize, euclideanDistance, assignEuclideanDistance);
     }
 
 
-    math::DynMatrix<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage,
+    math::DynMatrixBase<bool> RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, core::Img32s &labelImage, core::Img8u &maskImage,
                       std::vector<std::vector<int> > &surfaces, int minSize, float euclideanDistance, float assignEuclideanDistance){
       int numCluster=surfaces.size();
       clusterRemainingPoints(xyz, surfaces, labelImage, maskImage, minSize, euclideanDistance, numCluster);
@@ -46,7 +46,7 @@ namespace icl{
       detectNeighbours(xyz, surfaces, labelImage, neighbours, neighboursPoints, numCluster, assignEuclideanDistance);
 
       //create Matrix
-      math::DynMatrix<bool> remainingMatrix(surfaces.size(), surfaces.size(), false);
+      math::DynMatrixBase<bool> remainingMatrix(surfaces.size(), surfaces.size(), false);
       for(unsigned int x=numCluster; x<surfaces.size(); x++){
         std::vector<int> nb = neighbours[x-numCluster];
         for(unsigned int y=0; y<nb.size(); y++){

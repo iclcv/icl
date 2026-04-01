@@ -93,7 +93,7 @@ namespace icl{
             @return matrix of Result structs.
         */
         math::DynMatrix<Result> apply(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs,
-                    math::DynMatrix<bool> &testMatrix, float threshold, int passes, int tolerance, int optimization, core::Img32s labelImage);
+                    math::DynMatrixBase<bool> &testMatrix, float threshold, int passes, int tolerance, int optimization, core::Img32s labelImage);
 
 
         /// Create a label image of all points on the planar model (incl. the original surface)
@@ -133,11 +133,11 @@ namespace icl{
         struct Data;  //!< internal data type
         Data *m_data; //!< internal data pointer
 
-        void calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrix<bool> &testMatrix, float threshold, int passes,
+        void calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrixBase<bool> &testMatrix, float threshold, int passes,
                     std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                     std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end);
 
-        void calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrix<bool> &testMatrix,
+        void calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix,
                     float threshold, int passes, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre, std::vector<int> &cAbove,
                     std::vector<int> &cBelow, std::vector<int> &cOn, std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end);
 
@@ -152,7 +152,7 @@ namespace icl{
         Result createResult(std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                 float threshold, int passes, int tolerance, int optimization, int numPoints);
 
-        math::DynMatrix<Result> createResultMatrix(math::DynMatrix<bool> &testMatrix, std::vector<int> &start, std::vector<int> &end, std::vector<int> &adjs,
+        math::DynMatrix<Result> createResultMatrix(math::DynMatrixBase<bool> &testMatrix, std::vector<int> &start, std::vector<int> &end, std::vector<int> &adjs,
                    std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn, std::vector<std::vector<int> > &pointIDs,
                    std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre, float threshold, int passes, int tolerance, int optimization);
 

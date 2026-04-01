@@ -97,7 +97,7 @@ namespace icl{
     }
 
 
-    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrix<bool> &adjacencyMatrix, float threshold){
+    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrixBase<bool> &adjacencyMatrix, float threshold){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
       return thresholdCut(probabilities, threshold);
     }
@@ -143,7 +143,7 @@ namespace icl{
     }
 
 
-    std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrix<bool> &adjacencyMatrix){
+    std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrixBase<bool> &adjacencyMatrix){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
       return hierarchicalCut(probabilities);
     }
@@ -362,7 +362,7 @@ namespace icl{
     }
 
 
-    math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrix<bool> &initialMatrix, bool symmetry){
+    math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrixBase<bool> &initialMatrix, bool symmetry){
       math::DynMatrix<float> probabilities=math::DynMatrix<float>(initialMatrix.rows(),initialMatrix.cols(),0.0);
       for(unsigned int a=0; a<initialMatrix.cols(); a++){
         int count = 0;
@@ -390,7 +390,7 @@ namespace icl{
     }
 
 
-    void GraphCutter::mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src){
+    void GraphCutter::mergeMatrix(DynMatrixBase<bool> &dst, DynMatrixBase<bool> &src){
       if(src.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
       }
@@ -402,7 +402,7 @@ namespace icl{
     }
 
 
-    void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight){
+    void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrixBase<bool> &featureMatrix, float weight){
       if(featureMatrix.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
       }

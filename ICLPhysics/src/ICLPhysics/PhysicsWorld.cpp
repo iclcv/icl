@@ -45,7 +45,7 @@ namespace icl{
 			btMLCPSolverInterface *m_mlcp_solver;
       btSoftRigidDynamicsWorld *m_dynamicsWorld;
       btOverlapFilterCallback* m_filterCallback;
-      math::DynMatrix<bool>* m_collisionMatrix;
+      math::DynMatrixBase<bool>* m_collisionMatrix;
 
       std::vector<PhysicsObject*> m_objects;
 
@@ -104,13 +104,13 @@ namespace icl{
       data->m_worldInfo->m_dispatcher = data->m_dispatcher;
       data->m_worldInfo->m_sparsesdf.Initialize();
       //create collisionmatrix
-      data->m_collisionMatrix = new math::DynMatrix<bool>(100,100,true);
+      data->m_collisionMatrix = new math::DynMatrixBase<bool>(100,100,true);
 
       //define collision callback using the collisionmatrix and check constraints
       struct customFilterCallback : public btOverlapFilterCallback
       {
-        math::DynMatrix<bool> *collisionMatrix;
-        customFilterCallback(math::DynMatrix<bool>* mat):collisionMatrix(mat){}
+        math::DynMatrixBase<bool> *collisionMatrix;
+        customFilterCallback(math::DynMatrixBase<bool>* mat):collisionMatrix(mat){}
 	      // return true when pairs need collision
 	      virtual bool	needBroadphaseCollision(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1) const
 	      {

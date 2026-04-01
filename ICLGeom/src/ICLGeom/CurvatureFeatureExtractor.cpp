@@ -8,12 +8,12 @@
 namespace icl{
   namespace geom{
 
-    math::DynMatrix<bool> CurvatureFeatureExtractor::apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrix<bool> &initialMatrix,
+    math::DynMatrixBase<bool> CurvatureFeatureExtractor::apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrixBase<bool> &initialMatrix,
                           std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                           std::vector<std::vector<int> > &surfaces, core::DataSegment<float,4> &normals, bool useOpenObjects, bool useOccludedObjects,
                           float histogramSimilarity, int distance, float maxError, int ransacPasses, float distanceTolerance, float outlierTolerance){
       int w = depthImg.getSize().width;
-      math::DynMatrix<bool> curvature = math::DynMatrix<bool>(initialMatrix.rows(),initialMatrix.rows(), true);//result matrix
+      math::DynMatrixBase<bool> curvature = math::DynMatrixBase<bool>(initialMatrix.rows(),initialMatrix.rows(), true);//result matrix
       //initialize
       for(size_t i=0; i<initialMatrix.rows(); i++){
         for(size_t j=0; j<initialMatrix.rows(); j++){

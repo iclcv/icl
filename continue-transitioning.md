@@ -66,14 +66,19 @@
 | convolution gauss5x5 32f | 339 us | 9904 us | **29x** |
 | morphology dilate3x3 8u | 243 us | 6477 us | **27x** |
 
+**DynMatrixBase<bool> for non-float/double users:**
+- Replaced `DynMatrix<bool>` → `DynMatrixBase<bool>` across 18 files (85 occurrences)
+- DynMatrix<T> method bodies are out-of-line, only instantiated for float/double;
+  DynMatrix<bool> only "worked" because callers used inherited DynMatrixBase methods
+- DynMatrixBase<bool> is the correct type: fully header-only, all operations available
+- Files: GraphCutter.h/.cpp, 12 ICLGeom segmentation files, PhysicsWorld.cpp
+
 **Tests: 367/367 pass.** Build clean, zero warnings on macOS.
 
 ### Next Steps
 
 - **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
   re-add even-mask workaround conditionally in IPP convolution path
-- **Consider DynMatrixBase for non-float/double users** — GraphCutter (bool),
-  masks (unsigned char) could use DynMatrixBase directly instead of DynMatrix
 
 ## Previous State (Session 24 — LapackOps expansion, API cleanup, DynMatrixBase split)
 

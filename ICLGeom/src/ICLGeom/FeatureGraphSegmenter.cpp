@@ -165,26 +165,26 @@ namespace icl {
     if(m_data->surfaces.size()>0){
 		  m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
 
-	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
+	      math::DynMatrixBase<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
                                 m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
 
-	      math::DynMatrix<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 
 	      if(useCutfreeAdjacency){
-	        math::DynMatrix<bool> cutfreeMatrix = m_data->cutfree->apply(xyz,
+	        math::DynMatrixBase<bool> cutfreeMatrix = m_data->cutfree->apply(xyz,
                     m_data->surfaces, initialMatrix, m_data->cutfreeRansacEuclideanDistance,
 				    m_data->cutfreeRansacPasses, m_data->cutfreeRansacTolerance, m_data->labelImage, m_data->features, m_data->cutfreeMinAngle);
           math::GraphCutter::mergeMatrix(resultMatrix, cutfreeMatrix);
         }
 
         if(useCoplanarity){
-		  math::DynMatrix<bool> coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
+		  math::DynMatrixBase<bool> coplanMatrix = CoPlanarityFeatureExtractor::apply(initialMatrix, m_data->features, depthImg, m_data->surfaces, m_data->coplanarityMaxAngle,
                             m_data->coplanarityDistanceTolerance, m_data->coplanarityOutlierTolerance, m_data->coplanarityNumTriangles, m_data->coplanarityNumScanlines);
       	   math::GraphCutter::mergeMatrix(resultMatrix, coplanMatrix);
         }
 
         if(useCurvature){
-		  math::DynMatrix<bool> curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
+		  math::DynMatrixBase<bool> curveMatrix = CurvatureFeatureExtractor::apply(depthImg, xyz, initialMatrix, m_data->features, m_data->surfaces, normals,
                                               m_data->curvatureUseOpenObjects, m_data->curvatureUseOccludedObjects, m_data->curvatureHistogramSimilarity,
                                               m_data->curvatureMaxDistance, m_data->curvatureMaxError, m_data->curvatureRansacPasses, m_data->curvatureDistanceTolerance,
                                               m_data->curvatureOutlierTolerance);
@@ -216,15 +216,15 @@ namespace icl {
 		  if(m_data->surfaces.size()>0){
 		    m_data->features=SurfaceFeatureExtractor::apply(m_data->labelImage, xyz, normals, SurfaceFeatureExtractor::ALL);
 
-	      math::DynMatrix<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
+	      math::DynMatrixBase<bool> initialMatrix = m_data->segUtils->edgePointAssignmentAndAdjacencyMatrix(xyz, m_data->labelImage,
                                 m_data->maskImage, m_data->assignmentRadius, m_data->assignmentDistance, m_data->surfaces.size());
 
-	      math::DynMatrix<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> resultMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 
-	      math::DynMatrix<bool> cutfreeMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      math::DynMatrix<bool> coplanMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      math::DynMatrix<bool> curveMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
-	      math::DynMatrix<bool> remainingMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> cutfreeMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> coplanMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> curveMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
+	      math::DynMatrixBase<bool> remainingMatrix(m_data->surfaces.size(), m_data->surfaces.size(), false);
 
 	      m_data->surfaces = m_data->segUtils->createLabelVectors(m_data->labelImage);
 

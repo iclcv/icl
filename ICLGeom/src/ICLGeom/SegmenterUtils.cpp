@@ -324,9 +324,9 @@ namespace icl{
     }
 
 
-    math::DynMatrix<bool> SegmenterUtils::calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+    math::DynMatrixBase<bool> SegmenterUtils::calculateAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
-      math::DynMatrix<bool> adjacencyMatrix;
+      math::DynMatrixBase<bool> adjacencyMatrix;
     	if(m_data->useCL==true && m_data->clReady==true){
     	  adjacencyMatrix=edgePointAssignmentAndAdjacencyMatrixCL(xyzh, labelImage, maskImage, radius, euclideanDistance, numSurfaces, false);
     	}else{
@@ -338,7 +338,7 @@ namespace icl{
 
     void SegmenterUtils::edgePointAssignment(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
-      math::DynMatrix<bool> adjacencyMatrix;
+      math::DynMatrixBase<bool> adjacencyMatrix;
       if(m_data->useCL==true && m_data->clReady==true){
     	  adjacencyMatrix=edgePointAssignmentAndAdjacencyMatrixCL(xyzh, labelImage, maskImage, radius, euclideanDistance, numSurfaces, true);
     	}else{
@@ -347,9 +347,9 @@ namespace icl{
     }
 
 
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+    math::DynMatrixBase<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrix(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces){
-      math::DynMatrix<bool> adjacencyMatrix;
+      math::DynMatrixBase<bool> adjacencyMatrix;
     	if(m_data->useCL==true && m_data->clReady==true){
     	  adjacencyMatrix=edgePointAssignmentAndAdjacencyMatrixCL(xyzh, labelImage, maskImage, radius, euclideanDistance, numSurfaces, true);
     	}else{
@@ -663,11 +663,11 @@ namespace icl{
     }
 
 
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+    math::DynMatrixBase<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCL(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment){
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
-        math::DynMatrix<bool> neighbours(numSurfaces,numSurfaces,false);
+        math::DynMatrixBase<bool> neighbours(numSurfaces,numSurfaces,false);
         math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,static_cast<unsigned char>(0));
         if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit
 	        m_data->size = s;
@@ -730,17 +730,17 @@ namespace icl{
 
 	      return neighbours;
       #else
-        return math::DynMatrix<bool>();
+        return math::DynMatrixBase<bool>();
 	    #endif
     }
 
 
-    math::DynMatrix<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
+    math::DynMatrixBase<bool> SegmenterUtils::edgePointAssignmentAndAdjacencyMatrixCPU(core::DataSegment<float,4> &xyzh, core::Img32s &labelImage,
                               core::Img8u &maskImage, int radius, float euclideanDistance, int numSurfaces, bool pointAssignment){
       utils::Size s = labelImage.getSize();
       int w = s.width;
       int h = s.height;
-      math::DynMatrix<bool> neighbours(numSurfaces, numSurfaces, false);
+      math::DynMatrixBase<bool> neighbours(numSurfaces, numSurfaces, false);
       core::Img32s labelImageOut(labelImage.getSize(),1,core::formatMatrix);
 
       core::Channel32s labelImageC = labelImage[0];

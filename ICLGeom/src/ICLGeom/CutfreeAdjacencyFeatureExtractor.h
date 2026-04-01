@@ -35,8 +35,8 @@ namespace icl{
           @param tolerance the RANSAC tolerance in number of points (outlier)
           @param labelImage the label image
           @return the boolean cutfree adjacency matrix */
-       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
+       math::DynMatrixBase<bool> apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage);
 
        /// Calculates the cutfree adjacency feature matrix with minimum angle constraint.
@@ -50,8 +50,8 @@ namespace icl{
           @param feature the surface feature for the surfaces
           @param minAngle the minimum angle for combination
           @return the boolean cutfree adjacency matrix */
-       math::DynMatrix<bool> apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
+       math::DynMatrixBase<bool> apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage,
                 std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle);
 

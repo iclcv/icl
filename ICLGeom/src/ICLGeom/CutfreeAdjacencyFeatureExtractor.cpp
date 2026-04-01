@@ -59,10 +59,10 @@ namespace icl {
     }
 
 
-    math::DynMatrix<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
+    math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage){
-      math::DynMatrix<bool> cutfreeMatrix(testMatrix);
+      math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
       for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
         cutfreeMatrix(x,x)=false;
       }
@@ -82,11 +82,11 @@ namespace icl {
     }
 
 
-    math::DynMatrix<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrix<bool> &testMatrix, float euclideanDistance,
+    math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
+                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
                 int passes, int tolerance, core::Img32s labelImage,
                 std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle){
-      math::DynMatrix<bool> cutfreeMatrix(testMatrix);
+      math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
       for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
         cutfreeMatrix(x,x)=false;
         for(unsigned int y=0; y<cutfreeMatrix.cols(); y++){

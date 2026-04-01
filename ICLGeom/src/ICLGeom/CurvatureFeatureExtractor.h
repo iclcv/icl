@@ -33,7 +33,7 @@ namespace icl{
           @param distanceTolerance distance tolerance for occlusion check
           @param outlierTolerance outlier tolerance for occlusion check
           @return the boolean curvature matrix */
-        static math::DynMatrix<bool> apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrix<bool> &initialMatrix,
+        static math::DynMatrixBase<bool> apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrixBase<bool> &initialMatrix,
                           std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                           std::vector<std::vector<int> > &surfaces, core::DataSegment<float,4> &normals, bool useOpenObjects=true, bool useOccludedObjects=true,
                           float histogramSimilarity=0.5, int distance=10, float maxError=10., int ransacPasses=20, float distanceTolerance=3., float outlierTolerance=5.);

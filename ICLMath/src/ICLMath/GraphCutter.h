@@ -44,7 +44,7 @@ namespace icl{
             @param threshold the maximum cut cost
             @return a list of subsets.
         */
-        static std::vector<std::vector<int> > thresholdCut(DynMatrix<bool> &adjacencyMatrix, float threshold);
+        static std::vector<std::vector<int> > thresholdCut(DynMatrixBase<bool> &adjacencyMatrix, float threshold);
 
         /// Applies hierarchical minimum cut and returns a list of nodes including subset, parent, children and weight representing a cut tree (for weighted graphs).
         /** @param adjacencyMatrix the input symmetric adjacency matrix (0 for "no edge", >0 for edge weights)
@@ -56,13 +56,13 @@ namespace icl{
         /** @param adjacencyMatrix the input symmetric adjacency matrix (0 for "no edge", 1 for "edge")
             @return a list of tree-nodes.
         */
-        static std::vector<CutNode> hierarchicalCut(DynMatrix<bool> &adjacencyMatrix);
+        static std::vector<CutNode> hierarchicalCut(DynMatrixBase<bool> &adjacencyMatrix);
 
         /// Creates a weighted matrix from an unweighted boolean matrix.
         /** @param initialMatrix the unweighted boolean matrix (0 for "no edge", 1 for "edge")
             @return a weighted matrix.
         */
-        static math::DynMatrix<float> calculateProbabilityMatrix(math::DynMatrix<bool> &initialMatrix, bool symmetry=true);
+        static math::DynMatrix<float> calculateProbabilityMatrix(math::DynMatrixBase<bool> &initialMatrix, bool symmetry=true);
 
         /// Find all unconnected subgraphs and return a list of the subsets
         /** @param adjacencyMatrix the input matrix (0 for "no edge", >0 for edge weights)
@@ -81,14 +81,14 @@ namespace icl{
         /** @param dst the destination matrix
             @param src the source matrix
         */
-	      static void mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src);
+	      static void mergeMatrix(DynMatrixBase<bool> &dst, DynMatrixBase<bool> &src);
 
 	      /// Weights the dst matrix (value*=weight) for all true cells in the featureMatrix.
         /** @param dst the destination matrix
             @param featureMatrix the boolean feature matrix (indicates where to weight)
             @param weight the weight
         */
-	      static void weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight);
+	      static void weightMatrix(DynMatrix<float> &dst, DynMatrixBase<bool> &featureMatrix, float weight);
 
       private:
         static std::vector<float> capforest(std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts, int subsetsSize);

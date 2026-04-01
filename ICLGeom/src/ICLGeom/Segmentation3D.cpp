@@ -371,7 +371,7 @@ const int* Segmentation3D::getAssignment(){
   return assignment;
 }
 
-DynMatrix<bool> Segmentation3D::getNeigboursMatrix() {
+DynMatrixBase<bool> Segmentation3D::getNeigboursMatrix() {
 	return neighbours;
 }
 
@@ -497,7 +497,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 #ifdef ICL_HAVE_OPENCL
 		try {
 			int numFaces=cluster.size();
-			DynMatrix<bool> newMatrix(numFaces,numFaces,false);
+			DynMatrixBase<bool> newMatrix(numFaces,numFaces,false);
 			neighbours=newMatrix;
 
 			neighboursBuffer = program.createBuffer("rw", numFaces*numFaces * sizeof(bool), &neighbours[0]);
@@ -541,7 +541,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 #endif
 	} else {
 		int numFaces = cluster.size();
-		DynMatrix<bool> newMatrix(numFaces, numFaces, false);
+		DynMatrixBase<bool> newMatrix(numFaces, numFaces, false);
 		neighbours = newMatrix;
 		int *assignmentOut = new int[w * h];
     for (int x=0; x<w; x++) {
@@ -604,7 +604,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 }
 
 void Segmentation3D::calculateCutfreeMatrix() {
-	DynMatrix<bool> newMatrix(neighbours.rows(), neighbours.cols(), false);
+	DynMatrixBase<bool> newMatrix(neighbours.rows(), neighbours.cols(), false);
 	cutfree = newMatrix;
 
 	for (unsigned int a = 0; a < neighbours.rows(); a++) {
@@ -781,7 +781,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 }
 
 void Segmentation3D::greedyComposition() {
-	DynMatrix<bool> combinable = DynMatrix<bool>(cluster.size(), cluster.size(),
+	DynMatrixBase<bool> combinable = DynMatrixBase<bool>(cluster.size(), cluster.size(),
 			false);
 	probabilities = DynMatrix<float>(cluster.size(), cluster.size(), 0.0);
 	for (unsigned int a = 0; a < cutfree.cols(); a++) {
