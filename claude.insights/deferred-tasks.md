@@ -58,10 +58,8 @@ BLAS/LAPACK/vDSP backends added in sessions 20-24. vImage filter backends added 
 - See `claude.insights/accelerate-ipp-mapping.md` for full mapping
 - Remaining: histogram (no backend dispatch), median/Canny/integral (no vImage equivalent)
 
-### ARM NEON via sse2neon
-SSE SIMD code disabled on ARM. [sse2neon](https://github.com/DLTcollab/sse2neon) is a header-only library that translates SSE intrinsics to NEON (used by Chromium, FFmpeg, etc.).
-- **Approach:** Add `sse2neon.h` to `3rdparty/`, include in `SSETypes.h`/`SSEUtils.h` when on ARM, re-enable SIMD code paths
-- **Test with:** MedianOp and ConvolutionOp benchmarks
+### ARM NEON via sse2neon ✅
+Already implemented: `3rdparty/sse2neon/sse2neon.h` bundled, CMake auto-detects ARM and defines `ICL_USE_SSE2/SSE3/SSSE3`, `SSETypes.h` includes sse2neon on `__ARM_NEON`. All SIMD tests pass on Apple Silicon (arm64).
 
 ### `register` Keyword Removal ✅
 Already removed — no `register` storage class keywords remain in source, no `-Wno-register` in CMake.
