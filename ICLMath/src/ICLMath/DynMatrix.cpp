@@ -278,46 +278,8 @@ namespace icl{
     // Explicit instantiations: arithmetic/norms/properties (float+double)
     // ================================================================
 
-  #define INST_ARITH(T) \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::mult(const DynMatrix<T>&, DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator*(T) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::mult(T, DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator*=(T); \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator/(T) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator/=(T); \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator+(const T&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator-(const T&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator+=(const T&); \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator-=(const T&); \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator*(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator*=(const DynMatrix<T>&); \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator/(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator/=(const DynMatrix<T>&); \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator+(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::operator-(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator+=(const DynMatrix<T>&); \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::operator-=(const DynMatrix<T>&); \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::elementwise_mult(const DynMatrix<T>&, DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::elementwise_mult(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> &DynMatrix<T>::elementwise_div(const DynMatrix<T>&, DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::elementwise_div(const DynMatrix<T>&) const; \
-    template ICLMath_API T DynMatrix<T>::norm(double) const; \
-    template ICLMath_API T DynMatrix<T>::sqrDistanceTo(const DynMatrix<T>&) const; \
-    template ICLMath_API T DynMatrix<T>::distanceTo(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::transp() const; \
-    template ICLMath_API T DynMatrix<T>::element_wise_inner_product(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::dot(const DynMatrix<T>&) const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::diag() const; \
-    template ICLMath_API T DynMatrix<T>::trace() const; \
-    template ICLMath_API DynMatrix<T> DynMatrix<T>::cross(const DynMatrix<T>&, const DynMatrix<T>&); \
-    template ICLMath_API T DynMatrix<T>::cond(double) const;
-
-    INST_ARITH(float)
-    INST_ARITH(double)
-  #undef INST_ARITH
-
     // ================================================================
-    // Linear algebra (already defined above, instantiate here)
+    // Linear algebra
     // ================================================================
 
     template<class T>
@@ -641,34 +603,15 @@ namespace icl{
     }
 
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::inv()const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::inv()const;
-
-    template ICLMath_API float DynMatrix<float>::det()const;
-    template ICLMath_API double DynMatrix<double>::det()const;
-
-
-    template ICLMath_API void DynMatrix<float>::svd(DynMatrix<float>&, DynMatrix<float>&, DynMatrix<float>&) const;
-    template ICLMath_API void DynMatrix<double>::svd(DynMatrix<double>&, DynMatrix<double>&, DynMatrix<double>&) const;
-
-    template ICLMath_API void DynMatrix<float>::eigen(DynMatrix<float>&, DynMatrix<float>&) const;
-    template ICLMath_API void DynMatrix<double>::eigen(DynMatrix<double>&, DynMatrix<double>&) const;
-
-    template ICLMath_API void DynMatrix<float>::decompose_QR(DynMatrix<float> &Q, DynMatrix<float> &R) const;
-    template ICLMath_API void DynMatrix<double>::decompose_QR(DynMatrix<double> &Q, DynMatrix<double> &R) const;
-
-    template ICLMath_API void DynMatrix<float>::decompose_RQ(DynMatrix<float> &R, DynMatrix<float> &Q) const;
-    template ICLMath_API void DynMatrix<double>::decompose_RQ(DynMatrix<double> &R, DynMatrix<double> &Q) const;
-
-    template ICLMath_API void DynMatrix<float>::decompose_LU(DynMatrix<float> &L, DynMatrix<float> &U, float zeroThreshold) const;
-    template ICLMath_API void DynMatrix<double>::decompose_LU(DynMatrix<double> &L, DynMatrix<double> &U, double zeroThreshold) const;
-
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::solve(const DynMatrix<float> &b, float zeroThreshold);
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::solve(const DynMatrix<double> &b, double zeroThreshold);
+    // Whole-class explicit instantiation for float and double.
+    // Covers all out-of-line member functions (arithmetic, linalg, norms, etc.)
+    template class ICLMath_API DynMatrix<float>;
+    template class ICLMath_API DynMatrix<double>;
 
 
-    template ICLMath_API DynMatrix<float> DynMatrix<float>::pinv(float) const;
-    template ICLMath_API DynMatrix<double> DynMatrix<double>::pinv(double) const;
+    // ================================================================
+    // Free functions: I/O (instantiated for all types)
+    // ================================================================
 
     template<class T>
     std::ostream &operator<<(std::ostream &s,const DynMatrix<T> &m){
