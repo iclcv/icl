@@ -46,7 +46,7 @@ namespace icl {
     ///   });
     template<auto... Values, class F>
     void dispatchEnum(int runtime, F&& f) {
-      ((static_cast<int>(Values) == runtime
+      (void)((static_cast<int>(Values) == runtime
         ? (f(std::integral_constant<decltype(Values), Values>{}), true)
         : false) || ...);
     }
