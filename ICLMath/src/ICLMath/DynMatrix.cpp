@@ -603,6 +603,13 @@ namespace icl{
     }
 
 
+    template<class T>
+    DynMatrix<T> DynMatrix<T>::id(unsigned int dim) {
+      DynMatrix M(dim, dim, T(0));
+      for(unsigned int i = 0; i < dim; ++i) M(i, i) = 1;
+      return M;
+    }
+
     // Whole-class explicit instantiation for float and double.
     // Covers all out-of-line member functions (arithmetic, linalg, norms, etc.)
     template class ICLMath_API DynMatrix<float>;

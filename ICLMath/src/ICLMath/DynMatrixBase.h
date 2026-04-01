@@ -289,12 +289,7 @@ namespace icl{
         return old_data;
       }
 
-      /// creates a dim-D identity Matrix
-      static inline DynMatrixBase id(unsigned int dim) {
-        DynMatrixBase M(dim,dim,T(0));
-        for(unsigned int i=0;i<dim;++i) M(i,i) = 1;
-        return M;
-      }
+      // id() factory is in DynMatrix<T> (out-of-line)
 
     protected:
       inline void row_check(unsigned int row) const{

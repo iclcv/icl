@@ -276,11 +276,7 @@ namespace icl{
       }
 
       /// creates a dim-D identity Matrix
-      static inline DynMatrix id(unsigned int dim) {
-        DynMatrix M(dim,dim,T(0));
-        for(unsigned int i=0;i<dim;++i) M(i,i) = 1;
-        return M;
-      }
+      static DynMatrix id(unsigned int dim);
 
       // ================================================================
       // Arithmetic operators — declarations only, defined in DynMatrix.cpp
