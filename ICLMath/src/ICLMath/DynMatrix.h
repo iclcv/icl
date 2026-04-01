@@ -351,33 +351,11 @@ namespace icl{
 
 
     /// horizontal concatenation of matrices (missing elements padded with 0)
-    template<class T>
-    inline DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
-      int w = left.cols() + right.cols();
-      int h = iclMax(left.rows(),right.rows());
-      DynMatrix<T> result(w,h,T(0));
-      for(unsigned int y=0;y<left.rows();++y){
-        std::copy(left.row_begin(y), left.row_end(y), result.row_begin(y));
-      }
-      for(unsigned int y=0;y<right.rows();++y){
-        std::copy(right.row_begin(y), right.row_end(y), result.row_begin(y) + left.cols());
-      }
-      return result;
-    }
+    template<class T> ICLMath_IMP
+    DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right);
 
     /// vertical concatenation of matrices (missing elements padded with 0)
-    template<class T>
-    inline DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
-      int w = iclMax(top.cols(),bottom.cols());
-      int h = top.rows() + bottom.rows();
-      DynMatrix<T> result(w,h,T(0));
-      for(unsigned int y=0;y<top.rows();++y){
-        std::copy(top.row_begin(y), top.row_end(y), result.row_begin(y));
-      }
-      for(unsigned int y=0;y<bottom.rows();++y){
-        std::copy(bottom.row_begin(y), bottom.row_end(y), result.row_begin(y+top.rows()));
-      }
-      return result;
-    }
+    template<class T> ICLMath_IMP
+    DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom);
   } // namespace math
 }
