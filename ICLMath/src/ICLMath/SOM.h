@@ -6,7 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
-#include <ICLUtils/SmartArray.h>
+#include <memory>
 #include <vector>
 
 namespace icl{
@@ -48,7 +48,7 @@ namespace icl{
           addition, each neuron has a void* meta, that can be used to associate some
           meta-data with a certain neuron (Note,the pointer meta is not released automatically).*/
       struct ICLMath_API Neuron{
-        using vector_type = utils::SmartArray<float>;
+        using vector_type = std::shared_ptr<float[]>;
 
         /// create a null neuron
         Neuron(){}

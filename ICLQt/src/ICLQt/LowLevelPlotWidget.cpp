@@ -4,7 +4,7 @@
 
 #include <ICLQt/LowLevelPlotWidget.h>
 #include <ICLMath/LinearTransform1D.h>
-#include <ICLUtils/SmartArray.h>
+#include <memory>
 #include <ICLUtils/Macros.h>
 
 #include <QPainter>
@@ -59,8 +59,8 @@ namespace icl{
         }
         int xStride;
         int yStride;
-        SmartArray<float> xs;
-        SmartArray<float> ys;
+        std::shared_ptr<float[]> xs;
+        std::shared_ptr<float[]> ys;
 
         float xAt(int i) const { return xs.get()[i*xStride]; }
         float yAt(int i) const { return ys.get()[i*xStride]; }
@@ -73,7 +73,7 @@ namespace icl{
           this->style = style;
         }
         int stride;
-        SmartArray<float> data;
+        std::shared_ptr<float[]> data;
         float at(int i) const { return data.get()[i*stride]; }
       };
 
@@ -680,12 +680,12 @@ namespace icl{
       Data::SeriesData *s = new Data::SeriesData(style, len, name, deepCopyData?1:stride);
 
       if(deepCopyData){
-        s->data = new float[len];
+        s->data.reset(new float[len]);
         for(int i=0;i<len;++i){
           s->data.get()[i] = data[i*stride];
         }
       }else{
-        s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
+        s->data = passOwnerShip ? std::shared_ptr<float[]>(const_cast<float*>(data)) : std::shared_ptr<float[]>(const_cast<float*>(data), [](float*){});
       }
       Locker lock(this);
       this->data->seriesData.push_back(s);
@@ -699,15 +699,15 @@ namespace icl{
       Data::ScatterData *s = new Data::ScatterData(sym, num, name, r,g,b, size, filled, connectingLine,
                                                    deepCopyData?1:xStride, deepCopyData?1:yStride);
       if(deepCopyData){
-        s->xs = new float[num];
-        s->ys = new float[num];
+        s->xs.reset(new float[num]);
+        s->ys.reset(new float[num]);
         for(int i=0;i<num;++i){
           s->xs.get()[i] = xs[i*xStride];
           s->ys.get()[i] = ys[i*yStride];
         }
       }else{
-        s->xs = SmartArray<float>(const_cast<float*>(xs), passDataOwnerShip);
-        s->ys = SmartArray<float>(const_cast<float*>(ys), passDataOwnerShip);
+        s->xs = passDataOwnerShip ? std::shared_ptr<float[]>(const_cast<float*>(xs)) : std::shared_ptr<float[]>(const_cast<float*>(xs), [](float*){});
+        s->ys = passDataOwnerShip ? std::shared_ptr<float[]>(const_cast<float*>(ys)) : std::shared_ptr<float[]>(const_cast<float*>(ys), [](float*){});
       }
       Locker lock(this);
       data->scatterData.push_back(s);
@@ -720,12 +720,12 @@ namespace icl{
     Data::SeriesData *s = new Data::SeriesData(style, len, name, deepCopyData?1:stride);
 
       if(deepCopyData){
-        s->data = new float[len];
+        s->data.reset(new float[len]);
         for(int i=0;i<len;++i){
           s->data.get()[i] = data[i*stride];
         }
       }else{
-        s->data = SmartArray<float>(const_cast<float*>(data), passOwnerShip);
+        s->data = passOwnerShip ? std::shared_ptr<float[]>(const_cast<float*>(data)) : std::shared_ptr<float[]>(const_cast<float*>(data), [](float*){});
       }
       Locker lock(this);
       this->data->barPlotData.push_back(s);

@@ -70,8 +70,8 @@ namespace icl{
 
       // Create the neurons
       for(unsigned int i=0;i<dim;++i){
-        float *gridpos = new float[m_uiSomDim];
-        float *prototype = new float[m_uiDataDim];
+        std::shared_ptr<float[]> gridpos(new float[m_uiSomDim]);
+        std::shared_ptr<float[]> prototype(new float[m_uiDataDim]);
 
         // calculate the corresponding grid location ( TODO check check check! )
         int iRest = i;

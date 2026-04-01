@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/PlotWidget.h>
-#include <ICLUtils/SmartArray.h>
+#include <memory>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -13,11 +13,16 @@ namespace icl{
 
 
     struct PlotWidget::Data{
-      struct Buffer : SmartArray<float>{
+      struct Buffer {
+        std::shared_ptr<float[]> data;
+        int len = 0;
+        bool used = false;
         Buffer(){}
-        Buffer(int len):SmartArray<float>(new float[len]), len(len), used(false){}
-        int len;
-        bool used;
+        Buffer(int len):data(new float[len]), len(len), used(false){}
+        float* get() { return data.get(); }
+        const float* get() const { return data.get(); }
+        float& operator[](int i) { return data[i]; }
+        operator bool() const { return !!data; }
       };
       std::vector<Buffer> buffers;
 

@@ -76,7 +76,7 @@ namespace icl {
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
-        m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
+        m_vecChannels.push_back(passOwnerShip ? std::shared_ptr<Type[]>(*it) : std::shared_ptr<Type[]>(*it, [](Type*){}));
       }
     }
 
@@ -89,7 +89,7 @@ namespace icl {
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
-        m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
+        m_vecChannels.push_back(passOwnerShip ? std::shared_ptr<Type[]>(*it) : std::shared_ptr<Type[]>(*it, [](Type*){}));
       }
     }
 
@@ -102,7 +102,7 @@ namespace icl {
 
       typename std::vector<Type*>::const_iterator it = vptData.begin();
       for(int i=0; i<getChannels(); ++i, ++it) {
-        m_vecChannels.push_back(SmartArray<Type>(*it,passOwnerShip));
+        m_vecChannels.push_back(passOwnerShip ? std::shared_ptr<Type[]>(*it) : std::shared_ptr<Type[]>(*it, [](Type*){}));
       }
     }
 
@@ -130,7 +130,7 @@ namespace icl {
       for(const auto &ch : channels) {
         ICLASSERT_THROW(static_cast<int>(ch.size()) == h,
           InvalidImgParamException("inconsistent channel heights in initializer list"));
-        m_vecChannels.push_back(SmartArray<Type>(new Type[w * h], true));
+        m_vecChannels.push_back(std::shared_ptr<Type[]>(new Type[w * h]));
         Type *base = m_vecChannels.back().get();
         int y = 0;
         for(const auto &row : ch) {
@@ -223,11 +223,11 @@ namespace icl {
 
       if(c1.isNull()) return;
       m_vecChannels.reserve(getChannels());
-      m_vecChannels.push_back(SmartArray<Type>(const_cast<Type*>(c1.begin()),false));
+      m_vecChannels.push_back(std::shared_ptr<Type[]>(const_cast<Type*>(c1.begin()), [](Type*){}));
   #define ADD_CHANNEL(i)                                                  \
       if(!c##i.isNull()){                                                 \
         ICLASSERT_THROW(c1.cols() == c##i.cols() && c1.rows() == c##i.rows(), InvalidMatrixDimensionException(__FUNCTION__)); \
-        m_vecChannels.push_back(SmartArray<Type>(const_cast<Type*>(c##i.begin()),false)); \
+        m_vecChannels.push_back(std::shared_ptr<Type[]>(const_cast<Type*>(c##i.begin()), [](Type*){})); \
       }
       ADD_CHANNEL(2)    ADD_CHANNEL(3)    ADD_CHANNEL(4)    ADD_CHANNEL(5)
   #undef ADD_CHANNEL
@@ -761,10 +761,10 @@ namespace icl {
 
 
     template<class Type>
-    SmartArray<Type> Img<Type>::createChannel(Type *ptDataToCopy) const {
+    std::shared_ptr<Type[]> Img<Type>::createChannel(Type *ptDataToCopy) const {
       FUNCTION_LOG("");
       int dim = getDim();
-      if(!dim) return SmartArray<Type>();
+      if(!dim) return std::shared_ptr<Type[]>();
 
       Type *ptNewData = new Type[dim];
       if(ptDataToCopy){
@@ -772,7 +772,7 @@ namespace icl {
       }else{
         std::fill(ptNewData,ptNewData+dim,0);
       }
-      return SmartArray<Type>(ptNewData);
+      return std::shared_ptr<Type[]>(ptNewData);
     }
 
 

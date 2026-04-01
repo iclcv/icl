@@ -6,7 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
-#include <ICLUtils/SmartArray.h>
+#include <memory>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
 #include <ICLMath/FixedMatrix.h>
@@ -46,7 +46,7 @@ namespace icl{
 
       /// single constructor to create a pixelref instance
       /** This should not be used manually. Rather you should use Img<T>'s operator()(int x, int y) */
-      inline PixelRef(int x, int y, int width, std::vector<utils::SmartArray<T> > &data):
+      inline PixelRef(int x, int y, int width, std::vector<std::shared_ptr<T[]> > &data):
       m_data(data.size()){
         int offs = x+width*y;
         for(unsigned int i=0;i<data.size();++i){

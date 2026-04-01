@@ -29,7 +29,7 @@
 
 #include <ICLUtils/Lockable.h>
 #include <ICLUtils/Configurable.h>
-#include <ICLUtils/SmartArray.h>
+#include <memory>
 #include <map>
 #include <ICLGeom/ShaderUtil.h>
 
@@ -485,7 +485,7 @@ namespace icl{
       mutable bool m_previousLightState[8][4];
 
       /// optionally given bounds of the scene
-      utils::SmartArray<utils::Range32f> m_bounds;
+      std::shared_ptr<utils::Range32f[]> m_bounds;
 
       /// global ambient light
       math::FixedColVector<int,4> m_globalAmbientLight;

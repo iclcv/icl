@@ -1421,7 +1421,7 @@ namespace icl{
     }
 
     void Scene::setBounds(float minX, float maxX, float minY, float maxY, float minZ, float maxZ){
-      m_bounds = SmartArray<Range32f>(new Range32f[3]);
+      m_bounds = std::shared_ptr<Range32f[]>(new Range32f[3]);
       if(minX == maxX){
         maxX = -minX;
         if(minX == maxX){

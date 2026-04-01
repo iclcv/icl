@@ -5,10 +5,10 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLUtils/SmartArray.h>
 #include <ICLUtils/Size.h>
 #include <ICLUtils/Point.h>
 #include <algorithm>
+#include <memory>
 
 namespace icl{
   namespace utils{
@@ -20,7 +20,7 @@ namespace icl{
         is designed for simple 2D data storage. The internal data
         layout is row-major i.e. the data is stored row-by-row.
         Array2D instances can be set up to have their own data, that
-        is managed internally using a SmartArray<T> instance, or they
+        is managed internally using a std::shared_ptr<T[]>, or they
         can be wrapped around an existing data data pointer. In the
         latter case, the given data is not copied deeply which
         implicates that the data must remain valid.
@@ -38,7 +38,7 @@ namespace icl{
       Size m_size;
 
       /// current data
-      SmartArray<T> m_data;
+      std::shared_ptr<T[]> m_data;
 
       public:
 
@@ -75,13 +75,15 @@ namespace icl{
 
       /// Creates a matrix of size w x h, using given (optionally shared) data
       inline Array2D(int w, int h, T *data, bool deepCopy=false):
-      m_size(w,h),m_data(deepCopy ? new T[w*h] : data, deepCopy){
+      m_size(w,h),m_data(deepCopy ? std::shared_ptr<T[]>(new T[w*h])
+                                  : std::shared_ptr<T[]>(data, [](T*){})){
         if(deepCopy) assign(data,data+w*h);
       }
 
       /// Creates a matrix of given Size, using given (optionally shared) data
       inline Array2D(const Size &s, T *data, bool deepCopy=false):
-      m_size(s),m_data(deepCopy ? new T[s.getDim()] : data, deepCopy){
+      m_size(s),m_data(deepCopy ? std::shared_ptr<T[]>(new T[s.getDim()])
+                                : std::shared_ptr<T[]>(data, [](T*){})){
         if(deepCopy) assign(data,data+s.getDim());
       }
 
@@ -168,13 +170,9 @@ namespace icl{
       }
 
       /// ensures that the contained data is not shared by other instances
-      /** This method ensure exclusive access to the internal data. I.e. If
-          the data is used by another Array2D instance. This is also true for
-          the shared-data mode, which behaves exactly like the non-shared
-          data mode except that the data-pointer is finally not deleted */
       inline void detach(){
           if(m_data.use_count() > 1){
-            SmartArray<T> det(new T[getDim()]);
+            std::shared_ptr<T[]> det(new T[getDim()]);
             std::copy(begin(),end(),det.get());
             m_data = det;
           }
@@ -187,8 +185,6 @@ namespace icl{
       inline const T* data() const { return begin(); }
 
       /// returns the minumum element of the matrix (operator < must be defined on T)
-      /** If the optional argument pos is given and it is not 0, *pos is
-          set to the minimum elements x,y position in the matrix */
       inline const T &minElem(Point *pos=0) const {
         int idx = static_cast<int>(std::min_element(begin(),end()) - begin());
         if(pos) *pos = Point(idx%getWidth(),idx/getWidth());
@@ -196,8 +192,6 @@ namespace icl{
       }
 
       /// returns the maximum element of the matrix (operator < must be defined on T)
-      /** If the optional argument pos is given and it is not 0, *pos is
-          set to the maximum elements x,y position in the matrix */
       inline const T &maxElem(Point *pos=0) const {
         int idx = static_cast<int>(std::max_element(begin(),end()) - begin());
         if(pos) *pos = Point(idx%getWidth(),idx/getWidth());
@@ -205,17 +199,13 @@ namespace icl{
       }
 
       /// sets a new size
-      /** If the current size doesn't differ from the new size,
-          nothing is done*/
       void setSize(const Size &size){
         if(getSize() == size) return;
         m_size = size;
-        m_data = new T[size.getDim()];
+        m_data.reset(new T[size.getDim()]);
       }
 
       /// sets size and fills with new entries
-      /** If the current size doesn't differ from the new size,
-          only the content is overwritte with init */
       template<class Init>
       void setSize(const Size &size, const Init &init){
         setSize(size);
