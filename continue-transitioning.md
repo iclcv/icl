@@ -1,6 +1,88 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 23 — Full Backend Dispatch Architecture)
+## Current State (Session 24 — LapackOps expansion, API cleanup, DynMatrixBase split)
+
+### Session 24 Summary
+
+**New LapackOps (3 new ops, 2 gap-fills):**
+- `geqrf` + `orgqr` (QR factorization via Householder reflectors) — all 4 backends
+- `gelsd` (SVD least-squares solve) — all 4 backends
+- `getrf`/`getri` added to MKL and Eigen backends (were missing)
+
+**Accelerate backend row-major fix:**
+- getrf, getri, geqrf, orgqr, gelsd now transpose explicitly to/from column-major
+  before calling LAPACK. Ensures packed output (L/U, Householder reflectors)
+  matches C++ backend convention. gesdd/syev keep dimension-swap trick.
+
+**Consumer wiring:**
+- `decompose_QR()` → geqrf + orgqr (was hand-written Gram-Schmidt)
+- `decompose_LU()` → getrf + unpack (was hand-written partial pivoting)
+- `solve()` → gelsd directly (was string-based method dispatch with "lu"/"svd"/"qr"/"inv")
+- `pinv()` → always reduced SVD + BLAS gemm (was bool useSVD with QR fallback)
+- `mult()` → BLAS gemm for float/double (was hand-written inner_product loop)
+- `matrix_mult_t()` → gemm transpose flags for float/double (no temp copies)
+
+**API simplification:**
+- Removed `big_matrix_pinv()` — merged into `pinv()`
+- Removed `big_matrix_mult_t()` — merged into `matrix_mult_t()`
+- Removed `pinv(bool useSVD)` parameter — always SVD
+- Removed `solve(b, string method)` parameter — always gelsd
+- Removed `solve_upper_triangular()` / `solve_lower_triangular()` — dead code
+- Removed `PolynomialRegression::apply()` useSVD parameter
+- Removed dead `#if 0` block in DynMatrixUtils.h (old svd_cpp_64f)
+- Removed dead EigenICLConverter (zero callers)
+
+**DynMatrixBase<T> refactor — compilation time reduction:**
+- New `DynMatrixBase<T>` (header-only, ~290 lines): storage, element access,
+  flat iterators, properties, operator<</>>
+- `DynMatrix<T>` inherits DynMatrixBase, adds col/row iterators, DynMatrixColumn,
+  all arithmetic and linalg — declarations only in header (~200 lines)
+- All method bodies in `DynMatrix.cpp` (~700 lines), whole-class instantiation
+  for float/double: `template class ICLMath_API DynMatrix<float/double>;`
+- `DynVector.h` declarations only, `DynVector.cpp` with whole-class instantiation
+- DynMatrix.h includes only `<iterator>` beyond ICL headers (was `<numeric>`,
+  `<functional>`, `<vector>`, `<cmath>`, `<algorithm>`)
+- Concatenation operators (operator,/%) moved out of line
+
+**License header cleanup:**
+- Replaced 29-line decorative headers with 3-line SPDX across 1038 files (~27,600 lines removed)
+- Format: `SPDX-License-Identifier: LGPL-3.0-or-later` / `ICL - Image Component Library (URL)` / `Copyright (original authors)`
+- New top-level LICENSE file with project info and EXC 277 acknowledgment
+
+**Tests: 364/364 pass (15 new).** Build clean, zero warnings on macOS.
+
+### LapackOps Summary (8 operations, 4 backends)
+
+| Op | Signature | C++ | Accelerate | MKL | Eigen |
+|---|---|---|---|---|---|
+| gesdd | SVD divide-and-conquer | ✓ | ✓ | ✓ | ✓ |
+| syev | Symmetric eigenvalue | ✓ | ✓ | ✓ | ✓ |
+| getrf | LU factorization | ✓ | ✓ | ✓ | ✓ |
+| getri | LU inverse | ✓ | ✓ | ✓ | ✓ |
+| geqrf | QR factorization | ✓ | ✓ | ✓ | ✓ |
+| orgqr | Form Q from reflectors | ✓ | ✓ | ✓ | ✓ |
+| gelsd | SVD least-squares solve | ✓ | ✓ | ✓ | ✓ |
+| gemm | Matrix multiply (BlasOps) | ✓ | ✓ | ✓ | — |
+
+### DynMatrix File Layout
+
+```
+DynMatrixBase.h   — storage, element access, streaming (header-only, any type)
+DynMatrix.h       — col/row iterators, arithmetic/linalg declarations (~200 lines)
+DynMatrix.cpp     — all method bodies + whole-class instantiation float/double
+DynVector.h       — DynColVector/DynRowVector declarations
+DynVector.cpp     — all method bodies + whole-class instantiation float/double
+```
+
+### Next Steps
+
+- **Investigate legacy test stubs** — per-module test executables compile to 0 tests
+- **NeighborhoodOp.cpp** — 2 `#ifdef ICL_HAVE_IPP` workaround blocks (anchor bug)
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
+- **Consider DynMatrixBase for non-float/double users** — GraphCutter (bool),
+  masks (unsigned char) could use DynMatrixBase directly instead of DynMatrix
+
+## Previous State (Session 23 — Full Backend Dispatch Architecture)
 
 ### Session 23 Summary
 
