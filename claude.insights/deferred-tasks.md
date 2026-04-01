@@ -50,21 +50,21 @@ macOS provides `<OpenCL/opencl.h>` (C API only). ICL's CL code uses C++ bindings
 
 ## Performance / Platform
 
-### Apple Accelerate Framework
-IPP removed for macOS (Intel Macs too old). Apple's Accelerate framework is the native alternative:
-- **vImage** — image processing (convolution, morphology, color conversion, scaling)
-- **vDSP** — signal processing, FFT
-- **BLAS/LAPACK** — linear algebra (could replace MKL too)
-- **Approach:** Grep for `ICL_HAVE_IPP`, identify hot paths, add Accelerate backends
+### Apple Accelerate Framework ✅ (Session 25)
+BLAS/LAPACK/vDSP backends added in sessions 20-24. vImage filter backends added in session 25:
+- **ConvolutionOp** — `vImageConvolve_PlanarF` (icl32f): 1.3x gauss3x3, **29x gauss5x5**
+- **MorphologicalOp** — `vImageDilate/Erode_Planar8/PlanarF` (icl8u/32f): **27x dilate3x3**
+- **AffineOp** — `vImageAffineWarp_Planar8/PlanarF` (icl8u/32f bilinear)
+- See `claude.insights/accelerate-ipp-mapping.md` for full mapping
+- Remaining: histogram (no backend dispatch), median/Canny/integral (no vImage equivalent)
 
 ### ARM NEON via sse2neon
 SSE SIMD code disabled on ARM. [sse2neon](https://github.com/DLTcollab/sse2neon) is a header-only library that translates SSE intrinsics to NEON (used by Chromium, FFmpeg, etc.).
 - **Approach:** Add `sse2neon.h` to `3rdparty/`, include in `SSETypes.h`/`SSEUtils.h` when on ARM, re-enable SIMD code paths
 - **Test with:** MedianOp and ConvolutionOp benchmarks
 
-### `register` Keyword Removal
-Currently suppressed with `-Wno-register`. The `register` storage class specifier is removed in C++17 and used in performance-critical files (BayerConverter, CCLUT, CCFunctions, MathFunctions, Img).
-- **Fix:** Remove all `register` keywords from source (they have no effect on modern compilers)
+### `register` Keyword Removal ✅
+Already removed — no `register` storage class keywords remain in source, no `-Wno-register` in CMake.
 
 ## Code Modernization
 

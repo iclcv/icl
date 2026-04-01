@@ -58,11 +58,17 @@
   Accelerate framework linked via 3RDPARTY_LIBS
 - All cross-validated against C++ backend across all test cases
 
+**Benchmark results (640x480 images, 50 iterations):**
+
+| Benchmark | Accelerate | C++ | Speedup |
+|---|---|---|---|
+| convolution gauss3x3 32f | 235 us | 314 us | 1.3x |
+| convolution gauss5x5 32f | 339 us | 9904 us | **29x** |
+| morphology dilate3x3 8u | 243 us | 6477 us | **27x** |
+
 **Tests: 367/367 pass.** Build clean, zero warnings on macOS.
 
 ### Next Steps
-
-- **Accelerate histogram backend** (see `claude.insights/accelerate-ipp-mapping.md`)
 
 - **Re-enable IPP backends** on Linux — update to modern oneAPI APIs;
   re-add even-mask workaround conditionally in IPP convolution path
