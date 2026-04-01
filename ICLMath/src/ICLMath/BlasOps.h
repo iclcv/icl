@@ -48,6 +48,15 @@ namespace icl {
 
       BlasOps();
       static BlasOps& instance();
+
+      /// Cached dispatch — resolved on first call, O(1) thereafter.
+      /// Safe because the context is type-only (no runtime applicability).
+      static void vadd(const T* a, const T* b, T* dst, int n);
+      static void vsub(const T* a, const T* b, T* dst, int n);
+      static void vmul(const T* a, const T* b, T* dst, int n);
+      static void vdiv(const T* a, const T* b, T* dst, int n);
+      static void vsadd(const T* src, T scalar, T* dst, int n);
+      static void vsmul(const T* src, T scalar, T* dst, int n);
     };
 
   } // namespace math

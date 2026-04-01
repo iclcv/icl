@@ -39,6 +39,32 @@ namespace icl {
       return ops;
     }
 
+    // Cached dispatch methods — resolve on first call via function-local static
+#define BLAS_CACHED_BINARY(NAME, KEY)                                        \
+    template<class T>                                                        \
+    void BlasOps<T>::NAME(const T* a, const T* b, T* dst, int n) {           \
+      static auto* impl = instance()                                         \
+          .template getSelector<VecBinarySig>(BlasOp::KEY).resolveOrThrow(); \
+      impl->apply(a, b, dst, n);                                             \
+    }
+#define BLAS_CACHED_SCALAR(NAME, KEY)                                        \
+    template<class T>                                                        \
+    void BlasOps<T>::NAME(const T* src, T scalar, T* dst, int n) {           \
+      static auto* impl = instance()                                         \
+          .template getSelector<VecScalarSig>(BlasOp::KEY).resolveOrThrow(); \
+      impl->apply(src, scalar, dst, n);                                      \
+    }
+
+    BLAS_CACHED_BINARY(vadd, vadd)
+    BLAS_CACHED_BINARY(vsub, vsub)
+    BLAS_CACHED_BINARY(vmul, vmul)
+    BLAS_CACHED_BINARY(vdiv, vdiv)
+    BLAS_CACHED_SCALAR(vsadd, vsadd)
+    BLAS_CACHED_SCALAR(vsmul, vsmul)
+
+#undef BLAS_CACHED_BINARY
+#undef BLAS_CACHED_SCALAR
+
     template struct BlasOps<float>;
     template struct BlasOps<double>;
 
