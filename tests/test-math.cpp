@@ -434,6 +434,155 @@ ICL_REGISTER_TEST("math.fixed.element_wise_inner", "element_wise_inner_product")
 }
 
 // =====================================================================
+// FixedMatrix — SIMD/cblas cross-validation
+// =====================================================================
+
+// Generic C++ reference multiply (no SIMD, no cblas — always correct)
+template<class T, unsigned int COLS, unsigned int ROWS, unsigned int MCOLS>
+static FixedMatrix<T,MCOLS,ROWS> ref_mult(
+    const FixedMatrix<T,COLS,ROWS> &a,
+    const FixedMatrix<T,MCOLS,COLS> &b) {
+  FixedMatrix<T,MCOLS,ROWS> dst;
+  for(unsigned int c=0;c<MCOLS;++c)
+    for(unsigned int r=0;r<ROWS;++r) {
+      T sum = T(0);
+      for(unsigned int k=0;k<COLS;++k)
+        sum += a(k,r) * b(c,k);
+      dst(c,r) = sum;
+    }
+  return dst;
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_4x4f", "4x4 float: SIMD matches C++ reference")
+{
+  FixedMatrix<float,4,4> a, b;
+  for(int i=0; i<16; ++i) { a[i] = float(i+1); b[i] = float(16-i); }
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<16; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_4x4d", "4x4 double: SIMD matches C++ reference")
+{
+  FixedMatrix<double,4,4> a, b;
+  for(int i=0; i<16; ++i) { a[i] = double(i+1); b[i] = double(16-i); }
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<16; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-10);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_3x3f", "3x3 float: SIMD matches C++ reference")
+{
+  FixedMatrix<float,3,3> a, b;
+  for(int i=0; i<9; ++i) { a[i] = float(i+1); b[i] = float(9-i); }
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<9; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_3x3d", "3x3 double: SIMD matches C++ reference")
+{
+  FixedMatrix<double,3,3> a, b;
+  for(int i=0; i<9; ++i) { a[i] = double(i+1); b[i] = double(9-i); }
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<9; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-10);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_2x2f", "2x2 float: SIMD matches C++ reference")
+{
+  FixedMatrix<float,2,2> a, b;
+  a[0]=1; a[1]=2; a[2]=3; a[3]=4;
+  b[0]=5; b[1]=6; b[2]=7; b[3]=8;
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<4; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_2x2d", "2x2 double: SIMD matches C++ reference")
+{
+  FixedMatrix<double,2,2> a, b;
+  a[0]=1; a[1]=2; a[2]=3; a[3]=4;
+  b[0]=5; b[1]=6; b[2]=7; b[3]=8;
+  auto got = a * b;
+  auto ref = ref_mult(a, b);
+  for(int i=0; i<4; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-10);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_matvec_4f", "4x4 float * vec: SIMD matches reference")
+{
+  FixedMatrix<float,4,4> m;
+  for(int i=0; i<16; ++i) m[i] = float(i+1);
+  FixedMatrix<float,1,4> v;
+  v[0]=1; v[1]=2; v[2]=3; v[3]=4;
+  FixedMatrix<float,1,4> got, ref;
+  m.mult(v, got);
+  // manual reference
+  for(int r=0; r<4; ++r) {
+    float s = 0;
+    for(int k=0; k<4; ++k) s += m(k,r) * v[k];
+    ref[r] = s;
+  }
+  for(int i=0; i<4; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_cross_matvec_4d", "4x4 double * vec: SIMD matches reference")
+{
+  FixedMatrix<double,4,4> m;
+  for(int i=0; i<16; ++i) m[i] = double(i+1);
+  FixedMatrix<double,1,4> v;
+  v[0]=1; v[1]=2; v[2]=3; v[3]=4;
+  FixedMatrix<double,1,4> got, ref;
+  m.mult(v, got);
+  for(int r=0; r<4; ++r) {
+    double s = 0;
+    for(int k=0; k<4; ++k) s += m(k,r) * v[k];
+    ref[r] = s;
+  }
+  for(int i=0; i<4; ++i) ICL_TEST_NEAR(got[i], ref[i], 1e-10);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_inv_cross_4x4f", "4x4 float inv: A * inv(A) = I")
+{
+  FixedMatrix<float,4,4> m = {2,0,1,0, 0,1,0,3, 1,0,2,0, 0,1,0,1};
+  auto inv = m.inv();
+  auto eye = m * inv;
+  for(int r=0; r<4; ++r)
+    for(int c=0; c<4; ++c)
+      ICL_TEST_NEAR(eye(c,r), (r==c ? 1.0f : 0.0f), 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_inv_cross_3x3d", "3x3 double inv: A * inv(A) = I")
+{
+  FixedMatrix<double,3,3> m = {1,2,3, 0,1,4, 5,6,0};
+  auto inv = m.inv();
+  auto eye = m * inv;
+  for(int r=0; r<3; ++r)
+    for(int c=0; c<3; ++c)
+      ICL_TEST_NEAR(eye(c,r), (r==c ? 1.0 : 0.0), 1e-10);
+}
+
+ICL_REGISTER_TEST("math.fixed.simd_det_cross_4x4f", "4x4 float det: matches Dyn")
+{
+  FixedMatrix<float,4,4> fm = {2,0,1,0, 0,1,0,3, 1,0,2,0, 0,1,0,1};
+  float fd = fm.det();
+  float dd = fm.dyn().det();
+  ICL_TEST_NEAR(fd, dd, 1e-4f);
+}
+
+ICL_REGISTER_TEST("math.fixed.mult_int_fallback", "int matrix multiply uses generic fallback")
+{
+  FixedMatrix<int,2,2> a, b;
+  a[0]=1; a[1]=2; a[2]=3; a[3]=4;
+  b[0]=5; b[1]=6; b[2]=7; b[3]=8;
+  auto c = a * b;
+  ICL_TEST_EQ(c[0], 19);
+  ICL_TEST_EQ(c[1], 22);
+  ICL_TEST_EQ(c[2], 43);
+  ICL_TEST_EQ(c[3], 50);
+}
+
+// =====================================================================
 // DynMatrix — Construction and ownership
 // =====================================================================
 

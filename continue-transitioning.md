@@ -1,6 +1,94 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 25 — NeighborhoodOp fix, dead IPP cleanup, Accelerate mapping)
+## Current State (Session 26 — FixedMatrix compile-time SIMD acceleration)
+
+### Session 26 Summary
+
+**Compile-time SIMD acceleration for FixedMatrix:**
+
+FixedMatrix (`ICLMath/FixedMatrix.h`) handles fixed-size matrices (2x2, 3x3, 4x4)
+used in hot paths (camera projection, scene graph transforms, rotation composition).
+Previously only 4x4 float multiply had SIMD (SSE2/sse2neon). All other sizes and
+double precision fell back to generic `std::inner_product` with strided column
+iterators — no vectorization. The runtime BlasOps dispatch mechanism was too costly
+for these tiny matrices.
+
+**Solution: compile-time `#ifdef` selection with zero dispatch overhead.**
+
+**Apple SIMD (`<simd/simd.h>`) on macOS:**
+- All functions are inline `SIMD_CFUNC` — zero call overhead, native NEON
+- Row-major/column-major compatibility solved with zero overhead:
+  - 4x4/2x2: `memcpy` reinterpret (same byte size), swap multiply args
+  - Matrix-vector: `simd_mul(v, A_cm)` = `A_rm * v`
+  - det/inv: transpose-invariant, reinterpret works directly
+- Covers: mult, inv for 4x4/2x2 float/double; det for 4x4/2x2; matvec for 4x4
+- Element-wise ops (add, sub, scalar mul, negate, div) for 4x4/2x2
+- inv checks determinant and throws SingularMatrixException (matching C++ semantics)
+- Replaces existing SSE2/sse2neon specializations on macOS
+
+**SSE2/sse2neon (non-macOS fallback):**
+- Existing specializations for 4x4 float multiply + matvec
+- On Linux x86, clang -O3 auto-vectorizes remaining C++ loops to SSE/AVX
+
+**Benchmark results (Apple M-series, -O3, batch=128 independent ops):**
+
+| Operation | float SIMD | float C++ | Speedup | double Speedup |
+|---|---|---|---|---|
+| 4x4 multiply | 1.8 ns | 8.6 ns | **4.8x** | **3.2x** |
+| 4x4 * vec4 | 0.8 ns | 1.4 ns | **1.6x** | 1.0x |
+| 4x4 inverse | 5.4 ns | 20.1 ns | **3.7x** | **2.1x** |
+| 4x4 det | 2.0 ns | 2.2 ns | ~1x | ~1x |
+| Full pipeline | 2.6 ns | 6.5 ns | **2.5x** | **1.7x** |
+
+**Key findings from benchmarking:**
+- 3x3 Apple SIMD is **10x slower** than C++ due to `simd_float3` padding overhead
+  (48 vs 36 bytes for 3x3). Excluded — uses C++ closed-form instead.
+- cblas/MKL is **25x slower** than C++ for 4x4 (~100ns call overhead for a 4ns op).
+  Removed from FixedMatrix — only useful for DynMatrix via BlasOps.
+- Element-wise ops (add, smul, det) show ~1x because clang -O3 auto-vectorizes
+  the C++ loops to equivalent NEON/SSE code.
+- `memcpy` for load/store compiles to identical assembly as `reinterpret_cast`
+  at -O2. Kept for correctness (alignment not guaranteed by FixedArray).
+
+**New files:**
+- `ICLMath/src/ICLMath/SimdCompat.h` — Apple SIMD load/store helpers + element-wise
+  ops (add, sub, smul) for 4x4/2x2 float/double
+- `benchmarks/bench-fixedmatrix.cpp` — standalone benchmark (no ICL deps), supports
+  Apple SIMD, SSE2 intrinsics, MKL cblas, and plain C++ backends
+- `scripts/docker/` — Docker infrastructure for Linux testing:
+  `docker-build.sh`, `docker-shell.sh`, `docker-test.sh`, `docker-bench-fixedmatrix.sh`
+  Uses rsync + named volumes for fast incremental builds.
+
+**Modified files:**
+- `ICLMath/src/ICLMath/FixedMatrix.h`:
+  - `#include <ICLMath/SimdCompat.h>`, `<type_traits>`, `<initializer_list>`
+  - Apple SIMD specializations: mult (4), matvec (2), inv (4), det (4),
+    element-wise ops in operator+/-/*/negate bodies
+  - SSE2 block restructured: `#elif defined(ICL_HAVE_SSE2)` (non-macOS fallback)
+  - New `std::initializer_list<T>` constructor
+  - 3x3 inv/det always use C++ closed-form (even on macOS)
+- `tests/test-math.cpp`: 12 new cross-validation tests
+
+**Tests: 379/379 pass (12 new).** Build clean on macOS.
+
+### Next Steps
+
+- **Wire BlasOps through codebase** — grep for hand-written dot products, norm
+  calculations, axpy-style accumulations, and matrix-vector multiplies across
+  ICLMath, ICLGeom, ICLCV, ICLFilter; replace with `BlasOps<T>::dot/nrm2/axpy/gemv`
+- **Image scaling Accelerate backend** — `vImageScale_Planar8/PlanarF` for
+  `scaledCopyChannelROI()` in Img.cpp (needs backend dispatch added first)
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **C++17 source pass** — std::filesystem, std::string_view, structured bindings
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
+- **Linux FixedMatrix benchmarks on real x86** — Docker Rosetta benchmarks are
+  directionally useful but not reliable for absolute numbers. Run on CI or
+  cloud x86 VM for definitive comparison.
+
+## Previous State (Session 25 — NeighborhoodOp fix, dead IPP cleanup, Accelerate mapping)
 
 ### Session 25 Summary
 

@@ -13,12 +13,15 @@
 
 #include <iterator>
 #include <ICLUtils/SSETypes.h>
+#include <ICLMath/SimdCompat.h>
 #include <algorithm>
 #include <numeric>
 #include <functional>
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <type_traits>
+#include <initializer_list>
 
 // Note: ippm.h (IPP matrix module) was removed from modern IPP (oneAPI 2022+)
 
@@ -195,6 +198,18 @@ namespace icl{
   #undef C4
       }
 
+      /// Initializer list constructor
+      /** Allows: FixedMatrix<float,2,2> m = {1, 2, 3, 4};
+          Remaining elements are zero-filled if fewer values are given. */
+      FixedMatrix(std::initializer_list<T> init){
+        auto it = init.begin();
+        unsigned int i = 0;
+        for(; i < DIM && it != init.end(); ++i, ++it)
+          utils::FixedArray<T,COLS*ROWS>::m_data[i] = *it;
+        for(; i < DIM; ++i)
+          utils::FixedArray<T,COLS*ROWS>::m_data[i] = T(0);
+      }
+
       /// Range based constructor for STL compatiblitiy
       /** Range size must be compatible to the new matrix's dimension */
       template<class OtherIterator>
@@ -282,26 +297,42 @@ namespace icl{
       /// Multiply all elements by a scalar
       FixedMatrix operator*(T f) const{
         FixedMatrix d;
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::smul<T,DIM>(f, data(), d.data());
+#else
         std::transform(begin(),end(),d.begin(),[f](const T &v){ return v * f; });
+#endif
         return d;
       }
 
       /// Multiply all elements by a scalar (inplace)
       FixedMatrix &operator*=(T f){
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::smul<T,DIM>(f, data(), data());
+#else
         std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
+#endif
         return *this;
       }
 
       /// Divide all elements by a scalar
       FixedMatrix operator/(T f) const{
         FixedMatrix d;
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::smul<T,DIM>(T(1)/f, data(), d.data());
+#else
         std::transform(begin(),end(),d.begin(),[f](const T &v){ return v / f; });
+#endif
         return d;
       }
 
       /// Divide all elements by a scalar
       FixedMatrix &operator/=(T f){
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::smul<T,DIM>(T(1)/f, data(), data());
+#else
         std::transform(begin(),end(),begin(),[f](const T &v){ return v / f; });
+#endif
         return *this;
       }
 
@@ -335,25 +366,41 @@ namespace icl{
       /// Element-wise matrix addition
       FixedMatrix operator+(const FixedMatrix &m) const{
         FixedMatrix d;
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::add<T,DIM>(data(), m.data(), d.data());
+#else
         std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
+#endif
         return d;
       }
 
       /// Element-wise matrix addition (inplace)
       FixedMatrix &operator+=(const FixedMatrix &m){
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::add<T,DIM>(data(), m.data(), data());
+#else
         std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
+#endif
         return *this;
       }
 
       /// Element-wise matrix subtraction
       FixedMatrix operator-(const FixedMatrix &m) const{
         FixedMatrix d;
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::sub<T,DIM>(data(), m.data(), d.data());
+#else
         std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
+#endif
         return d;
       }
       /// Element-wise matrix subtraction (inplace)
       FixedMatrix &operator-=(const FixedMatrix &m){
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::sub<T,DIM>(data(), m.data(), data());
+#else
         std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
+#endif
         return *this;
       }
 
@@ -361,9 +408,13 @@ namespace icl{
       /** M + (-M) = 0;
       */
       FixedMatrix operator-() const {
-        FixedMatrix cpy(*this);
-        std::transform(cpy.begin(),cpy.end(),cpy.begin(),std::negate<T>());
-        return cpy;
+        FixedMatrix d;
+#ifdef ICL_HAVE_APPLE_SIMD
+        simd_compat::smul<T,DIM>(T(-1), data(), d.data());
+#else
+        std::transform(begin(),end(),d.begin(),std::negate<T>());
+#endif
+        return d;
       }
 
 
@@ -638,11 +689,16 @@ namespace icl{
           @param dst destination of matrix multiplication
           @see operator*(const FixedMatrix<T,MCOLS,COLS>&)
       */
+      /// Generic matrix multiply (C++ fallback).
+      /** For 4x4/2x2 float/double, explicit SIMD specializations below override
+          this. cblas was benchmarked but rejected: ~100ns call overhead makes it
+          25x slower than the C++ loop for 4x4 matrices. Clang auto-vectorizes
+          this loop at -O3, producing SSE/NEON code comparable to hand-written
+          intrinsics for most sizes. */
       template<unsigned int MCOLS>
       void mult(const FixedMatrix<T,MCOLS,COLS> &m,  FixedMatrix<T,MCOLS,ROWS> &dst) const{
         for(unsigned int c=0;c<MCOLS;++c){
           for(unsigned int r=0;r<ROWS;++r){
-            //          std::cout << "calling inner_product" << std::endl;
             dst(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
           }
         }
@@ -1039,16 +1095,118 @@ namespace icl{
     }
     /** \endcond */
 
-  // --- SSE2-optimized 4x4 float matrix multiply ---
-  // Row-major: dst = A * B where A=this, B=m
-  // Strategy: load each column of B, dot with each row of A
-  #ifdef ICL_HAVE_SSE2
+  // --- Platform-optimized FixedMatrix specializations ---
+  //
+  // Priority: Apple SIMD (macOS) > SSE2/sse2neon (x86/ARM) > generic C++
+  //
+  // Apple SIMD uses column-major layout, ICL uses row-major. Compatibility:
+  // - 4x4/2x2: memcpy reinterpret (same byte size), swap multiply args
+  //   simd_mul(B_cm, A_cm) produces (A_rm * B_rm) in row-major bytes
+  // - Matrix-vector: simd_mul(v, A_cm) = A_rm * v
+  // - det/inv: transpose-invariant, reinterpret works directly
+  //
+  // NOT accelerated via SIMD:
+  // - 3x3: simd_float3 has 16-byte padding (48 vs 36 bytes), making Apple SIMD
+  //   ~10x slower than clang's auto-vectorized C++ at -O3. Uses C++ closed-form.
+  // - cblas/MKL: benchmarked and rejected — ~100ns call overhead makes it 25x
+  //   slower than a 4ns inline C++ loop for 4x4 matrices.
+  //
+  // On Linux, clang -O3 auto-vectorizes the C++ loops to SSE/AVX code that is
+  // comparable to hand-written intrinsics for most operations. The existing SSE2
+  // specializations (4x4 float mult/matvec) provide explicit SIMD for the most
+  // critical path.
+  //
+  // Note on load/store via memcpy vs reinterpret_cast:
+  // The load/store helpers in SimdCompat.h use std::memcpy to transfer between
+  // float*/double* and simd types. A reinterpret_cast would be semantically
+  // simpler, but simd_float4x4 requires 16-byte alignment while FixedArray's
+  // m_data[] only guarantees natural float alignment (4 bytes). Adding
+  // alignas(16) to FixedArray would fix this but changes its ABI and wastes
+  // space for small specializations (1-3 elements). In practice, the memcpy is
+  // completely elided by clang at -O2 — the generated assembly is identical to
+  // a reinterpret_cast (ldp/stp pairs directly from/to the source pointer).
+
+#if defined(ICL_HAVE_APPLE_SIMD)
+
+  // --- Apple SIMD: 4x4 float multiply ---
+  template<> template<>
+  inline void FixedMatrix<float,4,4>::mult(
+      const FixedMatrix<float,4,4> &B,
+      FixedMatrix<float,4,4> &dst) const {
+    using namespace simd_compat;
+    auto a = load_4x4(data());
+    auto b = load_4x4(B.data());
+    store_4x4(simd_mul(b, a), dst.data()); // swapped for row-major
+  }
+
+  // --- Apple SIMD: 4x4 double multiply ---
+  template<> template<>
+  inline void FixedMatrix<double,4,4>::mult(
+      const FixedMatrix<double,4,4> &B,
+      FixedMatrix<double,4,4> &dst) const {
+    using namespace simd_compat;
+    auto a = load_4x4(data());
+    auto b = load_4x4(B.data());
+    store_4x4(simd_mul(b, a), dst.data());
+  }
+
+  // Note: 3x3 multiply intentionally NOT specialized for Apple SIMD.
+  // Benchmarking shows simd_matrix_from_rows + element extraction overhead
+  // makes it ~10x slower than clang's auto-vectorized C++ loop at -O3.
+  // The padding mismatch (simd_float3x3=48 bytes vs float[9]=36) is the cause.
+
+  // --- Apple SIMD: 2x2 float multiply ---
+  template<> template<>
+  inline void FixedMatrix<float,2,2>::mult(
+      const FixedMatrix<float,2,2> &B,
+      FixedMatrix<float,2,2> &dst) const {
+    using namespace simd_compat;
+    auto a = load_2x2(data());
+    auto b = load_2x2(B.data());
+    store_2x2(simd_mul(b, a), dst.data()); // swapped for row-major
+  }
+
+  // --- Apple SIMD: 2x2 double multiply ---
+  template<> template<>
+  inline void FixedMatrix<double,2,2>::mult(
+      const FixedMatrix<double,2,2> &B,
+      FixedMatrix<double,2,2> &dst) const {
+    using namespace simd_compat;
+    auto a = load_2x2(data());
+    auto b = load_2x2(B.data());
+    store_2x2(simd_mul(b, a), dst.data());
+  }
+
+  // --- Apple SIMD: 4x4 float * 4x1 vector ---
+  template<> template<>
+  inline void FixedMatrix<float,4,4>::mult(
+      const FixedMatrix<float,1,4> &v,
+      FixedMatrix<float,1,4> &dst) const {
+    using namespace simd_compat;
+    auto a = load_4x4(data());
+    auto vv = load_vec4(v.data());
+    store_vec4(simd_mul(vv, a), dst.data()); // v * A_cm = A_rm * v
+  }
+
+  // --- Apple SIMD: 4x4 double * 4x1 vector ---
+  template<> template<>
+  inline void FixedMatrix<double,4,4>::mult(
+      const FixedMatrix<double,1,4> &v,
+      FixedMatrix<double,1,4> &dst) const {
+    using namespace simd_compat;
+    auto a = load_4x4(data());
+    auto vv = load_vec4(v.data());
+    store_vec4(simd_mul(vv, a), dst.data());
+  }
+
+#elif defined(ICL_HAVE_SSE2)
+
+  // --- SSE2/sse2neon: 4x4 float matrix multiply ---
   template<> template<>
   inline void FixedMatrix<float,4,4>::mult(
       const FixedMatrix<float,4,4> &B,
       FixedMatrix<float,4,4> &dst) const
   {
-    // Load columns of B (B is row-major, so column j = elements j, j+4, j+8, j+12)
     const float *b = B.data();
     __m128 bcol0 = _mm_set_ps(b[12], b[8], b[4], b[0]);
     __m128 bcol1 = _mm_set_ps(b[13], b[9], b[5], b[1]);
@@ -1059,13 +1217,10 @@ namespace icl{
     float *d = dst.data();
     for(int r = 0; r < 4; ++r){
       __m128 arow = _mm_loadu_ps(a + r*4);
-      // dot(arow, bcol_j) for each j
       __m128 d0 = _mm_mul_ps(arow, bcol0);
       __m128 d1 = _mm_mul_ps(arow, bcol1);
       __m128 d2 = _mm_mul_ps(arow, bcol2);
       __m128 d3 = _mm_mul_ps(arow, bcol3);
-      // horizontal sum each: a0*b0 + a1*b1 + a2*b2 + a3*b3
-      // SSE2: shuffle + add pairs
       __m128 s0 = _mm_add_ps(d0, _mm_shuffle_ps(d0, d0, _MM_SHUFFLE(1,0,3,2)));
       s0 = _mm_add_ps(s0, _mm_shuffle_ps(s0, s0, _MM_SHUFFLE(2,3,0,1)));
       __m128 s1 = _mm_add_ps(d1, _mm_shuffle_ps(d1, d1, _MM_SHUFFLE(1,0,3,2)));
@@ -1081,7 +1236,7 @@ namespace icl{
       d[r*4+3] = _mm_cvtss_f32(s3);
     }
   }
-  // --- SSE2-optimized 4x4 float * 4x1 vector (matrix-vector transform) ---
+  // --- SSE2/sse2neon: 4x4 float * 4x1 vector ---
   template<> template<>
   inline void FixedMatrix<float,4,4>::mult(
       const FixedMatrix<float,1,4> &v,
@@ -1092,35 +1247,80 @@ namespace icl{
     for(int r = 0; r < 4; ++r){
       __m128 arow = _mm_loadu_ps(a + r*4);
       __m128 prod = _mm_mul_ps(arow, vv);
-      // horizontal sum
       __m128 s = _mm_add_ps(prod, _mm_shuffle_ps(prod, prod, _MM_SHUFFLE(1,0,3,2)));
       s = _mm_add_ps(s, _mm_shuffle_ps(s, s, _MM_SHUFFLE(2,3,0,1)));
       dst.data()[r] = _mm_cvtss_f32(s);
     }
   }
-  #endif // ICL_HAVE_SSE2
+#endif // ICL_HAVE_APPLE_SIMD / ICL_HAVE_SSE2
 
+  // --- Optimized inv() and det() for 2x2, 3x3, 4x4 (float/double) ---
+  // C++ closed-form functions always compiled (FixedMatrix.cpp).
+  // Apple SIMD overrides 4x4 and 2x2; 3x3 always uses C++ (padding overhead).
   #define USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+  /** \cond */
 
-  #ifdef USE_OPTIMIZED_INV_AND_DET_FOR_2X2_3X3_AND_4X4_MATRICES
+    // Forward declarations — always needed (the .cpp definitions are unconditional)
+    template<class T> ICLMath_IMP void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
+    template<class T> ICLMath_IMP T icl_util_get_fixed_4x4_matrix_det(const T *src);
+    template<class T> ICLMath_IMP T icl_util_get_fixed_3x3_matrix_det(const T *src);
+    template<class T> ICLMath_IMP T icl_util_get_fixed_2x2_matrix_det(const T *src);
 
-    /** \cond */
-    // this functions are implemented in iclFixedMatrix.cpp. All templates are
-    // instantiated for float and double
+#if defined(ICL_HAVE_APPLE_SIMD)
 
-    template<class T> ICLMath_IMP
-    void icl_util_get_fixed_4x4_matrix_inv(const T *src, T*dst);
-    template<class T> ICLMath_IMP
-    void icl_util_get_fixed_3x3_matrix_inv(const T *src, T*dst);
-    template<class T> ICLMath_IMP
-    void icl_util_get_fixed_2x2_matrix_inv(const T *src, T*dst);
+  // Apple SIMD for 4x4 and 2x2 inv/det (memcpy reinterpret, zero overhead).
+  // 3x3 uses C++ closed-form — benchmarking shows padding conversion makes
+  // Apple SIMD ~10x slower than clang's auto-vectorized C++ at -O3.
 
-    template<class T> ICLMath_IMP
-    T icl_util_get_fixed_4x4_matrix_det(const T *src);
-    template<class T> ICLMath_IMP
-    T icl_util_get_fixed_3x3_matrix_det(const T *src);
-    template<class T> ICLMath_IMP
-    T icl_util_get_fixed_2x2_matrix_det(const T *src);
+  #define ICL_SIMD_INV_SPEC(T, D, LOAD, STORE)                                \
+    template<>                                                                  \
+    inline FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const {                \
+      auto sm = LOAD(data());                                                   \
+      T d = simd_determinant(sm);                                               \
+      if(!d) throw SingularMatrixException("matrix is too singular");           \
+      FixedMatrix<T,D,D> r;                                                     \
+      STORE(simd_inverse(sm), r.data());                                        \
+      return r;                                                                 \
+    }
+  #define ICL_SIMD_DET_SPEC(T, D, LOAD)                                        \
+    template<>                                                                  \
+    inline T FixedMatrix<T,D,D>::det() const {                                 \
+      return simd_determinant(LOAD(data()));                                     \
+    }
+
+  ICL_SIMD_INV_SPEC(float,  4, simd_compat::load_4x4, simd_compat::store_4x4)
+  ICL_SIMD_DET_SPEC(float,  4, simd_compat::load_4x4)
+  ICL_SIMD_INV_SPEC(double, 4, simd_compat::load_4x4, simd_compat::store_4x4)
+  ICL_SIMD_DET_SPEC(double, 4, simd_compat::load_4x4)
+  ICL_SIMD_INV_SPEC(float,  2, simd_compat::load_2x2, simd_compat::store_2x2)
+  ICL_SIMD_DET_SPEC(float,  2, simd_compat::load_2x2)
+  ICL_SIMD_INV_SPEC(double, 2, simd_compat::load_2x2, simd_compat::store_2x2)
+  ICL_SIMD_DET_SPEC(double, 2, simd_compat::load_2x2)
+
+  #undef ICL_SIMD_INV_SPEC
+  #undef ICL_SIMD_DET_SPEC
+
+  // 3x3: C++ closed-form (Apple SIMD skipped due to padding overhead)
+  #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
+    template<>                                                            \
+    inline FixedMatrix<T,D,D> FixedMatrix<T,D,D>::inv() const {           \
+      FixedMatrix<T,D,D> r;                                               \
+      icl_util_get_fixed_##D##x##D##_matrix_inv<T>(begin(),r.begin());    \
+      return r;                                                           \
+    }                                                                     \
+    template<>                                                            \
+    inline T FixedMatrix<T,D,D>::det() const {                            \
+      return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
+    }
+
+    SPECIALISED_MATRIX_INV_AND_DET(3,float);
+    SPECIALISED_MATRIX_INV_AND_DET(3,double);
+
+  #undef SPECIALISED_MATRIX_INV_AND_DET
+
+#else // !ICL_HAVE_APPLE_SIMD — all sizes use C++ closed-form
 
   #define SPECIALISED_MATRIX_INV_AND_DET(D,T) \
     template<>                                                            \
@@ -1134,7 +1334,6 @@ namespace icl{
       return icl_util_get_fixed_##D##x##D##_matrix_det<T>(begin());       \
     }
 
-
     SPECIALISED_MATRIX_INV_AND_DET(2,float);
     SPECIALISED_MATRIX_INV_AND_DET(3,float);
     SPECIALISED_MATRIX_INV_AND_DET(4,float);
@@ -1142,11 +1341,11 @@ namespace icl{
     SPECIALISED_MATRIX_INV_AND_DET(3,double);
     SPECIALISED_MATRIX_INV_AND_DET(4,double);
 
-
   #undef SPECIALISED_MATRIX_INV_AND_DET
 
+#endif // ICL_HAVE_APPLE_SIMD
+
   /** \endcond */
-  #endif
 
 
 #ifdef WIN32
