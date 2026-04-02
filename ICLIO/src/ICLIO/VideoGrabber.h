@@ -7,9 +7,7 @@
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Xine-based Video Grabber (grabs most common image formats) \ingroup MOVIE_FILE_G
     /** The VideoGrabber implementation differs somehow from other Grabber implementations, as
         video playback is heavily constrained by the current video framerate. The
@@ -72,5 +70,4 @@ namespace icl{
         Params *m_params;   //!< property values
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

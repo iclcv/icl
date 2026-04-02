@@ -23,9 +23,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     std::map<std::string,FileWriterPlugin*> FileWriter::s_mapPlugins;
 
     class FileWriterPluginMapInitializer{
@@ -182,5 +180,4 @@ namespace icl{
     }
 
 
-  } // namespace io
-}
+  } // namespace icl::io

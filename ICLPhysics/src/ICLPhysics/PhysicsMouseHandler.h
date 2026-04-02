@@ -7,8 +7,7 @@
 #include <ICLGeom/SceneMouseHandler.h>
 
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     class PhysicsWorld;
     class PhysicsScene;
     class RigidObject;
@@ -38,4 +37,3 @@ namespace icl {
       void removeConstraint();
     };
   }
-}

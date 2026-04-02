@@ -33,9 +33,7 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-namespace icl {
-	namespace utils {
-
+namespace icl::utils {
 		CLMemoryAssistant::CLMemoryAssistant() {}
 
 		CLMemoryAssistant::CLMemoryAssistant(std::string const &deviceType) {
@@ -109,6 +107,4 @@ namespace icl {
 		}
 
 	}
-}
-
 #endif

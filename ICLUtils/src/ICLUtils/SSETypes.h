@@ -177,9 +177,7 @@
 
 */
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     #ifdef ICL_HAVE_SSE2
 
       // ++ basic SSE types ++ //
@@ -2304,5 +2302,4 @@ namespace icl{
 
     #endif
 
-  } // namespace utils
-}
+  } // namespace icl::utils

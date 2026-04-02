@@ -24,9 +24,7 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Modes that define whether to prefer the source image's or the destination image's depth
     enum DepthPreference{
       PREFERE_SRC_DEPTH, //!< prefer source depth
@@ -211,5 +209,4 @@ namespace icl{
       const T* getInterleavedData() const;
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

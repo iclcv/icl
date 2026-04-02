@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     const ImgBase* CreateGrabber::acquireDisplay(){
       if(m_updateTimeStamp){
         m_image -> setTime();
@@ -61,5 +59,4 @@ namespace icl{
 
     REGISTER_GRABBER(create,createCreateGrabber, getCreateDeviceList,"create:parrot|lena|cameraman|mandril:everywhere available test images source");
 
-  } // namespace io
-}
+  } // namespace icl::io

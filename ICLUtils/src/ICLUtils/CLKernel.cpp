@@ -8,9 +8,7 @@
 
 #include <cstring>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     struct CLKernel::Impl {
       cl_kernel kernel;
       cl_command_queue cmdQueue;
@@ -234,5 +232,4 @@ namespace icl {
       impl->setArgFloat3(idx, value);
     }
   }
-}
 #endif

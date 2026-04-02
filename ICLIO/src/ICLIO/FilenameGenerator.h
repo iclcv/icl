@@ -9,8 +9,7 @@
 #include <vector>
 #include <memory>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /** \cond */
     class FilenameGeneratorImpl;
     /** \endcond */
@@ -95,5 +94,4 @@ namespace icl{
       private:
       std::shared_ptr<FilenameGeneratorImpl> impl;
     };
-  } // namespace io
-}
+  } // namespace icl::io

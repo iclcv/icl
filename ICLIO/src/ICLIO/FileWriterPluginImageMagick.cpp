@@ -24,9 +24,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
   #ifdef ICL_HAVE_IMAGEMAGICK
 
 
@@ -187,5 +185,4 @@ namespace icl{
     void FileWriterPluginImageMagick::write(File&, const ImgBase*){}
   #endif
 
-  } // namespace io
-}
+  } // namespace icl::io

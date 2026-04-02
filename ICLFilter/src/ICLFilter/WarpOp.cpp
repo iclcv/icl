@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(WarpOp::Op op) {
       switch(op) {
         case WarpOp::Op::warp: return "warp";
@@ -113,5 +111,4 @@ namespace icl{
       impl->apply(src, dst, cwm, warpOffset, m_scaleMode);
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

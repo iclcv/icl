@@ -12,8 +12,7 @@
 #include <ipp.h>
 #endif
 
-namespace icl {
-  namespace utils{
+namespace icl::utils {
   #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiSize struct, defined in the ippi lib
     struct IppiSize {
@@ -192,5 +191,4 @@ namespace icl {
     /** also called in Size::Size(const std::string&)**/
     ICLUtils_API std::istream &operator>>(std::istream &is, Size &s);
 
-  } // namespace utils
-}// namespace icl
+  } // namespace icl::utils

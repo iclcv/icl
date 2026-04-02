@@ -12,9 +12,7 @@
 #include <ICLCore/ImageBackendDispatching.h>
 
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class for Morphological operations  \ingroup UNARY \ingroup NBH
     /** (Only available for Img8u and Img32f, IPP and fallback implementation)
 
@@ -153,5 +151,4 @@ namespace icl {
     /// ADL-visible toString for MorphologicalOp::Op (defined in MorphologicalOp.cpp)
     ICLFilter_API const char* toString(MorphologicalOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

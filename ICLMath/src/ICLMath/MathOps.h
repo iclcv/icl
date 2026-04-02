@@ -7,9 +7,7 @@
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     /// Selector keys for math backend dispatch.
     /// Used by MathOps<T> singletons (one per scalar type).
     enum class MathOp : int {
@@ -66,5 +64,4 @@ namespace icl {
       static MathOps& instance();
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

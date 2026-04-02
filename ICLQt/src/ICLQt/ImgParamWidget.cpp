@@ -15,9 +15,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     ImgParamWidget::ImgParamWidget(QWidget *parent):QWidget(parent){
 
       m_poLayout = new QHBoxLayout;
@@ -149,5 +147,4 @@ namespace icl{
       m_iDepth = static_cast<int>(d);
       emit somethingChanged(m_iWidth,m_iHeight, m_iDepth, m_iFormat);
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

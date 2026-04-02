@@ -21,9 +21,7 @@
 #   include <sys/time.h>
 #endif
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
      const Time Time::null(0);
 
      Time::Time() :
@@ -197,5 +195,4 @@ namespace icl {
     std::istream& operator>>(std::istream& in, Time &t){
       return in >> t.m_usec;
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

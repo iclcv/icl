@@ -12,9 +12,7 @@ using namespace icl::math;
 using namespace icl::qt;
 #endif
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     const double SoftPosit::betaUpdate = 1.05;
 
     const double SoftPosit::betaZero = 0.0004;
@@ -625,5 +623,4 @@ namespace icl{
       Thread::msleep(delay);
     }
 #endif
-  } // namespace geom
-}
+  } // namespace icl::geom

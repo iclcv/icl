@@ -7,10 +7,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLIO/GenericImageOutput.h>
 
-namespace icl{
-
-  namespace physics{
-
+namespace icl::physics {
     class SceneMultiCamCapturer {
       std::vector<int> camIndices;
       geom::Scene *scene;
@@ -32,4 +29,3 @@ namespace icl{
       void capture();
     };
   }
-}

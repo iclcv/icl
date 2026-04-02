@@ -1,5 +1,6 @@
 #include <ICLGeom/Geom.h>
 #include <ICLQt/Common.h>
+#include <algorithm>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLPhysics/PhysicsScene.h>
 #include <ICLPhysics/RigidBoxObject.h>
@@ -29,7 +30,7 @@ void init(){
 }
 
 double fun(double val) {
-  return std::max(std::min(1.,val*5),-1.);
+  return std::clamp(val*5, -1., 1.);
 }
 
 utils::Time start = utils::Time::now();

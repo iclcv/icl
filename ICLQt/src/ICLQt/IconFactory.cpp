@@ -12,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::qt;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     static const char *ICL_WINDOW_ICON[] = {
 
       "32 32 596 2","er c #4b6f7b","#z c #4f7f99","#Z c #4f8fb4","#Y c #4fa2ca",".o c #504a49","a0 c #5199b6",
@@ -1243,6 +1241,3 @@ namespace icl{
       return it->second;
     }
   }
-
-
-}

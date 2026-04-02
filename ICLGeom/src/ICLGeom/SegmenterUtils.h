@@ -8,9 +8,7 @@
 #include <ICLCore/DataSegment.h>
 #include <ICLCore/Channel.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Support class for segmentation algorithms.
     /** This class provides supporting methods for segmentation algorithms.*/
 
@@ -148,5 +146,4 @@ namespace icl{
 
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

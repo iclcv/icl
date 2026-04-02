@@ -32,9 +32,7 @@
 #include <ICLPhysics/Constraint.h>
 #include <mutex>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     struct PhysicsWorld::Data{
       btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
       btBroadphaseInterface* m_broadphase;
@@ -396,4 +394,3 @@ namespace icl{
     }
 
   }
-}

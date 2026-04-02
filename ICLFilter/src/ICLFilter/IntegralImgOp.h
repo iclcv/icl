@@ -10,8 +10,7 @@
 #include <vector>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// class for creating integral images \ingroup UNARY
     /**
     The integral image A of an image a (introduced by Viola & Jones (2001) in the
@@ -104,5 +103,4 @@ namespace icl{
       core::depth m_integralImageDepth; //!< destination depth
       core::ImgBase *m_buf; //!< used only if IPP is available
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

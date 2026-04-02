@@ -9,9 +9,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Class that implements dithering mechanisms
     /** Dithering techniques approximate gray-scale values using black and white patterns.
 
@@ -90,5 +88,4 @@ namespace icl{
       Algorithm m_algorithm;
       int m_levels;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

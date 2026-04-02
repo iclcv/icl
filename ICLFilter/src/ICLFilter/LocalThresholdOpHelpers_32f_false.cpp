@@ -4,10 +4,8 @@
 
 #include <ICLFilter/LocalThresholdOpHelpers.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     FAST_LT_DEFINITION
 
     INST_FAST_LT_FOR_SRC_TYPE(32f,false);
   }
-}

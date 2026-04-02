@@ -5,9 +5,7 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLUtils/Thread.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     namespace{
       struct StackedBoolTrueSetter{
         bool &m_b;
@@ -68,5 +66,4 @@ namespace icl{
       FPSEstimator::showFPS(text);
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

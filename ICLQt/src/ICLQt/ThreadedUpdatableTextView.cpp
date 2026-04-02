@@ -7,9 +7,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLQt/Application.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void ThreadedUpdatableTextView::appendTextFromOtherThread(const std::string &text){
       if(ICLApp::isGUIThreadActive()){
         append(text.c_str());
@@ -38,5 +36,4 @@ namespace icl{
           return QTextEdit::event(event);
       }
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

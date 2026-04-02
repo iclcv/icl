@@ -7,9 +7,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     bool line_segment_intersect(const utils::Point32f &a, const utils::Point32f &b,
                                 const utils::Point32f &c, const utils::Point32f &d,
                                 utils::Point32f *dst=0,
@@ -19,4 +17,3 @@ namespace icl{
     bool point_in_triangle(const utils::Point32f &p, const utils::Point32f &v1,
                            const utils::Point32f &v2, const utils::Point32f &v3);
   }
-}

@@ -14,9 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace color_format_converter{
 
       template<BayerConverter::bayerPattern P>
@@ -189,5 +187,4 @@ namespace icl{
 
       it->second(data,size,dst,&m_buffer);
     }
-  } // namespace io
-}
+  } // namespace icl::io

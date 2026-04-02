@@ -25,9 +25,7 @@
 
 // Note: ippm.h (IPP matrix module) was removed from modern IPP (oneAPI 2022+)
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// FixedMatrix base struct defining datamode enum \ingroup LINALG
     struct FixedMatrixBase{
       /// Optimized copy function template (for N>30 using std::copy, otherwise a simple loop is used)
@@ -1356,5 +1354,4 @@ namespace icl{
     template class ICLMath_API FixedMatrix<double, 3, 3>;
 #endif
 
-  } // namespace math
-}
+  } // namespace icl::math

@@ -4,9 +4,7 @@
 
 #include <ICLMath/MathOps.h>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     const char* toString(MathOp op) {
       switch(op) {
         case MathOp::mean:              return "mean";
@@ -49,5 +47,4 @@ namespace icl {
     template struct MathOps<float>;
     template struct MathOps<double>;
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

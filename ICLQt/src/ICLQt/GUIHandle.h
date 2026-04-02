@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIHandleBase.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Abstract base class for Handle classes \ingroup HANDLES
     template <class T>
     class GUIHandle : public GUIHandleBase{
@@ -48,5 +47,4 @@ namespace icl{
       /// wrapped component
       T *m_poContent;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

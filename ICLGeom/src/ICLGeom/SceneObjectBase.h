@@ -16,9 +16,7 @@
 #include <mutex>
 #include <ICLQt/GLFragmentShader.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class Scene;
     /** \endcond */
@@ -34,7 +32,5 @@ namespace icl{
     };
 
 
-  } // namespace geom
-}
-
+  } // namespace icl::geom
 #endif

@@ -10,8 +10,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace icl {
-  namespace utils{
+namespace icl::utils {
     /// Base class for Exception handling in the ICL \ingroup EXCEPT
     class ICLException : public std::runtime_error
     {
@@ -117,5 +116,4 @@ namespace icl {
   #define ICL_INVALID_FORMAT throw InvalidFormatException(ICL_FILE_LOCATION)
   #define ICL_INVALID_DEPTH  throw InvalidDepthException(ICL_FILE_LOCATION)
 
-  } // namespace utils
-}
+  } // namespace icl::utils

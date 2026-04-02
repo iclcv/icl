@@ -9,9 +9,7 @@
 #include <ICLGeom/ViewRay.h>
 #include <vector>
 
-namespace icl{
-  namespace geom {
-
+namespace icl::geom {
     /// Special Octree implemenation that supports to query points close to caste rays
     /** The RayCastOctreeObject defines all template parameters of the more general
         OctreeObject class, while preserving the super classe's interface, it adds
@@ -81,4 +79,3 @@ namespace icl{
     };
 
   }
-}

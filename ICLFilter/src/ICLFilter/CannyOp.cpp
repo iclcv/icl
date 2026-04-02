@@ -11,9 +11,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     void CannyOp::property_callback(const Property &p){
     }
 
@@ -327,5 +325,4 @@ namespace icl {
       return m_highT;
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

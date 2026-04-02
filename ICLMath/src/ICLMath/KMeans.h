@@ -9,10 +9,7 @@
 #include <ICLUtils/Point32f.h>
 #include <algorithm>
 
-namespace icl{
-  namespace math{
-
-
+namespace icl::math {
     /// Generic Implementation of the K-Means algorithm
     /** The K-Means algorithms performs vector quantisation in a very
         simple way. Given a set of data pointers xi, and starting with
@@ -153,4 +150,3 @@ namespace icl{
 
 
   }
-}

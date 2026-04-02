@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber class that grabs images from SharedMemorySegment instances
     /** Images that are published using the SharedMemoryPublisher can
         be grabbed with this grabber type. Please don't use this
@@ -48,5 +46,4 @@ namespace icl{
         static void resetBus(bool verbose);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

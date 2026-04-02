@@ -12,10 +12,7 @@
 #include <ICLUtils/Rect32f.h>
 
 
-namespace icl{
-
-  namespace core{
-
+namespace icl::core {
     class ICLCore_API AbstractCanvas {
       public:
       AbstractCanvas(const AbstractCanvas&) = delete;
@@ -203,4 +200,3 @@ namespace icl{
     };
 
   }
-}

@@ -10,9 +10,7 @@
 #include <queue>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace dc{
 
       /// Internal used utility class for fast handling of DMA buffers \ingroup DC_G
@@ -93,5 +91,4 @@ namespace icl{
         int m_iQueuedBuffers;
       };
     }
-  } // namespace io
-}
+  } // namespace icl::io

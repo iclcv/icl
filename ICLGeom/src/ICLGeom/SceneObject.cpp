@@ -18,9 +18,7 @@ using namespace icl::core;
 using namespace icl::qt;
 
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     const std::vector<Vec> &SceneObject::getVertices() const {
       return m_vertices;
     }
@@ -1492,5 +1490,4 @@ namespace icl{
         }
       }
     }
-  } // namespace geom
-}
+  } // namespace icl::geom

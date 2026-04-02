@@ -11,9 +11,7 @@
 
 
 #include <iostream>
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     PhysicsMouseHandler::PhysicsMouseHandler(const int pCameraIndex, geom::Scene *pParentScene, PhysicsWorld *pPhysicsWorld):
     SceneMouseHandler(pCameraIndex, pParentScene),
     m_parentScene(pParentScene),
@@ -87,4 +85,3 @@ namespace icl {
       }
     }
   }
-}

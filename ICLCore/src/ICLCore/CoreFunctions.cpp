@@ -15,9 +15,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     ImgBase *imgNew(depth d, const Size& size, format fmt, const Rect &roi){
       return imgNew(d, ImgParams(size, fmt, roi));
     }
@@ -462,5 +460,4 @@ namespace icl{
 
 
 
-  } // namespace core
-} //namespace
+  } // namespace icl::core

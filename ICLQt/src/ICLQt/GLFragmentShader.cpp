@@ -14,8 +14,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     static std::string shader_info(GLuint obj){
       int infologLength = 0;
       int charsWritten  = 0;
@@ -259,5 +258,4 @@ namespace icl{
       return new GLFragmentShader(m_data->vertexProgramString,m_data->fragmentProgramString,true);
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

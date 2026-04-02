@@ -8,9 +8,7 @@
 #include <ICLCV/RegionGrower.h>
 #include <ICLGeom/PlanarRansacEstimator.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     void RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
                           std::vector<std::vector<int> > &surfaces, std::vector<std::vector<int> > &segments, int minSize, float euclideanDistance, int radius, float assignEuclideanDistance, int supportTolerance){
       calculateLocalMinima(depthImage, maskImage, radius);
@@ -276,5 +274,4 @@ namespace icl{
       return true;
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

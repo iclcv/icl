@@ -55,8 +55,7 @@
 
 #include <ICLCV/CLSurfLibKernels.h>
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     namespace clsurf{
 
       const char *utilityKernels =
@@ -1197,4 +1196,3 @@ namespace icl{
 
     }
   }
-}

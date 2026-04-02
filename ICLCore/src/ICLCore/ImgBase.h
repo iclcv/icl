@@ -12,9 +12,7 @@
 #include <vector>
 #include <string>
 
-namespace icl {
-  namespace core{
-
+namespace icl::core {
     /// ImgBase is the Image-Interface class that provides save access to underlying Img-template \ingroup IMAGE \ingroup TYPES
     /** \section SEC1 Class
         The ImgBase class provides access to the following basic image features:
@@ -844,5 +842,4 @@ namespace icl {
 
     /// puts a string representation of the image into given steam
     ICLCore_API std::ostream &operator<<(std::ostream &s, const ImgBase &image);
-  } // namespace core
-}
+  } // namespace icl::core

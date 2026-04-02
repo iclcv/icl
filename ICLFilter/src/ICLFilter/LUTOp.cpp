@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(LUTOp::Op op) {
       switch(op) {
         case LUTOp::Op::reduceBits: return "reduceBits";
@@ -117,5 +115,4 @@ namespace icl{
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

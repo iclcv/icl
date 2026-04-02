@@ -17,8 +17,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     //#define USE_3D_VECS this is slower due to data alignment issues!
 
     typedef FixedColVector<float,4> ViewRayDir;
@@ -606,5 +605,4 @@ namespace icl{
       return m_data->textureIDs;
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

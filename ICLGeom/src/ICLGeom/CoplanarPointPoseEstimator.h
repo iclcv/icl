@@ -9,9 +9,7 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Configurable.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class Camera;
     /** \endcond */
@@ -172,5 +170,4 @@ namespace icl{
                                                    const utils::Point32f *normalizedImagePoints,
                                                    const Camera &cam);
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -7,8 +7,7 @@
 #include <ICLUtils/Macros.h>
 #include <unistd.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace dc{
 
       DCFrameQueue::DCFrameQueue(dc1394camera_t* c, DCDeviceOptions *options,int nDMABuffers, int nQueuedBuffers):
@@ -105,5 +104,4 @@ namespace icl{
 
 
     }
-  } // namespace io
-}
+  } // namespace icl::io

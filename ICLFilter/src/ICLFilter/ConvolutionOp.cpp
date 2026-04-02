@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(ConvolutionOp::Op op) {
       switch(op) {
         case ConvolutionOp::Op::apply: return "apply";
@@ -61,5 +59,4 @@ namespace icl{
       getSelector<ConvSig>(Op::apply).resolve(src)->apply(src, dst, *this);
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

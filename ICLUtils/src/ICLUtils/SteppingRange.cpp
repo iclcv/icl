@@ -5,9 +5,7 @@
 #include <ICLUtils/SteppingRange.h>
 #include <ICLUtils/StringUtils.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     template<class T>
     std::ostream &operator<<(std::ostream &s, const SteppingRange <T> &range){
       s << '[';
@@ -45,5 +43,4 @@ namespace icl{
   #undef ICL_INSTANTIATE_DEPTH
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

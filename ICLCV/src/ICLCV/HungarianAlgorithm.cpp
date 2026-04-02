@@ -12,9 +12,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     typedef Array2D<int> imat;
     typedef std::vector<int> vec;
 
@@ -476,5 +474,4 @@ namespace icl{
     template class ICLCV_API HungarianAlgorithm<icl32f>;
     template class ICLCV_API HungarianAlgorithm<icl64f>;
 
-  } // namespace cv
-}
+  } // namespace icl::cv

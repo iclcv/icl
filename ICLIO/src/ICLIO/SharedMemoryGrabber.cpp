@@ -16,9 +16,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
 
     static void addDevicesToList(std::vector<GrabberDeviceDescription> &deviceList){
@@ -235,5 +233,4 @@ namespace icl{
     REGISTER_GRABBER(sm,createSMGrabber, getSMDeviceList, "sm:shared memory segment name:Qt-based shared memory source");
     REGISTER_GRABBER_BUS_RESET_FUNCTION(sm,SharedMemoryGrabber::resetBus);
 
-  } // namespace io
-}
+  } // namespace icl::io

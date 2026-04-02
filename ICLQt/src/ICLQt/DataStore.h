@@ -11,10 +11,7 @@
 #include <functional>
 #include <ICLQt/MouseEvent.h>
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
     /** Adds an index operator[string] for direct access to contained values
      */
@@ -248,5 +245,4 @@ namespace icl{
       }
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

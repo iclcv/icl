@@ -10,9 +10,7 @@
 #include <vector>
 #include <memory>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /** \cond */
     class FileImpl;
     /** \endcond */
@@ -200,5 +198,4 @@ namespace icl{
       private:
       std::shared_ptr<FileImpl> impl;
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

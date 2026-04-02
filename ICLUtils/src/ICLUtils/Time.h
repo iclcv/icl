@@ -19,9 +19,7 @@
 #pragma once
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// ICL Time class (taken from the Ice lib) \ingroup TIME
     class ICLUtils_API Time {
       public:
@@ -272,5 +270,4 @@ namespace icl{
      /// reads Time instances value type from the stream
      ICLUtils_API std::istream& operator>>(std::istream&, Time&);
 
-  } // namespace utils
-} // End namespace icl
+  } // namespace icl::utils

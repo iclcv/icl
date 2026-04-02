@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/MatrixSubRectIterator.h>
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// Iterator class used to iterate through an Images ROI-pixels \ingroup IMAGE
     /**
     The ImgIterator is a utility to iterate line by line through
@@ -286,5 +285,4 @@ namespace icl{
         return math::MatrixSubRectIterator<Type>::getSubRectHeight();
       }
     };
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

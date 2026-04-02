@@ -33,12 +33,11 @@
 #include <map>
 #include <ICLGeom/ShaderUtil.h>
 
-namespace icl{
-    /** \cond */
-  namespace qt {class ICLDrawWidget;}
-    /** \endcond */
+/** \cond */
+namespace icl::qt { class ICLDrawWidget; }
+/** \endcond */
 
-  namespace geom{
+namespace icl::geom {
 
     /// Scene Implementation that is used to handle a list of objects and cameras
     /** The scene combines visual objects (icl::SceneObject) which define nodes of a <b>scene graph</b>
@@ -499,8 +498,6 @@ namespace icl{
       /// called from the SceneObject class
       static void freeDisplayList(void *handle);
     };
-  } // namespace geom
-
-}
+} // namespace icl::geom
 
 #endif

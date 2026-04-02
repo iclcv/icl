@@ -17,8 +17,7 @@ namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
   #endif
 #endif
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// encoding class for data-to-data jpeg compression
     class ICLIO_API JPEGEncoder {
       struct Data;  //!< pimpl type
@@ -53,5 +52,4 @@ namespace icl{
       void writeToFile(const core::ImgBase *image, const std::string &filename);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

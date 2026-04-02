@@ -10,9 +10,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace jpeg_encoder{
       struct MemDst {
         struct jpeg_destination_mgr mgr;
@@ -244,5 +242,4 @@ namespace icl{
       file.write(encoded.bytes,encoded.len);
       file.close();
     }
-  } // namespace io
-}
+  } // namespace icl::io

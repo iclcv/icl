@@ -5,9 +5,7 @@
 #include <ICLQt/SpinnerHandle.h>
 #include <QSpinBox>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void SpinnerHandle::setMin(int min){
       sb()->setMinimum(min);
     }
@@ -33,5 +31,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

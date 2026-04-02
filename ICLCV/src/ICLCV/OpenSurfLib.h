@@ -23,10 +23,7 @@
 #include <ICLCore/OpenCV.h>
 #include <ICLCV/SurfFeature.h>
 
-namespace icl{
-
-   namespace cv{
-
+namespace icl::cv {
      namespace opensurf{
 
        using Ipoint = SurfFeature;
@@ -282,6 +279,4 @@ namespace icl{
 
     } // end of namespace opensurf
 
-  } // end of namespace cv
-
-} // end of namespace icl
+  } // namespace icl::cv

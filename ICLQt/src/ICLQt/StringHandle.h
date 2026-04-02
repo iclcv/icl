@@ -13,9 +13,7 @@
 class QLineEdit;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class for handling "string" textfield components \ingroup HANDLES
     class ICLQt_API StringHandle : public GUIHandle<QLineEdit>{
       public:
@@ -44,5 +42,4 @@ namespace icl{
       private:
       std::string *m_str;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

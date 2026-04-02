@@ -20,8 +20,7 @@
   #undef max
 #endif
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     class ICLGeom_API SoftPosit{
       private:
       //M
@@ -181,5 +180,4 @@ namespace icl{
                      const math::DynMatrix<icl64f> &projWorldPts, const math::DynMatrix<icl64f> &worldAdj, unsigned int delay=200);
 #endif
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

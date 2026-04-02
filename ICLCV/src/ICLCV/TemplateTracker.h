@@ -8,10 +8,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Point32f.h>
 #include <ICLCore/Img.h>
-namespace icl{
-  namespace cv{
-
-
+namespace icl::cv {
     /// Utility class vor viewbased template tracking
     /** TODO: add more documentation! */
     class ICLCV_API TemplateTracker : public utils::Configurable{
@@ -70,5 +67,4 @@ namespace icl{
 
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

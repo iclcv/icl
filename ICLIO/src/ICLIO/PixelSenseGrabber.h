@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// PixelSense Grabber class
     /** This grabber can be used to interface with devices implementing the
         Microsoft PixelSense technology, such as the Samsung SUR40 device.
@@ -67,5 +65,4 @@ namespace icl{
     /** relevant information is assumed to be comma delimited */
     ICLIO_API std::istream &operator>>(std::istream &str, PixelSenseGrabber::Blob &b);
 
-  } // namespace io
-}
+  } // namespace icl::io

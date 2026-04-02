@@ -4,8 +4,6 @@
 
 #include <ICLCV/RegionPCAInfo.h>
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     const RegionPCAInfo RegionPCAInfo::null;
-  } // namespace cv
-}
+  } // namespace icl::cv

@@ -12,9 +12,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     bool NeighborhoodOp::prepare(Image &dst, const Image &src) {
       return prepare(dst, src, src.getDepth());
     }
@@ -98,5 +96,4 @@ namespace icl {
       ImageSplitter::release(dsts);
 
     }
-  } // namespace filter
-}
+  } // namespace icl::filter

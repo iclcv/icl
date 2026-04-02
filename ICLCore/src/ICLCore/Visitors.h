@@ -26,9 +26,7 @@
 ///   ...PerChannel            — loop over all channels, one image
 ///   ...PerChannelWith        — loop over all channels, src + dst
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     // =================================================================
     //  visitROILines — single channel, single image
     // =================================================================
@@ -181,5 +179,4 @@ namespace icl {
       }
     }
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

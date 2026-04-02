@@ -19,10 +19,7 @@
 #include <QBrush>
 #include <QPainter>
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     /// The PlotWidget is an abstract base class for 2D plotting components
     /** \section _NONENCLATURE_ Nomenclature
 
@@ -377,5 +374,4 @@ namespace icl{
       p.drawConvexPolygon(e,4);
     }
     /** \endcond **/
-  } // namespace qt
-}
+  } // namespace icl::qt

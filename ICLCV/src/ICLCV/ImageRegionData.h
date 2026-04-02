@@ -15,9 +15,7 @@
 
 #include <set>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Utility class for shallow copied data of image region class  \ingroup G_RD
     /** Note: a nested class of ImageRegion is not possible as we need forward
         declarations of this class. Nested classes cannot be 'forward-declared' */
@@ -198,5 +196,4 @@ namespace icl{
       }
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

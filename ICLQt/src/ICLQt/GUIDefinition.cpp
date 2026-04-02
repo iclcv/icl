@@ -14,8 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     namespace{
 
       static std::string cutName(const std::string &s){
@@ -169,5 +168,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

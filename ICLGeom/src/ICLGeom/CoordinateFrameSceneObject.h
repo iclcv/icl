@@ -15,9 +15,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/SceneObject.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Special SceneObject implementation that define a visible coordinate frame
     /** The CoordinateFrameSceneObject is already integrated with the Scene
         class. Simply set scene.setDrawCoordinateFrameEnabled(true,l,t) to
@@ -71,7 +69,5 @@ namespace icl{
       /// returns current thickness of the axis'
       float getAxisThickness() const { return axisThickness; }
     };
-  } // namespace geom
-}
-
+  } // namespace icl::geom
 #endif

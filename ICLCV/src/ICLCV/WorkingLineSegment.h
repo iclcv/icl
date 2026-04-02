@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCV/LineSegment.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /** \cond */
     struct ImageRegionData;
     struct ImageRegionPart;
@@ -54,5 +52,4 @@ namespace icl{
     }
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

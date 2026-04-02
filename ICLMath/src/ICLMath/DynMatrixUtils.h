@@ -9,9 +9,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <algorithm>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /** @} @{ @name unary functions */
 
     /// Matrix initialization template \ingroup LINALG
@@ -419,5 +417,4 @@ namespace icl{
 
     /** @}*/
 
-  } // namespace math
-}
+  } // namespace icl::math

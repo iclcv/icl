@@ -15,9 +15,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     // ================================================================
     // Backend enum — values encode priority (higher = preferred).
     // Storage is a sorted vector, so the enum can grow freely without
@@ -71,9 +69,9 @@ namespace icl {
       void unforce() { forcedBackend = std::nullopt; }
 
       virtual std::unique_ptr<BackendSelectorBase> clone() const = 0;
-      virtual std::vector<Backend> registeredBackends() const = 0;
-      virtual Backend bestBackendFor(const Context& ctx) const = 0;
-      virtual std::vector<Backend> applicableBackendsFor(const Context& ctx) const = 0;
+      [[nodiscard]] virtual std::vector<Backend> registeredBackends() const = 0;
+      [[nodiscard]] virtual Backend bestBackendFor(const Context& ctx) const = 0;
+      [[nodiscard]] virtual std::vector<Backend> applicableBackendsFor(const Context& ctx) const = 0;
     };
 
     // Primary template declared so the partial specialization below can
@@ -373,5 +371,4 @@ namespace icl {
       std::vector<std::unique_ptr<BackendSelectorBase<Context>>> m_selectors;
     };
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

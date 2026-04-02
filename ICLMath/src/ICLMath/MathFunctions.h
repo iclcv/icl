@@ -10,8 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-namespace icl {
-  namespace math{
+namespace icl::math {
     /// Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
     /** @param v1Begin first element of v1
         @param v1End   end of v1 (points the first element behind v1)
@@ -127,5 +126,4 @@ namespace icl {
     }
 
 
-  } // namespace math
-} //namespace icl
+  } // namespace icl::math

@@ -10,9 +10,7 @@
 #include <ICLGeom/PlotWidget3D.h>
 #include <ICLGeom/PlotHandle3D.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Specialized 3D visualization component intended for 3D-box plots (needs ICLGeom-library to be linked)
     /** Creates a geom::PlotHandle3D, optimized for 3D-box plots. Internally, the created PlotWidget3D consists
         of an inherited ICLDrawWidget3D, a geom::Scene and a geom::Camera that are autpmatically created and
@@ -46,4 +44,3 @@ namespace icl{
     };
 
   }
-}

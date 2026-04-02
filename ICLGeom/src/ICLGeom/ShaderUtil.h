@@ -10,11 +10,11 @@
 
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-    /** \cond */
-  namespace qt {class GLFragmentShader;}
-    /** \endcond */
-  namespace geom{
+/** \cond */
+namespace icl::qt { class GLFragmentShader; }
+/** \endcond */
+
+namespace icl::geom {
 
     /** The ShaderUtil is an easy to use wrapper for activating the
         correct shader for the primitive that is to be rendered.*/
@@ -42,5 +42,4 @@ namespace icl{
       const Camera &getCurrentCamera() const;
       static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
     };
-  }
-}
+} // namespace icl::geom

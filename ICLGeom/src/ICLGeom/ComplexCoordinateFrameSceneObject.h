@@ -16,9 +16,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <mutex>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Special SceneObject implementation that define a visible coordinate frame
     /** In constrast to the <em>normal</em> CoordinateFrameSceneObject class, the
         ComplexCoordinateFrameSceneObject is build of cones and cylinders and
@@ -84,7 +82,5 @@ namespace icl{
       /// unlocks the internal mutex
       virtual void unlock() const override { mutex.unlock(); }
     };
-  } // namespace geom
-}
-
+  } // namespace icl::geom
 #endif

@@ -8,9 +8,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
 #if CV_MAJOR_VERSION < 4
     IplImage *ensureCompatible(IplImage **dst, int depth,const CvSize& size,int channels){
       if(!dst) {
@@ -463,5 +461,4 @@ ICL_INSTANTIATE_ALL_DEPTHS
 
 
 
-  } // namespace core
-}
+  } // namespace icl::core

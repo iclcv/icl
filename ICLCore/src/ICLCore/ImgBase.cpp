@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl {
-  namespace core{
-
+namespace icl::core {
     ImgBase::ImgBase(depth d, const ImgParams &params):m_oParams(params),m_eDepth(d) { }
 
     // --- shallow copy convenience wrappers ---
@@ -349,6 +347,4 @@ namespace icl {
   template ICLCore_API Img<icl##D> *ImgBase::convertROI<icl##D>(Img<icl##D> *poDst = nullptr) const;
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
-  } // namespace core
-
-} //namespace icl
+  } // namespace icl::core

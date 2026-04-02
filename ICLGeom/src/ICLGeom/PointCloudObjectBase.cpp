@@ -13,9 +13,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     void PointCloudObjectBase::customRender(){
       drawNormalLines();
 
@@ -778,5 +776,4 @@ namespace icl{
 
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -4,13 +4,11 @@
 
 #include <ICLQt/MouseHandler.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void MouseHandler::handleEvent(const MouseEvent &event){
       process(event);
     }
     void MouseHandler::process(const MouseEvent &event){
       if(m_handler)m_handler(event);
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

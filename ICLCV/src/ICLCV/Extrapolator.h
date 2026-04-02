@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// class for linear and quadatic extrapolation
     /** The Extrapolator class is designed as template and abstracts from
         the type of the values as well as from the type that is used to
@@ -93,5 +91,4 @@ namespace icl{
       */
       static  valueType predict(int n, valueType *xs, timeType *ts=0, timeType t=timeType(0));
     };
-  } // namespace cv
-}
+  } // namespace icl::cv

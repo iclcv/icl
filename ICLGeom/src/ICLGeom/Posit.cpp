@@ -10,9 +10,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     struct Posit::Data{
       typedef DynMatrix<float> DMat;
       int N;             // number of model points
@@ -242,5 +240,4 @@ namespace icl{
 
       return data->result;
     }
-  } // namespace geom
-}
+  } // namespace icl::geom

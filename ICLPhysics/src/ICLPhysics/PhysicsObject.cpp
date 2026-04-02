@@ -9,8 +9,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletSoftBody/btSoftBody.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     PhysicsObject::~PhysicsObject(){
       if(m_physicalObject) {
         // delete m_physicalObject->getCollisionShape(); this  is automatically deleted by the physical object!
@@ -180,4 +179,3 @@ namespace icl{
 			return m_id;
 		}
   }
-}

@@ -10,9 +10,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl {
-    namespace cv {
-
+namespace icl::cv {
     CurvatureExtractor::CurvatureExtractor(const uint32_t curv_radius,
                                      const uint32_t steps,
                                      const bool thinned_contour)
@@ -132,5 +130,4 @@ namespace icl {
         }
     }
 
-    } //cv
-} //icl
+    } // namespace icl::cv

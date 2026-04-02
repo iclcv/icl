@@ -7,9 +7,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <LinearMath/btMotionState.h>
 
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     class RigidObject;
 
     /// This class is a MotionState for updating SceneObjects to match the PhysicsObject state.
@@ -44,4 +42,3 @@ namespace icl {
       }
     };
   }
-}

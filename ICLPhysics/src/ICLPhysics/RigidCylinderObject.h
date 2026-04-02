@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/RigidObject.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// Cylinder with the features of a RigidObject
     class ICLPhysics_API RigidCylinderObject : public RigidObject{
       protected:
@@ -19,4 +18,3 @@ namespace icl{
 
     };
   }
-}

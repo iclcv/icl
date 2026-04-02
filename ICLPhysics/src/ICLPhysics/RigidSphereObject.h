@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/RigidObject.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// Sphere with the features of a RigidObject
     class ICLPhysics_API RigidSphereObject : public RigidObject{
       protected:
@@ -18,4 +17,3 @@ namespace icl{
       RigidSphereObject(float x, float y, float z, float r, float mass=1.0);
     };
   }
-}

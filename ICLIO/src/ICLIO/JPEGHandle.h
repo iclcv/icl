@@ -14,9 +14,7 @@
 
 
 /** \cond  this is not commented, because this are only support structs and functions */
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     // returns controll to the caller
     struct icl_jpeg_error_mgr : jpeg_error_mgr {
       jmp_buf setjmp_buffer;
@@ -37,17 +35,14 @@ namespace icl{
       struct icl_jpeg_error_mgr     em;
     };
 
-  } // namespace io
-}// namespace icl
+} // namespace icl::io
 
 /** \endcond */
 
 #else // not ICL_HAVE_LIBJPEG
-namespace icl{
-  namespace io{
+namespace icl::io {
     /** \cond */
     struct JPEGDataHandle{};
     /** \endcond */
-  } // namespace io
-}
+} // namespace icl::io
 #endif // not ICL_HAVE_LIBJPEG

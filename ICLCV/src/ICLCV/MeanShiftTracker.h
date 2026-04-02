@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
-namespace icl {
-  namespace cv{
-
+namespace icl::cv {
     /** MeanShiftTracker
 
         The MeanShiftTracker is a tracking component using the MeanShift algorithm.
@@ -148,5 +146,4 @@ namespace icl {
       const utils::Point32f step(const core::Img32f &weigthImage, const utils::Point32f &initialPoint,  int maxCycles=-1, float convergenceCriterion=1.0, bool *converged=0);
 
     };
-  } // namespace cv
-}
+  } // namespace icl::cv

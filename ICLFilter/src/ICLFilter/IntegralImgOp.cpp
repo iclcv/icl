@@ -9,10 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
-
+namespace icl::filter {
     IntegralImgOp::IntegralImgOp(depth d):
       m_integralImageDepth(d),m_buf(0){
     }
@@ -131,5 +128,4 @@ namespace icl{
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

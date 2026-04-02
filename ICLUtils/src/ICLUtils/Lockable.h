@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <mutex>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Interface for objects that can be locked using an internal mutex \ingroup THREAD
     /** Uses std::recursive_mutex internally so that nested locking
         by the same thread is always safe. */
@@ -35,5 +33,4 @@ namespace icl{
       std::recursive_mutex &getMutex() const { return m_mutex; }
     };
 
-  } // namespace utils
-}
+  } // namespace icl::utils

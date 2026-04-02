@@ -8,9 +8,7 @@
 #include <ICLCore/Converter.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Special converter "producing" images with fixed parameters
     /** This class can be used to convert images with arbitrary params
         and depth to well defined fixed params and depth. Its functionality
@@ -71,5 +69,4 @@ namespace icl{
       depth m_eDepth;
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

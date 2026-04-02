@@ -4,9 +4,7 @@
 
 #pragma once
 
-namespace icl {
-namespace qt {
-
+namespace icl::qt {
 /// Default dark-mode stylesheet applied to all ICL Qt applications.
 /// Disable with environment variable ICL_THEME=none.
 /// Load a custom .qss file with ICL_THEME=/path/to/style.qss.
@@ -734,5 +732,4 @@ QWidget:focus {
 )QSS";
 }
 
-} // namespace qt
-} // namespace icl
+} // namespace icl::qt

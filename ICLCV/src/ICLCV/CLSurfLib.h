@@ -66,9 +66,7 @@
 #include <ICLUtils/CLBuffer.h>
 #endif
 
-namespace icl{
-
-  namespace cv{
+namespace icl::cv {
     namespace clsurf{
 
       /// again, we use the generic Ipoint here!
@@ -138,4 +136,3 @@ namespace icl{
 
     }
   }
-}

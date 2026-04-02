@@ -9,9 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Generic implementation of D to K dim Self Organizing Map (SOM)
     /** Input dimension as well as output dimension is freely configurable, i.e. SOM
         neurons can be aligned in a K dimensional grid with arbitrary cell count for
@@ -161,5 +159,4 @@ namespace icl{
     };
 
 
-  } // namespace math
-}
+  } // namespace icl::math

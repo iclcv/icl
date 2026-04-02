@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     template <class T, class D>
     void apply_ws(const Img<T> &src, Img<D> &dst, const std::vector<D> &weights) {
       const ImgIterator<T> itSrc = src.beginROI(0);
@@ -61,5 +59,4 @@ namespace icl {
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

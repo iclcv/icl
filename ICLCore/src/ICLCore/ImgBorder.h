@@ -8,9 +8,7 @@
 #include <ICLCore/Img.h>
 
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Class to setup an images border pixels
     /** Border pixels are all pixels, that are not within the images ROI.
         The ImgBorder class provides three different strategies to setup
@@ -74,5 +72,4 @@ namespace icl{
       static void fromOther(ImgBase *poImage, ImgBase* poOther);
 
     };
-  } // namespace core
-}
+  } // namespace icl::core

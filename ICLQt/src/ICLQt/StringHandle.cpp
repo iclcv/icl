@@ -7,9 +7,7 @@
 #include <QLineEdit>
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void StringHandle::operator=(const std::string &text){
       (**this)->setText(text.c_str());
       getGUIWidget()->getGUI()->lockData();
@@ -27,5 +25,4 @@ namespace icl{
       const_cast<StringHandle*>(this)->getGUIWidget()->getGUI()->unlockData();
       return s;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

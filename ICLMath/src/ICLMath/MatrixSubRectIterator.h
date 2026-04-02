@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <iterator>
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     /// Iterator class used to iterate through a sub rect of 2D data
     /**
         The MatrixSubRectIterator is a utility to iterate line by line through
@@ -267,5 +266,4 @@ namespace icl{
       mutable Type *m_currLineEnd;
 
     };
-  } // namespace math
-}
+  } // namespace icl::math

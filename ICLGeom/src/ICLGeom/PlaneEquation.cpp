@@ -4,8 +4,7 @@
 
 #include <ICLGeom/PlaneEquation.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     PlaneEquation::PlaneEquation(const Vec &offset, const Vec &normal):
       offset(offset),normal(normal){
     }
@@ -14,5 +13,4 @@ namespace icl{
       return s << "PlaneEquation( <X- " << p.offset.transp() << "," << p.normal.transp() << "> = 0)";
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

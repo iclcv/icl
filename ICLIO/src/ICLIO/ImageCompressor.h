@@ -8,8 +8,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// Encoder class for optimized encoding of images
     /** The ImageCompressor class allows for simple and for optimized serialization and
         desirealization of images
@@ -226,5 +225,4 @@ namespace icl{
       const core::ImgBase *uncompress(const icl8u *compressedData, int len, core::ImgBase **dst=0);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

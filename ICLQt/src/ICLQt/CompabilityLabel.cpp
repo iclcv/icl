@@ -5,9 +5,7 @@
 #include <ICLQt/CompabilityLabel.h>
 #include <QPainter>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     CompabilityLabel::CompabilityLabel(const QString &text, QWidget *parent):
       ThreadedUpdatableWidget(parent),m_sText(text),m_alignment(Qt::AlignCenter){
       setAttribute(Qt::WA_StyledBackground, false);
@@ -58,5 +56,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

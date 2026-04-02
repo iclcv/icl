@@ -9,9 +9,7 @@
 #include <ICLPhysics/RigidObject.h>
 #include <vector>
 
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     /// Base Class for constraints
     class ICLPhysics_API Constraint{
       public:
@@ -40,4 +38,3 @@ namespace icl {
       std::vector<RigidObject*>& getObjects();
     };
   }
-}

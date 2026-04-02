@@ -12,9 +12,7 @@ using namespace icl::core;
 #define ICL_FOURCCC(c1,c2,c3,c4)                                        \
   (((c1)&255) + (((c2)&255)<<8) + (((c3)&255)<<16) + (((c4)&255)<<24))
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     OpenCVVideoWriter::OpenCVVideoWriter(const std::string &filename, const std::string &fourcc,
                                          double fps, Size frame_size, int frame_color){
       if(File(filename).exists()){
@@ -57,6 +55,4 @@ namespace icl{
       write(image);
       return *this;
     }
-  } // namespace io
-
-}
+  } // namespace icl::io

@@ -16,9 +16,7 @@
 #include <ICLGeom/SceneObject.h>
 
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// SceneObject specialization for grid like objects
     /** The GridSceneObject implements a 2D grid in 3D space. The grid consits of
         2D array of normal vectors. All attributes remain default SceneObject attributs.
@@ -68,7 +66,5 @@ namespace icl{
     };
 
 
-  } // namespace geom
-}
-
+  } // namespace icl::geom
 #endif

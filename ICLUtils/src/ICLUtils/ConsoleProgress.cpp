@@ -14,8 +14,7 @@ namespace{
 
   std::string PROGRESS_STR;
 }
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     void progress_init(const std::string &text){
 
       printf("\n");
@@ -54,5 +53,4 @@ namespace icl{
       }
 
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

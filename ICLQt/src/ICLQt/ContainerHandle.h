@@ -8,8 +8,7 @@
 #include <QWidget>
 #include <QtCore/QString>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Base class for Container like GUI handles as Box- or Tab widgets
     class ContainerHandle{
       protected:
@@ -32,5 +31,4 @@ namespace icl{
       }
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -13,8 +13,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     namespace{
       template<class T> inline T* deepcopy(const T*src, int dim){
         T *cpy = new T[dim];
@@ -209,5 +208,4 @@ namespace icl{
     }
 
 
-  } // namespace filter
-}
+  } // namespace icl::filter

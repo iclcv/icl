@@ -15,9 +15,7 @@
 #include <ICLCore/Img.h>
 #include <ICLIO/ImageUndistortion.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /**
         This class implements the image undistortion procedure.
         It is a reimplementation from the matlab toolbox
@@ -320,5 +318,4 @@ namespace icl{
       static Result optimize(const CalibrationData &data);
 
     };
-  } // namespace io
-}
+  } // namespace icl::io

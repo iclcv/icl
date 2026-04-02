@@ -7,8 +7,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <LinearMath/btTransform.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
 	ICLPhysics_API extern float ICL_UNIT_TO_METER;
 	ICLPhysics_API extern float METER_TO_BULLET_UNIT;
     #define ICL_UNIT_TO_BULLET_UNIT (ICL_UNIT_TO_METER / METER_TO_BULLET_UNIT)
@@ -66,4 +65,3 @@ namespace icl{
     /// Creates an icl vector from a bullet vector WITH scaling.
     inline geom::Vec bullet2icl_scaled(const btVector3 &v) { return geom::Vec(bullet2icl(v[0]),bullet2icl(v[1]),bullet2icl(v[2]),1.0); }
   }
-}

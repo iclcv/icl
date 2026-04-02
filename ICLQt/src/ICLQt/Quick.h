@@ -10,18 +10,16 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace utils{}
-  namespace math{}
-  namespace core{}
-  namespace filter{}
-  namespace io{}
-  namespace qt{}
-  namespace geom{}
-  namespace cv{}
-  namespace markers{}
-  namespace physics{}
-}
+namespace icl::utils{}
+namespace icl::math{}
+namespace icl::core{}
+namespace icl::filter{}
+namespace icl::io{}
+namespace icl::qt{}
+namespace icl::geom{}
+namespace icl::cv{}
+namespace icl::markers{}
+namespace icl::physics{}
 
 #ifndef ICL_NO_USING_NAMESPACES
 using namespace icl;
@@ -38,8 +36,7 @@ using namespace icl::physics;
 #endif
 
 /// all ICLQuick functions are placed here
-namespace icl{
-  namespace qt{
+namespace icl::qt{
 
   #ifdef ICL_HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
@@ -833,5 +830,4 @@ namespace icl{
     /** @} **/
     /* }}} */
 
-  } // namespace qt
-}
+} // namespace icl::qt

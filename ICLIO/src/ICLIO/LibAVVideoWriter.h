@@ -8,9 +8,7 @@
 #include <ICLIO/ImageOutput.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class ICLIO_API LibAVVideoWriter :public ImageOutput{
       struct Data;
       Data *m_data;
@@ -49,5 +47,4 @@ namespace icl{
   	/// as write but in stream manner
     LibAVVideoWriter &operator<<(const core::ImgBase *image);
     };
-  } // namespace io
-}
+  } // namespace icl::io

@@ -9,9 +9,7 @@
 #include <ICLIO/FileGrabberPlugin.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
     /** This implementation of a file grabber class provides an internally used
         and expendable plugin-based interface for reading files of different types.
@@ -147,5 +145,4 @@ namespace icl{
         bool m_updatingProperties;
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

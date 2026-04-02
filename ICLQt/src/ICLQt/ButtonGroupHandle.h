@@ -13,9 +13,7 @@
 class QRadioButton;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// type definition for the ButtonGroup handle \ingroup HANDLES
     using RadioButtonVec = std::vector<QRadioButton*>;
 
@@ -69,5 +67,4 @@ namespace icl{
       const RadioButtonVec &vec() const { return const_cast<ButtonGroupHandle*>(this)->vec(); }
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

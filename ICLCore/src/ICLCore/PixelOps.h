@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Types.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// copies data from source to destination array (memcpy) \ingroup GENERAL
     /** Explicitly instantiated for all 5 ICL depth types.
         For performance-critical inner loops, consider using memcpy directly. */
@@ -22,5 +20,4 @@ namespace icl{
     template<class srcT, class dstT>
     ICLCore_API void convert(const srcT *poSrcStart, const srcT *poSrcEnd, dstT *poDst);
 
-  } // namespace core
-}
+  } // namespace icl::core

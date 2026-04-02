@@ -9,8 +9,7 @@
 #include <map>
 #include <cmath>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     const Size Size::null(0,0);
     const Size Size::QQVGA(160,120);
     const Size Size::CGA(320,200);
@@ -97,5 +96,4 @@ namespace icl{
       height = round(other.height);
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

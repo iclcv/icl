@@ -12,9 +12,7 @@
 
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     using namespace utils;
     using namespace core;
 
@@ -497,4 +495,3 @@ namespace icl{
       m_data->grids[idx].texture.reset(new Data::Texture(dim,lines));
     }
   }
-}

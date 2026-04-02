@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     MouseEvent::MouseEvent(const Point &widgetPos,
                            const Point &imagePos,
                            const Point32f &imagePos32f,
@@ -36,5 +34,4 @@ namespace icl{
 
       std::fill(m_downMask,m_downMask+3,false);
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

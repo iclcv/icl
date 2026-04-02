@@ -4,10 +4,7 @@
 
 #include <ICLGeom/OctreeObject.h>
 
-namespace icl{
-  namespace geom{
-
-
+namespace icl::geom {
     void octree_object_render_box(float x0, float y0, float z0,
                                   float x1, float y1, float z1){
       glColor4f(0,1,0,0.25);
@@ -54,4 +51,3 @@ namespace icl{
       glEnd();
     }
   }
-}

@@ -6,8 +6,7 @@
 #include <ICLQt/GLFragmentShader.h>
 #include <sstream>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     ShaderUtil::ShaderUtil():
       m_camera(0),
       m_shaders(0),
@@ -330,6 +329,3 @@ namespace icl{
 
 
   }
-
-
-}

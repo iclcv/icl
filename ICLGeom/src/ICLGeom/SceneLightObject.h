@@ -8,9 +8,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Scene.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// The scene light object looks like a light bulb and represents an OpenGL light
     /** This class is used by the Scene class to visualize lights in the 3D scene */
     class ICLGeom_API SceneLightObject : public SceneObject{
@@ -35,4 +33,3 @@ namespace icl{
     };
 
   }
-}

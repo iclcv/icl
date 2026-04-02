@@ -9,9 +9,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Simple object oriented thread class wrapping std::thread \ingroup THREAD
     /** Create a custom Thread class derived from this class,
         reimplement the virtual run() function and use start() and stop()
@@ -105,5 +103,4 @@ namespace icl{
       std::atomic<bool> m_running{false};
     };
 
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -11,9 +11,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::filter;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     struct HoughLineDetector::Data{
       float dRho;
       utils::Range32f rRange;
@@ -336,5 +334,4 @@ namespace icl{
     }
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

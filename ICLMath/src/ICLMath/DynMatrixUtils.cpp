@@ -45,10 +45,7 @@ using namespace icl::utils;
    ICLASSERT_THROW( m1.rows() == m2.rows(), IncompatibleMatrixDimensionException(__FUNCTION__) )
 
 
-namespace icl{
-  namespace math{
-
-
+namespace icl::math {
     ///////////////////////////////////////////////////////////////////////////
     // Dispatch functions: unary element-wise                                //
     ///////////////////////////////////////////////////////////////////////////
@@ -479,5 +476,4 @@ namespace icl{
     template ICLMath_API void svd_dyn(const DynMatrix<icl64f>&, DynMatrix<icl64f>&, DynMatrix<icl64f>&, DynMatrix<icl64f>&);
 
 
-  } // namespace math
-}
+  } // namespace icl::math

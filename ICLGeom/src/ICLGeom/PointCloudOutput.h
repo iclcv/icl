@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Generic interface for PointCloud sources
     struct PointCloudOutput{
       /// fills the given point cloud with grabbed information
@@ -18,5 +16,4 @@ namespace icl{
       /// virtual, but empty destructor
       virtual ~PointCloudOutput(){}
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

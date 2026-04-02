@@ -9,9 +9,7 @@
 #include <QtCore/QEvent>
 #include <string>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     class ICLQt_API ThreadedUpdatableTextView : public QTextEdit{
       static const QEvent::Type ADD_TEXT=static_cast<QEvent::Type>(QEvent::User+1);
       static const QEvent::Type CLEAR_TEXT=static_cast<QEvent::Type>(QEvent::User+2);
@@ -35,5 +33,4 @@ namespace icl{
       /// automatically called by Qt's event processing mechanism
       virtual bool event ( QEvent * event );
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

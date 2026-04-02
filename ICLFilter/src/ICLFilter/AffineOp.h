@@ -9,8 +9,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY
     /** @see AffineOp.h for full documentation */
     class ICLFilter_API AffineOp : public BaseAffineOp, public core::ImageBackendDispatching {
@@ -69,5 +68,4 @@ namespace icl{
     /// ADL-visible toString for AffineOp::Op (defined in AffineOp.cpp)
     ICLFilter_API const char* toString(AffineOp::Op op);
 
-  } // namespace filter
-}
+  } // namespace icl::filter

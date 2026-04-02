@@ -8,9 +8,7 @@
 #include <ICLFilter/BinaryOp.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// Class for comparing two images pixel-wise \ingroup BINARY
     class ICLFilter_API BinaryCompareOp : public BinaryOp, public core::ImageBackendDispatching {
       public:
@@ -44,5 +42,4 @@ namespace icl {
     /// ADL-visible toString for BinaryCompareOp::Op → registry name (defined in BinaryCompareOp.cpp)
     ICLFilter_API const char* toString(BinaryCompareOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

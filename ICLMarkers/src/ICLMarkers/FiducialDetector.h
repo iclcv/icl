@@ -17,8 +17,7 @@
 
 
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     /// Main Fiducial Detector class
     class ICLMarkers_API FiducialDetector : public utils::Configurable{
 
@@ -187,5 +186,4 @@ namespace icl{
       FiducialDetectorPlugin* getPlugin();
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

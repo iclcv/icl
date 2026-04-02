@@ -9,8 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     namespace{
       struct BinarySerializer : public std::vector<icl8u>{
         template<class T>
@@ -147,5 +146,4 @@ namespace icl{
     Time ImageSerializer::deserializeTimeStamp(const icl8u *data){
       return Time(*reinterpret_cast<const int64_t*>(data+9*sizeof(icl32s)));
     }
-  } // namespace core
-}
+  } // namespace icl::core

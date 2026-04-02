@@ -19,8 +19,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace dc{
 
   #define MODE_SWITCH(X) case X: return #X
@@ -750,5 +749,4 @@ namespace icl{
       }
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

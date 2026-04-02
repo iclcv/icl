@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     template<class T>
     void hline(const int color[4], const Img<T> &dst, int y, int x1, int x2){
       const int rgb[] = { color[0], color[1], color[2] }, alpha = color[3], beta = 255 - alpha;
@@ -319,4 +317,3 @@ namespace icl{
 
 
   }
-}

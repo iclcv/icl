@@ -15,9 +15,7 @@
 #include <fcntl.h>
 #include <assert.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct V4L2LoopBackOutput::Data{
       std::vector<icl8u> m_out;
       std::string m_device;
@@ -151,4 +149,3 @@ namespace icl{
       m_data->send(image);
     }
   }
-}

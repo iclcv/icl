@@ -9,9 +9,7 @@
 #include <ICLGeom/RGBDMapping.h>
 #include <ICLGeom/Camera.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class PointCloudCreator;
     /** \endcond */
@@ -128,5 +126,4 @@ namespace icl{
       virtual void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T);
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

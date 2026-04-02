@@ -14,9 +14,7 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/VisualizationDescription.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     class ICLCV_API ORBFeatureDetector : public utils::Configurable{
       struct Data;
       Data *m_data;
@@ -51,4 +49,3 @@ namespace icl{
       std::vector<Match> match(const FeatureSet &a, const FeatureSet &b);
     };
   }
-}

@@ -12,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     template<class T>
     const Img<T> &ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform, const Img<T> &src, const Size &resultSize){
       throw ICLException("ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform,...): this method is not yet implemented!");
@@ -401,4 +399,3 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace markers
-}

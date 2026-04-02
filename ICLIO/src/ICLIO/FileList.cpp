@@ -26,9 +26,7 @@
 #include <cstring>
 using namespace icl::utils;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace{
       inline void replace_newline (std::string::value_type& c) {
 
@@ -262,5 +260,4 @@ namespace icl{
       return sFileName;
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     DefineRectanglesMouseHandler::Options::Options(const Color4D &edgeColor,
                                                    const Color4D &fillColor,
                                                    const Color4D &centerColor,
@@ -457,5 +455,4 @@ namespace icl{
 
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

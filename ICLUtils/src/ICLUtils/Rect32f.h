@@ -11,10 +11,7 @@
 #include <stdio.h>
 #include <algorithm>
 
-namespace icl {
-  namespace utils{
-
-
+namespace icl::utils {
     /// Floating point precision implementation of the Rect class \ingroup TYPES
     class ICLUtils_API Rect32f{
       public:
@@ -213,5 +210,4 @@ namespace icl {
     ICLUtils_API std::istream &operator>>(std::istream &s, Rect32f &r);
 
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

@@ -15,8 +15,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/DataSegment.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     class ObjectEdgeDetectorPlugin {
 
      public:
@@ -164,6 +163,5 @@ namespace icl{
 
     };
   }
-}
 
 /** \endcond */

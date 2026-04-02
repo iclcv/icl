@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     template<class T>
     void ImgBorder::fixed(Img<T> *im, T* val){
     /** clear strategy:
@@ -244,5 +242,4 @@ namespace icl{
       }();
     }
 
-  } // namespace core
-}
+  } // namespace icl::core

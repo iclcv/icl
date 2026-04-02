@@ -11,8 +11,7 @@
 #include <string>
 #include <map>
 
-namespace icl{
-namespace physics{
+namespace icl::physics {
   struct ICLPhysics_API BendingConstraint{
     using LinkArray = btSoftBody::tLinkArray;
     using Material = btSoftBody::Material;
@@ -33,5 +32,4 @@ namespace physics{
 
     std::pair<geom::Vec,geom::Vec> getLine() const;
   };
-}
 }

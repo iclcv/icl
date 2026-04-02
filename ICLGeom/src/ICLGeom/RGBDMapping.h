@@ -8,10 +8,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/Array2D.h>
 
-namespace icl{
-  namespace geom{
-
-
+namespace icl::geom {
     /// Utility class for RGBDMapping
     /** For the mapping, two Camera instances are needed. The mapping computes
         the source color image positions for a given depth (x,y,d)-depth image pixel
@@ -72,4 +69,3 @@ namespace icl{
       }
     };
   }
-}

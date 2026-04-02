@@ -9,8 +9,7 @@
 #include <ICLUtils/Uncopyable.h>
 
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// General Image Converter
     /** The Converter wraps and summarizes all image conversion routines,
         including depth change, scaling and color conversion. It provides all
@@ -139,5 +138,4 @@ namespace icl{
       /// internal scalemode
       scalemode m_scaleMode;
     };
-  } // namespace core
-}
+  } // namespace icl::core

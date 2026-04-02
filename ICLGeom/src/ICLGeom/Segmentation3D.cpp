@@ -40,9 +40,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::cv;
 
-namespace icl {
-namespace geom {
-
+namespace icl::geom {
 #ifdef ICL_HAVE_OPENCL
 //OpenCL kernel code
 static char segmentationKernel[] =
@@ -1778,5 +1776,4 @@ float Segmentation3D::dist3(const Vec &a, const Vec &b) {
 	return norm3(a - b);
 }
 
-} // namespace geom
-}
+} // namespace icl::geom

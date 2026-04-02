@@ -13,9 +13,7 @@
 #include <string>
 #include <opencv2/videoio.hpp>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class ICLIO_API OpenCVVideoWriter :public ImageOutput{
       private:
       ///OpenCV VideoWriter struct
@@ -56,5 +54,4 @@ namespace icl{
   	/// as write but in stream manner
   	OpenCVVideoWriter &operator<<(const core::ImgBase *image);
     };
-  } // namespace io
-}
+  } // namespace icl::io

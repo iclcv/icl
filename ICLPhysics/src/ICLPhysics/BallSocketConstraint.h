@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/SixDOFConstraint.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     class RigidObject;
 
     /// This constraint simulates a ballsocket joint.
@@ -17,4 +16,3 @@ namespace icl {
       BallSocketConstraint(RigidObject* a, RigidObject* b, const geom::Vec &pivotInA, const geom::Vec &pivotInB, const bool useLinearReferenceFrameA = true);
     };
   }
-}

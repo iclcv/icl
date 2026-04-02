@@ -6,9 +6,7 @@
 
 #include <ICLIO/DC.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Utility struct for DC Camera device options \ingroup DC_G
     class DCDeviceOptions{
       public:
@@ -31,5 +29,4 @@ namespace icl{
       /// if set, each frame can be grabbed only once
       bool suppressDoubledImages;
     };
-  } // namespace io
-}
+  } // namespace icl::io

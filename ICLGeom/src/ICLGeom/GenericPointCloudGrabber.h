@@ -8,9 +8,7 @@
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Configurable.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Generic interface for PointCloud sources
     class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber {
       struct Data;
@@ -74,5 +72,4 @@ namespace icl{
       virtual const core::Img8u *getColorDisplay() const;
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

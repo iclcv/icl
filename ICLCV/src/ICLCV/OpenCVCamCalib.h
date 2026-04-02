@@ -14,9 +14,7 @@
 #include <ICLCore/OpenCV.h>
 
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Cameracalibration using OpenCV functions.
     class ICLCV_API OpenCVCamCalib {
 
@@ -74,5 +72,3 @@ namespace icl{
 
     };
   } // namespace geom
-
-}

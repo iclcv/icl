@@ -24,10 +24,7 @@
 
 #endif
 
-namespace icl{
-  namespace geom{
-
-
+namespace icl::geom {
     SceneLight::SceneLight(const SceneLight &other):index(other.index){
       memcpy(this,&other,sizeof(other));
       objectAnchor = 0;
@@ -285,5 +282,4 @@ namespace icl{
       lightObject->unlock();
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class ICLIO_API ImageUndistortion{
       public:
       struct Impl; //!< internal impl
@@ -56,5 +54,4 @@ namespace icl{
 
     /// overloaded istream operator for ImageUndistortion instances
     ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
-  } // namespace io
-}
+  } // namespace icl::io

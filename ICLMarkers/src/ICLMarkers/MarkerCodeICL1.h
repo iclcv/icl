@@ -9,9 +9,7 @@
 #include <vector>
 #include <iostream>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Utility class for markers of type "icl1"
     /** "icl1" markers have 4 section each containing 1 to 5
         child-regions. Therefore, each marker is completely defined
@@ -99,5 +97,4 @@ namespace icl{
     ICLMarkers_API std::ostream &operator<<(std::ostream &str, const MarkerCodeICL1 &c);
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

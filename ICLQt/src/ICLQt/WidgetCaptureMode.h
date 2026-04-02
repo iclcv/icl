@@ -4,12 +4,10 @@
 
 #pragma once
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     enum ICLWidgetCaptureMode{
       capturingStarted,
       capturingStopped,
       capturingPaused
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

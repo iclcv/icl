@@ -8,9 +8,7 @@
 #include <ICLUtils/Any.h>
 #include <map>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Utility structure that utilizes an std::map as parameter list
     /** The ParamList is supposed to be used in function interfaces
         for passing several parameters as one argument. Usually this
@@ -96,5 +94,4 @@ namespace icl{
     };
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

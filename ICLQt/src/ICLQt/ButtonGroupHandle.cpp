@@ -5,8 +5,7 @@
 #include <ICLQt/ButtonGroupHandle.h>
 #include <ICLUtils/Macros.h>
 #include <QRadioButton>
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void ButtonGroupHandle::select(int id){
       ICLASSERT_RETURN(valid(id));
       vec()[id]->setChecked(true);
@@ -58,5 +57,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

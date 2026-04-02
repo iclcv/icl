@@ -12,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     static std::string ICL_IMGBASE_STREAM_PREPEND = "icl.core.imgbase.";
 
     struct SharedMemoryPublisher::Data{
@@ -57,5 +55,4 @@ namespace icl{
       return m_data->mem.getName();
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

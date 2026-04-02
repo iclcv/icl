@@ -5,9 +5,7 @@
 #include <ICLGeom/ICP3D.h>
 #include <ICLGeom/PoseEstimator.h>
 
-namespace icl {
-	namespace geom {
-
+namespace icl::geom {
 		ICP3D::Result::Result()
 			: transformation(math::Mat4::id()),
 			  error(0.0f), iterations(0) {}
@@ -169,5 +167,4 @@ namespace icl {
 			octree = 0;
 		}
 
-	} // namespace geom
-} // namespace icl
+	} // namespace icl::geom

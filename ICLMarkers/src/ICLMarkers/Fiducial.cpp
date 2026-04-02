@@ -11,9 +11,7 @@ using namespace icl::math;
 using namespace icl::geom;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     const Fiducial::FeatureSet Fiducial::AllFeatures(std::string(static_cast<int>(Fiducial::FeatureCount),'1'));
 
     int Fiducial::getID() const{
@@ -64,5 +62,4 @@ namespace icl{
 
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

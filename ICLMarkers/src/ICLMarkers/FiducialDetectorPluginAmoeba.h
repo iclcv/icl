@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// FiducialDetectorPlugin for reacTIVision's 'amoeba' markers\ingroup PLUGINS
     class ICLMarkers_API FiducialDetectorPluginAmoeba : public FiducialDetectorPluginHierarchical{
       /// internal data class
@@ -48,5 +46,4 @@ namespace icl{
       */
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

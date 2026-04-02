@@ -10,9 +10,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::geom;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
    struct MultiCamFiducialDetector::Data{
       bool camsDeeplyCopied;
       std::vector<Camera*> cams;
@@ -201,5 +199,4 @@ namespace icl{
 
 
     REGISTER_CONFIGURABLE_DEFAULT(MultiCamFiducialDetector);
-  } // namespace markers
-}
+  } // namespace icl::markers

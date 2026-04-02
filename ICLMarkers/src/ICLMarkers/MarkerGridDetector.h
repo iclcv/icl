@@ -9,9 +9,7 @@
 #include <ICLUtils/ParamList.h>
 #include <ICLMarkers/FiducialDetector.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Utility class that allows a regular grid of fiducial markers to be tracked
     /** The MarkerGridDetector is initialized with a definition of a regular marker grid.
 
@@ -109,4 +107,3 @@ namespace icl{
       FiducialDetector *getFiducialDetector();
     };
   }
-}

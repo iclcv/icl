@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     const char* toString(BinaryLogicalOp::Op op) {
       switch(op) {
         case BinaryLogicalOp::Op::apply: return "apply";
@@ -38,5 +36,4 @@ namespace icl {
       getSelector<Sig>(Op::apply).resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
     }
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

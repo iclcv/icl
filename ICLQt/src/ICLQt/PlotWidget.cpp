@@ -8,10 +8,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     struct PlotWidget::Data{
       struct Buffer {
         std::shared_ptr<float[]> data;
@@ -303,5 +300,4 @@ namespace icl{
 
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

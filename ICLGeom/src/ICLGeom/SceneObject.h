@@ -20,9 +20,7 @@
 
 namespace icl{ namespace qt{ class GLFragmentShader; } }
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class Scene;
     class ShaderUtil;
@@ -836,5 +834,4 @@ namespace icl{
 
       float m_pointHitMaxDistance;
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

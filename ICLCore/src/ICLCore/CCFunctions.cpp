@@ -12,9 +12,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
   #define AVL ccAvailable
   #define IMU ccEmulated
   #define UAV ccUnavailable
@@ -5186,5 +5184,4 @@ namespace icl{
     }
 
 
-  } // namespace core
-}
+  } // namespace icl::core

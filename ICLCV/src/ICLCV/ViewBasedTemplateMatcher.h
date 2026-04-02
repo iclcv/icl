@@ -7,9 +7,7 @@
 #include <ICLCV/CV.h>
 #include <ICLUtils/UncopiedInstance.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// TemplateMatching class (wrapping UsefulFunctions::matchTemplate)
     class ICLCV_API ViewBasedTemplateMatcher{
       public:
@@ -59,5 +57,4 @@ namespace icl{
       std::vector<utils::Rect> m_vecResults; ///< internal result buffer
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

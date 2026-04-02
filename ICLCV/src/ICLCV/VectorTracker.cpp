@@ -15,8 +15,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     typedef VectorTracker::Vec Vec;
 
     static inline float square(const float &a){ return a*a; }
@@ -525,5 +524,4 @@ namespace icl{
     }
 
 
-  } // namespace cv
-} // namespace icl
+  } // namespace icl::cv

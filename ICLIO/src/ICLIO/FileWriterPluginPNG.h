@@ -8,9 +8,7 @@
 #include <ICLIO/FileWriterPlugin.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
     class FileWriterPluginPNG : public FileWriterPlugin{
       std::recursive_mutex mutex;
@@ -21,5 +19,4 @@ namespace icl{
       /// write implementation
       ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
     };
-  } // namespace io
-}
+  } // namespace icl::io

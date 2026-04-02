@@ -12,9 +12,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct DataSourceManager : public jpeg_source_mgr {
       JOCTET *given_data;
       //const JOCTET * next_input_byte; /* => next byte to read from buffer */
@@ -233,5 +231,4 @@ namespace icl{
       if (oInfo.channelCount == 3) ICL_DELETE_ARRAY( pcBuf );
 
     }
-  } // namespace io
-}
+  } // namespace icl::io

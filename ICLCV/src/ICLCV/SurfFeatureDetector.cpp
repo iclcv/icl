@@ -20,9 +20,7 @@
 #endif
 #endif
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     using namespace core;
     using namespace utils;
 
@@ -447,7 +445,3 @@ namespace icl{
       return matches;
     }
   }
-
-
-
-}

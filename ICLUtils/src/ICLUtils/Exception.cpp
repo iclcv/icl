@@ -14,14 +14,11 @@
 */
 
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
     void ICLException::report() {
        FUNCTION_LOG("");
 
        std::cout << "ICL Exception: " << what() << std::endl;
     }
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

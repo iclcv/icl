@@ -6,9 +6,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     const char* toString(LapackOp op) {
       switch(op) {
         case LapackOp::gesdd: return "gesdd";
@@ -42,5 +40,4 @@ namespace icl {
     template struct LapackOps<float>;
     template struct LapackOps<double>;
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

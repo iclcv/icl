@@ -6,11 +6,11 @@
 
 #include <ICLGeom/Geom.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom{
     class Scene;
-  }
-  namespace physics{
+} // namespace icl::geom
+
+namespace icl::physics{
 
     class PhysicsWorld;
     class PhysicsObject;
@@ -29,5 +29,4 @@ namespace icl{
 
     /// Creates primitives from blobs. The last blob is assumed to be the Table the objects rest on.
 	void ICLPhysics_API createObjectsFromBlobs(const std::vector< std::vector<int> > &indices, const std::vector<geom::Vec> &vertices, std::vector<PhysicsObject*> &objects);
-  }
-}
+} // namespace icl::physics

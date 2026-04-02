@@ -10,9 +10,7 @@
 #include <ICLCore/Image.h>
 #include <vector>
 
-namespace icl {
-namespace filter {
-
+namespace icl::filter {
   /// Temporal smoothing filter with motion detection.
   ///
   /// Maintains a ring buffer of recent frames per channel. For each pixel,
@@ -77,5 +75,4 @@ namespace filter {
     std::vector<ChannelState> m_channels;
   };
 
-} // namespace filter
-} // namespace icl
+} // namespace icl::filter

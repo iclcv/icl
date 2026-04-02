@@ -15,11 +15,12 @@
 #include <ICLFilter/UnaryCompareOp.h>
 
 #include <stdio.h>
+#include <algorithm>
 #include <ICLCore/Image.h>
 
 template<class T>
 inline unsigned char myclip(T x){
-  return x < 0.0 ? 0 : x > 255.0 ? 255 : x;
+  return static_cast<unsigned char>(std::clamp(x, T(0), T(255)));
 }
 
 template<class T>
@@ -46,9 +47,7 @@ inline void ppm_write(const icl::core::Img<T> &image, const std::string &filenam
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     LocalThresholdOp::LocalThresholdOp(unsigned int maskSize, float globalThreshold, float gammaSlope):
       m_roiBufSrc(0), m_roiBufDst(0),
       m_iiOp(new IntegralImgOp),
@@ -599,5 +598,4 @@ namespace icl{
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

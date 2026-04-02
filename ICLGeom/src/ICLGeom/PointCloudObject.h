@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/PointCloudObjectBase.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
     /** This class replaces the former implementations
         - PointcloudSceneObject
@@ -141,5 +139,4 @@ namespace icl{
 
 
 
-  } // namespace geom
-}
+  } // namespace icl::geom

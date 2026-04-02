@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPluginHierarchical.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /** \cond */
     class FiducialDetector;
     /** \endcond */
@@ -69,5 +67,4 @@ namespace icl{
 
 
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

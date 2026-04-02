@@ -5,8 +5,7 @@
 #include <ICLQt/Dragger.h>
 #include <ICLQt/DrawWidget.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void Dragger::draw( ICLDrawWidget *w ) const{
       w->color(c.r,c.g,c.b,c.a);
       if(dragged()){
@@ -20,5 +19,4 @@ namespace icl{
       w->line(p.x-d/2,p.y-d/2, p.x+d/2,p.y+d/2);
       w->line(p.x+d/2,p.y-d/2, p.x-d/2,p.y+d/2);
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -7,9 +7,7 @@
 #include <ICLMath/FixedMatrix.h>
 #include <ICLMath/FixedVector.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// another shortcut for 3D vectors
     using Vec3 = FixedColVector<icl32f,3>;
 
@@ -194,4 +192,3 @@ namespace icl{
     }
 
   }
-}

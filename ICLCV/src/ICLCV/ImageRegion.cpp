@@ -13,9 +13,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     namespace{
       template<class T>
       struct DrawLineSegment{
@@ -719,5 +717,4 @@ namespace icl{
       return m_data->meta;
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

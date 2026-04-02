@@ -6,8 +6,7 @@
 
 #include <ICLGeom/SceneObject.h>
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     /// local utility class
 	  class GridIndicatorObject : public geom::SceneObject{
       struct MarkerObj;
@@ -19,4 +18,3 @@ namespace icl{
     };
 
   }
-}

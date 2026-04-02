@@ -10,9 +10,7 @@
 #include <ICLCore/Color.h>
 #include <ICLCV/ImageRegion.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Utility class for region-based colored blob detection
     /** The SimpleBlobSearcher is a re-implementation of the
         RegionBasedBlobSearcher class. It provides less features, but
@@ -98,5 +96,4 @@ namespace icl{
     };
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

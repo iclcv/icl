@@ -10,9 +10,7 @@
 #include <ICLUtils/Time.h>
 #include <vector>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Utility class for binary Image Serialization
     /** Images are serialized into one binary data block as follows:
         <pre>
@@ -69,5 +67,4 @@ namespace icl{
       static utils::Time deserializeTimeStamp(const icl8u *data);
 
     };
-  } // namespace core
-}
+  } // namespace icl::core

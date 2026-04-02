@@ -10,9 +10,7 @@ using namespace icl::core;
 using namespace icl::math;
 using namespace icl::math::fft;
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     // ================================================================
     // Data — internal state (buffers + params)
     // ================================================================
@@ -510,5 +508,4 @@ namespace icl {
     template void BaseFFTOp::applyIfftShift(DynMatrix<icl32f>&);
     template void BaseFFTOp::applyIfftShift(DynMatrix<icl64f>&);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

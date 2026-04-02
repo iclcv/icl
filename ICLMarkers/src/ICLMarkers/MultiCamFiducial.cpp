@@ -11,9 +11,7 @@ using namespace icl::core;
 using namespace icl::cv;
 using namespace icl::geom;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     int MultiCamFiducial::getCamsFound() const{
       ICLASSERT_THROW(!isNull(), ICLException(str(__FUNCTION__)+": this is null"));
       return impl->numFound;
@@ -58,5 +56,4 @@ namespace icl{
     }
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

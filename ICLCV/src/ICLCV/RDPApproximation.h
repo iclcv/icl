@@ -11,9 +11,7 @@
 #include <ICLCore/Types.h>
 #include <vector>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Ramer-Douglas-Peucker algorithm
     /** The algorithm takes an array of contour points as input. If a polygon should be
         approximated, then the two farthest points are found approximately. This points divide
@@ -94,5 +92,4 @@ namespace icl{
       /// result list
       std::vector<utils::Point32f> approximation;
     };
-  } // namespace cv
-}
+  } // namespace icl::cv

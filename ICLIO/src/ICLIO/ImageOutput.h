@@ -8,9 +8,7 @@
 #include <ICLCore/Image.h>
 #include <ICLIO/ImageCompressor.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Minimal interface for image output classes
     /** The image output is used as generic interface for image sinks.
         Usually, it is recommended to use the GenericImageOutput class
@@ -38,5 +36,4 @@ namespace icl{
       /// provide the protectedly inherited image compressor options here
       using ImageCompressor::setCompression;
     };
-  } // namespace io
-}
+  } // namespace icl::io

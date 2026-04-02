@@ -16,9 +16,7 @@
 #include <functional>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class PaintEngine;
     class OSDGLButton;
@@ -338,5 +336,4 @@ namespace icl{
       /// creates internal event instance
       const MouseEvent &createMouseEvent(MouseEventType type);
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

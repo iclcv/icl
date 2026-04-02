@@ -26,9 +26,7 @@
 /// and the callback receives the entire channel as a single contiguous
 /// block (width * height), maximizing SIMD throughput.
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     namespace detail {
       template<class T, int N, class F, size_t... Is>
       void call_n(F &&f, const std::array<const T*, N> &ptrs, int w,
@@ -102,5 +100,4 @@ namespace icl {
       }
     }
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

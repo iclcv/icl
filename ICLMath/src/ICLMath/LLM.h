@@ -9,8 +9,7 @@
 #include <ICLUtils/Configurable.h>
 #include <vector>
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     /// Local Linear Map implementation (LLM)
     /** The LLM-network (Local Linear Maps) is a very powerful regression network that uses
         a superposition of linearily weighted gaussians as regression model:
@@ -296,5 +295,4 @@ namespace icl{
   #endif
     };
 
-  } // namespace math
-}
+  } // namespace icl::math

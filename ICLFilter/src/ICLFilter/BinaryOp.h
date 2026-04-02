@@ -8,8 +8,7 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/OpROIHandler.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Abstract base class for binary image operations \ingroup BINARY
     /** A list of all binary operators can be found here: \n
         \ref BINARY
@@ -143,5 +142,4 @@ namespace icl{
       /// internal image buffer which is used for the apply function without destination image argument
       core::ImgBase *m_buf;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

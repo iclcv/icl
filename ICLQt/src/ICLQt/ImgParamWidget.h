@@ -13,9 +13,7 @@ class QComboBox;
 class QHBoxLayout;
 /** \endcond **/
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Internally used widget to define image params \ingroup UNCOMMON
     class ICLQt_API ImgParamWidget : public QWidget{
       Q_OBJECT
@@ -42,5 +40,4 @@ namespace icl{
       QHBoxLayout *m_poLayout;
       int m_iWidth,m_iHeight,m_iDepth, m_iFormat;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

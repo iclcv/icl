@@ -12,8 +12,7 @@
 #include <vector>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /** \cond */
     class ConvolutionOp;
     /** \endcond */
@@ -187,5 +186,4 @@ namespace icl{
       std::vector<core::Image> m_vecResults;
       utils::Size m_oKernelSize;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

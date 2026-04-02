@@ -11,9 +11,7 @@
 #include <ICLUtils/CLIncludes.h>
 #include <string>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     /// Wrapper for an OpenCL Buffer
     /** Valid CLBuffer instances can only be created by a CLProgram instance.
         @see CLProgram for more details */
@@ -68,5 +66,4 @@ namespace icl {
 
     };
   }
-}
 #endif

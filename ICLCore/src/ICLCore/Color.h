@@ -9,9 +9,7 @@
 #include <ICLMath/FixedVector.h>
 #include <string>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Default color type of the ICL
     using Color = math::FixedColVector<icl8u,3>;
 
@@ -62,5 +60,4 @@ namespace icl{
     */
     Color ICLCore_API color_from_string(const std::string &name);
 
-  } // namespace core
-}
+  } // namespace icl::core

@@ -8,8 +8,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace io{
+namespace icl::io {
   namespace{
   const int NROWS = 1922;
   const int NCOLS = 30;
@@ -1965,6 +1964,4 @@ namespace icl{
       remove("./.tmp_image_buffer.jpg");
       return image->deepCopy();
     }
-  } // namespace io
-
-} // end namespace icl
+  } // namespace icl::io

@@ -12,8 +12,7 @@
 
 #include <queue>
 
-namespace icl {
-  namespace io{
+namespace icl::io {
     namespace pylon {
 
       /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
@@ -62,5 +61,4 @@ namespace icl {
     };
 
     }//namespace pylon
-  } // namespace io
-}//namespace icl
+  } // namespace icl::io

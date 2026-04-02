@@ -8,10 +8,7 @@
 #include <ICLCore/Line.h>
 #include <mutex>
 
-namespace icl{
-
-  namespace qt{
-
+namespace icl::qt {
     using namespace utils;
     using namespace core;
 
@@ -182,4 +179,3 @@ namespace icl{
     }
 
   }
-}

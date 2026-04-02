@@ -8,9 +8,7 @@
 
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     #ifdef ICL_HAVE_OPENCL
     //OpenCL kernel code
     static char RansacKernel[] =
@@ -1098,4 +1096,3 @@ namespace icl{
     }
 
   }
-}

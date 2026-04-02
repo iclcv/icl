@@ -11,9 +11,7 @@
 class QLineEdit;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class for handling "float" textfield components \ingroup HANDLES
     class ICLQt_API FloatHandle : public GUIHandle<QLineEdit> {
       public:
@@ -30,5 +28,4 @@ namespace icl{
       /// returns the current text as float
       float getValue() const;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

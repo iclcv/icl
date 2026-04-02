@@ -8,10 +8,7 @@
 #include <ICLMath/DynVector.h>
 #include <functional>
 
-namespace icl{
-  namespace math{
-
-
+namespace icl::math {
     /// Utility class implementing the multidimensional Levenberg Marquardt Algorithm for non-linear Optimization
     /** The well known Levenberg Marquardt algorithms (LMA) is used for non-linear parameter optimization.
         Given a function \f$ f : R^N \rightarrow R^O \f$, an intial set of parameters \f$ \beta_0 \f$ and
@@ -418,5 +415,4 @@ namespace icl{
       /// internal fit function using matrices
       Result fitMat(const Matrix &xs, const Matrix &ys, Params initParams);
     };
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

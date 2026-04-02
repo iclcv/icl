@@ -4,9 +4,7 @@
 
 #pragma once
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     enum PrimitiveType{
       vertexPrimitive   = 1<<0, //<! vertex
       linePrimitive     = 1<<1, //<! line primitive (adressing two vertices -> start and end position of the line)
@@ -18,5 +16,4 @@ namespace icl{
       noPrimitive       = 1<<7, //<! internally used type
       PRIMITIVE_TYPE_COUNT = 8  //<! also for internal use only
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

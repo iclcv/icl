@@ -25,9 +25,7 @@
 
 #include <ICLUtils/Any.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     ConfigFile::Maps *ConfigFile::getMapsInstance(){
       static std::shared_ptr<Maps> typeMap(new Maps);
       return typeMap.get();
@@ -420,5 +418,4 @@ namespace icl{
       }
       return ret;
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

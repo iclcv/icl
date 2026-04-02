@@ -6,9 +6,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImgBase.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     BinaryOp::BinaryOp():m_buf(0){
 
     }
@@ -75,5 +73,4 @@ namespace icl{
       return dst;
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

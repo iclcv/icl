@@ -9,9 +9,7 @@
 #include <vector>
 #include <mutex>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Extended ICLDrawWidget, able to draw 2D and 3D primitives using OpenGL
     /** Even though, it is possible to use the ICLDrawWidget3D for rendering
         3D stuff on top of an image directly, it is strongly recommended to use
@@ -59,5 +57,4 @@ namespace icl{
       /// internal mutex
       std::recursive_mutex m_linkMutex;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

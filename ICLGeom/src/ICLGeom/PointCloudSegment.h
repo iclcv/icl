@@ -7,8 +7,7 @@
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLUtils/Exception.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /// PointCloudSegment class used to describe data segments in the scene
     /** Extends the PointCloudObject class (which stores the points in unordered fashion)
 		  with some meta information about the point cloud,
@@ -78,4 +77,3 @@ namespace icl{
       return str << "AABB(min: " << a.min.transp() << "  max: " << a.max.transp() << ")";
     }
   }
-}

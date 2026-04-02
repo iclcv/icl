@@ -10,9 +10,7 @@
 #include <vector>
 #include <QtWidgets/QCheckBox>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
     class ICLQt_API CheckBoxHandle : public GUIHandle<QCheckBox>{
       public:
@@ -44,5 +42,4 @@ namespace icl{
       bool *m_stateRef;
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -12,9 +12,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     namespace {
 
       // ---- GEMM (identical CBLAS interface) ----
@@ -130,5 +128,4 @@ namespace icl {
       return 0;
     }();
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

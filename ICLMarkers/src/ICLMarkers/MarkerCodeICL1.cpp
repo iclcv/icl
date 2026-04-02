@@ -7,9 +7,7 @@
 
 #include <algorithm>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
 // compiler bug?: http://bytes.com/topic/c/answers/710704-const-static-initialization-visual-studio
 #ifndef ICL_SYSTEM_WINDOWS
     const int MarkerCodeICL1::P;
@@ -86,5 +84,4 @@ namespace icl{
 
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

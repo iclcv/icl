@@ -9,9 +9,7 @@
 #include <ICLCore/Img.h>
 #include <ICLMath/FixedMatrix.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// The ImageRectification class can be use to rectify an image quadrangle (IPP accellerated)
     /** The ImageRectification can be set up for automatic sorting of the given points (which is default).
         If this behaviour is disabled, the given points are not checked for their correct order.
@@ -65,4 +63,3 @@ namespace icl{
     };
 
   } // namespace markers
-}

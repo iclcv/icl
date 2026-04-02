@@ -15,9 +15,7 @@
 #include <ICLUtils/Time.h>
 #include <mutex>
 
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     namespace pylon {
 
       /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
@@ -127,5 +125,4 @@ namespace icl {
 
     using PylonGrabber = pylon::PylonGrabber;
 
-  } // namespace io
-} //namespace icl
+  } // namespace icl::io

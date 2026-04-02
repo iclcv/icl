@@ -25,10 +25,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     class ChromaWidget : public ICLDrawWidget, public MouseHandler{
       public:
       ChromaWidget(QWidget *parent = 0):ICLDrawWidget(parent){
@@ -387,5 +384,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

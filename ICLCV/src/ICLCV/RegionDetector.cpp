@@ -20,9 +20,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     namespace{
       struct JoinRegionsIf{
         ImageRegionPart *m_oldR;
@@ -390,5 +388,4 @@ namespace icl{
     }
 
     REGISTER_CONFIGURABLE_DEFAULT(RegionDetector)
-  } // namespace cv
-}
+  } // namespace icl::cv

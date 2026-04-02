@@ -11,9 +11,7 @@
 #include <vector>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Curvature Corner Detector
     /** Implementation of the Curvature Scale Space corner detection algorithm
         described in the paper "Corner detector based on global and local curvature properties",
@@ -200,4 +198,3 @@ namespace icl{
       bool useOpenCL; // in case of no support, this is always false
     };
   } // namespace core
-}

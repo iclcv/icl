@@ -19,8 +19,7 @@ namespace pugi{
 /** \endcond */
 
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /** \cond */
     /** \endcond */
     /** \endcond */
@@ -589,5 +588,4 @@ namespace icl{
     }
     /** \endcond */
 
-  } // namespace utils
-}
+  } // namespace icl::utils

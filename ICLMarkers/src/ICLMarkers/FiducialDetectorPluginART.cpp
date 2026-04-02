@@ -15,8 +15,7 @@ using namespace icl::geom;
 using namespace icl::io;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     static Img8u rotate(const Img8u &in){
       const Size s = in.getSize();
       Img8u out(Size(s.height,s.width),1);
@@ -372,5 +371,4 @@ namespace icl{
       r.scale(size);
       return r;
     }
-  } // namespace markers
-}
+  } // namespace icl::markers

@@ -11,9 +11,7 @@
 #include <string.h>
 #include <complex>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
   namespace fft{
 
   /// 2*PI
@@ -293,5 +291,4 @@ namespace icl{
   DynMatrix<std::complex<T2> > &joinComplex(const DynMatrix<T1> &real, const DynMatrix<T1> &im, DynMatrix<std::complex<T2> > &dst);
 
   } // namespace math
-}
 }

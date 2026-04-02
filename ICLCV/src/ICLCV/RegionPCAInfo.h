@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <cmath>
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     /// data-struct to represent local PCA information \ingroup G_RD
     class ICLCV_API RegionPCAInfo{
       public:
@@ -33,5 +32,4 @@ namespace icl{
       /// null PCAInfo
       static const RegionPCAInfo null;
     };
-  } // namespace cv
-}
+  } // namespace icl::cv

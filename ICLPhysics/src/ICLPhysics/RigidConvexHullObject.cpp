@@ -11,8 +11,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ICLPhysics/MotionState.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z,
                                                                const std::vector<int> &indices, const std::vector<geom::Vec> &vertices,
                                                                geom::Vec offset,
@@ -47,4 +46,3 @@ namespace icl{
       RigidConvexHullObject(x, y, z, indices, vertices, offset, mass);
     }
   }
-}

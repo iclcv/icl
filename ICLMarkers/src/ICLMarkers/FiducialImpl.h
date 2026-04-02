@@ -10,9 +10,7 @@
 
 #include <bitset>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Hidden implemetation for fiduical classes
     /** The FiducialImpl class works as data storage for the public
         Fiducial class. It also holds a back-reference to it's parent
@@ -134,5 +132,4 @@ namespace icl{
     };
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

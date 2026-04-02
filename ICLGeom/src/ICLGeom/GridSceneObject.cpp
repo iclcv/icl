@@ -9,8 +9,7 @@ using namespace icl::core;
 using namespace icl::math;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     void GridSceneObject::init(int nXCells, int nYCells, const std::vector<Vec> &allGridPoints, bool lines, bool quads){
       this->nXCells = nXCells;
       this->nYCells = nYCells;
@@ -63,5 +62,4 @@ namespace icl{
 
 
 
-  } // namespace geom
-}
+  } // namespace icl::geom

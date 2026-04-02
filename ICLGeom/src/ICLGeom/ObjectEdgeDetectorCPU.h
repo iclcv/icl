@@ -10,9 +10,7 @@
 
 #include <ICLGeom/ObjectEdgeDetectorPlugin.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     struct Vec4 {
 	    inline Vec4() {
 	    }
@@ -185,6 +183,5 @@ namespace icl{
 
     };
   }
-}
 
 /** \endcond */

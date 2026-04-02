@@ -12,9 +12,7 @@
 #include <functional>
 #include <iostream>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// The ProcessMonitor class grants access to processes memory and CPU usage
     /** Since querying process specific information is not standardized in C++,
         Only a Linux solution is provided yet.
@@ -92,5 +90,4 @@ namespace icl{
 
     /// overloaded ostream operator for the ProcessMonitor's Info data type
     ICLUtils_API std::ostream &operator<<(std::ostream &s, const ProcessMonitor::Info &info);
-  } // namespace utils
-}
+  } // namespace icl::utils

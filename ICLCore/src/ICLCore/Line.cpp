@@ -10,10 +10,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
-
+namespace icl::core {
     Line::Line(Point start, float arc, float length):
       start(start){
       end.x = start.x + static_cast<int>(cos(arc)*length);
@@ -81,5 +78,4 @@ namespace icl{
       return false;
     }
 
-  } // namespace core
-}
+  } // namespace icl::core

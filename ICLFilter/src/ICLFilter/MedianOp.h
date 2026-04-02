@@ -9,9 +9,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class that provides median filter abilities \ingroup UNARY \ingroup NBH
     /** The median class provides the ability for arbitrary
         mask sizes. Although the functionality of the IPP-optimized
@@ -257,5 +255,4 @@ namespace icl {
     /// ADL-visible toString for MedianOp::Op → registry name (defined in MedianOp.cpp)
     ICLFilter_API const char* toString(MedianOp::Op op);
 
-  } // namespace filter
-}
+  } // namespace icl::filter

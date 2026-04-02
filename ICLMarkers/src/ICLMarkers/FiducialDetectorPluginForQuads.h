@@ -8,9 +8,7 @@
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/QuadDetector.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /** \cond */
     class FiducialDetector;
     /** \endcond */
@@ -83,5 +81,4 @@ namespace icl{
       QuadDetector& getQuadDetector();
 
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

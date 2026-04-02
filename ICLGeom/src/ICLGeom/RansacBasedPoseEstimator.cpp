@@ -10,9 +10,7 @@
 #include <ICLMath/RansacFitter.h>
 #include <ICLGeom/CoplanarPointPoseEstimator.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     using namespace math;
     using namespace utils;
 
@@ -246,4 +244,3 @@ namespace icl{
     }
 
   }
-}

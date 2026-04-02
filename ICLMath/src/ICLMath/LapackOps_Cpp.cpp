@@ -15,9 +15,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     namespace {
 
       // ================================================================
@@ -641,5 +639,4 @@ namespace icl {
       return 0;
     }();
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

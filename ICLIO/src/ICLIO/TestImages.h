@@ -8,8 +8,7 @@
 #include <ICLCore/Img.h>
 #include <string>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// Utility class for creating test images \ingroup UTILS_G
     class ICLIO_API TestImages{
       public:
@@ -105,5 +104,4 @@ namespace icl{
 
 
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -10,8 +10,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     struct FiducialDetectorPluginHierarchical::Data{
       RegionDetector rd;
       std::vector<ImageRegion> results;
@@ -34,5 +33,4 @@ namespace icl{
     }
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

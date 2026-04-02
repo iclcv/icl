@@ -9,9 +9,7 @@
 #include <memory>
 #include <ICLIO/ImageOutput.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Generic Sink for images
     /** Like the GenericGrabber, the GenericImageOutput provides a string-configurable
         interface for arbitrary image sinks.
@@ -91,5 +89,4 @@ namespace icl{
         return impl->getCompression();
       }
     };
-  } // namespace io
-}
+  } // namespace icl::io

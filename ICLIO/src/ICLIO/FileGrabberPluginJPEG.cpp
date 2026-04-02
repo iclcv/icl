@@ -9,8 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
   #ifdef ICL_HAVE_LIBJPEG
     void FileGrabberPluginJPEG::grab(File &file, ImgBase **dest){
       JPEGDecoder::decode(file,dest);
@@ -27,5 +26,4 @@ namespace icl{
     }
   #endif
 
-  } // namespace io
-}// end of the namespace icl
+  } // namespace icl::io

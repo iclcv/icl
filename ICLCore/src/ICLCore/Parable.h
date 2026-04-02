@@ -8,9 +8,7 @@
 #include <ICLUtils/Point32f.h>
 #include <stdio.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Utility class for the parable-based chromaticity segmentation \ingroup UNCOMMON
     /** A parabolic function is defined by 3 parameters a,b and c:
         \f[
@@ -65,5 +63,4 @@ namespace icl{
       }
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

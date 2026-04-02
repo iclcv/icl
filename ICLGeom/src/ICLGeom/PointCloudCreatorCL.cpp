@@ -36,8 +36,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl {
-  namespace geom {
+namespace icl::geom {
     //OpenCL kernel code
     static char pointCloudCreatorKernel[] =
     "__kernel void                                                                                                              \n"
@@ -268,5 +267,4 @@ namespace icl {
       return clReady;
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

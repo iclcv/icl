@@ -5,9 +5,7 @@
 #include <ICLQt/SliderHandle.h>
 #include <ICLQt/ThreadedUpdatableSlider.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void SliderHandle::setMin(int min){
       (**this)->setMinimum(min);
     }
@@ -32,5 +30,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

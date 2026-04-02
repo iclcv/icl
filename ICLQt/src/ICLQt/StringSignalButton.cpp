@@ -4,9 +4,7 @@
 
 #include <ICLQt/StringSignalButton.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     StringSignalButton::StringSignalButton(const QString &text,QWidget *parent):
       QPushButton(text,parent)
     {
@@ -18,5 +16,4 @@ namespace icl{
       emit clicked(text());
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUI.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Special GUI extension, that mimics the GUIComponent interface
     /** The Container GUIComponent mimics the GUIComponent interface
         in order to provide a unified look and feel within a hierarchical
@@ -145,5 +144,4 @@ namespace icl{
 
 
 
-  } // namespace qt
-} // namespace icl
+  } // namespace icl::qt

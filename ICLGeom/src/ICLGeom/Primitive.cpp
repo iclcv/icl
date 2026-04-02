@@ -32,8 +32,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     AlphaFuncProperty::AlphaFuncProperty(){
       alphaFunc = static_cast<int>(GL_GREATER);
       alphaValue = 0.1;
@@ -635,5 +634,4 @@ namespace icl{
 
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

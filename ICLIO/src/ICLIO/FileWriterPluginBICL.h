@@ -9,9 +9,7 @@
 #include <ICLIO/ImageCompressor.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
     /** The bicl-core::format does also support saving image meta data */
     class ICLIO_API FileWriterPluginBICL : public FileWriterPlugin{
@@ -27,5 +25,4 @@ namespace icl{
       ImageCompressor compressor;
       std::recursive_mutex mutex;
     };
-  } // namespace io
-}
+  } // namespace icl::io

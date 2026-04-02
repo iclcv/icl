@@ -18,8 +18,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     struct ExecThread : public Thread{
       typedef void (*callback)(void);
       callback cb;
@@ -316,5 +315,4 @@ namespace icl{
   bool ICLApplication::isGUIThreadActive(){
     return QThread::currentThread() == QCoreApplication::instance()->thread();
   }
-} // namespace qt
-}
+} // namespace icl::qt

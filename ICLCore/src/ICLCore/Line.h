@@ -9,8 +9,7 @@
 #include <ICLUtils/Rect.h>
 #include <vector>
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
     /** This Line class provides basic abilities for the description of an abstract line.
         A line is defined by two Points "start" and "end" where each of this points is
@@ -102,5 +101,4 @@ namespace icl{
     /// istream operator
     ICLCore_API std::istream &operator>>(std::istream &s, Line &l);
 
-  } // namespace core
-}
+  } // namespace icl::core

@@ -8,9 +8,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/Macros.h>
 
-namespace icl {
-  namespace core{
-
+namespace icl::core {
     //forward declaration for the Image interface \ingroup TYPES
     class ImgBase;
 
@@ -99,5 +97,4 @@ namespace icl {
     /// return sizeof value for the given depth type \ingroup GENERAL
     ICLCore_API unsigned int getSizeOf(depth eDepth);
 
-  } // namespace core
-}
+  } // namespace icl::core

@@ -9,9 +9,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class IntrinsicCalibrator::Data{
     public:
       int bWidth;
@@ -1476,6 +1474,4 @@ namespace icl{
       }
       return calib.calibrate(I,W);
     }
-  } // namespace io
-
-}
+  } // namespace icl::io

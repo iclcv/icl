@@ -5,8 +5,7 @@
 #include <ICLIO/Grabber.h>
 #include <ICLUtils/Exception.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// Special Grabber implementation for Microsoft's Kinect2 Device
     /** This class implements ICL's Grabber interface for Microsofts Kinect2
         Device. Internally, it uses libfreenect to access the device. */
@@ -40,5 +39,4 @@ namespace icl{
        // void updateState();
 
     };
-  } // namespace io
-}
+  } // namespace icl::io

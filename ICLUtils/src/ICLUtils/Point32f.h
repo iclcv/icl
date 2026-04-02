@@ -8,9 +8,7 @@
 #include <ICLUtils/ClippedCast.h>
 #include <ICLUtils/Point.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Single precission 3D Vectors Point class of the ICL \ingroup TYPES
     class ICLUtils_API Point32f{
       public:
@@ -108,5 +106,4 @@ namespace icl{
     ICLUtils_API std::istream &operator>>(std::istream &s, Point32f &p);
 
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

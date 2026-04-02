@@ -8,9 +8,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class for creating a color distance map
     class ICLFilter_API ColorDistanceOp : public UnaryOp{
       public:
@@ -72,5 +70,4 @@ namespace icl {
       double m_threshold;
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

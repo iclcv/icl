@@ -9,8 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace io{
+namespace icl::io{
 
     namespace{
       bool is_trigger_name(const std::string &n, bool withPolarity=false){
@@ -132,8 +131,9 @@ namespace icl{
         }
       }
     }
-  }
-  namespace utils{
+} // namespace icl::io
+
+namespace icl::utils{
     std::string str(dc1394feature_t t){
 
   #define X(x) if(t==DC1394_FEATURE_##x) return #x;
@@ -160,8 +160,9 @@ namespace icl{
   #undef X
 
     //}}}
-  }
-  namespace io{
+} // namespace icl::utils
+
+namespace icl::io{
 
     std::string getSpecialInfoString(std::string name){
       const std::string f = name.substr(8);
@@ -317,5 +318,4 @@ namespace icl{
       DEBUG_LOG("called this. configurable of this will not work")
     }
 
-  } // namespace io
-}
+} // namespace icl::io

@@ -8,9 +8,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Size.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Utility class for pretty console output
     /** The text table implements a simple tabular structure
         (rows x colums cells that have string content).
@@ -140,5 +138,4 @@ namespace icl{
     inline std::ostream &operator<<(std::ostream &stream, const TextTable &t){
       return stream << t.toString();
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -17,11 +17,11 @@
 class btSoftBodyWorldInfo;
 /** \endcond */
 
-namespace icl{
-  namespace geom{
+namespace icl::geom{
     struct ViewRay;
-  }
-  namespace physics{
+} // namespace icl::geom
+
+namespace icl::physics{
 
     class PhysicsObject;
     class RigidObject;
@@ -117,5 +117,4 @@ namespace icl{
       /// returns an internal world-info struct
       btSoftBodyWorldInfo *getWorldInfo();
     };
-  }
-}
+} // namespace icl::physics

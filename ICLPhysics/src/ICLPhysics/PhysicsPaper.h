@@ -15,9 +15,7 @@
 class btSoftBody;
 /** \endcond */
 
-namespace icl{
-namespace physics{
-
+namespace icl::physics {
   /** \cond */
   class PhysicsWorld;
   /** \endcond */
@@ -106,5 +104,4 @@ namespace physics{
     void randomizeLinks();
 
   };
-}
 }

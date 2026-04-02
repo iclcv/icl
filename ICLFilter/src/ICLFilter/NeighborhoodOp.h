@@ -8,8 +8,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
     /// unary operators that work on each pixels neighborhood \ingroup UNARY \ingroup NBH
     /** The NeighborhoodOp class builds a base class for unary operations employing
         a filter mask which is moved over the ROI of the source image(s),
@@ -110,5 +109,4 @@ namespace icl {
       utils::Point m_oAnchor;    ///< anchor of filter mask
       utils::Point m_oROIOffset; ///< to-be-used ROI offset for source image
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

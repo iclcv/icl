@@ -13,10 +13,7 @@
 
 #include <vector>
 
-namespace icl{
-
-  namespace cv{
-
+namespace icl::cv {
     /// Utility class for estimation of compensation parameters of lens-distortion
     /** Internally, this is a wrapper class around OpenCV's cvCalibrateCamera2.
         For the calibration, a set of "grids", each consisting of a set of
@@ -107,5 +104,3 @@ namespace icl{
 
     };
   }
-
-}

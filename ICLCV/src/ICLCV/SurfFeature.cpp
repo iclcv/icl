@@ -6,9 +6,7 @@
 
 #include <ICLUtils/Macros.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     float SurfFeature::operator-(const SurfFeature &other) const{
       float sum=0.f;
       for(int i=0; i < 64; ++i){
@@ -42,4 +40,3 @@ namespace icl{
       return d;
     }
   }
-}

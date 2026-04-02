@@ -7,9 +7,7 @@
 #include <ICLCore/ChromaClassifier.h>
 #include <ICLCore/ChromaAndRGBClassifier.h>
 #include <ICLQt/SliderHandle.h>
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ChromaWidget;
     /** \endcond */
@@ -66,5 +64,4 @@ namespace icl{
       SliderHandle m_aoSliderHandles[2][3];
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

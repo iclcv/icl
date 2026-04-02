@@ -5,9 +5,7 @@
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/Macros.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     inline std::size_t find_str(const std::string &s, const std::string &pattern, std::size_t idx){
       return s.find(pattern,idx);
     }
@@ -96,5 +94,4 @@ namespace icl{
       return m_oTokens;
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

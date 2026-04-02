@@ -8,9 +8,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     namespace{
       template<class T>
       struct ConstAttrib : public PolynomialRegressionAttrib<T>{
@@ -331,4 +329,3 @@ namespace icl{
     template class ICLMath_API PolynomialRegression<float>;
     template class ICLMath_API PolynomialRegression<double>;
   }
-}

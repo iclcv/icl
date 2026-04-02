@@ -16,13 +16,11 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace qt{
-    /** \cond */
-    class GLImg;
-    /** \endcond */
-  }
-  namespace geom{
+/** \cond */
+namespace icl::qt { class GLImg; }
+/** \endcond */
+
+namespace icl::geom {
 
     /** \cond */
     class SceneObject;
@@ -249,7 +247,6 @@ namespace icl{
       /// sets all paramters to OpenGL's default values
       void reset();
     };
-  } // namespace geom
-}
+} // namespace icl::geom
 
 #endif

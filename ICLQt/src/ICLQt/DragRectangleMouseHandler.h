@@ -10,9 +10,7 @@
 #include <ICLCore/Color.h>
 #include <ICLQt/MouseHandler.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ICLDrawWidget;
     /** \endcond */
@@ -90,5 +88,4 @@ namespace icl{
       /// returns the minimum rectangle size
       inline int getMinDim() const{ return m_minDim; }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

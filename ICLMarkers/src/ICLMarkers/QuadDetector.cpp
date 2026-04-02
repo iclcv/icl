@@ -51,9 +51,7 @@ using namespace icl::filter;
 using namespace icl::geom;
 using namespace icl::cv;
 typedef FixedColVector<float, 2> Vec2;
-namespace icl {
-  namespace markers {
-
+namespace icl::markers {
     static void optimize_edges(std::vector<Point32f> &e4,
                                const std::vector<Point> &boundary);
 
@@ -922,5 +920,4 @@ namespace icl {
 
     REGISTER_CONFIGURABLE_DEFAULT(QuadDetector)
     ;
-  } // namespace markers
-}
+  } // namespace icl::markers

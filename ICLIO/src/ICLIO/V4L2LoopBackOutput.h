@@ -8,9 +8,7 @@
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLIO/ImageOutput.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// ImageOutput implementation for V4L2-Looback devices
     /** The V4L2LoopBackOutput allows you to send images through a V4L2 loopback device.
         Please don't mix these up with common web-cam devices.
@@ -59,4 +57,3 @@ namespace icl{
       virtual void send(const core::Image &image);
     };
   }
-}

@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/SixDOFConstraint.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     /// This constraint simulates a Slider joint.
     class ICLPhysics_API SliderConstraint: public SixDOFConstraint{
       int m_rotationAxis;
@@ -33,4 +32,3 @@ namespace icl {
       void setLinearLimits(float lower, float upper);
     };
   }
-}

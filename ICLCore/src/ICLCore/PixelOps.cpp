@@ -10,9 +10,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     // ================================================================
     // copy<T>: memcpy-based array copy
     // ================================================================
@@ -276,5 +274,4 @@ namespace icl{
     template void convert(const icl32f*, const icl32f*, icl8s*);
     template void convert(const icl64f*, const icl64f*, icl8s*);
 
-  } // namespace core
-}
+  } // namespace icl::core

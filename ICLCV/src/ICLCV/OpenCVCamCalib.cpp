@@ -9,9 +9,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     struct OpenCVCamCalib::Data{
       int bWidth;
       int bHeight;
@@ -196,5 +194,3 @@ namespace icl{
       cvSave( "Distortion.xml", m_data->distortion_coeffs );
     }
   } // namespace geom
-
-}

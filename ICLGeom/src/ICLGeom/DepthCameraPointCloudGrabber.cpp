@@ -19,9 +19,7 @@ using namespace icl::io;
 using namespace icl::qt;
 using namespace icl::filter;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     namespace{
       struct BlurTool : public filter::UnaryOp{
         std::shared_ptr<ConvolutionOp> c_3x3;
@@ -440,7 +438,4 @@ namespace icl{
                     "creation-string: depth-camera-type,depth-camera-id,depth-camera-calib-file"
                     "[,depth-camera-type,depth-camera-id,depth-camera-calib-file] use 'DEFAULT'"
                     "as calib-file name if you dont have a calib file.");
-  } // namespace geom
-
-
-}
+  } // namespace icl::geom

@@ -10,8 +10,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ICLPhysics/MotionState.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     RigidCompoundObject::RigidCompoundObject(float x, float y, float z, float mass){
       btCompoundShape *shape = new btCompoundShape();
       btTransform T;
@@ -58,4 +57,3 @@ namespace icl{
       SceneObject::removeAllChildren();
     }
   }
-}

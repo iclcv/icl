@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/ConvolutionOp.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Convolution using the ROI of an ICL image as its kernel \ingroup UNARY \ingroup NBH
     /** Sometimes it is useful to use the ROI of an ICL image directly as the
         convolution kernel, e.g. for template matching. Because the ROI may be
@@ -34,5 +33,4 @@ namespace icl{
       core::Img<icl32f> *poKernelBuf;
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

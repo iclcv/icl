@@ -9,9 +9,7 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Marker metrics for "icl1" markers
     /** each marker has
         - a border of width 1 unit -> root regions
@@ -66,5 +64,4 @@ namespace icl{
 
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

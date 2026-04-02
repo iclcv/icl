@@ -11,9 +11,7 @@
 #include <ICLCore/Line32f.h>
 #include <vector>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Special MouseHandler Implementation that allows several quadrangular grids to be defined
 	  class ICLQt_API AdjustGridMouseHandler : public MouseHandler, public utils::Lockable{
       struct Data;  //!< pimpl type
@@ -79,4 +77,3 @@ namespace icl{
       utils::VisualizationDescription vis() const;
     };
   }
-}

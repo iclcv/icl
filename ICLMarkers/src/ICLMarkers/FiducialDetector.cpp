@@ -21,9 +21,7 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::geom;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     struct Preprocessor{
       virtual const Img8u &pp(const ImgBase *src) = 0;
       virtual ~Preprocessor() {}
@@ -191,5 +189,4 @@ namespace icl{
 
     REGISTER_CONFIGURABLE_DEFAULT(FiducialDetector);
 
-  } // namespace markers
-}
+  } // namespace icl::markers

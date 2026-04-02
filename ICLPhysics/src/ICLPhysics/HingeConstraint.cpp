@@ -7,8 +7,7 @@
 #include <ICLPhysics/PhysicsDefs.h>
 #include <ICLPhysics/RigidBoxObject.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     HingeConstraint::HingeConstraint(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, int rotationAxis, const bool useLinearReferenceFrameA):
       SliderConstraint(a,b,frameInA,frameInB,rotationAxis,useLinearReferenceFrameA) {
       setLinearLowerLimit(geom::Vec(0,0,0));
@@ -21,4 +20,3 @@ namespace icl {
       setLinearUpperLimit(geom::Vec(0,0,0));
     }
   }
-}

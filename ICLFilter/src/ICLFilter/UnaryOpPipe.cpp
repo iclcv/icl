@@ -11,9 +11,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     UnaryOpPipe::UnaryOpPipe(){}
 
     UnaryOpPipe::~UnaryOpPipe(){
@@ -63,5 +61,4 @@ namespace icl{
       if(dstPtr) dst = core::Image(*dstPtr);
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

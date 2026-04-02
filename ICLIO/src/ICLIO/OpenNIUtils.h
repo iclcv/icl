@@ -15,9 +15,7 @@
 #include <set>
 #include <mutex>
 
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     namespace icl_openni {
 
       /// fills an core::core::Img<T> from OpenNI DepthMetaData
@@ -524,5 +522,4 @@ namespace icl {
 
     } // namespace icl_openni
 
-  } // namespace io
-} // namespace icl
+  } // namespace icl::io

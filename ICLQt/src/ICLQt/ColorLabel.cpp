@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     ColorLabel::ColorLabel(Color4D &color, bool useAlpha, QWidget *parent):
       ThreadedUpdatableWidget(parent),m_color(color),m_hasAlpha(useAlpha){}
 
@@ -90,5 +88,4 @@ namespace icl{
     bool ColorLabel::hasAlpha() const{
       return m_hasAlpha;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

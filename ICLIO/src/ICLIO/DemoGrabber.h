@@ -12,10 +12,7 @@
 #include <ICLIO/Grabber.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     /// Demo Grabber class providing am image with a moving rect
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It can be set up to work at a certain fps to avoid
@@ -74,5 +71,4 @@ namespace icl{
         void processPropertyChange(const utils::Configurable::Property &prop);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

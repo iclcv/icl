@@ -10,8 +10,7 @@
 #include <unistd.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     using namespace icl::io::dc;
     using namespace icl::utils;
     using namespace icl::core;
@@ -306,5 +305,4 @@ namespace icl{
     REGISTER_GRABBER_BUS_RESET_FUNCTION(dc,DCGrabber::dc1394_reset_bus);
     REGISTER_GRABBER_BUS_RESET_FUNCTION(dc800,DCGrabber::dc1394_reset_bus);
 
-  } // namespace io
-}
+  } // namespace icl::io

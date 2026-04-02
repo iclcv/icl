@@ -8,9 +8,7 @@
 #include <ICLCore/DataSegment.h>
 #include <ICLMath/DynMatrix.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// class for planar RANSAC estimation on poincloud data (xyzh).
     /** The PlanarRansacEstimator class does not minimize the error but simply counts the points with a distance smaller a given threshold.
         The smaller the threshold the preciser the model. Additionally, it is possible to assign all points on the plane to the initial surface.*/
@@ -166,5 +164,4 @@ namespace icl{
 
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

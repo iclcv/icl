@@ -10,9 +10,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     template<class PCLPointType>
     int PCLPointCloudObject<PCLPointType>::offset(FeatureType) const{
       return -1;
@@ -328,5 +326,4 @@ namespace icl{
     INSTANTIATE_CLASS(pcl::PointXYZINormal);
   #undef INSTANTIATE_CLASS
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Class for calculation of gradient image information
     /** The GradientImage class provides functionalities for
         the calculation of the following gradient image information:
@@ -65,5 +63,4 @@ namespace icl{
       core::Img16s m_oX,m_oY;
       core::Img32f m_oI,m_oA;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

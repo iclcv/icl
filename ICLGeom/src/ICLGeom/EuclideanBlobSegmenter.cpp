@@ -36,8 +36,7 @@
 #include <ICLGeom/SegmenterUtils.h>
 
 
-namespace icl {
-  namespace geom {
+namespace icl::geom {
     using namespace core;
     struct EuclideanBlobSegmenter::Data {
 	    Data(Mode mode) {
@@ -236,5 +235,4 @@ namespace icl {
       m_data->blobs=rg.getRegions();
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

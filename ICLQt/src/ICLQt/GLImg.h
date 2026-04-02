@@ -13,8 +13,7 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLQt/ImageStatistics.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// OpenGL Texture Map Image class
     /** The GLImg provides a simple interface to use ICL images as OpenGL texture maps.
 
@@ -259,5 +258,4 @@ namespace icl{
 
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

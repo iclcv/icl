@@ -8,9 +8,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLCore/DataSegment.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// class for remaining points feature.
     /** This class implements the remaining points feature for feature-graph based segmentation.*/
 
@@ -94,5 +92,4 @@ namespace icl{
         static bool checkSupport(core::Img32s &labelImage, std::vector<int> &surface, int neighbourID, int supportTolerance);
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -11,9 +11,7 @@
 
 #include <functional>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// C++ Signal-Handler interface class \ingroup UTILS
     /** Just create an own signal handler class,  implement its handleSignal()
         function and create a static object of that signal handler.
@@ -133,5 +131,4 @@ namespace icl{
       //std::vector<int> m_vecAssocitatedSignals;
     };
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

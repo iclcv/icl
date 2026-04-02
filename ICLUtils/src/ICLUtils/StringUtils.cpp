@@ -14,9 +14,7 @@ using namespace icl::regex;
 #include <regex.h>
 #endif
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     std::string toStr(int i, const char* format, char *buf){
       if(buf){
         snprintf(buf,32,format,i);
@@ -282,5 +280,4 @@ namespace icl{
         }
       }
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

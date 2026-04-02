@@ -18,9 +18,7 @@ class QPushButton;
 /**\endcond */
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
     class ButtonHandle : public GUIHandle<QPushButton>{
       public:
@@ -63,5 +61,4 @@ namespace icl{
       std::shared_ptr<bool> m_triggered; //!< internal boolean variable
       std::string m_sID; //!< corresponding id
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

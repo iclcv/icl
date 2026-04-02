@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ImgBase.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
     /// Utility base class for Image Operators
     /** The OpROIHandler class builds a utility base class for ICL unary and binary
         operator classes. Each Operator is performed on the ROI of the source image(s)
@@ -108,5 +107,4 @@ namespace icl {
 
       bool m_bClipToROI, m_bCheckOnly;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

@@ -10,8 +10,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     namespace{
       inline float square_vec(const float *a,const  float *b,unsigned  int dim){
 
@@ -422,5 +421,4 @@ namespace icl{
 
 
     REGISTER_CONFIGURABLE(LLM, return new LLM(1,1));
-  } // namespace math
-}
+  } // namespace icl::math

@@ -13,11 +13,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
-
-
+namespace icl::qt {
     /// internally used classes
     class ICLDrawWidget::State{
       public:
@@ -1157,5 +1153,4 @@ namespace icl{
         }
       }
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

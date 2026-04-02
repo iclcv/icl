@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <mutex>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Utility class for class instances that are created brand new on copy
     /** Consider the following problem:
         You have a class with some mutex'ed interface
@@ -61,5 +59,4 @@ namespace icl{
         return *this;
       }
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

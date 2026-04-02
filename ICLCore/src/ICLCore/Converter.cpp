@@ -7,10 +7,7 @@
 #include <ICLCore/Converter.h>
 
 
-namespace icl{
-  namespace core{
-
-
+namespace icl::core {
     Converter::Converter(bool bROIOnly) :
 
       m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
@@ -208,5 +205,4 @@ namespace icl{
     }
 
 
-  } // namespace core
-}
+  } // namespace icl::core

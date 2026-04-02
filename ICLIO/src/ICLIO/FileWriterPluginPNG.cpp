@@ -15,10 +15,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     void FileWriterPluginPNG::write(File &file, const ImgBase *image){
       std::lock_guard<std::recursive_mutex> lock(mutex);
       ICLASSERT_RETURN(image);
@@ -153,5 +150,4 @@ namespace icl{
 
 
 
-  } // namespace io
-}
+  } // namespace icl::io

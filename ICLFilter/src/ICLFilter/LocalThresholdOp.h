@@ -11,9 +11,7 @@
 #include <vector>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /** \cond */
     class IntegralImgOp;
     class UnaryCompareOp;
@@ -242,5 +240,4 @@ namespace icl{
 
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

@@ -9,8 +9,7 @@
 #include <ICLUtils/Exception.h>
 
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Utility struct for managing convolution kernel data
     /** This structure provides a shallow as well as deep wrapper for int- and
         float-pointers into ConvolutionKernel-instances. Convolution Kernels
@@ -185,5 +184,4 @@ namespace icl{
       bool owned;   //!< is data owned
       fixedType ft; //!< fixed type set
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

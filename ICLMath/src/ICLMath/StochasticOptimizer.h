@@ -6,9 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Utility structure for the stochastic optimizer class
     template<class T>
     struct StochasticOptimizerResult{
@@ -79,5 +77,4 @@ namespace icl{
       int m_dataDim;
     };
 
-  } // namespace math
-}
+  } // namespace icl::math

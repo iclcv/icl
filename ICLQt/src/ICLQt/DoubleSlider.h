@@ -14,9 +14,7 @@ class QGridLayout;
 /** \endcond */
 
 // The icl namespace
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// A utiltiy class which implements a labeld, double valued QSlider \ingroup UNCOMMON
     class ICLQt_API DoubleSlider : public QWidget{
       Q_OBJECT
@@ -62,5 +60,4 @@ namespace icl{
       QString m_qsID;             //!< current label text
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

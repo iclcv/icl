@@ -10,8 +10,7 @@
 #include <ICLMath/FixedVector.h>
 #include <vector>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
     /** The GLFragmentShader class can be used to create simple fragment shader programs.
 
@@ -48,5 +47,4 @@ namespace icl{
           independent. The copy is created in createOnFirstActivate mode */
       GLFragmentShader *copy() const;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

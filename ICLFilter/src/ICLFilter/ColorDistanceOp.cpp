@@ -11,9 +11,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     template<class S>
     void apply_distance(const Img<S> &src, const double ref[3], double threshold, Image &dst) {
       if(threshold >= 0){
@@ -57,5 +55,4 @@ namespace icl{
       });
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

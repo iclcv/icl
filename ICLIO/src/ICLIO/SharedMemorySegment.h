@@ -12,9 +12,7 @@
 #include <mutex>
 
 
-namespace icl {
-  namespace io {
-
+namespace icl::io {
     /// Implementation of a cross-process shared memory
     /**
       The SharedMemorySegment can be used to share information between
@@ -206,5 +204,4 @@ namespace icl {
         static void removeSegment(std::string name);
     };
 
-  } // namespace io
-}  // namespace icl
+  } // namespace icl::io

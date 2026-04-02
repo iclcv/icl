@@ -7,8 +7,7 @@
 #include <cmath>
 
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     const Rect Rect::null(0,0,0,0);
 
     /// ostream operator (x,y)wxy
@@ -84,5 +83,4 @@ namespace icl{
                   static_cast<int>(xfac * width), static_cast<int>(yfac * height));
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

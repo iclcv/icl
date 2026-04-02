@@ -6,8 +6,7 @@
 
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
 	  class ICLMarkers_API MarkerGridBasedUndistortionOptimizer{
       using Marker = AdvancedMarkerGridDetector::Marker;
       using MarkerGrid = AdvancedMarkerGridDetector::MarkerGrid;
@@ -43,4 +42,3 @@ namespace icl{
 
     };
   }
-}

@@ -34,9 +34,7 @@
 #include <ICLGeom/ObjectEdgeDetector.h>
 #include <ICLFilter/MotionSensitiveTemporalSmoothing.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     struct ConfigurableDepthImageSegmenter::Data {
 				Data(Mode mode, Camera depthCam, Camera colorCam,
 						 PointCloudCreator::DepthImageMode depth_mode){
@@ -383,5 +381,4 @@ namespace icl{
       return m_data->segmentation->getSegments();
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

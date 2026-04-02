@@ -6,8 +6,7 @@
 #include <ICLPhysics/PhysicsDefs.h>
 #include <ICLPhysics/RigidBoxObject.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     BallSocketConstraint::BallSocketConstraint(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, const bool useLinearReferenceFrameA):
       SixDOFConstraint(a,b,frameInA,frameInB,useLinearReferenceFrameA) {
       setAngularLowerLimit(geom::Vec(1,1,1));
@@ -19,4 +18,3 @@ namespace icl {
       setAngularUpperLimit(geom::Vec(0,0,0));
     }
   }
-}

@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     namespace{
       void calculate_xy_gradient(const Img16s &src, Img16s &gx, Img16s &gy){
 
@@ -111,5 +109,4 @@ namespace icl{
       m_oI.normalizeAllChannels(Range<icl32f>(0,255));
       m_oA.normalizeAllChannels(Range<icl32f>(0,255));
     }
-  } // namespace filter
-}
+  } // namespace icl::filter

@@ -8,8 +8,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     const ImgParams ImgParams::null(0,0,0,formatMatrix,0,0,0,0);
 
     ImgParams::ImgParams(const Size &size, format fmt, const Rect &roi) {
@@ -175,5 +174,4 @@ namespace icl{
     }
 
 
-  } // namespace core
-}
+  } // namespace icl::core

@@ -11,10 +11,7 @@
 #include <ICLMath/FixedVector.h>
 #include <functional>
 
-namespace icl{
-  namespace math{
-
-
+namespace icl::math {
     /// Generic RANSAC (RAndom SAmpling Consensus) Implementation
     /** The RansacFitter provides a generic framework, for RANSAC based model fitting.
 
@@ -188,5 +185,4 @@ namespace icl{
         return m_result;
       }
     };
-  } // namespace math
-}
+  } // namespace icl::math

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <QtCore/QEvent>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Utility class for threaded updatable sliders
     struct SliderUpdateEvent : public QEvent{
       int value;
@@ -19,5 +17,4 @@ namespace icl{
       }
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

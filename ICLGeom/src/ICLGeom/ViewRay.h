@@ -10,8 +10,7 @@
 #include <ICLUtils/Point32f.h>
 #include <iostream>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /** \cond */
     struct PlaneEquation;
     /** \endcond */
@@ -89,5 +88,4 @@ namespace icl{
 
     /// ostream operator
     ICLGeom_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
-  } // namespace geom
-}
+  } // namespace icl::geom

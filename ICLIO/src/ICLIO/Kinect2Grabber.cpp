@@ -30,10 +30,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::filter;
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     struct LibFreenect2Context : public utils::Lockable{
       libfreenect2::Freenect2 *ctx;
 
@@ -416,5 +413,4 @@ namespace icl{
     REGISTER_GRABBER(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"kinect2c:device ID:kinect2 color camera source");
     REGISTER_GRABBER(kinect2i,createIR2Grabber, getKinect2IDeviceList,"kinect2i:devide ID:kinect2 IR camera source");
 
-  } // namespace io
-} // namespace icl
+  } // namespace icl::io

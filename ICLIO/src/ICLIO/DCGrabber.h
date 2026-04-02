@@ -13,8 +13,7 @@
 #include <ICLCore/Converter.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /** \cond */
     namespace dc{
       class DCGrabberThread;
@@ -134,5 +133,4 @@ namespace icl{
         std::string m_sUserDefinedBayerPattern;
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

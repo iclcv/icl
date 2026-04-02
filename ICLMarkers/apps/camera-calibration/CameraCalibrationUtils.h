@@ -13,9 +13,7 @@
 #include <QtCore/QObject>
 #include <ICLQt/GUI.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// special utility class that provices outsource functions and types for the camera-calibration app
     struct CameraCalibrationUtils{
 
@@ -238,4 +236,3 @@ namespace icl{
       static const core::ImgBase *preprocess(const core::ImgBase *image);
     };
   }
-}

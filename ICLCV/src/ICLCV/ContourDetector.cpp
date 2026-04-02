@@ -13,9 +13,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     struct SimpleContourImpl : public ContourImpl{
       const Point *begin_point;
       const Point *end_point;
@@ -673,5 +671,4 @@ namespace icl{
         }
       }
     }
-  } // namespace cv
-}
+  } // namespace icl::cv

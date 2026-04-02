@@ -9,8 +9,7 @@
 #include <deque>
 #include <string>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     ///Utility clas for online FPS estimation \ingroup TIME
     class ICLUtils_API FPSEstimator{
       public:
@@ -48,5 +47,4 @@ namespace icl{
   #define FPS_LOG_THIS_FUNCTION(N) static FPSEstimator __FPSEstimator__((N)); \
                                    __FPSEstimator__.showFps(__FUNCTION__);
 
-  } // namespace utils
-}
+  } // namespace icl::utils

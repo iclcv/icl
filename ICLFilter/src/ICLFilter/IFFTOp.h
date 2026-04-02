@@ -6,9 +6,7 @@
 
 #include <ICLFilter/BaseFFTOp.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// Inverse 2D FFT/DFT operator
     /** Computes the inverse 2D Fourier transform. See BaseFFTOp for shared
         documentation on result modes and size adaptation.
@@ -51,5 +49,4 @@ namespace icl {
       utils::Rect getRoi() { return getRemovePadROI(); }
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

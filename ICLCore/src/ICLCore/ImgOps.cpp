@@ -4,9 +4,7 @@
 
 #include <ICLCore/ImgOps.h>
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     ImgOps& ImgOps::instance() {
       static ImgOps ops;
       return ops;
@@ -50,5 +48,4 @@ namespace icl {
       addSelector<ScaledCopySig>(Op::scaledCopy);
     }
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

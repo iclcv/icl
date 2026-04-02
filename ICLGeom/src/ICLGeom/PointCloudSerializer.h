@@ -9,10 +9,7 @@
 
 #include <map>
 
-namespace icl{
-
-  namespace geom{
-
+namespace icl::geom {
     /// Utility class used as intermediate layer for point cloud serialization
     struct ICLGeom_API PointCloudSerializer{
 
@@ -74,4 +71,3 @@ namespace icl{
     };
 
   }
-}

@@ -9,9 +9,7 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ICLDrawWidget;
     /** \endcond */
@@ -162,5 +160,4 @@ namespace icl{
       utils::Point32f dragOffs; /** offset from the draggers center to the location where it was dragged by the mouse */
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

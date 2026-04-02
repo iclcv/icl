@@ -10,8 +10,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /** Utility class for point cloud normal and depth-edge estimation
         This class is a normal estimator and edge detector for depth images.
         It uses OpenCL for hardware parallelization if a compatible GPU is found.
@@ -207,5 +206,4 @@ namespace icl{
           @return openCL enabled/disabled */
       bool isCLActive();
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

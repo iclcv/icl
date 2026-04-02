@@ -9,9 +9,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/RGBDMapping.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Utility class that allows to create 3D (optionally colored) point clouds from given 2D core::depth images
     /** The PointCloudCreator utility class can be used to two differenct modes.
         It's basic functionality is to transform a core::depth-image into a 3D point cloud.
@@ -131,5 +129,4 @@ namespace icl{
 
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

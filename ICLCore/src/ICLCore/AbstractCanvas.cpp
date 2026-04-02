@@ -7,9 +7,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     void AbstractCanvas::point(float x, float y){
       if(state.pointsize == 1){
         draw_point_internal(transform(x,y));
@@ -141,4 +139,3 @@ namespace icl{
 
 
   }
-}

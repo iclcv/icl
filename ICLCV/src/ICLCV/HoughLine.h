@@ -9,8 +9,7 @@
 
 namespace icl { namespace core { class ImgBase; } }
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     /// Line Equation structure
     /** Lines can (among others) be represented in parameter form:
         \f[ l: \vec{o}+\lambda \vec{d} \f]
@@ -113,5 +112,4 @@ namespace icl{
       utils::Point32f m_offset;
       utils::Point32f m_direction;
     };
-  } // namespace cv
-}
+  } // namespace icl::cv

@@ -17,9 +17,7 @@
 using namespace icl::io::dc;
 using namespace icl::utils;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /** Have a NEW CAMERA ???
 
         - add a new CameryTypeID to the DCDevice::enum
@@ -488,6 +486,4 @@ namespace icl{
     bool DCDevice::supportsDC800(){
       return is_dc800_capable(getCam());
     }
-  } // namespace io
-
-}
+  } // namespace icl::io

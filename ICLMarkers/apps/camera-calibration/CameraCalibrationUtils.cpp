@@ -18,9 +18,7 @@
 #include <mutex>
 
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     static inline Vec set_3_to_1(Vec a){
       a[2] += 1;
       a[3] = 1;
@@ -940,4 +938,3 @@ namespace icl{
       }
     }
   }
-}

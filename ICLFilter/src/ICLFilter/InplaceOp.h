@@ -8,9 +8,7 @@
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 // forward declaration (was #include <ICLCore/ImgBase.h>)
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Interface class for inplace operators \ingroup INPLACE
     /** Inplace operators work on image pixels directly. Common examples
         are arithmetical expressions like IMAGE *= 2. Useful inplace
@@ -42,5 +40,4 @@ namespace icl{
       /// "roi-only" flag
       bool m_bROIOnly;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

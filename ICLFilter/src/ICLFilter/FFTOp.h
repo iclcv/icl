@@ -6,9 +6,7 @@
 
 #include <ICLFilter/BaseFFTOp.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// Forward 2D FFT/DFT operator
     /** Computes the 2D Fourier transform using IPP, MKL, or a pure C++ fallback.
         See BaseFFTOp for result modes and size adaptation modes.
@@ -40,5 +38,4 @@ namespace icl {
       bool getFFTShift() { return getShift(); }
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

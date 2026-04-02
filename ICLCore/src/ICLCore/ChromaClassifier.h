@@ -8,8 +8,7 @@
 #include <ICLCore/Types.h>
 #include <ICLCore/Parable.h>
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON
     struct ChromaClassifier{
     public:
@@ -32,5 +31,4 @@ namespace icl{
       //    ParableSet parables;
       Parable parables[2];
     };
-  } // namespace core
-}
+  } // namespace icl::core

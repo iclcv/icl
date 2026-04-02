@@ -5,8 +5,7 @@
 #include <ICLQt/FSliderHandle.h>
 #include <QSlider>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     FSliderHandle::FSliderHandle():
       GUIHandle<ThreadedUpdatableSlider>(),lcd(0),m_fMin(0),m_fMax(0),m_fM(0),m_fB(0),m_iSliderRange(0){
     }
@@ -41,5 +40,4 @@ namespace icl{
     float FSliderHandle::getValue() const{
       return i2f((**this)->value());
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

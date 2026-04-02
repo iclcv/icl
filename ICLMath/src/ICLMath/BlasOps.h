@@ -7,9 +7,7 @@
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     /// Selector keys for BLAS backend dispatch (Level 1, 2, 3).
     enum class BlasOp : int {
       // Level 3 — matrix-matrix, O(n³)
@@ -124,5 +122,4 @@ namespace icl {
       }
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

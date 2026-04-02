@@ -8,10 +8,7 @@
 #include <ICLUtils/Time.h>
 #include <ICLUtils/FPSEstimator.h>
 
-namespace icl{
-  namespace utils{
-
-
+namespace icl::utils {
     /// An fps limiter can be used to limit online applications FPS \ingroup TIME
     class ICLUtils_API FPSLimiter : public FPSEstimator{
       float m_maxFPS;
@@ -47,5 +44,4 @@ namespace icl{
       /// as FPSEstimator::showPPS, but with preceding wait()-call
       virtual void showFPS(const std::string &text="") const;
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

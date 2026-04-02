@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(MedianOp::Op op) {
       switch(op) {
         case MedianOp::Op::fixed: return "fixed";
@@ -47,5 +45,4 @@ namespace icl {
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

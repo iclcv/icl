@@ -37,9 +37,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-namespace filter {
-
+namespace icl::filter {
 namespace {
 
 /// Per-channel temporal smoothing: ring buffer + motion-aware averaging.
@@ -211,5 +209,4 @@ Img32f MotionSensitiveTemporalSmoothing::getMotionImage() const {
   return m_channels[0].motionImage;
 }
 
-} // namespace filter
-} // namespace icl
+} // namespace icl::filter

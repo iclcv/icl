@@ -12,9 +12,7 @@
 class QComboBox;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Handle class for combo components \ingroup HANDLES
     class ComboHandle : public GUIHandle<QComboBox>{
       public:
@@ -71,5 +69,4 @@ namespace icl{
       const QComboBox *cbx() const{ return **this; }
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

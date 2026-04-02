@@ -9,8 +9,7 @@
 
 #include <string>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
     class GUISyntaxErrorException : public utils::ICLException {
       public:
@@ -18,5 +17,4 @@ namespace icl{
       utils::ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}
       virtual ~GUISyntaxErrorException() noexcept {}
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

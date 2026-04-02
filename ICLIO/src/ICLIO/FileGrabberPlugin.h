@@ -8,8 +8,7 @@
 #include <ICLUtils/File.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// interface for ImageGrabber Plugins for reading different file types \ingroup FILEIO_G
     class ICLIO_API FileGrabberPlugin{
       public:
@@ -33,5 +32,4 @@ namespace icl{
         int imageCount;     ///!< image count (e.g. when writing color images as .pgm gray-scale images)
       };
     };
-  } // namespace io
-}
+  } // namespace icl::io

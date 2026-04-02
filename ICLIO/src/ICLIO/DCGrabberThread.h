@@ -14,9 +14,7 @@
 #include <vector>
 
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /** \cond */
     class DCGrabber;
     /** \endcond */
@@ -129,5 +127,4 @@ namespace icl{
         utils::Time m_lastFramesTimeStamp;
       };
     }
-  } // namespace io
-}
+  } // namespace icl::io

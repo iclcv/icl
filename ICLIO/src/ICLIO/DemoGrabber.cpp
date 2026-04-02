@@ -13,9 +13,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace{
       template<class T>
       void rect(Img<T> &image, const Color &color, const Rect &r){
@@ -219,5 +217,4 @@ namespace icl{
 
     REGISTER_GRABBER(demo,createDemoGrabber, getDemoDeviceList,"demo:0:demo image source");
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -10,9 +10,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     namespace som{
 
       static inline float distance2(const float *a,const float *b, unsigned int dim){
@@ -174,5 +172,4 @@ namespace icl{
     }
 
 
-  } // namespace math
-}
+  } // namespace icl::math

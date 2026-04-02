@@ -10,9 +10,7 @@
 #include <QtCore/QEvent>
 #include <QtCore/QThread>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Compability class
     /** This class provides a compability function for asyncronous updating
         of a QWidget.
@@ -52,5 +50,4 @@ namespace icl{
       }
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

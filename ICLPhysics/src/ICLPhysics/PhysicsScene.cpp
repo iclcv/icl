@@ -4,9 +4,7 @@
 
 #include <ICLPhysics/PhysicsScene.h>
 #include <ICLPhysics/PhysicsObject.h>
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
 			PhysicsScene::PhysicsScene(PhysicsWorld::BulletSolverType type)
 				: geom::Scene(), PhysicsWorld(type) {}
 
@@ -40,4 +38,3 @@ namespace icl{
         }
       }
   }
-}

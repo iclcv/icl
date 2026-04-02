@@ -6,9 +6,7 @@
 
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber class that grabs images from ZeroMQ-based network interfaces
     class ZmqGrabber : public Grabber {
       /// Internal Data storage class
@@ -33,5 +31,4 @@ namespace icl{
       ICLIO_API virtual const core::ImgBase* acquireDisplay();
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

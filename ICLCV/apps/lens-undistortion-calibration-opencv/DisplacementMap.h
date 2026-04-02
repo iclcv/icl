@@ -10,9 +10,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Macros.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     struct DisplacementMap{
       core::Img8u pseudo;
       const icl8u *lut[3];
@@ -96,4 +94,3 @@ namespace icl{
       }
     };
   }
-}

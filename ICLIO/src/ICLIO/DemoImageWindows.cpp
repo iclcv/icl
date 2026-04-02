@@ -9,8 +9,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace{
       const int NROWS = 214;
       const int NCOLS = 30;
@@ -258,6 +257,4 @@ namespace icl{
       f.erase();
       return image->deepCopy();
     }
-  } // namespace io
-
-} // end namespace icl
+  } // namespace icl::io

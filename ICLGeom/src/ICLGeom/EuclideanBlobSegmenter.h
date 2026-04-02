@@ -6,8 +6,7 @@
 
 #include <ICLCore/DataSegment.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class implements blob segmentation for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the ObjectEdgeDetector class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromDisplay() method of the PointCloudObject class).*/
     class ICLGeom_API EuclideanBlobSegmenter{
@@ -85,5 +84,4 @@ namespace icl{
       void regionGrowBlobs();
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

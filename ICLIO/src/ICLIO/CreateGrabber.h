@@ -11,10 +11,7 @@
 
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     /// Create Grabber class that provides an image from ICL's create function
     /** This grabber can be used as placeholder whenever no senseful Grabber
         is available. It provides an instance of an image that is created with
@@ -42,5 +39,4 @@ namespace icl{
         void processPropertyChange(const utils::Configurable::Property &p);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

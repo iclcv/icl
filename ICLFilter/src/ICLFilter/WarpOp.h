@@ -10,9 +10,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Operator that remaps an image with given look-up map
     /** \section OV Overview
         A 'Warping' operation on images is any operation, that works
@@ -133,5 +131,4 @@ namespace icl{
     /// ADL-visible toString for WarpOp::Op → registry name (defined in WarpOp.cpp)
     ICLFilter_API const char* toString(WarpOp::Op op);
 
-  } // namespace filter
-}
+  } // namespace icl::filter

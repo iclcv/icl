@@ -8,8 +8,7 @@
 #include <ICLCore/Img.h>
 #include <ICLGeom/SurfaceFeatureExtractor.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class implements the cutfree adjacency feature for feature-graph based segmentation.*/
     class CutfreeAdjacencyFeatureExtractor{
@@ -61,5 +60,4 @@ namespace icl{
       Data *m_data; //!< internal data pointer
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

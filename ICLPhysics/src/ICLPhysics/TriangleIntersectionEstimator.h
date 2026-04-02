@@ -7,9 +7,7 @@
 #include <ICLGeom/ViewRay.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-namespace physics{
-
+namespace icl::physics {
   class ICLPhysics_API TriangleIntersectionEstimator{
     public:
     enum IntersectionType{
@@ -41,5 +39,4 @@ namespace physics{
     static Intersection find(const Triangle &t, const geom::ViewRay &r);
   };
 
-}
 }

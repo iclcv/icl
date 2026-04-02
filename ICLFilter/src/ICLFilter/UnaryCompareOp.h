@@ -9,9 +9,7 @@
 #include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// UnaryCompareOp using the BackendDispatch architecture.
     class ICLFilter_API UnaryCompareOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
@@ -65,5 +63,4 @@ namespace icl {
     /// ADL-visible toString for UnaryCompareOp::Op → registry name (defined in UnaryCompareOp.cpp)
     ICLFilter_API const char* toString(UnaryCompareOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

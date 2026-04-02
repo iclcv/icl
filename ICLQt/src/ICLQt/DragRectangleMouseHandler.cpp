@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     DragRectangleMouseHandler::DragRectangleMouseHandler(int minDim):
       m_minDim(minDim),m_edge(0,100,255,255),m_fill(0,0,0,0),m_outer(0,100,255,150),
       m_edgeWhileDrag(255,0,0,255),m_fillWhileDrag(0,0,0,0),m_outerWhileDrag(255,0,0,50){
@@ -92,5 +90,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

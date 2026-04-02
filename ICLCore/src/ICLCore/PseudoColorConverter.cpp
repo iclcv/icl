@@ -9,9 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     static const icl8u defLut[3][256]={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,6,9,12,15,19,22,25,28,31,35,38,41,44,
@@ -213,5 +211,4 @@ namespace icl{
       }
     }
 
-  } // namespace core
-}
+  } // namespace icl::core

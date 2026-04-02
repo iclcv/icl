@@ -8,9 +8,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Singelton class that provides access to reusable temporary images
     /** \section GEN General Information
         For global functions as those, provided by the ICLQuick module,
@@ -85,5 +83,4 @@ namespace icl{
       ImgBase *get(depth d, const ImgParams &p);
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

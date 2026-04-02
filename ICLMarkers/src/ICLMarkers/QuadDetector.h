@@ -14,9 +14,7 @@
 #include <ICLMarkers/TiltedQuad.h>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Tool-class for detecting tilted quads in images
     /** The quad detector combines usual steps that are used
         to find quad-like structures in input images.\n
@@ -137,5 +135,4 @@ namespace icl{
 
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

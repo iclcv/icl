@@ -4,9 +4,7 @@
 
 #include <ICLMath/DynVector.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     // ---- DynColVector ----
 
     template<class T>
@@ -99,5 +97,4 @@ namespace icl{
     template struct ICLMath_API DynRowVector<float>;
     template struct ICLMath_API DynRowVector<double>;
 
-  } // namespace math
-}
+  } // namespace icl::math

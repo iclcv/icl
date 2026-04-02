@@ -11,9 +11,7 @@
 #include <ICLIO/OpenNIIncludes.h>
 #include <mutex>
 
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     // Forward declaration of OpenNIGrabberImpl
     class OpenNIGrabber;
 
@@ -100,5 +98,4 @@ namespace icl {
         bool m_OmitDoubleFrames;
     };
 
-  } // namespace io
-} //namespace icl
+  } // namespace icl::io

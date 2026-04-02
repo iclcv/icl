@@ -9,9 +9,7 @@
 #include <ICLQt/ContainerHandle.h>
 #include <QSplitter>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// A Handle for SplitterWidget container GUI components  \ingroup HANDLES
     class SplitterHandle : public GUIHandle<QSplitter>, public ContainerHandle{
       public:
@@ -33,5 +31,4 @@ namespace icl{
         (**this)->insertWidget(idx,comp);
       }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

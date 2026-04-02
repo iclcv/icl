@@ -15,11 +15,7 @@
 #include <algorithm>
 #include <set>
 
-namespace icl{
-
-  namespace math{
-
-
+namespace icl::math {
     /// Generic QuadTree Implementation
     /** The implementation follows the pseudo code from Wikipedia. However, we added
         some performance related implementation enhancements.
@@ -608,5 +604,4 @@ namespace icl{
       }
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

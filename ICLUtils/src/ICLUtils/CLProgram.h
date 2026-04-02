@@ -15,9 +15,7 @@
 #include <string.h>
 #include <fstream>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     /// Main class for OpenCL based accelleration
     /** The CLProgram is the based class for ICL's OpenCL support
         framework. A Program instance can be used to create all other
@@ -328,5 +326,4 @@ namespace icl {
       static void listAllPlatforms();
     };
   }
-}
 #endif

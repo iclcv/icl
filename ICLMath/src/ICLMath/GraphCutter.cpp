@@ -4,9 +4,7 @@
 
 #include <ICLMath/GraphCutter.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     float GraphCutter::minCut(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subset1, std::vector<int> &subset2){
       //Please note: it is possible to add an additional adjacency matrix for faster lookup with values pointing to the edgeList IDs.
 
@@ -414,4 +412,3 @@ namespace icl{
     }
 
   }
-}

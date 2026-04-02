@@ -4,9 +4,7 @@
 
 #include <ICLQt/ToggleButton.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     ToggleButton::ToggleButton(const std::string &untoggledText,
                                const std::string &toggledText,
                                QWidget *parent,
@@ -30,5 +28,4 @@ namespace icl{
       setText(m_text[toggled].c_str());
       if(m_stateRef) *m_stateRef = toggled;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

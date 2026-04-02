@@ -17,8 +17,7 @@
 #include <type_traits>
 
 
-namespace icl {
-  namespace core{
+namespace icl::core {
     /// The Img class implements the ImgBase Image interface with type specific functionalities \ingroup IMAGE \ingroup TYPES
     template<class Type>
     class ICLCore_API Img : public ImgBase
@@ -1879,6 +1878,4 @@ namespace icl {
     /* }}} */
 
     /* }}} */
-  } // namespace core
-} //namespace icl
-
+  } // namespace icl::core

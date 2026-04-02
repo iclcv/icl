@@ -16,9 +16,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::filter;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     struct FiducialDetectorPluginForQuads::Data{
       QuadDetector quadd;
       const std::vector<TiltedQuad> *quads;
@@ -208,5 +206,4 @@ namespace icl{
       if(name != "binary") return FiducialDetectorPlugin::getIntermediateImage(name);
       return &data->quadd.getLastBinaryDisplay();
     }
-  } // namespace markers
-}
+  } // namespace icl::markers

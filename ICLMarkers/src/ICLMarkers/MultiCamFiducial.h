@@ -8,9 +8,7 @@
 #include <ICLMarkers/FiducialDetector.h>
 #include <ICLGeom/GeomDefs.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /** \cond */
     struct MultiCamFiducialImpl;
     /** \endcond */
@@ -82,5 +80,4 @@ namespace icl{
       const geom::Mat &getPose3D() const;
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

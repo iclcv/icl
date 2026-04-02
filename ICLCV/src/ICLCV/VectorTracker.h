@@ -8,9 +8,7 @@
 #include <functional>
 #include <vector>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Extension of the position tracker class for N-dimensional positions
     /** Here's a copy of the PositionTracker documentation, which assumes 2D-input data:
         \copydoc icl::cv::PositionTracker
@@ -113,5 +111,4 @@ namespace icl{
     };
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

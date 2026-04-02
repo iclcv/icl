@@ -8,8 +8,7 @@
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.h>
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     Object2PointConstraint::Object2PointConstraint(RigidObject* obj, const geom::Vec& localOffset, const geom::Vec& point, float stiffness, float damping){
       //add anchor
       anchor = new RigidBoxObject(0,0,0,0,0,0,0);
@@ -93,4 +92,3 @@ namespace icl {
       cons->setDamping(5, newDamping);
     }
   }
-}

@@ -7,8 +7,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLPhysics/Constraint.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     class RigidObject;
 
     /// This constraint binds an object to a point with a spring
@@ -29,4 +28,3 @@ namespace icl {
       void setDamping(float newDamping);
     };
   }
-}

@@ -8,9 +8,7 @@
 #include <ICLQt/PlotWidget.h>
 #include <ICLQt/ImageStatistics.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Utility class used within the ICLWidget class
     /** The HistogrammWidget is used in the 'info' tab of the ICLWidget's on screen display */
     struct ICLQt_API HistogrammWidget : public PlotWidget{
@@ -39,5 +37,4 @@ namespace icl{
     };
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

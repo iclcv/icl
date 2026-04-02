@@ -10,8 +10,7 @@
 #include <ICLCV/RegionPCAInfo.h>
 #include <ICLCV/LineSegment.h>
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     /** \cond */
     struct ImageRegionPart;
     struct ImageRegionData;
@@ -228,5 +227,4 @@ namespace icl{
       const utils::Any &getMetaData() const;
    };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

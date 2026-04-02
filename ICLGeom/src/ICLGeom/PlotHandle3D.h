@@ -9,9 +9,7 @@
 #include <ICLQt/GUIWidget.h>
 #include <ICLGeom/PlotWidget3D.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Handle class for image components \ingroup HANDLES
     class ICLGeom_API PlotHandle3D : public qt::GUIHandle<PlotWidget3D>{
       public:
@@ -41,4 +39,3 @@ namespace icl{
       }
     };
   } // namespace qt
-}

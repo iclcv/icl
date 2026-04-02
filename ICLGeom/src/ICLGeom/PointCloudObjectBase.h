@@ -12,9 +12,7 @@
 #include <map>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Base class for point cloud data types
     /** The PointCloudObjectBase class provides a generic but abstract
         interface for point cloud data types. By inheriting the
@@ -358,5 +356,4 @@ namespace icl{
 
     /// overloaded ostream operator for PointCloudObjectBase::FeatureType
     ICLGeom_API std::ostream &operator<<(std::ostream &s, const PointCloudObjectBase::FeatureType t);
-  } // namespace geom
-}
+  } // namespace icl::geom

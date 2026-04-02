@@ -12,9 +12,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// class for applying table lookup transformation to Img8u images \ingroup UNARY
     /** \section SEC1 General Information
         The class knows two modes: first: given count of quantization levels,
@@ -122,5 +120,4 @@ namespace icl {
     /// ADL-visible toString for LUTOp::Op (defined in LUTOp.cpp)
     ICLFilter_API const char* toString(LUTOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

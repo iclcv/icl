@@ -14,9 +14,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     namespace{
       Rect32f computeRect(const Rect32f &rect, const Size &imageSize, PaintEngine::AlignMode mode){
 
@@ -450,5 +448,4 @@ namespace icl{
       glPixelTransferf(GL_BLUE_BIAS,fBiasRGB);
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

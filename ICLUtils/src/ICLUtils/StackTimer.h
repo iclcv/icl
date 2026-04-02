@@ -9,8 +9,7 @@
 #include <string>
 #include <cstdio>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// Tool for benchmarking method calls \ingroup TIME
     /** The stack timer class is an Extension of the Timer class,
         that provides very convenient function benchmarking
@@ -173,5 +172,4 @@ namespace icl{
   #define BENCHMARK_THIS_FUNCTION_LITE                                       \
     static icl::utils::StackTimer::StackTimerNotifier __notifier(__FUNCTION__,0,0,0,0);  \
     icl::utils::StackTimer __stacktimer(&__notifier);
-  } // namespace utils
-}
+  } // namespace icl::utils

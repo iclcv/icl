@@ -15,8 +15,7 @@ class QLayout;
 /** \endcond */
 
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /** \cond */
     class GUIDefinition;
     class ProxyLayout;
@@ -109,5 +108,4 @@ namespace icl{
       std::vector<GUI::ComplexCallback> m_vecComplexCallbacks;
       utils::Size m_preferredSize;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

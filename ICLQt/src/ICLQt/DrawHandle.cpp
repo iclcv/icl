@@ -7,8 +7,7 @@
 
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void DrawHandle::setImage(const ImgBase *image){
       (**this)->setImage(image);
     }
@@ -23,5 +22,4 @@ namespace icl{
       (**this)->removeCallbacks();
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

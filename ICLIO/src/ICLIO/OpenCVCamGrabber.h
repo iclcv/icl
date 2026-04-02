@@ -13,9 +13,7 @@
 #include <opencv2/videoio.hpp>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber class that uses OpenCV's grabbing function to grab camera images
     class ICLIO_API OpenCVCamGrabber : public Grabber{
       private:
@@ -66,5 +64,4 @@ namespace icl{
         static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

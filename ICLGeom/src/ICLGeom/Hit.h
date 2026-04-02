@@ -8,9 +8,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <iostream>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class SceneObject;
     /** \endcond */
@@ -45,5 +43,4 @@ namespace icl{
 
 
 
-  } // namespace geom
-}
+  } // namespace icl::geom

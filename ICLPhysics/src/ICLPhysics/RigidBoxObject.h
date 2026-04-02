@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/RigidObject.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// A Box that can with RigidObject features
     class ICLPhysics_API RigidBoxObject : public RigidObject{
       protected:
@@ -18,4 +17,3 @@ namespace icl{
       RigidBoxObject(float x, float y, float z, float dx, float dy, float dz, float mass=1.0);
     };
   }
-}

@@ -7,9 +7,7 @@
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     /// Selector keys for LAPACK backend dispatch.
     enum class LapackOp : int { gesdd, syev, getrf, getri, geqrf, orgqr, gelsd };
 
@@ -71,5 +69,4 @@ namespace icl {
       static LapackOps& instance();
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

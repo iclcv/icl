@@ -4,9 +4,7 @@
 
 #pragma once
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Simple 2D indexed LUT Implementation
     /** The LUT2D template class provides functionalities for
         aranging 2D index data in a linear array for best
@@ -63,5 +61,4 @@ namespace icl{
       }
 
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

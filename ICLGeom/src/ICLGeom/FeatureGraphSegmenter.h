@@ -8,8 +8,7 @@
 #include <ICLGeom/SurfaceFeatureExtractor.h>
 #include <ICLGeom/PointCloudSegment.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class implements feature graph segmentation for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. */
     class ICLGeom_API FeatureGraphSegmenter{
@@ -154,5 +153,4 @@ namespace icl{
       Data *m_data; //!< internal data pointer
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

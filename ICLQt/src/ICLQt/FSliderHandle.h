@@ -13,9 +13,7 @@ class QSlider;
 class QLCDNumber;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Handle class for slider componets \ingroup HANDLES
     class ICLQt_API FSliderHandle : public GUIHandle<ThreadedUpdatableSlider>{
       /// associated display
@@ -115,5 +113,4 @@ namespace icl{
       int m_iSliderRange;
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

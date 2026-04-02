@@ -17,9 +17,7 @@
 #include <iostream>
 #include <iomanip>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Single benchmark parameter value (int, double, or string)
     using BenchParamValue = std::variant<int, double, std::string>;
 
@@ -251,5 +249,4 @@ namespace icl{
         ICL_BENCHMARK_REG_##__LINE__(::icl::utils::BenchmarkEntry{         \
           key, desc, params, func})
 
-  } // namespace utils
-}
+  } // namespace icl::utils

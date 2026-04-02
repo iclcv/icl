@@ -10,8 +10,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::geom;
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     MultiCamFiducialImpl::MultiCamFiducialImpl(){}
     MultiCamFiducialImpl::MultiCamFiducialImpl(int id,
                                                const std::vector<Fiducial> &fids,
@@ -97,5 +96,4 @@ namespace icl{
       return orientation;
     }
 
-  } // namespace markers
-}
+  } // namespace icl::markers

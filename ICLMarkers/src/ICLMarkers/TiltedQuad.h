@@ -9,10 +9,7 @@
 #include <ICLCV/ImageRegion.h>
 #include <algorithm>
 
-namespace icl{
-  namespace markers{
-
-
+namespace icl::markers {
     /// Utility class that represents a tilted quad in an image
     /** A tilted quad is represented by It's for corner points
         The class provides access to these points using the index
@@ -61,5 +58,4 @@ namespace icl{
       /// returns the internal utils::Point-data pointer
       const utils::Point32f *data() const { return ps; }
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

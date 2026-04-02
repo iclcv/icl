@@ -11,9 +11,7 @@
 namespace pugi { class xml_node; }
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Special GUI implementation that allows for defining the GUI layout in an XML-file
     /** In some cases, it might be useful to not embed the design of the
         GUI layout into the c++-source code. To this end, ICL provides
@@ -158,5 +156,3 @@ namespace icl{
     };
 
   }
-
-}

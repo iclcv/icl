@@ -8,8 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,
                                                const std::string &quality):
       compressor(ImageCompressor::CompressionSpec(compressionType,quality)){}
@@ -21,5 +20,4 @@ namespace icl{
       file.write(data.bytes,data.len);
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

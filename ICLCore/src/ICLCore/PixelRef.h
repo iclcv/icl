@@ -12,8 +12,7 @@
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/ClippedCast.h>
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// Pixel-Type class for copying image pixles to image pixels
     /** PixelRef instances are returned by an images operator()(int x, int y)
         It allows to write:
@@ -146,5 +145,4 @@ namespace icl{
         return static_cast<int>(m_data.size());
       }
     };
-  } // namespace core
-}
+  } // namespace icl::core

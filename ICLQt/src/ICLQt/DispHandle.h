@@ -9,10 +9,7 @@
 #include <ICLQt/LabelHandle.h>
 #include <ICLQt/GUIHandle.h>
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     /// Type definition for handling GUI-"disp" components \ingroup HANDLES
     /** @see GUI, Array2D template class of the ICLUtils package */
     using LabelMatrix = utils::Array2D<LabelHandle>;
@@ -63,5 +60,4 @@ namespace icl{
 
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

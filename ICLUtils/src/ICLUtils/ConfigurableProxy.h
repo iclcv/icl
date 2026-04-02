@@ -8,9 +8,7 @@
 #include <ICLUtils/Configurable.h>
 #include <mutex>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// This class provides the getter and setter methods of an internally set Configurable.
     class ConfigurableProxy{
       private:
@@ -108,5 +106,4 @@ namespace icl{
           getInternalConfigurable()->syncChangesTo(configurable->getInternalConfigurable());
         }
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

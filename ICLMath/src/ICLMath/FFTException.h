@@ -7,12 +7,10 @@
 #include <ICLUtils/CompatMacros.h>
 #include<ICLUtils/Exception.h>
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     /// Special exception implementation for the FFT package
     class FFTException : public utils::ICLException{
       public:
       FFTException(const std::string &msg):utils::ICLException(msg){}
     };
-  }// namespace math
-}
+  } // namespace icl::math

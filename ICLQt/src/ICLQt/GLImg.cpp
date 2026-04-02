@@ -31,8 +31,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     struct WhiteTexture{
       Img8u image;
       GLImg gli;
@@ -1080,5 +1079,4 @@ namespace icl{
       m_data->textureBufferMutex.unlock();
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -11,9 +11,7 @@
 #endif
 #endif
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     float dist_point_linesegment(const Vec4 &p,const Vec4 &lineStart,const Vec4 &lineEnd,Vec4 *nearestPoint){
       Vec4  d1(p-lineStart);
       Vec4  d2(lineEnd-lineStart);
@@ -145,4 +143,3 @@ namespace icl{
     }
 
   }
-}

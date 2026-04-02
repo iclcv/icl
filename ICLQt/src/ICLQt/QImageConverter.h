@@ -10,9 +10,7 @@
 // forward declared QImage class
 class QImage;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// class for conversion between QImage and core::ImgBase/Img\<T\> \ingroup COMMON
     /** The QImageConverter class provides functionality for conversion
         between the QImage class and the core::Img\<T\> classes.
@@ -131,5 +129,4 @@ namespace icl{
       /// use pseudo colors
       bool m_usePC;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

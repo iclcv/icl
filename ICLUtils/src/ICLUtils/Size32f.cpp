@@ -5,9 +5,7 @@
 #include <ICLUtils/Size32f.h>
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     const Size32f Size32f::null(0,0);
 
 
@@ -20,5 +18,4 @@ namespace icl{
       return s >> size.width >> c >> size.height;
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

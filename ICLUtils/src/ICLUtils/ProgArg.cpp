@@ -12,9 +12,7 @@
 #include <map>
 #include <set>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
    /*
        padef("-force|-f(int,int,string) -size|-s(Size)");
 
@@ -590,5 +588,4 @@ namespace icl{
     std::string pa_get_help_text(){
       return ProgArgContext::getHelpText();
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

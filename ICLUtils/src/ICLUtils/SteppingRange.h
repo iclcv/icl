@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// class representing a range with defined stepping \ingroup TYPES
     /** A Stepping range is a well defined interval
         I = [minVal,maxVal] with an also well defined
@@ -80,5 +79,4 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-  } // namespace utils
-}
+  } // namespace icl::utils

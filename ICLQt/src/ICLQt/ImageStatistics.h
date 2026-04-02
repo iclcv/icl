@@ -11,8 +11,7 @@
 #include <ICLCore/ImgParams.h>
 #include <vector>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     struct ImageStatistics{
       core::ImgParams params;
       core::depth d;
@@ -22,5 +21,4 @@ namespace icl{
       bool isNull;
       utils::Time time;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

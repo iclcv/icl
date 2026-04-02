@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     bool FileWriterPluginCSV::s_bExtendFileName = false;
 
     void FileWriterPluginCSV::setExtendFileName(bool value){
@@ -76,5 +74,4 @@ namespace icl{
         }
       }
     }
-  } // namespace io
-}
+  } // namespace icl::io

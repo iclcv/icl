@@ -6,8 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// Class interface for un-copyable classes.
     /** In some cases, classes might not be copied e.g. if
         the implementation of this would be very complex and
@@ -51,5 +50,4 @@ namespace icl{
         return *this;
       }
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

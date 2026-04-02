@@ -14,9 +14,7 @@
 using namespace icl::utils;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
   #ifdef ICL_HAVE_QT
 
     SceneMouseHandler::~SceneMouseHandler(){
@@ -378,5 +376,4 @@ namespace icl{
     }
 
 #endif
-  } // namespace geom
-}
+  } // namespace icl::geom

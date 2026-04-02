@@ -11,9 +11,7 @@
 #include <QSplitter>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Special QWidget implementation for configuring grabber properties
     /** \section GEN General Information
         The CamCfgWidget can be used if an application needs to configure
@@ -92,5 +90,4 @@ namespace icl{
       void scan();
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

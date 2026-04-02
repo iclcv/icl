@@ -19,10 +19,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
-namespace icl{
-  namespace geom{
-
-
+namespace icl::geom {
     template<typename T>
     static void perpendiculars(const T x[3], T y[3], T z[3], T theta){
       int dx,dy,dz;
@@ -293,5 +290,4 @@ namespace icl{
 
     template ICLGeom_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode);
     template ICLGeom_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode);
-  } // namespace geom
-}
+  } // namespace icl::geom

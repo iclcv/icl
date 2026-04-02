@@ -8,8 +8,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <ICLUtils/SSETypes.h>
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     namespace region_detector_tools{
 
       template<class IteratorA, class IteratorB, class Predicate>
@@ -129,5 +128,4 @@ namespace icl{
   #endif
 
     }
-  } // namespace cv
-}
+  } // namespace icl::cv

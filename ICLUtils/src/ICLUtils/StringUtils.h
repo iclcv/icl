@@ -17,9 +17,7 @@
 #include <type_traits>
 #include <iostream>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// compatibility function that writes a datatype instance into a stream \ingroup STRUTILS
     /** This must be used, to ensure, icl8u data is shown as (int) rather as char */
     template<class T>
@@ -296,5 +294,4 @@ namespace icl{
         **/
     ICLUtils_API void analyseHashes(const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
 
-  } // namespace utils
-}
+  } // namespace icl::utils

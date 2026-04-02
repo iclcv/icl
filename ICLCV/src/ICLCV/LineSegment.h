@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <iostream>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// line segment class (e.g. used for run-length coding)
     /** A line segment represents a set of successive pixels in one
         image line that have the same value.
@@ -38,5 +36,4 @@ namespace icl{
       return s << "LineSegment(x="<<l.x<<" y="<<l.y<<" len="<<l.len()<<")";
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

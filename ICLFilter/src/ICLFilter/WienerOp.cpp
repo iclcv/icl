@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(WienerOp::Op op) {
       switch(op) {
         case WienerOp::Op::apply: return "apply";
@@ -39,5 +37,4 @@ namespace icl {
         src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

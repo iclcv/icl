@@ -9,9 +9,7 @@
 #include <ICLUtils/Range.h>
 #include <ICLUtils/Size.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// The GUIComponent class servers as a generic interface for GUI definitions
     /** <b>Please refer to the ICL-manual for an introduction to the GUI toolkit</b>\n
      */
@@ -251,5 +249,4 @@ namespace icl{
         return str.str();
       }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

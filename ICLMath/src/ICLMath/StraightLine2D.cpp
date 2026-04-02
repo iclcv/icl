@@ -6,9 +6,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     StraightLine2D::StraightLine2D(float angle, float distance){
       o = Pos(cos(angle),sin(angle))*distance;
       v = Pos(o[1],-o[0]);
@@ -80,5 +78,4 @@ namespace icl{
       return o + v*(v[0]*x[0]+v[1]*x[1]);
     }
 
-  } // namespace math
-}
+  } // namespace icl::math

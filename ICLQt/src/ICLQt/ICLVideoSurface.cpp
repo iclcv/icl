@@ -8,8 +8,7 @@
 using namespace icl::core;
 using namespace icl::utils;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     ICLVideoSurface::ICLVideoSurface() : QObject() {
       init();
       m_sink = new QVideoSink(this);
@@ -85,4 +84,3 @@ namespace icl{
       return imgDisplay;
     }
   }
-}

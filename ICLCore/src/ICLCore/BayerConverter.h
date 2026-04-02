@@ -8,9 +8,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl {
-  namespace core{
-
+namespace icl::core {
     /// Utiltity class for bayer pattern conversion
     /** The internal implementation was basically taken from
         the libdc files */
@@ -107,5 +105,4 @@ namespace icl {
       }
     };
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

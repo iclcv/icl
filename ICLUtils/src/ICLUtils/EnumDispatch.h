@@ -6,9 +6,7 @@
 
 #include <type_traits>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     /// Dispatch a runtime enum/int value to a compile-time template parameter.
     ///
     /// Calls f(std::integral_constant<E, V>{}) for the matching value.
@@ -25,5 +23,4 @@ namespace icl {
         : false) || ...);
     }
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

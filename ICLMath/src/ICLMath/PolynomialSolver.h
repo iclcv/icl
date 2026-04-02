@@ -11,9 +11,7 @@
 #pragma WARNING("This compiler does not support the functions ilogb and scalbln.")
 #else
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
   using xcomplex = std::complex<double>;
 
     /****************************************************************************
@@ -482,6 +480,4 @@ namespace icl{
       return nroots;
     }
   }
-}
-
 #endif

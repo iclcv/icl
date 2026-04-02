@@ -9,9 +9,7 @@
 using namespace icl::utils;
 
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     MarkerMetricsICL1::MarkerMetricsICL1(const MarkerCodeICL1 &c, const Size32f &markerSizeMM):
       MarkerCodeICL1(c),root(markerSizeMM){
 
@@ -45,5 +43,4 @@ namespace icl{
         }
       }
     }
-  } // namespace markers
-}
+  } // namespace icl::markers

@@ -7,9 +7,7 @@
 #include <ICLUtils/ConfigFile.h>
 #include <mutex>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     namespace{
       struct DefInt{
         int value;
@@ -435,5 +433,4 @@ namespace icl{
       });
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

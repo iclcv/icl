@@ -9,9 +9,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Macros.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Programm argument environment exception type \ingroup PA \ingroup EXCEPT
     struct ProgArgException : public ICLException{
       ProgArgException(const std::string &func, const std::string &what):
@@ -456,5 +454,4 @@ namespace icl{
 
     /// returns the current help text (which is empty, if it was not set) \ingroup PA
     ICLUtils_API std::string pa_get_help_text();
-  } // namespace utils
-}
+  } // namespace icl::utils

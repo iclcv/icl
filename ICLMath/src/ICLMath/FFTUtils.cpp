@@ -21,8 +21,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     namespace fft{
 
       typedef std::complex<icl32f> icl32c;
@@ -1506,5 +1505,4 @@ namespace icl{
       DynMatrix<icl32c >&  idft2D(DynMatrix<std::complex<icl64f> >& src,
                                                      DynMatrix<icl32c > &dst,DynMatrix<icl32c > &buf);
     } // namespace fft
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

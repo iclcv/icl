@@ -6,9 +6,7 @@
 #include <ICLUtils/PugiXML.h>
 #include <ICLUtils/StringUtils.h>
 
-namespace icl{
-    namespace geom{
-
+namespace icl::geom {
         const char *Primitive3DFilter::KERNEL_CODE = (
         "float4 conj(float4 q) {                                                                                                                                                      \n"
         "    float4 res;                                                                                                                                                              \n"
@@ -621,5 +619,4 @@ namespace icl{
 
         }
 
-    } // namespace geom
-}
+    } // namespace icl::geom

@@ -6,8 +6,7 @@
 #include <ICLMath/FixedMatrix.h>
 #include <ICLMath/FixedVector.h>
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     using namespace utils;
     using namespace math;
 
@@ -258,4 +257,3 @@ namespace icl{
       return e.evalError(false);
     }
   }
-}

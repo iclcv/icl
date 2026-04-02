@@ -11,9 +11,7 @@
 #include <functional>
 #include <ICLQt/MouseHandler.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ICLDrawWidget;
     /** \endcond */
@@ -270,5 +268,4 @@ namespace icl{
       /// brings one rectangle to the back internally
       void bringToBack(int idx);
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

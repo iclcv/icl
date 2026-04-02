@@ -9,10 +9,7 @@
 #include <ICLCore/Image.h>
 #include <ICLFilter/OpROIHandler.h>
 
-namespace icl{
-  namespace filter{
-
-
+namespace icl::filter {
     /// Abstract Base class for Unary Operators \ingroup UNARY
     /** A list of unary operators can be found here:\n
         \ref UNARY
@@ -42,10 +39,10 @@ namespace icl{
       virtual void apply(const core::ImgBase *src, core::ImgBase **dst) final;
 
       /// Single-arg apply: uses internal buffer, returns reference to it
-      const core::Image& apply(const core::Image &src);
+      [[nodiscard]] const core::Image& apply(const core::Image &src);
 
       /// function operator
-      inline const core::Image& operator()(const core::Image &src){
+      [[nodiscard]] inline const core::Image& operator()(const core::Image &src){
         return apply(src);
       }
 
@@ -158,5 +155,4 @@ namespace icl{
       }                                                  \
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

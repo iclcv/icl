@@ -15,8 +15,7 @@
 #include <ICLUtils/CLBuffer.h>
 #endif
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class is used in PointCloudCreator for GPU-parallelized pointcloud creation*/
     class PointCloudCreatorCL{
@@ -80,5 +79,4 @@ namespace icl{
 
     #endif
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

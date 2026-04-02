@@ -10,8 +10,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Class for fast LUT-based color segmentation
     /** \section GEN General Information
         Color segmentation is a very common issue in computer vision applications. The ColorSegmentationOp
@@ -181,5 +180,4 @@ namespace icl{
 
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

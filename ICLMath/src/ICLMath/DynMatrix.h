@@ -8,9 +8,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <iterator>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Highly flexible and optimized matrix class implementation  \ingroup LINALG
     /** Inherits DynMatrixBase<T> for storage and element access.
         Adds strided column/row iteration, arithmetic operators,
@@ -331,5 +329,4 @@ namespace icl{
     /// vertical concatenation of matrices (missing elements padded with 0)
     template<class T> ICLMath_IMP
     DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom);
-  } // namespace math
-}
+  } // namespace icl::math

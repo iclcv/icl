@@ -457,9 +457,7 @@ namespace {
 
 }
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     Img8u *TestImages::internalCreate(const std::string &name){
       try{
         if(name == "women"){
@@ -608,5 +606,4 @@ namespace icl{
     }
 
 
-  } // namespace io
-}
+  } // namespace icl::io

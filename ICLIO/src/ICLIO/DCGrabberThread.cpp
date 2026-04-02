@@ -14,8 +14,7 @@
 
 using namespace icl::utils;
 using namespace icl::core;
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace dc{
 
       /// mutex protected list of all currently running grabber threads
@@ -164,5 +163,4 @@ namespace icl{
       }
 
     }
-  } // namespace io
-}
+  } // namespace icl::io

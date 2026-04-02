@@ -8,9 +8,7 @@
 #include <ICLMath/LeastSquareModelFitting.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Direct Least Square Fitting specialization for 2D input data
     /** Specialized least square model fitting for 2D data. Also
         some special desing matrix creation methods are provided */
@@ -73,5 +71,4 @@ namespace icl{
     };
 
 
-  } // namespace math
-}
+  } // namespace icl::math

@@ -10,9 +10,7 @@
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLIO/ImageOutput.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Publisher, that can be used to publish images via SharedMemorySegment
     class ICLIO_API SharedMemoryPublisher : public ImageOutput{
       struct Data;  //!< intenal data
@@ -39,5 +37,4 @@ namespace icl{
       /// returns current memory segment name
       std::string getMemorySegmentName() const;
     };
-  } // namespace io
-}
+  } // namespace icl::io

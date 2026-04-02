@@ -18,9 +18,7 @@
 #include <mutex>
 #endif
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     struct ProcessMonitor::Data{
       std::recursive_mutex mutex;
       ProcessMonitor::Info info;
@@ -173,5 +171,4 @@ namespace icl{
       static ProcessMonitor pm;
       return &pm;
     }
-  } // namespace utils
-}
+  } // namespace icl::utils

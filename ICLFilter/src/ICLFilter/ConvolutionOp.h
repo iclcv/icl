@@ -11,9 +11,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class for Image convolutions
     /** (Img8u, Img32f: IPP + Fallback, all other Types: Fallback only!) \ingroup UNARY \ingroup NBH
     The ConvolutionOp class provides functionality for any kind of convolution
@@ -117,5 +115,4 @@ namespace icl {
     /// ADL-visible toString for ConvolutionOp::Op (defined in ConvolutionOp.cpp)
     ICLFilter_API const char* toString(ConvolutionOp::Op op);
 
-  } // namespace filter
-}
+  } // namespace icl::filter

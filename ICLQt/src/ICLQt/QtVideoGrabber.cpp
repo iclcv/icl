@@ -7,8 +7,7 @@
 using namespace icl::utils;
 using namespace icl::io;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     QtVideoGrabber::QtVideoGrabber(const std::string &filename) {
 
       if(!File(filename).exists()){
@@ -60,4 +59,3 @@ namespace icl{
 
     REGISTER_GRABBER(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
   }
-}

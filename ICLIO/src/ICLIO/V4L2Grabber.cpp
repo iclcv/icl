@@ -31,9 +31,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     std::string fourcc_to_string(int fourcc){
       int tmp[2] = {fourcc,0};
       return std::string(reinterpret_cast<char*>(tmp));
@@ -776,5 +774,4 @@ namespace icl{
 
     REGISTER_GRABBER(v4l,createVlGrabber, V4L2Grabber::getDeviceList, "v4l:/dev/videoX index or device-file:V4l2 based camera source");
 
-  } // namespace io
-}
+  } // namespace icl::io

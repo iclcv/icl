@@ -10,9 +10,7 @@
 #include <ICLGeom/PointCloudObject.h>
 #include <vector>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Utility structure, that represents a superquadric
     struct ICLGeom_API SQParams {
       math::Vec3 size;
@@ -84,5 +82,4 @@ namespace icl{
     };
     using SQFitterPtr = std::shared_ptr<SQFitter>;
 
-  } // namespace geom
-}
+  } // namespace icl::geom

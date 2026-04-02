@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/InplaceOp.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Filter class for logical in-place operations  \ingroup INPLACE
     /** The InplaceLogicalOp class provides functionalities for
         arbitrary logical in-place operations on images. The operator
@@ -84,5 +82,4 @@ namespace icl{
       /// value
       icl64f m_dValue;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

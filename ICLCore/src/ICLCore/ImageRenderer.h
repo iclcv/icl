@@ -9,9 +9,7 @@
 #include <ICLUtils/Uncopyable.h>
 
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     class ICLCore_API ImageRenderer {
       struct Data;
       Data *m_data;
@@ -43,4 +41,3 @@ namespace icl{
     };
 
   }
-}

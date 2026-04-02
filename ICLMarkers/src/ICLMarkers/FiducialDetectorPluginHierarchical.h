@@ -10,10 +10,7 @@
 #include <ICLMarkers/FiducialDetectorPlugin.h>
 #include <ICLMarkers/RegionStructure.h>
 
-namespace icl{
-  namespace markers{
-
-
+namespace icl::markers {
     /// Extra abstraction layer that defines a basic skeleton for the detection of hierarchical fiducials \ingroup PLUGINS
     class ICLMarkers_API FiducialDetectorPluginHierarchical : public FiducialDetectorPlugin{
       /// internal data class
@@ -46,5 +43,4 @@ namespace icl{
       virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params)=0;
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

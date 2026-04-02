@@ -8,10 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
-
+namespace icl::cv {
     struct TransformLinesegAndSetImageRegionData{
       ImageRegionData *d;
       TransformLinesegAndSetImageRegionData(ImageRegionData *d) : d(d){}
@@ -78,5 +75,4 @@ namespace icl{
         }
       }
     }
-  } // namespace cv
-}
+  } // namespace icl::cv

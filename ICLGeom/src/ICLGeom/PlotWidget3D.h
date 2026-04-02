@@ -10,9 +10,7 @@
 #include <functional>
 
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     class ICLGeom_API PlotWidget3D : public qt::ICLDrawWidget3D{
       struct Data;
       Data *m_data;
@@ -71,4 +69,3 @@ namespace icl{
       Handle label(const Vec &p, const std::string &text);
     };
   }
-}

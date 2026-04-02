@@ -16,9 +16,7 @@
 
 #include <ICLMarkers/FiducialImpl.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Generic Interface class for FiducialDetector plugins \ingroup PLUGINS
     struct ICLMarkers_API FiducialDetectorPlugin : public utils::Configurable{
       /// Camera structure for 3D feature estimation
@@ -140,5 +138,4 @@ namespace icl{
       }
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

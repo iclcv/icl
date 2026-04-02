@@ -5,9 +5,7 @@
 #include <ICLCV/Extrapolator.h>
 #include <stdio.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     //s(t+1) = s(t) + dt v(t) + (dt)²/2 a(t)
     //v(t+1) = v(t) + dt a(t)  empirisch!
     //a(t+1) = a(t)            empirisch!
@@ -79,5 +77,4 @@ namespace icl{
     template ICLCV_API class Extrapolator<icl64f, long int>;
     template ICLCV_API class Extrapolator<icl64f, int>;
     template ICLCV_API class Extrapolator<icl64f, icl32f>;
-  } // namespace cv
-}
+  } // namespace icl::cv

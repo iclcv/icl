@@ -9,9 +9,7 @@
 #include <memory>
 #include <functional>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Direct Least Square Fitting Algorithm
     /** The given algorithm is based on the paper <em><b>Direct Least Square Fitting
         of Ellipses</b></em> written by<em>Andrew W. Fitzgibbon</em>, <em>Maurizio Milu</em>
@@ -190,5 +188,4 @@ namespace icl{
         return m_model;
       }
     };
-  } // namespace math
-}
+  } // namespace icl::math

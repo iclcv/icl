@@ -19,9 +19,7 @@ extern "C" {
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
 #define INPUT_FORMAT AV_PIX_FMT_RGB24
 #define STREAM_FORMAT AV_PIX_FMT_YUV420P
 
@@ -263,5 +261,4 @@ namespace icl{
       return *this;
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

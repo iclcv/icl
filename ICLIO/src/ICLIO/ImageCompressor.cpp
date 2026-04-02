@@ -19,9 +19,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::filter;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct ImageCompressor::Data{
       Img8u ditheringBuffer;
       std::vector<icl8u> encoded_buffer;
@@ -511,5 +509,4 @@ namespace icl{
       return m_data->compression;
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

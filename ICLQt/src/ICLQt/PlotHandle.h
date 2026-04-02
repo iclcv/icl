@@ -8,9 +8,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/PlotWidget.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Handle class for image components \ingroup HANDLES
     class ICLQt_API PlotHandle : public GUIHandle<PlotWidget>{
       public:
@@ -37,5 +35,4 @@ namespace icl{
                            "GUI::ComplexCallback instances to an image GUI component");
       }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

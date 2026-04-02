@@ -12,9 +12,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     class LowLevelPlotWidget::DrawState{
       public:
       bool allowLines;
@@ -751,5 +749,4 @@ namespace icl{
     }
 
     REGISTER_CONFIGURABLE(LowLevelPlotWidget, return create_LowLevelPlotWidget());
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -10,9 +10,7 @@
 #include <type_traits>
 #include <sstream>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Simple generic data type implementation that uses a string based data representation
     /** Instances of class Any can simply be created from any
         data type that implements the ostream-operator<< and
@@ -203,5 +201,4 @@ namespace icl{
     /** \endcond */
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

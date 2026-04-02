@@ -10,9 +10,7 @@
 #include <string>
 #include <ICLUtils/Macros.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Color conversion from source to destination image
     /** All color conversions of the ICL are tackled by this function.
         The destination images size is adapted to the source images size,
@@ -530,5 +528,4 @@ namespace icl{
 
     /// converts given (r,g,b) pixel into the Lab format
     void cc_util_rgb_to_lab(const icl32f &r, const icl32f &g, const icl32f &b, icl32f &L, icl32f &A, icl32f &B);
-  } // namespace core
-}
+  } // namespace icl::core

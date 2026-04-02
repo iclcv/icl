@@ -8,9 +8,7 @@
 #include <ICLMath/Octree.h>
 #include <ICLMath/HomogeneousMath.h>
 
-namespace icl {
-	namespace geom {
-
+namespace icl::geom {
 		/**
 		 * @brief The ICP3D class is a special ICP-case for homogeneous 3D-vectors
 		 */
@@ -139,5 +137,4 @@ namespace icl {
 			std::vector<ICP3DVec> m_target;
 
 		}; // class ICP3D
-	} // namespace geom
-} // namespace icl
+	} // namespace icl::geom

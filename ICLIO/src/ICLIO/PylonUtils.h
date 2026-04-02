@@ -11,8 +11,7 @@
 #include <ICLCore/Img.h>
 #include <mutex>
 
-namespace icl {
-  namespace io{
+namespace icl::io {
     namespace pylon {
 
       /// Buffer, registered to the Pylon-drivers StreamGrabber \ingroup GIGE_G
@@ -242,5 +241,4 @@ namespace icl {
       getPylonDeviceList(Pylon::DeviceInfoList_t* filter=nullptr);
 
     } //namespace pylon
-  } // namespace io
-} //namespace icl
+  } // namespace icl::io

@@ -6,9 +6,7 @@
 
 #include <ICLIO/FileGrabberPlugin.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Interface class for reading images using an ImageMagick++ wrapper  \ingroup FILEIO_G
     /** @copydoc icl::io::FileWriterPluginImageMagick
     */
@@ -30,5 +28,4 @@ namespace icl{
       /// Internal data storage
       InternalData *m_data;
     };
-  } // namespace io
-}
+  } // namespace icl::io

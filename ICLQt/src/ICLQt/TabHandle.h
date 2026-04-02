@@ -10,9 +10,7 @@
 #include <QTabWidget>
 #include <QLayout>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// A Handle for TabWidget container GUI components  \ingroup HANDLES
     class TabHandle : public GUIHandle<QTabWidget>, public ContainerHandle{
       public:
@@ -42,5 +40,4 @@ namespace icl{
         return (**this)->count();
       }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

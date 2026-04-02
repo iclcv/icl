@@ -14,9 +14,7 @@ class QLayout;
 class QWidget;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class GUI;
     class ProxyLayout;
@@ -129,5 +127,4 @@ namespace icl{
       ProxyLayout *m_poParentProxyLayout;    //<! parent widget proxy layout
       std::string m_toolTip;                 //<! optionally given tooltip
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

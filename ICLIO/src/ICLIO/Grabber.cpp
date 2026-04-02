@@ -15,8 +15,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace {
       [[maybe_unused]] inline bool inList(const std::string &s, const std::vector<std::string> &vec){
         return std::find(vec.begin(),vec.end(),s) != vec.end();
@@ -413,5 +412,4 @@ namespace icl{
       }
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -4,9 +4,7 @@
 
 #include <ICLGeom/SurfaceFeatureExtractor.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     SurfaceFeatureExtractor::SurfaceFeature SurfaceFeatureExtractor::apply(
                                             std::vector<Vec> &points, std::vector<Vec> &normals, int mode){
       SurfaceFeatureExtractor::SurfaceFeature feature = getInitializedStruct();
@@ -133,4 +131,3 @@ namespace icl{
 	  }
 
   }
-}

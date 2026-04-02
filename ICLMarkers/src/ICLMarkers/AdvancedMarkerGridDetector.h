@@ -10,9 +10,7 @@
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLMarkers/Fiducial.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Extension of the MarkerGridDetector class that provides a more advanced output
 	  class ICLMarkers_API AdvancedMarkerGridDetector : public MarkerGridDetector{
       public:
@@ -200,4 +198,3 @@ namespace icl{
       MarkerGrid grid; //!< internal marker grid
     };
   }
-}

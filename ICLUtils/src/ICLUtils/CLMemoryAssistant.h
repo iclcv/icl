@@ -39,9 +39,7 @@
 #include <ICLUtils/Exception.h>
 #include <map>
 
-namespace icl {
-	namespace utils {
-
+namespace icl::utils {
 		/**
 		 * @brief The CLMemoryAssistant class is a helper class to maintain buffers and images for opencl-program pipelines
 		 *
@@ -143,6 +141,4 @@ namespace icl {
 		};
 
 	}
-}
-
 #endif

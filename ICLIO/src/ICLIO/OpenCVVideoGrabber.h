@@ -15,9 +15,7 @@
 #include <string>
 #include <ICLUtils/File.h>
 #include <mutex>
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
     class ICLIO_API OpenCVVideoGrabber : public Grabber{
         struct Data; //!< pimpl type
@@ -41,5 +39,4 @@ namespace icl{
         ~OpenCVVideoGrabber();
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

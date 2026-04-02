@@ -8,9 +8,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <ICLQt/ColorLabel.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class wrapping ColorLabel GUI compoenent handling \ingroup HANDLES
     class ColorHandle : public GUIHandle<ColorLabel>{
       public:
@@ -54,5 +52,4 @@ namespace icl{
 
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

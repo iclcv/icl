@@ -4,8 +4,7 @@
 
 #include <ICLPhysics/GeometricTools.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     using namespace utils;
     using namespace geom;
 
@@ -47,4 +46,3 @@ namespace icl{
 
 
   }
-}

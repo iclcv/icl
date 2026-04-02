@@ -9,9 +9,7 @@
 #include <vector>
 #include <string>
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
     class ICLUtils_API Timer{
       private:
       int m_iTimerMode;
@@ -49,6 +47,4 @@ namespace icl {
       /// stops the timer and returns the overall working time as long int
       long int stopSilent();
     }; //class Timer
-  } // namespace utils
-
-} //namespace ICL
+  } // namespace icl::utils

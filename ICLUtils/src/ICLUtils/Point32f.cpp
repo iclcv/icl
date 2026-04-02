@@ -4,8 +4,7 @@
 
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     const Point32f Point32f::null(0.0,0.0);
 
     float Point32f::norm(float p) const{
@@ -63,5 +62,4 @@ namespace icl{
       return (b1 == b2) && (b2 == b3);
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -23,9 +23,7 @@
 #define VIEW_E 3
 
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class MyrmexDecoder {
 
     public:
@@ -51,5 +49,4 @@ namespace icl{
       void init(const icl16s *data, const utils::Size &size,char viewpoint,unsigned char speed, unsigned char compression);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

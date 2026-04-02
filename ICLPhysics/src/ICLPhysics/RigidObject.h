@@ -9,8 +9,7 @@
 
 class btRigidBody;
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// This class combines a movable but rigid physics object and it's graphical representation in ICL
     /** Actually, this sub-class is just an explicit restriction of the general PhysicalObject class,
         that can represent:
@@ -95,4 +94,3 @@ namespace icl{
       void setMass(float mass);
     };
   }
-}

@@ -4,9 +4,7 @@
 
 #include <ICLGeom/PointCloudSegment.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     PointCloudSegment::PointCloudSegment(int dim, bool withColors):
       PointCloudObject(dim,false,withColors),
       featuresComputed(false),
@@ -296,4 +294,3 @@ namespace icl{
     }
 
   }
-}

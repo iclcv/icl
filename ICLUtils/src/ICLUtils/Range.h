@@ -14,10 +14,7 @@
 #include <iostream>
 #include <string>
 
-namespace icl{
-  namespace utils{
-
-
+namespace icl::utils {
     /// class representing a range defined by min and max value \ingroup TYPES
     template<class Type>
     struct Range{
@@ -114,5 +111,4 @@ namespace icl{
     template<class T> ICLUtils_API
     std::istream &operator>>(std::istream &s, Range <T> &range);
 
-  } // namespace utils
-}
+  } // namespace icl::utils

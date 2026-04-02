@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     //      10------------------------50
     //n=4   10     20     30    40    50
     //
@@ -51,5 +49,4 @@ namespace icl{
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

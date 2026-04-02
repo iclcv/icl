@@ -9,10 +9,7 @@
 #include <vector>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     /// Plugin class to read "png" images \ingroup FILEIO_G
     class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
       std::vector<unsigned char> data;
@@ -25,5 +22,4 @@ namespace icl{
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);
     };
-  } // namespace io
-}
+  } // namespace icl::io

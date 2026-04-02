@@ -9,8 +9,7 @@
 #include <QtWidgets/QGroupBox>
 #include <string>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Handle class for "border" gui components (only for explicit "border" components) \ingroup HANDLES
     class ICLQt_API BorderHandle : public GUIHandle<QGroupBox>{
       public:
@@ -27,5 +26,4 @@ namespace icl{
       void operator=(const std::string &title);
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

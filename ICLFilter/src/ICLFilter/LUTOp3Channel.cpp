@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     template<class T>
     LUTOp3Channel<T>::LUTOp3Channel(Plugin *p,icl8u shift):m_poPlugin(0),m_ucShift(shift){
       ICLASSERT_THROW(shift<8,ICLException("invalid shift value ( must be < 8 )"));
@@ -128,5 +126,4 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

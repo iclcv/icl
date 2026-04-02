@@ -11,8 +11,7 @@
 #include <vector>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Chamfering Unit \ingroup UNARY
     /** Chamfering is a procedure called Euclidean-Distance-Transformation (EDT).
         Input of the Chamfering operation is a binary image. The Chamfering operation
@@ -344,5 +343,4 @@ namespace icl{
       /// temporarily use buffer
       core::Img32s m_oBufferImage;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

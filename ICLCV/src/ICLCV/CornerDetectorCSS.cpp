@@ -14,8 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
 #ifdef ICL_HAVE_OPENCL
     struct CornerDetectorCSS::CLCurvature{
       CLProgram deriveProgram;
@@ -663,4 +662,3 @@ namespace icl{
 
     REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);
   }
-}

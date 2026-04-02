@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/FixedMatrix.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     template<class T, int DIM>
     struct FixedColVector : public FixedMatrix<T, 1, DIM>{
       using super = FixedMatrix<T,1,DIM>;
@@ -52,5 +50,4 @@ namespace icl{
 
 
 
-  } // namespace math
-}
+  } // namespace icl::math

@@ -15,9 +15,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     // local definitions
 #define ID_MICROSOFT 0x045e
 #define ID_SURFACE   0x0775
@@ -364,5 +362,4 @@ namespace icl{
 
     REGISTER_GRABBER(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"ps:0:pixelsense image source");
 
-  } // namespace io
-}
+  } // namespace icl::io

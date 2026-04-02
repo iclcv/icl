@@ -6,9 +6,7 @@
 
 #include <ICLIO/GenericImageOutput.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// image output implementation using the ZeroMQ (ZMQ) framwork
     class ZmqImageOutput : public ImageOutput{
       public:
@@ -41,5 +39,4 @@ namespace icl{
       /// returns whether this is not a null instance
       inline operator bool() const { return static_cast<bool>(m_data); }
     };
-  } // namespace io
-}
+  } // namespace icl::io

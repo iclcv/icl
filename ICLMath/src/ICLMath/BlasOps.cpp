@@ -6,9 +6,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     const char* toString(BlasOp op) {
       switch(op) {
         case BlasOp::gemm:  return "gemm";
@@ -60,5 +58,4 @@ namespace icl {
     template struct BlasOps<float>;
     template struct BlasOps<double>;
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

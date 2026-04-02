@@ -8,9 +8,7 @@
 #include <ICLCore/Color.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// Utility class for speudocolor conversion
     /** The PseudoColorConverter converts a given 1-channel image into an RGB pseudocolor image.
         It can be set up to use a default color-table or it can be set up using a Stop-based
@@ -77,5 +75,4 @@ namespace icl{
       Data *m_data;
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

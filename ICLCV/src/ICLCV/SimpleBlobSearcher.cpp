@@ -8,10 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
-
+namespace icl::cv {
     SimpleBlobSearcher::Blob::Blob(const ImageRegion *region,
                                    const Color &refColor,
                                    int refColorIndex):
@@ -105,5 +102,4 @@ namespace icl{
       }
       return m_data->blobs;
     }
-  } // namespace cv
-}
+  } // namespace icl::cv

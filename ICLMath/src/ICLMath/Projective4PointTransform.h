@@ -10,9 +10,7 @@
 #include <ICLUtils/Rect32f.h>
 #include <ICLUtils/Rect.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Utility class that provides functions to perspectively map 4 points of a source frame into 4 points of a destination frame
     /** In contrast to a standard bilinear interpolation, a 4-point projective transform also implements perspective
         vanishing point effencts. The algorithm was explained well in
@@ -114,4 +112,3 @@ namespace icl{
 
     };
   }
-}

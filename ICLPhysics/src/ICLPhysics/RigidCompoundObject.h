@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/RigidObject.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// A Box that can with RigidObject features
     class ICLPhysics_API RigidCompoundObject : public RigidObject{
 
@@ -19,4 +18,3 @@ namespace icl{
       void removeAllChildren();
     };
   }
-}

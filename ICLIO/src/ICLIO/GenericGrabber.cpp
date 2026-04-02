@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     class GrabberInstanceTable : Uncopyable {
       private:
         static GrabberInstanceTable inst;
@@ -368,5 +366,4 @@ namespace icl{
       return deviceList;
     }
 
-  } // namespace io
-} // namespace icl
+  } // namespace icl::io

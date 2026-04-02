@@ -19,9 +19,7 @@
 class QLayout;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class GUIWidget;
     class ProxyLayout;
@@ -202,5 +200,4 @@ namespace icl{
       bool m_bCreated;
       QWidget *m_poParent;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

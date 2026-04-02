@@ -6,8 +6,7 @@
 
 #include <ICLGeom/Scene.h>
 #include <ICLPhysics/PhysicsWorld.h>
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     class ICLPhysics_API PhysicsScene: public geom::Scene, public PhysicsWorld {
       public:
 			PhysicsScene(PhysicsWorld::BulletSolverType type = PhysicsWorld::Default);
@@ -31,4 +30,3 @@ namespace icl{
       void removeObjects(int startIndex, int endIndex=-1);
     };
   }
-}

@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     const char* toString(BinaryCompareOp::Op op) {
       switch(op) {
         case BinaryCompareOp::Op::compare: return "compare";
@@ -45,5 +43,4 @@ namespace icl {
       }
     }
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

@@ -11,9 +11,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     struct ThreadedUpdatableSlider::EventFilter : public QObject{
       ThreadedUpdatableSlider *m_parent;
       EventFilter(ThreadedUpdatableSlider *parent):
@@ -118,5 +116,4 @@ namespace icl{
       }
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

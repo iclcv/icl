@@ -11,8 +11,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ICLPhysics/MotionState.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     RigidBoxObject::RigidBoxObject(float x, float y, float z, float dx, float dy, float dz, float mass){
       so = addCuboid(0,0,0,dx,dy,dz);
 
@@ -29,4 +28,3 @@ namespace icl{
       setPhysicalObject(new btRigidBody(ci));
     }
   }
-}

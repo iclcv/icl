@@ -7,14 +7,11 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
     class ICLIO_API FileGrabberPluginBICL : public FileGrabberPlugin{
       public:
       /// grab implementation
       virtual void grab(utils::File &file, core::ImgBase **dest);
     };
-  } // namespace io
-}
+  } // namespace icl::io

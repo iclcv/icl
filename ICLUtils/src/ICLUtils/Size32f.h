@@ -8,8 +8,7 @@
 #include <ICLUtils/Size.h>
 #include <iostream>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// Size32f class of the ICL (float valued)
     class ICLUtils_API Size32f{
 
@@ -78,5 +77,4 @@ namespace icl{
     /// istream operator
     ICLUtils_API std::istream &operator>>(std::istream &is, Size32f &s);
 
-  } // namespace utils
-}// namespace icl
+  } // namespace icl::utils

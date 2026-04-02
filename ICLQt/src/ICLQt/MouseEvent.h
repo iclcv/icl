@@ -11,9 +11,7 @@
 #include <QtCore/Qt>
 #include <vector>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ICLWidget;
     /** \endcond */
@@ -228,5 +226,4 @@ namespace icl{
         return cpy;
       }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -10,9 +10,7 @@
 #include <ICLCore/Img.h>
 #include <bitset>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// used 36Bit BCH Code -> 12Bit data max-Error: 4bit
     using BCHCode = std::bitset<36>;
 
@@ -129,5 +127,4 @@ namespace icl{
       DecodedBCHCode2D decode2D(const core::Img8u &image, int maxID=4095, bool useROI=true);
 
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

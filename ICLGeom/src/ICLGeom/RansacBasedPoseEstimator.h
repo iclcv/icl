@@ -10,9 +10,7 @@
 #include <ICLGeom/GeomDefs.h>
 #include <ICLGeom/Camera.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// RANSAC-based pose estimation
     class ICLGeom_API RansacBasedPoseEstimator : public utils::Configurable{
       struct Data;  //!< internal data handling
@@ -66,4 +64,3 @@ namespace icl{
 
     };
   }
-}

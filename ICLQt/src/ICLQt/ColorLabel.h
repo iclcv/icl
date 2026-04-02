@@ -9,9 +9,7 @@
 #include <ICLQt/ThreadedUpdatableWidget.h>
 #include <QtCore/QMutex>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Utility class to avoid Qt warning when accesing QLabels from differnt Threads
     /** QLabels can not be used from different Threads. So if a QLabel is created in
         in the main thread, it might not be set up to show another text/number from
@@ -66,5 +64,4 @@ namespace icl{
       /// Thread-safety mutex
       mutable QMutex m_oMutex;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

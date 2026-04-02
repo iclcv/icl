@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(UnaryLogicalOp::Op op) {
       switch(op) {
         case UnaryLogicalOp::Op::withVal: return "withVal";
@@ -46,5 +44,4 @@ namespace icl {
       }
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

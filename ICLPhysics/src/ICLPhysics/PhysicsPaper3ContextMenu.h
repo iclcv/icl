@@ -9,9 +9,7 @@
 #include <functional>
 #include <string>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     class PhysicsPaper3ContextMenu {
       struct Data;
       Data *m_data;
@@ -37,4 +35,3 @@ namespace icl{
       void show(const utils::Point &screenPos);
     };
   }
-}

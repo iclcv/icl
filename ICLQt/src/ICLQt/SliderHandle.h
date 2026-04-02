@@ -13,9 +13,7 @@
 class QLCDNumber;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ThreadedUpdatableSlider;
     /** \endcond */
@@ -92,5 +90,4 @@ namespace icl{
 
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

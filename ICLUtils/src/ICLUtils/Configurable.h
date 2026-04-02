@@ -17,9 +17,7 @@
 #include <map>
 #include <mutex>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Interface for classes that can be configured from configuration-files and GUI-Components
     /** The Configurable-interface can be used to define a classes
         parameters/properties that shall be changed at runtime. The
@@ -491,5 +489,4 @@ namespace icl{
     /** @see \ref REG */
   #define REGISTER_CONFIGURABLE_DEFAULT(NAME) REGISTER_CONFIGURABLE(NAME,return new NAME)
 
-  } // namespace utils
-}
+  } // namespace icl::utils

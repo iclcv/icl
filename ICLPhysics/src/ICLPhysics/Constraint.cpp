@@ -3,9 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLPhysics/Constraint.h>
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     void Constraint::initUserPointer() {
       m_constraint->setUserConstraintPtr(this);
     }
@@ -25,4 +23,3 @@ namespace icl {
       return m_objects;
     }
   }
-}

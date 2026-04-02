@@ -7,9 +7,7 @@
 #include <ICLUtils/Array2D.h>
 #include <vector>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Implementation of the Hungarian Algorithm to solve Linear Assignment problems
     /** @see PositionTracker
 
@@ -44,5 +42,4 @@ namespace icl{
       //static real calculateError(const utils::Array2D<real> &cost, const std::vector<int> &assignement);
     };
 
-  } // namespace cv
-} //namespace
+  } // namespace icl::cv

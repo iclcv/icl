@@ -15,9 +15,7 @@
 #include <map>
 #include <vector>
 
-namespace icl {
-	namespace utils {
-
+namespace icl::utils {
 	// /////////////////////////////////////////////////////////////////////////////////////////////
 
 	struct CLProgram::Impl {
@@ -239,5 +237,4 @@ namespace icl {
 	}
 
   }
-}
 #endif

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/FileWriterPlugin.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Writer plugins for ".csv"-files (<b>Comma</b>-<b>Separated</b> <b>Values</b>) \ingroup FILEIO_G
     class ICLIO_API FileWriterPluginCSV : public FileWriterPlugin{
       public:
@@ -28,5 +26,4 @@ namespace icl{
       /// static flag
       static bool s_bExtendFileName;
     };
-  } // namespace io
-}
+  } // namespace icl::io

@@ -9,8 +9,7 @@
 #include <QVBoxLayout>
 
 /// The icl namespace
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// A simple utility class (QWidget with titled border) \ingroup UNCOMMON
     struct BorderBox : public QGroupBox{
 
@@ -33,5 +32,4 @@ namespace icl{
       QVBoxLayout *m_poLayout; //<! layout
       QWidget *m_poContent;    //<! content widget
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

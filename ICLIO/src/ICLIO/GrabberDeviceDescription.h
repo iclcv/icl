@@ -8,9 +8,7 @@
 #include <string>
 #include <iostream>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// defines and explains an available grabber device
     struct ICLIO_API GrabberDeviceDescription{
       /// Constructor
@@ -48,5 +46,4 @@ namespace icl{
       return s << "FoundDevice(" << d.type << "," << d.id << "," << d.description << ")";
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

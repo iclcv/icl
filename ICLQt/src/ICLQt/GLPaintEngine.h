@@ -11,9 +11,7 @@
 #include <QFont>
 #include <QOpenGLWidget>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Paint engine to be used in QGLWigets for a high performance image visualization \ingroup UNCOMMON
     /** The GLPaintEngine provides a QPainter like interface for drawing
         2D-OpenGL primitives directly into a OpenGL graphics context.
@@ -101,5 +99,4 @@ namespace icl{
       private:
       core::ImgBase *m_incompDepthBuf;
     };
-  } // namespace qt
-}// namespace
+  } // namespace icl::qt

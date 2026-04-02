@@ -4,9 +4,7 @@
 
 #include <ICLMath/FFTOps.h>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     const char* toString(FFTOp op) {
       switch(op) {
         case FFTOp::r2c:     return "r2c";
@@ -32,5 +30,4 @@ namespace icl {
     template struct FFTOps<float>;
     template struct FFTOps<double>;
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

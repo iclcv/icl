@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/ContainerGUIComponent.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Horizonal Box container component
     struct HBox : public ContainerGUIComponent{
       /// create HBox with optionally given parent
@@ -63,5 +61,4 @@ namespace icl{
       Border(const std::string &label, QWidget *parent=0):
       ContainerGUIComponent("border",label,parent){}
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -15,9 +15,7 @@
 #include <ICLMath/DynMatrixUtils.h>
 #include <gtest/gtest.h>
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
   /** Checks whether all elements of two matrices are pairwise almost equal using
   * a given error bound 'delta'. Use this function in your test by calling, e.g.,
   * EXPECT_TRUE(isNear(A, B, delta));
@@ -103,6 +101,4 @@ testing::AssertionResult isNear(const Point32f &p,
   }
   return testing::AssertionSuccess();
 }
-}
-
 #endif

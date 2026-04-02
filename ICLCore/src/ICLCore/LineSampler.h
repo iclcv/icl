@@ -12,8 +12,7 @@
 #include <vector>
 
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// Utility class for line sampling
     /** The LineSampler class provides a generic framework for efficient line renderig into images.
         It uses the Bresenham line sampling algorithm, that manages to render arbitray lines between
@@ -75,5 +74,4 @@ namespace icl{
       void sample(const utils::Point &a, const utils::Point &b, std::vector<utils::Point> &dst);
     };
 
-  } // namespace core
-}
+  } // namespace icl::core

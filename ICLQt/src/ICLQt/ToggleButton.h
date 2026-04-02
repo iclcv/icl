@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <QPushButton>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     class ICLQt_API ToggleButton : public QPushButton{
       Q_OBJECT;
       public:
@@ -26,5 +24,4 @@ namespace icl{
       std::string m_text[2];
       bool *m_stateRef;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

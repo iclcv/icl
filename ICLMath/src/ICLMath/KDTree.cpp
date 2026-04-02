@@ -4,9 +4,7 @@
 
 #include <ICLMath/KDTree.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
       if(list.size()>0){
         buildTree(list, 0, &root);
@@ -193,5 +191,4 @@ namespace icl{
         //SHOW(*(n->point));
       }
     }
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

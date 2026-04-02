@@ -10,8 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     static inline float median_of_5(const float *p){
       float a[5]= {p[0],p[1],p[2],p[3],p[4]};
       std::sort(a,a+5);
@@ -118,5 +117,4 @@ namespace icl{
       unlock();
       updateFromOtherThread();
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

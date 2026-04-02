@@ -16,8 +16,7 @@
 #include <ICLUtils/CLKernel.h>
 #endif
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class includes segmentation algorithms for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the PointNormalEstimation class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromDisplay() method of the PointCloudObject class).*/
     class ICLGeom_API Segmentation3D{
@@ -243,5 +242,4 @@ namespace icl{
       utils::CLBuffer elementsBlobsBuffer;
     #endif
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

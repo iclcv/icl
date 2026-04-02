@@ -10,9 +10,7 @@
 #include <vector>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
     class ICLIO_API FileWriterPluginPNM : public FileWriterPlugin{
       public:
@@ -26,5 +24,4 @@ namespace icl{
       /// internal data conversion buffer
       std::vector<icl8u> m_vecBuffer;
     };
-  } // namespace io
-}
+  } // namespace icl::io

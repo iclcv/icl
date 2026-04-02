@@ -8,9 +8,7 @@
 #include <ICLCore/CoreFunctions.h>
 #include <iostream>
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     // --- Constructors ---
 
     Image::Image() = default;
@@ -198,5 +196,4 @@ namespace icl {
                << img.getDepth() << " " << img.getFormat();
     }
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

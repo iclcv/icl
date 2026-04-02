@@ -10,8 +10,7 @@ using namespace icl::core;
 using namespace icl::geom;
 
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     FiducialDetectorPlugin::FiducialDetectorPlugin():camera(0){
       addChildConfigurable(&poseEst,"pose");
     }
@@ -88,5 +87,4 @@ namespace icl{
     };
 
     REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPlugin_VIRTUAL);
-  } // namespace markers
-}
+  } // namespace icl::markers

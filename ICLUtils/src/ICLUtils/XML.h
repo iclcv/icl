@@ -6,9 +6,7 @@
 
 #include <ICLUtils/PugiXML.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     // note: this file basically contains ICL-specific typedefs for
     // The included PugiXML backend
 
@@ -74,5 +72,4 @@ namespace icl{
 
     /// Set of XPath nodes \ingroup XML
     using XPathNodeSet = pugi::xpath_node_set;
-  } // namespace utils
-}
+  } // namespace icl::utils

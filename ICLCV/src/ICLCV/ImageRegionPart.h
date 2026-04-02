@@ -10,9 +10,7 @@
 #include <vector>
 #include <list>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// The ImageRegionPart represents a intermediate region part for the connected component analysis
     struct ICLCV_API ImageRegionPart{
 
@@ -66,5 +64,4 @@ namespace icl{
       }
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

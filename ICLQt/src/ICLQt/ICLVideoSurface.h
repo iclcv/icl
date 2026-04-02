@@ -14,9 +14,7 @@
 #include <QtCore/QAtomicInt>
 #include <mutex>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Receives video frames from Qt6 multimedia and converts to ICL images
     class ICLQt_API ICLVideoSurface : public QObject
     {
@@ -55,4 +53,3 @@ namespace icl{
       void init();
     };
   }
-}

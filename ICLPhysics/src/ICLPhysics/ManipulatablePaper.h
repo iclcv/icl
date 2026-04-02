@@ -12,9 +12,7 @@
 #include <map>
 #include <mutex>
 
-namespace icl{
-namespace physics{
-
+namespace icl::physics {
   /// extension of the standard physical paper class
   class ICLPhysics_API ManipulatablePaper : public PhysicsPaper{
     struct VertexAttractor : public SceneObject{
@@ -171,5 +169,4 @@ namespace physics{
     }
   };
 
-}
 }

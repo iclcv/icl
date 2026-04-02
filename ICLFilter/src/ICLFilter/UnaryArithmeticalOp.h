@@ -9,9 +9,7 @@
 #include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// UnaryArithmeticalOp using the BackendDispatch architecture.
     class ICLFilter_API UnaryArithmeticalOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
@@ -49,5 +47,4 @@ namespace icl {
     /// ADL-visible toString for UnaryArithmeticalOp::Op (defined in UnaryArithmeticalOp.cpp)
     ICLFilter_API const char* toString(UnaryArithmeticalOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

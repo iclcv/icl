@@ -22,9 +22,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::filter;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     static std::ostream &operator<<(std::ostream &s, const KinectGrabber::Mode &m){
       static std::string names[] = { "GRAB_RGB_IMAGE", "GRAB_BAYER_IMAGE", "GRAB_DEPTH_IMAGE",
                                      "GRAB_IR_IMAGE_8BIT", "GRAB_IR_IMAGE_10BIT"};
@@ -862,5 +860,4 @@ namespace icl{
     REGISTER_GRABBER(kinectc,createRGBGrabber, getKinectCDeviceList,"kinectc:device ID:kinect color camera source");
     REGISTER_GRABBER(kinecti,createIRGrabber, getKinectIDeviceList,"kinecti:devide ID:kinect IR camera source");
 
-  } // namespace io
-} // namespace icl
+  } // namespace icl::io

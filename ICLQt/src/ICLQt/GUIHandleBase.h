@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIWidget.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Base class for GUIHandles providing functions to register callbacks \ingroup UNCOMMON
     class GUIHandleBase{
 
@@ -84,5 +82,4 @@ namespace icl{
       private:
       GUIWidget *m_poGUIWidget;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -13,10 +13,7 @@
 #include <QApplication>
 #include <QOpenGLWidget>
 
-namespace icl{
-
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     struct ExecThread;
     /** \endcond */
@@ -215,5 +212,4 @@ namespace icl{
 
     /// this is just a shortcut typedef
     using ICLApp = ICLApplication;
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -8,9 +8,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <QtWidgets/QLineEdit>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class for handling "int" textfield components \ingroup HANDLES
     class ICLQt_API IntHandle : public GUIHandle<QLineEdit>{
       public:
@@ -27,5 +25,4 @@ namespace icl{
       /// returns the current text as int
       int getValue() const;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

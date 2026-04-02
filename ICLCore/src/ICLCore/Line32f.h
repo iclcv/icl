@@ -9,9 +9,7 @@
 #include <ICLUtils/Rect.h>
 #include <vector>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /** \cond */
     class Line;
     /** \endcond */
@@ -108,5 +106,4 @@ namespace icl{
     /// istream operator
     ICLCore_API std::istream &operator>>(std::istream &s, Line32f &l);
 
-  } // namespace core
-}
+  } // namespace icl::core

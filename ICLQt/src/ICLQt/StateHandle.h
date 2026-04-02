@@ -10,9 +10,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <string>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class for GUI-Label handling a so called state component\ingroup HANDLES
     /** You can add a state component as an alternative std::cout for debugging
         or system state messages
@@ -61,5 +59,4 @@ namespace icl{
 
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

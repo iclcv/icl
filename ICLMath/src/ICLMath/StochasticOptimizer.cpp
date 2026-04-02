@@ -9,9 +9,7 @@
 #include <vector>
 #include <functional>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     template<class T>
     StochasticOptimizerResult<T>::StochasticOptimizerResult(const T *data,T error, T startError, int steps):
       data(data),error(error),startError(startError),steps(steps){
@@ -55,5 +53,4 @@ namespace icl{
     template class ICLMath_API StochasticOptimizer<float>;
     template class ICLMath_API StochasticOptimizer<double>;
 
-  } // namespace math
-}
+  } // namespace icl::math

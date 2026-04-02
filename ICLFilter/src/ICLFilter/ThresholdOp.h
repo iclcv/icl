@@ -9,9 +9,7 @@
 #include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     class ICLFilter_API ThresholdOp : public UnaryOp, public core::ImageBackendDispatching {
       public:
 
@@ -58,5 +56,4 @@ namespace icl {
     /// ADL-visible toString for ThresholdOp::Op → registry name (defined in ThresholdOp.cpp)
     ICLFilter_API const char* toString(ThresholdOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

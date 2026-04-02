@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLCore/ChromaClassifier.h>
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON
     struct ChromaAndRGBClassifier{
       /// classifies a given r-g-b-Pixel
@@ -42,5 +41,4 @@ namespace icl{
         printf("color thresholds: %d %d %d \n",thresh[0],thresh[1],thresh[2]);
       }
     };
-  } // namespace core
-}
+  } // namespace icl::core

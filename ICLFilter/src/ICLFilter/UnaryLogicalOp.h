@@ -10,8 +10,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
      /// Class for bitwise logical operations on pixel values. \ingroup UNARY
      /**
          (all functions: Img8u, Img32s: IPP + Fallback, Img16s: Fallback only!, No support for other Types)
@@ -64,5 +63,4 @@ namespace icl {
     /// ADL-visible toString for UnaryLogicalOp::Op → registry name (defined in UnaryLogicalOp.cpp)
     ICLFilter_API const char* toString(UnaryLogicalOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

@@ -9,8 +9,7 @@
 #include <QGridLayout>
 #include <math.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     DoubleSlider::DoubleSlider(QWidget *parent, const QString &id): QWidget(parent),m_qsID(id){
       m_poSlider = new QSlider(this);
       m_poSlider->setMinimum(0);
@@ -80,5 +79,4 @@ namespace icl{
     void DoubleSlider::setMaxDouble(double dmax){
       m_dMax = dmax;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

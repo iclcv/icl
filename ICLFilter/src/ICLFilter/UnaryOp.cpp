@@ -26,9 +26,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     void UnaryOp::initConfigurable(){
       addProperty("UnaryOp.clip to ROI","menu","on,off",m_oROIHandler.getClipToROI() ? "on" : "off",0,
                   "If this option is set to true, the result images are always adapted\n"
@@ -406,5 +404,4 @@ namespace icl{
     };
 
     REGISTER_CONFIGURABLE_DEFAULT(UnaryOp_VIRTUAL);
-  } // namespace filter
-}
+  } // namespace icl::filter

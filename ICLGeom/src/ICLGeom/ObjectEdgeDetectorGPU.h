@@ -10,8 +10,7 @@
 
 #include <ICLGeom/ObjectEdgeDetectorPlugin.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     class ICLGeom_API ObjectEdgeDetectorGPU : public ObjectEdgeDetectorPlugin{
 
      struct Data;  //!< internal data type
@@ -166,6 +165,5 @@ namespace icl{
 
     };
   }
-}
 
 /** \endcond */

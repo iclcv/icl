@@ -11,9 +11,7 @@
 #include <cmath>
 #include <iosfwd>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Special linear algebra exception type  \ingroup LINALG \ingroup EXCEPT
     struct InvalidMatrixDimensionException :public utils::ICLException{
       InvalidMatrixDimensionException(const std::string &msg):utils::ICLException(msg){}
@@ -306,5 +304,4 @@ namespace icl{
     template<class T> ICLMath_IMP
     std::istream &operator>>(std::istream &s, DynMatrixBase<T> &m);
 
-  } // namespace math
-}
+  } // namespace icl::math

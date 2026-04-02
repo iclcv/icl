@@ -9,9 +9,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     class Camera;
     /** \endcond */
@@ -120,5 +118,4 @@ namespace icl{
                              float focalLengthX, float focalLengthY);
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -14,9 +14,7 @@
 class QScrollArea;
 /** \endcond */
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// A Handle for container GUI components (hbox, vbox, hscroll and vscroll) \ingroup HANDLES
     class BoxHandle : public GUIHandle<QWidget>, public ContainerHandle{
       bool horizontal;    //!< internal property that indicate the underlying layout orientation
@@ -53,5 +51,4 @@ namespace icl{
       bool isVertical() const { return !horizontal; }
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

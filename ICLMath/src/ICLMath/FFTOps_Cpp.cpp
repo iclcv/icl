@@ -10,9 +10,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     namespace {
 
       template<class T>
@@ -55,5 +53,4 @@ namespace icl {
       return 0;
     }();
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

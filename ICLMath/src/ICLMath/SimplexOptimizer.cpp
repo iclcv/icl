@@ -19,10 +19,7 @@ using namespace icl::utils;
 #endif
 #endif
 
-namespace icl{
-  namespace math{
-
-
+namespace icl::math {
     template<class Vector>
     static inline Vector create_zero_vector(int dim){
       return Vector(dim,0.0);
@@ -408,5 +405,4 @@ namespace icl{
 
   #undef INST
 
-  } // namespace math
-}
+  } // namespace icl::math

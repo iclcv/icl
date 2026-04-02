@@ -8,9 +8,7 @@
 #include <ICLMath/FixedMatrix.h>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Utility structure that represents a 2D homography (implemented for float and double)
     /** Basically, a 2D homography implements a transformation between 2 paralellograms
         Given a set of at least 4 points in parallellogram A and the same number of
@@ -173,5 +171,4 @@ namespace icl{
     using Homography2D = GenericHomography2D<float>;
 
 
-  } // namespace math
-}
+  } // namespace icl::math

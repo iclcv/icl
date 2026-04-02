@@ -20,9 +20,7 @@ TODOS:
 - windows version
 */
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     class ICLDynamicLibLoadException : ICLException {
       public:
         ICLDynamicLibLoadException (const char* error) noexcept :
@@ -107,5 +105,4 @@ namespace icl{
     };
 
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

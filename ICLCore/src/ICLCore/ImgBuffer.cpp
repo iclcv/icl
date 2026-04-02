@@ -7,8 +7,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     struct ImgBuffer::Data{
       std::vector<ImgBase*> bufs[depthLast+1];
     };
@@ -103,5 +102,4 @@ namespace icl{
   template ICLCore_API Img<icl##D> *ImgBuffer::get<icl##D>(const Size&, int);
     ICL_INSTANTIATE_ALL_DEPTHS
 #undef ICL_INSTANTIATE_DEPTH
-  } // namespace core
-}
+  } // namespace icl::core

@@ -20,9 +20,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     GUIWidget::GUIWidget(const GUIDefinition &def,
                          int minParamCount,
                          int maxParamCount,
@@ -133,5 +131,4 @@ namespace icl{
       }
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

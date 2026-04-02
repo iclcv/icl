@@ -3,9 +3,7 @@
 
 #include <ICLCore/Core.h>
 
-namespace icl {
-	namespace io {
-
+namespace icl::io {
 		class Kinect11BitCompressor {
 
 		public:
@@ -30,5 +28,4 @@ namespace icl {
 
 		};
 
-	}// namespace io
-}// namespace icl
+	} // namespace icl::io

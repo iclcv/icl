@@ -6,9 +6,7 @@
 #include <ICLMath/FFTUtils.h>
 #include <climits>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     static const int SECONDS_IN_MINUTE = 60;
     static const int MINIMUM_HEARTRATE = 40;
     static const int MAXIMUM_HEARTRATE = 200;
@@ -204,5 +202,4 @@ namespace icl{
       return m_data->historyDepth;
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

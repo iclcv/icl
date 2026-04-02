@@ -9,9 +9,7 @@ using namespace icl::math;
 using namespace icl::core;
 
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     PointCloudObject::PointCloudObject(bool withNormals, bool withColors, bool withLabels, bool withDepth):
       m_organized(false){
       m_dim2D = Size(0,0);
@@ -201,5 +199,4 @@ namespace icl{
       unlock();
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

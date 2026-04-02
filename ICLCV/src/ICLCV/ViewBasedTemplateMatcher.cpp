@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     ViewBasedTemplateMatcher::ViewBasedTemplateMatcher(float significance, mode m, bool clipBuffersToROI):
       m_fSignificance(significance),m_eMode(m),m_bClipBuffersToROI(clipBuffersToROI){}
 
@@ -46,5 +44,4 @@ namespace icl{
     }
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

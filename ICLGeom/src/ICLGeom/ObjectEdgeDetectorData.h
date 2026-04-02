@@ -6,9 +6,7 @@
 
 #include <ICLMath/DynMatrix.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /**
      This class is used in the ObjectEdgeDetector implementations */
     class ICLGeom_API ObjectEdgeDetectorData{
@@ -51,4 +49,3 @@ namespace icl{
       m_params getParameters();
     };
   }
-}

@@ -6,8 +6,7 @@
 
 #include <QGroupBox>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     std::string BorderHandle::getTitle() const{
       const BorderHandle &bh = *this;//const_cast<BorderHandle*>(this);
       const QGroupBox *gb = *bh;
@@ -22,5 +21,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

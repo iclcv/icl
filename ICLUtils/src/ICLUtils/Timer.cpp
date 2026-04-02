@@ -5,9 +5,7 @@
 #include <ICLUtils/Timer.h>
 #include <ICLUtils/Time.h>
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
     Timer::Timer(int iTimerMode){
       m_iTimerMode = iTimerMode;
     }
@@ -83,6 +81,4 @@ namespace icl {
       }
     }
 
-  } // utils
-
-} // icl
+  } // namespace icl::utils

@@ -8,8 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
   //Lookup table for a single module which contains the correct outputbuffer index position for a value from the linear videostream
     unsigned int correctionLUT[] = {
       3, 7, 11, 15, 67, 71, 75, 79, 131, 135, 139, 143, 195, 199, 203, 207,
@@ -571,5 +570,4 @@ namespace icl{
     }
 
 
-  } // namespace io
-}
+  } // namespace icl::io

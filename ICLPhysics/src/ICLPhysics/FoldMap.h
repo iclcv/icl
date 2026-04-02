@@ -6,10 +6,7 @@
 
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace physics{
-
-
+namespace icl::physics {
     /// discretized paper space representing folds
     /** Each pixel contains a stiffness value of the paper at that point.
         For each link that is created on the paper, the minimum intersected
@@ -53,4 +50,3 @@ namespace icl{
       const core::Img32f &getDisplay() const { return m; }
     };
   }
-}

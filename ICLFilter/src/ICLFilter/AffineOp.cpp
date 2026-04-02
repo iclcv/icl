@@ -11,9 +11,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     const char* toString(AffineOp::Op op) {
       switch(op) {
         case AffineOp::Op::apply: return "apply";
@@ -109,5 +107,4 @@ namespace icl{
        }
      }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

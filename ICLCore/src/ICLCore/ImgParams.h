@@ -13,8 +13,7 @@
 #include <ICLUtils/Macros.h>
 
 
-namespace icl{
-  namespace core{
+namespace icl::core {
     /// The ImgParams class stores all image parameters \ingroup IMAGE \ingroup TYPES
     /** This class offers an encapsulation of all Img parameters
         - size
@@ -267,5 +266,4 @@ namespace icl{
     /// istream operator
     ICLCore_API std::istream &operator>>(std::istream &is, ImgParams &p);
 
-  } // namespace core
-}
+  } // namespace icl::core

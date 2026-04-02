@@ -22,9 +22,7 @@ using namespace icl::utils;
 
 //TODO: QSharedMemory::create recreates the QSystemSemaphore of a QSharedMemory, rendering it useless when it was locked.
 
-namespace icl {
-  namespace io {
-
+namespace icl::io {
     //##########################################################################
     //# constant fields ########################################################
     //##########################################################################
@@ -689,5 +687,4 @@ namespace icl {
       resetQtSystemResource("-s");
     }
 
-  } // namespace io
-}  // namespace icl
+  } // namespace icl::io

@@ -10,9 +10,7 @@
 
 #include <map>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// The ColorFormatDecoder allows for easy conversion of special color formats to RGB
     /** If a capturing device does not support to provide RGB image directly, this
         Decoder is usually used to convert the compressed image data into a simple
@@ -76,5 +74,4 @@ namespace icl{
       }
 
     };
-  } // namespace io
-}
+  } // namespace icl::io

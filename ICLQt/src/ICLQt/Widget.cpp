@@ -72,8 +72,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
   #define GL_BUTTON_Y 2
   #define GL_BUTTON_W 20
   #define GL_BUTTON_H 20
@@ -2725,5 +2724,4 @@ namespace icl{
       QMessageBox::information(this,"Extra Information",m_data->infoText.c_str());
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

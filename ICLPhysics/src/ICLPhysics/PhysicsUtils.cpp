@@ -24,9 +24,7 @@
 #include <ICLPhysics/PhysicsObject.h>
 #include <mutex>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     void remove_fallen_objects(geom::Scene *scene, PhysicsWorld *world, float minZ){
       std::lock_guard<std::recursive_mutex> lock(scene->getMutex());
       for(int i=scene->getObjectCount()-1;i>=0;--i){
@@ -234,4 +232,3 @@ namespace icl{
 //    objects.push_back(obj);
 //  }
   }
-}

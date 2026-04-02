@@ -8,8 +8,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
     /// Class for Wiener Filter (IPP only) \ingroup UNARY \ingroup NBH
     /** @see WienerOp.h for full Wiener filter documentation */
     class WienerOp : public NeighborhoodOp, public core::ImageBackendDispatching {
@@ -45,5 +44,4 @@ namespace icl {
     /// ADL-visible toString for WienerOp::Op (defined in WienerOp.cpp)
     ICLFilter_API const char* toString(WienerOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

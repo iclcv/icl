@@ -7,9 +7,7 @@
 #include <ICLMath/DynMatrix.h>
 #include <ICLUtils/Point.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// class for graph cut algorithms on undirected graphs (a graph is represented by an adjacency matrix).
     /** The GraphCutter class implements the CONTRACT/CAP algorithm from H. Nagamochi, T. Ono, T. Ibaraki, "Implementing an efficient
         minimum capacity cut algorithm", Mathematical Programming 67 (1994). */
@@ -103,5 +101,4 @@ namespace icl{
 	                                   std::vector<std::vector<int> > &subsets, float lambda_score, int j, int &lambda_id);
     };
 
-  } // namespace math
-}
+  } // namespace icl::math

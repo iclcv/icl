@@ -42,9 +42,7 @@
 
 #include <ICLUtils/CLIncludes.h>
 
-namespace icl {
-    namespace utils {
-
+namespace icl::utils {
         /// Wrapper for an OpenCL Image2D
         /** Valid CLImage2D instances can only be created by a CLProgram instance.
          @see CLProgram for more details */
@@ -106,5 +104,4 @@ namespace icl {
 
         };
     }
-}
 #endif

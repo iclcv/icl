@@ -40,9 +40,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     namespace{
       struct FileListEndedException : public ICLException{
         inline FileListEndedException(const std::string &what):ICLException(what){}
@@ -519,5 +517,4 @@ namespace icl{
 
     REGISTER_GRABBER(file,createGrabber,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
 
-  } // namespace io
-}
+  } // namespace icl::io

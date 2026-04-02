@@ -17,9 +17,7 @@
 #include <vector>
 #include <iosfwd>
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     // Forward declarations — Image.h does NOT pull in ImgBase.h or Img.h
     class ImgBase;
     template<class T> class Img;
@@ -163,10 +161,10 @@ namespace icl {
       /// @{
 
       /// Returns a deep (independent) copy
-      Image deepCopy() const;
+      [[nodiscard]] Image deepCopy() const;
 
       /// Returns a copy converted to the given depth
-      Image convert(depth d) const;
+      [[nodiscard]] Image convert(depth d) const;
 
       /// Converts this image into dst (dst determines the target depth)
       void convertTo(Image &dst) const;
@@ -175,7 +173,7 @@ namespace icl {
       void convertROITo(Image &dst) const;
 
       /// Returns a scaled copy
-      Image scaledCopy(const utils::Size &newSize,
+      [[nodiscard]] Image scaledCopy(const utils::Size &newSize,
                        scalemode sm = interpolateNN) const;
 
       /// @}
@@ -183,10 +181,10 @@ namespace icl {
       /// @{
 
       /// Returns a shallow single-channel image
-      Image selectChannel(int c) const;
+      [[nodiscard]] Image selectChannel(int c) const;
 
       /// Returns a shallow multi-channel selection
-      Image selectChannels(const std::vector<int> &channels) const;
+      [[nodiscard]] Image selectChannels(const std::vector<int> &channels) const;
 
       /// @}
       /// @name In-Place Operations
@@ -199,7 +197,7 @@ namespace icl {
       void mirror(axis a);
 
       /// Returns a mirrored copy (flipped along given axis)
-      Image mirrored(axis a) const;
+      [[nodiscard]] Image mirrored(axis a) const;
 
       /// Scales the image in-place
       void scale(const utils::Size &s, scalemode sm = interpolateNN);
@@ -345,5 +343,4 @@ namespace icl {
     /// Stream output (prints size, depth, channels, format)
     ICLCore_API std::ostream& operator<<(std::ostream &s, const Image &img);
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

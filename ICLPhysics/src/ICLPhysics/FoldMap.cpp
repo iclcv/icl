@@ -7,8 +7,7 @@
 #include <ICLCore/LineSampler.h>
 
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     using namespace utils;
     using namespace core;
 
@@ -88,4 +87,3 @@ namespace icl{
     }
 
   }
-}

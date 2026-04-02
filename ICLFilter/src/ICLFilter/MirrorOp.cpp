@@ -9,8 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
      MirrorOp::MirrorOp (axis eAxis) :
         m_eAxis (eAxis)
      {}
@@ -43,5 +42,4 @@ namespace icl{
         });
      }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

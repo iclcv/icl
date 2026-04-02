@@ -28,8 +28,7 @@
 #include <opencv2/highgui/highgui_c.h>
 
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     namespace opensurf{
 
        class FastHessian {
@@ -1410,6 +1409,4 @@ namespace icl{
 
     } // end of namespace opensurf
 
-  } // end of namespace cv
-
-} // end of namespace icl
+  } // namespace icl::cv

@@ -9,8 +9,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletSoftBody/btSoftBody.h>
 
-namespace icl{
-namespace physics{
+namespace icl::physics {
   /// This class combines a soft-body physics object and it's graphical representation in ICL
   /** Actually, this sub-class is just an explicit restriction of the general PhysicalObject
       class, that can represent:
@@ -48,5 +47,4 @@ namespace physics{
     void propertyChanged(const Configurable::Property &prop);
 
   };
-}
 }

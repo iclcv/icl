@@ -15,11 +15,7 @@
 #include <algorithm>
 #include <set>
 
-namespace icl{
-
-  namespace math{
-
-
+namespace icl::math {
     /// Generic Octree Implementation
     /** The Octree implementation is a simple 3D-generalization of the
         QuadTree class template.
@@ -464,5 +460,4 @@ namespace icl{
       */
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

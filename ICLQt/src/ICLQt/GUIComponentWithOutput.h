@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/GUIComponent.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     struct GUIComponentWithOutput : public GUIComponent{
       GUIComponentWithOutput(const std::string &type, const std::string &params):
       GUIComponent(type,params){}
@@ -147,5 +145,4 @@ namespace icl{
 
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

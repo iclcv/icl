@@ -10,8 +10,7 @@
 #include <ICLIO/PylonUtils.h>
 #include <ICLUtils/Configurable.h>
 
-namespace icl {
-  namespace io{
+namespace icl::io {
     namespace pylon {
 
       /// This is a helper class for Pylon camera settings \ingroup GIGE_G
@@ -170,5 +169,4 @@ namespace icl {
           Pylon::IPylonDevice* device, std::string parameter);
 
     } //namespace pylon
-  } // namespace io
-} //namespace icl
+  } // namespace icl::io

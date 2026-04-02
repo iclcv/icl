@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/InplaceOp.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     /// Inplace implementation for arithmetical operations  \ingroup INPLACE
     /** Current supported operations: "+","-","*","/","^2","sqrt2,
         "ln", "exp" and "abs".\n
@@ -60,5 +59,4 @@ namespace icl{
       /// value
       icl64f m_dValue;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

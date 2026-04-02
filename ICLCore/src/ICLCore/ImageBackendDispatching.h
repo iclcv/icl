@@ -7,9 +7,7 @@
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     // Re-export general types into core namespace
     using utils::Backend;
     using utils::backendName;
@@ -35,5 +33,4 @@ namespace icl {
       depth d = p->getDepth();
       return ((d == getDepth<Ts>()) || ...);
     }
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

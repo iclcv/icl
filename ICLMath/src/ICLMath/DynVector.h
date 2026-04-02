@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/DynMatrix.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Extension class for DynMatrix<T> that restricts column count to one
     template<class T>
     struct ICLMath_API DynColVector : public DynMatrix<T>{
@@ -37,5 +35,4 @@ namespace icl{
       void setDim(unsigned int dim, bool holdContent=false, const T &initializer=0);
     };
 
-  } // namespace math
-}
+  } // namespace icl::math

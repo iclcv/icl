@@ -12,8 +12,7 @@ using namespace icl::core;
 using namespace icl::geom;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     class FiducialDetectorPluginAmoeba::Data{
       public:
       std::vector<TwoLevelRegionStructure> rs;
@@ -162,5 +161,4 @@ namespace icl{
 
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

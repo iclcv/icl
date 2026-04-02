@@ -14,9 +14,7 @@
 #include <string>
 #include <mutex>
 
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     /// Common interface class for all grabbers \ingroup GRABBER_G
     /** The generic grabber provides an interface for a multi-platform
         compatible grabber.
@@ -360,5 +358,4 @@ namespace icl {
         }
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

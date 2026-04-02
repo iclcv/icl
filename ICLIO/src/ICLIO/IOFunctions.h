@@ -9,9 +9,7 @@
 #include <string>
 
 /// icl namespace
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     /// draws a label into the upper left image corner \ingroup UTILS_G
     /** This utility function can be used e.g. to identify images in longer
         computation queues. Internally is uses a static map of hard-coded
@@ -24,5 +22,4 @@ namespace icl {
     */
     ICLIO_API void labelImage(core::ImgBase *image, const std::string &label);
 
-  } // namespace io
-} //namespace icl
+  } // namespace icl::io

@@ -7,9 +7,7 @@
 #include <ICLPhysics/PhysicsDefs.h>
 #include <ICLPhysics/RigidBoxObject.h>
 
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     void SliderConstraint::init() {
       switch(m_rotationAxis) {
       case 1:
@@ -80,4 +78,3 @@ namespace icl {
       }
     }
   }
-}

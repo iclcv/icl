@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <string>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// static utility function for displaying some progress information in console
     ICLUtils_API void progress_init(const std::string &text = "Creating LUT");
 
@@ -20,5 +18,4 @@ namespace icl{
     /** Extra text is show behind the progress bar */
     ICLUtils_API void progress(int curr, int max, const std::string &extraText = "");
 
-  } // namespace utils
-}
+  } // namespace icl::utils

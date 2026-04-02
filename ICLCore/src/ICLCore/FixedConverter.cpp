@@ -6,9 +6,7 @@
 #include <ICLCore/CoreFunctions.h>
 
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     FixedConverter::FixedConverter(const ImgParams &p, depth d, bool applyToROIOnly):
       m_oParams(p),m_oConverter(applyToROIOnly),m_eDepth(d) { }
 
@@ -19,5 +17,4 @@ namespace icl{
       ensureCompatible(ppoDst,m_eDepth,m_oParams);
       m_oConverter.apply(poSrc,*ppoDst);
     }
-  } // namespace core
-}
+  } // namespace icl::core

@@ -9,9 +9,7 @@
 #include <vector>
 #include <memory>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /** \cond */
     class FileListImpl;
     /** \endcond */
@@ -87,5 +85,4 @@ namespace icl{
       private:
       std::shared_ptr<FileListImpl> impl;
     };
-  } // namespace io
-}
+  } // namespace icl::io

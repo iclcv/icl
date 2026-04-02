@@ -9,10 +9,7 @@
 #include <vector>
 #include <string>
 
-namespace icl{
-
-  namespace math{
-
+namespace icl::math {
     /** \cond */
 
     /// utility class
@@ -163,4 +160,3 @@ namespace icl{
     };
 
   }
-}

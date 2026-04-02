@@ -11,9 +11,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct OpenCVVideoGrabber::Data{
         /// Device struct
         std::unique_ptr<cv::VideoCapture> cvc;
@@ -127,5 +125,4 @@ namespace icl{
 
     REGISTER_GRABBER(cvvideo,createCVVGrabber, getOCVVDeviceList, "cvvideo:video filename:OpenCV based video file source");
 
-  } // namespace io
-}
+  } // namespace icl::io

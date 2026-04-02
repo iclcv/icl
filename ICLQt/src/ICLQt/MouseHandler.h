@@ -8,9 +8,7 @@
 #include <ICLQt/MouseEvent.h>
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /** \cond */
     class ICLWidget;
     /** \endcond */
@@ -111,5 +109,4 @@ namespace icl{
       /// internal mouse handler function
       mouse_handler m_handler;
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -8,9 +8,7 @@
 #include <ICLFilter/BinaryOp.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// Class for logical operations on two images (and, or, xor). \ingroup BINARY
     /// Only supports integer types (icl8u, icl16s, icl32s).
     class ICLFilter_API BinaryLogicalOp : public BinaryOp, public core::ImageBackendDispatching {
@@ -41,5 +39,4 @@ namespace icl {
     /// ADL-visible toString for BinaryLogicalOp::Op → registry name (defined in BinaryLogicalOp.cpp)
     ICLFilter_API const char* toString(BinaryLogicalOp::Op op);
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

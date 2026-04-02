@@ -8,9 +8,7 @@
 #include <ICLQt/GUIHandle.h>
 #include <QtWidgets/QSpinBox>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Handle class for spinner components \ingroup HANDLES
     class ICLQt_API SpinnerHandle : public GUIHandle<QSpinBox>{
 
@@ -56,5 +54,4 @@ namespace icl{
       /// internally used utility function
       const QSpinBox *sb() const{ return **this; }
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

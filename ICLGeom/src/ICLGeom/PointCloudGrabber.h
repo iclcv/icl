@@ -12,9 +12,7 @@
 
 #include <map>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Generic interface for PointCloud sources
     struct PointCloudGrabber : public utils::Configurable{
       /// fills the given point cloud with grabbed information
@@ -50,4 +48,3 @@ namespace icl{
       }
     };
   }
-}

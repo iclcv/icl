@@ -5,9 +5,7 @@
 #include <ICLQt/ComboHandle.h>
 #include <QComboBox>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void ComboHandle::add(const std::string &item){
       cbx()->addItem(item.c_str());
     }
@@ -54,5 +52,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

@@ -12,9 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     struct CLBuffer::Impl {
       cl_mem buffer;
       cl_command_queue cmdQueue;
@@ -163,5 +161,4 @@ namespace icl {
       return impl->buffer;
     }
   }
-}
 #endif

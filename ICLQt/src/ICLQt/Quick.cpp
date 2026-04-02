@@ -63,9 +63,7 @@ using namespace icl::filter;
 using namespace icl::io;
 using namespace icl::cv;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     std::string execute_process(const std::string &command){
       char buf[128];
 #ifdef ICL_SYSTEM_WINDOWS
@@ -1866,4 +1864,3 @@ namespace icl{
 
 
   } // namespace cv
-}

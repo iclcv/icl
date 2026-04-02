@@ -6,10 +6,7 @@
 #include <QCheckBox>
 
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     CheckBoxHandle::CheckBoxHandle():m_stateRef(0){}
 
     CheckBoxHandle::CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef):
@@ -32,5 +29,4 @@ namespace icl{
     bool CheckBoxHandle::isChecked() const{
       return *m_stateRef;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

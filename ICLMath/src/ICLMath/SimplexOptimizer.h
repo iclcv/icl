@@ -10,9 +10,7 @@
 #include <ICLMath/FixedVector.h>
 #include <functional>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Utility structure, that is used as accumulator for results of the SimplexOptimizer class
     template<class T, class Vector=DynColVector<T> >
     struct SimplexOptimizationResult{
@@ -222,5 +220,4 @@ namespace icl{
           \ref __ALGO__ section. */
       static std::vector<Vector> createDefaultSimplex(const Vector &init);
     };
-  } // namespace math
-}
+  } // namespace icl::math

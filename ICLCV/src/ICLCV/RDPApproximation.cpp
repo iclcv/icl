@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     const std::vector<Point32f> &RDPApproximation::approximate(const std::vector<Point> &poly, bool polygon) {
       ChainPoint *cps = new ChainPoint[poly.size()];
       ChainPoint *current = cps, *prev = &(cps[poly.size() - 1]);
@@ -258,5 +256,4 @@ namespace icl{
       }
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

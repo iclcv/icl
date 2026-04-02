@@ -25,9 +25,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     struct AbstractPlotWidget::Data{
       struct Annotation{
         Annotation(char type,const float *data, int num,
@@ -1176,5 +1174,4 @@ namespace icl{
 
     REGISTER_CONFIGURABLE(AbstractPlotWidget_VIRTUAL, return create_AbstractPlotWidget_VIRTUAL());
 
-  } // namespace qt
-}
+  } // namespace icl::qt

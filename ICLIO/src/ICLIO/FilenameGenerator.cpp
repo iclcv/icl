@@ -10,8 +10,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace{
       std::string generate_filename(int digits, int counter, const std::string &prefix, const std::string &postfix){
         if (!digits) {
@@ -232,5 +231,4 @@ namespace icl{
 
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

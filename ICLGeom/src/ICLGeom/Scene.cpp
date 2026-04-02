@@ -40,9 +40,7 @@ using namespace icl::core;
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::qt;
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     static bool creatingDisplayList = false;
 
     struct CameraObject : public SceneObject{
@@ -1722,5 +1720,4 @@ namespace icl{
                     "Simulation based Grabber that renders a point cloud in a virtual scene",
                     "creation-string: {shape|object-file}[:camera-file] (shape can be sphere or cube)");
 
-  } // namespace geom
-}
+  } // namespace icl::geom

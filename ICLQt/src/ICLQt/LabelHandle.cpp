@@ -6,8 +6,7 @@
 #include <QPainter>
 #include <QLabel>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void LabelHandle::operator=(const std::string &text){
       lab()->setText(text.c_str());
       lab()->updateFromOtherThread();
@@ -32,5 +31,4 @@ namespace icl{
       lab()->setText(lab()->text() + text.c_str());
       lab()->updateFromOtherThread();
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

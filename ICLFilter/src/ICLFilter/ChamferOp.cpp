@@ -16,9 +16,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     namespace{
       inline icl32s min3(icl32s a, icl32s b, icl32s c){
 
@@ -479,6 +477,4 @@ namespace icl{
 
     }
   
-  } // namespace filter
-
-}
+  } // namespace icl::filter

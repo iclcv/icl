@@ -20,9 +20,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     using namespace region_detector_tools;
 
 
@@ -123,5 +121,4 @@ namespace icl{
       }
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

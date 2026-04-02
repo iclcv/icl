@@ -9,9 +9,7 @@
 #include <ICLCore/Img.h>
 #include <ICLUtils/Configurable.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class for computing proximity measures  \ingroup BINARY
     /** (Only available for Img8u and Img32f, IPP only!)
         \section OV Overview (taken from the IPPI-Manual)
@@ -145,5 +143,4 @@ namespace icl {
       /// internal buffer for converting unsupported template depths to 32f
       core::Img32f *m_poTemplateBuffer;
     };
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

@@ -11,8 +11,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace icl {
-	namespace utils {
+namespace icl::utils {
 	    /// Base class for an OpenCL Exception
     class CLException: public ICLException {
 		public:
@@ -46,6 +45,4 @@ namespace icl {
 		};
 
 	}
-
-}
 #endif

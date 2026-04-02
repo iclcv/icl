@@ -9,8 +9,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Types.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// Utility class for decoding JPEG-Data streams (with ICL_HAVE_LIBJPEG only)
     class ICLIO_API JPEGDecoder{
       public:
@@ -35,5 +34,4 @@ namespace icl{
       static void decode_internal(utils::File *file,const unsigned char *data,
                                   unsigned int maxDataLen, core::ImgBase **dst);
     };
-  } // namespace io
-}
+  } // namespace icl::io

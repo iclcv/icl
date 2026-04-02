@@ -5,8 +5,7 @@
 #include <ICLUtils/FPSEstimator.h>
 #include <ICLUtils/Macros.h>
 #include <cstdio>
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     FPSEstimator::FPSEstimator(int n){
       reset(n);
     }
@@ -56,5 +55,4 @@ namespace icl{
       printf("%s:%s\n",text.c_str(),getFPSString().c_str());
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

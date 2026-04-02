@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     void WeightChannelsOp::apply(const Image &src, Image &dst) {
       ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == src.getChannels() );
       if(!prepare(dst, src)) return;
@@ -27,5 +25,4 @@ namespace icl {
       });
     }
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

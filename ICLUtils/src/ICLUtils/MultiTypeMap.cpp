@@ -6,9 +6,7 @@
 #include <cstdio>
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     MultiTypeMap::MultiTypeMap(){
       m_oDataMapPtr = SmartDataMapPtr(new DataMap);
       m_oMutexPtr = SmartMutexPtr(new std::recursive_mutex);
@@ -79,5 +77,4 @@ namespace icl{
       return (*m_oDataMapPtr)[id].type == typestr;
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

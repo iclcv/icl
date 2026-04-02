@@ -7,14 +7,11 @@
 #include <QLineEdit>
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     void FloatHandle::operator=(float f){
       (**this)->setText(QString::number(f));
     }
     float FloatHandle::getValue() const{
       return static_cast<float>(atof((**this)->text().toLatin1().data()));
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

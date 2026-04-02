@@ -7,8 +7,7 @@
 
 /** \cond */
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     namespace clsurf{
       extern const char *utilityKernels;
       extern const char *normalizeDescriptors_kernel;
@@ -20,6 +19,5 @@ namespace icl{
       extern const char *createDescriptors_kernel;
     }
   }
-}
 
 /** \endcond */

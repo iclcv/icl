@@ -18,9 +18,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     // ---- Matrix multiplication via BLAS gemm ----
 
     template<class T>
@@ -798,5 +796,4 @@ namespace icl{
     template ICLMath_API void DynMatrix<icl##D>::saveCSV(const std::string&);
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
-  } // namespace math
-}
+  } // namespace icl::math

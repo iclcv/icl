@@ -10,9 +10,7 @@
 #include <string>
 #include <iostream>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Wrapper class for fourcc color codes
     /** @see ColorFormatDecoder */
     class ICLIO_API FourCC{
@@ -72,5 +70,4 @@ namespace icl{
       return stream << "FourCC(" << fourCC.asString() << ")" << std::endl;
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

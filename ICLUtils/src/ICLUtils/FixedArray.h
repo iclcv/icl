@@ -6,8 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// Fixed C++-array wrapper class for data handling
     /** This class is specialized for the DIM values 1,2,3 and 4
         FixedArray<T,1> contains a union that shares the
@@ -125,5 +124,4 @@ namespace icl{
       const T &operator[](unsigned int idx) const { return m_data[idx]; }
     };
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

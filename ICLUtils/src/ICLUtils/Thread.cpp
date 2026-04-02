@@ -6,9 +6,7 @@
 #include <ICLUtils/Macros.h>
 #include <chrono>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     Thread::Thread() = default;
 
     Thread::~Thread(){
@@ -69,5 +67,4 @@ namespace icl{
       std::this_thread::sleep_for(std::chrono::duration<float>(secs));
     }
 
-  } // namespace utils
-}
+  } // namespace icl::utils

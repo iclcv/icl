@@ -14,9 +14,7 @@
 #endif
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     namespace{
       static const char DIR_SEPERATOR = '/';
       static const char NEW_LINE = '\n';
@@ -638,4 +636,3 @@ namespace icl{
     }
 
   } // namespace io
-}

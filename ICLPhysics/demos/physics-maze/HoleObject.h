@@ -3,9 +3,7 @@
 #include <ICLPhysics/RigidCylinderObject.h>
 #include <ICLPhysics/RigidSphereObject.h>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     class HoleObject : public RigidCylinderObject{
       public:
       void onHit(PhysicsObject* self, PhysicsObject* other, geom::Vec pos) {
@@ -35,4 +33,3 @@ namespace icl{
       }
     };
   }
-}

@@ -9,8 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
      MultiDrawHandle::MultiDrawHandle():
       GUIHandle<ICLDrawWidget>(),m_imageBuffer(0),m_tabBar(0),m_bufferAll(false),m_bufferDeeply(true){
     }
@@ -139,5 +138,4 @@ namespace icl{
       return getSelected() == text;
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

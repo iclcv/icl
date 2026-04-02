@@ -12,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct ImageUndistortion::Impl{
       virtual ~Impl(){}
       Img32f warpMap;
@@ -265,5 +263,4 @@ namespace icl{
       }
       return impl->warpMap;
     }
-  } // namespace io
-}
+  } // namespace icl::io

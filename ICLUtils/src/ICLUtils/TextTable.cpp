@@ -4,9 +4,7 @@
 
 #include <ICLUtils/TextTable.h>
 #include <ICLUtils/Macros.h>
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     void TextTable::ensureSize(int width, int height){
       width = iclMax(getSize().width,width);     //2
       height = iclMax(getSize().height,height);  //1
@@ -116,5 +114,4 @@ namespace icl{
     }
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     // ippiSqrDistanceFull/Same/Valid_Norm_* and ippiCrossCorrFull/Same/Valid_Norm_*
     // were removed from modern IPP (oneAPI 2022+).
     // TODO: implement C++ fallback or use modern ippiSqrDistanceNorm API
@@ -51,5 +49,4 @@ namespace icl {
       ERROR_LOG("ProximityOp::apply not yet implemented (deprecated IPP API removed, C++ fallback needed)");
     }
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

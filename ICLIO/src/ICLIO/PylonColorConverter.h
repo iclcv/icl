@@ -12,8 +12,7 @@
 #include <ICLCore/BayerConverter.h>
 #include <mutex>
 
-namespace icl {
-  namespace io{
+namespace icl::io {
     namespace pylon {
 
       /// Pure virtual interface for color converters  \ingroup GIGE_G
@@ -189,5 +188,4 @@ namespace icl {
       //       via ippiYUV422ToRGB_8u_C2C3R / ippiCbYCr422ToRGB_8u_C2C3R
 
     } //namespace
-  } // namespace io
-} //namespace
+  } // namespace icl::io

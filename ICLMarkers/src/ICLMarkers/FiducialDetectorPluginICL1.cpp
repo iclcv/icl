@@ -19,9 +19,7 @@ using namespace icl::core;
 using namespace icl::cv;
 using namespace icl::geom;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     struct FiducialImplICL1 : public FiducialImpl{
       FiducialImplICL1(FiducialDetectorPlugin *parent,
                        Fiducial::FeatureSet supported,
@@ -292,5 +290,4 @@ namespace icl{
     REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPluginICL1);
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

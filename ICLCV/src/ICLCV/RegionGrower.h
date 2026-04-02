@@ -10,9 +10,7 @@
 #include <ICLMath/HomogeneousMath.h>
 #include <ICLUtils/Exception.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// class for region growing on images and DataSegments (e.g. poincloud xyzh)
     /** The RegionGrower class is designed as template applying a growing criterion to given input data.
         A mask defines the points for processing (e.g. a region of interest).
@@ -279,5 +277,4 @@ namespace icl{
         }
       }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

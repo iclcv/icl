@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMarkers/FiducialDetectorPluginForQuads.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /** \cond */
     class FiducialDetector;
     /** \endcond */
@@ -60,5 +58,4 @@ namespace icl{
       virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
 
     };
-  } // namespace markers
-}
+  } // namespace icl::markers

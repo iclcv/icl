@@ -10,9 +10,7 @@
 #include <algorithm>
 #include <memory>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Simple 2D-Array class that provides shallow copy per default
     /** This class replaces the former SimpleMatrix class
 
@@ -215,5 +213,4 @@ namespace icl{
 
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

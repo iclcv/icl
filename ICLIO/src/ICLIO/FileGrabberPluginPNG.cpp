@@ -15,9 +15,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
       std::lock_guard<std::recursive_mutex> lock(mutex);
       png_byte header[8];
@@ -143,5 +141,4 @@ namespace icl{
         default: throw ICLException("error reading png image unexpected channel count");
       }
     }
-  } // namespace io
-}
+  } // namespace icl::io

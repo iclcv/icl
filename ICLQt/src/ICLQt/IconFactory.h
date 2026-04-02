@@ -9,9 +9,7 @@
 #include <QPixmap>
 #include <QIcon>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Simple utility class providing static functions to create some icons
     class ICLQt_API IconFactory{
       public:
@@ -22,5 +20,4 @@ namespace icl{
       static const core::Img8u &create_image(const std::string &id);
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

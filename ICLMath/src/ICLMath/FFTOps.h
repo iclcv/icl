@@ -8,9 +8,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <complex>
 
-namespace icl {
-  namespace math {
-
+namespace icl::math {
     /// Selector keys for FFT backend dispatch.
     enum class FFTOp : int { r2c, c2c, inv_c2c };
 
@@ -44,5 +42,4 @@ namespace icl {
       static FFTOps& instance();
     };
 
-  } // namespace math
-} // namespace icl
+  } // namespace icl::math

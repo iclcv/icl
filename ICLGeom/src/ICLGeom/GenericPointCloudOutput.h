@@ -7,9 +7,7 @@
 #include <ICLGeom/PointCloudOutput.h>
 #include <ICLUtils/ProgArg.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// Generic interface for PointCloud sources
     class ICLGeom_API GenericPointCloudOutput : public PointCloudOutput{
       struct Data;
@@ -50,5 +48,4 @@ namespace icl{
       virtual void send(const PointCloudObjectBase &src);
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

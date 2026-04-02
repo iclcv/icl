@@ -21,9 +21,7 @@
 class btSoftBody;
 /** \endcond */
 
-namespace icl{
-  namespace physics {
-
+namespace icl::physics {
     /** \cond */
     class PhysicsWorld;
     /** \endcond */
@@ -217,6 +215,4 @@ namespace icl{
 
       void computeSmoothNormals();
     };
-  } // end of namespace physics
-
-} // end of namespace icl
+  } // namespace icl::physics

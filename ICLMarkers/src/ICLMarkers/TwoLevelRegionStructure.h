@@ -13,8 +13,7 @@
 #include <vector>
 #include <string>
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     /// Defines a common two level RegionStructure
     /** The Two level region structure is defined by
         -# the color of the root region (level 0)
@@ -77,5 +76,4 @@ namespace icl{
       inline bool operator==(const TwoLevelRegionStructure &s) const { return code == s.code; }
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLMath/SOM.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Simple Wrapper class of the generic SOM Implementation for 2D SOMs
     /** As the SOM class provides a <em>very</em> abstract interface for
         generic K-D Self Organizing Maps, the SOM2D class offers a more convenient
@@ -53,5 +51,4 @@ namespace icl{
       const Neuron &getNeuron(int x, int y) const { return m_vecNeurons[x+m_vecDimOffsets[1]*y]; }
 
     };
-  } // namespace math
-}
+  } // namespace icl::math

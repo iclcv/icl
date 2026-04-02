@@ -5,8 +5,7 @@
 #pragma once
 #include <string>
 #include <ICLMath/HomogeneousMath.h>
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     void subVec4(const char * a, const char *b, char *c) {
       struct Vec4{
         float x;
@@ -663,5 +662,4 @@ namespace icl{
           "  pb->pos.w = m[12]*pa->pos.x+m[13]*pa->pos.y+m[14]*pa->pos.z+m[15]*pa->pos.w;\n"
           "}\n"
           );
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/SSETypes.h>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     #ifdef ICL_HAVE_SSE2
 
       // ++ rounding ++ //
@@ -2555,5 +2553,4 @@ namespace icl{
 
     #endif
 
-  } // namespace utils
-}
+  } // namespace icl::utils

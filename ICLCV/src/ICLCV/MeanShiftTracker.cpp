@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace cv{
-
+namespace icl::cv {
     Point32f MeanShiftTracker::applyMeanShiftStep(const Img32f &image, const Point32f &pos){
 
       Channel32f k = m_kernelImage[0];
@@ -104,5 +102,4 @@ namespace icl {
       return lastPos;
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

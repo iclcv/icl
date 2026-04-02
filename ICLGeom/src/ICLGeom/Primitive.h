@@ -11,8 +11,7 @@
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/GLImg.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /** \cond */
     class SceneObject;
     /** \endcond */
@@ -451,5 +450,4 @@ namespace icl{
     };
 
 
-  } // namespace geom
-}
+  } // namespace icl::geom

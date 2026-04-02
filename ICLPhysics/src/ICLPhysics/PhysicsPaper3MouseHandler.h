@@ -8,10 +8,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/VisualizationDescription.h>
 
-namespace icl{
-
-  namespace physics{
-
+namespace icl::physics {
     /** \cond */
     class PhysicsPaper3;
     /** \endcond */
@@ -41,5 +38,3 @@ namespace icl{
     };
 
   }
-
-}

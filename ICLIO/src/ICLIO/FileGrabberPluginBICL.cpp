@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     void FileGrabberPluginBICL::grab(File &file, ImgBase **dest){
       ICLASSERT_RETURN(dest);
       file.open(File::readBinary);
@@ -21,5 +19,4 @@ namespace icl{
       cmp.uncompress(data.data(), data.size(), dest);
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

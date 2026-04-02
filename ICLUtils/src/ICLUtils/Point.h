@@ -11,8 +11,7 @@
 #include <ipp.h>
 #endif
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
   #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiPoint struct, defined in the ippi libb \ingroup TYPES
     struct IppiPoint {
@@ -93,5 +92,4 @@ namespace icl{
     ICLUtils_API std::istream &operator>>(std::istream &s, Point &p);
 
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

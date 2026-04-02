@@ -10,8 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace io{
+namespace icl::io {
     struct OffsPtr {
       OffsPtr(const Point &offs=Point::null, icl8u* img=0, int width=0):
         offs(offs), img(img), width(width){}
@@ -132,5 +131,4 @@ namespace icl {
       }
     }
 
-  } // namespace io
-} //namespace
+  } // namespace icl::io

@@ -10,9 +10,7 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLQt/LowLevelPlotWidget.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Easy to use widget component for 2D data visualization
     /** In contrast to it's parent class icl::LowLevelPlotWidget, the
         icl::PlotWidget interface is allinged with ICL's 2D image
@@ -424,5 +422,4 @@ namespace icl{
       }
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

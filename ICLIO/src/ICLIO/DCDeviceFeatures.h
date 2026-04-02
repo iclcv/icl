@@ -9,9 +9,7 @@
 #include <memory>
 
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /** cond */
     class DCDeviceFeaturesImpl : public utils::Configurable {
     public:
@@ -57,5 +55,4 @@ namespace icl{
       private:
       std::shared_ptr<DCDeviceFeaturesImpl> impl;
     };
-  } // namespace io
-}
+  } // namespace icl::io

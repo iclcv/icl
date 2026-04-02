@@ -7,8 +7,7 @@
 #include <ICLPhysics/PhysicsDefs.h>
 #include <ICLPhysics/RigidBoxObject.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
   void SixDOFConstraint::init(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, const bool useLinearReferenceFrameA) {
       btGeneric6DofConstraint *cons = new btGeneric6DofConstraint(*a->getRigidBody(),
                                                                   *b->getRigidBody(),
@@ -129,4 +128,3 @@ namespace icl {
 			}
     }
   }
-}

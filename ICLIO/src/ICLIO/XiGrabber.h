@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber class that grabs images using the XiAPI (extension of the M3API)
     /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
         with the generic grabber for this.
@@ -45,5 +43,4 @@ namespace icl{
         void processPropertyChange(const utils::Configurable::Property &prop);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

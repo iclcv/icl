@@ -9,9 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     template<class Scalar>
     LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(){
 
@@ -552,5 +550,4 @@ namespace icl{
 
     template class ICLMath_API LevenbergMarquardtFitter<icl32f>;
     template class ICLMath_API LevenbergMarquardtFitter<icl64f>;
-  } // namespace math
-}
+  } // namespace icl::math

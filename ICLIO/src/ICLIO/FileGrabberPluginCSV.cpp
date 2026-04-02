@@ -15,8 +15,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     namespace{
 
       template<class T>
@@ -177,5 +176,4 @@ namespace icl{
       }
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

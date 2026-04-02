@@ -9,8 +9,7 @@
 #include <ICLQt/Common.h>
 #include <ICLQt/ICLVideoSurface.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     class ICLQt_API QtCameraGrabber: public icl::io::Grabber{
       public:
 
@@ -29,4 +28,3 @@ namespace icl{
         ICLVideoSurface* surface;
     };
   }
-}

@@ -7,10 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLQt/AbstractPlotWidget.h>
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     /// Default AbstractPlotWidget implementation for plotting different kinds of data
     /** \section WHY Why Low-Level ?
         ICL's plotting framework does also provide a derived class called icl::PlotWidget.
@@ -327,5 +324,4 @@ namespace icl{
 
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

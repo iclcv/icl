@@ -41,8 +41,7 @@
 #include <ICLCV/RegionDetector.h>
 #include <ICLGeom/PlanarRansacEstimator.h>
 
-namespace icl {
-  namespace geom {
+namespace icl::geom {
     struct FeatureGraphSegmenter::Data {
 	    Data(Mode mode) {
         if(mode==BEST || mode==GPU){
@@ -477,5 +476,4 @@ namespace icl {
 	    return results;
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -5,14 +5,12 @@
 #ifdef ICL_SYSTEM_WINDOWS
 #include <ICLUtils/SignalHandler.h>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     void SignalHandler::install(const std::string &, std::function<void(const std::string&)>,
                                 const std::string &, int){}
 
     void SignalHandler::uninstall(const std::string &){}
-  }
-}
+} // namespace icl::utils
 #else
 
 #include <ICLUtils/SignalHandler.h>
@@ -34,8 +32,7 @@ namespace icl{
 #define SIGPOLL SIGIO
 #endif
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     struct SignalHandlerContext : public Lockable{
       SignalHandlerContext() : Lockable(true){
 #define A_(S) add(str("SIG") + #S,SIG##S)
@@ -201,8 +198,5 @@ namespace icl{
     }
 
 
-  } // namespace utils
-
-}
-
+  } // namespace icl::utils
 #endif

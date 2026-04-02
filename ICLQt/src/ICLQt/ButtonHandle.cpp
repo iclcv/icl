@@ -6,8 +6,7 @@
 #include <QPushButton>
 #include <algorithm>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     ButtonHandle::ButtonHandle(){}
 
     ButtonHandle::ButtonHandle(QPushButton *b, GUIWidget *w):
@@ -30,5 +29,4 @@ namespace icl{
     }
 
 
-  } // namespace qt
-}
+  } // namespace icl::qt

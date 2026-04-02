@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     Rect FloodFiller::prepare(const Size &imageSize, const Point &seed){
       result.ffLUT.setChannels(1);
       result.ffLUT.setSize(imageSize);
@@ -65,5 +63,4 @@ namespace icl{
       return result;
     }
 
-  } // namespace cv
-}
+  } // namespace icl::cv

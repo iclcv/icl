@@ -11,9 +11,7 @@
 #include <ICLCore/Image.h>
 #include <vector>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// class for applying table look-up transformation to 3-channel integer-valued images \ingroup UNARY
     /** In many applications it is necessary to create a feature map on 3-channel
         input images. These feature map creation procedure can take much time,
@@ -231,5 +229,4 @@ namespace icl {
       icl8u m_ucShift;
     };
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

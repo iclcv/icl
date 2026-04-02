@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     DynamicConvolutionOp::DynamicConvolutionOp (const ImgBase* poKernel) :
        ConvolutionOp ()
     {
@@ -36,4 +34,3 @@ namespace icl{
        ConvolutionOp::setKernel (ConvolutionKernel(poKernelBuf->getData(0), poKernelBuf->getSize(), false));
     }
   }
-}

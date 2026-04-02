@@ -14,9 +14,7 @@
 #include <random>
 #include <vector>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Thread-local random engine used by all ICL random functions \ingroup RANDOM
     inline std::mt19937 &random_engine(){
       static thread_local std::mt19937 engine(std::random_device{}());
@@ -193,5 +191,4 @@ namespace icl{
 
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

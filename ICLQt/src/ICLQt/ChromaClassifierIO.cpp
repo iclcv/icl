@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     namespace{
       float &auxget(Parable &p, int idx){
         switch(idx){
@@ -72,5 +70,4 @@ namespace icl{
       carc.thresh[2] = f.get<icl8u>("config.chroma-and-rgb-classifier.threshold.blue");
       return carc;
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

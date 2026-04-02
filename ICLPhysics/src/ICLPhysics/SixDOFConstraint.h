@@ -7,8 +7,7 @@
 #include <ICLPhysics/Constraint.h>
 #include <ICLGeom/GeomDefs.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     class RigidObject;
 
     /// This is a generic constraint that allows to free configuration of the limits on all 6 degrees of freedom.
@@ -65,4 +64,3 @@ namespace icl {
 			void setAngularMotor(int index, bool enableMotor, float targetVelocity, float maxMotorForce, bool force_activation = false);
     };
   }
-}

@@ -16,8 +16,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):
       ICLDrawWidget(parent),m_linkedCallback(0){
     }
@@ -76,5 +75,4 @@ namespace icl{
       }
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

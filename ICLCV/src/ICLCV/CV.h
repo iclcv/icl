@@ -151,8 +151,7 @@ int main(int n,char **v){
 
 */
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
     /// template matching using proximity measurement
     /** \section OV Overview
 
@@ -233,5 +232,4 @@ namespace icl{
 
 
 
-  } // namespace cv
-} // namespace icl
+  } // namespace icl::cv

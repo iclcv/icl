@@ -449,9 +449,7 @@ INST_OTHER_TYPES
 
 typedef std::map<const std::string, std::map< const std::string, DataStore::Assign*> > AssignMap;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     AssignMap *create_assign_map(){
       AssignMap &m = *new AssignMap;
 
@@ -832,5 +830,4 @@ namespace icl{
       }
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

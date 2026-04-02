@@ -9,9 +9,7 @@
 #include <ICLUtils/Configurable.h>
 
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Fiducial detector class that allows for using multiple cameras at once for fiducial detection
     /** By using more than one camera at once, the 3D Pose estimation accurrace can
         be increased significantly. The MultiCamFiducialDetector detects Fiducials in several
@@ -122,5 +120,4 @@ namespace icl{
       static int getCameraIDFromIntermediteImageName(const std::string &name);
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

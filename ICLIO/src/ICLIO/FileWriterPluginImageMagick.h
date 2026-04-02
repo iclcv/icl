@@ -6,8 +6,7 @@
 
 #include <ICLIO/FileWriterPlugin.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /// Interface class for writing images using an ImageMagick++ wrapper  \ingroup FILEIO_G
     /** ImageMagick provides reading and writing routines for many file formats: The following
         list shows all formats currently implemented for ICL's FileWriter.
@@ -57,5 +56,4 @@ namespace icl{
     ICLIO_API void icl_initialize_image_magick_context();
     /** \endcond */
 
-  } // namespace io
-}
+  } // namespace icl::io

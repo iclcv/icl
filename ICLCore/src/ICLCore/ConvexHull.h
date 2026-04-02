@@ -9,9 +9,7 @@
 #include <ICLUtils/Point32f.h>
 #include <vector>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     /// convex hull monotone chain algorithm for int-points
     /** @param P list of utils::Point (input) call-by-value, as we need an inplace-sort
                  internally
@@ -29,4 +27,3 @@ namespace icl{
     ICLCore_API std::vector<utils::Point32f> convexHull(std::vector<utils::Point32f> P);
 
   } // namespace geom
-}

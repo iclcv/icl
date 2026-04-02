@@ -22,10 +22,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
   #ifdef ICL_HAVE_IMAGEMAGICK
     struct FileGrabberPluginImageMagick::InternalData{
       std::vector<icl8u> buffer;
@@ -76,5 +73,4 @@ namespace icl{
       throw InvalidFileException(file.getName());
     }
   #endif
-  } // namespace io
-}
+  } // namespace icl::io

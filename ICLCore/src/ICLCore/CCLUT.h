@@ -10,9 +10,7 @@
 #include <vector>
 #include <string>
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     class ICLCore_API CCLUT{
       public:
       CCLUT(format srcFmt, format dstFmt);
@@ -81,5 +79,4 @@ namespace icl{
         }
         };
         */
-  } // namespace core
-}
+  } // namespace icl::core

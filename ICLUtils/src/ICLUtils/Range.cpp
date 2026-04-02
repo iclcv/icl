@@ -4,9 +4,7 @@
 
 #include <ICLUtils/Range.h>
 #include <ICLUtils/StringUtils.h>
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     template<class T>
     std::ostream &operator<<(std::ostream &s, const Range <T> &range){
       s << '[';
@@ -32,5 +30,4 @@ namespace icl{
       ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
 
-  } // namespace utils
-}
+  } // namespace icl::utils

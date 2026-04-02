@@ -12,9 +12,7 @@
 #include <string>
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Class for GUI-Label handling \ingroup HANDLES
     /** The gui label is created inside the GUI class, it can be used
         to make GUI-"label" components show anther text
@@ -54,5 +52,4 @@ namespace icl{
       const CompabilityLabel *lab() const { return **this; }
     };
 
-  } // namespace qt
-}
+  } // namespace icl::qt

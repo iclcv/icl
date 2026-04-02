@@ -14,9 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     class ColorSegmentationOp::LUT3D {
       public:
       LUT3D(const LUT3D&) = delete;
@@ -526,5 +524,4 @@ namespace icl{
       t = m_lut->t;
     }
   
-  } // namespace filter
-}
+  } // namespace icl::filter

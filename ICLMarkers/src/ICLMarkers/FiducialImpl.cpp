@@ -4,9 +4,7 @@
 
 #include <ICLMarkers/FiducialImpl.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     FiducialImpl::FiducialImpl(const FiducialImpl &o):
       parent(o.parent),supported(o.supported),computed(o.computed),
       id(o.id),index(o.index){
@@ -36,5 +34,4 @@ namespace icl{
       return *this;
     }
 
-  } // namespace markers
-}
+  } // namespace icl::markers

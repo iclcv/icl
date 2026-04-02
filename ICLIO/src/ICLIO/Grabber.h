@@ -11,11 +11,9 @@
 #include <ICLCore/ImgBase.h>
 #include <ICLIO/GrabberDeviceDescription.h>
 
-namespace icl {
-  namespace core { class Image; }
-  namespace utils { class ProgArg; }
-  namespace io { class ImageUndistortion; }
-}
+namespace icl::core { class Image; }
+namespace icl::utils { class ProgArg; }
+namespace icl::io { class ImageUndistortion; }
 
 #include <functional>
 #include <string>
@@ -24,9 +22,7 @@ namespace icl {
 #include <mutex>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl {
-  namespace io{
-
+namespace icl::io {
     /** \cond */
     namespace{
       template <class T> inline T grabber_get_null(){ return 0; }
@@ -375,5 +371,4 @@ namespace icl {
       }                                                                                                            \
     } staticGrabberBusResetRegistrationFor_##NAME;
 
-  } // namespace io
-} // namespace icl
+  } // namespace icl::io

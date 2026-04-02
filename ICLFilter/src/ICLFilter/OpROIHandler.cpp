@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
      /// check+adapt destination images parameters against given values
     bool OpROIHandler::prepare (ImgBase **ppoDst, depth eDepth,
                                 const Size &imgSize, format eFormat, int nChannels,
@@ -37,5 +35,4 @@ namespace icl {
       }
       return true;
     }
-  } // namespace filter
-}
+  } // namespace icl::filter

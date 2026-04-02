@@ -10,8 +10,7 @@ using namespace icl::math;
 using namespace icl::core;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
     TwoLevelRegionStructure::TwoLevelRegionStructure(const std::string &code) : color(0), code(code){
       if(code.size() < 3) throw ICLException("TwoLevelRegionStructure(code): error parsing code " + code + "(code too short)");
       int i=0;
@@ -54,5 +53,4 @@ namespace icl{
 
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

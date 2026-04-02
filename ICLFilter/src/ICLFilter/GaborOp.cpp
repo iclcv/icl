@@ -10,8 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
     GaborOp::GaborOp(){}
     GaborOp::GaborOp(const Size &kernelSize,
                      std::vector<icl32f> lambdas,
@@ -137,5 +136,4 @@ namespace icl{
       return poKernelImage;
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

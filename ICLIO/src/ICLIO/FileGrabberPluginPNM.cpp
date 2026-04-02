@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     static int ti(const std::string &t) { return parse<int>(t); }
     static std::vector<int> vec3(int a, int b, int c){
       int abc[] = {a,b,c};
@@ -132,5 +130,4 @@ namespace icl{
       }
     }
 
-  } // namespace io
-}
+  } // namespace icl::io

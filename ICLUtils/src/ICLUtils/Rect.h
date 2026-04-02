@@ -14,9 +14,7 @@
 #endif
 
 
-namespace icl {
-  namespace utils{
-
+namespace icl::utils {
   #ifndef ICL_HAVE_IPP
     /// fallback implementation for the IppiRect struct, defined in the ippi lib \ingroup TYPES
     struct IppiRect {
@@ -277,5 +275,4 @@ namespace icl {
     ICLUtils_API std::istream &operator>>(std::istream &s, Rect &r);
 
 
-  } // namespace utils
-} // namespace icl
+  } // namespace icl::utils

@@ -11,9 +11,7 @@
 #include <ICLCore/ChromaClassifier.h>
 #include <ICLCore/ChromaAndRGBClassifier.h>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     class ICLQt_API ChromaClassifierIO{
       public:
       static void save(const core::ChromaClassifier &cc,
@@ -28,5 +26,4 @@ namespace icl{
 
       static core::ChromaAndRGBClassifier loadRGB(const std::string &filename);
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

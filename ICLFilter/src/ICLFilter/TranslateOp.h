@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/AffineOp.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Class to translate images \ingroup UNARY \ingroup AFFINE
     /** TODO: currently the translation effect is compensated by the AffineOp's
         re-centering mechanism*/
@@ -43,5 +41,4 @@ namespace icl{
       using AffineOp::scale;
       using AffineOp::setAdaptResultImage;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

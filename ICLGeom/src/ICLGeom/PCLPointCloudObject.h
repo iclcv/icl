@@ -17,9 +17,7 @@ namespace pcl{
 }
 /** \endcond */
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     ///PointCloudObject implementation for the PCLPointCloud types
     /** Right now, the following pcl-point types are supported. Due to the non-inline
         implementation of the class, all other point-types are not available. For other
@@ -145,5 +143,4 @@ namespace icl{
 
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

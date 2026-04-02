@@ -10,9 +10,7 @@
 #include <ICLCV/ImageRegion.h>
 #include <stdint.h>
 
-namespace icl {
-    namespace cv {
-
+namespace icl::cv {
     /**
      * Curvature evaluation from "Contact-free and pose-invariant hand-biometric-based personal identification system using RGB and depth data"
      * by Can Wang, Hong Liu, Xing Liu
@@ -162,5 +160,4 @@ namespace icl {
 
     };
 
-    } //cv
-} //icl
+    } // namespace icl::cv

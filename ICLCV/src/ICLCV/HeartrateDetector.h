@@ -8,10 +8,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLCore/Img.h>
 #include <ICLQt/PlotWidget.h>
-namespace icl{
-  namespace cv{
-
-
+namespace icl::cv {
     /// Heartrate Detector
     /** Implementation of a simple heartrate detector using video material of a face.
 
@@ -71,5 +68,4 @@ namespace icl{
 
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

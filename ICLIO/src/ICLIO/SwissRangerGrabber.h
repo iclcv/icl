@@ -8,10 +8,7 @@
 #include <ICLUtils/Exception.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     /// Grabber-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup GRABBER_G
     class SwissRangerGrabber : public Grabber{
       public:
@@ -58,5 +55,4 @@ namespace icl{
         std::recursive_mutex m_mutex;
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -20,8 +20,7 @@
 #include <ICLPhysics/FoldMap.h>
 #include <mutex>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     using namespace utils;
     using namespace math;
     using namespace core;
@@ -1899,4 +1898,3 @@ namespace icl{
       return s->m_nodes.size();
     }
   }
-}

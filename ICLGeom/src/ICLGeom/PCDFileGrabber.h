@@ -7,10 +7,7 @@
 #include <ICLGeom/PointCloudGrabber.h>
 
 
-namespace icl{
-
-  namespace geom{
-
+namespace icl::geom {
     class PCDFileGrabber : public PointCloudGrabber{
       struct Data;  // !< pimpl type
       Data *m_data; // !< pimpl pointer
@@ -34,4 +31,3 @@ namespace icl{
       virtual void grab(PointCloudObjectBase &dst);
     };
   }
-}

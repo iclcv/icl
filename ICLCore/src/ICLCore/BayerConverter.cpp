@@ -9,9 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl {
-  namespace core{
-
+namespace icl::core {
     BayerConverter::BayerConverter(const std::string &pattern, const std::string &method){
       m_eBayerPattern = translateBayerPattern(pattern);
       m_eConvMethod = translateBayerConverterMethod(method);
@@ -939,5 +937,4 @@ namespace icl {
       }
     }
 
-  } // namespace core
-} // namespace
+  } // namespace icl::core

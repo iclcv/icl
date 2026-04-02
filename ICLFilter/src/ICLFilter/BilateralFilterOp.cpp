@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-namespace filter {
-
+namespace icl::filter {
   const char* toString(BilateralFilterOp::Op op) {
     switch(op) {
       case BilateralFilterOp::Op::apply: return "apply";
@@ -43,5 +41,4 @@ namespace filter {
     impl->apply(src, dst, m_radius, m_sigmaS, m_sigmaR, m_useLAB);
   }
 
-} // namespace filter
-} // namespace icl
+} // namespace icl::filter

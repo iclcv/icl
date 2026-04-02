@@ -8,9 +8,7 @@
 #include <ICLIO/FileWriterPlugin.h>
 #include <mutex>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// A Writer Plugin for writing ".jpeg" and ".jpg" images \ingroup FILEIO_G
     class ICLIO_API FileWriterPluginJPEG : public FileWriterPlugin{
       public:
@@ -31,5 +29,4 @@ namespace icl{
       /// mutex to protect the static buffer
       static std::recursive_mutex s_oBufferImageMutex;
     };
-  } // namespace io
-}
+  } // namespace icl::io

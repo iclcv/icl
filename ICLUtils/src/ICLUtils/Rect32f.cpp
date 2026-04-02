@@ -7,9 +7,7 @@
 
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     const Rect32f Rect32f::null(0,0,0,0);
 
     Rect32f Rect32f::operator&(const Rect32f &r) const {
@@ -80,5 +78,4 @@ namespace icl{
     }
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

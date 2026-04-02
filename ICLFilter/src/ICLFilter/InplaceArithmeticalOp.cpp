@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     namespace{
 
       // general implementation for transforming a single value
@@ -98,5 +96,4 @@ namespace icl{
       return srcIn;
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

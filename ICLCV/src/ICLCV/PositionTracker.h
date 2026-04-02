@@ -7,9 +7,7 @@
 #include <deque>
 #include <ICLUtils/Point32f.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// How should new ID's be allocated
     enum IDAllocationMode{
       allocateFirstFreeIDs, // re-using old ID's
@@ -296,5 +294,4 @@ namespace icl{
     };
 
 
-  } // namespace cv
-}
+  } // namespace icl::cv

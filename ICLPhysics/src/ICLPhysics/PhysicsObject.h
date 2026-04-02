@@ -10,9 +10,7 @@
 #include <functional>
 class btCollisionObject;
 
-namespace icl {
-  namespace physics{
-
+namespace icl::physics {
     class PhysicsWorld;
 
     /// This class combines an physical object and it's graphical representation in ICL
@@ -142,4 +140,3 @@ namespace icl {
 			std::string getObjectID() const;
     };
   }
-}

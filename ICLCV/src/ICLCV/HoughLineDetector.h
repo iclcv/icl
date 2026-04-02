@@ -17,9 +17,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <ICLUtils/Configurable.h>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /** LineDetection class using hough-space line detection
 
         @section ALG Algorithm
@@ -200,5 +198,4 @@ namespace icl{
 
     };
 
-  } // namespace cv
-}
+  } // namespace icl::cv

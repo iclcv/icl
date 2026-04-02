@@ -10,9 +10,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Class for the canny edge detector \ingroup UNARY
     /** @section OV Overview
 
@@ -152,5 +150,4 @@ namespace icl {
       bool m_use_derivatives_info;
       int m_preBlurRadius;
     };
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

@@ -14,8 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     void FileWriterPluginJPEG::setQuality(int value){
       s_iQuality = value;
     }
@@ -181,5 +180,4 @@ namespace icl{
 
 
 
-  } // namespace io
-}
+  } // namespace icl::io

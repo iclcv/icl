@@ -10,9 +10,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     /// Common base class for FFTOp and IFFTOp
     /** Holds unified enums, DynMatrix buffers, size adaptation, result mode
         extraction, and the shift implementation. Subclasses only set
@@ -92,5 +90,4 @@ namespace icl {
       void applyIfftShift(math::DynMatrix<T>& m);
     };
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

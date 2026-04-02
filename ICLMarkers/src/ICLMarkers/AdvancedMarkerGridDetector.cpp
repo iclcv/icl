@@ -5,10 +5,7 @@
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
 #include <ICLMarkers/MarkerGridEvaluater.h>
 
-namespace icl{
-  namespace markers{
-
-
+namespace icl::markers {
     AdvancedMarkerGridDetector::AdvancedGridDefinition::AdvancedGridDefinition(const utils::Size &numCells,
                                                                                const utils::Size32f &markerBounds,
                                                                                const utils::Size32f &gridBounds,
@@ -184,4 +181,3 @@ namespace icl{
       return grid;
     }
   }
-}

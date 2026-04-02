@@ -11,9 +11,7 @@
 #include <ICLUtils/Uncopyable.h>
 #include <vector>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// Simple KD-Tree implementation
     /** This class implements a simple kd-tree. You can create an object of this class
         with or without given point data. After creating a kd-tree without data you can use
@@ -127,4 +125,3 @@ namespace icl{
 
     };
   } // namespace utils
-}

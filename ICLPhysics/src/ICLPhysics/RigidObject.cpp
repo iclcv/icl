@@ -7,8 +7,7 @@
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 #include <ICLPhysics/PhysicsDefs.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     RigidObject::RigidObject(){}
 
     btRigidBody *RigidObject::getRigidBody() {
@@ -125,4 +124,3 @@ namespace icl{
       getRigidBody()->setMassProps(mass, intertia);
     }
   }
-}

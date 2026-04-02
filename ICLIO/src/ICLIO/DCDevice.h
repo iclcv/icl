@@ -10,8 +10,7 @@
 #include <ICLCore/Types.h>
 #include <ICLUtils/Size.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
     /** \cond */
     class DCGrabber;
     namespace dc{
@@ -169,5 +168,4 @@ namespace icl{
       // CameraTypeID m_eCameraTypeID;
       BayerFilterMode m_eBayerFilterMode;
     };
-  } // namespace io
-}
+  } // namespace icl::io

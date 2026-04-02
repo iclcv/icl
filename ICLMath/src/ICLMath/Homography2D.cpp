@@ -9,8 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     template<class T>
     GenericHomography2D<T>::GenericHomography2D(const Point32f *x, const Point32f *y, int n,typename GenericHomography2D<T>::Algorithm alg){
       if(alg == Simple){
@@ -65,5 +64,4 @@ namespace icl{
     template struct ICLMath_API GenericHomography2D<float>;
     template struct ICLMath_API GenericHomography2D<double>;
 
-  } // namespace math
-}
+  } // namespace icl::math

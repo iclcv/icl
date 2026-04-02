@@ -7,8 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <QPushButton>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// internally used button that emits a signal with its text \ingroup UNCOMMON
     class ICLQt_API StringSignalButton : public QPushButton{
       Q_OBJECT
@@ -25,5 +24,4 @@ namespace icl{
       void receiveClick(bool checked);
 
     };
-  } // namespace qt
-}
+  } // namespace icl::qt

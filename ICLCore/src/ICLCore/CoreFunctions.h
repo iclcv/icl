@@ -16,9 +16,7 @@
 /** This namespace is dedicated for ICLCore- and all additional Computer-Vision
     packages, that are based on the ICLCore classes.
 **/
-namespace icl {
-  namespace core{
-
+namespace icl::core {
   /* {{{ Global functions */
 
   /// create a new image instance of the given depth type and with given parameters \ingroup IMAGE
@@ -214,5 +212,4 @@ namespace icl {
     /// computes the color histogramm of given image
     ICLCore_API std::vector<std::vector<int> > hist(const ImgBase *image, int levels = 256, bool roiOnly = false);
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

@@ -11,9 +11,7 @@
 
 #include <bitset>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /** \cond */
     struct FiducialImpl;
     struct FiducialDetectorPlugin;
@@ -155,5 +153,4 @@ namespace icl{
     inline Fiducial::FeatureSet operator|(Fiducial::Feature f1, Fiducial::Feature f2){
       Fiducial::FeatureSet s; s.reset(); s.set(f1); s.set(f2); return s;
     }
-  } // namespace markers
-}
+  } // namespace icl::markers

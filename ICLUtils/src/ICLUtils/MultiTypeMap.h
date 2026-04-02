@@ -15,9 +15,7 @@
 #include <cstdio>
 #include <vector>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Abstract and associative Data Container for Data of different types
     /** The MultiTypeMap class can be used to create an associative container
         for different types. It provides an interface for a type-save handling
@@ -270,5 +268,4 @@ namespace icl{
       /// mutex to handle syncronous calls
       mutable SmartMutexPtr m_oMutexPtr;
     };
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -8,9 +8,7 @@
 #include <vector>
 #include <string>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// String Tokenizer Utility class  \ingroup UTILS
     class ICLUtils_API StrTok{
       public:
@@ -89,5 +87,4 @@ namespace icl{
       unsigned int m_uiPos;
     };
 
-  } // namespace utils
-}
+  } // namespace icl::utils

@@ -9,8 +9,7 @@
 #include <string>
 #include <limits>
 
-namespace icl{
-  namespace math{
+namespace icl::math {
     const AXES AXES_DEFAULT = rxyz;
 
     template<class T, bool skip3rd>
@@ -439,5 +438,4 @@ namespace icl{
         REGISTER_CONFIG_FILE_TYPE(Vec);
       }
     } FixedMatrixConfigFileStaticRegistration__Instance;
-  } // namespace math
-}
+  } // namespace icl::math

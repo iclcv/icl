@@ -7,9 +7,7 @@
 #include <ICLCore/ImageBackendDispatching.h>
 #include <ICLCore/Types.h>
 
-namespace icl {
-  namespace core {
-
+namespace icl::core {
     /// Singleton that owns BackendSelectors for Img utility operations
     /// (mirror, min, max, lut, etc.). Uses ImgBase* as dispatch context
     /// so Img<T> methods can dispatch directly via `this`.
@@ -61,5 +59,4 @@ namespace icl {
     /// ADL-visible toString for ImgOps::Op → registry name (defined in ImgOps.cpp)
     ICLCore_API const char* toString(ImgOps::Op op);
 
-  } // namespace core
-} // namespace icl
+  } // namespace icl::core

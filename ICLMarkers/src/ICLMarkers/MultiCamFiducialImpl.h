@@ -8,9 +8,7 @@
 #include <ICLMarkers/Fiducial.h>
 #include <ICLGeom/Camera.h>
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     /// Internal Implementation class for the MutiCamFiducial
     /** @section _SB_ Smart Buffering
         The 3D pose estimation results are buffered internally so that
@@ -51,5 +49,4 @@ namespace icl{
       const math::FixedColVector<float,3> &estimateOrientation3D();
     };
 
-  } // namespace markers
-}
+  } // namespace icl::markers

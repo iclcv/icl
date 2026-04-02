@@ -5,10 +5,7 @@
 #include <ICLQt/StateHandle.h>
 #include <ICLQt/ThreadedUpdatableTextView.h>
 
-namespace icl{
-  namespace qt{
-
-
+namespace icl::qt {
     void StateHandle::append(const std::string &text){
       this->text()->appendTextFromOtherThread(text);
     }
@@ -30,5 +27,4 @@ namespace icl{
       // todo!
     }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

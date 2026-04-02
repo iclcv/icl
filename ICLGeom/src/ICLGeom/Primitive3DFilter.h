@@ -11,9 +11,7 @@
 #include "ICLUtils/CLProgram.h"
 #endif
 
-namespace icl{
-    namespace geom{
-
+namespace icl::geom {
         /// Class for filtering point clouds according to a set of primitives and a filter configuration
         class Primitive3DFilter {
 
@@ -321,5 +319,4 @@ namespace icl{
 
         };
 
-    } // namespace geom
-}
+    } // namespace icl::geom

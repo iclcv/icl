@@ -9,9 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     Line32f::Line32f(const Line &l):start(l.start),end(l.end){}
 
     Line32f::Line32f(Point32f start, float arc, float length):
@@ -71,5 +69,4 @@ namespace icl{
       }
       return false;
     }
-  } // namespace core
-}
+  } // namespace icl::core

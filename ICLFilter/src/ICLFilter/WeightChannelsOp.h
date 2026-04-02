@@ -9,9 +9,7 @@
 #include <ICLFilter/UnaryOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter{
-
+namespace icl::filter {
     /// Weight pixel values of all image channels \ingroup UNARY
     /** Pixels of all channels in source image are weighted
         by a channel-wise weight:
@@ -70,5 +68,4 @@ namespace icl {
       std::vector<icl64f> m_vecWeights;
     };
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

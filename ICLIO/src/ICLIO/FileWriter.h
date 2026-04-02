@@ -13,9 +13,7 @@
 #include <string>
 #include <map>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     ///  File Writer implementation writing images to the hard disc \ingroup FILEIO_G
     /** \section OVERVIEW Overview
         The implementation has been re-designed to provide a structured more flexible
@@ -145,5 +143,4 @@ namespace icl{
       static std::map<std::string,FileWriterPlugin*> s_mapPlugins;
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

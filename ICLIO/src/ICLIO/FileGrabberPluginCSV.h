@@ -8,10 +8,7 @@
 #include <ICLIO/FileGrabberPlugin.h>
 #include <mutex>
 
-namespace icl{
-
-  namespace io{
-
+namespace icl::io {
     /// FileGrabber plugins for writing ".csv" files (<b>C</b>omma-<b>S</b>eparated <b>V</b>alues) \ingroup FILEIO_G
     /** image parameters can be found by three different means:
         -# <b>Encoded into the file name.</b> When using the ICLFileWriter to write
@@ -48,5 +45,4 @@ namespace icl{
       /// internally used mutex to protect the reading buffer
       std::recursive_mutex *m_poReadBufferMutex;
     };
-  } // namespace io
-}
+  } // namespace icl::io

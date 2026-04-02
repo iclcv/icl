@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Abtract base class for arbitrary affine operation classes \ingroup AFFINE \ingroup UNARY
     /** The Base affine class complies an abtract interface class
         for all Filter classes implementing affine operations:
@@ -28,5 +26,4 @@ namespace icl{
       using UnaryOp::apply;
     };
 
-  } // namespace filter
-}
+  } // namespace icl::filter

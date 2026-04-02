@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Range.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// A standard linear mapping class for the 1D case f(x) = m * x + b
     struct LinearTransform1D{
       /// slope
@@ -31,5 +29,4 @@ namespace icl{
       float operator()(float x) const { return m*x+b; }
     };
 
-  } // namespace math
-}
+  } // namespace icl::math

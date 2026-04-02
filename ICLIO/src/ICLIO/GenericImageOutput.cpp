@@ -35,10 +35,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
-
+namespace icl::io {
     GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
       init(type,description);
     }
@@ -165,5 +162,4 @@ namespace icl{
         impl = std::shared_ptr<ImageOutput>(o);
       }
     }
-  } // namespace io
-}
+  } // namespace icl::io

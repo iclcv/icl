@@ -11,10 +11,7 @@
 #include <ICLUtils/ClippedCast.h>
 #include <cstring>
 
-namespace icl{
-  namespace core{
-
-
+namespace icl::core {
     /// The DataSegment class defines a strided data segment (or 1D or 2D ordred array of vectors)
     /** Each data segment is defined by
         - the type of it's elements (template parameter T)
@@ -372,5 +369,4 @@ int main(){
 
 
 
-  } // namespace core
-}
+  } // namespace icl::core

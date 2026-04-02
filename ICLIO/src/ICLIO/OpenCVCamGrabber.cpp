@@ -8,9 +8,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     OpenCVCamGrabber::OpenCVCamGrabber(int dev) :device(dev),m_buffer(0){
       cvc.reset(new cv::VideoCapture());
       cvc->open(dev);
@@ -102,5 +100,4 @@ namespace icl{
 
     REGISTER_GRABBER(cvcam,createCVCGrabber, OpenCVCamGrabber::getDeviceList, "cvcam:camera ID:OpenCV based camera source");
 
-  } // namespace io
-}
+  } // namespace icl::io

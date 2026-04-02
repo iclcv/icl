@@ -11,8 +11,7 @@
 #include <ICLCore/DataSegment.h>
 #include <ICLGeom/Camera.h>
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     /**
        This class computes the whole segmentation pipeline of the feature graph based segmentation. The configurable class provides the GUI with all paramters: Prop("segmentation") */
     class ICLGeom_API ConfigurableDepthImageSegmenter : public utils::Configurable{
@@ -92,5 +91,4 @@ namespace icl{
       Data *m_data; //!< internal data pointer
 
     };
-  } // namespace geom
-}
+  } // namespace icl::geom

@@ -8,9 +8,7 @@
 #include <ICLCore/DataSegment.h>
 #include <ICLCore/Img.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /// class for extraction of surface features.
     /** The SurfaceFeatureExtractor class computes normalHistograms, meanNormals, meanPosition, and curvatureFactor(planar, 1D curved, 2D curved) for sets of points. */
 
@@ -80,5 +78,4 @@ namespace icl{
         static void finish(SurfaceFeature &feature, int mode);
     };
 
-  } // namespace geom
-}
+  } // namespace icl::geom

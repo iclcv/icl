@@ -9,9 +9,7 @@
 #include <ICLUtils/Exception.h>
 #include <ICLMath/FixedVector.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     /// A straight line is parameterized in offset/direction form
     /** This formular is used:
         \f[ L(x) = \vec{o} + x\vec{v} \f]
@@ -71,5 +69,4 @@ namespace icl{
       /// retunrs the closest point on the straight line to a given other point
       Pos getClosestPoint(const Pos &p) const;
     };
-  } // namespace math
-}
+  } // namespace icl::math

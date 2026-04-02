@@ -8,9 +8,7 @@
 #include <ICLUtils/VisualizationDescription.h>
 #include <utility>
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// Generic SURF Feature type
     struct ICLCV_API SurfFeature{
       float x;               //!< feature x-position
@@ -34,4 +32,3 @@ namespace icl{
     using SurfMatch = std::pair<SurfFeature,SurfFeature>;
 
   }
-}

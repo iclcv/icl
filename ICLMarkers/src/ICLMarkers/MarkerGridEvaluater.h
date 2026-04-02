@@ -7,8 +7,7 @@
 #include <ICLMarkers/AdvancedMarkerGridDetector.h>
 #include <ICLMath/FixedVector.h>
 
-namespace icl{
-  namespace markers{
+namespace icl::markers {
 	  struct ICLMarkers_API MarkerGridEvaluater{
       using MarkerGrid = AdvancedMarkerGridDetector::MarkerGrid;
       using Marker = AdvancedMarkerGridDetector::Marker;
@@ -54,5 +53,3 @@ namespace icl{
       void updateLines();
     };
   }
-
-}

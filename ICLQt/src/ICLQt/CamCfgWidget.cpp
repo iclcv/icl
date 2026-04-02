@@ -29,9 +29,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::io;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     class CamCfgWidget::Data{
     public:
       bool complex;
@@ -217,5 +215,4 @@ namespace icl{
         }
       }
     }
-  } // namespace qt
-}
+  } // namespace icl::qt

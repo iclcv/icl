@@ -10,8 +10,7 @@ using namespace icl::core;
 using namespace icl::math;
 using namespace icl::qt;
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     ComplexCoordinateFrameSceneObject::ComplexCoordinateFrameSceneObject(float axisLength,float axisThickness, bool withLabels,
                                                                           const std::string &xLabel,
                                                                           const std::string &yLabel,
@@ -81,5 +80,4 @@ namespace icl{
       }
     }
 
-  } // namespace geom
-}
+  } // namespace icl::geom

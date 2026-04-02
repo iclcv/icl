@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/AffineOp.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
    /// Class to rotate images \ingroup UNARY \ingroup AFFINE
     class ICLFilter_API RotateOp : public AffineOp {
       public:
@@ -36,5 +34,4 @@ namespace icl{
       using AffineOp::translate;
       using AffineOp::scale;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

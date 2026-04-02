@@ -24,9 +24,7 @@
 #include <GL/glu.h>
 #endif
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     /** \cond */
     ICLGeom_API void octree_object_render_box(float x0, float y0, float z0,
                                               float x1, float y1, float z1);
@@ -332,5 +330,3 @@ namespace icl{
     };
 
   }
-
-}

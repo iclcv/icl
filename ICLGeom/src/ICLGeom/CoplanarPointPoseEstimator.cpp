@@ -26,8 +26,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace geom{
+namespace icl::geom {
     typedef DynMatrix<float> DMat;
 
     [[maybe_unused]] static inline void assign_row(float* p, float a, float b, float c, float d,
@@ -955,5 +954,4 @@ namespace icl{
     }
 
     REGISTER_CONFIGURABLE_DEFAULT(CoplanarPointPoseEstimator);
-  } // namespace geom
-}
+  } // namespace icl::geom

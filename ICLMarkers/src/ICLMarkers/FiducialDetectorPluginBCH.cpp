@@ -12,9 +12,7 @@ using namespace icl::core;
 using namespace icl::geom;
 using namespace icl::cv;
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     namespace{
       struct PatternBinarization{
         virtual void apply(icl8u *p) = 0;
@@ -176,5 +174,4 @@ namespace icl{
     }
 
 
-  } // namespace markers
-}
+  } // namespace icl::markers

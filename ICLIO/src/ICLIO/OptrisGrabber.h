@@ -7,9 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <ICLIO/Grabber.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// Grabber class that grabs images using the libImager library from Optris
     /** Optris provides IR-Cameras, such as the TIM 160 which yields IR-temperature
         images of 160x120 resolution at 120 Hz.
@@ -46,5 +44,4 @@ namespace icl{
         void processPropertyChange(const utils::Configurable::Property &prop);
     };
 
-  } // namespace io
-}
+  } // namespace icl::io

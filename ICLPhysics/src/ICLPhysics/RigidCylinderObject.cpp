@@ -11,8 +11,7 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <ICLPhysics/MotionState.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     RigidCylinderObject::RigidCylinderObject(float x, float y, float z, float r, float h, float mass){
       so = addCylinder(0, 0, 0, r, r, h, 16);
 
@@ -29,4 +28,3 @@ namespace icl{
       setPhysicalObject(new btRigidBody(ci));
     }
   }
-}

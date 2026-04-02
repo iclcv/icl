@@ -7,9 +7,7 @@
 using namespace icl;
 using namespace icl::utils;
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     class SceneLightObject::ThreadPart : public SceneObject{
       public:
 
@@ -167,4 +165,3 @@ namespace icl{
 
     }
   }
-}

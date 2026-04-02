@@ -7,9 +7,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter {
-
+namespace icl::filter {
     const char* toString(ThresholdOp::Op op) {
       switch(op) {
         case ThresholdOp::Op::ltVal:   return "ltVal";
@@ -72,5 +70,4 @@ namespace icl {
       }
     }
 
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

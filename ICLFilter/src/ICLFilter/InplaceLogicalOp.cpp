@@ -9,9 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     namespace{
 
   #define TRUE_VAL 255
@@ -157,5 +155,4 @@ namespace icl{
       return srcIn;
     }
 
-  } // namespace filter
-}
+  } // namespace icl::filter

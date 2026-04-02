@@ -4,12 +4,10 @@
 
 #include <ICLQt/PlotHandle.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     void PlotHandle::render(){
       (**this)->updateFromOtherThread();
     }
 
     /// todo: more convecience methods
-  } // namespace qt
-}
+  } // namespace icl::qt

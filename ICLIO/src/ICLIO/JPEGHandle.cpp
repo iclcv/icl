@@ -4,8 +4,7 @@
 
 #include <ICLIO/JPEGHandle.h>
 
-namespace icl{
-  namespace io{
+namespace icl::io {
   #ifdef ICL_HAVE_LIBJPEG
     void icl_jpeg_error_exit (j_common_ptr cinfo) {
       /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
@@ -19,5 +18,4 @@ namespace icl{
       longjmp(err->setjmp_buffer, 1);
     }
   #endif // ICL_HAVE_LIBJPEG
-  } // namespace io
-}
+  } // namespace icl::io

@@ -10,8 +10,7 @@
 #include <ICLUtils/VisualizationDescription.h>
 #include <ICLQt/MouseHandler.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     /// Special MouseHandler Implementation that allows for defining a quadrangle
     /** The resulting quadrangle (defined by it's four corners points) can be
         restricted to be always convex. The quadrangle is initialized as a rectangle
@@ -68,4 +67,3 @@ namespace icl{
 
     };
   }
-}

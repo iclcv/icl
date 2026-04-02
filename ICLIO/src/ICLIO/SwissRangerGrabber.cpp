@@ -42,9 +42,7 @@ inline int set_canon(int flag){
   return 1;
 }
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     static std::string translate_modulation_freq(ModulationFrq m){
       switch(m){
 #define CASE(X) case MF_##X##MHz: return #X+str("MHz");
@@ -561,5 +559,4 @@ namespace icl{
 
     REGISTER_GRABBER(sr,createSRGrabber, SwissRangerGrabber::getDeviceList, "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
 
-  } // namespace io
-}
+  } // namespace icl::io

@@ -14,10 +14,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl {
-  namespace core{
-
-
+namespace icl::core {
     //----------------------------------------------------------------------------
     template<class Type>
     Img<Type>::Img(const ImgParams &params):
@@ -1626,5 +1623,4 @@ namespace icl {
 
 
 
-  } // namespace core
-} //namespace icl
+  } // namespace icl::core

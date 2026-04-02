@@ -6,8 +6,7 @@
 #include <ICLUtils/Point32f.h>
 #include <cmath>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     const Point Point::null(0,0);
 
     float Point::distanceTo(const Point &p) const{
@@ -35,5 +34,4 @@ namespace icl{
     }
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils

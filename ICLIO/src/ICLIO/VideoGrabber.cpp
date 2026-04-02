@@ -23,9 +23,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     struct VideoGrabber::XineHandle{
         xine_t              *xine;
         xine_stream_t       *stream;
@@ -360,5 +358,4 @@ namespace icl{
 
     REGISTER_GRABBER(xine,createVideoGrabber, getVideoDeviceList,"xine:video filename:Xine library based video file source");
 
-  } // namespace io
-}
+  } // namespace icl::io

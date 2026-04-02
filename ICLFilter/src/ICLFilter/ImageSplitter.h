@@ -9,9 +9,7 @@
 #include <vector>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Utility class to split an images roi into a set of shallow copies
     /** In some cases it is useful, to devide a task, that should be applied on an
         images ROI, into a set of disjoint subtasks. This can be achieved by
@@ -52,5 +50,4 @@ namespace icl{
       **/
       static void splitImage(core::ImgBase *src, std::vector<core::ImgBase*> &parts);
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

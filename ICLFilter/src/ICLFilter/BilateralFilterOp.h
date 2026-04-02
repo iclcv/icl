@@ -8,9 +8,7 @@
 #include <ICLCore/Image.h>
 #include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-namespace filter {
-
+namespace icl::filter {
   /// Gaussian bilateral filter — edge-preserving smoothing
   /** The bilateral filter combines spatial Gaussian weighting with
       range (intensity/color difference) weighting. Pixels that are
@@ -63,5 +61,4 @@ namespace filter {
   /// ADL-visible toString for BilateralFilterOp::Op → registry name (defined in BilateralFilterOp.cpp)
   ICLFilter_API const char* toString(BilateralFilterOp::Op op);
 
-} // namespace filter
-} // namespace icl
+} // namespace icl::filter

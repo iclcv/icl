@@ -8,8 +8,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     static inline bool operator <(const Point &a, const Point &p){
       return a.x < p.x || (a.x == p.x && a.y < p.y);
     }
@@ -23,9 +22,9 @@ namespace icl{
     static inline float cross(const Point32f &O, const Point32f &A, const Point32f &B){
       return (A.x - O.x) * (B.y - O.y) - (A.y - O.y) * (B.x - O.x);
     }
-  }
+} // namespace icl::utils
 
-  namespace core{
+namespace icl::core {
     // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
     // 2D cross product.
     // Return a positive value, if OAB makes a counter-clockwise turn,
@@ -79,5 +78,4 @@ namespace icl{
       H.resize(k);
       return H;
     }
-  } // namespace geom
-}
+} // namespace icl::core

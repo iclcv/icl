@@ -9,9 +9,7 @@
 #include <ICLFilter/BaseAffineOp.h>
 #include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
     class ICLFilter_API MirrorOp : public BaseAffineOp {
       public:
@@ -38,5 +36,4 @@ namespace icl{
       utils::Size  m_oSize;
       utils::Point m_oSrcOffset, m_oDstOffset;
     };
-  } // namespace filter
-}
+  } // namespace icl::filter

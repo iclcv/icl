@@ -10,9 +10,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl{
-  namespace core{
-
+namespace icl::core {
     namespace{
       struct ColorMap : public std::map<std::string,Color>{
         ColorMap(){
@@ -53,5 +51,4 @@ namespace icl{
 
 
 
-  } // namespace core
-}
+  } // namespace icl::core

@@ -13,9 +13,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     /// create dedicated file for this class
     HoughLine::HoughLine():m_distance(0),m_angle(0){}
 
@@ -155,5 +153,4 @@ namespace icl{
 
     const Point32f HoughLine::NO_INTERSECTION = Point32f(Range32f::limits().maxVal,Range32f::limits().maxVal);
 
-  } // namespace cv
-}
+  } // namespace icl::cv

@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/RigidObject.h>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     /// ConvexHullObject witht he features of a RigidObject that can be created from a pointcloud
     class ICLPhysics_API RigidConvexHullObject : public RigidObject{
       public:
@@ -25,4 +24,3 @@ namespace icl{
                                    float mass=1.0);
     };
   }
-}

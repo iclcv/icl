@@ -17,9 +17,7 @@ using namespace icl::math;
 using namespace icl::core;
 
 
-namespace icl {
-  namespace markers{
-
+namespace icl::markers {
     /** source copyright: (source code found at http://www.eccpage.com/bch3.c)
 
         COPYRIGHT NOTICE: This computer program is free for non-commercial purposes.
@@ -608,5 +606,4 @@ namespace icl {
       }
       return im;
     }
-  } // namespace markers
-}
+  } // namespace icl::markers

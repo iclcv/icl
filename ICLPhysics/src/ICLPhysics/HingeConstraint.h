@@ -6,8 +6,7 @@
 
 #include <ICLPhysics/SliderConstraint.h>
 
-namespace icl {
-  namespace physics{
+namespace icl::physics {
     class RigidObject;
 
     /// This constraint simulates a Hinge joint.
@@ -20,4 +19,3 @@ namespace icl {
       HingeConstraint(RigidObject* a, RigidObject* b, const geom::Vec &pivotInA, const geom::Vec &pivotInB, int rotationAxis, const bool useLinearReferenceFrameA = true);
     };
   }
-}

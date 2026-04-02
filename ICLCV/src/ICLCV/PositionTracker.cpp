@@ -34,9 +34,7 @@ Data[0] Data[1] ...      |  Dist[0], Dist[1], ...
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
-
+namespace icl::cv {
     namespace positiontracker{
       const int X = 0;
       const int Y = 1;
@@ -600,5 +598,4 @@ namespace icl{
     template ICLCV_API class PositionTracker<icl32f>;
     //template class  PositionTracker<icl64f>;
 
-  } // namespace cv
-}
+  } // namespace icl::cv

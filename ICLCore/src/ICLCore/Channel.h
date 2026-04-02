@@ -12,10 +12,7 @@
 #include <ICLUtils/Rect.h>
 #include <ICLCore/ImgIterator.h>
 
-namespace icl{
-  namespace core{
-
-
+namespace icl::core {
     /// Utility helper class for faster and more convenient access to single channel image data \ingroup IMAGE
     /** Yet, the (x,x,c)-operator of the Img<T> class is slow, because of hight computational overhead
         due to the necessity of a channel lookup
@@ -351,5 +348,4 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS
   #undef ICL_INSTANTIATE_DEPTH
     /** \endcond */
-  } // namespace core
-}
+  } // namespace icl::core

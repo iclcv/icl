@@ -5,14 +5,14 @@
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
+#include <algorithm>
 #include <limits>
 
-namespace icl{
-  namespace utils{
+namespace icl::utils {
     /// clips a value into the range [tMin,tMax] \ingroup GENERAL
     template <class T>
     inline T clip(T tX, T tMin, T tMax){
-      return tX < tMin ? tMin : tX > tMax ? tMax : tX;
+      return std::clamp(tX, tMin, tMax);
     }
 
 
@@ -57,5 +57,4 @@ namespace icl{
   #undef SPECIALISE_CLIPPED_CAST
     /** \endcond */
 
-  } // namespace utils
-}
+  } // namespace icl::utils

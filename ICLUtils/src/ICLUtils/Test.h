@@ -15,9 +15,7 @@
 #include <future>
 #include <thread>
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     /// Exception thrown by test assertion macros
     struct TestFailure {
       std::string file;
@@ -337,5 +335,4 @@ namespace icl{
         }                                                                   \
       } while(0)
 
-  } // namespace utils
-}
+  } // namespace icl::utils
