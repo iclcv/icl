@@ -7,6 +7,27 @@
 using namespace icl::utils;
 
 namespace icl::math {
+
+  // Row-major ↔ column-major transpose helpers for LAPACK backends.
+  // LAPACK expects column-major; ICL's DynMatrix is row-major.
+  template<class T>
+  void lapack_row_to_col(const T* A, int M, int N, int lda, T* AT) {
+    for(int i = 0; i < M; i++)
+      for(int j = 0; j < N; j++)
+        AT[j * M + i] = A[i * lda + j];
+  }
+
+  template<class T>
+  void lapack_col_to_row(const T* AT, int M, int N, T* A, int lda) {
+    for(int i = 0; i < M; i++)
+      for(int j = 0; j < N; j++)
+        A[i * lda + j] = AT[j * M + i];
+  }
+
+  template void lapack_row_to_col(const float*, int, int, int, float*);
+  template void lapack_row_to_col(const double*, int, int, int, double*);
+  template void lapack_col_to_row(const float*, int, int, float*, int);
+  template void lapack_col_to_row(const double*, int, int, double*, int);
   const char* toString(LapackOp op) {
     switch(op) {
       case LapackOp::gesdd: return "gesdd";
