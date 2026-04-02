@@ -227,14 +227,16 @@ namespace icl::utils {
 #endif
 
   std::string time2str(Time::value_type x){
-    char acBuf[30];
-    auto [ptr, ec] = std::to_chars(acBuf, acBuf + sizeof(acBuf), static_cast<long long>(x));
-    return std::string(acBuf, ptr);
+    char buf[std::numeric_limits<long long>::digits10 + 3];
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), static_cast<long long>(x));
+    if (ec != std::errc{}) return {};
+    return std::string(buf, ptr);
   }
   std::string i2str(int i){
-    char acBuf[12];
-    auto [ptr, ec] = std::to_chars(acBuf, acBuf + sizeof(acBuf), i);
-    return std::string(acBuf, ptr);
+    char buf[std::numeric_limits<int>::digits10 + 3];
+    auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), i);
+    if (ec != std::errc{}) return {};
+    return std::string(buf, ptr);
   }
 
   std::string skipWhitespaces(const std::string &s){
