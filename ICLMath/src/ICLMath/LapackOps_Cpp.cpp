@@ -408,41 +408,49 @@ namespace icl::math {
 
     template<class T>
     int cpp_getri(int N, T* A, int lda, const int* ipiv) {
-      // Invert U in place
-      for(int j = N - 1; j >= 0; j--) {
-        if(A[j * lda + j] == T(0)) return j + 1;
-        A[j * lda + j] = T(1) / A[j * lda + j];
-        for(int i = j - 1; i >= 0; i--) {
-          T sum = T(0);
-          for(int k = i + 1; k <= j; k++)
-            sum += A[i * lda + k] * A[k * lda + j];
-          A[i * lda + j] = -sum * A[i * lda + i];
+      // Build inverse column-by-column: solve A * x_j = e_j for each j.
+      // Since A = P*L*U (from getrf), we solve by:
+      //   1. Apply P to e_j
+      //   2. Forward-substitute with L (unit lower, stored below diagonal)
+      //   3. Back-substitute with U (stored on/above diagonal)
+      std::vector<T> inv(N * N, T(0));
+      std::vector<T> col(N);
+
+      for(int j = 0; j < N; j++) {
+        // Start with e_j
+        std::fill(col.begin(), col.end(), T(0));
+        col[j] = T(1);
+
+        // Apply row permutation forward: for k=0..N-1, swap col[k] and col[ipiv[k]-1]
+        for(int k = 0; k < N; k++) {
+          int pk = ipiv[k] - 1;
+          if(pk != k) std::swap(col[k], col[pk]);
         }
+
+        // Forward substitution with L (unit diagonal)
+        for(int i = 1; i < N; i++) {
+          for(int k = 0; k < i; k++)
+            col[i] -= A[i * lda + k] * col[k];
+        }
+
+        // Back substitution with U
+        for(int i = N - 1; i >= 0; i--) {
+          if(A[i * lda + i] == T(0)) return i + 1;
+          for(int k = i + 1; k < N; k++)
+            col[i] -= A[i * lda + k] * col[k];
+          col[i] /= A[i * lda + i];
+        }
+
+        // Store column j of inverse
+        for(int i = 0; i < N; i++)
+          inv[i * N + j] = col[i];
       }
 
-      // Solve U^{-1} * L^{-1} by back-substitution
-      // Work column by column from right to left
-      std::vector<T> work(N);
-      for(int j = N - 2; j >= 0; j--) {
-        // Save column j below diagonal (L part)
-        for(int i = j + 1; i < N; i++) { work[i] = A[i * lda + j]; A[i * lda + j] = T(0); }
-        // Subtract L column from inverse
-        for(int i = 0; i < N; i++) {
-          T sum = T(0);
-          for(int k = j + 1; k < N; k++)
-            sum += A[i * lda + k] * work[k];
-          A[i * lda + j] -= sum;
-        }
-      }
+      // Copy result back to A
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = inv[i * N + j];
 
-      // Apply pivot permutation in reverse
-      for(int j = N - 1; j >= 0; j--) {
-        int jp = ipiv[j] - 1; // 0-based
-        if(jp != j) {
-          for(int i = 0; i < N; i++)
-            std::swap(A[i * lda + j], A[i * lda + jp]);
-        }
-      }
       return 0;
     }
 
