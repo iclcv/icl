@@ -1,6 +1,75 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 26 — FixedMatrix compile-time SIMD acceleration)
+## Current State (Session 27 — C++17 Phase 1: namespaces, std::clamp, [[nodiscard]])
+
+### Session 27 Summary
+
+**C++17 Phase 1 — mechanical modernization across 821+ files:**
+
+Three categories of changes, all purely mechanical with zero semantic impact:
+
+**1. Nested namespace fusion (821 files):**
+- Fused `namespace icl { namespace X {` → `namespace icl::X {` across the entire
+  codebase using `scripts/fuse-namespaces.py`. Script handles the standard case
+  (outer `namespace icl {` on one line, inner `namespace X {` on the next).
+- 11 files with non-standard patterns fixed manually:
+  - Sibling namespaces (`namespace icl { namespace qt {...} namespace geom {...} }`)
+    in Scene.h, ShaderUtil.h, SceneLight.h, PhysicsWorld.h, PhysicsUtils.h, Quick.h,
+    ConvexHull.cpp, DCDeviceFeatures.cpp — split into separate `namespace icl::X` blocks.
+  - Multi-block files (SignalHandler.cpp — two `#ifdef` blocks with separate namespaces).
+  - Forward-declaration blocks (Grabber.h, JPEGHandle.h).
+- Closing braces updated: `} // namespace X` → `} // namespace icl::X`, outer `}` removed.
+- Content dedented by 2 spaces (`scripts/dedent-namespaces.py`) to restore standard
+  2-space indent for namespace content (664 files, purely whitespace).
+
+**2. std::clamp (3 files):**
+- `ICLUtils/ClippedCast.h` — `clip()` body replaced with `std::clamp(tX, tMin, tMax)`.
+  All ~60 call sites across the codebase get std::clamp behavior automatically.
+- `ICLFilter/LocalThresholdOp.cpp` — `myclip()` replaced with `std::clamp` + cast.
+- `ICLPhysics/demos/physics-maze/physics-maze.cpp` — `std::max(std::min(...))` →
+  `std::clamp(val*5, -1., 1.)`.
+
+**3. [[nodiscard]] (3 files):**
+- `ICLCore/Image.h` — deepCopy, convert, scaledCopy, selectChannel, selectChannels,
+  mirrored (all return new Image values that should never be silently discarded).
+- `ICLFilter/UnaryOp.h` — single-arg apply() and operator()().
+- `ICLUtils/BackendDispatching.h` — registeredBackends, bestBackendFor,
+  applicableBackendsFor (pure query methods).
+- `tests/test-filter.cpp` — 19 call sites suppressed with `(void)` where apply() is
+  called for side effects (feeding frames into MotionSensitiveTemporalSmoothing).
+
+**New utility scripts:**
+- `scripts/fuse-namespaces.py` — fuses two-level `namespace icl { namespace X {` into
+  `namespace icl::X {`. Uses last-zero-indent-brace strategy for closing brace removal.
+  Skips one-line forward declarations. Does NOT handle sibling-namespace files (those
+  need manual fixup).
+- `scripts/dedent-namespaces.py` — removes 2 leading spaces from all lines inside
+  fused namespace blocks. Skips blank lines and preprocessor directives.
+- `scripts/fix-orphan-braces.py` — earlier iteration, superseded by the fuse script
+  improvements (can be deleted).
+
+**Build: 100% clean (zero warnings), tests: 384/384 pass.**
+
+### Next Steps
+
+**C++17 Phase 2-7** (see phased plan below):
+- Phase 2: structured bindings, if-init, scoped_lock
+- Phase 3: std::filesystem
+- Phase 4: std::from_chars / std::to_chars
+- Phase 5: if constexpr cleanup
+- Phase 6: std::string_view
+- Phase 7: std::optional
+
+**Other work:**
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
+- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
+  useful but not reliable for absolute numbers. Run on CI or cloud x86 VM.
+
+## Previous State (Session 26 — FixedMatrix compile-time SIMD acceleration)
 
 ### Session 26 Summary
 
@@ -103,16 +172,118 @@ and SimdCompat/Apple SIMD is already wired where it matters (FixedMatrix 4x4/2x2
 
 **Tests: 384/384 pass (5 new scaling tests).** Build clean on macOS.
 
-### Next Steps
+### C++17 Source Modernization — Phased Plan
 
-- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
-  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
-- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
-- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
-- **C++17 source pass** — std::filesystem, std::string_view, structured bindings
-- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
-- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
-  useful but not reliable for absolute numbers. Run on CI or cloud x86 VM.
+Full codebase scan completed (session 27). Already well-modernized in some areas:
+`SimdCompat.h` (if constexpr), `EnumDispatch.h` (fold expressions), `VisitorsN.h`
+(index_sequence + pack expansion), `StringUtils.h` (void_t + if constexpr).
+
+#### Phase 1 — COMPLETED (session 27)
+
+std::clamp, nested namespaces (`namespace icl::X`), `[[nodiscard]]`.
+See session 27 summary above for details.
+
+#### Phase 2 — Structured bindings, if-init, scoped_lock (~40 files, low risk)
+
+**Structured bindings** (~40+ locations with `.first`/`.second`):
+- `ICLIO/GenericGrabber.cpp:247-280` — `split_at_first()` result unpacking
+- `ICLMarkers/FiducialDetectorPluginICL1.cpp:89-90` — pair unpacking
+- `ICLPhysics/PhysicsPaper3.cpp:105-116,1656,1720` — map lookups, coords
+- All map iterations using `it->first`/`it->second`
+
+**If-with-initializer** (~25+ map-find-then-check patterns):
+- `ICLMarkers/MarkerGridDetector.cpp:42-44` — `auto it = find(); if(it != end())`
+- `ICLCore/Color.cpp:43-45` — color map lookup
+- `ICLIO/FileGrabber.cpp:154-156` — plugin map lookup
+- `ICLIO/DCDeviceFeatures.cpp:302-304` — feature map lookup
+- `ICLGeom/PointCloudObjectBase.cpp:340-343` — metadata lookup
+- `ICLPhysics/PhysicsPaper3ContextMenu.cpp:35,45` — action map
+- `ICLQt/MultiDrawHandle.cpp:113-115` — name→index map
+- `ICLUtils/SignalHandler.cpp:151,165,180` — handler maps
+
+**std::scoped_lock** (replaces lock_guard, fixes manual lock/unlock):
+- `ICLGeom/PointCloudCreator.cpp:125,294` — `lock_guard<recursive_mutex>` → `scoped_lock`
+- `ICLQt/AbstractPlotWidget.cpp:110` — same
+- `ICLFilter/GradientImage.cpp:29,42` — **manual lock()/unlock()** → RAII (bug risk)
+
+**[[maybe_unused]]** (replaces `(void)variable` casts):
+- `ICLGeom/Scene.cpp`, `ICLQt/GLImg.cpp`, `ICLGeom/PointCloudObjectBase.cpp`,
+  `ICLGeom/CoplanarPointPoseEstimator.cpp`, `ICLIO/SharedMemoryGrabber.cpp`, etc.
+
+#### Phase 3 — std::filesystem (~15 files, medium risk)
+
+Biggest single win. Eliminates platform `#ifdef` blocks in FileList.cpp entirely.
+
+**Core targets:**
+- `ICLUtils/File.cpp:34-62` — `break_apart()` does manual `rfind('/')`,
+  `rfind('.')`, `substr()` for dir/basename/suffix/filename. Replace with
+  `path::parent_path()`, `stem()`, `extension()`. Special `.gz` double-extension
+  handling needs care.
+- `ICLUtils/File.cpp:110-119` — `file_exists()` and `file_is_dir()` use
+  `struct stat`. Direct replacement with `std::filesystem::exists()`/`is_directory()`.
+- `ICLUtils/File.cpp:590` — `File::erase()` uses C `remove()` →
+  `std::filesystem::remove()`.
+- `ICLIO/FileList.cpp:40-126` — Three platform-specific directory listing
+  impls (`wordexp` Linux, `glob` macOS, `FindFirstFile` Windows). Replace with
+  `std::filesystem::directory_iterator`. Note: glob pattern matching still needed
+  on top of directory_iterator (std::filesystem doesn't do glob natively).
+- `ICLIO/V4L2Grabber.cpp:91-95,147-150` — string concatenation with `"/"`
+  for device paths → `operator/`; `stat()` for device existence → `fs::exists()`.
+- `ICLQt/Widget.cpp:703-705` — `QDir("/").mkpath()` →
+  `std::filesystem::create_directories()`.
+- `ICLIO/V4L2Grabber.cpp:434-435` — hardcoded `/tmp/` →
+  `std::filesystem::temp_directory_path()`.
+
+#### Phase 4 — std::from_chars / std::to_chars (~10 files, low risk)
+
+Faster, locale-independent number parsing/formatting:
+- `ICLQt/IntHandle.cpp:17` — `atoi()`
+- `ICLQt/FloatHandle.cpp:17` — `atof()`
+- `ICLQt/GUIDefinition.cpp` — multiple `atoi`/`atof`
+- `ICLIO/FileGrabberPluginCSV.cpp:26,110,118` — CSV float parsing with `atof`
+- `ICLIO/TestImages.cpp:130,424-427` — XPM parsing with `atoi`
+- `ICLIO/JPEGDecoder.cpp:140,142` — timestamp/ROI parsing
+- `ICLUtils/StringUtils.cpp:22-42` — `snprintf` for number→string
+
+#### Phase 5 — if constexpr cleanup (~5 files, medium risk)
+
+- `ICLUtils/BackendDispatching.h:268-327` — 6 `enable_if` SFINAE overloads for
+  enum/integral key types → single template with `if constexpr(is_enum_v<K>)`
+- `ICLMath/FixedMatrix.h:300-336` — 4 `#ifdef ICL_HAVE_APPLE_SIMD` blocks in
+  operator bodies → `if constexpr` with a constexpr flag
+- Depth switch statements (~240 instances) — many could leverage the existing
+  `dispatchEnum` fold-expression helper from EnumDispatch.h more broadly
+
+#### Phase 6 — std::string_view (20+ files, higher risk — API change)
+
+Changes function signatures. Start with leaf utilities (no virtual overrides):
+
+**Leaf utilities (safe to change first):**
+- `StringUtils.h` — `tok()`, `toLower()`, `toUpper()`, `parse<T>()`,
+  `startsWith()`, `endsWith()`, `match()`
+- `File.h` — `read_file()`, `read_lines()`, `write_file()`, constructors
+
+**Map-lookup APIs (key parameter only reads):**
+- `Configurable.h` — `prop()`, `addProperty()`, `getPropertyType/Info/Tooltip()`,
+  `supportsProperty()`, `deactivateProperty()`
+- `MultiTypeMap.h` — `allocValue()`, `getValue()`, `contains()`, `getType()`
+- `ConfigFile.h` — `load()`, `save()`, `set()`, `check_type()`
+
+**Caveat:** Functions that call `.c_str()` internally (fopen, etc.) need the string
+materialized — string_view doesn't guarantee null termination.
+
+#### Phase 7 — std::optional (10+ files, highest risk — API change)
+
+**Sentinel return values → optional:**
+- `MarkerGridDetector::getPos()` returns `Point(-1,-1)` for "not found"
+- `PCLPointCloudObject` methods returning `-1` for unsupported features
+- `FilenameGenerator.cpp:93,109` returns `""` for error
+
+**Optional output parameters → optional return:**
+- `ImgBase::getMax(int ch, Point *coords=0)` / `getMin()` / `getMinMax()`
+- `Primitive.cpp:87` — `compute_normal(..., bool *ok=0)`
+
+Best done opportunistically or when touching these APIs for other reasons.
 
 ## Previous State (Session 25 — NeighborhoodOp fix, dead IPP cleanup, Accelerate mapping)
 
