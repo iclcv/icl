@@ -69,13 +69,23 @@ for these tiny matrices.
   - 3x3 inv/det always use C++ closed-form (even on macOS)
 - `tests/test-math.cpp`: 12 new cross-validation tests
 
+**ICP.cpp inner loop heap allocations eliminated:**
+- Transform loop did `new DynMatrix`+`delete` per point per iteration — replaced
+  with a single stack-allocated temp buffer reused across all points.
+- `error()` function simplified to avoid DynMatrix temporaries (direct element access).
+
+**Codebase scan for BlasOps/SIMD wiring — completed:**
+Systematic scan of all modules found that remaining hand-written loops (VectorTracker
+`eucl_dist`, MathFunctions `euclidian`, KMeans `dist`) are NOT worth wiring through
+BlasOps: they operate on small runtime-sized vectors (2-10 elements) where BlasOps
+dispatch overhead (~2ns) exceeds the computation itself. The compiler auto-vectorizes
+these short loops at -O3. BlasOps is already wired where it matters (DynMatrix),
+and SimdCompat/Apple SIMD is already wired where it matters (FixedMatrix 4x4/2x2).
+
 **Tests: 379/379 pass (12 new).** Build clean on macOS.
 
 ### Next Steps
 
-- **Wire BlasOps through codebase** — grep for hand-written dot products, norm
-  calculations, axpy-style accumulations, and matrix-vector multiplies across
-  ICLMath, ICLGeom, ICLCV, ICLFilter; replace with `BlasOps<T>::dot/nrm2/axpy/gemv`
 - **Image scaling Accelerate backend** — `vImageScale_Planar8/PlanarF` for
   `scaledCopyChannelROI()` in Img.cpp (needs backend dispatch added first)
 - **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
