@@ -12,6 +12,7 @@
 #include <ICLUtils/Size.h>
 #include <ICLIO/FileWriter.h>
 #include <stdlib.h>
+#include <charconv>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Thread.h>
 
@@ -127,7 +128,8 @@ namespace {
     if(s.starts_with("gray")){
       std::string n = &(s[4]);
       if(n.length() > 0){
-        int g = atoi(n.c_str());
+        int g = 0;
+        std::from_chars(n.data(), n.data() + n.size(), g);
         ok = 1;
         return XPMColor(g,g,g);
       }
@@ -421,10 +423,14 @@ namespace {
 
   // header
   strvec headA = tokenize(*p++," ");
-  int w = atoi(headA[0].c_str());
-  int h = atoi(headA[1].c_str());
-  int colors = atoi(headA[2].c_str());
-  [[maybe_unused]] int one = atoi(headA[3].c_str());
+  int w = 0;
+  std::from_chars(headA[0].data(), headA[0].data() + headA[0].size(), w);
+  int h = 0;
+  std::from_chars(headA[1].data(), headA[1].data() + headA[1].size(), h);
+  int colors = 0;
+  std::from_chars(headA[2].data(), headA[2].data() + headA[2].size(), colors);
+  [[maybe_unused]] int one = 0;
+  std::from_chars(headA[3].data(), headA[3].data() + headA[3].size(), one);
 
   // parsing colors:
   XPMColor lut[256];

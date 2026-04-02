@@ -4,6 +4,7 @@
 
 #include <ICLQt/FloatHandle.h>
 #include <string>
+#include <cstdlib>
 #include <QLineEdit>
 
 
@@ -12,6 +13,7 @@ namespace icl::qt {
     (**this)->setText(QString::number(f));
   }
   float FloatHandle::getValue() const{
-    return static_cast<float>(atof((**this)->text().toLatin1().data()));
+    auto bytes = (**this)->text().toLatin1();
+    return std::strtof(bytes.data(), nullptr);
   }
   } // namespace icl::qt

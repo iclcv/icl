@@ -8,6 +8,7 @@
 #include <ICLUtils/Macros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <ICLUtils/StrTok.h>
+#include <charconv>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -135,9 +136,16 @@ namespace icl::io {
       // iss >> sKey;
 
        if (ts[0] == "TimeStamp") {
-         oInfo.time = Time::microSeconds(atoi(ts[1].c_str()));
+         int tsVal = 0;
+         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), tsVal);
+         oInfo.time = Time::microSeconds(tsVal);
        } else if (ts[0] == "ROI") {
-         oInfo.roi = Rect(atoi(ts[1].c_str()),atoi(ts[2].c_str()),atoi(ts[3].c_str()),atoi(ts[4].c_str()));
+         int r0 = 0, r1 = 0, r2 = 0, r3 = 0;
+         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), r0);
+         std::from_chars(ts[2].data(), ts[2].data() + ts[2].size(), r1);
+         std::from_chars(ts[3].data(), ts[3].data() + ts[3].size(), r2);
+         std::from_chars(ts[4].data(), ts[4].data() + ts[4].size(), r3);
+         oInfo.roi = Rect(r0, r1, r2, r3);
        }
     }
 

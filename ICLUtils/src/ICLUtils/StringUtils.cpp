@@ -4,6 +4,8 @@
 
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/StrTok.h>
+#include <charconv>
+#include <cstdlib>
 #include <limits>
 #include <cstdio>
 
@@ -139,27 +141,20 @@ namespace icl::utils {
     return dst;
   }
   icl8u parse_icl8u(const std::string &s){
-    std::istringstream str(s);
-    int t;
-    str >> t;
+    int t = 0;
+    std::from_chars(s.data(), s.data() + s.size(), t);
     return icl8u(t);
   }
 
   icl32f parse_icl32f(const std::string &s){
     if(s == "inf") return std::numeric_limits<icl32f>::infinity();
     if(s == "-inf") return -std::numeric_limits<icl32f>::infinity();
-    std::istringstream str(s);
-    icl32f f;
-    str >> f;
-    return f;
+    return std::strtof(s.c_str(), nullptr);
   }
   icl64f parse_icl64f(const std::string &s){
     if(s == "inf") return std::numeric_limits<icl64f>::infinity();
     if(s == "-inf") return -std::numeric_limits<icl64f>::infinity();
-    std::istringstream str(s);
-    icl64f f;
-    str >> f;
-    return f;
+    return std::strtod(s.c_str(), nullptr);
   }
 
   bool parse_bool(const std::string &s){
@@ -233,13 +228,13 @@ namespace icl::utils {
 
   std::string time2str(Time::value_type x){
     char acBuf[30];
-    snprintf(acBuf, sizeof(acBuf), "%lld",static_cast<long long>(x));
-    return acBuf;
+    auto [ptr, ec] = std::to_chars(acBuf, acBuf + sizeof(acBuf), static_cast<long long>(x));
+    return std::string(acBuf, ptr);
   }
   std::string i2str(int i){
     char acBuf[12];
-    snprintf(acBuf, sizeof(acBuf), "%d",i);
-    return acBuf;
+    auto [ptr, ec] = std::to_chars(acBuf, acBuf + sizeof(acBuf), i);
+    return std::string(acBuf, ptr);
   }
 
   std::string skipWhitespaces(const std::string &s){

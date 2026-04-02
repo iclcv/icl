@@ -9,7 +9,8 @@
 #include <ICLUtils/StrTok.h>
 #include <ICLQt/ProxyLayout.h>
 
-
+#include <charconv>
+#include <cstdlib>
 #include <list>
 using namespace icl::utils;
 using namespace icl::core;
@@ -97,8 +98,18 @@ namespace icl::qt {
         else if(s.starts_with("maxsize")) m_oMaxSize = parse<Size>(cutName(s));
         else if(s.starts_with("label")) m_sLabel = cutName(s);
         else if(s.starts_with("handle")) m_sHandle = cutName(s);
-        else if(s.starts_with("margin")) m_iMargin = static_cast<int>(abs(atoi(cutName(s).c_str())));
-        else if(s.starts_with("spacing")) m_iSpacing = static_cast<int>(abs(atoi(cutName(s).c_str())));
+        else if(s.starts_with("margin")) {
+          auto ms = cutName(s);
+          int mv = 0;
+          std::from_chars(ms.data(), ms.data() + ms.size(), mv);
+          m_iMargin = static_cast<int>(abs(mv));
+        }
+        else if(s.starts_with("spacing")) {
+          auto ss = cutName(s);
+          int sv = 0;
+          std::from_chars(ss.data(), ss.data() + ss.size(), sv);
+          m_iSpacing = static_cast<int>(abs(sv));
+        }
         else if(s.starts_with("tooltip")) m_toolTip = cutName(s);
         else throw GUISyntaxErrorException(def,std::string("illegal optional parameter \"")+s+"\"");
       }
@@ -115,7 +126,9 @@ namespace icl::qt {
 
     const std::string &s = param(idx);
     if(s != ""){
-      return atoi(s.c_str());
+      int val = 0;
+      std::from_chars(s.data(), s.data() + s.size(), val);
+      return val;
     }else{
       return 0;
     }
@@ -125,7 +138,7 @@ namespace icl::qt {
 
     const std::string &s = param(idx);
     if(s != ""){
-      return atof(s.c_str());
+      return std::strtof(s.c_str(), nullptr);
     }else{
       return 0;
     }

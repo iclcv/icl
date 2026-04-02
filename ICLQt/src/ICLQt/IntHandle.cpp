@@ -4,6 +4,7 @@
 
 #include <ICLQt/IntHandle.h>
 #include <string>
+#include <charconv>
 #include <QLineEdit>
 
 
@@ -12,6 +13,9 @@ namespace icl::qt {
     (**this)->setText(QString::number(i));
   }
   int IntHandle::getValue() const{
-    return atoi((**this)->text().toLatin1().data());
+    auto bytes = (**this)->text().toLatin1();
+    int val = 0;
+    std::from_chars(bytes.data(), bytes.data() + bytes.size(), val);
+    return val;
   }
   } // namespace icl::qt

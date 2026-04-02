@@ -7,6 +7,8 @@
 #include <mutex>
 #include <ICLUtils/StrTok.h>
 
+#include <charconv>
+#include <cstdlib>
 #include <string>
 #include <vector>
 #include <ICLUtils/StringUtils.h>
@@ -22,7 +24,8 @@ namespace icl::io {
     void tokenzie_line_tmpl(const std::vector<std::string> &v, T *data){
 
       for(unsigned int i=0;i<v.size();i++){
-        data[i] = clipped_cast<icl64f,T>(atof(v[i].c_str()));
+        icl64f tmp = std::strtod(v[i].c_str(), nullptr);
+        data[i] = clipped_cast<icl64f,T>(tmp);
       }
     }
 
@@ -106,7 +109,12 @@ namespace icl::io {
         if(ts.size() < 3) continue;
 
         if (ts[1] == "ROI") {
-          oInfo.roi = Rect(atoi(ts[2].c_str()),atoi(ts[3].c_str()),atoi(ts[4].c_str()),atoi(ts[5].c_str()));
+          int r0 = 0, r1 = 0, r2 = 0, r3 = 0;
+          std::from_chars(ts[2].data(), ts[2].data() + ts[2].size(), r0);
+          std::from_chars(ts[3].data(), ts[3].data() + ts[3].size(), r1);
+          std::from_chars(ts[4].data(), ts[4].data() + ts[4].size(), r2);
+          std::from_chars(ts[5].data(), ts[5].data() + ts[5].size(), r3);
+          oInfo.roi = Rect(r0, r1, r2, r3);
           continue;
         } else if (ts[1] == "ImageDepth") {
           oInfo.imageDepth = parse<depth>( ts[2] );
@@ -114,7 +122,9 @@ namespace icl::io {
         } else if (ts[1] == "Format") {
           oInfo.imageFormat = parse<format>(ts[2]);
         } else if (ts[1] == "TimeStamp") {
-          oInfo.time = Time::microSeconds(atoi(ts[2].c_str()));
+          int tsVal = 0;
+          std::from_chars(ts[2].data(), ts[2].data() + ts[2].size(), tsVal);
+          oInfo.time = Time::microSeconds(tsVal);
           continue;
         } else if (ts[1] == "Size") {
           oInfo.size = Size(parse<int>(ts[2]),parse<int>(ts[3]));
