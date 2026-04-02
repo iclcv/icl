@@ -4,16 +4,8 @@
 
 #include <ICLIO/FileList.h>
 
-#ifdef ICL_SYSTEM_LINUX
-#include <wordexp.h>
-#endif
-#ifdef ICL_SYSTEM_APPLE // wordexp not supported on osx
-#include <glob.h>
-#endif
-
-#ifdef ICL_SYSTEM_WINDOWS
-#include <windows.h>
-#endif
+#include <filesystem>
+#include <regex>
 
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Exception.h>
@@ -23,7 +15,6 @@
 #include <algorithm>
 #include <sstream>
 #include <set>
-#include <cstring>
 using namespace icl::utils;
 
 namespace icl::io {
@@ -40,87 +31,83 @@ namespace icl::io {
     FileListImpl(const std::string &pattern, bool omitDoubledFiles):
       m_bNoDoubledFiles(omitDoubledFiles){
 
-      if(pattern == "") return;
+      if(pattern.empty()) return;
       std::string sPattern = pattern;
-      std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
+      std::for_each(sPattern.begin(), sPattern.end(), replace_newline);
 
-#ifndef ICL_SYSTEM_WINDOWS
-#ifndef ICL_SYSTEM_APPLE
-      wordexp_t match;
+      namespace fs = std::filesystem;
+      fs::path patternPath(sPattern);
+      fs::path dirPart = patternPath.parent_path();
+      std::string globPart = patternPath.filename().string();
 
-      // search for file matching the pattern(s)
-      switch (wordexp (sPattern.c_str(), &match, WRDE_UNDEF)) {
-        case 0: break;
-        case WRDE_BADCHAR:
-          throw ICLException ("illegal chars in pattern (|, &, ;, <, >, (, ), {, }");
-          break;
-        case WRDE_BADVAL:
-          throw ICLException ("encountered undefined shell variable");
-          break;
-        case WRDE_NOSPACE:
-          throw ICLException ("out of memory");
-          break;
-        case WRDE_SYNTAX:
-          throw ICLException ("syntax error, e.g. unbalanced parentheses or quotes");
-          break;
-      }
+      // If no directory, use current directory
+      if (dirPart.empty()) dirPart = ".";
 
-      char **ppcFiles = match.we_wordv;
-      for (unsigned int i=0; i < match.we_wordc; ++i) {
-        if(!strchr(ppcFiles[i],'*')){
-          add(ppcFiles[i]);
+      // Handle ~ (tilde) expansion for home directory
+      if (dirPart.string().front() == '~') {
+        const char *home = std::getenv("HOME");
+        if (home) {
+          std::string dirStr = dirPart.string();
+          dirStr.replace(0, 1, home);
+          dirPart = dirStr;
         }
       }
 
-      wordfree(&match);
-#else /*__APPLE__*/
-      glob_t pglob;
-
-      int gflags = GLOB_MARK | GLOB_TILDE;
-//#ifdef __APPLE__ // only supported on __APPLE__
-      gflags |= GLOB_QUOTE;
-//#endif
-
-      int gerr = glob(sPattern.c_str(), gflags, nullptr, &pglob);
-      if (gerr) {
-          // refine if necessary
-          throw ICLException ("wrong use of glob");
-          //  pglob.gl_pathc = 0;
+      // Check if the pattern has no wildcards — could be a direct file or .seq
+      if (globPart.find('*') == std::string::npos &&
+          globPart.find('?') == std::string::npos &&
+          globPart.find('[') == std::string::npos) {
+        // No wildcards — treat as literal filename
+        std::string fullPath = (dirPart / globPart).string();
+        // Normalize: if dirPart was ".", strip the "./" prefix for paths
+        // that didn't have a directory component
+        if (patternPath.parent_path().empty()) {
+          add(globPart);
+        } else {
+          add(fullPath);
+        }
+        return;
       }
 
-      for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
-        /// only add those patterns without remaining wildchards
-        if(!strchr(pglob.gl_pathv[i],'*')){
-          add(pglob.gl_pathv[i]);
+      // Convert glob to regex: escape special chars, then convert glob wildcards
+      // Note: [ and ] pass through as-is (valid in both glob and regex)
+      std::string regexStr;
+      for (char c : globPart) {
+        switch (c) {
+          case '*': regexStr += ".*"; break;
+          case '?': regexStr += "."; break;
+          case '.': regexStr += "\\."; break;
+          case '(': regexStr += "\\("; break;
+          case ')': regexStr += "\\)"; break;
+          case '+': regexStr += "\\+"; break;
+          case '^': regexStr += "\\^"; break;
+          case '$': regexStr += "\\$"; break;
+          case '|': regexStr += "\\|"; break;
+          case '{': regexStr += "\\{"; break;
+          case '}': regexStr += "\\}"; break;
+          default: regexStr += c; break;
         }
       }
 
-      globfree(&pglob);
-#endif
-#else /* WIN32 */
-  WIN32_FIND_DATA FindFileData;
-  HANDLE hFind;
-  TCHAR filePath[MAX_PATH];
+      std::error_code ec;
+      std::vector<std::string> matches;
 
-  std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
+      for (const auto &entry : fs::directory_iterator(dirPart, ec)) {
+        if (ec) break;
+        if (!entry.is_regular_file()) continue;
 
-  hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
-  if (hFind == INVALID_HANDLE_VALUE) {
-    throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
-  } else {
-    if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
-      GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
-      add(filePath);
-    }
-  }
+        std::string filename = entry.path().filename().string();
+        if (std::regex_match(filename, std::regex(regexStr))) {
+          matches.push_back(entry.path().string());
+        }
+      }
 
-  while (FindNextFile(hFind, &FindFileData) != 0) {
-    if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
-      GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
-      add(filePath);
-    }
-  }
-#endif /* WIN32 */
+      // Sort for deterministic order (old implementations returned sorted results)
+      std::sort(matches.begin(), matches.end());
+
+      for (const auto &f : matches) {
+        add(f);
+      }
     }
 
     FileListImpl(const std::vector<std::string> &filenames)
