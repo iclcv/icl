@@ -367,6 +367,116 @@ namespace {
   }
 
 
+  // ---- Scaled copy (C++ fallback — NN, bilinear, region average) ----
+
+  template<class T>
+  void cpp_scaledCopyChannel(const Img<T> *src, int srcC, const Point &srcOffs, const Size &srcSize,
+                              Img<T> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
+                              scalemode eScaleMode) {
+    float fSX = float(srcSize.width) / float(dstSize.width);
+    float fSY = float(srcSize.height) / float(dstSize.height);
+
+    switch(eScaleMode) {
+      case interpolateNN: {
+        const T *d = src->getData(srcC);
+        const unsigned int w = src->getWidth();
+        ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+        const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
+        int xD = 0, yD = 0;
+        float yS = srcOffs.y + fSY * yD;
+        for(; itDst != itDstEnd; ++itDst) {
+          *itDst = clipped_cast<float, T>(*(d + int(srcOffs.x + fSX * xD) + int(yS) * w));
+          if(++xD == dstSize.width) { yS = srcOffs.y + fSY * ++yD; xD = 0; }
+        }
+        return;
+      }
+      case interpolateLIN: {
+        fSX = (float(srcSize.width)-1) / float(dstSize.width);
+        fSY = (float(srcSize.height)-1) / float(dstSize.height);
+        const T *d = src->getData(srcC);
+        const unsigned int w = src->getWidth();
+        ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+        const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
+        int xD = 0, yD = 0;
+        float yS = srcOffs.y + fSY * yD;
+        for(; itDst != itDstEnd; ++itDst) {
+          float xS = srcOffs.x + fSX * xD;
+          float fX0 = xS - floor(xS), fX1 = 1.0f - fX0;
+          float fY0 = yS - floor(yS), fY1 = 1.0f - fY0;
+          int xll = int(xS), yll = int(yS);
+          const T *pLL = d + xll + yll * w;
+          float a = *pLL;
+          float b = *(++pLL);
+          pLL += w;
+          float dd = *pLL;
+          float c = *(--pLL);
+          *itDst = clipped_cast<float, T>(fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*dd));
+          if(++xD == dstSize.width) { yS = srcOffs.y + fSY * ++yD; xD = 0; }
+        }
+        return;
+      }
+      case interpolateRA: {
+        float ratio = 1.0f / (fSX * fSY);
+        const T *d = src->getData(srcC);
+        const unsigned int w = src->getWidth();
+        std::vector<unsigned int> xBegin(dstSize.width), xEnd(dstSize.width);
+        std::vector<unsigned int> yBegin(dstSize.height), yEnd(dstSize.height);
+        std::vector<float> xBMul(dstSize.width), xEMul(dstSize.width);
+        std::vector<float> yBMul(dstSize.height), yEMul(dstSize.height);
+        for(int i = 0; i < dstSize.width; ++i) {
+          float b = srcOffs.x + i*fSX;
+          xBegin[i] = b; xBMul[i] = 1.0f - (b - xBegin[i]);
+          xEnd[i] = ceilf((b+fSX)-1); xEMul[i] = 1.0f - (xEnd[i] - (b+fSX-1));
+        }
+        for(int i = 0; i < dstSize.height; ++i) {
+          float e = srcOffs.y + i*fSY;
+          yBegin[i] = e; yBMul[i] = 1.0f - (e - yBegin[i]);
+          yEnd[i] = ceilf((e+fSY)-1); yEMul[i] = 1.0f - (yEnd[i] - (e+fSY-1));
+        }
+        ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
+        const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
+        int xD = 0, yD = 0;
+        for(; itDst != itDstEnd; ++itDst) {
+          float sum = 0.0f;
+          unsigned int xB = xBegin[xD], xE = xEnd[xD];
+          unsigned int yB = yBegin[yD], yE = yEnd[yD];
+          sum += (*(d + xB + yB*w)) * xBMul[xD];
+          for(unsigned int x = xB+1; x < xE; ++x) sum += *(d + x + yB*w);
+          sum = (sum + (*(d + xE + yB*w)) * xEMul[xD]) * yBMul[yD];
+          for(unsigned int y = yB+1; y < yE; ++y) {
+            sum += (*(d + xB + y*w)) * xBMul[xD];
+            for(unsigned int x = xB+1; x < xE; ++x) sum += *(d + x + y*w);
+            sum += (*(d + xE + y*w)) * xEMul[xD];
+          }
+          float psum = (*(d + xB + yE*w)) * xBMul[xD];
+          for(unsigned int x = xB+1; x < xE; ++x) psum += *(d + x + yE*w);
+          sum += (psum + (*(d + xE + yE*w)) * xEMul[xD]) * yEMul[yD];
+          *itDst = clipped_cast<float, T>(sum * ratio + 0.5f);
+          if(++xD == dstSize.width) { ++yD; xD = 0; }
+        }
+        return;
+      }
+      default: break;
+    }
+  }
+
+  void cpp_scaledCopy(const ImgBase& src, int srcC,
+                      const Point& srcOffs, const Size& srcSize,
+                      ImgBase& dst, int dstC,
+                      const Point& dstOffs, const Size& dstSize,
+                      scalemode mode) {
+    switch(src.getDepth()) {
+#define ICL_INSTANTIATE_DEPTH(D) \
+      case depth##D: \
+        cpp_scaledCopyChannel(src.asImg<icl##D>(), srcC, srcOffs, srcSize, \
+                              dst.asImg<icl##D>(), dstC, dstOffs, dstSize, mode); \
+        break;
+      ICL_INSTANTIATE_ALL_DEPTHS;
+#undef ICL_INSTANTIATE_DEPTH
+      default: break;
+    }
+  }
+
   // ---- Direct registration into ImgOps singleton (no global registry) ----
 
   static int _reg = [] {
@@ -395,6 +505,7 @@ namespace {
         default: return 0;
       }
     }, "C++ math::mean iterator");
+    cpp.add<ImgOps::ScaledCopySig>(Op::scaledCopy, cpp_scaledCopy, "C++ NN/bilinear/region-average");
     return 0;
   }();
 

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <ICLCore/ImageBackendDispatching.h>
+#include <ICLCore/Types.h>
 
 namespace icl {
   namespace core {
@@ -19,7 +20,8 @@ namespace icl {
       /// Operation keys — values must match addSelector() insertion order.
       enum class Op : int {
         mirror, clearChannelROI, lut, getMax, getMin, getMinMax, normalize, flippedCopy,
-        channelMean, replicateBorder, planarToInterleaved, interleavedToPlanar
+        channelMean, replicateBorder, planarToInterleaved, interleavedToPlanar,
+        scaledCopy
       };
 
       // ---- Dispatch signatures (ImgBase& + operation args) ----
@@ -43,6 +45,11 @@ namespace icl {
       using ReplicateBorderSig = void(ImgBase&);
       using PlanarToInterleavedSig = void(ImgBase& src, void* dst, int dstLineStep);
       using InterleavedToPlanarSig = void(const void* src, ImgBase& dst, int srcLineStep);
+      using ScaledCopySig = void(const ImgBase& src, int srcC,
+                                 const utils::Point& srcOffs, const utils::Size& srcSize,
+                                 ImgBase& dst, int dstC,
+                                 const utils::Point& dstOffs, const utils::Size& dstSize,
+                                 scalemode mode);
 
       /// Access the singleton instance (lazy-init, thread-safe)
       static ImgOps& instance();

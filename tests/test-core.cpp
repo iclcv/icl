@@ -387,6 +387,73 @@ ICL_REGISTER_TEST("Img.visitPixels_roi", "visitPixels respects ROI by default") 
   ICL_TEST_EQ(img(5, 5, 0), (icl8u)0);
 }
 
+// ---- Scaled copy (tests all interpolation modes and backend dispatch) ----
+
+ICL_REGISTER_TEST("Img.scaledCopy_NN_8u", "NN scaling 8u preserves corner pixels") {
+  Img8u src(Size(4, 4), 1);
+  src.clear();
+  src(0, 0, 0) = 100;
+  src(3, 0, 0) = 200;
+  src(0, 3, 0) = 150;
+  src(3, 3, 0) = 250;
+  Img8u dst(Size(8, 8), 1);
+  src.scaledCopy(&dst, interpolateNN);
+  // Top-left corner should be 100
+  ICL_TEST_EQ(dst(0, 0, 0), (icl8u)100);
+  // Bottom-right area should be 250
+  ICL_TEST_EQ(dst(7, 7, 0), (icl8u)250);
+}
+
+ICL_REGISTER_TEST("Img.scaledCopy_LIN_8u", "bilinear scaling 8u produces smooth result") {
+  Img8u src(Size(2, 2), 1);
+  src(0, 0, 0) = 0;
+  src(1, 0, 0) = 100;
+  src(0, 1, 0) = 100;
+  src(1, 1, 0) = 200;
+  Img8u dst(Size(4, 4), 1);
+  src.scaledCopy(&dst, interpolateLIN);
+  // Center should be interpolated (not 0 or 200)
+  icl8u center = dst(2, 2, 0);
+  ICL_TEST_TRUE(center > 30 && center < 170);
+}
+
+ICL_REGISTER_TEST("Img.scaledCopy_LIN_32f", "bilinear scaling 32f correctness") {
+  Img32f src(Size(4, 4), 1);
+  for(int y = 0; y < 4; ++y)
+    for(int x = 0; x < 4; ++x)
+      src(x, y, 0) = float(x + y * 4);
+  Img32f dst(Size(2, 2), 1);
+  src.scaledCopy(&dst, interpolateLIN);
+  // Downscaled values should be reasonable averages
+  ICL_TEST_TRUE(dst(0, 0, 0) >= 0.0f && dst(0, 0, 0) <= 15.0f);
+  ICL_TEST_TRUE(dst(1, 1, 0) >= 0.0f && dst(1, 1, 0) <= 15.0f);
+}
+
+ICL_REGISTER_TEST("Img.scaledCopy_RA_8u", "region average scaling 8u") {
+  Img8u src(Size(8, 8), 1);
+  // Fill with uniform value
+  for(int y = 0; y < 8; ++y)
+    for(int x = 0; x < 8; ++x)
+      src(x, y, 0) = 128;
+  Img8u dst(Size(4, 4), 1);
+  src.scaledCopy(&dst, interpolateRA);
+  // Uniform input → uniform output
+  ICL_TEST_NEAR(dst(0, 0, 0), 128, 2);
+  ICL_TEST_NEAR(dst(3, 3, 0), 128, 2);
+}
+
+ICL_REGISTER_TEST("Img.scaledCopy_identity", "scaling to same size preserves image") {
+  Img32f src(Size(8, 6), 1);
+  for(int y = 0; y < 6; ++y)
+    for(int x = 0; x < 8; ++x)
+      src(x, y, 0) = float(x * 10 + y);
+  Img32f dst(Size(8, 6), 1);
+  src.scaledCopy(&dst, interpolateLIN);
+  for(int y = 0; y < 6; ++y)
+    for(int x = 0; x < 8; ++x)
+      ICL_TEST_NEAR(dst(x, y, 0), src(x, y, 0), 0.01f);
+}
+
 ICL_REGISTER_TEST("Img.visitPixels_full", "visitPixels roiOnly=false ignores ROI") {
   Img8u img(utils::Size(6, 6), 1);
   img.clear();

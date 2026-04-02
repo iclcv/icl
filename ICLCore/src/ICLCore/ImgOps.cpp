@@ -26,6 +26,7 @@ namespace icl {
         case ImgOps::Op::replicateBorder:  return "replicateBorder";
         case ImgOps::Op::planarToInterleaved: return "planarToInterleaved";
         case ImgOps::Op::interleavedToPlanar: return "interleavedToPlanar";
+        case ImgOps::Op::scaledCopy:          return "scaledCopy";
       }
       return "?";
     }
@@ -46,6 +47,7 @@ namespace icl {
       addSelector<ReplicateBorderSig>(Op::replicateBorder);
       addSelector<PlanarToInterleavedSig>(Op::planarToInterleaved);
       addSelector<InterleavedToPlanarSig>(Op::interleavedToPlanar);
+      addSelector<ScaledCopySig>(Op::scaledCopy);
     }
 
   } // namespace core

@@ -1,9 +1,12 @@
 file(GLOB SOURCES src/ICLCore/*.cpp)
 file(GLOB HEADERS src/ICLCore/*.h)
 
-# Convention: *_Ipp.cpp = IPP-only, *_OpenCL.cpp = OpenCL-only, *_Simd.cpp = always built.
+# Convention: *_<Backend>.cpp excluded when the backend library is not found.
 if(NOT IPP_FOUND)
   list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
+endif()
+if(NOT ACCELERATE_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Accelerate\\.cpp$")
 endif()
 
 if(NOT OpenCV_FOUND)

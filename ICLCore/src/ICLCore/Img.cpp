@@ -1047,185 +1047,17 @@ namespace icl {
     ICLASSERT_RETURN( srcOffs.x+srcSize.width <= src->getWidth() && srcOffs.y+srcSize.height <= src->getHeight() ); \
     ICLASSERT_RETURN( dstOffs.x+dstSize.width <= dst->getWidth() && dstOffs.y+dstSize.height <= dst->getHeight() );
 
-    // scale channel ROI function for abitrary image scaling operations
+    // Dispatch scaled copy through ImgOps backend (C++ / Accelerate / IPP).
     template<class T>
     void scaledCopyChannelROI(const Img<T> *src, int srcC, const Point &srcOffs, const Size &srcSize,
                               Img<T> *dst, int dstC, const Point &dstOffs, const Size &dstSize,
                               scalemode eScaleMode){
-
       CHECK_VALUES_NO_SIZE(src,srcC,srcOffs,srcSize,dst,dstC,dstOffs,dstSize);
-
-      float fSX = (static_cast<float>(srcSize.width))/static_cast<float>(dstSize.width);
-      float fSY = (static_cast<float>(srcSize.height))/static_cast<float>(dstSize.height);
-
-      float (Img<T>::*subPixelMethod)(float fX, float fY, int iChannel) const;
-      switch(eScaleMode) {
-        case interpolateNN:
-          {
-              const T *d = src->getData(srcC);
-              const unsigned int w = src->getWidth();
-
-              ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-              const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
-              int xD = 0;
-              int yD = 0;
-              float yS = srcOffs.y + fSY * yD;
-              for(; itDst != itDstEnd ; ++itDst) {
-                *itDst = clipped_cast<float, T>(*(d + static_cast<int>(srcOffs.x + fSX * xD) + static_cast<int>(yS) * w));
-                if (++xD == dstSize.width) {
-                  yS = srcOffs.y + fSY * ++yD;
-                  xD = 0;
-                }
-              }
-          }
-          return;
-        case interpolateLIN:
-          {
-              fSX = (static_cast<float>(srcSize.width)-1)/static_cast<float>(dstSize.width);
-              fSY = (static_cast<float>(srcSize.height)-1)/static_cast<float>(dstSize.height);
-
-              const T *d = src->getData(srcC);
-              const unsigned int w = src->getWidth();
-
-              ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-              const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
-              int xD = 0;
-              int yD = 0;
-              float yS = srcOffs.y + fSY * yD;
-              for(; itDst != itDstEnd ; ++itDst) {
-                  float xS = srcOffs.x + fSX * xD;
-                  float fX0 = xS - floor(xS), fX1 = 1.0 - fX0;
-                  float fY0 = yS - floor(yS), fY1 = 1.0 - fY0;
-                  int xll = static_cast<int>(xS);
-                  int yll = static_cast<int>(yS);
-
-                  const T *pLL = (d + xll + yll * w);
-                  float a = *pLL;        //  a b
-                  float b = *(++pLL);    //  c d
-                  pLL += w;
-                  float d = *pLL;
-                  float c = *(--pLL);
-
-                  *itDst = clipped_cast<float, T>(fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*d));
-
-                  if (++xD == dstSize.width) {
-                    yS = srcOffs.y + fSY * ++yD;
-                    xD = 0;
-                  }
-              }
-          }
-
-          return;
-        case interpolateRA:
-          {
-              float b, e;
-              float ratio = 1/(fSX*fSY);
-              const T *d = src->getData(srcC);
-              const unsigned int w = src->getWidth();
-
-              // rectangle in source image for the destination pixel
-              unsigned int *xBegin = new unsigned int[dstSize.width];
-              unsigned int *xEnd = new unsigned int[dstSize.width];
-              unsigned int *yBegin = new unsigned int[dstSize.height];
-              unsigned int *yEnd = new unsigned int[dstSize.height];
-              // fill quantity of the rectangle edges
-              float *xBMul = new float[dstSize.width];
-              float *xEMul = new float[dstSize.width];
-              float *yBMul = new float[dstSize.height];
-              float *yEMul = new float[dstSize.height];
-
-              for (int i = 0; i < dstSize.width; ++i) {
-                      b = srcOffs.x + i*fSX;
-                      xBegin[i] = b;
-                      xBMul[i] = 1.0f - (b-xBegin[i]);
-                      xEnd[i]   = ceilf((b+fSX)-1);
-                      xEMul[i] = 1.0f - (xEnd[i]-(b+fSX-1));
-              }
-
-              for (int i = 0; i < dstSize.height; ++i) {
-                      e = srcOffs.y + i*fSY;
-                      yBegin[i] = e;
-                      yBMul[i] = 1.0f - (e-yBegin[i]);
-                      yEnd[i]   = ceilf((e+fSY)-1);
-                      yEMul[i] = 1.0f - (yEnd[i]-(e+fSY-1));
-              }
-
-              ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-              const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
-              int xD = 0;
-              int yD = 0;
-              for(; itDst != itDstEnd ; ++itDst) {
-                  float sum = 0.0f;
-
-                  unsigned int xB = xBegin[xD];
-                  unsigned int xE = xEnd[xD];
-                  unsigned int yB = yBegin[yD];
-                  unsigned int yE = yEnd[yD];
-
-                  // sum of the first row
-                  sum += (*(d + xB + yB*w))*xBMul[xD];
-                  for (unsigned int x = xB+1; x < xE; ++x) {
-                          sum += (*(d + x + yB*w));
-                  }
-                  sum = (sum + (*(d + xE + yB*w))*xEMul[xD]) * yBMul[yD];
-
-                  for (unsigned int y = yB+1; y < yE; ++y) {
-                          sum += (*(d + xB + y*w))*xBMul[xD];
-                          for (unsigned int x = xB+1; x < xE; ++x) {
-                                  sum += *(d + x + y*w);
-                          }
-                          sum += (*(d + xE + y*w))*xEMul[xD];
-                  }
-
-                  // sum of the last row
-                  float psum = (*(d + xB + yE*w))*xBMul[xD];
-                  for (unsigned int x = xB+1; x < xE; ++x) {
-                          psum += (*(d + x + yE*w));
-                  }
-                  sum += ((psum + (*(d + xE + yE*w))*xEMul[xD]) * yEMul[yD]);
-
-                  *itDst = clipped_cast<float, T>(sum*ratio+0.5f);
-                  if (++xD == dstSize.width) {
-                      ++yD;
-                      xD = 0;
-                  }
-              }
-
-              delete[] xBegin;
-              delete[] xEnd;
-              delete[] yBegin;
-              delete[] yEnd;
-              delete[] xBMul;
-              delete[] xEMul;
-              delete[] yBMul;
-              delete[] yEMul;
-          }
-
-          return;
-        default:{
-          static bool first = true;
-          if(first){
-            first = false;
-            WARNING_LOG("the given interpolation method is not supported without IPP");
-            WARNING_LOG("using nearest neighbour interpolation as fallback!");
-          }
-          subPixelMethod = &Img<T>::subPixelNN;
-          break;
-        }
-      }
-
-      ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
-      const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
-      int xD = 0;
-      int yD = 0;
-      float yS = srcOffs.y + fSY * yD;
-      for(; itDst != itDstEnd ; ++itDst) {
-        *itDst = clipped_cast<float, T>((src->*subPixelMethod)(srcOffs.x + fSX * xD, yS, srcC));
-        if (++xD == dstSize.width) {
-          yS = srcOffs.y + fSY * ++yD;
-          xD = 0;
-        }
-      }
+      static auto *impl = ImgOps::instance()
+          .getSelector<ImgOps::ScaledCopySig>(ImgOps::Op::scaledCopy)
+          .resolveOrThrow();
+      impl->apply(*src, srcC, srcOffs, srcSize,
+                   *dst, dstC, dstOffs, dstSize, eScaleMode);
     }
 
 
@@ -1233,8 +1065,8 @@ namespace icl {
     (const Img<icl##D>*,int,const Point&,const Size&,                     \
      Img<icl##D>*,int,const Point&,const Size&,scalemode);
 
-    // IPP resize specializations (ippiResizeSqrPixel) removed — deprecated in oneAPI 2022+.
-    // TODO: re-add via BackendDispatch with ippiResizeLinear/ippiResizeNearest.
+    // Scaling now dispatched via ImgOps (C++ / Accelerate / IPP backends).
+    // C++ backend in Img_Cpp.cpp, Accelerate backend in Img_Accelerate.cpp.
     ICL_INSTANTIATE_ALL_DEPTHS
 
   #undef ICL_INSTANTIATE_DEPTH
