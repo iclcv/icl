@@ -55,68 +55,7 @@ namespace icl {
       return ops;
     }
 
-    // Cached dispatch methods — resolve on first call via function-local static
-
-#define BLAS_CACHED_BINARY(NAME, KEY) \
-    template<class T> \
-    void BlasOps<T>::NAME(const T* a, const T* b, T* dst, int n) { \
-      static auto* impl = instance().template getSelector<VecBinarySig>(BlasOp::KEY).resolveOrThrow(); \
-      impl->apply(a, b, dst, n); \
-    }
-#define BLAS_CACHED_SCALAR(NAME, KEY) \
-    template<class T> \
-    void BlasOps<T>::NAME(const T* src, T scalar, T* dst, int n) { \
-      static auto* impl = instance().template getSelector<VecScalarSig>(BlasOp::KEY).resolveOrThrow(); \
-      impl->apply(src, scalar, dst, n); \
-    }
-
-    BLAS_CACHED_BINARY(vadd, vadd)
-    BLAS_CACHED_BINARY(vsub, vsub)
-    BLAS_CACHED_BINARY(vmul, vmul)
-    BLAS_CACHED_BINARY(vdiv, vdiv)
-    BLAS_CACHED_SCALAR(vsadd, vsadd)
-    BLAS_CACHED_SCALAR(vsmul, vsmul)
-
-#undef BLAS_CACHED_BINARY
-#undef BLAS_CACHED_SCALAR
-
-    template<class T>
-    T BlasOps<T>::dot(const T* a, const T* b, int n) {
-      static auto* impl = instance().template getSelector<DotSig>(BlasOp::dot).resolveOrThrow();
-      return impl->apply(a, b, n);
-    }
-
-    template<class T>
-    T BlasOps<T>::nrm2(const T* x, int n) {
-      static auto* impl = instance().template getSelector<NrmSig>(BlasOp::nrm2).resolveOrThrow();
-      return impl->apply(x, n);
-    }
-
-    template<class T>
-    T BlasOps<T>::asum(const T* x, int n) {
-      static auto* impl = instance().template getSelector<NrmSig>(BlasOp::asum).resolveOrThrow();
-      return impl->apply(x, n);
-    }
-
-    template<class T>
-    void BlasOps<T>::axpy(T alpha, const T* x, T* y, int n) {
-      static auto* impl = instance().template getSelector<AxpySig>(BlasOp::axpy).resolveOrThrow();
-      impl->apply(alpha, x, y, n);
-    }
-
-    template<class T>
-    void BlasOps<T>::scal(T alpha, T* x, int n) {
-      static auto* impl = instance().template getSelector<ScalSig>(BlasOp::scal).resolveOrThrow();
-      impl->apply(alpha, x, n);
-    }
-
-    template<class T>
-    void BlasOps<T>::gemv(bool trans, int M, int N, T alpha,
-                           const T* A, int lda, const T* x,
-                           T beta, T* y) {
-      static auto* impl = instance().template getSelector<GemvSig>(BlasOp::gemv).resolveOrThrow();
-      impl->apply(trans, M, N, alpha, A, lda, x, beta, y);
-    }
+    // Cached dispatch methods are now inline in BlasOps.h
 
     template struct BlasOps<float>;
     template struct BlasOps<double>;

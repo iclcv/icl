@@ -68,26 +68,60 @@ namespace icl {
       static BlasOps& instance();
 
       // ---- Cached dispatch — resolved on first call, O(1) thereafter ----
+      // Inline so the compiler can fold the static-local check + virtual call
+      // into the caller without an extra function-call layer.
+
+#define BLAS_CACHED_INLINE_BIN(NAME, KEY) \
+      static inline void NAME(const T* a, const T* b, T* dst, int n) { \
+        static auto* impl = instance().template getSelector<VecBinarySig>(BlasOp::KEY).resolveOrThrow(); \
+        impl->apply(a, b, dst, n); \
+      }
+#define BLAS_CACHED_INLINE_SCAL(NAME, KEY) \
+      static inline void NAME(const T* src, T scalar, T* dst, int n) { \
+        static auto* impl = instance().template getSelector<VecScalarSig>(BlasOp::KEY).resolveOrThrow(); \
+        impl->apply(src, scalar, dst, n); \
+      }
 
       // Level 1 element-wise
-      static void vadd(const T* a, const T* b, T* dst, int n);
-      static void vsub(const T* a, const T* b, T* dst, int n);
-      static void vmul(const T* a, const T* b, T* dst, int n);
-      static void vdiv(const T* a, const T* b, T* dst, int n);
-      static void vsadd(const T* src, T scalar, T* dst, int n);
-      static void vsmul(const T* src, T scalar, T* dst, int n);
+      BLAS_CACHED_INLINE_BIN(vadd, vadd)
+      BLAS_CACHED_INLINE_BIN(vsub, vsub)
+      BLAS_CACHED_INLINE_BIN(vmul, vmul)
+      BLAS_CACHED_INLINE_BIN(vdiv, vdiv)
+      BLAS_CACHED_INLINE_SCAL(vsadd, vsadd)
+      BLAS_CACHED_INLINE_SCAL(vsmul, vsmul)
+
+#undef BLAS_CACHED_INLINE_BIN
+#undef BLAS_CACHED_INLINE_SCAL
 
       // Level 1 reductions & in-place
-      static T    dot(const T* a, const T* b, int n);
-      static T    nrm2(const T* x, int n);
-      static T    asum(const T* x, int n);
-      static void axpy(T alpha, const T* x, T* y, int n);
-      static void scal(T alpha, T* x, int n);
+      static inline T dot(const T* a, const T* b, int n) {
+        static auto* impl = instance().template getSelector<DotSig>(BlasOp::dot).resolveOrThrow();
+        return impl->apply(a, b, n);
+      }
+      static inline T nrm2(const T* x, int n) {
+        static auto* impl = instance().template getSelector<NrmSig>(BlasOp::nrm2).resolveOrThrow();
+        return impl->apply(x, n);
+      }
+      static inline T asum(const T* x, int n) {
+        static auto* impl = instance().template getSelector<NrmSig>(BlasOp::asum).resolveOrThrow();
+        return impl->apply(x, n);
+      }
+      static inline void axpy(T alpha, const T* x, T* y, int n) {
+        static auto* impl = instance().template getSelector<AxpySig>(BlasOp::axpy).resolveOrThrow();
+        impl->apply(alpha, x, y, n);
+      }
+      static inline void scal(T alpha, T* x, int n) {
+        static auto* impl = instance().template getSelector<ScalSig>(BlasOp::scal).resolveOrThrow();
+        impl->apply(alpha, x, n);
+      }
 
       // Level 2
-      static void gemv(bool trans, int M, int N, T alpha,
-                        const T* A, int lda, const T* x,
-                        T beta, T* y);
+      static inline void gemv(bool trans, int M, int N, T alpha,
+                               const T* A, int lda, const T* x,
+                               T beta, T* y) {
+        static auto* impl = instance().template getSelector<GemvSig>(BlasOp::gemv).resolveOrThrow();
+        impl->apply(trans, M, N, alpha, A, lda, x, beta, y);
+      }
     };
 
   } // namespace math
