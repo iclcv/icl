@@ -1,6 +1,115 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 27 — C++17 Phase 1: namespaces, std::clamp, [[nodiscard]])
+## Current State (Session 28 — C++17 Phases 2-6: complete modernization)
+
+### Session 28 Summary
+
+**C++17 Phases 2-6 — mechanical and structural modernization across 183 files:**
+
+Completed the entire C++17 modernization plan (phases 2-6) in a single session.
+All changes are zero-semantic-impact except where noted (string_view API, transparent
+comparators). Build clean (zero warnings), tests: 384/384 pass throughout.
+
+**Phase 2 — scoped_lock, structured bindings, if-init, [[maybe_unused]] (118 files):**
+
+- `std::scoped_lock` (75 files, 281 replacements): all `std::lock_guard` replaced.
+  GradientImage.cpp and DC.cpp manual lock()/unlock() converted to RAII scoped_lock.
+- Structured bindings (10 files, ~20 conversions): map iteration loops converted to
+  `auto [key, value]` syntax. Pair unpacking in GenericGrabber (`split_at_first`).
+  Files: ConfigFile, UnaryOp, GUI, Widget, PointCloudObjectBase,
+  PhysicsPaper3ContextMenu, ManipulatablePaper, CCFunctions, GenericGrabber,
+  ProcessMonitor.
+- If-with-initializer (25 files, ~40 conversions): `find()`+`if` patterns converted to
+  `if(auto it = find(); it != end())`. Files: Configurable, ConfigFile, Size,
+  UnaryOp, Grabber, FileGrabber, GenericGrabber, Scene, MarkerGridDetector,
+  PointCloudObjectBase, Benchmark, SignalHandler, and more.
+- `[[maybe_unused]]` (33 files, ~52 conversions): `(void)var` casts replaced with
+  `[[maybe_unused]]` on declarations/parameters. Includes 14 ICLFilter Op files
+  (static init pattern), function parameters, catch variables, conditional vars.
+
+**Phase 3 — std::filesystem (2 files):**
+
+- `File.cpp`: `break_apart()` rewritten with `fs::path` methods (parent_path, stem,
+  extension). Fixes pre-existing bug where `.gz` double-extension handling truncated
+  the last character of basename (`substr(0,p-1)` → correct via `fs::path::stem`).
+  `file_exists()` → `fs::exists()`, `file_is_dir()` → `fs::is_directory()`,
+  `erase()` → `fs::remove()`. Removed `<sys/stat.h>` and `DIR_SEPERATOR`.
+- `FileList.cpp`: eliminated all three platform-specific glob implementations
+  (`wordexp` Linux, `glob` macOS, `FindFirstFile` Windows). Replaced with
+  `fs::directory_iterator` + `std::regex_match`. Added tilde expansion via `$HOME`,
+  deterministic sort, no-wildcard fast path. Removed `<wordexp.h>`, `<glob.h>`,
+  `<windows.h>`, `<cstring>`.
+
+**Phase 4 — std::from_chars / std::to_chars (7 files):**
+
+- Integer parsing: `atoi()` → `std::from_chars` in IntHandle, GUIDefinition,
+  FileGrabberPluginCSV, TestImages, JPEGDecoder.
+- Float parsing: `atof()` / `istringstream` → `std::strtof` / `std::strtod` in
+  FloatHandle, GUIDefinition, FileGrabberPluginCSV, StringUtils (parse_icl32f/64f).
+  Apple Clang libc++ lacks `from_chars` for floats; `strtof`/`strtod` are
+  locale-independent and avoid istringstream allocation overhead.
+- Integer formatting: `snprintf` → `std::to_chars` in StringUtils (i2str, time2str).
+  Buffer sizes use `std::numeric_limits<T>::digits10 + 3` for portability.
+
+**Phase 5 — if constexpr cleanup (3 files):**
+
+- `SimdCompat.h`: added non-Apple scalar fallbacks for `add`/`sub`/`smul` in
+  `simd_compat` namespace (compiler auto-vectorizes at -O3).
+- `FixedMatrix.h`: removed all 9 `#ifdef ICL_HAVE_APPLE_SIMD` blocks in element-wise
+  operators (*, /, +, -, negate). Each replaced with a direct `simd_compat::` call
+  that works on all platforms — Apple SIMD for 4x4/2x2, scalar fallback otherwise.
+- `BackendDispatching.h`: 6 `enable_if` SFINAE constraints replaced with
+  `static_assert` (cleaner error messages, `_v` trait aliases).
+
+**Phase 6 — std::string_view + transparent map comparators (52 files):**
+
+- `StringUtils.h/cpp`: `tok`, `toLower`, `toUpper`, `parse<T>`, `startsWith`,
+  `endsWith`, `match`, `skipWhitespaces`, `analyseHashes`, `to8u/16s/32s/32f/64f`
+  all take `std::string_view` instead of `const std::string&`. Deleted dangerous
+  `parse<const char*>` specialization. Functions needing null-terminated strings
+  (`strtof`, `regcomp`) construct `std::string` internally.
+- `StrTok.h/cpp`: constructor takes `string_view`, internal tokenization updated.
+- Transparent map comparators (`std::less<>`) added to all `std::map<std::string,...>`
+  declarations across 48 files, enabling heterogeneous lookup with `string_view` keys
+  without allocating temporary `std::string`. Modules: ICLUtils (Configurable,
+  ConfigFile, ParamList, PluginRegister, MultiTypeMap, Benchmark, IppInterface),
+  ICLCore (Color), ICLFilter (UnaryOp), ICLIO (Grabber, FileWriter, GenericGrabber,
+  DCDeviceFeatures, SharedMemorySegment, OpenNIUtils, V4L2Grabber), ICLGeom
+  (PointCloudObjectBase, PointCloudSerializer, Primitive3DFilter, PCDFileGrabber,
+  Scene, DepthCameraPointCloudGrabber), ICLQt (Widget, GUI, Quick, MultiDrawHandle,
+  DefineRectanglesMouseHandler, IconFactory), ICLPhysics (ManipulatablePaper,
+  PhysicsPaper3ContextMenu).
+
+**Build: 100% clean (zero warnings), tests: 384/384 pass.**
+
+### C++17 Modernization — Final Status
+
+| Phase | What | Files | Status |
+|---|---|---|---|
+| 1 | Nested namespaces, std::clamp, [[nodiscard]] | 821 | Done (session 27) |
+| 2 | scoped_lock, structured bindings, if-init, [[maybe_unused]] | 118 | Done (session 28) |
+| 3 | std::filesystem (File.cpp, FileList.cpp) | 2 | Done (session 28) |
+| 4 | std::from_chars / std::to_chars | 7 | Done (session 28) |
+| 5 | if constexpr (SimdCompat, BackendDispatching) | 3 | Done (session 28) |
+| 6 | std::string_view + transparent map comparators | 52 | Done (session 28) |
+| 7 | std::optional | ~10 | Deferred — do opportunistically |
+
+Phase 7 (std::optional) is low-priority. The guide recommends doing it when touching
+the relevant APIs for other reasons (MarkerGridDetector::getPos, ImgBase::getMax/Min,
+FilenameGenerator error returns).
+
+### Next Steps
+
+**Remaining non-C++17 work:**
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
+- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
+  useful but not reliable for absolute numbers. Run on CI or cloud x86 VM.
+
+## Previous State (Session 27 — C++17 Phase 1: namespaces, std::clamp, [[nodiscard]])
 
 ### Session 27 Summary
 
@@ -50,24 +159,33 @@ Three categories of changes, all purely mechanical with zero semantic impact:
 
 **Build: 100% clean (zero warnings), tests: 384/384 pass.**
 
-### Next Steps
+### C++17 Source Modernization — Phased Plan
 
-**C++17 Phase 2-7** (see phased plan below):
-- Phase 2: structured bindings, if-init, scoped_lock
-- Phase 3: std::filesystem
-- Phase 4: std::from_chars / std::to_chars
-- Phase 5: if constexpr cleanup
-- Phase 6: std::string_view
-- Phase 7: std::optional
+Full codebase scan completed (session 27). Already well-modernized in some areas:
+`SimdCompat.h` (if constexpr), `EnumDispatch.h` (fold expressions), `VisitorsN.h`
+(index_sequence + pack expansion), `StringUtils.h` (void_t + if constexpr).
 
-**Other work:**
-- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
-  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
-- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
-- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
-- **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
-- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
-  useful but not reliable for absolute numbers. Run on CI or cloud x86 VM.
+#### Phase 1 — COMPLETED (session 27)
+
+std::clamp, nested namespaces (`namespace icl::X`), `[[nodiscard]]`.
+See session 27 summary above for details.
+
+#### Phases 2-6 — COMPLETED (session 28)
+
+See session 28 summary above for details.
+
+#### Phase 7 — std::optional (deferred)
+
+**Sentinel return values → optional:**
+- `MarkerGridDetector::getPos()` returns `Point(-1,-1)` for "not found"
+- `PCLPointCloudObject` methods returning `-1` for unsupported features
+- `FilenameGenerator.cpp:93,109` returns `""` for error
+
+**Optional output parameters → optional return:**
+- `ImgBase::getMax(int ch, Point *coords=0)` / `getMin()` / `getMinMax()`
+- `Primitive.cpp:87` — `compute_normal(..., bool *ok=0)`
+
+Best done opportunistically or when touching these APIs for other reasons.
 
 ## Previous State (Session 26 — FixedMatrix compile-time SIMD acceleration)
 
