@@ -92,98 +92,160 @@ namespace icl::math {
     }
 
     // ---- GETRF (LU factorization) ----
+    // Explicit transposition for row-major → column-major.
 
     int mkl_getrf_f(int M, int N, float* A, int lda, int* ipiv) {
-      int info;
-      sgetrf(&N, &M, A, &lda, ipiv, &info);
+      int mn = std::min(M, N);
+      std::vector<float> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, _lda = M;
+      sgetrf(&m, &n, AT.data(), &_lda, ipiv, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
     int mkl_getrf_d(int M, int N, double* A, int lda, int* ipiv) {
-      int info;
-      dgetrf(&N, &M, A, &lda, ipiv, &info);
+      int mn = std::min(M, N);
+      std::vector<double> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, _lda = M;
+      dgetrf(&m, &n, AT.data(), &_lda, ipiv, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
     // ---- GETRI (inverse from LU) ----
 
     int mkl_getri_f(int N, float* A, int lda, const int* ipiv) {
-      int info;
+      std::vector<float> AT(N * N);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * N + i] = A[i * lda + j];
+      int info, n = N, _lda = N;
       std::vector<int> ipiv_copy(ipiv, ipiv + N);
       float work_query;
       int lwork = -1;
-      sgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
+      sgetri(&n, AT.data(), &_lda, ipiv_copy.data(), &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
-      sgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      sgetri(&n, AT.data(), &_lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * N + i];
       return info;
     }
 
     int mkl_getri_d(int N, double* A, int lda, const int* ipiv) {
-      int info;
+      std::vector<double> AT(N * N);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * N + i] = A[i * lda + j];
+      int info, n = N, _lda = N;
       std::vector<int> ipiv_copy(ipiv, ipiv + N);
       double work_query;
       int lwork = -1;
-      dgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
+      dgetri(&n, AT.data(), &_lda, ipiv_copy.data(), &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
-      dgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      dgetri(&n, AT.data(), &_lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * N + i];
       return info;
     }
 
     // ---- GEQRF (QR factorization) ----
+    // LAPACK expects column-major; our data is row-major.
+    // Unlike SVD/eigenvalue, the dimension-swap trick does NOT work for QR
+    // (QR(A^T) ≠ QR(A)), so we transpose explicitly.
 
     int mkl_geqrf_f(int M, int N, float* A, int lda, float* tau) {
-      int info;
+      std::vector<float> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, _lda = M;
       float work_query;
       int lwork = -1;
-      sgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
+      sgeqrf(&m, &n, AT.data(), &_lda, tau, &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
-      sgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
+      sgeqrf(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
     int mkl_geqrf_d(int M, int N, double* A, int lda, double* tau) {
-      int info;
+      std::vector<double> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, _lda = M;
       double work_query;
       int lwork = -1;
-      dgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
+      dgeqrf(&m, &n, AT.data(), &_lda, tau, &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
-      dgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
+      dgeqrf(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
     // ---- ORGQR (form Q from Householder reflectors) ----
 
     int mkl_orgqr_f(int M, int N, int K, float* A, int lda, const float* tau) {
-      int info, m = M, n = N, k = K;
+      std::vector<float> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, k = K, _lda = M;
       std::vector<float> tau_copy(tau, tau + K);
       float work_query;
       int lwork = -1;
-      sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
+      sorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
-      sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
+      sorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
     int mkl_orgqr_d(int M, int N, int K, double* A, int lda, const double* tau) {
-      int info, m = M, n = N, k = K;
+      std::vector<double> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      int info, m = M, n = N, k = K, _lda = M;
       std::vector<double> tau_copy(tau, tau + K);
       double work_query;
       int lwork = -1;
-      dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
+      dorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), &work_query, &lwork, &info);
       if(info != 0) return info;
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
-      dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
+      dorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          A[i * lda + j] = AT[j * M + i];
       return info;
     }
 
