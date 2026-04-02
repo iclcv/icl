@@ -101,6 +101,10 @@ namespace icl {
     // Level 1: element-wise vector operations
     // ================================================================
 
+    // ================================================================
+    // Level 1: element-wise + reductions + in-place
+    // ================================================================
+
     template<class T> void cpp_vadd(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]+b[i]; }
     template<class T> void cpp_vsub(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]-b[i]; }
     template<class T> void cpp_vmul(const T* a, const T* b, T* d, int n) { for(int i=0;i<n;++i) d[i]=a[i]*b[i]; }
@@ -108,27 +112,73 @@ namespace icl {
     template<class T> void cpp_vsadd(const T* s, T v, T* d, int n) { for(int i=0;i<n;++i) d[i]=s[i]+v; }
     template<class T> void cpp_vsmul(const T* s, T v, T* d, int n) { for(int i=0;i<n;++i) d[i]=s[i]*v; }
 
+    template<class T> T cpp_dot(const T* a, const T* b, int n) {
+      T s = 0; for(int i=0;i<n;++i) s += a[i]*b[i]; return s;
+    }
+    template<class T> T cpp_nrm2(const T* x, int n) {
+      T s = 0; for(int i=0;i<n;++i) s += x[i]*x[i]; return std::sqrt(s);
+    }
+    template<class T> T cpp_asum(const T* x, int n) {
+      T s = 0; for(int i=0;i<n;++i) s += std::abs(x[i]); return s;
+    }
+    template<class T> void cpp_axpy(T alpha, const T* x, T* y, int n) {
+      for(int i=0;i<n;++i) y[i] += alpha * x[i];
+    }
+    template<class T> void cpp_scal(T alpha, T* x, int n) {
+      for(int i=0;i<n;++i) x[i] *= alpha;
+    }
+
+    // ================================================================
+    // Level 2: matrix-vector
+    // ================================================================
+
     template<class T>
-    void register_level1(Backend b = Backend::Cpp) {
-      auto proxy = BlasOps<T>::instance().backends(b);
-      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vadd, cpp_vadd<T>, "C++ vadd");
-      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vsub, cpp_vsub<T>, "C++ vsub");
-      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vmul, cpp_vmul<T>, "C++ vmul");
-      proxy.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vdiv, cpp_vdiv<T>, "C++ vdiv");
-      proxy.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd, cpp_vsadd<T>, "C++ vsadd");
-      proxy.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsmul, cpp_vsmul<T>, "C++ vsmul");
+    void cpp_gemv(bool trans, int M, int N, T alpha,
+                  const T* A, int lda, const T* x, T beta, T* y) {
+      int yLen = trans ? N : M;
+      for(int i = 0; i < yLen; ++i) y[i] *= beta;
+      if(trans) {
+        // y = alpha * A^T * x + beta*y  (y is Nx1, x is Mx1)
+        for(int j = 0; j < N; ++j)
+          for(int i = 0; i < M; ++i)
+            y[j] += alpha * A[i * lda + j] * x[i];
+      } else {
+        // y = alpha * A * x + beta*y  (y is Mx1, x is Nx1)
+        for(int i = 0; i < M; ++i)
+          for(int j = 0; j < N; ++j)
+            y[i] += alpha * A[i * lda + j] * x[j];
+      }
+    }
+
+    // ================================================================
+    // Registration
+    // ================================================================
+
+    template<class T>
+    void register_all_cpp() {
+      auto p = BlasOps<T>::instance().backends(Backend::Cpp);
+      // Level 3
+      p.template add<typename BlasOps<T>::GemmSig>(BlasOp::gemm, cpp_gemm<T>, "C++ GEMM");
+      // Level 2
+      p.template add<typename BlasOps<T>::GemvSig>(BlasOp::gemv, cpp_gemv<T>, "C++ GEMV");
+      // Level 1 binary/scalar
+      p.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vadd, cpp_vadd<T>, "C++ vadd");
+      p.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vsub, cpp_vsub<T>, "C++ vsub");
+      p.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vmul, cpp_vmul<T>, "C++ vmul");
+      p.template add<typename BlasOps<T>::VecBinarySig>(BlasOp::vdiv, cpp_vdiv<T>, "C++ vdiv");
+      p.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsadd, cpp_vsadd<T>, "C++ vsadd");
+      p.template add<typename BlasOps<T>::VecScalarSig>(BlasOp::vsmul, cpp_vsmul<T>, "C++ vsmul");
+      // Level 1 reductions/in-place
+      p.template add<typename BlasOps<T>::DotSig>(BlasOp::dot, cpp_dot<T>, "C++ dot");
+      p.template add<typename BlasOps<T>::NrmSig>(BlasOp::nrm2, cpp_nrm2<T>, "C++ nrm2");
+      p.template add<typename BlasOps<T>::NrmSig>(BlasOp::asum, cpp_asum<T>, "C++ asum");
+      p.template add<typename BlasOps<T>::AxpySig>(BlasOp::axpy, cpp_axpy<T>, "C++ axpy");
+      p.template add<typename BlasOps<T>::ScalSig>(BlasOp::scal, cpp_scal<T>, "C++ scal");
     }
 
     static const int _cpp_blas_reg = []() {
-      auto cpp_f = BlasOps<float>::instance().backends(Backend::Cpp);
-      cpp_f.add<BlasOps<float>::GemmSig>(BlasOp::gemm, cpp_gemm<float>, "C++ naive GEMM");
-
-      auto cpp_d = BlasOps<double>::instance().backends(Backend::Cpp);
-      cpp_d.add<BlasOps<double>::GemmSig>(BlasOp::gemm, cpp_gemm<double>, "C++ naive GEMM");
-
-      register_level1<float>();
-      register_level1<double>();
-
+      register_all_cpp<float>();
+      register_all_cpp<double>();
       return 0;
     }();
 

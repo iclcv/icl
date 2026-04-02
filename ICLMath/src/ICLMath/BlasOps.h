@@ -10,15 +10,26 @@
 namespace icl {
   namespace math {
 
-    /// Selector keys for BLAS backend dispatch.
+    /// Selector keys for BLAS backend dispatch (Level 1, 2, 3).
     enum class BlasOp : int {
-      gemm,   ///< Level 3: general matrix multiply
-      vadd,   ///< Level 1: dst[i] = a[i] + b[i]
-      vsub,   ///< Level 1: dst[i] = a[i] - b[i]
-      vmul,   ///< Level 1: dst[i] = a[i] * b[i]
-      vdiv,   ///< Level 1: dst[i] = a[i] / b[i]
-      vsadd,  ///< Level 1: dst[i] = src[i] + scalar
-      vsmul,  ///< Level 1: dst[i] = src[i] * scalar
+      // Level 3 — matrix-matrix, O(n³)
+      gemm,   ///< C = α·op(A)·op(B) + β·C
+
+      // Level 2 — matrix-vector, O(n²)
+      gemv,   ///< y = α·A·x + β·y
+
+      // Level 1 — vector-vector, O(n)
+      vadd,   ///< dst[i] = a[i] + b[i]
+      vsub,   ///< dst[i] = a[i] - b[i]
+      vmul,   ///< dst[i] = a[i] * b[i]
+      vdiv,   ///< dst[i] = a[i] / b[i]
+      vsadd,  ///< dst[i] = src[i] + scalar
+      vsmul,  ///< dst[i] = src[i] * scalar
+      dot,    ///< return Σ(a[i]·b[i])
+      nrm2,   ///< return √Σ(x[i]²)
+      asum,   ///< return Σ|x[i]|
+      axpy,   ///< y[i] += α·x[i]
+      scal,   ///< x[i] *= α
     };
 
     ICLMath_API const char* toString(BlasOp op);
@@ -34,29 +45,49 @@ namespace icl {
     template<class T>
     struct ICLMath_API BlasOps : utils::BackendDispatching<int> {
 
-      /// Level 3: C = alpha * op(A) * op(B) + beta * C
+      // ---- Level 3 signatures ----
       using GemmSig = void(bool transA, bool transB,
                             int M, int N, int K, T alpha,
                             const T* A, int lda, const T* B, int ldb,
                             T beta, T* C, int ldc);
 
-      /// Level 1 binary: dst = a OP b (element-wise, n elements)
-      using VecBinarySig = void(const T* a, const T* b, T* dst, int n);
+      // ---- Level 2 signatures ----
+      using GemvSig = void(bool trans, int M, int N, T alpha,
+                            const T* A, int lda, const T* x,
+                            T beta, T* y);
 
-      /// Level 1 scalar: dst[i] = src[i] OP scalar (n elements)
+      // ---- Level 1 signatures ----
+      using VecBinarySig = void(const T* a, const T* b, T* dst, int n);
       using VecScalarSig = void(const T* src, T scalar, T* dst, int n);
+      using DotSig  = T(const T* a, const T* b, int n);
+      using NrmSig  = T(const T* x, int n);
+      using AxpySig = void(T alpha, const T* x, T* y, int n);
+      using ScalSig = void(T alpha, T* x, int n);
 
       BlasOps();
       static BlasOps& instance();
 
-      /// Cached dispatch — resolved on first call, O(1) thereafter.
-      /// Safe because the context is type-only (no runtime applicability).
+      // ---- Cached dispatch — resolved on first call, O(1) thereafter ----
+
+      // Level 1 element-wise
       static void vadd(const T* a, const T* b, T* dst, int n);
       static void vsub(const T* a, const T* b, T* dst, int n);
       static void vmul(const T* a, const T* b, T* dst, int n);
       static void vdiv(const T* a, const T* b, T* dst, int n);
       static void vsadd(const T* src, T scalar, T* dst, int n);
       static void vsmul(const T* src, T scalar, T* dst, int n);
+
+      // Level 1 reductions & in-place
+      static T    dot(const T* a, const T* b, int n);
+      static T    nrm2(const T* x, int n);
+      static T    asum(const T* x, int n);
+      static void axpy(T alpha, const T* x, T* y, int n);
+      static void scal(T alpha, T* x, int n);
+
+      // Level 2
+      static void gemv(bool trans, int M, int N, T alpha,
+                        const T* A, int lda, const T* x,
+                        T beta, T* y);
     };
 
   } // namespace math
