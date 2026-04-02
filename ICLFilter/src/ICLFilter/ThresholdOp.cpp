@@ -19,13 +19,12 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& ThresholdOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<ThreshSig>(Op::ltVal);
       proto.addSelector<ThreshSig>(Op::gtVal);
       proto.addSelector<ThreshDualSig>(Op::ltgtVal);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

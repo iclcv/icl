@@ -335,10 +335,12 @@ namespace icl::geom {
   }
 
   const std::string & PointCloudObjectBase::getMetaData(const std::string &key) const{
-    std::map<std::string,std::string>::const_iterator it = m_metaData.find(key);
-    if(it == m_metaData.end()) throw ICLException("PointCloudObjectBase::getMetaData(key): no meta data with given key ("
-                                                   + key + ") was associated with this point cloud");
-    return it->second;
+    if(auto it = m_metaData.find(key); it == m_metaData.end()){
+      throw ICLException("PointCloudObjectBase::getMetaData(key): no meta data with given key ("
+                         + key + ") was associated with this point cloud");
+    } else {
+      return it->second;
+    }
   }
 
 
@@ -360,8 +362,7 @@ namespace icl::geom {
   }
 
   void PointCloudObjectBase::clearMetaData(const std::string &key){
-    std::map<std::string,std::string>::iterator it = m_metaData.find(key);
-    if(it != m_metaData.end()){
+    if(auto it = m_metaData.find(key); it != m_metaData.end()){
       m_metaData.erase(it);
     }
   }
@@ -369,9 +370,8 @@ namespace icl::geom {
   std::vector<std::string> PointCloudObjectBase::getAllMetaDataEntries() const{
     std::vector<std::string> all(m_metaData.size());
     int i = 0;
-    for(std::map<std::string,std::string>::const_iterator it = m_metaData.begin();
-        it != m_metaData.end(); ++it){
-      all[i++] = it->first;
+    for(const auto& [key, value] : m_metaData){
+      all[i++] = key;
     }
     return all;
   }

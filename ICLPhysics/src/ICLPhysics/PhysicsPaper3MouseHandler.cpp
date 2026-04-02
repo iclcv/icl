@@ -35,12 +35,12 @@ namespace icl{
       bool addLinksTwice;
 
       void setLinkHighlight(const VisualizationDescription &d){
-        std::lock_guard<std::recursive_mutex> lock(getMutex());
+        std::scoped_lock<std::recursive_mutex> lock(getMutex());
         linkHighlight = d;
       }
 
       VisualizationDescription getLinkHighlight() const {
-        std::lock_guard<std::recursive_mutex> lock(getMutex());
+        std::scoped_lock<std::recursive_mutex> lock(getMutex());
         return linkHighlight;
       }
 

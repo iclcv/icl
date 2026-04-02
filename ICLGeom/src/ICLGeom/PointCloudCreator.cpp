@@ -121,7 +121,7 @@ namespace icl::geom {
     }
 
     void reinitIfNecessary(float focalLengthMultiplier, float positionOffsetAlongNorm){
-      std::lock_guard<std::recursive_mutex> lock(mutex);
+      std::scoped_lock<std::recursive_mutex> lock(mutex);
       if(this->focalLengthMultiplier == focalLengthMultiplier &&
          this->positionOffsetAlongNorm == positionOffsetAlongNorm) return;
 
@@ -228,11 +228,10 @@ namespace icl::geom {
 
   /// specialization for 3D rgb: no alpha
   template<>
-  inline void assign_rgba(FixedColVector<icl8u,3> &rgb, icl8u r, icl8u g, icl8u b, icl8u a){
+  inline void assign_rgba(FixedColVector<icl8u,3> &rgb, icl8u r, icl8u g, icl8u b, [[maybe_unused]] icl8u a){
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
-    (void)a;
   }
 
   /// specialization for icl32s: reinterpert as FixedColVector<icl8u,4>
@@ -290,7 +289,7 @@ namespace icl::geom {
 
   void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination,
                                  const Img8u *rgbImage, float depthScaling, bool addDepthFeature){
-    std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> lock(m_data->mutex);
     m_data->lastDepthImageMM = &depthImageMM;
 
     static_cam  = m_data->colorCamera.get();
@@ -535,7 +534,7 @@ namespace icl::geom {
   }
 
   void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
-    std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> lock(m_data->mutex);
     if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
     if(!depthImageMM) throw ICLException("PointCloudCreator::mapImage: no depthImage given and not depth image "
                                          "from preceding 'create' method call available");
@@ -574,11 +573,9 @@ namespace icl::geom {
     }
   }
 
-  void PointCloudCreator::setUseCL(bool use){
+  void PointCloudCreator::setUseCL([[maybe_unused]] bool use){
 #ifdef ICL_HAVE_OPENCL
     m_data->clUse=use;
-#else
-    (void)use;
 #endif
   }
 

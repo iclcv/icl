@@ -524,8 +524,7 @@ namespace icl::core {
 
     /// this function is forbidden, it produces an error message
     /** This would allow the programme to violate the Imgs const concept */
-    inline void extractChannels(Channel<Type> *dst) const{
-      (void)dst;
+    inline void extractChannels([[maybe_unused]] Channel<Type> *dst) const{
       ERROR_LOG("extracting channels of a const Img into an un-const Channel\n"
                 "is forbidden because it violates the const concept");
     }
@@ -541,8 +540,7 @@ namespace icl::core {
 
     /// this function is forbidden, it produces an error message
     /** This would allow the programme to violate the Imgs const concept */
-    inline void extractPointers(Type **dst) const{
-      (void)dst;
+    inline void extractPointers([[maybe_unused]] Type **dst) const{
       ERROR_LOG("extracting channel data of a const Img into an un-const pointer\n"
                 "is forbidden because it violates the const concept");
     }

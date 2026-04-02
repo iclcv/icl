@@ -42,7 +42,7 @@ namespace icl::qt {
     }
 
     void DefineQuadrangleMouseHandler::init(const Size &maxSize, bool convexOnly){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -77,13 +77,13 @@ namespace icl::qt {
         throw ICLException("DefineQuadrangleMouseHandler::setQuadrangle: given quadrangle is not convex "
                            "or twisted");
       }
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       m_data->ps.assign(ps,ps+4);
     }
 
 
     void DefineQuadrangleMouseHandler::setOffset(const Point &o){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::setOffset(p) was called before it was initialized!");
       }
@@ -93,7 +93,7 @@ namespace icl::qt {
     }
 
     std::vector<Point> DefineQuadrangleMouseHandler::getQuadrangle() const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::getQuadrangle() was called before it was initialized!");
       }
@@ -102,7 +102,7 @@ namespace icl::qt {
     }
 
     void DefineQuadrangleMouseHandler::process(const MouseEvent &e){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
@@ -154,7 +154,7 @@ namespace icl::qt {
     }
 
     VisualizationDescription DefineQuadrangleMouseHandler::vis() const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::vis() was called before it was initialized!");
       }

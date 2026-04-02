@@ -18,12 +18,11 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& MedianOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<MedianFixedSig>(Op::fixed);
       proto.addSelector<MedianGenericSig>(Op::generic);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

@@ -38,8 +38,7 @@ namespace icl::core {
   static const Color *create_named_color(std::string str){
     toLowerI(str);
     static ColorMap cm;
-    ColorMap::iterator it = cm.find(str);
-    if(it != cm.end()) return  &it->second;
+    if(auto it = cm.find(str); it != cm.end()) return &it->second;
     else return 0;
   }
 

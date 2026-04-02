@@ -18,12 +18,11 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& UnaryArithmeticalOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<ArithValSig>(Op::withVal);
       proto.addSelector<ArithNoValSig>(Op::noVal);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

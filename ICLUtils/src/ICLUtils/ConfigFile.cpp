@@ -210,9 +210,11 @@ namespace icl::utils {
       e.id = key;
       e.value = n.first_child().value();
       Maps &maps  = getMapsInstanceRef();
-      std::map<std::string,std::string>::const_iterator jt = maps.typeMapReverse.find(n.attribute("type").value());
-      if(jt == maps.typeMapReverse.end()) throw UnregisteredTypeException(n.attribute("type").value());
-      e.rttiType = jt->second;
+      if(auto jt = maps.typeMapReverse.find(n.attribute("type").value()); jt == maps.typeMapReverse.end()){
+        throw UnregisteredTypeException(n.attribute("type").value());
+      } else {
+        e.rttiType = jt->second;
+      }
 
       XMLAttribute rangeAtt = n.attribute("range");
 
@@ -333,9 +335,11 @@ namespace icl::utils {
   }
 
   ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id){
-    std::map<std::string,Entry>::iterator it = m_entries.find(id);
-    if(it == m_entries.end()) throw EntryNotFoundException(id);
-    else return it->second;
+    if(auto it = m_entries.find(id); it == m_entries.end()){
+      throw EntryNotFoundException(id);
+    } else {
+      return it->second;
+    }
   }
   const ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) const{
     return const_cast<ConfigFile*>(this)->get_entry_internal(id);
@@ -345,23 +349,24 @@ namespace icl::utils {
 
   void ConfigFile::set_internal(const std::string &idIn, const std::string &val, const std::string &type){
     Maps &maps = getMapsInstanceRef();
-    std::map<std::string,std::string>::iterator it = maps.typeMap.find(type);
-    if(it == maps.typeMap.end()) throw UnregisteredTypeException(type);
-    std::string id=m_sDefaultPrefix + idIn;
-    Entry &e = m_entries[id];
-    e.parent = this;
-    e.id = id;
-    e.rttiType = type;
-    e.value = val;
-    add_to_doc(*m_doc,id,it->second,val);
+    if(auto it = maps.typeMap.find(type); it == maps.typeMap.end()){
+      throw UnregisteredTypeException(type);
+    } else {
+      std::string id=m_sDefaultPrefix + idIn;
+      Entry &e = m_entries[id];
+      e.parent = this;
+      e.id = id;
+      e.rttiType = type;
+      e.value = val;
+      add_to_doc(*m_doc,id,it->second,val);
+    }
   }
 
   void ConfigFile::listContents() const{
     std::cout << "config file entries:" << std::endl;
-    for(std::map<std::string,Entry>::const_iterator it = m_entries.begin();
-        it != m_entries.end(); ++it){
-      std::cout << (it->second.id) << "\t" << (it->second.value) << "\t" << (it->second.rttiType) << "\t";
-      if(it->second.restr) std::cout << "(restriction: " << it->second.restr->toString() << ")" <<  std::endl;
+    for(const auto& [key, entry] : m_entries){
+      std::cout << entry.id << "\t" << entry.value << "\t" << entry.rttiType << "\t";
+      if(entry.restr) std::cout << "(restriction: " << entry.restr->toString() << ")" <<  std::endl;
       else std::cout << "(no restriction)" << std::endl;
     }
   }
@@ -410,10 +415,9 @@ namespace icl::utils {
 
   std::vector<ConfigFile::Data> ConfigFile::find(const std::string &regex){
     std::vector<Data> ret;
-    for(std::map<std::string,Entry>::const_iterator it = m_entries.begin();
-        it != m_entries.end(); ++it){
-      if(match(it->first, regex)){
-        ret.push_back(Data(it->first,*this));
+    for(const auto& [key, entry] : m_entries){
+      if(match(key, regex)){
+        ret.push_back(Data(key,*this));
       }
     }
     return ret;

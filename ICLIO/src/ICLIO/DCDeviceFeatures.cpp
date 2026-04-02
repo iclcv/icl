@@ -300,8 +300,7 @@ namespace icl::io{
       }else if(l > 3 && ((name.substr(l-3) == "_RV")||(name.substr(l-3)=="_BU"))){
         return getInfoPtr(name.substr(0,l-3));
       }else{
-        std::map<std::string,dc1394feature_info_t*>::const_iterator it = featureMap.find(name);
-        if(it != featureMap.end()){
+        if(auto it = featureMap.find(name); it != featureMap.end()){
           return it->second;
         }
       }

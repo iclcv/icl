@@ -66,10 +66,9 @@ namespace icl{
     void PhysicsPaper3ContextMenu::show(const Point &screenPos){
       QAction *a = m_data->men.exec(QPoint(screenPos.x,screenPos.y));
       if(a && m_data->cb){
-        for(std::map<std::string, QAction*>::iterator it = m_data->actions.begin();
-            it != m_data->actions.end();++it){
-          if(it->second == a){
-            m_data->cb(it->first);
+        for(const auto& [name, action] : m_data->actions){
+          if(action == a){
+            m_data->cb(name);
             return;
           }
         }

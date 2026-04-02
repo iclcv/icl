@@ -717,14 +717,13 @@ namespace icl::qt {
 
     void registerRecordingCallback(std::function<void(const ImgBase*)> cb,
                                    const std::string &handle){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       recordingCallbacks[handle] = cb;
     }
 
     void unregisterRecordingCallback(const std::string &handle){
-      std::lock_guard<std::recursive_mutex> l(mutex);
-      std::map<std::string,std::function<void(const core::ImgBase*)> >::iterator it = recordingCallbacks.find(handle);
-      if(it != recordingCallbacks.end()){
+      std::scoped_lock<std::recursive_mutex> l(mutex);
+      if(auto it = recordingCallbacks.find(handle); it != recordingCallbacks.end()){
         recordingCallbacks.erase(it);
       }else{
         ERROR_LOG("could not remove recording callback for handle " << handle
@@ -735,7 +734,7 @@ namespace icl::qt {
 
     bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
                         bool forceParams, const Size &dstSize, core::format dstFmt,  core::depth dstDepth){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
 
       ICL_DELETE(converter);
       if(forceParams){
@@ -785,19 +784,19 @@ namespace icl::qt {
       return true;
     }
     bool setPaused(bool val){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       paused = val;
       return paused;
     }
     bool stopRecording(){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       imageOutput.release();
       recording = false;
       return recording;
     }
 
     void captureImageHook(){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       if(!recording || paused || (target != SET_IMAGES) ) return;
       ICLASSERT_RETURN(!imageOutput.isNull());
       if(frameIdx < frameSkip){
@@ -808,9 +807,8 @@ namespace icl::qt {
       }
       try{
         std::shared_ptr<const ImgBase> image(data->image.extractDisplay(),[](auto*){});
-        for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
-            it != recordingCallbacks.end();++it){
-          it->second(image.get());
+        for(const auto& [name, callback] : recordingCallbacks){
+          callback(image.get());
         }
 
         if(converter){
@@ -824,7 +822,7 @@ namespace icl::qt {
     }
 
     void captureFrameBufferHook(){
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
 
       if(!recording || paused || (target != FRAME_BUFFER)) return;
       ICLASSERT_RETURN(!imageOutput.isNull());
@@ -837,9 +835,8 @@ namespace icl::qt {
       }
       try{
         const ImgBase *fb = &parent->grabFrameBufferICL();
-        for(std::map<std::string, std::function<void(const ImgBase*)> >::iterator it = recordingCallbacks.begin();
-            it != recordingCallbacks.end();++it){
-          it->second(fb);
+        for(const auto& [name, callback] : recordingCallbacks){
+          callback(fb);
         }
         if(converter){
           converter->apply(fb,&convertedBuffer);

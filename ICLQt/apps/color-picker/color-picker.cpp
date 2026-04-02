@@ -31,7 +31,7 @@ std::vector<XC> colorbuffer;
 
 
 void mouse(const MouseEvent &event){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   std::string colormode = gui["colormode"].as<std::string>();
   if(event.isPressEvent()){
     const std::vector<icl64f> &c = event.getColor();
@@ -66,12 +66,12 @@ void mouse(const MouseEvent &event){
 
 
 void reset_list(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   colorbuffer.clear();
   printf("cleared! \n----------------------------------------\n");
 }
 void calc_mean(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   if(!colorbuffer.size()){
     return;
   }

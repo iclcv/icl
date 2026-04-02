@@ -60,7 +60,7 @@ void* loadFunction(void* lib, const char* name){
 }
 
 IppInterface::IppInterface(){
-  std::lock_guard<std::recursive_mutex> l(current_path_lock);
+  std::scoped_lock<std::recursive_mutex> l(current_path_lock);
 
   DEBUG_LOG("Getting paths from environment.")
       // update ipp search path from environment
@@ -186,7 +186,7 @@ icl32s IppInterface::ippmDet_m_64f(
 
 void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_name)
 {
-  std::lock_guard<std::recursive_mutex> l(m_FunctionHandleMutex);
+  std::scoped_lock<std::recursive_mutex> l(m_FunctionHandleMutex);
   // check if function is already loaded
   if(m_FunctionHandles.contains(symbol_name)){
     return m_FunctionHandles[symbol_name];

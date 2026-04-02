@@ -242,7 +242,7 @@ namespace icl::filter {
 
       PenaltyModeNone( const Rect &roi, icl32s penalty):
         roi(roi),penalty(penalty){}
-      inline icl32s operator()(icl32s val, int x, int y) const {(void)x; (void)y;  return val; }
+      inline icl32s operator()(icl32s val, [[maybe_unused]] int x, [[maybe_unused]] int y) const { return val; }
       Rect roi;
       icl32s penalty;
     };

@@ -18,7 +18,7 @@ PylonGrabber::PylonGrabber(
   : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(nullptr)
 {
   FUNCTION_LOG("args: " << args);
-  std::lock_guard<std::recursive_mutex> l(m_ImgMutex);
+  std::scoped_lock<std::recursive_mutex> l(m_ImgMutex);
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 

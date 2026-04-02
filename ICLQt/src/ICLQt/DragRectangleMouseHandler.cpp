@@ -17,7 +17,7 @@ namespace icl::qt {
 
 
   void DragRectangleMouseHandler::process(const MouseEvent &e){
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     if(e.isRight()){
       m_rect = Rect::null;
       return;
@@ -60,7 +60,7 @@ namespace icl::qt {
     const Size s = w.getImageSize();
     const int &imagew = s.width;
     const int &imageh = s.height;
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     if(m_rect != Rect::null){
       vis_rect(w, m_rect, imagew, imageh, m_edge, m_fill, m_outer);
     }
@@ -71,21 +71,21 @@ namespace icl::qt {
   }
 
   bool DragRectangleMouseHandler::hasRect() const{
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     return m_rect != Rect::null;
   }
   bool DragRectangleMouseHandler::hasDraggedRect() const{
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     return m_curr != Point::null || m_origin != Point::null;
   }
 
   Rect DragRectangleMouseHandler::getRect() const{
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     return m_rect;
   }
 
   Rect DragRectangleMouseHandler::getDragggedRect() const{
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     return Rect(m_origin, Size(m_curr.x-m_origin.x,m_curr.y-m_origin.y));
   }
 

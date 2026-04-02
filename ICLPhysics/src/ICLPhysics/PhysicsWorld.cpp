@@ -203,7 +203,7 @@ namespace icl::physics {
 		}
 
     void PhysicsWorld::addObject(PhysicsObject *obj){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -229,7 +229,7 @@ namespace icl::physics {
 
 
     void PhysicsWorld::removeObject(PhysicsObject *obj){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -275,7 +275,7 @@ namespace icl::physics {
     }
 
     void PhysicsWorld::step(float dtSecs, int maxSubSteps, float fixedTimeStep){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
 
       //step simulation
       if(dtSecs < 0){

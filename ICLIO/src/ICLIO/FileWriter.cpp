@@ -141,13 +141,12 @@ namespace icl::io {
 
     File file(m_oGen.next());
 
-    std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.find(toLower(file.getSuffix()));
-    if(it == s_mapPlugins.end()){
+    if(auto it = FileWriter::s_mapPlugins.find(toLower(file.getSuffix())); it == s_mapPlugins.end()){
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;
+    } else {
+      it->second->write(file,image);
     }
-
-    it->second->write(file,image);
   }
 
 

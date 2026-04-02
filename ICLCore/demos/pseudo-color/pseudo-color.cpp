@@ -23,7 +23,7 @@ void update_color(int maxSteps){
 
 void step(const std::string &handle){
   static std::recursive_mutex mutex;
-  std::lock_guard<std::recursive_mutex> lock(mutex);
+  std::scoped_lock<std::recursive_mutex> lock(mutex);
 
   const float mult = gui["mult"];
   static float lastMult = -1;

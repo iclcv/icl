@@ -160,7 +160,7 @@ void highlight_regions(int classID){
 }
 
 void mouse(const MouseEvent &e){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   if(!currLUT.getDim()) return;
 
   static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
@@ -219,7 +219,7 @@ void save_dialog(){
 }
 
 void clear_lut(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   segmenter->clearLUT(0);
 }
 
@@ -396,7 +396,7 @@ void run(){
 
   const Img8u *grabbedImage = &inputImage.as8u();
 
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
 
   if(preMedian){
     static MedianOp m(Size(3,3));

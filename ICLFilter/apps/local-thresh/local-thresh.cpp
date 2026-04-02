@@ -59,7 +59,7 @@ void save(){
 }
 
 void step(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   static DrawHandle orig = gui["orig"];
   static ImageHandle prev = gui["prev"];
   static ButtonHandle next = gui["next"];

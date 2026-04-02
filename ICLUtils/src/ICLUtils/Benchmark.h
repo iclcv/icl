@@ -47,16 +47,16 @@ namespace icl::utils {
     void set(const std::string &key, BenchParamValue v){ m_vals[key] = std::move(v); }
 
     int getInt(const std::string &key) const {
-      auto it = m_vals.find(key);
-      return it != m_vals.end() ? std::get<int>(it->second) : 0;
+      if(auto it = m_vals.find(key); it != m_vals.end()) return std::get<int>(it->second);
+      return 0;
     }
     double getDbl(const std::string &key) const {
-      auto it = m_vals.find(key);
-      return it != m_vals.end() ? std::get<double>(it->second) : 0.0;
+      if(auto it = m_vals.find(key); it != m_vals.end()) return std::get<double>(it->second);
+      return 0.0;
     }
     std::string getStr(const std::string &key) const {
-      auto it = m_vals.find(key);
-      return it != m_vals.end() ? std::get<std::string>(it->second) : "";
+      if(auto it = m_vals.find(key); it != m_vals.end()) return std::get<std::string>(it->second);
+      return "";
     }
   };
 

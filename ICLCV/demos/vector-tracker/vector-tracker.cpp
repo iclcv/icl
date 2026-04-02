@@ -185,11 +185,11 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
   }
 
   void add_single_blob(){
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     setBlobCount(blobs.size()+1);
   }
   void remove_single_blob(int x, int y){
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     int i = find_blob(x,y);
     if(i!=-1){
       blobs.erase(blobs.begin()+i);
@@ -246,7 +246,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
   }
 
   virtual const ImgBase *acquireDisplay(){
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
 
     image.setSize(getDesired<Size>());

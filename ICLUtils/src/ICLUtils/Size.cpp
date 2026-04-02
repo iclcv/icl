@@ -61,8 +61,7 @@ namespace icl::utils {
       A(QCIF);A(PAL);A(NTSC);
 #undef A
     }
-    std::map<std::string,const Size*>::iterator it = m.find(name);
-    if(it!=m.end()){
+    if(auto it = m.find(name); it!=m.end()){
       size = *it->second;
     }else{
       size = neg1;

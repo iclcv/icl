@@ -39,7 +39,7 @@ namespace icl::geom {
                                                     const GeomColor &xAxisColor, const GeomColor &yAxisColor,
                                                     const GeomColor &zAxisColor, const GeomColor &textLabelColor,
                                                     float textScaling){
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
 
     m_vertices.clear();
     m_normals.clear();

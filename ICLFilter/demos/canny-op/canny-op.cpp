@@ -38,7 +38,7 @@ void init(){
 
 void update(){
   static std::recursive_mutex mutex;
-  std::lock_guard<std::recursive_mutex> l(mutex);
+  std::scoped_lock<std::recursive_mutex> l(mutex);
 
   static ImageHandle image = gui["image"];
   static LabelHandle dt = gui["dt"];

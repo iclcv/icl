@@ -44,8 +44,7 @@ namespace icl::filter {
     return const_cast<ProximityOp*>(this)->getPropertyValue("apply mode");
   }
 
-  void ProximityOp::apply(const core::Image &src1, const core::Image &src2, core::Image &dst){
-    (void)src1; (void)src2; (void)dst;
+  void ProximityOp::apply([[maybe_unused]] const core::Image &src1, [[maybe_unused]] const core::Image &src2, [[maybe_unused]] core::Image &dst){
     ERROR_LOG("ProximityOp::apply not yet implemented (deprecated IPP API removed, C++ fallback needed)");
   }
 

@@ -337,7 +337,7 @@ namespace icl::io {
 
   // adds properties to Configurable
   void SwissRangerGrabber::addProperties(){
-    std::lock_guard<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
     std::string imgmode;
     if(m_sr->iim == iimUnknownPixelsMinusOne){
       imgmode = "minus one";
@@ -381,7 +381,7 @@ namespace icl::io {
 
   // callback for changed configurable properties
   void SwissRangerGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-    std::lock_guard<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
     if(prop.name == "intensity-image-mode"){
       if(prop.value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
       else if(prop.value == "zero") m_sr->iim = iimUnknownPixelsZero;
@@ -429,7 +429,7 @@ namespace icl::io {
   }
 
   const ImgBase *SwissRangerGrabber::acquireDisplay(){
-    std::lock_guard<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
     SR_Acquire(m_sr->cam);
     Time captureTime = Time::now();
 

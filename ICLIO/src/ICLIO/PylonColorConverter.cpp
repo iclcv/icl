@@ -26,13 +26,13 @@ using namespace Pylon;
 
 // Constructor
 PylonColorConverter::PylonColorConverter() : m_Mutex() {
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   m_Converter = nullptr;
 }
 
 // Destructor
 PylonColorConverter::~PylonColorConverter(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   ICL_DELETE(m_Converter)
 }
 
@@ -42,7 +42,7 @@ void PylonColorConverter::resetConversion(
     Pylon::PixelType pixel_type, std::string pixel_type_name){
 
   //locking mutex
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   DEBUG_LOG("w=" << width << " h=" << height << " t=" << pixel_type
                     << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   #ifdef SPEED_TEST
@@ -163,7 +163,7 @@ ImgBase* PylonColorConverter::convert(const void *pImageBuffer, ConvBuffers* b){
 #ifdef SPEED_TEST
   Time t = Time::now();
 #endif
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   if(m_Converter == nullptr){
     DEBUG_LOG(m_ErrorMessage)
     return nullptr;

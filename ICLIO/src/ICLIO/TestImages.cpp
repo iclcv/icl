@@ -424,7 +424,7 @@ namespace {
   int w = atoi(headA[0].c_str());
   int h = atoi(headA[1].c_str());
   int colors = atoi(headA[2].c_str());
-  int one = atoi(headA[3].c_str()); (void)one;
+  [[maybe_unused]] int one = atoi(headA[3].c_str());
 
   // parsing colors:
   XPMColor lut[256];

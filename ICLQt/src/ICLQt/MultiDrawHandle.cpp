@@ -109,8 +109,7 @@ namespace icl::qt {
     return a;
   }
   MultiDrawHandle::Assigner MultiDrawHandle::operator[](const std::string &name){
-    std::map<std::string,int>::iterator it = m_map.find(name);
-    if(it!=m_map.end()){
+    if(auto it = m_map.find(name); it!=m_map.end()){
       return (*this)[it->second];
     }else{
       ERROR_LOG("Tab " << name << " is not defined");

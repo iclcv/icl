@@ -40,10 +40,9 @@ namespace icl::io {
       }
 
       Grabber* createGrabber(const GrabberDeviceDescription &desc){
-        std::lock_guard<std::recursive_mutex> l(mutex);
+        std::scoped_lock<std::recursive_mutex> l(mutex);
 
-        GPM::iterator it = gpm.find(desc.name());
-        if(it != gpm.end()){
+        if(auto it = gpm.find(desc.name()); it != gpm.end()){
           // increment instance counter
           DEBUG_LOG("return old grabber" << desc.name());
           ++(it -> second).count;
@@ -58,10 +57,9 @@ namespace icl::io {
       }
 
       void deleteGrabber(const GrabberDeviceDescription &desc){
-        std::lock_guard<std::recursive_mutex> l(mutex);
+        std::scoped_lock<std::recursive_mutex> l(mutex);
         DEBUG_LOG("called delete grabber");
-        GPM::iterator it = gpm.find(desc.name());
-        if(it == gpm.end()){
+        if(auto it = gpm.find(desc.name()); it == gpm.end()){
           ERROR_LOG("Grabber with name '" << desc.name() << "' was not existent.");
           return;
         } else {
@@ -79,8 +77,8 @@ namespace icl::io {
 
       std::vector<GrabberDeviceDescription> getInstanceList(){
         std::vector<GrabberDeviceDescription> list;
-        for (GPM::iterator it = gpm.begin(); it != gpm.end(); ++it){
-          list.push_back(it->second.description);
+        for(const auto& [name, instance] : gpm){
+          list.push_back(instance.description);
         }
         return list;
       }
@@ -122,15 +120,15 @@ namespace icl::io {
     static GrabberRegister* reg = GrabberRegister::getInstance();
     static std::vector<std::string> plugins = reg -> getRegisteredGrabbers();
     for(unsigned int i=0;i<ts.size();++i){
-      std::pair<std::string,std::string> tsi = split_at_first('@',ts[i]);
+      auto [deviceSpec, optionStr] = split_at_first('@',ts[i]);
 
-      std::vector<std::string> ab = tok(tsi.first,"=");
+      std::vector<std::string> ab = tok(deviceSpec,"=");
 
       unsigned int S = ab.size();
       switch(S){
         case 1: case 2:
           if(!(std::find(plugins.begin(), plugins.end(), ab[0]) == plugins.end())){
-            SpecifiedDevice s = { ab[0], (S==2 ? ab[1] : std::string("")), tok(tsi.second,"@") };
+            SpecifiedDevice s = { ab[0], (S==2 ? ab[1] : std::string("")), tok(optionStr,"@") };
             pmap[ab[0]] = s;
             //DEBUG_LOG("setting pmap[" << ab[0] << "] to '" << (pmap[ab[0]])<< '\'');
           }else{
@@ -156,7 +154,7 @@ namespace icl::io {
                             bool notifyErrors)
   {
     // get lock and grabber information
-    std::lock_guard<std::recursive_mutex> __lock(m_mutex);
+    std::scoped_lock<std::recursive_mutex> __lock(m_mutex);
     GrabberRegister *grabberReg = GrabberRegister::getInstance();
 
     // (re)set GenericGrabber to default values
@@ -242,11 +240,11 @@ namespace icl::io {
       const std::vector<std::string> &options = pmap[m_poDesc.type].options;
       // setting extra properties ...
       for(unsigned int i=0;i<options.size();++i){
-        std::pair<std::string,std::string> p = split_at_first('=',options[i]);
-        if(p.second.length()) p.second = p.second.substr(1);
-        if(p.first == "load"){
-          m_poGrabber->loadProperties(p.second);
-        }else if(p.first == "info"){
+        auto [propName, propVal] = split_at_first('=',options[i]);
+        if(propVal.length()) propVal = propVal.substr(1);
+        if(propName == "load"){
+          m_poGrabber->loadProperties(propVal);
+        }else if(propName == "info"){
           std::cout << "Property list for " << m_poDesc << std::endl;
           std::vector<std::string> ps = m_poGrabber->getPropertyList();
           TextTable t(4,ps.size()+4,35);
@@ -271,10 +269,10 @@ namespace icl::io {
 
           std::cout << t << std::endl;
           std::terminate();
-        }else if(p.first == "udist"){
-          m_poGrabber -> enableUndistortion(p.second);
+        }else if(propName == "udist"){
+          m_poGrabber -> enableUndistortion(propVal);
         }else{
-          m_poGrabber->setPropertyValue(p.first,p.second);
+          m_poGrabber->setPropertyValue(propName,propVal);
         }
       }
     }

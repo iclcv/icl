@@ -14,7 +14,7 @@ namespace icl::io {
     compressor(ImageCompressor::CompressionSpec(compressionType,quality)){}
 
   void FileWriterPluginBICL::write(File &file, const ImgBase *image){
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
     const ImageCompressor::CompressedData data = compressor.compress(image);
     file.open(File::writeBinary);
     file.write(data.bytes,data.len);

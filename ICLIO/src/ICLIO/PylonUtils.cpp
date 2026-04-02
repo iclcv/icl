@@ -47,7 +47,7 @@ void ConvBuffers::free(){
 // Constructor creates and initializes resources.
 ConcGrabberBuffer::ConcGrabberBuffer() :
 m_Mutex(), m_Write(0), m_Next(1), m_Read(2) {
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   m_Buffers[0] = new ConvBuffers();
   m_Buffers[1] = new ConvBuffers();
   m_Buffers[2] = new ConvBuffers();
@@ -55,7 +55,7 @@ m_Mutex(), m_Write(0), m_Next(1), m_Read(2) {
 
 // Destructor frees memory
 ConcGrabberBuffer::~ConcGrabberBuffer() {
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   ICL_DELETE(m_Buffers[0]);
   ICL_DELETE(m_Buffers[1]);
   ICL_DELETE(m_Buffers[2]);
@@ -63,7 +63,7 @@ ConcGrabberBuffer::~ConcGrabberBuffer() {
 
 // returns a pointer to the most recent actualized ConvBuffers.
 ConvBuffers* ConcGrabberBuffer::getNextReadBuffer(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   if(m_Avail){
     // new buffer is available.
     std::swap(m_Next, m_Read);
@@ -74,7 +74,7 @@ ConvBuffers* ConcGrabberBuffer::getNextReadBuffer(){
 
 // returns a pointer to the next write ConvBuffers.
 ConvBuffers* ConcGrabberBuffer::getNextWriteBuffer(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   // swap write buffer and next buffer.
   std::swap(m_Next, m_Write);
   // new buffer is available for reading.
@@ -85,7 +85,7 @@ ConvBuffers* ConcGrabberBuffer::getNextWriteBuffer(){
 
 // mark ConvBuffers to be reset on next write-access.
 void ConcGrabberBuffer::setReset(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   m_Buffers[0] -> m_Reset = true;
   m_Buffers[1] -> m_Reset = true;
   m_Buffers[2] -> m_Reset = true;
@@ -93,7 +93,7 @@ void ConcGrabberBuffer::setReset(){
 
 // tells whether a new image is available
 bool ConcGrabberBuffer::newAvailable(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   return m_Avail;
 }
 
@@ -109,7 +109,7 @@ PylonAutoEnv::~PylonAutoEnv(){
 // initializes the Pylon environment
 // (returns whether PylonInitialize() was called)
 bool PylonAutoEnv::initPylonEnv(){
-  std::lock_guard<std::recursive_mutex> l(*env_mutex);
+  std::scoped_lock<std::recursive_mutex> l(*env_mutex);
   ICLASSERT(pylon_env_inits >= 0)
   pylon_env_inits++;
   if(pylon_env_inits == 1){
@@ -133,7 +133,7 @@ bool PylonAutoEnv::initPylonEnv(){
 // terminates the Pylon environment
 // (returns whether PylonTerminate() was called).
 bool PylonAutoEnv::termPylonEnv(){
-  std::lock_guard<std::recursive_mutex> l(*env_mutex);
+  std::scoped_lock<std::recursive_mutex> l(*env_mutex);
   ICLASSERT(pylon_env_inits > 0)
   pylon_env_inits--;
   if(pylon_env_inits == 0){

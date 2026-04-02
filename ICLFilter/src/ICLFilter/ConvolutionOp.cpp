@@ -19,11 +19,10 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& ConvolutionOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<ConvSig>(Op::apply);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

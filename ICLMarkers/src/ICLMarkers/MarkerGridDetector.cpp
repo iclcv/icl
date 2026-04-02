@@ -39,9 +39,11 @@ namespace  icl{
 
     utils::Point MarkerGridDetector::GridDefinition::getPos(int id) const{
       if(posLUT.size()){
-        std::map<int,utils::Point>::const_iterator it = posLUT.find(id);
-        if(it == posLUT.end()) return utils::Point(-1,-1);
-        return it->second;
+        if(auto it = posLUT.find(id); it == posLUT.end()){
+          return utils::Point(-1,-1);
+        } else {
+          return it->second;
+        }
       }else{
         if(id >= getDim()) return utils::Point(-1,-1);
         return utils::Point(id%getWidth(), id/getWidth());
@@ -50,9 +52,11 @@ namespace  icl{
 
     int MarkerGridDetector::GridDefinition::getIndex(int id) const{
       if(posLUT.size()){
-        std::map<int,utils::Point>::const_iterator it = posLUT.find(id);
-        if(it == posLUT.end()) return -1;
-        return it->second.x + it->second.y * getWidth();
+        if(auto it = posLUT.find(id); it == posLUT.end()){
+          return -1;
+        } else {
+          return it->second.x + it->second.y * getWidth();
+        }
       }else{
         if(static_cast<unsigned>(id) >= static_cast<unsigned>(getDim())){
           return -1;

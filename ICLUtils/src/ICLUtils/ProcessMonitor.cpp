@@ -54,8 +54,8 @@ namespace icl::utils {
     }
 
     void call_callbacks(){
-      for(unsigned int i=0;i<callbacks.size();++i){
-        callbacks[i].second(info);
+      for(const auto& [id, cb] : callbacks){
+        cb(info);
       }
     }
 
@@ -108,11 +108,11 @@ namespace icl::utils {
       line += c;
       if (c == '\n'){
         if(line.substr(0,7) == "Cpu(s):"){
-          std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
           m_data->parse_top_line_cpus(line);
         }
         if(strip_line(line).substr(0,pid.length()) == pid){
-          std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
           m_data->parse_top_line(line);
           m_data->evaluate_proc();
           m_data->call_callbacks();
@@ -128,18 +128,18 @@ namespace icl::utils {
   }
 
   ProcessMonitor::Info ProcessMonitor::getInfo() const {
-    std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
     return m_data->info;
   }
 
   int ProcessMonitor::registerCallback(ProcessMonitor::Callback cb){
-    std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
     m_data->callbacks.push_back(std::make_pair(m_data->nextCallbackID++,cb));
     return m_data->callbacks.back().first;
   }
 
   void ProcessMonitor::removeCallback(int id){
-    std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
     for(unsigned int i=0;i<m_data->callbacks.size();++i){
       if(m_data->callbacks[i].first == id){
         m_data->callbacks.erase(m_data->callbacks.begin()+i);
@@ -150,7 +150,7 @@ namespace icl::utils {
   }
 
   void ProcessMonitor::removeAllCallbacks(){
-    std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
     m_data->callbacks.clear();
   }
 

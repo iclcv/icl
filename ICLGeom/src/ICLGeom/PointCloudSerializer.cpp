@@ -211,12 +211,12 @@ namespace icl{
     }
 
     const icl8u *PointCloudSerializer::DefaultDeserializationDevice::sourceFor(const std::string &featureName, int &bytes){
-      std::map<std::string,std::vector<icl8u> >::const_iterator it = data.find(featureName);
-      if(it == data.end()){
+      if(auto it = data.find(featureName); it == data.end()){
         bytes = 0;
         throw ICLException("DefaultDeserializationDevice::sourceFor: no source for feature name '" + featureName + "' found");
+      } else {
+        return it->second.data();
       }
-      return it->second.data();
     }
 
   }

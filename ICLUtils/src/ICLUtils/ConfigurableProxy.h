@@ -25,13 +25,13 @@ namespace icl::utils {
 
       /// sets the internally used Configurable to the passed one
       void setInternalConfigurable(Configurable* c=nullptr){
-        std::lock_guard<std::recursive_mutex> l(m_configurableLock);
+        std::scoped_lock<std::recursive_mutex> l(m_configurableLock);
         m_intConfigurable = c;
       }
 
       /// returns the internally used Configurable
       Configurable* getInternalConfigurable() const{
-        std::lock_guard<std::recursive_mutex> l(m_configurableLock);
+        std::scoped_lock<std::recursive_mutex> l(m_configurableLock);
         ICLASSERT_THROW(m_intConfigurable,ICLException("ConfigurableProxy: internal Configurable is null"));
         return m_intConfigurable;
       }

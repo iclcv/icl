@@ -712,10 +712,8 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 	float norm = 1;
 	DynMatrix<float> kernel = DynMatrix<float>(1, 1, 0.0);
 	int l = 0;
-	int kSize = 1;
-	int rowSize = 1;
-        (void)kSize;
-        (void)rowSize;
+	[[maybe_unused]] int kSize = 1;
+	[[maybe_unused]] int rowSize = 1;
 
 	if (m_data->normalAveragingRange <= 1) {
 		// nothing!

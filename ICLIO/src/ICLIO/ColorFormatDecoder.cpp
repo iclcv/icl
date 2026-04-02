@@ -49,11 +49,9 @@ namespace icl::io {
       dec.decode(reinterpret_cast<const icl16s*>(rawData), size, dst);
     }
 
-    void gray(const icl8u *rawData,const Size &size, ImgBase **dst, std::vector<icl8u> *buffer=0){
+    void gray(const icl8u *rawData,const Size &size, ImgBase **dst, [[maybe_unused]] std::vector<icl8u> *buffer=0){
       ensureCompatible(dst,depth8u,size,formatGray);
       Img8u &image = *(*dst)->as8u();
-
-      (void)buffer;
       Img8u tmp(size,1,std::vector<icl8u*>(1,const_cast<icl8u*>(rawData)),false);
       cc(&tmp,&image);
     }
@@ -182,9 +180,10 @@ namespace icl::io {
   }
 
   void ColorFormatDecoder::decode(FourCC fourcc, const icl8u *data, const Size &size, ImgBase **dst){
-    std::map<icl32u,decoder_func>::iterator it = m_functions.find(fourcc.asInt());
-    if(it == m_functions.end()) throw ICLException("ColorFormatDecoder::unable to convert given format " + fourcc.asString());
-
-    it->second(data,size,dst,&m_buffer);
+    if(auto it = m_functions.find(fourcc.asInt()); it == m_functions.end()){
+      throw ICLException("ColorFormatDecoder::unable to convert given format " + fourcc.asString());
+    } else {
+      it->second(data,size,dst,&m_buffer);
+    }
   }
   } // namespace icl::io

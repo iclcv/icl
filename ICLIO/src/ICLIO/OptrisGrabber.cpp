@@ -237,7 +237,7 @@ namespace icl{
       virtual void run(){
         while(true){
           {
-            std::lock_guard<std::recursive_mutex> lock(buffer.mutex);
+            std::scoped_lock<std::recursive_mutex> lock(buffer.mutex);
             if(imager->getFrame(buffer.buf.data()) == IRIMAGER_SUCCESS){
               imager->process(buffer.buf.data(), &buffer);
               imager->releaseFrame();
@@ -310,7 +310,7 @@ namespace icl{
     const core::ImgBase* OptrisGrabber::acquireDisplay(){
       bool omitDoubledFrames = getPropertyValue("omit doubled frames");
 
-      std::lock_guard<std::recursive_mutex> lock(m_data->buffer.mutex);
+      std::scoped_lock<std::recursive_mutex> lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
         while(m_data->buffer.getDisplay().getTime() == m_data->buffer.lastTimeAcquired){
           m_data->buffer.mutex.unlock();

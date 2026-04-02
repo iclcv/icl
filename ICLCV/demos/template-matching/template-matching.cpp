@@ -40,7 +40,7 @@ void mouse(const MouseEvent &e){
     }
       dragging = true;
   }else if(e.isReleaseEvent()){
-    std::lock_guard<std::recursive_mutex> l(mutex);
+    std::scoped_lock<std::recursive_mutex> l(mutex);
     if(dragging_R){
       currROI = currROI.normalized() & Rect(Point::null,imageSize);
       dragging = false;

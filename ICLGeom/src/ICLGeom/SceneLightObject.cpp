@@ -93,9 +93,8 @@ namespace icl::geom {
       }
     }
 
-    SceneLightObject::SceneLightObject(Scene *scene, int lightID):
+    SceneLightObject::SceneLightObject([[maybe_unused]] Scene *scene, int lightID):
       m_lightID(lightID), m_hasText(false){
-      (void)scene;
       const float size = 1;
 
       SceneObject *thread = new ThreadPart;

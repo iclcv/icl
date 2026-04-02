@@ -42,7 +42,7 @@ OpenNIContext::OpenNIContext()
 {}
 
 OpenNIContext::~OpenNIContext(){
-  std::lock_guard<std::recursive_mutex> l(m_Lock);
+  std::scoped_lock<std::recursive_mutex> l(m_Lock);
   if(m_Initialized){
     m_Context.Release();
     m_Initialized = false;
@@ -52,7 +52,7 @@ OpenNIContext::~OpenNIContext(){
 
 OpenNIContext* OpenNIContext::getInst(){
   static OpenNIContext inst;
-  std::lock_guard<std::recursive_mutex> l(inst.m_Lock);
+  std::scoped_lock<std::recursive_mutex> l(inst.m_Lock);
   if(!inst.m_Initialized){
     XnStatus xn = inst.m_Context.Init();
     assertStatus(xn);
@@ -692,8 +692,7 @@ void alternativeViewPiontCapabilitySet(xn::MapGenerator* gen,
     status = avc.ResetViewPoint();
   } else {
     // get the ProductionNode named by value from Map
-    std::map<std::string, xn::ProductionNode>::iterator it = pn_map.find(value);
-    if (it != pn_map.end()) {
+    if(auto it = pn_map.find(value); it != pn_map.end()) {
       if(avc.IsViewPointSupported(pn_map[value])){
         // set alt viewpoint.
         status = avc.SetViewPoint(pn_map[value]);

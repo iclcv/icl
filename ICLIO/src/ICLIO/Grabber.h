@@ -178,7 +178,7 @@ bool desiredUsed() const{ return false; }
 
 /// sets desired parameters (only available for core::depth,utils::Size and core::format)
 template<class T>
-void useDesired(const T &t){ (void)t;}
+void useDesired([[maybe_unused]] const T &t){}
 
 /// sets up the grabber to use all given desired parameters
 void useDesired(core::depth d, const utils::Size &size, core::format fmt);

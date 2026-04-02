@@ -22,7 +22,7 @@ namespace icl::qt {
   }
 
   void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
-    std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
+    std::scoped_lock<std::recursive_mutex> lock(m_linkMutex);
     //m_oCommandMutex.lock();
 
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -60,7 +60,7 @@ namespace icl::qt {
   }
 
   void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
-    std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
+    std::scoped_lock<std::recursive_mutex> lock(m_linkMutex);
 
     if(cb == m_linkedCallback) return;
 

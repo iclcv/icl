@@ -158,7 +158,7 @@ namespace icl::markers {
 
     void CameraCalibrationUtils::BestOfNSaver::init(){
       num_end = nFramesSource();
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(inited) return;
       filename = CameraCalibrationUtils::get_save_filename("-o");
       if(filename != ""){
@@ -171,14 +171,14 @@ namespace icl::markers {
     }
 
     void CameraCalibrationUtils::BestOfNSaver::stop(){
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(inited){
         n = num_end;
       }
     }
 
     std::pair<int,float> CameraCalibrationUtils::BestOfNSaver::next_hook(const Camera &cam, float error){
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(!inited) return std::pair<int,float>(0,0);
 
 
@@ -285,8 +285,7 @@ namespace icl::markers {
         SHOW(e.what());
       }catch(int){}
 
-      int systemResult = system((std::string(ICL_SYSTEMCALL_RM) + tmpFilename).c_str());
-      (void)systemResult;
+      [[maybe_unused]] int systemResult = system((std::string(ICL_SYSTEMCALL_RM) + tmpFilename).c_str());
 
       enum Mode{
         ExtractGrids,
@@ -726,7 +725,7 @@ namespace icl::markers {
           scene.lock();
           Camera cam = scene.getCamera(0);
           {
-            std::lock_guard<std::recursive_mutex> lock(saver->getMutex());
+            std::scoped_lock<std::recursive_mutex> lock(saver->getMutex());
             try{
               if(givenIntrinsicParams){
                 cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams,

@@ -27,7 +27,7 @@ void init(){
 }
 
 void run(){
-  std::lock_guard<std::recursive_mutex> l(mux);
+  std::scoped_lock<std::recursive_mutex> l(mux);
   if(inst) inst->update();
 }
 

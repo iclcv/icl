@@ -249,9 +249,8 @@ namespace icl::geom {
       static LinkMap current_links;
       static std::recursive_mutex mutex;
 
-      std::lock_guard<std::recursive_mutex> lock(mutex);
-      LinkMap::iterator it = current_links.find(parent);
-      if(it != current_links.end()){
+      std::scoped_lock<std::recursive_mutex> lock(mutex);
+      if(auto it = current_links.find(parent); it != current_links.end()){
         std::vector<ICLDrawWidget*> &ws = it->second;
         if(std::find(ws.begin(),ws.end(), widget) != ws.end()){
           // link between scene and widget is already established!
@@ -774,7 +773,7 @@ namespace icl::geom {
 
  void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
     glewInit();
-    std::lock_guard<std::recursive_mutex> l(getMutex());
+    std::scoped_lock<std::recursive_mutex> l(getMutex());
     //update Sceneinfo
     (const_cast<Scene*>(this))->setPropertyValue("info.FPS",m_fps.getFPSString());
 
@@ -1548,10 +1547,8 @@ namespace icl::geom {
   }
 
   void Scene::freePBuffer(const Size &size){
-    typedef std::map<PBufferIndex, PBuffer*>::iterator It;
     PBufferIndex idx(size);
-    It it = m_pbuffers.find(idx);
-    if (it != m_pbuffers.end()){
+    if(auto it = m_pbuffers.find(idx); it != m_pbuffers.end()){
       delete it->second;
       m_pbuffers.erase(it);
     }

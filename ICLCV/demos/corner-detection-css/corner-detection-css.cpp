@@ -19,7 +19,7 @@ GenericGrabber *grabber = 0;
 void mouse(const MouseEvent &event){
   if(event.isPressEvent()){
     if(event.getColor().size() == 3) {
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       for(int i=0;i<3;++i) refColor[i] = event.getColor()[i];
       std::cout << "new Ref-Color:"  << refColor.transp() << std::endl;
     }
@@ -64,7 +64,7 @@ void init(){
 
 template<class T>
     void thresh(const Img<T> &input, Img8u &result, float t,const Color &ref){
-  std::lock_guard<std::recursive_mutex> l(mutex);
+  std::scoped_lock<std::recursive_mutex> l(mutex);
   result.setChannels(1);
   result.setSize(input.getSize());
   const Channel<T> cs[3] = {input[0], input[1], input[2]};

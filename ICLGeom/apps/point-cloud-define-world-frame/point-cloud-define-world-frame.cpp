@@ -134,7 +134,7 @@ void mouse(const MouseEvent &e){
 
       if(e.isPressEvent() && (e.isModifierActive(ShiftModifier)
                               || e.isModifierActive(ControlModifier))){
-        std::lock_guard<std::recursive_mutex> lock(grabberMutex);
+        std::scoped_lock<std::recursive_mutex> lock(grabberMutex);
         grabber->setCameraWorldFrame(T);
         scene.getCamera(0).setWorldFrame(T);
 

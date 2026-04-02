@@ -66,8 +66,7 @@ namespace icl{
     }
 
 
-    const std::vector<GrabberDeviceDescription> &ZmqGrabber::getDeviceList(bool rescan){
-      (void)rescan;
+    const std::vector<GrabberDeviceDescription> &ZmqGrabber::getDeviceList([[maybe_unused]] bool rescan){
       static std::vector<GrabberDeviceDescription> deviceList;
       return deviceList;
     }

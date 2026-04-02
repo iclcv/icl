@@ -690,8 +690,7 @@ namespace icl::qt {
       }else{
         id = dev+devSpec;
       }
-      std::map<std::string,std::shared_ptr<GenericGrabber> >::iterator it = grabbers.find(id);
-      if(it != grabbers.end()){
+      if(auto it = grabbers.find(id); it != grabbers.end()){
         g = it->second;
       }else{
         g.reset(new GenericGrabber());

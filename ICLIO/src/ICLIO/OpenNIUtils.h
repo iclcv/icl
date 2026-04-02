@@ -149,7 +149,7 @@ namespace icl::io {
         ReadWriteBuffer(ReadWriteBufferHandler<T>* buffer_handler)
           : m_Mutex(), m_Write(0), m_Next(1), m_Read(2)
         {
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           m_BufferHandler = buffer_handler;
           m_Buffers[0] = m_BufferHandler -> initBuffer();
           m_Buffers[1] = m_BufferHandler -> initBuffer();
@@ -161,7 +161,7 @@ namespace icl::io {
 
         /// Destructor frees allocated memory.
         ~ReadWriteBuffer(){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           ICL_DELETE(m_Buffers[0]);
           ICL_DELETE(m_Buffers[1]);
           ICL_DELETE(m_Buffers[2]);
@@ -173,7 +173,7 @@ namespace icl::io {
           next call to getNextReadBuffer()
       **/
         T* getNextReadBuffer(){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           if(m_Avail){
             // new buffer is available.
             std::swap(m_Next, m_Read);
@@ -231,7 +231,7 @@ namespace icl::io {
           the old writeable as new.
       **/
         T* getNextWriteBuffer(){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           // swap write buffer and next buffer.
           std::swap(m_Next, m_Write);
           // new buffer is available for reading.
@@ -248,7 +248,7 @@ namespace icl::io {
 
         /// mark buffers to be reset on next write-access.
         void setReset(){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           m_ResetBuffers[0] = true;
           m_ResetBuffers[1] = true;
           m_ResetBuffers[2] = true;
@@ -256,7 +256,7 @@ namespace icl::io {
 
         /// switches the handler
         void switchHandler(ReadWriteBufferHandler<T>* new_handler){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           m_BufferHandler = new_handler;
           m_ResetBuffers[0] = true;
           m_ResetBuffers[1] = true;
@@ -265,7 +265,7 @@ namespace icl::io {
 
         /// tells whether a new ConvBuffers is available
         bool newAvailable(){
-          std::lock_guard<std::recursive_mutex> l(m_Mutex);
+          std::scoped_lock<std::recursive_mutex> l(m_Mutex);
           return m_Avail;
         }
 

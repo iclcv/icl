@@ -359,27 +359,30 @@ namespace icl::filter {
       plist = tok(ps.substr(0,ps.size()-1),",");
     }
 
-    std::map<std::string,unary_op_from_string::Creator>::iterator it=unary_op_from_string::CREATORS.find(name);
-    if(it == unary_op_from_string::CREATORS.end()) throw ICLException(str(__FUNCTION__)+": no op found for given specifier ["+name+"]");
-    UnaryOp * op = it->second(plist);
-    if(!op) throw ICLException("wrong parameter list syntax");
-    return op;
+    if(auto it = unary_op_from_string::CREATORS.find(name); it == unary_op_from_string::CREATORS.end()){
+      throw ICLException(str(__FUNCTION__)+": no op found for given specifier ["+name+"]");
+    } else {
+      UnaryOp * op = it->second(plist);
+      if(!op) throw ICLException("wrong parameter list syntax");
+      return op;
+    }
   }
 
   std::string UnaryOp::getFromStringSyntax(const std::string &opSpecifier){
     unary_op_from_string::static_init();
-    std::map<std::string,unary_op_from_string::Creator>::iterator it=unary_op_from_string::CREATORS.find(opSpecifier);
-    if(it == unary_op_from_string::CREATORS.end()) throw ICLException(str(__FUNCTION__)+": no op found for given specifier ["+opSpecifier+"]");
-    return it->second.s;
+    if(auto it = unary_op_from_string::CREATORS.find(opSpecifier); it == unary_op_from_string::CREATORS.end()){
+      throw ICLException(str(__FUNCTION__)+": no op found for given specifier ["+opSpecifier+"]");
+    } else {
+      return it->second.s;
+    }
   }
 
   std::vector<std::string> UnaryOp::listFromStringOps(){
     unary_op_from_string::static_init();
     std::vector<std::string> v(unary_op_from_string::CREATORS.size());
     int i=0;
-    for(std::map<std::string,unary_op_from_string::Creator>::iterator it=unary_op_from_string::CREATORS.begin();
-        it!=unary_op_from_string::CREATORS.end();++it){
-      v[i++] = it->second;
+    for(const auto& [name, creator] : unary_op_from_string::CREATORS){
+      v[i++] = creator;
     }
     return v;
   }

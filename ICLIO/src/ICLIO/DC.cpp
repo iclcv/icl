@@ -414,11 +414,10 @@ namespace icl::io {
                                dc1394color_filter_t bayerLayout,
                                 ImgBase **ppoDst,
                                 const Size &desiredSizeHint,
-                                depth desiredDepthHint,
+                                [[maybe_unused]] depth desiredDepthHint,
                                 std::vector<icl8u> &dataBuffer,
                                dc1394bayer_method_t bayerMethod){
       //      DEBUG_LOG("color_filter:" << f->color_filter);
-      (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       ensureCompatible(ppoDst,depth8u,frameSize,formatGray);
 
@@ -488,12 +487,9 @@ namespace icl::io {
                               dc1394color_filter_t bayerLayout,
                               ImgBase **ppoDst,
                               const Size &desiredSizeHint,
-                              depth desiredDepthHint,
+                              [[maybe_unused]] depth desiredDepthHint,
                               std::vector<icl8u> &dataBuffer,
                               dc1394bayer_method_t bayerMethod){
-
-
-      (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
 
       if(bayerLayout){
@@ -540,14 +536,12 @@ namespace icl::io {
                           ImgBase **ppoDst,
                           const Size &desiredSizeHint,
                           format desiredFormatHint,
-                          depth desiredDepthHint,
+                          [[maybe_unused]] depth desiredDepthHint,
                           std::vector<icl8u> &dataBuffer,
                           dc1394bayer_method_t bayerMethod){
 
 
       // This function must work dynamically --> it must not use is_firefly_mono for example !!
-
-      (void)desiredDepthHint;
       Size frameSize(f->size[0],f->size[1]);
       switch(desiredFormatHint){
         case formatGray:
@@ -688,19 +682,17 @@ namespace icl::io {
         release();
       }
       void create(){
-        mutex.lock();
+        std::scoped_lock lock(mutex);
         if(!context){
           context = dc1394_new();
         }
-        mutex.unlock();
       }
       void release(){
-        mutex.lock();
+        std::scoped_lock lock(mutex);
         if(context){
           dc1394_free(context);
           context = 0;
         }
-        mutex.unlock();
       }
     };
 

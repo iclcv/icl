@@ -447,7 +447,7 @@ namespace icl::io {
 
 
       void process_image(const icl8u *p, int fourcc){
-        std::lock_guard<std::recursive_mutex> lock(mutex);
+        std::scoped_lock<std::recursive_mutex> lock(mutex);
         Time t = Time::now();
         if(deviceNameInfo == "Myrmex"){ // spezialization for the myrmex tactile device
           fourcc = FourCC("MYRM");
@@ -457,7 +457,7 @@ namespace icl::io {
       }
 
       const ImgBase *acquireDisplay(){
-        std::lock_guard<std::recursive_mutex> lock(mutex);
+        std::scoped_lock<std::recursive_mutex> lock(mutex);
         while(!image || (avoidDoubleFrames && lastTime == image->getTime())){
           mutex.unlock();
           Thread::msleep(0);
@@ -675,12 +675,12 @@ namespace icl::io {
   }
 
   V4L2Grabber::~V4L2Grabber(){
-    std::lock_guard<std::recursive_mutex> lock(implMutex);
+    std::scoped_lock<std::recursive_mutex> lock(implMutex);
     delete impl;
   }
 
   const ImgBase *V4L2Grabber::acquireDisplay(){
-    std::lock_guard<std::recursive_mutex> lock(implMutex);
+    std::scoped_lock<std::recursive_mutex> lock(implMutex);
     const ImgBase *image = 0;
     do{ image = impl->acquireDisplay(); } while(!image || !image->getDim() );
     return image;
@@ -736,7 +736,7 @@ namespace icl::io {
 
   // callback for changed configurable properties
   void V4L2Grabber::processPropertyChange(const utils::Configurable::Property &prop){
-    std::lock_guard<std::recursive_mutex> lock(implMutex);
+    std::scoped_lock<std::recursive_mutex> lock(implMutex);
     if(prop.name == "format"){
       std::string oldDeviceName = impl->deviceName;
       impl->stop();

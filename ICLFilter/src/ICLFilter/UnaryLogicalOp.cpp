@@ -18,12 +18,11 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& UnaryLogicalOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<WithValSig>(Op::withVal);
       proto.addSelector<NoValSig>(Op::noVal);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

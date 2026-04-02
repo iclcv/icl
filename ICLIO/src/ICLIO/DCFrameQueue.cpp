@@ -25,9 +25,7 @@ namespace icl::io {
       for(int i=0;i<m_iBuffers;i++){
 #endif
         dc1394video_frame_t *frame=0;
-        dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
-
-        (void)err;
+        [[maybe_unused]] dc1394error_t err = dc1394_capture_dequeue(m_poCam,DC1394_CAPTURE_POLICY_WAIT,&frame);
         // this does not work dc1394_capture_dequeu crashes when the bus is broken
         //if(err != DC1394_SUCCESS || !frame){
         //  ERROR_LOG("dc1394_capture_dequeue was not successfull -> trying to reset the bus");

@@ -24,7 +24,7 @@ namespace icl::filter {
       static ConvolutionOp convY( (ConvolutionKernel(ConvolutionKernel::sobelY3x3)) );
       static std::recursive_mutex convXYMutex;
       static bool first = true;
-      convXYMutex.lock();
+      std::scoped_lock lock(convXYMutex);
 
       if(first){
         convX.setCheckOnly(true);
@@ -36,8 +36,6 @@ namespace icl::filter {
 
       convX.apply(&src,bpp(gx));
       convY.apply(&src,bpp(gy));
-
-      convXYMutex.unlock();
     }
 
 

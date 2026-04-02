@@ -31,7 +31,7 @@ void mouse(const MouseEvent &e){
   try{
     Vec v;
     {
-      std::lock_guard<std::recursive_mutex> lock(octreeMutex);
+      std::scoped_lock<std::recursive_mutex> lock(octreeMutex);
       if(!octree) return;
       v = octree->rayCastClosest(scene.getCamera(0).getViewRay(e.getPos()), 10);
       pos = v;
@@ -158,7 +158,7 @@ void run_octree(){
     octree->insert(xyzh[i]);
   }
   //t.showAge("time for point insertion ... of " + str(xyzh.getDim()) + " points");
-  std::lock_guard<std::recursive_mutex> lock(octreeMutex);
+  std::scoped_lock<std::recursive_mutex> lock(octreeMutex);
   ::octree = std::shared_ptr<RayCastOctreeObject>(octree);
 }
 

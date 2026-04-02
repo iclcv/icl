@@ -149,9 +149,11 @@ namespace icl::io {
     for(unsigned int i=0;i<lowerType.length();++i){
       lowerType[i] = tolower(lowerType[i]);
     }
-    std::map<std::string,std::shared_ptr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
-    if(it == plugins.end()) return 0;
-    else return it->second.get();
+    if(auto it = plugins.find(lowerType); it == plugins.end()){
+      return 0;
+    } else {
+      return it->second.get();
+    }
   }
 
   FileGrabber::FileGrabber()
@@ -250,8 +252,7 @@ namespace icl::io {
             try{
               grab(&m_data->vecImageBuffer[i]);
               correctNames.push_back(m_data->oFileList[i]);
-            }catch(ICLException &ex){
-              (void)ex;
+            }catch([[maybe_unused]] ICLException &ex){
             }
           }else{
             grab(&m_data->vecImageBuffer[i]);
@@ -432,7 +433,7 @@ namespace icl::io {
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      std::lock_guard<std::recursive_mutex> l(m_propertyMutex);
+      std::scoped_lock<std::recursive_mutex> l(m_propertyMutex);
       if (m_updatingProperties) return;
       if(prop.name == "next") {
         next();
@@ -473,7 +474,7 @@ namespace icl::io {
     }
 
     void FileGrabber::updateProperties(const ImgBase* img){
-      std::lock_guard<std::recursive_mutex> l(m_propertyMutex);
+      std::scoped_lock<std::recursive_mutex> l(m_propertyMutex);
       m_updatingProperties = true;
       int s = m_data->oFileList.size();
       int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);

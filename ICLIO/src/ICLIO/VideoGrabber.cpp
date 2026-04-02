@@ -259,7 +259,7 @@ namespace icl::io {
 
 
   const ImgBase *VideoGrabber::acquireDisplay(){
-    std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> lock(m_data->mutex);
 
     m_params->wait(m_data->fps);
 
@@ -302,7 +302,7 @@ namespace icl::io {
     if(prop.name == "stream-pos-info"){
       return;
     }
-    std::lock_guard<std::recursive_mutex> l(m_data->mutex);
+    std::scoped_lock<std::recursive_mutex> l(m_data->mutex);
     if(prop.name == "speed-mode"){
       m_params->speedMode = prop.value;
     }else if(prop.name == "speed"){

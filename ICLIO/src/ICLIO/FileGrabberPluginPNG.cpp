@@ -17,7 +17,7 @@ using namespace icl::core;
 
 namespace icl::io {
   void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
     png_byte header[8];
 
     FILE *cfile = fopen(file.getName().c_str(), "rb");
@@ -25,8 +25,7 @@ namespace icl::io {
       ERROR_LOG("unable to open given file in read binary mode: " << file.getName());
       return;
     }
-    size_t res = fread(header, 1, 8, cfile);
-    (void)res;
+    [[maybe_unused]] size_t res = fread(header, 1, 8, cfile);
     if (png_sig_cmp(header, 0, 8)){
       ERROR_LOG("given file's header " << file.getName() << " is not a valid png header");
       return;
@@ -55,16 +54,14 @@ namespace icl::io {
     int width = png_get_image_width(reader,info);
     int height = png_get_image_height(reader,info);
     int channels = png_get_channels(reader,info);
-    png_byte colorfmt = png_get_color_type(reader,info);
-    (void)colorfmt; // this is expanded to either rgb or gray
+    [[maybe_unused]] png_byte colorfmt = png_get_color_type(reader,info); // this is expanded to either rgb or gray
     png_byte bits = png_get_bit_depth(reader,info);
 
     // palette is automatically expanded to RGB / RGBA
     // gray is automatically expanded to at least 8Bit (+alpha if neccessary)
     png_set_expand(reader);
 
-    int interlacing = png_set_interlace_handling(reader);
-    (void)interlacing;
+    [[maybe_unused]] int interlacing = png_set_interlace_handling(reader);
     png_read_update_info(reader,info);
 
 

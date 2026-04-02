@@ -18,11 +18,10 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& WarpOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<WarpSig>(Op::warp);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

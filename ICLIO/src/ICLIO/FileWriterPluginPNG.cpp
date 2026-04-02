@@ -17,7 +17,7 @@ using namespace icl::core;
 
 namespace icl::io {
   void FileWriterPluginPNG::write(File &file, const ImgBase *image){
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
     ICLASSERT_RETURN(image);
     FILE *cfile = fopen(file.getName().c_str(), "wb");
     if (!cfile){

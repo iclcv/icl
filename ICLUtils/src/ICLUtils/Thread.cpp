@@ -14,7 +14,7 @@ namespace icl::utils {
   }
 
   void Thread::start(){
-    std::lock_guard<std::mutex> l(m_lifecycle);
+    std::scoped_lock<std::mutex> l(m_lifecycle);
     if(m_running){
       ERROR_LOG("unable to start thread (it's still running)");
       return;
@@ -25,7 +25,7 @@ namespace icl::utils {
 
   void Thread::stop(){
     m_running = false;
-    std::lock_guard<std::mutex> l(m_lifecycle);
+    std::scoped_lock<std::mutex> l(m_lifecycle);
     if(m_thread.joinable()){
       m_thread.join();
       finalize();
@@ -33,7 +33,7 @@ namespace icl::utils {
   }
 
   void Thread::wait(){
-    std::lock_guard<std::mutex> l(m_lifecycle);
+    std::scoped_lock<std::mutex> l(m_lifecycle);
     if(m_thread.joinable()){
       m_thread.join();
       m_running = false;
@@ -46,7 +46,7 @@ namespace icl::utils {
   void Thread::unlock(){ m_mutex.unlock(); }
 
   void Thread::join(){
-    std::lock_guard<std::mutex> l(m_lifecycle);
+    std::scoped_lock<std::mutex> l(m_lifecycle);
     if(m_thread.joinable()) m_thread.join();
   }
 

@@ -403,10 +403,10 @@ namespace icl{
       }
 
       StSt getStSt(std::map<std::string,std::vector<StSt> > &map, std::string name){
-        for(std::map<std::string,std::vector<StSt> >::iterator it=map.begin();it != map.end();++it){
-          for(unsigned int i=0;i<it->second.size();++i){
-            if((it->second[i]).full == name){
-              return it->second[i];
+        for(const auto& [section, entries] : map){
+          for(unsigned int i=0;i<entries.size();++i){
+            if(entries[i].full == name){
+              return entries[i];
             }
           }
         }
@@ -461,20 +461,19 @@ namespace icl{
         int generalIdx = 0;
         int i=0;
         if(!conf->isOrderedFlagSet()) {
-          for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
-            if(it->first == "general") {
+          for(const auto& [section, entries] : sections){
+            if(section == "general") {
               generalIdx = i;
             }
-            tablist += (tablist.length()?",":"")+it->first;
+            tablist += (tablist.length()?",":"")+section;
             ++i;
           }
         } else {
-          for(std::map<int,std::string>::iterator it_ordered=sections_ordering.begin();it_ordered != sections_ordering.end();++it_ordered){
-            std::string first = it_ordered->second;
-            if(first == "general") {
+          for(const auto& [order, section] : sections_ordering){
+            if(section == "general") {
               generalIdx = i;
             }
-            tablist += (tablist.length()?",":"")+first;
+            tablist += (tablist.length()?",":"")+section;
             ++i;
           }
         }
@@ -505,14 +504,14 @@ namespace icl{
 
         bool haveGeneral = false;
         if(!conf->isOrderedFlagSet()) {
-          for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
+          for(const auto& [section, entries] : sections){
             GUI tab = VScroll();
-            for(unsigned int i=0;i<it->second.size();++i){
-              if(!isSpecialGrabberGrabberProperty(conf,(it->second[i]).full)){
-                add_component(tab,it->second[i],ostr,gui);
+            for(unsigned int i=0;i<entries.size();++i){
+              if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
+                add_component(tab,entries[i],ostr,gui);
               }
             }
-            if(it->first == "general"){
+            if(section == "general"){
               haveGeneral = true;
               tab << ( HBox()
                        << Button("load").handle("#X#load")
@@ -525,16 +524,15 @@ namespace icl{
             sub_gui << tab;
           }
         } else {
-            for(std::map<int,std::string>::iterator it_ordered=sections_ordering.begin();it_ordered != sections_ordering.end();++it_ordered){
-              std::string first = it_ordered->second;
-              std::vector<StSt>& second = sections[it_ordered->second];
+            for(const auto& [order, section] : sections_ordering){
+              std::vector<StSt>& entries = sections[section];
               GUI tab = VScroll();
-              for(unsigned int i=0;i<second.size();++i){
-                if(!isSpecialGrabberGrabberProperty(conf,(second[i]).full)){
-                  add_component(tab,second[i],ostr,gui);
+              for(unsigned int i=0;i<entries.size();++i){
+                if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
+                  add_component(tab,entries[i],ostr,gui);
                 }
               }
-              if(first == "general"){
+              if(section == "general"){
                 haveGeneral = true;
                 tab << ( HBox()
                          << Button("load").handle("#X#load")
@@ -563,9 +561,8 @@ namespace icl{
         gui << sub_gui;
         gui.create();
 
-        for(std::map<std::string,std::string>::const_iterator it = deferredAssignList.begin();
-            it != deferredAssignList.end(); ++it){
-          gui[it->first] = it->second;
+        for(const auto& [handle, value] : deferredAssignList){
+          gui[handle] = value;
         }
 
         if(use_tabs){
@@ -585,7 +582,7 @@ namespace icl{
 
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
-        std::lock_guard<std::recursive_mutex> l(execMutex);
+        std::scoped_lock<std::recursive_mutex> l(execMutex);
         const std::string &name = p.name;
         const std::string &type = p.type;
         deactivateExec = true;
@@ -626,7 +623,7 @@ namespace icl{
       }
 
       void exec(const std::string &handle){
-        std::lock_guard<std::recursive_mutex> l(execMutex);
+        std::scoped_lock<std::recursive_mutex> l(execMutex);
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         if(deactivateExec || processingProperty == prop){
@@ -2099,12 +2096,11 @@ namespace icl{
     GUIWidget *create_widget(const GUIDefinition &def){
       typedef std::map<std::string,GUI::CreatorFunction> tmap;
       tmap &m = get_registered_widget_types();
-      tmap::iterator it = m.find(def.type());
-
-      if(it == m.end()){
+      if(auto it = m.find(def.type()); it == m.end()){
         throw ICLException("unable to create GUI component with type '" + def.type() + "' (unknown type)");
+      } else {
+        return it->second(def);
       }
-      return it->second(def);
     }
 
 

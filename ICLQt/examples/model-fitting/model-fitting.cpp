@@ -55,7 +55,7 @@ const std::vector<Point32f> gen_circle_points(int num = 1000){
 
 void compute(){
   static std::recursive_mutex mutex;
-  std::lock_guard<std::recursive_mutex> lock(mutex);
+  std::scoped_lock<std::recursive_mutex> lock(mutex);
 
   PlotHandle plot = gui["plot"];
   plot->lock();

@@ -39,7 +39,7 @@ struct OSRCube : public SceneObject{
     gui["image"] = screen;
 
 
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
     screen.deepCopy(&image);
     image.setROI(Rect(10,10,280,280));
     URand r(-50,50);

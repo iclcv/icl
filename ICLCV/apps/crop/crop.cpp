@@ -111,7 +111,7 @@ void rectangular_changed(){
 }
 
 void save_as(){
-  std::lock_guard<std::recursive_mutex> lock(currMutex);
+  std::scoped_lock<std::recursive_mutex> lock(currMutex);
   try{
     std::string filename = saveFileDialog();
     save(curr,filename);
@@ -119,7 +119,7 @@ void save_as(){
 }
 
 void overwrite(){
-  std::lock_guard<std::recursive_mutex> lock(currMutex);
+  std::scoped_lock<std::recursive_mutex> lock(currMutex);
   std::string filename = pa("-i", 1).as<std::string>();
   save(curr,filename);
 }

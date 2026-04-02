@@ -12,7 +12,7 @@ std::recursive_mutex mtex;
 Image image;
 
 void capture(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   std::string filename = saveFileDialog();
   if(filename.length()){
     save(cvt(image.ptr()),filename);

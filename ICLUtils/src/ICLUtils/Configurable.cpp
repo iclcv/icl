@@ -22,11 +22,11 @@ namespace icl::utils {
   }
 
    Configurable::Property &Configurable::prop(const std::string &propertyName){
-    std::map<std::string,Property>::iterator it = m_properties.find(propertyName);
-    if(it == m_properties.end()){
+    if(auto it = m_properties.find(propertyName); it == m_properties.end()){
       throw ICLException("Property " + str(propertyName) + " is not supported");
+    } else {
+      return it->second;
     }
-    return it->second;
   }
 
   void Configurable::addChildConfigurable(Configurable *configurable, const std::string &childPrefix){
@@ -43,8 +43,7 @@ namespace icl::utils {
                             configurable->getPropertyVolatileness(ps[i]),
                             configurable->getPropertyToolTip(ps[i]));
       p.childPrefix = pfx;
-      std::map<std::string,Property>::iterator it = m_properties.find(p.name);
-      if(it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
+      if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
       m_properties[p.name] = p;
       if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
     }
@@ -95,8 +94,7 @@ namespace icl::utils {
   std::map<std::string,Configurable*> Configurable::m_instances;
 
   Configurable* Configurable::get(const std::string &id) {
-    std::map<std::string,Configurable*>::iterator it = m_instances.find(id);
-    if(it != m_instances.end()){
+    if(auto it = m_instances.find(id); it != m_instances.end()){
       return it->second;
     }else{
       return 0;
@@ -143,11 +141,11 @@ namespace icl::utils {
 
   void Configurable::setConfigurableID(const std::string &ID){
     if(m_ID.length()){
-      std::map<std::string,Configurable*>::iterator it = m_instances.find(m_ID);
-      if(it == m_instances.end()){
+      if(auto it = m_instances.find(m_ID); it == m_instances.end()){
         WARNING_LOG("this should not happen");
+      } else {
+        m_instances.erase(it);
       }
-      m_instances.erase(it);
     }
     m_ID = ID;
     if(ID != ""){
@@ -189,7 +187,7 @@ namespace icl::utils {
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
     }else{
-      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
       return p.value;
     }
   }
@@ -204,7 +202,7 @@ namespace icl::utils {
     if(p.configurable != this){
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
     }else{
-      std::lock_guard<std::recursive_mutex> lock(m_mutex);
+      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
       p.value = value;
     }
     call_callbacks(propertyName, this);
@@ -401,8 +399,7 @@ namespace icl::utils {
   void Configurable::register_configurable_type(const std::string &classname,
                                                 std::function<Configurable*()> creator){
     CRM &crm = get_configurable_registration_map();
-    CRM::iterator it = crm.find(classname);
-    if(it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");
+    if(auto it = crm.find(classname); it != crm.end()) throw ICLException("unable to register configurable " + classname + ": name already in use");
     crm[classname] = creator;
   }
 
@@ -417,9 +414,11 @@ namespace icl::utils {
 
   Configurable *Configurable::create_configurable(const std::string &classname){
     CRM &crm = get_configurable_registration_map();
-    CRM::iterator it = crm.find(classname);
-    if(it == crm.end()) throw ICLException("unable to create configurable " + classname + ": name not registered");
-    return it->second();
+    if(auto it = crm.find(classname); it == crm.end()){
+      throw ICLException("unable to create configurable " + classname + ": name not registered");
+    } else {
+      return it->second();
+    }
   }
 
 

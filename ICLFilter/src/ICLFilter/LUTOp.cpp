@@ -18,11 +18,10 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& LUTOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<ReduceBitsSig>(Op::reduceBits);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

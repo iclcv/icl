@@ -17,11 +17,10 @@ const char* toString(BilateralFilterOp::Op op) {
 
 core::ImageBackendDispatching& BilateralFilterOp::prototype() {
   static core::ImageBackendDispatching proto;
-  static bool init = [&] {
+  [[maybe_unused]] static bool init = [&] {
     proto.addSelector<ApplySig>(Op::apply);
     return true;
   }();
-  (void)init;
   return proto;
 }
 

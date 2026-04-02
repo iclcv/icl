@@ -264,29 +264,23 @@ namespace icl::math {
     // id() factory is in DynMatrix<T> (out-of-line)
 
   protected:
-    inline void row_check(unsigned int row) const{
+    inline void row_check([[maybe_unused]] unsigned int row) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(static_cast<int>(row) >= m_rows) ERROR_LOG("access to row index " << row << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
-#else
-      (void)row;
 #endif
     }
-    inline void col_check(unsigned int col) const{
+    inline void col_check([[maybe_unused]] unsigned int col) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(static_cast<int>(col) >= m_cols) ERROR_LOG("access to column index " << col << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
-#else
-      (void)col;
 #endif
     }
     inline void idx_check(unsigned int col, unsigned int row) const{
       col_check(col);
       row_check(row);
     }
-    inline void idx_check(unsigned int idx) const{
+    inline void idx_check([[maybe_unused]] unsigned int idx) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(idx >= dim()) ERROR_LOG("access to linear index " << idx << " on a "<<m_cols<<'x'<<m_rows<<"-matrix");
-#else
-      (void)idx;
 #endif
     }
 

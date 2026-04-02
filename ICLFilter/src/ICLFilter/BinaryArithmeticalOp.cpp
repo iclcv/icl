@@ -17,11 +17,10 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& BinaryArithmeticalOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<Sig>(Op::apply);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

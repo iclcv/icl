@@ -18,12 +18,11 @@ namespace icl::filter {
 
   core::ImageBackendDispatching& BinaryCompareOp::prototype() {
     static core::ImageBackendDispatching proto;
-    static bool init = [&] {
+    [[maybe_unused]] static bool init = [&] {
       proto.addSelector<CmpSig>(Op::compare);
       proto.addSelector<CmpEqtSig>(Op::compareEqTol);
       return true;
     }();
-    (void)init;
     return proto;
   }
 

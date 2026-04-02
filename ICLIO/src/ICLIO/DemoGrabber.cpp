@@ -96,7 +96,7 @@ namespace icl::io {
   }
 
   const ImgBase* DemoGrabber::acquireDisplay(){
-    std::lock_guard<std::recursive_mutex> __lock(m_mutex);
+    std::scoped_lock<std::recursive_mutex> __lock(m_mutex);
     ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 
     m_v += Point32f(utils::random(-0.001, 0.001),utils::random(-0.001, 0.001));

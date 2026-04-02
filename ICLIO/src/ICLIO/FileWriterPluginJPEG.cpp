@@ -34,7 +34,7 @@ namespace icl::io {
       throw ICLException (str(fmt)+" not supported by jpeg");
     }
 
-    std::lock_guard<std::recursive_mutex> _locker(s_oBufferImageMutex);
+    std::scoped_lock<std::recursive_mutex> _locker(s_oBufferImageMutex);
 
     const Img8u *poSrc = 0;
     if(image->getDepth()!= depth8u){

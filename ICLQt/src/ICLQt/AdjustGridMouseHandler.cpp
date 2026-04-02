@@ -251,7 +251,7 @@ namespace icl::qt {
     }
 
     void AdjustGridMouseHandler::init(const Rect &bounds, bool convexOnly){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -269,14 +269,14 @@ namespace icl::qt {
     }
 
     void AdjustGridMouseHandler::clear(){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
     }
 
     void AdjustGridMouseHandler::init(const utils::Rect &bounds,
                                       const std::vector<std::vector<Point> > &grids,
                                       bool convexOnly){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -324,7 +324,7 @@ namespace icl::qt {
         throw ICLException("AdjustGridMouseHandler::setQuadrangle: given quadrangle is not convex "
                            "or twisted");
       }
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       Data::Grid &g = m_data->grids[idx];
       for(int i=0;i<4;++i){
         g.handles[i].pos = ps[i];
@@ -332,7 +332,7 @@ namespace icl::qt {
     }
 
     std::vector<Point> AdjustGridMouseHandler::getGrid(size_t idx) const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::getGrid() was called before it was initialized!");
       }
@@ -348,7 +348,7 @@ namespace icl::qt {
     }
 
     void AdjustGridMouseHandler::process(const MouseEvent &e){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
@@ -450,7 +450,7 @@ namespace icl::qt {
     }
 
     VisualizationDescription AdjustGridMouseHandler::vis() const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::vis() was called before it was initialized!");
       }
@@ -485,7 +485,7 @@ namespace icl::qt {
 
     void AdjustGridMouseHandler::defineGridTexture(size_t idx, const Size32f &dim,
                                                    const std::vector<Line32f> &lines){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::defineGridTexture() was called before it was initialized!");
       }

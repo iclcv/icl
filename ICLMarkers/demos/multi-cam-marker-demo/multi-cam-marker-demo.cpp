@@ -25,7 +25,7 @@ void updateCube(int id, const Mat &T){
     cube = new SceneObject("cuboid",p);
     cube->setVisible(Primitive::quad,false);
     cube->addChild(new ComplexCoordinateFrameSceneObject);
-    std::lock_guard<std::recursive_mutex> lock(scene.getMutex());
+    std::scoped_lock<std::recursive_mutex> lock(scene.getMutex());
     scene.addObject(cube);
   }
   cube->setTransformation(T);

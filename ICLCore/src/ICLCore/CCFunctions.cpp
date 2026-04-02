@@ -116,12 +116,11 @@ namespace icl::core {
 
     typedef std::map<format,CCLUT*> fmap;
     typedef std::map<format,fmap> ffmap;
-    for(ffmap::iterator it= g_mapCCLUTs.begin(); it!= g_mapCCLUTs.end();it++){
-      fmap &f = (*it).second;
-      for(fmap::iterator jt = f.begin();jt != f.end(); jt++){
-        if((*jt).second){
-          delete (*jt).second;
-          (*jt).second = 0;
+    for(auto& [srcFmt, innerMap] : g_mapCCLUTs){
+      for(auto& [dstFmt, lut] : innerMap){
+        if(lut){
+          delete lut;
+          lut = 0;
         }
       }
     }
@@ -515,8 +514,7 @@ namespace icl::core {
 #define GET_2_CHANNEL_POINTERS_NODIM(T,I,P1,P2) T *P1=I->getData(0),*P2=I->getData(1)
 
   template<class S, class D, format srcFmt, format dstFmt> struct CCFunc{
-    static void convert(const Img<S> *src, Img<D> *dst, bool roiOnly){
-      (void)src; (void)dst; (void)roiOnly;
+    static void convert([[maybe_unused]] const Img<S> *src, [[maybe_unused]] Img<D> *dst, [[maybe_unused]] bool roiOnly){
     }
   };
 
