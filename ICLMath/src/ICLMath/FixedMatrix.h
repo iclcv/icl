@@ -295,42 +295,26 @@ namespace icl::math {
     /// Multiply all elements by a scalar
     FixedMatrix operator*(T f) const{
       FixedMatrix d;
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::smul<T,DIM>(f, data(), d.data());
-#else
-      std::transform(begin(),end(),d.begin(),[f](const T &v){ return v * f; });
-#endif
       return d;
     }
 
     /// Multiply all elements by a scalar (inplace)
     FixedMatrix &operator*=(T f){
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::smul<T,DIM>(f, data(), data());
-#else
-      std::transform(begin(),end(),begin(),[f](const T &v){ return v * f; });
-#endif
       return *this;
     }
 
     /// Divide all elements by a scalar
     FixedMatrix operator/(T f) const{
       FixedMatrix d;
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::smul<T,DIM>(T(1)/f, data(), d.data());
-#else
-      std::transform(begin(),end(),d.begin(),[f](const T &v){ return v / f; });
-#endif
       return d;
     }
 
     /// Divide all elements by a scalar
     FixedMatrix &operator/=(T f){
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::smul<T,DIM>(T(1)/f, data(), data());
-#else
-      std::transform(begin(),end(),begin(),[f](const T &v){ return v / f; });
-#endif
       return *this;
     }
 
@@ -364,41 +348,25 @@ namespace icl::math {
     /// Element-wise matrix addition
     FixedMatrix operator+(const FixedMatrix &m) const{
       FixedMatrix d;
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::add<T,DIM>(data(), m.data(), d.data());
-#else
-      std::transform(begin(),end(),m.begin(),d.begin(),std::plus<T>());
-#endif
       return d;
     }
 
     /// Element-wise matrix addition (inplace)
     FixedMatrix &operator+=(const FixedMatrix &m){
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::add<T,DIM>(data(), m.data(), data());
-#else
-      std::transform(begin(),end(),m.begin(),begin(),std::plus<T>());
-#endif
       return *this;
     }
 
     /// Element-wise matrix subtraction
     FixedMatrix operator-(const FixedMatrix &m) const{
       FixedMatrix d;
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::sub<T,DIM>(data(), m.data(), d.data());
-#else
-      std::transform(begin(),end(),m.begin(),d.begin(),std::minus<T>());
-#endif
       return d;
     }
     /// Element-wise matrix subtraction (inplace)
     FixedMatrix &operator-=(const FixedMatrix &m){
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::sub<T,DIM>(data(), m.data(), data());
-#else
-      std::transform(begin(),end(),m.begin(),begin(),std::minus<T>());
-#endif
       return *this;
     }
 
@@ -407,11 +375,7 @@ namespace icl::math {
     */
     FixedMatrix operator-() const {
       FixedMatrix d;
-#ifdef ICL_HAVE_APPLE_SIMD
       simd_compat::smul<T,DIM>(T(-1), data(), d.data());
-#else
-      std::transform(begin(),end(),d.begin(),std::negate<T>());
-#endif
       return d;
     }
 

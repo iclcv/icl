@@ -263,9 +263,9 @@ namespace icl::utils {
 
     /// Enum-keyed addSelector — asserts enum value matches insertion index.
     /// Selector name derived via ADL toString(K) for error messages.
-    template<class Sig, class K,
-             typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+    template<class Sig, class K>
     BackendSelector<Context, Sig>& addSelector(K key) {
+      static_assert(std::is_enum_v<K>, "key must be an enum type");
       if(static_cast<size_t>(key) != m_selectors.size())
         throw std::logic_error("addSelector: enum value " + std::to_string(static_cast<int>(key))
           + " does not match insertion index " + std::to_string(m_selectors.size()));
@@ -279,9 +279,9 @@ namespace icl::utils {
     // ---- Selector lookup ----
 
     /// Enum/index-based O(1) lookup
-    template<class Sig, class K,
-             typename std::enable_if<std::is_enum<K>::value || std::is_integral<K>::value, int>::type = 0>
+    template<class Sig, class K>
     BackendSelector<Context, Sig>& getSelector(K key) {
+      static_assert(std::is_enum_v<K> || std::is_integral_v<K>, "key must be an enum or integral type");
       return *static_cast<BackendSelector<Context, Sig>*>(m_selectors[static_cast<size_t>(key)].get());
     }
 
@@ -291,25 +291,25 @@ namespace icl::utils {
       BackendDispatching* self;
       Backend backend;
 
-      template<class Sig, class K, class F,
-               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      template<class Sig, class K, class F>
       void add(K key, F&& f, ApplicabilityFn<Context> applicability,
                std::string description = "") {
+        static_assert(std::is_enum_v<K>, "key must be an enum type");
         self->template getSelector<Sig>(key).add(backend, std::forward<F>(f),
                                                  std::move(applicability), std::move(description));
       }
 
-      template<class Sig, class K, class F,
-               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      template<class Sig, class K, class F>
       void add(K key, F&& f, std::string description = "") {
+        static_assert(std::is_enum_v<K>, "key must be an enum type");
         self->template getSelector<Sig>(key).add(backend, std::forward<F>(f), std::move(description));
       }
 
-      template<class Sig, class K, class Factory,
-               typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+      template<class Sig, class K, class Factory>
       void addStateful(K key, Factory&& factory,
                        ApplicabilityFn<Context> applicability,
                        std::string description = "") {
+        static_assert(std::is_enum_v<K>, "key must be an enum type");
         self->template getSelector<Sig>(key).addStateful(backend, std::forward<Factory>(factory),
                                                          std::move(applicability), std::move(description));
       }
@@ -318,9 +318,9 @@ namespace icl::utils {
     BackendProxy backends(Backend b) { return {this, b}; }
 
     /// Enum-keyed lookup returning base (introspection / tests)
-    template<class K,
-             typename std::enable_if<std::is_enum<K>::value, int>::type = 0>
+    template<class K>
     BackendSelectorBase<Context>* selector(K key) {
+      static_assert(std::is_enum_v<K>, "key must be an enum type");
       return m_selectors[static_cast<size_t>(key)].get();
     }
 

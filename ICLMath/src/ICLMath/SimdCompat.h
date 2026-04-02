@@ -190,11 +190,25 @@
 
   }}} // namespace icl::math::simd_compat
 
-// --- Linux / non-Apple ---
-// No compile-time SIMD abstraction needed. Clang auto-vectorizes the C++ loops
-// at -O3 to SSE/AVX code that matches or beats hand-written intrinsics for most
-// operations. cblas (MKL) was benchmarked but rejected: ~100ns call overhead
-// makes it 25x slower than a 4ns inline C++ loop for 4x4 matrices.
-// The existing SSE2 specializations in FixedMatrix.h (4x4 float mult/matvec)
-// provide explicit SIMD for the most critical path on x86/ARM-via-sse2neon.
+#else // non-Apple: scalar-only fallbacks (compiler auto-vectorizes at -O3)
+
+namespace icl::math::simd_compat {
+
+template<class T, unsigned int DIM>
+inline void add(const T* a, const T* b, T* dst) {
+  for (unsigned int i = 0; i < DIM; ++i) dst[i] = a[i] + b[i];
+}
+
+template<class T, unsigned int DIM>
+inline void sub(const T* a, const T* b, T* dst) {
+  for (unsigned int i = 0; i < DIM; ++i) dst[i] = a[i] - b[i];
+}
+
+template<class T, unsigned int DIM>
+inline void smul(T scalar, const T* src, T* dst) {
+  for (unsigned int i = 0; i < DIM; ++i) dst[i] = scalar * src[i];
+}
+
+} // namespace icl::math::simd_compat
+
 #endif
