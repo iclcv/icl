@@ -177,7 +177,7 @@ namespace icl::qt {
 
     private:
     using Callback = std::function<void(const std::vector<utils::Rect> &)>;
-    std::map<std::string,Callback> callbacks;
+    std::map<std::string,Callback, std::less<>> callbacks;
     void callCallbacks();
 
     public:

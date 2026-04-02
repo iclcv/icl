@@ -6,6 +6,7 @@
 
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/Any.h>
+#include <functional>
 #include <map>
 
 namespace icl::utils {
@@ -13,7 +14,7 @@ namespace icl::utils {
   /** The ParamList is supposed to be used in function interfaces
       for passing several parameters as one argument. Usually this
       should only be used where efficiency is not compulsory */
-  struct ParamList : public std::map<std::string, Any>{
+  struct ParamList : public std::map<std::string, Any, std::less<>>{
 
     /// The Key type (std::string)
     using Key = std::string;
@@ -90,7 +91,7 @@ namespace icl::utils {
     }
 
     /// also provides the map's not-const index operator
-    using std::map<std::string,Any>::operator[];
+    using std::map<std::string,Any, std::less<>>::operator[];
   };
 
 

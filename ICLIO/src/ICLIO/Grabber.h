@@ -315,11 +315,11 @@ struct GrabberFunctions{
 };
 
 // grabber functions map
-using GFM = std::map<std::string, GrabberFunctions>;
+using GFM = std::map<std::string, GrabberFunctions, std::less<>>;
 GFM gfm;
 
 // grabber bus reset functions map
-using GBRM = std::map<std::string, std::function<void(bool)> >;
+using GBRM = std::map<std::string, std::function<void(bool)>, std::less<>>;
 GBRM gbrm;
 
 // grabber device descriptions map

@@ -42,7 +42,7 @@ namespace icl::utils {
 
   /// Resolved parameter set passed to benchmark functions
   class BenchParams {
-    std::map<std::string, BenchParamValue> m_vals;
+    std::map<std::string, BenchParamValue, std::less<>> m_vals;
   public:
     void set(const std::string &key, BenchParamValue v){ m_vals[key] = std::move(v); }
 

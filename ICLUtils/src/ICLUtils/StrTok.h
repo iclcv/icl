@@ -7,6 +7,7 @@
 #include <ICLUtils/CompatMacros.h>
 #include <vector>
 #include <string>
+#include <string_view>
 
 namespace icl::utils {
   /// String Tokenizer Utility class  \ingroup UTILS
@@ -23,7 +24,7 @@ namespace icl::utils {
                           if this char is found directly before the delimiter. (Often
                           the '\\' char is used here)
     */
-    StrTok(const std::string &s,const std::string &delims, bool singleCharDelims=true, char escapeChar='\0');
+    StrTok(std::string_view s, std::string_view delims, bool singleCharDelims=true, char escapeChar='\0');
 
     /// Returns whether more tokens are available using nextToken()
     /** <b>note:</b> nextToken is not safe; it must be checked with hasMoreTokens

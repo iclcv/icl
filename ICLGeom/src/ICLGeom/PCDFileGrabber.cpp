@@ -124,7 +124,7 @@ namespace icl{
           int count;
         };
 
-        std::map<std::string,FieldDef> m_typeLUT;
+        std::map<std::string,FieldDef, std::less<>> m_typeLUT;
 
         LineParser(const std::string &fieldsS,
                    const std::string &sizesS,
@@ -344,8 +344,8 @@ namespace icl{
 
 
 
-    static PointCloudGrabber *create_pcd_file_grabber(const std::map<std::string,std::string> &d){
-      std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+    static PointCloudGrabber *create_pcd_file_grabber(const std::map<std::string,std::string, std::less<>> &d){
+      auto it = d.find("creation-string");
       if(it == d.end()) return 0;
       const std::string &params = it->second;
 

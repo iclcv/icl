@@ -12,7 +12,7 @@ using namespace icl::math;
 
 namespace icl::core {
   namespace{
-    struct ColorMap : public std::map<std::string,Color>{
+    struct ColorMap : public std::map<std::string,Color, std::less<>>{
       ColorMap(){
         ColorMap &t = *this;
         t["black"] = Color(0,0,0);

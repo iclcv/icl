@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <limits>
 #include <cstdio>
+#include <string_view>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #include <regex_icl.h>
@@ -76,13 +77,13 @@ namespace icl::utils {
   }
 
   /// lower case conversion \ingroup STRUTILS
-  std::string toLower(const std::string &s){
+  std::string toLower(std::string_view s){
     std::string cpy(s);
     return toLowerI(cpy);
   }
 
   /// upper case conversion \ingroup STRUTILS
-  std::string toUpper(const std::string &s){
+  std::string toUpper(std::string_view s){
     std::string cpy(s);
     return toUpperI(cpy);
   }
@@ -130,59 +131,62 @@ namespace icl::utils {
 
 
 
-  std::vector<std::string> tok(const std::string &s, const std::string &delims, bool singleCharDelims, char escapeChar){
+  std::vector<std::string> tok(std::string_view s, std::string_view delims, bool singleCharDelims, char escapeChar){
     return StrTok(s,delims,singleCharDelims,escapeChar).allTokens();
   }
 
 
-  std::vector<std::string> &tok(const std::string &s, const std::string &delims,bool singleCharDelims, char escapeChar,std::vector<std::string> &dst){
+  std::vector<std::string> &tok(std::string_view s, std::string_view delims, std::vector<std::string> &dst, bool singleCharDelims, char escapeChar){
     // todo optimize
     dst = tok(s,delims,singleCharDelims,escapeChar);
     return dst;
   }
-  icl8u parse_icl8u(const std::string &s){
+  icl8u parse_icl8u(std::string_view s){
     int t = 0;
     std::from_chars(s.data(), s.data() + s.size(), t);
     return icl8u(t);
   }
 
-  icl32f parse_icl32f(const std::string &s){
+  icl32f parse_icl32f(std::string_view s){
     if(s == "inf") return std::numeric_limits<icl32f>::infinity();
     if(s == "-inf") return -std::numeric_limits<icl32f>::infinity();
-    return std::strtof(s.c_str(), nullptr);
+    std::string tmp(s);
+    return std::strtof(tmp.c_str(), nullptr);
   }
-  icl64f parse_icl64f(const std::string &s){
+  icl64f parse_icl64f(std::string_view s){
     if(s == "inf") return std::numeric_limits<icl64f>::infinity();
     if(s == "-inf") return -std::numeric_limits<icl64f>::infinity();
-    return std::strtod(s.c_str(), nullptr);
+    std::string tmp(s);
+    return std::strtod(tmp.c_str(), nullptr);
   }
 
-  bool parse_bool(const std::string &s){
+  bool parse_bool(std::string_view s){
     std::string s2 = toLower(s);
     if(s == "true" || s == "yes" || s == "on" || s == "1") return true;
     if(s == "false" || s == "no" || s == "off" || s == "0") return false;
     return static_cast<bool>(parse_icl8u(s));
   }
 
-  icl8u to8u(const std::string &s) {
+  icl8u to8u(std::string_view s) {
     return parse<icl8u>(s);
   }
-  icl16s to16s(const std::string &s) {
+  icl16s to16s(std::string_view s) {
     return parse<icl16s>(s);
   }
-  icl32s to32s(const std::string &s) {
+  icl32s to32s(std::string_view s) {
     return parse<icl32s>(s);
   }
-  icl32f to32f(const std::string &s) {
+  icl32f to32f(std::string_view s) {
     return parse<icl32f>(s);
   }
-  icl64f to64f(const std::string &s) {
+  icl64f to64f(std::string_view s) {
     return parse<icl64f>(s);
   }
 
 
-  MatchResult match(const std::string &text, const std::string &regexIn, int num){
-    std::string regexSave = regexIn;
+  MatchResult match(std::string_view text, std::string_view regexIn, int num){
+    std::string regexSave(regexIn);
+    std::string textStr(text);
 //#ifndef ICL_SYSTEM_WINDOWS // TODOW
     char *regex = const_cast<char*>(regexSave.c_str());
     regex_t    re;
@@ -192,14 +196,14 @@ namespace icl::utils {
     int status = regcomp(&re, regex, cflags);
     if(status != 0){
       char buf[256];
-      throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
+      throw InvalidRegularExpressionException(regexSave + "[Error: " + str(buf) + "]");
     }
 
     std::vector<regmatch_t> matchList(num);
-    status = regexec(&re, text.c_str(), num, num ? matchList.data() : nullptr, 0);
+    status = regexec(&re, textStr.c_str(), num, num ? matchList.data() : nullptr, 0);
     // char buf[256];
     // regerror(status,&re,buf,256);
-    //throw InvalidRegularExpressionException(regexIn + "[Error: " + str(buf) + "]");
+    //throw InvalidRegularExpressionException(regexSave + "[Error: " + str(buf) + "]");
 //#endif
     MatchResult mr;
 //#ifndef ICL_SYSTEM_WINDOWS
@@ -208,7 +212,7 @@ namespace icl::utils {
       int so = matchList[i].rm_so;
       int eo = matchList[i].rm_eo;
       if(so != -1 && eo != -1){
-        mr.submatches.push_back(text.substr(so,eo-so));
+        mr.submatches.push_back(textStr.substr(so,eo-so));
       }
     }
     regfree(&re);
@@ -217,14 +221,6 @@ namespace icl::utils {
   }
 
 
-#ifndef ICL_SYSTEM_WINDOWS // TODOW
-  std::string toLower(std::string s){
-    for(unsigned int i=0;i<s.length();i++){
-      s[i]=tolower(s[i]);
-    }
-    return s;
-  };
-#endif
 
   std::string time2str(Time::value_type x){
     char buf[std::numeric_limits<long long>::digits10 + 3];
@@ -239,36 +235,36 @@ namespace icl::utils {
     return std::string(buf, ptr);
   }
 
-  std::string skipWhitespaces(const std::string &s){
+  std::string skipWhitespaces(std::string_view s){
     if(!s.length()) return "";
-    return s.substr(s.find_first_not_of(' '));
+    return std::string(s.substr(s.find_first_not_of(' ')));
   }
 
-  bool endsWith(const std::string &s,const std::string &postfix){
+  bool endsWith(std::string_view s, std::string_view postfix){
     return s.ends_with(postfix);
   }
 
-  bool startsWith(const std::string &s, const std::string &praefix){
+  bool startsWith(std::string_view s, std::string_view praefix){
     return s.starts_with(praefix);
   }
 
-  void analyseHashes (const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos) {
-    nHashes = 0; iPostfixPos = std::string::npos;
+  void analyseHashes (std::string_view sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos) {
+    nHashes = 0; iPostfixPos = std::string_view::npos;
 
     // search for first '.'
-    std::string::size_type iTmpPos = sFileName.rfind ('.');
-    if (iTmpPos == std::string::npos)
+    std::string_view::size_type iTmpPos = sFileName.rfind ('.');
+    if (iTmpPos == std::string_view::npos)
       throw ICLException ("cannot detect file type");
 
     // search for second '.' if the postfix is .gz so far
-    const std::string& sType = sFileName.substr (iTmpPos);
+    std::string_view sType = sFileName.substr (iTmpPos);
     if (sType == ".gz" && iTmpPos > 0) { // search further for file type
       iPostfixPos = sFileName.rfind ('.', iTmpPos-1);
     }
-    if (iPostfixPos == std::string::npos) iPostfixPos = iTmpPos;
+    if (iPostfixPos == std::string_view::npos) iPostfixPos = iTmpPos;
 
     // count number of hashes directly before the postfix
-    for (std::string::const_reverse_iterator start (sFileName.begin() + iPostfixPos),
+    for (std::string_view::const_reverse_iterator start (sFileName.begin() + iPostfixPos),
          it = start, end = sFileName.rend(); it != end; ++it) {
       if (*it != '#') {
         // first pos without hash, count hashes

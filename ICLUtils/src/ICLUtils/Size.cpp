@@ -47,7 +47,7 @@ namespace icl::utils {
 
   static void size_from_string(const std::string &name, Size &size){
     static const Size neg1(-1,-1);
-    static std::map<std::string,const Size*> m;
+    static std::map<std::string,const Size*, std::less<>> m;
     static bool first = true;
     if(first){
       first = false;

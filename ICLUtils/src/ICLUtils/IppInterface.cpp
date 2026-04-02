@@ -21,7 +21,7 @@ std::recursive_mutex current_path_lock;
 std::string current_ipp_search_path = "";
 std::string current_iomp_search_path = "";
 
-void loadLib(const char* path, const char* name, std::map<std::string, void*>& map){
+void loadLib(const char* path, const char* name, std::map<std::string, void*, std::less<>>& map){
   DEBUG_LOG("Try to load lib" << name << ".so ... ");
   void* lib = dlopen(name, RTLD_LAZY);
   if(!lib){
@@ -100,7 +100,7 @@ IppInterface::IppInterface(){
 }
 
 IppInterface::~IppInterface(){
-  std::map<std::string,void*>::iterator it;
+  std::map<std::string,void*, std::less<>>::iterator it;
   for(it = m_LibHandles.begin(); it != m_LibHandles.end(); ++it){
     dlclose(it->second);
   }
@@ -193,7 +193,7 @@ void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_na
   } else {
     if(lib_name.empty()){
       // check all loaded libs
-      std::map<std::string,void*>::iterator it;
+      std::map<std::string,void*, std::less<>>::iterator it;
       for(it = m_LibHandles.begin(); it != m_LibHandles.end(); ++it){
         try{
           void* fn = loadFunction(it->second, symbol_name.c_str());

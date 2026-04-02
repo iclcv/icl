@@ -32,7 +32,7 @@ namespace {
 };
 
 
-  typedef std::map<std::string,XPMColor> colormap;
+  typedef std::map<std::string,XPMColor, std::less<>> colormap;
   typedef std::map<char,int> charmap;
   typedef std::vector<std::string> strvec;
 

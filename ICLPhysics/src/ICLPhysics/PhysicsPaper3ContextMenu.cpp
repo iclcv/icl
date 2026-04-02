@@ -14,8 +14,8 @@ namespace icl{
     struct PhysicsPaper3ContextMenu::Data{
       PhysicsPaper3ContextMenu::callback cb;
       QMenu men;
-      std::map<std::string, QAction*> actions;
-      std::map<std::string, QMenu*> menus;
+      std::map<std::string, QAction*, std::less<>> actions;
+      std::map<std::string, QMenu*, std::less<>> menus;
     };
 
 

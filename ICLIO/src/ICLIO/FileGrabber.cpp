@@ -84,7 +84,7 @@ namespace icl::io {
   };
 
   static FileGrabberPlugin *find_plugin(const std::string &type){
-    static std::map<std::string,std::shared_ptr<FileGrabberPlugin> > plugins;
+    static std::map<std::string,std::shared_ptr<FileGrabberPlugin>, std::less<>> plugins;
     if(!plugins.size()){
       plugins[".ppm"].reset(new FileGrabberPluginPNM);
       plugins[".pgm"].reset(new FileGrabberPluginPNM);

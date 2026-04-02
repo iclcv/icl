@@ -16,7 +16,7 @@ namespace icl::utils {
   }
 
   std::string Configurable::create_default_ID(const std::string &prefix){
-    static std::map<std::string,DefInt> numbers;
+    static std::map<std::string,DefInt, std::less<>> numbers;
     DefInt &i = numbers[prefix];
     return prefix+str(i.value++);
   }
@@ -91,7 +91,7 @@ namespace icl::utils {
 
 
   const std::vector<std::string> Configurable::EMPTY_VEC;
-  std::map<std::string,Configurable*> Configurable::m_instances;
+  std::map<std::string,Configurable*, std::less<>> Configurable::m_instances;
 
   Configurable* Configurable::get(const std::string &id) {
     if(auto it = m_instances.find(id); it != m_instances.end()){
@@ -389,7 +389,7 @@ namespace icl::utils {
     }
   }
 
-  typedef std::map<std::string, std::function<Configurable*()> > CRM;
+  typedef std::map<std::string, std::function<Configurable*()>, std::less<>> CRM;
 
   static CRM &get_configurable_registration_map(){
     static std::shared_ptr<CRM> crm(new CRM);

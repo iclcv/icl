@@ -7,6 +7,7 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 #include <ICLCore/DataSegmentBase.h>
 
+#include <functional>
 #include <map>
 
 namespace icl::geom {
@@ -41,7 +42,7 @@ namespace icl::geom {
         MandatoryInfo info;
 
         /// interall collected data
-        std::map<std::string, std::vector<icl8u> > data;
+        std::map<std::string, std::vector<icl8u>, std::less<>> data;
 
         /// returns number of bytes when all data is concatenated
         int getFullSerializationSize() const;
@@ -54,7 +55,7 @@ namespace icl::geom {
 
       struct DefaultDeserializationDevice : public DeserializationDevice {
         MandatoryInfo info;
-        std::map<std::string, std::vector<icl8u> > data;
+        std::map<std::string, std::vector<icl8u>, std::less<>> data;
         std::vector<std::string> features;
 
         DefaultDeserializationDevice(const icl8u *data);

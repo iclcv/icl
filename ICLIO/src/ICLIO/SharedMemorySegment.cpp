@@ -87,7 +87,7 @@ namespace icl::io {
       int minsize;
 
       static std::recursive_mutex implMapMutex;
-      static std::map<std::string,SharedMemorySegment::Impl*> implmap;
+      static std::map<std::string,SharedMemorySegment::Impl*, std::less<>> implmap;
       int localInstances;
 
       static void registerSegment(std::string name){
@@ -330,15 +330,15 @@ namespace icl::io {
         }
       }
 
-      static std::map<std::string,SharedMemorySegment::Impl*>* getImplMap(){
+      static std::map<std::string,SharedMemorySegment::Impl*, std::less<>>* getImplMap(){
         return &implmap;
       }
 
       static void handleSignal(){
       std::scoped_lock<std::recursive_mutex> l(implMapMutex);
-        std::map<std::string,SharedMemorySegment::Impl*>* map =
+        std::map<std::string,SharedMemorySegment::Impl*, std::less<>>* map =
             SharedMemorySegment::Impl::getImplMap();
-        std::map<std::string,SharedMemorySegment::Impl*>::iterator it;
+        std::map<std::string,SharedMemorySegment::Impl*, std::less<>>::iterator it;
         for(it = map->begin(); it != map->end(); ++it){
           if(it->first != ICL_SHARED_MEMORY_REGISTER_NAME){
             printf("[Deleting SharedMemorySegment \"%s\"]\n",(it->first).c_str());
@@ -350,7 +350,7 @@ namespace icl::io {
   };
 
   std::recursive_mutex SharedMemorySegment::Impl::implMapMutex;
-  std::map<std::string,SharedMemorySegment::Impl*> SharedMemorySegment::Impl::implmap;
+  std::map<std::string,SharedMemorySegment::Impl*, std::less<>> SharedMemorySegment::Impl::implmap;
 
   //##########################################################################
   //# SharedMemorySegment ####################################################

@@ -27,7 +27,7 @@ namespace icl::io {
       };
 
       // map of grabber instances
-      typedef std::map<std::string, GrabberInstance> GPM;
+      typedef std::map<std::string, GrabberInstance, std::less<>> GPM;
       GPM gpm;
 
       // private constructor
@@ -111,7 +111,7 @@ namespace icl::io {
     }
   }
 
-  typedef std::map<std::string,SpecifiedDevice> ParamMap;
+  typedef std::map<std::string,SpecifiedDevice, std::less<>> ParamMap;
 
   static ParamMap create_param_map(const std::string &filter){
     std::vector<std::string> ts = tok(filter,",");
@@ -293,7 +293,7 @@ namespace icl::io {
   }
 
   template<class T>
-  static inline bool contains(const std::map<std::string,T> &m,const std::string &t){
+  static inline bool contains(const std::map<std::string,T, std::less<>> &m,const std::string &t){
     return m.contains(t);
   }
 

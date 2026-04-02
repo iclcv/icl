@@ -325,7 +325,7 @@ namespace icl::qt {
 
   void DefineRectanglesMouseHandler::callCallbacks(){
     std::vector<Rect> rects = getRects();
-    for(std::map<std::string,Callback>::iterator it = callbacks.begin();
+    for(std::map<std::string,Callback, std::less<>>::iterator it = callbacks.begin();
         it != callbacks.end();++it){
       it->second(rects);
     }

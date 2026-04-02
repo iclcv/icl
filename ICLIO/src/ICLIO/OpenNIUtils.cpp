@@ -681,7 +681,7 @@ void setCropping(xn::MapGenerator* gen,
 // sets alternative viewpoit
 void alternativeViewPiontCapabilitySet(xn::MapGenerator* gen,
                                        const std::string &value,
-                                       std::map<std::string, xn::ProductionNode> &pn_map)
+                                       std::map<std::string, xn::ProductionNode, std::less<>> &pn_map)
 {
   // get alt. viewpoint capapility
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
@@ -708,10 +708,10 @@ void alternativeViewPiontCapabilitySet(xn::MapGenerator* gen,
 
 // creates string representation of alt. viewpoint capability value
 std::string alternativeViewPiontCapabilityValue(xn::MapGenerator* gen,
-                                                std::map<std::string, xn::ProductionNode> &pn_map)
+                                                std::map<std::string, xn::ProductionNode, std::less<>> &pn_map)
 {
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
-  std::map<std::string, xn::ProductionNode>::iterator it;
+  std::map<std::string, xn::ProductionNode, std::less<>>::iterator it;
   for(it = pn_map.begin(); it != pn_map.end(); ++it){
     if(avc.IsViewPointAs((*it).second)){
       return (*it).first;
@@ -722,12 +722,12 @@ std::string alternativeViewPiontCapabilityValue(xn::MapGenerator* gen,
 
 // creates info string for alt viewpoint capability
 std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen,
-                                               std::map<std::string, xn::ProductionNode> &pn_map)
+                                               std::map<std::string, xn::ProductionNode, std::less<>> &pn_map)
 {
   AlternativeViewPointCapability avc = gen -> GetAlternativeViewPointCap();
   std::ostringstream ret;
   ret << "self,";
-  std::map<std::string, xn::ProductionNode>::iterator it;
+  std::map<std::string, xn::ProductionNode, std::less<>>::iterator it;
   for(it = pn_map.begin(); it != pn_map.end(); ++it){
     if(avc.IsViewPointSupported((*it).second)){
       ret << (*it).first << ",";
@@ -737,7 +737,7 @@ std::string alternativeViewPiontCapabilityInfo(xn::MapGenerator* gen,
 }
 
 // fills a Map with available ProductionNodes. used for altern. viewpoint.
-void fillProductionNodeMap(std::map<std::string, xn::ProductionNode> &pn_map)
+void fillProductionNodeMap(std::map<std::string, xn::ProductionNode, std::less<>> &pn_map)
 {
   ProductionNode n;
   XnStatus status = XN_STATUS_OK;

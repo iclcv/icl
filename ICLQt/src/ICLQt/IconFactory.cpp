@@ -1194,8 +1194,8 @@ namespace icl::qt {
   }
 
   const Img8u &IconFactory::create_image(const std::string &id){
-    static std::map<std::string,Img8u> data;
-    std::map<std::string,Img8u>::iterator it = data.find(id);
+    static std::map<std::string,Img8u, std::less<>> data;
+    std::map<std::string,Img8u, std::less<>>::iterator it = data.find(id);
     if(it == data.end()){
 #define ICON(S,D) if(id == #S) return data[id] = load_image_data(D);
 #define ICON_NEW(S,D) if(id == #S) return data[id] = load_image_data_new(D);
@@ -1228,8 +1228,8 @@ namespace icl::qt {
     return it->second;
   }
   const QIcon &IconFactory::create_icon(const std::string &id){
-    static std::map<std::string,QIcon> data;
-    std::map<std::string,QIcon>::iterator it = data.find(id);
+    static std::map<std::string,QIcon, std::less<>> data;
+    std::map<std::string,QIcon, std::less<>>::iterator it = data.find(id);
     if(it == data.end()){
       const Img8u &image = create_image(id);
       if(image.getSize() == Size::null){

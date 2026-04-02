@@ -10,6 +10,7 @@
 #include <ICLIO/ImageOutput.h>
 #include <ICLIO/FilenameGenerator.h>
 #include <ICLIO/FileWriterPlugin.h>
+#include <functional>
 #include <string>
 #include <map>
 
@@ -140,7 +141,7 @@ namespace icl::io {
     FilenameGenerator m_oGen;
 
     /// static map of writer plugins
-    static std::map<std::string,FileWriterPlugin*> s_mapPlugins;
+    static std::map<std::string,FileWriterPlugin*, std::less<>> s_mapPlugins;
   };
 
   } // namespace icl::io

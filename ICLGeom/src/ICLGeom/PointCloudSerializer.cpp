@@ -54,8 +54,8 @@ namespace icl{
 #undef CPY
 #undef CPY_IF
 
-      const std::map<std::string,std::string> &m = o.getMetaData();
-      for(std::map<std::string,std::string>::const_iterator it = m.begin(); it != m.end(); ++it){
+      const auto &m = o.getMetaData();
+      for(auto it = m.begin(); it != m.end(); ++it){
         const std::string &key = it->first;
         const std::string &value = it->second;
         icl8u *d = dev.targetFor("meta:"+key, value.length());
@@ -141,7 +141,7 @@ namespace icl{
          note: each strig is stored without explicit \0 delimiter
      */
       int n = sizeof(MandatoryInfo) + 4;
-      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+      for(std::map<std::string, std::vector<icl8u>, std::less<>>::const_iterator it = data.begin();
           it != data.end(); ++it){
         n += 4 +  4 + it->first.length() + it->second.size();
       }
@@ -167,7 +167,7 @@ namespace icl{
       icl32s n = data.size();
       copy_next_bytes(dst, &n, sizeof(n));
 
-      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+      for(std::map<std::string, std::vector<icl8u>, std::less<>>::const_iterator it = data.begin();
           it != data.end(); ++it){
         icl32s nameLen = it->first.length();
         icl32s dataLen = it->second.size();

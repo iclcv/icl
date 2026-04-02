@@ -201,7 +201,7 @@ namespace icl::io{
 
       // Configurtable
       addProperty("all manual", "command", "", Any(), 0, "Sets all auto adjustment-supporting options to manual adjustment.");
-      for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
+      for(std::map<std::string,dc1394feature_info_t*, std::less<>>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         std::string name = it->first;
         dc1394feature_info_t* info = it->second;
         if(isSpecialInfo(info)){

@@ -9,6 +9,7 @@
 #include <ICLCore/Img.h>
 #include <ICLQt/MouseHandler.h>
 
+#include <functional>
 #include <map>
 #include <mutex>
 
@@ -52,7 +53,7 @@ class ICLPhysics_API ManipulatablePaper : public PhysicsPaper{
 
 
   std::vector<SceneObject *> nodes;
-  using AttractorMap = std::map<std::string,VertexAttractor*>;
+  using AttractorMap = std::map<std::string,VertexAttractor*, std::less<>>;
   AttractorMap attractors;
   PhysicsWorld *world;
   geom::Scene *scene;

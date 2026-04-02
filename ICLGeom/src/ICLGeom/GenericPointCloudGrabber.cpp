@@ -80,7 +80,7 @@ namespace icl{
         delete m_data->impl;
       }
 
-      std::map<std::string,std::string> data;
+      std::map<std::string,std::string, std::less<>> data;
       data["creation-string"] = srcDescription;
       m_data->impl = PluginRegister<PointCloudGrabber>::instance().createInstance(sourceType,data);
       if(!m_data->impl){

@@ -11,7 +11,7 @@ namespace icl{
 
   namespace geom{
 
-    static PointCloudOutput *create_null_point_cloud_output(const std::map<std::string,std::string>&){
+    static PointCloudOutput *create_null_point_cloud_output(const std::map<std::string,std::string, std::less<>>&){
       struct NullOutput : public PointCloudOutput{
         virtual void send(const PointCloudObjectBase &){}
       };
@@ -55,7 +55,7 @@ namespace icl{
         throw ICLException("GenericPointCloudOutput list presented successfully");
       }
       ICL_DELETE(m_data->impl);
-      std::map<std::string,std::string> data;
+      std::map<std::string,std::string, std::less<>> data;
       data["creation-string"] = srcDescription;
       m_data->impl = PluginRegister<PointCloudOutput>::instance().createInstance(sourceType,data);
       if(!m_data->impl){

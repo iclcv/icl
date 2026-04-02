@@ -20,7 +20,7 @@ namespace icl{
       public:
 
       /// data used for instance creation
-      using Data = std::map<std::string,std::string>;
+      using Data = std::map<std::string,std::string, std::less<>>;
 
       /// creator function for instances
       using CreateFunction = std::function<T*(const Data&)>;
@@ -48,10 +48,10 @@ namespace icl{
 
       /// creates an instance (or throws)
       inline T *createInstance(const std::string &name, const Data &data){
-        typename std::map<std::string,Plugin>::iterator it = plugins.find(name);
+        typename std::map<std::string,Plugin, std::less<>>::iterator it = plugins.find(name);
         if(it == plugins.end()){
           std::ostringstream all;
-          for(typename std::map<std::string,Plugin>::iterator jt = plugins.begin(); jt != plugins.end();){
+          for(typename std::map<std::string,Plugin, std::less<>>::iterator jt = plugins.begin(); jt != plugins.end();){
             all << jt->first;
             if(++jt != plugins.end()) all << ",";
           }
@@ -68,7 +68,7 @@ namespace icl{
         t(1,0) = "Description";
         t(2,0) = "Creation Syntax";
         int i=1;
-        for(typename std::map<std::string,Plugin>::iterator it = plugins.begin();
+        for(typename std::map<std::string,Plugin, std::less<>>::iterator it = plugins.begin();
             it != plugins.end(); ++it, ++i){
           t(0,i) = it->second.name;
           t(1,i) = it->second.description;
@@ -78,7 +78,7 @@ namespace icl{
       }
 
       /// returns a all registered plugins
-      const std::map<std::string,Plugin> &getRegisteredPlugins() const{
+      const std::map<std::string,Plugin, std::less<>> &getRegisteredPlugins() const{
         return plugins;
       }
 
@@ -87,7 +87,7 @@ namespace icl{
       PluginRegister(){}
 
       /// internal plugin list
-      std::map<std::string,Plugin> plugins;
+      std::map<std::string,Plugin, std::less<>> plugins;
 
     };
   }

@@ -6,6 +6,7 @@
 
 #include <ICLGeom/PointCloudObject.h>
 #include <ICLGeom/SceneObject.h>
+#include <functional>
 
 #ifdef ICL_HAVE_OPENCL
 #include "ICLUtils/CLProgram.h"
@@ -273,10 +274,10 @@ namespace icl::geom {
               FilterConfig(const std::string &filename);
 
               /// map primitive group id to internal groupBit
-              std::map<std::string, unsigned char> mapGroupIdToBit;
+              std::map<std::string, unsigned char, std::less<>> mapGroupIdToBit;
 
               /// map regular expression (matching the primitive description) to internal groupBit
-              std::map<std::string, unsigned char> mapRegexToBit;
+              std::map<std::string, unsigned char, std::less<>> mapRegexToBit;
 
               /// map groupBit to padding
               std::map<unsigned char, float> mapGroupBitToPadding;

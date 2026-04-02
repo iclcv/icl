@@ -326,11 +326,11 @@ namespace icl::geom {
 
 
 
-  std::map<std::string,std::string> & PointCloudObjectBase::getMetaData(){
+  std::map<std::string,std::string, std::less<>> & PointCloudObjectBase::getMetaData(){
       return m_metaData;
   }
 
-  const std::map<std::string,std::string> & PointCloudObjectBase::getMetaData() const{
+  const std::map<std::string,std::string, std::less<>> & PointCloudObjectBase::getMetaData() const{
     return m_metaData;
   }
 

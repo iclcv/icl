@@ -253,7 +253,7 @@ namespace icl{
       bool deactivateExec;
       std::string processingProperty;
       std::recursive_mutex execMutex;
-      std::map<std::string,std::string> deferredAssignList;
+      std::map<std::string,std::string, std::less<>> deferredAssignList;
 
       struct StSt{
         std::string full,half;
@@ -402,7 +402,7 @@ namespace icl{
         return false;
       }
 
-      StSt getStSt(std::map<std::string,std::vector<StSt> > &map, std::string name){
+      StSt getStSt(std::map<std::string,std::vector<StSt>, std::less<>> &map, std::string name){
         for(const auto& [section, entries] : map){
           for(unsigned int i=0;i<entries.size();++i){
             if(entries[i].full == name){
@@ -431,7 +431,7 @@ namespace icl{
         if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
 
         std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
-        std::map<std::string,std::vector<StSt> > sections;
+        std::map<std::string,std::vector<StSt>, std::less<>> sections;
         std::map<int,std::string> sections_ordering;
 
         if(def.hasToolTip()){
@@ -2038,8 +2038,8 @@ namespace icl{
     }
 
 
-    static std::map<std::string,GUI::CreatorFunction> &get_registered_widget_types(){
-      static std::map<std::string,GUI::CreatorFunction> m;
+    static std::map<std::string,GUI::CreatorFunction, std::less<>> &get_registered_widget_types(){
+      static std::map<std::string,GUI::CreatorFunction, std::less<>> m;
       return m;
     }
 
@@ -2094,7 +2094,7 @@ namespace icl{
         it build a CreatorFuncMap which uses the GUIDefinitinos type-string as
         identifier to estimate which creation function must be called.         */
     GUIWidget *create_widget(const GUIDefinition &def){
-      typedef std::map<std::string,GUI::CreatorFunction> tmap;
+      typedef std::map<std::string,GUI::CreatorFunction, std::less<>> tmap;
       tmap &m = get_registered_widget_types();
       if(auto it = m.find(def.type()); it == m.end()){
         throw ICLException("unable to create GUI component with type '" + def.type() + "' (unknown type)");

@@ -8,6 +8,7 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLUtils/Lockable.h>
+#include <functional>
 #include <map>
 #include <typeinfo>
 #include <memory>
@@ -172,10 +173,10 @@ namespace icl::utils {
     /// internally used type map class
     struct Maps{
       /// key: rttiType (e.g. i), value: written type (e.g. int)
-      std::map<std::string,std::string> typeMap;
+      std::map<std::string,std::string, std::less<>> typeMap;
 
       /// reverse ordered map here, key is written type, and value is rtti-type
-      std::map<std::string,std::string> typeMapReverse;
+      std::map<std::string,std::string, std::less<>> typeMapReverse;
     };
 
     /// returns a singelton instance of type Maps
@@ -184,8 +185,8 @@ namespace icl::utils {
     /// returns a singelton instance of type Maps as reference
     static Maps &getMapsInstanceRef() { return *getMapsInstance(); }
 #if 0
-    static std::map<std::string,std::string> s_typeMap;
-    static std::map<std::string,std::string> s_typeMapReverse;
+    static std::map<std::string,std::string, std::less<>> s_typeMap;
+    static std::map<std::string,std::string, std::less<>> s_typeMapReverse;
 #endif
 
     /// internally used utitlity function
@@ -513,7 +514,7 @@ namespace icl::utils {
     };
 
     /// iterator type to run through all entries (const only)
-    using const_iterator = std::map<std::string,Entry>::const_iterator;
+    using const_iterator = std::map<std::string,Entry, std::less<>>::const_iterator;
 
     /// all-entry iterator begin
     const_iterator begin() const{ return m_entries.begin(); }
@@ -569,7 +570,7 @@ namespace icl::utils {
 
 
     /// DataStore contents
-    std::map<std::string,Entry> m_entries;
+    std::map<std::string,Entry, std::less<>> m_entries;
 
     /// ostream operator is allowed to access privat members
     friend ICLUtils_API std::ostream &operator<<(std::ostream&, const ConfigFile&);

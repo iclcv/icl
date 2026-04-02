@@ -391,8 +391,8 @@ namespace icl::geom {
     return m_data->lastColorImage;
   }
 
-  static PointCloudGrabber *create_depth_camera_point_cloud_grabber(const std::map<std::string,std::string> &d){
-    std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+  static PointCloudGrabber *create_depth_camera_point_cloud_grabber(const std::map<std::string,std::string, std::less<>> &d){
+    auto it = d.find("creation-string");
     if(it == d.end()) return 0;
     const std::string &params = it->second;
 

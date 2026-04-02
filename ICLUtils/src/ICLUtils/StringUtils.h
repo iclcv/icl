@@ -10,6 +10,7 @@
 #include <ICLUtils/Time.h>
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <algorithm>
 #include <iterator>
@@ -65,17 +66,17 @@ namespace icl::utils {
   ICLUtils_API std::string &toUpperI(std::string &s);
 
   /// lower case conversion \ingroup STRUTILS
-  ICLUtils_API std::string toLower(const std::string &s);
+  ICLUtils_API std::string toLower(std::string_view s);
 
   /// upper case conversion \ingroup STRUTILS
-  ICLUtils_API std::string toUpper(const std::string &s);
+  ICLUtils_API std::string toUpper(std::string_view s);
 
   /// tokenizes a string with given delimiters (internally using a temporary StrTok instance) \ingroup STRUTILS
-  ICLUtils_API std::vector<std::string> tok(const std::string &s, const std::string &delims = " ",
+  ICLUtils_API std::vector<std::string> tok(std::string_view s, std::string_view delims = " ",
                                bool singleCharDelims=true, char escapeChar='\0');
 
   /// tokenize a string with given delimiters into a result vector (optimized) \ingroup STRUTILS
-  ICLUtils_API std::vector<std::string> &tok(const std::string &s, const std::string &delim, std::vector<std::string> &dst,
+  ICLUtils_API std::vector<std::string> &tok(std::string_view s, std::string_view delim, std::vector<std::string> &dst,
                                 bool singleCharDelims=true, char escapeChar='\0');
 
   /// concatinates at string-vector to a single string \ingroup STRUTILS
@@ -159,9 +160,9 @@ namespace icl::utils {
   /// parses a string into template parameter (defined for iclXX and std::string) \ingroup STRUTILS
   /** @see to8u to16s to32s to32f to64f (*/
   template<class T>
-  inline T parse(const std::string &s){
+  inline T parse(std::string_view s){
     if constexpr (is_stream_extractable<T>::value) {
-      std::istringstream str(s);
+      std::istringstream str{std::string(s)};
       T t;
       str >> t;
       return t;
@@ -170,56 +171,51 @@ namespace icl::utils {
     }
   }
 
-  template<>
-  inline const char* parse(const std::string &s){
-    return s.c_str();
-  }
-
   /** \cond */
   // we use this support functions here to avoid massive header code blow!
-  ICLUtils_API icl8u parse_icl8u(const std::string &s);
-  ICLUtils_API icl32f parse_icl32f(const std::string &s);
-  ICLUtils_API icl64f parse_icl64f(const std::string &s);
-  ICLUtils_API bool parse_bool(const std::string &s);
+  ICLUtils_API icl8u parse_icl8u(std::string_view s);
+  ICLUtils_API icl32f parse_icl32f(std::string_view s);
+  ICLUtils_API icl64f parse_icl64f(std::string_view s);
+  ICLUtils_API bool parse_bool(std::string_view s);
 
   template<>
-  inline icl8u parse<icl8u>(const std::string &s){
+  inline icl8u parse<icl8u>(std::string_view s){
     return parse_icl8u(s);
   }
   template<>
-  inline icl32f parse<icl32f>(const std::string &s){
+  inline icl32f parse<icl32f>(std::string_view s){
     return parse_icl32f(s);
   }
   template<>
-  inline icl64f parse<icl64f>(const std::string &s){
+  inline icl64f parse<icl64f>(std::string_view s){
     return parse_icl64f(s);
   }
   template<>
-  inline bool parse<bool>(const std::string &s){
+  inline bool parse<bool>(std::string_view s){
     return parse_bool(s);
   }
   template<>
-  inline std::string parse<std::string>(const std::string &s){
-    return s;
+  inline std::string parse<std::string>(std::string_view s){
+    return std::string(s);
   }
 
   /** \endcond */
 
 
   /// cast a string to an icl8u (parse) \ingroup STRUTILS
-  ICLUtils_API icl8u to8u(const std::string &s);
+  ICLUtils_API icl8u to8u(std::string_view s);
 
   /// cast a string to an icl16s (parse) \ingroup STRUTILS
-  ICLUtils_API icl16s to16s(const std::string &s);
+  ICLUtils_API icl16s to16s(std::string_view s);
 
   /// cast a string to an icl32ss (parse) \ingroup STRUTILS
-  ICLUtils_API icl32s to32s(const std::string &s);
+  ICLUtils_API icl32s to32s(std::string_view s);
 
   /// cast a string to an icl32f (parse) \ingroup STRUTILS
-  ICLUtils_API icl32f to32f(const std::string &s);
+  ICLUtils_API icl32f to32f(std::string_view s);
 
   /// cast a string to an icl64f (parse) \ingroup STRUTILS
-  ICLUtils_API icl64f to64f(const std::string &s);
+  ICLUtils_API icl64f to64f(std::string_view s);
 
   /// parse a vector of strings into a vector of T's \ingroup STRUTILS
   template<class T>
@@ -231,7 +227,7 @@ namespace icl::utils {
 
   /// parse a delims seperated string into a vector of T's \ingroup STRUTILS
   template<class T>
-  inline std::vector<T> parseVecStr(const std::string &vecStr, const std::string &delims = ","){
+  inline std::vector<T> parseVecStr(std::string_view vecStr, std::string_view delims = ","){
     return parseVec<T>(tok(vecStr,delims));
   }
 
@@ -269,21 +265,21 @@ namespace icl::utils {
                               the whole pattern match is submatches[0] in the resulting MatchResult
                               if numSubMatches is at least 1
       */
-  ICLUtils_API MatchResult match(const std::string &text, const std::string &regex, int numSubMatches = 0);
+  ICLUtils_API MatchResult match(std::string_view text, std::string_view regex, int numSubMatches = 0);
 
 
   /// converts a Time::value_type (long int) into a string
   ICLUtils_API std::string time2str(Time::value_type x);
 
   /// crops trailing whitespaces of a string
-  ICLUtils_API std::string skipWhitespaces(const std::string &s);
+  ICLUtils_API std::string skipWhitespaces(std::string_view s);
 
 
   /// returns whether a given string ends with a given suffix
-  ICLUtils_API bool endsWith(const std::string &s, const std::string &suffix);
+  ICLUtils_API bool endsWith(std::string_view s, std::string_view suffix);
 
   /// returns whether a given string begins with a given prefix
-  ICLUtils_API bool startsWith(const std::string &s, const std::string &prefix);
+  ICLUtils_API bool startsWith(std::string_view s, std::string_view prefix);
 
   /// analyses a file pattern with hash-characters
   /** This function is e.g. used by the FilennameGenerator to extract a patterns hash count
@@ -292,6 +288,6 @@ namespace icl::utils {
       hashes and the position in the string where the suffix begins. E.g. if the pattern is
       "image_##.ppm.gz", the hash-count is 2 and the suffix-pos becomes 8.
       **/
-  ICLUtils_API void analyseHashes(const std::string &sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
+  ICLUtils_API void analyseHashes(std::string_view sFileName, unsigned int& nHashes, std::string::size_type& iPostfixPos);
 
   } // namespace icl::utils

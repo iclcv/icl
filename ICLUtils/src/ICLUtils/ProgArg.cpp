@@ -154,11 +154,11 @@ namespace icl::utils {
 
   struct ProgArgContext{
     std::vector<AllowedArgPtr> allowed;
-    static std::map<std::string,std::string> explanations;
+    static std::map<std::string,std::string, std::less<>> explanations;
     std::string progname;
     std::string prognamelight;
-    std::map<std::string,GivenArg*> given;
-    std::map<std::string,AllowedArgPtr> allowedMap;
+    std::map<std::string,GivenArg*, std::less<>> given;
+    std::map<std::string,AllowedArgPtr, std::less<>> allowedMap;
     std::vector<std::string> dangling;
     std::vector<std::string> all;
     static std::string givenLicense;
@@ -247,7 +247,7 @@ namespace icl::utils {
     /// check elsewhere if explanations are ambiguous
     const std::string *findExplanation(const std::vector<std::string> &ns){
       for(unsigned int j=0;j<ns.size();++j){
-        std::map<std::string,std::string>::iterator it = explanations.find(ns[j]);
+        std::map<std::string,std::string, std::less<>>::iterator it = explanations.find(ns[j]);
         if(it != explanations.end()){
           return &it->second;
         }
@@ -277,7 +277,7 @@ namespace icl::utils {
       std::cout << "              information" << std::endl;
     }
     void showGiven() const{
-      for(std::map<std::string,GivenArg*>::const_iterator it= given.begin(); it != given.end();++it){
+      for(std::map<std::string,GivenArg*, std::less<>>::const_iterator it= given.begin(); it != given.end();++it){
         it->second->showSelf();
       }
     }
@@ -302,7 +302,7 @@ namespace icl::utils {
     }
 
     void add(GivenArg *g){
-      std::map<std::string,GivenArg*>::iterator it = given.find(g->arg());
+      std::map<std::string,GivenArg*, std::less<>>::iterator it = given.find(g->arg());
       if(it != given.end()) THROW_ProgArgException("argument '" + g->arg() + "' was given at least twice");
       for(unsigned int i=0;i<g->allowed->names.size();++i){
         given[g->allowed->names[i]] = g;
@@ -310,13 +310,13 @@ namespace icl::utils {
     }
 
     AllowedArg *findArg(const std::string &s){
-      std::map<std::string,AllowedArgPtr>::iterator it = allowedMap.find(s);
+      std::map<std::string,AllowedArgPtr, std::less<>>::iterator it = allowedMap.find(s);
       if(it != allowedMap.end()) return it->second.get();
       else return 0;
     }
 
     GivenArg *findGivenArg(const std::string &s){
-      std::map<std::string,GivenArg*>::iterator it = given.find(s);
+      std::map<std::string,GivenArg*, std::less<>>::iterator it = given.find(s);
       if(it != given.end()){
         return it->second;
       }else{
@@ -331,7 +331,7 @@ namespace icl::utils {
   std::string ProgArgContext::helpText;
 
   ProgArgContext *ProgArgContext::s_context = 0;
-  std::map<std::string,std::string> ProgArgContext::explanations;
+  std::map<std::string,std::string, std::less<>> ProgArgContext::explanations;
 
   void pa_init_internal(const std::string &sIn, ProgArgContext &context){
 
@@ -457,7 +457,7 @@ namespace icl::utils {
 
       std::set<std::string> missing;
       // ensure, that all mandatory args were actually given
-      for(std::map<std::string,AllowedArgPtr>::const_iterator it = context.allowedMap.begin();
+      for(std::map<std::string,AllowedArgPtr, std::less<>>::const_iterator it = context.allowedMap.begin();
           it != context.allowedMap.end(); ++it){
         const AllowedArgPtr &p = it->second;
         if(p->mandatory && !p->given){

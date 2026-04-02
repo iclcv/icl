@@ -64,7 +64,7 @@ namespace icl::io {
       std::recursive_mutex mutex;
 
       /// the ID is the format description
-      typedef std::map<std::string,SupportedFormatPtr> FMap;
+      typedef std::map<std::string,SupportedFormatPtr, std::less<>> FMap;
       FMap supportedFormats;
       SupportedFormatPtr currentFormat;
       Size currentSize;
@@ -501,7 +501,7 @@ namespace icl::io {
           std::string type;
           std::string info;
           int value;
-          std::map<std::string,icl32s> menu;
+          std::map<std::string,icl32s, std::less<>> menu;
           int internal_type;
 
           std::string toString() const {
@@ -515,7 +515,7 @@ namespace icl::io {
 
           void setValue(const std::string &value){
             if(type == "menu"){
-              std::map<std::string,int>::const_iterator it = menu.find(value);
+              std::map<std::string,int, std::less<>>::const_iterator it = menu.find(value);
               if(it == menu.end()) impl->normal_exception("unable to set menu property " + name + " to invalid value " + value);
               impl->set_property(internal_type,it->second);
             }else{
@@ -528,7 +528,7 @@ namespace icl::io {
           std::string getValue(){
             if(type == "menu"){
               int idx = impl->get_property(internal_type);
-              for(std::map<std::string,int>::const_iterator it = menu.begin();
+              for(std::map<std::string,int, std::less<>>::const_iterator it = menu.begin();
                   it != menu.end(); ++it){
                 if(it->second == idx) return it->first;
               }
@@ -543,7 +543,7 @@ namespace icl::io {
             if(type == "menu"){
               std::ostringstream stream;
               stream << "{";
-              for(std::map<std::string,icl32s>::const_iterator it = menu.begin(); it != menu.end();){
+              for(std::map<std::string,icl32s, std::less<>>::const_iterator it = menu.begin(); it != menu.end();){
                 stream << it->first;
                 if(++it != menu.end()) stream << ",";
               }
@@ -553,7 +553,7 @@ namespace icl::io {
           }
       };
       typedef std::shared_ptr<SupportedProperty> SupportedPropertyPtr;
-      typedef std::map<std::string,SupportedPropertyPtr> PMap;
+      typedef std::map<std::string,SupportedPropertyPtr, std::less<>> PMap;
       PMap supportedProperties;
 
       SupportedPropertyPtr findProperty(const std::string &name){

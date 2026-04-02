@@ -24,7 +24,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  std::map<std::string,FileWriterPlugin*> FileWriter::s_mapPlugins;
+  std::map<std::string,FileWriterPlugin*, std::less<>> FileWriter::s_mapPlugins;
 
   class FileWriterPluginMapInitializer{
   public:
@@ -95,7 +95,7 @@ namespace icl::io {
       // add plugins
     }
     ~FileWriterPluginMapInitializer(){
-      for(std::map<std::string,FileWriterPlugin*>::iterator it = FileWriter::s_mapPlugins.begin();
+      for(std::map<std::string,FileWriterPlugin*, std::less<>>::iterator it = FileWriter::s_mapPlugins.begin();
           it != FileWriter::s_mapPlugins.end(); ++it){
         delete it->second;
       }

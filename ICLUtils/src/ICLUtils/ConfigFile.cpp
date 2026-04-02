@@ -328,7 +328,7 @@ namespace icl::utils {
     return e.rttiType == rttiTypeID;
     /*
         DEBUG_LOG("rtti type is " << rttiTypeID << "#registered types:" << s_typeMap.size());
-        std::map<std::string,std::string>::const_iterator it=s_typeMap.find(rttiTypeID);
+        std::map<std::string,std::string, std::less<>>::const_iterator it=s_typeMap.find(rttiTypeID);
         if(it == s_typeMap.end()) throw UnregisteredTypeException(rttiTypeID);
         return (it->second == e.rttiType);
     */

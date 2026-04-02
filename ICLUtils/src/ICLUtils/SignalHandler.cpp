@@ -96,11 +96,11 @@ namespace icl::utils {
       names[signal]=s;
     }
     std::map<int,std::string> names;
-    std::map<std::string,int> keys;
+    std::map<std::string,int, std::less<>> keys;
 
   public:
     std::map<int,int> numHandlers; // for given signal key!
-    typedef std::map<std::string, Handler> HMap;
+    typedef std::map<std::string, Handler, std::less<>> HMap;
     HMap handlers;
   };
 

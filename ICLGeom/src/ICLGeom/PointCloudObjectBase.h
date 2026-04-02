@@ -9,6 +9,7 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLCore/DataSegment.h>
 // forward declaration (was #include <ICLCore/ImgBase.h>)
+#include <functional>
 #include <map>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
@@ -83,7 +84,7 @@ namespace icl::geom {
     GeomColor m_defaultPointColor;
 
     /// internal map of meta data
-    std::map<std::string,std::string> m_metaData;
+    std::map<std::string,std::string, std::less<>> m_metaData;
 
     /// internally used utility method that throws verbose exceptions
     template<class T, int N>
@@ -327,10 +328,10 @@ namespace icl::geom {
                         float tollerance=1.0e-5) const;
 
     /// returns the meta data associated with this point cloud object
-    std::map<std::string,std::string> &getMetaData();
+    std::map<std::string,std::string, std::less<>> &getMetaData();
 
     /// returns the meta data associated with this point cloud object (const)
-    const std::map<std::string,std::string> &getMetaData() const;
+    const std::map<std::string,std::string, std::less<>> &getMetaData() const;
 
     /// returns the meta data associated with a given key
     const std::string &getMetaData(const std::string &key) const;

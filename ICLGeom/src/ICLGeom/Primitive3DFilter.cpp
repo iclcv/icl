@@ -140,7 +140,7 @@ namespace icl::geom {
 
               // match regular expression with description to find primitive group
               int groupBit = -1;
-              for(std::map<std::string, unsigned char>::const_iterator mapit = config.mapRegexToBit.begin(); mapit != config.mapRegexToBit.end(); ++mapit) {
+              for(std::map<std::string, unsigned char, std::less<>>::const_iterator mapit = config.mapRegexToBit.begin(); mapit != config.mapRegexToBit.end(); ++mapit) {
                   std::string regex = mapit->first;
                   if(utils::match(it->description, regex)) {
                       if(groupBit == -1) {

@@ -347,7 +347,7 @@ namespace icl::io {
         /// A vector holding all capabilities of the MapGenerator
         std::vector<std::string> m_Capabilities;
         /// A Map Holding all used ProductionNodes
-        std::map<std::string, xn::ProductionNode> m_ProductionNodeMap;
+        std::map<std::string, xn::ProductionNode, std::less<>> m_ProductionNodeMap;
     };
 
     /// this class interprets and sets Properties of OpenNI DepthGenerators

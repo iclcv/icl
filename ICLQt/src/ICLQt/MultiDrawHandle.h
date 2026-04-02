@@ -6,6 +6,7 @@
 
 #include <ICLQt/GUIHandle.h>
 #include <QTabBar>
+#include <functional>
 #include <vector>
 #include <map>
 #include <QtCore/QObject>
@@ -67,7 +68,7 @@ namespace icl{
 
       std::vector<core::ImgBase*> *m_imageBuffer;
       QTabBar *m_tabBar;
-      std::map<std::string,int> m_map;
+      std::map<std::string,int, std::less<>> m_map;
       bool m_bufferAll;
       bool m_bufferDeeply;
     };

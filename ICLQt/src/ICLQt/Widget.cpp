@@ -682,7 +682,7 @@ namespace icl::qt {
     int frameIdx;
     FixedConverter *converter;
     ImgBase *convertedBuffer;
-    std::map<std::string,std::function<void(const core::ImgBase*)> > recordingCallbacks;
+    std::map<std::string,std::function<void(const core::ImgBase*)>, std::less<>> recordingCallbacks;
 
   public:
     OutputBufferCapturer(ICLWidget *parent, ICLWidget::Data *data):

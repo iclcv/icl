@@ -681,7 +681,7 @@ namespace icl::qt {
     template<class T>
     Img<T> grab(const std::string &dev, const std::string &devSpec,
               const Size &size, format fmt, bool releaseGrabber){
-      static std::map<std::string,std::shared_ptr<GenericGrabber> > grabbers;
+      static std::map<std::string,std::shared_ptr<GenericGrabber>, std::less<>> grabbers;
 
       std::shared_ptr<GenericGrabber> g;
       std::string id;
@@ -721,7 +721,7 @@ namespace icl::qt {
     template<class T>
     Img<T> filter(const Img<T> &image,const std::string &filter){
 
-      static std::map<std::string,UnaryOp*> M;
+      static std::map<std::string,UnaryOp*, std::less<>> M;
       if(!M.size()){
         static Size s3x3(3,3);
         M["sobely"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3),true);

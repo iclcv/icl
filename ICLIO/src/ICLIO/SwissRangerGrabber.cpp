@@ -141,7 +141,7 @@ namespace icl::io {
     }
   }
 
-  static std::map<std::string,int> g_props;
+  static std::map<std::string,int, std::less<>> g_props;
   static struct g_props_initializer{
     g_props_initializer(){
 #define ENTRY(X) g_props[#X] = X
@@ -160,7 +160,7 @@ namespace icl::io {
   static int g_use_single_serial = -1;
 
   static int propNr(const std::string &x){
-    std::map<std::string,int>::iterator it = g_props.find(x);
+    std::map<std::string,int, std::less<>>::iterator it = g_props.find(x);
     if(it != g_props.end()){
       return it->second;
     }
@@ -168,7 +168,7 @@ namespace icl::io {
   }
 
   /*static std::string propNr(int v){
-    for(std::map<std::string,int>::iterator it = g_props.begin();it!=g_props.end();++it){
+    for(std::map<std::string,int, std::less<>>::iterator it = g_props.begin();it!=g_props.end();++it){
       if(it->second == v){
         return it->first;
       }

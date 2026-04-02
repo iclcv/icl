@@ -190,7 +190,7 @@ namespace icl::utils {
     private:
 
     /// by default internally use property list
-    using PropertyMap = std::map<std::string,Property>;
+    using PropertyMap = std::map<std::string,Property, std::less<>>;
 
     /// list of all properties
     PropertyMap m_properties;
@@ -210,7 +210,7 @@ namespace icl::utils {
     std::string m_ID;
 
     /// static list of all instantiated Configurables
-    static std::map<std::string,Configurable*> m_instances;
+    static std::map<std::string,Configurable*, std::less<>> m_instances;
 
     /// list of patterns for deactiavted properties
     std::vector<std::string> m_deactivated;

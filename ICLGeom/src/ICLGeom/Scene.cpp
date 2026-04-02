@@ -1678,8 +1678,8 @@ namespace icl::geom {
   REGISTER_CONFIGURABLE(Scene, return new Scene);
 
 
-  static PointCloudGrabber *create_scene_point_cloud_grabber(const std::map<std::string,std::string> &d){
-    std::map<std::string,std::string>::const_iterator it = d.find("creation-string");
+  static PointCloudGrabber *create_scene_point_cloud_grabber(const std::map<std::string,std::string, std::less<>> &d){
+    auto it = d.find("creation-string");
     if(it == d.end()) return 0;
     const std::string &params = it->second;
     std::vector<std::string> ts = tok(params,",");

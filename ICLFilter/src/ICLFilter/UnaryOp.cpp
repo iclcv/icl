@@ -141,7 +141,7 @@ namespace icl::filter {
         return c(params);
       }
     };
-    static std::map<std::string,Creator> CREATORS;
+    static std::map<std::string,Creator, std::less<>> CREATORS;
 
     UnaryOp *create_generic_conv(const paramlist &paramsIn){
       paramlist params = paramsIn;

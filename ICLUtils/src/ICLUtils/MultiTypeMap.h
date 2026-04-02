@@ -9,6 +9,7 @@
 #include <mutex>
 #include <memory>
 
+#include <functional>
 #include <string>
 #include <map>
 #include <typeinfo>
@@ -254,7 +255,7 @@ namespace icl::utils {
     protected:
 
     /// internal definition
-    using DataMap = std::map<std::string,DataArray>;
+    using DataMap = std::map<std::string,DataArray, std::less<>>;
 
     /// internal definition
     using SmartDataMapPtr = std::shared_ptr<DataMap>;

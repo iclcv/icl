@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <map>
 
 #include <ICLUtils/BasicTypes.h>
@@ -96,12 +97,12 @@ namespace icl::utils {
       ~IppInterface();
 
       /// A map holding handles to all dynamically loaded libs
-      std::map<std::string,void*> m_LibHandles;
+      std::map<std::string,void*, std::less<>> m_LibHandles;
 
       /// A mutex for the function handle map
       std::recursive_mutex m_FunctionHandleMutex;
       /// A map holding handles to all dynamically loaded functions
-      std::map<std::string,void*> m_FunctionHandles;
+      std::map<std::string,void*, std::less<>> m_FunctionHandles;
   };
 
 
